@@ -1,0 +1,10 @@
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: update_on_demand.csv
+    format:    csv
+    trigger:
+      start:   top.cpu.core0.rob.stats.total_number_retired >= 2500
+      update-whenever: notif.stats_profiler == 1
+      stop:    top.cpu.core0.rob.stats.total_number_retired >= 8800

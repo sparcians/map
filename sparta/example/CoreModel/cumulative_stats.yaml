@@ -1,0 +1,35 @@
+# This YAML file uses the 'csv_cumulative' report format. This format
+# is identical to the 'csv' format, except the calculated statistic
+# values are always taken relative to when the report first started,
+# NOT relative to the last update.
+#
+# The first descriptor below only specifies the 'csv_cumulative'
+# format. The resulting file would be named:
+#
+#    cumulative_stats.csv
+#
+# The second descriptor uses 'csv, csv_cumulative' to
+# generate two reports from that one descriptor. The resulting
+# output files in that case would be named:
+#
+#    sim_statistics.csv
+#    sim_statistics_cumulative.csv
+
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: cumulative_stats.csv
+    format:    csv_cumulative
+    trigger:
+      start:   top.cpu.core0.rob.stats.total_number_retired >= 2250
+      update-cycles: 75
+
+report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: sim_statistics.csv
+    format:    csv, csv_cumulative
+    trigger:
+      start:   top.cpu.core0.rob.stats.total_number_retired >= 2250
+      update-cycles: 75

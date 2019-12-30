@@ -1,0 +1,19 @@
+content:
+  report:
+    def_file:  simple_stats.yaml
+    pattern:   _global
+    dest_file: out1.txt
+    format:    txt
+    trigger:
+      start:   top.cpu.core0.rob.stats.total_number_retired >= 162
+      stop:    top.cpu.core0.rob.stats.total_number_retired >= 963
+      tag:     t0
+  report:
+    def_file:  simple_stats.yaml
+    pattern:   _global
+    dest_file: out2.csv
+    format:    csv
+    trigger:
+      start:   t0.start
+      stop:    t0.stop
+      update-count: top.cpu.core0.rob.stats.total_number_retired 25 noalign

@@ -1,0 +1,6 @@
+// It's handy to know when you're creating a single-argument
+// constructor that isn't marked as explicit, but I think it's a bit
+// overkill since most of the classes in this framework take complex
+// objects instead of POD types.  The chances of an implicit cast is
+// super low...
+noExplicitConstructor

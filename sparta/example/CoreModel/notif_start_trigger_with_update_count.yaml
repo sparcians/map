@@ -1,0 +1,12 @@
+content:
+
+  report:
+    name: 'Notification-driven start trigger with update-count timeseries'
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out.csv
+    format:    csv
+    trigger:
+      start:   notif.testing_notif_channel >= 15
+      update-count: top.cpu.core0.rob.stats.total_number_retired 250 noalign
+

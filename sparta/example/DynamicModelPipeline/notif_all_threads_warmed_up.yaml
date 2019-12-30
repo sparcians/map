@@ -1,0 +1,10 @@
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out.json
+    format:    json_reduced
+    trigger:
+      tag:     r3
+      start:   notif.all_threads_warmup_instruction_count_retired_re4 >= 0
+

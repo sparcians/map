@@ -1,0 +1,25 @@
+name: "Report Autopopulation Test"
+style:
+    decimal_places: 3
+content:
+    top:
+        subreport:
+            name: Summary
+            content:
+                autopopulate:
+                    attributes: vis:summary
+                    max_report_depth: 0
+                    max_recursion_depth: 2 # + leaves in ".core0.stats"
+        subreport:
+            name: All stats
+            style:
+                collapsible_children: no
+            content:
+                autopopulate:
+                    attributes: "!=vis:hidden && !=vis:summary"
+                    max_report_depth: 1
+    scheduler:
+        subreport:
+            name: scheduler
+            content:
+                autopopulate : ""

@@ -1,0 +1,41 @@
+# This YAML file contains several report definitions that use ContextCounter-
+# driven report trigger expressions. Notice that this type of expression does
+# not affect other parts of the YAML definition (_global vs. top, unitless
+# target value such as 139 vs. one with units such as 12k, and the use of a
+# parameterized target value).
+#
+# The examples here also use the built-in 'agg' method in the first two report
+# definitions. That method simply adds up ('agg'regates) the internal counter
+# values and triggers the report once that aggregate value exceeds the target.
+#
+# In the third report definition, the user has requested the 'avg' method be
+# used instead when looking at the internal counter values and comparing them
+# against the target value. This user-supplied 'avg' method must be supplied
+# from C++ directly. See source in /example/CoreModel/src/ExampleSimulation.cpp
+# and search for "registerContextCounterCalcFunction".
+
+content:
+
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out1.csv
+    format:    csv
+    trigger:
+      start:   stat_def.top.core0.dispatch.stats.count_insts_per_unit.agg >= 12k
+
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out2.html
+    format:    html
+    trigger:
+      start:   stat_def.top.core0.dispatch.stats.count_insts_per_unit.agg > top.core0.params.foo
+
+  report:
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: out3.json
+    format:    json_reduced
+    trigger:
+      start:   stat_def.core0.dispatch.stats.count_insts_per_unit.avg == 139

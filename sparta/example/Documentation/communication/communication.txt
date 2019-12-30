@@ -1,0 +1,169 @@
+
+/*!
+  \page communication Communication & Scheduling
+  \tableofcontents
+
+  In addition to providing a simulation command line infrastructure
+  (see \ref config) as well as resource creation (see \ref resources)
+  in a tree form for organization (see \ref trees), ROME provides a
+  series of classes and ordering specifically dedicated for resource
+  to resource communication as well as internal resource
+  communication.  This communication can be timed or untimed as
+  desired.
+
+  The first point to make revolves around the philosophy behind the
+  timing aspects of ROME: There are scheduling phases
+  (rome::SchedulingPhase) that allows a user to count on certain
+  ordering between resources and another.  This is different from
+  prior versions of ROME where every scheduleable type of event was in
+  a single phase and required the user to provide explicit orderings.
+
+  Ordering within a phase, however, is still supported, allowing a
+  modeler to specify the order in which events are scheduled/fired
+  within that phase.  For example, a modeler may desired eventA which
+  reads from a Port to be scheduled before eventB which might act on
+  the data read.
+
+  The classes that support communication and scheduling are:
+  - \ref rome::Port
+  - \ref rome::PortSet
+  - \ref rome::DataInPort, \ref rome::DataOutPort
+  - \ref rome::SignalInPort, \ref rome::SignalOutPort
+  - \ref rome::SyncInPort, \ref rome::SyncOutPort
+  - \ref rome::Scheduleable
+  - \ref rome::Event
+  - \ref rome::UniqueEvent
+  - \ref rome::PayloadEvent
+  - \ref rome::EventSet
+  - \ref rome::Clock
+  - \ref rome::Scheduler
+  - \ref rome::SchedulingPhase
+  - \ref rome::SysCRomeSchedulerAdapter
+
+  The below sections detail each.
+
+  ======================================================================
+  \section comm_ports Ports
+
+  Ports are the mechanism in which a resource communicates a message
+  to another resource (for example, via the method
+  rome::DataOutPort::send).  The two resources do not know about each
+  other and don't need to.  Typically, during
+  rome::Simulation::finalizeTree (calls rome::Simulation::bindTree_)
+  phase, any rome::Port derived classes that are constructed with a
+  rome::PortSet are bound together using rome::bind(rome::Port,
+  rome::Port) methods.  An example of how this is done is found in
+  details section of rome::DataOutPort as well as the example core
+  simulator's ExampleSimulator::buildTree_ (see \ref core_example)
+  method (source found in example/CoreExample/src).
+
+  For the receiver of the data, the receiver would have to register a
+  callback on the rome::DataInPort via the
+  rome::DataInPort::registerConsumerHandler.  This callback \b must be
+  a member of the containing class or another persistent class in
+  simulation.
+
+  Example of a device receiving data can be found in
+  example/Documentation/communication/Port_example.h, and compiled by
+  typing 'make PORTS_EXAMPLE=1'.
+
+   \include Documentation/communication/Ports_example.h
+
+   \subsection sync_ports rome::SyncPorts
+
+   To enable communication between components on different Clock
+   boundaries, use rome::SyncInPort and rome::SyncOutPort.  This type
+   of port is identical to DataIn/OutPort with the exception that data
+   sent on the out port is delayed until the "rising edge" of the
+   receiver's clock. See rome::SyncOutPort for more information.
+
+   ======================================================================
+   \section comm_events Events
+
+   Events are mechanism to allow the scheduling of work based on
+   activity within a resource.  For example, the receiving of data
+   from an external resource on a port might trigger the need to act
+   upon that data and send it on.  Take the previous example in the
+   Port section and add an event based on the receiving of data (found
+   examples/Documentation/communication/Events_example.h, and compiled
+   by typing 'make EVENTS_EXAMPLE=1':
+
+   \include Documentation/communication/Events_example.h
+
+   This isn't a very interesting class as myDataReceiver_() could
+   easily just call doSomeWork_() directly.  But, what if MyDevice had
+   \b two inports that needed to be called \b before doing some work?
+   That's no problem either.  Let's extend the class, but this time
+   adding a second port and changing event_do_some_work_ from a
+   rome::Event to a rome::UniqueEvent to ensure it gets called only
+   once when scheduled by both handlers. Code found in
+   examples/Documentation/communication/Port_dual_example.h, and
+   compiled by typing 'make EVENTS_DUAL_EXAMPLE=1'
+
+   \include Documentation/communication/Events_dual_example.h
+
+   ======================================================================
+   \section comm_dyn_events Dynamic Event Creation
+
+   What if we want have a dynamic object that wants to schedule Events
+   on the rome::Scheduler?  How do you do that?  This approach is
+   typically discouraged as debugging dynamic events is difficult for
+   the model developer and requires the modeler to create
+   rome::Scheduleable objects with hard-coded groupings.
+
+   But, if this is required, create a rome::Scheduleable instance and
+   perform scheduling directly on that instance.  If the base behavior
+   is not desired, derive from rome::Scheduleable and provide an
+   implementation of rome::Scheduleable::scheduleRelativeTick.
+
+   ======================================================================
+   \section comm_clocks Clocks
+
+   ROME's clocking and clock management are contained in rome::Clock
+   and rome::ClockManager classes.  The main difference to note in
+   ROME, is that rome::Clock objects are not event-based objects nor
+   do they constantly "clock" as simulation progresses (like in other
+   frameworks).  rome::Clock objects are simply available to convert
+   simulation time (from the rome::Scheduler) to clock time based on
+   that clock's frequency.  Therefor, in simulation, rome::Clock
+   objects are passed around as constant objects.  In addition, there
+   is no notion of a "rising edge" nor a "falling edge" in simulation
+   (however, the rome::Clock supports this notion if absolutely
+   needed).  Instead, the Clocks are used to simply answer the
+   question, what time (in NS) on the Scheduler should Event X be
+   scheduled?
+
+   Using the ClockManager and the Clock classes are pretty
+   straight-forward.  By default the ClockManager contains a clock
+   that runs on the Scheduler frequency 1 cycle == 1 NS.  This is
+   called the master clock (and denotes the "hypercycle").  From the
+   master clock, more clocks can be created and then associated with
+   TreeNode objects that Device objects hang off of:
+
+   \code
+    rome::RootTreeNode root_clks("clocks",
+                                 "Clock Tree Root",
+                                 root_node.getSearchScope());
+    rome::ClockManager cm;
+    rome::Clock::Handle root_clk = cm.makeRoot(&root_clks);
+    rome::Clock::Handle clk_1000 = cm.makeClock("clk_1000", root_clk, 1000.0);
+    rome::Clock::Handle clk_100  = cm.makeClock("clk_100",  root_clk,  100.0);
+    rome::Clock::Handle clk_10   = cm.makeClock("clk_10",   root_clk, 10.0);
+
+    root_tree_node_.setClock(root_clk.get()); // The root is at highest freq
+
+    // The device "runs" at 1GHz.  I.e. it's events are scheduled at that
+    // time frame.
+    my_device_node_.setClock(clk_1000.get());
+
+   \endcode
+
+   ======================================================================
+   \section comm_schedulers Schedulers
+
+   \subsection rome_Scheduler rome::Scheduler
+   \copydetails rome::Scheduler
+
+   \subsection sysc_scheduler rome::SysCRomeSchedulerAdapter
+   \copydetails rome::SysCRomeSchedulerAdapter
+  */

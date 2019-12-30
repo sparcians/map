@@ -1,0 +1,35 @@
+Report: "Report1" [60,80]
+  top.core0.stats.c1 = 1
+  top.core0.stats.s1 = 1
+  stat1 = 1
+  stat5 = 100000
+  top.core0.stats.c2 = 2
+  stat3 = 3
+  stat4 = 4
+  PICO = 20
+  top.core0.stats.s2 = 2
+  top.core0.stats.s3 = 0.0365854
+  top.core0.stats.s4 = 82
+  <expression> = 10
+  <expression> = 10
+  Report: "SubreportB" [60,80]
+    stat1 = 1
+    stat2 = 1
+  Report: "SubreportA" [60,80]
+    stat1 = 1
+    stat2 = 2
+    stat3 = 0.0365854
+    ticks = 20
+    stat3_per_tick = 0.00182927
+    stat4 = 82
+    custom_expression = 81
+    s3_expression = 1000.04
+    s4_expression = 1082
+    zero = 6.12323e-17
+    s = 2e-11
+    ms = 2e-08
+    us = 2e-05
+    ns = 0.02
+    ps = 20
+    core0 cycles = 10
+    core1 cycles = 7

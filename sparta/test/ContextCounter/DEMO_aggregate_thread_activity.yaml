@@ -1,0 +1,35 @@
+#    * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+#    *    DEMO: User-provided ContextCounter aggregation method    *
+#    * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+#
+# The user-implemented calculation method can be anything that evaluates
+# to a scalar double value, and SPARTA will simply call that ContextCounter
+# subclass method when it needs to write out the current statistic value
+# to a report.
+#
+# In the 'cc_simple_stats4.yaml' file, we have these stats being sent to
+# a report:
+#
+#   top.core0.dispatch.stats.threaded_count_insts_per_unit
+#   top.core0.dispatch.stats.threaded_count_insts_per_unit.numActive_
+#
+# The first stat is an auto-expanded context counter, so the report
+# will show the individual context counts, as well as the raw sum
+# of those counts in each update. That is the default definition of
+# 'aggregate' - it is a simple raw sum of each of the counts.
+#
+# However, the '..numActive_' stat will actually get its aggregate
+# values from a user-provided callback that exists in the ContextCounter
+# subclass ('numActive_' is actually the name of the method, and SPARTA
+# will just invoke it when it needs to grab the aggregate value).
+
+content:
+  report:
+    pattern:   _global
+    def_file:  thread_activity.yaml
+    dest_file: aggregated_thread_activity.csv
+    format:    csv
+    expand-cc: true
+    trigger:
+      start:   top.core0.rob.stats.total_number_retired >= 7500
+      update-cycles: 1

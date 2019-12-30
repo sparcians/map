@@ -1,0 +1,7 @@
+Report: "Report with Wildcard" [40,100]
+  top.core0.stats.c1 = 3
+  top.core1.stats.c1 = 0
+  stat_0_wild = 9
+  stat_1_wild = 0
+  top.core0.stats.c4_stat_wild = 12
+  top.core1.stats.c4_stat_wild = 0

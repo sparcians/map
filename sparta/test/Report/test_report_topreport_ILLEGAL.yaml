@@ -1,0 +1,8 @@
+# Illegal "report" at top level. Because this is interpreted directly
+# from a --report option, it is already within a "report"
+report: # SHOULD NOT BE PRESENT
+    name: "Report 1"
+    author: "nhaw"
+    content:
+        core0.stats:
+            c1 : ""

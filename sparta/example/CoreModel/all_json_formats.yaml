@@ -1,0 +1,21 @@
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out1.json
+    format:    json
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out2.json
+    format:    json_reduced
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out3.json
+    format:    json_detail
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out4.json
+    format:    jims_json

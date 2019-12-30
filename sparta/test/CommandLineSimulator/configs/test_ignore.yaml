@@ -1,0 +1,18 @@
+# Ignore some parameters that don't exist
+
+top:
+  core0:
+    fetch:
+      params:
+        this_does_not_exist: 100
+        this_does_not_exist: <OPTIONAL>
+        also_does_not_exist: [1,2,3,4,5]
+        also_does_not_exist: <OPTIONAL>
+        still_does_not_exist: [[1,2],[3,4]]
+top.core*.fetch.params.still_does_not_exist: <OPTIONAL>
+top:
+  fiz:
+    bin:
+      params:
+        no_way_this_exists: 12345
+        no_way_this_exists: <OPTIONAL>

@@ -1,0 +1,10 @@
+# Has multiple subreports, each scoped to a different (or possibly the same)
+# point in the tree and autopopulated separately
+name: Report X
+content:
+  "top.core*":
+    subreport:
+      name: "%l"
+      content:
+        autopopulate:
+          attributes: ">=vis:0"

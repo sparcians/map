@@ -1,0 +1,42 @@
+content:
+    report:
+        name:      'Create a time trigger with nanoseconds units'
+        trigger:
+            tag:   t0
+            start: "rob.stats.total_number_retired >= 1200"
+            update-time: "5.5 ns"
+        pattern:   top.core0
+        def_file:  core_stats.yaml
+        dest_file: core0_statistics.csv
+        format:    csv
+
+    report:
+        name:      'Create a time trigger with microseconds units'
+        trigger:
+            tag:   t1
+            start: "rob.stats.total_number_retired >= 1500"
+            update-time: "0.004 us"
+        pattern:   top.core1
+        def_file:  core_stats.yaml
+        dest_file: core1_statistics.csv
+        format:    csv
+
+    report:
+        name:      'Create a time trigger with picoseconds units'
+        trigger:
+            start: "t0.start && t1.start"
+            update-time: "2750 ps"
+        pattern:   top
+        def_file:  top_stats.yaml
+        dest_file: overlapping_statistics.csv
+        format:    csv
+
+    report:
+        name:      'Create a time trigger without specifying any units'
+        trigger:
+            start: t0.start
+            update-time: 6
+        pattern:   top.core1
+        def_file:  core_stats.yaml
+        dest_file: core1_statistics_no_units_given.csv
+        format:    csv

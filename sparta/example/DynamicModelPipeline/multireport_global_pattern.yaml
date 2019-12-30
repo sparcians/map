@@ -1,0 +1,34 @@
+content:
+
+  report:
+    name: 'Counter-based updates with global pattern'
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: basic_triggers1.csv
+    format:    csv
+    trigger:
+      start:   'top.core0.rob.stats.total_number_retired >= 1000'
+      stop:    'top.core0.rob.stats.total_number_retired >= 9000'
+      update-count: 'top.core0.rob.stats.total_number_retired 500'
+
+  report:
+    name: 'Cycle-based updates with global pattern'
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: basic_triggers2.csv
+    format:    csv
+    trigger:
+      start:   'top.core0.rob.stats.total_number_retired >= 1000'
+      stop:    'top.core0.rob.stats.total_number_retired >= 9000'
+      update-cycles: 500
+
+  report:
+    name: 'Time-based updates with global pattern'
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: basic_triggers3.csv
+    format:    csv
+    trigger:
+      start:   'top.core0.rob.stats.total_number_retired >= 1000'
+      stop:    'top.core0.rob.stats.total_number_retired >= 9000'
+      update-time: '7.5 ns'

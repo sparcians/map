@@ -1,0 +1,10 @@
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: bug.csv
+    format:    csv
+    trigger:
+      tag:     r3_timeseries
+      start:   r3.start
+      update-count: top.cpu.core0.rob.stats.total_number_retired 100 noalign

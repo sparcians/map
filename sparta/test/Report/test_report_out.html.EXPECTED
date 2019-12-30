@@ -1,0 +1,329 @@
+<html><head><title>Report1</title><style type='text/css'>
+table {
+  font-family:courier new, monospace;
+}
+table.report_table {
+  border:1px solid #808080;
+}
+table.subreport_table {
+  border:1px solid #808080;
+}
+.subreport_section {
+  font-size:80%;
+  text-align:left;
+  font-style:italic;
+  color:#505050;
+}
+th.tabletitle {
+  padding:6px;
+  text-align:left;
+  font-family:Helvetica, Verdana, sans-serif;
+  font-size:120%;
+  border-bottom:3px solid #404040;
+  background-color:#fffff0;
+}
+th.tablesection {
+  font-weight:normal;  text-align:left;
+  font-family:Helvetica, Verdana, sans-serif;
+  font-size:80%;
+  border-bottom:1px solid #404040;
+  background-color:#d0d0d0;
+}
+th {
+  font-size:95%;
+  background-color:#d0d0d0;
+  border-bottom:1px solid #707070;
+  border-right:1px solid #C0C0C0;
+  }
+td {
+  border-bottom:1px solid #707070;
+  border-right:1px solid #C0C0C0;
+}
+td.name {
+  font-size:80%;
+  text-align:left;
+  padding-right:4px;
+  width:400px;
+}
+td.value {
+  font-size:80%;
+  width:180px;
+  padding-left:8px;
+  font-weight:bold;
+}
+td.expression {
+  font-size:75%;
+  color:#505050;
+  padding-left:8px;
+}
+td.info {
+  text-align:right;
+  font-style:italic;  font-size:80%;  padding-right:20px;
+}
+span.info_span {
+  font-style:italic;
+  font-size:70%;
+}
+span.units_span {
+  font-size:115%;
+  color:#808080;
+}
+td.infoval {
+  text-align:left;
+  font-style:italic;
+  font-size:90%;
+}
+td.subreport_td {
+  text-align:left;
+  padding:12px 8px 0px 16px;
+}
+</style>
+<script>
+function hideNode(name) {
+    document.getElementById(name).style.display='none';
+    document.getElementById(name + "_show").style.display='inline';
+    document.getElementById(name + "_hide").style.display='none';
+}
+function showNode(name) {
+    document.getElementById(name).style.display='block';
+    document.getElementById(name + "_show").style.display='none';
+    document.getElementById(name + "_hide").style.display='inline';
+}
+</script>
+</head>
+<body style='font-size:8px;'><table cellpadding=3 cellspacing=0 style='width:100%;' class='report_table'><thead><tr><th colspan=3 class='tabletitle'><input type="button" onclick="hideNode('Report1_0');" id="Report1_0_hide" value="-"><input type="button" onclick="showNode('Report1_0');" id="Report1_0_show" value="+" style='display:none;'>&nbsp;Report1</th></tr></thead>
+<tbody id="Report1_0"><tr>
+
+<td class='name' title='Counter 1 (NORMAL VIS)
+top.core0.stats.c1'>top.core0.stats.c1</td>
+<td class='value' title='Counter 1 (NORMAL VIS)
+top.core0.stats.c1' style='' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1</td>
+<td class='expression'>Counter 1 (NORMAL VIS)</td>
+<tr>
+
+<td class='name' title='Statistic Description
+top.core0.stats.c1'>top.core0.stats.s1</td>
+<td class='value' title='Statistic Description
+top.core0.stats.c1' style='' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1<span class='units_span'>%</span></td>
+<td class='expression'>Statistic Description</td>
+<tr>
+
+<td class='name' title='Counter 1 (NORMAL VIS)
+top.core0.stats.c1'>stat1</td>
+<td class='value' title='Counter 1 (NORMAL VIS)
+top.core0.stats.c1' style='' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1</td>
+<td class='expression'>Counter 1 (NORMAL VIS)</td>
+<tr>
+
+<td class='name' title='Counter 5 (NORMAL VIS)
+top.core0.stats.c5'>stat5</td>
+<td class='value' title='Counter 5 (NORMAL VIS)
+top.core0.stats.c5' style='' >100000</td>
+<td class='expression'>Counter 5 (NORMAL VIS)</td>
+<tr>
+
+<td class='name' title='Counter 2 (SUMMARY VIS)
+top.core0.stats.c2'>top.core0.stats.c2</td>
+<td class='value' title='Counter 2 (SUMMARY VIS)
+top.core0.stats.c2' style='' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2</td>
+<td class='expression'>Counter 2 (SUMMARY VIS)</td>
+<tr>
+
+<td class='name' title='Counter 3 (HIDDEN VIS)
+top.core0.stats.c3'>stat3</td>
+<td class='value' title='Counter 3 (HIDDEN VIS)
+top.core0.stats.c3' style='' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3</td>
+<td class='expression'>Counter 3 (HIDDEN VIS)</td>
+<tr>
+
+<td class='name' title='Counter 4 (NORMAL VIS)
+top.core0.stats.c4'>stat4</td>
+<td class='value' title='Counter 4 (NORMAL VIS)
+top.core0.stats.c4' style='' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4</td>
+<td class='expression'>Counter 4 (NORMAL VIS)</td>
+<tr>
+
+<td class='name' title='Picosecond Count of this Clock
+scheduler.stats.picoseconds'>PICO</td>
+<td class='value' title='Picosecond Count of this Clock
+scheduler.stats.picoseconds' style='' >&nbsp;&nbsp;&nbsp;&nbsp;20</td>
+<td class='expression'>Picosecond Count of this Clock</td>
+<tr>
+
+<td class='name' title='Statistic Description
+top.core0.stats.c2'>top.core0.stats.s2</td>
+<td class='value' title='Statistic Description
+top.core0.stats.c2' style='' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2</td>
+<td class='expression'>Statistic Description</td>
+<tr>
+
+<td class='name' title='Statistic Description
+(top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))'>top.core0.stats.s3</td>
+<td class='value' title='Statistic Description
+(top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))' style='' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.036585</td>
+<td class='expression'>Statistic Description</td>
+<tr>
+
+<td class='name' title='Statistic Description
+((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4))'>top.core0.stats.s4</td>
+<td class='value' title='Statistic Description
+((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4))' style='' >&nbsp;&nbsp;&nbsp;&nbsp;82</td>
+<td class='expression'>Statistic Description</td>
+<tr>
+
+<td class='name' title='Free Expression: ~Root.half.stats.cycles
+~Root.half.stats.cycles'>&lt;expression&gt;</td>
+<td class='value' title='Free Expression: ~Root.half.stats.cycles
+~Root.half.stats.cycles' style='' >&nbsp;&nbsp;&nbsp;&nbsp;10</td>
+<td class='expression'>Free Expression: ~Root.half.stats.cycles</td>
+<tr>
+
+<td class='name' title='Free Expression: ~Root.half.stats.cycles
+~Root.half.stats.cycles'>&lt;expression&gt;</td>
+<td class='value' title='Free Expression: ~Root.half.stats.cycles
+~Root.half.stats.cycles' style='' >&nbsp;&nbsp;&nbsp;&nbsp;10</td>
+<td class='expression'>Free Expression: ~Root.half.stats.cycles</td>
+</tr>
+<tr><td colspan=3 class='subreport_td'>
+<table cellpadding=3 cellspacing=0 style='width:100%;' class='subreport_table'><thead><tr><th colspan=3 class='tabletitle'><input type="button" onclick="hideNode('SubreportB_1');" id="SubreportB_1_hide" value="-"><input type="button" onclick="showNode('SubreportB_1');" id="SubreportB_1_show" value="+" style='display:none;'>&nbsp;SubreportB</th></tr></thead>
+<tbody id="SubreportB_1"><tr>
+
+<td class='name' title='Statistic Description
+top.core0.stats.c1'>stat1</td>
+<td class='value' title='Statistic Description
+top.core0.stats.c1' style='' >1<span class='units_span'>%</span></td>
+<td class='expression'>Statistic Description</td>
+<tr>
+
+<td class='name' title='Statistic Description
+top.core0.stats.c1'>stat2</td>
+<td class='value' title='Statistic Description
+top.core0.stats.c1' style='' >1<span class='units_span'>%</span></td>
+<td class='expression'>Statistic Description</td>
+</tr>
+</tbody>
+</table><table cellpadding=3 cellspacing=0 style='width:100%;' class='subreport_table'><thead><tr><th colspan=3 class='tabletitle'><input type="button" onclick="hideNode('SubreportA_2');" id="SubreportA_2_hide" value="-"><input type="button" onclick="showNode('SubreportA_2');" id="SubreportA_2_show" value="+" style='display:none;'>&nbsp;SubreportA</th></tr></thead>
+<tbody id="SubreportA_2"><tr>
+
+<td class='name' title='Statistic Description
+top.core0.stats.c1'>stat1</td>
+<td class='value' title='Statistic Description
+top.core0.stats.c1' style='' >&nbsp;&nbsp;&nbsp;1<span class='units_span'>%</span></td>
+<td class='expression'>Statistic Description</td>
+<tr>
+
+<td class='name' title='Statistic Description
+top.core0.stats.c2'>stat2</td>
+<td class='value' title='Statistic Description
+top.core0.stats.c2' style='' >&nbsp;&nbsp;&nbsp;2</td>
+<td class='expression'>Statistic Description</td>
+<tr>
+
+<td class='name' title='Statistic Description
+(top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))'>stat3</td>
+<td class='value' title='Statistic Description
+(top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))' style='' >&nbsp;&nbsp;&nbsp;0.036585</td>
+<td class='expression'>Statistic Description</td>
+<tr>
+
+<td class='name' title='Free Expression: scheduler.stats.ticks
+scheduler.stats.ticks'>ticks</td>
+<td class='value' title='Free Expression: scheduler.stats.ticks
+scheduler.stats.ticks' style='' >&nbsp;&nbsp;20</td>
+<td class='expression'>Free Expression: scheduler.stats.ticks</td>
+<tr>
+
+<td class='name' title='Free Expression: ((top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))/scheduler.stats.ticks)
+((top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))/scheduler.stats.ticks)'>stat3_per_tick</td>
+<td class='value' title='Free Expression: ((top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))/scheduler.stats.ticks)
+((top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))/scheduler.stats.ticks)' style='' >&nbsp;&nbsp;&nbsp;0.001829</td>
+<td class='expression'>Free Expression: ((top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))/scheduler.stats.ticks)</td>
+<tr>
+
+<td class='name' title='Statistic Description
+((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4))'>stat4</td>
+<td class='value' title='Statistic Description
+((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4))' style='' >&nbsp;&nbsp;82</td>
+<td class='expression'>Statistic Description</td>
+<tr>
+
+<td class='name' title='Free Expression: pow(top.core0.stats.c3, top.core0.stats.c4)
+pow(top.core0.stats.c3, top.core0.stats.c4)'>custom_expression</td>
+<td class='value' title='Free Expression: pow(top.core0.stats.c3, top.core0.stats.c4)
+pow(top.core0.stats.c3, top.core0.stats.c4)' style='' >&nbsp;&nbsp;81</td>
+<td class='expression'>Free Expression: pow(top.core0.stats.c3, top.core0.stats.c4)</td>
+<tr>
+
+<td class='name' title='Free Expression: (1000+(top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4))))
+(1000+(top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4))))'>s3_expression</td>
+<td class='value' title='Free Expression: (1000+(top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4))))
+(1000+(top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4))))' style='' >1000.036585</td>
+<td class='expression'>Free Expression: (1000+(top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4))))</td>
+<tr>
+
+<td class='name' title='Free Expression: (1000+((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))
+(1000+((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))'>s4_expression</td>
+<td class='value' title='Free Expression: (1000+((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))
+(1000+((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))' style='' >1082</td>
+<td class='expression'>Free Expression: (1000+((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))</td>
+<tr>
+
+<td class='name' title='Free Expression: cos((3.14159/2))
+cos((3.14159/2))'>zero</td>
+<td class='value' title='Free Expression: cos((3.14159/2))
+cos((3.14159/2))' style='' >&nbsp;&nbsp;&nbsp;0.000000</td>
+<td class='expression'>Free Expression: cos((3.14159/2))</td>
+<tr>
+
+<td class='name' title='Free Expression: (scheduler.stats.picoseconds/1e+12)
+(scheduler.stats.picoseconds/1e+12)'>s</td>
+<td class='value' title='Free Expression: (scheduler.stats.picoseconds/1e+12)
+(scheduler.stats.picoseconds/1e+12)' style='' >&nbsp;&nbsp;&nbsp;0.000000</td>
+<td class='expression'>Free Expression: (scheduler.stats.picoseconds/1e+12)</td>
+<tr>
+
+<td class='name' title='Free Expression: (scheduler.stats.picoseconds/1e+09)
+(scheduler.stats.picoseconds/1e+09)'>ms</td>
+<td class='value' title='Free Expression: (scheduler.stats.picoseconds/1e+09)
+(scheduler.stats.picoseconds/1e+09)' style='' >&nbsp;&nbsp;&nbsp;0.000000</td>
+<td class='expression'>Free Expression: (scheduler.stats.picoseconds/1e+09)</td>
+<tr>
+
+<td class='name' title='Free Expression: (scheduler.stats.picoseconds/1e+06)
+(scheduler.stats.picoseconds/1e+06)'>us</td>
+<td class='value' title='Free Expression: (scheduler.stats.picoseconds/1e+06)
+(scheduler.stats.picoseconds/1e+06)' style='' >&nbsp;&nbsp;&nbsp;0.000020</td>
+<td class='expression'>Free Expression: (scheduler.stats.picoseconds/1e+06)</td>
+<tr>
+
+<td class='name' title='Free Expression: (scheduler.stats.picoseconds/1000)
+(scheduler.stats.picoseconds/1000)'>ns</td>
+<td class='value' title='Free Expression: (scheduler.stats.picoseconds/1000)
+(scheduler.stats.picoseconds/1000)' style='' >&nbsp;&nbsp;&nbsp;0.020000</td>
+<td class='expression'>Free Expression: (scheduler.stats.picoseconds/1000)</td>
+<tr>
+
+<td class='name' title='Free Expression: scheduler.stats.picoseconds
+scheduler.stats.picoseconds'>ps</td>
+<td class='value' title='Free Expression: scheduler.stats.picoseconds
+scheduler.stats.picoseconds' style='' >&nbsp;&nbsp;20</td>
+<td class='expression'>Free Expression: scheduler.stats.picoseconds</td>
+<tr>
+
+<td class='name' title='Free Expression: ~Root.half.stats.cycles
+~Root.half.stats.cycles'>core0 cycles</td>
+<td class='value' title='Free Expression: ~Root.half.stats.cycles
+~Root.half.stats.cycles' style='' >&nbsp;&nbsp;10</td>
+<td class='expression'>Free Expression: ~Root.half.stats.cycles</td>
+<tr>
+
+<td class='name' title='Free Expression: ~Root.third.stats.cycles
+~Root.third.stats.cycles'>core1 cycles</td>
+<td class='value' title='Free Expression: ~Root.third.stats.cycles
+~Root.third.stats.cycles' style='' >&nbsp;&nbsp;&nbsp;7</td>
+<td class='expression'>Free Expression: ~Root.third.stats.cycles</td>
+</tr>
+</tbody>
+</table><br/></td></tr>
+</tbody>
+</table></body></html>

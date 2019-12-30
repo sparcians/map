@@ -1,0 +1,83 @@
+"// comment": "value of comment"
+"//": "this is a test device tree configuration file"
+a:
+    "//": "this is a comment"
+    params:
+        param1: 12
+    "b":
+    {
+        "params.param1": 56,
+        # Must only have flow maps inside flow maps
+        "params": {
+            "#include" : "test_other.json"
+        }
+    }
+    params:
+        "param5":   [1.0, 1.1, 2, 3, 5.5]
+        "param6": "0xdeadbeef"
+        param7: "070"
+        param8: [0xa1, 0xb2, 0xc3]
+
+        # strvecvec: [[a, hey, there], [b, friend], [c]]
+        strvecvec:
+            - [a, hey, there]
+            - [b, friend]
+            - [c]
+        strvecvecvec: [ [[a], [b], [c]], [[d, e, f]], [[g], [h, i]], [[]] , [[j]] ]
+        intvecvecvec: [ [ [000, 001], [010] ], [ [100, 101], [110] ] ]
+
+# This is a comment that will be lost
+"//": "comment again"
+"a.params.param2": 34
+"a.params.param3": [5,6,7,8]
+a.params.param9 : string with spaces
+
+"// block comment":
+{
+    "a.nonexistant_param": false,
+    "a.param1": 100, # Wrong value
+    "b":
+    {
+        params: {
+            "nonexistant_param": false,
+        },
+        "c.params":
+        {
+            "nonexistant_param": false
+        }
+    }
+}
+# Commented node, ignored
+"//a.nonexistant_param": false
+
+# Commented block, ignored
+"//": "empty block, special case hander"
+"a":
+{
+}
+
+
+a:
+    b:
+        params:
+            param11: 0xc001
+            param12: -4g3m2k1
+            param13: -6p5t4g3m2k1
+        .:
+            params.param10: 0xc001
+a:
+    b:
+        # No children
+        params:
+            param10: 0xa1
+            similar: 4B3m2k1 # 4003002001
+    "*.params":
+        similar0+: 0x50 # Should set on b and b1
+    b.params.similar1+: 0x51
+    params:
+        "similar??": 0x5000
+        param12: -4g3m2k1
+        param13: -6p5t4g3m2k1
+
+"//": "yet another comment"
+"a.b.params.param2": 78

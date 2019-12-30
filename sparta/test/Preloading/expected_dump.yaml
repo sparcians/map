@@ -1,0 +1,22 @@
+top.core0.cache1.preloadable:
+    lines:
+        -   a:  test
+            b:  2748
+        -   a:  helloworld
+            b:  65535
+        -   a:  dupl
+            b:  13107
+top.core0.cache2.preloadable:
+    lines:
+        -   a:  tested
+            b:  2
+        -   a:  hello2world
+            b:  572719103
+        -   a:  dupl
+            b:  13107
+top.cache3.preloadable:
+    lines:
+        []
+top.cache_simple.preloadable:
+    lines:
+        []

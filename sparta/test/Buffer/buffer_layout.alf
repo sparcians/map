@@ -1,0 +1,162 @@
+---
+- Content: annotation
+  LocationString: top.buf10_untimed.buf10_untimed0
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (120, 20)
+  position: (440, 40)
+  t_offset: 0
+- Content: annotation
+  LocationString: top.buf10_untimed.buf10_untimed1
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (120, 20)
+  position: (440, 60)
+  t_offset: 0
+- Content: annotation
+  LocationString: top.buf10_untimed.buf10_untimed2
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (120, 20)
+  position: (440, 80)
+  t_offset: 0
+- Content: annotation
+  LocationString: top.buf10_untimed.buf10_untimed3
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (120, 20)
+  position: (440, 100)
+  t_offset: 0
+- Content: annotation
+  LocationString: top.buf10_untimed.buf10_untimed4
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (120, 20)
+  position: (440, 120)
+  t_offset: 0
+- Content: annotation
+  LocationString: top.buf10_untimed.buf10_untimed5
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (120, 20)
+  position: (440, 140)
+  t_offset: 0
+- Content: annotation
+  LocationString: top.buf10_untimed.buf10_untimed6
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (120, 20)
+  position: (440, 160)
+  t_offset: 0
+- Content: annotation
+  LocationString: top.buf10_untimed.buf10_untimed7
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (120, 20)
+  position: (440, 180)
+  t_offset: 0
+- Content: annotation
+  LocationString: top.buf10_untimed.buf10_untimed8
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (120, 20)
+  position: (440, 200)
+  t_offset: 0
+- Content: annotation
+  LocationString: top.buf10_untimed.buf10_untimed9
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (120, 20)
+  position: (440, 220)
+  t_offset: 0
+- Content: loc
+  LocationString: top.buf10_untimed.buf10_untimed0
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (340, 20)
+  position: (80, 40)
+  t_offset: 0
+- Content: loc
+  LocationString: top.buf10_untimed.buf10_untimed1
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (340, 20)
+  position: (80, 60)
+  t_offset: 0
+- Content: loc
+  LocationString: top.buf10_untimed.buf10_untimed2
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (340, 20)
+  position: (80, 80)
+  t_offset: 0
+- Content: loc
+  LocationString: top.buf10_untimed.buf10_untimed3
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (340, 20)
+  position: (80, 100)
+  t_offset: 0
+- Content: loc
+  LocationString: top.buf10_untimed.buf10_untimed4
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (340, 20)
+  position: (80, 120)
+  t_offset: 0
+- Content: loc
+  LocationString: top.buf10_untimed.buf10_untimed5
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (340, 20)
+  position: (80, 140)
+  t_offset: 0
+- Content: loc
+  LocationString: top.buf10_untimed.buf10_untimed6
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (340, 20)
+  position: (80, 160)
+  t_offset: 0
+- Content: loc
+  LocationString: top.buf10_untimed.buf10_untimed7
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (340, 20)
+  position: (80, 180)
+  t_offset: 0
+- Content: loc
+  LocationString: top.buf10_untimed.buf10_untimed8
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (340, 20)
+  position: (80, 200)
+  t_offset: 0
+- Content: loc
+  LocationString: top.buf10_untimed.buf10_untimed9
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (340, 20)
+  position: (80, 220)
+  t_offset: 0
+...

@@ -1,0 +1,37 @@
+content:
+
+  report:
+    pattern:   top.cpu.core0
+    def_file:  core_stats.yaml
+    dest_file: core0.csv
+    format:    csv
+    trigger:
+      start:   rob.stats.total_number_retired >= 3500
+      update-time: 5 ns
+
+  report:
+    pattern:   top.cpu.core1
+    def_file:  core_stats.yaml
+    dest_file: core1.csv
+    format:    csv
+    trigger:
+      start:   rob.stats.total_number_retired >= 2500
+      update-time: 5 ns
+
+  report:
+    pattern:    top
+    def_file:   top_stats.yaml
+    dest_file:  top_stats.csv
+    format:     csv
+    trigger:
+      start:    notif.stats_profiler == 1
+      update-time: 5 ns
+
+  report:
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  global_stats.csv
+    format:     csv
+    trigger:
+      start:    notif.stats_profiler == 1
+      update-time: 5 ns

@@ -1,0 +1,14 @@
+top: {
+    cpu.core0.lsu.extension.cat: {
+        language_: grrr
+    },
+    cpu.core0.fpu.extension.circle: {
+        edges_:    0
+    },
+    cpu.core0.dispatch.extension.square: {
+        edges_:    4
+    },
+    cpu.core0.dispatch.baz_node.extension.baz_ext: {
+        ticket_:   "663"
+    }
+}

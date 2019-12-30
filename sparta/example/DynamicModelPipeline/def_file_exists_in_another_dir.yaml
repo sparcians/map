@@ -1,0 +1,13 @@
+content:
+
+  report:
+    pattern:   _global
+    def_file:  hiding_stats_1_directory_deep.yaml
+    dest_file: basic1.csv
+    format:    csv
+
+  report:
+    pattern:   _global
+    def_file:  hiding_stats_2_directories_deep.yaml
+    dest_file: basic2.csv
+    format:    csv

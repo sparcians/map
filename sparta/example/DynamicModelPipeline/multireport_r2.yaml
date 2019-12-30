@@ -1,0 +1,10 @@
+content:
+  report:
+    def_file:  simple_stats.yaml
+    pattern:   _global
+    dest_file: out3.txt
+    format:    txt
+    trigger:
+      start:   top.core0.rob.stats.total_number_retired >= 162
+      stop:    top.core0.rob.stats.total_number_retired >= 193
+      tag:     t0

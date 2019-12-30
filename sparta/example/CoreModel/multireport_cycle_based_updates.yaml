@@ -1,0 +1,10 @@
+content:
+  report:
+    name:      'Cycle trigger report updates'
+    trigger:
+      start:   'cpu.core0.rob.stats.total_number_retired >= 1500'
+      update-cycles: 250
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: cycle_updates_unnamed_clock.csv
+    format:    csv

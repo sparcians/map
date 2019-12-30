@@ -1,0 +1,7 @@
+content:
+  subreport:
+    name: Bad expression - CounterTrigger with unsupported comparison
+    trigger:
+      start: "core0.rob.stats.total_number_retired != 500"
+    core0:
+      include: simple_stats.yaml

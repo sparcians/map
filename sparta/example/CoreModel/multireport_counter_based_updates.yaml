@@ -1,0 +1,46 @@
+content:
+  report:
+    name:      'Counter trigger report updates'
+    trigger:
+      start:   'cpu.core0.rob.stats.total_number_retired >= 2500'
+      update-count: 'cpu.core0.rob.stats.total_number_retired 375'
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: counter_updates.csv
+    format:    csv
+  report:
+    name:      'Counter trigger report updates (explicitly aligned)'
+    trigger:
+      start:   'cpu.core0.rob.stats.total_number_retired >= 1500'
+      update-count: 'cpu.core0.rob.stats.total_number_retired 175 align'
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: counter_updates_aligned.csv
+    format:    csv
+  report:
+    name:      'Counter trigger report updates (unaligned)'
+    trigger:
+      start:   'cpu.core0.rob.stats.total_number_retired >= 3300'
+      update-count: 'cpu.core0.rob.stats.total_number_retired 225'
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: counter_updates_unaligned.csv
+    format:    csv
+  report:
+    name:      'Global statistics using counter-based report updates'
+    trigger:
+      start:   'top.cpu.core0.rob.stats.total_number_retired >= 500'
+      stop:    'top.cpu.core0.rob.stats.total_number_retired >= 8500'
+      update-count: 'top.cpu.core0.rob.stats.total_number_retired 750'
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: global_stats_counter_updates.csv
+    format:    csv
+  report:
+    name:      'Relative location for start, absolute location for stop'
+    trigger:
+      start:   'rob.stats.total_number_retired >= 1500'
+      stop:    'top.cpu.core1.rob.stats.total_number_retired >= 2200'
+    pattern:   top.cpu.core0
+    def_file:  core_stats.yaml
+    dest_file: 1

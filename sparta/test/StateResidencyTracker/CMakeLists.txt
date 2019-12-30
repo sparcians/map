@@ -1,0 +1,5 @@
+project(StateResidencyTracker_test)
+add_executable(StateResidencyTracker_test StateResidencyTracker_test.cpp)
+include(../TestingMacros.cmake)
+sparta_test(StateResidencyTracker_test StateResidencyTracker_test_RUN)
+

@@ -1,0 +1,130 @@
+---
+- Content: loc
+  LocationString: top.slave.in_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (120, 20)
+  position: (80, 80)
+  t_offset: 0
+- Content: loc
+  LocationString: top.slave.out_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (120, 20)
+  position: (80, 100)
+  t_offset: 0
+- Content: loc
+  LocationString: top.master.in_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (120, 20)
+  position: (80, 140)
+  t_offset: 0
+- Content: loc
+  LocationString: top.master.out_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (120, 20)
+  position: (80, 160)
+  t_offset: 0
+- Content: annotation
+  LocationString: top.slave.in_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (440, 20)
+  position: (380, 80)
+  t_offset: 0
+- Content: annotation
+  LocationString: top.slave.out_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (440, 20)
+  position: (380, 100)
+  t_offset: 0
+- Content: annotation
+  LocationString: top.master.in_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (440, 20)
+  position: (380, 140)
+  t_offset: 0
+- Content: annotation
+  LocationString: top.master.out_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (440, 20)
+  position: (380, 160)
+  t_offset: 0
+- Content: clock
+  LocationString: top.slave.in_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (80, 20)
+  position: (200, 80)
+  t_offset: 0
+- Content: cycle
+  LocationString: top.slave.out_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (80, 20)
+  position: (200, 100)
+  t_offset: 0
+- Content: clock
+  LocationString: top.master.in_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (80, 20)
+  position: (200, 140)
+  t_offset: 0
+- Content: cycle
+  LocationString: top.master.out_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (80, 20)
+  position: (200, 160)
+  t_offset: 0
+- Content: loc_id
+  LocationString: top.slave.in_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (80, 20)
+  position: (280, 80)
+  t_offset: 0
+- Content: loc_id
+  LocationString: top.slave.out_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (80, 20)
+  position: (280, 100)
+  t_offset: 0
+- Content: loc_id
+  LocationString: top.master.in_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (80, 20)
+  position: (280, 140)
+  t_offset: 0
+- Content: loc_id
+  LocationString: top.master.out_cmd
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (80, 20)
+  position: (280, 160)
+  t_offset: 0
+...

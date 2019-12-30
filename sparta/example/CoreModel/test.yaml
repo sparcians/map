@@ -1,0 +1,3 @@
+top: {
+    cpu.core0.params.foo: 12
+}

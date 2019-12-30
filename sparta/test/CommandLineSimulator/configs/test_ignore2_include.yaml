@@ -1,0 +1,9 @@
+# Refer to some parameters that don't exist
+
+top:
+  core0:
+    fetch:
+      params:
+        this_does_not_exist: 100
+        also_does_not_exist: [1,2,3,4,5]
+        still_does_not_exist: [[1,2],[3,4]]

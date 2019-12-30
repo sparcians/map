@@ -1,0 +1,78 @@
+# This YAML file uses ContextCounterTrigger's in its "update-count"
+# trigger expressions. There is a mixture of the following traits:
+#
+#    - trigger expressions relative to _global
+#    - trigger expressions relative to top (anybody *but* _global)
+#    - align (default) / noalign
+#    - hard coded target value (200) / parameterized target value (...foo)
+#    - explicit, user-provided aggregation function ("weightedAvg_") /
+#      default, SPARTA-provided aggregation function (unnamed; SPARTA just
+#      adds up the counter values)
+
+content:
+
+# Global scope, aligned, using a user-defined aggregate function,
+# hard-coded trigger point
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: context_counter_update_triggers1.csv
+    format:    csv
+    trigger:
+      start:         top.core0.rob.stats.total_number_retired >= 250
+      update-count:  stat_def.top.core0.dispatch.stats.weighted_count_insts_per_unit.weightedAvg_ 220
+
+# Top scope, aligned, using a user-defined aggregate function,
+# hard-coded trigger point
+  report:
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: context_counter_update_triggers2.csv
+    format:    csv
+    trigger:
+      start:         core0.rob.stats.total_number_retired >= 500
+      update-count:  stat_def.core0.dispatch.stats.weighted_count_insts_per_unit.weightedAvg_ 125
+
+# Global scope, unaligned, explicitly using the "agg" default function,
+# parameterized trigger point
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: context_counter_update_triggers3.csv
+    format:    csv
+    trigger:
+      start:         top.core0.rob.stats.total_number_retired >= 400
+      update-count:  stat_def.top.core0.dispatch.stats.count_insts_per_unit.agg top.core0.params.foo noalign
+
+# Top scope, aligned, explicitly using the "agg" default function,
+# hard-coded trigger point
+  report:
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: context_counter_update_triggers4.csv
+    format:    csv
+    trigger:
+      start:         core0.rob.stats.total_number_retired >= 380
+      update-count:  stat_def.core0.dispatch.stats.count_insts_per_unit.agg 625
+
+# Global scope, aligned, not providing any aggregate method,
+# hard-coded trigger point (should choose "agg" automatically)
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: context_counter_update_triggers5.csv
+    format:    csv
+    trigger:
+      start:         top.core0.rob.stats.total_number_retired >= 280
+      update-count:  stat_def.top.core0.dispatch.stats.weighted_count_insts_per_unit 670
+
+# Top scope, unaligned, not providing any aggregate method,
+# hard-coded trigger point (should choose "agg" automatically)
+  report:
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: context_counter_update_triggers6.csv
+    format:    csv
+    trigger:
+      start:         core0.rob.stats.total_number_retired >= 150
+      update-count:  stat_def.core0.dispatch.stats.count_insts_per_unit 910 noalign

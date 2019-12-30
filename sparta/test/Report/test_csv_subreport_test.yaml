@@ -1,0 +1,19 @@
+# Testing subreports outside of the main content were not
+#  including ','s in the header/data
+name: test report
+content:
+    "top.core*":
+        subreport:
+            name: retire
+            content:
+                autopopulate:
+                    attributes: vis:normal
+                    max_report_depth: 1
+
+    scheduler:
+        subreport:
+            name: CLK_TEST
+            content:
+                autopopulate:
+                    attributes: vis:normal
+                    max_report_depth: 1

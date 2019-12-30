@@ -1,0 +1,113 @@
+# Please take a look at the 'SubreportTriggers.txt' file found in this directory
+# for information about how to define your own subreports' computation windows
+# (start/stop), what the formatting looks like, supported comparison operations,
+# and more detailed examples.
+
+content:
+
+  subreport:
+    name: Counter trigger smoke test (start)
+    trigger:
+      start: "core0.rob.stats.total_number_retired >= 1200"
+    core0:
+      include: simple_stats.yaml
+      
+  subreport:
+    name: Counter trigger smoke test (stop)
+    trigger:
+      stop: "core1.rob.stats.total_number_retired >= 5000"
+    core1:
+      include: simple_stats.yaml
+      
+  subreport:
+    name: Notification trigger (smoke test 1)
+    trigger:
+      start: "notif.testing_notif_channel == 80"
+      stop:  "notif.testing_notif_channel != 99"
+    core0:
+      include: simple_stats.yaml
+      
+  subreport:
+    name: Notification trigger (smoke test 2)
+    trigger:
+      start: "notif.testing_notif_channel >= 123"
+      stop:  "notif.testing_notif_channel <= 321"
+    core0:
+      include: simple_stats.yaml
+      
+  subreport:
+    name: Notification trigger (smoke test 3)
+    trigger:
+      start: "notif.testing_notif_channel > 987"
+      stop:  "notif.testing_notif_channel < 654"
+    core1:
+      include: simple_stats.yaml
+      
+  subreport:
+    name: Tag basic trigger
+    trigger:
+      tag:   ReferenceThis
+      start: "core0.rob.stats.total_number_retired >= 2500"
+      stop:  "core0.rob.stats.total_number_retired >= 8000"
+    core0:
+      include: simple_stats.yaml
+      
+  subreport:
+    name: Referenced trigger 1 (refer to a counter trigger)
+    trigger:
+      start: "ReferenceThis.start"
+      stop:  "ReferenceThis.stop"
+    core0:
+      include: simple_stats.yaml
+      
+  subreport:
+    name: Counter trigger AND notification trigger
+    trigger:
+      start: "core1.rob.stats.total_number_retired >= 850 && notif.testing_notif_channel < 8"
+    core1:
+      include: simple_stats.yaml
+      
+  subreport:
+    name: Notification trigger AND referenced trigger
+    trigger:
+      stop:  "notif.testing_notif_channel == 444 && ReferenceThis.stop"
+    core0:
+      include: simple_stats.yaml
+      
+  subreport:
+    name: Referenced trigger AND counter trigger
+    trigger:
+      stop:  "ReferenceThis.start && core1.rob.stats.total_number_retired >= 3800"
+    core1:
+      include: simple_stats.yaml
+      
+  subreport:
+    name: All three basic trigger types together (AND)
+    trigger:
+      tag:   RefAND
+      stop:  "core1.rob.stats.total_number_retired >= 4000 && notif.testing_notif_channel < 6 && ReferenceThis.stop"
+    core1:
+      include: simple_stats.yaml
+      
+  subreport:
+    name: All three basic trigger types together (OR)
+    trigger:
+      tag:   RefOR
+      start: "core0.rob.stats.total_number_retired >= 600 || notif.testing_notif_channel > 777 || ReferenceThis.start"
+      stop:  "ReferenceThis.stop || core1.rob.stats.total_number_retired >= 7777"
+    core0:
+      include: simple_stats.yaml
+      
+  subreport:
+    name: References that are themselves composites of basic triggers and other references! (AND)
+    trigger:
+      start: "RefAND.stop && RefOR.start"
+    core0:
+      include: simple_stats.yaml
+      
+  subreport:
+    name: References that are themselves composites of basic triggers and other references - again! (OR)
+    trigger:
+      stop:  "RefAND.stop || RefOR.start"
+    core1:
+      include: simple_stats.yaml

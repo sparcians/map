@@ -1,0 +1,9 @@
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: foo.json
+    format:    json_reduced
+    trigger:
+      start:   top.cpu.core0.rob.stats.total_number_retired >= %START_TIME%
+      stop:    top.cpu.core0.rob.stats.total_number_retired >= %END_TIME%

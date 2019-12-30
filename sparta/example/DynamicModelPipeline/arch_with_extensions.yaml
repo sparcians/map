@@ -1,0 +1,13 @@
+top:
+  core0:
+    alu0:
+      extension.difficulty:
+        color_: "black"
+        shape_: "diamond"
+    alu1:
+      extension.difficulty:
+        color_: "green"
+        shape_: "circle"
+    params:
+      foo: 555
+top.core*.alu*.params.ignore_inst_execute_time: true

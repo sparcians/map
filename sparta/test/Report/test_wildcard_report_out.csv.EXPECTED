@@ -1,0 +1,3 @@
+# report="Report with Wildcard",start=40,end=SIMULATION_END
+top.core0.stats.c1,top.core1.stats.c1,stat_0_wild,stat_1_wild,top.core0.stats.c4_stat_wild,top.core1.stats.c4_stat_wild
+3,0,9,0,12,0

@@ -1,0 +1,9 @@
+stats:
+    c3: stat3
+stats.c4: stat4
+subreport:
+    name: SubreportB
+    content:
+        # Adds a stat1 to SubreportB. This is important to make sure the interpreter can disambiguate
+        stats.s1 : stat1
+        stats.s1 : stat2

@@ -1,0 +1,12 @@
+Stats:
+  components:
+    top.cpu.core0.dispatch.baz_node
+NumericMeta:
+  components:
+    top.cpu.core0.dispatch.baz_node
+StringMeta:
+  components:
+    top.cpu.core0.dispatch.baz_node
+NumericMeta:
+  components:
+    top.cpu.core0.dispatch.baz_node

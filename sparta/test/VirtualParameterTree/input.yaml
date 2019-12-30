@@ -1,0 +1,14 @@
+top.foo.poz: 0
+top.fiz.puz: ["a","b","c",""]
+top.fiz.paz: [[1,2,3], [4,5,6], [], [7,8,9]]
+top:
+    foo:
+        bar: 0x001
+        biz: 0x2
+        baz: 03
+        a.b.c: abc_value
+    fiz:
+        bin: "top.fiz.bin"
+    "*":
+        pez: "top.*.pez"
+    fiz.piz: ["1", "2", "3"]

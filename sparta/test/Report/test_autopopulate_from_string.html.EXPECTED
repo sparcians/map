@@ -1,0 +1,273 @@
+<html><head><title>String-based report Autopopulation Test</title><style type='text/css'>
+table {
+  font-family:courier new, monospace;
+}
+table.report_table {
+  border:1px solid #808080;
+}
+table.subreport_table {
+  border:1px solid #808080;
+}
+.subreport_section {
+  font-size:80%;
+  text-align:left;
+  font-style:italic;
+  color:#505050;
+}
+th.tabletitle {
+  padding:6px;
+  text-align:left;
+  font-family:Helvetica, Verdana, sans-serif;
+  font-size:120%;
+  border-bottom:3px solid #404040;
+  background-color:#fffff0;
+}
+th.tablesection {
+  font-weight:normal;  text-align:left;
+  font-family:Helvetica, Verdana, sans-serif;
+  font-size:80%;
+  border-bottom:1px solid #404040;
+  background-color:#d0d0d0;
+}
+th {
+  font-size:95%;
+  background-color:#d0d0d0;
+  border-bottom:1px solid #707070;
+  border-right:1px solid #C0C0C0;
+  }
+td {
+  border-bottom:1px solid #707070;
+  border-right:1px solid #C0C0C0;
+}
+td.name {
+  font-size:80%;
+  text-align:left;
+  padding-right:4px;
+  width:400px;
+}
+td.value {
+  font-size:80%;
+  width:180px;
+  padding-left:8px;
+  font-weight:bold;
+}
+td.expression {
+  font-size:75%;
+  color:#505050;
+  padding-left:8px;
+}
+td.info {
+  text-align:right;
+  font-style:italic;  font-size:80%;  padding-right:20px;
+}
+span.info_span {
+  font-style:italic;
+  font-size:70%;
+}
+span.units_span {
+  font-size:115%;
+  color:#808080;
+}
+td.infoval {
+  text-align:left;
+  font-style:italic;
+  font-size:90%;
+}
+td.subreport_td {
+  text-align:left;
+  padding:12px 8px 0px 16px;
+}
+</style>
+<script>
+function hideNode(name) {
+    document.getElementById(name).style.display='none';
+    document.getElementById(name + "_show").style.display='inline';
+    document.getElementById(name + "_hide").style.display='none';
+}
+function showNode(name) {
+    document.getElementById(name).style.display='block';
+    document.getElementById(name + "_show").style.display='none';
+    document.getElementById(name + "_hide").style.display='inline';
+}
+</script>
+</head>
+<body style='font-size:8px;'><table cellpadding=3 cellspacing=0 style='width:100%;' class='report_table'><thead><tr><th colspan=3 class='tabletitle'><input type="button" onclick="hideNode('String-based report Autopopulation Test_0');" id="String-based report Autopopulation Test_0_hide" value="-"><input type="button" onclick="showNode('String-based report Autopopulation Test_0');" id="String-based report Autopopulation Test_0_show" value="+" style='display:none;'>&nbsp;String-based report Autopopulation Test</th></tr></thead>
+<tbody id="String-based report Autopopulation Test_0"><tr><td colspan=3 class='subreport_td'>
+<table cellpadding=3 cellspacing=0 style='width:100%;' class='subreport_table'><thead><tr><th colspan=3 class='tabletitle'><input type="button" onclick="hideNode('Summary_1');" id="Summary_1_hide" value="-"><input type="button" onclick="showNode('Summary_1');" id="Summary_1_show" value="+" style='display:none;'>&nbsp;Summary</th></tr></thead>
+<tbody id="Summary_1"></tbody>
+</table><table cellpadding=3 cellspacing=0 style='width:100%;' class='subreport_table'><thead><tr><th colspan=3 class='tabletitle'><input type="button" onclick="hideNode('top.core0_2');" id="top.core0_2_hide" value="-"><input type="button" onclick="showNode('top.core0_2');" id="top.core0_2_show" value="+" style='display:none;'>&nbsp;top.core0</th></tr></thead>
+<tbody id="top.core0_2"><tr>
+
+<td class='name' title='Counter 2 (SUMMARY VIS)
+top.core0.stats.c2'>c2</td>
+<td class='value' title='Counter 2 (SUMMARY VIS)
+top.core0.stats.c2' style='' >6</td>
+<td class='expression'>Counter 2 (SUMMARY VIS)</td>
+</tr>
+</tbody>
+</table><table cellpadding=3 cellspacing=0 style='width:100%;' class='subreport_table'><thead><tr><th colspan=3 class='tabletitle'><input type="button" onclick="hideNode('All stats_3');" id="All stats_3_hide" value="-"><input type="button" onclick="showNode('All stats_3');" id="All stats_3_show" value="+" style='display:none;'>&nbsp;All stats</th></tr></thead>
+<tbody id="All stats_3"><tr><td colspan=3 class='subreport_td'>
+<table cellpadding=3 cellspacing=0 style='width:100%;' class='subreport_table'><thead><tr><th colspan=3 class='tablesection'>top.core0</th></tr></thead>
+<tbody id="top.core0_4"><tr>
+
+<td class='name' title='Counter 1 (NORMAL VIS)
+top.core0.stats.c1'>c1</td>
+<td class='value' title='Counter 1 (NORMAL VIS)
+top.core0.stats.c1' style='' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3</td>
+<td class='expression'>Counter 1 (NORMAL VIS)</td>
+<tr>
+
+<td class='name' title='Counter 4 (NORMAL VIS)
+top.core0.stats.c4'>c4</td>
+<td class='value' title='Counter 4 (NORMAL VIS)
+top.core0.stats.c4' style='' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;12</td>
+<td class='expression'>Counter 4 (NORMAL VIS)</td>
+<tr>
+
+<td class='name' title='Counter 5 (NORMAL VIS)
+top.core0.stats.c5'>c5</td>
+<td class='value' title='Counter 5 (NORMAL VIS)
+top.core0.stats.c5' style='' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;100000</td>
+<td class='expression'>Counter 5 (NORMAL VIS)</td>
+<tr>
+
+<td class='name' title='Statistic Description
+top.core0.stats.c1'>s1</td>
+<td class='value' title='Statistic Description
+top.core0.stats.c1' style='' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3<span class='units_span'>%</span></td>
+<td class='expression'>Statistic Description</td>
+<tr>
+
+<td class='name' title='Statistic Description
+top.core0.stats.c2'>s2</td>
+<td class='value' title='Statistic Description
+top.core0.stats.c2' style='' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6</td>
+<td class='expression'>Statistic Description</td>
+<tr>
+
+<td class='name' title='Statistic Description
+(top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))'>s3</td>
+<td class='value' title='Statistic Description
+(top.core0.stats.c3/((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4)))' style='' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.000</td>
+<td class='expression'>Statistic Description</td>
+<tr>
+
+<td class='name' title='Statistic Description
+((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4))'>s4</td>
+<td class='value' title='Statistic Description
+((log2(16)/4)+pow(top.core0.stats.c3, top.core0.stats.c4))' style='' >282429536482</td>
+<td class='expression'>Statistic Description</td>
+<tr>
+
+<td class='name' title='Statistic Description
+(top.core0.stats.c4+((top.core0.stats.c4*top.core0.stats.c4)/top.core0.stats.c4))'>s5</td>
+<td class='value' title='Statistic Description
+(top.core0.stats.c4+((top.core0.stats.c4*top.core0.stats.c4)/top.core0.stats.c4))' style='' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24</td>
+<td class='expression'>Statistic Description</td>
+</tr>
+</tbody>
+</table><table cellpadding=3 cellspacing=0 style='width:100%;' class='subreport_table'><thead><tr><th colspan=3 class='tablesection'>top.core0.dummy</th></tr></thead>
+<tbody id="top.core0.dummy_5"><tr>
+
+<td class='name' title='Counter 2 in dummy
+top.core0.dummy.stats.c2'>c2</td>
+<td class='value' title='Counter 2 in dummy
+top.core0.dummy.stats.c2' style='' >0</td>
+<td class='expression'>Counter 2 in dummy</td>
+</tr>
+</tbody>
+</table><table cellpadding=3 cellspacing=0 style='width:100%;' class='subreport_table'><thead><tr><th colspan=3 class='tablesection'>top.core1</th></tr></thead>
+<tbody id="top.core1_6"><tr>
+
+<td class='name' title='Counter 1
+top.core1.stats.c1'>c1</td>
+<td class='value' title='Counter 1
+top.core1.stats.c1' style='' >0</td>
+<td class='expression'>Counter 1</td>
+<tr>
+
+<td class='name' title='Counter 2
+top.core1.stats.c2'>c2</td>
+<td class='value' title='Counter 2
+top.core1.stats.c2' style='' >0</td>
+<td class='expression'>Counter 2</td>
+<tr>
+
+<td class='name' title='Counter 3
+top.core1.stats.c3'>c3</td>
+<td class='value' title='Counter 3
+top.core1.stats.c3' style='' >0</td>
+<td class='expression'>Counter 3</td>
+<tr>
+
+<td class='name' title='Counter 4
+top.core1.stats.c4'>c4</td>
+<td class='value' title='Counter 4
+top.core1.stats.c4' style='' >0</td>
+<td class='expression'>Counter 4</td>
+</tr>
+</tbody>
+</table><br/></td></tr>
+</tbody>
+</table><table cellpadding=3 cellspacing=0 style='width:100%;' class='subreport_table'><thead><tr><th colspan=3 class='tabletitle'><input type="button" onclick="hideNode('scheduler_7');" id="scheduler_7_hide" value="-"><input type="button" onclick="showNode('scheduler_7');" id="scheduler_7_show" value="+" style='display:none;'>&nbsp;scheduler</th></tr></thead>
+<tbody id="scheduler_7"><tr>
+
+<td class='name' title='Current tick number
+scheduler.stats.ticks'>ticks</td>
+<td class='value' title='Current tick number
+scheduler.stats.ticks' style='' >60</td>
+<td class='expression'>Current tick number</td>
+<tr>
+
+<td class='name' title='Picosecond Count of this Clock
+scheduler.stats.picoseconds'>picoseconds</td>
+<td class='value' title='Picosecond Count of this Clock
+scheduler.stats.picoseconds' style='' >60</td>
+<td class='expression'>Picosecond Count of this Clock</td>
+<tr>
+
+<td class='name' title='Seconds elapsed
+(scheduler.stats.picoseconds/1e+12)'>seconds</td>
+<td class='value' title='Seconds elapsed
+(scheduler.stats.picoseconds/1e+12)' style='' >&nbsp;0.000</td>
+<td class='expression'>Seconds elapsed</td>
+<tr>
+
+<td class='name' title='Milliseconds elapsed
+(scheduler.stats.picoseconds/1e+09)'>milliseconds</td>
+<td class='value' title='Milliseconds elapsed
+(scheduler.stats.picoseconds/1e+09)' style='' >&nbsp;0.000</td>
+<td class='expression'>Milliseconds elapsed</td>
+<tr>
+
+<td class='name' title='Microseconds elapsed
+(scheduler.stats.picoseconds/1e+06)'>microseconds</td>
+<td class='value' title='Microseconds elapsed
+(scheduler.stats.picoseconds/1e+06)' style='' >&nbsp;0.000</td>
+<td class='expression'>Microseconds elapsed</td>
+<tr>
+
+<td class='name' title='Nanoseconds elapsed
+(scheduler.stats.picoseconds/1000)'>nanoseconds</td>
+<td class='value' title='Nanoseconds elapsed
+(scheduler.stats.picoseconds/1000)' style='' >&nbsp;0.060</td>
+<td class='expression'>Nanoseconds elapsed</td>
+<tr>
+
+<td class='name' title='Simulation user runtime in seconds as measured on the host machine
+scheduler.stats.user_runtime_seconds'>user_runtime_seconds</td>
+<td class='value' title='Simulation user runtime in seconds as measured on the host machine
+scheduler.stats.user_runtime_seconds' style='' >&nbsp;0</td>
+<td class='expression'>Simulation user runtime in seconds as measured on the host machine</td>
+<tr>
+
+<td class='name' title='Simulation system runtime in seconds as measured on the host machine
+scheduler.stats.system_runtime_seconds'>system_runtime_seconds</td>
+<td class='value' title='Simulation system runtime in seconds as measured on the host machine
+scheduler.stats.system_runtime_seconds' style='' >&nbsp;0</td>
+<td class='expression'>Simulation system runtime in seconds as measured on the host machine</td>
+</tr>
+</tbody>
+</table><br/></td></tr>
+</tbody>
+</table></body></html>

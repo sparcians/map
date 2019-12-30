@@ -1,0 +1,22 @@
+content:
+  report:
+    pattern:   _global
+    def_file:  autopop_all.yaml
+    dest_file: all_stats_update_count_WITH_OTHERS.csv
+    format:    csv
+    trigger:
+      update-count: top.core0.rob.stats.total_number_retired 75
+  report:
+    pattern:   _global
+    def_file:  autopop_all.yaml
+    dest_file: all_stats_update_cycles_WITH_OTHERS.csv
+    format:    csv
+    trigger:
+      update-cycles: 500
+  report:
+    pattern:   _global
+    def_file:  autopop_rob.yaml
+    dest_file: rob_stats_update_picoseconds_WITH_OTHERS.csv
+    format:    csv
+    trigger:
+      update-time: 100 ps

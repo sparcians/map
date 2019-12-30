@@ -1,0 +1,4 @@
+content:
+  top:
+    stat_def.core0.dispatch.stats.weighted_count_insts_per_unit.max_: ccMax  # User-calculated max
+    core0.rob.stats.total_number_retired: retired                            # Native (not user-calculated) statistic

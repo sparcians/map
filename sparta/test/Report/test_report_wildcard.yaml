@@ -1,0 +1,8 @@
+name: "Report with Wildcard"
+author: "nhaw"
+content: # Stats, counters, and subreports (sections)
+    core*.stats: # Context (location in tree)
+        c1 : "" # Anonymous
+        ##c2 : stat_wild_%i
+        c3 : stat_%1_wild
+        c4 : "%l_stat_wild" # Strings startin with % must be quoted

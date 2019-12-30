@@ -1,0 +1,53 @@
+# Example YAML syntax showing how to toggle triggers with expressions.
+# Toggle triggers are enabled using the 'whenever' keyword. The other 
+# triggers (start, stop, and update) will still fire as usual, but if
+# the 'whenever' statement is currently FALSE at that time, updates
+# will be short-circuited. When an update is skipped because the report
+# happens to be disabled at that time, a row will appear in the CSV
+# saying that it happened, and exactly how many updates were skipped.
+#
+# For example, in pseudo-CSV:
+#
+#    A       B       C       D                //Notes:
+#    4       1       9       8                // update 1
+#    Skipped 12      -       -                // updates 2-13
+#    6       2       3       9                // update 14
+#
+# Would mean that update 1 was hit when the toggle trigger was enabled
+# (the 'whenever' expression was TRUE at that time), followed by 12 calls
+# to the 'update report' method at a time when the toggle trigger was
+# disabled, followed by 1 more update at a time when the toggle was again
+# enabled.
+
+content:
+
+  report:
+    name:       'Report triggers using expressions to toggle reports on/off'
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  toggle_basic.csv
+    format:     csv
+    trigger:
+      whenever: notif.stats_profiler == 1
+      update-time: 25 ns
+
+  report:
+    name:       'Toggle triggers with start, stop, and update triggers'
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  toggle_with_start_stop_update.csv
+    format:     csv
+    trigger:
+      whenever: notif.stats_profiler == 1
+      start:    top.cpu.core0.rob.stats.total_number_retired >= 1k
+      stop:     top.cpu.core0.rob.stats.total_number_retired >= 40k
+      update-count: top.cpu.core0.rob.stats.total_number_retired 150
+
+  report:
+    name:       'Toggle triggers without any update triggers'
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  toggle_without_update.csv
+    format:     csv
+    trigger:
+      whenever: notif.stats_profiler == 1

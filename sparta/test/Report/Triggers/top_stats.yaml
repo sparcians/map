@@ -1,0 +1,6 @@
+content:
+  core*:
+    subreport:
+      name: 'Core %-1 Statistics'
+      stats:
+        autopopulate: true

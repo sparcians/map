@@ -1,0 +1,10 @@
+# Illegal "subreport" at top level. Because this is interpreted directly 
+# from a --report option, it is already within a "report" and subreports must
+# be added only within 'content' sections. If this file were #included
+# from another inside a content section, then this would be valid
+subreport: # Cannot be at top of file unless #included from another
+    name: "Report 1"
+    author: "nhaw"
+    content:
+        core0.ctrs:
+            c1 : ""

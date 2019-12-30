@@ -1,0 +1,50 @@
+---
+- Content: annotation
+  LocationString: top.sdata_man
+  auto_color_basis:
+  caption:
+  color: (128, 128, 128)
+  color_basis_type: string_key
+  dimensions: (200, 20)
+  on_update:
+  position: (280, 120)
+  t_offset: 0
+  tooltip:
+  type: box
+- Content: loc
+  LocationString: top.sdata_auto
+  auto_color_basis:
+  caption:
+  color: (128, 128, 128)
+  color_basis_type: string_key
+  dimensions: (220, 20)
+  on_update:
+  position: (20, 180)
+  t_offset: 0
+  tooltip:
+  type: box
+- Content: annotation
+  LocationString: top.sdata_auto
+  auto_color_basis:
+  caption:
+  color: (128, 128, 128)
+  color_basis_type: string_key
+  dimensions: (200, 20)
+  on_update:
+  position: (280, 180)
+  t_offset: 0
+  tooltip:
+  type: box
+- Content: loc
+  LocationString: top.sdata_man
+  auto_color_basis:
+  caption:
+  color: (128, 128, 128)
+  color_basis_type: string_key
+  dimensions: (220, 20)
+  on_update:
+  position: (20, 120)
+  t_offset: 0
+  tooltip:
+  type: box
+...

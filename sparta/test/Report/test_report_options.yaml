@@ -1,0 +1,14 @@
+# Reserved keys include subreport, name, author, content, report.
+# Do not start with "report:" because this file is parsed as the body of a
+# report. It can contain subreports in its conent section though.
+name: "Report1" # Name
+author: "nhaw" # [highly-optional] Author of the report
+content: # Stats, counters, and subreports (sections)
+    core0.stats: # Context (location in tree) because it is not a reserved word
+    # Stat called "stat1 pointing to core0.stats.c1"
+    # This is important to make sure the interpreter can disambiguate
+        c1 : stat1
+        c2 : stat5
+        optional:
+            c3: stat3
+        c4: stat4

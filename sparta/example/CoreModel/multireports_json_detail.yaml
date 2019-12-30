@@ -1,0 +1,15 @@
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out1_detail.json
+    format:    json_detail
+    trigger:
+      start:   top.cpu.core0.rob.stats.total_number_retired >= 1000
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out2_detail.json
+    format:    json_detail
+    trigger:
+      start:   top.cpu.core0.rob.stats.total_number_retired >= 2000

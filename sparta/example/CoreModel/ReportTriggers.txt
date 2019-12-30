@@ -1,0 +1,91 @@
+Similar to the command line '--report' option:
+  % --report PATTERN DEF_FILE DEST_FILE [format]
+
+You may supply more than one report description in a
+single .yaml file with the '--reports' option:
+
+  % --reports descriptions.yaml
+
+Description files have the following format (two separate
+reports in this example):
+
+content:
+  report:
+    pattern:   top.core0
+    def_file:  core_stats.yaml
+    dest_file: solo_stats_core0.txt
+  report:
+    pattern:   top.core1
+    def_file:  core_stats.yaml
+    dest_file: solo_stats_core1.txt
+
+The 'pattern' is technically optional, as long as the definition
+file you provide (def_file:) can be interpreted in the context of
+the device tree. In other words:
+
+content:
+  report:
+    def_file:  stats.yaml
+    dest_file: all_my_statistics.txt
+
+This would work as long as everything found in 'stats.yaml' was
+valid from the global tree node's perspective. If a pattern IS
+given, then the pattern-plus-def_file needs to describe valid
+nodes in the device tree, for example:
+
+content:
+  report:
+    pattern:   top.core0
+    def_file:  stats.yaml           <--   stats.yaml
+    dest_file: out.txt                  ------------------------
+                                          content:
+                                            rob.stats:
+                                              autopopulate: true
+                                            fpu.stats:
+                                              autopopulate: true
+
+This report description would work if and only if:
+   top
+     core0
+       rob
+         stats
+       fpu
+         stats
+
+Is all valid in the device tree. If, for instance, your tree
+did not have "top.core0.fpu" - then this is an invalid description
+and will fail to parse.
+
+##############################################################
+
+You may also control triggered behavior on a per-report basis
+using trigger "expressions". The full documentation for trigger
+expressions can be found in "SubreportTriggers.txt" in this
+same directory. It is quite similar to hook in trigger points
+for starting and stopping your reports at a top-level:
+
+content:
+  report:
+    pattern:   top.core0
+    def_file:  stats.yaml
+    dest_file: some_statistics.txt
+    trigger:
+      tag:     t0
+      start:   "core0.rob.stats.total_number_retired >= 1800"
+      stop:    "notif.user_channel_data != 700"
+  report:
+    pattern:   top.core1
+    def_file:  stats.yaml
+    dest_file: some_other_stats.txt
+    trigger:
+      tag:     t1
+      start:   "core1.rob.stats.total_number_retired >= 2400"
+      stop:    "notif.another_user_channel < 45"
+  report:
+    pattern:   top
+    def_file:  stats_both_cores.yaml
+    dest_file: overlap_report.html
+    format:    html
+    trigger:
+      start:   't0.start && t1.start'
+      stop:    't0.stop  || t1.stop'

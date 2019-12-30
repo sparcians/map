@@ -1,0 +1,37 @@
+  digraph pipeline {
+     rankdir=LR
+     node [shape=record, fontname="Times-Roman", fontsize=20];
+     Fetch [ ];
+     Decode [ ];
+     Rename [ ];
+     Dispatch [ ];
+     FPU [ ];
+     ALU0 [ ];
+     ALU1 [ ];
+     ROB [ ];
+     LSU [ color=red, fontcolor=red ];
+     BIU [ color=red, fontcolor=red ];
+     MSS [ color=red, fontcolor=red ];
+     
+     Fetch -> Decode [arrowhead="open", style="solid", label="InstGroup"];
+     Decode -> Rename [arrowhead="open", style="solid", label="InstGroup"];
+     Rename -> Dispatch [arrowhead="open", style="solid", label="InstGroup"];
+     Dispatch -> LSU [arrowhead="open", style="solid", label="InstGroup", color=red, fontcolor=red];
+     Dispatch -> ROB [arrowhead="open", style="solid", label="InstGroup"];
+     Dispatch -> FPU [arrowhead="open", style="solid", label="Inst"];
+     Dispatch -> ALU0 [arrowhead="open", style="solid", label="Inst"];
+     Dispatch -> ALU1 [arrowhead="open", style="solid", label="Inst"];
+     LSU -> BIU [arrowhead="open", style="solid", label="Reqs", color=red, fontcolor=red];
+     BIU -> MSS [arrowhead="open", style="solid", label="Reqs", color=red, fontcolor=red];
+
+     Decode -> Fetch [arrowhead="open", style="dotted", label="credits"];
+     Rename -> Decode [arrowhead="open", style="dotted", label="credits"];
+     Dispatch -> Rename [arrowhead="open", style="dotted", label="credits"];
+     ROB -> Dispatch [arrowhead="open", style="dotted", label="credits"];
+     FPU -> Dispatch [arrowhead="open", style="dotted", label="credits"];
+     ALU0 -> Dispatch [arrowhead="open", style="dotted", label="credits"];
+     ALU1 -> Dispatch [arrowhead="open", style="dotted", label="credits"];
+     LSU -> Dispatch [arrowhead="open", style="dotted", label="credits", color=red, fontcolor=red];
+     BIU -> LSU [arrowhead="open", style="solid", label="Resps", color=red, fontcolor=red];
+     MSS -> BIU [arrowhead="open", style="solid", label="Resps", color=red, fontcolor=red];
+  }

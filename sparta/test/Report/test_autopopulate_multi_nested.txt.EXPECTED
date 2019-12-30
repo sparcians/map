@@ -1,0 +1,27 @@
+Report "Report X" [40,101]
+  Report "top.core0"
+      c1 = 3
+      c2 = 6
+      c3 = 9
+      c4 = 12
+      c5 = 100000
+      s1 = 3
+      s2 = 6
+      s3 = 3.18664e-11
+      s4 = 282429536482
+      s5 = 24
+
+    Report "top.core0.dummy"
+        c1 = 0
+        c2 = 0
+
+
+  Report "top.core1"
+      c1 = 0
+      c2 = 0
+      c3 = 0
+      c4 = 0
+
+  Report "Extra Nesting: top.core0"
+  Report "Extra Nesting: top.core1"
+

@@ -1,0 +1,22 @@
+top: {
+    core0.params.foo: 12,
+    core0.lsu.extension.cat: {
+        name_:     Tom,
+        language_: meow
+    },
+    core0.lsu.extension.mouse: {
+        name_:     Jerry,
+        language_: squeak
+    },
+    core0.fpu.extension.circle: {
+        color_:    green,
+        shape_:    round
+    },
+    extension.apple: {
+        color_:    red
+    },
+    core0.dispatch.extension.user_data: {
+        when_:     buildTree_,
+        why_:      checkAvailability
+    }
+}

@@ -1,0 +1,7 @@
+content:
+  subreport:
+    name: Bad expression - cannot parse
+    trigger:
+      start: "this.does.not.exist"
+    core0:
+      include: simple_stats.yaml

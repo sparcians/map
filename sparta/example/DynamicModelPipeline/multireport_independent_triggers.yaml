@@ -1,0 +1,40 @@
+# Please refer to the file titled 'ReportTriggers.txt' in this directory
+# for details on how to control top-level report events with trigger
+# expressions.
+
+content:
+
+  report:
+    pattern:   top.core0
+    def_file:  core_stats.yaml
+    dest_file: solo_stats_core0.txt
+    trigger:
+      tag:     t0
+      start:   "rob.stats.total_number_retired >= 1500"
+      stop:    "rob.stats.total_number_retired >= 9000"
+
+  report:
+    pattern:   top.core1
+    def_file:  core_stats.yaml
+    dest_file: solo_stats_core1.txt
+    trigger:
+      tag:     t1
+      start:   "rob.stats.total_number_retired >= 2200"
+      stop:    "rob.stats.total_number_retired >= 9400"
+      
+  report:
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: overlap_report.html
+    format:    html
+    trigger:
+      start:   "t0.start && t1.start"
+      stop:    "t0.stop  || t1.stop"
+
+  report:
+    pattern:   top.core1
+    def_file:  core_stats.yaml
+    dest_file: post_overlap_solo_stats_core1.html
+    format:    html
+    trigger:
+      start:   "t0.stop && t1.stop"

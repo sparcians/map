@@ -1,0 +1,11 @@
+**/lib*.a
+**/CTestTestfile.cmake
+**/cmake_install.cmake
+**/Makefile
+**/CMakeCache.txt
+**/CMakeFiles/**
+test/**/*.cmake
+build*
+release*
+debug*
+*~

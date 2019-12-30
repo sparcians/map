@@ -1,0 +1,6 @@
+{
+    "//": "These are all scoped to the including file's node",
+    "param4": ["a", "b", "cee", "dee"],
+    "param3": [1,2,3,4],
+    "..params.param4": ["e", "eff", "gee", "h"]
+}

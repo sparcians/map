@@ -1,0 +1,4 @@
+top.a.b.c: mycategory: Test Message 1 with some numbers like 1 and 2. Neat
+top.a.b.c: mycategory: Message from C in category 'mycategory'
+top.a.b.c: mycategory: Another message from C in category 'mycategory' with a newline char in the middle that should be converted to a ""
+top.a.b.c: mycategory: Another message from C in category 'mycategory' after removing the tap to a_removed.log.basic

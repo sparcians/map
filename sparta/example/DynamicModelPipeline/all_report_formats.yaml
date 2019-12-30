@@ -1,0 +1,154 @@
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out1.txt
+    format:    txt
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out2.txt
+    format:    text
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out1.html
+    format:    html
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out2.html
+    format:    htm
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out.csv
+    format:    csv
+    trigger:
+      update-time: 2 ns
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out.cumulative.csv
+    format:    csv_cumulative
+    trigger:
+      update-time: 2 ns
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out1.jims.json
+    format:    jims_json
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out2.jims.json
+    format:    jjson
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out1.py
+    format:    python
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out2.py
+    format:    py
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out1.json
+    format:    json
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out2.json
+    format:    JSON
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out1.reduced.json
+    format:    json_reduced
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out2.reduced.json
+    format:    JSON_reduced
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out1.detail.json
+    format:    json_detail
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out2.detail.json
+    format:    JSON_detail
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out1.gnu
+    format:    gnuplot
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out2.gnu
+    format:    gplt
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out.stats.mapping.json
+    format:    stats_mapping
+  report:
+    name:      My report name contain's a typo
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out.single.quote.json
+    format:    json
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: unexpected1.extension
+    format:    csv
+    trigger:
+      update-time: 2 ns
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: unexpected2.csv
+    format:    json
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: /tmp/out2.csv
+    format:    csv
+    trigger:
+      update-time: 2 ns
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: subdir_yamls_1/out3.csv
+    format:    csv
+    trigger:
+      update-time: 4 ns
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: subdir_yamls_2/another_subdir/out4.csv
+    format:    csv
+    trigger:
+      update-time: 6 ns
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: /tmp/out5.json
+    format:    json
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: subdir_yamls_1/out6.json
+    format:    json
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: subdir_yamls_2/another_subdir/out7.json
+    format:    json

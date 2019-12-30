@@ -1,0 +1,19 @@
+# If you provide the sparta::app::Simulation with a Simulation
+# Controller subclass of your own, you can then request callbacks
+# into your C++ code at specific times during the simulation,
+# controlled with trigger expressions.
+#
+# The default, out-of-the-box callbacks use the expresion keys
+# 'pause', 'resume', and 'term'.
+#
+# Custom callbacks (arbitrary named events) should be registered
+# with the SimulationController base class, and then can be triggered
+# using expressions in the same way. In this example here, both 'eat'
+# and 'sleep' are custom named events.
+
+content:
+  pause:  'core0.rob.stats.total_number_retired >= 1000'
+  resume: 'core0.rob.stats.total_number_retired >= 5000'
+  eat:    'core0.rob.stats.total_number_retired >= 6000'
+  sleep:  'core0.rob.stats.total_number_retired >= 7000'
+  term:   'core0.rob.stats.total_number_retired >= 8000'

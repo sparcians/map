@@ -1,0 +1,42 @@
+# Please refer to the file titled 'ReportTriggers.txt' in this directory
+# for details on how to control top-level report events with trigger
+# expressions.
+
+content:
+
+  report:
+    name:      'Start trigger does not fire - basic'
+    pattern:   top.cpu.core0
+    def_file:  core_stats.yaml
+    dest_file: solo_stats_core0_basic.txt
+    trigger:
+      start:   'notif.testing_notif_channel == 900'
+
+  report:
+    name:      'Start trigger does not fire - with CSV updates (counter-based)'
+    pattern:   top.cpu.core0
+    def_file:  core_stats.yaml
+    dest_file: solo_stats_core0_with_updates1.csv
+    format:    csv
+    trigger:
+      start:   'notif.testing_notif_channel == 900'
+      update-count: 'rob.stats.total_number_retired 225'
+
+  report:
+    name:      'Start trigger does not fire - with CSV updates (not counter-based)'
+    pattern:   top.cpu.core0
+    def_file:  core_stats.yaml
+    dest_file: solo_stats_core0_with_updates2.csv
+    format:    csv
+    trigger:
+      start:   'notif.testing_notif_channel == 900'
+      update-time: '3 ns'
+
+  report:
+    name:      'Start trigger does not fire - with stop trigger'
+    pattern:   top.cpu.core0
+    def_file:  core_stats.yaml
+    dest_file: solo_stats_core0_with_stop_trigger.txt
+    trigger:
+      start:   'notif.testing_notif_channel == 900'
+      stop:    'notif.testing_notif_channel > 22'

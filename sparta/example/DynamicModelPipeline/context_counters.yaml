@@ -1,0 +1,25 @@
+# This report definition uses statistics paths to ContextCounters. These will
+# automatically be expanded at runtime into their internal counters, and the
+# aggregate value will be captured in the report as well. For example, say the
+# statistic was specified as follows in the YAML file (def_file):
+#
+#   top.core0.dispatch.stats:
+#     count_insts_per_unit: ctx_count
+#
+# This would result in a report with the following statistics:
+#
+#   ctx_count               # Aggregate value
+#   ctx_count.<sub_stat0>   # Value of internal counter 0 with name 'sub_stat0'
+#   ctx_count.<sub_stat1>   # Value of internal counter 1 with name 'sub_stat1'
+#   ...
+#
+# Note that you must specify 'expand-cc: true' as shown below in order for the
+# ContextCounters to be automatically expanded.
+
+content:
+  report:
+    pattern:   _global
+    def_file:  cc_simple_stats.yaml
+    dest_file: internal_counters.json
+    format:    json
+    expand-cc: true

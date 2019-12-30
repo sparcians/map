@@ -1,0 +1,43 @@
+content:
+
+  report:
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: out1.txt
+    trigger:
+      start:   'cpu.core0.rob.stats.total_number_retired >= cpu.core0.params.foo'
+
+  report:
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: out2.txt
+    trigger:
+      start:   'notif.testing_notif_channel > cpu.core0.params.foo'
+
+  report:
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: out3.txt
+    trigger:
+      update-time: 'cpu.core0.params.foo ns'
+
+  report:
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: out4.txt
+    trigger:
+      update-cycles: 'cpu.core0.params.foo'
+
+  report:
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: out5.txt
+    trigger:
+      update-count: 'cpu.core0.rob.stats.total_number_retired cpu.core0.params.foo'
+
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out6.txt
+    trigger:  
+      stop:    'notif.testing_notif_channel == top.cpu.core0.params.foo'

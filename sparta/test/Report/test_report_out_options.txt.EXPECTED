@@ -1,0 +1,7 @@
+Report "Report1" [40,41]
+    top.core0.stats.s1 = 0.5
+    stat1 = 2
+    stat5 = 4
+    stat3 = 5
+    stat4 = 0
+

@@ -1,0 +1,7 @@
+content:
+  subreport:
+    name: Bad expression - && and || together (note this won't even attempt to create/reference triggers if it sees both operations here together)
+    trigger:
+      start: "one && thing || or && another"
+    core0:
+      include: simple_stats.yaml

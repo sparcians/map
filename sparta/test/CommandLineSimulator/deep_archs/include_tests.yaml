@@ -1,0 +1,4 @@
+# Test 5
+include: extend1.yaml
+include: deeper/extend2.yaml
+include: deeper/more_deep/extend3.yaml

@@ -1,0 +1,23 @@
+# Example toggle trigger syntax using parameterized expressions.
+
+content:
+
+  report:
+    name:       'Parameterized toggle trigger expression relative to TOP'
+    pattern:    top
+    def_file:   top_stats.yaml
+    dest_file:  toggle_with_parameterized_expression.csv
+    format:     csv
+    trigger:
+      whenever: notif.stats_profiler == cpu.core0.params.foo
+      update-time: 7.5 ns
+
+  report:
+    name:       'Parameterized toggle trigger expression relative to GLOBAL'
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  toggle_with_parameterized_expression2.csv
+    format:     csv
+    trigger:
+      whenever: notif.testing_notif_channel == top.cpu.core0.params.foo
+      update-time: 12.5 ns

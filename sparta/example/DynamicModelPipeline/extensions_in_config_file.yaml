@@ -1,0 +1,5 @@
+top: {
+    core0.lsu.extension.hexagon: {
+        edges_: 6
+    }
+}

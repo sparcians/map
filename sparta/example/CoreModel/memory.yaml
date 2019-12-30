@@ -1,0 +1,43 @@
+# Specify report settings for memory profiling of various simulation phases.
+# The fields shown here do not have to be overridden in order to capture the
+# memory usage (heap) statistics. If any are omitted, these are the defaults
+# that will be used:
+#
+#      name           'Memory usage statistics'
+#      dest_file      mem-stats.csv
+#      phases         all
+#      update-cycles: 10k
+#
+# Give the phases you wish to profile as a comma-separated string including
+# one or more of 'build', 'configure', 'bind', and/or 'simulate'. If you
+# want to capture memory stats for all phases, use 'all' or simply omit
+# the phases in the YAML and use the default behavior.
+#
+# One of update-counter, update-cycles, update-time, or update-whenever
+# expressions may be used in order to specify when heap usage is to be
+# inspected. This only affects the heap stats collected during the simulate
+# phase. The other phases - build, configure, and bind - only get one row
+# in the memory stats report representing a single heap snapshot at the very
+# end of each of those phases.
+
+content:
+  memory-report:
+    name:            'Memory usage report using counter-driven updates'
+    dest_file:       mem-stats1.csv
+    phases:          build, configure, simulate
+    update-count:    top.cpu.core0.rob.stats.total_number_retired 100
+  memory-report:
+    name:            'Memory usage report using cycle-driven updates'
+    dest_file:       mem-stats2.csv
+    phases:          all
+    update-cycles:   250
+  memory-report:
+    name:            'Memory usage report using time-driven updates'
+    dest_file:       mem-stats3.csv
+    phases:          configure, simulate
+    update-time:     5 ns
+  memory-report:
+    name:            'Memory usage report using on-demand updates'
+    dest_file:       mem-stats4.csv
+    phases:          configure, bind, simulate
+    update-whenever: notif.stats_profiler == 1

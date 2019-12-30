@@ -1,0 +1,2 @@
+top.a.e.g: mycategory: Message from G. Should be seen by e_tap_mycategory, a_tap_mycategory
+top.a.e.g: mycategory: Message from G. Should be seen by e_tap_mycategory but NOT a_removed

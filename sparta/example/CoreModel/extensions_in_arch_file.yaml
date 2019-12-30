@@ -1,0 +1,5 @@
+top: {
+    cpu.core0.lsu.extension.triangle: {
+        edges_: 3
+    }
+}

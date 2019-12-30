@@ -1,0 +1,66 @@
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out1.csv
+    format:    csv
+    trigger:
+      start:   notif.testing_notif_channel <= 6
+      update-count: top.core0.rob.stats.total_number_retired 1000 noalign
+      stop:    top.core0.rob.stats.total_number_retired >= 15750
+      tag:     r0
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out2.csv
+    format:    csv
+    trigger:
+      start:   top.core0.rob.stats.total_number_retired >= 800
+      update-count: top.core0.rob.stats.total_number_retired 100 align
+      stop:    notif.testing_notif_channel >= 23
+      tag:     r1
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out3.csv
+    format:    csv
+    trigger:
+      update-count: top.core0.rob.stats.total_number_retired 10000 noalign
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out4.csv
+    format:    csv
+    trigger:
+      update-count: top.core0.rob.stats.total_number_retired 100 align
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out5.csv
+    format:    csv
+    trigger:
+      update-cycles: 275
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out6.csv
+    format:    csv
+    trigger:
+      update-time: 17 ns
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out7.csv
+    format:    csv
+    trigger:
+      start:   notif.testing_notif_channel > 20
+      update-count: top.core0.rob.stats.total_number_retired 1500 noalign
+      stop:    top.core0.rob.stats.total_number_retired >= 25750
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out8.csv
+    format:    csv
+    trigger:
+      start:   r1.start
+      stop:    r0.stop

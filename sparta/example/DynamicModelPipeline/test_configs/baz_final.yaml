@@ -1,0 +1,101 @@
+# Name:     
+# Cmdline:  
+# Exe:      
+# SimulatorVersion:
+# Repro:    
+# Start:    Fri Feb  1 15:53:14 2019
+# Elapsed:  0.047359s
+# 
+---
+top:
+  core0:
+    params:
+      foo:                                         default            # default (std::string)
+      ctr_incr_period:                             1000               # default (uint64_t)
+      ctr_incr_amount:                             1                  # default (uint32_t)
+      contents:                                    []                 # default (std::vector<std::string>)
+    fetch:
+      params:
+        num_to_fetch:                              4                  # default (uint32_t)
+        inst_rand_seed:                            3735928559         # default (uint32_t)
+        fetch_max_ipc:                             false              # default (bool)
+    decode:
+      params:
+        num_to_decode:                             4                  # default (uint32_t)
+        fetch_queue_size:                          10                 # default (uint32_t)
+    rename:
+      params:
+        num_to_rename:                             4                  # default (uint32_t)
+        rename_queue_depth:                        10                 # default (uint32_t)
+    dispatch:
+      params:
+        num_to_dispatch:                           3                  # default (uint32_t)
+        dispatch_queue_depth:                      10                 # default (uint32_t)
+        context_weights:                           [1]                # default (std::vector<double>)
+      baz_node:
+        params:
+          baz:                                     345                # NON-DEFAULT: 0 (uint32_t)
+    alu0:
+      params:
+        ignore_inst_execute_time:                  false              # default (bool)
+        execute_time:                              1                  # default (uint32_t)
+        scheduler_size:                            8                  # default (uint32_t)
+        in_order_issue:                            true               # default (bool)
+    alu1:
+      params:
+        ignore_inst_execute_time:                  false              # default (bool)
+        execute_time:                              1                  # default (uint32_t)
+        scheduler_size:                            8                  # default (uint32_t)
+        in_order_issue:                            true               # default (bool)
+    fpu:
+      params:
+        ignore_inst_execute_time:                  false              # default (bool)
+        execute_time:                              1                  # default (uint32_t)
+        scheduler_size:                            8                  # default (uint32_t)
+        in_order_issue:                            true               # default (bool)
+      baz_node:
+        params:
+          baz:                                     0                  # default (uint32_t)
+    br:
+      params:
+        ignore_inst_execute_time:                  false              # default (bool)
+        execute_time:                              1                  # default (uint32_t)
+        scheduler_size:                            8                  # default (uint32_t)
+        in_order_issue:                            true               # default (bool)
+    lsu:
+      params:
+        ldst_inst_queue_size:                      8                  # default (uint32_t)
+        tlb_always_hit:                            false              # default (bool)
+        dl1_line_size:                             64                 # default (uint64_t)
+        dl1_size_kb:                               32                 # default (uint64_t)
+        dl1_associativity:                         8                  # default (uint64_t)
+        dl1_always_hit:                            false              # default (bool)
+        issue_latency:                             1                  # default (uint32_t)
+        mmu_latency:                               1                  # default (uint32_t)
+        cache_latency:                             1                  # default (uint32_t)
+        complete_latency:                          1                  # default (uint32_t)
+      tlb:
+        params:
+          tlb_page_size:                           4096               # default (uint64_t)
+          tlb_num_of_entries:                      32                 # default (uint64_t)
+          tlb_associativity:                       32                 # default (uint64_t)
+    biu:
+      params:
+        biu_req_queue_size:                        4                  # default (uint32_t)
+        biu_latency:                               1                  # default (uint32_t)
+    mss:
+      params:
+        mss_latency:                               5                  # default (uint32_t)
+    rob:
+      params:
+        num_to_retire:                             4                  # default (uint32_t)
+        retire_queue_depth:                        30                 # default (uint32_t)
+        num_insts_to_retire:                       10000              # NON-DEFAULT: 0 (uint32_t)
+    preloader:
+      params:
+        preload_file:                              ""                 # default (std::string)
+meta:
+  params:
+    architecture:                                  NONE               # default (std::string)
+    is_final_config:                               true               # NON-DEFAULT: false (bool)
+...

@@ -1,0 +1,25 @@
+# This YAML definition file is to show memory (heap) profiler reports printed
+# to the console, instead of being written to a CSV file (for an example YAML
+# that is set up to write these profiles to CSV files, see 'memory.yaml')
+
+content:
+  memory-report:
+    name:            'Memory usage report using counter-driven updates (stdout)'
+    dest_file:       1
+    phases:          build, configure, simulate
+    update-count:    top.core0.rob.stats.total_number_retired 100
+  memory-report:
+    name:            'Memory usage report using cycle-driven updates (stdout)'
+    dest_file:       1
+    phases:          all
+    update-cycles:   250
+  memory-report:
+    name:            'Memory usage report using time-driven updates (stdout)'
+    dest_file:       1
+    phases:          configure, simulate
+    update-time:     5 ns
+  memory-report:
+    name:            'Memory usage report using on-demand updates (stdout)'
+    dest_file:       1
+    phases:          configure, bind, simulate
+    update-whenever: notif.stats_profiler == 1

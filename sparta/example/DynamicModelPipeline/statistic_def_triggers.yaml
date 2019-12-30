@@ -1,0 +1,45 @@
+# This YAML shows the syntax that can be used to trigger reports
+# based on any StatisticDef's current value against a target value.
+#
+# For example, given an expression such as:
+#
+#     "stat_def.top.core0.rob.stats.ReorderBuffer_utilization_weighted_avg >= 16.5"
+#
+# Parse this into a StatisticDefTrigger object with:
+#
+#     statistic def path:  'top.core0.rob.stats.ReorderBuffer_utilization_weighted_avg'
+#     target value:        16.5
+#     trigger when:        This StatisticDef's current value is >= 16.5
+#
+# The 'stat_def' keyword must appear at the beginning of the trigger expression.
+# What follows 'stat_def' must be a valid path to a StatisticDef object in the
+# simulator. This path will be parsed relative to the pattern supplied in the
+# report descriptor ('_global' and 'top' below).
+#
+# Note the second report descriptor below uses a parameterized target value.
+# Parameter expressions are also resolved relative to the pattern given
+# to the descriptor. In this example, the pattern is 'top', so the actual
+# parameter path given to the simulator (--parameter) would be 'top.core0.params.foo'
+#
+# StatisticDefTrigger's are single-fire and should only be used for report
+# start and report stop expressions.
+
+content:
+
+  report:
+    name:      'Using stat def path relative to GLOBAL'
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: stat_def_trigger_out1.json
+    format:    json
+    trigger:
+      start:   stat_def.top.core0.decode.stats.FetchQueue_utilization_count0_probability < 0.1
+
+  report:
+    name:      'Using stat def path relative to TOP, with a parameterized target value'
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: stat_def_trigger_out2.json
+    format:    json
+    trigger:
+      start:   stat_def.core0.rob.stats.ReorderBuffer_utilization_weighted_avg >= core0.params.foo

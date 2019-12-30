@@ -1,0 +1,30 @@
+# This YAML file uses a 'stats_mapping' report format which prints
+# out a JSON dictionary that creates a statistics mapping like this:
+#
+#   {
+#     'Column-header-to-statistic': {
+#       'headerA' : 'statA',
+#       'headerB' : 'statB'
+#     },
+#     'Statistic-to-column-header': {
+#       'statA'   : 'headerA',
+#       'statB'   : 'headerB'
+#     }
+#  }
+#
+# This can be loaded into a Python dictionary quite easily:
+#
+#     >>> import json
+#     >>> json_file = open('mapping.json')
+#     >>> json_str = json_file.read()
+#     >>> json_data = json.loads(json_str)
+#
+#     >>> headers2stats = json_data['Column-header-to-statistic']
+#     >>> stats2headers = json_data['Statistic-to-column-header']
+
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: mapping.json
+    format:    stats_mapping

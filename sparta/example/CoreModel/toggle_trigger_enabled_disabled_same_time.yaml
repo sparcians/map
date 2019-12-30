@@ -1,0 +1,9 @@
+content:
+  report:
+    pattern :  _global
+    def_file:  simple_stats.yaml
+    dest_file: out.csv
+    format:    csv
+    trigger:
+      whenever: notif.stats_profiler == 1 || notif.stats_profiler == 0
+      update-count: top.cpu.core0.rob.stats.total_number_retired 100

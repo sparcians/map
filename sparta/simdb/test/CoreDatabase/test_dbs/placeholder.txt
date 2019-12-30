@@ -1,0 +1,4 @@
+This file serves as a placeholder to keep the 'test_dbs'
+subdirectory in SimDB's test/Database folder in git. We
+don't want to use things like boost::filesystem in SimDB
+to create temp folders.

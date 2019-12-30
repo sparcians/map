@@ -1,0 +1,6 @@
+# Invoke from top.cpu.core0.regs.regfoo.field*
+name: MultiReportFromReg%1
+content:
+  "...": # Should place us at cpu0
+    ctrs.counter_foo: "Counter%0"
+    ctrs.counter_foo: "Counter%1"

@@ -1,0 +1,10 @@
+# Ignore some parameters that don't exist
+
+include: test_ignore2_include.yaml
+top:
+  core0:
+    fetch:
+      params:
+        this_does_not_exist: <OPTIONAL>
+        also_does_not_exist: <OPTIONAL>
+        still_does_not_exist: <OPTIONAL>

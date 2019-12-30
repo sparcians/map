@@ -1,0 +1,10 @@
+~g: mycategory: This message SHOULD ACTUALLY BE OBSERVED
+~g: warning: This warning SHOULD be observed by warn.log.basic and global_warn.log.basic and that is it!
+top.a.b.c: mycategory: Test Message 1 with some numbers like 1 and 2. Neat
+top.a.b.c: mycategory: Message from C in category 'mycategory'
+top.a.b.c: mycategory: Another message from C in category 'mycategory' with a newline char in the middle that should be converted to a ""
+top.a.e.g: mycategory: Message from G. Should be seen by e_tap_mycategory, a_tap_mycategory
+top.a.d: other_category: Message from D. Should be seen by top_tap_all, a_tap_all, and a_tap_stder
+top.a.b.c: mycategory: Another message from C in category 'mycategory' after removing the tap to a_removed.log.basic
+top.a.e.g: mycategory: Message from G. Should be seen by e_tap_mycategory but NOT a_removed
+top.a.e.g: warning: Another warning after removing the temporary tap on a

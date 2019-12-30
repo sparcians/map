@@ -1,0 +1,51 @@
+# Preload data for Preloading test. 
+top.core0.cache1.preloadable:
+    lines:
+        - va: 0x1000
+          a : "test"
+          b : 0xabc
+          c : false
+        - va: 0x4000
+          a : "helloworld"
+          b : 0xFFFF
+          c : True
+
+top.core0.*.preloadable:
+    level1: "level1"
+    lines:
+        - va: 0xffff
+          a : "dupl"
+          b : 0x3333
+          c : false
+
+top.core0.cache2.preloadable:
+    lines:
+        - va: 0x2000
+          a : "tested"
+          b : 2
+          c : true
+        - va: 0x4000
+          a : "hello2world"
+          b : 0x2222FFFF
+          c : True
+    other:
+        - random: "data"
+
+top.cache3.preloadable:
+    a: "a"
+    b: "b" 
+    c: "c"
+    nested_data:
+        z: 100
+        deep_list:
+            - a: 0
+            - a: 1
+            - a: 2
+
+top.cache_simple.preloadable:
+    - va: 0x1000
+      val: 0xfffff
+    - va: 0x2000
+      val: 0xfffff
+    - va: 0x3000
+      val: 0xaaaaa   

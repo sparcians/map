@@ -1,0 +1,25 @@
+# This report definition uses a ContextCounter's internal sparta::Counter
+# to trigger the start of the report. A second report definition is given
+# using a regular Counter in the start trigger expression. In both cases,
+# the Counter used in the start expression is different than the one
+# used in the update-count expression.
+
+content:
+
+  report:
+    pattern:   top
+    def_file:  retired_insts.yaml
+    dest_file: retired_insts_1.csv
+    format:    csv
+    trigger:
+      start:   cpu.core0.dispatch.stats.count_insts_per_unit.dispatch_inst_count0 >= 1107
+      update-count: top.cpu.core0.rob.stats.total_number_retired 1000 noalign
+
+  report:
+    pattern:   top
+    def_file:  retired_insts.yaml
+    dest_file: retired_insts_2.csv
+    format:    csv
+    trigger:
+      start:   cpu.core0.decode.stats.FetchQueue_utilization_total >= 31468
+      update-count: top.cpu.core0.rob.stats.total_number_retired 1000 noalign

@@ -1,0 +1,37 @@
+# Time Series Report for MK HP
+# NOTE: works with topology families of --arch mklh_hp
+# Invoke on "top" using
+# --report top reports/tseries_mk.yaml %FIAT_TRACENAME%.csv csv
+# --report-update-counter top.core0.retire.stats.num_insts_retired 10000
+name: Summary
+content:
+  top:
+    core0.stats: # Context (location in tree) because it is not a reserved word
+    # Stat called "stat1 pointing to core0.stats.c1"
+    # This is important to make sure the interpreter can disambiguate
+      c1 : stat1
+      c5 : stat5
+
+    report_ignore: # Context (location in tree) because it is not a reserved word
+    # Stat called "stat1 pointing to core0.stats.c1"
+    # This is important to make sure the interpreter can disambiguate
+      c1 : stat1
+      c5 : stat5
+
+    core0.stats: # Context (location in tree) because it is not a reserved word
+    # Stat called "stat1 pointing to core0.stats.c1"
+    # This is important to make sure the interpreter can disambiguate
+      c1 : stat1 # will fail -- this is a rename.
+
+report_ignore:
+  display:
+    stats:
+        - [IPC]
+        - [IL1_hits_PKI] #, IL1_hit_rate] #IL1_accesses, , IL1_hit_rate
+        - [DL1_hits_PKI] #DL1_load_misses, DL1_store_misses, DL1_accesses, DL1_hit_rate
+        - [L2_hits_PKI] #L2_hits, L2_accesses, L2_hit_rate
+        - [L3_hits_PKI] #, L3_accesses] #, L3_hit_rate, L3_hits,
+        - [branch_MPKI]
+        - [L1_tlb_hits_PKI] #L1_tlb_hits, L1_tlb_accesses, L1_tlb_hit_rate
+        - [dispatch_stalls_PKC] #dispatched_0_uops
+    x-axis: num_insts_retired

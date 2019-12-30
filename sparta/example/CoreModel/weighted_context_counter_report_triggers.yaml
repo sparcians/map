@@ -1,0 +1,72 @@
+# This YAML file contains several report definitions that use ContextCounter-
+# driven report trigger expressions. This example YAML is similar to that
+# found in 'context_counter_report_triggers.yaml', however here we are using
+# a context counter path that is actually a sparta::WeightedContextCounter,
+# which is an example context counter subclass found in test/ContextCounter/.
+#
+# The constructor of the WeightedContextCounter class registers its own
+# aggregate calculation method (finding the weighted average of all the
+# internal counters' values) with the following macro:
+#
+# REGISTER_CONTEXT_COUNTER_AGGREGATE_FCN(
+#     WeightedContextCounter<CounterT>,
+#     weightedAvg_,
+#     calculated_average_);
+#
+# This macro should be called like this:
+#
+# REGISTER_CONTEXT_COUNTER_AGGREGATE_FCN(
+#     ClassT (for template subclasses, this would be SubclassName<CounterT>),
+#     Class method name that calculates the aggregate value,
+#     Member variable that holds the calculated aggregate value);
+#
+# For example:
+#
+#   template <typename CounterT>
+#   class MyContextCounter : public sparta::ContextCounter<CounterT>
+#   {
+#   public:
+#     MyContextCounter() {
+#       REGISTER_CONTEXT_COUNTER_AGGREGATE_FCN(
+#         MyContextCounter<CounterT>, myCalcMethod_, my_calc_value_);
+#     }
+#   private:
+#     void myCalcMethod_() {
+#       //do some calculations...
+#       my_calc_value_ = 3.14;
+#     }
+#     double my_calc_value_ = 0;
+#   };
+#
+# Some notes:
+#   - The method that is to be called for the calculation (myCalcMethod_)
+#     must have the signature 'void method()', with no inputs and no
+#     outputs
+#   - The member variable used to store the calculated aggregate value
+#     must be of type double
+
+content:
+
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: weighted_cc_out1.csv
+    format:    csv
+    trigger:
+      start:   stat_def.top.cpu.core0.dispatch.stats.weighted_count_insts_per_unit.weightedAvg_ >= 12k
+
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: weighted_cc_out2.html
+    format:    html
+    trigger:
+      start:   stat_def.top.cpu.core0.dispatch.stats.weighted_count_insts_per_unit.weightedAvg_ > top.cpu.core0.params.foo
+
+  report:
+    pattern:   top
+    def_file:  top_stats.yaml
+    dest_file: weighted_cc_out3.json
+    format:    json_reduced
+    trigger:
+      start:   stat_def.cpu.core0.dispatch.stats.weighted_count_insts_per_unit.weightedAvg_ == 139

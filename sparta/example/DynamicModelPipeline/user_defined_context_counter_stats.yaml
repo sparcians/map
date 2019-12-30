@@ -1,0 +1,35 @@
+# In the 'cc_simple_stats3.yaml' file, we are telling SPARTA to capture
+# the following stats:
+#
+#   top.core0.dispatch.stats.weighted_count_insts_per_unit.max_
+#   top.core0.rob.stats.total_number_retired
+#
+# The 'total_number_retired' statistic is a regular StatisticInstance.
+# But the ContextCounter statistic called 'max_' is actually a user-
+# implemented C++ method in a sparta::ContextCounter subclass. But we
+# can still refer to it in YAML report definition files as if it was
+# an actual statistic in the tree.
+#
+# In this example, we have a ContextCounter subclass with the tree
+# location:
+#
+#   top.core0.dispatch.stats.weighted_count_insts_per_unit
+#
+# That subclass has a member function 'max_()' which will calculate the
+# current maximum value of the individual counters in the ContextCounter
+# group.
+#
+# The user-implemented calculation method can be anything that evaluates
+# to a scalar double value, and SPARTA will simply call that ContextCounter
+# subclass method when it needs to write out the current statistic value
+# to a report.
+
+content:
+  report:
+    pattern:   _global
+    def_file:  cc_simple_stats3.yaml
+    dest_file: cc_user_calculated_stats.csv
+    format:    csv
+    trigger:
+      start:   top.core0.rob.stats.total_number_retired >= 1200
+      update-cycles: 50

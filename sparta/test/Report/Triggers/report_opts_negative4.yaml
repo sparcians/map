@@ -1,0 +1,7 @@
+content:
+  subreport:
+    name: Bad expression - unrecognized comparison
+    trigger:
+      start: "notif.testing_notif_channel ? 450"
+    core0:
+      include: simple_stats.yaml

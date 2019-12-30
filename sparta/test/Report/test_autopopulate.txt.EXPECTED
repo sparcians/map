@@ -1,0 +1,37 @@
+Report "Report Autopopulation Test" [40,101]
+  Report "Summary"
+  Report "top.core0"
+      c2 = 6
+
+  Report "All stats"
+    Report "top.core0"
+        c1 = 3
+        c4 = 12
+        c5 = 100000
+        s1 = 3
+        s2 = 6
+        s3 = 3.18664e-11
+        s4 = 282429536482
+        s5 = 24
+
+    Report "top.core0.dummy"
+        c2 = 0
+
+    Report "top.core1"
+        c1 = 0
+        c2 = 0
+        c3 = 0
+        c4 = 0
+
+
+  Report "scheduler"
+      ticks = 60
+      picoseconds = 60
+      seconds = 6e-11
+      milliseconds = 6e-08
+      microseconds = 6e-05
+      nanoseconds = 0.06
+      user_runtime_seconds = 0
+      system_runtime_seconds = 0
+
+

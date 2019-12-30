@@ -1,0 +1,35 @@
+content:
+
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: 1
+    trigger:
+      start:   notif.stats_profiler == 1
+      tag:     r1
+
+  report:
+    pattern :  _global
+    def_file:  simple_stats.yaml
+    dest_file: out1.csv
+    format:    csv
+    trigger:
+      start:   r1.start
+      update-count: top.cpu.core0.rob.stats.total_number_retired 1000
+
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: 1
+    trigger:
+      start:   top.cpu.core0.rob.stats.total_number_retired >= 5000
+      tag:     r2
+
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out2.csv
+    format:    csv
+    trigger:
+      start:   r2.start
+      update-count: top.cpu.core0.rob.stats.total_number_retired 1000

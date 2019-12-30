@@ -1,0 +1,338 @@
+---
+- Content: annotation
+  LocationString: root.obj1000.level1_0.level1_02_dummy_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (1100, 20)
+  position: (460, 60)
+  t_offset: 0
+- Content: annotation
+  LocationString: root.obj1000.level1_0.level1_01_int_local_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (1100, 20)
+  position: (460, 80)
+  t_offset: 0
+- Content: annotation
+  LocationString: root.obj1000.level1_0.level1_00_int_manual_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (1100, 20)
+  position: (460, 100)
+  t_offset: 0
+- Content: annotation
+  LocationString: root.obj100.level1_1.level1_12_dummy_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (1100, 20)
+  position: (460, 200)
+  t_offset: 0
+- Content: annotation
+  LocationString: root.obj100.level1_1.level1_11_int_local_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (1100, 20)
+  position: (460, 220)
+  t_offset: 0
+- Content: annotation
+  LocationString: root.obj100.level1_1.level1_10_int_manual_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (1100, 20)
+  position: (460, 240)
+  t_offset: 0
+- Content: annotation
+  LocationString: root.obj10.level1_2.level1_22_dummy_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (1100, 20)
+  position: (460, 340)
+  t_offset: 0
+- Content: annotation
+  LocationString: root.obj10.level1_2.level1_21_int_local_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (1100, 20)
+  position: (460, 360)
+  t_offset: 0
+- Content: annotation
+  LocationString: root.obj10.level1_2.level1_20_int_manual_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (1100, 20)
+  position: (460, 380)
+  t_offset: 0
+- Content: clock
+  LocationString: root.obj100.level1_1.level1_12_dummy_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (860, 20)
+  position: (460, 180)
+  t_offset: 0
+- Content: clock
+  LocationString: root.obj10.level1_2.level1_22_dummy_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (860, 20)
+  position: (460, 320)
+  t_offset: 0
+- Content: clock
+  LocationString: root.obj1000.level1_0.level1_02_dummy_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (860, 20)
+  position: (460, 40)
+  t_offset: 0
+- Content: cycle
+  LocationString: root.obj100.level1_1.level1_12_dummy_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (840, 20)
+  position: (720, 180)
+  t_offset: 0
+- Content: cycle
+  LocationString: root.obj1000.level1_0.level1_02_dummy_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (840, 20)
+  position: (720, 40)
+  t_offset: 0
+- Content: cycle
+  LocationString: root.obj10.level1_2.level1_22_dummy_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (840, 20)
+  position: (720, 320)
+  t_offset: 0
+- Content: loc_id
+  LocationString: root.obj1000.level1_0.level1_02_dummy_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (20, 20)
+  position: (20, 60)
+  t_offset: 0
+- Content: loc_id
+  LocationString: root.obj1000.level1_0.level1_01_int_local_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (20, 20)
+  position: (20, 80)
+  t_offset: 0
+- Content: loc_id
+  LocationString: root.obj1000.level1_0.level1_00_int_manual_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (20, 20)
+  position: (20, 100)
+  t_offset: 0
+- Content: loc_id
+  LocationString: root.obj100.level1_1.level1_12_dummy_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (20, 20)
+  position: (20, 200)
+  t_offset: 0
+- Content: loc_id
+  LocationString: root.obj100.level1_1.level1_11_int_local_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (20, 20)
+  position: (20, 220)
+  t_offset: 0
+- Content: loc_id
+  LocationString: root.obj100.level1_1.level1_10_int_manual_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (20, 20)
+  position: (20, 240)
+  t_offset: 0
+- Content: loc_id
+  LocationString: root.obj10.level1_2.level1_22_dummy_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (20, 20)
+  position: (20, 340)
+  t_offset: 0
+- Content: loc_id
+  LocationString: root.obj10.level1_2.level1_21_int_local_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (20, 20)
+  position: (20, 360)
+  t_offset: 0
+- Content: loc_id
+  LocationString: root.obj10.level1_2.level1_20_int_manual_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (20, 20)
+  position: (20, 380)
+  t_offset: 0
+- Content: loc
+  LocationString: root.obj1000.level1_0.level1_02_dummy_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (360, 20)
+  position: (60, 60)
+  t_offset: 0
+- Content: loc
+  LocationString: root.obj1000.level1_0.level1_01_int_local_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (360, 20)
+  position: (60, 80)
+  t_offset: 0
+- Content: loc
+  LocationString: root.obj1000.level1_0.level1_00_int_manual_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (360, 20)
+  position: (60, 100)
+  t_offset: 0
+- Content: loc
+  LocationString: root.obj100.level1_1.level1_12_dummy_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (360, 20)
+  position: (60, 200)
+  t_offset: 0
+- Content: loc
+  LocationString: root.obj100.level1_1.level1_11_int_local_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (360, 20)
+  position: (60, 220)
+  t_offset: 0
+- Content: loc
+  LocationString: root.obj100.level1_1.level1_10_int_manual_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (360, 20)
+  position: (60, 240)
+  t_offset: 0
+- Content: loc
+  LocationString: root.obj10.level1_2.level1_22_dummy_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (360, 20)
+  position: (60, 340)
+  t_offset: 0
+- Content: loc
+  LocationString: root.obj10.level1_2.level1_21_int_local_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (360, 20)
+  position: (60, 360)
+  t_offset: 0
+- Content: loc
+  LocationString: root.obj10.level1_2.level1_20_int_manual_collectable
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (360, 20)
+  position: (60, 380)
+  t_offset: 0
+- Content: loc
+  LocationString: root.obj1000.level1_0.level1_00_int_manual_collectable_will_close
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (360, 20)
+  position: (60, 120)
+  t_offset: 0
+- Content: loc
+  LocationString: root.obj100.level1_1.level1_10_int_manual_collectable_will_close
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (360, 20)
+  position: (60, 260)
+  t_offset: 0
+- Content: loc
+  LocationString: root.obj10.level1_2.level1_20_int_manual_collectable_will_close
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (360, 20)
+  position: (60, 400)
+  t_offset: 0
+- Content: loc_id
+  LocationString: root.obj1000.level1_0.level1_00_int_manual_collectable_will_close
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (20, 20)
+  position: (20, 120)
+  t_offset: 0
+- Content: loc_id
+  LocationString: root.obj100.level1_1.level1_10_int_manual_collectable_will_close
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (20, 20)
+  position: (20, 260)
+  t_offset: 0
+- Content: loc_id
+  LocationString: root.obj10.level1_2.level1_20_int_manual_collectable_will_close
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (20, 20)
+  position: (20, 400)
+  t_offset: 0
+- Content: annotation
+  LocationString: root.obj1000.level1_0.level1_00_int_manual_collectable_will_close
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (1100, 20)
+  position: (460, 120)
+  t_offset: 0
+- Content: annotation
+  LocationString: root.obj100.level1_1.level1_10_int_manual_collectable_will_close
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (1100, 20)
+  position: (460, 260)
+  t_offset: 0
+- Content: annotation
+  LocationString: root.obj10.level1_2.level1_20_int_manual_collectable_will_close
+  annotation:
+  caption:
+  color: (128, 128, 128)
+  dimensions: (1100, 20)
+  position: (460, 400)
+  t_offset: 0
+...

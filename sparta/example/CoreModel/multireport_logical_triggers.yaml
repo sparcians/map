@@ -1,0 +1,19 @@
+content:
+
+  report:
+    name:      'testing1'
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out1.txt
+    trigger:
+      start:   'top.cpu.core0.rob.stats.total_number_retired >= 100 || top.cpu.core1.rob.stats.total_number_retired >= 100'
+      stop:    'top.cpu.core0.rob.stats.total_number_retired >= 100 && top.cpu.core1.rob.stats.total_number_retired >= 100'
+
+  report:
+    name:      'testing2'
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out2.txt
+    trigger:
+      start:   'top.cpu.core0.rob.stats.total_number_retired >= 200 || top.cpu.core1.rob.stats.total_number_retired >= 200'
+      stop:    'top.cpu.core0.rob.stats.total_number_retired >= 200 && top.cpu.core1.rob.stats.total_number_retired >= 200'

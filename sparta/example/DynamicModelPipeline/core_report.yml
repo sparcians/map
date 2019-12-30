@@ -1,0 +1,15 @@
+# Report for SPARTA Core Example
+# To be parsed at "top" object in simulation: e.g:
+#  --report "top" core_report.yml 1
+# Will write this report to stdout (1)
+name: Example Core Report
+author: nhaw
+content:
+  # Create a counter named foo
+  # This line is a context block
+  core0.ctrs:
+    # This is the actual instance in the report
+    counter_foo : foo
+    
+  # Alternatively, we could have said (for the same result)
+  ##core0.ctrs.counter_foo : foo

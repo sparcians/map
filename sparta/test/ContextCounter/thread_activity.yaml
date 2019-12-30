@@ -1,0 +1,7 @@
+content:
+  top:
+    # Auto-expanded context counter (individual counts, plus raw sum)
+    core0.dispatch.stats.threaded_count_insts_per_unit: UnitInstCount
+
+    # User-calculated aggregate... are all threads (contexts) currently active?
+    core0.dispatch.stats.threaded_count_insts_per_unit.numActive_: AllThreadsActive

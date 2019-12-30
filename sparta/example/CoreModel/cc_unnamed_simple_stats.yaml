@@ -1,0 +1,3 @@
+content:
+  top.cpu.core*.dispatch.stats:
+    count_insts_per_unit: dispatch_count_core%-1

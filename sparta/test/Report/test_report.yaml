@@ -1,0 +1,45 @@
+# Reserved keys include subreport, name, author, content, report.
+# Do not start with "report:" because this file is parsed as the body of a
+# report. It can contain subreports in its conent section though.
+name: "Report1" # Name
+author: "nhaw" # [highly-optional] Author of the report
+content: # Stats, counters, and subreports (sections)
+    top:
+        core0.stats: # Context (location in tree) because it is not a reserved word
+            # Stat called "stat1 pointing to core0.stats.c1"
+            # This is important to make sure the interpreter can disambiguate
+            c1 : stat1
+            c5 : stat5
+
+        # Stat with no name pointing to core0.stats.c2"
+        core0.stats.c2 : ""
+
+        core0:
+            "#include" : test_report2.yaml
+
+        subreport:
+            name: SubreportA
+            content:
+                # Stat called "stat1/2 pointing to core0.stats.s1/2"
+                # Adds a stat1 to SubreportA. This is important to make sure the interpreter can disambiguate
+                core0.stats.s1 : stat1
+                core0.stats.s2 : stat2
+                core0.stats.s3 : stat3
+                g_ticks : ticks
+                "core0.stats.s3/g_ticks" : stat3_per_tick
+                core0.stats.s4 : stat4
+                core0.stats:
+                  "c3 ** c4" : custom_expression
+                "1000+core0.stats.s3": s3_expression
+                "1000+core0.stats.s4": s4_expression
+                "cos(c_pi/2)" : zero
+                g_seconds : s
+                g_milliseconds : ms
+                g_microseconds : us
+                g_nanoseconds : ns
+                g_picoseconds : ps
+                "cycles(core0.stats.c2)" : core0 cycles
+                core1:
+                    "cycles" : core1 cycles
+    scheduler:
+        stats.picoseconds: PICO

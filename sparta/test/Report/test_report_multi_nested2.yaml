@@ -1,0 +1,6 @@
+# Nested report from test_report_multi_nested.yaml
+subreport:
+  name: "%l"
+  content:
+    autopopulate:
+      attributes: ">=vis:0"

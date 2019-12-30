@@ -1,0 +1,7 @@
+top.core0.lsu.l1cache.preloadable:
+    - va: 0x1000
+      val: 0xfffff
+    - va: 0x2000
+      val: 0xfffff
+    - va: 0x3000
+      val: 0xaaaaa

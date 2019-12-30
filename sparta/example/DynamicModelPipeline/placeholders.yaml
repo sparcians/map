@@ -1,0 +1,8 @@
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: %TRACENAME%.stats.json
+    format:    json_reduced
+    trigger:
+      start:   top.core0.rob.stats.total_number_retired >= %CORE0_WARMUP%

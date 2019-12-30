@@ -1,0 +1,36 @@
+content:
+  report:
+    name:      'Basic on start and on stop named notifications'
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: out.txt
+    trigger:
+      start:   'top.core0.rob.stats.total_number_retired >= 1000 -> post.Hello'
+      stop:    'top.core0.rob.stats.total_number_retired >= 9500 -> post.Goodbye'
+
+  report:
+    name:      'Verify that update-time ignores the POST named notification and still works'
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: 1
+    trigger:
+      start:   'top.core0.rob.stats.total_number_retired >= 1000'
+      update-time: '5 ns -> post.ShouldBeIgnored'
+
+  report:
+    name:      'Verify that update-count ignores the POST named notification and still works'
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: 1
+    trigger:
+      start:   'top.core0.rob.stats.total_number_retired >= 1000'
+      update-count: 'top.core0.rob.stats.total_number_retired 750 -> post.ShouldBeIgnored'
+
+  report:
+    name:      'Verify that update-cycles ignores the POST named notification and still works'
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: 1
+    trigger:
+      start:   'top.core0.rob.stats.total_number_retired >= 1000'
+      update-cycles: '250 -> post.ShouldBeIgnored'

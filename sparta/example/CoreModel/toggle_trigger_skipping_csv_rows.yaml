@@ -1,0 +1,38 @@
+# When using toggle ('whenever') trigger expressions together with CSV report
+# format, skipped rows will instead be replaced by '#1234'. This is a commented
+# out row in the CSV report, where the number (1234) beside it is:
+#
+#    The number of skipped counter counts (if using update-count)
+#
+#    The number of skipped clock cycles (if using update-cycles)
+#
+#    The number of skipped picoseconds (if using update-time)
+
+content:
+
+  report:
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  out_update_count.csv
+    format:     csv
+    trigger:
+      whenever: notif.stats_profiler == 1
+      update-count: top.cpu.core0.rob.stats.total_number_retired 100
+
+  report:
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  out_update_cycles.csv
+    format:     csv
+    trigger:
+      whenever: notif.stats_profiler == 1
+      update-cycles: 175
+
+  report:
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  out_update_time.csv
+    format:     csv
+    trigger:
+      whenever: notif.stats_profiler == 1
+      update-time: 1 ns

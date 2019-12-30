@@ -1,0 +1,11 @@
+#This YAML is used to generate custom histogram stat reports.
+#The method names to be collected from is mentioned in hist_stats.yaml.
+#The collected values for the registered stats are written in the dest_file.
+content:
+  report:
+    def_file:  hist_stats.yaml
+    pattern:   _global
+    dest_file: histogram_stats.csv
+    format:    csv
+    trigger:
+      update-cycles: 100

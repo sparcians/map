@@ -1,0 +1,33 @@
+#hist_def is a keyword that enables the search of method names in histogram maps.
+content:
+  top:
+    core0.flushmanager.cycle_histogram_tn.hist_def.stdev_x3: std_dev_3
+  top.core0:
+    flushmanager.cycle_histogram_tn.hist_def.fraction_coverage_greaterThan2StdDev: f_c_g2SD
+  top.core0.flushmanager:
+    cycle_histogram_tn.hist_def.fraction_coverage_mean_p_StdDev_mean_p_2StdDev: f_c_mSD_m2SD
+  top.core0.flushmanager.cycle_histogram_tn:
+    hist_def.fraction_coverage_mean_mean_p_StdDev: f_c_m_mSD
+  top:
+    core0.flushmanager.cycle_histogram_tn.hist_def.fraction_coverage_mean_m_StdDev_mean: f_c_msD_m
+  top.core0:
+    flushmanager.cycle_histogram_tn.hist_def.fraction_coverage_mean_m_2StdDev_mean_m_StdDev: f_c_m2sD_msD
+  top.core0.flushmanager:
+    cycle_histogram_tn.hist_def.fraction_coverage_lesserThan2StdDev: f_c_l2SD
+  top:
+    core0.histogram_tn.hist_def.stdev_x3_h: std_dev_3_h
+  top.core0:
+    histogram_tn.hist_def.fraction_coverage_greaterThan2StdDev_h: f_c_g2SD_h
+  top.core0.histogram_tn:
+    hist_def.fraction_coverage_mean_p_StdDev_mean_p_2StdDev_h: f_c_mSD_m2SD_h
+  top:
+    core0.histogram_tn.hist_def.fraction_coverage_mean_mean_p_StdDev_h: f_c_m_mSD_h
+  top.core0:
+    histogram_tn.hist_def.fraction_coverage_mean_m_StdDev_mean_h: f_c_msD_m_h
+  top.core0.histogram_tn:
+    hist_def.fraction_coverage_mean_m_2StdDev_mean_m_StdDev_h: f_c_m2sD_msD_h
+  top:
+    core0:
+      histogram_tn:
+        hist_def.fraction_coverage_lesserThan2StdDev_h: f_c_l2SD_h
+

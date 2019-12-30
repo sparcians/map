@@ -1,0 +1,7 @@
+project(Argosdumper)
+add_executable(ArgosDumper Database_dumper.cpp)
+include(../TestingMacros.cmake)
+sparta_recursive_copy(ArgosDumper db_pipeout)
+#sparta_test(ArgosDumper ArgosDumper_RUN)
+sparta_recursive_copy(ArgosDumper db_pipeout)
+sparta_named_test(ArgosDumperSmokeTestingDB ArgosDumper db_pipeout/pipeout)

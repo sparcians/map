@@ -1,0 +1,6 @@
+# Example report.
+# Invoke with --report "" reports/example.yaml example_report.txt
+name: Example Report
+content:
+  top.core0.rob.stats:
+    ipc : "ipc"

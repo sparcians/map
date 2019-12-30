@@ -1,0 +1,6 @@
+content:
+  subreport:
+    rob.stats:
+      autopopulate: true
+    fpu.stats:
+      autopopulate: true

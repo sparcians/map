@@ -1,0 +1,112 @@
+The SPARTA report infrastructure allows subreports to have their individual
+computation windows determined by trigger expressions, including:
+
+  1. Counter path + trigger point
+  
+      -> example:   "core1.rob.stats.total_number_retired >= 2500"
+      
+      ** All that is required is for the path to be a valid counter
+         in the device tree. Note that since counter triggers only
+     respond to the '>=' comparison, trying to do something like
+     this:
+         
+       ->   "core0.rob.stats.total_number_retired != 1250"
+                                                      ^^
+                                                    invalid
+                                                    
+     Will issue an error. This is done for clarity.
+         
+       ->   "path.to.counter >= target_value"
+           
+     Is the only allowed format for this type of trigger.
+
+
+  2. User-provided notification source and target value
+  
+       -> example:  "notif.my_cool_device_tree_channel < 88"
+       
+       ** The format here is:
+           -> "notif.<your_channel_name_here> [comparison] target_value"
+           ^^^^^
+          keyword                         ^^^^^^^^^^^^
+                                       Supported comparisons are:
+                                          ==, !=, >=, <=, >, <
+
+  3. Referenced triggers
+
+       This is not a standalone trigger by itself, but is simply a convenience
+       for one trigger expression to refer to another. Think of it like a nickname:
+
+                subreport:
+                  trigger:
+       >>>          tag:   t0
+                    start: "core0.rob.stats.total_number_retired >= 1500"
+                    stop:  "notif.user_channel_sim_status == 404"
+                  core0:
+                    include: stats_defn.yaml
+                subreport:
+                  trigger:
+       >>>          tag:   t1
+                    start: "core1.rob.stats.total_number_retired >= 3300"
+                    stop:  "notif.early_termination_notifer == 1"
+                  core1:
+                    include: stats_defn.yaml
+                subreport:
+                  trigger:
+       >>>          start: "t0.start && t1.start"
+       >>>          stop:  "t0.stop  || t1.stop"
+                  ...
+
+       Without knowing what *exactly* causes subreports 1 and 2 to start or stop,
+       subreport 3 will capture the overlap: "start me when t0 has started AND
+       t1 has started... stop me when EITHER t0 has stopped OR t1 has stopped"
+
+       A current limitation is that in order for you to reference another trigger
+       by its "tag", that trigger definition must be found ABOVE where you try to
+       use it. So this won't work:
+
+                 subreport:
+                   name: Subreport1
+                   trigger:
+       >>> ?         start: sub2.start
+                   ...
+                 subreport:
+                   name: Subreport2
+                   trigger:
+       >>> !         tag:   sub2
+                     start: "notif.something_interesting < 1024"
+                   ...
+
+  4. Compound expressions using &&, ||
+
+       You may use any combination of the above trigger formats with && and ||
+       to make expressions such as this:
+
+                 subreport:
+                   trigger:
+                     tag:   foo
+                     start: "core0.rob.stats.total_number_retired >= 1200"
+                     stop:  "notif.my_own_channel_value != 9"
+                   ...
+                 subreport:
+                   trigger:
+                     stop:  "foo.start"
+                   ...
+                 subreport:
+                   trigger:
+                     tag:   bar
+                     start: "foo.start && notif.my_other_channel_value > 245"
+                     stop:  "notif.my_other_channel_value == 89"
+                   ...
+                 subreport:
+                   trigger:
+                     start: "foo.start && bar.start && notif.yet_another_channel_value != 77 && ..."
+                     stop:  "__________ || __________ || __________ || ..."
+
+       A current limitation is that you may not use && and || in a SINGLE trigger expression:
+
+                 subreport:
+                   trigger:
+                     start: "notif.abc == 45 && notif.def > 700 || notif.ghi != 570"
+                                             ^^                 ^^
+                                           Exception! Can't have both!

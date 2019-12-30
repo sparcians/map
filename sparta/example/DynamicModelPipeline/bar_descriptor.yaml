@@ -1,0 +1,9 @@
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: bar.csv
+    format:    csv
+    trigger:
+      start:   top.core0.rob.stats.total_number_retired >= %START_TIME%
+      update-cycles: %UPDATE_TIME%

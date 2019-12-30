@@ -1,0 +1,4 @@
+content:
+  pause:  'core0.rob.stats.total_number_retired >= 1000'
+  resume: 'core0.rob.stats.total_number_retired >= 5000'
+  term:   'core0.rob.stats.total_number_retired >= 8000'

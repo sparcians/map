@@ -1,0 +1,16 @@
+# Has multiple subreports coming from a sub-file, each scoped to a different
+# (or possibly the same) point in the tree and autopopulated separately
+name: Report X
+content:
+    "top.core*":
+        # Create a subreport for each location indicated by "top.core*"
+        include: test_report_multi_nested2.yaml
+
+        # Create an extra layer of subreports
+        subreport:
+            name: "Extra Nesting: %l"
+            # This is currently illegal because there are multiple scopes in
+            # this context and "include" cannot handle that. This will
+            # eventually be supported!
+            #content:
+            #    include: test_report_multi_nested2.yaml

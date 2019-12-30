@@ -1,0 +1,17 @@
+# This report definition uses statistics paths to ContextCounters. These will
+# not be automatically expanded at runtime into their internal counters (which
+# is the default behavior), since we are not specifying 'expand-cc: true'. See
+# the YAML file 'context_counters.yaml' in this same directory for an example
+# of expanded ContextCounters.
+#
+# Even though we are not auto-expanding ContextCounters, we can still request
+# individual internal counters using their full statistic path. See the file
+# 'cc_simple_stats2.yaml' - it is requesting stats 'aggregate', 'context 0',
+# and 'context 3' explicitly, without auto-expanding the ContextCounter.
+
+content:
+  report:
+    pattern:   _global
+    def_file:  cc_simple_stats2.yaml
+    dest_file: internal_counters2.json
+    format:    json
