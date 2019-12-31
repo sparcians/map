@@ -23,11 +23,9 @@ seq_num_type MessageSource::seq_num_ = 0;
 void MessageSource::emit_(const std::string& content) const {
     sparta_assert(getParent() != nullptr);
     const Clock* clk = getParent()->getClock();
-    Scheduler::Tick ticks;
+    Scheduler::Tick ticks = 0;
     if(clk){
         ticks = clk->getScheduler()->getCurrentTick();
-    }else{
-        ticks = sparta::Scheduler::getScheduler()->getCurrentTick();
     }
     sparta::log::Message msg =
         {

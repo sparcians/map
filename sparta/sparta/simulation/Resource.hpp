@@ -257,9 +257,14 @@ namespace sparta {
         /*!
          * \brief just write the tick information to the stream
          */
-        void appendTickData_(std::ostream& ss)
+        void appendTickData_(std::ostream& ss, Scheduler * sched)
         {
-            ss << "tick: " << sparta::Scheduler::getScheduler()->getCurrentTick();
+            if(sched) {
+                ss << "tick: " << sched->getCurrentTick();
+            }
+            else {
+                ss << "(no scheduler associated)";
+            }
         }
 
         /*!
@@ -267,13 +272,15 @@ namespace sparta {
          */
         void appendClockData_(std::ostream& ss, const Clock* clk)
         {
+            Scheduler * sched = nullptr;
             if(clk){
                 ss << "at cycle: " << clk->currentCycle() << " ";
+                sched = clk->getScheduler();
             }else{
                 ss << "(no clock associated) ";
             }
             // also always include the tick data along with the clock.
-            appendTickData_(ss);
+            appendTickData_(ss, sched);
         }
     public:
 
@@ -290,7 +297,7 @@ namespace sparta {
             (void) dummy;
             std::stringstream ss;
             ss << "(from non-sparta context at ";
-            appendTickData_(ss);
+            appendTickData_(ss, nullptr);
             ss << ")";
 
             return ss.str();

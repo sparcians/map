@@ -72,7 +72,7 @@ namespace sparta
         Clock(const std::string& name,
               Scheduler *scheduler) :
             TreeNode(name, "Clock"),
-            scheduler_(scheduler != nullptr ? scheduler : Scheduler::getScheduler())
+            scheduler_(scheduler)
         {
             sparta_assert(scheduler_ != nullptr);
             scheduler_->registerClock(this);

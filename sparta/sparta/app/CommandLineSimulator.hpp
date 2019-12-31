@@ -491,14 +491,6 @@ protected:
      */
     std::string help_topic_;
 
-    /*!
-     * \brief Allow users to override the maximum number of Schedulers
-     * that can be created during the simulation's lifetime. If this
-     * option was not passed in, the Scheduler will use its default
-     * maximum value during verification.
-     */
-    uint8_t max_num_schedulers_allowed_ = 0;
-
 private:
 
     /*!

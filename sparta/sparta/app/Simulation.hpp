@@ -68,9 +68,10 @@ class Simulation
 public:
 
     /*!
-     * \brief Types of semantics attached to certain counters. It is the
-     * responsibility of subclasses to implement findSemanticCounter such taht
-     * it can satisfy requests for counters having these semantics
+     * \brief Types of semantics attached to certain counters. It is
+     *        the responsibility of subclasses to implement
+     *        findSemanticCounter such taht it can satisfy requests
+     *        for counters having these semantics
      */
     enum CounterSemantic {
         CSEM_INSTRUCTIONS = 0 //!< Instruction count semantic (usually core0)
@@ -90,11 +91,11 @@ public:
 
     /*!
      * \brief Deferred configuration constructor. Subsequent call to configure
-     * must be made before building/configuring/finalizing.
+     *        must be made before building/configuring/finalizing.
      * \param sim_name Name of the simulator
+     * \param scheduler Pointer to the Scheduler that this Simulation operates with
      */
-    explicit Simulation(const std::string& sim_name,
-                        Scheduler * scheduler = Scheduler::getScheduler());
+    explicit Simulation(const std::string& sim_name, Scheduler * scheduler);
 
     /*!
      * \brief Virtual destructor
@@ -102,23 +103,27 @@ public:
     virtual ~Simulation();
 
     /*!
-     * \brief Set a collection of feature name-value pairs. Typically
-     * given to us by the CommandLineSimulator who populates the feature
-     * values using a command-line "feature" option.
+     * \brief Set a collection of feature name-value pairs.
+     * \param feature_config Pointer to a feature configuration class
+     *
+     * Typically given to us by the CommandLineSimulator who populates
+     * the feature values using a command-line "feature" option.
      */
     void setFeatureConfig(const FeatureConfiguration * feature_config) {
         feature_config_ = feature_config;
     }
 
     /*!
-     * \brief Get the database root for this simulation. This is a
-     * container that holds all databases the simulation is using.
-     * The underlying ObjectManager methods such as getTable() and
-     * findObject() can be accessed indirectly using the ObjectDatabase
-     * class (nested class inside ObjectManager). For example, say
-     * that we ran a simulation using the --report command line
-     * option, and we want to go through the DatabaseRoot to get
-     * the StatisticInstance / reports database records:
+     * \brief Get the database root for this simulation.
+     * \return Pointer to the DatabaseRoot
+     *
+     * This is a container that holds all databases the simulation is
+     * using.  The underlying ObjectManager methods such as getTable()
+     * and findObject() can be accessed indirectly using the
+     * ObjectDatabase class (nested class inside ObjectManager). For
+     * example, say that we ran a simulation using the --report
+     * command line option, and we want to go through the DatabaseRoot
+     * to get the StatisticInstance / reports database records:
      *
      * \code
      *     simdb::DatabaseRoot * db_root = sim->getDatabaseRoot();

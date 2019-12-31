@@ -209,7 +209,7 @@ namespace sparta {
 
             //! Method which gets invoked whenever a demand for a new
             //  State Tracker Unit is raised.
-            state_tracker_ptr<T> getNewStateTrackerUnit() noexcept {
+            state_tracker_ptr<T> getNewStateTrackerUnit(Scheduler * scheduler) noexcept {
 
                 //! Increment the instance count as number of tracker units
                 //  increases by 1.
@@ -219,7 +219,7 @@ namespace sparta {
                 //  Tracker Unit on the fly and dispatch it.
                 if(available_tracker_queue_->empty()) {
                     state_tracker_ptr<T> state_tracker_unit(
-                        new StateTrackerUnit<T>(),
+                        new StateTrackerUnit<T>(scheduler),
                         StateTrackerDeleter<T>(pool_existence_reference_));
                     return state_tracker_unit;
                 }
@@ -435,7 +435,8 @@ namespace sparta {
         //  Tracker Unit is demanded, we first get a handle of the appropriate
         //  StatePool by using the Template type. Once we have the Pool, we query
         //  the internal Tracker Queue for an available Tracker Unit.
-        class StatePoolManager {
+        class StatePoolManager
+        {
         public:
             StatePoolManager(const StatePoolManager &) = delete;
             StatePoolManager & operator = (const StatePoolManager &) = delete;
@@ -475,7 +476,7 @@ namespace sparta {
                 //! We go to the process of issuing tracker units
                 //  only if user have turned on state tracking.
                 if(__builtin_expect(is_tracking_enabled_, 0)) {
-                    return getStatePool_<T>()->getNewStateTrackerUnit();
+                    return getStatePool_<T>()->getNewStateTrackerUnit(scheduler_);
                 }
                 return nullptr;
             }
@@ -499,9 +500,15 @@ namespace sparta {
                 tracking_filename_ = filename;
             }
 
+            //! Set the scheduler used by the Simulation class
+            void setScheduler(Scheduler * scheduler) {
+                scheduler_ = scheduler;
+            }
+
         private:
             StatePoolManager() = default;
             bool is_tracking_enabled_ {false};
+            Scheduler * scheduler_ = nullptr;
             using CachedBase = std::map<size_t, std::unique_ptr<StatePoolBase>>;
             CachedBase unique_pool_type_map_;
             std::string tracking_filename_;
@@ -578,8 +585,8 @@ namespace sparta {
         template<typename EnumT>
         class StateTrackerUnit {
         public:
-            StateTrackerUnit() :
-                scheduler_instance_(sparta::Scheduler::getScheduler()),
+            StateTrackerUnit(Scheduler * scheduler) :
+                scheduler_instance_(scheduler),
                 time_assigned_(scheduler_instance_->getCurrentTick()),
                     state_set_(StateSet<EnumT>(
                         static_cast<uint64_t>(EnumT::__LAST) + 1)) {}

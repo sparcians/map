@@ -28,12 +28,9 @@ class RootTreeNode;
 
     public:
 
-        ClockManager(Scheduler & scheduler) :
+        ClockManager(Scheduler * scheduler) :
             any_clock_with_explicit_freq_(false),
-            scheduler_(&scheduler)
-        { }
-
-        ClockManager() : ClockManager(*Scheduler::getScheduler())
+            scheduler_(scheduler)
         { }
 
         ~ClockManager()

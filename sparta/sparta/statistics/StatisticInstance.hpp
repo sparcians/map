@@ -1194,23 +1194,19 @@ namespace sparta
                 return scheduler_;
             }
 
-            if (node_ref_.expired()) {
-                scheduler_ = Scheduler::getScheduler();
-            } else {
-                const Clock * clk = nullptr;
-                if (sdef_) {
-                    clk = sdef_->getClock();
-                } else if (ctr_) {
-                    clk = ctr_->getClock();
-                } else if (par_) {
-                    clk = par_->getClock();
-                }
-                if (clk) {
-                    scheduler_ = clk->getScheduler();
-                }
-                if (!scheduler_) {
-                    scheduler_ = Scheduler::getScheduler();
-                }
+            sparta_assert(false == node_ref_.expired(),
+                          "This node has expired and taken the Scheduler with it");
+
+            const Clock * clk = nullptr;
+            if (sdef_) {
+                clk = sdef_->getClock();
+            } else if (ctr_) {
+                clk = ctr_->getClock();
+            } else if (par_) {
+                clk = par_->getClock();
+            }
+            if (clk) {
+                scheduler_ = clk->getScheduler();
             }
 
             // Should always be able to fall back on singleton scheduler
