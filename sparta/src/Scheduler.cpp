@@ -35,9 +35,6 @@ namespace sparta
 {
 class GlobalTreeNode;
 
-uint8_t Scheduler::num_schedulers_created_ = 0;
-uint8_t Scheduler::max_num_schedulers_allowed_ = std::numeric_limits<uint8_t>::max();
-utils::ValidValue<uint8_t> Scheduler::max_num_schedulers_override_;
 
 Scheduler::Scheduler() :
     Scheduler(NODE_NAME)
@@ -120,14 +117,6 @@ Scheduler::Scheduler(const std::string& name, GlobalTreeNode* search_scope) :
     }
 
     timer_.stop();
-
-    ++Scheduler::num_schedulers_created_;
-    auto max_allowed = Scheduler::max_num_schedulers_allowed_;
-    if (Scheduler::max_num_schedulers_override_.isValid()) {
-        max_allowed = Scheduler::max_num_schedulers_override_;
-    }
-    sparta_assert(Scheduler::num_schedulers_created_ <=
-                max_allowed);
 }
 
 Scheduler::~Scheduler()

@@ -415,7 +415,7 @@ namespace sparta
         //! Internal method to set the value -- called by State and MarkerSet
         void setValue_(const EnumTValueType & val) {
             current_state_ = val;
-            marker_set_[val].setTimeAssigned(Scheduler::getScheduler()->getCurrentTick());
+            marker_set_[val].setTimeAssigned(scheduler_->getCurrentTick());
         }
 
         //! The behaviour of State<bool> requires it to be set to False after
@@ -443,13 +443,18 @@ namespace sparta
 
         /**
          * \brief Construct a State class
-         * \note Ensures that the EnumTValueType is a true enum or class enum.
-         * During construction of a State instance, we construct its internal
-         * state tracker unit. If tracking is disabled, a nullptr is returned,
-         * whereas, when it is enabled, a live state tracker pointer is given,
-         * ready to start tracking states.
+         * \param initial_value The initial value; __FIRST is not given
+         * \param scheduler The Scheduler for time tracking; null means no tracking
+         *
+         * \note Ensures that the EnumTValueType is a true enum or
+         *       class enum.  During construction of a State instance,
+         *       we construct its internal state tracker unit. If
+         *       tracking is disabled, a nullptr is returned, whereas,
+         *       when it is enabled, a live state tracker pointer is
+         *       given, ready to start tracking states.
          */
-        State(const EnumTValueType & initial_value = EnumType::__FIRST) :
+        State(const EnumTValueType & initial_value = EnumType::__FIRST,
+              Scheduler * scheduler = nullptr) :
             initial_value_(initial_value),
             current_state_(initial_value),
 
@@ -474,7 +479,8 @@ namespace sparta
             // StatePool instantiations form each other.
             state_tracker_unit_(std::move(
                 tracker::StatePoolManager::getInstance().
-                    dispatchNewTracker<EnumType>())) {
+                    dispatchNewTracker<EnumType>()))
+        {
 
             // If tracking is disabled, this internal
             // tracker unit will be nullptr. In that case,
@@ -504,6 +510,7 @@ namespace sparta
         // This only tests the stats accumulated by a
         // single sparta::State instance.
         const std::vector<sparta::Scheduler::Tick> & getRawData() const {
+            sparta_assert(state_tracker_unit_ != nullptr);
             return state_tracker_unit_->getStateSet().state_delta_set;
         }
 
@@ -517,13 +524,13 @@ namespace sparta
         }
 
         //! This methods returns the amount of time in
-        // Scheduler Ticks, this sparta::State instance has
-        // been residing in its current state.
-        Scheduler::Tick  getSpan() const {
+        //! Scheduler Ticks, this sparta::State instance has
+        //! been residing in its current state.
+        Scheduler::Tick getSpan() const {
             const auto & val = getValue();
-            sparta_assert(Scheduler::getScheduler()->getCurrentTick() >=
+            sparta_assert(scheduler_->getCurrentTick() >=
                 marker_set_[val].getTimeAssigned());
-            return Scheduler::getScheduler()->getCurrentTick()
+            return scheduler_->getCurrentTick()
                 - marker_set_[val].getTimeAssigned();
         }
 
@@ -767,7 +774,7 @@ namespace sparta
         // This tracker is a unique pointer with its own deleter which
         // knows what to do, when deleted.
         tracker::state_tracker_ptr<EnumType> state_tracker_unit_;
-
+        sparta::Scheduler       * scheduler_ = nullptr;
     }; // class State
 
     // SimulationConfiguration which holds the state tracker

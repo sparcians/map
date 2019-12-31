@@ -85,10 +85,10 @@ namespace checkpoint
          * \param sched Relevant scheduler. If nullptr (default), the
          * checkpointer will not touch attempt to roll back the scheduler on
          * checkpoint restores
-         * \pre sparta::Scheduler::getScheduler() must be non-nullptr
-         * This Scheduler object will have its current tick  read when
-         * a checkpoint is created and set through Scheduler::restartAt
-         * when a checkpoint is restored
+         * \pre sched must be non-nullptr This Scheduler object will
+         * have its current tick read when a checkpoint is created and
+         * set through Scheduler::restartAt when a checkpoint is
+         * restored
          */
         Checkpointer(TreeNode& root, sparta::Scheduler* sched=nullptr) :
             sched_(sched),
@@ -96,7 +96,9 @@ namespace checkpoint
             head_(nullptr),
             current_(nullptr),
             total_chkpts_created_(0)
-        { }
+        {
+            sparta_assert(sched != nullptr);
+        }
 
         /*!
          * \brief Destructor

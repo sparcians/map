@@ -54,10 +54,6 @@ namespace sparta {
     class Clock;
     class DAG;
 
-    //! The global scheduler (singleton).  Access it via
-    //! sparta::Scheduler::getScheduler()
-    extern Scheduler _GBL_scheduler;
-
     class Scheduleable;
     class StartupEvent;
     // Forward declaration to support the addition of sparta::GlobalEvent
@@ -325,23 +321,6 @@ public:
     //! Dey-stroy
     ~Scheduler();
 
-    //! TEMPORARY - Calling this method will ensure that a maximum of 1
-    //! sparta::Scheduler will be created. Simulations will assert if more
-    //! than 1 scheduler gets created after calling this method;
-    static void onlyAllowOneScheduler() {
-        //We always ignore this request if --max-num-schedulers was specifically
-        //given at the command line
-        if (Scheduler::max_num_schedulers_override_.isValid()) {
-            return;
-        }
-        sparta_assert(Scheduler::num_schedulers_created_ <= 1);
-        Scheduler::max_num_schedulers_allowed_ = 1;
-    }
-
-    static void overrideMaxNumSchedulersAllowed(const uint8_t max_schedulers) {
-        Scheduler::max_num_schedulers_override_ = max_schedulers;
-    }
-
     //! Reset the scheduler.  Tears down all events, the DAG, and sets
     //! all outstanding TopoSortables to an invalid group ID
     void reset();
@@ -373,14 +352,8 @@ public:
      */
     void finalize();
 
-    //! \brief Get the global instance of the scheduler
-    //! \note This method is inlined for efficiency
-    static Scheduler * getScheduler() {
-        return &_GBL_scheduler;
-    }
-
-    //! \brief Get the global instance of the scheduler
-    //! \note This method is inlined for efficiency
+    //! \brief Get the internal DAG
+    //! \return Pointer to the DAG
     DAG * getDAG() const{
         return dag_.get();
     }
@@ -872,17 +845,10 @@ public:
     //! @}
 
 private:
-    //! Keep track of the number of schedulers created (used for debugging
-    //! purposes and sanity checks)
-    static uint8_t num_schedulers_created_;
 
-    //! For debugging / sanity check purposes, this is the maximum number
-    //! of schedulers that are allowed to be created, for any reason
-    static uint8_t max_num_schedulers_allowed_;
-
-    static utils::ValidValue<uint8_t> max_num_schedulers_override_;
-
+    // The startup event adds itself to internal structures
     friend class StartupEvent;
+
     /**
      * \brief A temporary queue used for "cranking" the simulation
      * \param event_del The event delegate to call

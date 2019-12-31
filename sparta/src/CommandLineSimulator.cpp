@@ -482,10 +482,6 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "Example: \"--enable-state-tracking data/histograms.txt\"",
          "Note: Any directories in this path must already exist.\n",
          "Enable state residency tracking and write to file with name FILENAME.")
-        ("max-num-schedulers",
-         named_value<uint8_t>("MaxSchedulers", &max_num_schedulers_allowed_),
-         "The maximum number of Schedulers allowed to be created for the lifetime of the simulation",
-         "The maximum number of Schedulers allowed")
         ;
 
     // Logging
@@ -1623,13 +1619,6 @@ bool CommandLineSimulator::parse(int argc,
                 sim_config_.processArch(pattern, sim_config_.getDefaults().arch_arg_default);
             }
         }
-    }
-
-    // Set the 'maximum number of Schedulers' override value as early in the simulation
-    // as possible. During the CommandLineSimulator::parse() method here, the app::Simulation
-    // object has not been created yet, so we'll set it now.
-    if (max_num_schedulers_allowed_ > 0) {
-        Scheduler::overrideMaxNumSchedulersAllowed(max_num_schedulers_allowed_);
     }
 
     // Now that all --config-search-dir option(s) have been parsed, apply configurations

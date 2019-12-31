@@ -180,10 +180,8 @@ namespace sparta
             if(!scheduler_ && context){
                 scheduler_ = context->getScheduler();
             }
-            if(!scheduler_){
-                scheduler_ = Scheduler::getScheduler();
-            }
-            sparta_assert(scheduler_); // Should always be able to fall back on singleton scheduler
+
+            sparta_assert(scheduler_); // Must have a valid scheduler instance
             start_tick_ = scheduler_->getElapsedTicks();
         }
 

@@ -331,7 +331,7 @@ Simulation::Simulation(const std::string& sim_name,
                        Scheduler * scheduler) :
     sim_name_(sim_name),
     scheduler_(scheduler),
-    clk_manager_(*scheduler),
+    clk_manager_(scheduler),
     root_clk_(nullptr),
     root_(this, scheduler->getSearchScope()),
     warn_to_cerr_(sparta::TreeNode::getVirtualGlobalNode(),
@@ -341,11 +341,6 @@ Simulation::Simulation(const std::string& sim_name,
                           (this, "Simulation::delayedPEventStart_")),
     simulation_state_(this)
 {
-    // Sanity check to make sure that simulators outside of SPARTA (example simulators and unit test
-    // simulators) are not creating more than one scheduler for any reason
-    if (sim_name_ != "sparta_core_example" && sim_name_ != "sparta_skeleton" && sim_name_ != "mysim") {
-        Scheduler::onlyAllowOneScheduler();
-    }
 
     // Watch for created nodes to which we will apply taps
     root_.getNodeAttachedNotification().REGISTER_FOR_THIS(rootDescendantAdded_);

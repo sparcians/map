@@ -18,7 +18,9 @@ namespace sparta{
     State<T,
         typename std::enable_if<
             std::is_same<T, sparta::PhasedObject::TreePhase>::value>::type>
-    ::State(sparta::app::Simulation * sim) : sim_(sim) {}
+    ::State(sparta::app::Simulation * sim) :
+        sim_(sim)
+    {}
 
     //! This method does the actual work of querying the Simulation for its
     // Simulation Configuration. It then asks the Configuration whether the
@@ -34,6 +36,7 @@ namespace sparta{
             tracker::StatePoolManager::getInstance().setTrackingFilename(
                 (sim_->getSimulationConfiguration())->getStateTrackingFilename());
         }
+        tracker::StatePoolManager::getInstance().setScheduler(sim_->getScheduler());
     }
 
     //! Destruction of this Specialized sparta::State signals that all the

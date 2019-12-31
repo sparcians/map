@@ -37,9 +37,7 @@ public:
         if(clk) {
             scheduler_ = clk->getScheduler();
         }
-        else {
-            scheduler_ = Scheduler::getScheduler();
-        }
+        sparta_assert(scheduler_ != nullptr);
 
         if(scheduler_->isFinalized()) {
             // Take on the GRP# of the GOP
@@ -187,14 +185,7 @@ public:
      */
     Scheduler * getScheduler() const {
         auto clk = getClock();
-        // TimeTrigger's will ultimately be tied to a clock, but to
-        // prevent downstream teams from having to change their code
-        // until sparta_v1.7, let's allow those code bases to just
-        // fall back on the singleton scheduler. It's the scheduler
-        // their simulators are using anyway.
-        if (!clk) {
-            return Scheduler::getScheduler();
-        }
+        sparta_assert(clk != nullptr);
         auto scheduler = clk->getScheduler();
         sparta_assert(scheduler, "Trigger had a valid clock, but that clock did not have a scheduler");
         return scheduler;

@@ -2,7 +2,8 @@
 
 define help_message
 
-To build SPARTA, perform the following actions depending on purpose:
+To build Sparta, perform the following actions depending on purpose:
+
    Optimized (NDEBUG, optimized):
       mkdir release; cd release
       CC=$(CC) CXX=$(CXX) cmake .. -DCMAKE_BUILD_TYPE=Release

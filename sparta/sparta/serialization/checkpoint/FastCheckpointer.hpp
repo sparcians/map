@@ -84,10 +84,11 @@ namespace checkpoint
          * \param root Root of tree to checkpoint
          * \param sched Scheduler to read and restart on checkpoint restore (if
          * not nullptr)
-         * \pre sparta::Scheduler::getScheduler() must be non-nullptr
-         * This Scheduler object will have its current tick  read when
-         * a checkpoint is created and set through Scheduler::restartAt
-         * when a checkpoint is restored
+         *
+         * \pre sched must be non-nullptr This Scheduler object will
+         * have its current tick read when a checkpoint is created and
+         * set through Scheduler::restartAt when a checkpoint is
+         * restored
          */
         FastCheckpointer(TreeNode& root, Scheduler* sched=nullptr) :
             Checkpointer(root, sched),
