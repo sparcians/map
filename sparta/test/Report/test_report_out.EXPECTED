@@ -1,4 +1,4 @@
-Report: "Report1" [60,80]
+Report: "Report1" [20,40]
   top.core0.stats.c1 = 1
   top.core0.stats.s1 = 1
   stat1 = 1
@@ -12,10 +12,10 @@ Report: "Report1" [60,80]
   top.core0.stats.s4 = 82
   <expression> = 10
   <expression> = 10
-  Report: "SubreportB" [60,80]
+  Report: "SubreportB" [20,40]
     stat1 = 1
     stat2 = 1
-  Report: "SubreportA" [60,80]
+  Report: "SubreportA" [20,40]
     stat1 = 1
     stat2 = 2
     stat3 = 0.0365854
@@ -32,4 +32,4 @@ Report: "Report1" [60,80]
     ns = 0.02
     ps = 20
     core0 cycles = 10
-    core1 cycles = 7
+    core1 cycles = 6

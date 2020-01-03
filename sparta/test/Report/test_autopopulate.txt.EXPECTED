@@ -1,4 +1,4 @@
-Report "Report Autopopulation Test" [40,101]
+Report "Report Autopopulation Test" [0,61]
   Report "Summary"
   Report "top.core0"
       c2 = 6
