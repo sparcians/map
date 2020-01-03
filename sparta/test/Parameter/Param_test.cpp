@@ -23,7 +23,8 @@ const uint32_t EXPECTED_BOUND_TYPES = 14;
 
 class ExampleSimulator : public sparta::app::Simulation{
 public:
-    ExampleSimulator() : sparta::app::Simulation("Test_special_params"){}
+    ExampleSimulator() :
+        sparta::app::Simulation("Test_special_params", &scheduler_){}
 
     virtual ~ExampleSimulator(){
         getRoot()->enterTeardown();
@@ -32,6 +33,8 @@ private:
     void buildTree_() override{};
     void configureTree_() override{};
     void bindTree_() override{};
+
+    sparta::Scheduler scheduler_;
 };
 
 int main ()

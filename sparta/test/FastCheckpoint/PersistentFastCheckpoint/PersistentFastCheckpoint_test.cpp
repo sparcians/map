@@ -72,8 +72,9 @@ public:
 //! \brief General test for saving and loading PersistentFastCheckpoints
 void generalTest()
 {
+    sparta::Scheduler sched;
     RootTreeNode clocks("clocks");
-    sparta::Clock clk(&clocks, "clock");
+    sparta::Clock clk(&clocks, "clock", &sched);
 
     // Create a tree with some register sets and a memory
     RootTreeNode root;
@@ -98,7 +99,7 @@ void generalTest()
 
     // Create the checkpointer
 
-    PersistentFastCheckpointer pfcp(root, sparta::Scheduler::getScheduler());
+    PersistentFastCheckpointer pfcp(root, &sched);
     pfcp.setSnapshotThreshold(0);  // All checkpoints to be snapshots
 
     root.enterConfiguring();
@@ -120,8 +121,8 @@ void generalTest()
     memset(buf, 0x34, sizeof(buf));
     mem_if.write(0x100, 32, buf);
     EXPECT_NOTHROW(pfcp.save("chkpt1"));
-    sparta::Scheduler::getScheduler()->finalize();
-    sparta::Scheduler::getScheduler()->run(10, true);
+    sched.finalize();
+    sched.run(10, true);
 
     // SAVE CHECKPOINT 2: Stored in data file "chkpt2"
 
@@ -130,7 +131,7 @@ void generalTest()
     memset(buf, 0x56, sizeof(buf));
     mem_if.write(0x100, 32, buf);
     EXPECT_NOTHROW(pfcp.save("chkpt2"));
-    sparta::Scheduler::getScheduler()->run(10, true);
+    sched.run(10, true);
 
     // SAVE CHECKPOINT 3: Stored in compressed data file "chkpt3.xz"
 
@@ -145,7 +146,7 @@ void generalTest()
         EXPECT_NOTHROW(pfcp.save(fos.getStream()));
     }
     EXPECT_EQUAL(pclose(pipeout), 0);
-    sparta::Scheduler::getScheduler()->run(10, true);
+    sched.run(10, true);
 
     // SAVE CHECKPOINT 4: Stored in compressed data file "chkpt4.gz"
 

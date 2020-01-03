@@ -15,7 +15,8 @@ using namespace std;
 
 static void test_ratioed_clocks()
 {
-    sparta::ClockManager  m;
+    sparta::Scheduler sched;
+    sparta::ClockManager  m(&sched);
 
     Clock::Handle c_root  = m.makeRoot();
     Clock::Handle c_12    = m.makeClock("C12", c_root, 1, 2);
@@ -74,7 +75,8 @@ static uint64_t convert_mhz_to_ps(double frequency_mhz)
 
 static void test_frequency_clocks()
 {
-    sparta::ClockManager  m;
+    sparta::Scheduler sched;
+    sparta::ClockManager  m(&sched);
 
     Clock::Handle c_root  = m.makeRoot();
     Clock::Handle c_333   = m.makeClock("C12", c_root, 333.3333);

@@ -37,7 +37,8 @@ int main ()
     testPortCancels_();
 
     // Test communication between blocks using ports
-    sparta::Clock clk("clock");
+    sparta::Scheduler sched;
+    sparta::Clock clk("clock", &sched);
     sparta::RootTreeNode rtn;
     rtn.setClock(&clk);
 
@@ -107,7 +108,7 @@ int main ()
 
     rtn.enterConfiguring();
     rtn.enterFinalized();
-    sparta::Scheduler::getScheduler()->finalize();
+    sched.finalize();
 
 
     // sparta::log::Tap scheduler_debug(sparta::TreeNode::getVirtualGlobalNode(),
@@ -115,7 +116,7 @@ int main ()
 
     //The scheduler must have been turned on before scheduling events.
     p->scheduleTests();
-    sparta::Scheduler::getScheduler()->run();
+    sched.run();
 
     EXPECT_EQUAL(c->getNumTimes(), 10);
 
@@ -150,7 +151,8 @@ void tryDAGIssue_(bool failit)
                    |      |
                ----.      .----------
     */
-    sparta::Clock    clk("dummy");
+    sparta::Scheduler sched;
+    sparta::Clock    clk("dummy", &sched);
     sparta::PortSet  ps(nullptr);
     ps.setClock(&clk);
     sparta::EventSet es(nullptr);
@@ -179,7 +181,7 @@ void tryDAGIssue_(bool failit)
 
     if(failit) {
         // This will throw a DAG exception
-        EXPECT_THROW(sparta::Scheduler::getScheduler()->finalize());
+        EXPECT_THROW(sched.finalize());
     }
     else {
 
@@ -213,13 +215,13 @@ void tryDAGIssue_(bool failit)
         EXPECT_NOTHROW(zero_delay_in2.registerConsumerHandler
                        (CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(forceDagIssue, &fdi, getIt, bool)));
 
-        EXPECT_NOTHROW(sparta::Scheduler::getScheduler()->finalize());
+        EXPECT_NOTHROW(sched.finalize());
         force_dag_issue.schedule(1);
-        sparta::Scheduler::getScheduler()->run(2);
+        sched.run(2);
     }
 
     // Reset for next tests
-    sparta::Scheduler::getScheduler()->reset();
+    sched.reset();
 }
 
 class Receiver
@@ -253,19 +255,20 @@ public:
 
 void testPortCancels_()
 {
-    sparta::Clock    clk("dummy");
+    sparta::Scheduler sched;
+    sparta::Clock    clk("dummy", &sched);
     sparta::PortSet  ps(nullptr);
     ps.setClock(&clk);
     Receiver receiver(&ps);
     Sender   sender(&ps);
 
     sparta::bind(receiver.receiver_pt, sender.sender_pt);
-    EXPECT_NOTHROW(sparta::Scheduler::getScheduler()->finalize());
+    EXPECT_NOTHROW(sched.finalize());
 
     // Send some data, make sure it's received
     sender.sendSomeData(1, 0);
     EXPECT_FALSE(receiver.received_dat.isValid());
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
     EXPECT_TRUE(receiver.received_dat.isValid());
     receiver.received_dat.clearValid();
 
@@ -273,7 +276,7 @@ void testPortCancels_()
     sender.sendSomeData(1, 0);
     sender.sender_pt.cancel();
     EXPECT_FALSE(receiver.received_dat.isValid());
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
     EXPECT_FALSE(receiver.received_dat.isValid());
 
     // Test InPort cancel, same data, zero to many cycles
@@ -282,7 +285,7 @@ void testPortCancels_()
     sender.sendSomeData(1, 2);
     sender.sender_pt.cancel();
     EXPECT_FALSE(receiver.received_dat.isValid());
-    sparta::Scheduler::getScheduler()->run(4);
+    sched.run(4);
     EXPECT_FALSE(receiver.received_dat.isValid());
 
     // Test InPort cancel, different data, zero to many cycles
@@ -291,7 +294,7 @@ void testPortCancels_()
     sender.sendSomeData(3, 2);
     sender.sender_pt.cancel();
     EXPECT_FALSE(receiver.received_dat.isValid());
-    sparta::Scheduler::getScheduler()->run(4);
+    sched.run(4);
     EXPECT_FALSE(receiver.received_dat.isValid());
 
     // Test InPort cancel, different data, zero to many cycles,
@@ -303,10 +306,10 @@ void testPortCancels_()
     sender.sendSomeData(data + 3, delay + 2);
     sender.sender_pt.cancelIf(uint32_t(2));
     EXPECT_FALSE(receiver.received_dat.isValid());
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
     EXPECT_TRUE(receiver.received_dat.isValid());
     EXPECT_EQUAL(receiver.received_dat, uint32_t(1));
-    sparta::Scheduler::getScheduler()->run(2);
+    sched.run(2);
     EXPECT_TRUE(receiver.received_dat.isValid());
     EXPECT_EQUAL(receiver.received_dat, uint32_t(3));
     receiver.received_dat.clearValid();
@@ -323,14 +326,14 @@ void testPortCancels_()
                               });
 
     EXPECT_FALSE(receiver.received_dat.isValid());
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
     EXPECT_TRUE(receiver.received_dat.isValid());
     EXPECT_EQUAL(receiver.received_dat, uint32_t(1));
-    sparta::Scheduler::getScheduler()->run(2);
+    sched.run(2);
     EXPECT_TRUE(receiver.received_dat.isValid());
     EXPECT_EQUAL(receiver.received_dat, uint32_t(3));
     receiver.received_dat.clearValid();
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
     EXPECT_FALSE(receiver.received_dat.isValid());
 
     // Test the dynamic function call on the OutPort
@@ -344,17 +347,17 @@ void testPortCancels_()
                                   });
 
     EXPECT_FALSE(receiver.received_dat.isValid());
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
     EXPECT_TRUE(receiver.received_dat.isValid());
     EXPECT_EQUAL(receiver.received_dat, uint32_t(1));
-    sparta::Scheduler::getScheduler()->run(2);
+    sched.run(2);
     EXPECT_TRUE(receiver.received_dat.isValid());
     EXPECT_EQUAL(receiver.received_dat, uint32_t(3));
     receiver.received_dat.clearValid();
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
     EXPECT_FALSE(receiver.received_dat.isValid());
 
 
     // Reset for next tests
-    sparta::Scheduler::getScheduler()->reset();
+    sched.reset();
 }

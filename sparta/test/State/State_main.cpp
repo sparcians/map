@@ -316,9 +316,10 @@ enum class enStateID {
 
 int main()
 {
-    sparta::Clock clk("clock");
-    EXPECT_TRUE(sparta::Scheduler::getScheduler()->getCurrentTick() == 1);
-    EXPECT_TRUE(sparta::Scheduler::getScheduler()->isRunning() == 0);
+    sparta::Scheduler sched;
+    sparta::Clock clk("clock", &sched);
+    EXPECT_TRUE(sched.getCurrentTick() == 1);
+    EXPECT_TRUE(sched.isRunning() == 0);
 
     Observer                        obs("Foo");
     sparta::RootTreeNode rtn;
@@ -332,23 +333,23 @@ int main()
 
     rtn.enterConfiguring();
     rtn.enterFinalized();
-    sparta::Scheduler::getScheduler()->finalize();
+    sched.finalize();
 
-    sparta::Scheduler::getScheduler()->printNextCycleEventTree(std::cout, 0, 0);
+    sched.printNextCycleEventTree(std::cout, 0, 0);
 
     Uop                     uop("uop");
     Operand                 *a = uop.getSource(OperandType::A);
     Operand                 *b = uop.getSource(OperandType::B);
     Operand                 *c = uop.getSource(OperandType::C);
 
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
     EXPECT_TRUE(a->getCurrentState() == OperandState::OPER_INIT);
     EXPECT_TRUE(b->getCurrentState() == OperandState::OPER_INIT);
     EXPECT_TRUE(c->getCurrentState() == OperandState::OPER_INIT);
     EXPECT_TRUE(uop.getCurrentState() == uOpState::UOP_INIT);
     EXPECT_TRUE(a->getFlag().isClear());
 
-    sparta::Scheduler::getScheduler()->run(2);
+    sched.run(2);
     uop.observeState(uOpState::UOP_READY, e_uop_proto.preparePayload(&uop));
     a->observeState(OperandState::OPER_READY, e_op_proto0.preparePayload(a));
     b->observeState(OperandState::OPER_READY, e_op_proto1.preparePayload(b));
@@ -361,12 +362,12 @@ int main()
     a->setFlag();
 
     // Re-enroll since we don't have persistent audience anymore
-    sparta::Scheduler::getScheduler()->run(3);
+    sched.run(3);
     uop.observeState(uOpState::UOP_READY, e_uop_proto.preparePayload(&uop));
     a->observeState(OperandState::OPER_READY, e_op_proto0.preparePayload(a));
 
 
-    sparta::Scheduler::getScheduler()->run(4);
+    sched.run(4);
     EXPECT_TRUE(a->getCurrentState() == OperandState::OPER_READY);
     EXPECT_TRUE(b->getCurrentState() == OperandState::OPER_READY);
     EXPECT_TRUE(c->getState() == OperandState::OPER_READY);
@@ -374,7 +375,7 @@ int main()
     EXPECT_TRUE(a->getFlag().isSet());
 
     uop.reset();
-    sparta::Scheduler::getScheduler()->run(5);
+    sched.run(5);
     EXPECT_TRUE(a->getCurrentState() == OperandState::OPER_INIT);
     EXPECT_TRUE(b->getCurrentState() == OperandState::OPER_INIT);
     EXPECT_TRUE(c->getCurrentState() == OperandState::OPER_INIT);
@@ -385,19 +386,19 @@ int main()
 
     a->markReady();
 
-    sparta::Scheduler::getScheduler()->run(6);
+    sched.run(6);
     EXPECT_TRUE(a->getCurrentState() == OperandState::OPER_READY);
     EXPECT_TRUE(b->getCurrentState() == OperandState::OPER_INIT);
     EXPECT_TRUE(c->getCurrentState() == OperandState::OPER_INIT);
     EXPECT_TRUE(uop.getCurrentState() == uOpState::UOP_READY);
     EXPECT_TRUE(a->getFlag().isClear());
 
-    sparta::Scheduler::getScheduler()->run(100);
+    sched.run(100);
     EXPECT_EQUAL(obs.getActivations(), 7);
 
     // Test withdraw feature
     uop.reset();
-    sparta::Scheduler::getScheduler()->run(7);
+    sched.run(7);
     EXPECT_TRUE(a->getCurrentState() == OperandState::OPER_INIT);
     EXPECT_TRUE(b->getCurrentState() == OperandState::OPER_INIT);
     EXPECT_TRUE(c->getCurrentState() == OperandState::OPER_INIT);
@@ -410,17 +411,17 @@ int main()
     uop.observeState(uOpState::UOP_READY, uop_ehandle);
     a->observeState(OperandState::OPER_READY, operand_ehandle);
 
-    sparta::Scheduler::getScheduler()->run(8);
+    sched.run(8);
     EXPECT_TRUE(a->getState() == OperandState::OPER_INIT);
     EXPECT_TRUE(uop.getCurrentState() == uOpState::UOP_INIT);
 
-    sparta::Scheduler::getScheduler()->run(9);
+    sched.run(9);
     uop.withdrawState(uOpState::UOP_READY, uop_ehandle);
     a->withdrawState(OperandState::OPER_READY, operand_ehandle);
 
     a->markReady();
 
-    sparta::Scheduler::getScheduler()->run(100);
+    sched.run(100);
     // No new activations should be seen
     EXPECT_EQUAL(obs.getActivations(), 7);
 
@@ -458,7 +459,7 @@ int main()
     EXPECT_TRUE(ss.isClear(enStateID::COMPLETE));
     EXPECT_TRUE(ss.isClear(enStateID::RETIRED ));
 
-    sparta::Scheduler::getScheduler()->run(100);
+    sched.run(100);
     EXPECT_EQUAL(obs.getActivations(), 7);
 
     //speedTest();

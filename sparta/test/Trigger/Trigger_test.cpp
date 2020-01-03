@@ -81,7 +81,9 @@ using namespace sparta;
 
 int main()
 {
-    sparta::Clock clk("clock");
+    sparta::Scheduler sched;
+    sparta::Clock clk("clock", &sched);
+
     /*///////////////////////////Test a trigger that uses
       relative timing and defualt period options. With a period of
       10, start 50, and end 100. stop() 100 to be the last part of this
@@ -129,16 +131,16 @@ int main()
     start_only.setTriggerStartAbsolute(&clk, 75);
 
     try{
-        sparta::Scheduler::getScheduler()->finalize();
-        sparta::Scheduler::getScheduler()->run(109, true);
+        sched.finalize();
+        sched.run(109, true);
     }catch(const sparta::DAG::CycleException& ce){
         ce.writeDOT(std::cerr);
     };
 
     {
         RootTreeNode root;
-        log::Tap t(Scheduler::getScheduler(), "", std::cout);
-        ClockManager cm;
+        log::Tap t(&sched, "", std::cout);
+        ClockManager cm(&sched);
         Clock::Handle c_root = cm.makeRoot();
         Clock::Handle c_12   = cm.makeClock("C21", c_root, 2, 1);
         root.setClock(c_12.get());
@@ -175,18 +177,18 @@ int main()
         EXPECT_EQUAL(trig_mgr.hasTrigger(&ctrig3), true);
 
         uint32_t i;
-        auto SCHEDULER_START_TICK = Scheduler::getScheduler()->getCurrentTick();
+        auto SCHEDULER_START_TICK = sched.getCurrentTick();
         for(i = 0; i < 200; ++i){
-            std::cout << " i = " << i << ", tick = " << Scheduler::getScheduler()->getCurrentTick()
+            std::cout << " i = " << i << ", tick = " << sched.getCurrentTick()
                       << std::endl;
             ctr += 3;
-            Scheduler::getScheduler()->run(1, true);
+            sched.run(1, true);
             if(counter_triggerable.hit == true){
                 break;
             }
-            sparta_assert(Scheduler::getScheduler()->getCurrentTick() == SCHEDULER_START_TICK + i + 1,
+            sparta_assert(sched.getCurrentTick() == SCHEDULER_START_TICK + i + 1,
                   "Scheduler did not run for 1 tick. Cur tick is "
-                  << Scheduler::getScheduler()->getCurrentTick() << " but should be "
+                  << sched.getCurrentTick() << " but should be "
                   << SCHEDULER_START_TICK + i + 1 << " (i=" << i << ")");
             EXPECT_EQUAL(ctrig.hasFired(), false);
             EXPECT_EQUAL(ctrig.isActive(), true);
@@ -195,7 +197,7 @@ int main()
         EXPECT_EQUAL(ctr, 101ull);
         EXPECT_EQUAL(ctrig.hasFired(), true);
         EXPECT_EQUAL(ctrig.isActive(), false);
-        EXPECT_EQUAL(Scheduler::getScheduler()->getCurrentTick(), SCHEDULER_START_TICK + 33);
+        EXPECT_EQUAL(sched.getCurrentTick(), SCHEDULER_START_TICK + 33);
 
         ctrig.deactivate();
         EXPECT_EQUAL(ctrig.isActive(), false);

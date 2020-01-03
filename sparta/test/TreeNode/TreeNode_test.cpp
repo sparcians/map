@@ -449,7 +449,8 @@ int main()
         //sparta::ResourceFactory<ResourceWithDynamicChildren> fact6; // compile error - ResourceWithDynamicChildren has no ParameterSet member
         //sparta::ResourceFactory<SimpleDevice3> fact7; // compile error - SimpleDevice3 has a ParameterSet but it is not a Parameter subclass
 
-        sparta::Clock clk("clock");
+        sparta::Scheduler sched;
+        sparta::Clock clk("clock", &sched);
 
         // Create Tree Nodes (not resources)
 

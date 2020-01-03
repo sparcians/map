@@ -435,7 +435,8 @@ int main() {
     sparta::RootTreeNode root("root", "root node");
     sparta::TreeNode child("child", "child node");
     root.addChild(&child);
-    sparta::Clock clk("clock");
+    sparta::Scheduler sched;
+    sparta::Clock clk("clock", &sched);
 
     // ------ NestedPeventCollector test ----
     sparta::pevents::NestedPeventCollector<A> decode_pevent("DECODE", &child, &clk);

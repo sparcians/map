@@ -19,16 +19,18 @@ public:
     CycleValidator(sparta::TreeNode * es) :
         ev_test_cycle(es, "ev_test_cycle", CREATE_SPARTA_HANDLER(CycleValidator, testScheduler)),
         inf_looper(es, "inf_looper", CREATE_SPARTA_HANDLER(CycleValidator, infLoop))
-    {}
+    {
+        sched = es->getClock()->getScheduler();
+    }
 
     const uint32_t expected_time = 10;
 
     void testScheduler() {
-        EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getCurrentTick(), expected_time);
+        EXPECT_EQUAL(sched->getCurrentTick(), expected_time);
         // Since we are in the middle of a Scheduler "epoch" the
         // elapsed time should equal the current time
-        EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getCurrentTick(),
-                     sparta::Scheduler::getScheduler()->getElapsedTicks());
+        EXPECT_EQUAL(sched->getCurrentTick(),
+                     sched->getElapsedTicks());
     }
 
 
@@ -43,6 +45,8 @@ public:
 
     sparta::Event<> ev_test_cycle;
     sparta::Event<> inf_looper;
+
+    sparta::Scheduler * sched = nullptr;
 };
 
 void signal_handler(int)
@@ -55,13 +59,14 @@ int main()
 {
     std::cout << " this test should exit pretty fast, couple of seconds " << std::endl;
     signal(SIGABRT, signal_handler);
-    sparta::Clock clk("clock");
+    sparta::Scheduler sched;
+    sparta::Clock clk("clock", &sched);
     sparta::EventSet es(nullptr);
     es.setClock(&clk);
 
-    EXPECT_TRUE(sparta::Scheduler::getScheduler()->getCurrentTick()  == 1);
-    EXPECT_TRUE(sparta::Scheduler::getScheduler()->getElapsedTicks() == 0);
-    EXPECT_TRUE(sparta::Scheduler::getScheduler()->isRunning() == false);
+    EXPECT_TRUE(sched.getCurrentTick()  == 1);
+    EXPECT_TRUE(sched.getElapsedTicks() == 0);
+    EXPECT_TRUE(sched.isRunning() == false);
 
     // Test scheduler logging (general test of logging on global TreeNodes)
     // First, find the scheduler node
@@ -72,21 +77,21 @@ int main()
 
     //Test port dependency
     CycleValidator cval(&es);
-    sparta::SleeperThread::getInstance()->attachScheduler(sparta::Scheduler::getScheduler());
+    sparta::SleeperThread::getInstance()->attachScheduler(&sched);
     sparta::SleeperThread::getInstance()->finalize();
-    sparta::Scheduler::getScheduler()->finalize();
+    sched.finalize();
 
     // To be scheduled at the expected time, you need to take into
     // account the current time
     cval.ev_test_cycle.schedule(cval.expected_time -
-                                sparta::Scheduler::getScheduler()->getCurrentTick());
+                                sched.getCurrentTick());
 
 
     cval.inf_looper.schedule(101);
 
     boost::timer::cpu_timer t;
-    sparta::Scheduler::getScheduler()->printNextCycleEventTree(std::cout, 0, 0);
-    sparta::Scheduler::getScheduler()->run(102);
+    sched.printNextCycleEventTree(std::cout, 0, 0);
+    sched.run(102);
     // we should of exited in less than a second
     std::cout << t.elapsed().user << std::endl;
     // we hopefully didn't add to much time reaping the thread.

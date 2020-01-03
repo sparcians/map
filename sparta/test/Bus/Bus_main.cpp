@@ -106,8 +106,9 @@ public:
 
 void test_good_bind()
 {
+    sparta::Scheduler sched;
     sparta::RootTreeNode rtn;
-    sparta::Clock clk("dummy");
+    sparta::Clock clk("dummy", &sched);
     rtn.setClock(&clk);
     sparta::TreeNode lrsrc(&rtn, "lrsrc", "Left Resource");
     sparta::TreeNode rrsrc(&rtn, "rrsrc", "Right Resource");
@@ -154,8 +155,9 @@ void test_good_bind()
 // Test the bad binding...
 void test_bad_bind()
 {
+    sparta::Scheduler sched;
     sparta::RootTreeNode rtn;
-    sparta::Clock clk("dummy");
+    sparta::Clock clk("dummy", &sched);
     rtn.setClock(&clk);
     sparta::TreeNode lrsrc(&rtn, "lrsrc", "Left Resource");
     sparta::TreeNode rrsrc(&rtn, "rrsrc", "Right Resource");
@@ -187,8 +189,9 @@ void test_bad_bind()
 
 void test_multiple_buses()
 {
+    sparta::Scheduler sched;
     sparta::RootTreeNode rtn;
-    sparta::Clock clk("dummy");
+    sparta::Clock clk("dummy", &sched);
     rtn.setClock(&clk);
     sparta::TreeNode lrsrc(&rtn, "lrsrc", "Left Resource");
     sparta::TreeNode rrsrc(&rtn, "rrsrc", "Right Resource");

@@ -41,8 +41,9 @@ private:
 
 int main ()
 {
+    sparta::Scheduler sched;
     sparta::RootTreeNode rtn;
-    sparta::ClockManager cm;
+    sparta::ClockManager cm(&sched);
     sparta::Clock::Handle root_clk;
     root_clk = cm.makeRoot(&rtn, "root_clk");
     cm.normalize();
@@ -82,7 +83,7 @@ int main ()
     sparta::collection::PipelineCollector pc("testPipe", 1000000,
                                            root_clk.get(), &rtn);
 #endif
-    sparta::Scheduler::getScheduler()->finalize();
+    sched.finalize();
 
 #ifdef PIPEOUT_GEN
     EXPECT_THROW(pipe2.resize(5));
@@ -98,10 +99,10 @@ int main ()
     //pipe1.push_front(1);
     ev.preparePayload(1)->schedule(sparta::Clock::Cycle(0));
 
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 
     EXPECT_EQUAL(pipe1.size(), 0);
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #ifdef TEST_MANUAL_UPDATE
     pipe1.update();
 #endif
@@ -116,7 +117,7 @@ int main ()
 
     // Advance the pipe
     for(uint32_t i = 1; i < pipe1.capacity(); ++i) {
-        sparta::Scheduler::getScheduler()->run(1, true);
+        sched.run(1, true);
 #ifdef TEST_MANUAL_UPDATE
         pipe1.update();
 #endif
@@ -133,7 +134,7 @@ int main ()
     EXPECT_THROW(pipe1.push_front(5));  // A double push_front
     EXPECT_THROW(pipe1.invalidatePS(6));
 
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #ifdef TEST_MANUAL_UPDATE
     pipe1.update();
 #endif
@@ -249,7 +250,7 @@ int main ()
     EXPECT_FALSE(pipe1.isAnyValid());
     pipe1.push_front(42);
     EXPECT_TRUE(pipe1.isAnyValid());
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #ifdef TEST_MANUAL_UPDATE
     pipe1.update();
 #endif
@@ -271,7 +272,7 @@ int main ()
 #ifdef TEST_MANUAL_UPDATE
     pipe1.update();
 #else
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #endif
 
     pipe1.push_front(3);
@@ -279,41 +280,41 @@ int main ()
 #ifdef TEST_MANUAL_UPDATE
         pipe1.update();
 #endif
-        sparta::Scheduler::getScheduler()->run(1, true);
+        sched.run(1, true);
     }
 
     // Used to test pipeout size
     pipe2.push_front(10);
     pipe2.performOwnUpdates();
 
-    sparta::Scheduler::getScheduler()->run(pipe2.capacity() + 1, true);
+    sched.run(pipe2.capacity() + 1, true);
 
     pipe2.writePS(0, 20);
     pipe2.performOwnUpdates();
 
-    sparta::Scheduler::getScheduler()->run(pipe2.capacity() + 1, true);
+    sched.run(pipe2.capacity() + 1, true);
 
     // Test clearing
     EXPECT_EQUAL(pipe2.size(), 0);
     pipe2.push_front(10);
     EXPECT_EQUAL(pipe2.size(), 0);
-    sparta::Scheduler::getScheduler()->run(2, true);
+    sched.run(2, true);
     EXPECT_EQUAL(pipe2.size(), 1);
     pipe2.clear();
     EXPECT_EQUAL(pipe2.size(), 0);
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
     EXPECT_EQUAL(pipe2.size(), 0);
 
     pipe2.push_front(10);
     pipe2.clear();
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
     EXPECT_EQUAL(pipe2.size(), 0);
 
     pipe2.writePS(0, 20);
     EXPECT_EQUAL(pipe2.size(), 1);
     pipe2.clear();
     EXPECT_EQUAL(pipe2.size(), 0);
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
     EXPECT_EQUAL(pipe2.size(), 0);
 
     rtn.enterTeardown();

@@ -77,7 +77,8 @@ private:
 
 int main()
 {
-    sparta::Clock clk("clk");
+    sparta::Scheduler sched;
+    sparta::Clock clk("clk", &sched);
     sparta::RootTreeNode rtn("test_root");
     sparta::EventSet event_set(&rtn);
     event_set.setClock(&clk);
@@ -92,14 +93,14 @@ int main()
 
 
 
-    sparta::Scheduler::getScheduler()->finalize();
+    sched.finalize();
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
 
 
     ev_gbl_1.schedule(1);
-    sparta::Scheduler::getScheduler()->run(2, true);
+    sched.run(2, true);
 
     dlatch->driveLatch(1);
     EXPECT_EQUAL(dlatch->readLatch(), 0);
@@ -112,13 +113,13 @@ int main()
 #endif
 
     dlatch->update(2);
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 
 #ifdef TEST_DEAD_GLOBAL_EVENT
     dlatch.reset(nullptr);
 #endif
 
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #ifdef TEST_DEAD_GLOBAL_EVENT
     EXPECT_FALSE(deadLatchIsUpdated);
 #else

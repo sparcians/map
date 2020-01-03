@@ -76,7 +76,8 @@ int main() {
     RootTreeNode root("root", "root node");
     TreeNode child("child", "child node");
     root.addChild(&child);
-    Clock clk("clock");
+    sparta::Scheduler sched;
+    Clock clk("clock", &sched);
 
     // ------ PeventCollector test ----
     pevents::PeventCollector<CollectedA> decode_pevent("DECODE", &child, &clk);

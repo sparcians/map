@@ -75,13 +75,14 @@ public:
 class FizClass
 {
 public:
+    sparta::Scheduler sched_;
     sparta::Clock clk_;
 
     // Note the non-const method
     sparta::Clock* getClock() {return &clk_;};
 
     FizClass() :
-        clk_("dummy_clock")
+        clk_("dummy_clock", &sched_)
     {
         // Within non-sparta class with non-const getClock returning non-const Clock*
         sparta_assert_context(0, "Fiz Assertion");
@@ -104,11 +105,12 @@ class BuzClass
 {
 public:
 
+    sparta::Scheduler sched_;
     sparta::Clock clk_;
     const sparta::Clock* getClock() const {return &clk_;};
 
     BuzClass() :
-        clk_("dummy_clock")
+        clk_("dummy_clock", &sched_)
     {
     }
 
@@ -122,13 +124,14 @@ public:
 class BizClass
 {
 public:
+    sparta::Scheduler sched_;
     sparta::Clock clk_;
 
     // Note the non-const method with const return
     const sparta::Clock* getClock() {return &clk_;};
 
     BizClass() :
-        clk_("dummy_clock")
+        clk_("dummy_clock", &sched_)
     {
         // Within non-sparta class with const getClock returning const Clock*
         sparta_assert_context(0, "Biz Assertion");
@@ -138,20 +141,19 @@ public:
 int main()
 {
     { // Scope to this block
-
-
-        EXPECT_TRUE(sparta::Scheduler::getScheduler()->getCurrentTick() == 1);
-        EXPECT_TRUE(sparta::Scheduler::getScheduler()->isRunning() == 0);
-        sparta::Scheduler::getScheduler()->finalize();
-
+        sparta::Scheduler sched;
         sparta::RootTreeNode root;
-        sparta::Clock clk("clock");
+        sparta::Clock clk("clock", &sched);
         sparta::TreeNode dummy(&root, "dummy", "dummy node");
         dummy.setClock(&clk);
         SimpleDevice::ParameterSet ps(&dummy);
         ps.foo = true;
 
-        sparta::Scheduler::getScheduler()->run(100, true);
+        EXPECT_TRUE(sched.getCurrentTick() == 1);
+        EXPECT_TRUE(sched.isRunning() == 0);
+        sched.finalize();
+
+        sched.run(100, true);
 
 
         EXPECT_THROW_MSG_CONTAINS(SimpleDevice dev(&dummy, &ps),

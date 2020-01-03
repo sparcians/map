@@ -51,15 +51,17 @@ private:
 
 int main()
 {
+    sparta::Scheduler sched;
     sparta::RootTreeNode rtn;
-    sparta::Clock clk("clock");
+    sparta::Clock clk("clock", &sched);
     rtn.setClock(&clk);
-    EXPECT_TRUE(Scheduler::getScheduler()->getCurrentTick() == 0);
-    EXPECT_TRUE(Scheduler::getScheduler()->isRunning() == 0);
+
+    EXPECT_TRUE(sched.getCurrentTick() == 0);
+    EXPECT_TRUE(sched.isRunning() == 0);
 
     sparta::EventSet es(&rtn);
 
-    Observer                       obs("Foo");
+    Observer obs("Foo");
 
     Event<> e_proto(&es, "e_proto",
                     CREATE_SPARTA_HANDLER_WITH_OBJ(Observer, &obs, activate));
@@ -71,7 +73,7 @@ int main()
 
     p_proto.getScheduleable().setScheduleableClock(&clk);
     p_proto.getScheduleable().setScheduler(clk.getScheduler());
-    Scheduler::getScheduler()->finalize();
+    sched.finalize();
 
     Audience  aud;
     Audience  pay_aud;
@@ -85,8 +87,8 @@ int main()
     pay_aud.delayedNotify(10);
 
     for (uint32_t i = 0; i < 11; ++i) {
-        Scheduler::getScheduler()->printNextCycleEventTree(std::cout, 0, 0, 1);
-        Scheduler::getScheduler()->run(1);
+        sched.printNextCycleEventTree(std::cout, 0, 0, 1);
+        sched.run(1);
     }
     rtn.enterTeardown();
 

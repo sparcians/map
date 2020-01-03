@@ -111,8 +111,8 @@ int main()
         // It is important that g is destructed last to test destruction-time
         // log messages where the above TreeNodes have been destructed
         TalkativeTreeNode g("g", "G node");
-
-        sparta::Clock clk("clock");
+        sparta::Scheduler sched;
+        sparta::Clock clk("clock", &sched);
         g.setClock(&clk);
 
 

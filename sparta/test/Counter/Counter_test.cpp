@@ -70,7 +70,8 @@ public:
 int main()
 {
     {
-        sparta::Clock clk("clock");
+        sparta::Scheduler sched;
+        sparta::Clock clk("clock", &sched);
         RootTreeNode root;
         root.setClock(&clk); // Set clock within configuration phase
         sparta::ResourceFactory<DummyDevice, DummyDevice::ParameterSet> rfact;
@@ -172,7 +173,7 @@ int main()
 
         root.enterFinalized();
         EXPECT_TRUE(root.isFinalized());
-        sparta::Scheduler::getScheduler()->finalize();
+        sched.finalize();
         std::cout << "\nFINALIZED" << std::endl;
 
 
@@ -208,14 +209,14 @@ int main()
         cyc3.startCounting();
         cyc4.startCountingWithMultiplier(4);
         cyc5.startCounting();
-        sparta::Scheduler::getScheduler()->run(1);
+        sched.run(1);
         cyc5.stopCounting();
-        sparta::Scheduler::getScheduler()->run(9);
+        sched.run(9);
         cyc1.stopCounting();
 
         cyc2.startCounting();
         cyc4.stopCounting();
-        sparta::Scheduler::getScheduler()->run(15);
+        sched.run(15);
         cyc2.stopCounting();
 
         // Counter printing by pointer

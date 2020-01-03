@@ -330,9 +330,10 @@ private:
 // MAIN
 int main()
 {
-    Clock clk("clock");
-    EXPECT_TRUE(Scheduler::getScheduler()->getCurrentTick() == 1);
-    EXPECT_TRUE(Scheduler::getScheduler()->isRunning() == 0);
+    sparta::Scheduler sched;
+    Clock clk("clock", &sched);
+    EXPECT_TRUE(sched.getCurrentTick() == 1);
+    EXPECT_TRUE(sched.isRunning() == 0);
 
     sparta::RootTreeNode rtn;
     rtn.setClock(&clk);
@@ -346,8 +347,8 @@ int main()
     PayloadEvent<Operand*> e_op1(&es, "e_op1", CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(Observer, &obs, activate, Operand*));
     PayloadEvent<Operand*> e_op2(&es, "e_op2", CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(Observer, &obs, activate, Operand*));
 
-    Scheduler::getScheduler()->finalize();
-    Scheduler::getScheduler()->printNextCycleEventTree(cout, 0, 0);
+    sched.finalize();
+    sched.printNextCycleEventTree(cout, 0, 0);
 
     Uop                     uop("uop");
     MyMonitor               mon1("Mon1", uop, uop.getState());
@@ -383,7 +384,7 @@ int main()
     EXPECT_TRUE(c->getState() == OPER_READY);
     EXPECT_TRUE(uop.getState() == uOpState::UOP_SPECREADY);
 
-    Scheduler::getScheduler()->run(100);
+    sched.run(100);
     EXPECT_EQUAL(obs.getActivations(), 6);
     REPORT_ERROR;
     rtn.enterTeardown();

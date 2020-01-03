@@ -56,7 +56,8 @@ int main()
 {
     // install a signal handler to catch the infinite loop exception and exit cleanly.
     signal(SIGABRT, signal_handler);
-    sparta::Clock clk("clock");
+    sparta::Scheduler sched;
+    sparta::Clock clk("clock", &sched);
     sparta::EventSet es(nullptr);
     es.setClock(&clk);
 
@@ -64,14 +65,14 @@ int main()
     //Test port dependency
     CycleValidator cval(&es);
     sparta::SleeperThread::getInstance()->setInfLoopSleepInterval(std::chrono::seconds(5));
-    sparta::SleeperThread::getInstance()->attachScheduler(sparta::Scheduler::getScheduler());
+    sparta::SleeperThread::getInstance()->attachScheduler(&sched);
     sparta::SleeperThread::getInstance()->finalize();
-    sparta::Scheduler::getScheduler()->finalize();
+    sched.finalize();
     cval.inf_looper.schedule(101);
 
     boost::timer::cpu_timer t;
-    sparta::Scheduler::getScheduler()->printNextCycleEventTree(std::cout, 0, 0);
-    sparta::Scheduler::getScheduler()->run(102);
+    sched.printNextCycleEventTree(std::cout, 0, 0);
+    sched.run(102);
 
     std::cout << SPARTA_CURRENT_COLOR_RED << "Shouldn't be here..." << std::endl;
     return 1;

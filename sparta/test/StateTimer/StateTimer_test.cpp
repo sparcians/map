@@ -29,7 +29,8 @@ int main()
     sparta::RootTreeNode rtn;
     sparta::TreeNode     device_tn(&rtn, "dummy_device1", "Dummy Device TreeNode");
     sparta::TreeNode     device_tn1(&rtn, "dummy_device2", "Dummy Device TreeNode");
-    sparta::Clock        clk("clock");
+    sparta::Scheduler    sched;
+    sparta::Clock        clk("clock", &sched);
     rtn.setClock(&clk);
     sparta::PortSet ps(&rtn, "out_ports");
     std::unique_ptr<DummyDeviceParams> dummy_dev_params_(new DummyDeviceParams(&device_tn));

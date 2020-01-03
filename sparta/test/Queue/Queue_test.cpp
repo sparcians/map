@@ -21,8 +21,9 @@ void testStatsOutput();
 
 int main()
 {
+    sparta::Scheduler sched;
     sparta::RootTreeNode rtn;
-    sparta::ClockManager cm;
+    sparta::ClockManager cm(&sched);
     sparta::Clock::Handle root_clk;
     root_clk = cm.makeRoot(&rtn, "root_clk");
     cm.normalize();
@@ -46,19 +47,19 @@ int main()
                                            root_clk.get(), &rtn);
 #endif
 
-    sparta::Scheduler::getScheduler()->finalize();
+    sched.finalize();
 
 #ifdef PIPEOUT_GEN
     pc.startCollection(&rtn);
 #endif
 
     ////////////////////////////////////////////////////////////
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 
     queue10_untimed.push(1234.5);
     EXPECT_TRUE(queue10_untimed.size() == 1);
 
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 
     EXPECT_TRUE(queue10_untimed.size() == 1);
 
@@ -108,7 +109,7 @@ int main()
 #endif
 
     EXPECT_EQUAL(queue10_untimed.size(), 10);
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
     EXPECT_EQUAL(queue10_untimed.size(), 10);
 
     uint32_t half = queue10_untimed.size()/2;
@@ -116,13 +117,13 @@ int main()
         queue10_untimed.pop();
     }
     EXPECT_EQUAL(queue10_untimed.size(), 5);
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 
     while(queue10_untimed.size() != 0) {
         queue10_untimed.pop();
     }
     EXPECT_EQUAL(queue10_untimed.size(), 0);
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
     EXPECT_EQUAL(queue10_untimed.size(), 0);
 
     // Test clear()
@@ -238,8 +239,9 @@ int main()
 
 void testStatsOutput()
 {
+    sparta::Scheduler sched;
     sparta::RootTreeNode rtn;
-    sparta::ClockManager cm;
+    sparta::ClockManager cm(&sched);
     sparta::Clock::Handle root_clk;
     root_clk = cm.makeRoot(&rtn, "root_clk");
     cm.normalize();

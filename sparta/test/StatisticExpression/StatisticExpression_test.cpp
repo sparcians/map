@@ -111,7 +111,8 @@ int main(int argc, char** argv)
 
         sparta::RootTreeNode top("top","A Tree Node");
         sparta::TreeNode c(&top, "decoy", "Non-Counter, Non-Stat decoy Node");
-        sparta::Clock::Handle clk_h(new sparta::Clock("parent_clk"));
+        sparta::Scheduler sched;
+        sparta::Clock::Handle clk_h(new sparta::Clock("parent_clk", &sched));
         sparta::Clock clk("clk", clk_h, 4.75);
         top.setClock(&clk);
 
@@ -143,7 +144,7 @@ int main(int argc, char** argv)
         top.enterConfiguring();
         top.enterFinalized();
 
-        sparta::Scheduler::getScheduler()->finalize();
+        sched.finalize();
 
         outer_scope_expr_1.reset(new Expression("foo.stats.a", &top));
 
@@ -179,7 +180,7 @@ int main(int argc, char** argv)
             cb+=2;
             cc+=1;
 
-            sparta::Scheduler::getScheduler()->run(11, true);
+            sched.run(11, true);
 
             EXPECT_EQUAL(ex_printable4.evaluate(), 57.5);
 
@@ -212,7 +213,7 @@ int main(int argc, char** argv)
             cb+=2;
             cc+=1;
 
-            sparta::Scheduler::getScheduler()->run(10, true);
+            sched.run(10, true);
 
             var1 = 2; // Updated here
 

@@ -580,7 +580,8 @@ void testClockHierarchies()
 {
     using sparta::Clock;
 
-    sparta::ClockManager m;
+    sparta::Scheduler sched;
+    sparta::ClockManager m(&sched);
     Clock::Handle root_clk = m.makeRoot();
     Clock::Handle clk_12 = m.makeClock("C12", root_clk, 1, 2);
     Clock::Handle clk_23 = m.makeClock("C23", root_clk, 2, 3);
