@@ -168,6 +168,11 @@ namespace sparta
                              "a Counter, or a Parameter of any numeric type. Got Node: \"" << node->getLocation()
                              << "\". This node is not a stat, counter, or parameter.");
 
+            // Get the Scheduler as context
+            if(node->getClock()) {
+                scheduler_ = n->getClock()->getScheduler();
+            }
+
             if(sdef_){
                 node_ref_ = stat_def->getWeakPtr();
 
@@ -212,17 +217,9 @@ namespace sparta
 
         /*!
          * \brief Construction with a predefined expression
-         * \param expr Expression to copy
-         */
-        StatisticInstance(const statistics::expression::Expression& expr) :
-            StatisticInstance()
-        {
-            stat_expr_ = expr;
-        }
-
-        /*!
-         * \brief Construction with a predefined expression
          * \param expr Expression reference to move
+         * \note You *must* set the context (setContext) after this
+         *       call.  The Expression might or might not know the context for the Scheduler
          */
         StatisticInstance(statistics::expression::Expression&& expr) :
             StatisticInstance()
@@ -278,6 +275,7 @@ namespace sparta
             stat_expr_(rhp.stat_expr_),
             start_tick_(rhp.start_tick_),
             end_tick_(rhp.end_tick_),
+            scheduler_(rhp.scheduler_),
             initial_(rhp.initial_),
             result_(rhp.result_),
             sub_statistics_(rhp.sub_statistics_),
@@ -314,6 +312,7 @@ namespace sparta
             stat_expr_(std::move(rhp.stat_expr_)),
             start_tick_(rhp.start_tick_),
             end_tick_(rhp.end_tick_),
+            scheduler_(rhp.scheduler_),
             initial_(rhp.initial_),
             result_(rhp.result_),
             sub_statistics_(std::move(rhp.sub_statistics_)),
@@ -389,7 +388,7 @@ namespace sparta
             const InstrumentationNode::visibility_t visibility = InstrumentationNode::DEFAULT_VISIBILITY,
             const InstrumentationNode::class_t cls = InstrumentationNode::DEFAULT_CLASS,
             const std::vector<std::pair<std::string, std::string>> & metadata = {}) :
-          StatisticInstance()
+            StatisticInstance()
         {
             if (!location.empty()) {
                 provided_location_ = location;
@@ -429,8 +428,14 @@ namespace sparta
             stat_expr_ = rhp.stat_expr_;
             start_tick_ = rhp.start_tick_;
             end_tick_ = rhp.end_tick_;
+            scheduler_ = rhp.scheduler_;
             initial_ = rhp.initial_;
             result_ = rhp.result_;
+
+            sub_statistics_ = rhp.sub_statistics_;
+            user_calculated_si_value_ = rhp.user_calculated_si_value_;
+            direct_lookup_si_value_ = rhp.direct_lookup_si_value_;
+            provided_metadata_ = rhp.provided_metadata_;
 
             return *this;
         }
@@ -1071,6 +1076,25 @@ namespace sparta
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
+        /**
+         * \brief Set the context of this StatisticInstance (sets the scheduler) based on a TreeNode
+         * \param context The context of this StatisticInstance based on a TreeNode
+         */
+        void setContext(const TreeNode * context) {
+            sparta_assert(nullptr != context->getClock());
+            scheduler_ = context->getClock()->getScheduler();
+            sparta_assert(nullptr != scheduler_);
+        }
+
+        /**
+         * \brief Set the Scheduler context of this StatisticInstance
+         * \param scheduler The Scheduler this SI should use
+         */
+        void setContext(const Scheduler * scheduler) {
+            scheduler_ = scheduler;
+            sparta_assert(nullptr != scheduler_);
+        }
+
     private:
 
         /*!
@@ -1184,7 +1208,7 @@ namespace sparta
         /*!
          * \brief Cached Scheduler object
          */
-        mutable Scheduler * scheduler_ = nullptr;
+        mutable const Scheduler * scheduler_ = nullptr;
 
         /*!
          * \brief Get the Scheduler associated with this StatisticInstance
@@ -1210,7 +1234,7 @@ namespace sparta
             }
 
             // Should always be able to fall back on singleton scheduler
-            sparta_assert(scheduler_);
+            sparta_assert(nullptr != scheduler_);
             return scheduler_;
         }
 

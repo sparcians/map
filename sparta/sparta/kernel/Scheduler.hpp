@@ -1013,19 +1013,18 @@ private:
     //! Set of counters & stats for the Scheduler
     StatisticSet sset_;
 
+    //! A dummy clock for the stats in this Scheduler -- mostly here to carry this Scheduler object
+    std::unique_ptr<sparta::Clock> scheduler_internal_clk_;
+
     //! Current tick count. References current_tick_ and assumes it is the same as counter_type_
     ReadOnlyCounter ticks_roctr_;
-
+    //! Internal counter for the pico seconds...
     class PicoSecondCounter : public ReadOnlyCounter {
         Scheduler& sched_;
     public:
-        PicoSecondCounter(Scheduler& sched, StatisticSet* parent) :
-            ReadOnlyCounter(parent,
-                            "picoseconds",
-                            "Picosecond Count of this Clock",
-                            CounterBase::COUNT_NORMAL),
-            sched_(sched)
-        {;}
+        PicoSecondCounter(Scheduler& sched,
+                          sparta::Clock * clk,
+                          StatisticSet* parent);
 
         counter_type get() const override {
             return static_cast<counter_type>(static_cast<double>(sched_.getElapsedTicks()) *

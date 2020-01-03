@@ -67,25 +67,14 @@ namespace sparta
         /**
          * \brief Construct a clock
          * \param name The name of the clock
-         * \param scheduler The scheduler to use, nullptr == global
+         * \param scheduler The scheduler to use; must be provided
          */
-        Clock(const std::string& name,
-              Scheduler *scheduler) :
+        Clock(const std::string& name, Scheduler *scheduler) :
             TreeNode(name, "Clock"),
             scheduler_(scheduler)
         {
             sparta_assert(scheduler_ != nullptr);
             scheduler_->registerClock(this);
-        }
-
-        /**
-         * \brief Construct a clock with no scheduler
-         * \param name The name of the clock
-         */
-        Clock(const std::string& name) :
-            Clock(name, nullptr)
-        {
-            // Delegated constructor
         }
 
         /**
@@ -96,11 +85,11 @@ namespace sparta
          * \param parent_root RootTreeNode parent of this clock. If nullptr, has
          *                    no effect
          * \param name Name of this clock
-         * \param scheduler The scheduler to use, nullptr == global
+         * \param scheduler The scheduler to use; must be provided
          */
         Clock(RootTreeNode* parent_root,
               const std::string& name,
-              Scheduler *scheduler = nullptr) :
+              Scheduler *scheduler ) :
             Clock(name, scheduler)
         {
             if(parent_root){
@@ -110,18 +99,23 @@ namespace sparta
 
         /*!
          * \brief Construct a named clock with a clock parent and a clock
-         * relative to that parent
+         *        relative to that parent
+         * \param name Name of this clock
+         * \param scheduler Pointer to the scheduler to use
+         * \param parent_clk Parent clock relative to this clock
+         * \param p_rat Numerator to the ratio
+         * \param c_rat Denominator to the ratio
+         *
          * \note Inherits scheduler pointer from parent clock
          */
-        Clock(const std::string& name, const Handle& parent,
+        Clock(const std::string& name, const Handle& parent_clk,
               const uint32_t& p_rat = 1, const uint32_t& c_rat = 1) :
-            Clock(name, nullptr)
+            Clock(name, parent_clk->getScheduler())
         {
-            sparta_assert(parent != nullptr);
-            parent_ = parent;
-            scheduler_ = parent_->getScheduler();
+            sparta_assert(parent_clk != nullptr);
+            parent_ = parent_clk;
 
-            associate(parent);
+            associate(parent_);
             setRatio(p_rat, c_rat);
         }
 
@@ -399,7 +393,11 @@ namespace sparta
                                 "Cycle Count of this Clock",
                                 Counter::COUNT_NORMAL),
                 clk_(clk)
-            {;}
+            {
+                // Needed for time calculation down the road in
+                // StatisticInstance
+                this->setClock(&clk_);
+            }
 
             counter_type get() const override {
                 return clk_.currentCycle();

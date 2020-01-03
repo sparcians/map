@@ -171,7 +171,11 @@ void tryStatisticDef4()
  */
 void tryReport0()
 {
-    RootTreeNode root(Scheduler::getScheduler()->getSearchScope());
+    sparta::Scheduler sched;
+    sparta::ClockManager  m(&sched);
+    Clock::Handle c_root  = m.makeRoot();
+    RootTreeNode root(sched.getSearchScope());
+    root.setClock(c_root.get());
     TreeNode core0(&root, "core0", "Core 0");
     StatisticSet sset0(&core0);
 
@@ -184,11 +188,12 @@ void tryReport0()
 
     root.enterConfiguring();
     root.enterFinalized();
+    sched.finalize();
 
     c1 += 2;
     c2 += 4;
 
-    Scheduler::getScheduler()->run(20, true);
+    sched.run(20, true);
     r1.start();
     std::cout << r1 << std::endl; // 0/0
     const auto hopefully_nan = r1.getStatistic(0).getValue();
@@ -200,14 +205,20 @@ void tryReport0()
     std::cout << r1 << std::endl;
     EXPECT_EQUAL(r1.getStatistic(0).getValue(), 0.5);
 
-    Scheduler::getScheduler()->run(20, true);
+    sched.run(20, true);
 
     root.enterTeardown();
 }
 
 void tryReportWithOptions(bool option_exists)
 {
-    RootTreeNode root(Scheduler::getScheduler()->getSearchScope());
+    sparta::Scheduler sched;
+    RootTreeNode root(sched.getSearchScope());
+
+    sparta::ClockManager  m(&sched);
+    Clock::Handle c_root  = m.makeRoot();
+    root.setClock(c_root.get());
+
     TreeNode core0(&root, "core0", "Core 0");
     StatisticSet sset0(&core0);
     Counter c1(&sset0, "c1", "Counter 1 (NORMAL VIS)",  Counter::COUNT_NORMAL, sparta::InstrumentationNode::VIS_NORMAL);
@@ -257,10 +268,9 @@ int main()
     sparta::log::Tap warnings(sparta::TreeNode::getVirtualGlobalNode(),
                             sparta::log::categories::WARN,
                             std::cerr);
-
-    Report r("Report 0"); // Report which outlives the tree
-
-    Scheduler::getScheduler()->finalize();
+    sparta::Scheduler sched;
+    Report r("Report 0", nullptr, &sched); // Report which outlives the tree
+    sched.finalize();
 
     // Ok StatisticDefs to declare, but not to instantiate or evaluate
     tryStatisticDef1();
@@ -273,9 +283,9 @@ int main()
     tryReportWithOptions(false);
 
     { // Test object scope (to ensure teardown works)
-
+        sparta::Scheduler sched;
         // Place into a tree which is in the same search scope as scheduler
-        RootTreeNode root(Scheduler::getScheduler()->getSearchScope());
+        RootTreeNode root(sched.getSearchScope());
         TreeNode core0(&root, "core0", "Core 0");
         TreeNode core1(&root, "core1", "Core 1");
         StatisticSet sset0(&core0);
@@ -283,7 +293,7 @@ int main()
         EXPECT_TRUE(sset0.isAttached()); // Ensure that node constructed with parent arg is properly attached
 
         // Create and attach some clocks to be referenced in the statistics
-        sparta::ClockManager  m;
+        sparta::ClockManager  m(&sched);
         Clock::Handle c_root  = m.makeRoot();
         Clock::Handle c_half  = m.makeClock("half", c_root, 1, 2);
         Clock::Handle c_third = m.makeClock("third", c_root, 1, 3);
@@ -337,6 +347,7 @@ int main()
 
         root.enterConfiguring();
         root.enterFinalized();
+        sched.finalize();
 
         EXPECT_NOTHROW( StatisticInstance sg_ok(&sd_nocycle); );
 
@@ -415,7 +426,7 @@ int main()
 
         // Report 4
 
-        Report r4("Report 4");
+        Report r4("Report 4", nullptr, &sched);
         r4.copyFromReport(r); // Copy of r
         Report& r4_1 = r4.addSubreport("Report 4.1");
         r4_1.add(core0.getChild("stats.c1"));
@@ -507,7 +518,7 @@ content:
 
         Report r8;
         r8.setContext(root.getSearchScope());
-        EXPECT_EQUAL(Scheduler::getScheduler()->getElapsedTicks(), 40);
+        EXPECT_EQUAL(sched.getElapsedTicks(), 40);
         EXPECT_EQUAL(r8.getStart(), 40);
         r8.addFile("test_autopopulate_multireport.yaml");
 
@@ -532,7 +543,7 @@ content:
 
         // Run simulation a while
 
-        Scheduler::getScheduler()->run(20, true); // Run UP TO tick 20, but not tick 20
+        sched.run(20, true); // Run UP TO tick 20, but not tick 20
         ++c1;
         c2 += 2;
         c3 += 3;
@@ -542,7 +553,7 @@ content:
         EXPECT_EQUAL(r.getStatistic(0).getValue(), 0);
         periodic_csv.update();
 
-        Scheduler::getScheduler()->run(20, true); // Run UP TO tick 40, but not tick 40
+        sched.run(20, true); // Run UP TO tick 40, but not tick 40
         ++c1;
         c2 += 2;
         c3 += 3;
@@ -560,7 +571,7 @@ content:
         std::cout << "Ended report\n" << r << std::endl;
         EXPECT_EQUAL(r.getStatistic(0).getValue(), 1);
 
-        Scheduler::getScheduler()->run(20, true);
+        sched.run(20, true);
         ++c1;
         c2 += 2;
         c3 += 3;

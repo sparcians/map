@@ -406,6 +406,7 @@ class ReportFileParserYAML
 
                                     // Build the StatisticInstance responsible for evaluating.
                                     StatisticInstance si(std::move(expr));
+                                    si.setContext(n);
                                     std::string full_name = value;
                                     auto& captures = scope.second;
                                     Report* const r = report_map_.at(scope.uid);
@@ -434,6 +435,7 @@ class ReportFileParserYAML
 
                                         // Build the StatisticInstance responsible for evaluating.
                                         StatisticInstance si(std::move(expr));
+                                        si.setContext(n);
                                         std::string full_name = value;
                                         auto& captures = scope.second;
                                         Report* const r = report_map_.at(scope.uid);
@@ -446,6 +448,7 @@ class ReportFileParserYAML
                             else{
                                 statistics::expression::Expression expr(assoc_key, n);
                                 StatisticInstance si(std::move(expr));
+                                si.setContext(n);
                                 std::string full_name = value;
                                 auto& captures = scope.second;
                                 Report* const r = report_map_.at(scope.uid);
@@ -457,6 +460,7 @@ class ReportFileParserYAML
                         else{
                             statistics::expression::Expression expr(assoc_key, n);
                             StatisticInstance si(std::move(expr));
+                            si.setContext(n);
                             std::string full_name = value;
                             auto& captures = scope.second;
                             Report* const r = report_map_.at(scope.uid);
@@ -1798,7 +1802,7 @@ void recursValidateSIDirectLookups(const Report & report)
  */
 Report::Report(const simdb::DatabaseID report_hier_node_id,
                const simdb::ObjectManager & obj_mgr) :
-    Report()
+    Report("nameless", nullptr)
 {
     obj_mgr.safeTransaction([&]() {
         //To recreate a report from a database entry, start with

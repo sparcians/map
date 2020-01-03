@@ -178,11 +178,8 @@ namespace sparta
             end_tick_(Scheduler::INDEFINITE)
         {
             if(!scheduler_ && context){
-                scheduler_ = context->getScheduler();
+                setContext(context);
             }
-
-            sparta_assert(scheduler_); // Must have a valid scheduler instance
-            start_tick_ = scheduler_->getElapsedTicks();
         }
 
         /*!
@@ -302,14 +299,19 @@ namespace sparta
 
         /*!
          * \brief Sets the context node for any method in this Report that
-         * performs a lookup by node path.
+         *        performs a lookup by node path.
          * \note Typically, this should be a sparta::RootTreeNode, but it can be
-         * anything - even nullptr.
+         *       anything - even nullptr.
+         * \note If a context is being set, that context *must* include a scheduler
+         * \note The start_tick will be set using the context provided
          * \see getContext
          */
         void setContext(TreeNode* n)
         {
             context_ = n;
+            scheduler_ = context_->getScheduler();
+            sparta_assert(scheduler_ != nullptr);
+            start_tick_ = scheduler_->getElapsedTicks();
         }
 
         /*!
@@ -1373,7 +1375,9 @@ namespace sparta
         template <typename T>
         void addField_(const std::string& name, T si_arg) {
             try{
-                stats_.emplace_back(name, new StatisticInstance(si_arg));
+                StatisticInstance * si;
+                stats_.emplace_back(name, si = new StatisticInstance(si_arg));
+                si->setContext(scheduler_);
             }catch(SpartaException& ex){
                 ex << " StatisticInstance would have been named \"" << name << "\"";
                 throw;

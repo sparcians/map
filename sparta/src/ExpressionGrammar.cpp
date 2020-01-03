@@ -309,7 +309,7 @@ ExpressionGrammar::builtin_vars_::builtin_vars_(TreeNode* n,
             << n->getLocation();
 
         sparta_assert(!"Unreachable");
-        static Clock clock("dummy");
+        static Clock clock("dummy", nullptr);
         return clock;
     };
 
