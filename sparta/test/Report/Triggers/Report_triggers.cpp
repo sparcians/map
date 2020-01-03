@@ -1565,7 +1565,7 @@ void cycle_driven_update_intervals()
     scheduler.finalize();
     root.setClock(root_clk.get());
 
-    sparta::ClockManager  m;
+    sparta::ClockManager  m(&scheduler);
     Clock::Handle c0_clk = m.makeClock("FooClock", root_clk);
     Clock::Handle c1_clk = m.makeClock("BarClock", root_clk);
     core0.setClock(c0_clk.get());
