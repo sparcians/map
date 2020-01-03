@@ -518,7 +518,7 @@ class ContextCounterTrigger;
             }
         private:
             const TreeNode * stat_node_ = nullptr;
-            const std::string stat_name_;
+            std::string stat_name_;
         };
 
         inline const std::vector<PendingSubStatCreationInfo> & getSubStatistics() const {

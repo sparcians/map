@@ -110,7 +110,8 @@ static_assert(sparta::NUM_SCHEDULING_PHASES == 7,
 
 int main()
 {
-    sparta::Clock clk("clock");
+    sparta::Scheduler lsched;
+    sparta::Clock clk("clock", &lsched);
     sparta::RootTreeNode rtn("dummyrtn");
     rtn.setClock(&clk);
 

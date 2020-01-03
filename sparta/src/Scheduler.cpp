@@ -66,12 +66,13 @@ Scheduler::Scheduler(const std::string& name, GlobalTreeNode* search_scope) :
                        "Scheduler Event Call Trace"),
     latest_continuing_event_(0),
     sset_(this),
+    scheduler_internal_clk_(new sparta::Clock("_internal_scheduler_clk", this)),
     ticks_roctr_(&sset_,
                  "ticks",
                  "Current tick number",
                  Counter::COUNT_NORMAL,
                  &elapsed_ticks_),
-    picoseconds_roctr_(*this, &sset_),
+    picoseconds_roctr_(*this, scheduler_internal_clk_.get(), &sset_),
     seconds_stat_(&sset_,
                   "seconds",
                   "Seconds elapsed",
@@ -102,6 +103,10 @@ Scheduler::Scheduler(const std::string& name, GlobalTreeNode* search_scope) :
                          Counter::COUNT_LATEST),
     es_uptr_(new EventSet(this))
 {
+    // Statistics and StatisticInstance objects require a clock to
+    // obtain the scheduler (which is this object) to determine
+    // start/stop times for differencing.
+    sset_.setClock(scheduler_internal_clk_.get());
 
     dag_.reset(new DAG(this, false));
     // Added to support sparta::GlobalEvent, must follow dag_ initialization
@@ -117,6 +122,19 @@ Scheduler::Scheduler(const std::string& name, GlobalTreeNode* search_scope) :
     }
 
     timer_.stop();
+}
+
+Scheduler::PicoSecondCounter::PicoSecondCounter(Scheduler& sched,
+                                                sparta::Clock * clk,
+                                                StatisticSet* parent) :
+    ReadOnlyCounter(parent,
+                    "picoseconds",
+                    "Picosecond Count of this Clock",
+                    CounterBase::COUNT_NORMAL),
+    sched_(sched)
+{
+    // For obtaining the scheduler
+    this->setClock(clk);
 }
 
 Scheduler::~Scheduler()
@@ -336,7 +354,6 @@ void Scheduler::run(Tick num_ticks,
 {
     // NOTE: Do not return from this method without setting running_ to
     // false.
-
     sparta_assert(dag_finalized_ == true, "Cannot run the scheduler before the scheduler is finalized");
     sparta_assert(running_ == false, "Cannot run the scheduler because it is already running. "
                 "This is either a recursive run() call or an even more severe problem");

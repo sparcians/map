@@ -69,7 +69,7 @@ class RootTreeNode;
         /*!
          * \brief Create a new clock with a given ratio to a parent clock
          */
-        Clock::Handle makeClock(const std::string& name, Clock::Handle &parent,
+        Clock::Handle makeClock(const std::string& name, const Clock::Handle &parent,
                                 const uint32_t &p_rat, const uint32_t &c_rat)
         {
             Clock::Handle c = Clock::Handle(new Clock(name, parent, p_rat, c_rat));
@@ -80,7 +80,7 @@ class RootTreeNode;
         /*!
          * \brief Create a new clock with a 1:1 ratio to a parent clock
          */
-        Clock::Handle makeClock(const std::string& name, Clock::Handle &parent)
+        Clock::Handle makeClock(const std::string& name, const Clock::Handle &parent)
         {
             return makeClock(name, parent, 1, 1);
         }
@@ -88,7 +88,8 @@ class RootTreeNode;
         /*!
          * \brief Create a new clock with a given frequency
          */
-        Clock::Handle makeClock(const std::string & name, Clock::Handle &parent, double frequency_mhz)
+        Clock::Handle makeClock(const std::string & name,
+                                const Clock::Handle &parent, double frequency_mhz)
         {
             any_clock_with_explicit_freq_ = true;
             Clock::Handle c = Clock::Handle(new Clock(name, parent, frequency_mhz));
