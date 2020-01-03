@@ -518,8 +518,8 @@ content:
 
         Report r8;
         r8.setContext(root.getSearchScope());
-        EXPECT_EQUAL(sched.getElapsedTicks(), 40);
-        EXPECT_EQUAL(r8.getStart(), 40);
+        EXPECT_EQUAL(sched.getElapsedTicks(), 0);
+        EXPECT_EQUAL(r8.getStart(), 0);
         r8.addFile("test_autopopulate_multireport.yaml");
 
         Report r9;

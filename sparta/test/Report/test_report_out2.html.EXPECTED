@@ -320,7 +320,7 @@ scheduler.stats.picoseconds' style='' >&nbsp;&nbsp;20</td>
 <td class='name' title='Free Expression: ~Root.third.stats.cycles
 ~Root.third.stats.cycles'>core1 cycles</td>
 <td class='value' title='Free Expression: ~Root.third.stats.cycles
-~Root.third.stats.cycles' style='' >&nbsp;&nbsp;&nbsp;7</td>
+~Root.third.stats.cycles' style='' >&nbsp;&nbsp;&nbsp;6</td>
 <td class='expression'>Free Expression: ~Root.third.stats.cycles</td>
 </tr>
 </tbody>

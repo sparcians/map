@@ -1,4 +1,4 @@
-Report "Report X" [40,101]
+Report "Report X" [0,61]
   Report "top.core0"
       c1 = 3
       c2 = 6
