@@ -182,21 +182,22 @@ constexpr unsigned int TestDriver::ASYNC_EVENTS_PER_THREAD;
 
 int main()
 {
-    EXPECT_TRUE(sparta::Scheduler::getScheduler()->getCurrentTick() == 1);
-    EXPECT_TRUE(sparta::Scheduler::getScheduler()->isRunning() == 0);
-
-    sparta::Clock clk("clock");
+    sparta::Scheduler sched;
+    sparta::Clock clk("clock", &sched);
     sparta::RootTreeNode rtn;
     sparta::EventSet event_set(&rtn);
     rtn.setClock(&clk);
 
+    EXPECT_TRUE(sched.getCurrentTick() == 1);
+    EXPECT_TRUE(sched.isRunning() == 0);
+
     TestDriver test_driver(&rtn, &event_set);
 
-    sparta::Scheduler::getScheduler()->finalize();
+    sched.finalize();
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
-    sparta::Scheduler::getScheduler()->run(-1U);
+    sched.run(-1U);
 
     rtn.enterTeardown();
 

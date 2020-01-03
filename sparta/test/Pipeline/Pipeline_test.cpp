@@ -118,12 +118,12 @@ std::ostream & operator<<(std::ostream & os, const PipelineEntryObj & obj)
 }
 
 template<typename Pipe>
-void runCycle(Pipe &pipe)
+void runCycle(Pipe &pipe, sparta::Scheduler * sched)
 {
 #ifdef TEST_MANUAL_UPDATE
     pipe.update();
 #endif
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched->run(1, true, false);
 }
 
 void testPipelineContinuingEvent() {
@@ -142,7 +142,7 @@ void testPipelineContinuingEvent() {
     examplePipeline1.performOwnUpdates();
 
     //scheduler.printNextCycleEventTree(std::cerr);
-    EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getNextContinuingEventTime(), 0);
+    EXPECT_EQUAL(scheduler.getNextContinuingEventTime(), 0);
 
     EXPECT_FALSE(examplePipeline1.isAnyValid());
 
@@ -180,8 +180,9 @@ int main ()
 {
     testPipelineContinuingEvent();
 
+    sparta::Scheduler sched;
     sparta::RootTreeNode rtn;
-    sparta::ClockManager cm;
+    sparta::ClockManager cm(&sched);
     sparta::Clock::Handle root_clk;
     root_clk = cm.makeRoot(&rtn, "root_clk");
     cm.normalize();
@@ -565,7 +566,7 @@ int main ()
                    examplePipeline7.getEventsAtStage(1).size());
     EXPECT_EQUAL(pipeline7_stage1_num_tick_events, 2);
 
-    sparta::Scheduler::getScheduler()->finalize();
+    sched.finalize();
 
 #ifdef PIPEOUT_GEN
     pc.startCollection(&rtn);
@@ -589,22 +590,22 @@ int main ()
     examplePipeline1.append(19);
 
     // Run Cycle-0
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
     EXPECT_FALSE(examplePipeline1.isValid(0));
 
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
 #ifdef TEST_MANUAL_UPDATE
     // Run Cycle-1(a)
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
     examplePipeline1.update();
     ev_task1_port.schedule(sparta::Clock::Cycle(0));
     // Run Cycle-1(b) && Cycle-2(a)
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #else
     // Run Cycle-1
     ev_task1_port.schedule(sparta::Clock::Cycle(1));
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #endif
     // Test pipeline read/write using [] semantics
     EXPECT_EQUAL(examplePipeline1.numValid(), 1);
@@ -617,7 +618,7 @@ int main ()
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
     examplePipeline1.append(20);
     // Run Cycle-2(b) && Cycle-3(a)
-    runCycle(examplePipeline1);
+    runCycle(examplePipeline1, &sched);
     // Test pipeline forward progression and specific stage modification
     EXPECT_EQUAL(examplePipeline1.numValid(), 2);
     EXPECT_TRUE(examplePipeline1.isValid(0));
@@ -633,11 +634,11 @@ int main ()
     examplePipeline1.update();
     ev_task2_tick.preparePayload(100)->schedule(sparta::Clock::Cycle(0));
     // Run Cycle-3(b) && Cycle-4(a)
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #else
     ev_task2_tick.preparePayload(100)->schedule(sparta::Clock::Cycle(1));
     // Run cycle-3
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #endif
     // Test pipeline forward progression
     EXPECT_EQUAL(examplePipeline1.numValid(), 3);
@@ -654,11 +655,11 @@ int main ()
     examplePipeline1.update();
     ev_task0_tick.schedule(sparta::Clock::Cycle(0));
     // Run Cycle-4(b) && Cycle-5(a)
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #else
     ev_task0_tick.schedule(sparta::Clock::Cycle(1));
     // Run cycle-4
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #endif
     // Test pipeline forward progression
     EXPECT_EQUAL(examplePipeline1.numValid(), 3);
@@ -675,11 +676,11 @@ int main ()
     examplePipeline1.update();
     ev_task3_flush.preparePayload("flushing")->schedule(sparta::Clock::Cycle(0));
     // Run Cycle-5(b) && Cycle-6(a)
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #else
     ev_task3_flush.preparePayload("flushing")->schedule(sparta::Clock::Cycle(1));
     // Run cycle-5
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #endif
     // Test pipeline forward progression
     EXPECT_EQUAL(examplePipeline1.numValid(), 3);
@@ -693,7 +694,7 @@ int main ()
 
     while (cyc_cnt < examplePipeline1.capacity() + 3) {
         std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-        runCycle(examplePipeline1);
+        runCycle(examplePipeline1, &sched);
     }
     // Test pipeline forward progression
     EXPECT_EQUAL(examplePipeline1.numValid(), 1);
@@ -702,7 +703,7 @@ int main ()
 
     // Run the last cycle (i.e. drain the pipeline)
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline1);
+    runCycle(examplePipeline1, &sched);
     // Test pipeline draining
     EXPECT_FALSE(examplePipeline1.isAnyValid());
     EXPECT_EQUAL(examplePipeline1.size(), 0);
@@ -721,7 +722,7 @@ int main ()
     EXPECT_NOTHROW(examplePipeline1.append(200));
     EXPECT_NOTHROW(examplePipeline1.writeStage(1, 100));
     EXPECT_NOTHROW(examplePipeline1.writeStage(2, 50));
-    runCycle(examplePipeline1);
+    runCycle(examplePipeline1, &sched);
     // Test pipeline append and specific stage modification
     EXPECT_EQUAL(examplePipeline1.numValid(), 3);
     EXPECT_TRUE(examplePipeline1.isValid(0));
@@ -734,7 +735,7 @@ int main ()
     EXPECT_NOTHROW(examplePipeline1.append(300));
     EXPECT_NOTHROW(examplePipeline1.invalidateStage(3));
     EXPECT_THROW(examplePipeline1.invalidateStage(1));
-    runCycle(examplePipeline1);
+    runCycle(examplePipeline1, &sched);
     // Test pipeline specific stage modification
     EXPECT_EQUAL(examplePipeline1.numValid(), 3);
     EXPECT_TRUE(examplePipeline1.isValid(0));
@@ -745,7 +746,7 @@ int main ()
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
     EXPECT_NOTHROW(examplePipeline1.flushStage(3));
     EXPECT_EQUAL(examplePipeline1.numValid(), 2);
-    runCycle(examplePipeline1);
+    runCycle(examplePipeline1, &sched);
     // Test pipeline specific stage flushing
     EXPECT_EQUAL(examplePipeline1.numValid(), 2);
     EXPECT_TRUE(examplePipeline1.isValid(1));
@@ -755,7 +756,7 @@ int main ()
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
     EXPECT_NOTHROW(examplePipeline1.flushAllStages());
     EXPECT_EQUAL(examplePipeline1.numValid(), 0);
-    runCycle(examplePipeline1);
+    runCycle(examplePipeline1, &sched);
     // Test whole pipeline flushing
     EXPECT_EQUAL(examplePipeline1.numValid(), 0);
 
@@ -777,7 +778,7 @@ int main ()
     EXPECT_THROW(examplePipeline1.deactivateEventAtStage(1));
     EXPECT_THROW(examplePipeline1.activateEventAtStage(1));
     std::cout << "  NOTE: Stage[0] Event Hander is de-activated!\n";
-    runCycle(examplePipeline1);
+    runCycle(examplePipeline1, &sched);
     EXPECT_EQUAL(examplePipeline1.numValid(), 1);
     EXPECT_TRUE(examplePipeline1.isValid(0));
 
@@ -787,14 +788,14 @@ int main ()
     EXPECT_NOTHROW(examplePipeline1.append(2000));
     EXPECT_NOTHROW(examplePipeline1.activateEventAtStage(0));
     std::cout << "  NOTE: Stage[0] Event Hander is re-activated!\n";
-    runCycle(examplePipeline1);
+    runCycle(examplePipeline1, &sched);
     EXPECT_EQUAL(examplePipeline1.numValid(), 2);
     EXPECT_TRUE(examplePipeline1.isValid(0));
     EXPECT_TRUE(examplePipeline1.isValid(1));
 
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline1);
+    runCycle(examplePipeline1, &sched);
     EXPECT_EQUAL(examplePipeline1.numValid(), 2);
     EXPECT_TRUE(examplePipeline1.isValid(1));
     EXPECT_TRUE(examplePipeline1.isValid(2));
@@ -803,7 +804,7 @@ int main ()
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
     EXPECT_NOTHROW(examplePipeline1.deactivateEventAtStage(2));
     std::cout << "  NOTE: Stage[2] Event Hander is de-activated!\n";
-    runCycle(examplePipeline1);
+    runCycle(examplePipeline1, &sched);
     EXPECT_EQUAL(examplePipeline1.numValid(), 2);
     EXPECT_TRUE(examplePipeline1.isValid(2));
     EXPECT_TRUE(examplePipeline1.isValid(3));
@@ -813,12 +814,12 @@ int main ()
     EXPECT_NOTHROW(examplePipeline1.append(3000));
     EXPECT_NOTHROW(examplePipeline1.activateEventAtStage(2));
     std::cout << "  NOTE: Stage[2] Event Hander is re-activated!\n";
-    runCycle(examplePipeline1);
+    runCycle(examplePipeline1, &sched);
 
     uint32_t offset = cyc_cnt;
     while (cyc_cnt < examplePipeline1.capacity() + offset) {
         std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline1);
+    runCycle(examplePipeline1, &sched);
     }
     EXPECT_EQUAL(examplePipeline1.numValid(), 0);
 
@@ -846,13 +847,13 @@ int main ()
     EXPECT_FALSE(iterForStage2.isValid());
 #ifdef TEST_MANUAL_UPDATE
     // Run Cycle-0(a)
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
     examplePipeline2.update();
     // Run Cycle-0(b) && Cycle-1(a)
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #else
     // Run Cycle-0
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #endif
     cyc_cnt++;
     EXPECT_FALSE(iterForStage2.isValid());
@@ -871,7 +872,7 @@ int main ()
             EXPECT_THROW((*iterForStage2).getID());
         }
 
-        runCycle(examplePipeline2);
+        runCycle(examplePipeline2, &sched);
         cyc_cnt++;
     }
 
@@ -910,7 +911,7 @@ int main ()
             examplePipeline3.append(1);
             examplePipeline4.append(true);
         }
-        sparta::Scheduler::getScheduler()->run(2, true);
+        sched.run(2, true);
     }
     std::cout << "[FINISH] Cross Pipeline Precedence Setup Test" << std::endl;
 
@@ -932,7 +933,7 @@ int main ()
     EXPECT_NOTHROW(examplePipeline5.append(1000));
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_EQUAL(examplePipeline5.numValid(), 1);
     EXPECT_TRUE(examplePipeline5.isValid(0));
 
@@ -941,7 +942,7 @@ int main ()
     EXPECT_NOTHROW(examplePipeline5.append(2000));
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_EQUAL(examplePipeline5.numValid(), 2);
     EXPECT_TRUE(examplePipeline5.isValid(0));
     EXPECT_TRUE(examplePipeline5.isValid(1));
@@ -951,7 +952,7 @@ int main ()
     EXPECT_NOTHROW(examplePipeline5.append(3000));
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_EQUAL(examplePipeline5.numValid(), 3);
     EXPECT_TRUE(examplePipeline5.isValid(0));
     EXPECT_TRUE(examplePipeline5.isValid(1));
@@ -968,7 +969,7 @@ int main ()
     EXPECT_THROW(examplePipeline5.stall(0, 2));
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_EQUAL(examplePipeline5.numValid(), 3);
     EXPECT_TRUE(examplePipeline5.isValid(0));
     EXPECT_TRUE(examplePipeline5.isValid(1));
@@ -982,7 +983,7 @@ int main ()
     // Attempt to stall being stalled pipeline is forbidden
     EXPECT_THROW(examplePipeline5.stall(2, 2));
     EXPECT_THROW(examplePipeline5.stall(0, 2));
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_EQUAL(examplePipeline5.numValid(), 3);
     EXPECT_TRUE(examplePipeline5.isValid(0));
     EXPECT_TRUE(examplePipeline5.isValid(1));
@@ -999,7 +1000,7 @@ int main ()
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
     // Test writting into the stage that is about to restart
     EXPECT_NOTHROW(examplePipeline5.writeStage(1, 2500));
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_EQUAL(examplePipeline5.numValid(), 2);
     EXPECT_TRUE(examplePipeline5.isValid(0));
     EXPECT_TRUE(examplePipeline5.isValid(2));
@@ -1008,27 +1009,27 @@ int main ()
 
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_EQUAL(examplePipeline5.numValid(), 2);
     EXPECT_TRUE(examplePipeline5.isValid(1));
     EXPECT_TRUE(examplePipeline5.isValid(3));
 
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_EQUAL(examplePipeline5.numValid(), 2);
     EXPECT_TRUE(examplePipeline5.isValid(2));
     EXPECT_TRUE(examplePipeline5.isValid(4));
 
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_EQUAL(examplePipeline5.numValid(), 1);
     EXPECT_TRUE(examplePipeline5.isValid(3));
 
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_EQUAL(examplePipeline5.numValid(), 1);
     EXPECT_TRUE(examplePipeline5.isValid(4));
 
@@ -1036,7 +1037,7 @@ int main ()
     offset = cyc_cnt;
     while (cyc_cnt < examplePipeline5.capacity() + offset) {
         std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-        runCycle(examplePipeline5);
+        runCycle(examplePipeline5, &sched);
     }
     EXPECT_EQUAL(examplePipeline5.numValid(), 0);
 
@@ -1046,14 +1047,14 @@ int main ()
     std::cout << "Append pipeline with data[=1000]\n";
     EXPECT_NOTHROW(examplePipeline5.append(1000));
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_TRUE(examplePipeline5.isValid(0));
     EXPECT_EQUAL(examplePipeline5.numValid(), 1);
 
     std::cout << "Append pipeline with data[=2000]\n";
     EXPECT_NOTHROW(examplePipeline5.append(2000));
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_TRUE(examplePipeline5.isValid(0));
     EXPECT_TRUE(examplePipeline5.isValid(1));
     EXPECT_EQUAL(examplePipeline5.numValid(), 2);
@@ -1061,7 +1062,7 @@ int main ()
     // bubble
     std::cout << "Insert bubble\n";
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_TRUE(!examplePipeline5.isValid(0));
     EXPECT_TRUE(examplePipeline5.isValid(1));
     EXPECT_TRUE(examplePipeline5.isValid(2));
@@ -1071,7 +1072,7 @@ int main ()
     std::cout << "Stall (insert bubble)\n";
     EXPECT_NOTHROW(examplePipeline5.stall(2, 1, true));
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     // should be unchanged
     EXPECT_TRUE(!examplePipeline5.isValid(0));
     EXPECT_TRUE(examplePipeline5.isValid(1));
@@ -1082,7 +1083,7 @@ int main ()
     std::cout << "Append pipeline with data[=3000]\n";
     EXPECT_NOTHROW(examplePipeline5.append(3000));
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_TRUE(examplePipeline5.isValid(0));
     EXPECT_TRUE(!examplePipeline5.isValid(1)); // bubble advances
     EXPECT_TRUE(examplePipeline5.isValid(2));
@@ -1092,7 +1093,7 @@ int main ()
     // stall again
     EXPECT_NOTHROW(examplePipeline5.stall(3, 1, true));
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_TRUE(!examplePipeline5.isValid(0));
     EXPECT_TRUE(examplePipeline5.isValid(1)); // bubble crushed
     EXPECT_TRUE(examplePipeline5.isValid(2));
@@ -1105,7 +1106,7 @@ int main ()
     std::cout << "Append pipeline with data[=4000]\n";
     EXPECT_NOTHROW(examplePipeline5.append(4000));
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_TRUE(examplePipeline5.isValid(0));
     EXPECT_TRUE(examplePipeline5.isValid(1));
     EXPECT_TRUE(examplePipeline5.isValid(2));
@@ -1116,7 +1117,7 @@ int main ()
     offset = cyc_cnt + 1;
     while (cyc_cnt < examplePipeline5.capacity() + offset) {
         std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-        runCycle(examplePipeline5);
+        runCycle(examplePipeline5, &sched);
     }
     EXPECT_EQUAL(examplePipeline5.numValid(), 0);
 
@@ -1126,7 +1127,7 @@ int main ()
     //
     examplePipeline5.append(1234);
     for (uint32_t cnt = 0; cnt < examplePipeline5.capacity(); ++cnt) {
-        runCycle(examplePipeline5);
+        runCycle(examplePipeline5, &sched);
     }
     EXPECT_EQUAL(examplePipeline5.numValid(), 1);
     EXPECT_TRUE(examplePipeline5.isLastValid());
@@ -1134,7 +1135,7 @@ int main ()
 
     // now stall.  1234 should remain at the last stage in the pipeline
     examplePipeline5.stall(examplePipeline5.capacity() - 1, 1);
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_EQUAL(examplePipeline5.numValid(), 1);
     EXPECT_TRUE(examplePipeline5.isLastValid());
     EXPECT_EQUAL(examplePipeline5[examplePipeline5.capacity() - 1], 1234);
@@ -1142,7 +1143,7 @@ int main ()
     const bool crush_bubbles = true;
     examplePipeline5.append(4321);
     examplePipeline5.stall(examplePipeline5.capacity() - 1, 1, crush_bubbles);
-    runCycle(examplePipeline5);
+    runCycle(examplePipeline5, &sched);
     EXPECT_EQUAL(examplePipeline5.numValid(), 2);
     EXPECT_TRUE(examplePipeline5.isLastValid());
     EXPECT_EQUAL(examplePipeline5[examplePipeline5.capacity() - 1], 1234);
@@ -1156,7 +1157,7 @@ int main ()
         EXPECT_EQUAL(examplePipeline5[i], 4321);
         EXPECT_TRUE(examplePipeline5.isValid(i));
         examplePipeline5.stall(examplePipeline5.capacity() - 1, 1, crush_bubbles);
-        runCycle(examplePipeline5);
+        runCycle(examplePipeline5, &sched);
         EXPECT_EQUAL(examplePipeline5.numValid(), 2);
         EXPECT_TRUE(examplePipeline5.isLastValid());
         EXPECT_EQUAL(examplePipeline5[examplePipeline5.capacity() - 1], 1234);
@@ -1174,20 +1175,20 @@ int main ()
 #endif
     std::cout << "Append stwr pipeline with data[=true]\n";
     EXPECT_NOTHROW(stwr_pipe.append(true));
-    runCycle(stwr_pipe);
-    runCycle(stwr_pipe);
-    runCycle(stwr_pipe);
-    runCycle(stwr_pipe);
-    runCycle(stwr_pipe);
+    runCycle(stwr_pipe, &sched);
+    runCycle(stwr_pipe, &sched);
+    runCycle(stwr_pipe, &sched);
+    runCycle(stwr_pipe, &sched);
+    runCycle(stwr_pipe, &sched);
     stwr_pipe.stall(4, 1, true);
     EXPECT_NOTHROW(stwr_pipe.writeStage(0, false));
-    runCycle(stwr_pipe);
+    runCycle(stwr_pipe, &sched);
     EXPECT_TRUE(!stwr_pipe.isValid(0));
     EXPECT_NOTHROW(stwr_pipe.writeStage(0, true));
 
     // drain pipe
     for (uint32_t i = 0; i < stwr_pipe.capacity(); ++i)
-        runCycle(stwr_pipe);
+        runCycle(stwr_pipe, &sched);
 
     std::cout << "[FINISH] Pipeline Stall/Restart Handling Test" << std::endl;
 
@@ -1209,7 +1210,7 @@ int main ()
     EXPECT_NOTHROW(examplePipeline6.append(1000));
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline6);
+    runCycle(examplePipeline6, &sched);
     EXPECT_EQUAL(examplePipeline6.numValid(), 1);
     EXPECT_TRUE(examplePipeline6.isValid(0));
 
@@ -1218,7 +1219,7 @@ int main ()
     EXPECT_NOTHROW(examplePipeline6.append(2000));
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline6);
+    runCycle(examplePipeline6, &sched);
     EXPECT_EQUAL(examplePipeline6.numValid(), 2);
     EXPECT_TRUE(examplePipeline6.isValid(0));
     EXPECT_TRUE(examplePipeline6.isValid(1));
@@ -1228,7 +1229,7 @@ int main ()
     EXPECT_NOTHROW(examplePipeline6.append(3000));
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline6);
+    runCycle(examplePipeline6, &sched);
     EXPECT_EQUAL(examplePipeline6.numValid(), 3);
     EXPECT_TRUE(examplePipeline6.isValid(0));
     EXPECT_TRUE(examplePipeline6.isValid(1));
@@ -1240,10 +1241,10 @@ int main ()
 #ifdef TEST_MANUAL_UPDATE
     examplePipeline6.update();
     EXPECT_NOTHROW(ev_flush_all.schedule(sparta::Clock::Cycle(0)));
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #else
     EXPECT_NOTHROW(ev_flush_all.schedule(sparta::Clock::Cycle(1)));
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #endif
     EXPECT_EQUAL(examplePipeline6.numValid(), 0);
 
@@ -1252,7 +1253,7 @@ int main ()
     EXPECT_NOTHROW(examplePipeline6.append(1000));
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline6);
+    runCycle(examplePipeline6, &sched);
     EXPECT_EQUAL(examplePipeline6.numValid(), 1);
     EXPECT_TRUE(examplePipeline6.isValid(0));
 
@@ -1261,7 +1262,7 @@ int main ()
     EXPECT_NOTHROW(examplePipeline6.append(2000));
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline6);
+    runCycle(examplePipeline6, &sched);
     EXPECT_EQUAL(examplePipeline6.numValid(), 2);
     EXPECT_TRUE(examplePipeline6.isValid(0));
     EXPECT_TRUE(examplePipeline6.isValid(1));
@@ -1271,7 +1272,7 @@ int main ()
     EXPECT_NOTHROW(examplePipeline6.append(3000));
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline6);
+    runCycle(examplePipeline6, &sched);
     EXPECT_EQUAL(examplePipeline6.numValid(), 3);
     EXPECT_TRUE(examplePipeline6.isValid(0));
     EXPECT_TRUE(examplePipeline6.isValid(1));
@@ -1282,7 +1283,7 @@ int main ()
     EXPECT_NOTHROW(examplePipeline6.stall(1, 2));
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline6);
+    runCycle(examplePipeline6, &sched);
     EXPECT_EQUAL(examplePipeline6.numValid(), 3);
     EXPECT_TRUE(examplePipeline6.isValid(0));
     EXPECT_TRUE(examplePipeline6.isValid(1));
@@ -1294,10 +1295,10 @@ int main ()
 #ifdef TEST_MANUAL_UPDATE
     examplePipeline6.update();
     EXPECT_NOTHROW(ev_flush_one.preparePayload(0)->schedule(sparta::Clock::Cycle(0)));
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #else
     EXPECT_NOTHROW(ev_flush_one.preparePayload(0)->schedule(sparta::Clock::Cycle(1)));
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #endif
     EXPECT_EQUAL(examplePipeline6.numValid(), 2);
     EXPECT_FALSE(examplePipeline6.isValid(0));
@@ -1309,7 +1310,7 @@ int main ()
     EXPECT_NOTHROW(examplePipeline6.append(1000));
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline6);
+    runCycle(examplePipeline6, &sched);
     EXPECT_EQUAL(examplePipeline6.numValid(), 2);
     EXPECT_TRUE(examplePipeline6.isValid(0));
     EXPECT_TRUE(examplePipeline6.isValid(2));
@@ -1319,7 +1320,7 @@ int main ()
     EXPECT_NOTHROW(examplePipeline6.append(2000));
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline6);
+    runCycle(examplePipeline6, &sched);
     EXPECT_EQUAL(examplePipeline6.numValid(), 3);
     EXPECT_TRUE(examplePipeline6.isValid(0));
     EXPECT_TRUE(examplePipeline6.isValid(1));
@@ -1330,7 +1331,7 @@ int main ()
     EXPECT_NOTHROW(examplePipeline6.stall(1, 3));
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline6);
+    runCycle(examplePipeline6, &sched);
     EXPECT_EQUAL(examplePipeline6.numValid(), 3);
     EXPECT_TRUE(examplePipeline6.isValid(0));
     EXPECT_TRUE(examplePipeline6.isValid(1));
@@ -1343,10 +1344,10 @@ int main ()
 #ifdef TEST_MANUAL_UPDATE
     examplePipeline6.update();
     EXPECT_NOTHROW(ev_flush_one.preparePayload(1)->schedule(sparta::Clock::Cycle(0)));
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #else
     EXPECT_NOTHROW(ev_flush_one.preparePayload(1)->schedule(sparta::Clock::Cycle(1)));
-    sparta::Scheduler::getScheduler()->run(1, true);
+    sched.run(1, true);
 #endif
     EXPECT_EQUAL(examplePipeline6.numValid(), 1);
     EXPECT_TRUE(examplePipeline6.isValid(0));
@@ -1358,7 +1359,7 @@ int main ()
 
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-    runCycle(examplePipeline6);
+    runCycle(examplePipeline6, &sched);
     EXPECT_EQUAL(examplePipeline6.numValid(), 2);
     EXPECT_TRUE(examplePipeline6.isValid(0));
     EXPECT_TRUE(examplePipeline6.isValid(1));
@@ -1368,7 +1369,7 @@ int main ()
 
     while (examplePipeline6.numValid()) {
         std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
-        runCycle(examplePipeline6);
+        runCycle(examplePipeline6, &sched);
     }
 
     std::cout << "[FINISH] Pipeline Flush Handling Test\n" << std::endl;

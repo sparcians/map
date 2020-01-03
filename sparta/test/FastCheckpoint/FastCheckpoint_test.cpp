@@ -68,8 +68,9 @@ public:
 //! \brief General test for checkpointing behavior. Creates/deletes/loads, etc.
 void generalTest()
 {
+    sparta::Scheduler sched;
     RootTreeNode clocks("clocks");
-    sparta::Clock clk(&clocks, "clock");
+    sparta::Clock clk(&clocks, "clock", &sched);
 
     // Create a tree with some register sets and a memory
     RootTreeNode root;
@@ -98,7 +99,7 @@ void generalTest()
 
     // Create a checkpointer
 
-    FastCheckpointer fcp(root, sparta::Scheduler::getScheduler());
+    FastCheckpointer fcp(root, &sched);
     fcp.setSnapshotThreshold(5);
 
     root.enterConfiguring();
@@ -107,7 +108,7 @@ void generalTest()
     // Set up checkpointing (after tree finalization)
 
 
-    EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getCurrentTick(), 1);
+    EXPECT_EQUAL(sched.getCurrentTick(), 1);
 
 
     // CHECKPOINT: HEAD
@@ -144,11 +145,11 @@ void generalTest()
     std::cout << "Register set @ cp1" << std::endl;
     std::cout << *rset << std::endl << std::endl;
 
-    sparta::Scheduler::getScheduler()->finalize(); // Note that checkpoints could be created before this!
-    sparta::Scheduler::getScheduler()->run(10, true);
+    sched.finalize(); // Note that checkpoints could be created before this!
+    sched.run(10, true);
 
     // Scheduler's tick is zero-based
-    EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getCurrentTick(), 11);
+    EXPECT_EQUAL(sched.getCurrentTick(), 11);
 
     // CHECKPOINT: 2
 
@@ -165,17 +166,17 @@ void generalTest()
     std::cout << "Register set @ cp2" << std::endl;
     std::cout << *rset << std::endl << std::endl;
 
-    sparta::Scheduler::Tick curtick = sparta::Scheduler::getScheduler()->getCurrentTick();
-    sparta::Scheduler::getScheduler()->restartAt(curtick - 1); // Travel back in time (on the scheduler without telling the checkpointer)
+    sparta::Scheduler::Tick curtick = sched.getCurrentTick();
+    sched.restartAt(curtick - 1); // Travel back in time (on the scheduler without telling the checkpointer)
     EXPECT_THROW(fcp.createCheckpoint()); // Cannot add checkpoint in the past (less than tick of current)
-    sparta::Scheduler::getScheduler()->restartAt(curtick);
+    sched.restartAt(curtick);
 
     // Note: To properly change the scheduler time without loading a checkpoint,
     // use Checkpointer::forgetCurrent() after changing time in the scheduler
 
-    sparta::Scheduler::getScheduler()->run(10, true);
+    sched.run(10, true);
     // Scheduler's tick is zero-based
-    EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getCurrentTick(), 21);
+    EXPECT_EQUAL(sched.getCurrentTick(), 21);
 
 
     // Go back in time to cycle 1
@@ -189,9 +190,9 @@ void generalTest()
 
 
 
-    EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getCurrentTick(), 1);
-    sparta::Scheduler::getScheduler()->run(2, true);
-    EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getCurrentTick(), 3);
+    EXPECT_EQUAL(sched.getCurrentTick(), 1);
+    sched.run(2, true);
+    EXPECT_EQUAL(sched.getCurrentTick(), 3);
 
 
 
@@ -214,11 +215,11 @@ void generalTest()
     for(uint32_t i = 0; i < NUM_CHECKS_IN_LOOP; ++i){
 
         chpts_b1[i] = fcp.createCheckpoint();
-        sparta::Scheduler::getScheduler()->run(1, true);
-        EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getCurrentTick(), 3+i+1);
+        sched.run(1, true);
+        EXPECT_EQUAL(sched.getCurrentTick(), 3+i+1);
     }
 
-    EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getCurrentTick(), 3 + NUM_CHECKS_IN_LOOP);
+    EXPECT_EQUAL(sched.getCurrentTick(), 3 + NUM_CHECKS_IN_LOOP);
 
 
     // Go back in time to cycle 5
@@ -230,7 +231,7 @@ void generalTest()
     EXPECT_EQUAL(r1->read<uint32_t>(), 0x39);
     EXPECT_EQUAL(r2->read<uint32_t>(), 0x3a);
 
-    EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getCurrentTick(), 5);
+    EXPECT_EQUAL(sched.getCurrentTick(), 5);
 
 
     // CHECKPOINTS at time 5-11
@@ -242,11 +243,11 @@ void generalTest()
     for(uint32_t i = 0; i < NUM_CHECKS_IN_LOOP; ++i){
 
         /* chpts_b2[i] = */ fcp.createCheckpoint();
-        sparta::Scheduler::getScheduler()->run(1, true);
-        EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getCurrentTick(), 5+i+1);
+        sched.run(1, true);
+        EXPECT_EQUAL(sched.getCurrentTick(), 5+i+1);
     }
 
-    EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getCurrentTick(), 5 + NUM_CHECKS_IN_LOOP);
+    EXPECT_EQUAL(sched.getCurrentTick(), 5 + NUM_CHECKS_IN_LOOP);
 
     // Write memory
     memset(buf, 0xfff, sizeof(buf));
@@ -267,7 +268,7 @@ void generalTest()
     mem_if.read(0x100, 32, buf);
     EXPECT_TRUE(memcmp(buf, compare, 32) == 0); // Checkpoint did not work if value is 0xfff
 
-    EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getCurrentTick(), 1);
+    EXPECT_EQUAL(sched.getCurrentTick(), 1);
 
 
     // CHECKPOINTS at time 1-7
@@ -279,11 +280,11 @@ void generalTest()
     for(uint32_t i = 0; i < NUM_CHECKS_IN_LOOP; ++i){
 
         /* chpts_b3[i] = */ fcp.createCheckpoint();
-        sparta::Scheduler::getScheduler()->run(1, true);
-        EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getCurrentTick(), 1+i+1);
+        sched.run(1, true);
+        EXPECT_EQUAL(sched.getCurrentTick(), 1+i+1);
     }
 
-    EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getCurrentTick(), NUM_CHECKS_IN_LOOP+1);
+    EXPECT_EQUAL(sched.getCurrentTick(), NUM_CHECKS_IN_LOOP+1);
 
     std::cout << "\nCheckpoint Tree:" << std::endl;
     fcp.dumpTree(std::cout);
@@ -499,11 +500,12 @@ void restoreCheckpoint(std::stack<FastCheckpointer::chkpt_id_t>& ckpts,
 void stackTest()
 {
     std::cout << "Checkpoint test" << std::endl;
+    sparta::Scheduler csched;
 
-    sparta::Scheduler* sched = sparta::Scheduler::getScheduler();
+    sparta::Scheduler* sched = &csched;
     sched->restartAt(1);
 
-    sparta::Clock clk("clock");
+    sparta::Clock clk("clock", sched);
 
     // Place into a tree
     RootTreeNode root;
@@ -516,7 +518,7 @@ void stackTest()
 
     // Create checkpointer
 
-    FastCheckpointer fcp(root, sparta::Scheduler::getScheduler());
+    FastCheckpointer fcp(root, sched);
     fcp.setSnapshotThreshold(5);
 
     root.enterConfiguring();
@@ -609,8 +611,9 @@ void stackTest()
 
 void deletionTest1()
 {
+    sparta::Scheduler sched;
     RootTreeNode clocks("clocks");
-    sparta::Clock clk(&clocks, "clock");
+    sparta::Clock clk(&clocks, "clock", &sched);
 
     // Create a tree with some register sets and a memory
     RootTreeNode root;
@@ -639,7 +642,7 @@ void deletionTest1()
 
     // Create a checkpointer
 
-    FastCheckpointer fcp(root, sparta::Scheduler::getScheduler());
+    FastCheckpointer fcp(root, &sched);
     fcp.setSnapshotThreshold(5);
 
     root.enterConfiguring();
@@ -702,8 +705,9 @@ void deletionTest1()
 
 void deletionTest2()
 {
+    sparta::Scheduler sched;
     RootTreeNode clocks("clocks");
-    sparta::Clock clk(&clocks, "clock");
+    sparta::Clock clk(&clocks, "clock", &sched);
 
     // Create a tree with some register sets and a memory
     RootTreeNode root;
@@ -732,7 +736,7 @@ void deletionTest2()
 
     // Create a checkpointer
 
-    FastCheckpointer fcp(root, sparta::Scheduler::getScheduler());
+    FastCheckpointer fcp(root, &sched);
     fcp.setSnapshotThreshold(5);
 
     root.enterConfiguring();
@@ -801,7 +805,8 @@ void deletionTest2()
 void deletionTest3()
 {
     RootTreeNode clocks("clocks");
-    sparta::Clock clk(&clocks, "clock");
+    sparta::Scheduler sched;
+    sparta::Clock clk(&clocks, "clock", &sched);
 
     // Create a tree with some register sets and a memory
     RootTreeNode root;
@@ -830,7 +835,7 @@ void deletionTest3()
 
     // Create a checkpointer
 
-    FastCheckpointer fcp(root, sparta::Scheduler::getScheduler());
+    FastCheckpointer fcp(root, &sched);
     fcp.setSnapshotThreshold(5);
 
     root.enterConfiguring();
@@ -885,7 +890,8 @@ void deletionTest3()
 void speedTest1()
 {
     RootTreeNode clocks("clocks");
-    sparta::Clock clk(&clocks, "clock");
+    sparta::Scheduler sched;
+    sparta::Clock clk(&clocks, "clock", &sched);
 
     // Create a tree with some register sets and a memory
     RootTreeNode root;
@@ -914,7 +920,7 @@ void speedTest1()
 
     // Create a checkpointer
 
-    FastCheckpointer fcp(root, sparta::Scheduler::getScheduler());
+    FastCheckpointer fcp(root, &sched);
     fcp.setSnapshotThreshold(5);
 
     root.enterConfiguring();

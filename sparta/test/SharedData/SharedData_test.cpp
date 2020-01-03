@@ -16,10 +16,15 @@ TEST_INIT;
 
 struct auto_update
 {
+    auto_update(sparta::Scheduler * _sched) :
+        sched(_sched)
+    {}
+
     template<class T>
     void operator()(T &) const {
-        sparta::Scheduler::getScheduler()->run();
+        sched->run();
     }
+    sparta::Scheduler * sched;
 };
 
 struct manual_update
@@ -121,7 +126,8 @@ void test_sddata(T & sdata, std::function<void(T &)> & f_update)
 int main ()
 {
     sparta::RootTreeNode rtn;
-    sparta::ClockManager cm;
+    sparta::Scheduler sched;
+    sparta::ClockManager cm(&sched);
     sparta::Clock::Handle root_clk;
     root_clk = cm.makeRoot(&rtn, "root_clk");
     cm.normalize();
@@ -135,15 +141,15 @@ int main ()
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
-    sparta::Scheduler::getScheduler()->finalize();
-    sparta::Scheduler::getScheduler()->run(1, true, false);
+    sched.finalize();
+    sched.run(1, true, false);
 
     ////////////////////////////////////////////////////////////////////////////////
     // Enter testing
 
     // This will not compile since manual_update == false
     // sdata1.update();
-    std::function<void(sparta::SharedData<uint32_t> &)> a_update = auto_update();
+    std::function<void(sparta::SharedData<uint32_t> &)> a_update = auto_update(&sched);
     test_sddata(sdata1, a_update);
 
     std::function<void(sparta::SharedData<uint32_t, true> &)> m_update = manual_update();

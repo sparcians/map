@@ -83,7 +83,8 @@ int main()
         Bar b3(&s1);            // Same scheduler as b1: b1==b3
         EXPECT_TRUE(b1 == b3);
     }
-    Scheduler *s1 = sparta::Scheduler::getScheduler();
+    sparta::Scheduler sched;
+    Scheduler *s1 = &sched;
 
     DAG *dag[3] = {new DAG(s1, true), new DAG(s1, true), new DAG(s1, true)};
 
@@ -235,7 +236,7 @@ int main()
         }
     }
     sparta::RootTreeNode rtn;
-    sparta::Clock clk("clock");
+    sparta::Clock clk("clock", &sched);
     rtn.setClock(&clk);
     sparta::EventSet es(&rtn);
 
@@ -291,8 +292,8 @@ int main()
 
     // Finalize
     try {
-        Scheduler::getScheduler()->getDAG()->finalize();
-        cout << Scheduler::getScheduler()->getDAG() << endl;
+        sched.getDAG()->finalize();
+        cout << sched.getDAG() << endl;
     } catch (DAG::CycleException &) {
         EXPECT_TRUE(false);
         cout << "Cycle(s) found during sort..." << endl;
@@ -344,9 +345,9 @@ int main()
     EXPECT_EQUAL(chain_outp[1]->getGroupID(), base_grp + 3);
     EXPECT_EQUAL(chain_outp[2]->getGroupID(), base_grp + 5);
 
-    //EXPECT_EQUAL(Scheduler::getScheduler()->getDAG()->numGroups(), 13);
+    //EXPECT_EQUAL(sched.getDAG()->numGroups(), 13);
     // Account for the addition of 7 "global" PhasedPayloadEvent in sparta::Scheduler
-    EXPECT_EQUAL(Scheduler::getScheduler()->getDAG()->numGroups(), 19);
+    EXPECT_EQUAL(sched.getDAG()->numGroups(), 19);
 
     for (uint32_t p = 0; p < 3; ++p) {
         delete chain_inp[p];

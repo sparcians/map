@@ -19,8 +19,9 @@ TEST_INIT;
 
 void testPushBack()
 {
+    sparta::Scheduler sched;
+    sparta::ClockManager  cm(&sched);
     sparta::RootTreeNode  rtn;
-    sparta::ClockManager  cm;
     sparta::Clock::Handle root_clk;
     sparta::StatisticSet  buf10_stats(&rtn);
     root_clk = cm.makeRoot(&rtn, "root_clk");
@@ -48,7 +49,8 @@ void testPushBack()
 void testForwardIterators()
 {
     sparta::RootTreeNode  rtn;
-    sparta::ClockManager  cm;
+    sparta::Scheduler sched;
+    sparta::ClockManager  cm(&sched);
     sparta::Clock::Handle root_clk;
     sparta::StatisticSet  buf10_stats(&rtn);
     root_clk = cm.makeRoot(&rtn, "root_clk");
@@ -253,7 +255,8 @@ void testForwardIterators()
 void testReverseIterators()
 {
     sparta::RootTreeNode  rtn;
-    sparta::ClockManager  cm;
+    sparta::Scheduler sched;
+    sparta::ClockManager  cm(&sched);
     sparta::Clock::Handle root_clk;
     sparta::StatisticSet  buf10_stats(&rtn);
     root_clk = cm.makeRoot(&rtn, "root_clk");
@@ -295,7 +298,8 @@ void testReverseIterators()
 void testEraseInsert()
 {
     sparta::RootTreeNode  rtn;
-    sparta::ClockManager  cm;
+    sparta::Scheduler sched;
+    sparta::ClockManager  cm(&sched);
     sparta::Clock::Handle root_clk;
     sparta::StatisticSet  buf10_stats(&rtn);
     root_clk = cm.makeRoot(&rtn, "root_clk");
@@ -354,7 +358,8 @@ void testEraseInsert()
 void testCollection()
 {
     sparta::RootTreeNode  rtn;
-    sparta::ClockManager  cm;
+    sparta::Scheduler sched;
+    sparta::ClockManager  cm(&sched);
     sparta::Clock::Handle root_clk;
     sparta::StatisticSet  buf10_stats(&rtn);
     root_clk = cm.makeRoot(&rtn, "root_clk");
@@ -401,7 +406,8 @@ void testCollection()
 void testStatsOutput()
 {
     sparta::RootTreeNode rtn;
-    sparta::ClockManager cm;
+    sparta::Scheduler sched;
+    sparta::ClockManager  cm(&sched);
     sparta::Clock::Handle root_clk;
     root_clk = cm.makeRoot(&rtn, "root_clk");
     cm.normalize();

@@ -500,10 +500,12 @@ public:
                         SPARTA_ADDPAIR("val2", &Level_8::getPair));
 };
 
-int main(){
+int main()
+{
+    sparta::Scheduler sched;
     sparta::RootTreeNode root_node("root");
     sparta::RootTreeNode root_clks("clocks", "Clock Tree Root", root_node.getSearchScope());
-    sparta::ClockManager cm;
+    sparta::ClockManager cm(&sched);
     sparta::Clock::Handle root_clk = cm.makeRoot(&root_clks);
     sparta::Clock::Handle clk_1000000 = cm.makeClock("clk_1000000", root_clk, 1000000.0);
     sparta::Clock::Handle clk_100000 = cm.makeClock("clk_100000", root_clk, 100000.0);

@@ -35,9 +35,7 @@ typedef uint32_t DataType;
 // Tick and Data tuple
 typedef std::pair<uint64_t, DataType> TickAndData;
 
-uint64_t now() {
-    return sparta::Scheduler::getScheduler()->getCurrentTick();
-}
+#define now() getClock()->getScheduler()->getCurrentTick()
 
 sparta::Scheduler::Tick syncToRisingEdge(sparta::Scheduler::Tick tick, sparta::Clock::Cycle period) {
     sparta::Scheduler::Tick edge = tick;
@@ -148,10 +146,15 @@ public:
 
     ~TestSystem();
 
+    sparta::Scheduler * getScheduler() {
+        return &sched;
+    }
+
 private:
     sparta::RootTreeNode rtn;
 
-    sparta::ClockManager cm;
+    sparta::Scheduler sched;
+    sparta::ClockManager cm{&sched};
     sparta::Clock::Handle root_clk;
     sparta::Clock::Handle master_clk;
     sparta::Clock::Handle slave_clk;
@@ -213,7 +216,8 @@ void Unit::data_callback(const char &)
 void Unit::cmd_callback(const DataType & dat)
 {
 #ifdef MAKE_NOISE
-    std::cout << getName() << ": Got data '" << dat << "' at " << now() << ", cycle " << getClock()->currentCycle() << "\n";
+    std::cout << getName() << ": Got data '" << dat << "' at "
+              << now() << ", cycle " << getClock()->currentCycle() << "\n";
 #endif
 
     got_cmd_ = true;
@@ -368,7 +372,7 @@ TestSystem::TestSystem(double master_frequency_mhz, double slave_frequency_mhz)
     rtn.enterFinalized();
 
     if (scheduler_debug) {
-        sparta::Scheduler::getScheduler()->getDAG()->print(std::cout);
+        sched.getDAG()->print(std::cout);
     }
 
     Unit * master_unit = master_tn->getResourceAs<Unit*>();
@@ -397,11 +401,11 @@ TestSystem::TestSystem(double master_frequency_mhz, double slave_frequency_mhz)
     pc.reset(new sparta::collection::PipelineCollector("testPipe", 1000000, root_clk.get(), &rtn));
 #endif
 
-    sparta::Scheduler::getScheduler()->finalize();
+    sched.finalize();
 
     // Align the scheduler to the rising edge of both clocks
     while(!(master_clk->isPosedge() && slave_clk->isPosedge())) {
-        sparta::Scheduler::getScheduler()->run(1, true, false); // exacting_run = true, measure time = false
+        sched.run(1, true, false); // exacting_run = true, measure time = false
     }
 #ifdef PIPEOUT_GEN
     pc->startCollection(&rtn);
@@ -421,7 +425,7 @@ TestSystem::~TestSystem()
     pc->destroy();
 #endif
     rtn.enterTeardown();
-    sparta::Scheduler::getScheduler()->restartAt(0);
+    sched.restartAt(0);
 }
 
 
@@ -435,10 +439,10 @@ void run_test(double master_frequency_mhz, double slave_frequency_mhz)
 
     //sparta::log::Tap scheduler_tap(sparta::Scheduler::getScheduler(), "debug", "sched.out");
 
-    sparta::Scheduler::getScheduler()->run();
+    ts->getScheduler()->run();
     ts.reset();
 
-    sparta::Scheduler::getScheduler()->reset();
+    ts->getScheduler()->reset();
 
     if (!EXPECT_EQUAL(Unit::num_destructors_called, 2)) {
         std::cout << "ERROR: " << "run_test()"

@@ -28,7 +28,8 @@ void testConstIterator();
 int main()
 {
     sparta::RootTreeNode rtn;
-    sparta::ClockManager cm;
+    sparta::Scheduler sched;
+    sparta::ClockManager cm(&sched);
     sparta::Clock::Handle root_clk;
     root_clk = cm.makeRoot(&rtn, "root_clk");
     cm.normalize();
@@ -59,14 +60,14 @@ int main()
                                            root_clk.get(), &rtn);
 #endif
 
-    sparta::Scheduler::getScheduler()->finalize();
+    sched.finalize();
 
 #ifdef PIPEOUT_GEN
     pc.startCollection(&rtn);
 #endif
 
     ////////////////////////////////////////////////////////////
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 
     // Test an empty buffer
     uint32_t i = 0;
@@ -215,7 +216,7 @@ int main()
     buf10.push_back(1234.5);
     EXPECT_TRUE(buf10.size() == 1);
 
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 
     EXPECT_TRUE(buf10.size() == 1);
 
@@ -231,7 +232,7 @@ int main()
 
     EXPECT_EQUAL(buf10.size(), 10);
 
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
     EXPECT_EQUAL(buf10.size(), 10);
 
     sparta::Buffer<double>::iterator buf10_iter= buf10.begin();
@@ -272,7 +273,7 @@ int main()
         EXPECT_EQUAL(buf10.read(i), 4.5 + i);
     }
 
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 
     buf10.erase(3);
     EXPECT_EQUAL(buf10.size(), 4);
@@ -280,13 +281,13 @@ int main()
     EXPECT_EQUAL(buf10.read(1), 5.5);
     EXPECT_EQUAL(buf10.read(2), 6.5);
     EXPECT_EQUAL(buf10.read(3), 8.5);
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 
     while(buf10.size() != 0) {
         buf10.erase(0);
     }
     EXPECT_EQUAL(buf10.size(), 0);
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
     EXPECT_EQUAL(buf10.size(), 0);
 
     //////////////////////////////////////////////////////////////////////
@@ -295,17 +296,17 @@ int main()
         buf10.push_back(1.5 + i);
     }
     EXPECT_EQUAL(buf10.size(), 9);
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 
     buf10.clear();
     EXPECT_EQUAL(buf10.size(), 0);
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 
     for(uint32_t i = 0; i < 9; ++i) {
         buf10.push_back(20.5 + i);
     }
     EXPECT_EQUAL(buf10.size(), 9);
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 
 
     //////////////////////////////////////////////////////////////////////
@@ -349,7 +350,7 @@ int main()
     --itr; // should point to 6
     EXPECT_EQUAL(buf10.read(itr), 26.5);
 
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 
     // Check for correct response when using the increment operator
     buf10.clear();
@@ -378,7 +379,7 @@ int main()
     // }
 
 
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 
     //////////////////////////////////////////////////////////////////////
     // REVERSE_ITERATOR tests
@@ -420,7 +421,7 @@ int main()
     EXPECT_EQUAL(buf10.read(ritr), 26.5);
     --ritr; // What should this do?
 
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 
     // Check for correct response when using the increment operator
     buf10.clear();
@@ -438,7 +439,7 @@ int main()
     EXPECT_EQUAL(buf10.read(ritr), 1234.5);
     --ritr;
 
-    sparta::Scheduler::getScheduler()->run(5);
+    sched.run(5);
 
     testConstIterator();
 
@@ -488,8 +489,9 @@ private:
 
 void testConstIterator()
 {
+    sparta::Scheduler sched;
     sparta::RootTreeNode rtn;
-    sparta::ClockManager cm;
+    sparta::ClockManager cm(&sched);
     sparta::Clock::Handle root_clk;
     root_clk = cm.makeRoot(&rtn, "root_clk");
     cm.normalize();

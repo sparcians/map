@@ -76,7 +76,8 @@ bool runTest(bool validate_post_run,
     { // Scope to this block
         sparta::ResourceFactory<SimpleDevice> fact; // ParameterSet figured out automatically
 
-        sparta::Clock clk("clock");
+        sparta::Scheduler sched;
+        sparta::Clock clk("clock", &sched);
 
         sparta::RootTreeNode top;
         top.setClock(&clk);

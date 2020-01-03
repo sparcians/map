@@ -40,8 +40,9 @@ namespace sparta {
 
 void testStatsOutput()
 {
+    sparta::Scheduler sched;
     sparta::RootTreeNode rtn;
-    sparta::ClockManager cm;
+    sparta::ClockManager cm(&sched);
     sparta::Clock::Handle root_clk;
     root_clk = cm.makeRoot(&rtn, "root_clk");
     cm.normalize();
@@ -86,7 +87,8 @@ content:
 
 int main()
 {
-    sparta::Clock clk("clock");
+    sparta::Scheduler sched;
+    sparta::Clock clk("clock", &sched);
     //Create a dummy treenode.
     sparta::RootTreeNode root_node("root");
     root_node.setClock(&clk);
@@ -110,7 +112,7 @@ int main()
     sparta::collection::PipelineCollector pc("test_collection_", 1000, &clk, &root);
 #endif
 
-    sparta::Scheduler::getScheduler()->finalize();
+    sched.finalize();
 
 #ifdef PIPEOUT_GEN
     pc.startCollection(&root_node);
@@ -182,7 +184,7 @@ int main()
     EXPECT_FALSE(aged_array_test.getNextOldestIndex(test_index));
 
 #ifdef PIPEOUT_GEN
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 #endif
 
     aged_collected_array.erase(0); //+9 records.
@@ -190,7 +192,7 @@ int main()
     aged_collected_array.write(0, 0);
 
 #ifdef PIPEOUT_GEN
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 #endif
 
     EXPECT_EQUAL(aged_array.abegin().getIndex(), aged_array.getOldestIndex().getIndex());
@@ -231,7 +233,7 @@ int main()
     EXPECT_EQUAL(cnt, 7);
 
 #ifdef PIPEOUT_GEN
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 #endif
 
     aged_array.write(4, 4);
@@ -239,7 +241,7 @@ int main()
     aged_array.write(1, 1);
 
 #ifdef PIPEOUT_GEN
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 #endif
 
    EXPECT_THROW(aged_array.write(0,0));
@@ -256,7 +258,7 @@ int main()
     aged_array.erase(it);
 
 #ifdef PIPEOUT_GEN
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 #endif
 
     //set up the pipeline collection.
@@ -269,7 +271,7 @@ int main()
     ns_array.write(2, 2);
 
 #ifdef PIPEOUT_GEN
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 #endif
 
     //ns_array.getOldestIndex(0); THROWS a static assert message since
@@ -285,7 +287,7 @@ int main()
     EXPECT_EQUAL(ns_array.capacity(), 10);
 
 #ifdef PIPEOUT_GEN
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 #endif
 
 
@@ -294,7 +296,7 @@ int main()
     ns_array.write(0, 0);
 
 #ifdef PIPEOUT_GEN
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 #endif
 
     MyArray::iterator iter = ns_array.begin();
@@ -312,7 +314,7 @@ int main()
     }
 
 #ifdef PIPEOUT_GEN
-    sparta::Scheduler::getScheduler()->run(1);
+    sched.run(1);
 #endif
     iter = ns_array.begin();
     std::advance(iter, 3);
@@ -400,7 +402,7 @@ int main()
 //     }
 
 #ifdef PIPEOUT_GEN
-    sparta::Scheduler::getScheduler()->run(10);
+    sched.run(10);
     pc.destroy();
 #endif
 

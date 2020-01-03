@@ -126,8 +126,9 @@ void makeEmGo(ObjT & obj_list) {
 // MAIN
 int main()
 {
+    sparta::Scheduler sched;
 
-    sparta::Clock zclk("dummy");
+    sparta::Clock zclk("dummy", &sched);
 
     sparta::log::Tap sched_logger(sparta::TreeNode::getVirtualGlobalNode(),
                                 sparta::log::categories::DEBUG, "sched.out");
@@ -177,17 +178,17 @@ int main()
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
-    sparta::Scheduler::getScheduler()->finalize();
+    sched.finalize();
 
     sop.send(1);
 
-    sparta::Scheduler::getScheduler()->getDAG()->print(std::cout);
+    sched.getDAG()->print(std::cout);
 
     makeEmGo(ups);
     makeEmGo(cols);
     makeEmGo(tickables);
 
-    sparta::Scheduler::getScheduler()->run(2);
+    sched.run(2);
     rtn.enterTeardown();
 
     EXPECT_EQUAL(call_sequence, 20);
