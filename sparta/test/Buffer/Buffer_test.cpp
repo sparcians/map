@@ -494,6 +494,7 @@ void testConstIterator()
     sparta::ClockManager cm(&sched);
     sparta::Clock::Handle root_clk;
     root_clk = cm.makeRoot(&rtn, "root_clk");
+    rtn.setClock(root_clk.get());
     cm.normalize();
     sparta::Report r1("report 1", &rtn);
 

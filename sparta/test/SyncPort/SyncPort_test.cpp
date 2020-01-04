@@ -442,8 +442,6 @@ void run_test(double master_frequency_mhz, double slave_frequency_mhz)
     ts->getScheduler()->run();
     ts.reset();
 
-    ts->getScheduler()->reset();
-
     if (!EXPECT_EQUAL(Unit::num_destructors_called, 2)) {
         std::cout << "ERROR: " << "run_test()"
                   << ": didn't see 2 units destructed; saw "

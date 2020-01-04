@@ -1,3 +1,10 @@
+#Name:     
+#Cmdline:  
+#Exe:      
+#SimulatorVersion:
+#Repro:    
+#Start:    Friday Fri Jan  3 16:55:56 2020
+#Elapsed:  0.00189s
 ~g: warning: This warning SHOULD be observed by warn.log.basic and global_warn.log.basic and that is it!
 top.a.e.g: warning: Another warning after removing the temporary tap on a
 _SPARTA_virtual_global_: warning: global warning message

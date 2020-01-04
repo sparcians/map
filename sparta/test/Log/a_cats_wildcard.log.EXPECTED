@@ -1,13 +1,13 @@
-#Name:
-#Cmdline:
-#Exe:
-#Version:
-#Repro:
-#Start:    Tue Mar 25 13:35:38 2014
-#Elapsed:  0.058438s
-{0000000001 -------- top.a.b.c mycategory} Message from C in category 'mycategory'
-{0000000001 -------- top.a.b.c mycategory} Another message from C in category 'mycategory' with a newline char in the middle that should be converted to a ""
+#Name:     
+#Cmdline:  
+#Exe:      
+#SimulatorVersion:
+#Repro:    
+#Start:    Friday Fri Jan  3 16:55:56 2020
+#Elapsed:  0.009289s
+{0000000000 -------- top.a.b.c mycategory} Message from C in category 'mycategory'
+{0000000000 -------- top.a.b.c mycategory} Another message from C in category 'mycategory' with a newline char in the middle that should be converted to a ""
 {0000000001 00000001 top.a.e.g mycategory} Message from G. Should be seen by e_tap_mycategory, a_tap_mycategory
-{0000000001 -------- top.a.d other_category} Message from D. Should be seen by top_tap_all, a_tap_all, and a_tap_stder
-{0000000001 -------- top.a.b.c mycategory} Another message from C in category 'mycategory' after removing the tap to a_removed.log.basic
+{0000000000 -------- top.a.d other_category} Message from D. Should be seen by top_tap_all, a_tap_all, and a_tap_stder
+{0000000000 -------- top.a.b.c mycategory} Another message from C in category 'mycategory' after removing the tap to a_removed.log.basic
 {0000000001 00000001 top.a.e.g mycategory} Message from G. Should be seen by e_tap_mycategory but NOT a_removed

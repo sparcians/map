@@ -23,8 +23,8 @@ const uint32_t EXPECTED_BOUND_TYPES = 14;
 
 class ExampleSimulator : public sparta::app::Simulation{
 public:
-    ExampleSimulator() :
-        sparta::app::Simulation("Test_special_params", &scheduler_){}
+    ExampleSimulator(sparta::Scheduler & sched) :
+        sparta::app::Simulation("Test_special_params", &sched){}
 
     virtual ~ExampleSimulator(){
         getRoot()->enterTeardown();
@@ -34,11 +34,11 @@ private:
     void configureTree_() override{};
     void bindTree_() override{};
 
-    sparta::Scheduler scheduler_;
 };
 
 int main ()
 {
+    sparta::Scheduler scheduler;
 
     // Typical usage for simulator startup
     // 1. Allocate ParameterSetSubclass (with defaults)
@@ -52,7 +52,7 @@ int main ()
     //    b. during destruction of DeviceTreeNode
 
     // Instantiation of tree node, scheduler and clock.
-    std::unique_ptr<ExampleSimulator> sim(new ExampleSimulator);
+    std::unique_ptr<ExampleSimulator> sim(new ExampleSimulator(scheduler));
 
     // Get root of device tree
     auto rtn = sim->getRoot();
@@ -1066,6 +1066,8 @@ int main ()
     // Done
 
     sim->finalizeTree();
+    sim.reset();
+
     REPORT_ERROR;
 
     return ERROR_CODE;
