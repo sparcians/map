@@ -503,6 +503,7 @@ void stackTest()
     sparta::Scheduler csched;
 
     sparta::Scheduler* sched = &csched;
+    sched->finalize();
     sched->restartAt(1);
 
     sparta::Clock clk("clock", sched);
@@ -647,6 +648,7 @@ void deletionTest1()
 
     root.enterConfiguring();
     root.enterFinalized();
+    sched.finalize();
 
 
     // CHECKPOINT: HEAD
@@ -840,7 +842,7 @@ void deletionTest3()
 
     root.enterConfiguring();
     root.enterFinalized();
-
+    sched.finalize();
 
     // CHECKPOINT: HEAD
     r1->write<uint32_t>(0x0);
@@ -925,7 +927,7 @@ void speedTest1()
 
     root.enterConfiguring();
     root.enterFinalized();
-
+    sched.finalize();
 
     // CHECKPOINT: HEAD
     r1->write<uint32_t>(0x0);

@@ -107,8 +107,8 @@ public:
 
 private:
     string                      name_;
-    StateType                        state_;
-    Uop*                             const uop_;
+    StateType                   state_;
+    Uop*                        const uop_;
 
     State<uOpState>::Marker    *uop_ready_marker_;    // For example
     State<uOpState>::Marker    *uop_not_ready_marker_;    // For example

@@ -95,7 +95,7 @@ public:
      * \param sim_name Name of the simulator
      * \param scheduler Pointer to the Scheduler that this Simulation operates with
      */
-    explicit Simulation(const std::string& sim_name, Scheduler * scheduler);
+    Simulation(const std::string& sim_name, Scheduler * scheduler);
 
     /*!
      * \brief Virtual destructor

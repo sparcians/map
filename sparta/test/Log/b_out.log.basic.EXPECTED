@@ -1,3 +1,10 @@
+#Name:     
+#Cmdline:  
+#Exe:      
+#SimulatorVersion:
+#Repro:    
+#Start:    Friday Fri Jan  3 16:55:56 2020
+#Elapsed:  0.007151s
 top.a.b.c: mycategory: Message from C in category 'mycategory'
 top.a.b.c: mycategory: Another message from C in category 'mycategory' with a newline char in the middle that should be converted to a ""
 top.a.b.c: mycategory: Another message from C in category 'mycategory' after removing the tap to a_removed.log.basic

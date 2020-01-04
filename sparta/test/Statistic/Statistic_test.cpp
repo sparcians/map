@@ -33,6 +33,9 @@ int main()
 {
     // Place into a tree
     RootTreeNode root;
+    sparta::Scheduler sched;
+    sparta::Clock clk(&root, "clock", &sched);
+    root.setClock(&clk);
     TreeNode dummy(&root, "dummy", "A dummy node");
     StatisticSet sset(&root);
     StatisticSet cset(&dummy);
@@ -106,6 +109,8 @@ int main()
     std::cout << "The tree from sset: " << std::endl << sset.renderSubtree(-1, true);
 
     root.enterTeardown();
+
+    REPORT_ERROR;
 
     return ERROR_CODE;
 }

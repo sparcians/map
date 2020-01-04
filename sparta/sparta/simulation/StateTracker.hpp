@@ -635,10 +635,10 @@ namespace sparta {
                 state_set_.active_state_starting_time = 0;
             }
 
-            //! This method is called right before we send away a tracker unit
-            //  for recycling. This method basically does one last calculation
-            //  and processes stats before sending the tracker unit back to the
-            //  queue.
+            //! This method is called right before we send away a
+            //  tracker unit for recycling. This method basically does
+            //  one last calculation and processes stats before
+            //  sending the tracker unit back to the queue.
             inline void updateLastDeltas() noexcept {
                 if(__builtin_expect(state_set_.active_state_index.isValid(), 1)) {
                     sparta::Scheduler::Tick current_time =
@@ -650,6 +650,13 @@ namespace sparta {
                     state_set_.active_state_index.clearValid();
                     state_set_.active_state_starting_time = 0;
                 }
+            }
+
+            //! Return the amount of time this state has been active
+            //! in the current state
+            sparta::Scheduler::Tick getActiveTime() const {
+                return scheduler_instance_->getCurrentTick() -
+                    state_set_.active_state_starting_time;
             }
 
             const StateSet<EnumT> & getStateSet() const {

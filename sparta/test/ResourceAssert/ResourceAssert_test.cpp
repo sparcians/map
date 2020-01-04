@@ -75,13 +75,12 @@ public:
 class FizClass
 {
 public:
-    sparta::Scheduler sched_;
     sparta::Clock clk_;
 
     // Note the non-const method
     sparta::Clock* getClock() {return &clk_;};
 
-    FizClass() :
+    FizClass(sparta::Scheduler & sched_) :
         clk_("dummy_clock", &sched_)
     {
         // Within non-sparta class with non-const getClock returning non-const Clock*
@@ -145,7 +144,6 @@ int main()
         sparta::RootTreeNode root;
         sparta::Clock clk("clock", &sched);
         sparta::TreeNode dummy(&root, "dummy", "dummy node");
-        dummy.setClock(&clk);
         SimpleDevice::ParameterSet ps(&dummy);
         ps.foo = true;
 
@@ -160,19 +158,19 @@ int main()
                                   "0: Resource Assertion: in file:");
 
         EXPECT_THROW_MSG_CONTAINS(SimpleDevice dev(&root, &ps),
-                                  "ResourceAssert_test.cpp', on line: 37 within resource at: top (no clock associated) tick: 101");
+                                  "ResourceAssert_test.cpp', on line: 37 within resource at: top (no clock associated) (no scheduler associated)");
 
         EXPECT_THROW_MSG_CONTAINS(FooClass foo,
-                                  "ResourceAssert_test.cpp', on line: 58 (from non-sparta context at tick: 101)");
+                                  "ResourceAssert_test.cpp', on line: 58 (from non-sparta context at (no scheduler associated))");
 
-        EXPECT_THROW_MSG_CONTAINS(FizClass fiz,
+        EXPECT_THROW_MSG_CONTAINS(FizClass fiz(sched),
                                   "ResourceAssert_test.cpp', on line: 87 at cycle: 101 tick: 101");
 
         EXPECT_THROW_MSG_CONTAINS(BinClass bin(&root),
-                                  "ResourceAssert_test.cpp', on line: 99 within TreeNode: top.bin (no clock associated) tick: 101");
+                                  "ResourceAssert_test.cpp', on line: 99 within TreeNode: top.bin (no clock associated) (no scheduler associated)");
 
         EXPECT_THROW_MSG_CONTAINS(BuzClass buz; buz.causeAssertion(),
-                                  "ResourceAssert_test.cpp', on line: 118 at cycle: 101 tick: 101");
+                                  "ResourceAssert_test.cpp', on line: 119 at cycle: 1 tick: 1");
 
         EXPECT_THROW_MSG_CONTAINS(BizClass biz,
                                   "0: Biz Assertion: in file:");

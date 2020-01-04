@@ -347,17 +347,6 @@ namespace sparta
                 is_set_ = true;
             }
 
-            //! Set the time this entry was set
-            //! \param t The timestamp
-            void setTimeAssigned(const Scheduler::Tick & t) {
-                time_assigned_ = t;
-            }
-
-            //! \return The timestamp
-            const Scheduler::Tick & getTimeAssigned() const {
-                return time_assigned_;
-            }
-
             //! Has this marker set been set?
             //! \return true if set, false otherwise
             bool isSet() const {
@@ -405,7 +394,6 @@ namespace sparta
             Audience                audience_;
             bool                    is_set_ = false;
             std::vector<Monitor *>  monitors_;
-            Scheduler::Tick         time_assigned_ = 0;
         }; // class MarkerSet
 
         //! Friend the MarkerSet to set the value on the State when
@@ -415,7 +403,6 @@ namespace sparta
         //! Internal method to set the value -- called by State and MarkerSet
         void setValue_(const EnumTValueType & val) {
             current_state_ = val;
-            marker_set_[val].setTimeAssigned(scheduler_->getCurrentTick());
         }
 
         //! The behaviour of State<bool> requires it to be set to False after
@@ -444,7 +431,6 @@ namespace sparta
         /**
          * \brief Construct a State class
          * \param initial_value The initial value; __FIRST is not given
-         * \param scheduler The Scheduler for time tracking; null means no tracking
          *
          * \note Ensures that the EnumTValueType is a true enum or
          *       class enum.  During construction of a State instance,
@@ -453,8 +439,7 @@ namespace sparta
          *       when it is enabled, a live state tracker pointer is
          *       given, ready to start tracking states.
          */
-        State(const EnumTValueType & initial_value = EnumType::__FIRST,
-              Scheduler * scheduler = nullptr) :
+        State(const EnumTValueType & initial_value = EnumType::__FIRST) :
             initial_value_(initial_value),
             current_state_(initial_value),
 
@@ -506,14 +491,6 @@ namespace sparta
         //! Virtual destructor
         virtual ~State() {}
 
-        // Debug API for testing only.
-        // This only tests the stats accumulated by a
-        // single sparta::State instance.
-        const std::vector<sparta::Scheduler::Tick> & getRawData() const {
-            sparta_assert(state_tracker_unit_ != nullptr);
-            return state_tracker_unit_->getStateSet().state_delta_set;
-        }
-
         //! Get the current value of the state
         const EnumTValueType & getValue() const {
             return current_state_;
@@ -523,15 +500,13 @@ namespace sparta
             return (current_state_.getValue()).getEnum();
         }
 
-        //! This methods returns the amount of time in
-        //! Scheduler Ticks, this sparta::State instance has
-        //! been residing in its current state.
-        Scheduler::Tick getSpan() const {
-            const auto & val = getValue();
-            sparta_assert(scheduler_->getCurrentTick() >=
-                marker_set_[val].getTimeAssigned());
-            return scheduler_->getCurrentTick()
-                - marker_set_[val].getTimeAssigned();
+        //! This methods returns the amount of time in Scheduler
+        //! Ticks, this sparta::State instance has been residing in
+        //! its current state.  Requires StateTracking to be enabled.
+        Scheduler::Tick getTimeInState() const {
+            sparta_assert(state_tracker_unit_ != nullptr,
+                          "This method can only be called on this State class with tracking enabled");
+            return state_tracker_unit_->getActiveTime();
         }
 
         /**
@@ -552,15 +527,6 @@ namespace sparta
             // are registered with the Audience in the marker set for
             // that value type
             marker_set_[val].notifyObservers();
-        }
-
-        /**
-         * \brief Get the scheduler tick that was assigned when the value was set
-         * \param val The value to get the time stamp for
-         * \return The Scheduler::Tick or 0 if not set
-         */
-        const Scheduler::Tick& getTimeAssigned(const EnumTValueType & val) const {
-            return marker_set_[val].getTimeAssigned();
         }
 
         /**
@@ -762,6 +728,15 @@ namespace sparta
 
         //@}
 
+#ifndef DO_NOT_DOCUMENT
+        // Debug API for testing only.
+        // This only tests the stats accumulated by a
+        // single sparta::State instance.
+        const std::vector<sparta::Scheduler::Tick> & getRawAccumulatedTime() const {
+            sparta_assert(state_tracker_unit_ != nullptr);
+            return state_tracker_unit_->getStateSet().state_delta_set;
+        }
+#endif
 
     private:
         ////////////////////////////////////////////////////////////
@@ -774,7 +749,6 @@ namespace sparta
         // This tracker is a unique pointer with its own deleter which
         // knows what to do, when deleted.
         tracker::state_tracker_ptr<EnumType> state_tracker_unit_;
-        sparta::Scheduler       * scheduler_ = nullptr;
     }; // class State
 
     // SimulationConfiguration which holds the state tracker

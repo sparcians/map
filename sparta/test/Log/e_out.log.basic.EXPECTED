@@ -1,2 +1,9 @@
+#Name:     
+#Cmdline:  
+#Exe:      
+#SimulatorVersion:
+#Repro:    
+#Start:    Friday Fri Jan  3 16:55:56 2020
+#Elapsed:  0.006263s
 top.a.e.g: mycategory: Message from G. Should be seen by e_tap_mycategory, a_tap_mycategory
 top.a.e.g: mycategory: Message from G. Should be seen by e_tap_mycategory but NOT a_removed
