@@ -22,6 +22,8 @@ namespace sparta { namespace app {
 }}
 
 namespace sparta {
+    class Scheduler;
+
 namespace db {
 
 /*!
@@ -129,7 +131,8 @@ public:
         //! by one to verify. Returns true if the verification
         //! succeeded, false otherwise. More details can be
         //! obtained via the public APIs.
-        bool verifyReport_(const std::string & filename);
+        bool verifyReport_(const std::string & filename,
+                           const Scheduler * scheduler);
 
         //! ReportVerifier is the only one who can create one
         //! of these objects.
@@ -146,7 +149,8 @@ public:
     //! addReportToVerify(), and return a summary object
     //! for inspection and error reporting.
     std::unique_ptr<VerificationSummary> verifyAll(
-        const simdb::ObjectManager & sim_db);
+        const simdb::ObjectManager & sim_db,
+        const Scheduler * scheduler);
 
 private:
     std::map<std::string, std::string> to_verify_;

@@ -145,10 +145,11 @@ bool verifyNonTimeseriesReport(
     const std::string & format,
     const simdb::DatabaseID report_id,
     const simdb::ObjectManager & sim_db,
+    const Scheduler * scheduler,
     std::string & failure_differences)
 {
     if (!Report::createFormattedReportFromDatabase(
-            sim_db, report_id, simdb_dest_file, format))
+            sim_db, report_id, simdb_dest_file, format, scheduler))
     {
         throw SpartaException("Unable to create report from SimDB: \n")
             << "\tdest_file: " << yaml_dest_file << "\n"
@@ -358,7 +359,8 @@ public:
         return trimmed_fnames;
     }
 
-    bool verifyReport(const std::string & filename)
+    bool verifyReport(const std::string & filename,
+                      const Scheduler * scheduler)
     {
         //Until the timeseries and non-timeseries backend is
         //more streamlined, we need to run separate queries to infer
@@ -425,6 +427,7 @@ public:
             const bool passed = verifyNonTimeseriesReport(
                 desc_dest_file, simdb_dest_file,
                 format, report_id, sim_db_,
+                scheduler,
                 failure_differences);
 
             //Store some pass/fail metadata for later and return.
@@ -500,9 +503,10 @@ std::map<std::string, std::string>
     return impl_->getFinalDestFiles();
 }
 
-bool ReportVerifier::VerificationSummary::verifyReport_(const std::string & filename)
+bool ReportVerifier::VerificationSummary::verifyReport_(const std::string & filename,
+                                                        const Scheduler * scheduler)
 {
-    return impl_->verifyReport(filename);
+    return impl_->verifyReport(filename, scheduler);
 }
 
 void ReportVerifier::addReportToVerify(const app::ReportDescriptor & rd)
@@ -518,7 +522,8 @@ void ReportVerifier::addBaseFormatterForPreVerificationReset(
 }
 
 std::unique_ptr<ReportVerifier::VerificationSummary> ReportVerifier::verifyAll(
-    const simdb::ObjectManager & sim_db)
+    const simdb::ObjectManager & sim_db,
+    const Scheduler * scheduler)
 {
     //Immediately lock down the verification artifacts directory
     //from changes for the rest of the program.
@@ -568,7 +573,7 @@ std::unique_ptr<ReportVerifier::VerificationSummary> ReportVerifier::verifyAll(
             if (formatter_iter != formatters_.end()) {
                 formatter_iter->second->doPostProcessingBeforeReportValidation();
             }
-            summary->verifyReport_(file.first);
+            summary->verifyReport_(file.first, scheduler);
         }
     });
 

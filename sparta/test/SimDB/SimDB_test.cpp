@@ -539,41 +539,43 @@ void testReportCreationFromSimDB()
     EXPECT_TRUE(result_iter->getNext());
     EXPECT_TRUE(report_db_id > 0);
 
-    EXPECT_TRUE(sparta::Report::createFormattedReportFromDatabase(
-                obj_mgr, report_db_id,
-                "test.json", "json"));
+    sparta::Scheduler sched;
 
     EXPECT_TRUE(sparta::Report::createFormattedReportFromDatabase(
                 obj_mgr, report_db_id,
-                "test.reduced.json", "json_reduced"));
+                "test.json", "json", &sched));
 
     EXPECT_TRUE(sparta::Report::createFormattedReportFromDatabase(
                 obj_mgr, report_db_id,
-                "test.detail.json", "json_detail"));
+                "test.reduced.json", "json_reduced", &sched));
 
     EXPECT_TRUE(sparta::Report::createFormattedReportFromDatabase(
                 obj_mgr, report_db_id,
-                "test.jims.json", "jims_json"));
+                "test.detail.json", "json_detail", &sched));
 
     EXPECT_TRUE(sparta::Report::createFormattedReportFromDatabase(
                 obj_mgr, report_db_id,
-                "test.html", "html"));
+                "test.jims.json", "jims_json", &sched));
 
     EXPECT_TRUE(sparta::Report::createFormattedReportFromDatabase(
                 obj_mgr, report_db_id,
-                "test.txt", "txt"));
+                "test.html", "html", &sched));
 
     EXPECT_TRUE(sparta::Report::createFormattedReportFromDatabase(
                 obj_mgr, report_db_id,
-                "test.py", "python"));
+                "test.txt", "txt", &sched));
 
     EXPECT_TRUE(sparta::Report::createFormattedReportFromDatabase(
                 obj_mgr, report_db_id,
-                "test.gnu", "gnuplot"));
+                "test.py", "python", &sched));
 
     EXPECT_TRUE(sparta::Report::createFormattedReportFromDatabase(
                 obj_mgr, report_db_id,
-                "test.stats.mapping.json", "stats_mapping"));
+                "test.gnu", "gnuplot", &sched));
+
+    EXPECT_TRUE(sparta::Report::createFormattedReportFromDatabase(
+                obj_mgr, report_db_id,
+                "test.stats.mapping.json", "stats_mapping", &sched));
 }
 
 void testClockHierarchies()

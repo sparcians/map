@@ -4270,6 +4270,7 @@ namespace sparta
         TreeNode* getChild_(const std::string& name,
                             bool must_exist,
                             bool private_also);
+
         //! Overloaded const-qualified getChild_
         const TreeNode* getChild_(const std::string& name,
                                  bool must_exist,

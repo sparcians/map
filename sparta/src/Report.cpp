@@ -1801,8 +1801,9 @@ void recursValidateSIDirectLookups(const Report & report)
  * ID.
  */
 Report::Report(const simdb::DatabaseID report_hier_node_id,
-               const simdb::ObjectManager & obj_mgr) :
-    Report("nameless", nullptr)
+               const simdb::ObjectManager & obj_mgr,
+               const Scheduler * scheduler) :
+    Report("nameless", scheduler)
 {
     obj_mgr.safeTransaction([&]() {
         //To recreate a report from a database entry, start with
@@ -2074,7 +2075,7 @@ Report::Report(const simdb::DatabaseID report_hier_node_id,
         //Add subreports to this report, if any. Calls this same
         //Report constructor with the appropriate database ID.
         for (const auto subreport_db_id : nextgen_subreport_db_ids) {
-            Report subrep(subreport_db_id, obj_mgr);
+            Report subrep(subreport_db_id, obj_mgr, scheduler);
             addSubreport(subrep);
         }
     });
@@ -2312,7 +2313,8 @@ bool Report::createFormattedReportFromDatabase(
     const simdb::ObjectManager & obj_mgr,
     const simdb::DatabaseID report_hier_node_id,
     const std::string & filename,
-    const std::string & format)
+    const std::string & format,
+    const Scheduler * scheduler)
 {
     std::string _format(format);
     std::transform(_format.begin(), _format.end(),
@@ -2360,7 +2362,7 @@ bool Report::createFormattedReportFromDatabase(
                 "formatted report files from the SimDB.");
         }
 
-        Report report(report_hier_node_id, obj_mgr);
+        Report report(report_hier_node_id, obj_mgr, scheduler);
 
         if (_format.find("auto") == 0) {
             //We use ReportDescriptor directly to generate formatted
