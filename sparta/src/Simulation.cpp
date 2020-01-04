@@ -1172,7 +1172,8 @@ void Simulation::saveReports()
             }
 
             auto verification_summary =
-                formatted_reports_to_verify.verifyAll(*stats_db_);
+                formatted_reports_to_verify.verifyAll(*stats_db_,
+                                                      scheduler_);
 
             if (verification_summary->hasSummary()) {
                 verification_summary->serializeSummary(*stats_db_);

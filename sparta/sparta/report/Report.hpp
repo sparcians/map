@@ -135,7 +135,7 @@ namespace sparta
          * \brief Default constructor with no name or context
          */
         Report() :
-            Report("", nullptr)
+            Report("", nullptr, nullptr)
         {
             // Delegated constructor
         }
@@ -145,7 +145,7 @@ namespace sparta
          * \param name Name of report
          */
         explicit Report(const std::string& name) :
-            Report(name, nullptr)
+            Report(name, nullptr, nullptr)
         {
             // Delegated constructor
         }
@@ -162,13 +162,25 @@ namespace sparta
         { }
 
         /*!
+         * \brief Basic constructor with context node
+         * \param name Name of report
+         * \param scheduler The scheduler associated with this report
+         *
+         * This contructor can be used with Reports that just provide
+         * SI outputs for verification.
+         */
+        Report(const std::string& name, const Scheduler * scheduler) :
+            Report(name, nullptr, scheduler)
+        { }
+
+        /*!
          * \brief Basic constructor with context node and scheduler
          * \param name Name of report
          * \param context Node from which a relative search will be performed
          * when new items areadded to this report using a a node location string
          * Often, this is a RootTreeNode.
          */
-        Report(const std::string& name, TreeNode* context, Scheduler* scheduler) :
+        Report(const std::string& name, TreeNode* context, const Scheduler* scheduler) :
             scheduler_(scheduler),
             name_(name),
             author_(""),
@@ -1207,7 +1219,7 @@ namespace sparta
             return name_;
         }
 
-        Scheduler* getScheduler() const {
+        const Scheduler* getScheduler() const {
             return scheduler_;
         }
 
@@ -1355,7 +1367,8 @@ namespace sparta
             const simdb::ObjectManager & obj_mgr,
             const simdb::DatabaseID report_hier_node_id,
             const std::string & filename,
-            const std::string & format);
+            const std::string & format,
+            const Scheduler * scheduler);
 
         ////////////////////////////////////////////////////////////////////////
         //! @}
@@ -1461,7 +1474,8 @@ namespace sparta
          * from SimDB-related static sparta::Report methods.
          */
         Report(const simdb::DatabaseID report_hier_node_id,
-               const simdb::ObjectManager & obj_mgr);
+               const simdb::ObjectManager & obj_mgr,
+               const Scheduler * scheduler);
 
         /*!
          * \brief When we recreate a sparta::Report object from SimDB
@@ -1530,7 +1544,7 @@ namespace sparta
         /*!
          * \brief Schedler associated with this report (for time-elapsed information)
          */
-        Scheduler* scheduler_;
+        const Scheduler * scheduler_;
 
         /*!
          * \brief Name of this report
