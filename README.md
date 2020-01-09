@@ -1,5 +1,5 @@
 # MAP - Modeling Architectural Platform
-This is a framework designed and built by expert modeling/simulation engineers in the industry.  It's purpose is to provide a set of classes, tools, and flows to aid in modeling/simulation of complex hardware for the purpose of performance analysis and better hardware designs. 
+This is a framework designed and built by expert modeling/simulation engineers in the industry.  Its purpose is to provide a set of classes, tools, and flows to aid in modeling/simulation of complex hardware for the purpose of performance analysis and better hardware designs. 
 
 These classes and tools are also designed to work with existing platforms like Gem5 and SystemC while providing more abstract and flexible methodologies for quick analysis and study.
 
