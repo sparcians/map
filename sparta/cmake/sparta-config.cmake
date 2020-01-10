@@ -56,7 +56,7 @@ if (COMPILE_WITH_PYTHON)
   # Bring in the python library and include files
   find_package (Python 3.0 REQUIRED COMPONENTS Development)
   add_definitions (-DSPARTA_PYTHON_SUPPORT -DPYTHONHOME="${Python_LIBRARY_DIRS}")
-  include_directories (SYSTEM ${Python_INCLUDE_DIR})
+  include_directories (SYSTEM ${Python_INCLUDE_DIRS})
   list (APPEND Sparta_LIBS Python::Python Boost::python37)
 endif ()
 

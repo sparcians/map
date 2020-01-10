@@ -1039,7 +1039,7 @@ void Simulation::runControlLoop_(uint64_t cmdline_run_time)
         //! phases of setup in some circumstances
         pyshell_->publishTree(getRoot());
         pyshell_->publishSimulator(this);
-        rc_.reset(new control::TemporaryRunControl(this, sparta::Scheduler::getScheduler()));
+        rc_.reset(new control::TemporaryRunControl(this, getScheduler()));
         pyshell_->publishRunController(rc_.get());
         setupStreamControllers_();
 

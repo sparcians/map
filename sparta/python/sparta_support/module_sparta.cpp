@@ -1145,10 +1145,11 @@ void LOCAL_SimulationDatabase__createReport(
     const simdb::ObjectManager * sim_db,
     const int report_db_id,
     const std::string & filename,
-    const std::string & format)
+    const std::string & format,
+    const sparta::Scheduler * scheduler)
 {
     if (!sparta::Report::createFormattedReportFromDatabase(
-             *sim_db, report_db_id, filename, format))
+             *sim_db, report_db_id, filename, format, scheduler))
     {
         std::cout << "Unable to create report file '"
                   << filename << "' " << std::endl;
@@ -1172,59 +1173,60 @@ template <SimDBReportType type>
 void SimulationDatabase__createReport(
     simdb::ObjectManager * sim_db,
     const int report_db_id,
-    const std::string & filename)
+    const std::string & filename,
+    const sparta::Scheduler * scheduler)
 {
     using rt = SimDBReportType;
 
     switch (type) {
         case rt::AutoSummary: {
             LOCAL_SimulationDatabase__createReport(
-                sim_db, report_db_id, filename, "auto");
+                sim_db, report_db_id, filename, "auto", scheduler);
             break;
         }
         case rt::Json: {
             LOCAL_SimulationDatabase__createReport(
-                sim_db, report_db_id, filename, "json");
+                sim_db, report_db_id, filename, "json", scheduler);
             break;
         }
         case rt::JsonReduced: {
             LOCAL_SimulationDatabase__createReport(
-                sim_db, report_db_id, filename, "json_reduced");
+                sim_db, report_db_id, filename, "json_reduced", scheduler);
             break;
         }
         case rt::JsonDetail: {
             LOCAL_SimulationDatabase__createReport(
-                sim_db, report_db_id, filename, "json_detail");
+                sim_db, report_db_id, filename, "json_detail", scheduler);
             break;
         }
         case rt::JimsJson: {
             LOCAL_SimulationDatabase__createReport(
-                sim_db, report_db_id, filename, "jims_json");
+                sim_db, report_db_id, filename, "jims_json", scheduler);
             break;
         }
         case rt::Html: {
             LOCAL_SimulationDatabase__createReport(
-                sim_db, report_db_id, filename, "html");
+                sim_db, report_db_id, filename, "html", scheduler);
             break;
         }
         case rt::Text: {
             LOCAL_SimulationDatabase__createReport(
-                sim_db, report_db_id, filename, "txt");
+                sim_db, report_db_id, filename, "txt", scheduler);
             break;
         }
         case rt::PyDictionary: {
             LOCAL_SimulationDatabase__createReport(
-                sim_db, report_db_id, filename, "python");
+                sim_db, report_db_id, filename, "python", scheduler);
             break;
         }
         case rt::GnuPlot: {
             LOCAL_SimulationDatabase__createReport(
-                sim_db, report_db_id, filename, "gnuplot");
+                sim_db, report_db_id, filename, "gnuplot", scheduler);
             break;
         }
         case rt::StatsMapping: {
             LOCAL_SimulationDatabase__createReport(
-                sim_db, report_db_id, filename, "stats_mapping");
+                sim_db, report_db_id, filename, "stats_mapping", scheduler);
             break;
         }
     }
