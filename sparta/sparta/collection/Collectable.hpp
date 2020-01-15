@@ -116,7 +116,7 @@ namespace sparta{
 
                 // Get an initial value, if available
                 if(collected_object) {
-                    std::stringstream ss;
+                    std::ostringstream ss;
                     ss << *collected_object;
                     prev_annot_ = ss.str();
                 }
@@ -144,7 +144,7 @@ namespace sparta{
              * \param val The value to initial the record with
              */
             void initialize(const DataT & val) {
-                std::stringstream ss;
+                std::ostringstream ss;
                 ss << val;
                 prev_annot_ = ss.str();
             }
@@ -155,7 +155,7 @@ namespace sparta{
             {
                 if(SPARTA_EXPECT_FALSE(isCollected()))
                 {
-                    std::stringstream ss;
+                    std::ostringstream ss;
                     ss << val;
                     if((ss.str() != prev_annot_) && !record_closed_)
                     {
@@ -713,7 +713,7 @@ namespace sparta{
             const std::string & dumpNameValuePairs(const DataT & val) {
                 collect_(val);
                 log_string_.clear();
-                std::stringstream ss;
+                std::ostringstream ss;
                 for(const auto & pairs : getPEventLogVector()){
                     ss << pairs.first << "(" << pairs.second << ") ";
                 }
