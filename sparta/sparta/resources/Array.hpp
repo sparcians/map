@@ -58,7 +58,7 @@ namespace sparta
     class Array : public Resource
     {
     private:
-        //!A struct for a position in our array.
+        //! A struct for a position in our array.
         struct ArrayPosition{
             ArrayPosition() :
                 valid(false),
@@ -74,9 +74,6 @@ namespace sparta
         //! Typedef for the underlaying vector used as the basis of the Array
         typedef std::vector<ArrayPosition> ArrayVector;
 
-        //! Typedef for a list of indexes in age order.
-        // typedef std::list<uint32_t>        AgedList;
-
         //! The array type
         typedef Array<DataT, ArrayT>       FullArrayType;
 
@@ -85,7 +82,7 @@ namespace sparta
         //! The data type, STL style
         typedef DataT    value_type;
 
-        //!Expected typedef for the data that will be stored in this structure.
+        //! Expected typedef for the data that will be stored in this structure.
         typedef DataT    DataType;
 
         //! Typedef for size_type
@@ -175,7 +172,7 @@ namespace sparta
                 return (index_ < array_->capacity());
             }
 
-            /// what index does our iterator currently represent.
+            /// What index does our iterator currently represent.
             uint32_t getIndex() const
             {
                 sparta_assert(index_ != array_->invalid_entry_,
@@ -211,12 +208,12 @@ namespace sparta
 
             /**
              * \brief determine if the data at this iterator
-             * was written too more recently than another
+             * was written to more recently than another
              * index.
              * \param idx the index of the other entry to be
              * compared.
              * \return true if the data at this iterator
-             * was written too more frequently than the
+             * was written to more frequently than the
              * data at idx.
              */
             bool isYounger(const uint32_t idx) const
@@ -226,14 +223,14 @@ namespace sparta
                 return array_->isYounger(index_, idx);
             }
 
-            ///ovverload isYounger to accept another iterator instead of index.
+            /// Overload isYounger to accept another iterator instead of index.
             bool isYounger(const ArrayIterator & other) const
             {
                 return isYounger(other.index_);
             }
 
-            ///comparison operators
-            ///NOTE operator< and operator> were removed b/c they have no use case.
+            /// comparison operators
+            /// NOTE: operator< and operator> were removed b/c they have no use case.
 
             bool operator==(const ArrayIterator<true>& rhs) const
             {
@@ -255,27 +252,27 @@ namespace sparta
                 return (rhs.index_ != index_) || (rhs.array_ != array_);
             }
 
-            ///Support the derefence operator.
+            /// support the dereference operator.
             DataReferenceType operator*() {
                 sparta_assert(index_ < array_->capacity(),
-                            "Cannot operate on an unitialized iterator.");
-                //return the data at our location in the array.
+                            "Cannot operate on an uninitialized iterator.");
+                // return the data at our location in the array.
                 return getAccess_(std::integral_constant<bool, is_const_iterator>());
             }
 
-            ///support -> operator
+            /// support -> operator.
             DataReferenceType operator->()
             {
                 sparta_assert(index_ < array_->capacity(),
-                            "Cannot operate on an unitialized iterator.");
+                            "Cannot operate on an uninitialized iterator.");
                 return getAccess_(std::integral_constant<bool, is_const_iterator>());
             }
 
-            ///pre increment operator
+            /// pre-increment operator.
             ArrayIterator & operator++()
             {
                 sparta_assert(index_ != array_->invalid_entry_,
-                            "Cannot operate on an unitialized iterator.");
+                            "Cannot operate on an uninitialized iterator.");
                 if(is_aged_walk_) {
                     if(!array_->getNextOldestIndex(index_)) {
                         index_ = (array_->getOldestIndex());
@@ -289,8 +286,8 @@ namespace sparta
                 }
                 if(is_circular_) { return *this; }
 
-                // Aged iterators will be circular is the array is
-                // filled with valid entries
+                // Aged iterators will act circular if the array is
+                // filled with valid entries.
                 if(is_aged_)
                 {
                     // We've wrapped around -- we're done.
@@ -315,18 +312,18 @@ namespace sparta
                 return *this;
             }
 
-            ///post increment operator
+            /// post-increment operator.
             ArrayIterator operator++(int)
             {
                 iterator old_iter(*this);
-                //do the same functionality as the pre increment.
+                // do the same functionality as the pre increment.
                 operator++();
-                //return the state before the increment.
+                // return the state before the increment.
                 return old_iter;
             }
 
         private:
-            uint32_t index_; /*!< the index that this iterator points to. */
+            uint32_t index_; /*!< The index that this iterator points to. */
             ArrayPointerType array_; /*!< The parent Array that created this iterator. */
             bool is_aged_     = false; //!< Is this an aged iterator?
             bool is_circular_ = false; //!< Is this a circular iterator?
@@ -361,8 +358,7 @@ namespace sparta
             return iterator(this, invalid_entry_, is_aged, is_circular, is_aged_walk);
         }
 
-        /// \brief STL-like begin operation, starts at index 0 regardless if
-        ///        the index is valid or not
+        /// \brief STL-like begin operation, starts at index 0 (ignores valid bit).
         /// \return iterator to the beginning of the Array
        iterator begin() {
             constexpr bool is_aged = false;
@@ -371,8 +367,7 @@ namespace sparta
             return iterator(this, 0, is_aged, is_circular, is_aged_walk);
         }
 
-        /// \brief STL-like begin operation, const, starts at index 0
-        ///        regardless if the index is valid or not
+        /// \brief STL-like begin operation, const, starts at index 0 (ignores valid bit).
         /// \return iterator to the beginning of the Array
         const_iterator begin() const {
             constexpr bool is_aged = false;
@@ -381,8 +376,8 @@ namespace sparta
             return const_iterator(this, 0, is_aged, is_circular, is_aged_walk);
         }
 
-        /// \brief STL-like end operation
-        /// \return iterator to the end of the Array, but not the last element
+        /// \brief STL-like end operation.
+        /// \return iterator to the end of the Array, past the last element
         iterator end() {
             constexpr bool is_aged = false;
             constexpr bool is_circular = false;
@@ -390,8 +385,8 @@ namespace sparta
             return iterator(this, invalid_entry_, is_aged, is_circular, is_aged_walk);
         }
 
-        /// \brief STL-like end operation, const
-        /// \return iterator to the end of the Array, but not the last element
+        /// \brief STL-like end operation, const.
+        /// \return iterator to the end of the Array, past the last element
         const_iterator end() const {
             constexpr bool is_aged = false;
             constexpr bool is_circular = false;
@@ -399,7 +394,7 @@ namespace sparta
             return const_iterator(this, invalid_entry_, is_aged, is_circular, is_aged_walk);
         }
 
-        /// \brief STL-like begin operation, starts at the oldest valid index
+        /// \brief STL-like begin operation, starts at the oldest valid index.
         /// \return iterator to the oldest entry in the array
         iterator abegin() {
             constexpr bool is_aged = true;
@@ -411,8 +406,8 @@ namespace sparta
             return  iterator(this, invalid_entry_, is_aged, is_circular, is_aged_walk);
         }
 
-        /// \brief STL-like begin operation, starts at the oldest
-        ///        valid index, const
+        /// \brief STL-like begin operation, const, starts at the oldest
+        ///        valid index.
         /// \return iterator to the oldest entry in the array
         const_iterator abegin() const {
             constexpr bool is_aged = true;
@@ -424,7 +419,7 @@ namespace sparta
             return  const_iterator(this, invalid_entry_, is_aged, is_circular, is_aged_walk);
         }
 
-        /// \brief STL-like end operation
+        /// \brief STL-like end operation.
         /// \return iterator to the element past the youngest entry
         iterator aend() {
             constexpr bool is_aged = true;
@@ -433,7 +428,7 @@ namespace sparta
             return iterator(this, invalid_entry_, is_aged, is_circular, is_aged_walk);
         }
 
-        /// \brief STL-like end operation, const
+        /// \brief STL-like end operation, const.
         /// \return iterator to the element one past the youngest entry
         const_iterator aend() const {
             constexpr bool is_aged = true;
@@ -476,7 +471,7 @@ namespace sparta
          *          CONTAINER_DEFAULT_VISIBILITY which at the time of
          *          writing this comment is set to VIS_HIDDEN. If you
          *          rely on the stats from this container you should
-         *          explicity set the visibility.
+         *          explicitly set the visibility.
          */
         Array(const std::string& name, uint32_t num_entries, const Clock* clk,
               StatisticSet* statset = nullptr,
@@ -497,7 +492,7 @@ namespace sparta
         }
 
         /**
-         * \brief Read the data at an index.
+         * \brief Read (only) the data at an index.
          * \param idx the index to access.
          * \return A const reference to the data.
          */
@@ -505,11 +500,10 @@ namespace sparta
             sparta_assert(isValid(idx), "On Array " << getName()
                         << " Cannot read from an invalid index. Idx:" << idx);
             return array_[idx].data;
-
         }
 
         /**
-         * \brief Access the data at a position
+         * \brief Access (writeable) the data at a position.
          * \param idx The index to access.
          */
         DataT& access(const uint32_t idx) {
@@ -517,7 +511,6 @@ namespace sparta
                         << " Cannot read from an invalid index. Idx:" << idx);
             return (array_[idx].data);
         }
-
 
         /**
          * \brief Return the oldest index in the array.
@@ -527,7 +520,7 @@ namespace sparta
          * \warning this method may be expensive for larger nth values. Low values
          * should be very quick.
          *
-         * \note This method is only accessable if the template parameter
+         * \note This method is only accessible if the template parameter
          *       FullArrayType == AGED
          *
          */
@@ -545,7 +538,7 @@ namespace sparta
             // Since our data_list_ always adds new items to the
             // front.  The oldest data is actually kept at the end of
             // the list.  We can iterate from the end to find the nth
-            // oldest item
+            // oldest item.
             auto it = aged_list_.rbegin();
             uint32_t idx = invalid_entry_;
             for(uint32_t i = 0; i <= nth; ++i)
@@ -566,7 +559,7 @@ namespace sparta
          * \return the index of the nth youngest index.
          * \warning this method may get expensive for larger nth values.
          *
-         * \note This method is only accessable if the template parameter
+         * \note This method is only accessible if the template parameter
          *       FullArrayType == AGED.
          */
         const_iterator getYoungestIndex(const uint32_t nth=0) const
@@ -580,7 +573,7 @@ namespace sparta
             constexpr bool is_circular = false;
             constexpr bool is_aged_walk = true;
 
-            //define idx, and set it to a value surely beyond the bounds of our array.
+            // Define idx, and set it to a value surely beyond the bounds of our array.
             uint32_t idx = invalid_entry_;
             auto it = aged_list_.begin();
             for(uint32_t i = 0; i <= nth; ++i)
@@ -588,7 +581,7 @@ namespace sparta
                 idx = *it;
                 ++it;
             }
-            //Make sure we found something valid.
+            // Make sure we found something valid.
             sparta_assert(isValid(idx));
             return const_iterator(this, idx, is_aged, is_circular, is_aged_walk);
         }
@@ -609,7 +602,7 @@ namespace sparta
         }
 
         /**
-         * \brief Provide access to our aged_list_ internals
+         * \brief Provide access to our aged_list_ internals.
          */
         const AgedList & getAgedList() const
         {
@@ -619,7 +612,7 @@ namespace sparta
 
         /**
          * \brief Return the maximum number of elements this Array can
-         *        hold
+         *        hold.
          * \return The number of positions this array was constructed with
          */
         size_type capacity() const {
@@ -627,20 +620,20 @@ namespace sparta
         }
 
         /**
-         * \brief The number of valid entries contained
+         * \brief The number of valid entries contained.
          * \return The number of valid elements in the array
          */
         size_type numValid() const {
             return num_valid_;
         }
 
-        //! \return numValid() -- function for stl compatibility
+        //! \return numValid() -- function for stl compatibility.
         size_type size() const {
             return numValid();
         }
 
         /**
-         * \brief The number of free entries
+         * \brief The number of free entries.
          * \return The number of free spaces in the array.
          */
         size_type numFree() const {
@@ -649,12 +642,12 @@ namespace sparta
         }
 
         /**
-         * \brief this will set up a auto-collector for this Array.
+         * \brief Set up a auto-collector for this Array.
          * \param parent the parent tree node under which to create the collection
          */
         void enableCollection(TreeNode* parent)
         {
-            //create the collector instance of the appropriate type.
+            // Create the collector instance of the appropriate type.
             sparta_assert(parent != nullptr);
             collector_.
                 reset(new collection::IterableCollector<FullArrayType,
@@ -669,7 +662,7 @@ namespace sparta
         }
 
         /**
-         * \brief invalidate data at an iterator position
+         * \brief Invalidate data at an iterator position.
          * \param iter An iterator used to invalidate -- must be valid
          */
         void erase(const iterator& iter) {
@@ -686,16 +679,16 @@ namespace sparta
             sparta_assert(isValid(idx), "Cannot invalidate a non valid index.");
             sparta_assert(num_valid_ > 0);
 
-            //just set the data to invalid.
+            // Just set the data to invalid.
             array_[idx].valid = false;
             --num_valid_;
-            //Remove the index from our aged list.
+            // Remove the index from our aged list.
             if(ArrayT == ArrayType::AGED)
             {
                 aged_list_.erase(array_[idx].list_pointer);
             }
 
-            //update counter
+            // Update occupancy counter.
             if(utilization_)
             {
                 utilization_->setValue(num_valid_);
@@ -703,7 +696,7 @@ namespace sparta
         }
 
         /**
-         * \brief Clear the array of all data
+         * \brief Clear the array of all data.
          */
         void clear()
         {
@@ -718,7 +711,7 @@ namespace sparta
         }
 
         /**
-         * \brief Write data to the array
+         * \brief Write data to the array.
          * \param idx The index to write at
          * \param dat The data to write at that index.
          */
@@ -730,7 +723,7 @@ namespace sparta
                         "It is illegal write over an already valid index.");
 
 
-            // Timestamp the entry in the the array, for fast age comparison between two indexes.
+            // Timestamp the entry in the array, for fast age comparison between two indexes.
             array_[idx].age_id = next_age_id_;
             ++next_age_id_;
 
@@ -740,7 +733,7 @@ namespace sparta
             array_[idx].valid = true;
             ++num_valid_;
 
-            //maintain our age order if we are an aged array
+            // Maintain our age order if we are an aged array.
             if(ArrayT == ArrayType::AGED)
             {
                 // To maintain aged items, add the index to the front
@@ -749,7 +742,7 @@ namespace sparta
                 array_[idx].list_pointer = aged_list_.begin();
             }
 
-            //update counter
+            // Update occupancy counter.
             if(utilization_)
             {
                 utilization_->setValue(num_valid_);
@@ -757,11 +750,11 @@ namespace sparta
         }
 
         /**
-         * \brief write data at an iterator position.
+         * \brief Write data at an iterator position.
          * \param iter The iterator pointing to the data
          * \param dat The data to write at the iterator location
          *
-         * This will write to the location at \a iter, regardless if
+         * This will write to the location at \a iter, whether
          * the iterator is valid or not.
          */
         void write(const iterator& iter, const DataT& dat)
@@ -770,8 +763,8 @@ namespace sparta
         }
 
         /**
-         * \brief determine if an index is was written more recently,
-         * to the Array than another index.
+         * \brief Determine if an index was written (using write()) to the
+         * Array after another index.
          * \param lhs an index to compare.
          * \param rhs an index to compare.
          * \return true if lhs was written more recently than rhs to the array.
@@ -782,9 +775,10 @@ namespace sparta
             sparta_assert(lhs < num_entries_ && rhs < num_entries_, "Cannot compare age on an index outside the bounds of the array");
             return array_[lhs].age_id > array_[rhs].age_id;
         }
+
         /**
-         * \brief determine if an index is was ealier in time
-         * than another index to the Array.
+         * \brief Determine if an index was written (using write()) to the
+         * Array before another index.
          * \param lhs an index to compare.
          * \param rhs an index to compare.
          * \return true if lhs was written at less recently than rhs was written at.
@@ -795,6 +789,7 @@ namespace sparta
             sparta_assert(lhs < num_entries_ && rhs < num_entries_, "Cannot compare age on an index outside the bounds of the array");
             return  array_[lhs].age_id < array_[rhs].age_id;
         }
+
     private:
 
         class AgedArrayCollectorProxy
@@ -833,18 +828,18 @@ namespace sparta
             return aged_list_;
         }
 
-        //  The size of our array.
+        // The size of our array.
         const size_type num_entries_;
         const uint32_t invalid_entry_{num_entries_ + 1};
 
-        //  The number of valid positions after last update
+        // The number of valid positions after last update.
         size_type num_valid_;
 
         // A vector that holds all of our data, contains valid and
-        // invalide data
+        // invalid data.
         ArrayVector array_;
 
-        // The aged list
+        // The aged list.
         AgedList aged_list_;
         AgedArrayCollectorProxy aged_array_col_{this};
 
@@ -879,8 +874,8 @@ namespace sparta
         num_valid_(0),
         next_age_id_(0)
     {
-        //Set up some vector's of a default size
-        //to work as the underlaying implemetation structures of our array.
+        // Set up some vector's of a default size
+        // to work as the underlying implementation structures of our array.
         array_.resize(num_entries_);
 
         if(statset)
