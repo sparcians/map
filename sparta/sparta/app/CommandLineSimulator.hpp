@@ -526,7 +526,7 @@ private:
 
     /*!
      * \brief Open and parse a given ALF file for pipeline node
-     * restriction (part of --argos-collection-at command line)
+     * restriction (part of --pipeViewer-collection-at command line)
      * \return true if all good; false otherwise
      */
     bool openALFAndFindPipelineNodes_(const std::string & alf_filename);

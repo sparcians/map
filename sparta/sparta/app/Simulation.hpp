@@ -26,7 +26,7 @@
 #include "sparta/app/SimulationConfiguration.hpp"
 #include "sparta/control/TemporaryRunController.hpp"
 #include "sparta/simulation/State.hpp"
-#include "sparta/argos/InformationWriter.hpp"
+#include "sparta/pipeViewer/InformationWriter.hpp"
 
 namespace YP = YAML; // Prevent collision with YAML class in ConfigParser namespace.
 

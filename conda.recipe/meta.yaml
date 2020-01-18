@@ -25,8 +25,11 @@ build:
 requirements:
   build: # build-arch
     - cmake
+    - cython
     - make
     - doxygen
+    - python # specify here so that pinning from build matrix will be applied correctly
+    - rsync
     - texlive-core
     # compiler('cxx') is defined at https://github.com/conda-forge/conda-forge-pinning-feedstock/blob/master/recipe/conda_build_config.yaml
     # see:
@@ -38,15 +41,32 @@ requirements:
     - clang 9
     - clangxx 9
     - rsync
+    # add runtime requirements for argos to make it easier to script 
+    # creation of a 'dev' environment that can also run Argos
+    - matplotlib-base
+    - numpy
+    - pillow
+    - pyyaml
+    - wxpython
   host:  # target-arch buildtime deps
     - boost-cpp
     - yaml-cpp
     - sqlite
     - hdf5
+    - python
     - rapidjson
   run:
+    - matplotlib-base
+    - numpy
+    - pillow
+    - python
+    - pyyaml
+    - wxpython
+    # duplicate required host libs to make it easier to script creation of run environent
     - boost-cpp
     - yaml-cpp
+    - sqlite
+    - hdf5
   run_constrained:
     # make sure that mac has good enough SDK
     # See https://conda-forge.org/docs/maintainer/knowledge_base.html?highlight=feature#requiring-newer-macos-sdks

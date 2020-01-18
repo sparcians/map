@@ -4,7 +4,7 @@
  * \file DelayedCollectable.hpp
  *
  * \brief Implementation of the DelayedCollectable class that allows
- * a user to collect an object into an Argos pipeline file
+ * a user to collect an object into an pipeViewer pipeline file
  */
 
 #ifndef __DELAYED_PIPELINE_COLLECTABLE_H__
@@ -13,7 +13,7 @@
 #include <sstream>
 #include <functional>
 #include "sparta/collection/Collectable.hpp"
-#include "sparta/argos/transaction_structures.hpp"
+#include "sparta/pipeViewer/transaction_structures.hpp"
 #include "sparta/events/EventSet.hpp"
 #include "sparta/events/PayloadEvent.hpp"
 

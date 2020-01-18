@@ -112,7 +112,7 @@ namespace sparta {
             formatter_list_.reserve(capacity);
         }
 
-        //! Return the format guide to be used in Argos Viewer.
+        //! Return the format guide to be used in pipeViewer Viewer.
         inline const std::string & getArgosFormatGuide() const {
             return string_format_;
         }
@@ -268,7 +268,7 @@ namespace sparta {
         }
 
         //! Public method which is called by writeRecord function
-        //  in Collectable class to get the Argos Format Guide.
+        //  in Collectable class to get the pipeViewer Format Guide.
         inline const std::string & getArgosFormatGuide() const {
             return pair_cache_.getArgosFormatGuide();
         }
@@ -1898,7 +1898,7 @@ namespace sparta {
         /**
         * \brief This special character will act as placeholder
         * for printing values when formatting the string to be
-        * displayed in Argos Viewer.
+        * displayed in pipeViewer Viewer.
         */
         unsigned char specialDelimiter = '#';
         std::string argosFormatPair;
