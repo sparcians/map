@@ -4,6 +4,8 @@
 
 #include <boost/timer/timer.hpp>
 
+#include <cstring>
+
 #include "sparta/sparta.hpp"
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/memory/BlockingMemoryIF.hpp"
@@ -606,6 +608,7 @@ void testMemoryObjectPerformance() {
 
     uint8_t dat[block_size];
     uint8_t buf[block_size];
+    memset((void*)buf, 0, sizeof(decltype(buf)));
 
     // General
     EXPECT_EQUAL(mem.getSize(), mem_size);
