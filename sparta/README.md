@@ -16,6 +16,19 @@ design.
 ## Quick Start for the Impatient, Yet Confident
 
 ```
+
+# Install the following
+#
+#    cmake boost hdf5 yaml-cpp rapidJSON xz sqlite
+#
+# Versions tested and known to work:
+#    cmake     3.14
+#    boost     1.71  (can go older)
+#    yaml-cpp  0.6
+#    RapidJSON 1.1
+#    SQLite3   3.19
+#    HDF5      1.10
+
 # Build a release version
 mkdir release; cd release
 cmake .. -DCMAKE_BUILD_TYPE=Release
