@@ -265,6 +265,18 @@ namespace sparta
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");
                 return circularbuffer_entry_->data;
             }
+            value_type* operator->() {
+                sparta_assert(attached_circularbuffer_,
+                            "This iterator is not attached to a CircularBuffer. Was it initialized?");
+                sparta_assert(isValid(), "Iterator is not valid for dereferencing");
+                return &circularbuffer_entry_->data;
+            }
+            const value_type* operator->() const {
+                sparta_assert(attached_circularbuffer_,
+                            "This iterator is not attached to a CircularBuffer. Was it initialized?");
+                sparta_assert(isValid(), "Iterator is not valid for dereferencing");
+                return &circularbuffer_entry_->data;
+            }
 
             /** brief Move the iterator forward to point to next element in queue ; PREFIX
              */
