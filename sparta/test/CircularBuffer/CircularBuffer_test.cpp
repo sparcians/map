@@ -452,6 +452,44 @@ content:
     rtn.enterTeardown();
 }
 
+void testStruct()
+{
+    sparta::RootTreeNode rtn;
+    sparta::Scheduler sched;
+    sparta::ClockManager  cm(&sched);
+    sparta::Clock::Handle root_clk;
+    root_clk = cm.makeRoot(&rtn, "root_clk");
+    rtn.setClock(root_clk.get());
+    cm.normalize();
+    sparta::Report r1("report 1", &rtn);
+
+    sparta::StatisticSet stats(&rtn);
+    struct Entry
+    {
+        uint64_t aval;
+        bool bval;
+
+        explicit Entry(uint64_t v, bool b)
+        : aval(v)
+        , bval(b)
+        {
+        }
+    };
+    sparta::CircularBuffer<Entry> b("buf_struct_test", 10,
+                                     root_clk.get(), &stats);
+
+    b.push_back(Entry(4, true));
+    b.push_back(Entry(15, false));
+
+    EXPECT_EQUAL(b.begin()->aval, 4);
+
+    auto i = b.begin();
+    EXPECT_EQUAL(i->bval, true);
+
+    ++i;
+    EXPECT_EQUAL(i->aval, 15);
+    EXPECT_EQUAL(i->bval, false);
+}
 
 int main()
 {
@@ -460,6 +498,7 @@ int main()
     testReverseIterators();
     testEraseInsert();
     testStatsOutput();
+    testStruct();
 
     // Cannot test collection until we move to gcc4.9 or higher.  Bug
     // in gcc -- gets confused on the const iterators
