@@ -907,25 +907,7 @@ itself.
 
 \section linux_gcc Linux (gcc)
 \subsection Prerequesites
-- <b>gcc-4.7.0</b> or later: Other compilers supporting c++11 may be used instead, but SPARTA has not been
-tested for compilers other than gcc-4.7.0
-- <b>boost 1.49.0</b> or later: Newer boosts are expected to work, but are untested. Recent, older boost
-release may also work.
-  - Boost must be configured to build libraries for non-default components including:
-    - boost_python
-    - boost_system
-    - boost_program_options
-- <b>easymake framework</b>: The SPA team's makefile helper must exist on the filesystem. Easymake
-is a makefile that is included by a project's makefile. It interprets certain variables and
-eliminates much of the repetition and boiler-plate found in typical makefiles. It also adds some
-consistency to building and testing between different projects.
-- <b>python 2.7.x</b>: Python is used to generate several libraries used to interface analyis tools with
-SPARTA APIs. A 'python' should be found somewhere in your path when building. Note that Python 3.x is
-unsupported.
-- <b>Cython 0.20.x</b> (Versions later than 0.10.1 likely work)
-- <i>[optional]</i> <b>doxygen</b>: To regenerate html documentation for SPARTA's c++/Python code,
-doxygen must be installed
-
+- See Sparta's README.md for more information
 \subsection boost_loc Boost Location
 The absolute path to the prefix of a boost installation must be defined. This path must contain:
 - lib directory containing libboost_*

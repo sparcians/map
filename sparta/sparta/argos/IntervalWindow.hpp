@@ -2,10 +2,8 @@
  * \file IntervalWindow.h
  *
  * \brief IntervalWindow provides the data storage and search aparatus for
- * the SPA Transaction Viewer, code named Argos.
- *
- * \copyright
-**/
+ *        the Helois tools.
+ **/
 
 #ifndef __INTERVAL_WINDOW_H__
 #define __INTERVAL_WINDOW_H__
