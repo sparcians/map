@@ -77,47 +77,97 @@ namespace sparta
         }
     }
 
+    /**
+     * Detect whether the DAG has at least one cycle somewhere
+     * At the completion of detectCycle(), the DAG vertices will
+     * be marked:
+     *     WHITE if they have NOT be visited
+     *     GRAY if they have been visited, and ARE part of a cycle
+     *     BLACK if they have been visited, but are NOT part of a cycle
+     */
     bool Vertex::detectCycle()
     {
+        // Mark that we've visited this (current) vertex
         marker_ = CycleMarker::GRAY;
+
+        // Loop through this vertex's outbound edges...
         for (auto& ei : edges_) {
             Vertex *w = ei.first;
+
             switch (w->marker_) {
+            // w has not been visited, recurse down this edge
             case CycleMarker::WHITE:
                 if (w->detectCycle()) {
                     return true;
                 }
                 break;
+
+            // w has already been visited, so we have a cycle
             case CycleMarker::GRAY:
                 return true;
+
+            // w is "finished" (i.e. BLACK), nothing to see here
             default:
                 break; // Do nothing
             }
         }
+
+        // Done with checking the edge paths from this vertex
         marker_ = CycleMarker::BLACK;
         return false;
     }
 
+    /**
+     * Return the set of vertices that are part of a DAG cycle
+     *
+     * If a cycle is found, return true and provide set of vertices
+     * in the cycle.
+     *
+     * If a cycle is NOT found, return false, and leave cycle_set
+     * untouched.
+     *
+     * At the completion of findCycle(), the DAG vertices will
+     * be marked:
+     *     WHITE if they have NOT be visited
+     *     GRAY if they have been visited, and ARE part of a cycle
+     *     BLACK if they have been visited, but are NOT part of a cycle
+     *
+     * NOTE: This routine does the same white/gray/black traversal
+     * as detectCycle_. We COULD just return all the gray vertices
+     * after calling detectCycle_(). Is it computationally cheaper to
+     * repeat the traversal, or just scan through all the (many!) allocated
+     * vertices?
+     */
     bool Vertex::findCycle(VList& cycle_set)
     {
+        // Mark that we've visited this (current) vertex
         marker_ = CycleMarker::GRAY;
 
+        // Loop through this vertex's outbound edges...
         for (auto& ei : edges_) {
             Vertex *w = ei.first;
+
             switch (w->marker_) {
+            // w has not been visited, recurse down this edge
             case CycleMarker::WHITE:
                 if (w->findCycle(cycle_set)) {
                     cycle_set.push_front(w);
                     return true;
                 }
                 break;
+
+            // w has already been visited, so we have a cycle
             case CycleMarker::GRAY:
                 cycle_set.push_front(w);
                 return true;
+
+            // w is "finished" (i.e. BLACK), nothing to see here
             default:
                 break; // Do nothing
             }
         }
+
+        // Done with checking the edge paths from this vertex
         marker_ = CycleMarker::BLACK;
         return false;
     }

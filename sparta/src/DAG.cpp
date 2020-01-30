@@ -9,6 +9,7 @@
 namespace sparta
 {
 
+#if 0
     void DAG::CycleException::outPutIssue_(std::ostream & os, bool dot) const
     {
         if(dot) {
@@ -69,6 +70,58 @@ namespace sparta
             os << "\n}\n";
         }
     }
+#endif
+
+    /**
+     * Write a text version of the CycleException's cycle vertex list
+     * @param os
+     */
+    void DAG::CycleException::writeText(std::ostream& os) const {
+        os << "DAG CYCLE: " << std::endl;
+
+        const Vertex* prior_v = nullptr;
+        for (const auto& v : cycle_set_) {
+            if (prior_v != nullptr) {
+                const Edge* e = prior_v->getEdgeTo(v);
+                assert(e != nullptr);
+                os << " -> " << v->getLabel()
+                   << "\t// edge: " << e->getLabel()
+                   << std::endl;
+            }
+            os << "\t" << v->getLabel();
+            prior_v = v;
+        }
+
+        Vertex* first = cycle_set_.front();
+        const Edge* e = prior_v->getEdgeTo(first);
+        assert(e != nullptr);
+        os << " -> " << first->getLabel()
+           << "\t// edge: " << e->getLabel()
+           << std::endl;
+    }
+
+    /**
+     * Write a DOT graph version of the CycleException's cycle vertex list
+     * @param os
+     */
+    void DAG::CycleException::writeDOT(std::ostream& os) const {
+        os << "digraph dag_cycle {" << std::endl;
+        os << "\trankdir=TB;" << std::endl;
+        os << "\tnode [shape=record, fontname=Helvetica, fontsize=10];" << std::endl;
+        os << std::endl;
+
+        bool first = true;
+        for (const auto& v : cycle_set_) {
+            if (!first) {
+                os << " -> \"" << v->getLabel() << "\";" << std::endl;
+            }
+            os << "\t\"" << v->getLabel() << "\"";
+            first = false;
+        }
+        os << " -> \"" << cycle_set_.front()->getLabel() << "\";" << std::endl;
+        os << "}" << std::endl;
+    }
+
     Vertex* DAG::newFactoryVertex(const std::string& label,
                                   sparta::Scheduler* const scheduler,
                                   const bool isgop)
@@ -77,7 +130,7 @@ namespace sparta
     }
 
     /**
-     * \brief Finialize the DAG
+     * \brief Finalize the DAG
      * \return The number of groups that were created
      */
     uint32_t DAG::finalize()
@@ -205,6 +258,7 @@ namespace sparta
         return (vcount == 0);
     }
 
+    //! Detect whether the DAG has at least one cycle
     bool DAG::detectCycle() const
     {
         for (auto& vi : alloc_vertices_)
@@ -213,7 +267,7 @@ namespace sparta
         }
 
         for (auto& vi : alloc_vertices_) {
-            if (vi->wasVisited()) {
+            if (vi->wasNotVisited()) {
                 if (vi->detectCycle()) {
                     return true;
                 }
@@ -233,7 +287,7 @@ namespace sparta
         }
 
         for (auto& vi : alloc_vertices_) {
-            if (vi->wasVisited()) {
+            if (vi->wasNotVisited()) {
                 if (vi->findCycle(cycle_set)) {
                     os << "CYCLE:" << std::endl;
                     for (auto ci : cycle_set) {
@@ -271,8 +325,10 @@ namespace sparta
         }
 
         for (auto& vi : alloc_vertices_) {
-            if (vi->wasVisited()) {
-                vi->findCycle(cycle_set);
+            if (vi->wasNotVisited()) {
+                if (vi->findCycle(cycle_set)) {
+                    break;
+                }
             }
         }
         return cycle_set;

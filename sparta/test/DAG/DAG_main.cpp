@@ -106,17 +106,17 @@ int main()
     dag[0]->link(&f[2], &f[4]);
     dag[0]->link(&f[3], &f[4]);
 
-    dag[0]->print(std::cout);
+    cout << dag[0];
 
     bool did_throw = false;
     try {
         dag[0]->link(&f[4], &f[0]);
     } catch (DAG::CycleException & e) {
-        cout << dag[0] << endl;
-        fstream fs;
-        fs.open("dag_cycle1.dot", fstream::out);
-        e.writeDOT(fs);
-        e.writeText(std::cerr);
+        // cout << dag[0] << endl;
+        // fstream fs;
+        // fs.open("dag_cycle1.dot", fstream::out);
+        e.writeDOT(cout);
+        e.writeText(cout);
         did_throw = true;
     }
     EXPECT_TRUE(did_throw);
@@ -126,29 +126,31 @@ int main()
     } catch (DAG::CycleException & e) {
         cout << "Cycle(s) found during sort..." << endl;
         dag[0]->printCycles(cout);
-        fstream fs;
-        fs.open("dag_cycle2.dot", fstream::out);
-        e.writeDOT(fs);
-        e.writeText(std::cerr);
+        //fstream fs;
+        //fs.open("dag_cycle2.dot", fstream::out);
+        e.writeDOT(cout);
+        e.writeText(cout);
     }
     cout << endl;
 
     // Remove the cycle and re-try
     dag[0]->unlink(&f[4], &f[0]);
-    cout << dag[0] << endl;
 
     try {
         EXPECT_TRUE(dag[0]->sort());
     } catch (DAG::CycleException & e) {
         cout << "Cycle(s) found during sort..." << endl;
         dag[0]->printCycles(cout);
-        fstream fs;
-        fs.open("dag_cycle3.dot", fstream::out);
-        e.writeDOT(fs);
-        e.writeText(std::cerr);
-        fs.close();
+        // fstream fs;
+        // fs.open("dag_cycle3.dot", fstream::out);
+        e.writeDOT(cout);
+        e.writeText(cout);
+        //fs.close();
     }
-    cout << endl;
+    cout << "______________________" << endl;
+    cout << "SORTED DAG[0]" << endl;
+    cout << "______________________" << endl;
+    cout << dag[0];
 
     EXPECT_EQUAL(f[0].getGroupID(), 1);
     EXPECT_EQUAL(f[1].getGroupID(), 1); // Already set correctly from the attempt with cycles
@@ -211,13 +213,18 @@ int main()
             }
         }
     }
-    cout << dag[2] << endl;
+
     try {
         EXPECT_TRUE(dag[2]->sort());
     } catch (DAG::CycleException &) {
         cout << "Cycle(s) found during sort..." << endl;
         dag[2]->printCycles(cout);
     }
+
+    cout << "______________________" << endl;
+    cout << "SORTED DAG[2] (5x5 grid)" << endl;
+    cout << "______________________" << endl;
+    cout << dag[2];
 
     for(DAG* dg : dag){
         delete dg;
@@ -293,6 +300,9 @@ int main()
     // Finalize
     try {
         sched.getDAG()->finalize();
+        cout << "______________________" << endl;
+        cout << "CHAINED PRECEDENCE DAG" << endl;
+        cout << "______________________" << endl;
         cout << sched.getDAG() << endl;
     } catch (DAG::CycleException &) {
         EXPECT_TRUE(false);

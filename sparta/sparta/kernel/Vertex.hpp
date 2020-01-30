@@ -146,6 +146,12 @@ namespace sparta
 
         //! Has this Vertex been visited yet?
         bool wasVisited() const {
+            //return marker_ == CycleMarker::WHITE;
+            return marker_ == CycleMarker::GRAY;
+        }
+
+        //! Has this Vertex NOT been visited yet?
+        bool wasNotVisited() const {
             return marker_ == CycleMarker::WHITE;
         }
 
@@ -244,7 +250,8 @@ namespace sparta
             ss << (isGOP() ? "GOP" : "V")
                << "[" << getLabel() << "]:"
                << " id: " << id_
-               << " edges(in=" << numInboundEdges()
+               << ", marker=" << (marker_ == CycleMarker::WHITE ? "white" : (marker_ == CycleMarker::GRAY ? "GRAY" : "black"))
+               << ", edges(in=" << numInboundEdges()
                << ", out=" << numOutboundEdges() << ")"
                << ", group: " << getGroupID();
             return ss.str();

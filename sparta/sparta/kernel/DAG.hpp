@@ -54,16 +54,18 @@ namespace sparta
                 SpartaException(reason)
             {}
 
-            void writeDOT (std::ostream & os) const {
-                outPutIssue_(os, true);
-            }
-            void writeText(std::ostream & os) const {
-                outPutIssue_(os, false);
-            }
+            void writeDOT (std::ostream & os) const;
+                //outPutIssue_(os, true);
+            //}
+            void writeText(std::ostream & os) const;
+                //outPutIssue_(os, false);
+            //}
+
         private:
-            void outPutIssue_(std::ostream & os, bool dot) const;
+            //void outPutIssue_(std::ostream & os, bool dot) const;
             typename Vertex::VList     cycle_set_;
         };
+
         ////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////
