@@ -31,7 +31,7 @@ namespace sparta
 class JSON_reduced : public BaseOstreamFormatter
 {
 private:
-    // Jim's JSON format is considered as version 1.0.
+    // JavaScript JSON format is considered as version 1.0.
     const std::string version_ = "2.1";
 
 public:

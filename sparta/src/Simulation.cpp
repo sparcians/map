@@ -463,7 +463,7 @@ void Simulation::configure(const int argc,
     using_final_config_       = sim_config_->hasFinalConfig();
 
     // This can be set either command line or explicitly.  Either way,
-    // if it's at all true, keep it that way.  Monaco requires this.
+    // if it's at all true, keep it that way.
     validate_post_run_        = sim_config_->validate_post_run;
 
 #ifdef SPARTA_PYTHON_SUPPORT

@@ -1,4 +1,3 @@
-# Time Series Report for MK HP
 # NOTE: works with topology families of --arch my_arch
 # Invoke on "top" using
 # --report top reports/tseries_mk.yaml %TRACENAME%.csv csv

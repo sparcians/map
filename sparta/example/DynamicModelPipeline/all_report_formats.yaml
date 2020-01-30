@@ -36,12 +36,12 @@ content:
   report:
     pattern:   _global
     def_file:  simple_stats.yaml
-    dest_file: out1.jims.json
-    format:    jims_json
+    dest_file: out1.js.json
+    format:    js_json
   report:
     pattern:   _global
     def_file:  simple_stats.yaml
-    dest_file: out2.jims.json
+    dest_file: out2.js.json
     format:    jjson
   report:
     pattern:   _global

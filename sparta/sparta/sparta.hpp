@@ -873,8 +873,6 @@ layouts. Development is ongoing.
 Future editions of Argos will aim to provide more dashboard-like functionality with the ability to
 show counters, statistics, and histograms from the simulation in addition to pipeline state.
 
-Refer to the Argos viewer documentation (http://wiki/index.php/Argos) for usage on the argos viewer
-itself.
 */
 
 /*!
@@ -1729,8 +1727,7 @@ of the construction process.
 
 
 \section config_des_req Configuration System Design Requirements
-For reference, a number of the requirements for the configuration system design are listed here. See
-also <a href="http://wiki/index.php/Configuration_API">http://wiki/index.php/Configuration_API</a>
+For reference, a number of the requirements for the configuration system design are listed here.
 -# Enable command-line configuration of a simulation tree
 -# Support configuration-files to configure a simulation tree
    - Separate configuration files for each component in the simulation should be allowed by not

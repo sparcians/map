@@ -52,7 +52,7 @@ static std::map<std::string, std::list<info_data> > detail_json_map;
 class JSON_detail : public BaseOstreamFormatter
 {
 private:
-    // Jim's JSON format is considered as version 1.0.
+    // JavaScript JSON format is considered as version 1.0.
     const std::string version_ = "2.1";
 
     // Clear the detail_json_map static variable before

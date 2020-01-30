@@ -1137,7 +1137,7 @@ bp::object StreamNode__streamTo(bp::tuple args, bp::dict kwargs)
 //! ObjectManager (SimDB). You may call this method for any report format
 //! *except* csv and csv_cumulative:
 //!
-//!    txt, text, html, htm, jims_json, jjson, python, py, json, JSON,
+//!    txt, text, html, htm, js_json, jjson, python, py, json, JSON,
 //!    json_reduced, JSON_reduced, json_detail, JSON_detail, gnuplot,
 //!    gplt, stats_mapping
 //!
@@ -1161,7 +1161,7 @@ enum class SimDBReportType {
     Json,
     JsonReduced,
     JsonDetail,
-    JimsJson,
+    JsJson,
     Html,
     Text,
     PyDictionary,
@@ -1199,9 +1199,9 @@ void SimulationDatabase__createReport(
                 sim_db, report_db_id, filename, "json_detail", scheduler);
             break;
         }
-        case rt::JimsJson: {
+        case rt::JsJson: {
             LOCAL_SimulationDatabase__createReport(
-                sim_db, report_db_id, filename, "jims_json", scheduler);
+                sim_db, report_db_id, filename, "js_json", scheduler);
             break;
         }
         case rt::Html: {
@@ -2534,7 +2534,7 @@ BOOST_PYTHON_MODULE(sparta)
         .def("toJson", &SimulationDatabase__createReport<SimDBReportType::Json>)
         .def("toJsonReduced", &SimulationDatabase__createReport<SimDBReportType::JsonReduced>)
         .def("toJsonDetail", &SimulationDatabase__createReport<SimDBReportType::JsonDetail>)
-        .def("toJimsJson", &SimulationDatabase__createReport<SimDBReportType::JimsJson>)
+        .def("toJsJson", &SimulationDatabase__createReport<SimDBReportType::JsJson>)
         .def("toHtml", &SimulationDatabase__createReport<SimDBReportType::Html>)
         .def("toText", &SimulationDatabase__createReport<SimDBReportType::Text>)
         .def("toDictionary", &SimulationDatabase__createReport<SimDBReportType::PyDictionary>)
