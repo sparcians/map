@@ -5,9 +5,9 @@ project(DOCUMENTATION_MODEL)
 # with different defines
 macro (example_comm_build name build_defines)
     add_executable(${name} main.cpp)
-    target_link_libraries(${name} rome ${REQUIRED_ROME_LIBS} -L${PROJECT_BINARY_DIR}/../../.. -L${PROJECT_BINARY_DIR}/../../../simdb/)
+    target_link_libraries(${name} sparta ${REQUIRED_SPARTA_LIBS} -L${PROJECT_BINARY_DIR}/../../.. -L${PROJECT_BINARY_DIR}/../../../simdb/)
     set_target_properties(${name} PROPERTIES COMPILE_DEFINITIONS "${build_defines}")
-    rome_test(${name})
+    sparta_test(${name})
 endmacro(example_comm_build)
 
 example_comm_build(Events_example_test "EVENTS_EXAMPLE=1")

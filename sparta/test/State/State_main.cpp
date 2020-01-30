@@ -314,6 +314,26 @@ enum class enStateID {
 //     }
 // }
 
+void testCopyConstruct()
+{
+    enum class StateCopyTest {
+        COPIED_STATE1,
+        __FIRST = COPIED_STATE1,
+        COPIED_STATE2,
+        __LAST = COPIED_STATE2
+    };
+
+    sparta::State<StateCopyTest> orig_state;
+    sparta::State<StateCopyTest> new_state(orig_state);
+    EXPECT_TRUE(orig_state.getValue() == StateCopyTest::COPIED_STATE1);
+    EXPECT_TRUE(new_state.getValue() == StateCopyTest::COPIED_STATE1);
+
+    orig_state.setValue(StateCopyTest::COPIED_STATE2);
+    sparta::State<StateCopyTest> new_state2(orig_state);
+    EXPECT_TRUE(orig_state.getValue() == StateCopyTest::COPIED_STATE2);
+    EXPECT_TRUE(new_state2.getValue() == StateCopyTest::COPIED_STATE2);
+}
+
 int main()
 {
     sparta::Scheduler sched;
@@ -461,6 +481,8 @@ int main()
 
     sched.run(100);
     EXPECT_EQUAL(obs.getActivations(), 7);
+
+    testCopyConstruct();
 
     //speedTest();
 

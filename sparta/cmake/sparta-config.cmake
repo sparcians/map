@@ -1,7 +1,7 @@
 ################################################################################
 #              RequiredLibraries
 #
-# This file is responsible for setting up rome to find the required
+# This file is responsible for setting up sparta to find the required
 # libraries like boost, yaml_cpp, etc.
 #
 # Variables available afterwards.

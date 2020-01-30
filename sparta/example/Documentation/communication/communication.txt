@@ -5,17 +5,17 @@
 
   In addition to providing a simulation command line infrastructure
   (see \ref config) as well as resource creation (see \ref resources)
-  in a tree form for organization (see \ref trees), ROME provides a
+  in a tree form for organization (see \ref trees), SPARTA provides a
   series of classes and ordering specifically dedicated for resource
   to resource communication as well as internal resource
   communication.  This communication can be timed or untimed as
   desired.
 
   The first point to make revolves around the philosophy behind the
-  timing aspects of ROME: There are scheduling phases
-  (rome::SchedulingPhase) that allows a user to count on certain
+  timing aspects of SPARTA: There are scheduling phases
+  (sparta::SchedulingPhase) that allows a user to count on certain
   ordering between resources and another.  This is different from
-  prior versions of ROME where every scheduleable type of event was in
+  prior versions of SPARTA where every scheduleable type of event was in
   a single phase and required the user to provide explicit orderings.
 
   Ordering within a phase, however, is still supported, allowing a
@@ -25,20 +25,20 @@
   the data read.
 
   The classes that support communication and scheduling are:
-  - \ref rome::Port
-  - \ref rome::PortSet
-  - \ref rome::DataInPort, \ref rome::DataOutPort
-  - \ref rome::SignalInPort, \ref rome::SignalOutPort
-  - \ref rome::SyncInPort, \ref rome::SyncOutPort
-  - \ref rome::Scheduleable
-  - \ref rome::Event
-  - \ref rome::UniqueEvent
-  - \ref rome::PayloadEvent
-  - \ref rome::EventSet
-  - \ref rome::Clock
-  - \ref rome::Scheduler
-  - \ref rome::SchedulingPhase
-  - \ref rome::SysCRomeSchedulerAdapter
+  - \ref sparta::Port
+  - \ref sparta::PortSet
+  - \ref sparta::DataInPort, \ref sparta::DataOutPort
+  - \ref sparta::SignalInPort, \ref sparta::SignalOutPort
+  - \ref sparta::SyncInPort, \ref sparta::SyncOutPort
+  - \ref sparta::Scheduleable
+  - \ref sparta::Event
+  - \ref sparta::UniqueEvent
+  - \ref sparta::PayloadEvent
+  - \ref sparta::EventSet
+  - \ref sparta::Clock
+  - \ref sparta::Scheduler
+  - \ref sparta::SchedulingPhase
+  - \ref sparta::SysCSpartaSchedulerAdapter
 
   The below sections detail each.
 
@@ -47,19 +47,19 @@
 
   Ports are the mechanism in which a resource communicates a message
   to another resource (for example, via the method
-  rome::DataOutPort::send).  The two resources do not know about each
+  sparta::DataOutPort::send).  The two resources do not know about each
   other and don't need to.  Typically, during
-  rome::Simulation::finalizeTree (calls rome::Simulation::bindTree_)
-  phase, any rome::Port derived classes that are constructed with a
-  rome::PortSet are bound together using rome::bind(rome::Port,
-  rome::Port) methods.  An example of how this is done is found in
-  details section of rome::DataOutPort as well as the example core
+  sparta::Simulation::finalizeTree (calls sparta::Simulation::bindTree_)
+  phase, any sparta::Port derived classes that are constructed with a
+  sparta::PortSet are bound together using sparta::bind(sparta::Port,
+  sparta::Port) methods.  An example of how this is done is found in
+  details section of sparta::DataOutPort as well as the example core
   simulator's ExampleSimulator::buildTree_ (see \ref core_example)
   method (source found in example/CoreExample/src).
 
   For the receiver of the data, the receiver would have to register a
-  callback on the rome::DataInPort via the
-  rome::DataInPort::registerConsumerHandler.  This callback \b must be
+  callback on the sparta::DataInPort via the
+  sparta::DataInPort::registerConsumerHandler.  This callback \b must be
   a member of the containing class or another persistent class in
   simulation.
 
@@ -69,13 +69,13 @@
 
    \include Documentation/communication/Ports_example.h
 
-   \subsection sync_ports rome::SyncPorts
+   \subsection sync_ports sparta::SyncPorts
 
    To enable communication between components on different Clock
-   boundaries, use rome::SyncInPort and rome::SyncOutPort.  This type
+   boundaries, use sparta::SyncInPort and sparta::SyncOutPort.  This type
    of port is identical to DataIn/OutPort with the exception that data
    sent on the out port is delayed until the "rising edge" of the
-   receiver's clock. See rome::SyncOutPort for more information.
+   receiver's clock. See sparta::SyncOutPort for more information.
 
    ======================================================================
    \section comm_events Events
@@ -95,7 +95,7 @@
    \b two inports that needed to be called \b before doing some work?
    That's no problem either.  Let's extend the class, but this time
    adding a second port and changing event_do_some_work_ from a
-   rome::Event to a rome::UniqueEvent to ensure it gets called only
+   sparta::Event to a sparta::UniqueEvent to ensure it gets called only
    once when scheduled by both handlers. Code found in
    examples/Documentation/communication/Port_dual_example.h, and
    compiled by typing 'make EVENTS_DUAL_EXAMPLE=1'
@@ -106,29 +106,29 @@
    \section comm_dyn_events Dynamic Event Creation
 
    What if we want have a dynamic object that wants to schedule Events
-   on the rome::Scheduler?  How do you do that?  This approach is
+   on the sparta::Scheduler?  How do you do that?  This approach is
    typically discouraged as debugging dynamic events is difficult for
    the model developer and requires the modeler to create
-   rome::Scheduleable objects with hard-coded groupings.
+   sparta::Scheduleable objects with hard-coded groupings.
 
-   But, if this is required, create a rome::Scheduleable instance and
+   But, if this is required, create a sparta::Scheduleable instance and
    perform scheduling directly on that instance.  If the base behavior
-   is not desired, derive from rome::Scheduleable and provide an
-   implementation of rome::Scheduleable::scheduleRelativeTick.
+   is not desired, derive from sparta::Scheduleable and provide an
+   implementation of sparta::Scheduleable::scheduleRelativeTick.
 
    ======================================================================
    \section comm_clocks Clocks
 
-   ROME's clocking and clock management are contained in rome::Clock
-   and rome::ClockManager classes.  The main difference to note in
-   ROME, is that rome::Clock objects are not event-based objects nor
+   SPARTA's clocking and clock management are contained in sparta::Clock
+   and sparta::ClockManager classes.  The main difference to note in
+   SPARTA, is that sparta::Clock objects are not event-based objects nor
    do they constantly "clock" as simulation progresses (like in other
-   frameworks).  rome::Clock objects are simply available to convert
-   simulation time (from the rome::Scheduler) to clock time based on
-   that clock's frequency.  Therefor, in simulation, rome::Clock
+   frameworks).  sparta::Clock objects are simply available to convert
+   simulation time (from the sparta::Scheduler) to clock time based on
+   that clock's frequency.  Therefor, in simulation, sparta::Clock
    objects are passed around as constant objects.  In addition, there
    is no notion of a "rising edge" nor a "falling edge" in simulation
-   (however, the rome::Clock supports this notion if absolutely
+   (however, the sparta::Clock supports this notion if absolutely
    needed).  Instead, the Clocks are used to simply answer the
    question, what time (in NS) on the Scheduler should Event X be
    scheduled?
@@ -141,14 +141,14 @@
    TreeNode objects that Device objects hang off of:
 
    \code
-    rome::RootTreeNode root_clks("clocks",
+    sparta::RootTreeNode root_clks("clocks",
                                  "Clock Tree Root",
                                  root_node.getSearchScope());
-    rome::ClockManager cm;
-    rome::Clock::Handle root_clk = cm.makeRoot(&root_clks);
-    rome::Clock::Handle clk_1000 = cm.makeClock("clk_1000", root_clk, 1000.0);
-    rome::Clock::Handle clk_100  = cm.makeClock("clk_100",  root_clk,  100.0);
-    rome::Clock::Handle clk_10   = cm.makeClock("clk_10",   root_clk, 10.0);
+    sparta::ClockManager cm;
+    sparta::Clock::Handle root_clk = cm.makeRoot(&root_clks);
+    sparta::Clock::Handle clk_1000 = cm.makeClock("clk_1000", root_clk, 1000.0);
+    sparta::Clock::Handle clk_100  = cm.makeClock("clk_100",  root_clk,  100.0);
+    sparta::Clock::Handle clk_10   = cm.makeClock("clk_10",   root_clk, 10.0);
 
     root_tree_node_.setClock(root_clk.get()); // The root is at highest freq
 
@@ -161,9 +161,9 @@
    ======================================================================
    \section comm_schedulers Schedulers
 
-   \subsection rome_Scheduler rome::Scheduler
-   \copydetails rome::Scheduler
+   \subsection sparta_Scheduler sparta::Scheduler
+   \copydetails sparta::Scheduler
 
-   \subsection sysc_scheduler rome::SysCRomeSchedulerAdapter
-   \copydetails rome::SysCRomeSchedulerAdapter
+   \subsection sysc_scheduler sparta::SysCSpartaSchedulerAdapter
+   \copydetails sparta::SysCSpartaSchedulerAdapter
   */

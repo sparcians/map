@@ -1,7 +1,7 @@
 # Ignrore leaks from backtrace function. They are small and not obviously
 # solveable - likely library ABI compatibility problems.
 {
-   <rome_backtrace_pthread_open_leak>
+   <sparta_backtrace_pthread_open_leak>
    Memcheck:Leak
    fun:malloc
    fun:_dl_map_object_deps
@@ -14,5 +14,5 @@
    fun:init
    fun:pthread_once
    fun:backtrace
-   fun:_ZN4rome3app13get_backtraceEPv
+   fun:_ZN4sparta3app13get_backtraceEPv
 }
