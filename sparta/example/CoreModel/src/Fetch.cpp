@@ -10,38 +10,38 @@ namespace core_example
 {
     const char * Fetch::name = "fetch";
 
-    // Dummy opcodes, but based on a really small piece of ARM...
+    // Dummy opcodes, but based on a really small piece of PowerPC...
     static std::vector<ExampleInst::StaticInfo> dummy_opcodes =
     {
-        { {0x02a00000, 0x0fe00000, {}, "adc", 0 }, ExampleInst::TargetUnit::ALU0, 1, false},
-        { {0x016f0f10, 0x0fff0ff0, {}, "clz", 0 }, ExampleInst::TargetUnit::ALU1, 1, false},
-        { {0x02800000, 0x0fe00000, {}, "add", 0 }, ExampleInst::TargetUnit::ALU0, 1, false},
-        { {0x03700000, 0x0ff0f000, {}, "cmn", 0 }, ExampleInst::TargetUnit::ALU1, 1, false},
-        { {0x02000000, 0x0fe00000, {}, "and", 0 }, ExampleInst::TargetUnit::ALU0, 1, false},
-        { {0x00000000, 0x0fe00010, {}, "and", 0 }, ExampleInst::TargetUnit::ALU0, 1, false},
-        { {0xf2000710, 0xfe800f10, {}, "vaba", 0 }, ExampleInst::TargetUnit::FPU, 1, false},
-        { {0x01700000, 0x0ff0f010, {}, "cmn", 0 }, ExampleInst::TargetUnit::ALU1, 1, false},
-        { {0x01700010, 0x0ff0f090, {}, "cmn", 0 }, ExampleInst::TargetUnit::ALU1, 1, false},
-        { {0x03500000, 0x0ff0f000, {}, "cmp", 0 }, ExampleInst::TargetUnit::ALU1, 1, false},
-        { {0x01500000, 0x0ff0f010, {}, "cmp", 0 }, ExampleInst::TargetUnit::ALU1, 1, false},
-        { {0x00400010, 0x0fe00090, {}, "sub", 0 }, ExampleInst::TargetUnit::ALU1, 1, false},
-        { {0xf2800500, 0xfe800f50, {}, "vabal",0 }, ExampleInst::TargetUnit::FPU, 5, false},
-        { {0xf2000700, 0xfe800f10, {}, "vabd", 0 }, ExampleInst::TargetUnit::FPU, 5, false},
-        { {0xf3200d00, 0xffa00f10, {}, "vabd", 0 }, ExampleInst::TargetUnit::FPU, 5, false},
-        { {0xf2800700, 0xfe800f50, {}, "vabdl",0 }, ExampleInst::TargetUnit::FPU, 5, false},
-        { {0xf3b10300, 0xffb30b90, {}, "vabs", 0 }, ExampleInst::TargetUnit::FPU, 5, false},
-        { {0x0eb00ac0, 0x0fbf0ed0, {}, "vabs", 0 }, ExampleInst::TargetUnit::FPU, 5, false},
-        { {0xf2000800, 0xff800f10, {}, "vadd", 0 }, ExampleInst::TargetUnit::FPU, 5, false},
-        { {0xf2000d00, 0xffa00f10, {}, "vadd", 0 }, ExampleInst::TargetUnit::FPU, 5, false},
-        { {0x0e300a00, 0x0fb00e50, {}, "vadd", 0 }, ExampleInst::TargetUnit::FPU, 5, false},
-        { {0xf2800400, 0xff800f50, {}, "vaddhn", 0 }, ExampleInst::TargetUnit::FPU, 10, false},
-        { {0xf2800000, 0xfe800f50, {}, "vaddl",  0 }, ExampleInst::TargetUnit::FPU, 1, false},
-        { {0xf2800100, 0xfe800f50, {}, "vaddw",  0 }, ExampleInst::TargetUnit::FPU, 1, false},
-        { {0xf2000110, 0xffb00f10, {}, "vand",   0 }, ExampleInst::TargetUnit::FPU, 20, false},
-        { {0xf2800030, 0xfeb800b0, {}, "vbic",   0 }, ExampleInst::TargetUnit::FPU, 30, false},
-        { {0xf8100000, 0xfe500000, {}, "flush",  0 }, ExampleInst::TargetUnit::ROB, 1, false},
-        { {0x01a00010, 0x0fe000f0, {}, "ldr", 0 }, ExampleInst::TargetUnit::LSU, 10, false},
-        { {0x01a00030, 0x0fe000f0, {}, "str", 0 }, ExampleInst::TargetUnit::LSU, 10, true}
+        { {0x7c01f214, 0xffffffff, {}, "add.", 0 }, ExampleInst::TargetUnit::ALU0, 1, false},
+        { {0x7c6f0f10, 0xffffffff, {}, "cntlzw", 0 }, ExampleInst::TargetUnit::ALU1, 1, false},
+        { {0x7c800000, 0xffffffff, {}, "add", 0 }, ExampleInst::TargetUnit::ALU0, 1, false},
+        { {0x7c700000, 0xffffffff, {}, "subf.", 0 }, ExampleInst::TargetUnit::ALU1, 1, false},
+        { {0x7c000000, 0xffffffff, {}, "and", 0 }, ExampleInst::TargetUnit::ALU0, 1, false},
+        { {0x7c000000, 0xffffffff, {}, "and", 0 }, ExampleInst::TargetUnit::ALU0, 1, false},
+        { {0x7c000710, 0xffffffff, {}, "fadd.", 0 }, ExampleInst::TargetUnit::FPU, 1, false},
+        { {0x7c700000, 0xffffffff, {}, "cmp", 0 }, ExampleInst::TargetUnit::ALU1, 1, false},
+        { {0x7c700010, 0xffffffff, {}, "cmn", 0 }, ExampleInst::TargetUnit::ALU1, 1, false},
+        { {0x7c500000, 0xffffffff, {}, "cmp", 0 }, ExampleInst::TargetUnit::ALU1, 1, false},
+        { {0x7c500000, 0xffffffff, {}, "cmp", 0 }, ExampleInst::TargetUnit::ALU1, 1, false},
+        { {0x7c400010, 0xffffffff, {}, "sub", 0 }, ExampleInst::TargetUnit::ALU1, 1, false},
+        { {0xfc800500, 0xffffffff, {}, "fabs",0 }, ExampleInst::TargetUnit::FPU, 5, false},
+        { {0xfc000700, 0xffffffff, {}, "fctid.", 0 }, ExampleInst::TargetUnit::FPU, 5, false},
+        { {0xfc200d00, 0xffffffff, {}, "fadd.", 0 }, ExampleInst::TargetUnit::FPU, 5, false},
+        { {0xfc800700, 0xffffffff, {}, "fadd.",0 }, ExampleInst::TargetUnit::FPU, 5, false},
+        { {0xfcb10300, 0xffffffff, {}, "fadd.", 0 }, ExampleInst::TargetUnit::FPU, 5, false},
+        { {0xfcb00ac0, 0xffffffff, {}, "fadd.", 0 }, ExampleInst::TargetUnit::FPU, 5, false},
+        { {0xfc000800, 0xffffffff, {}, "fadd.", 0 }, ExampleInst::TargetUnit::FPU, 5, false},
+        { {0xfc000d00, 0xffffffff, {}, "fadd.", 0 }, ExampleInst::TargetUnit::FPU, 5, false},
+        { {0xfc300a00, 0xffffffff, {}, "fadd.", 0 }, ExampleInst::TargetUnit::FPU, 5, false},
+        { {0xfc800400, 0xffffffff, {}, "fadd.", 0 }, ExampleInst::TargetUnit::FPU, 10, false},
+        { {0xfc800000, 0xffffffff, {}, "fadd.",  0 }, ExampleInst::TargetUnit::FPU, 1, false},
+        { {0xfc800100, 0xffffffff, {}, "fadd.",  0 }, ExampleInst::TargetUnit::FPU, 1, false},
+        { {0xfc000110, 0xffffffff, {}, "fdiv",   0 }, ExampleInst::TargetUnit::FPU, 20, false},
+        { {0xfc800030, 0xffffffff, {}, "fdiv.",   0 }, ExampleInst::TargetUnit::FPU, 30, false},
+        { {0xfc100000, 0xffffffff, {}, "sync",  0 }, ExampleInst::TargetUnit::ROB, 1, false},
+        { {0x7ea00010, 0xffffffff, {}, "lwx", 0 }, ExampleInst::TargetUnit::LSU, 10, false},
+        { {0xfca00030, 0xffffffff, {}, "stw", 0 }, ExampleInst::TargetUnit::LSU, 10, true}
     };
 
     // Fetch a random instruction or MaxIPC

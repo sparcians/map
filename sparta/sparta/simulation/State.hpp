@@ -169,7 +169,7 @@ namespace sparta
         public:
 
             // No copies
-            // Marker(const Marker &) = delete;
+            Marker(const Marker &) = delete;
 
             //! Set the marker
             void set(MetaDataTPtr ptr = nullptr) {
@@ -483,7 +483,7 @@ namespace sparta
         }
 
         //! No copies of State are allowed
-        // State(const State &) = delete;
+        State(const State &) = delete;
 
         //! Deleting default assignment operator to prevent copies
         State & operator = (const State &) = delete;
