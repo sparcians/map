@@ -237,10 +237,12 @@ namespace sparta
         bool detectCycle();
         bool findCycle(VList& cycle_set);
 
+        // Printable string (called by DAG print routines)
         explicit operator std::string() const
         {
             std::stringstream ss;
-            ss << "V[" << getLabel() << "]:"
+            ss << (isGOP() ? "GOP" : "V")
+               << "[" << getLabel() << "]:"
                << " id: " << id_
                << " edges(in=" << numInboundEdges()
                << ", out=" << numOutboundEdges() << ")"

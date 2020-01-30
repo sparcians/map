@@ -134,7 +134,7 @@ namespace sparta
     {
         os << std::string(*this) << std::endl;
         for (const auto & ei : edges_) {
-            os << "\t" << std::string(*(ei.first)) << ", " << std::string(ei.second) << std::endl;
+            os << "\t-> " << std::string(*(ei.first)) << ", " << std::string(ei.second) << std::endl;
         }
         os << std::endl;
     }

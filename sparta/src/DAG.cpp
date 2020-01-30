@@ -247,15 +247,17 @@ namespace sparta
 
     void DAG::print(std::ostream& os) const
     {
-        if(finalized_) {
-            for (const auto & vi : alloc_vertices_) {
-                vi->print(os);
-                os << std::endl;
-            }
+        std::ios_base::fmtflags os_state(os.flags());
+        if (!finalized_) {
+            os << "=================" << std::endl;
+            os << "WARNING: DAG IS NOT YET FINALIZED (unsorted, so group ID's are not yet fixed)" << std::endl;
+            os << "=================" << std::endl;
         }
-        else {
-            os << "DAG not finalized ... cannot print contents" << std::endl;
+        for (const auto & vi : alloc_vertices_) {
+            vi->print(os);
+            os << std::endl;
         }
+        os.flags(os_state);
     }
 
     // Just mark one cycle for now...
