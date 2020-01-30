@@ -73,8 +73,7 @@ namespace sparta
      * \brief A class used in DAG and Scheduleable
      *     A Scheduleable contains a Vertex to connect to other
      *     Vertices in a DAG (GOPs) or other Scheduleables to
-     *     establish precedence. Aliased to GOPoint to maintain
-     *     FIAT compatibility
+     *     establish precedence.
      */
     class Vertex
     {

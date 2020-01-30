@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(simdb CXX)
 
 set(SIMDB_BASE ${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${SIMDB_BASE}/include)
+include_directories(${SIMDB_BASE}/include ${SIMDB_BASE}/test)
 include(${SIMDB_BASE}/cmake/simdb-config.cmake)
 
 list(APPEND SimDB_CPP

@@ -28,7 +28,7 @@ TEST_INIT;
 
 typedef sparta::Array<uint32_t, sparta::ArrayType::NORMAL> MyArray;
 typedef sparta::Array<uint32_t, sparta::ArrayType::AGED> AgedArray;
-typedef sparta::FrontArray<uint32_t, sparta::ArrayType::NORMAL> RajArray;
+typedef sparta::FrontArray<uint32_t, sparta::ArrayType::NORMAL> FrontArray;
 
 //Test non-integral aged array data types
 namespace sparta {
@@ -104,7 +104,7 @@ int main()
 
     AgedArray aged_collected_array("aged_collected_array", 10, &clk);
     aged_collected_array.enableCollection(&root);
-    RajArray front_array("front_array", 8, &clk, &sset);
+    FrontArray front_array("front_array", 8, &clk, &sset);
 
     root_node.enterConfiguring();
     root_node.enterFinalized();

@@ -52,8 +52,8 @@ const std::vector<FormatterFactory> BaseFormatter::FACTORIES = {
           return new CSV(r,fn, std::ios::trunc | std::ios::out); }
     },
 
-    { {"jims_json", "jjson"},
-      "Jim's JavaScript Object Notation Report Output",
+    { {"js_json", "jsjson"},
+      "JavaScript Object Notation Report Output",
       [](const Report* r, const std::string& fn) -> BaseFormatter* { return new JavascriptObject(r,fn); }
     },
 

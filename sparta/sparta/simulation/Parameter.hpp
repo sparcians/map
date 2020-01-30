@@ -1546,13 +1546,15 @@ namespace sparta
 
         /*!
          * \brief Copy assignment - deleted explicitly.
-         * \note This explicit delete of the copy assignment operator is to work around
-         * cases where we have one parameter A getting its value at run time from another
-         * parameter B, using the simple syntax A = B. There are instances of this in fiat.
-         * The issue with this is that it's rather ambiguous whether this syntax attempts
-         * to copy a parameter value into A from B (which is the intent of the offending
-         * FIAT code), or copy the entire Parameter object. Hence, explicitly deleted. Use
-         * getValue() calls for value copy.
+         * \note This explicit delete of the copy assignment operator
+         *       is to work around cases where we have one parameter A
+         *       getting its value at run time from another parameter
+         *       B, using the simple syntax A = B.  The issue with
+         *       this is that it's rather ambiguous whether this
+         *       syntax attempts to copy a parameter value into A from
+         *       B, or copy the entire Parameter object. Hence,
+         *       explicitly deleted. Use getValue() calls for value
+         *       copy.
          */
         void operator=(const Parameter& p) = delete;
 

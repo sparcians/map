@@ -555,7 +555,7 @@ void testReportCreationFromSimDB()
 
     EXPECT_TRUE(sparta::Report::createFormattedReportFromDatabase(
                 obj_mgr, report_db_id,
-                "test.jims.json", "jims_json", &sched));
+                "test.js.json", "js_json", &sched));
 
     EXPECT_TRUE(sparta::Report::createFormattedReportFromDatabase(
                 obj_mgr, report_db_id,

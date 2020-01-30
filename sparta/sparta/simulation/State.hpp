@@ -117,8 +117,6 @@ namespace sparta
      * the State class is in the critical path for most performance
      * modeling applications, use of STL types is discouraged.
      */
-
-    // FIAT-1489: Changing markers to accomodate the fixup related change
     template<class EnumT, class MetaDataT = void, uint32_t MAX_MARKERS = 15>
     class State
     {
@@ -173,9 +171,6 @@ namespace sparta
 
             //! Set the marker
             void set(MetaDataTPtr ptr = nullptr) {
-                //XXX Raj thinks this is a valid assert, but it
-                //doesn't match the old State behavior
-                //sparta_assert(marked_ == false);
                 if(!marked_) {
                     marker_set_->jointSet_(ptr);
                     marked_ = true;
@@ -184,9 +179,6 @@ namespace sparta
 
             //! Clear the marker
             void clear() {
-                //XXX Raj thinks this is a valid assert, but it
-                //doesn't match the old State behavior
-                //sparta_assert(marked_ == true);
                 if(marked_) {
                     // clear the marker set
                     marker_set_->clearMark_();

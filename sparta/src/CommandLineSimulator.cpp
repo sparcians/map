@@ -808,7 +808,7 @@ bool CommandLineSimulator::parse(int argc,
             }else if(o.string_key == "arch"){
                 if(o.value.size() != 1){
                     std::cerr << "command-line option \"" << o.string_key << "\" had " << o.value.size()
-                              << " tokens but requires 1.\nExample:\n   --arch evt0"
+                              << " tokens but requires 1.\nExample:\n   --arch my_arch"
                               << std::endl;
                     printUsageHelp_();
                     err_code = 1;

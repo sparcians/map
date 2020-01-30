@@ -33,8 +33,6 @@ namespace sparta
 
                 const uint64_t sz_bytes = (cache_sz_unit_is_kb) ? (sz*1024) : (sz);
                 const uint32_t num_sets = (sz_bytes)/ (line_sz * num_ways);
-                //MRVN-464: implement 3-bank SL3, so the total # sets are no longer power of 2.
-                //assert( utils::is_power_of_2(num_sets) );
 
                 blk_offset_mask_ = line_sz - 1;
                 blk_addr_mask_   = ~uint64_t(blk_offset_mask_);

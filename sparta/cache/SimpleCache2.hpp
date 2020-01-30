@@ -103,7 +103,7 @@ namespace sparta
             }
 
             CacheSetT& getCacheSet(uint64_t addr) {
-                return cache_.getCacheSet(addr); 
+                return cache_.getCacheSet(addr);
             }
 
             // Get a line for replacement
@@ -128,7 +128,6 @@ namespace sparta
                     auto &cache_set = cache_.getCacheSet(addr);
                     CacheItemT &way0_line = cache_set.getItemAtWay(0);
                     CacheItemT &way1_line = cache_set.getItemAtWay(1);
-                    // Per Karthik Sundaram
                     // a)  Fill into way 0,
                     //     1) if both way0 and way1 is non-NT
                     //     2) if both way0 and way1 is NT, way0 is older than way1
@@ -256,7 +255,7 @@ namespace sparta
 
             /**
              * determine if there are any open ways in the set.
-             */ 
+             */
             bool hasOpenWay(const uint64_t addr)
             {
                 return cache_.getCacheSet(addr).hasOpenWay();

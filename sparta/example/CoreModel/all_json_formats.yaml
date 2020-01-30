@@ -18,4 +18,4 @@ content:
     pattern:   _global
     def_file:  simple_stats.yaml
     dest_file: out4.json
-    format:    jims_json
+    format:    js_json

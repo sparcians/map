@@ -513,7 +513,7 @@ public:
     //!    query.addConstraints(
     //!        "WarmupInsts", constraints::greater_than, 12800,
     //!        "NumStatInsts", constraints::less_than_or_equal_to, 300,
-    //!        "ReportName", constraints::in_set, {"Fiat","sparta_core_example"});
+    //!        "ReportName", constraints::in_set, {"mysim","sparta_core_example"});
     //!
     template <typename ColumnT, typename... Args>
     void addConstraints(const char * col_name,

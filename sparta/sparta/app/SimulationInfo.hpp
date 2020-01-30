@@ -396,7 +396,7 @@ public:
 
     /*!
      * \brief Instantiate a SimulationInfo object from a json, json_reduced,
-     * json_detail, or jims_json report file.
+     * json_detail, or js_json report file.
      *
      * \param json_fin Input file stream for the JSON report file
      * \param json_kvpairs Optional output argument to get all the
