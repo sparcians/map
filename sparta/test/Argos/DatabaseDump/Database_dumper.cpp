@@ -13,7 +13,7 @@
  * Instructions, run ./ArgosDumper <path+database prefix>
  * the database prefix should be the same prefix passed to the simulator when creating the database
  * example
- * ./ArgosDumper ../../fiat/data_ > out.csv
+ * ./ArgosDumper ../../sim/data_ > out.csv
  *
  * I recommend dumping the output to an *.csv file. Then in open office you can set the file to
  * recognize spaces as new columns. If you do this, then you will have a nice output formatted table

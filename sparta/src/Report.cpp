@@ -2352,7 +2352,7 @@ bool Report::createFormattedReportFromDatabase(
             //written to the file. We should be able to pick off a
             //subset of the data by node path, for example in Python:
             //
-            //   >>> dbconn.fiat14.top.core0.rob.toJsonReduced('rob_reduced.json')
+            //   >>> dbconn.sim.top.core0.rob.toJsonReduced('rob_reduced.json')
             //
             throw SpartaException(
                 "Report::createFormattedReportFromDatabase() "

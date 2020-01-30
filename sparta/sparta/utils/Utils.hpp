@@ -530,17 +530,6 @@ public:
         return set_;
     }
 
-    /*!
-     * \brief unassign this object
-     * \deprecated This should not be used. It is a temporary fix for an incomplete copy-constructor
-     * implementation in fiat's fetch BPOp that requires the ability to reset values.
-     * \note AssignOnceObjects should never have the abiltiy to be unassigned. Such functionality
-     * should belong to some kind of "ValidObject" structure.
-     */
-    void unassign_DEPRECATED() {
-        set_.set_DEPRECATED(false);
-    }
-
 private:
 
     template <typename X>

@@ -117,8 +117,6 @@ namespace sparta
      * the State class is in the critical path for most performance
      * modeling applications, use of STL types is discouraged.
      */
-
-    // FIAT-1489: Changing markers to accomodate the fixup related change
     template<class EnumT, class MetaDataT = void, uint32_t MAX_MARKERS = 15>
     class State
     {

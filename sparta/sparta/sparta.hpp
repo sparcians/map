@@ -2504,9 +2504,6 @@ Wildcard  | Meaning
 \+        | One or more characters
 ?         | Zero or One character
 
-This language (and tree pattern matching in general) is implemented within fiat in
-sparta::TreeNode::findChildren
-
 When evaluating an tree location with wildcards, the substitutions for each match are tracked.
 These substitutions can be accessed through variables in report field declarations. See
 \ref report_def_field_name_variables. Even the substitutions in enclosing scope qualifiers (on other

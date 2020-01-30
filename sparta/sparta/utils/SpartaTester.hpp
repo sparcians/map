@@ -334,9 +334,9 @@ namespace sparta
                             std::stringstream msg;
                             msg << "Files were different lengths: ";
                             if(!fa.good()){
-                                msg << a << " was shorted than " << b << " at char '" << chn << "' #" << pos;
+                                msg << a << " was shorter than " << b << " at char '" << chn << "' #" << pos;
                             }else{
-                                msg << b << " was shorted than " << a << " at char '" << cho << "' #" << pos;
+                                msg << b << " was shorter than " << a << " at char '" << cho << "' #" << pos;
                             }
                             fileComparisonFailed(a, b, line, file, msg.str());
                         }

@@ -57,8 +57,6 @@ namespace sparta {
 
 const char* backtrace_demangle(const char* msg, char* buf, size_t buf_size)
 {
-    // Parse out the junk around the symbol. A line looks like this
-    // ./bld-Linux_x86_64-gcc4.7/sim(_ZN4fiat6Retire16handleTickEvent_Ev+0xc) [0x163841c]
 
     const uint32_t SYMBOL_BUF_SIZE = 4096;
     char SYMBOL_BUF[SYMBOL_BUF_SIZE];
