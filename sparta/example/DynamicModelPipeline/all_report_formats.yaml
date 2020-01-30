@@ -42,7 +42,7 @@ content:
     pattern:   _global
     def_file:  simple_stats.yaml
     dest_file: out2.js.json
-    format:    jjson
+    format:    jsjson
   report:
     pattern:   _global
     def_file:  simple_stats.yaml
