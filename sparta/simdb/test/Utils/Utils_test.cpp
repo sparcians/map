@@ -4,10 +4,10 @@
  * \brief Tests for various utility classes in SimDB.
  */
 
-#include "simdb/test/SimDBTester.h"
+#include "simdb/test/SimDBTester.hpp"
 
 //Core database headers
-#include "simdb/utils/StringUtils.h"
+#include "simdb/utils/StringUtils.hpp"
 
 //Standard headers
 #include <string>

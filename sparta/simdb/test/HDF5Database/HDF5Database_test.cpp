@@ -4,16 +4,16 @@
  * \brief Tests functionality of SimDB's HDF5 implementation
  */
 
-#include "simdb/test/SimDBTester.h"
+#include "simdb/test/SimDBTester.hpp"
 
 //Core database headers
-#include "simdb/ObjectManager.h"
-#include "simdb/ObjectRef.h"
-#include "simdb/TableRef.h"
-#include "simdb/Errors.h"
+#include "simdb/ObjectManager.hpp"
+#include "simdb/ObjectRef.hpp"
+#include "simdb/TableRef.hpp"
+#include "simdb/Errors.hpp"
 
 //HDF5-specific headers
-#include "simdb/impl/hdf5/HDF5ConnProxy.h"
+#include "simdb/impl/hdf5/HDF5ConnProxy.hpp"
 
 //Standard headers
 #include <random>

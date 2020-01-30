@@ -8,9 +8,9 @@
  * likely cause unexpected behavior.
  */
 
-#include "simdb/test/SimDBTester.h"
+#include "simdb/test/SimDBTester.hpp"
 
-#include "simdb/async/AsyncTaskEval.h"
+#include "simdb/async/AsyncTaskEval.hpp"
 
 TEST_INIT;
 

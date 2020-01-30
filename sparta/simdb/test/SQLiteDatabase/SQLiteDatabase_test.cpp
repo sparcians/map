@@ -5,19 +5,19 @@
  * including schema creation, INSERT/UPDATE/DELETE
  */
 
-#include "simdb/test/SimDBTester.h"
+#include "simdb/test/SimDBTester.hpp"
 
 //Core database headers
-#include "simdb/ObjectManager.h"
-#include "simdb/ObjectRef.h"
-#include "simdb/TableRef.h"
-#include "simdb/utils/ObjectQuery.h"
-#include "simdb/utils/BlobHelpers.h"
+#include "simdb/ObjectManager.hpp"
+#include "simdb/ObjectRef.hpp"
+#include "simdb/TableRef.hpp"
+#include "simdb/utils/ObjectQuery.hpp"
+#include "simdb/utils/BlobHelpers.hpp"
 
 //SQLite-specific headers
-#include "simdb/impl/sqlite/SQLiteConnProxy.h"
-#include "simdb/impl/sqlite/TransactionUtils.h"
-#include "simdb/impl/sqlite/Errors.h"
+#include "simdb/impl/sqlite/SQLiteConnProxy.hpp"
+#include "simdb/impl/sqlite/TransactionUtils.hpp"
+#include "simdb/impl/sqlite/Errors.hpp"
 #include <sqlite3.h>
 
 //Standard headers
