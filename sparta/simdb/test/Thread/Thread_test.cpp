@@ -3,11 +3,11 @@
  * \brief Test for SimDB threading utilities
  */
 
-#include "simdb/test/SimDBTester.h"
+#include "simdb/test/SimDBTester.hpp"
 
-#include "simdb/async/TimerThread.h"
-#include "simdb/async/ConcurrentQueue.h"
-#include "simdb/async/AsyncTaskEval.h"
+#include "simdb/async/TimerThread.hpp"
+#include "simdb/async/ConcurrentQueue.hpp"
+#include "simdb/async/AsyncTaskEval.hpp"
 
 #include <math.h>
 #include <iomanip>

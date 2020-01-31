@@ -5,15 +5,15 @@
  * used to write the data to disk asynchronously.
  */
 
-#include "simdb/test/SimDBTester.h"
-#include "simdb/schema/DatabaseRoot.h"
-#include "simdb/ObjectManager.h"
-#include "simdb/DbConnProxy.h"
-#include "simdb/impl/sqlite/SQLiteConnProxy.h"
-#include "simdb/async/AsyncTaskEval.h"
-#include "simdb/utils/ObjectQuery.h"
-#include "simdb/TableRef.h"
-#include "simdb/utils/MathUtils.h"
+#include "simdb/test/SimDBTester.hpp"
+#include "simdb/schema/DatabaseRoot.hpp"
+#include "simdb/ObjectManager.hpp"
+#include "simdb/DbConnProxy.hpp"
+#include "simdb/impl/sqlite/SQLiteConnProxy.hpp"
+#include "simdb/async/AsyncTaskEval.hpp"
+#include "simdb/utils/ObjectQuery.hpp"
+#include "simdb/TableRef.hpp"
+#include "simdb/utils/MathUtils.hpp"
 
 #include <random>
 #include <climits>

@@ -64,7 +64,7 @@ Open a MacOS Terminal
 1. `brew install pygments` # for cppcheck-htmlreport
 1. Install XCode and check for clang: `clang --version`
 
-Clone sparta through https: `git clone https://github.com/klingaard/sparta.git`
+Clone sparta through https: `git clone https://github.com/sparcians/map.git`
 
 Attempt a build:
 
@@ -119,6 +119,7 @@ This can be done generally via "sudo apt install <package name>"
 - libhdf5-dev
 - cppcheck
 - pygments (for cppcheck-htmlreport)
+- doxygen (if you want generate the documentation)
 
 ## Notes on Building
 

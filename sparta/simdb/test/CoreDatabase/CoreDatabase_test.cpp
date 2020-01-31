@@ -6,22 +6,22 @@
  * etc.)
  */
 
-#include "simdb/test/SimDBTester.h"
+#include "simdb/test/SimDBTester.hpp"
 
 //Core database headers
-#include "simdb/schema/DatabaseRoot.h"
-#include "simdb/ObjectManager.h"
-#include "simdb/utils/ObjectQuery.h"
-#include "simdb/utils/uuids.h"
-#include "simdb/utils/MathUtils.h"
-#include "simdb/utils/StringUtils.h"
-#include "simdb/ObjectRef.h"
-#include "simdb/TableRef.h"
-#include "simdb/Errors.h"
+#include "simdb/schema/DatabaseRoot.hpp"
+#include "simdb/ObjectManager.hpp"
+#include "simdb/utils/ObjectQuery.hpp"
+#include "simdb/utils/uuids.hpp"
+#include "simdb/utils/MathUtils.hpp"
+#include "simdb/utils/StringUtils.hpp"
+#include "simdb/ObjectRef.hpp"
+#include "simdb/TableRef.hpp"
+#include "simdb/Errors.hpp"
 
 //SQLite-specific includes
-#include "simdb/impl/sqlite/SQLiteConnProxy.h"
-#include "simdb/impl/hdf5/HDF5ConnProxy.h"
+#include "simdb/impl/sqlite/SQLiteConnProxy.hpp"
+#include "simdb/impl/hdf5/HDF5ConnProxy.hpp"
 
 //Standard headers
 #include <random>
