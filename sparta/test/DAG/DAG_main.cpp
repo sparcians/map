@@ -93,24 +93,31 @@ int main()
     dag[2]->enableEarlyCycleDetect();
 
     // Test ability to find a cycle in the DAG
-    Vertex f[6] = { Vertex("a0",s1),
-                 Vertex("b1",s1),
-                 Vertex("c2",s1),
-                 Vertex("d3",s1),
-                 Vertex("e4",s1),
-                 Vertex("f5",s1) };
+    Vertex* f[6] = { dag[0]->newFactoryVertex("a0",s1),
+                     dag[0]->newFactoryVertex("b1",s1),
+                     dag[0]->newFactoryVertex("c2",s1),
+                     dag[0]->newFactoryVertex("d3",s1),
+                     dag[0]->newFactoryVertex("e4",s1),
+                     dag[0]->newFactoryVertex("f5",s1) };
 
-    dag[0]->link(&f[0], &f[2]);
-    dag[0]->link(&f[1], &f[2]);
-    dag[0]->link(&f[2], &f[3]);
-    dag[0]->link(&f[2], &f[4]);
-    dag[0]->link(&f[3], &f[4]);
+    dag[0]->link(f[0], f[2]);
+    dag[0]->link(f[1], f[2]);
+    dag[0]->link(f[2], f[3]);
+    dag[0]->link(f[2], f[4]);
+    dag[0]->link(f[3], f[4]);
 
     cout << dag[0];
+    dag[0]->dumpToCSV(std::cout, std::cout);
+    {
+        fstream fs_vert("dag0_vertices.csv", fstream::out);
+        fstream fs_edge("dag0_edges.csv", fstream::out);
+        dag[0]->dumpToCSV(fs_vert, fs_edge);
+    }
+
 
     bool did_throw = false;
     try {
-        dag[0]->link(&f[4], &f[0]);
+        dag[0]->link(f[4], f[0]);
     } catch (DAG::CycleException & e) {
         // cout << dag[0] << endl;
         // fstream fs;
@@ -134,7 +141,7 @@ int main()
     cout << endl;
 
     // Remove the cycle and re-try
-    dag[0]->unlink(&f[4], &f[0]);
+    dag[0]->unlink(f[4], f[0]);
 
     try {
         EXPECT_TRUE(dag[0]->sort());
@@ -152,11 +159,11 @@ int main()
     cout << "______________________" << endl;
     cout << dag[0];
 
-    EXPECT_EQUAL(f[0].getGroupID(), 1);
-    EXPECT_EQUAL(f[1].getGroupID(), 1); // Already set correctly from the attempt with cycles
-    EXPECT_EQUAL(f[2].getGroupID(), 2);
-    EXPECT_EQUAL(f[3].getGroupID(), 3);
-    EXPECT_EQUAL(f[4].getGroupID(), 4);
+    EXPECT_EQUAL(f[0]->getGroupID(), 1);
+    EXPECT_EQUAL(f[1]->getGroupID(), 1); // Already set correctly from the attempt with cycles
+    EXPECT_EQUAL(f[2]->getGroupID(), 2);
+    EXPECT_EQUAL(f[3]->getGroupID(), 3);
+    EXPECT_EQUAL(f[4]->getGroupID(), 4);
 
     // Test the "whiteboard" configuration
     Vertex p[8] = { Vertex("p",s1), Vertex("q",s1), Vertex("r",s1),

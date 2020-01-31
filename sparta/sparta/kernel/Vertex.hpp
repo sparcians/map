@@ -16,6 +16,7 @@
 namespace sparta
 {
     class Vertex;
+    class EdgeFactory;
 
     /**
      * \class Edge
@@ -55,6 +56,8 @@ namespace sparta
 
         operator std::string() const;
 
+        void dumpToCSV(std::ostream& os, bool dump_header=false) const;
+
         void print(std::ostream& os) const
         {
             os << std::string(*this) << std::endl;
@@ -83,7 +86,7 @@ namespace sparta
             BLACK    // Finished
         };
 
-        typedef std::map<Vertex *, Edge>    EMap;
+        typedef std::map<Vertex*, const Edge*>    EMap;
         typedef std::list<Scheduleable*>    AssociateList;
 
     public:
@@ -225,7 +228,7 @@ namespace sparta
             if (ei == edges_.end()) {
                 return nullptr;
             }
-            return &ei->second;
+            return ei->second;
         }
 
         const EMap & edges() const { return edges_; }
@@ -236,8 +239,8 @@ namespace sparta
         bool isInDAG() { return in_dag_; }
         void setInDAG(bool v) { in_dag_ = v; }
 
-        bool link(Vertex * w, const std::string& label="");
-        bool unlink(Vertex * w);
+        bool link(EdgeFactory& efact, Vertex * w, const std::string& label="");
+        bool unlink(EdgeFactory& efact, Vertex * w);
         void assignConsumerGroupIDs(VList &zlist);
         bool detectCycle();
         bool findCycle(VList& cycle_set);
@@ -256,6 +259,7 @@ namespace sparta
             return ss.str();
         }
 
+        void dumpToCSV(std::ostream& os, bool dump_header=false) const;
         void print(std::ostream& os) const;
 
     protected:
@@ -265,19 +269,16 @@ namespace sparta
         bool in_dag_ = false;
 
     private:
-        // The Scheduleable this Vertex is associated with
-        Scheduleable   *scheduleable_ = nullptr;
-        std::string     label_;
-        sparta::Scheduler * my_scheduler_ = nullptr;
-        uint32_t        id_ = 0;  // A unique global ID not associated with GroupID
-        uint32_t        num_inbound_edges_ = 0;
-        EMap            edges_;
-        // Number of inbound edges
-        uint32_t        sorted_num_inbound_edges_ = num_inbound_edges_;
-        // Outbound edges
-        EMap            sorting_edges_  = edges_;
-        CycleMarker     marker_         = CycleMarker::WHITE;
-        AssociateList   associates_;
+        Scheduleable *      scheduleable_ = nullptr; // The Scheduleable this Vertex is associated with
+        std::string         label_;
+        sparta::Scheduler*  my_scheduler_ = nullptr;
+        uint32_t            id_ = 0;  // A unique global ID not associated with GroupID
+        uint32_t            num_inbound_edges_ = 0;
+        EMap                edges_;   // Outbound edges
+        uint32_t            sorted_num_inbound_edges_ = num_inbound_edges_; // Number of inbound edges
+        EMap                sorting_edges_ = edges_; // temporary copy needed for sorting algorithm
+        CycleMarker         marker_ = CycleMarker::WHITE;
+        AssociateList       associates_;
     };
 
     typedef Vertex GOPoint;
@@ -306,6 +307,21 @@ namespace sparta
            << " -> "
            << dest_->getLabel();
         return ss.str();
+    }
+
+    inline void Edge::dumpToCSV(std::ostream& os, bool dump_header) const {
+        std::ios_base::fmtflags os_state(os.flags());
+
+        if (dump_header) {
+            os << "source_v,dest_v,label" << std::endl;
+        }
+
+        os << std::dec << source_->getID()
+           << "," << dest_->getID()
+           << ",\"" << getLabel() << "\""
+           << std::endl;
+
+        os.flags(os_state);
     }
 
     inline std::ostream& operator<<(std::ostream& os, const Vertex &v)

@@ -1,23 +1,20 @@
 // <VertexFactory> -*- C++ -*-
 
-
-#include <algorithm>
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "sparta/kernel/Vertex.hpp"
 #include "sparta/kernel/VertexFactory.hpp"
+#include <iostream>
 
-namespace sparta
-{
-class Scheduler;
+namespace sparta {
 
-    Vertex* VertexFactory::newFactoryVertex(const std::string & label,
-                                      sparta::Scheduler *scheduler,
-                                      bool isgop)
-    {
-        factory_vertices.emplace_back(new Vertex(label,scheduler, isgop));
-        return factory_vertices.back().get();
+void VertexFactory::dumpToCSV(std::ostream& os) const {
+    std::ios_base::fmtflags os_state(os.flags());
+
+    bool first = true;
+    for (const auto& v : vertices_) {
+        v->dumpToCSV(os, first);
+        first = false;
     }
+
+    os.flags(os_state);
 }
+
+} // namespace sparta

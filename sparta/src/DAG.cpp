@@ -8,70 +8,6 @@
 
 namespace sparta
 {
-
-#if 0
-    void DAG::CycleException::outPutIssue_(std::ostream & os, bool dot) const
-    {
-        if(dot) {
-            os << "digraph dag_issue {\n";
-            os << "\trankdir=TB;\n";
-            os << "\tnode [shape=record, fontname=Helvetica, fontsize=10];\n\n";
-        }
-        else {
-            os << "DAG CYCLE: " << std::endl;
-        }
-
-        Vertex * very_first = nullptr;
-        Vertex * very_last = nullptr;
-
-        typename Vertex::VList cycle_set = cycle_set_;
-
-        while(!cycle_set.empty())
-        {
-            Vertex * first = cycle_set.front();
-            cycle_set.pop_front();
-
-            Vertex * second = nullptr;
-            if(!cycle_set.empty()) {
-                second = cycle_set.front();
-            }
-            if(first == second) {
-                continue;
-            }
-
-            if(!very_first) { very_first = first; }
-            if(second) {
-                os << "\t\"" << first->getLabel() << "\"";
-                os << " -> \"" << second->getLabel() << "\"";
-                const Edge * e = first->getEdgeTo(second);
-                if(e != nullptr && dot) {
-                    os << " [fontsize=8 label=\"" << e->getLabel() << "\"]";
-                }
-                os << ";\n";
-                very_last = second;
-            }
-        }
-        if(very_first && very_last) {
-            if(very_first != very_last) {
-                const Edge * e = very_last->getEdgeTo(very_first);
-                if(e) {
-                    if(dot) {
-                        os << "\t\"" << very_last->getLabel() << "\" -> \"" << very_first->getLabel()
-                           << "\" [fontsize=8 label=\"" << e->getLabel() << "\"];\n";
-                    }
-                    else {
-                        os << "\t\"" << very_last->getLabel() << "\" -> \""
-                           << very_first->getLabel() << "\";" << std::endl;
-                    }
-                }
-            }
-        }
-        if(dot) {
-            os << "\n}\n";
-        }
-    }
-#endif
-
     /**
      * Write a text version of the CycleException's cycle vertex list
      * @param os
@@ -126,7 +62,7 @@ namespace sparta
                                   sparta::Scheduler* const scheduler,
                                   const bool isgop)
     {
-        return v_factory_->newFactoryVertex(label, scheduler, isgop);
+        return v_factory_.newFactoryVertex(label, scheduler, isgop);
     }
 
     /**
@@ -150,7 +86,6 @@ namespace sparta
     }
 
     DAG::DAG(sparta::Scheduler * scheduler, const bool& check_cycles):
-        v_factory_(std::unique_ptr<VertexFactory>(new VertexFactory())),
         num_groups_(1),
         early_cycle_detect_(check_cycles),
         gops_(),
@@ -189,6 +124,7 @@ namespace sparta
 
     }
 
+    //! Only linked vertices will be known to the DAG
     void DAG::link(Vertex * source_vertex,
                    Vertex * dest_vertex, const std::string & reason)
     {
@@ -202,7 +138,7 @@ namespace sparta
             dest_vertex->setInDAG(true);
         }
 
-        if (source_vertex->link(dest_vertex, reason)) {
+        if (source_vertex->link(e_factory_, dest_vertex, reason)) {
             if (early_cycle_detect_ && detectCycle()) {
                 throw CycleException(getCycles_());
             }
@@ -297,6 +233,11 @@ namespace sparta
                 }
             }
         }
+    }
+
+    void DAG::dumpToCSV(std::ostream &os_vertices, std::ostream &os_edges) const {
+        v_factory_.dumpToCSV(os_vertices);
+        e_factory_.dumpToCSV(os_edges);
     }
 
     void DAG::print(std::ostream& os) const

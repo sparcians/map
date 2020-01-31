@@ -10,13 +10,14 @@
 #include "sparta/kernel/DAG.hpp"
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/kernel/Vertex.hpp"
+#include "sparta/kernel/EdgeFactory.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/events/Scheduleable.hpp"
 
 namespace sparta
 {
 
-    bool Vertex::link(Vertex * dest, const std::string& label)
+    bool Vertex::link(EdgeFactory& efact, Vertex * dest, const std::string& label)
     {
         if(dest == this) return false;
 
@@ -25,14 +26,15 @@ namespace sparta
             return false;
         } else {
 
-            edges_[dest] = Edge(this, dest, label);
+            //edges_[dest] = new Edge(this, dest, label);
+            edges_[dest] = efact.newFactoryEdge(this, dest, label);
 
             ++(dest->num_inbound_edges_);
         }
         return true;
     }
 
-    bool Vertex::unlink(Vertex * w)
+    bool Vertex::unlink(EdgeFactory& efact, Vertex * w)
     {
         if(w == this) return false;
 
@@ -44,6 +46,7 @@ namespace sparta
             edges_.erase(ei);
             sparta_assert(w->num_inbound_edges_ > 0);
             --(w->num_inbound_edges_);
+            efact.removeEdge(ei->second);
         }
         return true;
     }
@@ -180,13 +183,34 @@ namespace sparta
         dag->link(this, w.getGOPoint(), label);
     }
 
+    // Dump this vertex to the provided CSV ostream
+    void Vertex::dumpToCSV(std::ostream& os, bool dump_header) const
+    {
+        std::ios_base::fmtflags os_state(os.flags());
+
+        if (dump_header) {
+            os << "vertex_id,type,group_id,marker,label" << std::endl;
+        }
+
+        os << std::dec << id_
+           << "," << (isGOP() ? "G" : "V")
+           << "," << getGroupID()
+           << "," << (marker_ == CycleMarker::WHITE ? "white" : (marker_ == CycleMarker::GRAY ? "gray" : "black"))
+           << ",\"" << getLabel() << "\""
+           << std::endl;
+
+        os.flags(os_state);
+    }
+
     void Vertex::print(std::ostream& os) const
     {
+        std::ios_base::fmtflags os_state(os.flags());
         os << std::string(*this) << std::endl;
         for (const auto & ei : edges_) {
-            os << "\t-> " << std::string(*(ei.first)) << ", " << std::string(ei.second) << std::endl;
+            os << "\t-> " << std::string(*(ei.first)) << ", " << std::string(*(ei.second)) << std::endl;
         }
         os << std::endl;
+        os.flags(os_state);
     }
 
 }
