@@ -156,16 +156,12 @@ namespace sparta
          * \throw Will assert if already exists
          * \param label The GOP point to create
          * \param scheduler The Scheduler associated with this Vertex
-         * \param isgop Indicates that this Vertex is part of the DAG
-         *        and performs transferGID()
          * \return the new GOP point; assert if already exists
          */
-        Vertex* newVertex(const std::string& label,
-                          sparta::Scheduler* const scheduler,
-                          const bool isgop=true)
+        Vertex* newGOPVertex(const std::string& label, sparta::Scheduler* const scheduler)
         {
             sparta_assert(findVertex(label) == nullptr);
-            Vertex* gop = this->newFactoryVertex(label, scheduler, isgop);
+            Vertex* gop = this->newFactoryVertex(label, scheduler, true);
             gops_[label] = gop;
             return gop;
         }
@@ -179,7 +175,7 @@ namespace sparta
         {
             Vertex *gop = findVertex(label);
             if (gop == nullptr) {
-                return newVertex(label, getScheduler(), true);
+                return newGOPVertex(label, getScheduler());
             }
             return gop;
         }

@@ -83,7 +83,7 @@ namespace sparta
         for (const auto& v : cycle_set_) {
             if (prior_v != nullptr) {
                 const Edge* e = prior_v->getEdgeTo(v);
-                assert(e != nullptr);
+                sparta_assert(e != nullptr);
                 os << " -> " << v->getLabel()
                    << "\t// edge: " << e->getLabel()
                    << std::endl;
@@ -94,7 +94,7 @@ namespace sparta
 
         Vertex* first = cycle_set_.front();
         const Edge* e = prior_v->getEdgeTo(first);
-        assert(e != nullptr);
+        sparta_assert(e != nullptr);
         os << " -> " << first->getLabel()
            << "\t// edge: " << e->getLabel()
            << std::endl;
@@ -169,13 +169,13 @@ namespace sparta
         // Trigger -> Update -> PortUpdate -> Flush -> Collection -> Tick -> PostTick
         //
         // XXX Dave to make this go away.
-        Vertex * trigger  = newVertex("Trigger", getScheduler(), true);
-        Vertex * update   = newVertex("Update", getScheduler(),  true);
-        Vertex * pu       = newVertex("PortUpdate", getScheduler(), true);
-        Vertex * flush    = newVertex("Flush", getScheduler(), true);
-        Vertex * collect  = newVertex("Collection", getScheduler(), true);
-        Vertex * tick     = newVertex("Tick", getScheduler(), true);
-        Vertex * posttick = newVertex("PostTick", getScheduler(), true);
+        Vertex * trigger  = newGOPVertex("Trigger", getScheduler());
+        Vertex * update   = newGOPVertex("Update", getScheduler());
+        Vertex * pu       = newGOPVertex("PortUpdate", getScheduler());
+        Vertex * flush    = newGOPVertex("Flush", getScheduler());
+        Vertex * collect  = newGOPVertex("Collection", getScheduler());
+        Vertex * tick     = newGOPVertex("Tick", getScheduler());
+        Vertex * posttick = newGOPVertex("PostTick", getScheduler());
         link(trigger, update);
         link(update, pu);
         link(pu, flush);
