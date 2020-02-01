@@ -237,10 +237,7 @@ namespace sparta
         }
 
         //! Set a new label for this Scheduleable -- used in debugging.
-        //! MUST BE a persistent const char * as it is NOT copied.
-        void setLabel(const char * label) {
-            label_ = label;
-        }
+        void setLabel(const char * label);
 
         /*! \brief get the internal Vertex of this scheduleable
          */

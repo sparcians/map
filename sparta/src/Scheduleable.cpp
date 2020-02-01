@@ -37,9 +37,16 @@ namespace sparta
         sched_phase_(sched_phase){
     }
 
+    void Scheduleable::setLabel(const char * label) {
+        label_ = label;
+        if(vertex_) {
+            vertex_->setLabel(label);
+        }
+    }
+
     void Scheduleable::setVertex() {
         sparta_assert(scheduler_);
-        vertex_ = scheduler_->getDAG()->newFactoryVertex(consumer_event_handler_.getName(), scheduler_, false);
+        vertex_ = scheduler_->getDAG()->newFactoryVertex(label_, scheduler_, false);
         vertex_->setScheduleable(this);
     }
 

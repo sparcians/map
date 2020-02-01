@@ -140,6 +140,11 @@ namespace sparta
             resetMarker();
         }
 
+        //! Provide a new label for this Vertex
+        void setLabel(const std::string & label) {
+            label_ = label;
+        }
+
         //! A unique global ID not associated with GroupID
         uint32_t getID() const { return id_; }
 

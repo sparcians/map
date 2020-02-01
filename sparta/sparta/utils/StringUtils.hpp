@@ -23,10 +23,10 @@
 namespace sparta {
 namespace utils {
 
-//===========================================================================
-// function uint64_to_hexstr()
-// - print a uint64 as a hex string
-// - prints an "_" to separate the upper 8 digits from the lower 8 digits
+//!===========================================================================
+//! function uint64_to_hexstr()
+//! - print a uint64 as a hex string
+//! - prints an "_" to separate the upper 8 digits from the lower 8 digits
 //
 inline std::string uint64_to_hexstr (uint64_t val)
 {
@@ -38,9 +38,9 @@ inline std::string uint64_to_hexstr (uint64_t val)
 
 
 
-//===========================================================================
-// function uint32_to_hexstr()
-// - print a uint32 as a hex string
+//!===========================================================================
+//! function uint32_to_hexstr()
+//! - print a uint32 as a hex string
 //
 inline std::string uint32_to_hexstr (uint32_t val)
 {
@@ -50,9 +50,9 @@ inline std::string uint32_to_hexstr (uint32_t val)
 }
 
 
-//===========================================================================
-// function uint64_to_str()
-// - print a uint64 as a string
+//!===========================================================================
+//! function uint64_to_str()
+//! - print a uint64 as a string
 //
 inline std::string uint64_to_str (uint64_t val)
 {
@@ -61,9 +61,9 @@ inline std::string uint64_to_str (uint64_t val)
 }
 
 
-//===========================================================================
-// function uint32_to_hexstr()
-// - print a uint32 as a hex string
+//!===========================================================================
+//! function uint32_to_hexstr()
+//! - print a uint32 as a hex string
 //
 inline std::string uint32_to_str (uint32_t val)
 {
@@ -71,9 +71,9 @@ inline std::string uint32_to_str (uint32_t val)
     return (static_cast<std::ostringstream*>( &(ss << val))->str());
 }
 
-//===========================================================================
-// function int64_to_str()
-// - print a int64 as a string
+//!===========================================================================
+//! function int64_to_str()
+//! - print a int64 as a string
 //
 inline std::string int64_to_str (int64_t val)
 {
@@ -82,9 +82,9 @@ inline std::string int64_to_str (int64_t val)
 }
 
 
-//===========================================================================
-// function int32_to_hexstr()
-// - print a int32 as a hex string
+//!===========================================================================
+//! function int32_to_hexstr()
+//! - print a int32 as a hex string
 //
 inline std::string int32_to_str (int32_t val)
 {
@@ -92,9 +92,9 @@ inline std::string int32_to_str (int32_t val)
     return (static_cast<std::ostringstream*>( &(ss << val))->str());
 }
 
-//===========================================================================
-// function bool_to_str()
-// - print a int32 as a hex string
+//!===========================================================================
+//! function bool_to_str()
+//! - print a int32 as a hex string
 //
 inline std::string bool_to_str (bool val)
 {
@@ -102,9 +102,9 @@ inline std::string bool_to_str (bool val)
     return (static_cast<std::ostringstream*>( &(ss << std::boolalpha << val))->str());
 }
 
-//===========================================================================
-// function bin_to_hexstr()
-// - print binary data as a hex string
+//!===========================================================================
+//! function bin_to_hexstr()
+//! - print binary data as a hex string
 //
 inline std::string bin_to_hexstr(const uint8_t *data, size_t size, const std::string &sep=" ")
 {
@@ -119,9 +119,9 @@ inline std::string bin_to_hexstr(const uint8_t *data, size_t size, const std::st
     return ss.str();
 }
 
-//===========================================================================
-// function bin_to_bitstr()
-// - print binary data as a bit string
+//!===========================================================================
+//! function bin_to_bitstr()
+//! - print binary data as a bit string
 //
 inline std::string bin_to_bitstr(const uint8_t *data, size_t size, const std::string &sep=" ")
 {
@@ -142,9 +142,9 @@ inline std::string bin_to_bitstr(const uint8_t *data, size_t size, const std::st
     return ss.str();
 }
 
-//===========================================================================
-// function eliminate_whitespace()
-// - strip whitespace from anywhere in a string (including newlines)
+//!===========================================================================
+//! function eliminate_whitespace()
+//! - strip whitespace from anywhere in a string (including newlines)
 //
 inline std::string eliminate_whitespace(const std::string &str)
 {
@@ -152,11 +152,11 @@ inline std::string eliminate_whitespace(const std::string &str)
     strip_str.erase(std::remove_if(strip_str.begin(), strip_str.end(), ::isspace),
                     strip_str.end());
     return strip_str;
-}   // function eliminate_whitespace()
+}   //! function eliminate_whitespace()
 
-//===========================================================================
-// function strip_whitespace()
-// - strip whitespace from the front and back of a string (including newlines)
+//!===========================================================================
+//! function strip_whitespace()
+//! - strip whitespace from the front and back of a string (including newlines)
 //
 inline std::string strip_whitespace(const std::string &str)
 {
@@ -166,32 +166,32 @@ inline std::string strip_whitespace(const std::string &str)
     size_t end_pos   = str.find_last_not_of(STR_WHITESPACE);
 
     return str.substr(start_pos, end_pos-start_pos + 1);
-}   // function strip_whitespace()
+}   //! function strip_whitespace()
 
-//===========================================================================
-// function strip_string_pattern()
-// - strip the given string of the given pattern (at the end/beginning)
-//   Examples:
-//       strip_string_pattern("out", "remove_out") -> "remove_"
-//       strip_string_pattern("out", "out_remove_out") -> "_remove_"
+//!===========================================================================
+//! function strip_string_pattern()
+//! - strip the given string of the given pattern (at the end/beginning)
+//!   Examples:
+//!       strip_string_pattern("out", "remove_out") -> "remove_"
+//!       strip_string_pattern("out", "out_remove_out") -> "_remove_"
 //
 inline std::string strip_string_pattern(const std::string & pat,
                                         const std::string & str)
 {
-    // Look for the pattern at the beginning of the string
+    //! Look for the pattern at the beginning of the string
     size_t start_pos = str.find(pat);
     if(start_pos == 0) {
-        // It's at the beginning...
+        //! It's at the beginning...
         start_pos += pat.length();
     }
     else {
         start_pos = 0;
     }
 
-    // Look for the pattern at the end of the string
+    //! Look for the pattern at the end of the string
     size_t end_pos = str.rfind(pat);
     if(end_pos == 0 || (end_pos + pat.length()) != str.length()) {
-        // Found the beginning one OR we found a match NOT at the end
+        //! Found the beginning one OR we found a match NOT at the end
         end_pos = std::string::npos;
     }
     else {
@@ -199,15 +199,15 @@ inline std::string strip_string_pattern(const std::string & pat,
     }
 
     return str.substr(start_pos, end_pos);
-}   // function strip_string_pattern()
+}   //! function strip_string_pattern()
 
-//===========================================================================
-// function tokenize()
-// - tokenize a string with an arbitrary set of delimiters, return
-//   result in a string vector
-// - default is space
-// - note:  multiple consecutive whitespaces are treated as separate delimiters,
-//   so that " x   y " would tokenize as ("", "x", "", "", "y", "")
+//!===========================================================================
+//! function tokenize()
+//! - tokenize a string with an arbitrary set of delimiters, return
+//!   result in a string vector
+//! - default is space
+//! - note:  multiple consecutive whitespaces are treated as separate delimiters,
+//!   so that " x   y " would tokenize as ("", "x", "", "", "y", "")
 //
 inline void tokenize(const std::string &in_str, std::vector<std::string> & str_vector, const std::string &delimiters = " ")
 {
@@ -219,33 +219,33 @@ inline void tokenize(const std::string &in_str, std::vector<std::string> & str_v
     }
 
     str_vector.push_back(in_str.substr(prev_pos));
-}   // function tokenize()
+}   //! function tokenize()
 
-//===========================================================================
-// function split_lines_around_tokens()
-// - tokenize multi-line text around line separators and an arbirtary
-//   set of delimiters, returning a vector of tokenized lines
-// - default line separator is newline ('\n')
-// - default token/delimiter applied per line is a space (' ')
+//!===========================================================================
+//! function split_lines_around_tokens()
+//! - tokenize multi-line text around line separators and an arbirtary
+//!   set of delimiters, returning a vector of tokenized lines
+//! - default line separator is newline ('\n')
+//! - default token/delimiter applied per line is a space (' ')
 //
-// For example, an istream containing this text:
+//! For example, an istream containing this text:
 //
-//    x:foo
-//    y:bar:z:baz?w?buz
+//!    x:foo
+//!    y:bar:z:baz?w?buz
 //
-// Could be tokenized with this call:
+//! Could be tokenized with this call:
 //
-//    std::vector<std::vector<std::string>> str_vectors;
-//    utils::split_lines_around_tokens(in_stream, str_vectors, ":?");
+//!    std::vector<std::vector<std::string>> str_vectors;
+//!    utils::split_lines_around_tokens(in_stream, str_vectors, ":?");
 //
-// Would return str_vectors containing:
+//! Would return str_vectors containing:
 //
-//    {
-//      { "x", "foo" },
-//      { "y", "bar", "z", "baz" }
-//    }
+//!    {
+//!      { "x", "foo" },
+//!      { "y", "bar", "z", "baz" }
+//!    }
 //
-// Assuming the line endings of the text were '\n' (the default line separator)
+//! Assuming the line endings of the text were '\n' (the default line separator)
 inline void split_lines_around_tokens(std::istream & in_stream,
                                       std::vector<std::vector<std::string>> & str_vectors,
                                       const std::string & delimiters = " ",
@@ -256,29 +256,29 @@ inline void split_lines_around_tokens(std::istream & in_stream,
         str_vectors.emplace_back(std::vector<std::string>());
         tokenize(line, str_vectors.back(), delimiters);
     }
-}   // function split_lines_around_tokens()
+}   //! function split_lines_around_tokens()
 
 
-//===========================================================================
-// function tokenize()
-// - tokenize a character string with an arbitrary set of delimiters, return
-//   result in a string vector
-// - default is space
-// - note:  multiple consecutive whitespaces are treated as separate delimiters,
-//   so that " x   y " would tokenize as ("", "x", "", "", "y", "")
+//!===========================================================================
+//! function tokenize()
+//! - tokenize a character string with an arbitrary set of delimiters, return
+//!   result in a string vector
+//! - default is space
+//! - note:  multiple consecutive whitespaces are treated as separate delimiters,
+//!   so that " x   y " would tokenize as ("", "x", "", "", "y", "")
 //
 inline void tokenize(const char *in_char_str, std::vector<std::string> & str_vector, const std::string &delimiters = " ")
 {
-    // Copy char * into a string
+    //! Copy char * into a string
     std::string in_str = in_char_str;
 
     tokenize(in_str, str_vector, delimiters);
-}   // function tokenize()
+}   //! function tokenize()
 
 
-//===========================================================================
-// function tokenize_strip_whitespace()
-// - same as tokenize(), but strip whitespace at beginning and end of each string
+//!===========================================================================
+//! function tokenize_strip_whitespace()
+//! - same as tokenize(), but strip whitespace at beginning and end of each string
 //
 inline void tokenize_strip_whitespace(const std::string &in_str, std::vector<std::string> & str_vector, const std::string &delimiters = " ")
 {
@@ -290,31 +290,31 @@ inline void tokenize_strip_whitespace(const std::string &in_str, std::vector<std
     }
 
     str_vector.push_back(strip_whitespace(in_str.substr(prev_pos)));
-}   // function tokenize_strip_whitespace()
+}   //! function tokenize_strip_whitespace()
 
 
-//===========================================================================
-// function tokenize_strip_whitespace()
-// - tokenize a character string with an arbitrary set of delimiters, return
-//   result in a string vector
-// - default is space
-// - note:  multiple consecutive whitespaces are treated as separate delimiters,
-//   so that " x   y " would tokenize as ("", "x", "", "", "y", "")
+//!===========================================================================
+//! function tokenize_strip_whitespace()
+//! - tokenize a character string with an arbitrary set of delimiters, return
+//!   result in a string vector
+//! - default is space
+//! - note:  multiple consecutive whitespaces are treated as separate delimiters,
+//!   so that " x   y " would tokenize as ("", "x", "", "", "y", "")
 //
 inline void tokenize_strip_whitespace(const char *in_char_str, std::vector<std::string> & str_vector, const std::string &delimiters = " ")
 {
-    // Copy char * into a string
+    //! Copy char * into a string
     std::string in_str = in_char_str;
 
     tokenize_strip_whitespace(in_str, str_vector, delimiters);
-}   // function tokenize_strip_whitespace()
+}   //! function tokenize_strip_whitespace()
 
 
-//===========================================================================
-// function tokenize_on_whitespace()
-// - tokenize a string on whitespace (space, tab, return)
-// - note:  multiple consecutive whitespaces are treated as a single delimiters
-//   so that " x   y " would tokenize as ("x", "y")
+//!===========================================================================
+//! function tokenize_on_whitespace()
+//! - tokenize a string on whitespace (space, tab, return)
+//! - note:  multiple consecutive whitespaces are treated as a single delimiters
+//!   so that " x   y " would tokenize as ("x", "y")
 //
 inline void tokenize_on_whitespace(const std::string &in_str, std::vector<std::string> & str_vector)
 {
@@ -332,27 +332,27 @@ inline void tokenize_on_whitespace(const std::string &in_str, std::vector<std::s
     if (prev_pos != in_str.size()) {
         str_vector.push_back(in_str.substr(prev_pos));
     }
-}   // function tokenize()
+}   //! function tokenize()
 
 
-//===========================================================================
-// function tokenize_on_whitespace()
-// - tokenize a character string on whitespace (space, tab, return)
-// - note:  multiple consecutive whitespaces are treated as a single delimiters
-//   so that " x   y " would tokenize as ("x", "y")
+//!===========================================================================
+//! function tokenize_on_whitespace()
+//! - tokenize a character string on whitespace (space, tab, return)
+//! - note:  multiple consecutive whitespaces are treated as a single delimiters
+//!   so that " x   y " would tokenize as ("x", "y")
 //
 inline void tokenize_on_whitespace(const char *in_char_str, std::vector<std::string> & str_vector)
 {
-    // Copy char * into a string
+    //! Copy char * into a string
     std::string in_str = in_char_str;
 
     tokenize_on_whitespace(in_str, str_vector);
-}   // function tokenize()
+}   //! function tokenize()
 
-//===========================================================================
-// function strcmp_with_null()
-// - Compare two strings. There are two cases in which the strings comare equal;
-// when both strings are nullptr and otherwise if the actual strings are equal.
+//!===========================================================================
+//! function strcmp_with_null()
+//! - Compare two strings. There are two cases in which the strings comare equal;
+//! when both strings are nullptr and otherwise if the actual strings are equal.
 inline bool strcmp_with_null(const char *s1, const char *s2)
 {
     if (s1 != nullptr && s2 != nullptr) {
@@ -364,16 +364,16 @@ inline bool strcmp_with_null(const char *s1, const char *s2)
     return false;
 }
 
-//===========================================================================
-// function LevenshteinDistance()
+//!===========================================================================
+//! function LevenshteinDistance()
 //
-// - Calculate the Levenshtein distance for two strings.
-//   The returned value gives an indication of how similar
-//   the strings are to one another. This is used in error
-//   diagnostics in the import program.
+//! - Calculate the Levenshtein distance for two strings.
+//!   The returned value gives an indication of how similar
+//!   the strings are to one another. This is used in error
+//!   diagnostics in the import program.
 //
-// Implementation taken from here:
-//   https://gist.github.com/TheRayTracer/2644387
+//! Implementation taken from here:
+//!   https://gist.github.com/TheRayTracer/2644387
 //
 inline uint32_t LevenshteinDistance(const char * s, size_t n,
                                     const char * t, size_t m)
@@ -390,21 +390,21 @@ inline uint32_t LevenshteinDistance(const char * s, size_t n,
                 d[(i * n) + j] = d[((i - 1) * n) + (j - 1)];
             } else {
                 d[(i * n) + j] = std::min({
-                    d[(i - 1) * n + j] + 1,          // A deletion
-                    d[(i - 1) * n + j] + 1,          // An insertion
-                    d[(i - 1) * n + (j - 1)] + 1     // A substitution
+                    d[(i - 1) * n + j] + 1,          //! A deletion
+                    d[(i - 1) * n + j] + 1,          //! An insertion
+                    d[(i - 1) * n + (j - 1)] + 1     //! A substitution
                 });
             }
         }
     }
 
     return d[n * m - 1];
-}   // function LevenshteinDistance()
+}   //! function LevenshteinDistance()
 
-//===========================================================================
-// Utility class which applies a user-provided functor to all
-// chars of a std::string, so that users do not have to remember
-// to always apply these algorithms manually themselves.
+//!===========================================================================
+//! Utility class which applies a user-provided functor to all
+//! chars of a std::string, so that users do not have to remember
+//! to always apply these algorithms manually themselves.
 template <class AppliedTransform>
 class TransformedString
 {
@@ -477,28 +477,28 @@ private:
     AppliedTransform transformer_;
 };
 
-// Functor for ::tolower
+//! Functor for ::tolower
 struct make_lowercase {
     int operator()(const int ch) const {
         return std::tolower(ch);
     }
 };
 
-// Functor for ::toupper
+//! Functor for ::toupper
 struct make_uppercase {
     int operator()(const int ch) const {
         return std::toupper(ch);
     }
 };
 
-// always lowercase string data type
+//! always lowercase string data type
 typedef TransformedString<make_lowercase> lowercase_string;
 
-// ALWAYS UPPERCASE STRING DATA TYPE
+//! ALWAYS UPPERCASE STRING DATA TYPE
 typedef TransformedString<make_uppercase> UPPERCASE_STRING;
 
-// Less than comparison, so you can put these data types
-// into ordered containers like std::set's
+//! Less than comparison, so you can put these data types
+//! into ordered containers like std::set's
 template <class AppliedTransform>
 inline bool operator<(const TransformedString<AppliedTransform> & one,
                       const TransformedString<AppliedTransform> & two)
@@ -506,13 +506,13 @@ inline bool operator<(const TransformedString<AppliedTransform> & one,
     return one.getString() < two.getString();
 }
 
-// Comparisons against std::string where the utils object is the rhs:
+//! Comparisons against std::string where the utils object is the rhs:
 //
-//      std::string s1(...);
-//      lowercase_string s2(...);
-//      if (s1 == s2) {
-//         ...
-//      }
+//!      std::string s1(...);
+//!      lowercase_string s2(...);
+//!      if (s1 == s2) {
+//!         ...
+//!      }
 template <class AppliedTransform>
 inline bool operator==(const std::string & one,
                        const TransformedString<AppliedTransform> & two)
