@@ -143,7 +143,7 @@ namespace sparta
          * \param label The GOP point to create
          * \return the GOP point; nullptr if not found
          */
-        Vertex* findVertex(const std::string& label) const
+        Vertex* findGOPVertex(const std::string& label) const
         {
             auto loc = gops_.find(label);
             return (loc != gops_.end()) ? loc->second : nullptr;
@@ -158,7 +158,7 @@ namespace sparta
          */
         Vertex* newGOPVertex(const std::string& label, sparta::Scheduler* const scheduler)
         {
-            sparta_assert(findVertex(label) == nullptr);
+            sparta_assert(findGOPVertex(label) == nullptr);
             Vertex* gop = this->newFactoryVertex(label, scheduler, true);
             gops_[label] = gop;
             return gop;
@@ -171,7 +171,7 @@ namespace sparta
          */
         Vertex* getGOPoint(const std::string& label)
         {
-            Vertex *gop = findVertex(label);
+            Vertex *gop = findGOPVertex(label);
             if (gop == nullptr) {
                 return newGOPVertex(label, getScheduler());
             }
