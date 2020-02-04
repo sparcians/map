@@ -21,7 +21,7 @@ namespace sparta
                 const Edge* e = prior_v->getEdgeTo(v);
                 sparta_assert(e != nullptr);
                 os << " -> " << v->getLabel()
-                   << "\t// edge: " << e->getLabel()
+                   // << "\t// edge: " << e->getLabel()
                    << std::endl;
             }
             os << "\t" << v->getLabel();
@@ -32,7 +32,7 @@ namespace sparta
         const Edge* e = prior_v->getEdgeTo(first);
         sparta_assert(e != nullptr);
         os << " -> " << first->getLabel()
-           << "\t// edge: " << e->getLabel()
+           // << "\t// edge: " << e->getLabel()
            << std::endl;
     }
 
@@ -138,6 +138,10 @@ namespace sparta
             dest_vertex->setInDAG(true);
         }
 
+        // TODO: REMOVE DEBUGGING STATEMENTS
+        std::cout << "DAG::link()" << std::endl;
+        std::cout << "\t" << std::string(*source_vertex) << " -> " << std::string(*dest_vertex) << std::endl;
+
         if (source_vertex->link(e_factory_, dest_vertex, reason)) {
             if (early_cycle_detect_ && detectCycle()) {
                 throw CycleException(getCycles_());
@@ -152,6 +156,14 @@ namespace sparta
         uint32_t vcount = alloc_vertices_.size();
         num_groups_ = 1;
         typename Vertex::VList   zlist;
+
+        if (detectCycle()) {
+            printCycles(std::cout);
+            //sparta_assert(false);
+        }
+
+        // TODO:: REMOVE DEBUGGING STATEMENTS
+        std::cout << *this << std::endl;
 
         // Initialize the queue of 0-vertices
         for (auto & vi : alloc_vertices_) {
@@ -227,7 +239,7 @@ namespace sparta
                 if (vi->findCycle(cycle_set)) {
                     os << "CYCLE:" << std::endl;
                     for (auto ci : cycle_set) {
-                        ci->print(os);
+                        ci->printFiltered(os, Vertex::CycleMarker::GRAY);
                     }
                     return;
                 }

@@ -33,6 +33,7 @@ public:
 
     //Constructor
     VertexFactory() =default;
+    ~VertexFactory();
 
     /**
      * \brief Factory method to create new Vertices
@@ -42,11 +43,6 @@ public:
     {
         Vertex*   new_vertex = new Vertex(std::forward<ArgTypes>(args)...);
         vertices_.emplace_back(new_vertex);
-
-        std::cout << "newFactoryVertex: id=" << new_vertex->getID()
-                  << ", factory size=" << vertices_.size()
-                  << std::endl;
-
         return new_vertex;
     }
 
@@ -54,7 +50,8 @@ public:
 
 private:
     //! Unique ptr of DAG Vertices
-    std::vector<std::unique_ptr<Vertex>> vertices_;
+    //std::vector<std::unique_ptr<Vertex>> vertices_;
+    std::vector<Vertex*> vertices_;
 };
 
 

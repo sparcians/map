@@ -17,6 +17,10 @@
 namespace sparta
 {
 
+    // Static global vertex and edge ID's
+    uint32_t Vertex::global_id_  = 0;
+    uint32_t Edge::global_id_ = 0;
+
     bool Vertex::link(EdgeFactory& efact, Vertex * dest, const std::string& label)
     {
         if(dest == this) return false;
@@ -175,12 +179,12 @@ namespace sparta
         return false;
     }
 
-    void Vertex::precedes(Scheduleable & w, const std::string & label) {
+    void Vertex::precedes(Scheduleable & s, const std::string & label) {
         sparta_assert(my_scheduler_);
         DAG * dag = my_scheduler_->getDAG();
         sparta_assert(dag->isFinalized() == false,
                     "You cannot set precedence during a running simulation (i.e., the DAG is finalized)");
-        dag->link(this, w.getGOPoint(), label);
+        dag->link(this, s.getVertex(), label);
     }
 
     // Dump this vertex to the provided CSV ostream
@@ -207,10 +211,24 @@ namespace sparta
         std::ios_base::fmtflags os_state(os.flags());
         os << std::string(*this) << std::endl;
         for (const auto & ei : edges_) {
-            os << "\t-> " << std::string(*(ei.first)) << ", " << std::string(*(ei.second)) << std::endl;
+            //os << "\t-> " << std::string(*(ei.first)) << ", " << std::string(*(ei.second)) << std::endl;
+            os << "\t-> " << std::string(*(ei.first)) << std::endl;
         }
         os << std::endl;
         os.flags(os_state);
     }
 
+    void Vertex::printFiltered(std::ostream &os, CycleMarker matchingMarker) const
+    {
+        std::ios_base::fmtflags os_state(os.flags());
+        os << std::string(*this) << std::endl;
+        for (const auto & ei : edges_) {
+            //os << "\t-> " << std::string(*(ei.first)) << ", " << std::string(*(ei.second)) << std::endl;
+            if (ei.first->marker_ == matchingMarker) {
+                os << "\t-> " << std::string(*(ei.first)) << std::endl;
+            }
+        }
+        os << std::endl;
+        os.flags(os_state);
+    }
 }

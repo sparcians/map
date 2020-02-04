@@ -54,7 +54,7 @@ namespace sparta
             return label_;
         }
 
-        operator std::string() const;
+        explicit operator std::string() const;
 
         void dumpToCSV(std::ostream& os, bool dump_header=false) const;
 
@@ -64,10 +64,11 @@ namespace sparta
         }
 
     private:
+        uint32_t        id_ = 0; // Unique global ID
+        static uint32_t global_id_;
         const Vertex *  source_ = nullptr;
         const Vertex *  dest_ = nullptr;
         std::string     label_{"unitialized"};
-        std::string     id_{"unitialized"};
     }; //END Edge
 
     /**
@@ -80,16 +81,17 @@ namespace sparta
      */
     class Vertex
     {
+
+        typedef std::map<Vertex*, const Edge*>      EMap;
+        typedef std::list<Scheduleable*>            AssociateList;
+
+    public:
         enum class CycleMarker {
             WHITE,   // Not discovered
             GRAY,    // Just discovered
             BLACK    // Finished
         };
 
-        typedef std::map<Vertex*, const Edge*>    EMap;
-        typedef std::list<Scheduleable*>    AssociateList;
-
-    public:
         typedef uint32_t PrecedenceGroup;
         static const PrecedenceGroup INVALID_GROUP;
         typedef std::list<Vertex *>          VList;
@@ -220,7 +222,7 @@ namespace sparta
             this->precedes(*consumer, reason);
         }
 
-        void precedes(Scheduleable & consumer, const std::string & reason = "");
+        void precedes(Scheduleable & s, const std::string & reason = "");
 
         bool degreeZero() const { return (sorted_num_inbound_edges_ == 0); }
         uint32_t numInboundEdges() const { return num_inbound_edges_; }
@@ -266,6 +268,7 @@ namespace sparta
 
         void dumpToCSV(std::ostream& os, bool dump_header=false) const;
         void print(std::ostream& os) const;
+        void printFiltered(std::ostream& os, CycleMarker matchingMarker) const;
 
     protected:
         static uint32_t global_id_;
@@ -294,9 +297,8 @@ namespace sparta
         dest_(dest),
         label_(label)
     {
+        id_ = global_id_++;
         std::stringstream ss_id;
-        ss_id << source->getID() << ":" << dest->getID();
-        id_ = ss_id.str();
         if (label.empty()) {
             std::stringstream ss_lb;
             ss_lb << source->getLabel() << ":" << dest->getLabel();

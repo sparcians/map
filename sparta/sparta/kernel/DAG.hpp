@@ -211,7 +211,7 @@ namespace sparta
         EdgeFactory                             e_factory_;
 
         std::vector<Vertex*>                    alloc_vertices_;
-        uint32_t                                num_groups_;
+        uint32_t                                num_groups_ = 1;
         bool                                    early_cycle_detect_;
         VertexMap                               gops_;
         bool                                    finalized_ = false;
