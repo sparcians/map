@@ -140,7 +140,7 @@ namespace sparta
         void reset()
         {
             sorted_num_inbound_edges_ = num_inbound_edges_;
-            sorting_edges_  = outbound_edge_map_;
+            // sorting_edges_  = outbound_edge_map_;
             setGroupID(1);
             resetMarker();
         }
@@ -285,7 +285,7 @@ namespace sparta
         EdgeMap                 outbound_edge_map_;             // MAP of outbound edges
         VertexList              outbound_edge_list_;            // LIST of destination vertices
         uint32_t                sorted_num_inbound_edges_ = num_inbound_edges_; // Number of inbound edges
-        EdgeMap                 sorting_edges_ = outbound_edge_map_; // temporary copy needed for sorting algorithm
+        // EdgeMap                 sorting_edges_ = outbound_edge_map_; // temporary copy needed for sorting algorithm
         CycleMarker             marker_ = CycleMarker::WHITE;
         AssociateList           associates_;
     };

@@ -64,7 +64,7 @@ namespace sparta
 
         uint32_t gid = getGroupID();
 
-        for(auto &ei : sorting_edges_)
+        for(auto &ei : outbound_edge_map_)
         {
             Vertex * outbound = ei.first;
             // The outbound edge better have a count of edges by at
