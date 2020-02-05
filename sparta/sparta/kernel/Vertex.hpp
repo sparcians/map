@@ -238,7 +238,8 @@ namespace sparta
             return ei->second;
         }
 
-        const EdgeMap & edges() const { return outbound_edge_map_; }
+        // const EdgeMap & edges() const { return outbound_edge_map_; }
+        const VertexList & edges() const { return outbound_edge_list_; }
         const Scheduleable * getScheduleable() const { return scheduleable_; }
         void setScheduleable(Scheduleable * s) { scheduleable_ = s; }
         EdgeMap::size_type numOutboundEdges() const { return outbound_edge_map_.size(); }
@@ -285,7 +286,6 @@ namespace sparta
         EdgeMap                 outbound_edge_map_;             // MAP of outbound edges
         VertexList              outbound_edge_list_;            // LIST of destination vertices
         uint32_t                sorted_num_inbound_edges_ = num_inbound_edges_; // Number of inbound edges
-        // EdgeMap                 sorting_edges_ = outbound_edge_map_; // temporary copy needed for sorting algorithm
         CycleMarker             marker_ = CycleMarker::WHITE;
         AssociateList           associates_;
     };
