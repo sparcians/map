@@ -226,7 +226,8 @@ namespace sparta
 
         bool degreeZero() const { return (sorted_num_inbound_edges_ == 0); }
         uint32_t numInboundEdges() const { return num_inbound_edges_; }
-        uint32_t numSortedInboundEdges() const { return sorted_num_inbound_edges_; }
+        uint32_t getNumInboundEdgesForSorting() const { return sorted_num_inbound_edges_; }
+        void setNumInboundEdgesForSorting(uint32_t edges) { sorted_num_inbound_edges_ = edges; }
 
         const Edge* getEdgeTo(Vertex * w) const
         {
@@ -249,7 +250,7 @@ namespace sparta
 
         bool link(EdgeFactory& efact, Vertex * w, const std::string& label="");
         bool unlink(EdgeFactory& efact, Vertex * w);
-        void assignConsumerGroupIDs(VertexList &zlist);
+        // void assignConsumerGroupIDs(VertexList &zlist);
         bool detectCycle();
         bool findCycle(VertexList& cycle_set);
 

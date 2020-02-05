@@ -59,6 +59,7 @@ namespace sparta
         return true;
     }
 
+#if 0
     void Vertex::assignConsumerGroupIDs(VertexList &zlist)
     {
 
@@ -87,6 +88,7 @@ namespace sparta
 
         }
     }
+#endif
 
     /**
      * Detect whether the DAG has at least one cycle somewhere

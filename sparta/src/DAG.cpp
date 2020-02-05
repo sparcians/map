@@ -191,7 +191,33 @@ namespace sparta
             sparta_assert(vcount > 0);
             --vcount;
 
-            v->assignConsumerGroupIDs(zlist);
+            // v->assignConsumerGroupIDs(zlist);
+            uint32_t gid = v->getGroupID();
+            for(auto &w_out : v->edges())
+            {
+                // Vertex * outbound = ei.first;
+                // The outbound edge better have a count of edges by at
+                // LEAST one -- it has to include this link!
+                uint32_t w_out_inbound_edges = w_out->getNumInboundEdgesForSorting();
+                sparta_assert(w_out_inbound_edges > 0);
+                --w_out_inbound_edges;
+
+                // If the destination's group ID is at or less than this
+                // source's ID, bump it -- there's a dependency
+                if (w_out->getGroupID() <= gid) {
+                    w_out->setGroupID(gid + 1);
+                }
+
+                // If there are no other inputs to this Vertex, it's now
+                // on the zlist to recursively set it's destination group
+                // IDs.
+                if (w_out_inbound_edges == 0) {
+                    zlist.push_back(w_out);
+                }
+
+                w_out->setNumInboundEdgesForSorting(w_out_inbound_edges);
+            }
+
             if (v->getGroupID() > num_groups_) {
                 num_groups_ = v->getGroupID() + 1;
             }
