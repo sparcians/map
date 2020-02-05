@@ -64,25 +64,25 @@ namespace sparta
 
         uint32_t gid = getGroupID();
 
-        for(auto &ei : outbound_edge_map_)
+        for(auto &out_w : outbound_edge_list_)
         {
-            Vertex * outbound = ei.first;
+            // Vertex * outbound = ei.first;
             // The outbound edge better have a count of edges by at
             // LEAST one -- it has to include this link!
-            sparta_assert(outbound->sorted_num_inbound_edges_ > 0);
-            --(outbound->sorted_num_inbound_edges_);
+            sparta_assert(out_w->sorted_num_inbound_edges_ > 0);
+            --(out_w->sorted_num_inbound_edges_);
 
             // If the destination's group ID is at or less than this
             // source's ID, bump it -- there's a dependency
-            if (outbound->getGroupID() <= gid) {
-                outbound->setGroupID(gid + 1);
+            if (out_w->getGroupID() <= gid) {
+                out_w->setGroupID(gid + 1);
             }
 
             // If there are no other inputs to this Vertex, it's now
             // on the zlist to recursively set it's destination group
             // IDs.
-            if (outbound->sorted_num_inbound_edges_ == 0) {
-                zlist.push_back(outbound);
+            if (out_w->sorted_num_inbound_edges_ == 0) {
+                zlist.push_back(out_w);
             }
 
         }
@@ -102,13 +102,13 @@ namespace sparta
         marker_ = CycleMarker::GRAY;
 
         // Loop through this vertex's outbound edges...
-        for (auto& ei : outbound_edge_map_) {
-            Vertex *w = ei.first;
+        for (auto& w_out : outbound_edge_list_) {
+            // Vertex *w = ei.first;
 
-            switch (w->marker_) {
+            switch (w_out->marker_) {
             // w has not been visited, recurse down this edge
             case CycleMarker::WHITE:
-                if (w->detectCycle()) {
+                if (w_out->detectCycle()) {
                     return true;
                 }
                 break;
@@ -155,21 +155,21 @@ namespace sparta
         marker_ = CycleMarker::GRAY;
 
         // Loop through this vertex's outbound edges...
-        for (auto& ei : outbound_edge_map_) {
-            Vertex *w = ei.first;
+        for (auto& w_out : outbound_edge_list_) {
+            //Vertex *w = ei.first;
 
-            switch (w->marker_) {
+            switch (w_out->marker_) {
             // w has not been visited, recurse down this edge
             case CycleMarker::WHITE:
-                if (w->findCycle(cycle_set)) {
-                    cycle_set.push_front(w);
+                if (w_out->findCycle(cycle_set)) {
+                    cycle_set.push_front(w_out);
                     return true;
                 }
                 break;
 
             // w has already been visited, so we have a cycle
             case CycleMarker::GRAY:
-                cycle_set.push_front(w);
+                cycle_set.push_front(w_out);
                 return true;
 
             // w is "finished" (i.e. BLACK), nothing to see here
@@ -214,9 +214,8 @@ namespace sparta
     {
         std::ios_base::fmtflags os_state(os.flags());
         os << std::string(*this) << std::endl;
-        for (const auto & ei : outbound_edge_map_) {
-            //os << "\t-> " << std::string(*(ei.first)) << ", " << std::string(*(ei.second)) << std::endl;
-            os << "\t-> " << std::string(*(ei.first)) << std::endl;
+        for (const auto & w_out : outbound_edge_list_) {
+            os << "\t-> " << std::string(*(w_out)) << std::endl;
         }
         os << std::endl;
         os.flags(os_state);
@@ -226,10 +225,9 @@ namespace sparta
     {
         std::ios_base::fmtflags os_state(os.flags());
         os << std::string(*this) << std::endl;
-        for (const auto & ei : outbound_edge_map_) {
-            //os << "\t-> " << std::string(*(ei.first)) << ", " << std::string(*(ei.second)) << std::endl;
-            if (ei.first->marker_ == matchingMarker) {
-                os << "\t-> " << std::string(*(ei.first)) << std::endl;
+        for (const auto & w_out : outbound_edge_list_) {
+            if (w_out->marker_ == matchingMarker) {
+                os << "\t-> " << std::string(*(w_out)) << std::endl;
             }
         }
         os << std::endl;

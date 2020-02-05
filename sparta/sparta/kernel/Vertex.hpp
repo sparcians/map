@@ -242,8 +242,8 @@ namespace sparta
         const VertexList & edges() const { return outbound_edge_list_; }
         const Scheduleable * getScheduleable() const { return scheduleable_; }
         void setScheduleable(Scheduleable * s) { scheduleable_ = s; }
-        EdgeMap::size_type numOutboundEdges() const { return outbound_edge_map_.size(); }
-        bool isOrphan() const { return ((num_inbound_edges_ == 0) && outbound_edge_map_.empty()); }
+        EdgeMap::size_type numOutboundEdges() const { return outbound_edge_list_.size(); }
+        bool isOrphan() const { return ((num_inbound_edges_ == 0) && outbound_edge_list_.empty()); }
         bool isInDAG() { return in_dag_; }
         void setInDAG(bool v) { in_dag_ = v; }
 
