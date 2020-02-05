@@ -155,7 +155,7 @@ namespace sparta
     {
         uint32_t vcount = alloc_vertices_.size();
         num_groups_ = 1;
-        typename Vertex::VList   zlist;
+        typename Vertex::VertexList   zlist;
 
         if (detectCycle()) {
             printCycles(std::cout);
@@ -227,7 +227,7 @@ namespace sparta
     // Just print one cycle for now...
     void DAG::printCycles(std::ostream& os) const
     {
-        typename Vertex::VList     cycle_set;
+        typename Vertex::VertexList     cycle_set;
 
         for (auto& vi : alloc_vertices_)
         {
@@ -268,9 +268,9 @@ namespace sparta
     }
 
     // Just mark one cycle for now...
-    typename Vertex::VList DAG::getCycles_()
+    typename Vertex::VertexList DAG::getCycles_()
     {
-        typename Vertex::VList cycle_set;
+        typename Vertex::VertexList cycle_set;
 
         for (auto& vi : alloc_vertices_)
         {

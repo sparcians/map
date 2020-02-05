@@ -47,7 +47,7 @@ namespace sparta
         class CycleException : public SpartaException
         {
         public:
-            CycleException(const typename Vertex::VList & cycle_set) :
+            CycleException(const typename Vertex::VertexList & cycle_set) :
                 SpartaException(),
                 cycle_set_(cycle_set)
             {}
@@ -61,7 +61,7 @@ namespace sparta
 
         private:
             //void outPutIssue_(std::ostream & os, bool dot) const;
-            typename Vertex::VList     cycle_set_;
+            typename Vertex::VertexList     cycle_set_;
         };
 
         ////////////////////////////////////////////////////////////
@@ -196,7 +196,7 @@ namespace sparta
 
     private:
         // Just mark one cycle for now...
-        typename Vertex::VList getCycles_();
+        typename Vertex::VertexList getCycles_();
 
         // Transfer Global Ordering Point GID's to associates
         void finalizeGOPs_()

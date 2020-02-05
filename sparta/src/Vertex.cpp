@@ -25,14 +25,13 @@ namespace sparta
     {
         if(dest == this) return false;
 
-        if (edges_.find(dest) != edges_.end()) {
+        if (outbound_edge_map_.find(dest) != outbound_edge_map_.end()) {
             // Edge already present -- not necessary to add it again
             return false;
         } else {
-
-            //edges_[dest] = new Edge(this, dest, label);
-            edges_[dest] = efact.newFactoryEdge(this, dest, label);
-
+            const Edge* new_edge = efact.newFactoryEdge(this, dest, label);
+            outbound_edge_map_[dest] = new_edge;
+            outbound_edge_list_.push_back(dest);
             ++(dest->num_inbound_edges_);
         }
         return true;
@@ -42,12 +41,17 @@ namespace sparta
     {
         if(w == this) return false;
 
-        auto ei = edges_.find(w);
-        if (ei == edges_.end()) {
+        auto ei = outbound_edge_map_.find(w);
+        if (ei == outbound_edge_map_.end()) {
             // Edge not present -- just ignore
             return false;
         } else {
-            edges_.erase(ei);
+            for (auto el = outbound_edge_list_.begin(); el != outbound_edge_list_.end(); ++el) {
+                if (*el == ei->first) {
+                    outbound_edge_list_.erase(el);
+                }
+            }
+            outbound_edge_map_.erase(ei);
             sparta_assert(w->num_inbound_edges_ > 0);
             --(w->num_inbound_edges_);
             efact.removeEdge(ei->second);
@@ -55,7 +59,7 @@ namespace sparta
         return true;
     }
 
-    void Vertex::assignConsumerGroupIDs(VList &zlist)
+    void Vertex::assignConsumerGroupIDs(VertexList &zlist)
     {
 
         uint32_t gid = getGroupID();
@@ -98,7 +102,7 @@ namespace sparta
         marker_ = CycleMarker::GRAY;
 
         // Loop through this vertex's outbound edges...
-        for (auto& ei : edges_) {
+        for (auto& ei : outbound_edge_map_) {
             Vertex *w = ei.first;
 
             switch (w->marker_) {
@@ -145,13 +149,13 @@ namespace sparta
      * repeat the traversal, or just scan through all the (many!) allocated
      * vertices?
      */
-    bool Vertex::findCycle(VList& cycle_set)
+    bool Vertex::findCycle(VertexList& cycle_set)
     {
         // Mark that we've visited this (current) vertex
         marker_ = CycleMarker::GRAY;
 
         // Loop through this vertex's outbound edges...
-        for (auto& ei : edges_) {
+        for (auto& ei : outbound_edge_map_) {
             Vertex *w = ei.first;
 
             switch (w->marker_) {
@@ -210,7 +214,7 @@ namespace sparta
     {
         std::ios_base::fmtflags os_state(os.flags());
         os << std::string(*this) << std::endl;
-        for (const auto & ei : edges_) {
+        for (const auto & ei : outbound_edge_map_) {
             //os << "\t-> " << std::string(*(ei.first)) << ", " << std::string(*(ei.second)) << std::endl;
             os << "\t-> " << std::string(*(ei.first)) << std::endl;
         }
@@ -222,7 +226,7 @@ namespace sparta
     {
         std::ios_base::fmtflags os_state(os.flags());
         os << std::string(*this) << std::endl;
-        for (const auto & ei : edges_) {
+        for (const auto & ei : outbound_edge_map_) {
             //os << "\t-> " << std::string(*(ei.first)) << ", " << std::string(*(ei.second)) << std::endl;
             if (ei.first->marker_ == matchingMarker) {
                 os << "\t-> " << std::string(*(ei.first)) << std::endl;

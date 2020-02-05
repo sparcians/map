@@ -82,7 +82,7 @@ namespace sparta
     class Vertex
     {
 
-        typedef std::map<Vertex*, const Edge*>      EMap;
+        typedef std::map<Vertex*, const Edge*>      EdgeMap;
         typedef std::list<Scheduleable*>            AssociateList;
 
     public:
@@ -93,9 +93,9 @@ namespace sparta
         };
 
         typedef uint32_t PrecedenceGroup;
-        static const PrecedenceGroup INVALID_GROUP;
-        typedef std::list<Vertex *>          VList;
-        typedef std::set<Vertex *>           VSet;
+        static const PrecedenceGroup                INVALID_GROUP;
+        typedef std::list<Vertex *>                 VertexList;
+        typedef std::set<Vertex *>                  VertexSet;
 
 
         /**
@@ -140,7 +140,7 @@ namespace sparta
         void reset()
         {
             sorted_num_inbound_edges_ = num_inbound_edges_;
-            sorting_edges_  = edges_;
+            sorting_edges_  = outbound_edge_map_;
             setGroupID(1);
             resetMarker();
         }
@@ -231,26 +231,26 @@ namespace sparta
         const Edge* getEdgeTo(Vertex * w) const
         {
             assert(w != this);
-            const auto & ei = edges_.find(w);
-            if (ei == edges_.end()) {
+            const auto & ei = outbound_edge_map_.find(w);
+            if (ei == outbound_edge_map_.end()) {
                 return nullptr;
             }
             return ei->second;
         }
 
-        const EMap & edges() const { return edges_; }
+        const EdgeMap & edges() const { return outbound_edge_map_; }
         const Scheduleable * getScheduleable() const { return scheduleable_; }
         void setScheduleable(Scheduleable * s) { scheduleable_ = s; }
-        EMap::size_type numOutboundEdges() const { return edges_.size(); }
-        bool isOrphan() const { return ((num_inbound_edges_ == 0) && edges_.empty()); }
+        EdgeMap::size_type numOutboundEdges() const { return outbound_edge_map_.size(); }
+        bool isOrphan() const { return ((num_inbound_edges_ == 0) && outbound_edge_map_.empty()); }
         bool isInDAG() { return in_dag_; }
         void setInDAG(bool v) { in_dag_ = v; }
 
         bool link(EdgeFactory& efact, Vertex * w, const std::string& label="");
         bool unlink(EdgeFactory& efact, Vertex * w);
-        void assignConsumerGroupIDs(VList &zlist);
+        void assignConsumerGroupIDs(VertexList &zlist);
         bool detectCycle();
-        bool findCycle(VList& cycle_set);
+        bool findCycle(VertexList& cycle_set);
 
         // Printable string (called by DAG print routines)
         explicit operator std::string() const
@@ -277,16 +277,17 @@ namespace sparta
         bool in_dag_ = false;
 
     private:
-        Scheduleable *      scheduleable_ = nullptr; // The Scheduleable this Vertex is associated with
-        std::string         label_;
-        sparta::Scheduler*  my_scheduler_ = nullptr;
-        uint32_t            id_ = 0;  // A unique global ID not associated with GroupID
-        uint32_t            num_inbound_edges_ = 0;
-        EMap                edges_;   // Outbound edges
-        uint32_t            sorted_num_inbound_edges_ = num_inbound_edges_; // Number of inbound edges
-        EMap                sorting_edges_ = edges_; // temporary copy needed for sorting algorithm
-        CycleMarker         marker_ = CycleMarker::WHITE;
-        AssociateList       associates_;
+        Scheduleable *          scheduleable_ = nullptr; // The Scheduleable this Vertex is associated with
+        std::string             label_;
+        sparta::Scheduler*      my_scheduler_ = nullptr;
+        uint32_t                id_ = 0;  // A unique global ID not associated with GroupID
+        uint32_t                num_inbound_edges_ = 0;
+        EdgeMap                 outbound_edge_map_;             // MAP of outbound edges
+        VertexList              outbound_edge_list_;            // LIST of destination vertices
+        uint32_t                sorted_num_inbound_edges_ = num_inbound_edges_; // Number of inbound edges
+        EdgeMap                 sorting_edges_ = outbound_edge_map_; // temporary copy needed for sorting algorithm
+        CycleMarker             marker_ = CycleMarker::WHITE;
+        AssociateList           associates_;
     };
 
     typedef Vertex GOPoint;
