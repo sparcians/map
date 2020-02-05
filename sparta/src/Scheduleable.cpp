@@ -55,15 +55,43 @@ namespace sparta
         DAG * dag = scheduler_->getDAG();
         sparta_assert(dag->isFinalized() == false,
                     "You cannot set precedence during a running simulation (i.e., the DAG is finalized)");
-        dag->link(this->vertex_, w.vertex_, label);
+        try {
+            dag->link(this->vertex_, w.vertex_, label);
+        } catch(sparta::DAG::CycleException & e) {
+            std::cerr << SPARTA_CMDLINE_COLOR_ERROR
+                      << "\n\nScheduleable::precedes: "
+                      << this->vertex_->getLabel() << " -> " << w.vertex_->getLabel()
+                      << " results in a DAG cycle"
+                      << SPARTA_CMDLINE_COLOR_NORMAL
+                      << std::endl;
+            std::ofstream cd("cycle_detection.dot");
+            e.writeDOT(cd);
+            std::cerr << "DOT file generated: cycle_detection.dot Textual version: " << std::endl;
+            e.writeText(std::cerr);
+            throw;
+        }
     }
 
-    void Scheduleable::precedes(Vertex & w, const std::string & label) const{
+    void Scheduleable::precedes(Vertex & w, const std::string & label) const {
         sparta_assert(scheduler_);
         DAG * dag = scheduler_->getDAG();
         sparta_assert(dag->isFinalized() == false,
                     "You cannot set precedence during a running simulation (i.e., the DAG is finalized)");
-        dag->link(this->vertex_, &w, label);
+        try {
+            dag->link(this->vertex_, &w, label);
+        } catch(sparta::DAG::CycleException & e) {
+            std::cerr << SPARTA_CMDLINE_COLOR_ERROR
+                      << "\n\nScheduleable::precedes: "
+                      << this->vertex_->getLabel() << " -> " << w.getLabel()
+                      << " results in a DAG cycle"
+                      << SPARTA_CMDLINE_COLOR_NORMAL
+                      << std::endl;
+            std::ofstream cd("cycle_detection.dot");
+            e.writeDOT(cd);
+            std::cerr << "DOT file generated: cycle_detection.dot Textual version: " << std::endl;
+            e.writeText(std::cerr);
+            throw;
+        }
     }
 
     bool Scheduleable::unlink(Scheduleable *w)

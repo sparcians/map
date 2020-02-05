@@ -790,9 +790,7 @@ void Simulation::finalizeFramework()
         throw;
     }
     catch(...) {
-        if(print_dag_) {
-            scheduler_->getDAG()->print(std::cout);
-        }
+        this->dumpDebugContentIfAllowed(std::current_exception());
         throw;
     }
 

@@ -139,8 +139,8 @@ namespace sparta
         }
 
         // TODO: REMOVE DEBUGGING STATEMENTS
-        std::cout << "DAG::link()" << std::endl;
-        std::cout << "\t" << std::string(*source_vertex) << " -> " << std::string(*dest_vertex) << std::endl;
+        //std::cout << "DAG::link()" << std::endl;
+        //std::cout << "\t" << std::string(*source_vertex) << " -> " << std::string(*dest_vertex) << std::endl;
 
         if (source_vertex->link(e_factory_, dest_vertex, reason)) {
             if (early_cycle_detect_ && detectCycle()) {
@@ -148,10 +148,14 @@ namespace sparta
             }
         }
 
+        // TODO: DEBUGGING - remove this
+        //if (detectCycle()) {
+            //throw CycleException(getCycles_());
+        //}
     }
 
 
-    bool DAG::sort()
+bool DAG::sort()
     {
         uint32_t vcount = alloc_vertices_.size();
         num_groups_ = 1;
@@ -161,9 +165,6 @@ namespace sparta
             printCycles(std::cout);
             //sparta_assert(false);
         }
-
-        // TODO:: REMOVE DEBUGGING STATEMENTS
-        std::cout << *this << std::endl;
 
         // Initialize the queue of 0-vertices
         for (auto & vi : alloc_vertices_) {

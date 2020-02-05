@@ -108,7 +108,9 @@ Scheduler::Scheduler(const std::string& name, GlobalTreeNode* search_scope) :
     // start/stop times for differencing.
     sset_.setClock(scheduler_internal_clk_.get());
 
-    dag_.reset(new DAG(this, false));
+    // TODO NOTE: setting check cycles to TRUE for debugging
+    dag_.reset(new DAG(this, true));
+
     // Added to support sparta::GlobalEvent, must follow dag_ initialization
     for (uint32_t phase = 0; phase < sparta::NUM_SCHEDULING_PHASES; phase++) {
         sparta::SchedulingPhase sched_phase = static_cast<sparta::SchedulingPhase>(phase);
