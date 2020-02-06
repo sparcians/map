@@ -336,6 +336,10 @@ namespace sparta
          * the data will be delivered on the
          * sparta::SchedulingPhase::PortUpdate phase.  This can be
          * overridden using the other DataInPort constructor.
+         *
+         * The reason for moving the InPort to the Tick phase for 0 cycle is that the typical use
+         * case is an event in another unit is driving the OutPort in the Tick phase.  If the InPort was
+         * was on the Update phase, you will get a runtime error.
          */
         DataInPort(TreeNode* portset, const std::string & name, sparta::Clock::Cycle delay = 0) :
             DataInPort(portset, name, (delay == 0 ? sparta::SchedulingPhase::Tick : sparta::SchedulingPhase::PortUpdate), delay)
