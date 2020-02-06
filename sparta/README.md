@@ -61,7 +61,7 @@ Open a MacOS Terminal
 1. `brew install rapidJSON`
 1. `brew install xz`
 1. `brew install cppcheck`
-1. `brew install pygments` # for cppcheck-htmlreport
+1. `sudo easy_install Pygments` # Do not use HomeBrew! Needed for cppcheck-htmlreport
 1. Install XCode and check for clang: `clang --version`
 
 Clone sparta through https: `git clone https://github.com/sparcians/map.git`
@@ -159,10 +159,6 @@ In sparta/release|debug dir, run the following command after running cppcheck wi
 
 ```
 cppcheck-htmlreport --source-dir .. --title "CppCheck" --file analysis/cppcheck/cppcheck_analysis.xml --report-dir analysis/cppcheck/html
-```
-If you're having issues (like I did on the Mac with more than one python install), try this:
-```
-PYTHONPATH=/usr/local/Cellar/pygments/2.4.2/libexec/lib/python3.7/site-packages/ python3.7 `which cppcheck-htmlreport` --source-dir .. --title "CppCheck" --file analysis/cppcheck/cppcheck_analysis.xml --report-dir analysis/cppcheck/html
 ```
 
 There will be an analysis/cppcheck/html/index.html file to open in a browser to review
