@@ -33,7 +33,6 @@ public:
 
     //Constructor
     VertexFactory() =default;
-    ~VertexFactory();
 
     /**
      * \brief Factory method to create new Vertices
@@ -50,8 +49,7 @@ public:
 
 private:
     //! Unique ptr of DAG Vertices
-    //std::vector<std::unique_ptr<Vertex>> vertices_;
-    std::vector<Vertex*> vertices_;
+    std::vector<std::unique_ptr<Vertex>> vertices_;
 };
 
 

@@ -50,7 +50,9 @@ public:
     void dumpToCSV(std::ostream& os) const;
 
 private:
-    //! Unique ptr of DAG Edges
+    // I use bare Edge* here instead of std::unique_ptr<> since I need
+    // to be able to do a set::find() on the Edge address. The
+    // class destructor zaps the Edges
     std::set<const Edge*> edges_;
 };
 

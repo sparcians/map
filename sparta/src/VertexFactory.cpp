@@ -5,11 +5,13 @@
 
 namespace sparta {
 
+#if 0
 VertexFactory::~VertexFactory() {
     for (auto v : vertices_) {
         delete(v);
     }
 }
+#endif
 
 void VertexFactory::dumpToCSV(std::ostream& os) const {
     std::ios_base::fmtflags os_state(os.flags());
