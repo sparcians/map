@@ -12,7 +12,7 @@ namespace sparta
      * Write a text version of the CycleException's cycle vertex list
      * @param os
      */
-    void DAG::CycleException::writeText(std::ostream& os) const {
+    void DAG::CycleException::writeCycleAsText(std::ostream& os) const {
         os << "DAG CYCLE: " << std::endl;
 
         const Vertex* prior_v = nullptr;
@@ -55,7 +55,7 @@ namespace sparta
      * Write a DOT graph version of the CycleException's cycle vertex list
      * @param os
      */
-    void DAG::CycleException::writeDOT(std::ostream& os) const {
+    void DAG::CycleException::writeCycleAsDOT(std::ostream& os) const {
         os << "digraph dag_cycle {" << std::endl;
         os << "\trankdir=TB;" << std::endl;
         os << "\tnode [shape=record, fontname=Helvetica, fontsize=10];" << std::endl;

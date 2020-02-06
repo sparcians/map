@@ -122,8 +122,8 @@ int main()
         // cout << dag[0] << endl;
         // fstream fs;
         // fs.open("dag_cycle1.dot", fstream::out);
-        e.writeDOT(cout);
-        e.writeText(cout);
+        e.writeCycleAsDOT(cout);
+        e.writeCycleAsText(cout);
         did_throw = true;
     }
     EXPECT_TRUE(did_throw);
@@ -135,8 +135,8 @@ int main()
         dag[0]->printCycles(cout);
         //fstream fs;
         //fs.open("dag_cycle2.dot", fstream::out);
-        e.writeDOT(cout);
-        e.writeText(cout);
+        e.writeCycleAsDOT(cout);
+        e.writeCycleAsText(cout);
     }
     cout << endl;
 
@@ -150,8 +150,8 @@ int main()
         dag[0]->printCycles(cout);
         // fstream fs;
         // fs.open("dag_cycle3.dot", fstream::out);
-        e.writeDOT(cout);
-        e.writeText(cout);
+        e.writeCycleAsDOT(cout);
+        e.writeCycleAsText(cout);
         //fs.close();
     }
     cout << "______________________" << endl;

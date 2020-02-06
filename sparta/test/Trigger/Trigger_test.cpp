@@ -134,7 +134,7 @@ int main()
         sched.finalize();
         sched.run(109, true);
     }catch(const sparta::DAG::CycleException& ce){
-        ce.writeDOT(std::cerr);
+        ce.writeCycleAsDOT(std::cerr);
     };
 
     {

@@ -244,7 +244,7 @@ namespace sparta
         void setScheduleable(Scheduleable * s) { scheduleable_ = s; }
         EdgeMap::size_type numOutboundEdges() const { return outbound_edge_list_.size(); }
         bool isOrphan() const { return ((num_inbound_edges_ == 0) && outbound_edge_list_.empty()); }
-        bool isInDAG() { return in_dag_; }
+        bool isInDAG() const { return in_dag_; }
         void setInDAG(bool v) { in_dag_ = v; }
 
         bool link(EdgeFactory& efact, Vertex * w, const std::string& label="");

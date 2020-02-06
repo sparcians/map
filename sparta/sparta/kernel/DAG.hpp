@@ -56,8 +56,8 @@ namespace sparta
                 SpartaException(reason)
             {}
 
-            void writeDOT (std::ostream & os) const;
-            void writeText(std::ostream & os) const;
+            void writeCycleAsDOT (std::ostream & os) const;
+            void writeCycleAsText (std::ostream & os) const;
 
         private:
             //void outPutIssue_(std::ostream & os, bool dot) const;

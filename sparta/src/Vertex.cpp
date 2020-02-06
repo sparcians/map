@@ -59,37 +59,6 @@ namespace sparta
         return true;
     }
 
-#if 0
-    void Vertex::assignConsumerGroupIDs(VertexList &zlist)
-    {
-
-        uint32_t gid = getGroupID();
-
-        for(auto &out_w : outbound_edge_list_)
-        {
-            // Vertex * outbound = ei.first;
-            // The outbound edge better have a count of edges by at
-            // LEAST one -- it has to include this link!
-            sparta_assert(out_w->sorted_num_inbound_edges_ > 0);
-            --(out_w->sorted_num_inbound_edges_);
-
-            // If the destination's group ID is at or less than this
-            // source's ID, bump it -- there's a dependency
-            if (out_w->getGroupID() <= gid) {
-                out_w->setGroupID(gid + 1);
-            }
-
-            // If there are no other inputs to this Vertex, it's now
-            // on the zlist to recursively set it's destination group
-            // IDs.
-            if (out_w->sorted_num_inbound_edges_ == 0) {
-                zlist.push_back(out_w);
-            }
-
-        }
-    }
-#endif
-
     /**
      * Detect whether the DAG has at least one cycle somewhere
      * At the completion of detectCycle(), the DAG vertices will

@@ -169,7 +169,6 @@ namespace sparta {
     constexpr char Scheduler::NODE_NAME[];
     const Scheduler::Tick Scheduler::INDEFINITE = 0xFFFFFFFFFFFFFFFFull;
     std::unique_ptr<sparta::SleeperThreadBase> SleeperThread::sleeper_thread_;
-    // uint32_t Vertex::global_id_ = 0;
 
     // KeyPairs
     constexpr char sparta::PairCollectorTreeNode::COLLECTABLE_DESCRIPTION[];

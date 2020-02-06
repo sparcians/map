@@ -784,9 +784,9 @@ void Simulation::finalizeFramework()
             "Generated cycle_detection.dot file for examination" SPARTA_CMDLINE_COLOR_NORMAL
                   << std::endl;
         std::ofstream cd("cycle_detection.dot");
-        e.writeDOT(cd);
+        e.writeCycleAsDOT(cd);
         std::cerr << "DOT file generated: cycle_detection.dot Textual version: " << std::endl;
-        e.writeText(std::cerr);
+        e.writeCycleAsText(std::cerr);
         throw;
     }
     catch(...) {
