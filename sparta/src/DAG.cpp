@@ -28,12 +28,27 @@ namespace sparta
             prior_v = v;
         }
 
-        Vertex* first = cycle_set_.front();
-        const Edge* e = prior_v->getEdgeTo(first);
-        sparta_assert(e != nullptr);
-        os << " -> " << first->getLabel()
-           // << "\t// edge: " << e->getLabel()
-           << std::endl;
+        // TODO: FOR NOW -- we relax the constraint that the final
+        // vertex in the cycle_set_ needs to have an edge back to
+        // the first vertex.
+        //Vertex* first = cycle_set_.front();
+        //const Edge* e = prior_v->getEdgeTo(first);
+        //sparta_assert(e != nullptr);
+        //os << " -> " << first->getLabel()
+           //<< std::endl;
+
+        // Find and print the cyclic edge from prior_v
+        bool found_cycle_edge = false;
+        for (const auto& w : cycle_set_) {
+            const Edge* e = prior_v->getEdgeTo(w);
+            if (e != nullptr) {
+                os << " -> " << w->getLabel()
+                   << std::endl;
+                found_cycle_edge = true;
+                break;
+            }
+        }
+        sparta_assert(found_cycle_edge);
     }
 
     /**
@@ -54,7 +69,25 @@ namespace sparta
             os << "\t\"" << v->getLabel() << "\"";
             first = false;
         }
-        os << " -> \"" << cycle_set_.front()->getLabel() << "\";" << std::endl;
+
+        // TODO: FOR NOW -- we relax the constraint that the final
+        // vertex in the cycle_set_ needs to have an edge back to
+        // the first vertex.
+        // os << " -> \"" << cycle_set_.front()->getLabel() << "\";" << std::endl;
+
+        // Find and print the cyclic edge from last_v
+        const Vertex* last_v = cycle_set_.back();
+        bool found_cycle_edge = false;
+        for (const auto& w : cycle_set_) {
+            const Edge* e = last_v->getEdgeTo(w);
+            if (e != nullptr) {
+                os << " -> \"" << w->getLabel() << "\";" << std::endl;
+                found_cycle_edge = true;
+                break;
+            }
+        }
+        sparta_assert(found_cycle_edge);
+
         os << "}" << std::endl;
     }
 

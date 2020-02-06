@@ -231,7 +231,6 @@ namespace sparta
 
         const Edge* getEdgeTo(Vertex * w) const
         {
-            assert(w != this);
             const auto & ei = outbound_edge_map_.find(w);
             if (ei == outbound_edge_map_.end()) {
                 return nullptr;
