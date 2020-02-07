@@ -96,15 +96,15 @@ namespace sparta
             for(auto & e : unit_event_set_.getEvents(static_cast<sparta::SchedulingPhase>(i))) {
                 const sparta::Scheduleable & sched = e->getScheduleable();
                 phase_to_name[static_cast<sparta::SchedulingPhase>(i)].insert(sched.getLabel());
-                for(auto & ed : sched.vertex_->edges())
+                for(auto & dest_vertex : sched.vertex_->edges())
                 {
-                    if(!ed.first->isGOP()) {
-                        auto ext_dep = dynamic_cast<const Scheduleable*>(ed.first->getScheduleable());
+                    if(!dest_vertex->isGOP()) {
+                        auto ext_dep = dynamic_cast<const Scheduleable*>(dest_vertex->getScheduleable());
                         if(ext_dep) {
                             phase_to_name[ext_dep->getSchedulingPhase()].
-                                insert(ed.first->getLabel());
+                                insert(dest_vertex->getLabel());
                         }
-                        links[sched.getLabel()].insert(ed.first->getLabel());
+                        links[sched.getLabel()].insert(dest_vertex->getLabel());
                     }
                 }
             }

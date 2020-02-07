@@ -8,76 +8,98 @@
 
 namespace sparta
 {
+    /**
+     * Write a text version of the CycleException's cycle vertex list
+     * @param os
+     */
+    void DAG::CycleException::writeCycleAsText(std::ostream& os) const {
+        os << "DAG CYCLE: " << std::endl;
 
-    void DAG::CycleException::outPutIssue_(std::ostream & os, bool dot) const
-    {
-        if(dot) {
-            os << "digraph dag_issue {\n";
-            os << "\trankdir=TB;\n";
-            os << "\tnode [shape=record, fontname=Helvetica, fontsize=10];\n\n";
-        }
-        else {
-            os << "DAG CYCLE: " << std::endl;
-        }
-
-        Vertex * very_first = nullptr;
-        Vertex * very_last = nullptr;
-
-        typename Vertex::VList cycle_set = cycle_set_;
-
-        while(!cycle_set.empty())
-        {
-            Vertex * first = cycle_set.front();
-            cycle_set.pop_front();
-
-            Vertex * second = nullptr;
-            if(!cycle_set.empty()) {
-                second = cycle_set.front();
+        const Vertex* prior_v = nullptr;
+        for (const auto& v : cycle_set_) {
+            if (prior_v != nullptr) {
+                const Edge* e = prior_v->getEdgeTo(v);
+                sparta_assert(e != nullptr);
+                os << " -> " << v->getLabel()
+                   // << "\t// edge: " << e->getLabel()
+                   << std::endl;
             }
-            if(first == second) {
-                continue;
-            }
+            os << "\t" << v->getLabel();
+            prior_v = v;
+        }
 
-            if(!very_first) { very_first = first; }
-            if(second) {
-                os << "\t\"" << first->getLabel() << "\"";
-                os << " -> \"" << second->getLabel() << "\"";
-                const Edge * e = first->getEdgeTo(second);
-                if(e != nullptr && dot) {
-                    os << " [fontsize=8 label=\"" << e->getLabel() << "\"]";
-                }
-                os << ";\n";
-                very_last = second;
+        // TODO: FOR NOW -- we relax the constraint that the final
+        // vertex in the cycle_set_ needs to have an edge back to
+        // the first vertex.
+        //Vertex* first = cycle_set_.front();
+        //const Edge* e = prior_v->getEdgeTo(first);
+        //sparta_assert(e != nullptr);
+        //os << " -> " << first->getLabel()
+           //<< std::endl;
+
+        // Find and print the cyclic edge from prior_v
+        bool found_cycle_edge = false;
+        for (const auto& w : cycle_set_) {
+            const Edge* e = prior_v->getEdgeTo(w);
+            if (e != nullptr) {
+                os << " -> " << w->getLabel()
+                   << std::endl;
+                found_cycle_edge = true;
+                break;
             }
         }
-        if(very_first && very_last) {
-            if(very_first != very_last) {
-                const Edge * e = very_last->getEdgeTo(very_first);
-                if(e) {
-                    if(dot) {
-                        os << "\t\"" << very_last->getLabel() << "\" -> \"" << very_first->getLabel()
-                           << "\" [fontsize=8 label=\"" << e->getLabel() << "\"];\n";
-                    }
-                    else {
-                        os << "\t\"" << very_last->getLabel() << "\" -> \""
-                           << very_first->getLabel() << "\";" << std::endl;
-                    }
-                }
-            }
-        }
-        if(dot) {
-            os << "\n}\n";
-        }
+        sparta_assert(found_cycle_edge);
     }
+
+    /**
+     * Write a DOT graph version of the CycleException's cycle vertex list
+     * @param os
+     */
+    void DAG::CycleException::writeCycleAsDOT(std::ostream& os) const {
+        os << "digraph dag_cycle {" << std::endl;
+        os << "\trankdir=TB;" << std::endl;
+        os << "\tnode [shape=record, fontname=Helvetica, fontsize=10];" << std::endl;
+        os << std::endl;
+
+        bool first = true;
+        for (const auto& v : cycle_set_) {
+            if (!first) {
+                os << " -> \"" << v->getLabel() << "\";" << std::endl;
+            }
+            os << "\t\"" << v->getLabel() << "\"";
+            first = false;
+        }
+
+        // TODO: FOR NOW -- we relax the constraint that the final
+        // vertex in the cycle_set_ needs to have an edge back to
+        // the first vertex.
+        // os << " -> \"" << cycle_set_.front()->getLabel() << "\";" << std::endl;
+
+        // Find and print the cyclic edge from last_v
+        const Vertex* last_v = cycle_set_.back();
+        bool found_cycle_edge = false;
+        for (const auto& w : cycle_set_) {
+            const Edge* e = last_v->getEdgeTo(w);
+            if (e != nullptr) {
+                os << " -> \"" << w->getLabel() << "\";" << std::endl;
+                found_cycle_edge = true;
+                break;
+            }
+        }
+        sparta_assert(found_cycle_edge);
+
+        os << "}" << std::endl;
+    }
+
     Vertex* DAG::newFactoryVertex(const std::string& label,
                                   sparta::Scheduler* const scheduler,
                                   const bool isgop)
     {
-        return v_factory_->newFactoryVertex(label, scheduler, isgop);
+        return v_factory_.newFactoryVertex(label, scheduler, isgop);
     }
 
     /**
-     * \brief Finialize the DAG
+     * \brief Finalize the DAG
      * \return The number of groups that were created
      */
     uint32_t DAG::finalize()
@@ -97,7 +119,6 @@ namespace sparta
     }
 
     DAG::DAG(sparta::Scheduler * scheduler, const bool& check_cycles):
-        v_factory_(std::unique_ptr<VertexFactory>(new VertexFactory())),
         num_groups_(1),
         early_cycle_detect_(check_cycles),
         gops_(),
@@ -116,13 +137,13 @@ namespace sparta
         // Trigger -> Update -> PortUpdate -> Flush -> Collection -> Tick -> PostTick
         //
         // XXX Dave to make this go away.
-        Vertex * trigger  = newVertex("Trigger", getScheduler(), true);
-        Vertex * update   = newVertex("Update", getScheduler(),  true);
-        Vertex * pu       = newVertex("PortUpdate", getScheduler(), true);
-        Vertex * flush    = newVertex("Flush", getScheduler(), true);
-        Vertex * collect  = newVertex("Collection", getScheduler(), true);
-        Vertex * tick     = newVertex("Tick", getScheduler(), true);
-        Vertex * posttick = newVertex("PostTick", getScheduler(), true);
+        Vertex * trigger  = newGOPVertex("Trigger", getScheduler());
+        Vertex * update   = newGOPVertex("Update", getScheduler());
+        Vertex * pu       = newGOPVertex("PortUpdate", getScheduler());
+        Vertex * flush    = newGOPVertex("Flush", getScheduler());
+        Vertex * collect  = newGOPVertex("Collection", getScheduler());
+        Vertex * tick     = newGOPVertex("Tick", getScheduler());
+        Vertex * posttick = newGOPVertex("PostTick", getScheduler());
         link(trigger, update);
         link(update, pu);
         link(pu, flush);
@@ -136,6 +157,7 @@ namespace sparta
 
     }
 
+    //! Only linked vertices will be known to the DAG
     void DAG::link(Vertex * source_vertex,
                    Vertex * dest_vertex, const std::string & reason)
     {
@@ -149,20 +171,33 @@ namespace sparta
             dest_vertex->setInDAG(true);
         }
 
-        if (source_vertex->link(dest_vertex, reason)) {
+        // TODO: REMOVE DEBUGGING STATEMENTS
+        //std::cout << "DAG::link()" << std::endl;
+        //std::cout << "\t" << std::string(*source_vertex) << " -> " << std::string(*dest_vertex) << std::endl;
+
+        if (source_vertex->link(e_factory_, dest_vertex, reason)) {
             if (early_cycle_detect_ && detectCycle()) {
                 throw CycleException(getCycles_());
             }
         }
 
+        // TODO: DEBUGGING - remove this
+        //if (detectCycle()) {
+            //throw CycleException(getCycles_());
+        //}
     }
 
 
-    bool DAG::sort()
+bool DAG::sort()
     {
         uint32_t vcount = alloc_vertices_.size();
         num_groups_ = 1;
-        typename Vertex::VList   zlist;
+        typename Vertex::VertexList   zlist;
+
+        if (detectCycle()) {
+            printCycles(std::cout);
+            //sparta_assert(false);
+        }
 
         // Initialize the queue of 0-vertices
         for (auto & vi : alloc_vertices_) {
@@ -190,7 +225,33 @@ namespace sparta
             sparta_assert(vcount > 0);
             --vcount;
 
-            v->assignConsumerGroupIDs(zlist);
+            // v->assignConsumerGroupIDs(zlist);
+            uint32_t gid = v->getGroupID();
+            for(auto &w_out : v->edges())
+            {
+                // Vertex * outbound = ei.first;
+                // The outbound edge better have a count of edges by at
+                // LEAST one -- it has to include this link!
+                uint32_t w_out_inbound_edges = w_out->getNumInboundEdgesForSorting();
+                sparta_assert(w_out_inbound_edges > 0);
+                --w_out_inbound_edges;
+
+                // If the destination's group ID is at or less than this
+                // source's ID, bump it -- there's a dependency
+                if (w_out->getGroupID() <= gid) {
+                    w_out->setGroupID(gid + 1);
+                }
+
+                // If there are no other inputs to this Vertex, it's now
+                // on the zlist to recursively set it's destination group
+                // IDs.
+                if (w_out_inbound_edges == 0) {
+                    zlist.push_back(w_out);
+                }
+
+                w_out->setNumInboundEdgesForSorting(w_out_inbound_edges);
+            }
+
             if (v->getGroupID() > num_groups_) {
                 num_groups_ = v->getGroupID() + 1;
             }
@@ -205,6 +266,7 @@ namespace sparta
         return (vcount == 0);
     }
 
+    //! Detect whether the DAG has at least one cycle
     bool DAG::detectCycle() const
     {
         for (auto& vi : alloc_vertices_)
@@ -213,7 +275,7 @@ namespace sparta
         }
 
         for (auto& vi : alloc_vertices_) {
-            if (vi->wasVisited()) {
+            if (vi->wasNotVisited()) {
                 if (vi->detectCycle()) {
                     return true;
                 }
@@ -225,7 +287,7 @@ namespace sparta
     // Just print one cycle for now...
     void DAG::printCycles(std::ostream& os) const
     {
-        typename Vertex::VList     cycle_set;
+        typename Vertex::VertexList     cycle_set;
 
         for (auto& vi : alloc_vertices_)
         {
@@ -233,11 +295,11 @@ namespace sparta
         }
 
         for (auto& vi : alloc_vertices_) {
-            if (vi->wasVisited()) {
+            if (vi->wasNotVisited()) {
                 if (vi->findCycle(cycle_set)) {
                     os << "CYCLE:" << std::endl;
                     for (auto ci : cycle_set) {
-                        ci->print(os);
+                        ci->printFiltered(os, Vertex::CycleMarker::GRAY);
                     }
                     return;
                 }
@@ -245,23 +307,30 @@ namespace sparta
         }
     }
 
+    void DAG::dumpToCSV(std::ostream &os_vertices, std::ostream &os_edges) const {
+        v_factory_.dumpToCSV(os_vertices);
+        e_factory_.dumpToCSV(os_edges);
+    }
+
     void DAG::print(std::ostream& os) const
     {
-        if(finalized_) {
-            for (const auto & vi : alloc_vertices_) {
-                vi->print(os);
-                os << std::endl;
-            }
+        std::ios_base::fmtflags os_state(os.flags());
+        if (!finalized_) {
+            os << "=================" << std::endl;
+            os << "WARNING: DAG IS NOT YET FINALIZED (unsorted, so group ID's are not yet fixed)" << std::endl;
+            os << "=================" << std::endl;
         }
-        else {
-            os << "DAG not finalized ... cannot print contents" << std::endl;
+        for (const auto & vi : alloc_vertices_) {
+            vi->print(os);
+            os << std::endl;
         }
+        os.flags(os_state);
     }
 
     // Just mark one cycle for now...
-    typename Vertex::VList DAG::getCycles_()
+    typename Vertex::VertexList DAG::getCycles_()
     {
-        typename Vertex::VList cycle_set;
+        typename Vertex::VertexList cycle_set;
 
         for (auto& vi : alloc_vertices_)
         {
@@ -269,8 +338,10 @@ namespace sparta
         }
 
         for (auto& vi : alloc_vertices_) {
-            if (vi->wasVisited()) {
-                vi->findCycle(cycle_set);
+            if (vi->wasNotVisited()) {
+                if (vi->findCycle(cycle_set)) {
+                    break;
+                }
             }
         }
         return cycle_set;

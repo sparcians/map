@@ -35,7 +35,7 @@
 #include "sparta/statistics/ReadOnlyCounter.hpp"
 #include "sparta/statistics/Counter.hpp"
 #include "sparta/statistics/StatisticSet.hpp"
-#include "sparta/kernel/VertexFactory.hpp"
+//#include "sparta/kernel/VertexFactory.hpp"
 #include "sparta/events/SchedulingPhases.hpp"
 #include "sparta/utils/ValidValue.hpp"
 #include "sparta/statistics/CounterBase.hpp"

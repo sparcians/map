@@ -16,6 +16,7 @@
 namespace sparta
 {
     class Vertex;
+    class EdgeFactory;
 
     /**
      * \class Edge
@@ -53,7 +54,9 @@ namespace sparta
             return label_;
         }
 
-        operator std::string() const;
+        explicit operator std::string() const;
+
+        void dumpToCSV(std::ostream& os, bool dump_header=false) const;
 
         void print(std::ostream& os) const
         {
@@ -61,10 +64,11 @@ namespace sparta
         }
 
     private:
+        uint32_t        id_ = 0; // Unique global ID
+        static uint32_t global_id_;
         const Vertex *  source_ = nullptr;
         const Vertex *  dest_ = nullptr;
         std::string     label_{"unitialized"};
-        std::string     id_{"unitialized"};
     }; //END Edge
 
     /**
@@ -77,20 +81,21 @@ namespace sparta
      */
     class Vertex
     {
+
+        typedef std::map<Vertex*, const Edge*>      EdgeMap;
+        typedef std::list<Scheduleable*>            AssociateList;
+
+    public:
         enum class CycleMarker {
             WHITE,   // Not discovered
             GRAY,    // Just discovered
             BLACK    // Finished
         };
 
-        typedef std::map<Vertex *, Edge>    EMap;
-        typedef std::list<Scheduleable*>    AssociateList;
-
-    public:
         typedef uint32_t PrecedenceGroup;
-        static const PrecedenceGroup INVALID_GROUP;
-        typedef std::list<Vertex *>          VList;
-        typedef std::set<Vertex *>           VSet;
+        static const PrecedenceGroup                INVALID_GROUP;
+        typedef std::list<Vertex *>                 VertexList;
+        typedef std::set<Vertex *>                  VertexSet;
 
 
         /**
@@ -135,7 +140,7 @@ namespace sparta
         void reset()
         {
             sorted_num_inbound_edges_ = num_inbound_edges_;
-            sorting_edges_  = edges_;
+            // sorting_edges_  = outbound_edge_map_;
             setGroupID(1);
             resetMarker();
         }
@@ -150,6 +155,12 @@ namespace sparta
 
         //! Has this Vertex been visited yet?
         bool wasVisited() const {
+            //return marker_ == CycleMarker::WHITE;
+            return marker_ == CycleMarker::GRAY;
+        }
+
+        //! Has this Vertex NOT been visited yet?
+        bool wasNotVisited() const {
             return marker_ == CycleMarker::WHITE;
         }
 
@@ -211,48 +222,54 @@ namespace sparta
             this->precedes(*consumer, reason);
         }
 
-        void precedes(Scheduleable & consumer, const std::string & reason = "");
+        void precedes(Scheduleable & s, const std::string & reason = "");
 
         bool degreeZero() const { return (sorted_num_inbound_edges_ == 0); }
         uint32_t numInboundEdges() const { return num_inbound_edges_; }
-        uint32_t numSortedInboundEdges() const { return sorted_num_inbound_edges_; }
+        uint32_t getNumInboundEdgesForSorting() const { return sorted_num_inbound_edges_; }
+        void setNumInboundEdgesForSorting(uint32_t edges) { sorted_num_inbound_edges_ = edges; }
 
         const Edge* getEdgeTo(Vertex * w) const
         {
-            assert(w != this);
-            const auto & ei = edges_.find(w);
-            if (ei == edges_.end()) {
+            const auto & ei = outbound_edge_map_.find(w);
+            if (ei == outbound_edge_map_.end()) {
                 return nullptr;
             }
-            return &ei->second;
+            return ei->second;
         }
 
-        const EMap & edges() const { return edges_; }
+        // const EdgeMap & edges() const { return outbound_edge_map_; }
+        const VertexList & edges() const { return outbound_edge_list_; }
         const Scheduleable * getScheduleable() const { return scheduleable_; }
         void setScheduleable(Scheduleable * s) { scheduleable_ = s; }
-        EMap::size_type numOutboundEdges() const { return edges_.size(); }
-        bool isOrphan() const { return ((num_inbound_edges_ == 0) && edges_.empty()); }
-        bool isInDAG() { return in_dag_; }
+        EdgeMap::size_type numOutboundEdges() const { return outbound_edge_list_.size(); }
+        bool isOrphan() const { return ((num_inbound_edges_ == 0) && outbound_edge_list_.empty()); }
+        bool isInDAG() const { return in_dag_; }
         void setInDAG(bool v) { in_dag_ = v; }
 
-        bool link(Vertex * w, const std::string& label="");
-        bool unlink(Vertex * w);
-        void assignConsumerGroupIDs(VList &zlist);
+        bool link(EdgeFactory& efact, Vertex * w, const std::string& label="");
+        bool unlink(EdgeFactory& efact, Vertex * w);
+        // void assignConsumerGroupIDs(VertexList &zlist);
         bool detectCycle();
-        bool findCycle(VList& cycle_set);
+        bool findCycle(VertexList& cycle_set);
 
+        // Printable string (called by DAG print routines)
         explicit operator std::string() const
         {
             std::stringstream ss;
-            ss << "V[" << getLabel() << "]:"
+            ss << (isGOP() ? "GOP" : "V")
+               << "[" << getLabel() << "]:"
                << " id: " << id_
-               << " edges(in=" << numInboundEdges()
+               << ", marker=" << (marker_ == CycleMarker::WHITE ? "white" : (marker_ == CycleMarker::GRAY ? "GRAY" : "black"))
+               << ", edges(in=" << numInboundEdges()
                << ", out=" << numOutboundEdges() << ")"
                << ", group: " << getGroupID();
             return ss.str();
         }
 
+        void dumpToCSV(std::ostream& os, bool dump_header=false) const;
         void print(std::ostream& os) const;
+        void printFiltered(std::ostream& os, CycleMarker matchingMarker) const;
 
     protected:
         static uint32_t global_id_;
@@ -261,19 +278,16 @@ namespace sparta
         bool in_dag_ = false;
 
     private:
-        // The Scheduleable this Vertex is associated with
-        Scheduleable   *scheduleable_ = nullptr;
-        std::string     label_;
-        sparta::Scheduler * my_scheduler_ = nullptr;
-        uint32_t        id_ = 0;  // A unique global ID not associated with GroupID
-        uint32_t        num_inbound_edges_ = 0;
-        EMap            edges_;
-        // Number of inbound edges
-        uint32_t        sorted_num_inbound_edges_ = num_inbound_edges_;
-        // Outbound edges
-        EMap            sorting_edges_  = edges_;
-        CycleMarker     marker_         = CycleMarker::WHITE;
-        AssociateList   associates_;
+        Scheduleable *          scheduleable_ = nullptr; // The Scheduleable this Vertex is associated with
+        std::string             label_;
+        sparta::Scheduler*      my_scheduler_ = nullptr;
+        uint32_t                id_ = 0;  // A unique global ID not associated with GroupID
+        uint32_t                num_inbound_edges_ = 0;
+        EdgeMap                 outbound_edge_map_;             // MAP of outbound edges
+        VertexList              outbound_edge_list_;            // LIST of destination vertices
+        uint32_t                sorted_num_inbound_edges_ = num_inbound_edges_; // Number of inbound edges
+        CycleMarker             marker_ = CycleMarker::WHITE;
+        AssociateList           associates_;
     };
 
     typedef Vertex GOPoint;
@@ -284,9 +298,8 @@ namespace sparta
         dest_(dest),
         label_(label)
     {
+        id_ = global_id_++;
         std::stringstream ss_id;
-        ss_id << source->getID() << ":" << dest->getID();
-        id_ = ss_id.str();
         if (label.empty()) {
             std::stringstream ss_lb;
             ss_lb << source->getLabel() << ":" << dest->getLabel();
@@ -302,6 +315,21 @@ namespace sparta
            << " -> "
            << dest_->getLabel();
         return ss.str();
+    }
+
+    inline void Edge::dumpToCSV(std::ostream& os, bool dump_header) const {
+        std::ios_base::fmtflags os_state(os.flags());
+
+        if (dump_header) {
+            os << "source_v,dest_v,label" << std::endl;
+        }
+
+        os << std::dec << source_->getID()
+           << "," << dest_->getID()
+           << ",\"" << getLabel() << "\""
+           << std::endl;
+
+        os.flags(os_state);
     }
 
     inline std::ostream& operator<<(std::ostream& os, const Vertex &v)

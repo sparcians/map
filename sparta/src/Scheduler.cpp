@@ -108,7 +108,12 @@ Scheduler::Scheduler(const std::string& name, GlobalTreeNode* search_scope) :
     // start/stop times for differencing.
     sset_.setClock(scheduler_internal_clk_.get());
 
+    // TODO NOTE: Should we turn cycle-checking on by default (true)?
+    // Cycle-checking tells the DAG to flag a cycle at the earliest opportunity
+    // This means checking for a cycle as each edge is added to the DAG (DAG::link)
+    // It's expensive, but can save time in debugging precedence problems
     dag_.reset(new DAG(this, false));
+
     // Added to support sparta::GlobalEvent, must follow dag_ initialization
     for (uint32_t phase = 0; phase < sparta::NUM_SCHEDULING_PHASES; phase++) {
         sparta::SchedulingPhase sched_phase = static_cast<sparta::SchedulingPhase>(phase);

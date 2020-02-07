@@ -44,6 +44,7 @@ list (APPEND SourceCppFiles
             src/DatabaseContextCounter.cpp
             src/DatabaseSchema.cpp
             src/Destination.cpp
+            src/EdgeFactory.cpp
             src/EventNode.cpp
             src/Expression.cpp
             src/ExpressionGrammar.cpp

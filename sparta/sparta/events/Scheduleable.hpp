@@ -241,7 +241,7 @@ namespace sparta
 
         /*! \brief get the internal Vertex of this scheduleable
          */
-        Vertex * getGOPoint(){
+        Vertex * getVertex(){
             return vertex_;
         }
 

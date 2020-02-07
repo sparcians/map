@@ -23,6 +23,7 @@
 #include "sparta/events/SchedulingPhases.hpp"
 #include "sparta/kernel/Vertex.hpp"
 #include "sparta/kernel/VertexFactory.hpp"
+#include "sparta/kernel/EdgeFactory.hpp"
 
 namespace sparta
 {
@@ -41,11 +42,12 @@ namespace sparta
 
         // For backward compatibility
         typedef Vertex GOPoint;
+        typedef std::map<std::string, Vertex*>   VertexMap;
 
         class CycleException : public SpartaException
         {
         public:
-            CycleException(const typename Vertex::VList & cycle_set) :
+            CycleException(const typename Vertex::VertexList & cycle_set) :
                 SpartaException(),
                 cycle_set_(cycle_set)
             {}
@@ -54,16 +56,14 @@ namespace sparta
                 SpartaException(reason)
             {}
 
-            void writeDOT (std::ostream & os) const {
-                outPutIssue_(os, true);
-            }
-            void writeText(std::ostream & os) const {
-                outPutIssue_(os, false);
-            }
+            void writeCycleAsDOT (std::ostream & os) const;
+            void writeCycleAsText (std::ostream & os) const;
+
         private:
-            void outPutIssue_(std::ostream & os, bool dot) const;
-            typename Vertex::VList     cycle_set_;
+            //void outPutIssue_(std::ostream & os, bool dot) const;
+            typename Vertex::VertexList     cycle_set_;
         };
+
         ////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////
@@ -104,7 +104,7 @@ namespace sparta
          */
         Vertex* newFactoryVertex(const std::string& label,
                                  sparta::Scheduler* const scheduler,
-                                 const bool isgop=true);
+                                 const bool isgop=false);
 
         /**
          * \brief link(): Establish a precedence relationship between
@@ -129,7 +129,7 @@ namespace sparta
             sparta_assert(v != nullptr);
             sparta_assert(w != nullptr);
 
-            return v->unlink(w);
+            return v->unlink(e_factory_, w);
         }
 
         uint32_t numGroups() {
@@ -143,7 +143,7 @@ namespace sparta
          * \param label The GOP point to create
          * \return the GOP point; nullptr if not found
          */
-        Vertex* findVertex(const std::string& label) const
+        Vertex* findGOPVertex(const std::string& label) const
         {
             auto loc = gops_.find(label);
             return (loc != gops_.end()) ? loc->second : nullptr;
@@ -154,16 +154,12 @@ namespace sparta
          * \throw Will assert if already exists
          * \param label The GOP point to create
          * \param scheduler The Scheduler associated with this Vertex
-         * \param isgop Indicates that this Vertex is part of the DAG
-         *        and performs transferGID()
          * \return the new GOP point; assert if already exists
          */
-        Vertex* newVertex(const std::string& label,
-                          sparta::Scheduler* const scheduler,
-                          const bool isgop=true)
+        Vertex* newGOPVertex(const std::string& label, sparta::Scheduler* const scheduler)
         {
-            sparta_assert(findVertex(label) == nullptr);
-            Vertex* gop = this->newFactoryVertex(label, scheduler, isgop);
+            sparta_assert(findGOPVertex(label) == nullptr);
+            Vertex* gop = this->newFactoryVertex(label, scheduler, true);
             gops_[label] = gop;
             return gop;
         }
@@ -175,9 +171,9 @@ namespace sparta
          */
         Vertex* getGOPoint(const std::string& label)
         {
-            Vertex *gop = findVertex(label);
+            Vertex *gop = findGOPVertex(label);
             if (gop == nullptr) {
-                return newVertex(label, getScheduler(), true);
+                return newGOPVertex(label, getScheduler());
             }
             return gop;
         }
@@ -192,12 +188,15 @@ namespace sparta
         // Just print one cycle for now...
         void printCycles(std::ostream& os) const;
 
+        //! Dump the DAG to a CSV vertices file and an edges file
+        void dumpToCSV(std::ostream& os_vertices, std::ostream& os_edges) const;
+
         //! Print the DAG
         void print(std::ostream& os) const;
 
     private:
         // Just mark one cycle for now...
-        typename Vertex::VList getCycles_();
+        typename Vertex::VertexList getCycles_();
 
         // Transfer Global Ordering Point GID's to associates
         void finalizeGOPs_()
@@ -208,15 +207,15 @@ namespace sparta
         }
 
         //! Vertex Factory to keep track of created vertices
-        const std::unique_ptr<VertexFactory> v_factory_;
+        VertexFactory                           v_factory_;
+        EdgeFactory                             e_factory_;
 
-        std::vector<Vertex*>  alloc_vertices_;
-        uint32_t                              num_groups_;
-        bool                                  early_cycle_detect_;
-        typedef std::map<std::string, Vertex*>   VertexMap;
-        VertexMap          gops_;
-        bool finalized_ = false;
-        sparta::Scheduler * my_scheduler_ = nullptr;
+        std::vector<Vertex*>                    alloc_vertices_;
+        uint32_t                                num_groups_ = 1;
+        bool                                    early_cycle_detect_;
+        VertexMap                               gops_;
+        bool                                    finalized_ = false;
+        sparta::Scheduler*                      my_scheduler_ = nullptr;
     };//End class DAG
 
 

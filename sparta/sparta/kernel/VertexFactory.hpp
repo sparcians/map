@@ -5,6 +5,7 @@
 #ifndef __VERTEXFACTORY__H__
 #define __VERTEXFACTORY__H__
 
+#include "sparta/kernel/Vertex.hpp"
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -13,8 +14,6 @@
 
 namespace sparta
 {
-
-class Vertex;
 
  /**
  * \class VertexFactory
@@ -35,16 +34,22 @@ public:
     //Constructor
     VertexFactory() =default;
 
-     /**
+    /**
      * \brief Factory method to create new Vertices
      */
-    Vertex* newFactoryVertex(const std::string & label,
-                                                sparta::Scheduler *scheduler,
-                                                bool isgop = false );
+    template<typename ...ArgTypes>
+    Vertex* newFactoryVertex(ArgTypes&&... args)
+    {
+        Vertex*   new_vertex = new Vertex(std::forward<ArgTypes>(args)...);
+        vertices_.emplace_back(new_vertex);
+        return new_vertex;
+    }
+
+    void dumpToCSV(std::ostream& os) const;
 
 private:
     //! Unique ptr of DAG Vertices
-    std::vector<std::unique_ptr<Vertex>> factory_vertices;
+    std::vector<std::unique_ptr<Vertex>> vertices_;
 };
 
 
