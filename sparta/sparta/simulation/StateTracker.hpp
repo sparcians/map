@@ -572,6 +572,8 @@ namespace sparta {
                 active_state_starting_time(0),
                 state_delta_set(std::vector<sparta::Scheduler::Tick>(num_states, 0)) {}
 
+            StateSet(const StateSet & lval) = default;
+
             StateSet(StateSet && rval) :
                 active_state_index(rval.active_state_index),
                 active_state_starting_time(rval.active_state_starting_time),
@@ -590,6 +592,8 @@ namespace sparta {
                 time_assigned_(scheduler_instance_->getCurrentTick()),
                     state_set_(StateSet<EnumT>(
                         static_cast<uint64_t>(EnumT::__LAST) + 1)) {}
+
+            StateTrackerUnit(const StateTrackerUnit &) = default;
 
             StateTrackerUnit(StateTrackerUnit && rval) :
                 scheduler_instance_(rval.scheduler_instance_),

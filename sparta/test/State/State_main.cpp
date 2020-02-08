@@ -157,6 +157,14 @@ public:
         src_[OperandType::C].reset(new Operand("c", this));
     }
 
+    Uop(const Uop& other) : 
+        name_{other.name_},
+        state_{other.state_}{
+            for(size_t i = 0; i < 3; ++i){
+                src_[i] = std::make_unique<Operand>(*other.src_[i]);
+            }
+        }
+
     void reset()
     {
         for (auto & oi : src_)
@@ -212,7 +220,7 @@ public:
 private:
     std::string name_;
     StateType   state_;
-    std::unique_ptr<Operand> src_[3];
+    std::array<std::unique_ptr<Operand>, 3> src_;
 
     //Decorations *decor_;
 };
@@ -369,6 +377,17 @@ int main()
     EXPECT_TRUE(uop.getCurrentState() == uOpState::UOP_INIT);
     EXPECT_TRUE(a->getFlag().isClear());
 
+    Operand copy_a {*a};
+    Operand copy_b {*b};
+    Operand copy_c {*c};
+    Uop copy_uop{uop};
+
+    EXPECT_TRUE(copy_a.getCurrentState() == OperandState::OPER_INIT);
+    EXPECT_TRUE(copy_b.getCurrentState() == OperandState::OPER_INIT);
+    EXPECT_TRUE(copy_c.getCurrentState() == OperandState::OPER_INIT);
+    EXPECT_TRUE(copy_uop.getCurrentState() == uOpState::UOP_INIT);
+    EXPECT_TRUE(copy_a.getFlag().isClear());
+
     sched.run(2);
     uop.observeState(uOpState::UOP_READY, e_uop_proto.preparePayload(&uop));
     a->observeState(OperandState::OPER_READY, e_op_proto0.preparePayload(a));
@@ -376,15 +395,27 @@ int main()
     c->observeState(OperandState::OPER_READY, e_op_proto2.preparePayload(c));
     a->observeFlag(e_op_proto0.preparePayload(a));
 
+    copy_uop.observeState(uOpState::UOP_READY, e_uop_proto.preparePayload(&copy_uop));
+    copy_a.observeState(OperandState::OPER_READY, e_op_proto0.preparePayload(&copy_a));
+    copy_b.observeState(OperandState::OPER_READY, e_op_proto1.preparePayload(&copy_b));
+    copy_c.observeState(OperandState::OPER_READY, e_op_proto2.preparePayload(&copy_c));
+    copy_a.observeFlag(e_op_proto0.preparePayload(&copy_a));
+
     a->markReady();
     b->markReady();
     c->markReady();
     a->setFlag();
 
+    copy_a.markReady();
+    copy_b.markReady();
+    copy_c.markReady();
+    copy_a.setFlag();
+
     // Re-enroll since we don't have persistent audience anymore
     sched.run(3);
     uop.observeState(uOpState::UOP_READY, e_uop_proto.preparePayload(&uop));
     a->observeState(OperandState::OPER_READY, e_op_proto0.preparePayload(a));
+    copy_a.observeState(OperandState::OPER_READY, e_op_proto0.preparePayload(&copy_a));
 
 
     sched.run(4);
@@ -393,6 +424,10 @@ int main()
     EXPECT_TRUE(c->getState() == OperandState::OPER_READY);
     EXPECT_TRUE(uop.getCurrentState() == uOpState::UOP_READY);
     EXPECT_TRUE(a->getFlag().isSet());
+    EXPECT_TRUE(copy_a.getCurrentState() == OperandState::OPER_READY);
+    EXPECT_TRUE(copy_b.getCurrentState() == OperandState::OPER_READY);
+    EXPECT_TRUE(copy_c.getState() == OperandState::OPER_READY);
+    EXPECT_TRUE(copy_a.getFlag().isSet());
 
     uop.reset();
     sched.run(5);
@@ -414,7 +449,7 @@ int main()
     EXPECT_TRUE(a->getFlag().isClear());
 
     sched.run(100);
-    EXPECT_EQUAL(obs.getActivations(), 7);
+    EXPECT_EQUAL(obs.getActivations(), 11);
 
     // Test withdraw feature
     uop.reset();
@@ -443,7 +478,7 @@ int main()
 
     sched.run(100);
     // No new activations should be seen
-    EXPECT_EQUAL(obs.getActivations(), 7);
+    EXPECT_EQUAL(obs.getActivations(), 11);
 
     // StateSet tests...
     // utils::Enum<enStateID> StateID(enStateID::FETCHED, "Fetched",
@@ -480,7 +515,7 @@ int main()
     EXPECT_TRUE(ss.isClear(enStateID::RETIRED ));
 
     sched.run(100);
-    EXPECT_EQUAL(obs.getActivations(), 7);
+    EXPECT_EQUAL(obs.getActivations(), 11);
 
     //testCopyConstruct();
 

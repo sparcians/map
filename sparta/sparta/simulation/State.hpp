@@ -167,7 +167,7 @@ namespace sparta
         public:
 
             // No copies
-            Marker(const Marker &) = delete;
+            Marker(const Marker &) = default;
 
             //! Set the marker
             void set(MetaDataTPtr ptr = nullptr) {
@@ -250,6 +250,9 @@ namespace sparta
 
             //! Construct MarkerSet
             MarkerSet() {}
+
+            //! Copy Constructor
+            MarkerSet(const MarkerSet&) = default;
 
             /**
              * \brief Make a new marker for the given enum type
@@ -474,8 +477,14 @@ namespace sparta
             attemptSetValue_();
         }
 
-        //! No copies of State are allowed
-        State(const State &) = delete;
+        //! Copy Constructor for State
+        State(const State &other) : 
+            initial_value_{other.initial_value_}, 
+            current_state_{other.current_state_},
+            marker_set_{other.marker_set_},
+            state_tracker_unit_{other.state_tracker_unit_ ? new auto {*other.state_tracker_unit_} : nullptr}
+        {}
+
 
         //! Deleting default assignment operator to prevent copies
         State & operator = (const State &) = delete;
@@ -735,7 +744,7 @@ namespace sparta
         // State Privates
         const EnumType initial_value_;
         sparta::utils::ValidValue<EnumTValueType> current_state_;
-        MarkerSet marker_set_[static_cast<uint32_t>(EnumType::__LAST)];
+        std::array<MarkerSet, static_cast<uint32_t>(EnumType::__LAST)> marker_set_;
 
         //! Personal State Tracker Unit for an instance of this class.
         // This tracker is a unique pointer with its own deleter which
