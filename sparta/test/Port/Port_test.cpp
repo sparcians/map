@@ -168,6 +168,17 @@ void tryDAGIssue_(bool failit)
     sparta::DataOutPort<bool> zero_delay_out1(&ps, "zero_delay_out1", presume_zero_delay);
     sparta::DataInPort<bool>  zero_delay_in2 (&ps, "zero_delay_in2", sparta::SchedulingPhase::Tick, 0);
     sparta::DataOutPort<bool> zero_delay_out2(&ps, "zero_delay_out2", presume_zero_delay);
+
+    // Test a situation (issue #15) where the user presumed a
+    // zero-delay InPort and attempted to set precedence on a non-zero
+    // delay Inport.  This will assert as the zero delay Port is on
+    // the Tick phase and the non-zero delay inport is on the Update
+    // phase (by default in BOTH cases).
+    if(presume_zero_delay) {
+        sparta::DataInPort<bool> one_delay_in (&ps, "one_delay_in", 1);
+        EXPECT_THROW(zero_delay_in2.precedes(one_delay_in));
+    }
+
     zero_delay_in1.registerConsumerEvent(zero_delay_cons);
     zero_delay_out1.registerProducingEvent(zero_delay_prod);
     zero_delay_in2.registerConsumerEvent(zero_delay_prod);
