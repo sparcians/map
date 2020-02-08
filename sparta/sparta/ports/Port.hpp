@@ -409,6 +409,9 @@ namespace sparta
          */
         void precedes(InPort & consumer)
         {
+            sparta_assert(getScheduleable_().getSchedulingPhase() == consumer.getScheduleable_().getSchedulingPhase(),
+                          "ERROR: You cannot set precedence between two Ports on different phases: "
+                          "producer: " << getLocation() << " consumer: " << consumer.getLocation());
             getScheduleable_().precedes(consumer.getScheduleable_());
         }
 

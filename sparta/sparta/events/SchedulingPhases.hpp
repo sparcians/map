@@ -1,8 +1,8 @@
-// <SchedulingPhases> -*- C++ -*-
+// <SchedulingPhases.hpp> -*- C++ -*-
 
 
 /**
- * \file   SchedulingPhases.h
+ * \file   SchedulingPhases.hpp
  *
  * \brief File that defines the phases used in simulation.
  */
