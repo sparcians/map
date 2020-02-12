@@ -756,16 +756,16 @@ protected:
     const std::string sim_name_;
 
     /*!
-     * \brief Map of of resources available to this simulation.
-     * This must outlast destruction of the tree root_ and its children
-     */
-    sparta::ResourceSet res_list_;
-
-    /*!
      * \brief User-specified Taps to delete at teardown. These should outlast
      * the entire tree so that they can intercept destruction log messages
      */
     std::vector<std::unique_ptr<sparta::log::Tap>> taps_to_del_;
+
+    /*!
+     * \brief Map of of resources available to this simulation.
+     * This must outlast destruction of the tree root_ and its children
+     */
+    sparta::ResourceSet res_list_;
 
     /*!
      * \brief Scheduler this simulation will use. If no scheduler was given

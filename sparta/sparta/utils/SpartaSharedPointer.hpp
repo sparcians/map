@@ -345,7 +345,7 @@ namespace sparta
                 {
                     std::cerr << "WARNING: Seems that not all of the blocks made it back.  \n'" <<
                         __PRETTY_FUNCTION__ << "'\nAllocated: " << allocated_ <<
-                        "\nReturned: " << free_blocks_.size();
+                        "\nReturned: " << free_blocks_.size() << std::endl;
                 }
             }
 

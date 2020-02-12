@@ -39,7 +39,6 @@ endif ()
 
 find_program (CPPCHECK_BIN NAMES cppcheck)
 find_program (CPPCHECK_HTMLREPORT_BIN NAMES cppcheck-htmlreport)
-set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (CPPCHECK_BIN)
   message ("-- Adding support for cppcheck")
