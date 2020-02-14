@@ -555,11 +555,10 @@ namespace sparta
          * any time for this data's position in the queue.
          * \warning appends through via this method are immediately valid.
          */
-        QueueIterator<false> push (const value_type & dat)
-        {
+        QueueIterator<false> push (const value_type & dat) {
             sparta_assert(current_write_idx_ <= vector_size_);
             // can't write more than the allowed items
-            queue_data_[current_write_idx_] = dat;
+            new (queue_data_.get() + current_write_idx_) value_type(dat);
             QueueIterator<false> new_entry(this, current_write_idx_, next_unique_id_);
             ++next_unique_id_;
             ++num_added_;
@@ -649,6 +648,13 @@ namespace sparta
         /// Process any pending invalidations.
         void processInvalidations_()
         {
+            // Destruct the items we are about to invalidate
+            size_type idx = current_zero_pos_;
+            while (idx != current_tail_idx_) {
+                queue_data_[idx].~value_type();
+                idx = incrementIndexValue_(idx);
+            }
+
             // the zero position is the tail pos after a compact.
             current_zero_pos_ = current_tail_idx_;
 
