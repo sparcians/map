@@ -2,7 +2,7 @@
 
 
 /**
- * \file Backtrace.h
+ * \file Backtrace.hpp
  * \brief Handles writing backtraces on errors
  */
 

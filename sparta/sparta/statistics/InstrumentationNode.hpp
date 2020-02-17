@@ -1,7 +1,7 @@
 // <InstrumentationNode> -*- C++ -*-
 
 /*!
- * \file InstrumentationNode.h
+ * \file InstrumentationNode.hpp
  * \brief Virtual interface node for simulator instrumentation (e.g. counters,
  * stats, nontifications).
  */

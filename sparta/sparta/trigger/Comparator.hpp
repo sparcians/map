@@ -1,7 +1,7 @@
 // <Comparator> -*- C++ -*-
 
 /**
- * \file Comparator.h
+ * \file Comparator.hpp
  *
  */
 

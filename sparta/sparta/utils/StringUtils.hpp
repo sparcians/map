@@ -2,7 +2,7 @@
 
 
 /*!
- * \file StringUtils.h
+ * \file StringUtils.hpp
  * \brief Cool string utilities
  */
 

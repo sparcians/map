@@ -1,8 +1,7 @@
-// <Port> -*- C++ -*-
-
+// <SignalPort> -*- C++ -*-
 
 /**
- * \file   Port.h
+ * \file   SignalPort.hpp
  *
  * \brief  File that defines the SignalInPort
  */

@@ -1,6 +1,6 @@
 
 /**
- * \file   TranslationIFNode.h
+ * \file   TranslationIFNode.hpp
  *
  * \brief  Contains class for publishing a TranslationIF as a TreeNode
  */

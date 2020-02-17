@@ -2,7 +2,7 @@
 
 
 /**
- * \file   PayloadEvent.h
+ * \file   PayloadEvent.hpp
  *
  * \brief  File that defines the PayloadEvent class
  */

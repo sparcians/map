@@ -1,7 +1,7 @@
 // <Grammar> -*- C++ -*-
 
 /*!
- * \file Grammar.h
+ * \file Grammar.hpp
  * \brief Grammar for specifying a filtering function for TreeNodes based on
  * their attributes
  */

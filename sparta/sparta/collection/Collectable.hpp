@@ -1,13 +1,12 @@
-// <Collectable>  -*- C++ -*-
-
-
+// <Collectable.hpp>  -*- C++ -*-
 
 /**
- * \file Collectable
+ * \file Collectable.hpp
  *
  * \brief Implementation of the Collectable class that allows
  *        a user to collect an object into an Argos pipeline file
  */
+
 #ifndef __PIPELINE_COLLECTABLE_H__
 #define __PIPELINE_COLLECTABLE_H__
 

@@ -1,8 +1,7 @@
-// <PipelineCollector.h> -*- C++ -*-
-
+// <PipelineCollector.hpp> -*- C++ -*-
 
 /**
- * \file PipelineCollector
+ * \file PipelineCollector.hpp
  *
  * \brief Class to facilitate pipeline collection operations.
  */

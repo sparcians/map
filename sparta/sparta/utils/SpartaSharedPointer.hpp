@@ -1,9 +1,8 @@
-// <SpartaSharedPointer> -*- C++ -*-
+// <SpartaSharedPointer.hpp> -*- C++ -*-
 
 /**
- * \file   SpartaSharedPointer
+ * \file   SpartaSharedPointer.hpp
  * \brief  Defines the SpartaSharedPointer class used for garbage collection
- *
  *
  */
 
@@ -218,7 +217,11 @@ namespace sparta
          * prevent others from using this class with std types like
          * std::shared_ptr, std::vector, etc.  Also, this class *is
          * not* thread safe.  Do not expect it to work in a threaded
-         * application.
+         * application.  Also, the allocator *must outlive* any
+         * simulator componentry that uses objects allocated by this
+         * allocator.  If not, random seg faults will plague the
+         * developer.  Suggested use is to make this allocator global,
+         * with user-defined atomic operations if desired.
          *
          * The class is not intended to be used directly, but rather
          * in compliment with the allocator method

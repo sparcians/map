@@ -2,7 +2,7 @@
 
 
 /**
- * \file   EventSet.h
+ * \file   EventSet.hpp
  *
  * \brief  File that defines the EventSet class
  */

@@ -1,7 +1,7 @@
 // <ReportRepository> -*- C++ -*-
 
 /*!
- * \file ReportRepository.h
+ * \file ReportRepository.hpp
  *
  * \brief Each simulation may have up to one report repository. Reports are
  * organized into directories, where all reports in the same directory have

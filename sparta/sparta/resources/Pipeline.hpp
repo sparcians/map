@@ -2,7 +2,7 @@
 
 
 /**
- * \file   Pipeline.h
+ * \file   Pipeline.hpp
  * \brief  Defines the Pipeline class
  */
 

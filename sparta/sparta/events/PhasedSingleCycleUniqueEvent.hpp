@@ -2,7 +2,7 @@
 
 
 /**
- * \file   PhasedSingleCycleUniqueEvent.h
+ * \file   PhasedSingleCycleUniqueEvent.hpp
  *
  * \brief  File that defines the PhasedSingleCycleUniqueEvent class
  */

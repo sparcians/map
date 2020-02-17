@@ -2,7 +2,7 @@
 
 
 /**
- * \file   Event.h
+ * \file   Event.hpp
  *
  * \brief  File that defines the Event class
  */

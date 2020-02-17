@@ -2,7 +2,7 @@
 
 
 /*!
- * \file TreeNode.h
+ * \file TreeNode.hpp
  * \brief Basic Node framework in sparta device tree composite pattern
  */
 

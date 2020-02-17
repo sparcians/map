@@ -1,6 +1,6 @@
 
 /**
- * \file TransactionInterval.h
+ * \file TransactionInterval.hpp
  *
  * \copyright
  */

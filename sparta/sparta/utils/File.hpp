@@ -2,7 +2,7 @@
 
 
 /**
- * \file   File.h
+ * \file   File.hpp
  *
  * \brief  Utilities for file I/O
  */
@@ -42,7 +42,7 @@ namespace sparta
                                           const std::string& sim_name);
 
         /*!
-         * \brief Look up the location of an architecture config file fiven a search
+         * \brief Look up the location of an architecture config file fiven a searchpp
          * dir and a name refering to a config file OR directory within that dir.
          * \throw SpartaException if input cannot resolve to yaml file.
          * \param[in] search_dir Search directory

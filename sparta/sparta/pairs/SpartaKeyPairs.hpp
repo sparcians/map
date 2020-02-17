@@ -1,8 +1,8 @@
-// <SpartaKeyPairs> -*- C++ -*-
+// <SpartaKeyPairs.hpp> -*- C++ -*-
 
 
 /**
- * \file SpartaKeyPairs
+ * \file SpartaKeyPairs.hpp
  *
  * \brief Contains classes used for SpartaKeyPair collection
  * concepts.

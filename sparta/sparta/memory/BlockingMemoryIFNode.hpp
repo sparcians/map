@@ -1,6 +1,6 @@
 
 /**
- * \file   BlockingMemoryIFNode.h
+ * \file   BlockingMemoryIFNode.hpp
  * \brief  File that contains BlockingMemoryIFNode
  */
 

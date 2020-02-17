@@ -2,7 +2,7 @@
 
 
 /**
- * \file   GlobalEvent.h
+ * \file   GlobalEvent.hpp
  * \brief  File that defines the GlobalEvent class
  */
 

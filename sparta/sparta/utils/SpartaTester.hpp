@@ -5,7 +5,7 @@
 #define __SPARTA_TESTER_H__
 
 /**
- * \file   SpartaTester.h
+ * \file   SpartaTester.hpp
  *
  * \brief File that defines the SpartaTester class and testing Macros
  */

@@ -2,7 +2,7 @@
 
 
 /**
- * \file   ValidValue.h
+ * \file   ValidValue.hpp
  *
  * \brief  File that defines a ValidValue
  */

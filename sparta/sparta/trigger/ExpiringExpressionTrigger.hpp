@@ -1,7 +1,7 @@
 // <ExpiringExpressionTrigger> -*- C++ -*-
 
 /**
- * \file ExpiringExpressionTrigger.h
+ * \file ExpiringExpressionTrigger.hpp
  *
  */
 

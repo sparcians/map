@@ -1,7 +1,7 @@
 // <TreeNodeExtensions.h> -*- C++ -*-
 
 /**
- * \file TreeNodeExtensions.h
+ * \file TreeNodeExtensions.hpp
  *
  */
 

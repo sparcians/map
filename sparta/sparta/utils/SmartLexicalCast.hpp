@@ -1,7 +1,7 @@
 // <SmartLex> -*- C++ -*-
 
 /*!
- * \file SmartLexicalCast.h
+ * \file SmartLexicalCast.hpp
  * \brief Smart lexical casting supporting prefixes, separator ignoring, and
  * suffixes.
  */

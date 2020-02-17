@@ -20,7 +20,7 @@
 #include <yaml-cpp/node/convert.h>
 
 /*!
- * \file LexicalCast.h
+ * \file LexicalCast.hpp
  * \brief String-to-value helpers and string formatting helpers.
  */
 

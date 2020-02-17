@@ -1,7 +1,7 @@
 // <Parser> -*- C++ -*-
 
 /*!
- * \file Parser.h
+ * \file Parser.hpp
  * \brief Defines a parser that uses the tree filter grammar
  */
 

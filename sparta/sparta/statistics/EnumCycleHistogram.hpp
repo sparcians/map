@@ -2,7 +2,7 @@
 
 
 /**
- * \file  EnumCycleHistogram.h
+ * \file  EnumCycleHistogram.hpp
  * \brief EnumCycleHistogram implementation using sparta CycleCounters
  *        that models enum state lifetimes.
  *        This Histogram class can be templated on both C++ enums and

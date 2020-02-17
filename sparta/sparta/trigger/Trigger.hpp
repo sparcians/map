@@ -1,8 +1,8 @@
-// <Trigger> -*- C++ -*-
+// <Trigger.hpp> -*- C++ -*-
 
 /**
- * \file Trigger
- *
+ * \file Trigger.hpp
+ * \brief Class used to "trigger" one time functionality
  */
 #ifndef __SPARTA_TRIGGER_H__
 #define __SPARTA_TRIGGER_H__
@@ -22,8 +22,8 @@ namespace sparta
 /**
  * \class Trigger
  * \brief A class that can be used to set scheduled callback
- * events, such as an event to trigger logging or pipeline collection
- * on the scheduler.
+ *        events, such as an event to trigger logging or pipeline collection
+ *        on the scheduler.
  *
  */
 class Trigger

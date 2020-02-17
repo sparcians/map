@@ -1,11 +1,10 @@
-// <Pipe> -*- C++ -*-
+// <Pipe.hpp> -*- C++ -*-
 
 
 /**
- * \file   Pipe
+ * \file   Pipe.hpp
  *
  * \brief  Defines the Pipe class
- * \note EXPERIMENTAL -- not tested
  *
  */
 

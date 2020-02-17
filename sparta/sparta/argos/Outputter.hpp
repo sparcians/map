@@ -1,8 +1,9 @@
-// <Outputter> -*- C++ -*-
+// <Outputter.hpp> -*- C++ -*-
+
 /**
-    * \file  Outputter
-**  \brief Outputs Transactions to record file and builds index file while running *
-*/
+ * \file  Outputter.hpp
+ **  \brief Outputs Transactions to record file and builds index file while running *
+ */
 
 #ifndef __OUTPUTTER_H__
 #define __OUTPUTTER_H__

@@ -1,7 +1,7 @@
 // <StatInstCalculator> -*- C++ -*-
 
 /**
- * \file StatInstCalculator.h
+ * \file StatInstCalculator.hpp
  *
  */
 

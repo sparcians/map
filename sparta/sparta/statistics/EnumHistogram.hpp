@@ -1,8 +1,8 @@
-// <HistogramEnum.h> -*- C++ -*-
+// <EnumHistogram.hpp> -*- C++ -*-
 
 
 /**
- * \file HistogramEnum.h
+ * \file EnumHistogram.hpp
  * \brief HistogramEnum implementation using sparta Counters
  */
 

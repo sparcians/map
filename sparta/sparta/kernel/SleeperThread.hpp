@@ -1,6 +1,6 @@
 
 /**
- * \file SleeperThread.h
+ * \file SleeperThread.hpp
  *
  *
  */

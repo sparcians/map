@@ -1,8 +1,8 @@
-// <Unit> -*- C++ -*-
+// <Unit.hpp> -*- C++ -*-
 
 
 /*!
- * \file   Unit
+ * \file   Unit.hpp
  *
  * \brief  File that defines the Unit class, a common grouping of sets and loggers
  */

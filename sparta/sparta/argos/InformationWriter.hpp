@@ -1,7 +1,7 @@
-// <InformationWriter> -*- C++ -*-
+// <InformationWriter.hpp> -*- C++ -*-
 
 /**
- * \file InformationWriter
+ * \file InformationWriter.hpp
  * \brief Define the Pipeline Collection Information outputter.
  */
 #ifndef __INFORMATION_WRITER_H__

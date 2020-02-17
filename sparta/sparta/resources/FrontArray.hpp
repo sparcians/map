@@ -1,8 +1,10 @@
-// <FrontArray> -*- C++ -*-
+// <FrontArray.hpp> -*- C++ -*-
 
 /**
- * \file FrontArray
- *
+ * \file FrontArray.hpp
+ * \brief Type of Array with special allocation policies to
+ *        support writing to the front most valid entry in the
+ *        Array
  */
 
 #ifndef __FRONT_ARRAY_H__

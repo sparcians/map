@@ -2,7 +2,7 @@
 
 
 /**
- * \file   Buffer.h
+ * \file   Buffer.hpp
  *
  * \brief  Defines the CircularBuffer class
  *

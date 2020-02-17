@@ -2,7 +2,7 @@
 
 
 /**
- * \file SimulationInfo.h
+ * \file SimulationInfo.hpp
  * \brief Simulation information container for tracking the status of the
  * simulation.
  */

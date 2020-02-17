@@ -2,7 +2,7 @@
 
 
 /*!
- * \file StatisticDef.h
+ * \file StatisticDef.hpp
  * \brief Contains a statistic definition (some useful information which can be
  * computed)
  */

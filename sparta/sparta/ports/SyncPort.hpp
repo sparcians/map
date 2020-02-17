@@ -1,7 +1,7 @@
 // <SyncPort.h> -*- C++ -*-
 
 /**
- * \file   SyncPort.h
+ * \file   SyncPort.hpp
  *
  * \brief  File that defines syncrhonized input/output ports.
  *

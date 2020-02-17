@@ -12,7 +12,7 @@
 #include "sparta/log/MessageSource.hpp"
 
 /*!
- * \file VirtualGlobalTreeNode.h
+ * \file VirtualGlobalTreeNode.hpp
  * \brief Contains the virtual global tree node which receives propagating
  * messages from every other node
  */

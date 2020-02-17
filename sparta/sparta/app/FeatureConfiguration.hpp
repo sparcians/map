@@ -2,7 +2,7 @@
 
 
 /*!
- * \file FeatureConfiguration.h
+ * \file FeatureConfiguration.hpp
  * Class for configuring feature values. Used together
  * with the command-line "--feature <name> value" option.
  */

@@ -1,14 +1,12 @@
-
-// <DelayedCollectable>  -*- C++ -*-
-
-
+// <DelayedCollectable.hpp>  -*- C++ -*-
 
 /**
- * \file DelayedCollectable
+ * \file DelayedCollectable.hpp
  *
  * \brief Implementation of the DelayedCollectable class that allows
  * a user to collect an object into an Argos pipeline file
  */
+
 #ifndef __DELAYED_PIPELINE_COLLECTABLE_H__
 #define __DELAYED_PIPELINE_COLLECTABLE_H__
 

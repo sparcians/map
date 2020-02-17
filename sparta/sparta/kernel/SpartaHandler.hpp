@@ -1,8 +1,7 @@
-// <SpartaHandler> -*- C++ -*-
+// <SpartaHandler.hpp> -*- C++ -*-
 
 /**
- * \file   SpartaHandler
- *
+ * \file   SpartaHandler.hpp
  * \brief  File that contains the macro used to generate the class callbacks.
  */
 

@@ -1,7 +1,7 @@
 // <PythonDict> -*- C++ -*-
 
 /*!
- * \file PythonDict.h
+ * \file PythonDict.hpp
  * \brief PythonDict Report output formatter
  */
 

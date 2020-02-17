@@ -1,7 +1,7 @@
 // <PhasedObject> -*- C++ -*-
 
 /*!
- * \file PhasedObject.h
+ * \file PhasedObject.hpp
  * \brief Basic Node framework in sparta device tree composite pattern
  */
 

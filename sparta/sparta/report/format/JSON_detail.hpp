@@ -2,7 +2,7 @@
 
 
 /*!
- * \file JSON_detail.h
+ * \file JSON_detail.hpp
  * \brief JSON Report output formatter for stat's non value information
  */
 

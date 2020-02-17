@@ -1,7 +1,7 @@
 // <ResourceContainer> -*- C++ -*-
 
 /*!
- * \file ResourceContainer.h
+ * \file ResourceContainer.hpp
  * \brief Object with a name which holds a Resource
  */
 

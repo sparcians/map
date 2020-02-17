@@ -1,8 +1,8 @@
-// <BoundedValue>  -*- C++ -*-
+// <BoundedValue.hpp>  -*- C++ -*-
 
 
 /**
- * \file BoundedValue
+ * \file BoundedValue.hpp
  *
  * \brief Implementation of the Bounded Value class that is
  *        templated based on a certain integral or floating-point

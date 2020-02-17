@@ -2,7 +2,7 @@
 
 
 /*!
- * \file Simulation.h
+ * \file Simulation.hpp
  * \brief Simulation setup base class
  */
 

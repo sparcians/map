@@ -2,7 +2,7 @@
 
 
 /**
- * \file HistogramFunctionManager.h
+ * \file HistogramFunctionManager.hpp
  *  This file contains a Singleton Function Manager
  *  which stores function names and function pointers
  *  as key-value pair in maps. There are two separate maps

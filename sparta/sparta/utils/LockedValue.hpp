@@ -2,7 +2,7 @@
 
 
 /**
- * \file   LockedValue.h
+ * \file   LockedValue.hpp
  *
  * \brief  File that defines a LockedValue
  */

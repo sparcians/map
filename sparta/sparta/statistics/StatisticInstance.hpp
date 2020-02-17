@@ -1,7 +1,7 @@
 // <StatisticInstance> -*- C++ -*-
 
 /*!
- * \file StatisticInstance.h
+ * \file StatisticInstance.hpp
  * \brief Contains a StatisticInstance which refers to a StatisticDef or Counter
  * and some local state to compute a value over a specific sample range
  */

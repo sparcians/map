@@ -1,7 +1,7 @@
 // <CSV> -*- C++ -*-
 
 /*!
- * \file CSV.h
+ * \file CSV.hpp
  * \brief CSV Report output formatter
  */
 

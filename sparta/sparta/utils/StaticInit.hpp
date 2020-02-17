@@ -1,7 +1,7 @@
 // <StaticInit> -*- C++ -*-
 
 /*!
- * \file StaticInit.h
+ * \file StaticInit.hpp
  * \brief Helpers for enforcing StaticInitialization order
  * \see SpartaStaticInitializer
  */

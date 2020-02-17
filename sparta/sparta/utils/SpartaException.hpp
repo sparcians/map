@@ -1,7 +1,7 @@
 // <SpartaException> -*- C++ -*-
 
 /**
- * \file   SpartaException.h
+ * \file   SpartaException.hpp
  *
  * \brief  Exception class for all of SPARTA.
  *

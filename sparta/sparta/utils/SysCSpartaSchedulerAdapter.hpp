@@ -2,7 +2,7 @@
 
 
 /**
- * \file SysCSpartaSchedulerAdapter.h
+ * \file SysCSpartaSchedulerAdapter.hpp
  *
  * \brief Glue code that connect the Sparta scheduler to SystemC
  *

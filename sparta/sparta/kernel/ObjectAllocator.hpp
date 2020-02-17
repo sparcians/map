@@ -2,7 +2,7 @@
 
 
 /**
- * \file   ObjectAllocator.h
+ * \file   ObjectAllocator.hpp
  *
  * \brief  File that defines the ObjectAllocator class
  */

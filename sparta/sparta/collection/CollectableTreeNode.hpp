@@ -2,7 +2,7 @@
 
 
 /**
- *\file CollectableTreeNode.h
+ *\file CollectableTreeNode.hpp
  *
  *
  *\brief define a CollectableTreeNode type TreeNode.

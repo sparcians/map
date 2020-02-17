@@ -1,7 +1,7 @@
 // <ReportHeader> -*- C++ -*-
 
 /*!
- * \file ReportHeader.h
+ * \file ReportHeader.hpp
  * \brief Utility class to be used with CSV report formatters. This class
  * re-writes CSV header values at any point during simulation. Only integral
  * header values can be overwritten however; string header values are locked

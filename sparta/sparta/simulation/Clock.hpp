@@ -5,7 +5,7 @@
 #define __CLOCK__H__
 
 /**
- * \file   Clock.h
+ * \file   Clock.hpp
  *
  * \brief File that defines the Clock class
  */

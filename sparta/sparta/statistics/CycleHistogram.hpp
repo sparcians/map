@@ -2,7 +2,7 @@
 
 
 /**
- * \file CycleHistogram.h
+ * \file CycleHistogram.hpp
  * \brief CycleHistogram implementation using sparta CycleCounter
  */
 

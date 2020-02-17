@@ -2,7 +2,7 @@
 
 
 /*!
- * \file ConfigApplicators.h
+ * \file ConfigApplicators.hpp
  * \brief Configuration Applicators
  */
 

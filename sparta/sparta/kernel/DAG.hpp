@@ -1,4 +1,10 @@
-// <DAG> -*- C++ -*-
+// <DAG.hpp> -*- C++ -*-
+
+
+/**
+ * \file DAG.hpp
+ * \brief Used internally by the sparta::Scheduler to set event ordering
+ */
 
 
 #ifndef __DAG__H__

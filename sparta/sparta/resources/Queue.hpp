@@ -1,9 +1,9 @@
-// <Queue.h> -*- C++ -*-
+// <Queue.hpp> -*- C++ -*-
 
 
 /**
- * \file   Queue
- * \brief  Defines the Queue class used for queueing data
+ * \file   Queue.hpp
+ * \brief  Defines the Queue class used for queuing data
  *
  */
 

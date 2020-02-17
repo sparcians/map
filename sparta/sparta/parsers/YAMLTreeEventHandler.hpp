@@ -1,9 +1,9 @@
-// <YAMLTreeListener> -*- C++ -*-
+// <YAMLTreeListener.hpp> -*- C++ -*-
 
 
 /*!
- * \file Tree event handler classs for yaml-cpp that maintains a stack of a tree
- * \brief
+ * \file YAMLTreeListener.hpp
+ * \brief Tree event handler classs for yaml-cpp that maintains a stack of a tree
  */
 
 #ifndef __YAML_TREE_EVENT_HANDLER_H__

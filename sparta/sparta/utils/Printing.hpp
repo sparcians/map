@@ -13,7 +13,7 @@
 #include "sparta/utils/SpartaException.hpp"
 
 /*!
- * \file Printing.h
+ * \file Printing.hpp
  * \brief Helpers for printing and populating vectors
  */
 namespace sparta

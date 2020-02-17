@@ -2,7 +2,7 @@
 
 
 /**
- * \file   StartupEvent.h
+ * \file   StartupEvent.hpp
  *
  * \brief  File that defines the StartupEvent class
  */

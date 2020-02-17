@@ -1,7 +1,7 @@
-// <Clockfilewriter>  -*- C++ -*-
+// <ClockFileWriter.hpp>  -*- C++ -*-
 
 /**
- * \file Clockfilewriter
+ * \file ClockfileWriter.hpp
  *
  * \brief Contains Clockfilewriter class
  */

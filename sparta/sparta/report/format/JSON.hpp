@@ -1,7 +1,7 @@
 // <JSON> -*- C++ -*-
 
 /*!
- * \file JSON.h
+ * \file JSON.hpp
  * \brief JSON Report output formatter
  */
 

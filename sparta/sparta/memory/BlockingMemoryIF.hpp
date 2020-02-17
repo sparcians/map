@@ -1,6 +1,6 @@
 
 /**
- * \file   BlockingMemoryIF.h
+ * \file   BlockingMemoryIF.hpp
  * \brief  File that contains BlockingMemoryIF
  */
 

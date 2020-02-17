@@ -2,7 +2,7 @@
 
 
 /**
- * \file   Traits.h
+ * \file   Traits.hpp
  *
  * \brief File that defines compile-time queries on data types.
  * Extends c++11's

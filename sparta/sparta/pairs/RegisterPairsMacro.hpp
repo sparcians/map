@@ -1,8 +1,8 @@
-// <RegisterPairsMacro> -*- C++ -*-
+// <RegisterPairsMacro.hpp> -*- C++ -*-
 
 
 /**
- * \file RegisterPairsMacro
+ * \file RegisterPairsMacro.hpp
  *
  * \brief Contains macro for registering and invoking addPair()
  *  and flattenNestedPairs() calls for pevent and pipeline collection.

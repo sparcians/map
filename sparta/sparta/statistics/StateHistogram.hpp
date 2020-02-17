@@ -2,7 +2,7 @@
 
 
 /**
- * \file StateHistogram.h
+ * \file StateHistogram.hpp
  * \brief StateHistogram implementation using sparta Counters
  */
 

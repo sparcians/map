@@ -2,7 +2,7 @@
 
 
 /*!
- * \file AppTriggers.h
+ * \file AppTriggers.hpp
  * \brief Application-infrastructure triggers.
  */
 

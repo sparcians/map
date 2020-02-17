@@ -2,7 +2,7 @@
 
 
 /*!
- * \file SimulationConfiguration.h
+ * \file SimulationConfiguration.hpp
  * Class for configuring a simulation
  */
 
@@ -671,7 +671,7 @@ private:
     //! map report column headers to statistics names
     bool generate_stats_mapping_ = false;
 
-    //! List of all report file formats ("json", "html", etc.) for which
+    //! List of all report file formats ("json", "html", etc.) for whichpp
     //! pretty printing has been disabled
     std::set<std::string> disabled_pretty_print_report_formats_;
 

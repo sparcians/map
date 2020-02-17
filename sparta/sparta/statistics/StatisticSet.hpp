@@ -2,7 +2,7 @@
 
 
 /**
- * \file   StatisticSet.h
+ * \file   StatisticSet.hpp
  *
  * \brief  File that defines the StatisticSet class
  */

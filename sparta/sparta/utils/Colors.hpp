@@ -2,7 +2,7 @@
 
 
 /*!
- * \file Colors.h
+ * \file Colors.hpp
  * \brief Color code for SPARTA
  */
 

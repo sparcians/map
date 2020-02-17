@@ -1,5 +1,5 @@
 /**
- * \file transaction_structures.h
+ * \file transaction_structures.hpp
  *
  */
 

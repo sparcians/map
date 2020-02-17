@@ -2,7 +2,7 @@
 
 
 /**
- * \file Histogram.h
+ * \file Histogram.hpp
  * \brief Histogram implementation using sparta Counters
  */
 

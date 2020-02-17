@@ -1,7 +1,8 @@
-// <Triggerable> -*- C++ -*-
+// <Triggerable.hpp> -*- C++ -*-
 
 /**
- * \file Triggerable
+ * \file Triggerable.hpp
+ * \brief Base class for Triggerable types
  *
  */
 #ifndef __SPARTA_TRIGGERABLE_H__

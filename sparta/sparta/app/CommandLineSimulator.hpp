@@ -2,7 +2,7 @@
 
 
 /*!
- * \file CommandLineSimulator.h
+ * \file CommandLineSimulator.hpp
  * \brief Class for creating a simulator based on command-line arguments
  */
 

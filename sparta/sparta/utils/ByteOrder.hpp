@@ -1,7 +1,7 @@
 // <ByteOrder> -*- C++ -*-
 
 /*!
- * \file ByteOrder.h
+ * \file ByteOrder.hpp
  * \brief Byte order types and byte-swapping routines.
  *
  * Contains byte_swap methods for a number of types.

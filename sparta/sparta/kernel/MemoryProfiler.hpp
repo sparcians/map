@@ -1,3 +1,9 @@
+// <MemoryProfiler.hpp> -*- C++ -*-
+
+/**
+ * \file   MemoryProfiler.hpp
+ * \brief  Simple class to see where memory is being used.  Generates reports
+ */
 
 #ifndef __SPARTA_MEMORY_PROFILER_H__
 #define __SPARTA_MEMORY_PROFILER_H__
@@ -18,6 +24,9 @@ namespace app {
  *        statistics throughout a simulation. Supported phases
  *        for inspection include Build, Configure, Bind, and
  *        Simulate.
+ *
+ * See the command line option '--log-memory-usage' for more
+ * information.  Simulation must be built with tcmalloc.
  */
 class MemoryProfiler
 {

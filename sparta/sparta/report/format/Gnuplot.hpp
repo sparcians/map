@@ -1,7 +1,7 @@
 // <Gnuplot> -*- C++ -*-
 
 /*!
- * \file Gnuplot.h
+ * \file Gnuplot.hpp
  * \brief Gnuplot Report output formatter
  */
 

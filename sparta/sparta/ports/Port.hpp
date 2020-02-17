@@ -2,7 +2,7 @@
 
 
 /**
- * \file   Port.h
+ * \file   Port.hpp
  *
  * \brief  File that defines the Port base class
  */

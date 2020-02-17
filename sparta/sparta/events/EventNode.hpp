@@ -2,7 +2,7 @@
 
 
 /**
- * \file   EventNode.h
+ * \file   EventNode.hpp
  *
  * \brief  File that defines the EventNode class
  */

@@ -1,6 +1,6 @@
 
 /**
- * \file   CheckpointExceptions.h
+ * \file   CheckpointExceptions.hpp
  * \brief  File that contains checkpoint exception types
  */
 

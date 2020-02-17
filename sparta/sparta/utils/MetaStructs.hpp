@@ -1,8 +1,8 @@
-// <MetaStructs> -*- C++ -*-
+// <MetaStructs.hpp> -*- C++ -*-
 
 
 /**
- * \file MetaStructs
+ * \file MetaStructs.hpp
  * \brief Contains a collection implementation of various
  * compile-time metaprogramming and Type-Detection APIs useful
  * for Template Metaprogramming.

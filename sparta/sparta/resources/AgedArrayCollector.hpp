@@ -1,7 +1,7 @@
-// <ArrayCollector.h> -*- C++ -*-
+// <ArrayCollector.hpp> -*- C++ -*-
 
 /**
- * \file ArrayCollector
+ * \file ArrayCollector.hpp
  * \brief Class used by the sparta::Array class
  */
 #ifndef __SPARTA_AGED_ARRAY_COLLECTOR_H__

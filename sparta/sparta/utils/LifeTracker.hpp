@@ -2,7 +2,7 @@
 
 
 /**
- * \file   LifeTracker.h
+ * \file   LifeTracker.hpp
  * \brief  File that defines the LifeTracker class
  */
 

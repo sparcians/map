@@ -1,8 +1,8 @@
-// <MetaTypeList> -*- C++ -*-
+// <MetaTypeList.hpp> -*- C++ -*-
 
 
 /**
- * \file MetaTypeList
+ * \file MetaTypeList.hpp
  * \brief Contains the implementation of Metatype_lists,
  *  a compile-time list for storing different type structures
  *  which can be accessed by using nested type aliases inside.

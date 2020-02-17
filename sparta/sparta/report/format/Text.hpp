@@ -1,7 +1,7 @@
 // <Test> -*- C++ -*-
 
 /*!
- * \file Text.h
+ * \file Text.hpp
  * \brief Plaintext Report output formatter
  */
 

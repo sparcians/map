@@ -1,7 +1,7 @@
-// <Collector> -*- C++ -*-
+// <Collector.hpp> -*- C++ -*-
 
 /**
- * \file Collector
+ * \file Collector.hpp
  *
  * \brief Define a base Collector class.
  */

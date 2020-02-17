@@ -2,7 +2,7 @@
 
 
 /*!
- * \file MultiDetailOptions.h
+ * \file MultiDetailOptions.hpp
  * \brief Wrapper for boost program_options option_description that allows
  * multiple levels of detail
  */

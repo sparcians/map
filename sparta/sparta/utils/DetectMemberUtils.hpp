@@ -2,7 +2,7 @@
 
 
 /*!
- * \file DetectMemberUtils.h
+ * \file DetectMemberUtils.hpp
  * \brief Compile-time SFINAE techniques to detect presence of
  * operators, member-fields and methods by name in any class.
  */

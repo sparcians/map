@@ -1,10 +1,11 @@
-// <Reader> -*- C++ -*-
+// <Reader.hpp> -*- C++ -*-
+
 /**
- * \file Reader
+ * \file Reader.hpp
  *
  * \brief Reads transctions using the record and index file
  *
-*/
+ */
 
 #ifndef __READER_H__
 #define __READER_H__

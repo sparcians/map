@@ -17,7 +17,7 @@
 #include "sparta/kernel/Vertex.hpp"
 
 /**
- * \file   Precedence.h
+ * \file   Precedence.hpp
  *
  * \brief File that defines Precedence operator>> rules between
  *        EventNode types

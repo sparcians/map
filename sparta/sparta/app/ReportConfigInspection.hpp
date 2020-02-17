@@ -2,7 +2,7 @@
 
 
 /*!
- * \file ReportConfigInspection.h
+ * \file ReportConfigInspection.hpp
  *
  * Collection of helper methods to inspect report / report trigger
  * configuration for a given simulation.

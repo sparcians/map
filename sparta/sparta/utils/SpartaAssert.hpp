@@ -12,7 +12,7 @@
 
 
 /*!
- * \file SpartaAssert.h
+ * \file SpartaAssert.hpp
  * \brief Set of macros used for assertions and performance enhancement
  */
 

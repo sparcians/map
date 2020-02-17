@@ -2,7 +2,7 @@
 
 
 /**
- * \file   SingleCycleUniqueEvent.h
+ * \file   SingleCycleUniqueEvent.hpp
  *
  * \brief  File that defines the SingleCycleUniqueEvent class
  */

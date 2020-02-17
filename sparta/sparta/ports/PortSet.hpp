@@ -2,7 +2,7 @@
 
 
 /**
- * \file   PortSet.h
+ * \file   PortSet.hpp
  *
  * \brief File that defines the PortSet class
  */

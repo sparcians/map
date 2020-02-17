@@ -1,9 +1,9 @@
-// <TriggerManager>  -*- C++ -*-
+// <TriggerManager.hpp>  -*- C++ -*-
 
 
 
 /**
- * \file TriggerManager
+ * \file TriggerManager.hpp
  * \brief Manages implementation of certain types of triggers. Does not actually
  * own triggers.
  */

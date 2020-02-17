@@ -1,12 +1,10 @@
-// <Resource> -*- C++ -*-
-
+// <Resource.hpp> -*- C++ -*-
 
 /*!
- * \file   Resource
+ * \file   Resource.hpp
  *
- * \brief  File that defines the Resource class
+ * \brief  File that defines the Resource class. Consider using sparta::Unit instead
  */
-
 
 #ifndef __RESOURCE__H__
 #define __RESOURCE__H__

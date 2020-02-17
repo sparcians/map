@@ -2,7 +2,7 @@
 
 
 /**
- * \file   DataPort.h
+ * \file   DataPort.hpp
  *
  * \brief  File that defines Data[In,Out]Port<DataT>
  */

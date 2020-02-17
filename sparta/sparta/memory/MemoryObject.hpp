@@ -1,6 +1,6 @@
 
 /**
- * \file   MemoryObject.h
+ * \file   MemoryObject.hpp
  * \brief  File that contains MemoryObject
  */
 

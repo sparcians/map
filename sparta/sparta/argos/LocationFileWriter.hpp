@@ -1,7 +1,7 @@
-// <LocationFileWriter>  -*- C++ -*-
+// <LocationFileWriter.hpp>  -*- C++ -*-
 
 /**
- * \file LocationFileWriter
+ * \file LocationFileWriter.hpp
  *
  * \brief Contains LocationFileWriter class
  */

@@ -2,7 +2,7 @@
 
 
 /*!
- * \file ClockManager.h
+ * \file ClockManager.hpp
  * \brief Manages building a clock tree
  */
 

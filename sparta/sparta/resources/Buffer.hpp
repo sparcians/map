@@ -2,7 +2,7 @@
 
 
 /**
- * \file   Buffer.h
+ * \file   Buffer.hpp
  * \brief  Defines the Buffer class used for buffering data
  *
  */

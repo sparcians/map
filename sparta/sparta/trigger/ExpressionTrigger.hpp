@@ -1,7 +1,7 @@
 // <ExpressionTrigger> -*- C++ -*-
 
 /**
- * \file ExpressionTrigger.h
+ * \file ExpressionTrigger.hpp
  *
  */
 

@@ -1,7 +1,7 @@
 // <BasicHTML> -*- C++ -*-
 
 /*!
- * \file BasicHTML.h
+ * \file BasicHTML.hpp
  * \brief Basic HTML Report output formatter
  */
 

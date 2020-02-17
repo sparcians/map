@@ -1,6 +1,6 @@
 
 /**
- * \file   TranslationInterface.h
+ * \file   TranslationInterface.hpp
  *
  * \brief  File that defines translation interface
  */

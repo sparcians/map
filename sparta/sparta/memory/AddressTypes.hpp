@@ -1,6 +1,6 @@
 
 /**
- * \file   Addresstypes.h
+ * \file   Addresstypes.hpp
  *
  * \brief  File that defines typedefs for addressing
  */

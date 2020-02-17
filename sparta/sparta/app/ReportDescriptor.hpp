@@ -1,6 +1,6 @@
 
 /**
- * \file   ReportDescriptor.h
+ * \file   ReportDescriptor.hpp
  * \brief  Describes reports to instantiate and tracks their instantiations
  */
 

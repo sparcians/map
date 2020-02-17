@@ -1,7 +1,7 @@
 // <RootTreeNode> -*- C++ -*-
 
 /*!
- * \file RootTreeNode.h
+ * \file RootTreeNode.hpp
  * \brief TreeNode refinement representing the root (or "top") of a device tree
  */
 

@@ -1,7 +1,7 @@
 // <JavascriptObject> -*- C++ -*-
 
 /*!
- * \file JavascriptObject.h
+ * \file JavascriptObject.hpp
  * \brief JavascriptObject Report output formatter
  */
 

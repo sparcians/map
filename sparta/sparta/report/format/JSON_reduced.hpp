@@ -2,7 +2,7 @@
 
 
 /*!
- * \file JSON_reduced.h
+ * \file JSON_reduced.hpp
  * \brief JSON Report output formatter for only stat value information; reduction of JSON.h
  */
 

@@ -11,7 +11,7 @@
 #include "sparta/kernel/SpartaHandler.hpp"
 
 /**
- * \file   Scheduleable.h
+ * \file   Scheduleable.hpp
  *
  * \brief  File that defines the Scheduleable class
  */

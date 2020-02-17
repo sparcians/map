@@ -2,7 +2,7 @@
 
 
 /**
- * \file   DataContainer.h
+ * \file   DataContainer.hpp
  *
  * \brief  File that defines the DataContainer class
  */

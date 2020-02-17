@@ -1,7 +1,7 @@
 // <GlobalTreeNode> -*- C++ -*-
 
 /*!
- * \file GlobalTreeNode.h
+ * \file GlobalTreeNode.hpp
  * \brief TreeNode refinement representing the global namespace (above "top") of
  * a device tree.
  *

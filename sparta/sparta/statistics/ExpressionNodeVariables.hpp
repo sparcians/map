@@ -1,7 +1,7 @@
 // <ExpressionNodeVariables> -*- C++ -*-
 
 /*!
- * \file ExpressionNodeVariables.h
+ * \file ExpressionNodeVariables.hpp
  * \brief This exists mainly to remove circular dependencies on StatVariable and
  * SimVariable: Expression -> StatVarible -> StatisticInstance -> Expression
  */

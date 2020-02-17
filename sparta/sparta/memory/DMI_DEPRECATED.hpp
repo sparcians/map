@@ -1,6 +1,6 @@
 
 /**
- * \file DMI_DEPRECATED.h
+ * \file DMI_DEPRECATED.hpp
  * \brief Define sparta::DMI_DEPRECATED
  */
 

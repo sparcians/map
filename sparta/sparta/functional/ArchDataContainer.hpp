@@ -1,7 +1,7 @@
 // <ArchDataContainer> -*- C++ -*-
 
 /*!
- * \file ArchDataContainer.h
+ * \file ArchDataContainer.hpp
  * \brief Contains a number of ArchData pointers
  */
 

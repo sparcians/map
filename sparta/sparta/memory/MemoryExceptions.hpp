@@ -1,6 +1,6 @@
 
 /**
- * \file   MemoryExceptions.h
+ * \file   MemoryExceptions.hpp
  * \brief  File that contains some exception types related to memory interfaces
  */
 

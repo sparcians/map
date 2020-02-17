@@ -1,9 +1,9 @@
-// <Expression> -*- C++ -*-
+// <Expression.hpp> -*- C++ -*-
 
 /*!
- * \file Tree filter expression.h
+ * \file Expression.hpp
  * \brief Expression for representing a filtering function for TreeNodes based
- * on their attributes
+ *        on their attributes
  */
 
 #ifndef __TREE_FILTER_EXPRESSION_H__

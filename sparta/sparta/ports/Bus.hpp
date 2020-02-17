@@ -2,7 +2,7 @@
 
 
 /**
- * \file   Bus.h
+ * \file   Bus.hpp
  *
  * \brief  File that defines the Bus, BusSet and helper binding classes
  */

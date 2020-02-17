@@ -2,7 +2,7 @@
 
 
 /**
- * \file SharedData.h
+ * \file SharedData.hpp
  * \brief Defines the SharedData class
  *
  */

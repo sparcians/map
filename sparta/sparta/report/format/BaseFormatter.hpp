@@ -1,7 +1,7 @@
 // <BaseFormatter> -*- C++ -*-
 
 /*!
- * \file BaseFormatter.h
+ * \file BaseFormatter.hpp
  * \brief Basic HTML Report output formatter
  */
 

@@ -1,5 +1,5 @@
 /**
- * \file IntervalWindow.h
+ * \file IntervalWindow.hpp
  *
  * \brief IntervalWindow provides the data storage and search aparatus for
  *        the Helois tools.

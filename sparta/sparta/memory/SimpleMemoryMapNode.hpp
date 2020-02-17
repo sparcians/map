@@ -1,6 +1,6 @@
 
 /**
- * \file   SimpleMemoryMapNode.h
+ * \file   SimpleMemoryMapNode.hpp
  * \brief  File that contains SimpleMemoryMapNode
  */
 

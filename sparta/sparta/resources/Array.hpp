@@ -1,7 +1,7 @@
-// <Array.h> -*- C++ -*-
+// <Array.hpp> -*- C++ -*-
 
 /**
- * \file Array
+ * \file Array.hpp
  * \brief Defines the Array class
  *
  */

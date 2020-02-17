@@ -1,6 +1,6 @@
 
 /**
- * \file   DebugMemoryIF.h
+ * \file   DebugMemoryIF.hpp
  * \brief  File that contains DebugMemoryIF
  */
 

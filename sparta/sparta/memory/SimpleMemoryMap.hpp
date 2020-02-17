@@ -1,6 +1,6 @@
 
 /**
- * \file   SimpleMemoryMap.h
+ * \file   SimpleMemoryMap.hpp
  * \brief  File that contains SimpleMemoryMap
  */
 

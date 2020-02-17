@@ -2,7 +2,7 @@
 
 
 /**
- * \file   UniqueEvent.h
+ * \file   UniqueEvent.hpp
  *
  * \brief  File that defines the UniqueEvent class
  */

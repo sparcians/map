@@ -1,6 +1,6 @@
 
 /**
- * \file   Translation.h
+ * \file   Translation.hpp
  *
  * \brief  File that defines Translation classes and typedefs for addressing
  */

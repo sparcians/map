@@ -30,7 +30,7 @@
 #include "sparta/kernel/PhasedObject.hpp"
 
 /*!
- * \file Parameter.h
+ * \file Parameter.hpp
  * \brief Individual Parameter interface base class, container class, and
  * global helpers methods.
  */

@@ -2,7 +2,7 @@
 
 
 /**
- * \file   PhasedPayloadEvent.h
+ * \file   PhasedPayloadEvent.hpp
  *
  * \brief File that defines the PhasedPayloadEvent class.  Suggest
  *        using sparta::PayloadEvent instead

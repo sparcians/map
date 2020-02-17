@@ -1,7 +1,7 @@
 // <BaseOstreamFormatter> -*- C++ -*-
 
 /*!
- * \file BaseOstreamFormatter.h
+ * \file BaseOstreamFormatter.hpp
  * \brief Basic HTML Report output formatter
  */
 
