@@ -53,9 +53,7 @@ Suggested best practices for using Sparta<br>&nbsp;
 -# \ref q_and_a <br>
 Questions and Answers (not necessarily frequently asked)
 
-<h3>Release Notes</h3>
--# <a href="../Spartav1.0.ReleaseNotes.html"><b>Sparta v1.0 release notes</b></a>
- */
+*/
 
 /*!
 \page tools Analysis Tools
