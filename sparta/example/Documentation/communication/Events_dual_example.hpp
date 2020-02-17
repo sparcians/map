@@ -2,14 +2,20 @@
 #include <cinttypes>
 #include <memory>
 
-#include "sparta/TreeNode.h"
-#include "sparta/ParameterSet.h"
-#include "sparta/Resource.h"
-#include "sparta/ports/PortSet.h"
-#include "sparta/ports/DataPort.h"
+#include "sparta/simulation/TreeNode.hpp"
+#include "sparta/simulation/ParameterSet.hpp"
+#include "sparta/simulation/Unit.hpp"
+#include "sparta/ports/PortSet.hpp"
+#include "sparta/ports/DataPort.hpp"
+#include "sparta/utils/SpartaAssert.hpp"
 
 // Include Event.h
-#include "sparta/events/Event.h"
+#include "sparta/events/Event.hpp"
+
+#define ILOG(msg) \
+    if(SPARTA_EXPECT_FALSE(info_logger_)) { \
+        info_logger_ << msg; \
+    }
 
 class MyDeviceParams : public sparta::ParameterSet
 {
@@ -31,7 +37,7 @@ public:
     PARAMETER(bool, my_device_param, true, "An example device parameter");
 };
 
-class MyDevice : public sparta::Resource
+class MyDevice : public sparta::Unit
 {
 public:
     MyDevice(sparta::TreeNode * parent_node,
@@ -41,9 +47,6 @@ public:
     static const char * name;
 
 private:
-    // A port set of my ports
-    sparta::PortSet              my_ports_;
-
     // A data in port that receives uint32_t from source 1
     sparta::DataInPort<uint32_t> a_delay_in_source1_;
 
@@ -60,8 +63,7 @@ private:
     // This means it can scheduled many times for a given cycle, but
     // it's only called once.  Also, this event in the
     // SchedulingPhase::Tick phase with a delay of 0.
-    sparta::EventSet event_set_;
-    sparta::UniqueEvent<> event_do_some_work_{&event_set_, "do_some_work_event",
+    sparta::UniqueEvent<> event_do_some_work_{&unit_event_set_, "do_some_work_event",
             CREATE_SPARTA_HANDLER(MyDevice, doSomeWork_)};
 
     // Method called by the event 'event_do_some_work_'
@@ -80,11 +82,9 @@ const char * MyDevice::name = "my_device";
 
 MyDevice::MyDevice(sparta::TreeNode * my_node,
                    const MyDeviceParams * my_params) :
-    sparta::Resource(my_node, name),
-    my_ports_(my_node, "MyDevice Ports"),
-    a_delay_in_source1_(&my_ports_, "a_delay_in_source1", 1), // Receive data one cycle later
-    a_delay_in_source2_(&my_ports_, "a_delay_in_source2", 1), // Receive data one cycle later
-    event_set_(my_node)
+    sparta::Unit(my_node, name),
+    a_delay_in_source1_(&unit_port_set_, "a_delay_in_source1", 1), // Receive data one cycle later
+    a_delay_in_source2_(&unit_port_set_, "a_delay_in_source2", 1)  // Receive data one cycle later
 {
     // Tell SPARTA to ignore this parameter
     my_params->my_device_param.ignore();
@@ -106,8 +106,8 @@ MyDevice::MyDevice(sparta::TreeNode * my_node,
 //
 void MyDevice::myDataReceiverFromSource1_(const uint32_t & dat)
 {
-    std::cout << "I got data from Source1: " << dat << std::endl;
-    std::cout << "Time to do some work this cycle: " << getClock()->currentCycle() << std::endl;
+    ILOG("I got data from Source1: " << dat);
+    ILOG("Time to do some work this cycle: " << getClock()->currentCycle());
 
     // Schedule doSomeWork_() for THIS cycle.  Doesn't matter if data
     // from Source2 is here yet.  Since the event_do_some_work_ is in
@@ -127,8 +127,8 @@ void MyDevice::myDataReceiverFromSource1_(const uint32_t & dat)
 //
 void MyDevice::myDataReceiverFromSource2_(const uint32_t & dat)
 {
-    std::cout << "I got data from Source2: " << dat << std::endl;
-    std::cout << "Time to do some work this cycle: " << getClock()->currentCycle() << std::endl;
+    ILOG("I got data from Source2: " << dat);
+    ILOG("Time to do some work this cycle: " << getClock()->currentCycle());
 
     // Schedule doSomeWork_() for THIS cycle.  Since the
     // event_do_some_work_ is in the SchedulingPhase::Tick phase, it
@@ -143,13 +143,14 @@ void MyDevice::myDataReceiverFromSource2_(const uint32_t & dat)
 // Called from the scheduler; scheduled by the event_do_some_work_
 // event.
 void MyDevice::doSomeWork_() {
-    std::cout << "Well, it's time to do some work. Cycle: "
-              << getClock()->currentCycle() << std::endl;
+    ILOG("Well, it's time to do some work. Cycle: " << getClock()->currentCycle());
 
-    sparta_assert(data1_.isValid() && data2_.isValid(), "Hey, we didn't get data1 and data2 before"" this function was called!");
-    std::cout << "Got these values: "
-              << data1_.getValue() << " and "
-              << data2_.getValue() << std::endl;
+    sparta_assert(data1_.isValid() && data2_.isValid(),
+                  "Hey, we didn't get data1 and data2 before"" this function was called!");
+
+    ILOG("Got these values: "
+         << data1_.getValue() << " and "
+         << data2_.getValue());
 
     total_data_ = data1_.getValue() + data2_.getValue();
     data1_.clearValid();

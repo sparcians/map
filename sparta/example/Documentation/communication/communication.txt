@@ -1,22 +1,23 @@
 
 /*!
-  \page communication Communication & Scheduling
+  \page communication Communication, Events, and Scheduling
   \tableofcontents
 
   In addition to providing a simulation command line infrastructure
   (see \ref config) as well as resource creation (see \ref resources)
-  in a tree form for organization (see \ref trees), SPARTA provides a
+  in a tree form for organization (see \ref trees), Sparta provides a
   series of classes and ordering specifically dedicated for resource
   to resource communication as well as internal resource
   communication.  This communication can be timed or untimed as
   desired.
 
-  The first point to make revolves around the philosophy behind the
-  timing aspects of SPARTA: There are scheduling phases
+  The first point of Sparta's communication philosophy lies behind the
+  timing aspects of Sparta: There are scheduling phases
   (sparta::SchedulingPhase) that allows a user to count on certain
   ordering between resources and another.  This is different from
-  prior versions of SPARTA where every scheduleable type of event was in
-  a single phase and required the user to provide explicit orderings.
+  prior versions of Sparta where every scheduleable type of event was
+  in a single phase and required the user to provide explicit
+  orderings.
 
   Ordering within a phase, however, is still supported, allowing a
   modeler to specify the order in which events are scheduled/fired
@@ -33,6 +34,7 @@
   - \ref sparta::Scheduleable
   - \ref sparta::Event
   - \ref sparta::UniqueEvent
+  - \ref sparta::SingleCycleUniqueEvent
   - \ref sparta::PayloadEvent
   - \ref sparta::EventSet
   - \ref sparta::Clock
@@ -40,7 +42,17 @@
   - \ref sparta::SchedulingPhase
   - \ref sparta::SysCSpartaSchedulerAdapter
 
-  The below sections detail each.
+  The below sections detail each. To build the examples documented in
+  this section, please see the README.md for directions/prerequisite
+  for creating a build directory.  Then, build in the
+  example/Documentation/communication directory:
+
+  \code
+  cd sparta
+  cd sparta/build-dir  # Please see the README.md for creation
+  cd example/Documentation/communication
+  make
+  \endcode
 
   ======================================================================
   \section comm_ports Ports
@@ -49,7 +61,7 @@
   to another resource (for example, via the method
   sparta::DataOutPort::send).  The two resources do not know about each
   other and don't need to.  Typically, during
-  sparta::Simulation::finalizeTree (calls sparta::Simulation::bindTree_)
+  sparta::app::Simulation::finalizeTree (calls sparta::app::Simulation::bindTree_)
   phase, any sparta::Port derived classes that are constructed with a
   sparta::PortSet are bound together using sparta::bind(sparta::Port,
   sparta::Port) methods.  An example of how this is done is found in
@@ -64,106 +76,90 @@
   simulation.
 
   Example of a device receiving data can be found in
-  example/Documentation/communication/Port_example.h, and compiled by
-  typing 'make PORTS_EXAMPLE=1'.
+  example/Documentation/communication/Ports_example.hpp.
 
-   \include Documentation/communication/Ports_example.h
+  \include Documentation/communication/Ports_example.hpp
 
-   \subsection sync_ports sparta::SyncPorts
+  \subsection sync_ports sparta::SyncPorts
 
-   To enable communication between components on different Clock
-   boundaries, use sparta::SyncInPort and sparta::SyncOutPort.  This type
-   of port is identical to DataIn/OutPort with the exception that data
-   sent on the out port is delayed until the "rising edge" of the
-   receiver's clock. See sparta::SyncOutPort for more information.
+  To enable communication between components on different Clock
+  boundaries, use sparta::SyncInPort and sparta::SyncOutPort.  This type
+  of port is identical to DataIn/OutPort with the exception that data
+  sent on the out port is delayed until the "rising edge" of the
+  receiver's clock. See sparta::SyncOutPort for more information.
 
-   ======================================================================
-   \section comm_events Events
+  ======================================================================
+  \section comm_events Events
 
-   Events are mechanism to allow the scheduling of work based on
-   activity within a resource.  For example, the receiving of data
-   from an external resource on a port might trigger the need to act
-   upon that data and send it on.  Take the previous example in the
-   Port section and add an event based on the receiving of data (found
-   examples/Documentation/communication/Events_example.h, and compiled
-   by typing 'make EVENTS_EXAMPLE=1':
+  Events are mechanism to allow the scheduling of work based on
+  activity within a resource.  For example, the receiving of data
+  from an external resource on a port might trigger the need to act
+  upon that data and send it on.  Take the previous example in the
+  Port section and add an event based on the receiving of data (found
+  example/Documentation/communication/Events_example.hpp).
 
-   \include Documentation/communication/Events_example.h
+  \include Documentation/communication/Events_example.hpp
 
-   This isn't a very interesting class as myDataReceiver_() could
-   easily just call doSomeWork_() directly.  But, what if MyDevice had
-   \b two inports that needed to be called \b before doing some work?
-   That's no problem either.  Let's extend the class, but this time
-   adding a second port and changing event_do_some_work_ from a
-   sparta::Event to a sparta::UniqueEvent to ensure it gets called only
-   once when scheduled by both handlers. Code found in
-   examples/Documentation/communication/Port_dual_example.h, and
-   compiled by typing 'make EVENTS_DUAL_EXAMPLE=1'
+  This isn't a very interesting class as \c myDataReceiver_() could
+  easily just call \c doSomeWork_() directly.  But, what if \c
+  MyDevice had \b two inports that needed to be called \b before doing
+  some work?  That's no problem either.  Let's extend the class, but
+  this time adding a second port and changing event_do_some_work_ from
+  a sparta::Event to a sparta::UniqueEvent to ensure it gets called
+  only once when scheduled by both handlers. Code found in
+  example/Documentation/communication/Events_dual_example.hpp.
 
-   \include Documentation/communication/Events_dual_example.h
+  \include Documentation/communication/Events_dual_example.hpp
 
-   ======================================================================
-   \section comm_dyn_events Dynamic Event Creation
+  ======================================================================
+  \section comm_clocks Clocks
 
-   What if we want have a dynamic object that wants to schedule Events
-   on the sparta::Scheduler?  How do you do that?  This approach is
-   typically discouraged as debugging dynamic events is difficult for
-   the model developer and requires the modeler to create
-   sparta::Scheduleable objects with hard-coded groupings.
+  Sparta's clocking and clock management are contained in sparta::Clock
+  and sparta::ClockManager classes.  The main difference to note in
+  Sparta, is that sparta::Clock objects are not event-based objects nor
+  do they constantly "clock" as simulation progresses (like in other
+  frameworks).  sparta::Clock objects are simply available to convert
+  simulation time (from the sparta::Scheduler) to clock time based on
+  that clock's frequency.  Therefor, in simulation, sparta::Clock
+  objects are passed around as constant objects.  In addition, there
+  is no notion of a "rising edge" nor a "falling edge" in simulation
+  (however, the sparta::Clock supports this notion if absolutely
+  needed).  Instead, the Clocks are used to simply answer the
+  question, what time (in NS) on the Scheduler should Event X be
+  scheduled?
 
-   But, if this is required, create a sparta::Scheduleable instance and
-   perform scheduling directly on that instance.  If the base behavior
-   is not desired, derive from sparta::Scheduleable and provide an
-   implementation of sparta::Scheduleable::scheduleRelativeTick.
+  Using the sparta::ClockManager and the sparta::Clock classes are
+  pretty straight-forward.  By default the sparta::ClockManager
+  contains a root clock that runs at the Scheduler frequency: 1 cycle
+  == 1 NS.  This is called the master clock (and denotes the
+  "hypercycle").  From the master clock, more clocks can be created
+  and then associated with sparta::TreeNode objects that Device
+  objects hang off of:
 
-   ======================================================================
-   \section comm_clocks Clocks
-
-   SPARTA's clocking and clock management are contained in sparta::Clock
-   and sparta::ClockManager classes.  The main difference to note in
-   SPARTA, is that sparta::Clock objects are not event-based objects nor
-   do they constantly "clock" as simulation progresses (like in other
-   frameworks).  sparta::Clock objects are simply available to convert
-   simulation time (from the sparta::Scheduler) to clock time based on
-   that clock's frequency.  Therefor, in simulation, sparta::Clock
-   objects are passed around as constant objects.  In addition, there
-   is no notion of a "rising edge" nor a "falling edge" in simulation
-   (however, the sparta::Clock supports this notion if absolutely
-   needed).  Instead, the Clocks are used to simply answer the
-   question, what time (in NS) on the Scheduler should Event X be
-   scheduled?
-
-   Using the ClockManager and the Clock classes are pretty
-   straight-forward.  By default the ClockManager contains a clock
-   that runs on the Scheduler frequency 1 cycle == 1 NS.  This is
-   called the master clock (and denotes the "hypercycle").  From the
-   master clock, more clocks can be created and then associated with
-   TreeNode objects that Device objects hang off of:
-
-   \code
-    sparta::RootTreeNode root_clks("clocks",
+  \code
+   sparta::RootTreeNode root_clks("clocks",
                                  "Clock Tree Root",
                                  root_node.getSearchScope());
-    sparta::ClockManager cm;
-    sparta::Clock::Handle root_clk = cm.makeRoot(&root_clks);
-    sparta::Clock::Handle clk_1000 = cm.makeClock("clk_1000", root_clk, 1000.0);
-    sparta::Clock::Handle clk_100  = cm.makeClock("clk_100",  root_clk,  100.0);
-    sparta::Clock::Handle clk_10   = cm.makeClock("clk_10",   root_clk, 10.0);
+   sparta::ClockManager cm;
+   sparta::Clock::Handle root_clk = cm.makeRoot(&root_clks);
+   sparta::Clock::Handle clk_1000 = cm.makeClock("clk_1000", root_clk, 1000.0);
+   sparta::Clock::Handle clk_100  = cm.makeClock("clk_100",  root_clk,  100.0);
+   sparta::Clock::Handle clk_10   = cm.makeClock("clk_10",   root_clk, 10.0);
 
-    root_tree_node_.setClock(root_clk.get()); // The root is at highest freq
+   root_tree_node_.setClock(root_clk.get()); // The root is at highest freq
 
-    // The device "runs" at 1GHz.  I.e. it's events are scheduled at that
-    // time frame.
-    my_device_node_.setClock(clk_1000.get());
+   // The device "runs" at 1GHz.  I.e. it's events are scheduled at that
+   // time frame.
+   my_device_node_.setClock(clk_1000.get());
 
-   \endcode
+  \endcode
 
-   ======================================================================
-   \section comm_schedulers Schedulers
+  ======================================================================
+  \section comm_schedulers Scheduling
 
-   \subsection sparta_Scheduler sparta::Scheduler
-   \copydetails sparta::Scheduler
+  \subsection sparta_Scheduler sparta::Scheduler
+  \copydetails sparta::Scheduler
 
-   \subsection sysc_scheduler sparta::SysCSpartaSchedulerAdapter
-   \copydetails sparta::SysCSpartaSchedulerAdapter
-  */
+  \subsection sysc_scheduler sparta::SysCSpartaSchedulerAdapter
+  \copydetails sparta::SysCSpartaSchedulerAdapter
+*/

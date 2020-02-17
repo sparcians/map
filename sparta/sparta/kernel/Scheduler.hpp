@@ -1,7 +1,7 @@
 // <Scheduler> -*- C++ -*-
 
 /**
- * \file Scheduler.h
+ * \file Scheduler.hpp
  * \brief A simple time-based, event precedence based scheduler
  *
  */
@@ -66,17 +66,15 @@ namespace sparta {
 namespace sparta
 {
 
-
-
 /**
  * \class Scheduler
  * \brief A class that lets you schedule events now and in the future.
  *
- * The Scheduler class simply schedules callback methods for some time
- * in the future.  These callbacks are typically scheduled by
- * sparta::Scheduleable class and its derivatives, but the scheduler is
- * open to anyone who wishes to schedule a callback (but this is
- * highly discouraged).
+ * The sparta::Scheduler class simply schedules callback methods for
+ * some time in the future.  These callbacks are typically scheduled
+ * by sparta::Scheduleable class and its derivatives, but the
+ * sparta::scheduler is open to anyone who wishes to schedule a
+ * callback (but this is highly discouraged).
  *
  * The callback type is sparta::SpartaHandler, a copyable method delegate
  * that allows a user to specify a function of their class as a
@@ -84,9 +82,9 @@ namespace sparta
  *
  * \code void func(); \endcode
  *
- * Time in the Scheduler can be interpreted anyway the user wishes,
- * but the base unit is a sparta::Scheduler::Tick.  For most simulation
- * uses at SARC, the Tick is considered a NS of time.  To convert a
+ * Time in the sparta::Scheduler can be interpreted anyway the user wishes,
+ * but the base unit is a sparta::Scheduler::Tick.  For most
+ * simulation uses, the Tick is considered a NS of time.  To convert a
  * Tick to a higher-order unit such as a clock cycle, use a
  * sparta::Clock made from a sparta::ClockManager to perform the
  * conversions.
@@ -95,29 +93,42 @@ namespace sparta
  *
  * -# Create an sparta::Scheduleable (or derivative sparta::Event,
  *    sparta::UniqueEvent, sparta::PayloadEvent) object with a given
- *    sparta::SpartaHandler and a sparta::EventSet (that contains a
+ *    handler and a sparta::EventSet (that contains a
  *    sparta::Clock)
  *
- * -# Schedule the event using the Event's schedule method, which will
- *    place the event on the Scheduler at the appropriate Tick using
+ * -# Schedule the event using the event's schedule method, which will
+ *    place the event on the sparta::Scheduler at the appropriate Tick using
  *    the sparta::Clock it got from the sparta::EventSet
  *
- * -# Wait for the Scheduler to get around to calling the method during
- *    the Scheduler::run call
+ * -# Wait for the sparta::Scheduler to get around to calling the method during
+ *    the sparta::Scheduler::run call
  *
- * <H2>Event Ordering</H2>
+ * The sparta::Scheduler is a sparta::RootTreeNode so that it can be seen in a
+ * global search scope, and loggers can be attached.  For example, try
+ * this on the CoreExample:
  *
- * The Scheduler has a concept of "phased grouping" that allows a user
- * to specify which callback they want called before another in time.
- * Each SPARTA event type has an associated sparta::SchedulingPhase phase
- * in its template parameter list that the event will always be placed
- * in.  In that phase, the event will always come before a "higher
- * priority phase" and always after a "lower priority phase."  But, \a
- * within its assigned phase, the event will still be semi-random with
- * respect to other events.  It's "semi-random," meaning order will be
- * indentical between simulation runs, but possibly different once the
- * simulator is modified at the source-code level.  This can be
- * annoying.
+ * \code
+ *   <build-dir>/example/CoreExample/sparta_core_example -r 1000 -l scheduler debug 1
+ * \endcode
+ *
+ * Or do this in your C++ code:
+ * \code
+ *    new sparta::log::Tap(&my_scheduler_, "debug", std::cout);
+ * \endcode
+ *
+ * \section event_ordering Event Ordering
+ *
+ * The sparta::Scheduler has a concept of "phased grouping" that
+ * allows a user to specify which callback they want called before
+ * another in time.  Each SPARTA event type has an associated
+ * sparta::SchedulingPhase phase in its template parameter list that
+ * the event will always be placed in.  In that phase, the event will
+ * always come before a "higher priority phase" and always after a
+ * "lower priority phase."  But, \a within its assigned phase, the
+ * event will still be semi-random with respect to other events.  It's
+ * "semi-random," meaning order will be indentical between simulation
+ * runs, but possibly different once the simulator is modified at the
+ * source-code level.  This can be annoying.
  *
  * Ordering within a phase is provided by a Direct Acyclic Graph or
  * sparta::DAG.  The DAG uses a class called sparta::Scheduleable that
@@ -160,9 +171,9 @@ namespace sparta
  * \endcode
  *
  * The sparta::Scheduler is responsible for finalizing the DAG. The DAG
- * is finalized when the Scheduler is finalized through the
+ * is finalized when the sparta::Scheduler is finalized through the
  * sparta::Scheduler::finalize method called by the framework. Therefor,
- * all events can only be scheduled after the scheduler is
+ * all events can only be scheduled after the sparta::scheduler is
  * finalized. It is illegal to schedule events before the dag is
  * finalized because precedence has not been fully established.  Any
  * startup work can be scheduled via the sparta::StartupEvent class
@@ -175,20 +186,6 @@ namespace sparta
  * sched.run(100); // will run up to at most 99 ticks
  * // sched.run(100, true); // will run to exactly 99 ticks
  * \endcode
- *
- * The Scheduler is a sparta::RootTreeNode so that it can be seen in a
- * global search scope, and loggers can be attached.  For example, try
- * this on the CoreExample:
- *
- * \code
- *   ./bld-Linux_x86_64-gcc4.7/sparta_core_example -r 1000 -l scheduler debug 1
- * \endcode
- *
- * Or do this in your C++ code:
- * \code
- *    new sparta::log::Tap(&my_scheduler_, "debug", std::cout);
- * \endcode
- *
  *
  */
 class Scheduler : public RootTreeNode

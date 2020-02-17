@@ -3,11 +3,16 @@
 #include <cinttypes>
 #include <memory>
 
-#include "sparta/TreeNode.h"
-#include "sparta/ParameterSet.h"
-#include "sparta/Resource.h"
-#include "sparta/ports/PortSet.h"
-#include "sparta/ports/DataPort.h"
+#include "sparta/simulation/TreeNode.hpp"
+#include "sparta/simulation/ParameterSet.hpp"
+#include "sparta/simulation/Unit.hpp"
+#include "sparta/ports/PortSet.hpp"
+#include "sparta/ports/DataPort.hpp"
+
+#define ILOG(msg) \
+    if(SPARTA_EXPECT_FALSE(info_logger_)) { \
+        info_logger_ << msg; \
+    }
 
 //
 // Basic device parameters
@@ -35,7 +40,7 @@ public:
 //
 // Example of a Device in simulation
 //
-class MyDevice : public sparta::Resource
+class MyDevice : public sparta::Unit
 {
 public:
     // Typical and expected constructor signature if this device is
@@ -48,9 +53,6 @@ public:
     static const char * name;
 
 private:
-    // A port set of my ports
-    sparta::PortSet              my_ports_;
-
     // A data in port that receives uint32_t
     sparta::DataInPort<uint32_t> a_delay_in_;
 
@@ -68,9 +70,8 @@ const char * MyDevice::name = "my_device";
 // Construction
 MyDevice::MyDevice(sparta::TreeNode * my_node,
                    const MyDeviceParams * my_params) :
-    sparta::Resource(my_node, name),
-    my_ports_(my_node, "MyDevice Ports"),
-    a_delay_in_(&my_ports_, "a_delay_in", 1) // Receive data one cycle later
+    sparta::Unit(my_node, name),
+    a_delay_in_(&unit_port_set_, "a_delay_in", 1) // Receive data one cycle later
 {
     // Tell SPARTA to ignore this parameter
     my_params->my_device_param.ignore();
@@ -87,5 +88,5 @@ MyDevice::MyDevice(sparta::TreeNode * my_node,
 //
 void MyDevice::myDataReceiver_(const uint32_t & dat)
 {
-    std::cout << "I got data: " << dat << std::endl;
+    ILOG("I got data: " << dat);
 }

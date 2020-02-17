@@ -1,17 +1,16 @@
-// <sparta> -*- C++ -*-
+// <sparta.hpp> -*- C++ -*-
 
 
 #ifndef __SPARTA_H__
 #define __SPARTA_H__
 
 /*!
- * \file sparta.h
- * \brief Sparta header files for sparta clients as well as common constants and
- * declarations.
- *
- * The list of includes int his file should be kept small to reduce compile
- * time. Generally, only external code performing introspection on sparta should
- * find this header file useful
+ * \file sparta.hpp
+ * \brief This is _not_ a global include file.  Used for documentation and const globals.
+ */
+
+/*!
+ * \brief Sparta namespace containing most Sparta classes
  */
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/simulation/ResourceTreeNode.hpp"
@@ -20,13 +19,7 @@
 #include "sparta/statistics/StatisticSet.hpp"
 
 /*!
- * \brief Sparta namespace containing most SPARTA classes
- */
-namespace sparta {
-}
-
-/*!
- * \brief All symbols required that must be defined for a SPARTA application.
+ * \brief All symbols required that must be defined for a Sparta application.
  * \deprecated SPARTA_SYMBOLS no longer has a use. All sparta symbols are
  * instantiated in sparta.cpp
  */
@@ -35,32 +28,33 @@ namespace sparta {
 // __SPARTA_H__
 #endif
 
+
 /*!
-\mainpage SPARTA
+\mainpage Sparta
 
 The framework is documented from several perspectives.<br>
 <h3>Online Documentation</h3>
 -# \ref modeling <br>
 Model development using sparta (include Getting Started)<br>&nbsp;
 -# \ref end_user <br>
-Simulator End-User Documentation for SPARTA CLI Simulators<br>&nbsp;
+Simulator End-User Documentation for Sparta CLI Simulators<br>&nbsp;
 -# \ref application <br>
 Simulator front-end integration with sparta<br>&nbsp;
 -# \ref client_apis <br>
-Interfaces for inspecting a SPARTA simulator programatically<br>&nbsp;
+Interfaces for inspecting a Sparta simulator programatically<br>&nbsp;
 -# \ref formats <br>
-File formats used by SPARTA<br>&nbsp;
+File formats used by Sparta<br>&nbsp;
 -# \ref tools <br>
 Sparta-Related Tools<br>&nbsp;
 -# \ref framework_dev <br>
-Documentation for SPARTA Developers<br>&nbsp;
+Documentation for Sparta Developers<br>&nbsp;
 -# \ref best_practices <br>
-Suggested best practices for using SPARTA<br>&nbsp;
+Suggested best practices for using Sparta<br>&nbsp;
 -# \ref q_and_a <br>
 Questions and Answers (not necessarily frequently asked)
 
 <h3>Release Notes</h3>
--# <a href="../SPARTAv1.0.ReleaseNotes.html"><b>SPARTA v1.0 release notes</b></a>
+-# <a href="../Spartav1.0.ReleaseNotes.html"><b>Sparta v1.0 release notes</b></a>
  */
 
 /*!
@@ -68,14 +62,14 @@ Questions and Answers (not necessarily frequently asked)
  */
 
 /*!
-\page end_user SPARTA Command Line Interface End-User Guide
+\page end_user Sparta Command Line Interface End-User Guide
 \tableofcontents
-<h4><i>For end-users of the SPARTA simulator CLI</i></h4>
+<h4><i>For end-users of the Sparta simulator CLI</i></h4>
 
 This page details the usage, configuration, inputs, and outputs of <b>"sparta-based CLI(command line
 interface)"</b>. This term is used to refer to a simulator that uses the sparta::app framework
 (sparta::app::CommandLineSimulator and sparta::app::Simulation) to initialize and configure the
-simulator from the command line. If a simulator application is not using this part of the SPARTA
+simulator from the command line. If a simulator application is not using this part of the Sparta
 framework, very little of this end-user guide is applicable to an application. Some of these
 features will still be available interally to the simulation framework, but they may be exposed to
 the end-user in a different manner.
@@ -85,14 +79,14 @@ only to simulators that expose a sparta tree with instrumentation such as counte
 notifications. Such simulators may or may not be driven by a sparta CLI.
 
 For the purpose of this page, 'user' means an invidual or script who invokes a simulator through its
-command line interface or needs to work with SPARTA simulator output
+command line interface or needs to work with Sparta simulator output
 
 ---
 \section invocation 1 Simulator Invocation
-The SPARTA command line consists of a number of generic options built into the sparta application
+The Sparta command line consists of a number of generic options built into the sparta application
 framework as well as application-specific commands that pertain to a specific simulator.
 
-In general, the SPARTA application framework attempts to provide a large set of generic commands
+In general, the Sparta application framework attempts to provide a large set of generic commands
 without making any assumptions about the underlying device being simulated. The only assumptions
 made are that the device operates on one or more clock domains with regular frequencies and that
 there is some 'tick' (sparta::Scheduler::getCurrentTick) unit which can be used as a unit of absolute
@@ -106,16 +100,16 @@ domain.
 \subsection io_policies 1.1 I/O Policies
 
 \par A. No Hidden I/O
-As policy, the SPARTA application framework will not read any input files that are not explicitly
+As policy, the Sparta application framework will not read any input files that are not explicitly
 specified on the command line or indirectly by configuration files specified on
-the command line. The SPARTA application framework generally does not write any output files unless
-explicitly requested. If any files are automatically written by SPARTA, those filenames will always be
-configurable and disable-able through the command line. For a given simulator, the SPARTA application
+the command line. The Sparta application framework generally does not write any output files unless
+explicitly requested. If any files are automatically written by Sparta, those filenames will always be
+configurable and disable-able through the command line. For a given simulator, the Sparta application
 framework's behavior will dependent only on the given command line. There should be no unexpected
 effects from seemingly unrelated files or environment variables.
 
 \par
-<b>NOTE:</b> The only cases of SPARTA writing files which were not requested are debug dumps. These
+<b>NOTE:</b> The only cases of Sparta writing files which were not requested are debug dumps. These
 files will be written if the simulator exits with an error (and the --debug-dump policy
 option allows it). The name of this file is typically.
 ~~~~
@@ -123,7 +117,7 @@ error-dump.dbg
 ~~~~
 The \--debug-dump-filename option controls this filename.
 
-Similarly, SPARTA will eventually write snapshot pipeout files on error. The pipeout file prefix will
+Similarly, Sparta will eventually write snapshot pipeout files on error. The pipeout file prefix will
 be configurable
 
 \par B. Full Output Control
@@ -132,7 +126,7 @@ the command line or through parameters in configuration files that are specified
 line. The user may not have full control
 
 \par C. Output Error Detection
-All output files opened from within SPARTA are expected to detect file write errors and throw
+All output files opened from within Sparta are expected to detect file write errors and throw
 exceptions on failed writes (e.g. when a disk quota is reached). Similarly, failed heap allocations
 are expected to throw exceptions, though some objects which suppress these exceptions (e.g.
 stringstream) may cause such errors to go undetected in the short term.
@@ -144,7 +138,7 @@ bad file write.
 <b style='font-color:$ff0000;'>WARNING:</b> Specific simulator applications may violate these policies, but are strongly
 encouraged not to.
 
-\subsection sparta_cmds 1.2 SPARTA Basic Command-Line Options
+\subsection sparta_cmds 1.2 Sparta Basic Command-Line Options
 
 The most useful of all commands are the help commands. Even if this document is out of date, full
 (albiet abridged) documentation will be available through the --help-verbose command line flag. The
@@ -161,8 +155,8 @@ simulator --help-topic topics
 A number of other built-in commands are listed in later sections.
 
 \par
-<b>NOTE:</b> In the future, a man-page may be created for the SPARTA application framework. A
-pagination system could be built into the SPARTA application framework to make browing the built-in
+<b>NOTE:</b> In the future, a man-page may be created for the Sparta application framework. A
+pagination system could be built into the Sparta application framework to make browing the built-in
 documentation even easier.
 
 \par
@@ -207,13 +201,13 @@ showing additional detailed help pages, and specifying trace files. Positional a
 
 Extending the sparta CLI to add application-specific events is straightforward and requires boost program_options.
 
-\subsection sparta_advanced_cmds 1.4 SPARTA Advanced commands
+\subsection sparta_advanced_cmds 1.4 Sparta Advanced commands
 
 \todo Write this section
 
-\subsection sim_dbg_cmds 1.5 SPARTA Simulation Debug commands
+\subsection sim_dbg_cmds 1.5 Sparta Simulation Debug commands
 
-The sparta CLI provides a few options that help debug the CLI and the SPARTA simulation framework.
+The sparta CLI provides a few options that help debug the CLI and the Sparta simulation framework.
 
 Usage             | Behavior
 ------            | -------------
@@ -284,7 +278,7 @@ A SpartaException will be thrown at the end of tree finalization if any virtual 
 unread. This ensures that all user parameters are consumed by the simulator in some way.
 
 \subsection ctrl_cfg_architecture 2.2 Selecting Architectures
-SPARTA configuration supports the` concept of architecture configuration baselines. This allows users
+Sparta configuration supports the` concept of architecture configuration baselines. This allows users
 to load configuration files that override the defaults of chosen parameters hard-coded in the
 simulator source code. Unlike typical configuration files or command line parameter specifications,
 selecting an architecture updates both the default and the value of any specified parameter such that
@@ -438,7 +432,7 @@ Usage                   | Behavior
 
 \par
 <b>NOTE:</b> If you want the automatic summary sent to a file instead of stdout, use to the
-\--report-all option, which SPARTA's automatic summary uses internally. The automatic summary can be
+\--report-all option, which Sparta's automatic summary uses internally. The automatic summary can be
 disabled with \--auto-summary=off
 
 ---
@@ -447,7 +441,7 @@ disabled with \--auto-summary=off
 
 \li \ref report_def_format
 
-The SPARTA Report system is capable of collecting counters and statistics from the simulation device
+The Sparta Report system is capable of collecting counters and statistics from the simulation device
 tree and printing their names and values to an output file or stream in any of a variety of formats.
 This is the principal means of extracting quantitative data from a simulation.
 
@@ -466,7 +460,7 @@ custom reports which contain arbitrary statistics. Since statistics only depend 
 counters, their values could always be computed in post-processing.
 
 \par
-Both counters and statistics objects are always found within a "stats" object in the SPARTA device
+Both counters and statistics objects are always found within a "stats" object in the Sparta device
 tree.
 
 \par
@@ -493,7 +487,7 @@ simulation --report top myreport.yaml out.txt
 
 Node paths in myreport.yaml for the above example would be specified relative to "top".
 
-Often, a global scope is desired so that SPARTA scheduler statistics can be used (e.g. ticks) or just
+Often, a global scope is desired so that Sparta scheduler statistics can be used (e.g. ticks) or just
 to allow fully qualified paths. This can be done using the "_global" keyword.
 
 \verbatim
@@ -522,7 +516,7 @@ Wildcard   | Value
 \%t        | timestamp
 \%s        | simulator name
 
-When using a variable in the destination, SPARTA will list the instantiations both at the start of
+When using a variable in the destination, Sparta will list the instantiations both at the start of
 simulation and at the end.
 \verbatim
 Running...
@@ -580,7 +574,7 @@ content:
     # Additional stats & subreports
 \endcode
 
-After generating a periodic report in the CSV format, try plotting with the SPARTA csv report plotter
+After generating a periodic report in the CSV format, try plotting with the Sparta csv report plotter
 in sparta/tools/plot_csv_report.py
 
 \todo Complete this section
@@ -589,7 +583,7 @@ in sparta/tools/plot_csv_report.py
 
 The list of available report output formats are available at \ref report_out_format . Refer to this
 page for notes and details. Use <b><pre>"--help-topic reporting"</pre></b> to get information
-about report formatsinteractively from a SPARTA simulator
+about report formatsinteractively from a Sparta simulator
 
 \par 3.2.5 Parsing and Extension
 
@@ -615,7 +609,7 @@ Usage                     | Behavior
 
 Command                                    | Functionality
 -----------                                | ------
-\-l / \--log PATTERN CATEGORY DESTINATION  | Creates a logging "tap" on the node(s) described by PATTERN. These taps observe log messages emitted at or below these nodes in the SPARTA tree when the messages' categories match CATEGORY. If CATEGORY is "", all message categories match. ALl log output received through this tap is routed to DESTINATION, which is formatted based on the file extension. See the <b>Logging Formats</b> below.
+\-l / \--log PATTERN CATEGORY DESTINATION  | Creates a logging "tap" on the node(s) described by PATTERN. These taps observe log messages emitted at or below these nodes in the Sparta tree when the messages' categories match CATEGORY. If CATEGORY is "", all message categories match. ALl log output received through this tap is routed to DESTINATION, which is formatted based on the file extension. See the <b>Logging Formats</b> below.
 
 \par 3.3.2 Logging Formats
 
@@ -696,7 +690,7 @@ If a pipeline dump is created, the debug dump (\ref debug_dump) will contain the
 pipeline file.
 
 \subsection debug_dump 3.7 Post-Run Debug dumps
-When the SPARTA application framework encounters an exception during running or post-run validation,
+When the Sparta application framework encounters an exception during running or post-run validation,
 it attempts to dump the debug state. This behavior can be controlled to always dump or never dump
 using the --debug-dump command line option. Valid usages are
 Usage                | Behavior
@@ -705,7 +699,7 @@ Usage                | Behavior
 \--debug-dump never  | Never dump
 \--debug-dump error  | (default) Dump on run exception or post-run validation exception
 
-During this dump, the simulator will write information about itself, about the SPARTA Scheduler, the
+During this dump, the simulator will write information about itself, about the Sparta Scheduler, the
 exception, the device tree, the backtrace of the exception (if exception is a SpartaException) and
 then every known resource will be asked to write its debug state to a file. During this procedure
 all exceptions are suppressed and a note about any suppressed exceptions will be found in the dump.
@@ -736,7 +730,7 @@ data to the output stream when given the chance. The file structure will look so
 ================================================================================
 Device tree:
 ================================================================================
-_SPARTA_global_node_ : <_SPARTA_global_node_> {builtin}
+_Sparta_global_node_ : <_Sparta_global_node_> {builtin}
 +-top : <top (root)>
 | +-foo : <top.foo>
 | | +-fiz : <top.foo.fiz>
@@ -772,11 +766,11 @@ less -R dumpfile
 <b>NOTE:</b> The format of this file is subject to change. It is not meant to be parsed.
 
 \par
-<b>NOTE:</b> In future versions the SPARTA CLI may respond to SIGTERM, SIGSTOP/SIGCONT, and SIGQUIT may be
+<b>NOTE:</b> In future versions the Sparta CLI may respond to SIGTERM, SIGSTOP/SIGCONT, and SIGQUIT may be
 handled
 
 \subsection backtraces 3.4 Backtraces
-When the SPARTA application framework encounters a fatal signal in the following list
+When the Sparta application framework encounters a fatal signal in the following list
  - SIGSEGV
  - SIGFPE
  - SIGILL
@@ -829,7 +823,7 @@ instead of the entire device tree.
 GDB 4.7 is capable of debugging the sparta infrastructure and handles the GNU ISO C++11 standard
 library.
 
-The SPARTA simulation framework catches and rethrows exceptions internally in order to
+The Sparta simulation framework catches and rethrows exceptions internally in order to
 provide debug dumps, perform proper cleanup, and potentially preserve state for user inspection once
 an interactive shell is built for sparta simulators. GDB breaks on uncaught exceptions by default,
 which is not helpful for sparta. It is more effective to break on Exception throws as seen below.
@@ -916,7 +910,7 @@ $ export BOOST=/absolute/path/to/boost_prefix
 \endcode
 
 \subsection easymake_loc EasyMake Location
-The absolute path to easymake must be defined for SPARTA:
+The absolute path to easymake must be defined for Sparta:
 \code
 $ export EASYMAKE_DIR=/absolute/path/to/easymake
 \endcode
@@ -932,7 +926,7 @@ And optionally
 \endcode
 
 Internally, this uses the easymake infrastructure found at $(EASYMAKE_DIR) to build and relies on
-SPARTA files as wel as the locally installed boost found at the prefix $(BOOST).
+Sparta files as wel as the locally installed boost found at the prefix $(BOOST).
 
 Building sparta produces several things:
 - libsparta.a containing the core sparta code
@@ -958,29 +952,29 @@ The simulator or test being built shoulve have a makefile that includes vars.mk 
 Typically, the top of the makefile will contain:
 \code
 # Required for sparta's vars.mk
-SPARTA_BASE := /path/to/sparta/project
+Sparta_BASE := /path/to/sparta/project
 
-include $(SPARTA_BASE)/vars.mk
+include $(Sparta_BASE)/vars.mk
 \endcode
 
-\subsection includes SPARTA Header Files
+\subsection includes Sparta Header Files
 All sparta header files can be found within the 'sparta' subdirectory of the sparta project. Sparta headers
 expect to look eachother up by their path including this 'sparta' directory (e.g.
 sparta/log/MessageSource.h). Therefore, your gcc compile lines must have an -I flag pointing to
 the sparta project base.
 
 \code
--I$(SPARTA_BASE)
+-I$(Sparta_BASE)
 \endcode
 
-\subsection linking SPARTA Libraries
+\subsection linking Sparta Libraries
 The vars.mk file provided by sparta to define some variables required to refer to some libraries in
 the final link line.
 
 The following must be present in any final link lines. The variables in this line are defined in
 sparta's vars.mk
 \code
--lsparta $(REQUIRED_SPARTA_LIBS) -L$(BOOST_LIBDIR) -L$(SPARTA_LIBDIR)
+-lsparta $(REQUIRED_Sparta_LIBS) -L$(BOOST_LIBDIR) -L$(Sparta_LIBDIR)
 \endcode
 
 Additionally, sparta is built with the following gcc flags. It is recommended that these also be used
@@ -1000,7 +994,7 @@ Making using a custom Makefile that contains the above flags should result in no
 that shared and static libraries appear only once on each gcc command.
 
 \subsection example Example Model
-SPARTA is distributed with an example model that uses sparta. This is a simple core with a dummy
+Sparta is distributed with an example model that uses sparta. This is a simple core with a dummy
 pipeline that uses easymake to help define its makefiles. This application can be used as a starting
 point for new simulators or tests.
 
@@ -1025,7 +1019,7 @@ Python code in sparta, cd into the doc direcoty int the sparta project and run d
 <br/><br/>
 \section windows_msvc Windows (MSVC 2012)
 \subsection Prerequesites
-\warning SPARTA does not yet support Windows
+\warning Sparta does not yet support Windows
  */
 
 /*!
@@ -1044,8 +1038,8 @@ See \ref pipeout_format
 Sparta can expose numeric information from within the system through Counters and Statistics
 
 \section ctr_stat_future
-In the future, SPARTA will be able to expose more information to reports and clients more easily
-\li Eventually, a SPARTA Python shell will allow direct query of counters and instantiation of statistics an reports
+In the future, Sparta will be able to expose more information to reports and clients more easily
+\li Eventually, a Sparta Python shell will allow direct query of counters and instantiation of statistics an reports
 
 \todo Complete this section
 
@@ -1096,7 +1090,7 @@ as anyone running, configurating, and extracting data from a sparta-enable simul
  */
 
 /*!
-\page client_apis SPARTA Client APIs
+\page client_apis Sparta Client APIs
 
 These aspects of sparta allow inspection and interaction with a sparta-enabled simulator by an outside
 C++ entity. In general, any entity in the device tree can be located given a pointer to the root of
@@ -1413,7 +1407,7 @@ Sparta includes a 'parameter' mechanism for configuring (and querying the config
 device tree both through C++ and configuration files (See \ref param_format).
 
 \section config_goals System Goals
-The SPARTA configuration system exists to allow configuration of hierarchical simulator before running
+The Sparta configuration system exists to allow configuration of hierarchical simulator before running
 a simulation and inspection (saving) of the final system configuration for the purpose of analysis
 or run reproduction.
 
@@ -1422,8 +1416,8 @@ The user-side configuration of a simulator is covered in \ref ctrl_cfg and \ref 
 
 Further background information on configuration files, parameters, and tree construction phases is available
 in this <TBD>,
-which contains diagrams of SPARTA tree elaboration.
-The following information is the most current documentation on SPARTA simulator construction.
+which contains diagrams of Sparta tree elaboration.
+The following information is the most current documentation on Sparta simulator construction.
 
 \par Overview
 Simulator initialization, at it's simplest, establishes an initial device tree (\ref trees) containing the parameters
@@ -1448,19 +1442,19 @@ its components. No changes to the tree may be made at this time
 \par Phased Construction Legacy/Limitations
 Note: <i>These limitations have been (or will be) addressed by additional features: "Unbound Parameter Tree",
 "Dynamically Created Parameter Sets", "Topology Files".</i>
-Early in SPARTA's development, these phases existed to keep the configuration process simple and allow
+Early in Sparta's development, these phases existed to keep the configuration process simple and allow
 all user onfiguration to be written into to the simulator tree's sparta::Parameter nodes exactly once
 (after building the initial tree) - eliminating the need for re-processing the configuration inputs
 multiple times. If new parameters could be added tothe tree at any time, re-reading the input
 configuration could be and expensive operation. This meant that all nodes in the device tree using
-SPARTA parameters would need to be specified before reading the configuration at all. The result was that
-SPARTA parameters could not be used to dictate how many instances of another component should be
-constructed if that other component had its own SPARTA parameters.
+Sparta parameters would need to be specified before reading the configuration at all. The result was that
+Sparta parameters could not be used to dictate how many instances of another component should be
+constructed if that other component had its own Sparta parameters.
 
 While this limitation forced the model owner to define their entire parameterized "topologies" in
 C++ code, probably makes simulator initialization code maintainable and clearly outlines the
 simulation hierarchy. It is also analogous to how "Topology Files" will work once implemented.
-In early SPARTA, this did introduces a substantial limitation in the form of disallowing sparta
+In early Sparta, this did introduces a substantial limitation in the form of disallowing sparta
 parameters to be used to specify the overall simulator topology (e.g. how many cores to create, how
 many of what units will exist in each core) and prevented resources from creating new parameterized
 resource children without some challenging ResourceFactory code. Support for pattern-matching-based
@@ -1641,8 +1635,8 @@ the last chance to alter the tree structure from within the simulation subclass
 
 \par Phase 4. Finalize Tree Phase
 There is no virtual method in sparta::app::Simulation for simulators to implement. This phase involves
-SPARTA walking the existing device tree and constructing all Resources as defined by the tree. For
-each ResourceTreeNode encountered in the tree, SPARTA will construct the resource through the
+Sparta walking the existing device tree and constructing all Resources as defined by the tree. For
+each ResourceTreeNode encountered in the tree, Sparta will construct the resource through the
 associated ResourceFactory using that ResourceTreeNode and its parameter set as arguments to the
 Resource's constructor. Each resource can create new children nodes (e.g. sparta::Port,
 sparta::CounterBase, sparta::StatisticDef, sparta::StatisiticSet, sparta::PortSet, sparta::log::MessageSource,
@@ -1690,7 +1684,7 @@ MyModel::MyModel(sparta::TreeNode * node,
                  const MyModelParameterSet * p)
 {
     // Schedule startup handler
-    node->getClock()->getScheduler()->scheduleStartupHandler (CREATE_SPARTA_HANDLER (MyModel, startupHandler_));
+    node->getClock()->getScheduler()->scheduleStartupHandler (CREATE_Sparta_HANDLER (MyModel, startupHandler_));
 }
 
 void MyModel::startupHandler_ ()
@@ -1711,14 +1705,14 @@ Prior to simulator shutdown, the entire device tree is marked as being in the te
 destructing sparta::TreeNode objects, each will throw a sparta::SpartaException if not marked as being in
 the teardown phase. The goal of this behavior is to prevent any user from accidentally destroying
 TreeNodes at run-time or even construction time once they are added to a tree. Deleting nodes at
-run-time can be challenging for SPARTA (especially with a Python shell or other remote
+run-time can be challenging for Sparta (especially with a Python shell or other remote
 clients) to handle. Because no legitimate reasons for supporting this have been proposed, destroying
 nodes prior to teardown is prohibited with the exception of sparta::Counter and sparta::StatisticDef
 where C++ move semantics can be used to swap nodes during construction in order to allow these nodes
 to be instantiated within an vector without introducing additional pointer indirection in
 performance-critical code.
 sparta::app::Simulation  attempts to cleanly tear down by freeing all nodes allocated on the heap and
-destructing any object on the simulator's stack. SPARTA alwys intends to teardown with no memory leaks
+destructing any object on the simulator's stack. Sparta alwys intends to teardown with no memory leaks
 so that any number of simulations can be run consecutively in the same process.
 
 The sparta command line parameter \--show-tree/\--show-parameters (or \--help-tree/\--help-parameters)
@@ -1759,7 +1753,7 @@ various output files to generate a textual trace of the state or events inside a
 This page details the modeling view of the logging system - that is, how log messages are emitted
 
 \section logging_goals Logging System Goals
-The SPARTA logging feature exists to allow model and simulator owners to generate free-form messages
+The Sparta logging feature exists to allow model and simulator owners to generate free-form messages
 of a certain 'category' from a specific point within a \ref trees "device tree". Each log message
 should be filterable by its category and origin by end-users of the simulator. Users should also
 have the ability to redirect log messages to any number of output files including stdout/stderr
@@ -1849,7 +1843,7 @@ Generating these notifications from within a model is described in \ref notifica
 \page framework_dev Framework Development
 \tableofcontents
 
-This is intended for anyone modifying SPARTA
+This is intended for anyone modifying Sparta
 
 \section changelogs Changelogs
 The intent of sparta/ChangeLog is to document API-level changes and other breaking changes to sparta.
@@ -1870,11 +1864,11 @@ existing test and be added to the Makefile in the test directory.
 
 \section meta_doc Meta Documentation
 
-All SPARTA features should be consistently documented. Whenever possible, hand-written documentation
-should reference to SPARTA C++ documentation using doxygen \\ref
+All Sparta features should be consistently documented. Whenever possible, hand-written documentation
+should reference to Sparta C++ documentation using doxygen \\ref
 
 \section content Page Content
-Where appropriate, a SPARTA feature (whether a single class or collection of features) should contain
+Where appropriate, a Sparta feature (whether a single class or collection of features) should contain
 documentation to justify its existance and current implementation.
 \subsection desc Feature Description
 This describes the feature in a few short sentances
@@ -1903,7 +1897,7 @@ Code comments should not extend past character column 80 except for preformatted
 example code.
 
 \subsection text_conv Texual Documentation Convention
-The doxygen pages automatically generated from namespace and classes related to each SPARTA
+The doxygen pages automatically generated from namespace and classes related to each Sparta
 component should contain detailed explanations of how to use that component's features.
 However, some concepts involve multiple components which requires standalone documentation pages to
 be written. These are mainly use-case-based (e.g. \ref logging How to Log).
@@ -1919,7 +1913,7 @@ Questions and Answers (not necessarily frequently-asked)
  */
 
 /*!
-\page formats SPARTA File formats
+\page formats Sparta File formats
 
 -# \ref param_format
 -# \ref report_def_format
@@ -1934,7 +1928,7 @@ This page describes the grammar and usage of a sparta parameter file.
 \todo Complete this page
 
 Configuration files are a subset of YAML (<a href="http://www.yaml.org/spec/1.2/spec.html">spec v1.2</a>)
-used to assign values to parameters in a SPARTA device Tree
+used to assign values to parameters in a Sparta device Tree
 (\ref trees). The format is simple: a typical YAML file consists of nested YAML maps which describe
 how the device tree is traversed to assign parameters. Each key within these maps represents a
 relative path in the device tree. Each value can be another map (implying descent depeer into the
@@ -2063,7 +2057,7 @@ using wildcards and and then mark a few exceptions to the the pattern as optiona
 
 This example shows a variety of ways parameters can be set in a configuration file:
 \code
-"// SPARTA cfg file comment": "value of comment“ # Eventually, comments like these may be reprocuded in config file output a SPARTA simulator
+"// Sparta cfg file comment": "value of comment“ # Eventually, comments like these may be reprocuded in config file output a Sparta simulator
 "//a.params.param1": 1 # Interpreted as commented line
 "//": "this is a test device tree configuration file"
 top:
@@ -2110,7 +2104,7 @@ Until this page is complete, additional (somewhat dated) documentation on report
 
 \section report_def_overveiew Overview
 Report definitions are YAML files which describe to the sparta simulation framework how to construct
-the content of a report from a given context in a SPARTA device tree. Specifically, the report
+the content of a report from a given context in a Sparta device tree. Specifically, the report
 definition defines exactly what counters and statistics are added to a report and how they are named
 in the report.
 
@@ -2138,7 +2132,7 @@ This is implemented in \ref Report.cpp, specifically in the \ref sparta::ReportF
 
 \section report_def_structure Structure
 The report definition is a YAML file consisting of nested dictionaries which specify scope in the
-SPARTA device tree on which the report is being constructed.
+Sparta device tree on which the report is being constructed.
 
 Report definitions respect the <a href="http://www.yaml.org/spec/1.2/spec.html">YAML 1.2
 specification</a> though only a subset is used by the report definiton parser
@@ -2833,7 +2827,7 @@ max_report_depth    | Immediately within an 'autopopulate' block | Specifies the
 \page report_out_format Report Output Formats
 This page describes the various output formats of a sparta report
 
-<em>For an up-to-date list, run a SPARTA simulation with the flag:</em><b><pre>"--help-topic reporting"</pre></b>
+<em>For an up-to-date list, run a Sparta simulation with the flag:</em><b><pre>"--help-topic reporting"</pre></b>
 
 \todo Complete this page
 \section report_out_format_plaintext Plaintext (.txt, .text)

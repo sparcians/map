@@ -4,12 +4,12 @@
 /**
  * \file SysCSpartaSchedulerAdapter.h
  *
- * \brief Glue code that connect the SPARTA scheduler to SystemC
+ * \brief Glue code that connect the Sparta scheduler to SystemC
  *
  */
 
-#ifndef __SYSCSPARTASCHEDULERADAPTER_H__
-#define __SYSCSPARTASCHEDULERADAPTER_H__
+#ifndef __SYSCSpartaSCHEDULERADAPTER_H__
+#define __SYSCSpartaSCHEDULERADAPTER_H__
 
 #include <climits>
 
@@ -28,37 +28,37 @@
 namespace sparta
 {
 
-//! \def SC_SPARTA_SCHEDULER_NAME
+//! \def SC_Sparta_SCHEDULER_NAME
 //! The name of the scheduler adapter
-#define SC_SPARTA_SCHEDULER_NAME  "SysCSpartaSchedulerAdapter"
+#define SC_Sparta_SCHEDULER_NAME  "SysCSpartaSchedulerAdapter"
 
-//! \def SC_SPARTA_STOP_EVENT_NAME
+//! \def SC_Sparta_STOP_EVENT_NAME
 //! The name of the SystemC event used to stop simulation
-#define SC_SPARTA_STOP_EVENT_NAME "sc_ev_stop_simulation"
+#define SC_Sparta_STOP_EVENT_NAME "sc_ev_stop_simulation"
 
 /*!
  * \class SysCSpartaSchedulerAdapter
- * \brief Class that "connects" SPARTA to SystemC
+ * \brief Class that "connects" Sparta to SystemC
  *
- * This class will allow a SPARTA developer to interoperate a
- * SPARTA-based simulator with the SystemC kernel.  The general rule
- * of thumb is that the SPARTA scheduler is either always equal to or
+ * This class will allow a Sparta developer to interoperate a
+ * Sparta-based simulator with the SystemC kernel.  The general rule
+ * of thumb is that the Sparta scheduler is either always equal to or
  * lagging the SystemC scheduler, waiting to be woken up to advance.
  *
  * There are two ways to stop simulation using this adapter:
  *
- * -# In SystemC, find the event SC_SPARTA_STOP_EVENT_NAME and notify it
+ * -# In SystemC, find the event SC_Sparta_STOP_EVENT_NAME and notify it
  *    when SystemC is complete
  * -# Register a sparta::Event via registerSysCFinishQueryEvent that is
- *    called by SPARTA to query the SystemC side
+ *    called by Sparta to query the SystemC side
  *
  * There are some caveats to know about this adapter.  See the todo.
  *
- * \todo The SPARTA scheduler is on its own SC_THREAD and put to sleep
- * between scheduled events.  For example, if the SPARTA scheduler has
- * an event scheduled @ tick 1000, and time is currently 500, the SPARTA
+ * \todo The Sparta scheduler is on its own SC_THREAD and put to sleep
+ * between scheduled events.  For example, if the Sparta scheduler has
+ * an event scheduled @ tick 1000, and time is currently 500, the Sparta
  * scheduler thread will wait() for 500 ticks. However, if a SystemC
- * component puts an event on the SPARTA scheduler during this sleep
+ * component puts an event on the Sparta scheduler during this sleep
  * window (say at 750 ticks), we do not have a mechanism to wake this
  * thread early.
  */
@@ -71,8 +71,8 @@ public:
 
     //! Initialized the sc_module this adapter is part of
     SysCSpartaSchedulerAdapter() :
-        sc_module(sc_core::sc_module_name(SC_SPARTA_SCHEDULER_NAME)),
-        sc_ev_stop_simulation_(SC_SPARTA_STOP_EVENT_NAME)
+        sc_module(sc_core::sc_module_name(SC_Sparta_SCHEDULER_NAME)),
+        sc_ev_stop_simulation_(SC_Sparta_STOP_EVENT_NAME)
     {
         SC_THREAD(runScheduler_);
         sparta_scheduler_ = sparta::Scheduler::getScheduler();
@@ -101,9 +101,9 @@ public:
     /*!
      * \brief Run simulation -- all of it including SystemC
      * \param num_ticks The number of ticks to run simulation (both
-     *                  SysC and SPARTA)
+     *                  SysC and Sparta)
      *
-     * Run simulation using the SPARTA command line infrastructure and
+     * Run simulation using the Sparta command line infrastructure and
      * world.  This method is typically called from derivatives of
      * sparta::Simulator via the runRaw_() overridden method.
      */
@@ -118,7 +118,7 @@ public:
 
     /**
      * \brief Set simulation complete on the SystemC side via the
-     *        SC_SPARTA_STOP_EVENT_NAME sc_event.  Can be called
+     *        SC_Sparta_STOP_EVENT_NAME sc_event.  Can be called
      *        directly if need be.
      */
     void setSystemCSimulationDone() {
@@ -139,12 +139,12 @@ public:
      * Since there are two schedulers running with this adapter, there
      * are interesting scenarios that must be acknowledged.  One
      * scenario is that the SysC clock is finished (no events), but
-     * the SPARTA Scheduler is still busy (and injecting events) into
-     * the SystemC side.  Likewise, SPARTA could be idle, but SystemC
+     * the Sparta Scheduler is still busy (and injecting events) into
+     * the SystemC side.  Likewise, Sparta could be idle, but SystemC
      * still running.  The best way to handle this (as most SystemC
      * users have continuous events and force simulation stop using
-     * sc_stop), is to have a SPARTA Event that queries the SystemC side
-     * to see if it's truly complete.  If so, then we drain SPARTA and
+     * sc_stop), is to have a Sparta Event that queries the SystemC side
+     * to see if it's truly complete.  If so, then we drain Sparta and
      * this adapter terminiates simulation.
      */
     void registerSysCFinishQueryEvent(sparta::Scheduleable * sysc_query_event,
@@ -166,7 +166,7 @@ public:
 
 private:
 
-    //! SC_THREAD that runs the SPARTA scheduler
+    //! SC_THREAD that runs the Sparta scheduler
     void runScheduler_()
     {
         // Start simulation
@@ -186,7 +186,7 @@ private:
             wait(sc_core::SC_ZERO_TIME);
 
             // If given, schedule the user's SystemC query event to
-            // allow the SPARTA user to check to see if the SystemC side
+            // allow the Sparta user to check to see if the SystemC side
             // of simulation is complete.  This query can be as simple
             // as asking the SystemC kernel if there are any events
             // (sc_core::sc_pending_activity()) or asking the SystemC
@@ -211,10 +211,10 @@ private:
         sc_core::sc_time sysc_time = sc_core::sc_time_stamp();
 
         // The SystemC scheduler will always lead or be exactly at
-        // the same tick as SPARTA.  Following this rule allows safe
+        // the same tick as Sparta.  Following this rule allows safe
         // assumptions in scheduling synchronization.
         //
-        // If the SPARTA Scheduler next tick is @ 1000 and we're at
+        // If the Sparta Scheduler next tick is @ 1000 and we're at
         // 500, we want to advance 500 ticks and end @ 1000.  The
         // next event tick time should never be the same as
         // current tick unless it's the beginning of simulation.
@@ -232,7 +232,7 @@ private:
     // Local copy of the sparta scheduler
     sparta::Scheduler * sparta_scheduler_ = nullptr;
 
-    // Time unit SPARTA runs in
+    // Time unit Sparta runs in
     sc_core::sc_time_unit sparta_sc_time_ = sc_core::SC_PS;
 
     // Boolean that tells our runScheduler_ thread to exit -- the rest
@@ -244,7 +244,7 @@ private:
     bool sc_stop_called_ = false;
 
     // Sparta Event (optional) that will be automatically scheduled if
-    // the SPARTA scheduler is finished and the driver needs to query systemc
+    // the Sparta scheduler is finished and the driver needs to query systemc
     sparta::Scheduleable * sysc_query_event_ = nullptr;
     Scheduler::Tick sysc_query_event_interval_ = 10000;
     Scheduler::Tick next_sysc_event_fire_tick_ = 0;
