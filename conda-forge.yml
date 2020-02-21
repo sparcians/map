@@ -8,3 +8,11 @@ skip_render:
   - .github/CONTRIBUTING.md
   - .github/ISSUE_TEMPLATE.md
   - .github/PULL_REQUEST_TEMPLATE.md
+provider:
+  linux: azure
+  osx: None
+  win: None
+  linux_ppc64le: None
+  linux_aarch64: None
+azure:
+  force: False
