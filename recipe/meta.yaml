@@ -12,7 +12,7 @@ source:
 
 build:
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', '0') }}
-  string: {{ [build_number, ('h' + PKG_HASH), environ.get('GIT_DESCRIBE_HASH', '')]|join('_') }}
+  string: {{ [PKG_BUILDNUM, ('h' + PKG_HASH), environ.get('GIT_DESCRIBE_HASH', '')]|join('_') }}
   # python2 is not supported
   skip: True # [py2k]
 
