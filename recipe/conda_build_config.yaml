@@ -1,0 +1,13 @@
+# overriding conda-forge-pinnings defined in
+# https://github.com/conda-forge/conda-forge-pinning-feedstock/blob/master/recipe/conda_build_config.yaml
+
+# conda-forge uses gcc on linux and clang on osx
+# we're only supporting clang on both platforms
+c_compiler:
+    - clang
+c_compiler_version:
+    - 9
+cxx_compiler:
+    - clangxx
+cxx_compiler_version:
+    - 9
