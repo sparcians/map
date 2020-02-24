@@ -23,7 +23,11 @@
 #include <cxxabi.h>
 #include <cassert>
 #ifndef __APPLE__
+#include <features.h>
+#if __GLIBC_PREREQ(2,26)
+// siginfo_t.h refactors some macros out of signal.h since glibc v2.26
 #include <bits/types/siginfo_t.h>
+#endif
 #endif
 #include <cstdint>
 #include <cstdio>
