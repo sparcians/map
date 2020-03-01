@@ -1,0 +1,17 @@
+/*!
+  \page app_overview Sparta Application APIs
+
+  Class | Brief Description
+  ----- | -----------------
+  AppTriggers.hpp | Set of classes used to trigger various behaviors
+  sparta::app::Backtrace | \copybrief sparta::app::Backtrace
+  sparta::app::CommandLineSimulator | \copybrief sparta::app::CommandLineSimulator
+  ConfigApplicators.hpp | Grouping of classes to apply configurations to sparta::ParameterSet, etc
+  sparta::app::FeatureConfiguration | \copybrief sparta::app::FeatureConfiguration
+  sparta::app::MultiDetailOptions | \copybrief sparta::app::MultiDetailOptions
+  sparta::app::ReportDescriptor | \copybrief sparta::app::ReportDescriptor
+  sparta::app::Simulation | \copybrief sparta::app::Simulation
+  sparta::app::SimulationConfiguration | \copybrief sparta::app::SimulationConfiguration
+  sparta::SimulationInfo | \copybrief sparta::SimulationInfo
+
+*/

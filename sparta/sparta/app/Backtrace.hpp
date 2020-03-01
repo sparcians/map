@@ -1,6 +1,5 @@
 // <Backtrace.h> -*- C++ -*-
 
-
 /**
  * \file Backtrace.hpp
  * \brief Handles writing backtraces on errors

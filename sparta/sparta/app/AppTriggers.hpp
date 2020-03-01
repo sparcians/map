@@ -23,6 +23,10 @@
 namespace sparta {
     namespace app {
 
+/*!
+ * \class PipelineTrigger
+ * \brief Trigger used to enable/disable Pipeline colletion
+ */
 class PipelineTrigger : public trigger::Triggerable
 {
 public:

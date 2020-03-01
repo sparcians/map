@@ -5,9 +5,9 @@
   The framework is documented from several perspectives.<br>
   <h3>Online Documentation</h3>
   -# \ref building <br>
-  Building and Understanding What Was Built<br>&nbsp;
+  Building and understanding what was built<br>&nbsp;
   -# \ref modeling <br>
-  Model development using Sparta<br>&nbsp;
+  Reference documentation for the Sparta API<br>&nbsp;
   -# \ref end_user <br>
   Simulator End-User Documentation for Sparta CLI Simulators<br>&nbsp;
   -# \ref application <br>

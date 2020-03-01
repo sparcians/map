@@ -1,0 +1,16 @@
+/*!
+  \page collection_overview Sparta Collection APIs
+
+  These classes are used to collect pipeline information for Argos
+  consumption.
+
+  Class | Brief Description
+  ----- | -----------------
+  sparta::collection::Collectable | \copybrief sparta::collection::Collectable
+  sparta::collection::CollectableTreeNode | \copybrief sparta::collection::CollectableTreeNode
+  sparta::collection::Collector | \copybrief sparta::collection::Collector
+  sparta::collection::DelayedCollectable | \copybrief sparta::collection::DelayedCollectable
+  sparta::collection::IterableCollector | \copybrief sparta::collection::IterableCollector
+  sparta::collection::PipelineCollector | \copybrief sparta::collection::PipelineCollector
+
+*/

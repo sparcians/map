@@ -1,9 +1,9 @@
-// <Simulation.h> -*- C++ -*-
+// <MetaTreeNode.hpp> -*- C++ -*-
 
 
 /*!
- * \file Simulation.hpp
- * \brief Simulation setup base class
+ * \file MetaTreeNode.hpp
+ * \brief
  */
 
 #ifndef __SPARTA_METATREENODE_H__

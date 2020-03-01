@@ -1,5 +1,5 @@
 /*!
-  \page utils_overview Sparta Utilities/Tools
+  \page utils_overview Sparta Utilities/Tools APIs
 
   Utility                     | Brief Description
   --------------------------- | ------------------

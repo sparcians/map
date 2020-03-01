@@ -25,6 +25,7 @@ namespace collection {
 /**
  * \class IterableCollector
  * \brief A collector of any iterable type (std::vector, std::list, sparta::Buffer, etc)
+ *
  * \tname IterableType     The type of the collected object
  * \tname collection_phase The phase collection will occur.
  *                         Collection happens automatically in this
