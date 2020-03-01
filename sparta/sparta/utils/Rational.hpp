@@ -11,6 +11,10 @@ namespace sparta
 {
 namespace utils
 {
+    /**
+       \class Rational
+       \brief Class to represent a Rational number
+     */
     template <class T>
     class Rational
     {

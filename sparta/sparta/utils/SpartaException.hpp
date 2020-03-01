@@ -1,9 +1,9 @@
-// <SpartaException> -*- C++ -*-
+// <SpartaException.hpp> -*- C++ -*-
 
 /**
  * \file   SpartaException.hpp
  *
- * \brief  Exception class for all of SPARTA.
+ * \brief  Exception class for all of Sparta.
  *
  *
  */
@@ -51,8 +51,7 @@ namespace sparta
 
     /**
      * \class SpartaException
-     *
-     * Used to construct and throw a standard C++ exception. Inherits from
+     * \brief Used to construct and throw a standard C++ exception. Inherits from
      * std::exception.
      *
      * \warning Creates a backtrace, which introduces much overhead. Whenever

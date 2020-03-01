@@ -1,4 +1,4 @@
-// <SpartaAssert> -*- C++ -*-
+// <SpartaAssert.hpp> -*- C++ -*-
 
 
 #ifndef __SPARTA_ASSERT_H__
@@ -13,7 +13,7 @@
 
 /*!
  * \file SpartaAssert.hpp
- * \brief Set of macros used for assertions and performance enhancement
+ * \brief Set of macros for Sparta assertions.  Caught by the framework
  */
 
 

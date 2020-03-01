@@ -5,44 +5,39 @@
   --------------------------- | ------------------
   sparta::utils::BoundedValue | \copybrief sparta::utils::BoundedValue
   sparta::utils::BitArray | \copybrief sparta::utils::BitArray
-  sparta::utils::Bits | \copybrief sparta::utils::Bits
+  Bits.hpp | Some "count leading 1s" tools
   sparta::utils::BoundedValue | \copybrief sparta::utils::BoundedValue
-  sparta::utils::ByteOrder | \copybrief sparta::utils::ByteOrder
-  sparta::utils::Colors | \copybrief sparta::utils::Colors
-  sparta::utils::DataContainer | \copybrief sparta::utils::DataContainer
-  sparta::utils::DetectMemberUtils | \copybrief sparta::utils::DetectMemberUtils
+  ByteOrder.hpp | Tools to help with LE vs BE machines
+  Colors.hpp, sparta::color::ColorScheme | Handy \c #defines for colors. \copybrief sparta::color::ColorScheme
+  sparta::DataContainer | \copybrief sparta::DataContainer
+  DetectMemberUtils.hpp |Compile-time SFINAE techniques to detect presence of operators, member-fields and methods by name in any class
   sparta::utils::Enum | \copybrief sparta::utils::Enum
-  sparta::utils::File | \copybrief sparta::utils::File
-  sparta::utils::KeyValue | \copybrief sparta::utils::KeyValue
-  sparta::utils::LexicalCast | \copybrief sparta::utils::LexicalCast
+  File.hpp | Utilities for File I/O
+  sparta::KeyValue | \copybrief sparta::KeyValue
+  LexicalCast.hpp | Methods for fancy casting operations
   sparta::utils::LifeTracker | \copybrief sparta::utils::LifeTracker
   sparta::utils::LockedValue | \copybrief sparta::utils::LockedValue
-  sparta::utils::MathUtils | \copybrief sparta::utils::MathUtils
-  sparta::utils::MetaStructs | \copybrief sparta::utils::MetaStructs
-  sparta::utils::MetaTypeList | \copybrief sparta::utils::MetaTypeList
-  sparta::utils::Param | \copybrief sparta::utils::Param
-  sparta::utils::PlacementAllocatedUniquePtr | \copybrief sparta::utils::PlacementAllocatedUniquePtr
-  sparta::utils::PointerUtils | \copybrief sparta::utils::PointerUtils
-  sparta::utils::Printing | \copybrief sparta::utils::Printing
+  MathUtils.hpp | Lots and lots and lots of math utils for use.
+  MetaStructs.hpp  | Structs to extend C++ meta-tools like `enable_if` and what-not
+  MetaTypeList.hpp | Types to extend c++ meta-types
+  Printing.hpp | Handy utils for printing `std::vector` etc
   sparta::utils::Rational | \copybrief sparta::utils::Rational
-  sparta::utils::SmartLexicalCast | \copybrief sparta::utils::SmartLexicalCast
-  sparta::utils::SpartaAssert | \copybrief sparta::utils::SpartaAssert
-  sparta::utils::SpartaException | \copybrief sparta::utils::SpartaException
-  sparta::utils::SpartaExpBackoff | \copybrief sparta::utils::SpartaExpBackoff
-  sparta::utils::SpartaSharedPointer | \copybrief sparta::utils::SpartaSharedPointer
-  sparta::utils::SpartaTester | \copybrief sparta::utils::SpartaTester
-  sparta::utils::StaticInit | \copybrief sparta::utils::StaticInit
-  sparta::utils::StringManager | \copybrief sparta::utils::StringManager
-  sparta::utils::StringUtils | \copybrief sparta::utils::StringUtils
-  sparta::utils::SysCSpartaSchedulerAdapter | \copybrief sparta::utils::SysCSpartaSchedulerAdapter
-  sparta::utils::Tag | \copybrief sparta::utils::Tag
-  sparta::utils::TieredMap | \copybrief sparta::utils::TieredMap
-  sparta::utils::TimeManager | \copybrief sparta::utils::TimeManager
-  sparta::utils::TrackingHandle | \copybrief sparta::utils::TrackingHandle
-  sparta::utils::Traits | \copybrief sparta::utils::Traits
-  sparta::utils::TupleHashCompute | \copybrief sparta::utils::TupleHashCompute
-  sparta::utils::Utils | \copybrief sparta::utils::Utils
+  SmartLexicalCast.hpp | Smart lexical casting supporting prefixes, separator ignoring, and suffixes.
+  SpartaAssert.hpp | Set of macros for Sparta assertions.  Caught by the framework
+  sparta::SpartaException | \copybrief sparta::SpartaException
+  SpartaExpBackoff.hpp | Macros for handling exponential backoff
+  sparta::SpartaSharedPointer | \copybrief sparta::SpartaSharedPointer
+  sparta::SpartaTester | \copybrief sparta::SpartaTester
+  sparta::StringManager | \copybrief sparta::StringManager
+  StringUtils.hpp | Set of handy functions for string manipulations.
+  sparta::SysCSpartaSchedulerAdapter | \copybrief sparta::SysCSpartaSchedulerAdapter
+  sparta::Tag | \copybrief sparta::Tag
+  sparta::TieredMap | \copybrief sparta::TieredMap
+  sparta::TimeManager | \copybrief sparta::TimeManager
+  Traits.hpp | File that defines compile-time queries on data types. Extends c++11+'s trait types
+  TupleHashCompute.hpp | Extends map's hashing to include tuples
+  Utils.hpp | Lots and lots of utilities (I know, not helpful)
   sparta::utils::ValidValue | \copybrief sparta::utils::ValidValue
-  sparta::utils::VectorUtils | \copybrief sparta::utils::VectorUtils
+  VectorUtils.hpp | Lots of vector utils to extend vector
 
   */

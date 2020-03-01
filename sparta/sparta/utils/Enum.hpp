@@ -15,7 +15,11 @@ namespace sparta
 {
 namespace utils
 {
-
+    /**
+       \class Enum
+       \brief Class that wraps a C++ class enum and allows conversion
+       between POD and the enum type.  Also provides strings for them
+     */
     template<class EnumType>
     class Enum
     {

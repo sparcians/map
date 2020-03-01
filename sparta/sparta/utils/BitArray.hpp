@@ -37,6 +37,7 @@ namespace sparta {
 
         /*!
          * \class BitArray
+         * \brief Class for fast bit manipulation
          *
          * Type to represent a bit array whose size is not known at compile time. If
          * the size is known at compile time use std::bitset.

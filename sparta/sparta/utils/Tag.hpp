@@ -1,4 +1,12 @@
+// <Tag.hpp> -*- C++ -*-
 
+
+/**
+ * \file Tag.hpp
+ *
+ * \brief Simple class for sequence numbering
+ *
+ */
 
 #ifndef _H_SPARTA_TAG
 #define _H_SPARTA_TAG
@@ -12,6 +20,7 @@ namespace sparta
 {
 
 /**
+ * \class Tag
  * \brief Tag(): Simple class to provide nested sequence
  *        numbering
  *
