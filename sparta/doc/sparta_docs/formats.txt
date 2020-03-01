@@ -1,0 +1,972 @@
+
+/*!
+  \page formats Sparta File formats
+
+  -# \ref param_format
+  -# \ref report_def_format
+  -# \ref report_out_format
+  -# \ref pipeout_format
+  -# \ref checkpoint_format
+  -# \ref log_out_format
+
+  \page param_format Parameter/Configuration Format (.cfg,.yaml)
+  This page describes the grammar and usage of a sparta parameter file.
+
+  \todo Complete this page
+
+  Configuration files are a subset of YAML (<a href="http://www.yaml.org/spec/1.2/spec.html">spec v1.2</a>)
+  used to assign values to parameters in a Sparta device Tree
+  (\ref trees). The format is simple: a typical YAML file consists of nested YAML maps which describe
+  how the device tree is traversed to assign parameters. Each key within these maps represents a
+  relative path in the device tree. Each value can be another map (implying descent depeer into the
+  tree) or a value to assign to the location indicated by the key. These leav values are either a
+  scalar (e.g. string, integer) or a sequence (of strings, integers, other vectors, etc.)
+
+  Configuration files are typically applied at the global namespace in the device tree (above the
+  "top" object).
+
+  This example shows a very simple usage of parameter files. Note that block-style maps in YAML are
+  indicated by "key: value" syntax and that the value can be an additional, nested map.
+
+  \code
+  # YAML comment. Lost during interpretation
+  top:
+  a:
+  params:
+  param1: 1
+  param2: foo
+  \endcode
+
+  This tree assigns values "1" and "foo" to the sparta::Parameter nodes located at "top.a.params.param1"
+  and "top.a.params.param2" respectively. It is up to the sparta::Parameter objets to interpret the as
+  a native type instead of a string (if necessary).
+
+  Note that multiple levels in the tree can be specified in one mapping key. The previous
+  configuration file can be rewritten as:
+
+  \code
+  top.a.params:
+  param1: 1
+  param2: foo
+  \endcode
+
+  For sparta::Parameter's which are vectors (or nested vectors), YAML in-line sequence syntax can be used
+  to represent the value.
+
+  \code
+  top.a.params:
+  one_dimension_vec_param: [1,2,3,4,5]  # This can be read by a 1-dimensional vector parameter
+  two_dimension_vec_param: [[1],[2,3,4]]  # This can be read by a 2-dimensional vector parameter
+  \endcode
+
+  It is also important that YAML keys and values cannot begin with '*' or '?' and must not contain
+  '#', ':', '{', or '}' characters without putting the entire string in quotes.
+
+  \section param_format_nesting Nesting
+
+  It is often useful to nest configuration files. For example if a simualtor contains repeating
+  hierarchies, one configuration file can be used for each level. Using the reserved "<b>include</b>"
+  key allows a configuration file to specify that another configuration file should be applied at that
+  context. At this time, the second configuration file is expected to be a relative path to the
+  currently-parsed config file.
+
+  Consider
+  \code
+  # top_a.yaml
+  top:
+  a.params:
+  a_param_1: 1
+  a_param_2: 2
+  b:
+  include: b.yaml # Applies b.yaml configuration in this context (top.b)
+  \endcode
+
+  \code
+  # b.yaml
+  # To be applied at top.b
+  params:
+  b_param_1: 1 # Assigns "1" to top.b.params.b_param_1
+  b_param_2: 2
+  \endcode
+
+  Note that "#include" or "include" can be used as the key. If the former is used, double-quotes are
+  required to prevent it from being interpreted as YAML comment.
+
+  \section param_format_attributes Parameter Assignment Attributes and Optional Parameters
+
+  Attributes can be assigned to parameters specified in configuration files that
+  dictate how those parameters values are applied.
+
+  Following normal configuration file syntax, parameter-assignment attributes can be attached to a
+  parameter using a value "<ATTRIBUTE>" (where ATTRIUTE is some meaningful attribute name) as if it
+  were a typical value being assigned to a parameter. These attribute names are <b>case-sensitive</b>.
+  \code
+  top.foo.params:
+  myparam: <ATTRIBUTE>
+  \endcode
+
+  Parameter paths which include wildcards are welcome. Additional value-assignments of parameters
+  following the attribute assignment may modify or remove the attribute depending on the specific
+  attribute.
+
+  <b>Optional Parameters</b><br/>
+  A parameter specified in a configuration file can be modified so that the simulator suppresses the
+  error that would otherwise occur if the node referred to did not actually exist in the simulated
+  device tree.
+
+  By assigning "<OPTIONAL>" as a value for the chosen parameter(s), the user prevent errors if
+  that/those parameters are missing from the simulation tree.
+
+  \code
+  top.foo.params:
+  param_that_does_not_exist: 12345
+  param_that_does_not_exist: <OPTIONAL>
+  \endcode
+
+  With this, a user can inherit from other configuration files even if those files
+  contain parameters which do not always exist or do not ever exist in the simulated
+  tree for which the inheriting configuration file is intended. For example, if a configuration file
+  for version 1 of some system included a subcomponent that version 2 did not have, version 2 could
+  still inherit from configuration files for version 1 by marking certain inapplicable parameters
+  from the version 1 file as optional.
+  \code
+  top:
+  core*:
+  version_1_component:
+  params:
+  "*": <OPTIONAL>
+  \endcode
+
+  This can also be used to generalize parameter files by assigning values using overly-broad paths
+  using wildcards and and then mark a few exceptions to the the pattern as optional.
+
+  \section param_format_examples Examples
+
+  This example shows a variety of ways parameters can be set in a configuration file:
+  \code
+  "// Sparta cfg file comment": "value of comment“ # Eventually, comments like these may be reprocuded in config file output a Sparta simulator
+  "//a.params.param1": 1 # Interpreted as commented line
+  "//": "this is a test device tree configuration file"
+  top:
+  a:
+  params:
+  param1: 12
+  top.a:
+  "b":
+  {
+  "params.param1": 56,
+  "params": {
+  "#include" : "test_other.yaml"
+  }
+  }
+  params:
+  "param5":   [1.0, 1.1, 2, 3, 5.5]
+  "param6": "0xdeadbeef"
+  param7: "070"
+  param8: [0xa1, 0xb2, 0xc3]
+
+  # This is a comment that will be lost
+  "top.a.params.param2": 34
+  "top.a.params.param3": [5,6,7,8]
+  top.a.params.param9 : string with spaces
+  "// block comment":
+  {
+  # This is all ignored because the key associated with this mapping begins with "//"
+  "a.paramsnonexistant_param": false,
+  "b": {
+  params.nonexistant_param": false
+  }
+  }
+  \endcode
+
+  It is up to the user to identify the types of each parameter. This can most easily done by
+  automatically generating a configuration file containing the simulator's default configuration and
+  then modifying this file. See \ref ctrl_cfg_parameters
+
+  \page report_def_format Report Definition Format (.rrep,.yaml)
+  \tableofcontents
+  This page describes the grammar and usage of a report definition file
+
+  Until this page is complete, additional (somewhat dated) documentation on reports can be found: TBD
+
+  \section report_def_overveiew Overview
+  Report definitions are YAML files which describe to the sparta simulation framework how to construct
+  the content of a report from a given context in a Sparta device tree. Specifically, the report
+  definition defines exactly what counters and statistics are added to a report and how they are named
+  in the report.
+
+  Report definitions do not contain information about report duration or context.
+
+  \par Important:
+  <b>A report definition can affect only the contents of the report that is instantiated based on that
+  definition. Reprot definitions have no impact on any instrumentation in the simulation and cannot
+  change the behavior of the simulation proper under any circumstance. It it does, it should be
+  considered a bug. Reports will never affect other reports either - they are entirely passive</b>
+
+  Report definitions do not directly dictate how or to what file the report is finally rendered.
+  Report definitions only modify report content, which has the sole purpose of observing the
+  simulation instrumentation and collecting results. The resposibility of rendering the report content
+  and any values collected to a file, files, or database(s) is left entirely to Report Formatters.
+  See \ref report_gen. Report formatters can obviously use the content of a report to determine
+  output. Report definitions can also contain some style hints which the report formatter may choose
+  to interpret (see \ref report_def_style)
+
+  In this way, the same report definition can be used to generate text, csv, python, json, and html
+  output.
+
+  \section report_def Implementation
+  This is implemented in \ref Report.cpp, specifically in the \ref sparta::ReportFileParserYAML class
+
+  \section report_def_structure Structure
+  The report definition is a YAML file consisting of nested dictionaries which specify scope in the
+  Sparta device tree on which the report is being constructed.
+
+  Report definitions respect the <a href="http://www.yaml.org/spec/1.2/spec.html">YAML 1.2
+  specification</a> though only a subset is used by the report definiton parser
+
+
+  These reports begin with some optional fields which are represented as YAML key-value pairs.
+  Comments in YAML are started with a '#' character. These can begin at any line and follow other text
+  on any line.
+  \code
+  name: MyReport # Name of report (optional)
+  author: Me # Author of the report (optional)
+  \endcode
+
+  Following these pairs usually comes the content section. A YAML dictionary key whose associated
+  value is yet another nested dictionary is said to be a 'section' or 'block' for the purposes of this
+  documentation when that key is a reserved word (e.g. content, subreport, autopopulate). All fields
+  in a report must be specified within a content block.
+
+
+  \code
+  content: # Begin a report content section. No more report meta-data below this point (except in subreports)
+  \endcode
+
+  <em>In the implementation of the YAML report definition parser, scope qualifiers and the content
+  section can be intermixed and the order is not really important as long as all report fields are
+  specified within a content section.
+  </em>
+
+  \subsection report_def_field Report Fields
+  To resolve amgiguity between the multiple meanings of "statistics", reports will be said to contain
+  a number of ordered, named "Fields" where each field will retrieve its current value from a counter,
+  statistic, or expression referencing the former and a number of simple (cmath) (1)
+  sparta::CounterBase, (2) StatisticDef. The name of each field is specified in the report as a string,
+  optionally containing \ref report_def_field_name_variables
+
+  These field names and expressions are part of the report only and have no impact on any
+  instrumentation in the simulation under any circumstances.
+
+  Field names within a report must be unique. However, \ref report_def_subreports can be used to get
+  around this restriction. \ref report_def_field_name_variables help accomplish this.
+
+  <em>The code in \ref sparta::Report refers to it's report fields as "statistics" because it makes sense
+  within the scope of that code. Fom an end-user perspective, it is less confusing toe call them
+  fields.</em>
+
+  Report fields can be added using a report definition using either \ref report_def_field_declaration
+  or \ref report_def_autopop.
+
+  \subsection report_def_example Example Report Definition
+  \code
+  # Example Report.
+  # Instantiate from global scope ("")
+  #
+  name: "Example Report"
+  style:
+  decimal_places: 2
+  content:
+  top: # Changes scope to TOP
+  subreport:
+  name: Automatic Summary
+  style:
+  show_descriptions: true
+  content:
+  autopopulate:
+  attributes: vis:summary
+  max_report_depth: 1
+  subreport:
+  name: Misc Stats
+  content:
+  core0.foo.stats.bar : BAR 0
+  core1.foo.stats.bar : BAR 1
+  core*.foo.stats.bin : BIN %1
+  core0:
+  foo.stats:
+  buz : "BUZ 0"
+  \endcode
+
+  Assume a device tree which looks like this:
+  \verbatim
+  - top
+  - core0
+  - foo
+  - stats
+  - bar (statistic, SUMMARY visibility)
+  - bin (statistic)
+  - buz (statistic)
+  - core1
+  - foo
+  - stats
+  - bar (statistic, SUMMARY visibility)
+  - bin (statistic)
+  - buz (statistic)
+  \endverbatim
+
+  The report above would be called "Example Report" and every field in every subreport would be
+  formatted to 2 decimal places (see \ref report_def_style).
+
+  Note the "top:" line just within the highest content section. This is a scope qualifier (see
+  \ref report_def_scope_qual) which tells the report parser that any node names or node name patterns
+  nested within the dictionaries associated with that "top:" section will be resolved within the scope
+  of "top". For example, "core0.foo" would resolve to "top.core0.foo" within that block.
+
+  A subreport called "Automatic Summary" would be created and would be populated by all counters/stats
+  below the top-level "top" node which were created with "SUMMARY"
+  (sparta::InstrumentationNode::Visibility::VIS_SUMMARY) level visibility. See \ref report_def_autopop).
+  The fields added by autopopulation will be given unique names. This is typically accomplished by
+  creating a nested subreport for each node below the place where the autopopulation was performed
+  ("top" in this case). However, because the max_report_depth was set to 1 for this autopopulate
+  block, only 1 level of subreports will be created based on the child nodes seen (core0 and core1 in
+  this case). Each with summary-level visibility (top.core0.foo.stats.bar and top.core1.foo.stats.bar
+  in this example) will be added to the appropriate subreports with names relative to that subreport.
+  Therefore the "Automatic Summary" subreport will contain 2 subreports each containing 1 field. So
+  following the end of the first subreport section, the report content is:
+  \verbatim
+  Report "Example Report"
+  Subreport "Autmatic Summary"
+  Subreport core0
+  Field "foo.stats.bar" -> top.core0.foo.stats.bar
+  Subreport core1
+  Field "foo.stats.bar" -> top.core1.foo.stats.bar
+  \endverbatim
+
+  <b>Note that this is not a real rendering of the report, but just a depiction of the current
+  structure of the report. The actual rendering of the report is totally dependant on the report
+  output formatter used to render the report (sparta::report::format).</b>
+
+  Because the "show_descriptions" style was set, if this report were rendered with the html formatter
+  (or any other formatter that recognizes the show_descriptions style) then descriptions for each
+  field in the "Automatic Summary" section would be shown beside each report field
+
+  A second subreport of the "Example Report" would be created and called "Misc Stats".
+  This second subreport would contain 5 fields as specified in the content section of that report.
+
+  The first two stats come from the lines
+  \verbatim
+  core0.foo.stats.bar : BAR 0
+  core1.foo.stats.bar : BAR 1
+  \endverbatim
+  These are explicit \ref report_def_field_declarations in the form of a leaf YAML key-value pair.
+  Each of these lines creates a new field in the current report/subreport with the given name to the
+  right of the ':'. This field points to the node (counter/stat) or expression
+  (\ref report_def_expressions) on the left side. The node referenced on the left is resolved relative
+  to the current scope ("top") in this case. The field name can be omitted and replaced with "" to
+  indicate it is an unnamed field. Report output formatters handle rendering unnamed fields
+  differently.
+
+  The third field declaration:
+  \verbatim
+  core*.foo.stats.bin : BIN %1
+  \endverbatim
+  adds 2 fields to the report. This declaration contains a <b>wildcard</b> in the <u>node location</u>
+  as well as a <b>variable</b> in the field <u>name</u>.
+
+  The wildcard in the node location indicates that when resolving this location to an actual node
+  within the current scope ("top" in this case), proceed with any child having that name. In this
+  example, "core*" could be substituted with "core0" and "core1". This is a very primitive glob-like
+  pattern matching language
+
+  Since both "core0" and "core1" will be matched, this line will result in the addition of a field for
+  "top.core0.foo.stats.bin" as well as "top.core1.foo.stats.bin". See \ref report_def_scope_wildcards
+  for more detail on these wildcards
+
+  The substitutions made when pattern matching "core*" to "core0" and "core1" are available to the
+  field name on the right of the ':'. "%1" refers to the first (most recent) subsitution on the
+  substitution stack for the current context. When "core*" is matched to "core0", "%1" refers to "0"
+  and when "core*" is matched to "core1", "%1" refers to "1". The field names of the two nodes added
+  as a result of this line are "BIN 0" and "BIN 1". See \ref report_def_field_name_variables
+  for more detail on field name variables.
+
+  The final few lines of this content section are just nested scope qualifiers.
+  \verbatim
+  core0:
+  foo.stats:
+  buz : "BUZ 0"
+  \endverbatim
+  "core0" just changes the current scope for anything in the nested dictionary associated with it.
+  Since the scope enclosing this node is "top", the scope inside this section is "top.core0". The
+  following line changes the scope to "top.core0.foo.stats". The third line is a field definition line
+  which simply creates a field named "BUZ 0: which points to the node "top.core0.foo.stats.buz".
+
+  It should be obvious from these lines that the current scope is a stack, and when the dictionary
+  associated with each of these lines ends, the scope is set back to what it was before the dictionary
+  was started. Any lines with the same indention as "core0" after these few line would have the scope
+  of "top" because they are not within the "core0" scope qualifier's associated dictionary.
+
+  The final report contents after parsing this entire report definition are:
+  \verbatim
+  Report "Example Report"
+  Subreport "Autmatic Summary"
+  Subreport core0
+  Field "foo.stats.bar" -> top.core0.foo.stats.bar
+  Subreport core1
+  Field "foo.stats.bar" -> top.core1.foo.stats.bar
+  Subreport "Misc Stats"
+  Field "BAR 0" -> core0.foo.stats.bar
+  Field "BAR 1" -> core1.foo.stats.bar
+  Field "BIN 0" -> core0.foo.stats.bin
+  Field "BIN 1" -> core1.foo.stats.bin
+  Field "BUZ 0" -> core0.foo.stats.buz
+  \endverbatim
+
+  \subsection report_def_field_declarations Field Declarations
+  Field declarations are leaf key-value pairs in YAML files within a content section but outside of
+  some other block (e.g. autopopulate). These pairs each add one or more fields in the report (See
+  \ref report_def_field) and dictate how those fields get their values whenever the report is
+  rendered.
+
+  A field has the following signature:
+  \code
+  value_expression : field_name
+  \endcode
+  <em>value_expression</em> indicates how the field gets its value. This can be a node location
+  relative to the current enclosing scope which may contain wildcards. Alternatively, this may be a
+  statistical expression (sparta::statistics::expression::grammar::ExpressionGrammar). When interpreting
+  a report definition, an attempt is made to interpret this as a node location. If the string is not
+  a properly formed node location string (alphanumeric with underscores and dot-separators) or if it
+  does not resolve to any nodes in the simulation's device tree then it will be interpreted as an
+  expression (See \ref report_def_expressions). If it is not a valid expression, an exception is
+  thrown.
+
+  <em>field_name</em> names the field. If the left side of a field declaration or any enclosing scope
+  node (see \ref report_def_scope_qual) contains wildcards, then this name should contain a variable
+  as explained in \ref report_def_field_name_variables.
+
+  See \ref report_def_example for some example usages
+
+  \subsection report_def_field_name_variables Field Name Variables
+  The wildcards contained in \ref report_def_scope_qual and \ref report_def_field_declarations node
+  paths allow a number of nodes having similar paths matching a given pattern to be added to a report
+  in a single line in the report definition. However, this functionality can often cause report field
+  name collisions. For example, the following line will always cause a report field name collision
+  (and cause an exception to be thrown) if there is more than one matching node.
+  \code
+  top.core*.stats.foo : foo_field
+  \endcode
+  The report being built may allow a field named "foo_field" to be added referring to
+  "top.core0.stats.foo". If the pattern above also matches another node, say "top.core1.stats.foo",
+  then it will attempt to add a field named "foo_field" to the report AGAIN for the next pattern
+  match. This will result in an exception being thrown.
+
+  To avoid such name collisions, variables can be used in the report field name. Consider the
+  following tree:
+  \verbatim
+  top
+  - core0
+  - stats
+  - foo0
+  - foo1
+  - core1
+  - stats
+  - foo0
+  - foo1
+  \endverbatim
+
+  And the following example report definition:
+  \verbatim
+  content:
+  top:
+  core*.stats:
+  foo* : "My Core%1 Foo%2 Stat"
+  # OR: foo* : "My Core%-2 Foo%-1 Stat"
+  \endverbatim
+
+  In this example, we see wildcards in a <b>scope qualifier</b> line ("core*.stats") and in a
+  <b>report field definition</b> node location. After evaluating the "core*.stats" line with the
+  example simulation tree shown above, the report definition interpreter will be tracking the contexts
+  {"top.core0.stats", "top.core1.stats"}. It will also be tracking a stack of substitutions which can
+  later be referenced by the report field name in variables. At this point, the stack of replacements
+  for each context being tracked looks like:
+  \verbatim
+  context "top.core0.stats" replacements_stack = ["0"]
+  context "top.core1.stats" replacements_stack = ["1"]
+  \endverbatim
+
+  When the node location "foo*" portion of the report field declaration line is encountered, the
+  interpreter evaluates the locations for each tracked context. The resulting set of contexts being
+  tracked is {"top.core0.stats.foo0", "top.core0.stats.foo1", "top.core1.stats.foo0",
+  "top.core1.stats.foo1"}. Each of these new contexts inherits the replacements stack from the context
+  from which the pattern was matched. This results in a new set of replacement stacks being tracked
+  \verbatim
+  context "top.core0.stats.foo0" replacements_stack = ["0", "0"] <- top of stack
+  context "top.core0.stats.foo1" replacements_stack = ["0", "1"] <- top of stack
+  context "top.core1.stats.foo0" replacements_stack = ["1", "0"] <- top of stack
+  context "top.core1.stats.foo1" replacements_stack = ["1", "1"] <- top of stack
+  \endverbatim
+
+  At this point, the interpreter found 4 nodes refering to the given report field declaration and must
+  create 4 report fields: one for each of the current contexts. Variables in the report field name can
+  refer to the contents of the replacements stack for the context for which each field is being added.
+
+  \%<em>X</em> refers to a position from the top of the replacements stack <em>X</em>-1. \%1 refers to
+  the top of the stack, \%2 to the second from the top, and so on. In this example, \%1 is the "foo"
+  number and \%2 is the "core" number. \%0 refers to the fully-qualified context. \%-<em>X</em>
+  indexes the replacements stack for the current context in reverse.
+
+  \%-1 refers to the least recent substitution made in the current context, \%-2  to the second least
+  recent and so on. Referring to replacements in this way is less flexible since a report definition
+  that uses these variables may be moved to a new scope or included (see \ref report_def_includes)
+  inside another report definition unexpectedly. If the containing report definition uses wildcards
+  to resolve its tree scope, it will change the values see in \%-<em>x</em> variables. Therefore,
+  this is discouraged.
+
+  Alternatively, one can totally omit the report field name as in:
+  \code
+  top.core*.stats.foo : ""
+  \endcode
+  This is generally less desirable as it relies on the report output formatter to display a useful
+  name when showing this field, which may not be the case depending on how the report is rendered.
+
+
+  \subsection report_def_subreports Subreports
+  A single report can contain multiple subreports to better organize its content.
+
+  \subsection report_def_reserved_nodes Reserved Nodes
+
+  \subsection report_def_scope_qual Node Scope Qualifiers
+  \subsection report_def_scope_wildcards scope Wildcards
+
+  Wildcards can be inserted into Node Scope qualifiers to simultaneously descend subtrees within the
+  sparta device tree. This is useful when there are mutliple instantiations of a simular component (e.g.
+  multiple cores). To see the same statistic across each core, one could supply a node location
+  containing a wildcard like so:
+  \code
+  top.core*.foo.bar.stats.mystat
+  \endcode
+
+  As long as this location was evaluated from the global scope (higher than top), it would find every
+  "mystat" matching this patttern. If the simulation had 12 core instances ("core0" through "core11")
+  which each had identical subtrees, this would find 12 instances of mystat.
+
+  If each "core*" in this hypothetical system contained different subtrees and some did NOT have a
+  "mystat" statistic as indicated by the path, the found set would contain fewer than 12 results.
+  <b>When interpreting a report definition file this is not a problem <u>as long as at least 1 node
+  can be found matching this pattern.</u></b>
+
+  These wildcards are part of a very limited glob-like pattern matching language. There is no limit to
+  the number of wildcards that can be used in a single string. The following wildcards are supported:
+
+  Wildcard  | Meaning
+  --------- | --------
+  \*        | Any number of characters
+  \+        | One or more characters
+  ?         | Zero or One character
+
+  When evaluating an tree location with wildcards, the substitutions for each match are tracked.
+  These substitutions can be accessed through variables in report field declarations. See
+  \ref report_def_field_name_variables. Even the substitutions in enclosing scope qualifiers (on other
+  lines) are accessible.
+
+  \subsection report_def_expressions Statistical Expressions
+  Expressions can be used instead of a statistic/counter name when defining report fields (as in
+  \ref report_def_field). These are arithmetic expressions supporting most some operators and tokens:
+  +, -, *, /, **, (, ), and -unary. Thes expressions support references to other counters and stats,
+  a number of builtin constants, simulation variables, and functions of various arities. Other
+  counters/stats can be referenced relative to the current context in the report def just as simple
+  named counters/stats are referenced in basic report entries.
+
+  Constant         | Value
+  ---------        | ------
+  c_pi             | boost::math::constants::pi<double>()
+  c_root_pi        | boost::math::constants::root_pi<double>()
+  c_root_half_pi   | boost::math::constants::root_half_pi<double>()
+  c_root_two_pi    | boost::math::constants::root_two_pi<double>()
+  c_root_ln_four   | boost::math::constants::root_ln_four<double>()
+  c_e              | boost::math::constants::e<double>()
+  c_half           | boost::math::constants::half<double>()
+  c_euler          | boost::math::constants::euler<double>()
+  c_root_two       | boost::math::constants::root_two<double>()
+  c_ln_two         | boost::math::constants::ln_two<double>()
+  c_ln_ln_two      | boost::math::constants::ln_ln_two<double>()
+  c_third          | boost::math::constants::third<double>()
+  c_twothirds      | boost::math::constants::twothirds<double>()
+  c_pi_minus_three | boost::math::constants::pi_minus_three<double>()
+  c_four_minus_pi  | boost::math::constants::four_minus_pi<double>()
+  c_nan            | NAN
+  c_inf            | INFINITY
+
+  Variable       | Value
+  ---------      | ------
+  g_ticks        | (singleton) Scheduler ticks
+  g_seconds      | (singleton) Scheduler simulated seconds elapsed
+  g_milliseconds | (singleton) Scheduler simulated milliseconds elapsed
+  g_microseconds | (singleton) Scheduler simulated microseconds elapsed
+  g_nanoseconds  | (singleton) Scheduler simulated nanoseconds elapsed
+  g_picoseconds  | (singleton) Scheduler simulated picoseconds elapsed
+
+  Unary Function | Implementation
+  -------------- | --------------
+  abs(x)         | std::fabs(x) <em>(abs in stat expressions maps to fabs</em>)
+  fabs(x)        | std::fabs(x)
+  acos(x)        | std::acos(x)
+  asin(x)        | std::asin(x)
+  atan(x)        | std::atan(x)
+  ceil(x)        | std::ceil(x)
+  trunc(x)       | std::trunc(x)
+  round(x)       | std::round(x)
+  cos(x)         | std::cos(x)
+  cosh(x)        | std::cosh(x)
+  exp(x)         | std::exp(x)
+  exp2(x)        | std::exp2(x)
+  floor(x)       | std::floor(x)
+  ln(x)          | std::log(x)
+  log2(x)        | std::log2(x)
+  log10(x)       | std::log10(x)
+  sin(x)         | std::sin(x)
+  sinh(x)        | std::sinh(x)
+  sqrt(x)        | std::sqrt(x)
+  cbrt(x)        | std::cbrt(x)
+  tan(x)         | std::tan(x)
+  tanh(x)        | std::tanh(x)
+  isnan(x)       | std::isnan(x)
+  isinf(x)       | std::isinf(x)
+  signbit(x)     | std::signbit(x)
+  logb(x)        | std::logb(x)
+  erf(x)         | std::erf(x)
+  erfc(x)        | std::erfc(x)
+  lgamma(x)      | std::lgamma(x)
+  tgamma(x)      | std::tgamma(x)
+
+
+  Binary Function  | Implementation
+  ---------------- | --------------
+  pow(a,b)         | std::pow(a, b)
+  atan2(a,b)       | std::atan2(a, b)
+  min(a,b)         | std::min<double>(a, b)
+  max(a,b)         | std::max<double>(a, b)
+  fmod(a,b)        | std::fmod(a, b)
+  remainder(a,b)   | std::remainder(a, b)
+  hypot(a,b)       | std::hypot(a, b)
+  ifnan(a,b)       | (std::isnan(a) or std::isinf(a)) ? b : a
+
+  Ternary Function | Implementation
+  ---------------- | --------------
+  cond(a,b,c)      | a ? b : c
+
+  <b style='color:#ff0000;'>WARNING: Expressions inside a (YAML) report definition cannot begin with a '*' character unless fully
+  enclosed in double-quotes</b>.<br/>This is because a YAML scalar cannot begin with an asterisk
+
+  See sparta::statistics::expression::grammar::ExpressionGrammar for implementation of this expression grammar
+
+  \subsection report_def_includes Include Directives
+  \todo Write this section
+
+  \subsection report_def_style Style section
+  The style section of a report is a dictionary associated with a 'style' keyword <b>outside the
+  content section</b> of a report. The style section contains style hints that some output formatters
+  will interpret.
+
+  To see a full list of the style hints and default behavior, look at documentation for each report
+  output formatter in sparta::report::format.
+
+  A few of the availsble style options include
+  Style                | Effect  | Supported Output Formatter
+  ------               | ------- | ---------------------------
+  decimal_places       | Number of digits after the decimal place for non-integer values | html, json
+  collapsible_children | When rendering HTML output, children can be dynamically collapsed via interactive javascript | html
+  num_stat_columns     | Number of statistic columns for HTML output. Can be used to make reports more dense| html
+  show_descriptions    | Show a description next to each report value in HTML output | html
+
+  \subsection report_def_autopop Autopopulation Blocks
+  Within a content section, the key "autopopulate" indicates that a number of fields will be added to
+  the report automatically based on some criteria.
+
+  Autopopulate can be used in two forms: as a single, concise key-value pair and as a nested
+  dictionary with multiple detailed options.
+
+  When used concisely, the autopopulate key is followed by a value that is a filter expression. This
+  simple filtering language filters nodes based on their visibility semantics. It is explained below.
+
+  \code
+  content:
+  # other content
+  # ...
+  autopopulate: "!=vis:hidden && !=vis:summary"
+  \endcode
+
+  The more verbose usage
+  \code
+  content:
+  # other content
+  # ...
+  autopopulate:
+  attributes: vis:summary
+  max_report_depth: 0  # Stops making subreports at depth N. 0 means no subreports
+  max_recursion_depth: -1 # Never stop recursion of the sparta tree
+
+  \endcode
+
+  <h4>Tree Filtering Expressions</h4>
+  Tree filter expressions use a simple custom grammar for accepting or rejecting an instrumentation
+  node in a sparta tree based on its attributes and visibility semantics. See
+  \ref sparta::InstrumentationNode.
+
+  Instrumentation nodes have a visiblity value in the range of sparta::InstrumentationNode::VIS_HIDDEN
+  (0) to sparta::InstrumentationNode::VIS_MAX. A few common values in the range are contained in the
+  sparta::InstrumentationNode::Visibility enum.
+
+  <h4>Visibility Filtering</h4>
+  Tree filtering expressions can filter for this visibility level. To accept only nodes with
+  visibility of sparta::InstrumentationNode::VIS_NORMAL or higher, use:
+  \code
+  ">=vis:normal"
+  \endcode
+
+  Visibility filtering is always in the form<br />
+  &nbsp;&nbsp;&nbsp;&nbsp;<em>\<visibility_comparison></em>vis:<em>\<visibility_value></em>
+
+  To require visibility be anything but sparta::InstrumentationNode::VIS_HIDDEN, use
+  \code
+  "!=vis:hidden"
+  \endcode
+
+  Visibility can also be an integer.
+  \code
+  "<vis:100"
+  \endcode
+
+  Grammar constants for visibility include (see sparta::InstrumentationNode::Visibility)
+  \li summary
+  \li normal
+  \li detail
+  \li support
+  \li hidden
+
+  Visibility Comparison Operators are (in no particular order):
+  \li "=="
+  \li ">="
+  \li "<="
+  \li "<"
+  \li ">"
+  \li "!="
+
+  The "==" comparison is implicitly used if no visibility comparison operator is chosen
+
+  <h4>Type filtering</h4>
+  Filtering can be performed based on node type attributes. For example, counters can be rejected.
+  \code
+  "!=type:counter"
+  \endcode
+
+  Type filtering is always in the form<br />
+  &nbsp;&nbsp;&nbsp;&nbsp;<em>\<type_comparison></em>type:<em>\<type_name></em>
+
+  Type Comparison Operators are (in no paticualr order):
+  \li "=="
+  \li "!="
+
+  The "==" comparison is implicitly used if no type comparison operator is chosen
+
+  Grammar constants or type include
+  \li statistic, statisticdef, stat, statdef
+  \li counter
+  \li parameter, param (<b>Currently unsupported in Reports</b>)
+  \li histogram (<b>Currently unsupported in Reports</b>)
+
+  <h4>Name and Tag filtering</h4>
+
+  Similarly to type and visiblity, nodes can be filtered by their local name and tag-set. These
+  attributes do not support comparison using relative operators (&lt;, &gt;, etc.). ==, != and regex
+  operators are supported. The 'regex' operator attempts to match a given regex pattern with the name
+  of name of the node or any tag of the node depending on how it is invoked.
+
+  Type Comparison Operators are (in no paticualr order):
+  \li "=="
+  \li "!="
+  \li "regex"
+
+  Some example expression to filter by a name might be
+  \code
+  "name:node_i_am_looking_for"
+  "!=name:name_of_an_inaccurate_counter"
+  "regex name:ctr_foo_.*" # Accept counters whose names have a ctr_foo_ prefix
+  \endcode
+
+  Tag filtering is similar to name filtering, but the comparison operators have
+  semantics that apply to the whole tag set. The truth table is
+  Name           | Required for  "true" evaluation
+  ----------     | -------------------------------
+  "=="           | Any tag matches comparison string
+  "!="           | No tag matches comparison string
+  "regex"        | Any tag matches regular expression pattern
+
+  There is no !regex operator. Instead the inversion operators "!" and "not"
+  can be used after a regex operation. Refer to the next section.
+
+  Some example expression to filter by a tag might be
+  \code
+  "tag:power"
+  "!=name:dummy_.*"
+  "regex tag:power_.*" # Accept counters having tags beginning with "power_"
+  \endcode
+
+  <h4>Compound filtering</h4>
+
+  Visibility and type filtering can be combined in to the same expression with logical operators. Just
+  as in C, these operators are more loosely bound than any other operators (with a lower number
+  indicating looser binding)
+
+  One could filter for only statistics (not counters) which have "summary" level visibility, a tag
+  indicating they are 'power'-related stats, and a name that does not contain the string 'fiz'
+  \code
+  "vis:summary && type:stat && tag:power && not regex name:.*fiz.*"
+  \endcode
+
+  More complex filters can be created using parentheses. This expression accepts statistics with
+  "summary" visibility OR counters with "hidden visibility"
+  \code
+  "(vis:summary && type:stat) || (vis:hidden && type:counter)"
+  \endcode
+
+  <h4>Logical Operators include</h4>
+  <ol>
+  <li> "^^" </li>
+  <li> "||" </li>
+  <li> "&&" </li>
+  <li> "!" </li>
+  <li> "not" </li>
+  </ol>
+
+  <h4>Parentheses are, of course, supported.</h4>
+
+  The grammar is fully defined and implemented \ref sparta::tree::filter::grammar::Grammar
+
+  <em>Often, these expressions contain characters not accepted by YAML and must be written in quotes.</em>
+
+  \section report_def_var_name_ambiguity Field Declaration Path/Expression Ambiguity
+  Because some reserved words in the report definition grammar may be the same as nodes in the sparta
+  tree, ambiguity can be created.
+
+  By default, any report field names are assumed to be node names unless a node by that name does not
+  exist in the current scope. Then, the report definition parser attempts to interpret the field name
+  as an expression.
+
+  For example, the folling tree can present problems when trying to look at the cycles <b>variable</b>
+  (not the top.cpu1.stats.cycles node) on the st0 or st1 nodes.
+  \verbatim
+  top
+  - cpu0
+  - cpu1
+  - st0
+  - st1
+  - stats
+  - cycles
+  \endverbatim
+
+  The following will only find the nodes "top.cpu1.stats.cycles" and add them to the report.
+  \code
+  content:
+  top.mss.cpu*.st*:
+  cycles: "%l"
+  \endcode
+
+  To use the "cycles" variable to get the number of cycles of the clock on the top.cpu1.st0 and st1
+  nodes, the following definition could be used.
+  \code
+  content:
+  top.mss.cpu*.st?:
+  cycles: "Clock for st%1 cpu%2"
+  \endcode
+
+  Resolving ambiguity of node names vs. statistic expression variables is not explicitly supported in
+  the language. One must be clever about either naming tree nodes more specifically or using wildcards
+  that specifically
+
+  <em>It is an eventual goal to add full regular expression support instead of glob-like pattern
+  matching. This should allow the user to define pattern-matching node-scope strings that eliminate
+  all ambiguity (if pattern matching must be used)</em>
+
+
+  \section report_def_directive_ref Report Definition Directive and Option Reference
+  Directive           | Report Definition File Context  | Semantic
+  ----------          | ------------------------------- | ---------
+  name                | Immediate child of a subreport section or at the top-level of a report definition | Name of the report (for output formatters that display a title)
+  author              | Immediate child of a subreport section or at the top-level of a report definition | Author of the report (for output formatters that display an author)
+  style               | Immediate child of a subreport section or at the top-level of a report definition | Begins a style section where key-value pairs can be used to specify style. Styles are output-formatter-specific. See \ref report_def_style
+  content             | Immediate child of a subreport section or at the top-level of a report definition | Begins a content section. Parser is considered to be in this content section until it enters a subrerport or exits the dictionary associated with the 'content' key
+  subreport           | Within a 'content' section more recently than the nearest parent subreport section | Begins a subreport of the most recent subreport (or top-level report if no subreports specified). See \ref report_def_subreports. This should be considered as "ending" the current content section until this particular content section ends.
+  include             | Within a 'content' section more recently than the nearest parent subreport section | Includes another report definition file at the <b>current node context</b>
+  autopopulate        | Within a 'content' section more recently than nearest parent subreport section | Specifies autopopulation of report fields based on some filter expression and other options
+  attributes          | Immediately within an 'autopopulate' block | Specifies the attribute filter expression for autopopulation. See \ref report_def_autopop
+  max_recursion_depth | Immediately within an 'autopopulate' block | Specifies the maximum recursion depth when autopopulating. This prevents autopopulation from recursing any deeper than N children. If 0, only looks at node(s) indicated by current scope and never looks at children. Defaults to -1 (no recursion limit)
+  max_report_depth    | Immediately within an 'autopopulate' block | Specifies the depth of nested subreports to create. If 0, all fields will be added to the top level report. This may cause name collisions which cause errors when instantiating the report. Defualts to -1 which means no limit
+
+
+  \section report_def_lims Limitations of Report Definitions
+  \li Cannot specify absolute paths of objects. All report content is relative to the context within which the report is constructed. Repo
+  \li Does not allow depth-first traversal of report context specifiers (i.e. cannot visit all children of one substitution of a report context qualifier with a wildcard before moving on to the next substitution for that wildcard)
+  \li Cannot always resolve ambiguity between node names and variables in statistic expressions
+
+  \todo Complete This Page
+
+  \page report_out_format Report Output Formats
+  This page describes the various output formats of a sparta report
+
+  <em>For an up-to-date list, run a Sparta simulation with the flag:</em><b><pre>"--help-topic reporting"</pre></b>
+
+  \todo Complete this page
+  \section report_out_format_plaintext Plaintext (.txt, .text)
+  sparta::report::format::Text<br/>
+
+  Writes report output as plain-text output. This is human readable and regex-parsable.<br/>
+
+  <em>See formatter class implementation for more details.</em>
+  \section report_out_format_csv CSV (.csv)
+  sparta::report::format::CSV<br/>
+
+  Writes report output as comma-separated values with 1 or 2 header rows and then 1 or more data rows
+  depending on whether periodic data was collected (see \ref report_gen).<br/>
+
+  Consider plotting with sparta/tools/plot_csv_report.py
+
+  <em>See formatter class implementation for more details.</em>
+  \section report_out_format_basichtml BasicHTML (.html, .htm)
+  sparta::report::format::BasicHTML<br/>
+
+  Writes report output a hierarchical HTML page with nested tables. This format
+  respects many report style options.<br/>
+
+  <em>See formatter class implementation for more details.</em>
+  \section report_out_format_gnuplot Gnuplot (.gnuplot, .gplt)
+  sparta::report::format::Gnuplot<br/>
+
+  Writes report output in a format suitable for gnuplot<br/>
+
+  <em>See formatter class implementation for more details.</em>
+  \section report_out_format_pythondict PythonDict (.python, .python)
+  sparta::report::format::PythonDict<br/>
+
+  Writes report output in a Python dictionary format. This is a string representation of a dictionary
+  which can be read as a multi-line string from the file and "eval"ed to load. Alternatively, it can
+  be copied into python code.<br/>
+
+  <em>See formatter class implementation for more details.</em>
+  \section report_out_format_json JavascriptObject (.json)
+  sparta::report::format::JavascriptObject<br/>
+
+  Writes report output in the JSON format which can be read by a number of libraries.<br/>
+
+  <em>See formatter class implementation for more details.</em>
+
+  \page pipeout_format Pipeline Collection Format (index.bin, location.dat, record.bin, simulation.info, clock.dat)
+  This page describes the various file formats of pipeline collection databases
+  \todo Write this page
+  \page checkpoint_format Checkpointer Format
+  This page describes the file format used by the sparta fast checkpointing mechanism
+  \todo Write this page
+  \page log_out_format Logging Output formats (.log, .log.raw, .log.basic, log.verbose)
+  This page describes the various file formats with which log files can be written
+  \todo Write this page
+*/

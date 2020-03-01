@@ -1,0 +1,48 @@
+
+/*!
+  \page modeling Sparta for Simulator Development
+
+  Sparta is a modeling framework, written in C++ (17 or higher) and
+  python.  Modeling teams can use Sparta to build abstract performance
+  models, detailed performance models, functional models, hybrid
+  (performance and functional) models, etc.  Users of Sparta can
+  connect Sparta built models to SystemC models, Gem5 models, etc.
+
+  Sparta can be a standalone simulator or embedded in a co-simulation
+  environment like verification tools, Verilog, EDA SystemC, etc.
+
+  Sparta can be a driver or a slave in these co-simulation
+  environment.
+
+  Either way, Sparta provides a rich set of classes, tools, utilities,
+  and debug facilities to build a custom Core, SoC, or peripheral
+  device and run it for functionality, performance analysis, or
+  verification.
+
+  \subsection spartaparts Sparta Pieces/Parts
+
+  This listing should look mostly familiar, especially if one does an
+  `ls -1 sparta`.
+
+  -# \ref app_overview
+  -# \ref argos_overview
+  -# \ref collection_overview
+  -# \ref control_overview
+  -# \ref events_overview
+  -# \ref functional_overview
+  -# \ref kernel_overview
+  -# \ref log_overview
+  -# \ref memory_overview
+  -# \ref pairs_overview
+  -# \ref parsers_overview
+  -# \ref pevents_overview
+  -# \ref ports_overview
+  -# \ref report_overview
+  -# \ref resources_overview
+  -# \ref serialization_overview
+  -# \ref simulation_overview
+  -# \ref statistics_overview
+  -# \ref trigger_overview
+  -# \ref utils_overview
+
+*/

@@ -23,6 +23,12 @@
 
 namespace sparta{
 namespace utils{
+
+/**
+ * \class BoundedValue
+ * \brief This class allows a developer to bound a value within an upper and lower value.
+ * \tparam T The type to wrap - a POD type
+ */
 template<typename T>
 class BoundedValue{
 public:
@@ -31,9 +37,13 @@ public:
     using pure_value_t = MetaStruct::decay_t<U>;
 
     /**
-     * \class BoundedValue
-     * \brief Parameterized Constructor from related integral arguments.
-     *  The 4 variables are BV type, initial value, upper bound and lower bound.
+     *  \brief Parameterized Constructor from related integral
+     *         arguments.  The 4 variables are BV type, initial value,
+     *         upper bound and lower bound.
+     *  \param value The value to assign
+     *  \param lower_bound The lower bound of this BoundedValue
+     *  \param upper_bound The upper bound of this BoundedValue
+     *
      *  Case when all 4 variables are integral and of the same sign(signed).
      *  Example:
      *  \code{.cpp}
@@ -54,9 +64,6 @@ public:
      *  BoundedValue<uintmax_t> bv(data, lower_bound, upper_bound);
      *  BoundedValue<int> bv(data, lower_bound, upper_bound);
      *  \endcode
-     *  \param value The value to assign
-     *  \param lower_bound The lower bound of this BoundedValue
-     *  \param upper_bound The upper bound of this BoundedValue
      */
     template<typename U, typename V = T, typename W = T>
     explicit BoundedValue(U value,
@@ -78,9 +85,12 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Parameterized Constructor from related integral arguments.
      *  The 4 variables are BV type, initial value, upper bound and lower bound.
+     *  \param value The value to assign
+     *  \param lower_bound The lower bound of this BoundedValue
+     *  \param upper_bound The upper bound of this BoundedValue
+     *
      *  Case when BV type, lower and upper bounds are unsigned but initial value is signed.
      *  Example:
      *  \code{.cpp}
@@ -90,9 +100,6 @@ public:
      *  uint32_t upper_bound = 40;
      *  BoundedValue<uintmax_t> bv(data, lower_bound, upper_bound);
      *  \endcode
-     *  \param value The value to assign
-     *  \param lower_bound The lower bound of this BoundedValue
-     *  \param upper_bound The upper bound of this BoundedValue
      */
     template<typename U, typename V = T, typename W = T>
     explicit BoundedValue(U value,
@@ -119,8 +126,11 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Parameterized Constructor from related integral arguments.
+     *  \param value The value to assign
+     *  \param lower_bound The lower bound of this BoundedValue
+     *  \param upper_bound The upper bound of this BoundedValue
+     *
      *  Case when BV type, and initial value is unsigned but one of the bounds are signed.
      *  Example:
      *  \code{.cpp}
@@ -130,9 +140,6 @@ public:
      *  uint32_t upper_bound = 40;
      *  BoundedValue<uintmax_t> bv(data, lower_bound, upper_bound);
      *  \endcode
-     *  \param value The value to assign
-     *  \param lower_bound The lower bound of this BoundedValue
-     *  \param upper_bound The upper bound of this BoundedValue
      */
     template<typename U, typename V = T, typename W = T>
     explicit BoundedValue(U value,
@@ -160,8 +167,11 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Parameterized Constructor from related integral arguments.
+     *  \param value The value to assign
+     *  \param lower_bound The lower bound of this BoundedValue
+     *  \param upper_bound The upper bound of this BoundedValue
+     *
      *  Case when BV type and one of the bounds is unsigned but initial value and one of the bounds are signed.
      *  \code{.cpp}
      *  Example:
@@ -171,9 +181,6 @@ public:
      *  uint32_t upper_bound = 40;
      *  BoundedValue<uintmax_t> bv(data, lower_bound, upper_bound);
      *  \endcode
-     *  \param value The value to assign
-     *  \param lower_bound The lower bound of this BoundedValue
-     *  \param upper_bound The upper bound of this BoundedValue
      */
     template<typename U, typename V = T, typename W = T>
     explicit BoundedValue(U value,
@@ -202,8 +209,10 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Parameterized Constructor from related integral arguments.
+     *  \param value The value to assign
+     *  \param lower_bound The lower bound of this BoundedValue
+     *  \param upper_bound The upper bound of this BoundedValue
      *  Case when BV type, lower and upper bounds are signed but initial value is unsigned.
      *  Example:
      *  \code{.cpp}
@@ -213,9 +222,6 @@ public:
      *  int32_t upper_bound = 40;
      *  BoundedValue<intmax_t> bv(data, lower_bound, upper_bound);
      *  \endcode
-     *  \param value The value to assign
-     *  \param lower_bound The lower bound of this BoundedValue
-     *  \param upper_bound The upper bound of this BoundedValue
      */
     template<typename U, typename V = T, typename W = T>
     explicit BoundedValue(U value,
@@ -240,8 +246,10 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Parameterized Constructor from related integral arguments.
+     *  \param value The value to assign
+     *  \param lower_bound The lower bound of this BoundedValue
+     *  \param upper_bound The upper bound of this BoundedValue
      *  Case when BV type and initial value is signed but one of the bounds is unsigned.
      *  Example:
      *  \code{.cpp}
@@ -251,9 +259,6 @@ public:
      *  uint32_t upper_bound = 40;
      *  BoundedValue<intmax_t> bv(data, lower_bound, upper_bound);
      *  \endcode
-     *  \param value The value to assign
-     *  \param lower_bound The lower bound of this BoundedValue
-     *  \param upper_bound The upper bound of this BoundedValue
      */
     template<typename U, typename V = T, typename W = T>
     explicit BoundedValue(U value,
@@ -285,8 +290,10 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Parameterized Constructor from related integral arguments.
+     *  \param value The value to assign
+     *  \param lower_bound The lower bound of this BoundedValue
+     *  \param upper_bound The upper bound of this BoundedValue
      *  Case when BV type is signed but initial value and one of the bounds is unsigned.
      *  Example:
      *  \code{.cpp}
@@ -296,9 +303,6 @@ public:
      *  uint32_t upper_bound = 40;
      *  BoundedValue<intmax_t> bv(data, lower_bound, upper_bound);
      *  \endcode
-     *  \param value The value to assign
-     *  \param lower_bound The lower bound of this BoundedValue
-     *  \param upper_bound The upper bound of this BoundedValue
      */
     template<typename U, typename V = T, typename W = T>
     explicit BoundedValue(U value,
@@ -330,14 +334,13 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Parameterized Constructor from related integral arguments.
-     *  Case which will immediately assert on compilation.
-     *  If we are creating a BV of type integral, then none of initial_value,
-     *  lower_bound or upper_bound can be non-integral type.
      *  \param value The value to assign
      *  \param lower_bound The lower bound of this BoundedValue
      *  \param upper_bound The upper bound of this BoundedValue
+     *  Case which will immediately assert on compilation.
+     *  If we are creating a BV of type integral, then none of initial_value,
+     *  lower_bound or upper_bound can be non-integral type.
      */
     template<typename U, typename V = T, typename W = T>
     explicit BoundedValue(U value,
@@ -360,7 +363,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Copy Constructor from related integral BV of same sign.
      * \param rhs The other BoundedValue object to construct from.
      */
@@ -379,7 +381,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Copy Constructor from related unsigned integral BV to signed BV.
      * \param rhs The other BoundedValue object to construct from.
      */
@@ -397,7 +398,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Copy Constructor from related signed integral BV to unsigned BV.
      * \param rhs The other BoundedValue object to construct from.
      */
@@ -419,7 +419,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Copy Constructor from floating-point BV to integral BV.
      * \param rhs The other BoundedValue object to construct from.
      */
@@ -433,7 +432,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Copy Assignment Operator from related integral BV of same sign.
      * \param rhs The other BoundedValue object to assign from.
      */
@@ -454,7 +452,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Copy Constructor from related unsigned integral BV to signed BV.
      * \param rhs The other BoundedValue object to assign from.
      */
@@ -474,7 +471,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Copy Constructor from related signed integral BV to unsigned BV.
      * \param rhs The other BoundedValue object to assign from.
      */
@@ -498,7 +494,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Copy Assignment Operator for floating-point BV to integral BV.
      * \param rhs The other BoundedValue object to assign from.
      */
@@ -513,7 +508,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Assignment operator for integral arguments to related BV.
      * \param value The value to assign to this BoundedValue.
      */
@@ -527,7 +521,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Assignment operator for floating-point arguments to integral BV.
      * \param value The value to assign to this BoundedValue.
      */
@@ -542,7 +535,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Overload pre-increment operator.
      */
     BoundedValue<T>& operator++(){
@@ -553,7 +545,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Overload post-increment operator.
      */
     BoundedValue<T> operator++(int){
@@ -563,7 +554,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Overload pre-decrement operator.
      */
     BoundedValue<T>& operator--(){
@@ -574,7 +564,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Overload post-decrement operator.
      */
     BoundedValue<T> operator--(int){
@@ -584,7 +573,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Overload shorthand += operator.
      * \param value The value to add.
      */
@@ -606,7 +594,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Overload shorthand -= operator.
      * \param value The value to subtract.
      */
@@ -628,7 +615,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Get the value - const version.
      * \return The internal value.
      */
@@ -637,7 +623,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Get the value - non-const version.
      * \return The internal value.
      */
@@ -646,7 +631,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Return the lower bound value, const version.
      * \return The lower bound value.
      */
@@ -655,7 +639,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Return the lower bound value, non-const version.
      * \return The lower bound value.
      */
@@ -664,7 +647,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Return the upper bound value, const version.
      * \return The upper bound value.
      */
@@ -673,7 +655,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Return the upper bound value, non-const version.
      * \return The upper bound value.
      */
@@ -682,7 +663,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Convert the BoundedValue into underlying resource, const version.
      * \return The internal value.
      */
@@ -691,7 +671,6 @@ public:
     }
 
     /**
-     * \class BoundedValue
      * \brief Convert the BoundedValue into underlying resource, non-const version.
      * \return The internal value.
      */
@@ -704,7 +683,6 @@ private:
     T upper_bound_;
 
     /**
-     * \class BoundedValue
      * \brief Method to handle sign and check range of rhs value.
      * \param value The value to validate.
      */
@@ -715,7 +693,6 @@ private:
     }
 
     /**
-     * \class BoundedValue
      * \brief Method to check lower bound validity.
      *  Case when rhs value and this value is of same sign.
      * \param value The value to validate.
@@ -728,7 +705,6 @@ private:
     }
 
     /**
-     * \class BoundedValue
      * \brief Method to check lower bound validity.
      *  Case when rhs value is unsigned but this value is signed.
      * \param value The value to validate.
@@ -743,7 +719,6 @@ private:
     }
 
     /**
-     * \class BoundedValue
      * \brief Method to check lower bound validity.
      *  Case when rhs value is signed but this value is unsigned.
      * \param value The value to validate.
@@ -756,7 +731,6 @@ private:
     }
 
     /**
-     * \class BoundedValue
      * \brief Method to check upper bound validity.
      *  Case when rhs value and this value is of same sign.
      * \param value The value to validate.
@@ -769,7 +743,6 @@ private:
     }
 
     /**
-     * \class BoundedValue
      * \brief Method to check upper bound validity.
      *  Case when rhs value is unsigned but this value is signed.
      * \param value The value to validate.
@@ -782,7 +755,6 @@ private:
     }
 
     /**
-     * \class BoundedValue
      * \brief Method to check upper bound validity.
      *  Case when rhs value is signed but this value is unsigned.
      * \param value The value to validate.
@@ -796,7 +768,6 @@ private:
 };
 
 /**
- * \class BoundedValue
  * \brief Overloading of ostream operator.
  * \param os A reference to the ostream instance.
  * \param data The BoundedValue to stringize.

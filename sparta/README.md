@@ -19,7 +19,7 @@ design.
 
 # Install the following
 #
-#    cmake boost hdf5 yaml-cpp rapidJSON xz sqlite
+#    cmake boost hdf5 yaml-cpp rapidJSON xz sqlite doxygen
 #
 # Versions tested and known to work:
 #    cmake     3.14
@@ -28,6 +28,7 @@ design.
 #    RapidJSON 1.1
 #    SQLite3   3.19
 #    HDF5      1.10
+#    Doxygen   1.8.3
 
 # Build a release version
 mkdir release; cd release
@@ -42,6 +43,10 @@ make
 # Regress
 cd release; make regress
 cd debug; make regress
+
+# Documentation (requires Doxygen 1.8)
+cd doc; make
+open html/index.html
 
 ```
 

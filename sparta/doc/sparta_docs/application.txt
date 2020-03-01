@@ -1,0 +1,18 @@
+
+/*!
+  \page application Simulator Application Level
+
+  The sparta simulator application-level infrastructure exists within the sparta:app namespace. This
+  information is useful for anyone creating a simulator command-line user interface or tool as well
+  as anyone running, configurating, and extracting data from a sparta-enable simulator.
+
+  -# \ref common_cmdline
+  -# integration with sparta app
+  -# \ref param_format
+  -# Report formatters
+  -# Log formatters
+  -# Checkpointing
+  -# Python shell
+  -# Run control
+  -# Remote Interfaces
+*/

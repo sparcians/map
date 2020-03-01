@@ -2802,6 +2802,11 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
                 }
 
                 if (!any_params_have_a_value) {
+                        std::cerr << "WARNING: Found a malformed extension: '"
+                                  << extension_name << "' location: '"
+                                  << extension_node->getOrigin() << "'\n\t"
+                                  << "Expected 'name: value' pairs for the named extension, but found none"
+                                  << std::endl;
                     return nullptr;
                 }
 
