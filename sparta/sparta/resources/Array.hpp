@@ -261,11 +261,18 @@ namespace sparta
             }
 
             /// support -> operator.
-            DataReferenceType operator->()
+            value_type* operator->()
             {
                 sparta_assert(index_ < array_->capacity(),
                             "Cannot operate on an uninitialized iterator.");
-                return getAccess_(std::integral_constant<bool, is_const_iterator>());
+                return std::addressof(getAccess_(std::integral_constant<bool, is_const_iterator>()));
+            }
+            
+            const value_type* operator->() const
+            {
+                sparta_assert(index_ < array_->capacity(),
+                            "Cannot operate on an uninitialized iterator.");
+                return std::addressof(getAccess_(std::integral_constant<bool, is_const_iterator>()));
             }
 
             /// pre-increment operator.
