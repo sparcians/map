@@ -1110,6 +1110,7 @@ void Simulation::saveReports()
             formatters_in_use = report_repository_->getFormattersByFilename();
             db::SimInfoSerializer serializer(SimulationInfo::getInstance());
             serializer.serialize(*stats_db_);
+            std::cout << "SimDB file is: " << stats_db_->getDatabaseFile() << std::endl;
         }
 
         auto saved_reports = report_repository_->saveReports();
