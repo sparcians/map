@@ -1023,7 +1023,6 @@ namespace sparta
         /*!
          * \overload virtual TreeNode* getParent()
          */
-
         virtual const TreeNode* getParent() const {
             return parent_;
         }
@@ -1934,7 +1933,9 @@ namespace sparta
 
         /*!
          * \brief Get an extension object by type string. Returns nullptr if not
-         * found (unrecognized).
+         *        found (unrecognized).
+         * \param extension_name The name of the extension to find
+         *
          */
         ExtensionsBase * getExtension(const std::string & extension_name);
 
@@ -3882,6 +3883,11 @@ namespace sparta
         virtual void onDestroyingChild_(TreeNode* child) noexcept {
             (void) child;
         }
+
+        /*!
+         * \brief When the framework is entering the configuration phase
+         */
+        virtual void onConfiguring_() {;}
 
         /*!
          * \brief Called for each node during bindTreeEarly_ recursion

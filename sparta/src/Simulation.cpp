@@ -653,8 +653,8 @@ void Simulation::buildTree()
     // Create a root for the clocks tree. It should share its search scope with
     // the device tree root.
     clk_root_node_.reset(new sparta::RootTreeNode("clocks",
-                                                "Clock Tree Root",
-                                                root_.getSearchScope()));
+                                                  "Clock Tree Root",
+                                                  root_.getSearchScope()));
     root_clk_ = clk_manager_.makeRoot(clk_root_node_.get());
 
     root_.setClock(root_clk_.get());

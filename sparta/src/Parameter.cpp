@@ -332,8 +332,8 @@ void sparta::ParameterSet::readValuesFromVirtualTree_()
 }
 
 bool sparta::ParameterSet::readValueFromVirtualTree_(const ParameterTree* arch_pt,
-                                                   const ParameterTree* pt,
-                                                   sparta::ParameterBase* p)
+                                                     const ParameterTree* pt,
+                                                     sparta::ParameterBase* p)
 {
     sparta_assert_context(p, "Cannot call readNewValueFromVirtualTree_ with a null Parameter");
 
