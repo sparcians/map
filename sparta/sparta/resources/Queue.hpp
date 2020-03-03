@@ -301,9 +301,10 @@ namespace sparta
             }
 
             ///support -> operator
-            DataReferenceType operator->()
+            value_type* operator->()
             {
-                return operator*();
+                sparta_assert(getIndex()<attatched_queue_->total_valid_, "Not a valid Iterator");
+                return std::addressof(getAccess_(std::integral_constant<bool, is_const_iterator>()));
             }
 
             /// Checks validity of iterator
