@@ -1,3 +1,5 @@
+MACOSX_DEPLOYMENT_TARGET:
+- '10.13'
 boost_cpp:
 - 1.70.0
 channel_sources:
@@ -8,10 +10,12 @@ cxx_compiler:
 - clangxx
 cxx_compiler_version:
 - '9'
-docker_image:
-- condaforge/linux-anvil-comp7
 hdf5:
 - 1.10.5
+macos_machine:
+- x86_64-apple-darwin13.4.0
+macos_min_version:
+- '10.13'
 pin_run_as_build:
   boost-cpp:
     max_pin: x.x.x
