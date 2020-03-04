@@ -2,6 +2,10 @@ MACOSX_DEPLOYMENT_TARGET:
 - '10.13'
 boost_cpp:
 - 1.70.0
+c_compiler:
+- clang
+c_compiler_version:
+- '9'
 channel_sources:
 - conda-forge,defaults
 channel_targets:
