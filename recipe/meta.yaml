@@ -31,6 +31,7 @@ requirements:
     #   https://conda-forge.org/docs/maintainer/infrastructure.html#conda-forge-pinning
     #   https://docs.conda.io/projects/conda-build/en/latest/resources/variants.html#compiler-packages
     - {{ compiler('cxx') }}
+    - {{ compiler('c') }}
   host:  # target-arch buildtime deps
     - boost-cpp
     - yaml-cpp
