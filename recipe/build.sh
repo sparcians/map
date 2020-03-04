@@ -1,3 +1,5 @@
+set -x
+
 if [[ $(uname) == Darwin ]]; then
     # note, conda-forge-ci-setup's run_conda_forge_build_setup_osx
     # exports MACOS_DEPLOYMENT_TARGET based on value seen in conda-build-config.yaml
