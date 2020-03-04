@@ -9,6 +9,8 @@ package:
 
 source:
   git_url: {{ environ.get('FEEDSTOCK_ROOT', '..') }}
+  patches: # [osx]
+    - patches/0001-Remove-hardcoded-path-to-brew-Boost-on-mac.patch # [osx]
 
 build:
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', '0') }}

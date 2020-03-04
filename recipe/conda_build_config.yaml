@@ -11,3 +11,13 @@ cxx_compiler:
     - clangxx
 cxx_compiler_version:
     - 9
+
+# override macos APK min version.
+# conda-forge supports from 10.9 but we
+# have code that needs 10.13.
+# See https://sifive.atlassian.net/wiki/x/0IBBJw
+# for details
+macos_min_version:             # [osx]
+  - 10.13                      # [osx]
+MACOSX_DEPLOYMENT_TARGET:      # [osx]
+  - 10.13                      # [osx]
