@@ -17,6 +17,8 @@ build:
   string: {{ [PKG_BUILDNUM, ('h' + PKG_HASH), environ.get('GIT_DESCRIBE_HASH', '')]|join('_') }}
   # python2 is not supported
   skip: True # [py2k]
+  # Native Windows isn't supported either, use WSL or Docker
+  skip: True # [win]
 
 requirements:
   build: # build-arch
