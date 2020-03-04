@@ -1953,7 +1953,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
     //while so downstream SPARTA clients can revert to legacy reporting
     //infrastructure if they really need to.
     if (!feature_config_.isFeatureValueSet("simdb")) {
-        feature_config_.setFeatureValue("simdb", 1);
+        feature_config_.setFeatureValue("simdb", 0);
     }
     sim->setFeatureConfig(&feature_config_);
 
