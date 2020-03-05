@@ -1,17 +1,17 @@
 boost_cpp:
 - 1.70.0
 c_compiler:
-- clang
+- gcc
 c_compiler_version:
-- '9'
+- '7'
 channel_sources:
 - conda-forge,defaults
 channel_targets:
 - conda-forge main
 cxx_compiler:
-- clangxx
+- gxx
 cxx_compiler_version:
-- '9'
+- '7'
 docker_image:
 - condaforge/linux-anvil-comp7
 hdf5:
