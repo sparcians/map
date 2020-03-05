@@ -22,6 +22,6 @@ fi
 mkdir -p sparta/release
 pushd sparta/release
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH="$PREFIX" "$CMAKE_EXTRA" ..
-cmake --build . --target
+cmake --build . || cmake --build . -v
 
 popd
