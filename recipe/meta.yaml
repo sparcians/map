@@ -32,6 +32,9 @@ requirements:
     #   https://docs.conda.io/projects/conda-build/en/latest/resources/variants.html#compiler-packages
     - {{ compiler('cxx') }}
     - {{ compiler('c') }}
+    # add duplicate clang dep per https://gitter.im/conda-forge/conda-forge.github.io?at=5e5feaf7ec7f8746aab200c4
+    - clang
+    - clangxx
   host:  # target-arch buildtime deps
     - boost-cpp
     - yaml-cpp
