@@ -28,6 +28,13 @@ jobs:
       rm ~/uninstall_homebrew
     displayName: Remove homebrew
 
+  - script: |
+      echo "Removing Mono from Azure to avoid conflicts."
+      sudo rm -rf /Library/Frameworks/Mono.framework
+      sudo pkgutil --forget com.xamarin.mono-MDK.pkg
+      sudo rm /etc/paths.d/mono-commands
+    displayName: Remove Mono Framework
+
   - bash: |
       echo "##vso[task.prependpath]$CONDA/bin"
       sudo chown -R $USER $CONDA
