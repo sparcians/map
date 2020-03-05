@@ -16,6 +16,11 @@ if [[ $(uname) == Darwin ]]; then
     CMAKE_EXTRA="-DCMAKE_OSX_SYSROOT=${CONDA_BUILD_SYSROOT}"
 else
     CMAKE_EXTRA=""
+
+    # Override CC and CXX to use clang on Linux.  Since it depends
+    # on gcc being available on Linux, cmake will default to picking up gcc
+    export CC=clang
+    export CXX=clang++
 fi
 
 
