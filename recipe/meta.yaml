@@ -42,6 +42,10 @@ requirements:
     - sqlite
     - hdf5
     - rapidjson
+  run_constrained:
+    # make sure that mac has good enough SDK
+    # See https://conda-forge.org/docs/maintainer/knowledge_base.html?highlight=feature#requiring-newer-macos-sdks
+    - __osx >={{ MACOSX_DEPLOYMENT_TARGET|default("10.9") }}  # [osx]
 
 # TODO add post-packaging tests
 
