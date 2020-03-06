@@ -27,6 +27,7 @@ fi
 mkdir -p sparta/release
 pushd sparta/release
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH="$PREFIX" "$CMAKE_EXTRA" ..
-cmake --build . || cmake --build . -v
+cmake --build . -j "$CPU_COUNT" || cmake --build . -v
+cmake --build . --target regress -j "$CPU_COUNT"
 
 popd
