@@ -1785,6 +1785,7 @@ bool CommandLineSimulator::parse(int argc,
     sim_config_.verbose_report_triggers = vm_.count("verbose-report-triggers") > 0;
     sim_config_.debug_sim               = vm_.count("debug-sim") > 0;
     sim_config_.report_on_error         = vm_.count("report-on-error") > 0;
+    sim_config_.reports                 = reports;
 
     //pevents
     run_pevents_ = (vm_.count("pevents-at") > 0) | (vm_.count("pevents") > 0) | (vm_.count("verbose-pevents") > 0);
@@ -1810,7 +1811,6 @@ bool CommandLineSimulator::parse(int argc,
         for(ReportDescVec::value_type& r : reports) {
             std::cout << "    " << r.stringize() << '\n';
         }
-        sim_config_.reports = reports;
 
         std::cout << "    ]" << std::endl;
         std::cout << "  run-time:            " << run_time_cycles_ << " on clock: " << runtime_clock_ << std::endl;

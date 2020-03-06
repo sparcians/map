@@ -276,8 +276,12 @@ public:
 
     //! Print the ArchNodeConfigFileApplicator for informative messages
     void printArchConfigurations(std::ostream & os) const {
-        sparta_assert(archFileProvided());
-        os << arch_applicator_->stringize();
+        if(archFileProvided()) {
+            os << arch_applicator_->stringize();
+        }
+        else {
+            os << "<not provided>";
+        }
     }
 
     /*!
