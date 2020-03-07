@@ -29,20 +29,24 @@ fi
 mkdir -p sparta/release
 pushd sparta/release
 cmake -DCMAKE_BUILD_TYPE=Release \
-      -DVALGRIND_REGRESS_ENABLED=ON \
-      -DVALGRIND_TEST_LABEL=valgrind_test \
       -DCMAKE_INSTALL_PREFIX:PATH="$PREFIX" \
       "${CMAKE_PLATFORM_FLAGS[@]}" \
       ..
 cmake --build . -j "$CPU_COUNT" || cmake --build . -v
+cmake --build . -j "$CPU_COUNT" --target regress
+cd example && ctest -j "$CPU_COUNT"
 
-# running with --test-action test creates Testing/<datetime>/Test.xml
-# that can be loaded into the CI test result tracker
-# We could and possibly should combine all of the tests into
-# one ctest run or a special target that gets run with --test-action
-(cd test && ctest --test-action test -j "$CPU_COUNT")
-(cd simdb && ctest --test-action test -j "$CPU_COUNT")
-(cd example && ctest --test-action test -j "$CPU_COUNT")
+# --test-action test (creating Test.xml results to load into a dashboard)
+# only works after the tests are built, ctest needs more configuration
+# to know how to only build the tests. Punting for now.
+#
+# # running with --test-action test creates Testing/<datetime>/Test.xml
+# # that can be loaded into the CI test result tracker
+# # We could and possibly should combine all of the tests into
+# # one ctest run or a special target that gets run with --test-action
+# (cd test && ctest --test-action test -j "$CPU_COUNT")
+# (cd simdb && ctest --test-action test -j "$CPU_COUNT")
+# (cd example && ctest --test-action test -j "$CPU_COUNT")
 
 
 cmake --build . --target install
