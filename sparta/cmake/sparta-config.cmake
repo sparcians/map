@@ -18,6 +18,12 @@ if (COMPILE_WITH_PYTHON)
   list (APPEND _BOOST_COMPONENTS python37)
 endif ()
 
+
+if (Sparta_VERBOSE)
+    set (Boost_VERBOSE ON) # There's also Boost_DEBUG if you need more
+    set (CMAKE_FIND_DEBUG_MODE ON) # verbosity for find_package
+endif()
+
 if (APPLE)
   set (Boost_NO_BOOST_CMAKE ON)
   set (CMAKE_CXX_COMPILER_VERSION 10.0)

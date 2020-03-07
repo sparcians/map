@@ -26,8 +26,9 @@ fi
 
 mkdir -p sparta/release
 pushd sparta/release
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH="$PREFIX" "$CMAKE_EXTRA" ..
+cmake -DCMAKE_BUILD_TYPE=Release -DSparta_VERBOSE=ON -DCMAKE_INSTALL_PREFIX:PATH="$PREFIX" "$CMAKE_EXTRA" ..
 cmake --build . -j "$CPU_COUNT" || cmake --build . -v
+(cd test/Memory && make VERBOSE=1)
 cmake --build . --target regress -j "$CPU_COUNT"
 cmake --build . --target install
 
