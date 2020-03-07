@@ -52,6 +52,7 @@ requirements:
 
 about:
   home: https://github.com/sparcians/map
+  summary: a set of classes, tools, and flows to aid in modeling/simulation of complex hardware for the purpose of performance analysis and design exploration
   license: MIT
   license_family: MIT
   license_file: LICENSE
