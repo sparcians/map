@@ -36,6 +36,7 @@ requirements:
     # add duplicate clang dep per https://gitter.im/conda-forge/conda-forge.github.io?at=5e5feaf7ec7f8746aab200c4
     - clang
     - clangxx
+    - valgrind
   host:  # target-arch buildtime deps
     - boost-cpp
     - yaml-cpp

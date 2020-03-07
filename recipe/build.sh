@@ -1,5 +1,8 @@
+#!/bin/bash
+
 set -x
 
+declare -a CMAKE_PLATFORM_FLAGS
 if [[ $(uname) == Darwin ]]; then
     # note, conda-forge-ci-setup's run_conda_forge_build_setup_osx
     # exports MACOS_DEPLOYMENT_TARGET based on value seen in conda-build-config.yaml
@@ -13,9 +16,8 @@ if [[ $(uname) == Darwin ]]; then
 	exit 1
     fi
 
-    CMAKE_EXTRA="-DCMAKE_OSX_SYSROOT=${CONDA_BUILD_SYSROOT}"
+    CMAKE_PLATFORM_FLAGS+=("-DCMAKE_OSX_SYSROOT=${CONDA_BUILD_SYSROOT}")
 else
-    CMAKE_EXTRA=""
 
     # Override CC and CXX to use clang on Linux.  Since it depends
     # on gcc being available on Linux, cmake will default to picking up gcc
@@ -26,10 +28,23 @@ fi
 
 mkdir -p sparta/release
 pushd sparta/release
-cmake -DCMAKE_BUILD_TYPE=Release -DSparta_VERBOSE=ON -DCMAKE_INSTALL_PREFIX:PATH="$PREFIX" "$CMAKE_EXTRA" ..
+cmake -DCMAKE_BUILD_TYPE=Release \
+      -DVALGRIND_REGRESS_ENABLED=ON \
+      -DVALGRIND_TEST_LABEL=valgrind_test \
+      -DCMAKE_INSTALL_PREFIX:PATH="$PREFIX" \
+      "${CMAKE_PLATFORM_FLAGS[@]}" \
+      ..
 cmake --build . -j "$CPU_COUNT" || cmake --build . -v
-(cd test/Memory && make VERBOSE=1)
-cmake --build . --target regress -j "$CPU_COUNT"
+
+# running with --test-action test creates Testing/<datetime>/Test.xml
+# that can be loaded into the CI test result tracker
+# We could and possibly should combine all of the tests into
+# one ctest run or a special target that gets run with --test-action
+(cd test && ctest --test-action test -j "$CPU_COUNT")
+(cd simdb && ctest --test-action test -j "$CPU_COUNT")
+(cd example && ctest --test-action test -j "$CPU_COUNT")
+
+
 cmake --build . --target install
 
 popd
