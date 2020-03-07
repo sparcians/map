@@ -174,9 +174,10 @@ void tryDAGIssue_(bool failit)
     // delay Inport.  This will assert as the zero delay Port is on
     // the Tick phase and the non-zero delay inport is on the Update
     // phase (by default in BOTH cases).
+    std::unique_ptr<sparta::DataInPort<bool>> one_delay_in;
     if(presume_zero_delay) {
-        sparta::DataInPort<bool> one_delay_in (&ps, "one_delay_in", 1);
-        EXPECT_THROW(zero_delay_in2.precedes(one_delay_in));
+        one_delay_in.reset(new sparta::DataInPort<bool>(&ps, "one_delay_in", 1));
+        EXPECT_THROW(zero_delay_in2.precedes(*(one_delay_in.get())));
     }
 
     zero_delay_in1.registerConsumerEvent(zero_delay_cons);
