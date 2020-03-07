@@ -10,7 +10,6 @@ package:
 source:
   git_url: {{ environ.get('FEEDSTOCK_ROOT', '..') }}
   patches:
-    - patches/0001-Remove-hardcoded-path-to-brew-Boost-on-mac.patch # [osx]
     - patches/0001-Fix-build-to-work-with-Anaconda-compiler-toolchain.patch
 
 build:
