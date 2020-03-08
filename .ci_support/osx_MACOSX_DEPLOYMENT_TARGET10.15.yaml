@@ -1,5 +1,5 @@
 MACOSX_DEPLOYMENT_TARGET:
-- '10.13'
+- '10.15'
 boost_cpp:
 - 1.70.0
 c_compiler:
@@ -19,7 +19,7 @@ hdf5:
 macos_machine:
 - x86_64-apple-darwin13.4.0
 macos_min_version:
-- '10.13'
+- '10.15'
 pin_run_as_build:
   boost-cpp:
     max_pin: x.x.x
@@ -27,3 +27,6 @@ pin_run_as_build:
     max_pin: x
 sqlite:
 - '3'
+zip_keys:
+- - macos_min_version
+  - MACOSX_DEPLOYMENT_TARGET
