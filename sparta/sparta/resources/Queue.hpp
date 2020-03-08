@@ -301,9 +301,16 @@ namespace sparta
             }
 
             ///support -> operator
-            DataReferenceType operator->()
+            value_type* operator->()
             {
-                return operator*();
+                sparta_assert(getIndex()<attatched_queue_->total_valid_, "Not a valid Iterator");
+                return std::addressof(getAccess_(std::integral_constant<bool, is_const_iterator>()));
+            }
+            
+            const value_type* operator->() const
+            {
+                sparta_assert(getIndex()<attatched_queue_->total_valid_, "Not a valid Iterator");
+                return std::addressof(getAccess_(std::integral_constant<bool, is_const_iterator>()));
             }
 
             /// Checks validity of iterator
@@ -550,24 +557,26 @@ namespace sparta
 
         /**
          * \brief push data to the Queue.
-         * \param dat Data to be pushed in
+         * \param dat Data to be copied in
          * \return a copy of a QueueIterator that can be queired at
          * any time for this data's position in the queue.
          * \warning appends through via this method are immediately valid.
          */
         QueueIterator<false> push (const value_type & dat)
         {
-            sparta_assert(current_write_idx_ <= vector_size_);
-            // can't write more than the allowed items
-            queue_data_[current_write_idx_] = dat;
-            QueueIterator<false> new_entry(this, current_write_idx_, next_unique_id_);
-            ++next_unique_id_;
-            ++num_added_;
-            // move the write index up.
-            current_write_idx_ = incrementIndexValue_(current_write_idx_);
-            // either process now or schedule for later at the correct precedence.
-            processWrites_();
-            return new_entry;
+            return pushImpl_(dat);
+        }
+        
+        /**
+         * \brief push data to the Queue.
+         * \param dat Data to be moved in
+         * \return a copy of a QueueIterator that can be queired at
+         * any time for this data's position in the queue.
+         * \warning appends through via this method are immediately valid.
+         */
+        QueueIterator<false> push (value_type && dat)
+        {
+            return pushImpl_(std::move(dat));
         }
 
         /**
@@ -617,6 +626,21 @@ namespace sparta
         const_iterator end() const { return const_iterator(this,false);}
 
     private:
+        template<typename U>
+        QueueIterator<false> pushImpl_ (U && dat)
+        {
+            sparta_assert(current_write_idx_ <= vector_size_);
+            // can't write more than the allowed items
+            queue_data_[current_write_idx_] = std::forward<U>(dat);
+            QueueIterator<false> new_entry(this, current_write_idx_, next_unique_id_);
+            ++next_unique_id_;
+            ++num_added_;
+            // move the write index up.
+            current_write_idx_ = incrementIndexValue_(current_write_idx_);
+            // either process now or schedule for later at the correct precedence.
+            processWrites_();
+            return new_entry;
+        }
 
         void updateUtilizationCounters_() {
             // Update Counters

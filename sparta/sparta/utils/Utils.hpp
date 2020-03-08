@@ -85,6 +85,21 @@ namespace sparta
 {
 
 /*!
+ * \brief Function to invert a maps or an unordered_map, or any type of
+ * class that has key/value semantics.  The variadic template
+ * argument is necessary 'cause map/unordered_map don't have just
+ * two template parameters
+ */
+template<typename K, typename V, typename... Args, template<typename...> class MapType>
+MapType<V, K> flipMap(const MapType<K, V, Args...>& map){
+    auto inverted_map {MapType<V, K>{}};
+    for(const auto& [key, value] : map){
+        inverted_map.insert({value, key});
+    }
+    return inverted_map;
+}
+
+/*!
  * \brief Template type helper that removes a pointer, adds a const,
  * and then re-adds the pointer. This is useful to turn "T" [T=U*] into
  * "U const *" in places where simply using "const T" results in "U* const"

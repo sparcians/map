@@ -11,6 +11,8 @@
 
 #include <boost/timer/timer.hpp>
 #include <vector>
+#include <string>
+#include <memory>
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/statistics/CycleCounter.hpp"
 TEST_INIT;
@@ -18,6 +20,17 @@ TEST_INIT;
 #define PIPEOUT_GEN
 
 void testStatsOutput();
+
+struct dummy_struct{
+    uint16_t int16_field;
+    uint32_t int32_field;
+    std::string s_field;
+    
+    dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string& s_field) :
+        int16_field{int16_field},
+        int32_field{int32_field},
+        s_field{s_field}{}
+};
 
 int main()
 {
@@ -33,6 +46,10 @@ int main()
     sparta::Queue<double> queue10_untimed("queue10_untimed", 10,
                                         root_clk.get(),
                                         &queue10_stats);
+    
+    sparta::Queue<dummy_struct*> dummy_struct_queue("dummy_struct_queue", 3, root_clk.get(), &queue10_stats);
+    sparta::Queue<std::unique_ptr<dummy_struct>> dummy_struct_queue_up("dummy_struct_queue_up", 3, root_clk.get(), &queue10_stats);
+    
     rtn.setClock(root_clk.get());
 
 #ifdef PIPEOUT_GEN
@@ -55,6 +72,12 @@ int main()
 
     ////////////////////////////////////////////////////////////
     sched.run(1);
+    
+    dummy_struct_queue.push(new dummy_struct{16, 314, "dummy struct 1"});
+    EXPECT_TRUE(dummy_struct_queue.size() == 1);
+    dummy_struct_queue_up.push(std::make_unique<dummy_struct>(16, 314, "dummy struct 1"));
+    EXPECT_TRUE(dummy_struct_queue.size() == 1);
+    EXPECT_TRUE(dummy_struct_queue_up.size() == 1);
 
     queue10_untimed.push(1234.5);
     EXPECT_TRUE(queue10_untimed.size() == 1);
@@ -62,6 +85,8 @@ int main()
     sched.run(1);
 
     EXPECT_TRUE(queue10_untimed.size() == 1);
+    EXPECT_TRUE(dummy_struct_queue.size() == 1);
+    EXPECT_TRUE(dummy_struct_queue_up.size() == 1);
 
     EXPECT_EQUAL(queue10_untimed.front(), 1234.5);
     EXPECT_EQUAL(queue10_untimed.back(), 1234.5);
@@ -71,6 +96,62 @@ int main()
         queue10_untimed.push(val);
         EXPECT_EQUAL(queue10_untimed.back(), val);
     }
+    
+    dummy_struct_queue.push(new dummy_struct{32, 123, "dummy struct 2"});
+    EXPECT_TRUE(dummy_struct_queue.size() == 2);
+    dummy_struct_queue.push(new dummy_struct{64, 109934, "dummy struct 3"});
+    EXPECT_TRUE(dummy_struct_queue.size() == 3);
+    dummy_struct_queue_up.push(std::make_unique<dummy_struct>(32, 123, "dummy struct 2"));
+    EXPECT_TRUE(dummy_struct_queue_up.size() == 2);
+    dummy_struct_queue_up.push(std::make_unique<dummy_struct>(64, 109934, "dummy struct 3"));
+    EXPECT_TRUE(dummy_struct_queue_up.size() == 3);
+    
+    // Test pointer to member operator
+    EXPECT_TRUE(dummy_struct_queue.read(0)->int16_field == 16);
+    EXPECT_TRUE(dummy_struct_queue.read(1)->int16_field == 32);
+    EXPECT_TRUE(dummy_struct_queue.read(2)->int16_field == 64);
+    EXPECT_TRUE(dummy_struct_queue.read(0)->int32_field == 314);
+    EXPECT_TRUE(dummy_struct_queue.read(1)->int32_field == 123);
+    EXPECT_TRUE(dummy_struct_queue.read(2)->int32_field == 109934);
+    EXPECT_TRUE(dummy_struct_queue.read(0)->s_field == "dummy struct 1");
+    EXPECT_TRUE(dummy_struct_queue.read(1)->s_field == "dummy struct 2");
+    EXPECT_TRUE(dummy_struct_queue.read(2)->s_field == "dummy struct 3");
+    
+    EXPECT_TRUE(dummy_struct_queue_up.read(0)->int16_field == 16);
+    EXPECT_TRUE(dummy_struct_queue_up.read(1)->int16_field == 32);
+    EXPECT_TRUE(dummy_struct_queue_up.read(2)->int16_field == 64);
+    EXPECT_TRUE(dummy_struct_queue_up.read(0)->int32_field == 314);
+    EXPECT_TRUE(dummy_struct_queue_up.read(1)->int32_field == 123);
+    EXPECT_TRUE(dummy_struct_queue_up.read(2)->int32_field == 109934);
+    EXPECT_TRUE(dummy_struct_queue_up.read(0)->s_field == "dummy struct 1");
+    EXPECT_TRUE(dummy_struct_queue_up.read(1)->s_field == "dummy struct 2");
+    EXPECT_TRUE(dummy_struct_queue_up.read(2)->s_field == "dummy struct 3");
+    
+    // Test dereference operator
+    EXPECT_TRUE((*(dummy_struct_queue.read(0))).int16_field == 16);
+    EXPECT_TRUE((*(dummy_struct_queue.read(1))).int16_field == 32);
+    EXPECT_TRUE((*(dummy_struct_queue.read(2))).int16_field == 64);
+    EXPECT_TRUE((*(dummy_struct_queue.read(0))).int32_field == 314);
+    EXPECT_TRUE((*(dummy_struct_queue.read(1))).int32_field == 123);
+    EXPECT_TRUE((*(dummy_struct_queue.read(2))).int32_field == 109934);
+    EXPECT_TRUE((*(dummy_struct_queue.read(0))).s_field == "dummy struct 1");
+    EXPECT_TRUE((*(dummy_struct_queue.read(1))).s_field == "dummy struct 2");
+    EXPECT_TRUE((*(dummy_struct_queue.read(2))).s_field == "dummy struct 3");
+    
+    EXPECT_TRUE((*(dummy_struct_queue_up.read(0))).int16_field == 16);
+    EXPECT_TRUE((*(dummy_struct_queue_up.read(1))).int16_field == 32);
+    EXPECT_TRUE((*(dummy_struct_queue_up.read(2))).int16_field == 64);
+    EXPECT_TRUE((*(dummy_struct_queue_up.read(0))).int32_field == 314);
+    EXPECT_TRUE((*(dummy_struct_queue_up.read(1))).int32_field == 123);
+    EXPECT_TRUE((*(dummy_struct_queue_up.read(2))).int32_field == 109934);
+    EXPECT_TRUE((*(dummy_struct_queue_up.read(0))).s_field == "dummy struct 1");
+    EXPECT_TRUE((*(dummy_struct_queue_up.read(1))).s_field == "dummy struct 2");
+    EXPECT_TRUE((*(dummy_struct_queue_up.read(2))).s_field == "dummy struct 3");
+    
+    delete dummy_struct_queue.read(0);
+    delete dummy_struct_queue.read(1);
+    delete dummy_struct_queue.read(2);
+    
     sparta::Queue<double>::iterator queue10_untimes_iter= queue10_untimed.begin();
 
     EXPECT_EQUAL(*queue10_untimes_iter, 1234.5);

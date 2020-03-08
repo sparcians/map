@@ -26,9 +26,16 @@ TEST_INIT;
 
 #define PIPEOUT_GEN
 
+struct dummy_struct{
+    uint16_t int16_field;
+    uint32_t int32_field;
+    std::string s_field;
+};
+
 typedef sparta::Array<uint32_t, sparta::ArrayType::NORMAL> MyArray;
 typedef sparta::Array<uint32_t, sparta::ArrayType::AGED> AgedArray;
 typedef sparta::FrontArray<uint32_t, sparta::ArrayType::NORMAL> FrontArray;
+typedef sparta::Array<dummy_struct*, sparta::ArrayType::NORMAL> DummyArray;
 
 //Test non-integral aged array data types
 namespace sparta {
@@ -105,6 +112,8 @@ int main()
     AgedArray aged_collected_array("aged_collected_array", 10, &clk);
     aged_collected_array.enableCollection(&root);
     FrontArray front_array("front_array", 8, &clk, &sset);
+    
+    DummyArray dummy_array("dummy_array", 3, &clk, &sset);
 
     root_node.enterConfiguring();
     root_node.enterFinalized();
@@ -118,6 +127,39 @@ int main()
 #ifdef PIPEOUT_GEN
     pc.startCollection(&root_node);
 #endif
+    
+    dummy_array.write(0, new dummy_struct{16, 314, "dummy struct 1"});
+    EXPECT_TRUE(dummy_array.size() == 1);
+    dummy_array.write(1, new dummy_struct{32, 123, "dummy struct 2"});
+    EXPECT_TRUE(dummy_array.size() == 2);
+    dummy_array.write(2, new dummy_struct{64, 109934, "dummy struct 3"});
+    EXPECT_TRUE(dummy_array.size() == 3);
+    
+    // Test pointer to member operator
+    EXPECT_TRUE(dummy_array.read(0)->int16_field == 16);
+    EXPECT_TRUE(dummy_array.read(1)->int16_field == 32);
+    EXPECT_TRUE(dummy_array.read(2)->int16_field == 64);
+    EXPECT_TRUE(dummy_array.read(0)->int32_field == 314);
+    EXPECT_TRUE(dummy_array.read(1)->int32_field == 123);
+    EXPECT_TRUE(dummy_array.read(2)->int32_field == 109934);
+    EXPECT_TRUE(dummy_array.read(0)->s_field == "dummy struct 1");
+    EXPECT_TRUE(dummy_array.read(1)->s_field == "dummy struct 2");
+    EXPECT_TRUE(dummy_array.read(2)->s_field == "dummy struct 3");
+    
+    // Test dereference operator
+    EXPECT_TRUE((*(dummy_array.read(0))).int16_field == 16);
+    EXPECT_TRUE((*(dummy_array.read(1))).int16_field == 32);
+    EXPECT_TRUE((*(dummy_array.read(2))).int16_field == 64);
+    EXPECT_TRUE((*(dummy_array.read(0))).int32_field == 314);
+    EXPECT_TRUE((*(dummy_array.read(1))).int32_field == 123);
+    EXPECT_TRUE((*(dummy_array.read(2))).int32_field == 109934);
+    EXPECT_TRUE((*(dummy_array.read(0))).s_field == "dummy struct 1");
+    EXPECT_TRUE((*(dummy_array.read(1))).s_field == "dummy struct 2");
+    EXPECT_TRUE((*(dummy_array.read(2))).s_field == "dummy struct 3");
+    
+    delete dummy_array.read(0);
+    delete dummy_array.read(1);
+    delete dummy_array.read(2);
 
     std::cout << sset << std::endl;
 
@@ -254,8 +296,8 @@ int main()
         ++it;
     }
     //this dereference should work if the -> operator was set up properly.
-    uint32_t dat = it.operator->();
-    EXPECT_EQUAL(dat, 9);
+    uint32_t* dat = it.operator->();
+    EXPECT_EQUAL(*dat, 9);
     aged_array.erase(it);
 
 #ifdef PIPEOUT_GEN
