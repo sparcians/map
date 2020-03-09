@@ -17,6 +17,9 @@ namespace sparta
 {
 
     /*!
+     * \enum SchedulingPhase
+     * \brief The SchedulingPhases used for events (Tick, Update, PortUpdate, etc)
+     *
      * SchedulingPhase are phases within the SPARTA framework that
      * allow a user to "categorize" events, ports, collection, and
      * updatables into groups for auto-precedence establishment.
@@ -55,7 +58,7 @@ namespace sparta
     enum class SchedulingPhase
     {
 #ifndef DO_NOT_DOCUMENT
-        Trigger,
+        Trigger,        //!< Used internally
 #endif
         Update,         //!< Resources are updated in this phase
         PortUpdate,     //!< N-cycle Ports are updated in this phase

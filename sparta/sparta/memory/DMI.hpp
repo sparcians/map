@@ -12,8 +12,7 @@ namespace sparta {
 
         /**
          * \class DMI
-         *
-         * Represents a memory range that can be accessed via DMI
+         * \brief Represents a memory range that can be accessed via DMI
          */
         class DMI
         {

@@ -28,15 +28,14 @@ namespace sparta
     // Data Ports
     //////////////////////////////////////////////////////////////////////
 
-    ///! Forward declaration
+    // Forward declaration
     template<class DataT>
     class DataInPort;
 
     /**
      * \class DataOutPort
      *
-     * \brief Class that defines an DataOutPort for data writes. See
-     * \ref timed_primitives for more details.
+     * \brief DataOutPort is used for transferring any data to another module
      *
      * The purpose of the DataOutPort is to provide a singular point of
      * data delivery when sending data to a component.  DataOutPorts are
@@ -244,7 +243,7 @@ namespace sparta
 
     /**
      * \class DataInPort
-     * \brief Class that defines an DataInPort
+     * \brief DataInPort receives data from sender using a DataOutPort
      *
      * The purpose of the DataInPort is to provide a singular point of
      * data reception when receiving data from a component.  DataInPorts

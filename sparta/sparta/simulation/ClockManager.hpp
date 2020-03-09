@@ -22,6 +22,10 @@
 namespace sparta {
 class RootTreeNode;
 
+    /**
+     * \class ClockManager
+     * \brief Manages building a clock tree
+     */
     class ClockManager
     {
         typedef std::list<Clock::Handle>  ClockList;

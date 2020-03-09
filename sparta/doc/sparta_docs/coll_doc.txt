@@ -1,5 +1,5 @@
 /*!
-  \page collection_overview Sparta Collection APIs
+  \page collection_overview Sparta Collection APIs (sparta/collection)
 
   These classes are used to collect pipeline information for Argos
   consumption.

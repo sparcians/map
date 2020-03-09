@@ -1,0 +1,21 @@
+/*!
+  \page kernel_overview Sparta Kernel Interface APIs (sparta/kernel)
+
+  This is the "heart" of Sparta, defining various classes to move
+  simulation ahead.  None of these class should be used directly.
+
+  Utility                     | Brief Description
+  --------------------------- | ------------------
+  sparta::DAG | \copybrief sparta::DAG
+  sparta::EdgeFactory | \copybrief sparta::EdgeFactory
+  sparta::MemoryProfiler | \copybrief sparta::MemoryProfiler
+  sparta::ObjectAllocator | \copybrief sparta::ObjectAllocator
+  sparta::PhasedObject | \copybrief sparta::PhasedObject
+  sparta::Scheduler | \copybrief sparta::Scheduler
+  sparta::SleeperThread | \copybrief sparta::SleeperThread
+  sparta::SleeperThreadBase | \copybrief sparta::SleeperThreadBase
+  sparta::SpartaHandler | \copybrief sparta::SpartaHandler
+  sparta::Vertex | \copybrief sparta::Vertex
+  sparta::VertexFactory | \copybrief sparta::VertexFactory
+
+*/

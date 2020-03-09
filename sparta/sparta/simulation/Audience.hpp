@@ -13,6 +13,11 @@
 
 namespace sparta
 {
+    /**
+     * \class Audience
+     * \brief Class used maintain a list of sparta::Scheduleable objects; used by observation-type classes
+     *
+     */
     class Audience
     {
         typedef std::list<ScheduleableHandle> ScheduleableHandleList;
