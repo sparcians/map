@@ -10,14 +10,8 @@ jobs:
   strategy:
     maxParallel: 8
     matrix:
-      osx_MACOSX_DEPLOYMENT_TARGET10.13:
-        CONFIG: osx_MACOSX_DEPLOYMENT_TARGET10.13
-        UPLOAD_PACKAGES: True
-      osx_MACOSX_DEPLOYMENT_TARGET10.14:
-        CONFIG: osx_MACOSX_DEPLOYMENT_TARGET10.14
-        UPLOAD_PACKAGES: True
-      osx_MACOSX_DEPLOYMENT_TARGET10.15:
-        CONFIG: osx_MACOSX_DEPLOYMENT_TARGET10.15
+      osx_:
+        CONFIG: osx_
         UPLOAD_PACKAGES: True
 
   steps:
