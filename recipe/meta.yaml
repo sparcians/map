@@ -14,8 +14,7 @@ source:
 
 build:
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', '0') }}
-  string: {{ [PKG_BUILDNUM, ('h' + PKG_HASH), environ.get('GIT_DESCRIBE_HASH', '')]|join('_') }}  # [not osx]
-  string: {{ [PKG_BUILDNUM, ('h' + PKG_HASH), environ.get('GIT_DESCRIBE_HASH', ''), 'osx'+MACOSX_DEPLOYMENT_TARGET]|join('_') }}  # [osx]
+  string: {{ [PKG_BUILDNUM, ('h' + PKG_HASH), environ.get('GIT_DESCRIBE_HASH', '')]|join('_') }}
   # python2 is not supported
   skip: True # [py2k]
   # Native Windows isn't supported either, use WSL or Docker

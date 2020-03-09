@@ -26,12 +26,8 @@
 # for details
 macos_min_version:             # [osx]
   - 10.13                      # [osx]
-  - 10.14                      # [osx]
-  - 10.15                      # [osx]
 MACOSX_DEPLOYMENT_TARGET:      # [osx]
   - 10.13                      # [osx]
-  - 10.14                      # [osx]
-  - 10.15                      # [osx]
 
 zip_keys:                       # [osx]
   -                             # [osx]
