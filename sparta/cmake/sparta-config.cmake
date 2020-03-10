@@ -24,22 +24,23 @@ if (Sparta_VERBOSE)
     set (CMAKE_FIND_DEBUG_MODE ON) # verbosity for find_package
 endif()
 
+set (Boost_USE_STATIC_LIBS OFF)
+
+# BOOST_CMAKE logic for in versions before 1.72 to ask for the shared libraries is broken, you can only force it to use
+# them if you're building shared libs?  wtf?
+set (existing_build_shared ${BUILD_SHARED_LIBS})
+set (BUILD_SHARED_LIBS ON)
+
 if (APPLE)
   set (Boost_NO_BOOST_CMAKE ON)
   set (CMAKE_CXX_COMPILER_VERSION 10.0)
   find_package (Boost 1.49.0 REQUIRED HINTS /usr/local/Cellar/boost/* COMPONENTS ${_BOOST_COMPONENTS})
 else ()
-  set (Boost_USE_STATIC_LIBS OFF)
-
-  # BOOST_CMAKE logic for asking for the shared libraries is broken, you can only force it to use
-  # them if you're building shared libs?  wtf?
-  set (existing_build_shared ${BUILD_SHARED_LIBS})
-  set (BUILD_SHARED_LIBS ON)
 
   find_package (Boost 1.49.0 REQUIRED COMPONENTS ${_BOOST_COMPONENTS})
-  set (BUILD_SHARED_LIBS ${existing_build_shared})
 
 endif ()
+set (BUILD_SHARED_LIBS ${existing_build_shared})
 message ("-- Using BOOST ${Boost_VERSION_STRING}")
 
 # Find YAML CPP
