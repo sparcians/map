@@ -496,15 +496,14 @@ namespace sparta
         { }
 
         /**
-         * \brief Add an event "listener" to this port
-         * \param producer A UniqueEvent or Event that will be
-         *                 scheduled when data arrives on this port.
-         *                 PayloadEvent types are not supported.
+         * \brief Add an event "producer" to this port
+         * \param producer A Scheduleable type that might be
+         *                 scheduled before data is driven on this port.
          *
          * When data is sent on this OutPort in zero-cycles, it is
          * guaranteed that any and all consumers on the paired InPorts
-         * will be scheduled \b after the producing event within the
-         * same cycle.
+         * will be scheduled \b after the registered producing event
+         * within the same cycle.
          *
          * This method can \b only be called before the TreeNodes are
          * finalized to ensure proper DAG ordering.  The best practice
@@ -526,12 +525,12 @@ namespace sparta
         }
 
         /**
-         * \brief Add an InPort "listener" to this OutPort
+         * \brief Add an InPort "producer" to this OutPort
          * \param producer An InPort whose handler will most likely drive this OutPort
          *
          * When data is sent on this OutPort in zero-cycles, it is
          * guaranteed that any and all consumers on the paired InPorts
-         * will be scheduled \b after the producing event within the
+         * will be scheduled \b after the producing InPort within the
          * same cycle.
          *
          * This method can \b only be called before the TreeNodes are
