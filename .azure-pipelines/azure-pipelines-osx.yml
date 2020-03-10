@@ -73,6 +73,14 @@ jobs:
       conda build ./recipe -m ./.ci_support/${CONFIG}.yaml --clobber-file ./.ci_support/clobber_${CONFIG}.yaml
     displayName: Build recipe
 
+  - task: PublishTestResults@2
+    inputs:
+        testResultsFormat: 'cTest'
+        testResultsFiles: '**/Test.xml'
+        mergeTestResults: false # Unclear on impact of setting this true
+        failTaskOnFailedTests: true
+        publishRunAttachments: true # uploads xml files for possible inspection
+
   - script: |
       source activate base
       export GIT_BRANCH=$BUILD_SOURCEBRANCHNAME

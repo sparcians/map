@@ -30,3 +30,10 @@ jobs:
     displayName: Run docker build
     env:
       BINSTAR_TOKEN: $(BINSTAR_TOKEN)
+  - task: PublishTestResults@2
+    inputs:
+        testResultsFormat: 'cTest'
+        testResultsFiles: '**/Test.xml'
+        mergeTestResults: false # Unclear on impact of setting this true
+        failTaskOnFailedTests: true
+        publishRunAttachments: true # uploads xml files for possible inspection
