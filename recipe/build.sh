@@ -17,14 +17,6 @@ if [[ $(uname) == Darwin ]]; then
     fi
 
     CMAKE_PLATFORM_FLAGS+=("-DCMAKE_OSX_SYSROOT=${CONDA_BUILD_SYSROOT}")
-
-
-    # Also hitting https://stackoverflow.com/questions/36567072/why-do-i-get-ld-warning-direct-access-in-main-to-global-weak-symbol-in-this
-    # conda-forge builds things on macOS with -fvisibility=hidden
-    # even though they don't put it in their clang activation scripts
-    CXXFLAGS="${CXXFLAGS} -fvisibility=hidden"
-    CFLAGS="${CFLAGS} -fvisibility=hidden"
-
 else
 
     # Override CC and CXX to use clang on Linux.  Since it depends
