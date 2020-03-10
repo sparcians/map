@@ -34,20 +34,14 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       ..
 cmake --build . -j "$CPU_COUNT" || cmake --build . -v
 cmake --build . -j "$CPU_COUNT" --target regress
-cd example && ctest -j "$CPU_COUNT"
+cmake --build . -j "$CPU_COUNT" --target simdb_regress
 
-# --test-action test (creating Test.xml results to load into a dashboard)
-# only works after the tests are built, ctest needs more configuration
-# to know how to only build the tests. Punting for now.
-#
-# # running with --test-action test creates Testing/<datetime>/Test.xml
-# # that can be loaded into the CI test result tracker
-# # We could and possibly should combine all of the tests into
-# # one ctest run or a special target that gets run with --test-action
-# (cd test && ctest --test-action test -j "$CPU_COUNT")
-# (cd simdb && ctest --test-action test -j "$CPU_COUNT")
-# (cd example && ctest --test-action test -j "$CPU_COUNT")
-
+# The example tests are built as a part of the toplevel 'regress'
+# target but they aren't run.  We have to explicitly run
+# by cd'ing into the example subdir and running ctest
+# because not all of the subdirs of example create their
+# own <subdir>_regress target like the core example.
+(cd example && ctest -j "$CPU_COUNT" --test-action test)
 
 cmake --build . --target install
 
