@@ -724,36 +724,17 @@ namespace sparta
          */
         void write(const uint32_t idx, const DataT& dat)
         {
-            sparta_assert(idx < num_entries_,
-                        "Cannot write to an index outside the bounds of the array.");
-            sparta_assert(array_[idx].valid == false,
-                        "It is illegal write over an already valid index.");
+            writeImpl_(idx, dat);
+        }
 
-
-            // Timestamp the entry in the array, for fast age comparison between two indexes.
-            array_[idx].age_id = next_age_id_;
-            ++next_age_id_;
-
-            // Since we are not timed. Write the data and validate it,
-            // then do pipeline collection.
-            array_[idx].data = dat;
-            array_[idx].valid = true;
-            ++num_valid_;
-
-            // Maintain our age order if we are an aged array.
-            if(ArrayT == ArrayType::AGED)
-            {
-                // To maintain aged items, add the index to the front
-                // of a list.
-                aged_list_.push_front(idx);
-                array_[idx].list_pointer = aged_list_.begin();
-            }
-
-            // Update occupancy counter.
-            if(utilization_)
-            {
-                utilization_->setValue(num_valid_);
-            }
+        /**
+         * \brief Write data to the array.
+         * \param idx The index to write at
+         * \param dat The data to write at that index.
+         */
+        void write(const uint32_t idx, DataT&& dat)
+        {
+            writeImpl_(idx, std::move(dat));
         }
 
         /**
@@ -767,6 +748,19 @@ namespace sparta
         void write(const iterator& iter, const DataT& dat)
         {
             write(iter.getIndex(), dat);
+        }
+
+        /**
+         * \brief Write data at an iterator position.
+         * \param iter The iterator pointing to the data
+         * \param dat The data to write at the iterator location
+         *
+         * This will write to the location at \a iter, whether
+         * the iterator is valid or not.
+         */
+        void write(const iterator& iter, DataT&& dat)
+        {
+            write(iter.getIndex(), std::move(dat));
         }
 
         /**
@@ -833,6 +827,41 @@ namespace sparta
         {
             sparta_assert(ArrayT == ArrayType::AGED);
             return aged_list_;
+        }
+
+        template<typename U>
+        void writeImpl_(const uint32_t idx, U&& dat)
+        {
+            sparta_assert(idx < num_entries_,
+                        "Cannot write to an index outside the bounds of the array.");
+            sparta_assert(array_[idx].valid == false,
+                        "It is illegal write over an already valid index.");
+
+
+            // Timestamp the entry in the array, for fast age comparison between two indexes.
+            array_[idx].age_id = next_age_id_;
+            ++next_age_id_;
+
+            // Since we are not timed. Write the data and validate it,
+            // then do pipeline collection.
+            array_[idx].data = std::forward<U>(dat);
+            array_[idx].valid = true;
+            ++num_valid_;
+
+            // Maintain our age order if we are an aged array.
+            if(ArrayT == ArrayType::AGED)
+            {
+                // To maintain aged items, add the index to the front
+                // of a list.
+                aged_list_.push_front(idx);
+                array_[idx].list_pointer = aged_list_.begin();
+            }
+
+            // Update occupancy counter.
+            if(utilization_)
+            {
+                utilization_->setValue(num_valid_);
+            }
         }
 
         // The size of our array.

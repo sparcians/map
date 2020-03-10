@@ -525,11 +525,17 @@ namespace sparta
          */
         void append(const DataT & item)
         {
-            pipe_.append(item);
+            appendImpl_(item);
+        }
 
-            if (perform_own_update_) {
-                ev_pipeline_update_.schedule();
-            }
+        /*!
+         * \brief Append data to the beginning of the pipeline
+         *
+         * \param item The data to be appended to the front of pipeline
+         */
+        void append(DataT && item)
+        {
+            return appendImpl_(std::move(item));
         }
 
         /*!
@@ -540,11 +546,18 @@ namespace sparta
          */
         void writeStage(const uint32_t & stage_id, const DataT & item)
         {
-            pipe_.writePS(stage_id, item);
+            writeStageImpl_(stage_id, item);
+        }
 
-            if (perform_own_update_) {
-                ev_pipeline_update_.schedule();
-            }
+        /*!
+         * \brief Modify a specific stage of the pipeline
+         *
+         * \param stage_id The stage number
+         * \param item The modified data for this designated stage
+         */
+        void writeStage(const uint32_t & stage_id, DataT && item)
+        {
+            writeStageImpl_(stage_id, std::move(item));
         }
 
         /*!
@@ -752,6 +765,26 @@ namespace sparta
         void enableCollection(TreeNode * parent) { pipe_.template enableCollection<phase>(parent); }
 
     private:
+        template<typename U>
+        void appendImpl_(U && item)
+        {
+            pipe_.append(std::forward<U>(item));
+
+            if (perform_own_update_) {
+                ev_pipeline_update_.schedule();
+            }
+        }
+
+        template<typename U>
+        void writeStageImpl_(const uint32_t & stage_id, U && item)
+        {
+            pipe_.writePS(stage_id, std::forward<U>(item));
+
+            if (perform_own_update_) {
+                ev_pipeline_update_.schedule();
+            }
+        }
+
         //! Perform pipeline forward progression (i.e. data-movement and event-scheduling)
         void internalUpdate_()
         {

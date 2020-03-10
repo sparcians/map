@@ -100,9 +100,10 @@ namespace sparta
 
         struct CircularBufferData
         {
-            CircularBufferData(const value_type & dat,
+            template<typename U = value_type>
+            CircularBufferData(U && dat,
                                const uint64_t window_idx) :
-                data(dat),
+                data(std::forward<U>(dat)),
                 window_idx(window_idx)
             {}
             CircularBufferData(const uint64_t window_idx) :
@@ -508,20 +509,21 @@ namespace sparta
          */
         void push_back(const value_type& dat)
         {
-            circularbuffer_data_.emplace(circularbuffer_data_.end(), dat, end_idx_);
-            ++end_idx_;
-            if(num_valid_ == max_size_) {
-                circularbuffer_data_.pop_front();
-                ++start_idx_;
-            }
-            else {
-                ++num_valid_;
-            }
-
-            // XXX Remove when testing complete.  This is an O(n) operation
-            sparta_assert(circularbuffer_data_.size() <= size());
-
-            updateUtilizationCounters_();
+            push_backImpl_(dat);
+        }
+        
+        /**
+         * \brief Append data to the end of CircularBuffer, and return a CircularBufferIterator
+         * \param dat Data to be pushed back into the CircularBuffer
+         * \return a CircularBufferIterator created to represent the object appended.
+         *
+         * Append data to the end of CircularBuffer, and return a CircularBufferIterator
+         * for the location appeneded. Untimed CircularBuffers will have the
+         * data become valid immediately.
+         */
+        void push_back(value_type&& dat)
+        {
+            push_backImpl_(std::move(dat));
         }
 
         /*!
@@ -539,9 +541,29 @@ namespace sparta
          * \param entry The interator to insert the data before
          * \param dat   The data to insert
          */
+        iterator insert(const iterator & entry, value_type&& dat)
+        {
+            return insertEntry_(entry, std::move(dat));
+        }
+
+        /*!
+         * \brief Insert the given data before the given iterator
+         * \param entry The interator to insert the data before
+         * \param dat   The data to insert
+         */
         iterator insert(const const_iterator & entry, const value_type& dat)
         {
             return insertEntry_(entry, dat);
+        }
+
+        /*!
+         * \brief Insert the given data before the given iterator
+         * \param entry The interator to insert the data before
+         * \param dat   The data to insert
+         */
+        iterator insert(const const_iterator & entry, value_type&& dat)
+        {
+            return insertEntry_(entry, std::move(dat));
         }
 
         /**
@@ -692,19 +714,38 @@ namespace sparta
             invalidateIndexes_();
         }
 
-        template<typename EntryIteratorT>
-        iterator insertEntry_(const EntryIteratorT & entry, const value_type& dat)
+        template<typename U>
+        void push_backImpl_(U&& dat)
+        {
+            circularbuffer_data_.emplace(circularbuffer_data_.end(), std::forward<U>(dat), end_idx_);
+            ++end_idx_;
+            if(num_valid_ == max_size_) {
+                circularbuffer_data_.pop_front();
+                ++start_idx_;
+            }
+            else {
+                ++num_valid_;
+            }
+
+            // XXX Remove when testing complete.  This is an O(n) operation
+            sparta_assert(circularbuffer_data_.size() <= size());
+
+            updateUtilizationCounters_();
+        }
+
+        template<typename EntryIteratorT, typename U>
+        iterator insertEntry_(const EntryIteratorT & entry, U&& dat)
         {
             // If the buffer is empty, the iterator is not valid, so
             // just do a push_back
             if(circularbuffer_data_.empty()) {
-                push_back(dat);
+                push_back(std::forward<U>(dat));
                 return begin();
             }
             sparta_assert(entry.isValid(),
                         "Cannot insert into Circularbuffer at given iterator");
             auto it = circularbuffer_data_.insert(entry.getInternalBufferEntry_(),
-                                                  CircularBufferData(dat, end_idx_));
+                                                  CircularBufferData(std::forward<U>(dat), end_idx_));
             ++num_valid_;
             invalidateIndexes_();
             return iterator(this, it, it->window_idx);
