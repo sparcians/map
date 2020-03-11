@@ -26,6 +26,12 @@ else
 fi
 
 
+################################################################################
+#
+#  BUILD & TEST SPARTA
+#
+################################################################################
+
 mkdir -p sparta/release
 pushd sparta/release
 cmake -DCMAKE_BUILD_TYPE=Release \
@@ -43,6 +49,29 @@ cmake --build . -j "$CPU_COUNT" --target simdb_regress
 # own <subdir>_regress target like the core example.
 (cd example && ctest -j "$CPU_COUNT" --test-action test)
 
+# if we want to create individual packages this should move into a separate install script for only SPARTA
+# and we might want to create separate install targets for the headers and the libs and the doc
 cmake --build . --target install
 
 popd
+
+
+################################################################################
+#
+# Preserve build-phase test results so that we can track them individually
+#
+################################################################################
+#
+# conda-build will remove the directory where it cloned and built
+# everything after a successful build.  It does this so that
+# when it goes to the conda-build test phase and installs the conda
+# package, any tests that are run will only use the installed
+# conda package and not accidentally use stuff from the source
+# build that isn't included in the package.
+rsync -a \
+    --include '**/Test.xml' \
+    --include '*/' \
+    --exclude '**' \
+    --prune-empty-dirs  \
+    --verbose \
+    . ../build_test_artifacts/
