@@ -132,6 +132,8 @@ int main()
     // Make perfect forwarding arrays
     DummyMoveArray dummy_array_pf("dummy_array_pf", 4, &clk, &sset);
     FrontMoveArray front_array_pf("front_array_pf", 4, &clk, &sset);
+    DummyMoveArray dummy_array_pfc("dummy_array_pfc", 4, &clk, &sset);
+    FrontMoveArray front_array_pfc("front_array_pfc", 4, &clk, &sset);
 
     root_node.enterConfiguring();
     root_node.enterFinalized();
@@ -146,7 +148,7 @@ int main()
     pc.startCollection(&root_node);
 #endif
     
-    // Test perfect forwarding arrays
+    // Test perfect forwarding arrays move
     {
         auto dummy_1 = dummy_struct(1, 2, "ABC");
         auto dummy_2 = dummy_struct(3, 4, "DEF");
@@ -185,7 +187,7 @@ int main()
         EXPECT_TRUE(dummy_array_pf.read(3).s_field == "jkl");
     }
 
-    // Test perfect forwarding front arrays
+    // Test perfect forwarding front arrays move
     {
         auto dummy_1 = dummy_struct(1, 2, "ABC");
         auto dummy_2 = dummy_struct(3, 4, "DEF");
@@ -214,6 +216,124 @@ int main()
         EXPECT_TRUE(front_array_pf.read(3).s_field == "def");
         EXPECT_TRUE(dummy_5.s_field.size() == 0);
         EXPECT_TRUE(dummy_6.s_field.size() == 0);
+    }
+
+    // Test perfect forwarding arrays copy
+    {
+        auto dummy_1 = dummy_struct(1, 2, "ABC");
+        auto dummy_2 = dummy_struct(3, 4, "DEF");
+        auto dummy_3 = dummy_struct(5, 6, "GHI");
+        auto dummy_4 = dummy_struct(7, 8, "JKL");
+        dummy_array_pfc.write(0, dummy_1);
+        dummy_array_pfc.write(1, dummy_2);
+        dummy_array_pfc.write(2, dummy_3);
+        dummy_array_pfc.write(3, dummy_4);
+        EXPECT_TRUE(dummy_1.int16_field == 1);
+        EXPECT_TRUE(dummy_1.int32_field == 2);
+        EXPECT_TRUE(dummy_1.s_field == "ABC");
+        EXPECT_TRUE(dummy_2.int16_field == 3);
+        EXPECT_TRUE(dummy_2.int32_field == 4);
+        EXPECT_TRUE(dummy_2.s_field == "DEF");
+        EXPECT_TRUE(dummy_3.int16_field == 5);
+        EXPECT_TRUE(dummy_3.int32_field == 6);
+        EXPECT_TRUE(dummy_3.s_field == "GHI");
+        EXPECT_TRUE(dummy_4.int16_field == 7);
+        EXPECT_TRUE(dummy_4.int32_field == 8);
+        EXPECT_TRUE(dummy_4.s_field == "JKL");
+        EXPECT_TRUE(dummy_array_pfc.read(0).int16_field == 1);
+        EXPECT_TRUE(dummy_array_pfc.read(0).int32_field == 2);
+        EXPECT_TRUE(dummy_array_pfc.read(0).s_field == "ABC");
+        EXPECT_TRUE(dummy_array_pfc.read(1).int16_field == 3);
+        EXPECT_TRUE(dummy_array_pfc.read(1).int32_field == 4);
+        EXPECT_TRUE(dummy_array_pfc.read(1).s_field == "DEF");
+        EXPECT_TRUE(dummy_array_pfc.read(2).int16_field == 5);
+        EXPECT_TRUE(dummy_array_pfc.read(2).int32_field == 6);
+        EXPECT_TRUE(dummy_array_pfc.read(2).s_field == "GHI");
+        EXPECT_TRUE(dummy_array_pfc.read(3).int16_field == 7);
+        EXPECT_TRUE(dummy_array_pfc.read(3).int32_field == 8);
+        EXPECT_TRUE(dummy_array_pfc.read(3).s_field == "JKL");
+        dummy_array_pfc.clear();
+        EXPECT_TRUE(dummy_array_pfc.size() == 0);
+        auto dummy_5 = dummy_struct(10, 20, "abc");
+        auto dummy_6 = dummy_struct(30, 40, "def");
+        auto dummy_7 = dummy_struct(50, 60, "ghi");
+        auto dummy_8 = dummy_struct(70, 80, "jkl");
+        auto itr = dummy_array_pfc.begin();
+        dummy_array_pfc.write(itr++, dummy_5);
+        dummy_array_pfc.write(itr++, dummy_6);
+        dummy_array_pfc.write(itr++, dummy_7);
+        dummy_array_pfc.write(itr++, dummy_8);
+        EXPECT_TRUE(dummy_5.int16_field == 10);
+        EXPECT_TRUE(dummy_5.int32_field == 20);
+        EXPECT_TRUE(dummy_5.s_field == "abc");
+        EXPECT_TRUE(dummy_6.int16_field == 30);
+        EXPECT_TRUE(dummy_6.int32_field == 40);
+        EXPECT_TRUE(dummy_6.s_field == "def");
+        EXPECT_TRUE(dummy_7.int16_field == 50);
+        EXPECT_TRUE(dummy_7.int32_field == 60);
+        EXPECT_TRUE(dummy_7.s_field == "ghi");
+        EXPECT_TRUE(dummy_8.int16_field == 70);
+        EXPECT_TRUE(dummy_8.int32_field == 80);
+        EXPECT_TRUE(dummy_8.s_field == "jkl");
+        EXPECT_TRUE(dummy_array_pfc.read(0).int16_field == 10);
+        EXPECT_TRUE(dummy_array_pfc.read(0).int32_field == 20);
+        EXPECT_TRUE(dummy_array_pfc.read(0).s_field == "abc");
+        EXPECT_TRUE(dummy_array_pfc.read(1).int16_field == 30);
+        EXPECT_TRUE(dummy_array_pfc.read(1).int32_field == 40);
+        EXPECT_TRUE(dummy_array_pfc.read(1).s_field == "def");
+        EXPECT_TRUE(dummy_array_pfc.read(2).int16_field == 50);
+        EXPECT_TRUE(dummy_array_pfc.read(2).int32_field == 60);
+        EXPECT_TRUE(dummy_array_pfc.read(2).s_field == "ghi");
+        EXPECT_TRUE(dummy_array_pfc.read(3).int16_field == 70);
+        EXPECT_TRUE(dummy_array_pfc.read(3).int32_field == 80);
+        EXPECT_TRUE(dummy_array_pfc.read(3).s_field == "jkl");
+    }
+
+    // Test perfect forwarding front arrays copy
+    {
+        auto dummy_1 = dummy_struct(1, 2, "ABC");
+        auto dummy_2 = dummy_struct(3, 4, "DEF");
+        auto dummy_3 = dummy_struct(5, 6, "GHI");
+        auto dummy_4 = dummy_struct(7, 8, "JKL");
+        front_array_pfc.write(0, dummy_1);
+        front_array_pfc.write(1, dummy_2);
+        front_array_pfc.write(2, dummy_3);
+        front_array_pfc.write(3, dummy_4);
+        EXPECT_TRUE(dummy_1.int16_field == 1);
+        EXPECT_TRUE(dummy_1.int32_field == 2);
+        EXPECT_TRUE(dummy_1.s_field == "ABC");
+        EXPECT_TRUE(dummy_2.int16_field == 3);
+        EXPECT_TRUE(dummy_2.int32_field == 4);
+        EXPECT_TRUE(dummy_2.s_field == "DEF");
+        EXPECT_TRUE(dummy_3.int16_field == 5);
+        EXPECT_TRUE(dummy_3.int32_field == 6);
+        EXPECT_TRUE(dummy_3.s_field == "GHI");
+        EXPECT_TRUE(dummy_4.int16_field == 7);
+        EXPECT_TRUE(dummy_4.int32_field == 8);
+        EXPECT_TRUE(dummy_4.s_field == "JKL");
+        EXPECT_TRUE(front_array_pfc.read(0).int16_field == 1);
+        EXPECT_TRUE(front_array_pfc.read(0).int32_field == 2);
+        EXPECT_TRUE(front_array_pfc.read(0).s_field == "ABC");
+        EXPECT_TRUE(front_array_pfc.read(1).int16_field == 3);
+        EXPECT_TRUE(front_array_pfc.read(1).int32_field == 4);
+        EXPECT_TRUE(front_array_pfc.read(1).s_field == "DEF");
+        EXPECT_TRUE(front_array_pfc.read(2).int16_field == 5);
+        EXPECT_TRUE(front_array_pfc.read(2).int32_field == 6);
+        EXPECT_TRUE(front_array_pfc.read(2).s_field == "GHI");
+        EXPECT_TRUE(front_array_pfc.read(3).int16_field == 7);
+        EXPECT_TRUE(front_array_pfc.read(3).int32_field == 8);
+        EXPECT_TRUE(front_array_pfc.read(3).s_field == "JKL");
+        front_array_pfc.erase(2);
+        EXPECT_TRUE(front_array_pfc.size() == 3);
+        auto dummy_5 = dummy_struct(10, 20, "abc");
+        front_array_pfc.writeFront(dummy_5);
+        EXPECT_TRUE(dummy_5.s_field == "abc");
+        EXPECT_TRUE(front_array_pfc.read(2).s_field == "abc");
+        front_array_pfc.erase(3);
+        auto dummy_6 = dummy_struct(30, 40, "def");
+        front_array_pfc.writeBack(dummy_6);
+        EXPECT_TRUE(dummy_6.s_field == "def");
+        EXPECT_TRUE(front_array_pfc.read(3).s_field == "def");
     }
 
     dummy_array.write(0, new dummy_struct{16, 314, "dummy struct 1"});
