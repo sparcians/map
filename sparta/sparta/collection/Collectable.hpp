@@ -114,10 +114,12 @@ namespace sparta{
                 collected_object_ = collected_object;
 
                 // Get an initial value, if available
-                if(collected_object) {
-                    std::ostringstream ss;
-                    ss << *collected_object;
-                    prev_annot_ = ss.str();
+                if constexpr (sparta::utils::has_ostream_operator<std::decay_t<DataT>>::value) {
+                    if(collected_object) {
+                        std::ostringstream ss;
+                        ss << *collected_object;
+                        prev_annot_ = ss.str();
+                    }
                 }
             }
 
@@ -143,31 +145,35 @@ namespace sparta{
              * \param val The value to initial the record with
              */
             void initialize(const DataT & val) {
-                std::ostringstream ss;
-                ss << val;
-                prev_annot_ = ss.str();
+                if constexpr (sparta::utils::has_ostream_operator<std::decay_t<DataT>>::value) {
+                    std::ostringstream ss;
+                    ss << val;
+                    prev_annot_ = ss.str();
+                }
             }
 
             //! Explicitly/manually collect a value for this collectable, ignoring
             //! what the Collectable is currently pointing to.
             void collect(const DataT & val)
             {
-                if(SPARTA_EXPECT_FALSE(isCollected()))
-                {
-                    std::ostringstream ss;
-                    ss << val;
-                    if((ss.str() != prev_annot_) && !record_closed_)
+                if constexpr (sparta::utils::has_ostream_operator<std::decay_t<DataT>>::value) {
+                    if(SPARTA_EXPECT_FALSE(isCollected()))
                     {
-                        // Close the old record (if there is one)
-                        closeRecord();
-                    }
+                        std::ostringstream ss;
+                        ss << val;
+                        if((ss.str() != prev_annot_) && !record_closed_)
+                        {
+                            // Close the old record (if there is one)
+                            closeRecord();
+                        }
 
-                    // Remember the new string for a new record and start
-                    // a new record if not empty.
-                    prev_annot_ = ss.str();
-                    if(!prev_annot_.empty() && record_closed_) {
-                        startNewRecord_();
-                        record_closed_ = false;
+                        // Remember the new string for a new record and start
+                        // a new record if not empty.
+                        prev_annot_ = ss.str();
+                        if(!prev_annot_.empty() && record_closed_) {
+                            startNewRecord_();
+                            record_closed_ = false;
+                        }
                     }
                 }
             }

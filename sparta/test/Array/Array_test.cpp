@@ -30,12 +30,16 @@ struct dummy_struct{
     uint16_t int16_field;
     uint32_t int32_field;
     std::string s_field;
+    dummy_struct() = default;
+    dummy_struct(const uint16_t a, const uint32_t b, const std::string& s):
+        int16_field{a}, int32_field{b}, s_field{s}{}
 };
 
 typedef sparta::Array<uint32_t, sparta::ArrayType::NORMAL> MyArray;
 typedef sparta::Array<uint32_t, sparta::ArrayType::AGED> AgedArray;
 typedef sparta::FrontArray<uint32_t, sparta::ArrayType::NORMAL> FrontArray;
 typedef sparta::Array<dummy_struct*, sparta::ArrayType::NORMAL> DummyArray;
+typedef sparta::Array<dummy_struct, sparta::ArrayType::NORMAL> DummyArray2;
 
 //Test non-integral aged array data types
 namespace sparta {
@@ -114,6 +118,7 @@ int main()
     FrontArray front_array("front_array", 8, &clk, &sset);
     
     DummyArray dummy_array("dummy_array", 3, &clk, &sset);
+    DummyArray2 dummy_array_2("dummy_array_2", 4, &clk, &sset);
 
     root_node.enterConfiguring();
     root_node.enterFinalized();
@@ -134,6 +139,40 @@ int main()
     EXPECT_TRUE(dummy_array.size() == 2);
     dummy_array.write(2, new dummy_struct{64, 109934, "dummy struct 3"});
     EXPECT_TRUE(dummy_array.size() == 3);
+    
+    // Test array with type having no ostream operator
+    auto dummy_1 = dummy_struct(1, 2, "ABC");
+    auto dummy_2 = dummy_struct(3, 4, "DEF");
+    auto dummy_3 = dummy_struct(5, 6, "GHI");
+    auto dummy_4 = dummy_struct(7, 8, "JKL");
+    dummy_array_2.write(0, dummy_1);
+    dummy_array_2.write(1, dummy_2);
+    dummy_array_2.write(2, dummy_3);
+    dummy_array_2.write(3, dummy_4);
+    EXPECT_TRUE(dummy_1.int16_field == 1);
+    EXPECT_TRUE(dummy_1.int32_field == 2);
+    EXPECT_TRUE(dummy_1.s_field == "ABC");
+    EXPECT_TRUE(dummy_2.int16_field == 3);
+    EXPECT_TRUE(dummy_2.int32_field == 4);
+    EXPECT_TRUE(dummy_2.s_field == "DEF");
+    EXPECT_TRUE(dummy_3.int16_field == 5);
+    EXPECT_TRUE(dummy_3.int32_field == 6);
+    EXPECT_TRUE(dummy_3.s_field == "GHI");
+    EXPECT_TRUE(dummy_4.int16_field == 7);
+    EXPECT_TRUE(dummy_4.int32_field == 8);
+    EXPECT_TRUE(dummy_4.s_field == "JKL");
+    EXPECT_TRUE(dummy_array_2.read(0).int16_field == 1);
+    EXPECT_TRUE(dummy_array_2.read(0).int32_field == 2);
+    EXPECT_TRUE(dummy_array_2.read(0).s_field == "ABC");
+    EXPECT_TRUE(dummy_array_2.read(1).int16_field == 3);
+    EXPECT_TRUE(dummy_array_2.read(1).int32_field == 4);
+    EXPECT_TRUE(dummy_array_2.read(1).s_field == "DEF");
+    EXPECT_TRUE(dummy_array_2.read(2).int16_field == 5);
+    EXPECT_TRUE(dummy_array_2.read(2).int32_field == 6);
+    EXPECT_TRUE(dummy_array_2.read(2).s_field == "GHI");
+    EXPECT_TRUE(dummy_array_2.read(3).int16_field == 7);
+    EXPECT_TRUE(dummy_array_2.read(3).int32_field == 8);
+    EXPECT_TRUE(dummy_array_2.read(3).s_field == "JKL");
     
     // Test pointer to member operator
     EXPECT_TRUE(dummy_array.read(0)->int16_field == 16);
