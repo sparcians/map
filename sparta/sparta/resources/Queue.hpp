@@ -176,7 +176,7 @@ namespace sparta
              * \param unique_id this helps to keep track of its validity.
              */
             QueueIterator(QueuePointerType queue, uint32_t physical_idx, uint64_t unique_id) :
-                attached_queue(queue),
+                attached_queue_(queue),
                 physical_idx_(physical_idx),
                 unique_id_(unique_id)
             {}
@@ -186,11 +186,11 @@ namespace sparta
              * \param begin_end if true iterator points to tail, if false points to head
              */
             QueueIterator(QueuePointerType q, bool begin_end):
-                attached_queue(q)
+                attached_queue_(q)
             {
                 if(begin_end){
                     physical_idx_ = q->current_tail_idx_;
-                    unique_id_ = q->next_unique_id_ - attached_queue->total_valid_;
+                    unique_id_ = q->next_unique_id_ - attached_queue_->total_valid_;
                 }else{
                     physical_idx_ = q->current_write_idx_;
                     unique_id_ = q->next_unique_id_;
@@ -206,7 +206,7 @@ namespace sparta
              * Allows for implicit conversion from a regular iterator to a const_iterator
              */
             QueueIterator(const QueueIterator<false> & iter) :
-                attached_queue(iter.attached_queue),
+                attached_queue_(iter.attached_queue_),
                 physical_idx_(iter.physical_idx_),
                 unique_id_(iter.unique_id_)
             {}
@@ -215,7 +215,7 @@ namespace sparta
              * Allows for implicit conversion from a regular iterator to a const_iterator
              */
             QueueIterator(const QueueIterator<true> & iter) :
-                attached_queue(iter.attached_queue),
+                attached_queue_(iter.attached_queue_),
                 physical_idx_(iter.physical_idx_),
                 unique_id_(iter.unique_id_)
             {}
@@ -227,7 +227,7 @@ namespace sparta
              */
             QueueIterator& operator=(const QueueIterator& rhs)
             {
-                attached_queue = rhs.attached_queue;
+                attached_queue_ = rhs.attached_queue_;
                 physical_idx_ = rhs.physical_idx_;
                 unique_id_ = rhs.physical_idx_;
                 return *this;
@@ -236,7 +236,7 @@ namespace sparta
             /// overload the comparison operator.
             bool operator<(const QueueIterator& rhs) const
             {
-                sparta_assert(attached_queue == rhs.attached_queue,
+                sparta_assert(attached_queue_ == rhs.attached_queue_,
                             "Cannot compare QueueIterators created by different Queues");
                 return getIndex() < rhs.getIndex();
             }
@@ -244,7 +244,7 @@ namespace sparta
             /// overload the comparison operator.
             bool operator>(const QueueIterator& rhs) const
             {
-                sparta_assert(attached_queue == rhs.attached_queue,
+                sparta_assert(attached_queue_ == rhs.attached_queue_,
                             "Cannot compare QueueIterators created by different Queues");
                 return getIndex() > rhs.getIndex();
             }
@@ -252,7 +252,7 @@ namespace sparta
             /// overload the comparison operator.
             bool operator==(const QueueIterator& rhs) const
             {
-                sparta_assert(attached_queue == rhs.attached_queue,
+                sparta_assert(attached_queue_ == rhs.attached_queue_,
                             "Cannot compare QueueIterators created by different Queues");
                 return getIndex() == rhs.getIndex();
             }
@@ -265,7 +265,7 @@ namespace sparta
             /// Pre-Increment operator
             QueueIterator & operator++()
             {
-                physical_idx_ = attached_queue->incrementIndexValue_(physical_idx_);
+                physical_idx_ = attached_queue_->incrementIndexValue_(physical_idx_);
                 ++unique_id_;
                 return *this;
             }
@@ -281,7 +281,7 @@ namespace sparta
             /// Pre-decrement iterator
             QueueIterator & operator--()
             {
-                physical_idx_ = attached_queue->decrementIndexValue_(physical_idx_);
+                physical_idx_ = attached_queue_->decrementIndexValue_(physical_idx_);
                 --unique_id_;
                 return *this;
             }
@@ -296,29 +296,29 @@ namespace sparta
             /// Dereferencing operator
             DataReferenceType operator* ()
             {
-                sparta_assert(getIndex()<attached_queue->total_valid_, "Not a valid Iterator");
+                sparta_assert(getIndex()<attached_queue_->total_valid_, "Not a valid Iterator");
                 return getAccess_(std::integral_constant<bool, is_const_iterator>());
             }
 
             ///support -> operator
             value_type* operator->()
             {
-                sparta_assert(getIndex()<attached_queue->total_valid_, "Not a valid Iterator");
+                sparta_assert(getIndex()<attached_queue_->total_valid_, "Not a valid Iterator");
                 return std::addressof(getAccess_(std::integral_constant<bool, is_const_iterator>()));
             }
             
             const value_type* operator->() const
             {
-                sparta_assert(getIndex()<attached_queue->total_valid_, "Not a valid Iterator");
+                sparta_assert(getIndex()<attached_queue_->total_valid_, "Not a valid Iterator");
                 return std::addressof(getAccess_(std::integral_constant<bool, is_const_iterator>()));
             }
 
             /// Checks validity of iterator
             /// \return Returns true if iterator is valid else false
             bool isValid() const {
-                if(unique_id_ >= attached_queue->numOngoingInvalidations_()
-                   && attached_queue != nullptr
-                   && physical_idx_ < attached_queue->vector_size_)
+                if(unique_id_ >= attached_queue_->numOngoingInvalidations_()
+                   && attached_queue_ != nullptr
+                   && physical_idx_ < attached_queue_->vector_size_)
                 {
                     return true;
                 } else {
@@ -329,28 +329,28 @@ namespace sparta
             /// Get the accurate logical index of this entry in the queue.
             uint32_t getIndex() const
             {
-                sparta_assert(unique_id_ >= attached_queue->numOngoingInvalidations_(),
+                sparta_assert(unique_id_ >= attached_queue_->numOngoingInvalidations_(),
                             "Cannot get index. This QueueIterator does not represent a valid entry in the Queue");
-                sparta_assert(attached_queue != nullptr,
+                sparta_assert(attached_queue_ != nullptr,
                             "Cannot get index. No Queue is attatched with this QueueEntree");
-                sparta_assert(physical_idx_ < attached_queue->vector_size_, "Not a valid Queue Iterator" );
-                return attached_queue->convertPhysicalIndex_(physical_idx_);
+                sparta_assert(physical_idx_ < attached_queue_->vector_size_, "Not a valid Queue Iterator" );
+                return attached_queue_->convertPhysicalIndex_(physical_idx_);
             }
 
         private:
 
-            QueuePointerType attached_queue;
+            QueuePointerType attached_queue_;
             uint32_t physical_idx_;
             uint64_t unique_id_;
 
             /// Get access on a non-const iterator
             DataReferenceType getAccess_(std::false_type) const {
-                return attached_queue->access(getIndex());
+                return attached_queue_->access(getIndex());
             }
 
             /// Get access on a const iterator
             DataReferenceType getAccess_(std::true_type) const {
-                return attached_queue->read(getIndex());
+                return attached_queue_->read(getIndex());
             }
         };
 
