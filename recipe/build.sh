@@ -17,6 +17,10 @@ if [[ $(uname) == Darwin ]]; then
     fi
 
     CMAKE_PLATFORM_FLAGS+=("-DCMAKE_OSX_SYSROOT=${CONDA_BUILD_SYSROOT}")
+
+    # Don't use Frameworks, Mono on Azure Pipelines caused mis-location of sqlite
+    # https://github.com/conda-forge/conda-smithy/issues/1251
+    CMAKE_PLATFORM_FLAGS+=("-DCMAKE_FIND_FRAMEWORK=NEVER")
 else
 
     # Override CC and CXX to use clang on Linux.  Since it depends
