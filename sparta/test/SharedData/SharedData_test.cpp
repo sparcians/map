@@ -192,8 +192,9 @@ void test_sddata(sparta::SharedData<dummy_struct, true>& sdata,
     EXPECT_THROW(sdata.accessNS());
     EXPECT_THROW(sdata.readNS());
 
-    sdata.write(std::move(dummy_2));
-    EXPECT_TRUE(dummy_2.s_field.size() == 0);
+    // Test copy
+    sdata.write(dummy_2);
+    EXPECT_TRUE(dummy_2.s_field == "DEF");
 
     EXPECT_FALSE(sdata.isValid());
     EXPECT_TRUE(sdata.isValidNS());
