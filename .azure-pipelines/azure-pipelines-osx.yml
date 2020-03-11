@@ -80,6 +80,9 @@ jobs:
         mergeTestResults: false # Unclear on impact of setting this true
         failTaskOnFailedTests: true
         publishRunAttachments: true # uploads xml files for possible inspection
+        # TODO need to make the build.sh copy different so that this doesn't have to
+        #      be platform specific
+        searchFolder: '/usr/local/miniconda3/conda-bld'
 
   - script: |
       source activate base
