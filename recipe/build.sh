@@ -21,12 +21,16 @@ if [[ $(uname) == Darwin ]]; then
     # Don't use Frameworks, Mono on Azure Pipelines caused mis-location of sqlite
     # https://github.com/conda-forge/conda-smithy/issues/1251
     CMAKE_PLATFORM_FLAGS+=("-DCMAKE_FIND_FRAMEWORK=NEVER")
+
+    BUILD_TEST_DEST="$SYSTEM_DEFAULTWORKINGDIRECTORY"
 else
 
     # Override CC and CXX to use clang on Linux.  Since it depends
     # on gcc being available on Linux, cmake will default to picking up gcc
     export CC=clang
     export CXX=clang++
+
+    BUILD_TEST_DEST="$HOME/feedstock_root/build_artifacts"
 fi
 
 
@@ -78,4 +82,4 @@ rsync -a \
     --exclude '**' \
     --prune-empty-dirs  \
     --verbose \
-    . ../build_test_artifacts/
+    . "$BUILD_TEST_DEST/build_test_artifacts/"
