@@ -26,16 +26,30 @@ TEST_INIT;
 
 #define PIPEOUT_GEN
 
-struct dummy_struct{
+struct dummy_struct
+{
     uint16_t int16_field;
     uint32_t int32_field;
     std::string s_field;
+
+    dummy_struct() = default;
+    dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) : 
+        int16_field{int16_field},
+        int32_field{int32_field},
+        s_field{s_field} {}
 };
+std::ostream &operator<<(std::ostream &os, const dummy_struct &obj)
+{
+    os << obj.int16_field << " " << obj.int32_field << obj.s_field << "\n";
+    return os;
+}
 
 typedef sparta::Array<uint32_t, sparta::ArrayType::NORMAL> MyArray;
 typedef sparta::Array<uint32_t, sparta::ArrayType::AGED> AgedArray;
 typedef sparta::FrontArray<uint32_t, sparta::ArrayType::NORMAL> FrontArray;
 typedef sparta::Array<dummy_struct*, sparta::ArrayType::NORMAL> DummyArray;
+typedef sparta::Array<dummy_struct, sparta::ArrayType::NORMAL> DummyMoveArray;
+typedef sparta::FrontArray<dummy_struct, sparta::ArrayType::NORMAL> FrontMoveArray;
 
 //Test non-integral aged array data types
 namespace sparta {
@@ -115,6 +129,10 @@ int main()
     
     DummyArray dummy_array("dummy_array", 3, &clk, &sset);
 
+    // Make perfect forwarding arrays
+    DummyMoveArray dummy_array_pf("dummy_array_pf", 4, &clk, &sset);
+    FrontMoveArray front_array_pf("front_array_pf", 4, &clk, &sset);
+
     root_node.enterConfiguring();
     root_node.enterFinalized();
 
@@ -128,6 +146,76 @@ int main()
     pc.startCollection(&root_node);
 #endif
     
+    // Test perfect forwarding arrays
+    {
+        auto dummy_1 = dummy_struct(1, 2, "ABC");
+        auto dummy_2 = dummy_struct(3, 4, "DEF");
+        auto dummy_3 = dummy_struct(5, 6, "GHI");
+        auto dummy_4 = dummy_struct(7, 8, "JKL");
+        dummy_array_pf.write(0, std::move(dummy_1));
+        dummy_array_pf.write(1, std::move(dummy_2));
+        dummy_array_pf.write(2, std::move(dummy_3));
+        dummy_array_pf.write(3, std::move(dummy_4));
+        EXPECT_TRUE(dummy_1.s_field.size() == 0);
+        EXPECT_TRUE(dummy_2.s_field.size() == 0);
+        EXPECT_TRUE(dummy_3.s_field.size() == 0);
+        EXPECT_TRUE(dummy_4.s_field.size() == 0);
+        EXPECT_TRUE(dummy_array_pf.read(0).s_field == "ABC");
+        EXPECT_TRUE(dummy_array_pf.read(1).s_field == "DEF");
+        EXPECT_TRUE(dummy_array_pf.read(2).s_field == "GHI");
+        EXPECT_TRUE(dummy_array_pf.read(3).s_field == "JKL");
+        dummy_array_pf.clear();
+        EXPECT_TRUE(dummy_array_pf.size() == 0);
+        auto dummy_5 = dummy_struct(10, 20, "abc");
+        auto dummy_6 = dummy_struct(30, 40, "def");
+        auto dummy_7 = dummy_struct(50, 60, "ghi");
+        auto dummy_8 = dummy_struct(70, 80, "jkl");
+        auto itr = dummy_array_pf.begin();
+        dummy_array_pf.write(itr++, std::move(dummy_5));
+        dummy_array_pf.write(itr++, std::move(dummy_6));
+        dummy_array_pf.write(itr++, std::move(dummy_7));
+        dummy_array_pf.write(itr++, std::move(dummy_8));
+        EXPECT_TRUE(dummy_5.s_field.size() == 0);
+        EXPECT_TRUE(dummy_6.s_field.size() == 0);
+        EXPECT_TRUE(dummy_7.s_field.size() == 0);
+        EXPECT_TRUE(dummy_8.s_field.size() == 0);
+        EXPECT_TRUE(dummy_array_pf.read(0).s_field == "abc");
+        EXPECT_TRUE(dummy_array_pf.read(1).s_field == "def");
+        EXPECT_TRUE(dummy_array_pf.read(2).s_field == "ghi");
+        EXPECT_TRUE(dummy_array_pf.read(3).s_field == "jkl");
+    }
+
+    // Test perfect forwarding front arrays
+    {
+        auto dummy_1 = dummy_struct(1, 2, "ABC");
+        auto dummy_2 = dummy_struct(3, 4, "DEF");
+        auto dummy_3 = dummy_struct(5, 6, "GHI");
+        auto dummy_4 = dummy_struct(7, 8, "JKL");
+        front_array_pf.write(0, std::move(dummy_1));
+        front_array_pf.write(1, std::move(dummy_2));
+        front_array_pf.write(2, std::move(dummy_3));
+        front_array_pf.write(3, std::move(dummy_4));
+        EXPECT_TRUE(dummy_1.s_field.size() == 0);
+        EXPECT_TRUE(dummy_2.s_field.size() == 0);
+        EXPECT_TRUE(dummy_3.s_field.size() == 0);
+        EXPECT_TRUE(dummy_4.s_field.size() == 0);
+        EXPECT_TRUE(front_array_pf.read(0).s_field == "ABC");
+        EXPECT_TRUE(front_array_pf.read(1).s_field == "DEF");
+        EXPECT_TRUE(front_array_pf.read(2).s_field == "GHI");
+        EXPECT_TRUE(front_array_pf.read(3).s_field == "JKL");
+        front_array_pf.erase(2);
+        EXPECT_TRUE(front_array_pf.size() == 3);
+        auto dummy_5 = dummy_struct(10, 20, "abc");
+        front_array_pf.writeFront(std::move(dummy_5));
+        EXPECT_TRUE(front_array_pf.read(2).s_field == "abc");
+        front_array_pf.erase(3);
+        auto dummy_6 = dummy_struct(30, 40, "def");
+        front_array_pf.writeBack(std::move(dummy_6));
+        EXPECT_TRUE(front_array_pf.read(3).s_field == "def");
+        EXPECT_TRUE(dummy_5.s_field.size() == 0);
+        EXPECT_TRUE(dummy_6.s_field.size() == 0);
+    }
+
     dummy_array.write(0, new dummy_struct{16, 314, "dummy struct 1"});
     EXPECT_TRUE(dummy_array.size() == 1);
     dummy_array.write(1, new dummy_struct{32, 123, "dummy struct 2"});
