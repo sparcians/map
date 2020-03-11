@@ -91,7 +91,7 @@ int main()
     ////////////////////////////////////////////////////////////
     sched.run(1);
 
-    // Test perfect forwarding Buffer
+    // Test perfect forwarding Buffer move
     {
         auto dummy_1 = dummy_struct(1, 2, "ABC");
         auto dummy_2 = dummy_struct(3, 4, "DEF");
@@ -110,6 +110,45 @@ int main()
         auto ritr = buf_dummy.rbegin();
         buf_dummy.insert(++ritr, std::move(dummy_4));
         EXPECT_TRUE(dummy_4.s_field.size() == 0);
+        EXPECT_TRUE(buf_dummy.read(2).s_field == "JKL");
+    }
+
+    // Test perfect forwarding Buffer copy
+    {
+        buf_dummy.clear();
+        auto dummy_1 = dummy_struct(1, 2, "ABC");
+        auto dummy_2 = dummy_struct(3, 4, "DEF");
+        auto dummy_3 = dummy_struct(5, 6, "GHI");
+        auto dummy_4 = dummy_struct(7, 8, "JKL");
+        buf_dummy.push_back(dummy_1);
+        EXPECT_TRUE(dummy_1.int16_field == 1);
+        EXPECT_TRUE(dummy_1.int32_field == 2);
+        EXPECT_TRUE(dummy_1.s_field == "ABC");
+        EXPECT_TRUE(buf_dummy.read(0).int16_field == 1);
+        EXPECT_TRUE(buf_dummy.read(0).int32_field == 2);
+        EXPECT_TRUE(buf_dummy.read(0).s_field == "ABC");
+        buf_dummy.insert(0, dummy_2);
+        EXPECT_TRUE(dummy_2.int16_field == 3);
+        EXPECT_TRUE(dummy_2.int32_field == 4);
+        EXPECT_TRUE(dummy_2.s_field == "DEF");
+        EXPECT_TRUE(buf_dummy.read(0).int16_field == 3);
+        EXPECT_TRUE(buf_dummy.read(0).int32_field == 4);
+        EXPECT_TRUE(buf_dummy.read(0).s_field == "DEF");
+        auto itr = buf_dummy.begin();
+        buf_dummy.insert(itr, dummy_3);
+        EXPECT_TRUE(dummy_3.int16_field == 5);
+        EXPECT_TRUE(dummy_3.int32_field == 6);
+        EXPECT_TRUE(dummy_3.s_field == "GHI");
+        EXPECT_TRUE(buf_dummy.read(0).int16_field == 5);
+        EXPECT_TRUE(buf_dummy.read(0).int32_field == 6);
+        EXPECT_TRUE(buf_dummy.read(0).s_field == "GHI");
+        auto ritr = buf_dummy.rbegin();
+        buf_dummy.insert(++ritr, dummy_4);
+        EXPECT_TRUE(dummy_4.int16_field == 7);
+        EXPECT_TRUE(dummy_4.int32_field == 8);
+        EXPECT_TRUE(dummy_4.s_field == "JKL");
+        EXPECT_TRUE(buf_dummy.read(2).int16_field == 7);
+        EXPECT_TRUE(buf_dummy.read(2).int32_field == 8);
         EXPECT_TRUE(buf_dummy.read(2).s_field == "JKL");
     }
 
