@@ -18,6 +18,24 @@ TEST_INIT;
 
 #define TEST_MANUAL_UPDATE
 
+struct dummy_struct
+{
+    uint16_t int16_field;
+    uint32_t int32_field;
+    std::string s_field;
+
+    dummy_struct() = default;
+    dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) : 
+        int16_field{int16_field},
+        int32_field{int32_field},
+        s_field{s_field} {}
+};
+std::ostream &operator<<(std::ostream &os, const dummy_struct &obj)
+{
+    os << obj.int16_field << " " << obj.int32_field << obj.s_field << "\n";
+    return os;
+}
+
 class DummyClass
 {
 public:
@@ -134,23 +152,31 @@ void testPipelineContinuingEvent() {
     sparta::RootTreeNode rtn;
     rtn.setClock(&clk);
     sparta::Pipeline<uint64_t> examplePipeline1("myFirstSpartaPipeline", 5, &clk);
+    sparta::Pipeline<dummy_struct> examplePipeline2("mySecondSpartaPipeline", 5, &clk);
     EXPECT_EQUAL(examplePipeline1.capacity(), 5);
+    EXPECT_EQUAL(examplePipeline2.capacity(), 5);
     // some opportunistic testing of the continuing feature for the pipeline unique event
     scheduler.finalize();
     rtn.enterConfiguring();
     rtn.enterFinalized();
     examplePipeline1.performOwnUpdates();
+    examplePipeline2.performOwnUpdates();
 
     //scheduler.printNextCycleEventTree(std::cerr);
     EXPECT_EQUAL(scheduler.getNextContinuingEventTime(), 0);
 
     EXPECT_FALSE(examplePipeline1.isAnyValid());
+    EXPECT_FALSE(examplePipeline2.isAnyValid());
 
     // make the pipeline updater event continuing, very important for some models
     examplePipeline1.setContinuing(true);
+    examplePipeline2.setContinuing(true);
 
     // add an event and let it move through a couple stages, the update event should still be scheduled
     examplePipeline1.append(42);
+    auto dummy_1 = dummy_struct(1, 2, "ABC");
+    examplePipeline2.append(std::move(dummy_1));
+    EXPECT_TRUE(dummy_1.s_field.size() == 0);
     scheduler.run(2, true);
 
     // that update event keeps the scheduler from being finished
@@ -161,9 +187,13 @@ void testPipelineContinuingEvent() {
 
     // make the update event continuing now
     examplePipeline1.setContinuing(false);
+    examplePipeline2.setContinuing(false);
 
     // add another event, move it one stage in
     examplePipeline1.append(84);
+    auto dummy_2 = dummy_struct(3, 4, "DEF");
+    examplePipeline2.append(std::move(dummy_2));
+    EXPECT_TRUE(dummy_2.s_field.size() == 0);
     scheduler.run(1, true);
 
     // verify that the update event doesn't count toward keeping the
