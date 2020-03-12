@@ -11,7 +11,7 @@ THISDIR="$( cd "$( dirname "$0" )" >/dev/null && pwd )"
 PROVIDER_DIR="$(basename $THISDIR)"
 
 FEEDSTOCK_ROOT=$(cd "$(dirname "$0")/.."; pwd;)
-RECIPE_ROOT="${FEEDSTOCK_ROOT}/recipe"
+RECIPE_ROOT="${FEEDSTOCK_ROOT}/conda.recipe"
 
 docker info
 
