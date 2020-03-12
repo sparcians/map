@@ -19,6 +19,8 @@ build:
   skip: True # [py2k]
   # Native Windows isn't supported either, use WSL or Docker
   skip: True # [win]
+  script_env:
+    - SYSTEM_DEFAULTWORKINGDIR # allow Azure variable into build.sh so that we can rescue our Test.xml files
 
 requirements:
   build: # build-arch
