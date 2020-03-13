@@ -33,6 +33,8 @@ else
     BUILD_TEST_DEST="$HOME/feedstock_root/build_artifacts"
 fi
 
+#  echo env for visibility in CI
+env | sort
 
 ################################################################################
 #

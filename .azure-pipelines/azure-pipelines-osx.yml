@@ -63,6 +63,8 @@ jobs:
 
   - script: |
       source activate base
+      set -x
+      env | sort
       conda build ./conda.recipe -m ./.ci_support/${CONFIG}.yaml --clobber-file ./.ci_support/clobber_${CONFIG}.yaml
     displayName: Build recipe
 
