@@ -47,6 +47,15 @@ jobs:
     displayName: Prepare conda build artifacts
     condition: succeededOrFailed()
 
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+        testResultsFormat: 'cTest'
+        testResultsFiles: '**/Test.xml'
+        mergeTestResults: false # Unclear on impact of setting this true
+        failTaskOnFailedTests: true
+        publishRunAttachments: true # uploads xml files for possible inspection
+
   - task: PublishPipelineArtifact@1
     displayName: Store conda build artifacts
     condition: not(eq(variables.BLD_ARTIFACT_PATH, ''))
