@@ -84,4 +84,5 @@ rsync -a \
     --exclude '**' \
     --prune-empty-dirs  \
     --verbose \
-    . "$BUILD_TEST_DEST/build_test_artifacts/"
+    . "$BUILD_TEST_DEST/build_test_artifacts/" || \
+    true # don't let failure of saving artifacts fail the build
