@@ -30,7 +30,7 @@ namespace sparta
      * void foo()
      * {
      *    sparta::SpartaSharedPointer<int> ptr(new int);
-     *    int * t = new int(0);   // Totally unsafe, BTW
+     *    int * t = new int(0);   // Don't do this, BTW
      *    sparta::SpartaSharedPointer<int> ptr2(t);
      *
      *    ptr2 = ptr;
@@ -56,7 +56,7 @@ namespace sparta
         {
             explicit RefCount(PointerT * _p,
                               bool perform_delete = true) :
-                count(1),
+                count(_p != nullptr ? 1 : 0),
                 p(_p),
                 perform_delete_(perform_delete)
             {}
@@ -88,7 +88,7 @@ namespace sparta
 
     public:
         //! Expected typedef for the resource type.
-        typedef PointerT element_type;
+        using element_type = PointerT;
 
         /**
          * \brief Construct a Reference Pointer with the given memory object
@@ -122,6 +122,22 @@ namespace sparta
             ++ref_count_->count;
         }
 
+        /**
+         * \brief Take ownership of a reference pointer
+         * \param orig The original pointer
+         *
+         * This SpartaSharedPointer now replaces orig.  Orig becomes a
+         * nullptr with no references
+         */
+        SpartaSharedPointer(SpartaSharedPointer && orig) :
+            memory_block_(orig.memory_block_),
+            ref_count_(orig.ref_count_)
+        {
+            // DO NOT unlink.
+            orig.memory_block_ = nullptr;
+            orig.ref_count_ = new RefCount(nullptr);
+        }
+
         //! \brief Detach this shared pointer; if last, delete underlying object
         ~SpartaSharedPointer() {
             unlink_();
@@ -140,6 +156,25 @@ namespace sparta
             memory_block_ = orig.memory_block_;
             ref_count_ = orig.ref_count_;
             ++ref_count_->count;
+            return *this;
+        }
+
+        /**
+         * \brief Assignment move operator
+         * \param orig The original pointer to be moved
+         * \return Reference to this
+         *
+         * The rvalue is assigned into this class, with this class
+         * unlinking itself from it's original pointer
+         */
+        SpartaSharedPointer & operator=(SpartaSharedPointer && orig)
+        {
+            sparta_assert(&orig != this);
+            unlink_();
+            memory_block_ = orig.memory_block_;
+            ref_count_    = orig.ref_count_;
+            orig.memory_block_ = nullptr;
+            orig.ref_count_ = new RefCount(nullptr);
             return *this;
         }
 
@@ -204,6 +239,15 @@ namespace sparta
             memory_block_  = nullptr;
         }
 
+        /**
+         * \brief Get the current reference count
+         * \return The current reference count
+         */
+        uint32_t use_count() const {
+            sparta_assert(ref_count_ != nullptr);
+            return ref_count_->count;
+        }
+
         // Allocation helpers
 
         /*!
@@ -217,11 +261,54 @@ namespace sparta
          * prevent others from using this class with std types like
          * std::shared_ptr, std::vector, etc.  Also, this class *is
          * not* thread safe.  Do not expect it to work in a threaded
-         * application.  Also, the allocator *must outlive* any
-         * simulator componentry that uses objects allocated by this
-         * allocator.  If not, random seg faults will plague the
-         * developer.  Suggested use is to make this allocator global,
-         * with user-defined atomic operations if desired.
+         * application where multiple threads are
+         * allocating/deallocating with the same
+         * sparta::SpartaSharedPointerAllocator instance.
+         *
+         * Also, the allocator *must outlive* any simulator
+         * componentry that uses objects allocated by this allocator.
+         * If not, random seg faults will plague the developer.
+         * Suggested use is to make this allocator global, with
+         * user-defined atomic operations if desired.
+         *
+         * A suggestion for Sparta developers using these allocators
+         * is to create an `Allocator` class type that derives from
+         * sparta::TreeNode and place that class somewhere in the
+         * simulation under root:
+         *
+         * \code
+         *
+         * // Define a specific TreeNode that is just allocators
+         * class OurAllocators : public sparta::TreeNode
+         * {
+         * public:
+         *      // Constructors and what-not...
+         *
+         *      // Allocators
+         *      using MyAllocator = sparta::SpartaSharedPointer<MyClassIUseALot>::SpartaSharedPointerAllocator;
+         *      MyAllocator my_allocator(100, 200);  // whatever params you chose
+         * };
+         *
+         * \endcode
+         *
+         * And in the modeler's block, they would retrive the
+         * `OurAllocators` node and get the allocator:
+         *
+         * \code
+         *
+         * class MyDevice : public sparta::Unit
+         * {
+         * public:
+         *     MyDevice(sparta::TreeNode * my_container, sparta::ParameterSet *) :
+         *         my_allocator_(customUtilToFindTheAllocatorTreeNode(my_container)->my_allocator)
+         *     {}
+         *
+         * private:
+         *
+         *     OurAllocators::MyAllocator & my_allocator_;
+         * };
+         *
+         * \endcode
          *
          * The class is not intended to be used directly, but rather
          * in compliment with the allocator method
@@ -312,6 +399,13 @@ namespace sparta
         {
         public:
 
+            //! Handy typedef
+            using element_type = PointerT;
+
+            //! Used for defining a custom watermark callback.
+            //! Default is to print a warning
+            using WaterMarkWarningCallback = std::function<void (const SpartaSharedPointerAllocator &)>;
+
             /**
              * \brief Construct this allocator with num_blocks of initial memory
              * \param max_num_blocks The maximum number of blocks this allocator is allowed to use
@@ -326,7 +420,8 @@ namespace sparta
             SpartaSharedPointerAllocator(const size_t max_num_blocks,
                                          const size_t water_mark) :
                 memory_blocks_(max_num_blocks),
-                water_mark_(water_mark)
+                water_mark_(water_mark),
+                watermark_warning_callback_(waterMarkWarningCallback_)
             {
                 sparta_assert(water_mark <= max_num_blocks,
                               "The water_mark on SpartaSharedPointerAllocator should be less than or " <<
@@ -395,6 +490,17 @@ namespace sparta
                 }
 
                 return allocated_objs;
+            }
+
+            /**
+             * \brief Set a custom watermark callback
+             *
+             * \param callback The callback to use when the allocator hits the watermark
+             *
+             * The callback will be called only once after the watermark was hit.
+             */
+            void registerCustomWaterMarkCallback(const WaterMarkWarningCallback & callback) {
+                watermark_warning_callback_ = callback;
             }
 
         private:
@@ -525,11 +631,7 @@ namespace sparta
                 else {
                     if(SPARTA_EXPECT_FALSE(allocated_ > water_mark_)) {
                         if(!water_mark_warning_) {
-                            std::cerr << "WARNING: The watermark for this allocator has been surpassed: \n\n\t"
-                                      << __PRETTY_FUNCTION__
-                                      << "\n\n"
-                                      << "\t\tNumber blocks preallocated: " << memory_blocks_.capacity()
-                                      << "\n\t\tWatermark                 : " << water_mark_ << std::endl;
+                            watermark_warning_callback_(*this);
                             water_mark_warning_ = true;
                         }
 
@@ -550,6 +652,15 @@ namespace sparta
                 return block;
             }
 
+            // Default watermark warning callback
+            static void waterMarkWarningCallback_(const SpartaSharedPointerAllocator & allocator) {
+                std::cerr << "WARNING: The watermark for this allocator has been surpassed: \n\n\t"
+                          << __PRETTY_FUNCTION__
+                          << "\n\n"
+                          << "\t\tNumber blocks preallocated: " << allocator.memory_blocks_.capacity()
+                          << "\n\t\tWatermark                 : " << allocator.water_mark_ << std::endl;
+            }
+
             /**
              * \brief Return the block of memory back to the "pool"
              * \param block The block to return
@@ -566,12 +677,13 @@ namespace sparta
                 ++free_idx_;
             }
 
-            MemBlockVector          memory_blocks_;
-            std::vector<MemBlock*>  free_blocks_;
-            size_t                  free_idx_ = 0;
-            size_t                  allocated_  = 0;
-            const size_t            water_mark_;
-            bool                    water_mark_warning_ = false;
+            MemBlockVector           memory_blocks_;
+            std::vector<MemBlock*>   free_blocks_;
+            size_t                   free_idx_ = 0;
+            size_t                   allocated_  = 0;
+            const size_t             water_mark_;
+            bool                     water_mark_warning_ = false;
+            WaterMarkWarningCallback watermark_warning_callback_;
         };
 
     private:
