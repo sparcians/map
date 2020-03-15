@@ -79,19 +79,20 @@ namespace sparta{
          */
         uint32_t writeFront(const DataT& dat)
         {
-            uint32_t i;
-            for(i = 0; i < BaseArray::capacity(); ++i)
-            {
-                if(!BaseArray::isValid(i))
-                {
-                    break; //we found an entry that is invalid. This is the front!
-                }
-            }
-            sparta_assert(i < BaseArray::capacity(), "Cannot write to the front of the Array. There are no free entries.");
-            BaseArray::write(i, dat);
-            return i;
+            return writeFrontImpl_(dat);
         }
 
+        /**
+         * \brief a public method that can be used to write data
+         * to the first invalidate entry in the array. '
+         * \param dat the data to be written to the front of the array.
+         * \note this method is only accessable on AllocationP == FrontAccessable
+         * type Arrays.
+         */
+        uint32_t writeFront(DataT&& dat)
+        {
+            return writeFrontImpl_(std::move(dat));
+        }
 
         /**
          * \brief a public method that can be used to write data
@@ -102,6 +103,41 @@ namespace sparta{
          */
         uint32_t writeBack(const DataT& dat)
         {
+            return writeBackImpl_(dat);
+        }
+
+        /**
+         * \brief a public method that can be used to write data
+         * to the last invalidate entry in the array. '
+         * \param dat the data to be written to the front of the array.
+         * \note this method is only accessable on AllocationP == FrontAccessable
+         * type Arrays.
+         */
+        uint32_t writeBack(DataT&& dat)
+        {
+            return writeBackImpl_(std::move(dat));
+        }
+
+        private:
+        template<typename U>
+        uint32_t writeFrontImpl_(U&& dat)
+        {
+            uint32_t i;
+            for(i = 0; i < BaseArray::capacity(); ++i)
+            {
+                if(!BaseArray::isValid(i))
+                {
+                    break; //we found an entry that is invalid. This is the front!
+                }
+            }
+            sparta_assert(i < BaseArray::capacity(), "Cannot write to the front of the Array. There are no free entries.");
+            BaseArray::write(i, std::forward<U>(dat));
+            return i;
+        }
+
+        template<typename U>
+        uint32_t writeBackImpl_(U&& dat)
+        {
             int32_t i;
             for(i = BaseArray::capacity()-1; i>=0;--i)
             {
@@ -111,7 +147,7 @@ namespace sparta{
                 }
             }
             sparta_assert(i >= 0, "Cannot write to the back of the array. There are no free entries.");
-            BaseArray::write(i, dat);
+            BaseArray::write(i, std::forward<U>(dat));
             return i;
         }
     };

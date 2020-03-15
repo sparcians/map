@@ -259,19 +259,25 @@ public:
     //! Append data to the beginning of the Pipe
     void append (const DataT & data)
     {
-        PipeEntry & pe = pipe_[getPhysicalStage_(-1)];
-        sparta_assert(pe.data.isValid() == false, "ERROR: sparta::Pipe '" << getName()
-                    << "' Double append of data before update");
-        pe.data = data;
-        if(perform_own_updates_) {
-            ev_update_.schedule();
-        }
+        appendImpl_(data);
+    }
+
+    //! Append data to the beginning of the Pipe
+    void append (DataT && data)
+    {
+        return appendImpl_(std::move(data));
     }
 
     //! Append data to the beginning of the Pipe
     void push_front (const DataT & data)
     {
         append(data);
+    }
+
+    //! Append data to the beginning of the Pipe
+    void push_front (DataT && data)
+    {
+        append(std::move(data));
     }
 
     /**
@@ -284,15 +290,20 @@ public:
      */
     void writePS (uint32_t stage, const DataT & data)
     {
-        PipeEntry & pe = pipe_[getPhysicalStage_(stage)];
-        if(pe.data.isValid()) {
-            --num_valid_;
-        }
-        pe.data = data;
-        ++num_valid_;
-        if(perform_own_updates_) {
-            ev_update_.schedule();
-        }
+        writePSImpl_(stage, data);
+    }
+
+    /**
+     *
+     * \brief Append data to the specified stage.  Will clobber what's
+     * there.
+     *
+     * \param stage The stage to write data to immediately
+     * \param data  The data to write
+     */
+    void writePS (uint32_t stage, DataT && data)
+    {
+        writePSImpl_(stage, std::move(data));
     }
 
     //! Invalidate the data at the given stage RIGHT NOW.  Will throw
@@ -517,6 +528,32 @@ private:
             ++num_valid_;
         }
         if((num_valid_ > 0) && perform_own_updates_) {
+            ev_update_.schedule();
+        }
+    }
+
+    template<typename U>
+    void appendImpl_ (U && data)
+    {
+        PipeEntry & pe = pipe_[getPhysicalStage_(-1)];
+        sparta_assert(pe.data.isValid() == false, "ERROR: sparta::Pipe '" << getName()
+                    << "' Double append of data before update");
+        pe.data = std::forward<U>(data);
+        if(perform_own_updates_) {
+            ev_update_.schedule();
+        }
+    }
+
+    template<typename U>
+    void writePSImpl_ (uint32_t stage, U && data)
+    {
+        PipeEntry & pe = pipe_[getPhysicalStage_(stage)];
+        if(pe.data.isValid()) {
+            --num_valid_;
+        }
+        pe.data = std::forward<U>(data);
+        ++num_valid_;
+        if(perform_own_updates_) {
             ev_update_.schedule();
         }
     }

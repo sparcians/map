@@ -82,10 +82,28 @@ int main()
 
     dummy_struct_queue.push(new dummy_struct{16, 314, "dummy struct 1"});
     EXPECT_TRUE(dummy_struct_queue.size() == 1);
-    auto struct_1 = dummy_struct(16, 314, "dummy struct 1");
-    dummy_struct_queue_up.push(std::move(struct_1));
-    EXPECT_TRUE(dummy_struct_queue.size() == 1);
-    EXPECT_TRUE(dummy_struct_queue_up.size() == 1);
+
+    // Test perfect forwarding queue
+    {
+        auto dummy_1 = dummy_struct(1, 2, "ABC");
+        auto dummy_2 = dummy_struct(3, 4, "DEF");
+        auto dummy_3 = dummy_struct(5, 6, "GHI");
+        dummy_struct_queue_up.push(std::move(dummy_1));
+        EXPECT_TRUE(dummy_1.s_field.size() == 0);
+        EXPECT_TRUE(dummy_struct_queue_up.back().int16_field == 1);
+        EXPECT_TRUE(dummy_struct_queue_up.back().int32_field == 2);
+        EXPECT_TRUE(dummy_struct_queue_up.back().s_field == "ABC");
+        dummy_struct_queue_up.push(dummy_2);
+        EXPECT_TRUE(dummy_2.s_field == "DEF");
+        EXPECT_TRUE(dummy_struct_queue_up.back().int16_field == 3);
+        EXPECT_TRUE(dummy_struct_queue_up.back().int32_field == 4);
+        EXPECT_TRUE(dummy_struct_queue_up.back().s_field == "DEF");
+        dummy_struct_queue_up.push(dummy_3);
+        EXPECT_TRUE(dummy_3.s_field == "GHI");
+        EXPECT_TRUE(dummy_struct_queue_up.back().int16_field == 5);
+        EXPECT_TRUE(dummy_struct_queue_up.back().int32_field == 6);
+        EXPECT_TRUE(dummy_struct_queue_up.back().s_field == "GHI");
+    }
 
     queue10_untimed.push(1234.5);
     EXPECT_TRUE(queue10_untimed.size() == 1);
@@ -94,7 +112,6 @@ int main()
 
     EXPECT_TRUE(queue10_untimed.size() == 1);
     EXPECT_TRUE(dummy_struct_queue.size() == 1);
-    EXPECT_TRUE(dummy_struct_queue_up.size() == 1);
 
     EXPECT_EQUAL(queue10_untimed.front(), 1234.5);
     EXPECT_EQUAL(queue10_untimed.back(), 1234.5);
@@ -110,12 +127,6 @@ int main()
     EXPECT_TRUE(dummy_struct_queue.size() == 2);
     dummy_struct_queue.push(new dummy_struct{64, 109934, "dummy struct 3"});
     EXPECT_TRUE(dummy_struct_queue.size() == 3);
-    auto struct_2 = dummy_struct(32, 123, "dummy struct 2");
-    dummy_struct_queue_up.push(std::move(struct_2));
-    EXPECT_TRUE(dummy_struct_queue_up.size() == 2);
-    auto struct_3 = dummy_struct(64, 109934, "dummy struct 3");
-    dummy_struct_queue_up.push(std::move(struct_3));
-    EXPECT_TRUE(dummy_struct_queue_up.size() == 3);
 
     // Test pointer to member operator
     EXPECT_TRUE(dummy_struct_queue.read(0)->int16_field == 16);
@@ -127,16 +138,6 @@ int main()
     EXPECT_TRUE(dummy_struct_queue.read(0)->s_field == "dummy struct 1");
     EXPECT_TRUE(dummy_struct_queue.read(1)->s_field == "dummy struct 2");
     EXPECT_TRUE(dummy_struct_queue.read(2)->s_field == "dummy struct 3");
-
-    EXPECT_TRUE(dummy_struct_queue_up.read(0).int16_field == 16);
-    EXPECT_TRUE(dummy_struct_queue_up.read(1).int16_field == 32);
-    EXPECT_TRUE(dummy_struct_queue_up.read(2).int16_field == 64);
-    EXPECT_TRUE(dummy_struct_queue_up.read(0).int32_field == 314);
-    EXPECT_TRUE(dummy_struct_queue_up.read(1).int32_field == 123);
-    EXPECT_TRUE(dummy_struct_queue_up.read(2).int32_field == 109934);
-    EXPECT_TRUE(dummy_struct_queue_up.read(0).s_field == "dummy struct 1");
-    EXPECT_TRUE(dummy_struct_queue_up.read(1).s_field == "dummy struct 2");
-    EXPECT_TRUE(dummy_struct_queue_up.read(2).s_field == "dummy struct 3");
 
     // Test dereference operator
     EXPECT_TRUE((*(dummy_struct_queue.read(0))).int16_field == 16);

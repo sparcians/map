@@ -58,6 +58,7 @@ namespace utils
 
         //! Allow assignments
         ValidValue & operator=(const ValidValue&) = default;
+        ValidValue & operator=(ValidValue&&) = default;
 
         /**
          * \brief Assignment
@@ -67,6 +68,16 @@ namespace utils
         value_type operator=(const value_type & val) {
             valid_ = true;
             return (value_ = val);
+        }
+
+        /**
+         * \brief Assignment
+         * \param val The value to assign, becomes immediately valid
+         * \return The value after assignment
+         */
+        value_type operator=(value_type && val) {
+            valid_ = true;
+            return (value_ = std::move(val));
         }
 
         /**
