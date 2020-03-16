@@ -76,18 +76,18 @@ namespace sparta
         /// Unlink the reference and delete the memory if last to point to it
         void unlink_()
         {
-            if(SPARTA_EXPECT_FALSE(ref_count_ != nullptr))
+            // DO not put a check for ref_count_ != nullptr here (or
+            // an assert).  This function is called by the destructor,
+            // which already checks for this.
+            --ref_count_->count;
+            if(SPARTA_EXPECT_FALSE(ref_count_->count <= 0))
             {
-                --ref_count_->count;
-                if(SPARTA_EXPECT_FALSE(ref_count_->count <= 0))
-                {
-                    if(memory_block_) {
-                        memory_block_->alloc->release_(memory_block_);
-                    }
-                    else {
-                        delete ref_count_;
-                        ref_count_ = 0;
-                    }
+                if(memory_block_) {
+                    memory_block_->alloc->release_(memory_block_);
+                }
+                else {
+                    delete ref_count_;
+                    ref_count_ = 0;
                 }
             }
         }
@@ -150,7 +150,9 @@ namespace sparta
 
         //! \brief Detach this shared pointer; if last, delete underlying object
         ~SpartaSharedPointer() {
-            unlink_();
+            if(ref_count_ != nullptr) {
+                unlink_();
+            }
         }
 
         /**
@@ -162,9 +164,9 @@ namespace sparta
          */
         SpartaSharedPointer & operator=(const SpartaSharedPointer & orig)
         {
+            sparta_assert(&orig != this);
             sparta_assert(orig.ref_count_ != nullptr,
                           "Assigning to a dead SpartaSharedPointer");
-            sparta_assert(&orig != this);
             unlink_();
             memory_block_ = orig.memory_block_;
             ref_count_    = orig.ref_count_;
@@ -182,9 +184,9 @@ namespace sparta
          */
         SpartaSharedPointer & operator=(SpartaSharedPointer && orig)
         {
+            sparta_assert(&orig != this);
             sparta_assert(orig.ref_count_ != nullptr,
                           "Moving from a dead SpartaSharedPointer");
-            sparta_assert(&orig != this);
             unlink_();
             memory_block_ = orig.memory_block_;
             ref_count_    = orig.ref_count_;
