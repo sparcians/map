@@ -164,6 +164,9 @@ void testMoveSupport()
     EXPECT_THROW(ptr7.get());
     EXPECT_EQUAL(ptr8.get(), nullptr);
 
+    EXPECT_THROW(ptr5 = ptr8);
+    EXPECT_THROW(ptr5 = std::move(ptr8));
+
 }
 
 #define COUNT 10

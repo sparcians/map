@@ -166,6 +166,8 @@ namespace sparta
         {
             sparta_assert(&orig != this);
             sparta_assert(orig.ref_count_ != nullptr,
+                          "Assigning from a dead SpartaSharedPointer");
+            sparta_assert(ref_count_ != nullptr,
                           "Assigning to a dead SpartaSharedPointer");
             unlink_();
             memory_block_ = orig.memory_block_;
@@ -187,6 +189,8 @@ namespace sparta
             sparta_assert(&orig != this);
             sparta_assert(orig.ref_count_ != nullptr,
                           "Moving from a dead SpartaSharedPointer");
+            sparta_assert(ref_count_ != nullptr,
+                          "Move to a dead SpartaSharedPointer");
             unlink_();
             memory_block_ = orig.memory_block_;
             ref_count_    = orig.ref_count_;
