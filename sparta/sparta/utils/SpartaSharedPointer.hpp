@@ -631,7 +631,7 @@ namespace sparta
                 }
                 else {
                     if(SPARTA_EXPECT_FALSE(allocated_ > water_mark_)) {
-                        if(!water_mark_warning_) {
+                        if(SPARTA_EXPECT_FALSE(!water_mark_warning_)) {
                             watermark_warning_callback_(*this);
                             water_mark_warning_ = true;
                         }
