@@ -120,8 +120,8 @@ void testMoveSupport()
     // Move construct with the first pointer.  The first pointer
     // should be null after the move
     sparta::SpartaSharedPointer<MyType> ptr3(std::move(ptr));
-    EXPECT_TRUE(ptr == nullptr);
-    EXPECT_EQUAL(ptr.use_count(), 0);
+
+    EXPECT_THROW(ptr.use_count());
     EXPECT_TRUE(ptr3.get() == orig_type);
     EXPECT_EQUAL(ptr3.use_count(), 2);
 
@@ -139,8 +139,7 @@ void testMoveSupport()
     // ptr3.
     ptr4 = std::move(ptr3);
 
-    EXPECT_TRUE(ptr3 == nullptr);
-    EXPECT_EQUAL(ptr3.use_count(), 0);
+    EXPECT_THROW(ptr3.use_count());
     EXPECT_TRUE(ptr4.get() == orig_type);
     EXPECT_EQUAL(ptr4.use_count(), 2);
 
@@ -155,14 +154,14 @@ void testMoveSupport()
     sparta::SpartaSharedPointer<MyType> ptr8;
     ptr8 = std::move(ptr7);
 
-    EXPECT_EQUAL(ptr5.use_count(), 0);
+    EXPECT_THROW(ptr5.use_count());
     EXPECT_EQUAL(ptr6.use_count(), 0);
-    EXPECT_EQUAL(ptr7.use_count(), 0);
+    EXPECT_THROW(ptr7.use_count());
     EXPECT_EQUAL(ptr8.use_count(), 0);
 
-    EXPECT_EQUAL(ptr5.get(), nullptr);
+    EXPECT_THROW(ptr5.get());
     EXPECT_EQUAL(ptr6.get(), nullptr);
-    EXPECT_EQUAL(ptr7.get(), nullptr);
+    EXPECT_THROW(ptr7.get());
     EXPECT_EQUAL(ptr8.get(), nullptr);
 
 }
