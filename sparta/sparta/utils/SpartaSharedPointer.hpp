@@ -68,20 +68,26 @@ namespace sparta
                 }
             }
 
-            uint32_t count;
+            int32_t count;
             PointerT * p = nullptr;
             const bool perform_delete_;
         };
 
         /// Unlink the reference and delete the memory if last to point to it
-        void unlink_() {
-            if(--ref_count_->count == 0) {
-                if(memory_block_) {
-                    memory_block_->alloc->release_(memory_block_);
-                }
-                else {
-                    delete ref_count_;
-                    ref_count_ = 0;
+        void unlink_()
+        {
+            if(SPARTA_EXPECT_FALSE(ref_count_ != nullptr))
+            {
+                --ref_count_->count;
+                if(SPARTA_EXPECT_FALSE(ref_count_->count <= 0))
+                {
+                    if(memory_block_) {
+                        memory_block_->alloc->release_(memory_block_);
+                    }
+                    else {
+                        delete ref_count_;
+                        ref_count_ = 0;
+                    }
                 }
             }
         }
@@ -115,10 +121,12 @@ namespace sparta
          *
          * The two reference pointers now share the common memory
          */
-        SpartaSharedPointer(const SpartaSharedPointer & orig) noexcept :
+        SpartaSharedPointer(const SpartaSharedPointer & orig) :
             memory_block_(orig.memory_block_),
             ref_count_(orig.ref_count_)
         {
+            sparta_assert(orig.ref_count_ != nullptr,
+                          "Copying a dead SpartaSharedPointer");
             ++ref_count_->count;
         }
 
@@ -129,13 +137,15 @@ namespace sparta
          * This SpartaSharedPointer now replaces orig.  Orig becomes a
          * nullptr with no references
          */
-        SpartaSharedPointer(SpartaSharedPointer && orig) noexcept :
+        SpartaSharedPointer(SpartaSharedPointer && orig) :
             memory_block_(orig.memory_block_),
             ref_count_(orig.ref_count_)
         {
+            sparta_assert(orig.ref_count_ != nullptr,
+                          "Moving a dead SpartaSharedPointer");
             // DO NOT unlink.
             orig.memory_block_ = nullptr;
-            orig.ref_count_ = new RefCount(nullptr);
+            orig.ref_count_    = nullptr;
         }
 
         //! \brief Detach this shared pointer; if last, delete underlying object
@@ -152,10 +162,12 @@ namespace sparta
          */
         SpartaSharedPointer & operator=(const SpartaSharedPointer & orig)
         {
+            sparta_assert(orig.ref_count_ != nullptr,
+                          "Assigning to a dead SpartaSharedPointer");
             sparta_assert(&orig != this);
             unlink_();
             memory_block_ = orig.memory_block_;
-            ref_count_ = orig.ref_count_;
+            ref_count_    = orig.ref_count_;
             ++ref_count_->count;
             return *this;
         }
@@ -170,12 +182,14 @@ namespace sparta
          */
         SpartaSharedPointer & operator=(SpartaSharedPointer && orig)
         {
+            sparta_assert(orig.ref_count_ != nullptr,
+                          "Moving from a dead SpartaSharedPointer");
             sparta_assert(&orig != this);
             unlink_();
             memory_block_ = orig.memory_block_;
             ref_count_    = orig.ref_count_;
             orig.memory_block_ = nullptr;
-            orig.ref_count_ = new RefCount(nullptr);
+            orig.ref_count_    = nullptr;
             return *this;
         }
 
@@ -189,6 +203,7 @@ namespace sparta
          * \endcode
          */
         bool operator!() const {
+            sparta_assert(ref_count_ != nullptr, "This is a dead SpartaSharedPointer");
             return (ref_count_->p == nullptr);
         }
 
@@ -203,6 +218,7 @@ namespace sparta
          * \endcode
          */
         explicit operator bool() const {
+            sparta_assert(ref_count_ != nullptr, "This is a dead SpartaSharedPointer");
             return ref_count_->p == nullptr ? false : true;
         }
 
@@ -211,6 +227,7 @@ namespace sparta
          * \return The pointer pointed to by this RefPointer
          */
         PointerT * operator->() const {
+            sparta_assert(ref_count_ != nullptr, "This is a dead SpartaSharedPointer");
             return ref_count_->p;
         }
 
@@ -219,6 +236,7 @@ namespace sparta
          * \return The pointer pointed to by this RefPointer
          */
         PointerT & operator*() const {
+            sparta_assert(ref_count_ != nullptr, "This is a dead SpartaSharedPointer");
             return *(ref_count_->p);
         }
 
@@ -227,6 +245,7 @@ namespace sparta
          * \return The underlying pointer
          */
         PointerT * get() const {
+            sparta_assert(ref_count_ != nullptr, "This is a dead SpartaSharedPointer");
             return ref_count_->p;
         }
 
@@ -235,6 +254,7 @@ namespace sparta
          * \param p The new pointer
          */
         void reset(PointerT * p = nullptr) {
+            sparta_assert(ref_count_ != nullptr, "This is a dead SpartaSharedPointer");
             unlink_();
             ref_count_     = new RefCount(p);
             memory_block_  = nullptr;
@@ -245,7 +265,7 @@ namespace sparta
          * \return The current reference count
          */
         uint32_t use_count() const {
-            sparta_assert(ref_count_ != nullptr);
+            sparta_assert(ref_count_ != nullptr, "This is a dead SpartaSharedPointer");
             return ref_count_->count;
         }
 
