@@ -97,7 +97,7 @@ namespace sparta
          * Construct a new Reference Pointer and take initial
          * ownership of the given object pointer.
          */
-        explicit SpartaSharedPointer(PointerT * p = nullptr) :
+        explicit SpartaSharedPointer(PointerT * p = nullptr) noexcept :
             ref_count_(new RefCount(p))
         { }
 
@@ -105,7 +105,7 @@ namespace sparta
          * \brief Constructor for SpartaSharedPointer<T> ptr = nullptr;
          * \param nullptr_t
          */
-        constexpr SpartaSharedPointer(std::nullptr_t) :
+        constexpr SpartaSharedPointer(std::nullptr_t) noexcept :
             ref_count_(new RefCount(nullptr))
         { }
 
@@ -115,7 +115,7 @@ namespace sparta
          *
          * The two reference pointers now share the common memory
          */
-        SpartaSharedPointer(const SpartaSharedPointer & orig) :
+        SpartaSharedPointer(const SpartaSharedPointer & orig) noexcept :
             memory_block_(orig.memory_block_),
             ref_count_(orig.ref_count_)
         {
@@ -129,7 +129,7 @@ namespace sparta
          * This SpartaSharedPointer now replaces orig.  Orig becomes a
          * nullptr with no references
          */
-        SpartaSharedPointer(SpartaSharedPointer && orig) :
+        SpartaSharedPointer(SpartaSharedPointer && orig) noexcept :
             memory_block_(orig.memory_block_),
             ref_count_(orig.ref_count_)
         {
@@ -150,7 +150,8 @@ namespace sparta
          *
          * The two reference pointers now share the common memory
          */
-        SpartaSharedPointer & operator=(const SpartaSharedPointer & orig) {
+        SpartaSharedPointer & operator=(const SpartaSharedPointer & orig)
+        {
             sparta_assert(&orig != this);
             unlink_();
             memory_block_ = orig.memory_block_;
