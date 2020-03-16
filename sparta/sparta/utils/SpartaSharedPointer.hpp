@@ -56,7 +56,7 @@ namespace sparta
         {
             explicit RefCount(PointerT * _p,
                               bool perform_delete = true) :
-                count(_p != nullptr ? 1 : 0),
+                count(1),
                 p(_p),
                 perform_delete_(perform_delete)
             {}
@@ -80,15 +80,15 @@ namespace sparta
             // an assert).  This function is called by the destructor,
             // which already checks for this.
             --ref_count_->count;
-            if(SPARTA_EXPECT_FALSE(ref_count_->count <= 0))
+            if(SPARTA_EXPECT_FALSE(ref_count_->count == 0))
             {
                 if(memory_block_) {
                     memory_block_->alloc->release_(memory_block_);
                 }
                 else {
                     delete ref_count_;
-                    ref_count_ = 0;
                 }
+                ref_count_ = 0;
             }
         }
 
@@ -268,11 +268,11 @@ namespace sparta
 
         /**
          * \brief Get the current reference count
-         * \return The current reference count
+         * \return The current reference count. 0 if this SpartaSharedPointer points to nullptr
          */
         uint32_t use_count() const {
             sparta_assert(ref_count_ != nullptr, "This is a dead SpartaSharedPointer");
-            return ref_count_->count;
+            return ref_count_->p ? ref_count_->count : 0;
         }
 
         // Allocation helpers

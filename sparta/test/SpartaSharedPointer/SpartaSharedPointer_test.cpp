@@ -106,6 +106,12 @@ void testBasicSpartaSharedPointer()
 
     EXPECT_TRUE(*int_ptr == 5);
 
+
+    sparta::SpartaSharedPointer<MyType> ptr6;
+    {
+        sparta::SpartaSharedPointer<MyType> ptr7(ptr6);
+    }
+
 }
 
 void testMoveSupport()
