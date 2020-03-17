@@ -34,7 +34,7 @@ public:
         my_device_param.addDependentValidationCallback(a_dumb_true_validator,
                                                        "My device parameter must be true");
     }
-    PARAMETER(bool, my_device_param, true, "An example device parameter");
+    PARAMETER(bool, my_device_param, true, "An example device parameter")
 };
 
 //

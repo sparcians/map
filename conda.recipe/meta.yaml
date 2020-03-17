@@ -1,0 +1,61 @@
+# conda-build meta.yaml format docs are at:
+# https://docs.conda.io/projects/conda-build/en/latest/resources/define-metadata.html
+{% set name = "map" %}
+{% set version = environ.get('GIT_DESCRIBE_TAG', 'untagged')|string|replace('-','_') %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  git_url: {{ environ.get('FEEDSTOCK_ROOT', '..') }}
+  patches:
+    - patches/0001-Fix-build-to-work-with-Anaconda-compiler-toolchain.patch
+
+build:
+  number: {{ environ.get('GIT_DESCRIBE_NUMBER', '0') }}
+  string: {{ [PKG_BUILDNUM, ('h' + PKG_HASH), environ.get('GIT_DESCRIBE_HASH', '')]|join('_') }}
+  # python2 is not supported
+  skip: True # [py2k]
+  # Native Windows isn't supported either, use WSL or Docker
+  skip: True # [win]
+  script_env:
+    - SYSTEM_DEFAULTWORKINGDIRECTORY # allow Azure variable into build.sh so that we can rescue our Test.xml files
+
+requirements:
+  build: # build-arch
+    - cmake
+    - make
+    - doxygen
+    - texlive-core
+    # compiler('cxx') is defined at https://github.com/conda-forge/conda-forge-pinning-feedstock/blob/master/recipe/conda_build_config.yaml
+    # see:
+    #   https://conda-forge.org/docs/maintainer/infrastructure.html#conda-forge-pinning
+    #   https://docs.conda.io/projects/conda-build/en/latest/resources/variants.html#compiler-packages
+    - {{ compiler('cxx') }}
+    - {{ compiler('c') }}
+    # add duplicate clang dep per https://gitter.im/conda-forge/conda-forge.github.io?at=5e5feaf7ec7f8746aab200c4
+    - clang
+    - clangxx
+    - rsync
+  host:  # target-arch buildtime deps
+    - boost-cpp
+    - yaml-cpp
+    - sqlite
+    - hdf5
+    - rapidjson
+  run_constrained:
+    # make sure that mac has good enough SDK
+    # See https://conda-forge.org/docs/maintainer/knowledge_base.html?highlight=feature#requiring-newer-macos-sdks
+    - __osx >={{ MACOSX_DEPLOYMENT_TARGET|default("10.9") }}  # [osx]
+
+# TODO add post-packaging tests
+
+about:
+  home: https://github.com/sparcians/map
+  summary: a set of classes, tools, and flows to aid in modeling/simulation of complex hardware for the purpose of performance analysis and design exploration
+  license: MIT
+  license_family: MIT
+  license_file: LICENSE
+  dev_url: https://github.com/sparcians/map
+  doc_url: https://github.com/sparcians/map

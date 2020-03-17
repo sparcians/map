@@ -13,8 +13,12 @@ set (VALGRIND_TEST_LABEL valgrind_test)
 # Add the custom regress/regress_valgrind targets.
 add_custom_target (simdb_regress)
 add_custom_target (simdb_regress_valgrind)
-add_custom_command(TARGET simdb_regress          POST_BUILD COMMAND ctest -LE ${VALGRIND_TEST_LABEL} -j10)
-add_custom_command(TARGET simdb_regress_valgrind POST_BUILD COMMAND ctest -L  ${VALGRIND_TEST_LABEL} -j10)
+
+# NOTE:
+# running ctest with --test-action test creates Testing/<datetime>/Test.xml
+# that can be loaded into the CI test result tracker
+add_custom_command(TARGET simdb_regress          POST_BUILD COMMAND ctest -LE ${VALGRIND_TEST_LABEL} -j10 --test-action test)
+add_custom_command(TARGET simdb_regress_valgrind POST_BUILD COMMAND ctest -L  ${VALGRIND_TEST_LABEL} -j10 --test-action test)
 
 add_subdirectory(CoreDatabase)
 add_subdirectory(HDF5Database)
