@@ -72,7 +72,6 @@ namespace sparta
         // Notice that our list for storing data is a dynamic array.
         // This is used instead of a stl vector to promote debug
         // performance.
-        typedef std::unique_ptr<DataT[]> DataList;
 
         /// Update the passed index value to reflect the current
         /// position of the tail.  The tail always represents what the
@@ -404,6 +403,11 @@ namespace sparta
               InstrumentationNode::visibility_t stat_vis_avg     = InstrumentationNode::AUTO_VISIBILITY) :
             num_entries_(num_entries),
             vector_size_(nextPowerOfTwo_(num_entries*2)),
+
+            // Make the queue twice as large and a power of two to
+            // allow a complete invalidation followed by a complete
+            // population
+            queue_data_((value_type *)malloc(sizeof(value_type) * vector_size_)),
             name_(name),
             collector_(nullptr)
         {
@@ -419,12 +423,11 @@ namespace sparta
                                                                 stat_vis_max,
                                                                 stat_vis_avg));
             }
+        }
 
-            // Make the queue twice as large and a power of two to
-            // allow a complete invalidation followed by a complete
-            // population
-            queue_data_.reset(new value_type[vector_size_]);
-
+        ~Queue(){
+            processInvalidations_();
+            free(queue_data_);
         }
 
         /// No copies, no moves
@@ -631,7 +634,7 @@ namespace sparta
         {
             sparta_assert(current_write_idx_ <= vector_size_);
             // can't write more than the allowed items
-            queue_data_[current_write_idx_] = std::forward<U>(dat);
+            new (queue_data_ + current_write_idx_) value_type(std::forward<U>(dat));
             QueueIterator<false> new_entry(this, current_write_idx_, next_unique_id_);
             ++next_unique_id_;
             ++num_added_;
@@ -673,6 +676,14 @@ namespace sparta
         /// Process any pending invalidations.
         void processInvalidations_()
         {
+            // Destruct the items we are about to invalidate
+            auto idx = current_zero_pos_;
+            while (idx != current_tail_idx_)
+            {
+                queue_data_[idx].~value_type();
+                idx = incrementIndexValue_(idx);
+            }
+
             // the zero position is the tail pos after a compact.
             current_zero_pos_ = current_tail_idx_;
 
@@ -699,7 +710,7 @@ namespace sparta
         size_type top_valid_idx_         = 0; /*!< The index in our vector of the highest valid index accurate after a compact.*/
         const size_type vector_size_;   /*!< The current size of our vector. Same as queue_data_.size()*/
 
-        DataList queue_data_;                      /*!< The actual array that holds all of the Data in the queue, valid and invalid */
+        DataT * queue_data_;                      /*!< The actual array that holds all of the Data in the queue, valid and invalid */
         uint64_t next_unique_id_ = 0;              /*!< A counter to provide a new unique id for every append to the queue */
         uint64_t ongoing_total_invalidations_ = 0; /*!< A counter to count the total number of invalidations that have ever occured in this queue */
 
