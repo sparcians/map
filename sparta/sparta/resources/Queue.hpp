@@ -411,7 +411,6 @@ namespace sparta
             name_(name),
             collector_(nullptr)
         {
-
             if(statset)
             {
                 utilization_.reset(new CycleHistogramStandalone(statset, clk,
@@ -426,7 +425,7 @@ namespace sparta
         }
 
         ~Queue(){
-            processInvalidations_();
+            clear();
             free(queue_data_);
         }
 
@@ -532,7 +531,12 @@ namespace sparta
          */
         void clear()
         {
-            ongoing_total_invalidations_ += total_valid_;
+            auto idx = current_zero_pos_;
+            while (idx != current_tail_idx_)
+            {
+                queue_data_[idx].~value_type();
+                idx = incrementIndexValue_(idx);
+            }
             current_write_idx_ = 0;
             current_tail_idx_  = 0;
             num_to_be_invalidated_ = 0;

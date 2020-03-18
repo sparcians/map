@@ -88,7 +88,7 @@ namespace sparta
                 else {
                     delete ref_count_;
                 }
-                ref_count_ = 0;
+                ref_count_ = nullptr;
             }
         }
 
