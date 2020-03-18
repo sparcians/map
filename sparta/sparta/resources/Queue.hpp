@@ -399,12 +399,13 @@ namespace sparta
             num_entries_(num_entries),
             vector_size_(nextPowerOfTwo_(num_entries*2)),
 
+            name_(name),
+            collector_(nullptr),
+
             // Make the queue twice as large and a power of two to
             // allow a complete invalidation followed by a complete
             // population
-            queue_data_((value_type *)malloc(sizeof(value_type) * vector_size_)),
-            name_(name),
-            collector_(nullptr)
+            queue_data_((value_type *)malloc(sizeof(value_type) * vector_size_))
         {
 
             if(statset)
@@ -421,7 +422,7 @@ namespace sparta
         }
 
         ~Queue(){
-            processInvalidations_();
+            clear();
             free(queue_data_);
         }
 
@@ -528,7 +529,7 @@ namespace sparta
         void clear()
         {
             auto idx = current_zero_pos_;
-            while (idx != current_tail_idx_)
+            while (idx != current_write_idx_)
             {
                 queue_data_[idx].~value_type();
                 idx = incrementIndexValue_(idx);
@@ -589,12 +590,22 @@ namespace sparta
          */
         void pop() {
             sparta_assert(isIndexInValidRange_(current_tail_idx_));
+
             // sparta_assert(idx == 0); THIS IS BROKEN IN EXAMPLE!
             // By incrementing the tail and num_to_be_invalidated_ index's we calculate
             // a valid index range during the compact.
             ++num_to_be_invalidated_;
+
             // our tail moves upward in the vector now.
             current_tail_idx_ = incrementIndexValue_(current_tail_idx_);
+
+            // Destruct the items we are about to invalidate
+            auto idx = current_zero_pos_;
+            while (idx != current_tail_idx_)
+            {
+                queue_data_[idx].~value_type();
+                idx = incrementIndexValue_(idx);
+            }
             processInvalidations_();
         }
 
@@ -604,12 +615,15 @@ namespace sparta
          */
         void pop_back() {
             sparta_assert(isIndexInValidRange_(current_tail_idx_));
+
             // sparta_assert(idx == 0); THIS IS BROKEN IN EXAMPLE!
             // By incrementing the tail and num_to_be_invalidated_ index's we calculate
             // a valid index range during the compact.
             ++num_to_be_invalidated_;
+
             // our tail moves upward in the vector now.
             current_write_idx_ = decrementIndexValue_(current_write_idx_);
+            queue_data_[current_write_idx_].~value_type();
             processInvalidations_();
         }
 
@@ -677,14 +691,6 @@ namespace sparta
         /// Process any pending invalidations.
         void processInvalidations_()
         {
-            // Destruct the items we are about to invalidate
-            auto idx = current_zero_pos_;
-            while (idx != current_tail_idx_)
-            {
-                queue_data_[idx].~value_type();
-                idx = incrementIndexValue_(idx);
-            }
-
             // the zero position is the tail pos after a compact.
             current_zero_pos_ = current_tail_idx_;
 
@@ -711,10 +717,6 @@ namespace sparta
         size_type top_valid_idx_         = 0; /*!< The index in our vector of the highest valid index accurate after a compact.*/
         const size_type vector_size_;   /*!< The current size of our vector. Same as queue_data_.size()*/
 
-        // Notice that our list for storing data is a dynamic array.
-        // This is used instead of a stl vector to promote debug
-        // performance.
-        DataT * queue_data_;                      /*!< The actual array that holds all of the Data in the queue, valid and invalid */
         uint64_t next_unique_id_ = 0;              /*!< A counter to provide a new unique id for every append to the queue */
         uint64_t ongoing_total_invalidations_ = 0; /*!< A counter to count the total number of invalidations that have ever occured in this queue */
 
@@ -727,6 +729,11 @@ namespace sparta
         //////////////////////////////////////////////////////////////////////
         // Collectors
         std::unique_ptr<collection::IterableCollector<Queue<value_type> > > collector_;
+    
+        // Notice that our list for storing data is a dynamic array.
+        // This is used instead of a stl vector to promote debug
+        // performance.
+        DataT * queue_data_ = nullptr; /*!< The actual array that holds all of the Data in the queue, valid and invalid */
     };
 
 }
