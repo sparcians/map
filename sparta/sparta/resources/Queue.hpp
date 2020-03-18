@@ -68,11 +68,6 @@ namespace sparta
     template <class DataT>
     class Queue
     {
-
-        // Notice that our list for storing data is a dynamic array.
-        // This is used instead of a stl vector to promote debug
-        // performance.
-
         /// Update the passed index value to reflect the current
         /// position of the tail.  The tail always represents what the
         /// client considers index of zero
@@ -411,6 +406,7 @@ namespace sparta
             name_(name),
             collector_(nullptr)
         {
+
             if(statset)
             {
                 utilization_.reset(new CycleHistogramStandalone(statset, clk,
@@ -425,7 +421,7 @@ namespace sparta
         }
 
         ~Queue(){
-            clear();
+            processInvalidations_();
             free(queue_data_);
         }
 
@@ -537,6 +533,7 @@ namespace sparta
                 queue_data_[idx].~value_type();
                 idx = incrementIndexValue_(idx);
             }
+            ongoing_total_invalidations_ += total_valid_;
             current_write_idx_ = 0;
             current_tail_idx_  = 0;
             num_to_be_invalidated_ = 0;
@@ -714,6 +711,9 @@ namespace sparta
         size_type top_valid_idx_         = 0; /*!< The index in our vector of the highest valid index accurate after a compact.*/
         const size_type vector_size_;   /*!< The current size of our vector. Same as queue_data_.size()*/
 
+        // Notice that our list for storing data is a dynamic array.
+        // This is used instead of a stl vector to promote debug
+        // performance.
         DataT * queue_data_;                      /*!< The actual array that holds all of the Data in the queue, valid and invalid */
         uint64_t next_unique_id_ = 0;              /*!< A counter to provide a new unique id for every append to the queue */
         uint64_t ongoing_total_invalidations_ = 0; /*!< A counter to count the total number of invalidations that have ever occured in this queue */

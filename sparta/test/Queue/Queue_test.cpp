@@ -28,7 +28,6 @@ struct dummy_struct
     std::string s_field;
 
     dummy_struct() = default;
-
     dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) : int16_field{int16_field},
                                                                                                        int32_field{int32_field},
                                                                                                        s_field{s_field} {}
@@ -51,7 +50,10 @@ int main()
 
     sparta::StatisticSet queue10_stats(&rtn);
 
-    sparta::Queue<double> queue10_untimed("queue10_untimed", 10, root_clk.get(), &queue10_stats);
+    sparta::Queue<double> queue10_untimed("queue10_untimed", 10,
+                                          root_clk.get(),
+                                          &queue10_stats);
+
     sparta::Queue<dummy_struct *> dummy_struct_queue("dummy_struct_queue", 3, root_clk.get(), &queue10_stats);
     sparta::Queue<dummy_struct> dummy_struct_queue_up("dummy_struct_queue_up", 3, root_clk.get(), &queue10_stats);
 
@@ -96,8 +98,8 @@ int main()
         EXPECT_TRUE(dummy_struct_queue_up.back().int16_field == 3);
         EXPECT_TRUE(dummy_struct_queue_up.back().int32_field == 4);
         EXPECT_TRUE(dummy_struct_queue_up.back().s_field == "DEF");
-        dummy_struct_queue_up.push(dummy_3);
-        EXPECT_TRUE(dummy_3.s_field == "GHI");
+        dummy_struct_queue_up.push(std::move(dummy_3));
+        EXPECT_TRUE(dummy_3.s_field.size() == 0);
         EXPECT_TRUE(dummy_struct_queue_up.back().int16_field == 5);
         EXPECT_TRUE(dummy_struct_queue_up.back().int32_field == 6);
         EXPECT_TRUE(dummy_struct_queue_up.back().s_field == "GHI");
