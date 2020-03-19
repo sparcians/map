@@ -642,7 +642,7 @@ namespace sparta
         const_iterator end() const { return const_iterator(this,false);}
 
     private:
-        struct FreeToDelete_{
+        struct DeleteToFree_{
             void operator()(void * x){
                 free(x);
             }
@@ -737,7 +737,7 @@ namespace sparta
         // Notice that our list for storing data is a dynamic array.
         // This is used instead of a stl vector to promote debug
         // performance.
-        std::unique_ptr<DataT[], FreeToDelete_> queue_data_ = nullptr; /*!< The actual array that holds all of the Data in the queue, valid and invalid */
+        std::unique_ptr<DataT[], DeleteToFree_> queue_data_ = nullptr; /*!< The actual array that holds all of the Data in the queue, valid and invalid */
     };
 
 }
