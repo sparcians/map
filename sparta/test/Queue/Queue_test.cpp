@@ -28,7 +28,6 @@ struct dummy_struct
     uint32_t int32_field;
     std::string s_field;
 
-    dummy_struct() = default;
     dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) : int16_field{int16_field},
                                                                                                        int32_field{int32_field},
                                                                                                        s_field{s_field} {}
