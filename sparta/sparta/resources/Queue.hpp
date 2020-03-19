@@ -68,9 +68,6 @@ namespace sparta
     template <class DataT>
     class Queue
     {
-        using DataTAlignedStorage = typename std::aligned_storage<sizeof(DataT), alignof(DataT)>::type;
-        using DataList = std::unique_ptr<DataTAlignedStorage[]>;
-
         /// Update the passed index value to reflect the current
         /// position of the tail.  The tail always represents what the
         /// client considers index of zero
