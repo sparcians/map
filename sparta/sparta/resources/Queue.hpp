@@ -68,6 +68,9 @@ namespace sparta
     template <class DataT>
     class Queue
     {
+        using DataTAlignedStorage = typename std::aligned_storage<sizeof(DataT), alignof(DataT)>::type;
+        using DataList = std::unique_ptr<DataTAlignedStorage[]>;
+
         /// Update the passed index value to reflect the current
         /// position of the tail.  The tail always represents what the
         /// client considers index of zero
@@ -398,14 +401,8 @@ namespace sparta
               InstrumentationNode::visibility_t stat_vis_avg     = InstrumentationNode::AUTO_VISIBILITY) :
             num_entries_(num_entries),
             vector_size_(nextPowerOfTwo_(num_entries*2)),
-
             name_(name),
-            collector_(nullptr),
-
-            // Make the queue twice as large and a power of two to
-            // allow a complete invalidation followed by a complete
-            // population
-            queue_data_((value_type *)malloc(sizeof(value_type) * vector_size_))
+            collector_(nullptr)
         {
 
             if(statset)
@@ -419,11 +416,15 @@ namespace sparta
                                                                 stat_vis_max,
                                                                 stat_vis_avg));
             }
+
+            // Make the queue twice as large and a power of two to
+            // allow a complete invalidation followed by a complete
+            // population
+            queue_data_.reset((value_type *)malloc(sizeof(value_type) * vector_size_));
         }
 
         ~Queue(){
             clear();
-            free(queue_data_);
         }
 
         /// No copies, no moves
@@ -644,12 +645,18 @@ namespace sparta
         const_iterator end() const { return const_iterator(this,false);}
 
     private:
+        struct FreeToDelete_{
+            void operator()(void * x){
+                free(x);
+            }
+        };
+
         template<typename U>
         QueueIterator<false> pushImpl_ (U && dat)
         {
             sparta_assert(current_write_idx_ <= vector_size_);
             // can't write more than the allowed items
-            new (queue_data_ + current_write_idx_) value_type(std::forward<U>(dat));
+            new (queue_data_.get() + current_write_idx_) value_type(std::forward<U>(dat));
             QueueIterator<false> new_entry(this, current_write_idx_, next_unique_id_);
             ++next_unique_id_;
             ++num_added_;
@@ -733,7 +740,7 @@ namespace sparta
         // Notice that our list for storing data is a dynamic array.
         // This is used instead of a stl vector to promote debug
         // performance.
-        DataT * queue_data_ = nullptr; /*!< The actual array that holds all of the Data in the queue, valid and invalid */
+        std::unique_ptr<DataT[], FreeToDelete_> queue_data_ = nullptr; /*!< The actual array that holds all of the Data in the queue, valid and invalid */
     };
 
 }
