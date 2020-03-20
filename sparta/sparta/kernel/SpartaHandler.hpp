@@ -41,12 +41,12 @@ namespace sparta
         /*!
          * \brief Named constructor
          */
-        SpartaHandler(const char * name) :
-            object_ptr(0),
+        explicit SpartaHandler(const char * name) :
+            object_ptr(nullptr),
             clear_ptr(&do_nothing_method_stub),
-            stub_ptr(0),
-            stub_ptr_1(0),
-            stub_ptr_2(0),
+            stub_ptr(nullptr),
+            stub_ptr_1(nullptr),
+            stub_ptr_2(nullptr),
             arg_count_(std::numeric_limits<uint32_t>::max()),
             name_(name)
         {}
