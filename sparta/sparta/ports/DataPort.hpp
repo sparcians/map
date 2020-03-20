@@ -95,7 +95,7 @@ namespace sparta
             OutPort(portset, name, presume_zero_delay)
         {
             sparta_assert(name.length() != 0, "You cannot have an unnamed port.");
-            sparta_assert(getClock() != nullptr, "DataOutPort created without a clock");
+            sparta_assert(getClock() != nullptr, "DataOutPort '" << name << "' created without a clock");
         }
 
         //! No making copies!
@@ -119,7 +119,7 @@ namespace sparta
             DataInPort<DataT> * inp;
             if((inp = dynamic_cast<DataInPort<DataT> *>(in)) == 0) {
                 throw SpartaException("ERROR: Attempt to bind DataInPort of a disparate types: '" +
-                                    in->getName() + "' to '" + getName() + "'");
+                                    in->getLocation() + "' to '" + getLocation() + "'");
             }
             OutPort::bind(in);
             bound_in_ports_.push_back(inp);
@@ -147,7 +147,7 @@ namespace sparta
         void send(const DataT & dat, sparta::Clock::Cycle rel_time = 0)
         {
             sparta_assert(!bound_in_ports_.empty(),
-                        "ERROR! Attempt to send data on unbound port: " << getLocation());
+                          "ERROR! Attempt to send data on unbound port: " << getLocation());
             for(DataInPort<DataT>* itr : bound_in_ports_) {
                 itr->send_(dat, rel_time);
             }
@@ -317,7 +317,7 @@ namespace sparta
             scheduler_ = receiver_clock_->getScheduler();
 
             sparta_assert(receiver_clock_ != nullptr,
-                        "DataInPort " << name << " does not have a clock");
+                          "DataInPort " << name << " does not have a clock");
             sparta_assert(name.length() != 0, "You cannot have an unnamed port.");
 
             user_payload_delivery_.reset(new PhasedPayloadEvent<DataT>(&data_in_port_events_, name + "_forward_event",
@@ -357,7 +357,7 @@ namespace sparta
             DataOutPort<DataT> * outp;
             if((outp = dynamic_cast<DataOutPort<DataT> *>(out)) == 0) {
                 throw SpartaException("ERROR: Attempt to bind DataOutPort of a disparate types: '" +
-                                    out->getName() + "' to '" + getName() + "'");
+                                      out->getLocation() + "' to '" + getLocation() + "'");
             }
             InPort::bind(out);
         }
