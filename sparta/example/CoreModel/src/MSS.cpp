@@ -14,8 +14,7 @@ namespace core_example
         sparta::Unit(node),
         mss_latency_(p->mss_latency)
     {
-        in_mss_req_sync_.registerConsumerHandler
-            (CREATE_SPARTA_HANDLER_WITH_DATA(MSS, getReqFromBIU_, ExampleInstPtr));
+        in_mss_req_sync_.registerConsumerHandler<MSS, ExampleInstPtr, &MSS::getReqFromBIU_>(this);
         in_mss_req_sync_.setPortDelay(static_cast<sparta::Clock::Cycle>(1));
 
 

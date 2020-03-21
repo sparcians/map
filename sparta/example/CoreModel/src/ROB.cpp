@@ -36,12 +36,8 @@ namespace core_example
         // Set up the reorder buffer to support pipeline collection.
         reorder_buffer_.enableCollection(node);
 
-        in_reorder_buffer_write_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(ROB, robAppended_, InstGroup));
-
-        in_reorder_flush_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(ROB, handleFlush_,
-                                                                  FlushManager::FlushingCriteria));
+        in_reorder_buffer_write_.registerConsumerHandler<ROB, InstGroup, &ROB::robAppended_>(this);
+        in_reorder_flush_.registerConsumerHandler<ROB, FlushManager::FlushingCriteria, &ROB::handleFlush_>(this);
 
         // This event is ALWAYS scheduled, but it should not keep
         // simulation continuing on.

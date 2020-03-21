@@ -25,35 +25,20 @@ namespace core_example
         stall_counters_[current_stall_].startCounting();
 
         // Register consuming events with the InPorts.
-        in_dispatch_queue_write_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Dispatch, dispatchQueueAppended_, InstGroup));
-
-        in_fpu_credits_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Dispatch, fpuCredits_, uint32_t));
+        in_dispatch_queue_write_.registerConsumerHandler<Dispatch, InstGroup, &Dispatch::dispatchQueueAppended_>(this);
+        in_fpu_credits_.registerConsumerHandler<Dispatch, uint32_t, &Dispatch::fpuCredits_>(this);
         in_fpu_credits_.enableCollection(node);
-
-        in_alu0_credits_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Dispatch, alu0Credits_, uint32_t));
+        in_alu0_credits_.registerConsumerHandler<Dispatch, uint32_t, &Dispatch::alu0Credits_>(this);
         in_alu0_credits_.enableCollection(node);
-
-        in_alu1_credits_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Dispatch, alu1Credits_, uint32_t));
+        in_alu1_credits_.registerConsumerHandler<Dispatch, uint32_t, &Dispatch::alu1Credits_>(this);
         in_alu1_credits_.enableCollection(node);
-
-        in_br_credits_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Dispatch, brCredits_, uint32_t));
+        in_br_credits_.registerConsumerHandler<Dispatch, uint32_t, &Dispatch::brCredits_>(this);
         in_br_credits_.enableCollection(node);
-
-        in_lsu_credits_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Dispatch, lsuCredits_, uint32_t));
+        in_lsu_credits_.registerConsumerHandler<Dispatch, uint32_t, &Dispatch::lsuCredits_>(this);
         in_lsu_credits_.enableCollection(node);
-
-        in_reorder_credits_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Dispatch, robCredits_, uint32_t));
+        in_reorder_credits_.registerConsumerHandler<Dispatch, uint32_t, &Dispatch::robCredits_>(this);
         in_reorder_credits_.enableCollection(node);
-
-        in_reorder_flush_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Dispatch, handleFlush_, FlushManager::FlushingCriteria));
+        in_reorder_flush_.registerConsumerHandler<Dispatch,FlushManager::FlushingCriteria, &Dispatch::handleFlush_>(this);
         in_reorder_flush_.enableCollection(node);
 
         sparta::StartupEvent(node, CREATE_SPARTA_HANDLER(Dispatch, sendInitialCredits_));

@@ -18,12 +18,9 @@ namespace core_example
     {
         fetch_queue_.enableCollection(node);
 
-        fetch_queue_write_in_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Decode, fetchBufferAppended_, InstGroup));
-        uop_queue_credits_in_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Decode, receiveUopQueueCredits_, uint32_t));
-        in_reorder_flush_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Decode, handleFlush_, FlushManager::FlushingCriteria));
+        fetch_queue_write_in_.registerConsumerHandler<Decode, InstGroup, &Decode::fetchBufferAppended_>(this);
+        uop_queue_credits_in_.registerConsumerHandler<Decode, uint32_t, &Decode::receiveUopQueueCredits_>(this);
+        in_reorder_flush_.registerConsumerHandler<Decode, FlushManager::FlushingCriteria, &Decode::handleFlush_>(this);
 
         sparta::StartupEvent(node, CREATE_SPARTA_HANDLER(Decode, sendInitialCredits_));
     }

@@ -323,8 +323,108 @@ namespace sparta
          * and will have to be manually collected.
          *
          */
-        void registerConsumerHandler(const SpartaHandler & handler)
-        {
+        template <typename T, void (T :: * TMethod)()>
+        void registerConsumerHandler(T * object_ptr){
+            auto handler = sparta::SpartaHandler::from_member<T, TMethod>(object_ptr, __PRETTY_FUNCTION__);
+            sparta_assert(!explicit_consumer_handler_,
+                        "Only one handler/callback is supported on this port: " << getName() <<
+                        " \n\tCurrent registered handler: " << explicit_consumer_handler_.getName() <<
+                        " \n\tTrying to register: " << handler.getName());
+
+            explicit_consumer_handler_ = handler;
+
+            // Let subclasses check out the handler...
+            registerConsumerHandler_(handler);
+        }
+
+        template <typename T, void (T :: * TMethod)() const>
+        void registerConsumerHandler(T * object_ptr){
+            auto handler = sparta::SpartaHandler::from_member<T, TMethod>(object_ptr, __PRETTY_FUNCTION__);
+            sparta_assert(!explicit_consumer_handler_,
+                        "Only one handler/callback is supported on this port: " << getName() <<
+                        " \n\tCurrent registered handler: " << explicit_consumer_handler_.getName() <<
+                        " \n\tTrying to register: " << handler.getName());
+
+            explicit_consumer_handler_ = handler;
+
+            // Let subclasses check out the handler...
+            registerConsumerHandler_(handler);
+        }
+
+        template <typename T, void (T :: * TMethod)(), void (T :: * TMethodClear)()>
+        void registerConsumerHandler(T * object_ptr){
+            auto handler = sparta::SpartaHandler::from_member_clear<T, TMethod, TMethodClear>(object_ptr, __PRETTY_FUNCTION__);
+            sparta_assert(!explicit_consumer_handler_,
+                        "Only one handler/callback is supported on this port: " << getName() <<
+                        " \n\tCurrent registered handler: " << explicit_consumer_handler_.getName() <<
+                        " \n\tTrying to register: " << handler.getName());
+
+            explicit_consumer_handler_ = handler;
+
+            // Let subclasses check out the handler...
+            registerConsumerHandler_(handler);
+        }
+
+        template <typename T, void (T :: * TMethod)() const, void (T :: * TMethodClear)()>
+        void registerConsumerHandler(T * object_ptr){
+            auto handler = sparta::SpartaHandler::from_member_clear<T, TMethod, TMethodClear>(object_ptr, __PRETTY_FUNCTION__);
+            sparta_assert(!explicit_consumer_handler_,
+                        "Only one handler/callback is supported on this port: " << getName() <<
+                        " \n\tCurrent registered handler: " << explicit_consumer_handler_.getName() <<
+                        " \n\tTrying to register: " << handler.getName());
+
+            explicit_consumer_handler_ = handler;
+
+            // Let subclasses check out the handler...
+            registerConsumerHandler_(handler);
+        }
+
+        template <typename T, typename DataT, void (T :: * TMethod)(const DataT &)>
+        void registerConsumerHandler(T * object_ptr){
+            auto handler = sparta::SpartaHandler::from_member_1<T, DataT, TMethod>(object_ptr, __PRETTY_FUNCTION__);
+            sparta_assert(!explicit_consumer_handler_,
+                        "Only one handler/callback is supported on this port: " << getName() <<
+                        " \n\tCurrent registered handler: " << explicit_consumer_handler_.getName() <<
+                        " \n\tTrying to register: " << handler.getName());
+
+            explicit_consumer_handler_ = handler;
+
+            // Let subclasses check out the handler...
+            registerConsumerHandler_(handler);
+
+        }
+
+        template <typename T, typename DataT, void (T :: * TMethod)(const DataT &) const>
+        void registerConsumerHandler(T * object_ptr){
+            auto handler = sparta::SpartaHandler::from_member_1<T, DataT, TMethod>(object_ptr, __PRETTY_FUNCTION__);
+            sparta_assert(!explicit_consumer_handler_,
+                        "Only one handler/callback is supported on this port: " << getName() <<
+                        " \n\tCurrent registered handler: " << explicit_consumer_handler_.getName() <<
+                        " \n\tTrying to register: " << handler.getName());
+
+            explicit_consumer_handler_ = handler;
+
+            // Let subclasses check out the handler...
+            registerConsumerHandler_(handler);
+        }
+
+        template <typename T, typename DataT, typename DataTwo, void (T :: * TMethod)(const DataT &, const DataTwo &)>
+        void registerConsumerHandler(T * object_ptr){
+            auto handler = sparta::SpartaHandler::from_member_2<T, DataT, DataTwo, TMethod>(object_ptr, __PRETTY_FUNCTION__);
+            sparta_assert(!explicit_consumer_handler_,
+                        "Only one handler/callback is supported on this port: " << getName() <<
+                        " \n\tCurrent registered handler: " << explicit_consumer_handler_.getName() <<
+                        " \n\tTrying to register: " << handler.getName());
+
+            explicit_consumer_handler_ = handler;
+
+            // Let subclasses check out the handler...
+            registerConsumerHandler_(handler);
+        }
+
+        template <typename T, typename DataT, typename DataTwo, void (T :: * TMethod)(const DataT &, const DataTwo &) const>
+        void registerConsumerHandler(T * object_ptr){
+            auto handler = sparta::SpartaHandler::from_member_2<T, DataT, DataTwo, TMethod>(object_ptr, __PRETTY_FUNCTION__);
             sparta_assert(!explicit_consumer_handler_,
                         "Only one handler/callback is supported on this port: " << getName() <<
                         " \n\tCurrent registered handler: " << explicit_consumer_handler_.getName() <<

@@ -16,13 +16,8 @@ namespace core_example
         in_order_issue_(p->in_order_issue),
         collected_inst_(node, node->getName())
     {
-        in_execute_inst_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Execute, getInstsFromDispatch_,
-                                                                  ExampleInstPtr));
-
-        in_reorder_flush_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Execute, flushInst_,
-                                                                  FlushManager::FlushingCriteria));
+        in_execute_inst_.registerConsumerHandler<Execute, ExampleInstPtr, &Execute::getInstsFromDispatch_>(this);
+        in_reorder_flush_.registerConsumerHandler<Execute, FlushManager::FlushingCriteria, &Execute::flushInst_>(this);
         // Startup handler for sending initiatl credits
         sparta::StartupEvent(node, CREATE_SPARTA_HANDLER(Execute, sendInitialCredits_));
         // Set up the precedence between issue and complete

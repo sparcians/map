@@ -35,17 +35,10 @@ namespace core_example
 
 
         // Port config
-        in_lsu_insts_.registerConsumerHandler
-                (CREATE_SPARTA_HANDLER_WITH_DATA(LSU, getInstsFromDispatch_, ExampleInstPtr));
-
-        in_biu_ack_.registerConsumerHandler
-                (CREATE_SPARTA_HANDLER_WITH_DATA(LSU, getAckFromBIU_, ExampleInstPtr));
-
-        in_rob_retire_ack_.registerConsumerHandler
-                (CREATE_SPARTA_HANDLER_WITH_DATA(LSU, getAckFromROB_, ExampleInstPtr));
-
-        in_reorder_flush_.registerConsumerHandler
-                (CREATE_SPARTA_HANDLER_WITH_DATA(LSU, handleFlush_, FlushManager::FlushingCriteria));
+        in_lsu_insts_.registerConsumerHandler<LSU, ExampleInstPtr, &LSU::getInstsFromDispatch_>(this);
+        in_biu_ack_.registerConsumerHandler<LSU, ExampleInstPtr, &LSU::getAckFromBIU_>(this);
+        in_rob_retire_ack_.registerConsumerHandler<LSU, ExampleInstPtr, &LSU::getAckFromROB_>(this);
+        in_reorder_flush_.registerConsumerHandler<LSU, FlushManager::FlushingCriteria, &LSU::handleFlush_>(this);
 
 
         // Pipeline events config

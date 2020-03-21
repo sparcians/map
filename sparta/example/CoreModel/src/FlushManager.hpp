@@ -64,14 +64,8 @@ namespace core_example
             in_fetch_flush_redirect_(getPortSet(), "in_fetch_flush_redirect", 0)
         {
             (void)params;
-            in_retire_flush_.
-                registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(FlushManager,
-                                                                      forwardRetireFlush_,
-                                                                      FlushingCriteria));
-            in_fetch_flush_redirect_.
-                registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(FlushManager,
-                                                                      forwardFetchRedirectFlush_,
-                                                                      uint64_t));
+            in_retire_flush_.registerConsumerHandler<FlushManager, FlushingCriteria, &FlushManager::forwardRetireFlush_>(this);
+            in_fetch_flush_redirect_.registerConsumerHandler<FlushManager, uint64_t, &FlushManager::forwardFetchRedirectFlush_>(this);
         }
 
     private:

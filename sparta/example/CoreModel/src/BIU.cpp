@@ -16,11 +16,9 @@ namespace core_example
         biu_req_queue_size_(p->biu_req_queue_size),
         biu_latency_(p->biu_latency)
     {
-        in_biu_req_.registerConsumerHandler
-            (CREATE_SPARTA_HANDLER_WITH_DATA(BIU, getReqFromLSU_, ExampleInstPtr));
+        in_biu_req_.registerConsumerHandler<BIU, ExampleInstPtr, &BIU::getReqFromLSU_>(this);
+        in_mss_ack_sync_.registerConsumerHandler<BIU, bool, &BIU::getAckFromMSS_>(this);
 
-        in_mss_ack_sync_.registerConsumerHandler
-            (CREATE_SPARTA_HANDLER_WITH_DATA(BIU, getAckFromMSS_, bool));
         in_mss_ack_sync_.setPortDelay(static_cast<sparta::Clock::Cycle>(1));
 
 

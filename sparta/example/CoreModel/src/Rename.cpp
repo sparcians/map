@@ -27,12 +27,9 @@ namespace core_example
         // The path into the Rename block
         // - Instructions are received on the Uop Queue Append port
         // - Credits arrive on the dispatch queue credits port
-        in_uop_queue_append_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Rename, decodedInstructions_, InstGroup));
-        in_dispatch_queue_credits_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Rename, creditsDispatchQueue_, uint32_t));
-        in_reorder_flush_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Rename, handleFlush_, FlushManager::FlushingCriteria));
+        in_uop_queue_append_.registerConsumerHandler<Rename, InstGroup, &Rename::decodedInstructions_>(this);
+        in_dispatch_queue_credits_.registerConsumerHandler<Rename, uint32_t, &Rename::creditsDispatchQueue_>(this);
+        in_reorder_flush_.registerConsumerHandler<Rename, FlushManager::FlushingCriteria, &Rename::handleFlush_>(this);
         sparta::StartupEvent(node, CREATE_SPARTA_HANDLER(Rename, sendInitialCredits_));
     }
 

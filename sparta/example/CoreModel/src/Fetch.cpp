@@ -103,8 +103,7 @@ namespace core_example
         num_insts_to_fetch_(p->num_to_fetch),
         next_pc_(node, "next_pc", &vaddr_)
     {
-        in_fetch_queue_credits_.
-            registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Fetch, receiveFetchQueueCredits_, uint32_t));
+        in_fetch_queue_credits_.registerConsumerHandler<Fetch, uint32_t, &Fetch::receiveFetchQueueCredits_>(this);
 
         if (p->fetch_max_ipc == true) {
             fetch_inst_event_.reset(new sparta::SingleCycleUniqueEvent<>(&unit_event_set_, "fetch_max_ipc",
@@ -119,7 +118,7 @@ namespace core_example
             sparta::StartupEvent(node, CREATE_SPARTA_HANDLER(Fetch, fetchInstruction_<false>));
         }
 
-        in_fetch_flush_redirect_.registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Fetch, flushFetch_, uint64_t));
+        in_fetch_flush_redirect_.registerConsumerHandler<Fetch, uint64_t, &Fetch::flushFetch_>(this);
 
         srand(p->inst_rand_seed);
     }
