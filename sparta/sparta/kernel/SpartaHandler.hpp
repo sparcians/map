@@ -317,45 +317,6 @@ namespace sparta
     (this, #clname"::"#meth"()")
 
     /*!
-     * \def CREATE_CONST_SPARTA_HANDLER(clname, meth)
-     *
-     * Creates a \c SpartaHandler type given the class name (\c
-     * clname) and a class method (\c meth).
-     *
-     * This method requires a class instance (expects \c this to be
-     * defined and of type \c clname).  The class method given must
-     * match the following signature:
-     *
-     * \code
-     * void clname::meth();
-     * \endcode
-     *
-     * Example:
-     *
-     * \code
-     * class MyClass
-     * {
-     * public:
-     *
-     *     MyClass() {
-     *         sparta::SpartaHandler handler =
-     *             CREATE_CONST_SPARTA_HANDLER(MyClass, myMethod);
-     *         // ... do something with the handle
-     *         handler();
-     *     }
-     *
-     *     void myMethod() {
-     *         std::cout << "myMethod called" << std::endl;
-     *     }
-     *
-     * };
-     * \endcode
-     */
-#define CREATE_CONST_SPARTA_HANDLER(clname, meth)                            \
-    sparta::SpartaHandler::from_member<clname, &clname::meth>            \
-    (this, #clname"::"#meth"() const")
-
-    /*!
      * \def CREATE_SPARTA_HANDLER_WITH_CLEAR(clname, meth, clear)
      *
      * Creates a \c SpartaHandler type given the class name (\c
@@ -403,53 +364,6 @@ namespace sparta
     (this, #clname"::"#meth"()")
 
     /*!
-     * \def CREATE_CONST_SPARTA_HANDLER_WITH_CLEAR(clname, meth, clear)
-     *
-     * Creates a \c SpartaHandler type given the class name (\c
-     * clname), a class method (\c meth), and a clear method (\c clear).
-     *
-     * This method requires a class instance (expects \c this to be
-     * defined and of type \c clname).  The class method and clear
-     * method given must match the following signature:
-     *
-     * \code
-     * void clname::meth();
-     * void clname::clear();
-     * \endcode
-     *
-     * This handler type allows the sparta::Scheduler to "clear" the
-     * handle that was previously set.  This is useful for nullifying
-     * a handler on the scheduler.
-     *
-     * Example:
-     *
-     * \code
-     * class MyClass
-     * {
-     * public:
-     *
-     *     MyClass() {
-     *         sparta::SpartaHandler handler =
-     *             CREATE_CONST_SPARTA_HANDLER_WITH_CLEAR(MyClass, myMethod, myClear);
-     *         // ... do something with the handle
-     *         handler();
-     *     }
-     *
-     *     void myMethod() {
-     *         std::cout << "myMethod called" << std::endl;
-     *     }
-     *
-     *     void myClear() {
-     *         std::cout << "myClear called" << std::endl;
-     *     }
-     * };
-     * \endcode
-     */
-#define CREATE_CONST_SPARTA_HANDLER_WITH_CLEAR(clname, meth, clear)                    \
-    sparta::SpartaHandler::from_member_clear<clname, &clname::meth, &clname::clear>\
-    (this, #clname"::"#meth"() const")
-
-    /*!
      * \def CREATE_SPARTA_HANDLER_WITH_OBJ(clname, obj, meth)
      *
      * Creates a \c SpartaHandler type given the class name (\c
@@ -485,43 +399,6 @@ namespace sparta
 #define CREATE_SPARTA_HANDLER_WITH_OBJ(clname, obj, meth)       \
     sparta::SpartaHandler::from_member<clname, &clname::meth>     \
     (obj, #clname"::"#meth"()")
-    
-    /*!
-     * \def CREATE_CONST_SPARTA_HANDLER_WITH_OBJ(clname, obj, meth)
-     *
-     * Creates a \c SpartaHandler type given the class name (\c
-     * clname), a class instance (\c obj) and a class method (\c meth).
-     *
-     * This method requires a class instance to be given.  The class
-     * method given must match the following signature:
-     *
-     * \code
-     * void clname::meth();
-     * \endcode
-     *
-     * Example:
-     *
-     * \code
-     * class MyClass
-     * {
-     * public:
-     *
-     *     MyClass() {
-     *         sparta::SpartaHandler handler =
-     *             CREATE_CONST_SPARTA_HANDLER_WITH_OBJ(MyClass, this, myMethod);
-     *         // ... do something with the handle
-     *         handler();
-     *     }
-     *
-     *     void myMethod() {
-     *         std::cout << "myMethod called" << std::endl;
-     *     }
-     * };
-     * \endcode
-     */
-#define CREATE_CONST_SPARTA_HANDLER_WITH_OBJ(clname, obj, meth)       \
-    sparta::SpartaHandler::from_member<clname, &clname::meth>     \
-    (obj, #clname"::"#meth"() const")
 
     /*!
      * \def CREATE_SPARTA_HANDLER_WITH_DATA(clname, meth, dataT)
@@ -564,46 +441,6 @@ namespace sparta
     (this, #clname"::"#meth"("#dataT")")
 
     /*!
-     * \def CREATE_CONST_SPARTA_HANDLER_WITH_DATA(clname, meth, dataT)
-     *
-     * Creates a \c SpartaHandler type given the class name (\c clname),
-     * a class method (\c meth), and the data type that method expects
-     * (\c dataT).
-     *
-     * This method requires a class instance (expects \c this to be
-     * defined and of type \c clname).  The class method given must
-     * match the following signature:
-     *
-     * \code
-     * void clname::meth(const dataT &);
-     * \endcode
-     *
-     * Example:
-     *
-     * \code
-     * class MyClass
-     * {
-     * public:
-     *
-     *     MyClass() {
-     *         sparta::SpartaHandler handler =
-     *             CREATE_CONST_SPARTA_HANDLER_WITH_DATA(MyClass, myMethod, uint32_t);
-     *         // ... do something with the handle
-     *         handler(10);
-     *     }
-     *
-     *     void myMethod(const uint32_t & dat) {
-     *         std::cout << "myMethod called: " << dat << std::endl;
-     *     }
-     *
-     * };
-     * \endcode
-     */
-#define CREATE_CONST_SPARTA_HANDLER_WITH_DATA(clname, meth, dataT)           \
-    sparta::SpartaHandler::from_member_1<clname, dataT, &clname::meth>   \
-    (this, #clname"::"#meth"("#dataT") const")
-
-    /*!
      * \def CREATE_SPARTA_HANDLER_WITH_TWO_DATA(clname, meth, dataOne, dataTwo)
      *
      * Creates a \c SpartaHandler type given the class name (\c clname),
@@ -643,45 +480,6 @@ namespace sparta
         (this, #clname"::"#meth"("#dataOne","#dataTwo")")
 
     /*!
-     * \def CREATE_CONST_SPARTA_HANDLER_WITH_TWO_DATA(clname, meth, dataOne, dataTwo)
-     *
-     * Creates a \c SpartaHandler type given the class name (\c clname),
-     * a class method (\c meth), and two arguments (\c dataOne and \c
-     * dataTwo).
-     *
-     * This method requires a class instance (expects \c this to be
-     * defined and of type \c clname).  The class method given must
-     * match the following signature:
-     *
-     * \code
-     * void clname::meth(const dataOne&, const dataTwo &);
-     * \endcode
-     *
-     * Example:
-     *
-     * \code
-     * class MyClass
-     * {
-     * public:
-     *
-     *     MyClass() {
-     *         sparta::SpartaHandler handler =
-     *             CREATE_CONST_SPARTA_HANDLER_WITH_TWO_DATA(MyClass, myMethod, uint32_t, std::string);
-     *         // ... do something with the handle
-     *         handler(10, "hello");
-     *     }
-     *
-     *     void myMethod(const uint32_t & dat, const std::string & msg) {
-     *         std::cout << "myMethod called " << dat << msg << std::endl;
-     *     }
-     * };
-     * \endcode
-     */
-#define CREATE_CONST_SPARTA_HANDLER_WITH_TWO_DATA(clname, meth, dataOne, dataTwo) \
-        sparta::SpartaHandler::from_member_2<clname, dataOne, dataTwo, &clname::meth> \
-        (this, #clname"::"#meth"("#dataOne","#dataTwo") const")
-
-    /*!
      * \def CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(clname, obj, meth, dataT)
      *
      * Creates a \c SpartaHandler type given the class name (\c clname),
@@ -718,44 +516,6 @@ namespace sparta
 #define CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(clname, obj, meth, dataT) \
     sparta::SpartaHandler::from_member_1<clname, dataT, &clname::meth>   \
     (obj, #clname"::"#meth"("#dataT")")
-
-    /*!
-     * \def CREATE_CONST_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(clname, obj, meth, dataT)
-     *
-     * Creates a \c SpartaHandler type given the class name (\c clname),
-     * class instance (\c obj), a class method (\c meth), and the
-     * parameter data (\c dataT).
-     *
-     * This method requires a class instance to be given.  The class
-     * method given must match the following signature:
-     *
-     * \code
-     * void clname::meth(const dataT &);
-     * \endcode
-     *
-     * Example:
-     *
-     * \code
-     * class MyClass
-     * {
-     * public:
-     *
-     *     MyClass() {
-     *         sparta::SpartaHandler handler =
-     *             CREATE_CONST_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(MyClass, this, myMethod, uint32_t);
-     *         // ... do something with the handle
-     *         handler();
-     *     }
-     *
-     *     void myMethod(const uint32_t & dat) {
-     *         std::cout << "myMethod called: " << dat << std::endl;
-     *     }
-     * };
-     * \endcode
-     */
-#define CREATE_CONST_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(clname, obj, meth, dataT) \
-    sparta::SpartaHandler::from_member_1<clname, dataT, &clname::meth>   \
-    (obj, #clname"::"#meth"("#dataT") const")
 }
 
 #endif
