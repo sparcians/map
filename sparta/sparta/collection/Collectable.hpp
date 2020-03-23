@@ -404,15 +404,15 @@ namespace sparta{
          * The only way to check this is to find out if this DataT type has a type alias inside
          * its namespace which is derived from sparta::PairDefinition class which in turn must be templatized
          * on the actual Collectable class or the DataT type itself, that we want to collect.
-         * That is why we have a type named "type" inside the Actual Collectable class which refers to its
+         * That is why we have a type named "SpartaPairDefinitionType" inside the Actual Collectable class which refers to its
          * PairDefinition type.
-         * For the same reason, we have a type named "type" inside the Pair Definition class which refers
+         * For the same reason, we have a type named "SpartaPairDefinitionType" inside the Pair Definition class which refers
          * to its Actual Collectable type.
-         * The std::enable_if template switching basically checks if the DataType has a type named "type",
+         * The std::enable_if template switching basically checks if the DataType has a type named "SpartaPairDefinitionType",
          * which is actually a PairDefinition of itself, a Pair Collectable Entity, or not.
-         * The only way to check if DataType has a type "type" which is Pair Definition of itself, a
+         * The only way to check if DataType has a type "SpartaPairDefinitionType" which is Pair Definition of itself, a
          * Collectable Entity or not, is by using SFINAE(Substitution Failure Is Not An Error).
-         * It checks if DataType has a type "type" in its namespace which derives from sparta::PairDefinition
+         * It checks if DataType has a type "SpartaPairDefinitionType" in its namespace which derives from sparta::PairDefinition
          * which is templatized on the the DataType itself.
          * If this exact piece of code is substituted to form a well-formed code, this template overload is
          * selected by compiler. If this does not work, then the compiler creates an ill-formed code.
@@ -427,14 +427,14 @@ namespace sparta{
         template<typename DataT, SchedulingPhase collection_phase>
         class Collectable<DataT, collection_phase, MetaStruct::enable_if_t<
             std::is_base_of<sparta::PairDefinition<MetaStruct::remove_any_pointer_t<DataT>>,
-                typename MetaStruct::remove_any_pointer_t<DataT>::type>::value>> :
-                    public sparta::PairCollector<typename MetaStruct::remove_any_pointer_t<DataT>::type>,
+                typename MetaStruct::remove_any_pointer_t<DataT>::SpartaPairDefinitionType>::value>> :
+                    public sparta::PairCollector<typename MetaStruct::remove_any_pointer_t<DataT>::SpartaPairDefinitionType>,
                         public CollectableTreeNode {
             // Aliasing the actual Datatype of the collectable being collected as Data_t
-            typedef typename MetaStruct::remove_any_pointer<DataT>::type Data_t;
+            typedef MetaStruct::remove_any_pointer_t<DataT> Data_t;
 
             // Aliasing the Datatype of the Pair Definition of the collectable being collected as PairDef_t
-            typedef typename Data_t::type PairDef_t;
+            typedef typename Data_t::SpartaPairDefinitionType PairDef_t;
 
             // Making a bunch of APIs of PairCollector class being available to us with the using directive
             using PairCollector<PairDef_t>::getNameStrings;

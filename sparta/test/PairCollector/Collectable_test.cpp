@@ -41,7 +41,7 @@
 class Level_1_PairDef;
 class Level_1{
 public:
-    using type = Level_1_PairDef;
+    using SpartaPairDefinitionType = Level_1_PairDef;
     Level_1(uint64_t uid, uint64_t vaddr, uint64_t raddr,
             const std::vector<uint16_t>& vec) :
             uid_(uid), vaddr_(vaddr), raddr_(raddr), vec_(vec) {}
@@ -86,7 +86,7 @@ inline std::ostream& operator << (std::ostream& os, const std::vector<uint16_t>&
 class Level_2_PairDef;
 class Level_2{
 public:
-    using type = Level_2_PairDef;
+    using SpartaPairDefinitionType = Level_2_PairDef;
     enum class TargetUnit : std::uint8_t{
         ALU0,
         ALU1,
@@ -161,7 +161,7 @@ public:
 class Level_3_PairDef;
 class Level_3{
 public:
-    using type = Level_3_PairDef;
+    using SpartaPairDefinitionType = Level_3_PairDef;
     enum class MMUState : std::uint8_t {
         NO_ACCESS,
         MISS,
@@ -241,7 +241,7 @@ public:
 class Level_4_PairDef;
 class Level_4{
 public:
-    using type = Level_4_PairDef;
+    using SpartaPairDefinitionType = Level_4_PairDef;
     enum class IssuePriority : std::uint8_t {
         HIGHEST,
         CACHE_RELOAD,   // Receive mss ack, waiting for cache re-access
@@ -339,7 +339,7 @@ public:
 class Level_5_PairDef;
 class Level_5{
 public:
-    using type = Level_5_PairDef;
+    using SpartaPairDefinitionType = Level_5_PairDef;
     enum class Mnemonic : std::uint8_t {
         ADC,
         CLZ,
@@ -408,7 +408,7 @@ public:
 class Level_6_PairDef;
 class Level_6{
 public:
-    using type = Level_6_PairDef;
+    using SpartaPairDefinitionType = Level_6_PairDef;
     Level_6(const Level_5_Ptr& ptr, uint16_t randomValue) :
             level_5_ptr_(ptr), randomValue_(randomValue) {}
     const Level_5_Ptr & getNestedPtr() const { return level_5_ptr_; }
@@ -438,7 +438,7 @@ public:
 class Level_7_PairDef;
 class Level_7{
 public:
-    using type = Level_7_PairDef;
+    using SpartaPairDefinitionType = Level_7_PairDef;
     Level_7(const Level_6_Ptr& ptr, uint16_t randomValue,
             bool a, uint64_t b) :
             level_6_ptr_(ptr), randomValue_(randomValue),
@@ -474,7 +474,7 @@ public:
 class Level_8_PairDef;
 class Level_8{
 public:
-    using type = Level_8_PairDef;
+    using SpartaPairDefinitionType = Level_8_PairDef;
     Level_8(const Level_7_Ptr& ptr, uint16_t randomValue,
             uint32_t a, uint32_t b) :
             level_7_ptr_(ptr), randomValue_(randomValue),
