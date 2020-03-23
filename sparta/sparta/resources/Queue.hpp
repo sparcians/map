@@ -68,12 +68,6 @@ namespace sparta
     template <class DataT>
     class Queue
     {
-
-        // Notice that our list for storing data is a dynamic array.
-        // This is used instead of a stl vector to promote debug
-        // performance.
-        typedef std::unique_ptr<DataT[]> DataList;
-
         /// Update the passed index value to reflect the current
         /// position of the tail.  The tail always represents what the
         /// client considers index of zero
@@ -423,8 +417,11 @@ namespace sparta
             // Make the queue twice as large and a power of two to
             // allow a complete invalidation followed by a complete
             // population
-            queue_data_.reset(new value_type[vector_size_]);
+            queue_data_.reset((value_type *)malloc(sizeof(value_type) * vector_size_));
+        }
 
+        ~Queue(){
+            clear();
         }
 
         /// No copies, no moves
@@ -529,6 +526,12 @@ namespace sparta
          */
         void clear()
         {
+            auto idx = current_zero_pos_;
+            while (idx != current_write_idx_)
+            {
+                queue_data_[idx].~value_type();
+                idx = incrementIndexValue_(idx);
+            }
             ongoing_total_invalidations_ += total_valid_;
             current_write_idx_ = 0;
             current_tail_idx_  = 0;
@@ -585,12 +588,22 @@ namespace sparta
          */
         void pop() {
             sparta_assert(isIndexInValidRange_(current_tail_idx_));
+
             // sparta_assert(idx == 0); THIS IS BROKEN IN EXAMPLE!
             // By incrementing the tail and num_to_be_invalidated_ index's we calculate
             // a valid index range during the compact.
             ++num_to_be_invalidated_;
+
             // our tail moves upward in the vector now.
             current_tail_idx_ = incrementIndexValue_(current_tail_idx_);
+
+            // Destruct the items we are about to invalidate
+            auto idx = current_zero_pos_;
+            while (idx != current_tail_idx_)
+            {
+                queue_data_[idx].~value_type();
+                idx = incrementIndexValue_(idx);
+            }
             processInvalidations_();
         }
 
@@ -600,12 +613,15 @@ namespace sparta
          */
         void pop_back() {
             sparta_assert(isIndexInValidRange_(current_tail_idx_));
+
             // sparta_assert(idx == 0); THIS IS BROKEN IN EXAMPLE!
             // By incrementing the tail and num_to_be_invalidated_ index's we calculate
             // a valid index range during the compact.
             ++num_to_be_invalidated_;
+
             // our tail moves upward in the vector now.
             current_write_idx_ = decrementIndexValue_(current_write_idx_);
+            queue_data_[current_write_idx_].~value_type();
             processInvalidations_();
         }
 
@@ -626,12 +642,18 @@ namespace sparta
         const_iterator end() const { return const_iterator(this,false);}
 
     private:
+        struct DeleteToFree_{
+            void operator()(void * x){
+                free(x);
+            }
+        };
+
         template<typename U>
         QueueIterator<false> pushImpl_ (U && dat)
         {
             sparta_assert(current_write_idx_ <= vector_size_);
             // can't write more than the allowed items
-            queue_data_[current_write_idx_] = std::forward<U>(dat);
+            new (queue_data_.get() + current_write_idx_) value_type(std::forward<U>(dat));
             QueueIterator<false> new_entry(this, current_write_idx_, next_unique_id_);
             ++next_unique_id_;
             ++num_added_;
@@ -699,7 +721,6 @@ namespace sparta
         size_type top_valid_idx_         = 0; /*!< The index in our vector of the highest valid index accurate after a compact.*/
         const size_type vector_size_;   /*!< The current size of our vector. Same as queue_data_.size()*/
 
-        DataList queue_data_;                      /*!< The actual array that holds all of the Data in the queue, valid and invalid */
         uint64_t next_unique_id_ = 0;              /*!< A counter to provide a new unique id for every append to the queue */
         uint64_t ongoing_total_invalidations_ = 0; /*!< A counter to count the total number of invalidations that have ever occured in this queue */
 
@@ -712,6 +733,11 @@ namespace sparta
         //////////////////////////////////////////////////////////////////////
         // Collectors
         std::unique_ptr<collection::IterableCollector<Queue<value_type> > > collector_;
+    
+        // Notice that our list for storing data is a dynamic array.
+        // This is used instead of a stl vector to promote debug
+        // performance.
+        std::unique_ptr<DataT[], DeleteToFree_> queue_data_ = nullptr; /*!< The actual array that holds all of the Data in the queue, valid and invalid */
     };
 
 }

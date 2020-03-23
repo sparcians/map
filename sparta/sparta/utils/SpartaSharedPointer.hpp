@@ -58,8 +58,7 @@ namespace sparta
                               bool perform_delete = true) :
                 count(1),
                 p(_p),
-                perform_delete_(perform_delete)
-            {}
+                perform_delete_(perform_delete){}
 
             ~RefCount() {
                 if (perform_delete_) {
@@ -88,7 +87,7 @@ namespace sparta
                 else {
                     delete ref_count_;
                 }
-                ref_count_ = 0;
+                ref_count_ = nullptr;
             }
         }
 
@@ -104,16 +103,14 @@ namespace sparta
          * ownership of the given object pointer.
          */
         explicit SpartaSharedPointer(PointerT * p = nullptr) noexcept :
-            ref_count_(new RefCount(p))
-        { }
+            ref_count_(new RefCount(p)){}
 
         /**
          * \brief Constructor for SpartaSharedPointer<T> ptr = nullptr;
          * \param nullptr_t
          */
         constexpr SpartaSharedPointer(std::nullptr_t) noexcept :
-            ref_count_(new RefCount(nullptr))
-        { }
+            ref_count_(new RefCount(nullptr)){}
 
         /**
          * \brief Construct a reference pointer given another reference pointer
@@ -260,8 +257,9 @@ namespace sparta
          * \param p The new pointer
          */
         void reset(PointerT * p = nullptr) {
-            sparta_assert(ref_count_ != nullptr, "This is a dead SpartaSharedPointer");
-            unlink_();
+            if(ref_count_ != nullptr) {
+                unlink_();
+            }
             ref_count_     = new RefCount(p);
             memory_block_  = nullptr;
         }
@@ -470,7 +468,7 @@ namespace sparta
                 {
                     std::cerr << "WARNING: Seems that not all of the blocks made it back.  \n'" <<
                         __PRETTY_FUNCTION__ << "'\nAllocated: " << allocated_ <<
-                        "\nReturned: " << free_blocks_.size() << std::endl;
+                        "\nReturned: " << free_idx_ << std::endl;
                 }
             }
 
@@ -719,7 +717,8 @@ namespace sparta
         explicit SpartaSharedPointer(typename SpartaSharedPointerAllocator::MemBlock * block) :
             memory_block_(block),
             ref_count_(block->ref_count)
-        {}
+        {
+        }
 
         typename SpartaSharedPointerAllocator::MemBlock * memory_block_ = nullptr;
         RefCount * ref_count_ = nullptr;
@@ -750,7 +749,7 @@ namespace sparta
 
     template<typename PtrT>
     bool operator!=(const SpartaSharedPointer<PtrT>& ptr1, std::nullptr_t) noexcept
-    { return (bool)ptr1; }
+    { return (bool)ptr1; };
 
     template<typename PtrT>
     bool operator!=(std::nullptr_t, const SpartaSharedPointer<PtrT>& ptr1) noexcept

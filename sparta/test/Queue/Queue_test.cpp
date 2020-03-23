@@ -15,6 +15,7 @@
 #include <memory>
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/statistics/CycleCounter.hpp"
+#include "sparta/utils/SpartaSharedPointer.hpp"
 TEST_INIT;
 
 #define PIPEOUT_GEN
@@ -27,11 +28,12 @@ struct dummy_struct
     uint32_t int32_field;
     std::string s_field;
 
-    dummy_struct() = default;
     dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) : int16_field{int16_field},
                                                                                                        int32_field{int32_field},
                                                                                                        s_field{s_field} {}
 };
+using dummy_struct_ptr = sparta::SpartaSharedPointer<dummy_struct>;
+sparta::SpartaSharedPointer<dummy_struct>::SpartaSharedPointerAllocator dummy_struct_allocator(6, 3);
 
 std::ostream &operator<<(std::ostream &os, const dummy_struct &obj)
 {
@@ -50,12 +52,10 @@ int main()
 
     sparta::StatisticSet queue10_stats(&rtn);
 
-    sparta::Queue<double> queue10_untimed("queue10_untimed", 10,
-                                          root_clk.get(),
-                                          &queue10_stats);
-
+    sparta::Queue<double> queue10_untimed("queue10_untimed", 10, root_clk.get(), &queue10_stats);
     sparta::Queue<dummy_struct *> dummy_struct_queue("dummy_struct_queue", 3, root_clk.get(), &queue10_stats);
     sparta::Queue<dummy_struct> dummy_struct_queue_up("dummy_struct_queue_up", 3, root_clk.get(), &queue10_stats);
+    sparta::Queue<dummy_struct_ptr> dummy_struct_queue_alloc("dummy_struct_queue_alloc", 5, root_clk.get(), &queue10_stats);
 
     rtn.setClock(root_clk.get());
 
@@ -67,8 +67,7 @@ int main()
     rtn.enterFinalized();
 
 #ifdef PIPEOUT_GEN
-    sparta::collection::PipelineCollector pc("testPipe", 1000000,
-                                             root_clk.get(), &rtn);
+    sparta::collection::PipelineCollector pc("testPipe", 1000000, root_clk.get(), &rtn);
 #endif
 
     sched.finalize();
@@ -79,6 +78,48 @@ int main()
 
     ////////////////////////////////////////////////////////////
     sched.run(1);
+
+    // Test Queue with SpartaSharedPointerAllocator
+    {
+        dummy_struct_ptr dummy_1 = sparta::allocate_sparta_shared_pointer<dummy_struct>(dummy_struct_allocator, 1, 2, "ABC");
+        dummy_struct_queue_alloc.push(std::move(dummy_1));
+        dummy_struct_ptr dummy_2 = sparta::allocate_sparta_shared_pointer<dummy_struct>(dummy_struct_allocator, 2, 3, "DEF");
+        dummy_struct_queue_alloc.push(std::move(dummy_2));
+        dummy_struct_ptr dummy_3 = sparta::allocate_sparta_shared_pointer<dummy_struct>(dummy_struct_allocator, 3, 4, "GHI");
+        dummy_struct_queue_alloc.push(std::move(dummy_3));
+        dummy_struct_ptr dummy_4 = sparta::allocate_sparta_shared_pointer<dummy_struct>(dummy_struct_allocator, 4, 5, "JKL");
+        dummy_struct_queue_alloc.push(std::move(dummy_4));
+        dummy_struct_ptr dummy_5 = sparta::allocate_sparta_shared_pointer<dummy_struct>(dummy_struct_allocator, 5, 6, "MNO");
+        dummy_struct_queue_alloc.push(std::move(dummy_5));
+        dummy_struct_queue_alloc.pop();
+        dummy_struct_queue_alloc.pop();
+        dummy_struct_queue_alloc.pop();
+        dummy_struct_ptr dummy_6 = sparta::allocate_sparta_shared_pointer<dummy_struct>(dummy_struct_allocator, 5, 6, "ASD");
+        dummy_struct_ptr dummy_7 = sparta::allocate_sparta_shared_pointer<dummy_struct>(dummy_struct_allocator, 5, 6, "ZXC");
+        dummy_struct_ptr dummy_8 = sparta::allocate_sparta_shared_pointer<dummy_struct>(dummy_struct_allocator, 5, 6, "RTY");
+        dummy_struct_queue_alloc.push(std::move(dummy_6));
+        dummy_struct_queue_alloc.push(std::move(dummy_7));
+        dummy_struct_queue_alloc.push(std::move(dummy_8));
+        dummy_struct_queue_alloc.pop_back();
+        dummy_struct_queue_alloc.pop_back();
+        dummy_struct_ptr dummy_9 = sparta::allocate_sparta_shared_pointer<dummy_struct>(dummy_struct_allocator, 5, 6, "ASD");
+        dummy_struct_ptr dummy_10 = sparta::allocate_sparta_shared_pointer<dummy_struct>(dummy_struct_allocator, 5, 6, "ZXC");
+        dummy_struct_queue_alloc.push(std::move(dummy_9));
+        dummy_struct_queue_alloc.push(std::move(dummy_10));
+        dummy_struct_queue_alloc.pop();
+        dummy_struct_queue_alloc.pop_back();
+        dummy_struct_queue_alloc.pop();
+        dummy_struct_queue_alloc.pop_back();
+        dummy_struct_ptr dummy_11 = sparta::allocate_sparta_shared_pointer<dummy_struct>(dummy_struct_allocator, 5, 6, "ASD");
+        dummy_struct_ptr dummy_12 = sparta::allocate_sparta_shared_pointer<dummy_struct>(dummy_struct_allocator, 5, 6, "ZXC");
+        dummy_struct_ptr dummy_13 = sparta::allocate_sparta_shared_pointer<dummy_struct>(dummy_struct_allocator, 5, 6, "RTY");
+        dummy_struct_ptr dummy_14 = sparta::allocate_sparta_shared_pointer<dummy_struct>(dummy_struct_allocator, 5, 6, "RTY");
+        dummy_struct_queue_alloc.push(std::move(dummy_11));
+        dummy_struct_queue_alloc.push(std::move(dummy_12));
+        dummy_struct_queue_alloc.push(std::move(dummy_13));
+        dummy_struct_queue_alloc.push(std::move(dummy_14));
+        dummy_struct_queue_alloc.clear();
+    }
 
     dummy_struct_queue.push(new dummy_struct{16, 314, "dummy struct 1"});
     EXPECT_TRUE(dummy_struct_queue.size() == 1);
@@ -98,8 +139,8 @@ int main()
         EXPECT_TRUE(dummy_struct_queue_up.back().int16_field == 3);
         EXPECT_TRUE(dummy_struct_queue_up.back().int32_field == 4);
         EXPECT_TRUE(dummy_struct_queue_up.back().s_field == "DEF");
-        dummy_struct_queue_up.push(dummy_3);
-        EXPECT_TRUE(dummy_3.s_field == "GHI");
+        dummy_struct_queue_up.push(std::move(dummy_3));
+        EXPECT_TRUE(dummy_3.s_field.size() == 0);
         EXPECT_TRUE(dummy_struct_queue_up.back().int16_field == 5);
         EXPECT_TRUE(dummy_struct_queue_up.back().int32_field == 6);
         EXPECT_TRUE(dummy_struct_queue_up.back().s_field == "GHI");
