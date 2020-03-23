@@ -257,8 +257,9 @@ namespace sparta
          * \param p The new pointer
          */
         void reset(PointerT * p = nullptr) {
-            sparta_assert(ref_count_ != nullptr, "This is a dead SpartaSharedPointer");
-            unlink_();
+            if(ref_count_ != nullptr) {
+                unlink_();
+            }
             ref_count_     = new RefCount(p);
             memory_block_  = nullptr;
         }
