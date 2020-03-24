@@ -106,6 +106,13 @@ void testBasicSpartaSharedPointer()
 
     EXPECT_TRUE(*int_ptr == 5);
 
+    if(int_ptr) {
+        std::cout << "operator bool is good" << std::endl;
+    }
+    else {
+        // Should not have gotten here
+        sparta_assert(false, "if(inst_ptr) failed");
+    }
 
     sparta::SpartaSharedPointer<MyType> ptr6;
     {
@@ -127,7 +134,7 @@ void testMoveSupport()
     // should be null after the move
     sparta::SpartaSharedPointer<MyType> ptr3(std::move(ptr));
 
-    EXPECT_THROW(ptr.use_count());
+    EXPECT_EQUAL(ptr.use_count(), 0);
     EXPECT_TRUE(ptr3.get() == orig_type);
     EXPECT_EQUAL(ptr3.use_count(), 2);
 
@@ -145,7 +152,7 @@ void testMoveSupport()
     // ptr3.
     ptr4 = std::move(ptr3);
 
-    EXPECT_THROW(ptr3.use_count());
+    EXPECT_EQUAL(ptr3.use_count(), 0);
     EXPECT_TRUE(ptr4.get() == orig_type);
     EXPECT_EQUAL(ptr4.use_count(), 2);
 
@@ -160,9 +167,9 @@ void testMoveSupport()
     sparta::SpartaSharedPointer<MyType> ptr8;
     ptr8 = std::move(ptr7);
 
-    EXPECT_THROW(ptr5.use_count());
+    EXPECT_EQUAL(ptr5.use_count(), 0);
     EXPECT_EQUAL(ptr6.use_count(), 0);
-    EXPECT_THROW(ptr7.use_count());
+    EXPECT_EQUAL(ptr7.use_count(), 0);
     EXPECT_EQUAL(ptr8.use_count(), 0);
 
     EXPECT_THROW(ptr5.get());
@@ -170,9 +177,25 @@ void testMoveSupport()
     EXPECT_THROW(ptr7.get());
     EXPECT_EQUAL(ptr8.get(), nullptr);
 
-    EXPECT_THROW(ptr5 = ptr8);
-    EXPECT_THROW(ptr5 = std::move(ptr8));
+    EXPECT_NOTHROW(ptr5 = ptr8);
+    EXPECT_NOTHROW(ptr5 = std::move(ptr8));
 
+
+    MyType * ptr_orig;
+    sparta::SpartaSharedPointer<MyType> ptr_start(ptr_orig = new MyType);
+    EXPECT_TRUE(ptr_orig == ptr_start.get());
+    sparta::SpartaSharedPointer<MyType> ptr9;
+
+    EXPECT_EQUAL(ptr9.use_count(), 0);
+
+    sparta::SpartaSharedPointer<MyType> ptr10(std::move(ptr_start));
+    EXPECT_EQUAL(ptr10.use_count(), 1);
+
+    sparta::SpartaSharedPointer<MyType> ptr11(std::move(ptr_start));
+    EXPECT_EQUAL(ptr11.use_count(), 0);
+
+    ptr_start = ptr10;
+    EXPECT_EQUAL(ptr10.use_count(), 2);
 }
 
 #define COUNT 10
