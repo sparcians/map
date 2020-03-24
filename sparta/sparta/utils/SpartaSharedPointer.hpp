@@ -145,9 +145,7 @@ namespace sparta
 
         //! \brief Detach this shared pointer; if last, delete underlying object
         ~SpartaSharedPointer() {
-            if(SPARTA_EXPECT_TRUE(ref_count_ != nullptr)) {
-                unlink_();
-            }
+            unlink_();
         }
 
         /**
@@ -247,9 +245,7 @@ namespace sparta
          * \param p The new pointer
          */
         void reset(PointerT * p = nullptr) {
-            if(ref_count_ != nullptr) {
-                unlink_();
-            }
+            unlink_();
             ref_count_     = new RefCount(p);
             memory_block_  = nullptr;
         }
