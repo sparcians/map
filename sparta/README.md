@@ -29,6 +29,10 @@ design.
 #    SQLite3   3.19
 #    HDF5      1.10
 
+# Clone Spart via the MAP repo and change into it
+git clone https://github.com/sparcians/map
+cd map/sparta
+
 # Build a release version
 mkdir release; cd release
 cmake .. -DCMAKE_BUILD_TYPE=Release
