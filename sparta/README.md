@@ -29,7 +29,7 @@ design.
 #    SQLite3   3.19
 #    HDF5      1.10
 
-# Clone Spart via the MAP repo and change into it
+# Clone Sparta via the MAP GitHub repo and 'cd' into it
 git clone https://github.com/sparcians/map
 cd map/sparta
 
