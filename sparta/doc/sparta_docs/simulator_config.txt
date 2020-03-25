@@ -5,7 +5,7 @@
   Sparta includes a 'parameter' mechanism for configuring (and querying the configuration of) a sparta
   device tree both through C++ and configuration files (See \ref param_format).
 
-  \section config_goals System Goals
+  \section config_goals Configuration Goals
   The Sparta configuration system exists to allow configuration of hierarchical simulator before running
   a simulation and inspection (saving) of the final system configuration for the purpose of analysis
   or run reproduction.
@@ -82,7 +82,7 @@
   \code
   auto pn = n->getRoot()->getAs<sparta::RootTreeNode>()->getSimulator()->getUnboundParameterTree()->tryGet("top.foo.params.x");
   if(pn){
-  std::cout << "Got parameter Value for x = " << pn->getValue() << std::endl;
+      std::cout << "Got parameter Value for x = " << pn->getValue() << std::endl;
   }
   \endcode
   This behavior is still experimental and under development. It should be improved soon.
@@ -134,20 +134,23 @@
   <br/>
   Consuming parmeters from the unbound tree can be done from within sparta::app::Simulation::buildTree_ as follows:
   \code
+
   const auto& pt = getUnboundParameterTree();
 
-  {
   // Approach 1: Assume top.params.cluster_count exists. Throw if nonexistant
-  uint32_t num_clusters = pt.get("top.params.cluster_count").getAs<uint32_t>();
-  }
   {
+      uint32_t num_clusters = pt.get("top.params.cluster_count").getAs<uint32_t>();
+  }
+
   // Approach 2: Atempt to get top.params.cluster_count and use a default value if it does not exist
-  auto ccn = pt.tryGet("top.params.cluster_count");
-  uint32_t num_clusters = 1; // Default
-  if(ccn){
-  num_clusters = ccn->getAs<uint32_t>();
+  {
+      auto ccn = pt.tryGet("top.params.cluster_count");
+      uint32_t num_clusters = 1; // Default
+      if(ccn){
+          num_clusters = ccn->getAs<uint32_t>();
+      }
   }
-  }
+
   \endcode
   Note that all parameters in the unbound tree must be consumed or must eventually correspond to
   sparta::Parameter nodes in the device tree one finalization is complete.
@@ -192,40 +195,43 @@
   output, even if the user's input configuration is overridden. The run can then be reproduced based
   on the final configuration as expected
   \code
-  uint32_t i = 0;
-  for(const std::string& trace : trace_filenames_){
-  // Find the parameter
-  std::stringstream ss;
-  ss << "core" << i;
-  sparta::TreeNode* core_node = nullptr;
-  try{
-  core_node = getRoot()->getChild(ss.str());
-  }catch(sparta::SpartaException& ex){
-  throw sparta::SpartaException("Unable to find a core below top called \"") << ss.str()
-  << "\". It is possible that too many traces were specified on the command line "
-  "such that they could not all be assigned to a core. Error encountered at trace"
-  << i << ": " << trace;
-  }
-  // Get top.core<i>.params.trace_filename node. Throws if not found
-  core_node->getChildAs<sparta::ParameterBase>("params.trace_filename")->setValueFromString(trace);
-  ++i;
-  }
+
+    uint32_t i = 0;
+    for(const std::string& trace : trace_filenames_){
+        // Find the parameter
+        std::stringstream ss;
+        ss << "core" << i;
+        sparta::TreeNode* core_node = nullptr;
+        try{
+            core_node = getRoot()->getChild(ss.str());
+        }catch(sparta::SpartaException& ex){
+            throw sparta::SpartaException("Unable to find a core below top called \"") << ss.str()
+                                                                                       << "\". It is possible that too many traces were specified on the command line "
+                "such that they could not all be assigned to a core. Error encountered at trace"
+                                                                                       << i << ": " << trace;
+        }
+        // Get top.core<i>.params.trace_filename node. Throws if not found
+        core_node->getChildAs<sparta::ParameterBase>("params.trace_filename")->setValueFromString(trace);
+        ++i;
+     }
+
   \endcode
 
   \par
   Configuration is an opportune time to create and attached clocks to the tree. This can be done
   during buildTree, but must be done before the end of configuration to prevent resources from being
   instantiated with no clock
-  \code
-  // Within configureTree_
-  sparta::Clock::Handle master_clock = getClockManager().getRoot();
-  core_clock_ = getClockManager().makeClock("core",
-  master_clock,
-  core_frequency_mhz_);
 
-  // for each core... {
-  core_node->setClock(core_clock_.get());
-  }
+  \code
+    // Within configureTree_
+    sparta::Clock::Handle master_clock = getClockManager().getRoot();
+    core_clock_ = getClockManager().makeClock("core",
+                                              master_clock,
+                                              core_frequency_mhz_);
+
+    // for each core... {
+    core_node->setClock(core_clock_.get());
+    }
   \endcode
 
   \par
@@ -280,17 +286,17 @@
   even a child resource has been constructed.
   \code
   MyModel::MyModel(sparta::TreeNode * node,
-  const MyModelParameterSet * p)
+                   const MyModelParameterSet * p)
   {
-  // Schedule startup handler
-  node->getClock()->getScheduler()->scheduleStartupHandler (CREATE_Sparta_HANDLER (MyModel, startupHandler_));
+      // Schedule startup handler
+      node->getClock()->getScheduler()->scheduleStartupHandler (CREATE_Sparta_HANDLER (MyModel, startupHandler_));
   }
 
   void MyModel::startupHandler_ ()
   {
-  // Access children and sibling resources
-  // Schedule initial events
-  // Register for notifications, etc.
+      // Access children and sibling resources
+      // Schedule initial events
+      // Register for notifications, etc.
   }
   \endcode
 

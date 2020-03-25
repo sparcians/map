@@ -22,7 +22,7 @@
   Documentation for Sparta Developers<br>&nbsp;
   -# \ref best_practices <br>
   Suggested best practices for using Sparta<br>&nbsp;
-  -# \ref q_and_a <br>
-  Questions and Answers (not necessarily frequently asked)
+  -# \ref communication <br>
+  Communication, Events, and Scheduling
 
 */

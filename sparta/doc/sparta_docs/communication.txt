@@ -76,7 +76,7 @@
   simulation.
 
   Example of a device receiving data can be found in
-  example/Documentation/communication/Ports_example.hpp.
+  `example/Documentation/communication/Ports_example.hpp`:
 
   \include Documentation/communication/Ports_example.hpp
 

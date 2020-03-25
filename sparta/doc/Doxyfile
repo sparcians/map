@@ -828,7 +828,8 @@ INPUT                  = sparta_docs           \
                          ../sparta/ports/      \
                          ../sparta/simulation/ \
                          ../sparta/statistics/ \
-                         ../sparta/utils/
+                         ../sparta/utils/      \
+                         ../sparta/example/
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -912,8 +913,8 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = # ../example \
-                         # ../
+EXAMPLE_PATH           = ../example \
+                         ../
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
@@ -1201,7 +1202,7 @@ HTML_EXTRA_FILES       =
 # Minimum value: 0, maximum value: 359, default value: 220.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_COLORSTYLE_HUE    = 100
+HTML_COLORSTYLE_HUE    = 130
 
 # The HTML_COLORSTYLE_SAT tag controls the purity (or saturation) of the colors
 # in the HTML output. For a value of 0 the output will use grayscales only. A
