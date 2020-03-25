@@ -19,15 +19,16 @@ design.
 
 # Install the following
 #
-#    cmake boost hdf5 yaml-cpp rapidJSON xz sqlite
+#    cmake boost hdf5 yaml-cpp rapidJSON xz sqlite doxygen
 #
 # Versions tested and known to work:
 #    cmake     3.14
-#    boost     1.71  (can go older)
+#    boost     1.71  (can go older, can go newer)
 #    yaml-cpp  0.6
 #    RapidJSON 1.1
 #    SQLite3   3.19
 #    HDF5      1.10
+#    Doxygen   1.8
 
 # Clone Sparta via the MAP GitHub repo and 'cd' into it
 git clone https://github.com/sparcians/map
@@ -46,6 +47,9 @@ make
 # Regress
 cd release; make regress
 cd debug; make regress
+
+# Documentation
+cd doc; make
 
 ```
 
