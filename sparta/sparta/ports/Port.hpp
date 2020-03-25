@@ -496,16 +496,14 @@ namespace sparta
         { }
 
         /**
-         * \brief Add an event "listener" to this port
-         * \param producer A UniqueEvent or Event that will be
-         *                 scheduled when data arrives on this port.
-         *                 PayloadEvent types are not supported.
-         * \throws sparta::SpartaException if the direction != Port::Direction::OUT
+         * \brief Add an event "producer" to this port
+         * \param producer A Scheduleable type that might be
+         *                 scheduled before data is driven on this port.
          *
          * When data is sent on this OutPort in zero-cycles, it is
          * guaranteed that any and all consumers on the paired InPorts
-         * will be scheduled \b after the producing event within the
-         * same cycle.
+         * will be scheduled \b after the registered producing event
+         * within the same cycle.
          *
          * This method can \b only be called before the TreeNodes are
          * finalized to ensure proper DAG ordering.  The best practice
@@ -524,6 +522,34 @@ namespace sparta
 
             // Let derived classes know about it for precedence
             this->registerProducingEvent_(producer);
+        }
+
+        /**
+         * \brief Add an InPort "producer" to this OutPort
+         * \param producer An InPort whose handler will most likely drive this OutPort
+         *
+         * When data is sent on this OutPort in zero-cycles, it is
+         * guaranteed that any and all consumers on the paired InPorts
+         * will be scheduled \b after the producing InPort within the
+         * same cycle.
+         *
+         * This method can \b only be called before the TreeNodes are
+         * finalized to ensure proper DAG ordering.  The best practice
+         * here is to register the listener at sparta::Resource
+         * construction time.
+         */
+        void registerProducingPort(InPort & producer)
+        {
+            sparta_assert(isBound() == false,
+                          "You cannot register a producing port after the port is bound.  \n\tOutPort: '"
+                          << getName() << "' InPort: '" << producer.getLocation() << "'"
+                          << "\n\tIf this is happening from sparta::Unit auto-precedence, set this Port's "
+                          << "\n\tauto-precedence rule to false by calling the Port's method participateInAutoPrecedence(false)");
+
+            port_producers_.push_back(&producer.getScheduleable_());
+
+            // Let derived classes know about it for precedence
+            this->registerProducingEvent_(producer.getScheduleable_());
         }
 
         /**

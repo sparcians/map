@@ -46,9 +46,11 @@ namespace sparta
             // Edge not present -- just ignore
             return false;
         } else {
-            for (auto el = outbound_edge_list_.begin(); el != outbound_edge_list_.end(); ++el) {
+            for (auto el = outbound_edge_list_.begin(); el != outbound_edge_list_.end(); ) {
                 if (*el == ei->first) {
-                    outbound_edge_list_.erase(el);
+                    el = outbound_edge_list_.erase(el);
+                } else {
+                    ++el;
                 }
             }
             outbound_edge_map_.erase(ei);

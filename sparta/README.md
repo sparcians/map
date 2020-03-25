@@ -23,12 +23,16 @@ design.
 #
 # Versions tested and known to work:
 #    cmake     3.14
-#    boost     1.71  (can go older)
+#    boost     1.71  (can go older, can go newer)
 #    yaml-cpp  0.6
 #    RapidJSON 1.1
 #    SQLite3   3.19
 #    HDF5      1.10
-#    Doxygen   1.8.3
+#    Doxygen   1.8
+
+# Clone Sparta via the MAP GitHub repo and 'cd' into it
+git clone https://github.com/sparcians/map
+cd map/sparta
 
 # Build a release version
 mkdir release; cd release

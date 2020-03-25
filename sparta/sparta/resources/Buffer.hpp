@@ -496,35 +496,21 @@ namespace sparta
          */
         iterator push_back(const value_type& dat)
         {
+            return push_backImpl_(dat);
+        }
 
-            // Check to see if the vectors need to be resized and relinked.
-            if(SPARTA_EXPECT_FALSE(is_infinite_mode_)) {
-                resizeInternalContainers_();
-            }
-            sparta_assert(numFree(), "Buffer exhausted");
-            sparta_assert(free_position_ != nullptr);
-            free_position_->data = dat;
-            free_position_->physical_idx = num_valid_;
-
-            // Create the entry to be returned.
-            iterator entry(this, free_position_);
-
-            // Do the append now.  We can do this with different logic
-            // that does not require a process.
-            buffer_map_[num_valid_] = free_position_;
-
-            // Store the index in the data_pool_ to which current
-            // free_position_ points to. We need to relink all these
-            // pointers once the data_pool_ resizes.
-            address_map_[num_valid_] =
-                static_cast<uint32_t>(free_position_ - &data_pool_[0]);
-            //Mark this data pointer as valid
-            validator_->attachDataPointer(free_position_);
-            ++num_valid_;
-            free_position_ = free_position_->next_free;
-            updateUtilizationCounters_();
-
-            return entry;
+        /**
+         * \brief Append data to the end of Buffer, and return a BufferIterator
+         * \param dat Data to be pushed back into the buffer
+         * \return a BufferIterator created to represent the object appended.
+         *
+         * Append data to the end of Buffer, and return a BufferIterator
+         * for the location appeneded. Untimed Buffers will have the
+         * data become valid immediately.
+         */
+        iterator push_back(value_type&& dat)
+        {
+            return push_backImpl_(std::move(dat));
         }
 
         /**
@@ -547,46 +533,30 @@ namespace sparta
          * */
         iterator insert(uint32_t idx, const value_type& dat)
         {
-            // Check to see if the vectors need to be resized and relinked.
-            if(SPARTA_EXPECT_FALSE(is_infinite_mode_)) {
-                resizeInternalContainers_();
-            }
-            sparta_assert(numFree(), "Buffer exhausted");
-            sparta_assert(idx <= num_valid_, "Cannot insert before a non valid index");
-            sparta_assert(free_position_ != nullptr);
-            free_position_->data = dat;
-            free_position_->physical_idx = idx;
+            return insertImpl_(idx, dat);
+        }
 
-            //Mark this data pointer as valid
-            validator_->attachDataPointer(free_position_);
-
-            // Create the entry to be returned.
-            iterator entry(this, free_position_);
-
-            //Shift all the positions above idx in the map one space down.
-            uint32_t i = num_valid_;
-            while(i > idx)
-            {
-                //assert that we are not going to do an invalid read.
-                buffer_map_[i] = buffer_map_[i - 1];
-                buffer_map_[i]->physical_idx = i ;
-
-                // Shift the indexes in the map.
-                address_map_[i] = address_map_[i - 1];
-                --i;
-            }
-
-            buffer_map_[idx] = free_position_;
-
-            // Store the index in the data_pool_ to which current
-            // free_position_ points to. We need to relink all these
-            // pointers once the data_pool_ resizes.
-            address_map_[num_valid_] =
-                static_cast<uint32_t>(free_position_ - &data_pool_[0]);
-            ++num_valid_;
-            free_position_ = free_position_->next_free;
-            updateUtilizationCounters_();
-            return entry;
+        /**
+         * \brief Insert the item BEFORE the given index.
+         * \param idx The index to insert the new item before
+         * \param dat The data to insert
+         * \return A BufferIterator for the new location.
+         *
+         * As an example, if the buffer contains:
+         * \code
+         * [a, b, c]
+         * \endcode
+         *
+         * an insert(1, w) becomes
+         *
+         * \code
+         * [a, w, b, c]
+         * \endcode
+         *
+         * */
+        iterator insert(uint32_t idx, value_type&& dat)
+        {
+            return insertImpl_(idx, std::move(dat));
         }
 
         //! Do an insert before a BufferIterator see insert method above
@@ -594,11 +564,23 @@ namespace sparta
         {
             return insert(entry.getIndex_(), dat);
         }
+        
+        //! Do an insert before a BufferIterator see insert method above
+        iterator insert(const const_iterator & entry, value_type&& dat)
+        {
+            return insert(entry.getIndex_(), std::move(dat));
+        }
 
         //! Do an insert before a BufferIterator see insert method above
         iterator insert(const const_reverse_iterator & entry, const value_type& dat)
         {
             return insert(entry.base().getIndex_(), dat);
+        }
+
+        //! Do an insert before a BufferIterator see insert method above
+        iterator insert(const const_reverse_iterator & entry, value_type&& dat)
+        {
+            return insert(entry.base().getIndex_(), std::move(dat));
         }
 
         /**
@@ -893,6 +875,85 @@ namespace sparta
 
             // Resize the validator vector and relink the validator data pool.
             validator_->resizeIteratorValidator(resize_delta_, data_pool_);
+        }
+
+        template<typename U>
+        iterator push_backImpl_(U&& dat)
+        {
+
+            // Check to see if the vectors need to be resized and relinked.
+            if(SPARTA_EXPECT_FALSE(is_infinite_mode_)) {
+                resizeInternalContainers_();
+            }
+            sparta_assert(numFree(), "Buffer exhausted");
+            sparta_assert(free_position_ != nullptr);
+            free_position_->data = std::forward<U>(dat);
+            free_position_->physical_idx = num_valid_;
+
+            // Create the entry to be returned.
+            iterator entry(this, free_position_);
+
+            // Do the append now.  We can do this with different logic
+            // that does not require a process.
+            buffer_map_[num_valid_] = free_position_;
+
+            // Store the index in the data_pool_ to which current
+            // free_position_ points to. We need to relink all these
+            // pointers once the data_pool_ resizes.
+            address_map_[num_valid_] =
+                static_cast<uint32_t>(free_position_ - &data_pool_[0]);
+            //Mark this data pointer as valid
+            validator_->attachDataPointer(free_position_);
+            ++num_valid_;
+            free_position_ = free_position_->next_free;
+            updateUtilizationCounters_();
+
+            return entry;
+        }
+
+        template<typename U>
+        iterator insertImpl_(uint32_t idx, U&& dat)
+        {
+            // Check to see if the vectors need to be resized and relinked.
+            if(SPARTA_EXPECT_FALSE(is_infinite_mode_)) {
+                resizeInternalContainers_();
+            }
+            sparta_assert(numFree(), "Buffer exhausted");
+            sparta_assert(idx <= num_valid_, "Cannot insert before a non valid index");
+            sparta_assert(free_position_ != nullptr);
+            free_position_->data = std::forward<U>(dat);
+            free_position_->physical_idx = idx;
+
+            //Mark this data pointer as valid
+            validator_->attachDataPointer(free_position_);
+
+            // Create the entry to be returned.
+            iterator entry(this, free_position_);
+
+            //Shift all the positions above idx in the map one space down.
+            uint32_t i = num_valid_;
+            while(i > idx)
+            {
+                //assert that we are not going to do an invalid read.
+                buffer_map_[i] = buffer_map_[i - 1];
+                buffer_map_[i]->physical_idx = i ;
+
+                // Shift the indexes in the map.
+                address_map_[i] = address_map_[i - 1];
+                --i;
+            }
+
+            buffer_map_[idx] = free_position_;
+
+            // Store the index in the data_pool_ to which current
+            // free_position_ points to. We need to relink all these
+            // pointers once the data_pool_ resizes.
+            address_map_[num_valid_] =
+                static_cast<uint32_t>(free_position_ - &data_pool_[0]);
+            ++num_valid_;
+            free_position_ = free_position_->next_free;
+            updateUtilizationCounters_();
+            return entry;
         }
 
         std::string name_;

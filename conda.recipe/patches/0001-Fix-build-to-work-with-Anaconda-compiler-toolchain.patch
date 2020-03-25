@@ -1,0 +1,39 @@
+From 6261d227b0cce2b765b3ca5e6dd661d6169c8f1e Mon Sep 17 00:00:00 2001
+From: Tim Snyder <snyder.tim@gmail.com>
+Date: Thu, 5 Mar 2020 17:17:17 -0600
+Subject: [PATCH] Fix build to work with Anaconda compiler toolchain
+
+sparta/CMakeLists.txt now clobbers the 'implicit' include directory
+list that cmake detects and incorrectly uses to filter out $PREFIX/include
+from INCLUDE_DIRECTORIES. see https://gitlab.kitware.com/cmake/cmake/issues/17966
+---
+ sparta/cmake/sparta-config.cmake | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/sparta/cmake/sparta-config.cmake b/sparta/cmake/sparta-config.cmake
+index dd4183791..9b990e250 100644
+--- a/sparta/cmake/sparta-config.cmake
++++ b/sparta/cmake/sparta-config.cmake
+@@ -60,6 +61,20 @@ if (COMPILE_WITH_PYTHON)
+   list (APPEND Sparta_LIBS Python::Python Boost::python37)
+ endif ()
+ 
++#
++# Conda support
++#
++# if you don't do this, cmake won't pass the conda $PREFIX/include to
++# the conda compiler and things get crazy
++unset(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES)
++unset(CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES)
++# This has to be done after sparta-config.cmake and before include directories because
++# those variables are maintained as directory properties and will propagate to the subdirectories
++# when we start doing include_directories.  If we clear them after, the toplevel sources will
++# build but the subdirs won't
++#
++# See also https://gitlab.kitware.com/cmake/cmake/issues/17966#note_408480
++
+ #
+ # Debug help
+ #
+2.25.0
+

@@ -109,8 +109,8 @@ namespace core_example
         class MemoryAccessInfo {
         public:
 
-            // The modeler needs to alias a type called "type" to the Pair Definition class of itself
-            using type = MemoryAccessInfoPairDef;
+            // The modeler needs to alias a type called "SpartaPairDefinitionType" to the Pair Definition class of itself
+            using SpartaPairDefinitionType = MemoryAccessInfoPairDef;
 
             enum class MMUState : std::uint32_t {
                 NO_ACCESS = 0,
@@ -215,8 +215,8 @@ namespace core_example
         class LoadStoreInstInfo
         {
         public:
-            // The modeler needs to alias a type called "type" to the Pair Definition class  of itself
-            using type = LoadStoreInstInfoPairDef;
+            // The modeler needs to alias a type called "SpartaPairDefinitionType" to the Pair Definition class  of itself
+            using SpartaPairDefinitionType = LoadStoreInstInfoPairDef;
             enum class IssuePriority : std::uint16_t
             {
                 HIGHEST = 0,

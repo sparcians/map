@@ -154,8 +154,8 @@ void tryDAGIssue_(bool failit)
     sparta::Scheduler sched;
     sparta::Clock    clk("dummy", &sched);
     sparta::PortSet  ps(nullptr);
-    ps.setClock(&clk);
     sparta::EventSet es(nullptr);
+    ps.setClock(&clk);
     es.setClock(&clk);
     sparta::Event<>  zero_delay_cons(&es, "zero_delay_cons", sparta::SpartaHandler("dummy"));
     sparta::Event<>  zero_delay_prod(&es, "zero_delay_prod", sparta::SpartaHandler("dummy"));
@@ -184,12 +184,14 @@ void tryDAGIssue_(bool failit)
     zero_delay_out1.registerProducingEvent(zero_delay_prod);
     zero_delay_in2.registerConsumerEvent(zero_delay_prod);
     zero_delay_out2.registerProducingEvent(zero_delay_cons);
+    zero_delay_out1.registerProducingPort(zero_delay_in2);
     sparta::bind(zero_delay_out1, zero_delay_in1);
     sparta::bind(zero_delay_out2, zero_delay_in2);
 
-    // Cannot register a producing event after binding
+    // Cannot register a producing event/port after binding
     EXPECT_THROW(zero_delay_out1.registerProducingEvent(zero_delay_prod));
     EXPECT_THROW(zero_delay_in2.registerConsumerEvent(zero_delay_prod));
+    EXPECT_THROW(zero_delay_out1.registerProducingPort(zero_delay_in2));
 
     if(failit) {
         // This will throw a DAG exception

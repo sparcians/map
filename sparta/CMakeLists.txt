@@ -179,3 +179,11 @@ add_subdirectory (simdb)
 #
 add_subdirectory (test EXCLUDE_FROM_ALL)
 add_subdirectory (example EXCLUDE_FROM_ALL)
+
+
+#
+# Installation
+#
+install(DIRECTORY sparta/ DESTINATION include/sparta)
+install(FILES ${SPARTA_STATIC_LIBS} DESTINATION lib)
+

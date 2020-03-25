@@ -57,12 +57,13 @@ namespace sparta
          * \param clk The clock it uses to advance the internal data
          * \param init_val The initial value of SharedData item
          */
+        template<typename U = DataT>
         SharedData(const std::string & name,
                    const Clock * clk,
-                   const DataT & init_val = DataT()) :
+                   U && init_val = U()) :
             ev_update_(clk, CREATE_SPARTA_HANDLER(SharedData, update_))
         {
-            writePS(init_val);
+            writePS(std::forward<U>(init_val));
         }
 
         /**
@@ -70,7 +71,15 @@ namespace sparta
          * \param dat The data to write for visibility \b this cycle
          */
         void writePS(const DataT & dat) {
-            data_[PState_()] = dat;
+            writePSImpl_(dat);
+        }
+
+        /**
+         * \brief Write data to the current view
+         * \param dat The data to write for visibility \b this cycle
+         */
+        void writePS(DataT && dat) {
+            writePSImpl_(std::move(dat));
         }
 
         /**
@@ -106,10 +115,15 @@ namespace sparta
          * \param dat The data to write for visibility \b next cycle
          */
         void write(const DataT & dat) {
-            data_[NState_()] = dat;
-            if constexpr (!manual_update) {
-                ev_update_.schedule(1);
-            }
+            writeImpl_(dat);
+        }
+
+        /**
+         * \brief Write data for the next cycle view
+         * \param dat The data to write for visibility \b next cycle
+         */
+        void write(DataT && dat) {
+            writeImpl_(std::move(dat));
         }
 
         /**
@@ -168,7 +182,19 @@ namespace sparta
         }
 
     private:
-        // Internal update
+        template<typename U>
+        void writePSImpl_(U && dat) {
+            data_[PState_()] = std::forward<U>(dat);
+        }
+
+        template<typename U>
+        void writeImpl_(U && dat) {
+            data_[NState_()] = std::forward<U>(dat);
+            if constexpr (!manual_update) {
+                ev_update_.schedule(1);
+            }
+        }
+
         void update_()
         {
             current_state_ = NState_();

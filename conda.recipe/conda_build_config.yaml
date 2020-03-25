@@ -1,0 +1,35 @@
+# overriding conda-forge-pinnings defined in
+# https://github.com/conda-forge/conda-forge-pinning-feedstock/blob/master/recipe/conda_build_config.yaml
+
+# clangxx isn't standalone on linux, it depends on gcc
+# Isuru from conda-forge reccomended explicitly adding clangxx
+# but we could also add a clang_linux-64 metapackage so that
+# clang could be listed in the compiler matrix
+# https://gitter.im/conda-forge/conda-forge.github.io?at=5e5feaf7ec7f8746aab200c4
+# is Isuru's reply to my question in:
+# https://gitter.im/conda-forge/conda-forge.github.io?at=5e5f4ae2376d882250cd5d5c
+# # conda-forge uses gcc on linux and clang on osx
+# # we're only supporting clang on both platforms
+# c_compiler:
+#     - clang
+# c_compiler_version:
+#     - 9
+# cxx_compiler:
+#     - clangxx
+# cxx_compiler_version:
+#     - 9
+
+# override macos APK min version.
+# conda-forge supports from 10.9 but we
+# have code that needs 10.13.
+# See https://sifive.atlassian.net/wiki/x/0IBBJw
+# for details
+macos_min_version:             # [osx]
+  - 10.13                      # [osx]
+MACOSX_DEPLOYMENT_TARGET:      # [osx]
+  - 10.13                      # [osx]
+
+zip_keys:                       # [osx]
+  -                             # [osx]
+    - macos_min_version         # [osx]
+    - MACOSX_DEPLOYMENT_TARGET  # [osx]

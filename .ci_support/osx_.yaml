@@ -1,0 +1,32 @@
+MACOSX_DEPLOYMENT_TARGET:
+- '10.13'
+boost_cpp:
+- 1.70.0
+c_compiler:
+- clang
+c_compiler_version:
+- '9'
+channel_sources:
+- conda-forge,defaults
+channel_targets:
+- conda-forge main
+cxx_compiler:
+- clangxx
+cxx_compiler_version:
+- '9'
+hdf5:
+- 1.10.5
+macos_machine:
+- x86_64-apple-darwin13.4.0
+macos_min_version:
+- '10.13'
+pin_run_as_build:
+  boost-cpp:
+    max_pin: x.x.x
+  sqlite:
+    max_pin: x
+sqlite:
+- '3'
+zip_keys:
+- - macos_min_version
+  - MACOSX_DEPLOYMENT_TARGET

@@ -106,9 +106,106 @@ void testBasicSpartaSharedPointer()
 
     EXPECT_TRUE(*int_ptr == 5);
 
+    if(int_ptr) {
+        std::cout << "operator bool is good" << std::endl;
+    }
+    else {
+        // Should not have gotten here
+        sparta_assert(false, "if(inst_ptr) failed");
+    }
+
+    sparta::SpartaSharedPointer<MyType> ptr6;
+    {
+        sparta::SpartaSharedPointer<MyType> ptr7(ptr6);
+    }
+
+}
+
+void testMoveSupport()
+{
+    MyType * orig_type;
+    sparta::SpartaSharedPointer<MyType> ptr(orig_type = new MyType);
+    sparta::SpartaSharedPointer<MyType> ptr2(ptr);
+    EXPECT_TRUE(ptr != nullptr);
+    EXPECT_EQUAL(ptr.use_count(), 2);
+    EXPECT_TRUE(ptr.get() == orig_type);
+
+    // Move construct with the first pointer.  The first pointer
+    // should be null after the move
+    sparta::SpartaSharedPointer<MyType> ptr3(std::move(ptr));
+
+    EXPECT_EQUAL(ptr.use_count(), 0);
+    EXPECT_TRUE(ptr3.get() == orig_type);
+    EXPECT_EQUAL(ptr3.use_count(), 2);
+
+    // Move assign with the third pointer.  The third pointer
+    // should be null after the move
+    MyType * untouched_ptr;
+    sparta::SpartaSharedPointer<MyType> untouched(untouched_ptr = new MyType);
+    sparta::SpartaSharedPointer<MyType> ptr4(untouched);
+    EXPECT_EQUAL(ptr4.use_count(), 2);
+    EXPECT_TRUE(ptr4.get() == untouched.get());
+    EXPECT_TRUE(ptr4 == untouched);
+    EXPECT_EQUAL(untouched.use_count(), 2);
+
+    // now, move ptr3.  Ptr4 should leave untouched alone and nullify
+    // ptr3.
+    ptr4 = std::move(ptr3);
+
+    EXPECT_EQUAL(ptr3.use_count(), 0);
+    EXPECT_TRUE(ptr4.get() == orig_type);
+    EXPECT_EQUAL(ptr4.use_count(), 2);
+
+    EXPECT_EQUAL(untouched.use_count(), 1);
+    EXPECT_EQUAL(untouched.get(), untouched_ptr);
+
+    // Try moving bogus ones
+    sparta::SpartaSharedPointer<MyType> ptr5 = nullptr;
+    sparta::SpartaSharedPointer<MyType> ptr6(std::move(ptr5));
+
+    sparta::SpartaSharedPointer<MyType> ptr7 = nullptr;
+    sparta::SpartaSharedPointer<MyType> ptr8;
+    ptr8 = std::move(ptr7);
+
+    EXPECT_EQUAL(ptr5.use_count(), 0);
+    EXPECT_EQUAL(ptr6.use_count(), 0);
+    EXPECT_EQUAL(ptr7.use_count(), 0);
+    EXPECT_EQUAL(ptr8.use_count(), 0);
+
+    EXPECT_THROW(ptr5.get());
+    EXPECT_EQUAL(ptr6.get(), nullptr);
+    EXPECT_THROW(ptr7.get());
+    EXPECT_EQUAL(ptr8.get(), nullptr);
+
+    EXPECT_NOTHROW(ptr5 = ptr8);
+    EXPECT_NOTHROW(ptr5 = std::move(ptr8));
+
+
+    MyType * ptr_orig;
+    sparta::SpartaSharedPointer<MyType> ptr_start(ptr_orig = new MyType);
+    EXPECT_TRUE(ptr_orig == ptr_start.get());
+    sparta::SpartaSharedPointer<MyType> ptr9;
+
+    EXPECT_EQUAL(ptr9.use_count(), 0);
+
+    sparta::SpartaSharedPointer<MyType> ptr10(std::move(ptr_start));
+    EXPECT_EQUAL(ptr10.use_count(), 1);
+
+    sparta::SpartaSharedPointer<MyType> ptr11(std::move(ptr_start));
+    EXPECT_EQUAL(ptr11.use_count(), 0);
+
+    ptr_start = ptr10;
+    EXPECT_EQUAL(ptr10.use_count(), 2);
 }
 
 #define COUNT 10
+
+bool warning_issued = false;
+void waterMarkCallback(const decltype(trivial_type_allocator) & allocator)
+{
+    std::cout << __PRETTY_FUNCTION__ << ": watermark hit" << std::endl;
+    warning_issued = true;
+}
 
 void testMemoryAllocation(const bool test_warning,
                           const bool test_error)
@@ -158,12 +255,14 @@ void testMemoryAllocation(const bool test_warning,
     outstand_objects = trivial_type_allocator.getOutstandingAllocatedObjects();
     EXPECT_EQUAL(outstand_objects.size(), 0);
 
+
     if(test_warning)
     {
         // Test the watermark
         const size_t max = 10;
         const size_t water = 8;
         sparta::SpartaSharedPointer<MyType>::SpartaSharedPointerAllocator limited_allocator(max, water);
+        limited_allocator.registerCustomWaterMarkCallback(waterMarkCallback);
         for(uint32_t i = 0; i < max; ++i) {
             sparta::SpartaSharedPointer<MyType> ptr =
                 sparta::allocate_sparta_shared_pointer<MyType>(limited_allocator, 30);
@@ -173,6 +272,7 @@ void testMemoryAllocation(const bool test_warning,
         for(auto & p : ptrs) {
             p.reset();
         }
+        EXPECT_TRUE(warning_issued);
     }
 
     if(test_error) {
@@ -281,6 +381,7 @@ int main()
 {
     testBasicSpartaSharedPointer();
     testBasicAllocationSupport();
+    testMoveSupport();
     for(uint32_t i = 0; i < 100; ++i) {
         testMemoryAllocation(i == 0, i == 0);
     }

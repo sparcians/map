@@ -27,8 +27,12 @@ sparta_application(sparta_core_example)
 # Add the custom regress/regress_valgrind targets.
 add_custom_target (core_example_regress)
 add_custom_target (core_example_regress_valgrind)
-add_custom_command(TARGET core_example_regress          POST_BUILD COMMAND ctest -LE ${VALGRIND_TEST_LABEL} -j10)
-add_custom_command(TARGET core_example_regress_valgrind POST_BUILD COMMAND ctest -L  ${VALGRIND_TEST_LABEL} -j10)
+
+# NOTE:
+# running ctest with --test-action test creates Testing/<datetime>/Test.xml
+# that can be loaded into the CI test result tracker
+add_custom_command(TARGET core_example_regress          POST_BUILD COMMAND ctest -LE ${VALGRIND_TEST_LABEL} -j10 --test-action test)
+add_custom_command(TARGET core_example_regress_valgrind POST_BUILD COMMAND ctest -L  ${VALGRIND_TEST_LABEL} -j10 --test-action test)
 
 #
 # Testing

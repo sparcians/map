@@ -56,7 +56,7 @@ public:
     virtual ~MyMethods() = default;
 
     void NonConstMethod() { ++executed; }
-    void ConstMethod() const { }
+    void ConstMethod() const { std::cout << "This is ConstMethod()\n"; }
 
     virtual void VirtMethod() = 0;
 
@@ -66,11 +66,13 @@ public:
 
     void NonConstRefMethod(uint32_t &val) { std::cout << "This is val: " << val << std::endl; }
     void ConstRefMethod(const uint32_t &val) { std::cout << "This is val: " << val << std::endl; }
-    void ConstRefConstMethod(const uint32_t &) const {}
+    void ConstRefConstMethod(const uint32_t &val) const { std::cout << "This is val: " << val << std::endl; }
 
     uint32_t executed = 0;
     sparta::SpartaHandler nonconstmethod{sparta::SpartaHandler::from_member<MyMethods, &MyMethods::NonConstMethod>(this)};
+    sparta::SpartaHandler constmethod{sparta::SpartaHandler::from_member<MyMethods, &MyMethods::ConstMethod>(this)};
     sparta::SpartaHandler constrefmethod{sparta::SpartaHandler::from_member_1<MyMethods, uint32_t, &MyMethods::ConstRefMethod>(this)};
+    sparta::SpartaHandler constrefconstmethod{sparta::SpartaHandler::from_member_1<MyMethods, uint32_t, &MyMethods::ConstRefConstMethod>(this)};
 };
 
 void MyMethods::VirtMethod() { ++executed; }
@@ -94,6 +96,9 @@ int main(int argc, char ** argv)
         std::cout << "Delegate" << std::endl;
         for(uint32_t i = 0; i < UPPER; ++i) {
             mm.nonconstmethod();
+            mm.constmethod();
+            mm.constrefmethod();
+            mm.constrefconstmethod();
         }
     }
     else {

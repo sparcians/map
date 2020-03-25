@@ -18,13 +18,29 @@ if (COMPILE_WITH_PYTHON)
   list (APPEND _BOOST_COMPONENTS python37)
 endif ()
 
+
+if (Sparta_VERBOSE)
+    set (Boost_VERBOSE ON) # There's also Boost_DEBUG if you need more
+    set (CMAKE_FIND_DEBUG_MODE ON) # verbosity for find_package
+endif()
+
+set (Boost_USE_STATIC_LIBS OFF)
+
+# BOOST_CMAKE logic for in versions before 1.72 to ask for the shared libraries is broken, you can only force it to use
+# them if you're building shared libs?  wtf?
+set (existing_build_shared ${BUILD_SHARED_LIBS})
+set (BUILD_SHARED_LIBS ON)
+
 if (APPLE)
   set (Boost_NO_BOOST_CMAKE ON)
   set (CMAKE_CXX_COMPILER_VERSION 10.0)
   find_package (Boost 1.49.0 REQUIRED HINTS /usr/local/Cellar/boost/* COMPONENTS ${_BOOST_COMPONENTS})
 else ()
+
   find_package (Boost 1.49.0 REQUIRED COMPONENTS ${_BOOST_COMPONENTS})
+
 endif ()
+set (BUILD_SHARED_LIBS ${existing_build_shared})
 message ("-- Using BOOST ${Boost_VERSION_STRING}")
 
 # Find YAML CPP
