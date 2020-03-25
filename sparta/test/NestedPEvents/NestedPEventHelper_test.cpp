@@ -77,7 +77,7 @@ inline std::ostream & operator << (std::ostream & os, const EnumClass & obj) {
 class DPPairDef;
 class DrawPacket {
 public:
-    using type = DPPairDef;
+    using SpartaPairDefinitionType = DPPairDef;
     DrawPacket(uint16_t val1, uint32_t val2, double val3,
         const EnumClass & val4, uint64_t val5, std::string val6) :
         val_1_(val1), val_2_(val2), val_3_(val3),
@@ -118,7 +118,7 @@ class Derived_1PairDef;
 //! Class Derived_1.
 class Derived_1 : public Base {
 public:
-    using type = Derived_1PairDef;
+    using SpartaPairDefinitionType = Derived_1PairDef;
     Derived_1(uint16_t val1, uint32_t val2,
         double val3, std::string val4,
             const std::shared_ptr<DrawPacket> & ptr) :
@@ -155,7 +155,7 @@ class Derived_2PairDef;
 //! Class Derived_2.
 class Derived_2 : public Base {
 public:
-    using type = Derived_2PairDef;
+    using SpartaPairDefinitionType = Derived_2PairDef;
     Derived_2(uint16_t val1, uint32_t val2) :
         val_1_(val1), val_2_(val2) {}
     uint16_t getVal1() const { return val_1_; }
@@ -182,7 +182,7 @@ class Derived_3PairDef;
 //! Class Derived_3.
 class Derived_3 : public Base {
 public:
-    using type = Derived_3PairDef;
+    using SpartaPairDefinitionType = Derived_3PairDef;
     Derived_3(uint16_t val1, uint32_t val2, double val3, std::string val4, std::string val5) :
         val_1_(val1), val_2_(val2), val_3_(val3), val_4_(val4), val_5_(val5) {}
     uint16_t getVal1() const { return val_1_; }
@@ -217,7 +217,7 @@ class Derived_4PairDef;
 //! Class Derived_3.
 class Derived_4 : public Base {
 public:
-    using type = Derived_4PairDef;
+    using SpartaPairDefinitionType = Derived_4PairDef;
 
     Derived_4(bool b_v, uint16_t val1, uint32_t val2, float val3,
         double dv, std::string val4, std::string val5) :
@@ -262,7 +262,7 @@ class CollectedA;
  */
 class A {
 public:
-    using type = CollectedA;
+    using SpartaPairDefinitionType = CollectedA;
     A(uint16_t val, uint16_t lav, uint32_t foo,
         uint64_t bar, const std::string& q,
             const std::shared_ptr<Base> & bp) :
@@ -310,7 +310,7 @@ public:
 class CollectedB;
 class B {
 public:
-    using type = CollectedB;
+    using SpartaPairDefinitionType = CollectedB;
 
     B(const A_Ptr& ptr, uint16_t val, uint16_t lav,
         uint32_t foo, uint64_t bar, const std::string& q,
@@ -362,7 +362,7 @@ public:
 class LambdaCollectPD;
 class LambdaCollect {
 public:
-    using type = LambdaCollectPD;
+    using SpartaPairDefinitionType = LambdaCollectPD;
     LambdaCollect(uint16_t i, uint32_t j, uint32_t k) : i{i}, j{j}, k{k} {}
     uint16_t getI() const { return i; };
     uint32_t getJ() const { return j; };
