@@ -17,7 +17,6 @@
 #include <vector>
 
 #include "sparta/simulation/Clock.hpp"
-#include "sparta/simulation/Resource.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/MathUtils.hpp"
 #include "sparta/collection/IterableCollector.hpp"
@@ -52,7 +51,7 @@ namespace sparta
      *    pipeline stage handlers are called under-the-hood whenever valid pipeline data arrives.
      */
     template <typename DataT>
-    class Pipeline : public Resource
+    class Pipeline
     {
     public:
         using size_type = uint32_t;
@@ -234,7 +233,8 @@ namespace sparta
         Pipeline(const std::string & name,
                  const uint32_t num_stages,
                  const Clock * clk) :
-            Resource(name, clk),
+            name_(name),
+            clock_(clk),
             pipe_(name, num_stages, clk),
             event_list_at_stage_(num_stages),
             event_matrix_at_stage_(num_stages),
@@ -265,7 +265,8 @@ namespace sparta
         void registerHandlerAtStage(const uint32_t & id, const SpartaHandler & handler)
         {
             sparta_assert(static_cast<uint32_t>(default_precedence_) == static_cast<uint32_t>(Precedence::NONE),
-                        "You have specified a default precedence (" << static_cast<uint32_t>(default_precedence_) << ") between stages. No new handlers can be registered any more!");
+                        "You have specified a default precedence (" << static_cast<uint32_t>(default_precedence_)
+                          << ") between stages. No new handlers can be registered any more!");
             sparta_assert(id < event_list_at_stage_.size(),
                         "Attempt to register handler for invalid pipeline stage[" << id << "]!");
 
@@ -277,8 +278,8 @@ namespace sparta
             auto new_event = event_list.back().get();
 
             // Set clock for this new event handler
-            new_event->setScheduleableClock(getClock());
-            new_event->setScheduler(getClock()->getScheduler());
+            new_event->setScheduleableClock(clock_);
+            new_event->setScheduler(clock_->getScheduler());
 
             // Update event matrix
             auto & event_list_per_phase = event_matrix_at_stage_[id][static_cast<uint32_t>(sched_phase)];
@@ -909,6 +910,12 @@ namespace sparta
                 advance_into_stage_[stage_id] = true;
             }
         }
+
+        //! Name of the pipeline
+        const std::string name_;
+
+        //! The clock this pipeline uses
+        const Clock * clock_;
 
         //! Internal data movement pipe
         sparta::Pipe<DataT> pipe_;

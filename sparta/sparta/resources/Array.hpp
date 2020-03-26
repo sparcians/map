@@ -12,7 +12,6 @@
 #include <map>
 #include <set>
 
-#include "sparta/simulation/Resource.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/statistics/CycleHistogram.hpp"
 #include "sparta/collection/IterableCollector.hpp"
@@ -55,7 +54,7 @@ namespace sparta
      * aend().
      */
     template<class DataT, ArrayType ArrayT = ArrayType::AGED>
-    class Array : public Resource
+    class Array
     {
     private:
         //! A struct for a position in our array.
@@ -267,7 +266,7 @@ namespace sparta
                             "Cannot operate on an uninitialized iterator.");
                 return std::addressof(getAccess_(std::integral_constant<bool, is_const_iterator>()));
             }
-            
+
             const value_type* operator->() const
             {
                 sparta_assert(index_ < array_->capacity(),
@@ -504,7 +503,7 @@ namespace sparta
          * \return A const reference to the data.
          */
         const DataT& read(const uint32_t idx) const {
-            sparta_assert(isValid(idx), "On Array " << getName()
+            sparta_assert(isValid(idx), "On Array " << name_
                         << " Cannot read from an invalid index. Idx:" << idx);
             return array_[idx].data;
         }
@@ -514,7 +513,7 @@ namespace sparta
          * \param idx The index to access.
          */
         DataT& access(const uint32_t idx) {
-            sparta_assert(isValid(idx), "On Array " << getName()
+            sparta_assert(isValid(idx), "On Array " << name_
                         << " Cannot read from an invalid index. Idx:" << idx);
             return (array_[idx].data);
         }
@@ -659,11 +658,11 @@ namespace sparta
             collector_.
                 reset(new collection::IterableCollector<FullArrayType,
                                                         SchedulingPhase::Collection, true>
-                      (parent, getName(), *this, capacity()));
+                      (parent, name_, *this, capacity()));
 
             if(ArrayT == ArrayType::AGED) {
                 age_collector_.reset(new collection::IterableCollector<AgedArrayCollectorProxy>
-                                     (parent, getName() + "_age_ordered",
+                                     (parent, name_ + "_age_ordered",
                                       aged_array_col_, capacity()));
             }
         }
@@ -864,6 +863,8 @@ namespace sparta
             }
         }
 
+        const std::string name_;
+
         // The size of our array.
         const size_type num_entries_;
         const uint32_t invalid_entry_{num_entries_ + 1};
@@ -905,7 +906,7 @@ namespace sparta
                                 InstrumentationNode::visibility_t stat_vis_detailed,
                                 InstrumentationNode::visibility_t stat_vis_max,
                                 InstrumentationNode::visibility_t stat_vis_avg) :
-        sparta::Resource(name, clk),
+        name_(name),
         num_entries_(num_entries),
         num_valid_(0),
         next_age_id_(0)
