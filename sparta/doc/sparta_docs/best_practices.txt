@@ -1,0 +1,212 @@
+
+/*!
+
+  \page best_practices Best Practices, Suggestions on using Sparta
+  \tableofcontents
+
+  \section sparta_asserts Using Sparta Asserts
+
+  Sparta provides a nifty error dumping/handling mechanism triggered
+  when a model throws a C++ exception.  By default, when the
+  framework encounters a C++ exception, it will generate a file
+  called error-dump.txt.  See \ref debug_dump for more information.
+
+  The make best use of this functionality, consider using \ref
+  sparta_assert whenever possible to catch errors.
+
+  \section sparta_expect Using Sparta compile-time hints
+
+  Sparta defines a set of macros called SPARTA_EXPECT_TRUE and
+  SPARTA_EXPECT_FALSE that help tell the compiler expected behavior for
+  a condition.  This enables the compiler to put the common execution
+  path inline for best performance.  A best practice is to use these
+  macros for logging messages since they are rarely turned on during
+  full simulation.
+
+  \code
+  sparta::log::MessageSource my_info_logger_;
+
+  void MyClass::myBlock()
+  {
+      if(SPARTA_EXPECT_FALSE(my_info_logger_))
+      // if(SPARTA_EXPECT_FALSE(my_info_logger_.observed())  This works too!
+      {
+           my_info_logger_ << "myBlock got called";
+      }
+      // ....
+
+  }
+  \endcode
+
+  \section cpp_eleven Take Advantage of C++11/17!
+
+  Since Sparta requires the use of a C++17 compiler, take advantage of
+  the [C++17](http://en.wikipedia.org/wiki/C++17) features.  This can
+  help reduce errors and clean up code immensely.  As an example, try
+  to initialized as many components directly in the header file of the
+  class.  Look at example/CoreExample/src/Dispatch.hpp in the
+  CoreExample for examples on how to do this.
+
+  \section discrete_event How to Use the Port/Event Mechansim Effectively
+
+  In this section, Sparta phases and general model flow will be
+  discussed/illustrated.
+
+  \subsection phases Phases
+
+  Communication between resources in a user's model occurs via Ports.
+  In SystemC, Ports are used as a mechanism to exchange interfaces
+  between blocks, but in Sparta, Ports are used to exchange data and
+  signals at given time intervals.  This follows a similar cohesion
+  pattern allowing any component to bind to another as long as it
+  understands the shared data type.
+
+  A typical modeled block using Sparta, looks like the following, with
+  each section following the next section in the order listed.
+
+  Phase                           | Intended Use
+  --------------------------------|-----------------------------------------------------------------------
+  Construction phase (only once): | Construction, ports and events registered
+  Update phase (runtime):         | Updating of internal resources (sparta::Pipe for example)
+  PortUpdate phase (runtime):     | Port delivery of Data (N-cycle ports)
+  Flush phase (runtime):          | Flushing
+  Collection phase (runtime):     | Collection Events
+  Tick phase (runtime):           | Operating Logic/Events
+  PostTick phase (runtime):       | Operating Logic/Events to process after main logic
+
+  where "Updating of internal resources" are Event objects
+  scheduled/fired that were created in the sparta::SchedulingPhase::Update phase:
+
+  \code
+  sparta::Event<sparta::SchedulingPhase::Update> my_updating_event_;
+  \endcode
+
+  "Port delivery of Data" are handlers called that were registered
+  with a Port that has an N-cycle delay:
+
+  \code
+  MyBlock::MyBlock(...) : // ...
+  {
+      in_port_.registerConsumerHandler(
+            CREATE_SPARTA_HANDLER(MyBlock, myPortCallback, ...));
+  }
+
+  // Called directly by the Port when data arrives on the Port in THIS
+  // cycle, but sent from a previous cycle.  In this case, the Port is
+  // considered N-Cycle and this callback is being called during the
+  // sparta::SchedulingPhase::PortUpdate phase.  If the Port is 0-cycle,
+  // this callback is called during the sparta::SchedulingPhase::Tick
+  // phase.
+  void MyBlock::myPortCallback(...) {
+  }
+  \endcode
+
+  and "Operating Logic/Events" are those sparta::Event objects that were
+  created in the sparta::SchedulingPhase::Tick phase:
+
+  \code
+  sparta::Event<sparta::SchedulingPhase::Tick> my_main_logic_event_;
+  // OR use the default template argument
+  sparta::Event<> my_main_logic_event_;
+  \endcode
+
+  \subsection using_phase Using The Phases
+
+  - Construction occurs first and only once.  During this "phase" the
+     modeler should add sparta::Event, sparta::Port, and sparta::Counter
+     objects to the base class sparta::Unit's sets:
+     .
+     \code
+     // Construction phase
+     MyBlock::MyBlock(sparta::TreeNode * node, MyParameters * params) :
+         sparta::Unit(node),
+         my_internal_tick_event_(&Unit::unit_event_set_, "my_internal_tick_event",
+                                 CREATE_SPARTA_HANDLER(MyBlock, myInternalTickCallback)),
+         my_other_internal_tick_event_(&Unit::unit_event_set_, "my_other_internal_tick_event",
+                                       CREATE_SPARTA_HANDLER(MyBlock, myInternalTickCallbackV2)),
+         my_inport_(&Unit::unit_port_set_, "my_inport", 1)
+     {
+         // Establish internal precedences here that can't be done automatically
+         my_internal_tick_event_ >> my_other_internal_tick_event_;
+
+         // Also, register handlers with any InPorts defined
+         my_inport_.registerConsumerHandler(CREATE_SPARTA_HANDLER(MyBlock, myCallback));
+     }
+
+     // PortUpdate Phase
+     void MyBlock::myCallback()
+     {
+         // my_inport_ received a message
+         my_internal_tick_event_.schedule();  // schedule internal tick event for this cycle
+     }
+     \endcode
+     .
+     <BR>
+     The framework will automatically set precedence between
+     registered sparta::Event objects in the sparta::EventSet and
+     registered sparta::Port objects in the sparta::PortSet.  However,
+     the framework will _not_ set precedence between events *defined
+     directly* in the block.  I.e. if there is an event called
+     `my_first_event_` created in the sparta::SchedulingPhase::Tick
+     phase, and another event called `my_second_event_` also created
+     in the sparta::SchedulingPhase::Tick phase, the order in which
+     these events are scheduled is random (however, persistent from
+     simulation to simulation run) _unless_ a precedence is
+     established:
+     .
+     <BR>
+     \code
+     my_first_event_ >> my_second_event_;
+     \endcode
+     .
+     <BR>
+     Automatic precedence establishment can be disabled by calling the
+     method sparta::Resource::setAutoPrecedence(false) in the
+     constructor of MyBlock.
+
+  - After the block is instantiated and the simulator is now running,
+    events will be scheduled based on established operations.
+    .
+    \dot
+      digraph model_flow {
+         rankdir=TB
+         UpdatePhase [ URL="\ref sparta::SchedulingPhase" ];
+         PortUpdate  [ URL="\ref sparta::SchedulingPhase" ];
+         Collection  [ URL="\ref sparta::SchedulingPhase" ];
+         Tick        [ URL="\ref sparta::SchedulingPhase" ];
+         Construction -> Update
+         Update -> PortUpdate
+         PortUpdate -> Collection
+         Collection -> Tick
+         Tick -> Tick
+         Tick -> UpdatePhase[label="[advance cycle]"]
+      }
+    \enddot
+    .
+     - Scheduled \b UpdatePhase events are run first, allowing a user to
+       update, clear, or simply operate on anything in their block
+       that needs to be ready to accept data from a Port or from a
+       Tick event
+
+     - Scheduled \b PortUpdate events (for N-cycle Ports) are run next
+       allowing Ports to deliver data to themselves as well as any
+       registered consumer handler.  Since resources were updated
+       earlier, they can be updated
+
+     - Scheduled \b Collection events are now run to collect current
+       state on the resources going into the Tick phase.  This is part
+       of the PipelineCollector mechanism and allows a modeler to see
+       what data was operated on THIS cycle.
+
+     - Scheduled \b Tick events are finally run to operate on data sent
+       from N-Cycle ports or data in internal resources.  0-cycle
+       Ports are also run in this phase delivering data directly to
+       the callback from another block.  Any collection required on
+       this type of data must be handled manually.  Most of the
+       modeler's code will be in this phase.
+    .
+
+  - Simulation will terminate when there are no more continuing events
+    scheduled for execution.
+
+*/

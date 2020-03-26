@@ -30,11 +30,11 @@ namespace sparta
 
 //! \def SC_Sparta_SCHEDULER_NAME
 //! The name of the scheduler adapter
-#define SC_Sparta_SCHEDULER_NAME  "SysCSpartaSchedulerAdapter"
+#define SC_SPARTA_SCHEDULER_NAME  "SysCSpartaSchedulerAdapter"
 
 //! \def SC_Sparta_STOP_EVENT_NAME
 //! The name of the SystemC event used to stop simulation
-#define SC_Sparta_STOP_EVENT_NAME "sc_ev_stop_simulation"
+#define SC_SPARTA_STOP_EVENT_NAME "sc_ev_stop_simulation"
 
 /*!
  * \class SysCSpartaSchedulerAdapter
@@ -47,7 +47,7 @@ namespace sparta
  *
  * There are two ways to stop simulation using this adapter:
  *
- * -# In SystemC, find the event SC_Sparta_STOP_EVENT_NAME and notify it
+ * -# In SystemC, find the event SC_SPARTA_STOP_EVENT_NAME and notify it
  *    when SystemC is complete
  * -# Register a sparta::Event via registerSysCFinishQueryEvent that is
  *    called by Sparta to query the SystemC side
@@ -71,8 +71,8 @@ public:
 
     //! Initialized the sc_module this adapter is part of
     SysCSpartaSchedulerAdapter() :
-        sc_module(sc_core::sc_module_name(SC_Sparta_SCHEDULER_NAME)),
-        sc_ev_stop_simulation_(SC_Sparta_STOP_EVENT_NAME)
+        sc_module(sc_core::sc_module_name(SC_SPARTA_SCHEDULER_NAME)),
+        sc_ev_stop_simulation_(SC_SPARTA_STOP_EVENT_NAME)
     {
         SC_THREAD(runScheduler_);
         sparta_scheduler_ = sparta::Scheduler::getScheduler();

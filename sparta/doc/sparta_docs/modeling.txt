@@ -1,6 +1,6 @@
 
 /*!
-  \page modeling Sparta for Simulator Development
+  \page modeling Sparta API
 
   Sparta is a modeling framework, written in C++ (17 or higher) and
   python.  Modeling teams can use Sparta to build abstract performance

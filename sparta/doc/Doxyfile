@@ -826,6 +826,7 @@ INPUT                  = sparta_docs           \
                          ../sparta/kernel/     \
                          ../sparta/memory/     \
                          ../sparta/ports/      \
+                         ../sparta/resources/  \
                          ../sparta/simulation/ \
                          ../sparta/statistics/ \
                          ../sparta/utils/      \
