@@ -417,7 +417,7 @@ namespace sparta
             // Make the queue twice as large and a power of two to
             // allow a complete invalidation followed by a complete
             // population
-            queue_data_.reset((value_type *)malloc(sizeof(value_type) * vector_size_));
+            queue_data_.reset(static_cast<value_type *>(malloc(sizeof(value_type) * vector_size_)));
         }
 
         ~Queue(){

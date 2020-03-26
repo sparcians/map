@@ -7,5 +7,5 @@
 test/**/*.cmake
 build*
 release*
-#debug*
+debug*
 *~
