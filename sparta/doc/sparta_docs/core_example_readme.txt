@@ -5,8 +5,7 @@
   The Sparta core example is located in sparta/examples/CoreModel.
 
   ======================================================================
-  \section Example core layout
-  ======================================================================
+  \section example_core Example Core Layout
 
   The CoreExample is an example simulator that uses the Sparta
   framework to mimic a very rudimentary model of a simple out-of-order
@@ -44,6 +43,7 @@
      Dispatch -> ALU0 [arrowhead="open", style="solid", label="Inst", URL="\ref ExampleInst.hpp"];
      Dispatch -> ALU1 [arrowhead="open", style="solid", label="Inst", URL="\ref ExampleInst.hpp"];
      Dispatch -> LSU  [arrowhead="open", style="solid", label="Inst", URL="\ref ExampleInst.hpp"];
+     Dispatch -> BR   [arrowhead="open", style="solid", label="Inst", URL="\ref ExampleInst.hpp"];
      LSU      -> BIU  [arrowhead="open", style="solid", label="Inst", URL="\ref ExampleInst.hpp"];
      BIU      -> MSS  [arrowhead="open", style="solid", label="Inst", URL="\ref ExampleInst.hpp"];
 
