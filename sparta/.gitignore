@@ -5,6 +5,7 @@
 **/CMakeCache.txt
 **/CMakeFiles/**
 test/**/*.cmake
+build*
 [Rr]elease*
-#debug*
+[Dd]ebug*
 *~
