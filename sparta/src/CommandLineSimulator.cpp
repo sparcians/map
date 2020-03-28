@@ -465,11 +465,6 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "Write the final configuration of the device tree to the specified file before running "
          "the simulation",
          "Write parameter configuration to file")
-        ("write-power-config",
-         named_value<std::string>("FILENAME", &power_config_file_)->default_value(power_config_file_),
-         "Write the configuration of the device tree to the specified file to be consumed by TESLA"
-         "for modeling power",
-         "Write power related parameter configuration to file")
         ("write-final-config-verbose",
          named_value<std::vector<std::string>>("FILENAME", 1, 1),
          "Write the final configuration of the device tree to the specified file before running "
@@ -1816,7 +1811,6 @@ bool CommandLineSimulator::parse(int argc,
         std::cout << "  run-time:            " << run_time_cycles_ << " on clock: " << runtime_clock_ << std::endl;
         std::cout << "  warnings file:       \"" << sim_config_.warnings_file << '"' << std::endl;
         std::cout << "  final config out:    \"" << sim_config_.getFinalConfigFile() << '"' << std::endl;
-        std::cout << "  power config out:    \"" << power_config_file_ << '"' << std::endl;
         std::cout << "  no-warn-stderr:      " << std::boolalpha << !sim_config_.warn_stderr << std::endl;
         std::cout << "  verbose-params:      " << std::boolalpha << sim_config_.verbose_cfg << std::endl;
         std::cout << "  debug-sim:           " << std::boolalpha << sim_config_.debug_sim << std::endl;
@@ -2036,16 +2030,6 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                                                  false); // Hide descriptions
             param_out_.addParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg);
 
-        }
-
-        // Store final config file(s) after finalization so that all dynamic parameters are built
-        //! \todo Print configuration if finalizeTree fails with exception then rethrow
-        if(power_config_file_ != ""){
-            sparta::ConfigEmitter::YAML param_out_(power_config_file_,
-                                                 false); // Hide descriptions
-
-            //param_out_.addPowerParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg);
-            param_out_.addParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg, true);
         }
 
         if(final_config_file_verbose_ != ""){
