@@ -16,7 +16,6 @@
 #include <functional>
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/ports/Port.hpp"
-#include "sparta/simulation/Resource.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/MathUtils.hpp"
 #include "sparta/collection/IterableCollector.hpp"
@@ -42,7 +41,7 @@ namespace sparta
  * transactions to the database.
  */
 template <typename DataT>
-class Pipe : public Resource
+class Pipe
 {
 
 private:
@@ -60,7 +59,7 @@ private:
 
     void initPipe_(uint32_t num_entries)
     {
-        sparta_assert(num_entries > 0, "ERROR: sparta::Pipe '" << getName()
+        sparta_assert(num_entries > 0, "ERROR: sparta::Pipe '" << name_
                     << "' Cannot be created with 0 stages");
         num_entries_ = num_entries;
         physical_size_ = sparta::utils::pow2 (sparta::utils::ceil_log2 (num_entries + 1));
@@ -203,7 +202,7 @@ public:
     Pipe (const std::string & name,
           uint32_t num_entries,
           const Clock * clk) :
-        Resource (name, clk),
+        name_(name),
         ev_update_(&es_, name+"_pipe_update_event",
                    CREATE_SPARTA_HANDLER(Pipe, internalUpdate_), 1)
     {
@@ -311,7 +310,7 @@ public:
     void invalidatePS (uint32_t stage)
     {
         PipeEntry & pe = pipe_[getPhysicalStage_(stage)];
-        sparta_assert(pe.data.isValid(), "ERROR: In sparta::Pipe '" << getName()
+        sparta_assert(pe.data.isValid(), "ERROR: In sparta::Pipe '" << name_
                     << "' invalidatePS at stage " << stage << " is not valid");
         sparta_assert(stage != uint32_t(-1), "Do not refer to stage -1 directly, use flushAppend()");
         if(pe.data.isValid()) {
@@ -434,7 +433,7 @@ public:
     const DataT & read (uint32_t stage) const
     {
         const PipeEntry & pe = pipe_[getPhysicalStage_(stage)];
-        sparta_assert(pe.data.isValid(), "ERROR: In sparta::Pipe '" << getName()
+        sparta_assert(pe.data.isValid(), "ERROR: In sparta::Pipe '" << name_
                     << "' read at stage " << stage << " is not valid");
         return pe.data.getValue();
     }
@@ -443,7 +442,7 @@ public:
     DataT & access(uint32_t stage)
     {
         PipeEntry & pe = pipe_[getPhysicalStage_(stage)];
-        sparta_assert(pe.data.isValid(), "ERROR: In sparta::Pipe '" << getName()
+        sparta_assert(pe.data.isValid(), "ERROR: In sparta::Pipe '" << name_
                     << "' read at stage " << stage << " is not valid");
         return pe.data.getValue();
     }
@@ -490,7 +489,7 @@ public:
     template<sparta::SchedulingPhase phase = SchedulingPhase::Collection>
     void enableCollection(TreeNode * parent) {
         collector_.reset (new collection::IterableCollector<Pipe<DataT>, phase, true>
-                          (parent, getName(), *this, capacity()));
+                          (parent, name_, *this, capacity()));
     }
 
 private:
@@ -502,6 +501,8 @@ private:
     size_type tail_          = 0; //!< The tail of the pipe
 
     std::unique_ptr<PipeEntry[]> pipe_;
+
+    const std::string name_;
 
     //////////////////////////////////////////////////////////////////////
     // Internal use only
@@ -536,7 +537,7 @@ private:
     void appendImpl_ (U && data)
     {
         PipeEntry & pe = pipe_[getPhysicalStage_(-1)];
-        sparta_assert(pe.data.isValid() == false, "ERROR: sparta::Pipe '" << getName()
+        sparta_assert(pe.data.isValid() == false, "ERROR: sparta::Pipe '" << name_
                     << "' Double append of data before update");
         pe.data = std::forward<U>(data);
         if(perform_own_updates_) {
