@@ -7,17 +7,18 @@
   ======================================================================
   \section example_core Example Core Layout
 
-  The CoreExample is an example simulator that uses the Sparta
+  The CoreExample is an example Sparta simulator that uses the Sparta
   framework to mimic a very rudimentary model of a simple out-of-order
   core.  The model does not have dependency checking nor actually
-  rename any instructions.  The "ISA" is uses is a few random
-  instructions pulled from the PowerPC ISA.
+  renames any instructions.  The "ISA" is uses is a few random
+  instructions pulled from the PowerPC ISA listed in a table in
+  Fetch.cpp.
 
   The example touches on Sparta command line simulation, construction
   phasing, unit creation, port creation and binding, event creation,
   and data transfer.
 
-  The Example core has a simple pipeline:
+  The ExampleCore has a simple pipeline:
 
   \dot
   digraph pipeline {
@@ -61,14 +62,18 @@
   }
   \enddot
 
-  Instructions are created in Fetch and progression of these
-  instructions is based on a credit system.  Credits flow from ROB
-  through Dispatch though Rename, etc. in 0 time (dotted lines) while
-  instructions flow from Fetch to Decode to Rename, etc (solid lines)
+  This heirarchy is built in
+  core_example::ExampleSimulator::buildTree_ pulling resources and
+  factories from core_example::CoreTopology_1.
+
+  Instructions are created in `Fetch` and progression of these
+  instructions is based on a credit system.  Credits flow from `ROB`
+  through `Dispatch` though `Rename`, etc. in 0 time (dotted lines) while
+  instructions flow from `Fetch` to `Decode` to `Rename`, etc (solid lines)
   in a delay of 1 cycle.  This flow is controlled based on the rule
-  (adopted by this example) that all InstGroup DataInPorts take
+  (adopted by this example) that all `DataInPorts<core_example::InstGroup>` take
   objects delayed by 1 cycle (set at instantiation time) and all
-  credit DataInPorts are assumed to be 0 cycle.  For example:
+  credit `DataInPorts<uint32_t>` are assumed to be 0 cycle.  For example:
 
   \dot
   digraph fetch_decode {
@@ -81,10 +86,12 @@
   }
   \enddot
 
-  These ports are bound in ExampleSimulation.cpp, and are defined in
-  Fetch.cpp / Fetch.hpp and Decode.cpp / Decode.hpp.
+  These ports are bound in core_example::ExampleSimulator::bindTree_,
+  using the `port_connections` list defined in
+  core_example::CoreTopology_1.  The ports themselves are instantiated
+  in Fetch.cpp / Fetch.hpp and Decode.cpp / Decode.hpp.
 
-  Without the delay of 1 cycle on the in_fetch_queue_write, we will come
+  Without the delay of 1 cycle on the `in_fetch_queue_write`, we will come
   across a cycle in simulation:
 
   \code
@@ -116,7 +123,7 @@
   \section Building
 
   To build the CoreExample, simply type 'make' in the
-  example/CoreExample directory.
+  example/CoreModel directory.
 
   Refer to builtin help for up-to-date help and commands, but try running
   the model with the '-h' option.

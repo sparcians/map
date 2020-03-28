@@ -14,8 +14,8 @@
 // sparta::app::CommandLineSimulator options
 const char USAGE[] =
     "Usage:\n"
-    "    [--num-producers]"     // The number of producers in the example
-    "    [-v]\n"                 // another example...
+    "    [--num-producers <count>] # Default is 1\n" // The number of producers in the example
+    "    [-v]\n"
     "    [-h] <data file1> <data file2> ...\n"
     "\n";
 
@@ -28,6 +28,9 @@ int main(int argc, char **argv)
     uint64_t num_producers = 1;
     std::vector<std::string> datafiles;
 
+    sparta::app::DefaultValues DEFAULTS;
+    DEFAULTS.auto_summary_default = "on";
+
     // try/catch block to ensure proper destruction of the cls/sim classes in
     // the event of an error
     try{
@@ -36,7 +39,7 @@ int main(int argc, char **argv)
         // done by this classs can be done manually if desired. Use
         // the source for the CommandLineSimulator class as a starting
         // point
-        sparta::app::CommandLineSimulator cls(USAGE);
+        sparta::app::CommandLineSimulator cls(USAGE, DEFAULTS);
         auto & app_opts = cls.getApplicationOptions();
         app_opts.add_options()
             (VERSION_VARNAME,

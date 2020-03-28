@@ -1,8 +1,9 @@
-// <Simulation.h> -*- C++ -*-
-
+// <ExampleSimulation.hpp> -*- C++ -*-
 
 #ifndef __EXAMPLE_SIMULATOR_H__
 #define __EXAMPLE_SIMULATOR_H__
+
+#include <cinttypes>
 
 #include "sparta/app/Simulation.hpp"
 

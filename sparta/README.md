@@ -128,7 +128,7 @@ This can be done generally via "sudo apt install <package name>"
 - libhdf5-dev
 - cppcheck
 - pygments (for cppcheck-htmlreport)
-- doxygen (if you want generate the documentation)
+- doxygen graphviz (if you want generate the documentation and dot graphs)
 
 ## Notes on Building
 

@@ -1,12 +1,12 @@
-
+// <Producer.hpp> -*- C++ -*-
 
 #ifndef _PRODUCER_H_
 #define _PRODUCER_H_
 
-#include <inttypes.h>
+#include <cinttypes>
 #include <string>
 
-#include "sparta/simulation/Resource.hpp"
+#include "sparta/simulation/Unit.hpp"
 #include "sparta/ports/PortSet.hpp"
 #include "sparta/ports/DataPort.hpp"
 #include "sparta/ports/SignalPort.hpp"
@@ -43,30 +43,27 @@ public:
 //
 // The Producer class
 //
-class Producer : public sparta::Resource
+class Producer : public sparta::Unit
 {
 public:
 
     Producer (sparta::TreeNode * name,
               const ProducerParameterSet * p);
 
-    //! \brief Name of this resource. Required by sparta::ResourceFactory
+    // Name of this resource. Required by sparta::ResourceFactory
     static const char * name;
 
 private:
-    // The producer's PortSet
-    sparta::PortSet port_set_;
 
     // Producer's ports
-    sparta::DataOutPort<uint32_t> producer_out_port_{&port_set_, "producer_out_port"};
-    sparta::SignalInPort          producer_go_port_ {&port_set_, "producer_go_port"};
+    sparta::DataOutPort<uint32_t> producer_out_port_{&unit_port_set_, "producer_out_port"};
+    sparta::SignalInPort          producer_go_port_ {&unit_port_set_, "producer_go_port"};
 
     // Producer's producer handler
     void produceData_();
 
     // Event to drive data, phase Tick, 1 cycle delay
-    sparta::EventSet      event_set_;
-    sparta::UniqueEvent<> ev_producing_event_{&event_set_, "ev_producing_event",
+    sparta::UniqueEvent<> ev_producing_event_{&unit_event_set_, "ev_producing_event",
             CREATE_SPARTA_HANDLER(Producer, produceData_), 1 /* delay */};
 
     // Internal count
@@ -74,9 +71,8 @@ private:
     uint32_t current_ints_count_ = 0;
 
     // Stats
-    sparta::StatisticSet stat_set_;
-    sparta::Counter      num_produced_{&stat_set_, "num_produced",
-            "Number of items produced", sparta::Counter::COUNT_NORMAL};
+    sparta::Counter num_produced_{&unit_stat_set_, "num_produced",
+                                  "Number of items produced", sparta::Counter::COUNT_NORMAL};
 
     // Loggers
     sparta::log::MessageSource producer_info_;

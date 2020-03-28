@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     DEFAULTS.auto_summary_default = "on";
 
     sparta::SimulationInfo::getInstance() = sparta::SimulationInfo("sparta_core_example",
-                                                               argc, argv, "", "", {});
+                                                                   argc, argv, "", "", {});
 
     // try/catch block to ensure proper destruction of the cls/sim classes in
     // the event of an error
