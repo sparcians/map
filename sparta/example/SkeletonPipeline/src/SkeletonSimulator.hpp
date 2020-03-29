@@ -1,28 +1,27 @@
-// <ExampleSimulation.hpp> -*- C++ -*-
+// <SkeletonSimulation.hpp> -*- C++ -*-
 
-#ifndef __EXAMPLE_SIMULATOR_H__
-#define __EXAMPLE_SIMULATOR_H__
+#ifndef __SKELETON_SIMULATOR_H__
+#define __SKELETON_SIMULATOR_H__
 
 #include <cinttypes>
 
 #include "sparta/app/Simulation.hpp"
 
 /*!
- * \brief ExampleSimulator which builds the model and configures it
+ * \brief SkeletonSimulator which builds the model and configures it
  */
-class ExampleSimulator : public sparta::app::Simulation
+class SkeletonSimulator : public sparta::app::Simulation
 {
 public:
 
     /*!
-     * \brief Construct ExampleSimulator
-     * \param num_producers The number of producers to make
-     * \param be_noisy Be verbose -- not necessary, just an example
+     * \brief Construct SkeletonSimulator
+     * \param be_noisy Be verbose -- not necessary, just an skeleton
      */
-    ExampleSimulator(sparta::Scheduler & scheduler, uint32_t num_producers, bool be_noisy);
+    SkeletonSimulator(sparta::Scheduler & scheduler, bool be_noisy);
 
     // Tear it down
-    virtual ~ExampleSimulator();
+    virtual ~SkeletonSimulator();
 
 private:
 
@@ -40,11 +39,9 @@ private:
     //! to bind things together.
     void bindTree_() override;
 
-    const uint32_t num_producers_ = 1;
-
     //! Verbosity
     const bool be_noisy_ = false;
 };
 
-// __EXAMPLE_SIMULATOR_H__
+// __SKELETON_SIMULATOR_H__
 #endif

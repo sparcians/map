@@ -210,7 +210,6 @@ private:
                             std::cout << "  ignoring child because it has no name" << std::endl;
                         }
                     }else{
-                        const ParameterBase* cpb = dynamic_cast<const ParameterBase*>(child);
                         if(child->getRecursiveNodeCount<ParameterBase>() == 0){
                             if(verbose){
                                 std::cout << "Skipping child of subtree with no parameters: " << subtree

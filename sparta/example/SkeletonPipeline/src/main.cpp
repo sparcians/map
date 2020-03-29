@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "ExampleSimulation.hpp" // Core model example simulator
+#include "SkeletonSimulator.hpp" // Core model skeleton simulator
 
 #include "sparta/parsers/ConfigEmitterYAML.hpp"
 #include "sparta/app/CommandLineSimulator.hpp"
@@ -14,7 +14,7 @@
 // sparta::app::CommandLineSimulator options
 const char USAGE[] =
     "Usage:\n"
-    "    [--num-producers <count>] # Default is 1\n" // The number of producers in the example
+    "    [--num-producers <count>] # Default is 1\n" // The number of producers in the skeleton
     "    [-v]\n"
     "    [-h] <data file1> <data file2> ...\n"
     "\n";
@@ -25,7 +25,6 @@ constexpr char DATA_FILE_OPTIONS[] = "data-file"; // Data file options, which ar
 
 int main(int argc, char **argv)
 {
-    uint64_t num_producers = 1;
     std::vector<std::string> datafiles;
 
     sparta::app::DefaultValues DEFAULTS;
@@ -45,18 +44,15 @@ int main(int argc, char **argv)
             (VERSION_VARNAME,
              "produce version message",
              "produce version message") // Brief
-            ("num-producers",
-             sparta::app::named_value<uint64_t>("PCOUNT", &num_producers)->default_value(num_producers),
-             "For this example skeleton, this is just a count, or number, of producer objects to create")
             ("verbose,v", "Be noisy.", "Be very, very noisy")
             (DATA_FILE_OPTIONS,
              sparta::app::named_value<std::vector<std::string>>("DATAFILES", &datafiles),
-             "Specifies the data files to look at")
+             "Specifies the data files to look at") // example, not used
             ;
 
-        // Add any positional command-line options -- example
+        // Add any positional command-line options -- skeleton
         po::positional_options_description& pos_opts = cls.getPositionalOptions();
-        pos_opts.add(DATA_FILE_VARNAME, -1); // example, look for the <data file> at the end
+        pos_opts.add(DATA_FILE_VARNAME, -1); // skeleton, look for the <data file> at the end
 
         // Parse command line options and configure simulator
         int err_code = 0;
@@ -77,7 +73,7 @@ int main(int argc, char **argv)
         // Create the simulator object for population -- does not
         // instantiate nor run it.
         sparta::Scheduler scheduler;
-        ExampleSimulator sim(scheduler, num_producers, be_noisy);
+        SkeletonSimulator sim(scheduler, be_noisy);
 
         cls.populateSimulation(&sim);
         cls.runSimulator(&sim);

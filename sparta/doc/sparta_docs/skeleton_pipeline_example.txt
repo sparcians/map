@@ -2,7 +2,7 @@
 /*!
   \page skeleton_example Skeleton Pipeline Using Sparta
 
-  The Sparta Skeleton Pipeline is located in sparta/examples/SkeletonPipeline.
+  The Sparta Skeleton Pipeline is located in sparta/example/SkeletonPipeline.
 
   ======================================================================
   \section skeleton_layout Skeleton Pipeline Layout
@@ -14,12 +14,12 @@
 
   - sparta::app::CommandLineSimulator
   - sparta::app::Simulation
-  - sparta::TreeNode/sparta::ResourceTreeNode
+  - sparta::TreeNode / sparta::ResourceTreeNode
   - sparta::Scheduler
   - sparta::Unit
-  - sparta::Parameter/sparta::ParameterSet
-  - sparta::DataInPort/sparta::DataOutPort
-  - sparta::SignalInPort/sparta::SignalOutPort
+  - sparta::Parameter / sparta::ParameterSet
+  - sparta::DataInPort / sparta::DataOutPort
+  - sparta::SignalInPort / sparta::SignalOutPort
   - sparta::UniqueEvent
   - sparta::StartupEvent
   - sparta::utils::ValidValue
@@ -38,6 +38,9 @@
   }
   \enddot
 
+  The files involved are Consumer.hpp / Consumer.cpp, Producer.hpp /
+  Producer.cpp, and SkeletonSimulator.hpp / SkeletonSimulator.cpp
+
   The pipeline is pretty simple.  The Producer, using a
   sparta::SignalInPort, waits for the Consumer to send "go" via a sparta::SignalOutPort.
 
@@ -45,27 +48,20 @@
   case, a uint32_t) on a sparta::DataOutPort to the consumer.
 
   The simulator can allow the user to set up more than one producer,
-  with the `--num-producer <count>` command line option.  Only one
-  Consumer will be created in simulation to consume from all of the
-  Producer objects created.
+  with the `-p top.consumer.params.num_producers <count>` command line
+  option.  Only one Consumer will be created in simulation to consume
+  from all of the Producer objects created.
 
   When the data arrives on the Consumer's sparta::DataInPort, the
   Consumer defers consumption of that data using a sparta::UniqueEvent
-  (Consumer::dataArrived_).
+  (registered callbac is Consumer::dataArrived_).
 
-  While simple, there's a lot that can be done with this simulator.  Try the following command lines.
+  While the purpose of the simulator is simple, there's a lot that can
+  be done with it.  Try the following command lines.
 
   Getting Help and Simulation Layout
-  \code
-  # Get small help
-  % ./sparta_skeleton --help-brief
-  Usage:
-    [--num-producers]    [-v]
-    [-h] <data file1> <data file2> ...
-
-  # other commands available from Sparta....
-
-  # Get larger help
+  \code{.sh}
+  # Get help
   % ./sparta_skeleton --help
 
   # Get help on a particular topic
@@ -84,11 +80,10 @@
 
   # Set a parameter (max_ints_to_send to 10,000), show it, but don't run
   % ./sparta_skeleton -p top.producer0.params.max_ints_to_send 10K --show-parameters --no-run
-
   \endcode
 
   Running the simulator
-  \code
+  \code{.sh}
   # Run the simulation with default number of producers: 1
   % ./sparta_skeleton
 
@@ -96,19 +91,28 @@
   % ./sparta_skeleton --auto-summary verbose
 
   # Run the simulation with 10 producers
-  % ./sparta_skeleton --num-producers 10
+  % ./sparta_skeleton -p top.consumer.params.num_producers 10
   \endcode
 
   Running the simulator and generating reports
-  \code
+  \code{.sh}
   # Run the simulation with default number of producers: 1
   % ./sparta_skeleton --report-all output.html html # HTML format
   % ./sparta_skeleton --report-all output.html text # Plain text
   % ./sparta_skeleton --report-all output.html json # JSON format
   \endcode
 
+  Running the simulator and generating logs
+  \code{.sh}
+  # Run the simulation with default number of producers: 1
+  % ./sparta_skeleton -l top info all.msgs
+  % ./sparta_skeleton -l top info all.msgs -l top.consumer info consumer_only.msgs
+  % ./sparta_skeleton -l top info all.msgs -l top.producer* info producer_only.msgs
+  % ./sparta_skeleton -l top.producer* info producer_consumer.msgs -l top.consumer info producer_consumer.msgs
+  \endcode
+
   Running the simulator and configuring it
-  \code
+  \code{.sh}
   # Run the simulation with default parameter and generate a configuration file
   % ./sparta_skeleton --write-final-config skeleton_default_config.yaml --no-run
 
@@ -117,7 +121,43 @@
 
   # Run with the new config
   % ./sparta_skeleton -c skeleton_default_config.yaml
-
   \endcode
 
+  ================================================================================
+  \subsection skeleton_looking Looking at the Code
+
+  The Skeleton Pipeline has three parts: Consumer, Producer, and
+  SkeletonSimulator, with each class deriving from a Sparta component:
+
+  Class                   | Sparta Class Derived
+  ------------------------|----------------------
+  Consumer                | sparta::Unit
+  Producer                | sparta::Unit
+  SkeletonSimulator       | sparta::app::Simulation
+
+  SkeletonSimulator is where the tree is build.  It's divided into
+  three phases that Sparta will call:
+
+  - sparta::app:Simulation::buildTree_ (virtual, overridden by
+  SkeletonSimulator) - This is where the tree hierarchy is created by
+  the modeler.
+
+  - sparta::app:Simulation::configureTree_ (virtual, overridden by
+  SkeletonSimulator) - This is where last minute configuration options
+  can be made.
+
+  - ... elaboration or construction of Consumer/Producer ... happens
+  behind the scenes.
+
+  - sparta::app:Simulation::bindTree_ (virtual, overridden by
+  SkeletonSimulator) - This is where the components are connected together
+
+  - Producer and Consumer are sparta::Unit derivatives created by the
+    framework after its sparta::ResourceTreeNode was created in
+    SkeletonSimulator's buildTree_
+
+  - Both the Producer and the Consumer create sparta::DataInPort and
+    sparta::DataOutPort as well as sparta::SignalInPort and
+    sparta::SignalOutPort objects.  These ports are bound together in
+    SkeletonSimulator::bindTree_
 */

@@ -4,7 +4,7 @@ include (../ExamplesMacros.cmake)
 
 add_executable(sparta_skeleton
   src/main.cpp
-  src/ExampleSimulation.cpp
+  src/SkeletonSimulator.cpp
   src/Producer.cpp
   src/Consumer.cpp)
 

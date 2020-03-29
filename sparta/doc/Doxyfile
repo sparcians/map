@@ -824,6 +824,7 @@ INPUT                  = sparta_docs           \
                          ../sparta/collection/ \
                          ../sparta/events/     \
                          ../sparta/kernel/     \
+                         ../sparta/log/        \
                          ../sparta/memory/     \
                          ../sparta/ports/      \
                          ../sparta/resources/  \
@@ -1203,7 +1204,7 @@ HTML_EXTRA_FILES       =
 # Minimum value: 0, maximum value: 359, default value: 220.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_COLORSTYLE_HUE    = 130
+HTML_COLORSTYLE_HUE    = 2200
 
 # The HTML_COLORSTYLE_SAT tag controls the purity (or saturation) of the colors
 # in the HTML output. For a value of 0 the output will use grayscales only. A

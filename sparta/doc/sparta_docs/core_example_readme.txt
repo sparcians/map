@@ -2,7 +2,7 @@
 /*!
   \page core_example Core Example Using Sparta
 
-  The Sparta core example is located in sparta/examples/CoreModel.
+  The Sparta core example is located in sparta/example/CoreModel.
 
   ======================================================================
   \section example_core Example Core Layout

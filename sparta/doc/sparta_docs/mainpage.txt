@@ -9,9 +9,8 @@
   connect Sparta built models to SystemC models, Gem5 models, etc.
 
   Sparta can be a standalone simulator or embedded in a co-simulation
-  environment like verification tools, Verilog, EDA SystemC, etc.
-
-  Sparta can be a driver or a slave in these co-simulation
+  environment like verification tools, Verilog, EDA, SystemC,
+  etc. Sparta can be a driver or a slave in these co-simulation
   environment.
 
   Either way, Sparta provides a rich set of classes, tools, utilities,
