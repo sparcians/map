@@ -49,7 +49,7 @@
 
   The simulator can allow the user to set up more than one producer,
   with the `-p top.consumer.params.num_producers <count>` command line
-  option.  Only one Consumer will be created in simulation to consume
+  option (See sparta::Parameter).  Only one Consumer will be created in simulation to consume
   from all of the Producer objects created.
 
   When the data arrives on the Consumer's sparta::DataInPort, the
