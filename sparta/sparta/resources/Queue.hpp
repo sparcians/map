@@ -219,13 +219,7 @@ namespace sparta
              * The copy also alerts the validator_ item that another QueueIterator is
              * now attached to it.
              */
-            QueueIterator& operator=(const QueueIterator& rhs)
-            {
-                attached_queue_ = rhs.attached_queue_;
-                physical_idx_ = rhs.physical_idx_;
-                unique_id_ = rhs.physical_idx_;
-                return *this;
-            }
+            QueueIterator& operator=(const QueueIterator& rhs) = default;
 
             /// overload the comparison operator.
             bool operator<(const QueueIterator& rhs) const
