@@ -152,12 +152,7 @@ namespace sparta
              *
              * \param rhs PipelineIterator(const or non-const)
              */
-            PipelineIterator& operator=(const PipelineIterator & rhs)
-            {
-                pipelinePtr_ = rhs.pipelinePtr_;
-                index_ = rhs.index_;
-                return *this;
-            }
+            PipelineIterator& operator=(const PipelineIterator & rhs) = default;
 
             //! Override the dereferencing operator*
             DataReferenceType operator*()
