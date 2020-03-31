@@ -6,6 +6,6 @@
 **/CMakeFiles/**
 test/**/*.cmake
 build*
-release*
-#debug*
+[Rr]elease*
+[Dd]ebug*
 *~

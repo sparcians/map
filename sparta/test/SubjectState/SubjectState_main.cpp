@@ -1,5 +1,4 @@
 #include "sparta/sparta.hpp"
-SPARTA_SYMBOLS;
 
 #include <iostream>
 #include <inttypes.h>

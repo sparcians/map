@@ -14,6 +14,11 @@
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/simulation/Parameter.hpp"
 
+/*!
+ * \file ParameterSet.hpp
+ * \brief A set of sparta::Parameters per sparta::ResourceTreeNode
+ */
+
 namespace sparta
 {
     class ParameterTree;

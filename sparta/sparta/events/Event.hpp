@@ -20,6 +20,7 @@ namespace sparta
 {
 
     /**
+     * \class Event
      * \brief Event is a simple class for scheduling random events on the Scheduler
      *
      * The purpose of this class is for a user to create an event

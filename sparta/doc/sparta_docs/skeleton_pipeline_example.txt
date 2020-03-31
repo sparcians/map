@@ -1,0 +1,163 @@
+
+/*!
+  \page skeleton_example Skeleton Pipeline Using Sparta
+
+  The Sparta Skeleton Pipeline is located in sparta/example/SkeletonPipeline.
+
+  ======================================================================
+  \section skeleton_layout Skeleton Pipeline Layout
+
+  The Skeleton Pipeline is an example Sparta simulator that uses the
+  Sparta framework to mimic a simple producer/consumer event-triggered
+  communication paradigm.  It illustrates the use of the following
+  Sparta classes:
+
+  - sparta::app::CommandLineSimulator
+  - sparta::app::Simulation
+  - sparta::TreeNode / sparta::ResourceTreeNode
+  - sparta::Scheduler
+  - sparta::Unit
+  - sparta::Parameter / sparta::ParameterSet
+  - sparta::DataInPort / sparta::DataOutPort
+  - sparta::SignalInPort / sparta::SignalOutPort
+  - sparta::UniqueEvent
+  - sparta::StartupEvent
+  - sparta::utils::ValidValue
+  - sparta::log::MessageSource
+
+  Visually, this is the flow of the pipeline:
+  \dot
+  digraph skeleton_pipeline {
+     rankdir=LR
+     node [shape=record, fontname=Helvetica, fontsize=10];
+     Producer [ URL="\ref Producer.hpp"];
+     Consumer [ URL="\ref Consumer.hpp"];
+     Producer -> Consumer [arrowhead="open", style="solid", label="Data[In,Out]Port<uint32_t>" ];
+     Consumer -> Producer [arrowhead="open", style="dotted", label="Signal[In,Out]Port::producer_go_port" ];
+
+  }
+  \enddot
+
+  The files involved are Consumer.hpp / Consumer.cpp, Producer.hpp /
+  Producer.cpp, and SkeletonSimulator.hpp / SkeletonSimulator.cpp
+
+  The pipeline is pretty simple.  The Producer, using a
+  sparta::SignalInPort, waits for the Consumer to send "go" via a sparta::SignalOutPort.
+
+  When the Producer receives that signal, the Producer  will send data (in this
+  case, a uint32_t) on a sparta::DataOutPort to the consumer.
+
+  The simulator can allow the user to set up more than one producer,
+  with the `-p top.consumer.params.num_producers <count>` command line
+  option (See sparta::Parameter).  Only one Consumer will be created in simulation to consume
+  from all of the Producer objects created.
+
+  When the data arrives on the Consumer's sparta::DataInPort, the
+  Consumer defers consumption of that data using a sparta::UniqueEvent
+  (registered callbac is Consumer::dataArrived_).
+
+  While the purpose of the simulator is simple, there's a lot that can
+  be done with it.  Try the following command lines.
+
+  Getting Help and Simulation Layout
+  \code{.sh}
+  # Get help
+  % ./sparta_skeleton --help
+
+  # Get help on a particular topic
+  % ./sparta_skeleton --help-topic logging
+  Logging Options:
+    -l [ --log ] PATTERN CATEGORY DEST ...
+
+  # Dump the simulation tree
+  % ./sparta_skeleton --show-tree --no-run
+
+  # Dump the counters/states
+  % ./sparta_skeleton --show-counters --no-run
+
+  # Dump the parameters
+  % ./sparta_skeleton --show-parameters --no-run
+
+  # Set a parameter (max_ints_to_send to 10,000), show it, but don't run
+  % ./sparta_skeleton -p top.producer0.params.max_ints_to_send 10K --show-parameters --no-run
+  \endcode
+
+  Running the simulator
+  \code{.sh}
+  # Run the simulation with default number of producers: 1
+  % ./sparta_skeleton
+
+  # Run the simulation with more verbose reporting
+  % ./sparta_skeleton --auto-summary verbose
+
+  # Run the simulation with 10 producers
+  % ./sparta_skeleton -p top.consumer.params.num_producers 10
+  \endcode
+
+  Running the simulator and generating reports
+  \code{.sh}
+  # Run the simulation with default number of producers: 1
+  % ./sparta_skeleton --report-all output.html html # HTML format
+  % ./sparta_skeleton --report-all output.html text # Plain text
+  % ./sparta_skeleton --report-all output.html json # JSON format
+  \endcode
+
+  Running the simulator and generating logs
+  \code{.sh}
+  # Run the simulation with default number of producers: 1
+  % ./sparta_skeleton -l top info all.msgs
+  % ./sparta_skeleton -l top info all.msgs -l top.consumer info consumer_only.msgs
+  % ./sparta_skeleton -l top info all.msgs -l top.producer* info producer_only.msgs
+  % ./sparta_skeleton -l top.producer* info producer_consumer.msgs -l top.consumer info producer_consumer.msgs
+  \endcode
+
+  Running the simulator and configuring it
+  \code{.sh}
+  # Run the simulation with default parameter and generate a configuration file
+  % ./sparta_skeleton --write-final-config skeleton_default_config.yaml --no-run
+
+  # Edit the file
+  % sed -i"" -e 's/num_producers: 1/num_producers: 100/' skeleton_default_config.yaml
+
+  # Run with the new config
+  % ./sparta_skeleton -c skeleton_default_config.yaml
+  \endcode
+
+  ================================================================================
+  \subsection skeleton_looking Looking at the Code
+
+  The Skeleton Pipeline has three parts: Consumer, Producer, and
+  SkeletonSimulator, with each class deriving from a Sparta component:
+
+  Class                   | Sparta Class Derived
+  ------------------------|----------------------
+  Consumer                | sparta::Unit
+  Producer                | sparta::Unit
+  SkeletonSimulator       | sparta::app::Simulation
+
+  SkeletonSimulator is where the tree is build.  It's divided into
+  three phases that Sparta will call:
+
+  - sparta::app:Simulation::buildTree_ (virtual, overridden by
+  SkeletonSimulator) - This is where the tree hierarchy is created by
+  the modeler.
+
+  - sparta::app:Simulation::configureTree_ (virtual, overridden by
+  SkeletonSimulator) - This is where last minute configuration options
+  can be made.
+
+  - ... elaboration or construction of Consumer/Producer ... happens
+  behind the scenes.
+
+  - sparta::app:Simulation::bindTree_ (virtual, overridden by
+  SkeletonSimulator) - This is where the components are connected together
+
+  - Producer and Consumer are sparta::Unit derivatives created by the
+    framework after its sparta::ResourceTreeNode was created in
+    SkeletonSimulator's buildTree_
+
+  - Both the Producer and the Consumer create sparta::DataInPort and
+    sparta::DataOutPort as well as sparta::SignalInPort and
+    sparta::SignalOutPort objects.  These ports are bound together in
+    SkeletonSimulator::bindTree_
+*/

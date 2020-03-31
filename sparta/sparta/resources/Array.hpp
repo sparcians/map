@@ -12,7 +12,6 @@
 #include <map>
 #include <set>
 
-#include "sparta/simulation/Resource.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/statistics/CycleHistogram.hpp"
 #include "sparta/collection/IterableCollector.hpp"
@@ -55,15 +54,19 @@ namespace sparta
      * aend().
      */
     template<class DataT, ArrayType ArrayT = ArrayType::AGED>
-    class Array : public Resource
+    class Array
     {
     private:
         //! A struct for a position in our array.
         struct ArrayPosition{
             ArrayPosition() :
                 valid(false),
-                to_validate(false)
-            {}
+                to_validate(false){}
+
+            template<typename U>
+            explicit ArrayPosition(U && data) :
+                data(std::forward<U>(data)){}
+
             bool valid;
             bool to_validate;
             DataT data;
@@ -267,7 +270,7 @@ namespace sparta
                             "Cannot operate on an uninitialized iterator.");
                 return std::addressof(getAccess_(std::integral_constant<bool, is_const_iterator>()));
             }
-            
+
             const value_type* operator->() const
             {
                 sparta_assert(index_ < array_->capacity(),
@@ -488,14 +491,16 @@ namespace sparta
               InstrumentationNode::visibility_t stat_vis_avg = InstrumentationNode::AUTO_VISIBILITY);
 
         //! Virtual destructor.
-        virtual ~Array() {}
+        virtual ~Array() {
+            clear();
+        }
 
         /**
          * \brief Determine whether an index is currently valid.
          * \return true if valid.
          */
         bool isValid(const uint32_t idx) const {
-            return (idx < capacity() && array_[idx].valid);
+            return valid_index_set_.find(idx) != valid_index_set_.end();
         }
 
         /**
@@ -504,7 +509,7 @@ namespace sparta
          * \return A const reference to the data.
          */
         const DataT& read(const uint32_t idx) const {
-            sparta_assert(isValid(idx), "On Array " << getName()
+            sparta_assert(isValid(idx), "On Array " << name_
                         << " Cannot read from an invalid index. Idx:" << idx);
             return array_[idx].data;
         }
@@ -514,7 +519,7 @@ namespace sparta
          * \param idx The index to access.
          */
         DataT& access(const uint32_t idx) {
-            sparta_assert(isValid(idx), "On Array " << getName()
+            sparta_assert(isValid(idx), "On Array " << name_
                         << " Cannot read from an invalid index. Idx:" << idx);
             return (array_[idx].data);
         }
@@ -659,11 +664,11 @@ namespace sparta
             collector_.
                 reset(new collection::IterableCollector<FullArrayType,
                                                         SchedulingPhase::Collection, true>
-                      (parent, getName(), *this, capacity()));
+                      (parent, name_, *this, capacity()));
 
             if(ArrayT == ArrayType::AGED) {
                 age_collector_.reset(new collection::IterableCollector<AgedArrayCollectorProxy>
-                                     (parent, getName() + "_age_ordered",
+                                     (parent, name_ + "_age_ordered",
                                       aged_array_col_, capacity()));
             }
         }
@@ -700,6 +705,8 @@ namespace sparta
             {
                 utilization_->setValue(num_valid_);
             }
+            array_[idx].~ArrayPosition();
+            valid_index_set_.erase(idx);
         }
 
         /**
@@ -707,8 +714,10 @@ namespace sparta
          */
         void clear()
         {
-            array_.clear();
-            array_.resize(num_entries_);
+            std::for_each(valid_index_set_.begin(), valid_index_set_.end(), [this](const auto index){
+                array_[index].~ArrayPosition();
+            });
+            valid_index_set_.clear();
             aged_list_.clear();
             num_valid_ = 0;
             if(utilization_)
@@ -834,17 +843,18 @@ namespace sparta
         {
             sparta_assert(idx < num_entries_,
                         "Cannot write to an index outside the bounds of the array.");
-            sparta_assert(array_[idx].valid == false,
+            sparta_assert(valid_index_set_.find(idx) == valid_index_set_.end(),
                         "It is illegal write over an already valid index.");
 
+            // Since we are not timed. Write the data and validate it,
+            // then do pipeline collection.
+            new (array_.get() + idx) ArrayPosition(std::forward<U>(dat));
+            valid_index_set_.insert(idx);
 
             // Timestamp the entry in the array, for fast age comparison between two indexes.
             array_[idx].age_id = next_age_id_;
             ++next_age_id_;
 
-            // Since we are not timed. Write the data and validate it,
-            // then do pipeline collection.
-            array_[idx].data = std::forward<U>(dat);
             array_[idx].valid = true;
             ++num_valid_;
 
@@ -864,6 +874,14 @@ namespace sparta
             }
         }
 
+        const std::string name_;
+
+        struct DeleteToFree_{
+            void operator()(void * x){
+                free(x);
+            }
+        };
+
         // The size of our array.
         const size_type num_entries_;
         const uint32_t invalid_entry_{num_entries_ + 1};
@@ -873,7 +891,10 @@ namespace sparta
 
         // A vector that holds all of our data, contains valid and
         // invalid data.
-        ArrayVector array_;
+        std::unique_ptr<ArrayPosition[], DeleteToFree_> array_ = nullptr;
+
+        // Set to hold valid indexes at a time
+        std::unordered_set<uint32_t> valid_index_set_ {};
 
         // The aged list.
         AgedList aged_list_;
@@ -905,14 +926,14 @@ namespace sparta
                                 InstrumentationNode::visibility_t stat_vis_detailed,
                                 InstrumentationNode::visibility_t stat_vis_max,
                                 InstrumentationNode::visibility_t stat_vis_avg) :
-        sparta::Resource(name, clk),
+        name_(name),
         num_entries_(num_entries),
         num_valid_(0),
         next_age_id_(0)
     {
         // Set up some vector's of a default size
         // to work as the underlying implementation structures of our array.
-        array_.resize(num_entries_);
+        array_.reset(static_cast<ArrayPosition *>(malloc(sizeof(ArrayPosition) * num_entries_)));
 
         if(statset)
         {

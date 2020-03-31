@@ -104,6 +104,7 @@ public:
 }; // class LineStringStream
 
 /*!
+ * \class SimulationInfo
  * \brief Contains information describing the simulation instance
  * for the purpose of identifying the simulation and possible recreating it.
  * This information should be written to all log files, reports, cmdline, etc.

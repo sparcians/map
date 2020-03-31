@@ -1,4 +1,9 @@
-// <Fetch.h> -*- C++ -*-
+// <Fetch.hpp> -*- C++ -*-
+
+//!
+//! \file Fetch.hpp
+//! \brief Definition of the CoreModel Fetch unit
+//!
 
 
 #ifndef __FETCH_H__

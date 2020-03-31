@@ -1,4 +1,4 @@
-// <ExpressionGrammar> -*- C++ -*-
+// <ExpressionGrammar.hpp> -*- C++ -*-
 
 #define BOOST_SPIRIT_USE_PHOENIX_V3 0
 

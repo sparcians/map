@@ -17,8 +17,7 @@ namespace sparta
 {
     /**
      * \class DataContainer
-     *
-     * Used by DataInPort and SyncInPort, this class holds received
+     * \brief Used by DataInPort and SyncInPort, this class holds received
      * data from these ports and remembers the time in which the data
      * was set.  It also maintains the validity of the data.
      *

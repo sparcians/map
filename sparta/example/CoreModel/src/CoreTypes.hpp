@@ -13,10 +13,9 @@ namespace core_example
 
     //! Instruction Queue
     typedef sparta::Queue<ExampleInstPtr> InstQueue;
-    /// Instruction Buffer
-    //typedef sparta::Buffer<ExampleInstPtr> InstBuffer;
 
-    //! \typedef InstGroup Typedef to define the instruction group
+    //! \typedef InstGroup
+    //! \brief Typedef to define the instruction group
     typedef std::vector<InstQueue::value_type> InstGroup;
 
     namespace message_categories {

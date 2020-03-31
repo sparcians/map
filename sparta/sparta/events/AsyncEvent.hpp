@@ -1,3 +1,4 @@
+// <AsyncEvent.hpp> -*- C++ -*-
 
 #ifndef __ASYNC_EVENT_H__
 #define __ASYNC_EVENT_H__
@@ -8,6 +9,7 @@ namespace sparta
 {
     /**
      * \class AsyncEvent
+     * \brief In a multi-threaded sim environment, this event is used to schedule an event asynchronously
      *
      * AsyncEvents are intended to be used by threads other than the main
      * scheduling thread (i.e., the thread that runs Scheduler::run()) that

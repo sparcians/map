@@ -1,4 +1,4 @@
-
+// <Consumer.cpp> -*- C++ -*-
 
 #include "Consumer.hpp"
 #include "MessageCategories.hpp"
@@ -8,11 +8,8 @@ const char * Consumer::name = "consumer";
 
 Consumer::Consumer (sparta::TreeNode * node,
                     const ConsumerParameterSet * p) :
-    sparta::Resource(node, name),
-    port_set_(node),
+    sparta::Unit(node, name),
     num_producers_(p->num_producers),
-    event_set_(node),
-    stat_set_(node),
     consumer_log_(node, message_categories::INFO, "Consumer Info Messages")
 {
     (void)p;
@@ -22,7 +19,7 @@ Consumer::Consumer (sparta::TreeNode * node,
     for(uint32_t i = 0; i < num_producers_; ++i) {
         std::stringstream str;
         str << "producer" << i << "_go_port";
-        producer_go_port_.emplace_back(new sparta::SignalOutPort(&port_set_, str.str()));
+        producer_go_port_.emplace_back(new sparta::SignalOutPort(&unit_port_set_, str.str()));
     }
 
     // Register callback to receive data on the InPort
@@ -47,7 +44,7 @@ void Consumer::signalNextProducer_()
 void Consumer::receiveData_(const uint32_t & dat)
 {
     sparta_assert(arrived_data_.isValid() == false,
-                      "Somehow, data wasn't cleared in this consumer: " << getName());
+                  "Somehow, data wasn't cleared in this consumer: " << getName());
     arrived_data_ = dat;
 
     // Schedule a consumption this cycle

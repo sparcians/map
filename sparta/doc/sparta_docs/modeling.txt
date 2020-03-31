@@ -1,0 +1,162 @@
+
+/*!
+  \page modeling Sparta API
+  \tableofcontents
+
+  \subsection spartaparts Sparta Pieces/Parts
+
+  This listing should look mostly familiar, especially if one does an
+  `ls -1 sparta`.
+
+  -# \ref resources_overview
+  -# \ref simulation_overview
+
+  ================================================================================
+  \subsection app_overview Sparta Application APIs (sparta/app)
+
+  Class | Brief Description
+  ----- | -----------------
+  AppTriggers.hpp | Set of classes used to trigger various behaviors
+  sparta::app::Backtrace | \copybrief sparta::app::Backtrace
+  sparta::app::CommandLineSimulator | \copybrief sparta::app::CommandLineSimulator
+  ConfigApplicators.hpp | Grouping of classes to apply configurations to sparta::ParameterSet, etc
+  sparta::app::FeatureConfiguration | \copybrief sparta::app::FeatureConfiguration
+  sparta::app::MultiDetailOptions | \copybrief sparta::app::MultiDetailOptions
+  sparta::app::ReportDescriptor | \copybrief sparta::app::ReportDescriptor
+  sparta::app::Simulation | \copybrief sparta::app::Simulation
+  sparta::app::SimulationConfiguration | \copybrief sparta::app::SimulationConfiguration
+  sparta::SimulationInfo | \copybrief sparta::SimulationInfo
+
+  ================================================================================
+  \subsection events_overview Sparta Events API (sparta/events)
+
+  Utility                     | Brief Description
+  --------------------------- | ------------------
+  sparta::AsyncEvent | \copybrief sparta::AsyncEvent
+  sparta::Event | \copybrief sparta::Event
+  sparta::EventNode | \copybrief sparta::EventNode
+  sparta::EventSet | \copybrief sparta::EventSet
+  sparta::GlobalEvent | \copybrief sparta::GlobalEvent
+  sparta::PayloadEvent | \copybrief sparta::PayloadEvent
+  sparta::PhasedPayloadEvent | \copybrief sparta::PhasedPayloadEvent
+  sparta::PhasedSingleCycleUniqueEvent | \copybrief sparta::PhasedSingleCycleUniqueEvent
+  sparta::PhasedUniqueEvent | \copybrief sparta::PhasedUniqueEvent
+  Precedence | A series of `operator>>` methods for event precedence.
+  sparta::Scheduleable | \copybrief sparta::Scheduleable
+  sparta::SchedulingPhase | \copybrief sparta::SchedulingPhase
+  sparta::SingleCycleUniqueEvent | \copybrief sparta::SingleCycleUniqueEvent
+  sparta::StartupEvent | \copybrief sparta::StartupEvent
+  sparta::UniqueEvent | \copybrief sparta::UniqueEvent
+
+  ================================================================================
+  \subsection ports_overview Sparta Ports API (sparta/ports)
+
+  Utility                     | Brief Description
+  --------------------------- | ------------------
+  sparta::Bus | \copybrief sparta::Bus
+  sparta::DataInPort | \copybrief sparta::DataInPort
+  sparta::DataOutPort | \copybrief sparta::DataOutPort
+  sparta::Port | \copybrief sparta::Port
+  sparta::PortSet | \copybrief sparta::PortSet
+  sparta::SignalInPort | \copybrief sparta::SignalInPort
+  sparta::SignalOutPort | \copybrief sparta::SignalOutPort
+  sparta::SyncInPort | \copybrief sparta::SyncInPort
+  sparta::SyncOutPort | \copybrief sparta::SyncOutPort
+
+  ================================================================================
+  \subsection statistics_overview Sparta Statistics/Counter API (sparta/statistics)
+
+  Utility                     | Brief Description
+  --------------------------- | ------------------
+  sparta::ContextCounter | \copybrief sparta::ContextCounter
+  sparta::Counter | \copybrief sparta::Counter
+  sparta::CounterBase | \copybrief sparta::CounterBase
+  sparta::CycleCounter | \copybrief sparta::CycleCounter
+  sparta::CycleHistogramTreeNode | Also known as sparta::CycleHistogram: \copybrief sparta::CycleHistogramTreeNode
+  sparta::EnumCycleHistogram | \copybrief sparta::EnumCycleHistogram
+  sparta::EnumHistogram | \copybrief sparta::EnumHistogram
+  sparta::statistics::expression::Expression              | \copybrief sparta::statistics::expression::Expression
+  sparta::HistogramTreeNode | Also known as a sparta::Histogram, \copybrief sparta::HistogramTreeNode
+  sparta::InstrumentationNode | \copybrief sparta::InstrumentationNode
+  sparta::ReadOnlyCounter | \copybrief sparta::ReadOnlyCounter
+  sparta::StateHistogram | \copybrief sparta::StateHistogram
+  sparta::StatisticDef | \copybrief sparta::StatisticDef
+  sparta::StatisticInstance | \copybrief sparta::StatisticInstance
+  sparta::StatisticSet | \copybrief sparta::StatisticSet
+
+  ================================================================================
+  \subsection collection_overview Sparta Collection APIs (sparta/collection)
+
+  These classes are used to collect pipeline information for Argos
+  consumption.
+
+  Class | Brief Description
+  ----- | -----------------
+  sparta::collection::Collectable | \copybrief sparta::collection::Collectable
+  sparta::collection::CollectableTreeNode | \copybrief sparta::collection::CollectableTreeNode
+  sparta::collection::Collector | \copybrief sparta::collection::Collector
+  sparta::collection::DelayedCollectable | \copybrief sparta::collection::DelayedCollectable
+  sparta::collection::IterableCollector | \copybrief sparta::collection::IterableCollector
+  sparta::collection::PipelineCollector | \copybrief sparta::collection::PipelineCollector
+
+  ================================================================================
+  \subsection memory_overview Sparta Memory Interface APIs (sparta/memory)
+
+  Utility                     | Brief Description
+  --------------------------- | ------------------
+  sparta::memory::BlockingMemoryIF     | \copybrief sparta::memory::BlockingMemoryIF
+  sparta::memory::BlockingMemoryIFNode | \copybrief sparta::memory::BlockingMemoryIFNode
+  sparta::memory::DMI                  | \copybrief sparta::memory::DMI
+  sparta::memory::DMIBlockingMemoryIF  | \copybrief sparta::memory::DMIBlockingMemoryIF
+  sparta::memory::DebugMemoryIF        | \copybrief sparta::memory::DebugMemoryIF
+  MemoryExceptions     | Group of classes defining various Memory-related simulation errors
+  sparta::memory::MemoryObject         | \copybrief sparta::memory::MemoryObject
+  sparta::memory::SimpleMemoryMap      | \copybrief sparta::memory::SimpleMemoryMap
+  sparta::memory::SimpleMemoryMapNode  | \copybrief sparta::memory::SimpleMemoryMapNode
+  sparta::memory::Translation          | \copybrief sparta::memory::Translation
+  sparta::memory::TranslationIF        | \copybrief sparta::memory::TranslationIF
+  sparta::memory::TranslationIFNode    | \copybrief sparta::memory::TranslationIFNode
+
+  ================================================================================
+  \subsection utils_overview Sparta Utilities/Tools APIs (sparta/utils)
+
+  Utility                     | Brief Description
+  --------------------------- | ------------------
+  sparta::utils::BoundedValue | \copybrief sparta::utils::BoundedValue
+  sparta::utils::BitArray | \copybrief sparta::utils::BitArray
+  Bits.hpp | Some "count leading 1s" tools
+  sparta::utils::BoundedValue | \copybrief sparta::utils::BoundedValue
+  ByteOrder.hpp | Tools to help with LE vs BE machines
+  Colors.hpp, sparta::color::ColorScheme | Handy \c #defines for colors. \copybrief sparta::color::ColorScheme
+  sparta::DataContainer | \copybrief sparta::DataContainer
+  DetectMemberUtils.hpp |Compile-time SFINAE techniques to detect presence of operators, member-fields and methods by name in any class
+  sparta::utils::Enum | \copybrief sparta::utils::Enum
+  File.hpp | Utilities for File I/O
+  sparta::KeyValue | \copybrief sparta::KeyValue
+  LexicalCast.hpp | Methods for fancy casting operations
+  sparta::utils::LifeTracker | \copybrief sparta::utils::LifeTracker
+  sparta::utils::LockedValue | \copybrief sparta::utils::LockedValue
+  MathUtils.hpp | Lots and lots and lots of math utils for use.
+  MetaStructs.hpp  | Structs to extend C++ meta-tools like `enable_if` and what-not
+  MetaTypeList.hpp | Types to extend c++ meta-types
+  Printing.hpp | Handy utils for printing `std::vector` etc
+  sparta::utils::Rational | \copybrief sparta::utils::Rational
+  SmartLexicalCast.hpp | Smart lexical casting supporting prefixes, separator ignoring, and suffixes.
+  SpartaAssert.hpp | Set of macros for Sparta assertions.  Caught by the framework
+  sparta::SpartaException | \copybrief sparta::SpartaException
+  SpartaExpBackoff.hpp | Macros for handling exponential backoff
+  sparta::SpartaSharedPointer | \copybrief sparta::SpartaSharedPointer
+  sparta::SpartaTester | \copybrief sparta::SpartaTester
+  sparta::StringManager | \copybrief sparta::StringManager
+  StringUtils.hpp | Set of handy functions for string manipulations.
+  sparta::SysCSpartaSchedulerAdapter | \copybrief sparta::SysCSpartaSchedulerAdapter
+  sparta::Tag | \copybrief sparta::Tag
+  sparta::TieredMap | \copybrief sparta::TieredMap
+  sparta::TimeManager | \copybrief sparta::TimeManager
+  Traits.hpp | File that defines compile-time queries on data types. Extends c++11+'s trait types
+  TupleHashCompute.hpp | Extends map's hashing to include tuples
+  Utils.hpp | Lots and lots of utilities (I know, not helpful)
+  sparta::utils::ValidValue | \copybrief sparta::utils::ValidValue
+  VectorUtils.hpp | Lots of vector utils to extend vector
+
+*/

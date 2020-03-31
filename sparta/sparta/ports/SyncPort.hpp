@@ -81,13 +81,13 @@
 namespace sparta
 {
 
-    //! Forward declaration
+    // Forward declaration
     template<class DataT>
     class SyncInPort;
 
     /**
      * \class SyncOutPort
-     * \brief Class that defines a synchronized DataOutPort for data writes
+     * \brief Class that defines a synchronized SyncOutPort for data writes on different clocks
      *
      *  The expected sync-port use case is that the delay for sending
      *  will only be used to schedule future events, e.g. data beats on
@@ -357,7 +357,7 @@ namespace sparta
 
     /**
      * \class SyncInPort
-     * \brief Class that defines an synchronized input port
+     * \brief Class that defines an synchronized input port on modules on two different clocks
      *
      */
     template<class DataT>

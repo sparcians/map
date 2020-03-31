@@ -1,4 +1,4 @@
-// <SmartLex> -*- C++ -*-
+// <SmartLexicalCast.hpp> -*- C++ -*-
 
 /*!
  * \file SmartLexicalCast.hpp

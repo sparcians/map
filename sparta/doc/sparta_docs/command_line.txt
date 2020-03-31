@@ -1,0 +1,291 @@
+
+/*!
+  \page common_cmdline Command Command Line Interface
+  Sparta provides a number of application-frontend classes in the sparta::app namespace. The essential
+  goal of these classes is to make the creation of a sparta-based simulation quick, simple, and
+  consistent.
+
+  \section cmdline_sim CommandLineSimulator
+  sparta::app::CommandLineSimulator provides a command-line parser and help-text generator based on
+  boost::program_options. This interface dozens of options common to all sparta-based simulations and
+  allows simulator-specific options to be added from outside of sparta as needed.
+
+  Among all features provided by this class (in conjunction with sparta::app::Simulation, the most
+  useful are command-line-based logging configuration and simulator parameter-setting (configuration).
+
+  \subsection cmdline_log_cfg Logging Configuration
+  Logging output configured through the classes in the sparta::app namespace apply as the simulator
+  starting up, while running, and when tearing down.
+
+  <br/>To log all warning messages from the entire device tree (top or below) to stdout (1).<br />
+  \verbatim
+  $ ./sim -l top warning 1
+  \endverbatim
+
+  <br/>To log all warning messages from core0 and core1 to newly-created file "cores.log"<br/>
+  <i>Note that this assumes nodes called core0 and core1 as children of the 'top' root node</i>.<br />
+  \verbatim
+  $ ./sim -l top.core0 warning cores.log -l top.core1 warning cores.log
+  \endverbatim
+
+  <br/>To log all messages of <b>any category</b> from core0 to stdout (1) and all warnings from the entire
+  simulated tree to stderr (2)<br/>
+  <i>Note that this assumes nodes called core0 and core1 as children of the 'top' root node</i>.<br />
+  \verbatim
+  $ ./sim -l top.core0 "" cores.log -l top warning 2
+  \endverbatim
+
+  <br/>Note that the logging system is smart about routing multiple overlapping trees to the same output
+  such that any message can only be written to a particular file exactly once. In this example,
+  the warnings from the entire simulated tree will be written to cores.log and all messages from core1
+  (which includes warnings) will be written to cores.log. However, each warning message from core1
+  will be seen exactly 1 time in cores.log<br/>
+  <i>Note that this assumes nodes called core0 and core1 as children of the 'top' root node</i>.<br />
+  \verbatim
+  $ ./sim -l top warning cores.log -l top.core1 "" cores.log
+  \endverbatim
+
+  \subsection cmdline_sim_cfg Command Line Simulation Configuration
+  \verbatim
+  $ ./sim -c myconfiguration.yaml
+  \endverbatim
+
+  \section example_cmdline_help_out Example Output
+  The following is example output from CommandLineSimulator when the --help option has been
+  set. This was generated from a sparta-based model on Jan 10, 2013.
+  \verbatim
+  General Options:
+  -h [ --help ]                         show this help message
+  --help-brief                          show brief help message
+  -r [ --run-time ] RUNTIME             Run length of simulation
+  --warn-file FILENAME                  Filename to which warnings from the
+  simulator will be logged. This file
+  will be overwritten
+  --no-warn-stderr                      Do not write warnings from the
+  simulator to stderr. Unset by default
+  --show-tree                           Show the device tree during all stages
+  of construction excluding hidden nodes.
+  This also enables printing of the tree
+  when an exception is printed
+  --show-parameters                     Show all device tree Parameters after
+  configuration excluding hidden nodes.
+  Shown in a separate tree printout from
+  all other --show-* parameters.
+  See related: --write-final-config
+  --show-ports                          Show all device tree Ports after
+  finalization. Shown in a separate tree
+  printout from all other --show-*
+  parameters
+  --show-counters                       Show the device tree Counters,
+  Statistics, and other instrumentation
+  after finalization. Shown in a separate
+  tree printout from all other --show-*
+  parameters
+  --show-notifications                  Show the device tree notifications
+  after finalization excluding hidden
+  nodes and Logger MessageSource nodes.
+  Shown in a separate tree printout from
+  all other --show-* parameters
+  --show-loggers                        Show the device tree logger
+  MessageSource nodes after finalization.
+  Shown in a separate tree printout
+  from all other --show-* parameters
+  --show-dag                            Show the dag tree just prior to running
+  simulation
+  --write-final-config FILENAME         Write the final configuration of the
+  device tree to the specified file
+  before running the simulation
+  --write-final-config-verbose FILENAME Write the final configuration of the
+  device tree to the specified file
+  before running the simulation. The
+  output will include parameter
+  descriptions and extra whitespace for
+  readability
+  -p [ --parameter ] PATTERN VAL        Specify an individual parameter value.
+  Multiple parameters can be identified
+  using '*' and '?' glob-like wildcards.
+  Example: --parameter
+  top.core0.params.foo value
+  -c [ --config-file ] FILENAME         Specify a YAML config file to load at
+  the top of the simulator device tree.
+  Example: "--config-file config.yaml"
+  This is effectively the same as
+  --node-config-file top params.yaml
+  -n [ --node-config-file ] PATTERN FILENAME
+  Specify a YAML config file to load at a
+  specific node (or nodes using '*' and
+  '?' glob-like wildcards) in the device
+  tree.
+  Example: "--node-config-file top.core0
+  core0_params.yaml"
+  -z [ --pipeline-collection ] OUTPUTPATH
+  Run pipeline collection on this
+  simulation, and dump the output files
+  to OUTPUTPATH. OUTPUTPATH can be a
+  prefix such as myfiles_ for the
+  pipeline files and may be a directory
+  Example: "--pipeline-collection
+  data/test1_"
+  Note: Any directories in this path must
+  already exist.
+
+  --heartbeat HEARTBEAT                 The interval in ticks at which index
+  pointers will be written to file during
+  pipeline collection. The heartbeat also
+  represents the longest life duration of
+  lingering transactions. Transactions
+  with a life span longer than the
+  heartbeat will be finalized and then
+  restarted with a new start time. Must
+  be a multiple of 100 for efficient
+  reading by Argos. Large values will
+  reduce responsiveness of Argos when
+  jumping to different areas of the file
+  and loading.
+  Default = 5000 ticks.
+
+  -l [ --log ] PATTERN CATEGORY DEST    Specify a node in the simulator device
+  tree at the node described by PATTERN
+  (or nodes using '*' and '?' glob
+  wildcards) on which to place place a
+  log-message tap (observer) that watches
+  for messages having the category
+  CATEGORY. Matching messages from those
+  node's subtree are written to the
+  filename in DEST. DEST may also be '1'
+  to refer to stdout and '2' to refer to
+  cerr. Any number of taps can be added
+  anywhere in the device tree. An error
+  is generated if PATTERN does not refer
+  to a 1 or more nodes. Use --help for
+  more details
+  Example: "--log top.core0 warning
+  core0_warnings.log"
+  --report PATTERN DEF_FILE DEST [FORMAT]
+  Specify a node in the simulator device
+  tree at the node described by PATTERN
+  (or nodes using '*' and '?' glob
+  wildcards) at which generate a
+  statistical report that examines the
+  set of statistics based on the Report
+  definition file DEF_FILE. At the end of
+  simulation, the content of this report
+  (or reports, if PATTERN refers to
+  multiple nodes) is written to the file
+  specified by DEST. DEST may also be  to
+  refer to stdout and 2 to refer to
+  stderr. Any number of reports can be
+  added anywhere in the device tree.An
+  error is generated rror generated if
+  PATTERN does not refer to 1 or more
+  nodes. FORMAT can be used to specify
+  the format. See the report options
+  section with --help for more
+  details about formats.
+  Example: "--report top.core0
+  core_stats.yaml core_stats txt"
+  Example: "--report top.core*
+  core_stats.yaml core_stats.%l"
+  Example: "--report top.core*
+  core_stats.yaml core_stats"
+  --report-all DEST [FORMAT]            Generates a single report on the global
+  simulation tree containing all counters
+  and statistics below it. This report is
+  written to the file specified by DEST
+  using the format specified by FORMAT
+  (if supplied). Otherwise, the format is
+  inferred from DEST. DEST may be a
+  filename or 1 to refer to stdout and 2
+  to refer to stderr. See the report
+  options setcion with --help for
+  more details.This option can be used
+  multiple times and does not interfere
+  with --report.
+  Example: "--report-all core_stats.txt"
+  Example: "--report-all output_file
+  html"
+  Example: "--report-all 1"
+  Attaches a single report containing
+  everything below the global simulation
+  tree and writes the output to
+  destination
+  --debug-on DEBUG_ON_TICK
+  Delay the recording of useful
+  information starting until a specified
+  simulator tick. This includes any
+  user-configured pipeline collecion or
+  logging (builtin logging of warnings to
+  stderr is always enabled). Note that
+  this is just a delay, logging and
+  pipeline collection must be explicitly
+  enabled.
+  WARNING: The DEBUG_ON_TICK may only be
+  partly included. It is dependent upon
+  when the scheduler fires. It is
+  recommended to schedule a few ticks
+  before your desired area.
+  Example: --debug-on 5002
+  --pipeline-collection PREFIX_ --log top
+  debug 1
+  begins pipeline collection to PREFIX_
+  and logging to stdout at some point
+  within tick 5002 and will include all
+  of tick 5003
+
+  Application-Specific Options:
+  --version                        produce version message
+  -i [ --instruction-limit ] LIMIT Limit the simulation to retiring a specific
+  number of instructions. 0 (default) means no
+  limit. If -r is also specified, the first
+  limit reached ends the simulation
+  --add-trace TRACEFILE            Specifies a tracefile to run
+
+  Advanced Options:
+  --show-hidden         Show hidden nodes in the tree printout (--show-tree).
+  Implicitly turns on --show-tree
+  --verbose-config      Display verbose messages when parsing any files (e.g.
+  parameters, report definitions,  etc.). This is not a
+  generic verbose simulation option.
+  --show-options        Show the options parsed from the command line
+  --debug-sim           Turns on simulator-framework debugging output. This is
+  unrelated to general debug logging
+
+  Logging:
+
+  The "--log" DEST parameter can be "1" to refer to stdout, "2" to refer to
+  stderr, or a filename which can contain any extension shown below for a
+  particular type of formatting:
+
+  ".log.basic" -> basic formatter. Contains message origin, category, and
+  content
+  ".log.verbose" -> verbose formatter. Contains all message meta-data
+  ".log.raw" -> verbose formatter. Contains no message meta-data
+  (default) -> Moderate information formatting. Contains most message meta-data
+  excluding thread and message sequence.
+
+  Note that parameters and configuration files specified by the -c (global
+  config file), -n (node config file), and -p (parameter value) options are
+  applied in the left-to-right order on the command line, overwriting any previous
+  values.
+
+  Reports:
+
+  The "--report" PATTERN parameter can refer to any number of nodes in the
+  device tree. For each node referenced, a new Report will be created and
+  appended to the file specified by DEST for that report. If these reports
+  should be written to different files, variables can be used in the destination
+  filename to differentiate:
+  %l => Location in device tree of report instantiation
+  %i => Index of report instantiation
+  %p => Host process ID
+  %t => Timestamp
+  %s => Simulator name
+
+  Additionaly, the DEST parameter can be a filename or "1", referring to stdout,
+  or "2", referring to stderr
+
+  The optional report FORMAT parameter must be omitted or "txt" in this version.
+  Only plaintext output is supported
+
+  \endverbatim
+*/

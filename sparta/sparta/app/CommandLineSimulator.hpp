@@ -60,6 +60,7 @@ const constexpr char DefaultHeartbeat[]        = "0";
 
 
 /*!
+ * \class CommandLineSimulator
  * \brief Command line simulator front-end class with argument parsing
  * Works in conjunction with sparta::app::Simulation
  *

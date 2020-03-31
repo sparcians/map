@@ -1,5 +1,9 @@
 // <Fetch.cpp> -*- C++ -*-
 
+//!
+//! \file Fetch.cpp
+//! \brief Implementation of the CoreModel Fetch unit
+//!
 
 #include <algorithm>
 #include "Fetch.hpp"

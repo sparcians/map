@@ -1,0 +1,350 @@
+
+/*!
+  \page config Simulator Configuration
+
+  Sparta includes a 'parameter' mechanism for configuring (and querying the configuration of) a sparta
+  device tree both through C++ and configuration files (See \ref param_format).
+
+  \section config_goals Configuration Goals
+  The Sparta configuration system exists to allow configuration of hierarchical simulator before running
+  a simulation and inspection (saving) of the final system configuration for the purpose of analysis
+  or run reproduction.
+
+  \section config_usage Simulator Subclass Configuration
+  The user-side configuration of a simulator is covered in \ref ctrl_cfg and \ref param_format
+
+  Further background information on configuration files, parameters, and tree construction phases is available
+  in this <TBD>,
+  which contains diagrams of Sparta tree elaboration.
+  The following information is the most current documentation on Sparta simulator construction.
+
+  \par Overview
+  Simulator initialization, at it's simplest, establishes an initial device tree (\ref trees) containing the parameters
+  available for a simulator which is then populated from user configuration files and command-line
+  parameters. Based on these parameters, various C++ resources (subclasses of sparta::Resouce) are
+  instantiated. These resources then add to the device tree some non-configurable objects such as
+  counters, statistics, registers, notification sources, memory interfaces,
+  logging message sources, and ports. At this time the tree is finalized (no more changes) and
+  simulation begins.
+
+  \par Phased Construction
+  The simulation setup is divided into several phases
+  \li building - Creating an initial topology of placeholder (sparta::ResourceTreeNodes) and other
+  TreeNodes to roughly define the topology
+  \li configuration - Applying user configuration to the tree established in the building phase
+  \li finalization - Walking through the configured placeholder tree and instantiating the underlying
+  resources based on the configuration applied to the tree in the previous phase
+  \li binding - Not a true phase, but after finalization the simulator can bind ports together between
+  its components. No changes to the tree may be made at this time
+  \li running - Running the simulation. No changes to the tree may be made at this time
+
+  \par Phased Construction Legacy/Limitations
+  Note: <i>These limitations have been (or will be) addressed by additional features: "Unbound Parameter Tree",
+  "Dynamically Created Parameter Sets", "Topology Files".</i>
+  Early in Sparta's development, these phases existed to keep the configuration process simple and allow
+  all user onfiguration to be written into to the simulator tree's sparta::Parameter nodes exactly once
+  (after building the initial tree) - eliminating the need for re-processing the configuration inputs
+  multiple times. If new parameters could be added tothe tree at any time, re-reading the input
+  configuration could be and expensive operation. This meant that all nodes in the device tree using
+  Sparta parameters would need to be specified before reading the configuration at all. The result was that
+  Sparta parameters could not be used to dictate how many instances of another component should be
+  constructed if that other component had its own Sparta parameters.
+
+  While this limitation forced the model owner to define their entire parameterized "topologies" in
+  C++ code, probably makes simulator initialization code maintainable and clearly outlines the
+  simulation hierarchy. It is also analogous to how "Topology Files" will work once implemented.
+  In early Sparta, this did introduces a substantial limitation in the form of disallowing sparta
+  parameters to be used to specify the overall simulator topology (e.g. how many cores to create, how
+  many of what units will exist in each core) and prevented resources from creating new parameterized
+  resource children without some challenging ResourceFactory code. Support for pattern-matching-based
+  parameter identification complicated the necessary optimization of compressing the set of input
+  parameters into an efficient tree structure. Initial requirements did not necessitate such this
+  feature, but support for topology definition through parameters has been added using the
+  "Unbound Parameter Tree" and "Dynamically Created Parameter Sets".
+
+  \par Unbound Parameter Tree
+  Recently, the unbound parameter tree was added to address the aforementioned strict initialization
+  ordering where the initial tree must be built to include all parameters and then configured (see sparta::ParameterTree).
+  This tree enables access to the user configuration input while
+  constructing the initial device tree in (sparta::app::Simulation:buildTree_) using an efficient
+  parameter-tree structure which handles pattern-based parameter paths and ensures each parameter is
+  consumed by code, even if not actually associated with a sparta::Parameter node in the final device tree.
+  <br/>
+  This feature is currently missing functionality (Nov 12, 2013). The missing functionality includes:
+  \li The ParameterTree is not capable of understanding configuration files or command line parameters
+  containing parent references (e.g. "x..y" or ".x"). This is mainly an inconvenience. If encountered
+  in a configuration file, generates a warning.
+
+  The unbound parameter tree is most useful during the build phase. Unbound parameters are read from a
+  configuration file before the building phase and can be accessed even before any nodes are created.
+  If a node foo with a parameter x is expected to be created later but required now (for topology),
+  it can be accessed if specified by the user.
+  \code
+  auto pn = n->getRoot()->getAs<sparta::RootTreeNode>()->getSimulator()->getUnboundParameterTree()->tryGet("top.foo.params.x");
+  if(pn){
+      std::cout << "Got parameter Value for x = " << pn->getValue() << std::endl;
+  }
+  \endcode
+  This behavior is still experimental and under development. It should be improved soon.
+  \li The contents of the unbound parameter tree are not yet written as part of the the final
+  configuration output (see \--write-final-config). Therefore, unbound parameters may be missing when
+  trying to reproduce a simulation run using the final configuration output of that run. The best
+  practice for this issue is that all unbound parameters should correspond to sparta::Parameter nodes
+  by the time the simulation is finalized. At any time before finalization the simulator should simply
+  create new ParameterSet and Parameter Nodes matching the location of the unbound parameters consumed
+  earlier
+  \li The unbound parameter tree provides no method for lexical casting its content to a vector like a
+  sparta::Parameter node does. Interpreting a value from the unbound parameter tree as a vector must
+  currently be done manually.
+  \li No default values are provided by the unbound parameter tree. Therefore, building-phase code that
+  consumes unbound parameters must be made aware of the defaults for those parameters in case the user
+  does not specify that parmeter as input. This could be done by accessing a static variable which
+  defines a default value in the relevant ParamaeterSet declaration.
+
+  \par Initialization Phases
+  Most of the initialization phases are marked by a different virtual method within
+  sparta::app::Simulation, though some work is done in the subclass
+  constructor and in sparta::Resource subclass constructors. These phases are part of
+  sparta::PhasedObject, from which every sparta::TreeNode in the device tree inherits.
+
+  \par Phase 1. Resource Factory Instantiation
+  First, a number of sparta::ResourceFactory objects are registered with a sparta::app::Simulation. These
+  objects associate a resource name with a factory capable of instantiating that resource. For
+  example, a factory might be declared for instantiating a "core" object and a "lsu" object. This is
+  typically done within the constructor of a subclass of a sparta::app::Simulation.
+  <br/>
+  The intent of these objects a is to identify resource classes by a string name which can be
+  referenced by parameters specifying topology and eventually used by some sort of
+  topology-definition file one such a feature exists.
+
+  \par Phase 2. Build-Tree Phase
+  Within a subclass of sparta::app::Simulation, the sparta::app::Simulation::buildTree_ method allows the
+  subclass to define an initial device tree. The overall device tree topology must be established
+  at this point. This device tree should contain any number of sparta::ResourceTreeNode instances
+  constructed referring to the factories created during resource factory instantiation. When a
+  sparta::ResourceTreeNode is created, the sparta::ParameterSet subclass specified by the factory is also
+  constructed and attached to the tree as a child of the ResourceTreeNode called "params". This is
+  immediately available though the contained parameters have default values only - they are not read
+  from the input configuration until after the build phase (This will change later).
+  <br/>
+  With the unbound parameter tree feature (see above), parameters can be accessed before and
+  during initial tree constuction. This allows the simulator to consume user parameters not associated
+  with any sparta::Parameter node to determine topology. (Note: More convenient ways of specifying
+  topology such as topology files may be implemented later).
+  <br/>
+  Consuming parmeters from the unbound tree can be done from within sparta::app::Simulation::buildTree_ as follows:
+  \code
+
+  const auto& pt = getUnboundParameterTree();
+
+  // Approach 1: Assume top.params.cluster_count exists. Throw if nonexistant
+  {
+      uint32_t num_clusters = pt.get("top.params.cluster_count").getAs<uint32_t>();
+  }
+
+  // Approach 2: Atempt to get top.params.cluster_count and use a default value if it does not exist
+  {
+      auto ccn = pt.tryGet("top.params.cluster_count");
+      uint32_t num_clusters = 1; // Default
+      if(ccn){
+          num_clusters = ccn->getAs<uint32_t>();
+      }
+  }
+
+  \endcode
+  Note that all parameters in the unbound tree must be consumed or must eventually correspond to
+  sparta::Parameter nodes in the device tree one finalization is complete.
+  <br/>
+  The best practice for using a parameter form the unbound parameter tree which must be read in the
+  build phase is to eventually create a sparta::ParameterSet node with a sparta::Parameter corresponding
+  to the path read from the unbound parameter tree. In the above example, A ParameterSet would be
+  created as a child of the "top" node and it would contain a parameter called "cluster_count".
+  Because of the aforementioned limitations, this parameter is not automatically populated from user
+  input until after the build phase, but doing this still serves several important purposes.
+  \li It Makes the parameter visible to the end-user when inspecting the tree (\--show-tree or
+  interactively [when the Python shell is complete])
+  \li The parameter will be written out whenever \--write-final-config[-verbose] is used.
+  \li Eventually, the value will be read from this ParameterSet immediately instead of using the
+  unbound tree. The unbound tree's visibility to simulator subclasses will be deprecated at that point
+
+  \par
+  The unbound parameter tree cannot be altered by the simulator subclass at any time. It represents
+  external user configuration only. However, new default values for any sparta::Parameter nodes created
+  can be set during the build phase. Note that, input user configuration
+  may override any parameter later if said parameter is specified in the input user configuration. To
+  force-override user parameters, set the value of any sparta::Parameter node during the <b>configuration
+  phase</b> (see below)
+  \warning accessing these parameters provides no method for lexical casting to a vector. Interpreting
+  a value from the unbound parameter tree as a vector must currently be done by hand.
+
+  \par Phase 3. Configure Tree Phase
+  The configuration phase for simulator subclasses is performed in the virtual
+  sparta::app::Simulation::configureTree_ method. Immediately before this method is called,
+  the sparta::app::Simulation internally applies the input configuration to all Parameter nodes in the
+  device tree.
+  <br/>
+  At this point, user parameters can be overridden by the simulator itself. A common case of this is
+  where simulator-specific command line arguments are given which have the same semantics as some
+  parameter in the device tree. Because simulator-specific command-line options should generally
+  override user configuration input, these commands can override values in the parameter tree.
+
+  \par
+  In this example, A list of traces on the command line (processed earlier into a trace_filenames_
+  member) is iterated and one trace filename is assigned to a parameter in each core object. As a
+  result, the actual traces used in this simulation will always show up in the \--write-final-config
+  output, even if the user's input configuration is overridden. The run can then be reproduced based
+  on the final configuration as expected
+  \code
+
+    uint32_t i = 0;
+    for(const std::string& trace : trace_filenames_){
+        // Find the parameter
+        std::stringstream ss;
+        ss << "core" << i;
+        sparta::TreeNode* core_node = nullptr;
+        try{
+            core_node = getRoot()->getChild(ss.str());
+        }catch(sparta::SpartaException& ex){
+            throw sparta::SpartaException("Unable to find a core below top called \"") << ss.str()
+                                                                                       << "\". It is possible that too many traces were specified on the command line "
+                "such that they could not all be assigned to a core. Error encountered at trace"
+                                                                                       << i << ": " << trace;
+        }
+        // Get top.core<i>.params.trace_filename node. Throws if not found
+        core_node->getChildAs<sparta::ParameterBase>("params.trace_filename")->setValueFromString(trace);
+        ++i;
+     }
+
+  \endcode
+
+  \par
+  Configuration is an opportune time to create and attached clocks to the tree. This can be done
+  during buildTree, but must be done before the end of configuration to prevent resources from being
+  instantiated with no clock
+
+  \code
+    // Within configureTree_
+    sparta::Clock::Handle master_clock = getClockManager().getRoot();
+    core_clock_ = getClockManager().makeClock("core",
+                                              master_clock,
+                                              core_frequency_mhz_);
+
+    // for each core... {
+    core_node->setClock(core_clock_.get());
+    }
+  \endcode
+
+  \par
+  Following configuration, all resources will be constructed and the tree will be finalized. This is
+  the last chance to alter the tree structure from within the simulation subclass
+
+  \par Phase 4. Finalize Tree Phase
+  There is no virtual method in sparta::app::Simulation for simulators to implement. This phase involves
+  Sparta walking the existing device tree and constructing all Resources as defined by the tree. For
+  each ResourceTreeNode encountered in the tree, Sparta will construct the resource through the
+  associated ResourceFactory using that ResourceTreeNode and its parameter set as arguments to the
+  Resource's constructor. Each resource can create new children nodes (e.g. sparta::Port,
+  sparta::CounterBase, sparta::StatisticDef, sparta::StatisiticSet, sparta::PortSet, sparta::log::MessageSource,
+  sparta::NotificationSource, and more.
+
+  \par
+  Resources can even create child ResourceTreeNodes at this time. Currently, the sparta::Parameters for
+  these ResourceTreeNodes constructed at finalization-time will not be automatically populated from
+  user configuration input. Instead, the parameters must be explicitly set. Eventually these
+  parameters will be automatically populated (see the "Unbound Parameter Tree" section above).
+  sparta::Parameter nodes created at this time will <b>not</b> show up in the final configuration output
+  until dynamic automatic population from input configuration is implemented for all Parameters
+
+  \par
+  During finalization, a resouces (in its constructor) cannot be sure if a neighbor or even a child
+  resource has been constructed yet. New nodes may still be added to the tree as finalization
+  continues and no assumptions should be made about resources initialization order. The only exception
+  to this rule is that parent nodes' resources will always be created before their childrens'
+  resources. Any references to other resource objects (such as exchanging pointers) should be done in
+  the startup handler (below). It is safe, however, to look at parent nodes (and all ancestors) and
+  their parameters (if any) for each resource as it is constructed at this point. This is because
+  those nodes must have been created for this a resource's node to exist.
+
+  \par Phase 5. Bind Tree Phase
+  After finalization, any remaining ports can be bound together in the
+  virtual sparta::app::Simulation::bindTree_ method. Binding is technically not a phase, just an action
+  that can take place after the tree is finalized and must be done before running. At this point, the
+  device tree is finalized, all resources are constructed, all nodes that will be present in the
+  running simulation exist, and no nodes may be added or destroyed.
+
+  \par
+  Ports should be bound together as per the desired simulation topology.
+  \code
+  sparta::bind(getRoot()->getChildAs<sparta::Port>("core0.ports.out_to_memory"),
+  getRoot()->getChildAs<sparta::Port>("memory.ports.in_from_core0"));
+  \endcode
+
+  \par Phase 6a. Run Startup Handling
+  Immediately before running, the sparta::Scheduler invokes startup handlers. At this time, the tree is
+  guaranteed to be finalized with all resources instantiated. It is safe for all nodes to access any
+  other resource. Prior to this point, a resouces (in its constructor) cannot be sure if a neighbor or
+  even a child resource has been constructed.
+  \code
+  MyModel::MyModel(sparta::TreeNode * node,
+                   const MyModelParameterSet * p)
+  {
+      // Schedule startup handler
+      node->getClock()->getScheduler()->scheduleStartupHandler (CREATE_Sparta_HANDLER (MyModel, startupHandler_));
+  }
+
+  void MyModel::startupHandler_ ()
+  {
+      // Access children and sibling resources
+      // Schedule initial events
+      // Register for notifications, etc.
+  }
+  \endcode
+
+  \par Phase 6b. Run Phase
+  Running is not relevant to simulation initialization except that it comes after binding and no
+  modifications can be made the the device tree structure at run time. This also means that no
+  TreeNodes may be destroyed until the teardown phase
+
+  \par Phase 7. Teardown Phase
+  Prior to simulator shutdown, the entire device tree is marked as being in the teardown phase. When
+  destructing sparta::TreeNode objects, each will throw a sparta::SpartaException if not marked as being in
+  the teardown phase. The goal of this behavior is to prevent any user from accidentally destroying
+  TreeNodes at run-time or even construction time once they are added to a tree. Deleting nodes at
+  run-time can be challenging for Sparta (especially with a Python shell or other remote
+  clients) to handle. Because no legitimate reasons for supporting this have been proposed, destroying
+  nodes prior to teardown is prohibited with the exception of sparta::Counter and sparta::StatisticDef
+  where C++ move semantics can be used to swap nodes during construction in order to allow these nodes
+  to be instantiated within an vector without introducing additional pointer indirection in
+  performance-critical code.
+  sparta::app::Simulation  attempts to cleanly tear down by freeing all nodes allocated on the heap and
+  destructing any object on the simulator's stack. Sparta alwys intends to teardown with no memory leaks
+  so that any number of simulations can be run consecutively in the same process.
+
+  The sparta command line parameter \--show-tree/\--show-parameters (or \--help-tree/\--help-parameters)
+  can be used to show the values of all parameters after the build, configuration, and binding phases
+  of the construction process.
+
+
+  \section config_des_req Configuration System Design Requirements
+  For reference, a number of the requirements for the configuration system design are listed here.
+  -# Enable command-line configuration of a simulation tree
+  -# Support configuration-files to configure a simulation tree
+  - Separate configuration files for each component in the simulation should be allowed by not
+  required
+  -# Support inspection of all parameters at any time including support to save these parameter to
+  disk in such a way that they can be reloaded for reproducability
+  -# Make configuration communication (as opposed to run-time simulation data/timing) between
+  simulation components difficult in favor of the sparta configuration system.
+  - This ensures tracability of configuration by exposing all parameters to the configuration
+  system such that they may be queried and analyzed. Bugs related to direct C++ communication of
+  parameters between components at configuration-time can be difficult to debug and extra code is
+  required to capture these parameters to compare against other simulations.
+  -# Prevent modification to the set of parameters once the simulation run begins
+  -# Strongly type parameters to support C++ plain-old-datatypes as well as strings
+  -# Support parameter having vector types so that 1 parameter could be a list of values (e.g.
+  [1,2,3])
+  -# Require descriptions associated with every parameter
+  -# Define a resource as 1:1 association of a resource class and a parameter set to ensure that all
+  instances of that resource have the same parameters and are effectively interchangable.
+  -# Allow validators to be registered on individual parameters
+*/

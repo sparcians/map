@@ -41,12 +41,12 @@ namespace sparta
         /*!
          * \brief Named constructor
          */
-        SpartaHandler(const char * name) :
-            object_ptr(0),
+        explicit SpartaHandler(const char * name) :
+            object_ptr(nullptr),
             clear_ptr(&do_nothing_method_stub),
-            stub_ptr(0),
-            stub_ptr_1(0),
-            stub_ptr_2(0),
+            stub_ptr(nullptr),
+            stub_ptr_1(nullptr),
+            stub_ptr_2(nullptr),
             arg_count_(std::numeric_limits<uint32_t>::max()),
             name_(name)
         {}
@@ -57,6 +57,16 @@ namespace sparta
         SpartaHandler(const SpartaHandler& rhp) = default;
 
         template <class T, void (T::*TMethod)()>
+        static SpartaHandler from_member(T* object_ptr, const char * name = "")
+        {
+            SpartaHandler d(name);
+            d.object_ptr = object_ptr;
+            d.stub_ptr = &method_stub<T, TMethod>;
+            d.arg_count_ = 0;
+            return d;
+        }
+
+        template <class T, void (T::*TMethod)() const>
         static SpartaHandler from_member(T* object_ptr, const char * name = "")
         {
             SpartaHandler d(name);
@@ -77,6 +87,17 @@ namespace sparta
             return d;
         }
 
+        template <class T, void (T::*TMethod)() const, void (T::*TMethodClear)()>
+        static SpartaHandler from_member_clear(T* object_ptr, const char * name = "")
+        {
+            SpartaHandler d(name);
+            d.object_ptr = object_ptr;
+            d.stub_ptr = &method_stub<T, TMethod>;
+            d.clear_ptr = &method_stub<T, TMethodClear>;
+            d.arg_count_ = 0;
+            return d;
+        }
+
         template <class T, class DataT, void (T::*TMethod)(const DataT &)>
         static SpartaHandler from_member_1(T* object_ptr, const char * name = "")
         {
@@ -87,7 +108,27 @@ namespace sparta
             return d;
         }
 
+        template <class T, class DataT, void (T::*TMethod)(const DataT &) const>
+        static SpartaHandler from_member_1(T* object_ptr, const char * name = "")
+        {
+            SpartaHandler d(name);
+            d.object_ptr = object_ptr;
+            d.stub_ptr_1 = &method_stub_1<T, DataT, TMethod>;
+            d.arg_count_ = 1;
+            return d;
+        }
+
         template <class T, class DataT, class DataTwo, void (T::*TMethod)(const DataT &, const DataTwo&)>
+        static SpartaHandler from_member_2(T* object_ptr, const char * name = "")
+        {
+            SpartaHandler d(name);
+            d.object_ptr = object_ptr;
+            d.stub_ptr_2 = &method_stub_2<T, DataT, DataTwo, TMethod>;
+            d.arg_count_ = 1;
+            return d;
+        }
+
+        template <class T, class DataT, class DataTwo, void (T::*TMethod)(const DataT &, const DataTwo&) const>
         static SpartaHandler from_member_2(T* object_ptr, const char * name = "")
         {
             SpartaHandler d(name);
@@ -188,6 +229,13 @@ namespace sparta
             (p->*TMethod)();
         }
 
+        template <class T, void (T::*TMethod)() const>
+        static void method_stub(void* object_ptr)
+        {
+            T* p = static_cast<T*>(object_ptr);
+            (p->*TMethod)();
+        }
+
         template <class T, class DataT, void (T::*TMethod)(const DataT &)>
         static void method_stub_1(void* object_ptr, const void * dat)
         {
@@ -196,7 +244,24 @@ namespace sparta
             (p->*TMethod)(data);
         }
 
+        template <class T, class DataT, void (T::*TMethod)(const DataT &) const>
+        static void method_stub_1(void* object_ptr, const void * dat)
+        {
+            T* p = static_cast<T*>(object_ptr);
+            const DataT & data = *(static_cast<const DataT *>(dat));
+            (p->*TMethod)(data);
+        }
+
         template <class T, class DataT, class DataTwo, void (T::*TMethod)(const DataT &, const DataTwo&)>
+        static void method_stub_2(void* object_ptr, const void * dat, const void * dat_two)
+        {
+            T* p = static_cast<T*>(object_ptr);
+            const DataT & data = *(static_cast<const DataT *>(dat));
+            const DataTwo & data_two = *(static_cast<const DataTwo *>(dat_two));
+            (p->*TMethod)(data, data_two);
+        }
+
+        template <class T, class DataT, class DataTwo, void (T::*TMethod)(const DataT &, const DataTwo&) const>
         static void method_stub_2(void* object_ptr, const void * dat, const void * dat_two)
         {
             T* p = static_cast<T*>(object_ptr);
@@ -359,7 +424,7 @@ namespace sparta
      *
      *     MyClass() {
      *         sparta::SpartaHandler handler =
-     *             CREATE_SPARTA_HANDLER(MyClass, myMethod, uint32_t);
+     *             CREATE_SPARTA_HANDLER_WITH_DATA(MyClass, myMethod, uint32_t);
      *         // ... do something with the handle
      *         handler(10);
      *     }
@@ -399,7 +464,7 @@ namespace sparta
      *
      *     MyClass() {
      *         sparta::SpartaHandler handler =
-     *             CREATE_SPARTA_HANDLER(MyClass, myMethod, uint32_t, std::string);
+     *             CREATE_SPARTA_HANDLER_WITH_TWO_DATA(MyClass, myMethod, uint32_t, std::string);
      *         // ... do something with the handle
      *         handler(10, "hello");
      *     }
@@ -437,7 +502,7 @@ namespace sparta
      *
      *     MyClass() {
      *         sparta::SpartaHandler handler =
-     *             CREATE_SPARTA_HANDLER(MyClass, this, myMethod, uint32_t);
+     *             CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(MyClass, this, myMethod, uint32_t);
      *         // ... do something with the handle
      *         handler();
      *     }

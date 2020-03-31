@@ -2015,7 +2015,7 @@ namespace sparta {
         template<typename T, typename... Args>
         MetaStruct::enable_if_t<!std::is_abstract<T>::value, void>
         processIfAbstractBaseType_(Args &&... args) {
-            T::type::nestedPairCallback(this, std::forward<Args>(args)...);
+            T::SpartaPairDefinitionType::nestedPairCallback(this, std::forward<Args>(args)...);
         }
 
         //! Type is Virtual Abstract.
@@ -2061,7 +2061,7 @@ namespace sparta {
             explicit UnrollTypeList_(const T & ptr, Args &&... args) :
                 UnrollTypeList_<T, MetaTypeList::type_list<Tail...>, Args...>(
                     ptr, std::forward<Args>(args)...) {
-                Head::type::nestedPairCallback(ptr, std::forward<Args>(args)...);
+                Head::SpartaPairDefinitionType::nestedPairCallback(ptr, std::forward<Args>(args)...);
             }
         };
 

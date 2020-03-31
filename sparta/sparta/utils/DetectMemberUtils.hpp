@@ -1,10 +1,10 @@
-// <DetectMemberUtils> -*- C++ -*-
+// <DetectMemberUtils.hpp> -*- C++ -*-
 
 
 /*!
  * \file DetectMemberUtils.hpp
  * \brief Compile-time SFINAE techniques to detect presence of
- * operators, member-fields and methods by name in any class.
+ *        operators, member-fields and methods by name in any class.
  */
 
 #ifndef __SPARTA_UTILS_DETECT_MEMBER_UTILS_H__

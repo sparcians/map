@@ -112,6 +112,7 @@ namespace color {
     /**
      * \class ColorScheme
      * \brief Accessor methods for obtaining color code strings.
+     *
      * \details The idea behind ColorScheme is to have the ability to disable terminal colors in
      * the model with a simple flag. There will be a single ColorScheme instance that is controlled
      * by a sparta command line option disables color for that instance. The majority of output can

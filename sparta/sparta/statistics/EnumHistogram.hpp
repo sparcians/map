@@ -23,7 +23,7 @@
 namespace sparta
 {
 /*!
- * \brief HistogramEnum class for sparta::utils::Enum.
+ * \brief EnumHistogram class for sparta::utils::Enum.
  *
  * A histogram is usually thought of has  having a lower limit, upper limit,
  * and number of bins.  This histogram class requires lower and upper limits,
@@ -35,7 +35,7 @@ namespace sparta
  * values.
  */
 template <class EnumType>
-class HistogramEnum : public TreeNode
+class EnumHistogram : public TreeNode
 {
 public:
     typedef EnumType value_type;
@@ -43,25 +43,25 @@ public:
     /*!
      * \brief Not default constructable
      */
-    HistogramEnum() = delete;
+    EnumHistogram() = delete;
 
     /*!
      * \brief Not copy-constructable
      */
-    HistogramEnum(const HistogramEnum&) = delete;
+    EnumHistogram(const EnumHistogram&) = delete;
 
     /*!
      * \brief Not move-constructable
      */
-    HistogramEnum(HistogramEnum&&) = delete;
+    EnumHistogram(EnumHistogram&&) = delete;
 
     /*!
      * \brief Not assignable
      */
-    void operator=(const HistogramEnum&) = delete;
+    void operator=(const EnumHistogram&) = delete;
 
     /*!
-     * \brief HistogramEnum constructor
+     * \brief EnumHistogram constructor
      * \param parent_treenode parent node. Must not be nullptr
      * \param histogram_name Name of this histograms. Used as name of the
      * TreeNode representing this histogram
@@ -74,7 +74,7 @@ public:
      * \param num_vals_per_bin Number of values per bin. Must be power of two
      * for fast devision.
      */
-    HistogramEnum(TreeNode* parent_treenode,
+    EnumHistogram(TreeNode* parent_treenode,
                   std::string histogram_name,
                   std::string description
                   ) :
@@ -224,7 +224,7 @@ private:
      */
     uint32_t idx_shift_amount_;
 
-}; // class HistogramEnum
+}; // class EnumHistogram
 
 }; // namespace sparta
 #endif // __SPARTA_HISTOGRAMENUM_H__

@@ -19,15 +19,20 @@ design.
 
 # Install the following
 #
-#    cmake boost hdf5 yaml-cpp rapidJSON xz sqlite
+#    cmake boost hdf5 yaml-cpp rapidJSON xz sqlite doxygen
 #
 # Versions tested and known to work:
 #    cmake     3.14
-#    boost     1.71  (can go older)
+#    boost     1.71  (can go older, can go newer)
 #    yaml-cpp  0.6
 #    RapidJSON 1.1
 #    SQLite3   3.19
 #    HDF5      1.10
+#    Doxygen   1.8
+
+# Clone Sparta via the MAP GitHub repo and 'cd' into it
+git clone https://github.com/sparcians/map
+cd map/sparta
 
 # Build a release version
 mkdir release; cd release
@@ -43,7 +48,17 @@ make
 cd release; make regress
 cd debug; make regress
 
+# Documentation (requires Doxygen 1.8)
+cd doc; make
+open html/index.html
+
 ```
+
+## Documentation
+
+All great projects have great documentation.  The Sparta team is striving to have the same, but there's always room for improvement.  There are presentations and online documentation being built, with a few ready for use.
+
+Specifically, start with the Doxygen.  After cloning the repo, ensure Doxygen and dot (part of the Graphviz tool suite) are installed.  Then `cd doc; make`.  On the Mac, type `open html/index.html` and peruse the documentation about the `SkeletalPipeline` and the `Core Example`.
 
 ## Getting Sparta to build on MacOS X
 
@@ -119,7 +134,7 @@ This can be done generally via "sudo apt install <package name>"
 - libhdf5-dev
 - cppcheck
 - pygments (for cppcheck-htmlreport)
-- doxygen (if you want generate the documentation)
+- doxygen graphviz (if you want generate the documentation and dot graphs)
 
 ## Notes on Building
 

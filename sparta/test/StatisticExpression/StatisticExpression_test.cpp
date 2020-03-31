@@ -13,8 +13,6 @@ using sparta::statistics::expression::Expression;
 using sparta::statistics::expression::ExpressionParser;
 using sparta::statistics::expression::ReferenceVariable;
 
-SPARTA_SYMBOLS;
-
 #include "sparta/utils/SpartaTester.hpp"
 
 TEST_INIT;

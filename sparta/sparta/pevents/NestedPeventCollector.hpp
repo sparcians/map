@@ -33,13 +33,13 @@ namespace pevents {
     class NestedPeventCollector :
         public sparta::PairCollector<
             typename MetaStruct::remove_any_pointer<
-                DataT>::type::type>, public PeventCollectorTreeNode {
+                DataT>::type::SpartaPairDefinitionType>, public PeventCollectorTreeNode {
 
         // Aliasing the actual Datatype of the collectable being collected as Data_t
         typedef typename MetaStruct::remove_any_pointer<DataT>::type Data_t;
 
         // Aliasing the Datatype of the Pair Definition of the collectable being collected as PairDef_t
-        typedef typename Data_t::type PairDef_t;
+        typedef typename Data_t::SpartaPairDefinitionType PairDef_t;
 
         using PairCollector<PairDef_t>::getPEventLogVector;
         using PairCollector<PairDef_t>::turnOn_;

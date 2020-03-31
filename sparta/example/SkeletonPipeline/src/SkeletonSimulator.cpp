@@ -1,9 +1,9 @@
-// <Simulation.cpp> -*- C++ -*-
+// <SkeletonSimulatorn.cpp> -*- C++ -*-
 
 
 #include <iostream>
 
-#include "ExampleSimulation.hpp"
+#include "SkeletonSimulator.hpp"
 
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/utils/TimeManager.hpp"
@@ -13,10 +13,8 @@
 #include "Producer.hpp"
 #include "Consumer.hpp"
 
-ExampleSimulator::ExampleSimulator(sparta::Scheduler & scheduler,
-                                   uint32_t num_producers, bool be_noisy) :
+SkeletonSimulator::SkeletonSimulator(sparta::Scheduler & scheduler, bool be_noisy) :
     sparta::app::Simulation("sparta_skeleton", &scheduler),
-    num_producers_(num_producers),
     be_noisy_(be_noisy)
 {
     // Using the macro SPARTA_EXPECT_FALSE will tell the compiler that
@@ -34,7 +32,7 @@ ExampleSimulator::ExampleSimulator(sparta::Scheduler & scheduler,
 }
 
 
-ExampleSimulator::~ExampleSimulator()
+SkeletonSimulator::~SkeletonSimulator()
 {
     if(SPARTA_EXPECT_FALSE(be_noisy_)) {
         std::cout << __PRETTY_FUNCTION__ << ": Tearing down" << std::endl;
@@ -42,7 +40,7 @@ ExampleSimulator::~ExampleSimulator()
     getRoot()->enterTeardown(); // Allow deletion of nodes without error now
 }
 
-void ExampleSimulator::buildTree_()
+void SkeletonSimulator::buildTree_()
 {
     if(SPARTA_EXPECT_FALSE(be_noisy_)) {
         std::cout << "NOISE: " << __PRETTY_FUNCTION__ << ": Building the ResourceTreeNodes -- not instantiated yet" << std::endl;
@@ -50,8 +48,23 @@ void ExampleSimulator::buildTree_()
 
     // TREE_BUILDING Phase.  See sparta::PhasedObject::TreePhase
 
+    // Create a single consumer
+    sparta::ResourceTreeNode* rtn =
+        new sparta::ResourceTreeNode(getRoot(), "consumer", // Could use Consumer::name here...
+                                   sparta::TreeNode::GROUP_NAME_NONE,  // Do not allow consumer[n] -- there's only one!
+                                   sparta::TreeNode::GROUP_IDX_NONE,
+                                   "Consumer Object",
+                                   getResourceSet()->getResourceFactory(Consumer::name));
+    to_delete_.emplace_back(rtn);
+
+    // Get the producer count from the created parameter in the
+    // created ParameterSet.  Note that you get the ParameterSet, but
+    // not the Consumer resource/unit -- that has not been created yet.
+    sparta::ParameterSet * param_set = rtn->getParameterSet();
+    const uint32_t num_producers = param_set->getParameterAs<uint32_t>("num_producers");
+
     // Create the producers
-    for (uint32_t i = 0; i < num_producers_; ++i)
+    for (uint32_t i = 0; i < num_producers; ++i)
     {
         std::stringstream nodeName, humanName;
         nodeName << "producer" << i;
@@ -69,17 +82,9 @@ void ExampleSimulator::buildTree_()
         to_delete_.emplace_back(prod_tn);
     }
 
-    // Create a single consumer
-    sparta::ResourceTreeNode* rtn =
-        new sparta::ResourceTreeNode(getRoot(), "consumer", // Could use Consumer::name here...
-                                   sparta::TreeNode::GROUP_NAME_NONE,  // Do not allow consumer[n] -- there's only one!
-                                   sparta::TreeNode::GROUP_IDX_NONE,
-                                   "Consumer Object",
-                                   getResourceSet()->getResourceFactory(Consumer::name));
-    to_delete_.emplace_back(rtn);
 }
 
-void ExampleSimulator::configureTree_()
+void SkeletonSimulator::configureTree_()
 {
     if(SPARTA_EXPECT_FALSE(be_noisy_)) {
         std::cout << "NOISE: " << __PRETTY_FUNCTION__
@@ -89,18 +94,9 @@ void ExampleSimulator::configureTree_()
 
     // In TREE_CONFIGURING phase
     // Configuration from command line is already applied
-
-    // Let's tell the consumer the number of producers
-    sparta::ParameterBase* prod_count =
-        getRoot()->getChildAs<sparta::ParameterBase>("consumer.params.num_producers");
-
-    // Safely assign as string for now in case parameter type changes.
-    // Direct integer assignment without knowing parameter type is not
-    // yet available through C++ API
-    prod_count->setValueFromString(sparta::utils::uint32_to_str(num_producers_));
 }
 
-void ExampleSimulator::bindTree_()
+void SkeletonSimulator::bindTree_()
 {
     if(SPARTA_EXPECT_FALSE(be_noisy_)) {
         std::cout << "NOISE: " << __PRETTY_FUNCTION__
@@ -113,7 +109,10 @@ void ExampleSimulator::bindTree_()
     sparta::TreeNode* root_tree_node = getRoot();
     sparta_assert(root_tree_node != nullptr);
 
-    for (uint32_t i = 0; i < num_producers_; ++i)
+    sparta::ParameterSet * param_set = root_tree_node->getChildAs<sparta::ParameterSet>("consumer.params");
+    const uint32_t num_producers = param_set->getParameterAs<uint32_t>("num_producers");
+
+    for (uint32_t i = 0; i < num_producers; ++i)
     {
         std::stringstream nodeName, humanName;
         nodeName << "producer" << i;

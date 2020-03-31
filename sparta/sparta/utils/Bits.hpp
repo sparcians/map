@@ -7,6 +7,11 @@
 
 #include "sparta/utils/SpartaException.hpp"
 
+/**
+ * \file Bits.hpp
+ * \brief Helper functions to count bits.  A little old -- consider using compiler intrinsics
+ */
+
 namespace sparta {
 namespace utils {
 

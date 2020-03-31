@@ -81,7 +81,7 @@ public:
      * \post emitter_ will be nullptr
      */
     void addParameters(TreeNode* device_tree,
-                       bool verbose=false, bool isPower=false)
+                       bool verbose=false)
     {
         sparta_assert(emitter_ == nullptr);
         sparta_assert(device_tree);
@@ -103,7 +103,7 @@ public:
 
         *emitter_ << YP::BeginDoc;
         sparta_assert(emitter_->good());
-        handleNode_(device_tree, verbose, isPower); // Recurse
+        handleNode_(device_tree, verbose); // Recurse
 
         if (!tree_node_extensions_.empty()) {
             for (auto & ext_info : tree_node_extensions_) {
@@ -168,7 +168,7 @@ private:
      *
      * YAML stream context: Must follow a BeginDoc or Value node.
      */
-    void handleNode_(TreeNode* subtree, bool verbose, bool isPower)
+    void handleNode_(TreeNode* subtree, bool verbose)
     {
         sparta_assert(subtree);
         sparta_assert(emitter_ != nullptr);
@@ -210,46 +210,10 @@ private:
                             std::cout << "  ignoring child because it has no name" << std::endl;
                         }
                     }else{
-                        const ParameterBase* cpb = dynamic_cast<const ParameterBase*>(child);
                         if(child->getRecursiveNodeCount<ParameterBase>() == 0){
                             if(verbose){
                                 std::cout << "Skipping child of subtree with no parameters: " << subtree
                                           << " while writing configuration file" << std::endl;
-                            }
-                        }else if((cpb) && (isPower)){
-                            if(cpb->hasTag("tesla_param")){
-                                *emitter_ << YP::Key;
-                                sparta_assert(emitter_->good());
-
-                                checkParent(child);
-
-                                if(show_param_descs_){
-                                    // A description of the child must be printed
-                                    // here if it will be a parameter
-                                    if(nullptr != dynamic_cast<const ParameterBase*>(child)){
-                                        //*emitter_ << YP::Newline << YP::Comment(child->getDesc());
-                                        //const auto indent = emitter_->getColumn();
-                                        //const auto pre_comment_indent = emitter_->GetPreCommentIndent();
-                                        //emitter_->SetPreCommentIndent(0); // yaml-cpp modified to allow 0 indent
-                                        *emitter_ << YP::Newline
-                                            // << YP::PadToColumn(indent - pre_comment_indent)
-                                                  << YP::Comment(child->getDesc())
-                                                  << YP::Newline;
-                                        // << YP::PadToColumn(indent);
-                                        //emitter_->SetPreCommentIndent(pre_comment_indent); // yaml-cpp modified to allow 0 indent
-                                    }
-                                }
-
-                                // Write child name as YAML key
-
-                                *emitter_ << child->getName();
-                                sparta_assert(emitter_->good());
-
-                                // Write child value (or children) as YAML value
-                                *emitter_ << YP::Value;
-                                sparta_assert(emitter_->good());
-                                handleNode_(child, verbose, isPower);
-
                             }
                         }else{
 
@@ -281,7 +245,7 @@ private:
                             // Write child value (or children) as YAML value
                             *emitter_ << YP::Value;
                             sparta_assert(emitter_->good());
-                            handleNode_(child, verbose, isPower);
+                            handleNode_(child, verbose);
                         }
                     }
                 }

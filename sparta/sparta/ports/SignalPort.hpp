@@ -30,7 +30,7 @@ namespace sparta
 
     /**
      * \class SignalOutPort
-     * \brief Class that defines an SignalOutPort
+     * \brief SignalOutPort is used for transferring a simple signal to another module
      *
      * The purpose of the SignalOutPort is to provide a singular point
      * of signal delivery when sending a signal to a component.
@@ -115,7 +115,7 @@ namespace sparta
 
     /**
      * \class SignalInPort
-     * \brief Class that defines an SignalInPort
+     * \brief SignalInPort receives data from sender using a SignalOutPort
      *
      * The purpose of the SignalInPort is to provide a singular point
      * of signal reception when receiving a signal from a component.

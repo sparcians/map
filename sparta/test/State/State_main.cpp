@@ -1,5 +1,4 @@
 #include "sparta/sparta.hpp"
-SPARTA_SYMBOLS;
 
 #include <iostream>
 #include <inttypes.h>
@@ -157,7 +156,7 @@ public:
         src_[OperandType::C].reset(new Operand("c", this));
     }
 
-    Uop(const Uop& other) : 
+    Uop(const Uop& other) :
         name_{other.name_},
         state_{other.state_}{
             for(size_t i = 0; i < 3; ++i){

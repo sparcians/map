@@ -1,4 +1,4 @@
-// <Expression> -*- C++ -*-
+// <Expression.hpp> -*- C++ -*-
 
 #ifndef __EXPRESSION_H__
 #define __EXPRESSION_H__

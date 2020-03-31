@@ -28,8 +28,8 @@ namespace core_example
     class ExampleInst {
     public:
 
-        // The modeler needs to alias a type called "type" to the Pair Definition class  of itself
-        using type = ExampleInstPairDef;
+        // The modeler needs to alias a type called "SpartaPairDefinitionType" to the Pair Definition class  of itself
+        using SpartaPairDefinitionType = ExampleInstPairDef;
 
         enum class Status : std::uint16_t{
             FETCHED = 0,
@@ -137,7 +137,6 @@ namespace core_example
             is_speculative_ = spec;
         }
 
-        std::string getMnemonicAsString() const { return std::string(static_inst_.mnemonic); }
         const char* getMnemonic() const { return static_inst_.mnemonic; }
         uint32_t getOpCode() const { return static_inst_.encoding; }
         uint64_t getVAdr() const { return vaddr_; }

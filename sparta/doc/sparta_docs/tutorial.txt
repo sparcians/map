@@ -1,0 +1,4 @@
+
+/*!
+  \page perf_model_tutorial Timed Component Tutorial
+*/

@@ -10,8 +10,7 @@ namespace memory {
 
 /**
  * \class DMIBlockingMemoryIF
- *
- * Wrapps a DMI in a BlockingMemoryIF
+ * \brief Wrapps a DMI in a BlockingMemoryIF
  */
 class DMIBlockingMemoryIF final : public BlockingMemoryIF
 {

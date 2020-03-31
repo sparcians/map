@@ -1,4 +1,4 @@
-// <TieredMap> -*- C++ -*-
+// <VectorUtils.hpp> -*- C++ -*-
 
 #ifndef __SPARTA_VECTOR_UTILS_H__
 #define __SPARTA_VECTOR_UTILS_H__

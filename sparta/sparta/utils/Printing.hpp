@@ -1,4 +1,4 @@
-// <Printing> -*- C++ -*-
+// <Printing.hpp> -*- C++ -*-
 
 
 #ifndef __PRINTING_H__
@@ -72,7 +72,6 @@ namespace utils
      * \note This is used internally by Parameter for self-printing, but can
      * be used to print vectors for any purpose
      *
-     * \example
      * \code
      * std::vector<int32_t> v; v.push_back(1); v.push_back(2);
      * std::cout << sparta::stringize_value(v, sparta::BASE_HEX) << std::endl;

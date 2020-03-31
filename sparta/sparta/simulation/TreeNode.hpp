@@ -180,61 +180,8 @@ namespace sparta
 
     typedef std::vector<std::unique_ptr<ExtensionDescriptor>> ExtensionDescriptorVec;
 
-    //    /*!
-    //     * \brief RAII base class for notification registeration
-    //     */
-    //    class NotificationRegistration
-    //    {
-    //        NotificationRegistration() = default;
-    //
-    //        /*!
-    //         * \brief Copy construction disabled for base class
-    //         * \note Prevents slicing
-    //         */
-    //        NotificationRegistration(const NotificationRegistration&) = delete;
-    //
-    //        /*!
-    //         * \brief Move construction disabled for base class
-    //         * \note Prevents slicing
-    //         */
-    //        NotificationRegistration(NotificationRegistration&&) = delete;
-    //
-    //        /*!
-    //         * \brief Copy-assignment disabled for base class
-    //         * \note Prevents slicing
-    //         */
-    //        NotificationRegistration& operator=(const NotificationRegistration&) = delete;
-    //
-    //        virtual ~NotificationRegistration() {;}
-    //    };
-    //
-    //    /*!
-    //     * \brief RAII notification registration with naked pointer as callback. Implements
-    //     * NotificationRegistration
-    //     */
-    //    template <typename DataT, typename T, void (T::*TMethod)(const TreeNode&, const TreeNode&, const DataT&)>
-    //    class PtrNotificationRegistration : private NotificationRegistration {
-    //
-    //
-    //        PtrNotificationRegistration(TreeNode* n, T* obj, const std::string& name, bool ensure_possible) {
-    //            n->registerForNotification<DataT, T, TMethod>
-    //        }
-    //
-    //        PtrNotificationRegistration(TreeNode* n, T* obj, const std::string& name) :
-    //            PtrNotificationRegistration(n, obj, name, true)
-    //        {
-    //
-    //        }
-    //
-    //
-    //
-    //        ~PtrNotificationRegistration() {
-    //
-    //        }
-    //    };
-
     /*!
-     * \brief Node in a composite tree representing a sparta DeviceTree.
+     * \brief Node in a composite tree representing a sparta Tree item.
      * \warning TreeNode construction is NOT thread-safe
      * \note Children cannot be removed from their parents once attached
      * \note Not all TreeNodes in existance are required to be part of the same tree.

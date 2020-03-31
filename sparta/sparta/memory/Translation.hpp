@@ -16,6 +16,7 @@ namespace sparta
     {
         /**
          * \class Translation
+         * \brief An older class used to help in encapsulate read/virtual addresses
          *
          * Class that will contain results of an address translation
          */

@@ -1,5 +1,4 @@
-// <module_sparta> -*- C++ -*-
-
+// <TemporaryRunController.hpp> -*- C++ -*-
 
 #ifndef __SPARTA_TEMPORARY_RUN_CONTROLLER_H__
 #define __SPARTA_TEMPORARY_RUN_CONTROLLER_H__
