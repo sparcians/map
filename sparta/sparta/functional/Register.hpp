@@ -137,6 +137,15 @@ public:
      */
     class Field : public TreeNode
     {
+        utils::BitArray computeFieldMask_(uint32_t start, uint32_t end, uint32_t reg_size)
+        {
+            const auto num_ones = start - end + 1;
+            // For 31-0:
+            // max() & (max() >> ((8 * 8) - 31))
+            return utils::BitArray(((std::numeric_limits<uint64_t>::max()
+                                     & (std::numeric_limits<uint64_t>::max() >> ((sizeof(uint64_t) * CHAR_BIT) - num_ones)))), reg_size) << end;
+        }
+
     public:
 
         /*!
@@ -201,15 +210,13 @@ public:
          *
          * Constructs Field from the given definition
          */
-        Field(RegisterBase &reg, const Definition &def)
-        : TreeNode(NULL_TO_EMPTY_STR(def.name),
-                   TreeNode::GROUP_NAME_NONE,
-                   TreeNode::GROUP_IDX_NONE,
-                   NULL_TO_EMPTY_STR(def.desc))
-        , reg_(reg)
-        , def_(def)
-        , reg_size_(reg_.getNumBytes())
-        , mask_(computeMask_(def.low_bit, def.high_bit, reg_.getNumBytes()))
+        Field(RegisterBase &reg, const Definition &def) :
+            TreeNode(NULL_TO_EMPTY_STR(def.name), TreeNode::GROUP_NAME_NONE,
+                     TreeNode::GROUP_IDX_NONE, NULL_TO_EMPTY_STR(def.desc)),
+            reg_(reg),
+            def_(def),
+            reg_size_(reg_.getNumBytes()),
+            field_mask_(computeFieldMask_(def.high_bit, def.low_bit, reg_.getNumBytes()))
         {
             setExpectedParent_(&reg);
 
@@ -255,7 +262,7 @@ public:
          */
         access_type read()
         {
-            return ((readBitArray_() & mask_) >> getLowBit()).getValue<access_type>();
+            return ((readBitArray_() & field_mask_) >> getLowBit()).getValue<access_type>();
         }
 
         /*!
@@ -265,7 +272,7 @@ public:
          */
         access_type peek() const
         {
-            return ((peekBitArray_() & mask_) >> getLowBit()).getValue<access_type>();
+            return ((peekBitArray_() & field_mask_) >> getLowBit()).getValue<access_type>();
         }
 
         /*!
@@ -387,24 +394,18 @@ public:
             reg_.pokeUnmasked(value.getValue(), value.getSize(), 0);
         }
 
-        utils::BitArray newRegisterValue_(access_type t) const
+        utils::BitArray newRegisterValue_(access_type value) const
         {
-            const auto old = peekBitArray_();
-            const auto val = utils::BitArray(t, reg_size_) << getLowBit();
+            const auto old_register_value  = peekBitArray_();
+            const auto field_value_to_be_written_shifted = utils::BitArray(value, reg_size_) << getLowBit();
 
-            sparta_assert(
-                (val & ~mask_) == utils::BitArray(access_type(0), reg_size_),
-                "Value of " << t <<  " too large for bit field "
-                << getLocation() << " of size " << getNumBits());
+            // Check to see if the number of bits being written to the
+            // field is larger than the field itself.
+            sparta_assert((field_value_to_be_written_shifted & ~field_mask_) == utils::BitArray(access_type(0), reg_size_),
+                          "Value of " << value <<  " too large for bit field "
+                          << getLocation() << " of size " << getNumBits());
 
-            return (old & ~mask_) | val;
-        }
-
-        utils::BitArray computeMask_(size_t low, size_t hig, size_t size) const
-        {
-            sparta_assert(hig >= low);
-            const auto bits = hig - low + 1;
-            return utils::BitArray(((size_type(1) << bits) - 1), size) << low;
+            return (old_register_value & ~field_mask_) | field_value_to_be_written_shifted;
         }
 
         /*!
@@ -423,9 +424,10 @@ public:
         const RegisterBase::size_type reg_size_ = 0;
 
         /*!
-         * Used to mask out the bits of this field
+         * Used to mask out the bits in the register of this field --
+         * the 'not' bits of the register.
          */
-        const utils::BitArray mask_;
+        const utils::BitArray field_mask_;
 
     }; // class Field
 
@@ -708,20 +710,18 @@ public:
                    NULL_TO_EMPTY_STR(def->group),
                    def->group_idx,
                    NULL_TO_EMPTY_STR(def->desc),
-                   false)
-        , def_(def)
-        , bits_(def->bytes * 8)
-        , mask_(computeWriteMask_(def))
-        , post_write_noti_(
-            this,
-            "post_write",
-            "Notification immediately after the register has been written",
-            "post_write")
-        , post_read_noti_(
-            this,
-            "post_read",
-            "Notification immediately after the register has been read",
-            "post_read")
+                   false),
+          def_(def),
+          bits_(def->bytes * 8),
+          mask_(computeWriteMask_(def)),
+          post_write_noti_(this,
+                           "post_write",
+                           "Notification immediately after the register has been written",
+                           "post_write"),
+          post_read_noti_(this,
+                          "post_read",
+                          "Notification immediately after the register has been read",
+                          "post_read")
     {
         if(parent != nullptr){
             setExpectedParent_(parent);
@@ -1464,17 +1464,12 @@ inline bool operator!=(const RegisterBase::Definition &a,
 class Register : public RegisterBase
 {
 public:
-    Register(TreeNode *parent, const Definition *def, ArchData *adata)
-    : RegisterBase(parent, def)
-    , dview_(adata,
-             def->id,
-             def->bytes,
-             def->subset_of,
-             def->subset_offset,
-             def->initial_value)
-    , prior_val_dview_(adata, DataView::INVALID_ID, def->bytes)
-    , post_write_noti_data_(this, &prior_val_dview_, &dview_)
-    , post_read_noti_data_(this, &dview_)
+    Register(TreeNode *parent, const Definition *def, ArchData *adata) :
+        RegisterBase(parent, def),
+        dview_(adata, def->id, def->bytes, def->subset_of, def->subset_offset, def->initial_value),
+        prior_val_dview_(adata, DataView::INVALID_ID, def->bytes),
+        post_write_noti_data_(this, &prior_val_dview_, &dview_),
+        post_read_noti_data_(this, &dview_)
     {
     }
 
