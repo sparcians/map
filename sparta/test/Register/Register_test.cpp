@@ -245,6 +245,35 @@ public:
     }
 };
 
+//! Issue 89, test field register writes to large fields
+void testFieldRegisterWrite()
+{
+    Register::ident_type new_regid = 1000; // Start counting at some unique ID
+
+    // Register with large fields
+    Register::Definition good_reg_defs[] = {
+        {new_regid++, "fp_reg",   Register::GROUP_NUM_NONE, "", Register::GROUP_IDX_NONE, "description", 8,
+         {{"dp", "Double precision", 0, 63}, {"sp", "single precision", 0, 31}}, {}, 0, Register::INVALID_ID, 0, nullptr, 0,0},
+        Register::DEFINITION_END
+    };
+    RootTreeNode root;
+    DummyDevice good_dummy(&root);
+    std::unique_ptr<RegisterSet> regs(RegisterSet::create(&good_dummy, good_reg_defs));
+    regs->getRegister("fp_reg")->getField("sp")->write(1);
+    regs->getRegister("fp_reg")->getField("dp")->write(1);
+
+    EXPECT_EQUAL(regs->getRegister("fp_reg")->getField("sp")->read(), 1);
+    EXPECT_EQUAL(regs->getRegister("fp_reg")->getField("dp")->read(), 1);
+
+    regs->getRegister("fp_reg")->getField("sp")->write(0xffffffff);
+    regs->getRegister("fp_reg")->getField("dp")->write(0xffffffffffffffff);
+
+    EXPECT_EQUAL(regs->getRegister("fp_reg")->getField("sp")->read(), 0xffffffff);
+    EXPECT_EQUAL(regs->getRegister("fp_reg")->getField("dp")->read(), 0xffffffffffffffff);
+
+    root.enterTeardown();
+}
+
 
 //! Load up some good regs from a table
 void testGoodRegs()
@@ -718,6 +747,7 @@ int main()
     root.bindTreeLate();
 
     // Construct some good and bad regs to test out size constraints
+    testFieldRegisterWrite();
     testGoodRegs();
     testBadRegs();
 
