@@ -1,7 +1,6 @@
 // <AsyncEvent.hpp> -*- C++ -*-
 
-#ifndef __ASYNC_EVENT_H__
-#define __ASYNC_EVENT_H__
+#pragma once
 
 #include "sparta/events/Event.hpp"
 
@@ -52,4 +51,3 @@ namespace sparta
         }
     };
 } /* namespace sparta */
-#endif /* __ASYNC_EVENT_H__ */

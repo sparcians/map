@@ -8,8 +8,7 @@
  * configuration for a given simulation.
  */
 
-#ifndef __REPORT_CONFIG_INSPECTION_H__
-#define __REPORT_CONFIG_INSPECTION_H__
+#pragma once
 
 #include "sparta/app/ReportDescriptor.hpp"
 
@@ -122,4 +121,3 @@ utils::ValidValue<std::string> getNotifSourceForStopTrigger(
 } // namespace app
 } // namespace sparta
 
-#endif

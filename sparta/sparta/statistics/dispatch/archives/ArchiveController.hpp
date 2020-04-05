@@ -1,7 +1,6 @@
 // <ArchiveController> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTICS_ARCHIVE_CONTROLLER_H__
-#define __SPARTA_STATISTICS_ARCHIVE_CONTROLLER_H__
+#pragma once
 
 #include <string>
 
@@ -88,4 +87,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif

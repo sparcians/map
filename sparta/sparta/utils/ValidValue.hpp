@@ -7,8 +7,7 @@
  * \brief  File that defines a ValidValue
  */
 
-#ifndef __VALID_VALUE_H__
-#define __VALID_VALUE_H__
+#pragma once
 
 #include <iostream>
 #include "sparta/utils/SpartaAssert.hpp"
@@ -173,5 +172,3 @@ std::ostream & operator<<(std::ostream & os, const sparta::utils::ValidValue<Val
 }
 }
 
-// __VALID_VALUE_H__
-#endif

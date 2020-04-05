@@ -6,8 +6,7 @@
  * \brief Class for creating a simulator based on command-line arguments
  */
 
-#ifndef __COMMAND_LINE_SIMULATOR_H__
-#define __COMMAND_LINE_SIMULATOR_H__
+#pragma once
 
 #include <boost/program_options.hpp>
 #include <boost/program_options/cmdline.hpp>
@@ -628,5 +627,3 @@ private:
 
     } // namespace app
 } // namespace sparta
-
-#endif // #ifndef __COMMAND_LINE_SIMULATOR_H__

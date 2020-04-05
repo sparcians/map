@@ -1,7 +1,6 @@
 // <PersistentFastCheckpointer> -*- C++ -*-
 
-#ifndef __PERSISTENT_FAST_CHECKPOINTER_H__
-#define __PERSISTENT_FAST_CHECKPOINTER_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -250,5 +249,3 @@ namespace checkpoint
 } // namespace serialization
 } // namespace sparta
 
-// __PERSISTENT_FAST_CHECKPOINTER_H__
-#endif

@@ -1,7 +1,6 @@
 // <RegisterBankTable> -*- C++ -*-
 
-#ifndef __REGISTER_BANK_TABLE_H__
-#define __REGISTER_BANK_TABLE_H__
+#pragma once
 
 #include <iostream>
 #include <unordered_map>
@@ -550,5 +549,3 @@ private:
 
 } // namespace sparta
 
-// __REGISTER_BANK_TABLE_H__
-#endif

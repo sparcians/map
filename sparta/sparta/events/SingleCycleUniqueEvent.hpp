@@ -7,8 +7,7 @@
  * \brief  File that defines the SingleCycleUniqueEvent class
  */
 
-#ifndef __SINGLE_CYCLE_UNIQUE_EVENT_H__
-#define __SINGLE_CYCLE_UNIQUE_EVENT_H__
+#pragma once
 
 #include <set>
 #include <memory>
@@ -115,5 +114,3 @@ namespace sparta
 }
 
 
-// __SINGLE_CYCLE_UNIQUE_EVENT_H__
-#endif

@@ -1,7 +1,6 @@
 // <Register> -*- C++ -*-
 
-#ifndef __REGISTER_H__
-#define __REGISTER_H__
+#pragma once
 
 #include <iostream>
 #include <ios>
@@ -1614,5 +1613,3 @@ inline std::ostream& operator<<(std::ostream& o, const sparta::Register::Field* 
     const sparta::RegisterBase::Definition sparta::RegisterBase::DEFINITION_END{0, nullptr, 0, nullptr, 0, nullptr, 0, { }, { }, nullptr, 0, 0, 0, 0, 0};
 
 
-// __REGISTER_H__
-#endif

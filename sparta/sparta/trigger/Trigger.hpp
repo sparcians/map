@@ -4,8 +4,7 @@
  * \file Trigger.hpp
  * \brief Class used to "trigger" one time functionality
  */
-#ifndef __SPARTA_TRIGGER_H__
-#define __SPARTA_TRIGGER_H__
+#pragma once
 
 #include "sparta/trigger/Triggerable.hpp"
 #include "sparta/trigger/SingleTrigger.hpp"
@@ -365,4 +364,3 @@ inline std::ostream& operator<<(std::ostream& os, const Trigger& trigger)
     }//namespace trigger
 }//namespace sparta
 
-#endif //__SPARTA_TRIGGER_H__

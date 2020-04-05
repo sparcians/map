@@ -6,8 +6,7 @@
  * \brief Basic Completer singleton class for various argument completers.
  */
 
-#ifndef __COMPLETER_H__
-#define __COMPLETER_H__
+#pragma once
 
 #include <string>
 #include "sparta/simulation/ParameterTree.hpp"
@@ -85,4 +84,3 @@ namespace sparta
 
 }
 
-#endif

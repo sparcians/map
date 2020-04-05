@@ -1,8 +1,7 @@
 // <Counter> -*- C++ -*-
 
 
-#ifndef __CYCLE_COUNTER_H__
-#define __CYCLE_COUNTER_H__
+#pragma once
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/functional/DataView.hpp"
@@ -324,5 +323,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __CYCLE_COUNTER_H__
-#endif

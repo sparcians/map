@@ -5,8 +5,7 @@
  * \brief CSV Report output formatter
  */
 
-#ifndef __SPARTA_REPORT_FORMAT_CSV_H__
-#define __SPARTA_REPORT_FORMAT_CSV_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -329,5 +328,3 @@ inline std::ostream& operator<< (std::ostream& out, CSV & f) {
     } // namespace report
 } // namespace sparta
 
-// __SPARTA_REPORT_FORMAT_CSV_H__
-#endif

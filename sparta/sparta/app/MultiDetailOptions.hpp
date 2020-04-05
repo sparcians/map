@@ -1,4 +1,4 @@
-// <MultiDetailOptions> -*- C++ -*-
+// <MultiDetailOptions.hpp> -*- C++ -*-
 
 
 /*!
@@ -7,8 +7,7 @@
  * multiple levels of detail
  */
 
-#ifndef __MULTI_DETAIL_OPTIONS_H__
-#define __MULTI_DETAIL_OPTIONS_H__
+#pragma once
 
 #include <boost/program_options.hpp>
 
@@ -579,5 +578,3 @@ private:
 
     } // namespace app
 } // namespace sparta
-
-#endif // #ifndef __MULTI_DETAIL_OPTIONS_H__

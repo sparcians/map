@@ -2,8 +2,7 @@
 // <EdgeFactory> -*- C++ -*-
 
 
-#ifndef __EDGEFACTORY__H__
-#define __EDGEFACTORY__H__
+#pragma once
 
 #include "sparta/kernel/Vertex.hpp"
 #include <string>
@@ -59,5 +58,4 @@ private:
 
 } // namespace sparta
 
-#endif
 

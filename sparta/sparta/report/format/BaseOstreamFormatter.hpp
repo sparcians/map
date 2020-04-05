@@ -5,8 +5,7 @@
  * \brief Basic HTML Report output formatter
  */
 
-#ifndef __SPARTA_REPORT_FORMAT_BASE_OSTREAM_FORMATTER_H__
-#define __SPARTA_REPORT_FORMAT_BASE_OSTREAM_FORMATTER_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -417,5 +416,3 @@ operator<< (std::basic_ostream<Ch,Tr>& out, const BaseOstreamFormatter * f) {
     } // namespace report
 } // namespace sparta
 
-// __SPARTA_REPORT_FORMAT_BASE_OSTREAM_FORMATTER_H__
-#endif

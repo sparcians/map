@@ -1,7 +1,6 @@
 // <GeneralMetaStructs> -*- C++ -*-
 
-#ifndef __SIMDB_GENERAL_SCHEMA_META_STRUCTS_H__
-#define __SIMDB_GENERAL_SCHEMA_META_STRUCTS_H__
+#pragma once
 
 /*!
  * \brief Metaprogramming utilities for use
@@ -79,4 +78,3 @@ struct is_contiguous<std::vector<ColumnT>> : std::true_type {
 
 }
 
-#endif

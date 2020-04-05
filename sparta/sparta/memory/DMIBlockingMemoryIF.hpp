@@ -1,6 +1,5 @@
 
-#ifndef __SPARTA_DMI_BLOCKING_MEMORY_IF_H__
-#define __SPARTA_DMI_BLOCKING_MEMORY_IF_H__
+#pragma once
 
 #include "sparta/memory/DMI.hpp"
 #include "sparta/memory/BlockingMemoryIF.hpp"
@@ -83,4 +82,3 @@ private:
 
 } // namespace memory
 } // namespace sparta
-#endif // __SPARTA_DMI_BLOCKING_MEMORY_IF_H__

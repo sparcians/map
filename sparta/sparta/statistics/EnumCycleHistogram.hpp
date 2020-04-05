@@ -9,8 +9,7 @@
  *        sparta::utils::Enums.
  */
 
-#ifndef __ENUM_CYCLE_HISTOGRAM_H__
-#define __ENUM_CYCLE_HISTOGRAM_H__
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -306,4 +305,3 @@ public:
     sparta::StatisticSet stats_;
 }; // class EnumCycleHistogram
 }  // namespace sparta
-#endif

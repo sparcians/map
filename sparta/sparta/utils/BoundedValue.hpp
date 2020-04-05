@@ -10,8 +10,7 @@
  *        operating range.
  */
 
-#ifndef __BOUNDED_VALUE_H__
-#define __BOUNDED_VALUE_H__
+#pragma once
 
 #include <iostream>
 #include <limits>
@@ -781,4 +780,3 @@ inline std::ostream & operator << (std::ostream & os,
 }
 }
 }
-#endif

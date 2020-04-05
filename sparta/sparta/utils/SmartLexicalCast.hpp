@@ -6,8 +6,7 @@
  * suffixes.
  */
 
-#ifndef __SMART_LEX_H__
-#define __SMART_LEX_H__
+#pragma once
 
 #include <iostream>
 #include <utility>
@@ -527,5 +526,3 @@ inline double smartLexicalCast(const std::string& s,
     }; // namespace utils
 } // namespace sparta
 
-// __SMART_LEX_H__
-#endif

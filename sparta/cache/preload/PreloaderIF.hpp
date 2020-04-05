@@ -7,8 +7,7 @@
  * \brief File that defines Preloadable.
  */
 
-#ifndef __SPARTA_PRELOADERIF_H__
-#define __SPARTA_PRELOADERIF_H__
+#pragma once
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 #include "sparta/simulation/TreeNode.hpp"
@@ -164,4 +163,3 @@ namespace cache {
 
 } // namespace sparta
 
-#endif //__SPARTA_PRELOADERIF_H__

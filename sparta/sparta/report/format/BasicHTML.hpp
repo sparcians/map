@@ -5,8 +5,7 @@
  * \brief Basic HTML Report output formatter
  */
 
-#ifndef __SPARTA_REPORT_FORMAT_BASIC_HTML_H__
-#define __SPARTA_REPORT_FORMAT_BASIC_HTML_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -440,5 +439,3 @@ private:
     } // namespace report
 } // namespace sparta
 
-// __SPARTA_REPORT_FORMAT_BASIC_HTML_H__
-#endif

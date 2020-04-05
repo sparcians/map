@@ -1,7 +1,6 @@
 // <Checkpoint> -*- C++ -*-
 
-#ifndef __CHECKPOINT_H__
-#define __CHECKPOINT_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -300,5 +299,3 @@ inline std::ostream& operator<<(std::ostream& o, const sparta::serialization::ch
         const Checkpoint::chkpt_id_t Checkpoint::UNIDENTIFIED_CHECKPOINT; \
     }}}
 
-// __CHECKPOINT_H__
-#endif

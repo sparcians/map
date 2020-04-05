@@ -7,8 +7,7 @@
  * \brief Provide a class for dumping formatted
  *        preload packet information.
  */
-#ifndef __SPARTA_PRELOAD_EMITTER_H__
-#define __SPARTA_PRELOAD_EMITTER_H__
+#pragma once
 
 #include <yaml-cpp/emittermanip.h>
 #include <yaml-cpp/yaml.h>
@@ -123,4 +122,3 @@ namespace cache {
 }// namespace cache
 }// namespace sparta
 
-#endif // __SPARTA_PRELOAD_EMITTER_H__

@@ -1,7 +1,6 @@
 // <Consumer.hpp> -*- C++ -*-
 
-#ifndef _CONSUMER_H_
-#define _CONSUMER_H_
+#pragma once
 
 #include <cinttypes>
 
@@ -63,4 +62,3 @@ private:
 
 };
 
-#endif

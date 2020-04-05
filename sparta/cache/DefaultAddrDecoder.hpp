@@ -1,6 +1,5 @@
 
-#ifndef _SPA_CACHE_DEFAULT_ADDR_DECODER_IF_H__
-#define _SPA_CACHE_DEFAULT_ADDR_DECODER_IF_H__
+#pragma once
 #include "cassert"
 #include "sparta/utils/MathUtils.hpp"
 #include "cache/AddrDecoderIF.hpp"
@@ -63,4 +62,3 @@ namespace sparta
 
 }; // namespace sparta
 
-#endif //  _SPA_CACHE_DEFAULT_ADDR_DECODER_IF_H__

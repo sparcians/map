@@ -7,8 +7,7 @@
  * \brief  File that defines the Port base class
  */
 
-#ifndef __PORT_H__
-#define __PORT_H__
+#pragma once
 #include <set>
 #include <list>
 #include <unordered_map>
@@ -693,5 +692,3 @@ namespace sparta
 
 
 
-// __PORT_H__
-#endif

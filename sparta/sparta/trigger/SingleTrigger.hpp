@@ -5,8 +5,7 @@
  *
  */
 
-#ifndef __SPARTA_SINGLE_TRIGGER__
-#define __SPARTA_SINGLE_TRIGGER__
+#pragma once
 
 #include "sparta/trigger/ManagedTrigger.hpp"
 #include "sparta/kernel/Scheduler.hpp"
@@ -843,4 +842,3 @@ private:
     }//namespace trigger
 }//namespace sparta
 
-#endif //__SPARTA_SINLE_TRIGGER__

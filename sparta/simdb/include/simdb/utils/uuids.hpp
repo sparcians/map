@@ -1,7 +1,6 @@
 // <uuids> -*- C++ -*-
 
-#ifndef __SIMDB_UUID_UTILS_H__
-#define __SIMDB_UUID_UTILS_H__
+#pragma once
 
 #include <chrono>
 #include <random>
@@ -45,4 +44,3 @@ inline std::string generateUUID()
 
 } // namespace simdb
 
-#endif

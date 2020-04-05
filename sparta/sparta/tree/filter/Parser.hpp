@@ -5,8 +5,7 @@
  * \brief Defines a parser that uses the tree filter grammar
  */
 
-#ifndef __TREE_FILTER_EXPRESSION_PARSER_H__
-#define __TREE_FILTER_EXPRESSION_PARSER_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -74,4 +73,4 @@ public:
     } // namespace tree
 } // namespace sparta
 
-#endif // #ifndef __TREE_FILTER_EXPRESSION_PARSER_H__
+#pragma once

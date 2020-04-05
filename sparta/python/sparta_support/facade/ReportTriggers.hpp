@@ -1,6 +1,5 @@
 
-#ifndef __PYTHON_FACADE_REPORT_TRIGGERS_H__
-#define __PYTHON_FACADE_REPORT_TRIGGERS_H__
+#pragma once
 
 #include "sparta/app/ReportDescriptor.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -534,4 +533,3 @@ inline bool ReportTrigger::isEnabled() const
 } // namespace facade
 } // namespace sparta
 
-#endif

@@ -1,8 +1,7 @@
 // <CPUFactory.h> -*- C++ -*-
 
 
-#ifndef __CPU_FACTORY_H__
-#define __CPU_FACTORY_H__
+#pragma once
 
 #include "sparta/simulation/ResourceFactory.hpp"
 #include "sparta/simulation/RootTreeNode.hpp"
@@ -94,4 +93,3 @@ private:
     std::vector<std::unique_ptr<sparta::ResourceTreeNode>> to_delete_;
 }; // class CPUFactory
 }  // namespace core_example
-#endif

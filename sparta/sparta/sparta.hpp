@@ -1,7 +1,6 @@
 // <sparta.hpp> -*- C++ -*-
 
-#ifndef __SPARTA_H__
-#define __SPARTA_H__
+#pragma once
 
 /*!
  * \file sparta.hpp
@@ -17,5 +16,3 @@
 #include "sparta/simulation/ParameterSet.hpp"
 #include "sparta/statistics/StatisticSet.hpp"
 
-// __SPARTA_H__
-#endif

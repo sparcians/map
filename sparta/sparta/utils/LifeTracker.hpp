@@ -6,8 +6,7 @@
  * \brief  File that defines the LifeTracker class
  */
 
-#ifndef __LIFE_TRACKER_H__
-#define __LIFE_TRACKER_H__
+#pragma once
 
 #include <memory>
 
@@ -79,4 +78,3 @@ namespace sparta
     }
 }
 
-#endif

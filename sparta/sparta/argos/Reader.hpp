@@ -7,8 +7,7 @@
  *
  */
 
-#ifndef __READER_H__
-#define __READER_H__
+#pragma once
 
 #include <functional>
 #include <iostream>
@@ -1218,5 +1217,3 @@ namespace argos{
     };
 }//NAMESPACE:argos
 }//NAMESPACE:sparta
-// __READER_H__
-#endif

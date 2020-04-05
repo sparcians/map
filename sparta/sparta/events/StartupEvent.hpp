@@ -7,8 +7,7 @@
  * \brief  File that defines the StartupEvent class
  */
 
-#ifndef __STARTUPEVENT_H__
-#define __STARTUPEVENT_H__
+#pragma once
 
 #include <set>
 #include <memory>
@@ -105,5 +104,3 @@ namespace sparta
 }
 
 
-// __STARTUPEVENT_H__
-#endif

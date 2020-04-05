@@ -4,13 +4,10 @@
  * \file InformationWriter.hpp
  * \brief Define the Pipeline Collection Information outputter.
  */
-#ifndef __INFORMATION_WRITER_H__
-#define __INFORMATION_WRITER_H__
+#pragma once
 
 #include <fstream>
 #include "sparta/utils/SpartaException.hpp"
-
-
 
 namespace sparta{
     /**
@@ -34,7 +31,7 @@ namespace sparta{
             file_(file, std::ios::out)
         {
             if(!file_.is_open()){
-                throw sparta::SpartaException("Failed to open InformationWriter file for file: " + file);
+                throw SpartaException("Failed to open InformationWriter file for file: " + file);
             }
 
             // Throw on write failure
@@ -80,5 +77,3 @@ namespace sparta{
     };
 
 }
-
-#endif

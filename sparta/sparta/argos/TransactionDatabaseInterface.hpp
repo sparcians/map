@@ -1,10 +1,9 @@
 // <TransactionDatabaseInterface> -*- C++ -*-
 
-#ifndef __SPARTA_TRANSACTION_DATABASE_INTERFACE_H__
-#define __SPARTA_TRANSACTION_DATABASE_INTERFACE_H__
+#pragma once
 
 // Required to enable std::this_thread::sleep_for
-#ifndef _GLIBCXX_USE_NANOSLEEP
+#pragma once
 #define _GLIBCXX_USE_NANOSLEEP
 #endif
 
@@ -1909,4 +1908,3 @@ private:
     } // argos
 } // sparta
 
-#endif // __SPARTA_TRANSACTION_DATABASE_INTERFACE_H__

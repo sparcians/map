@@ -1,7 +1,6 @@
 // <Events> -*- C++ -*-
 
-#ifndef __EVENTS_H__
-#define __EVENTS_H__
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -29,5 +28,3 @@ namespace sparta
     } // namespace log
 } // namespace sparta
 
-// __EVENTS_H__
-#endif

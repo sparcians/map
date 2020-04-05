@@ -1,6 +1,5 @@
 
-#ifndef __SPARTA_CONTEXT_COUNTER_TRIGGER_H__
-#define __SPARTA_CONTEXT_COUNTER_TRIGGER_H__
+#pragma once
 
 #include <functional>
 #include <memory>
@@ -192,4 +191,3 @@ private:
 } // namespace trigger
 } // namespace sparta
 
-#endif

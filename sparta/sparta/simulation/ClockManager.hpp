@@ -6,8 +6,7 @@
  * \brief Manages building a clock tree
  */
 
-#ifndef __CLOCK_MANAGER_H__
-#define __CLOCK_MANAGER_H__
+#pragma once
 
 #include <cstdint>
 #include <list>
@@ -173,4 +172,4 @@ class RootTreeNode;
     std::ostream &operator<<(std::ostream &os, const ClockManager &m);
 };
 
-#endif // #ifndef __CLOCK_MANAGER_H__
+#pragma once

@@ -56,8 +56,7 @@
  *  go and look in the Histogram Function Manager class for the string name.
 */
 
-#ifndef __HIST_FCN_MGR_H__
-#define __HIST_FCN_MGR_H__
+#pragma once
 
 #include <iostream>
 #include <functional>
@@ -262,4 +261,3 @@ namespace sparta{
     sparta::HistStatCalcFcn<sparta::histogram_type> callable = fcn_name;                            \
     sparta::FunctionManager::get().add<sparta::histogram_type>(key, callable);                      \
 }
-#endif

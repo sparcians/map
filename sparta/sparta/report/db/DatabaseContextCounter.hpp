@@ -1,7 +1,6 @@
 // <DatabaseContextCounter> -*- C++ -*-
 
-#ifndef __SPARTA_SIMDB_CONTEXT_COUNTER_H__
-#define __SPARTA_SIMDB_CONTEXT_COUNTER_H__
+#pragma once
 
 #include <unordered_set>
 #include <memory>
@@ -154,4 +153,3 @@ private:
 } // namespace db
 } // namespace sparta
 
-#endif

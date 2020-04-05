@@ -6,8 +6,7 @@
  * \brief Histogram implementation using sparta Counters
  */
 
-#ifndef __SPARTA_HISTOGRAM_H__
-#define __SPARTA_HISTOGRAM_H__
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -527,4 +526,3 @@ private:
 typedef HistogramTreeNode Histogram;
 
 }; // namespace sparta
-#endif // __SPARTA_HISTOGRAM_H__

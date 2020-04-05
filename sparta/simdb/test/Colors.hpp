@@ -4,8 +4,7 @@
  * \brief Color codes / utilities for SimDB.
  */
 
-#ifndef __SIMDB_COLORS_H__
-#define __SIMDB_COLORS_H__
+#pragma once
 
 #include "simdb/Errors.hpp"
 
@@ -158,4 +157,3 @@ namespace color {
 } // namespace color
 } // namespace simdb
 
-#endif

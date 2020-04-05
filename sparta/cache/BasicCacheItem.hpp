@@ -1,7 +1,6 @@
 
 
-#ifndef _SPA_BASIC_CACHE_ITEM_H__
-#define _SPA_BASIC_CACHE_ITEM_H__
+#pragma once
 
 #include <cinttypes>
 #include "cache/AddrDecoderIF.hpp"
@@ -75,4 +74,3 @@ namespace sparta
     }; // namespace cache
 
 }; // namespace sparta
-#endif // _SPA_BASIC_CACHE_ITEM_H__

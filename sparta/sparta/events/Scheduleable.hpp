@@ -2,8 +2,7 @@
 // <Scheduleable.h> -*- C++ -*-
 
 
-#ifndef __SCHEDULEABLE_H__
-#define __SCHEDULEABLE_H__
+#pragma once
 
 #include <cinttypes>
 
@@ -624,4 +623,3 @@ namespace sparta
 
 }
 
-#endif

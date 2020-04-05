@@ -6,8 +6,7 @@
  * \brief
  */
 
-#ifndef __SPARTA_METATREENODE_H__
-#define __SPARTA_METATREENODE_H__
+#pragma once
 
 #include <memory>
 #include "sparta/kernel/Scheduler.hpp"
@@ -161,5 +160,3 @@ public:
 
 } // namespace app
 } // naemspace sparta
-
-#endif // #ifndef __SPARTA_METATREENODE_H__

@@ -1,4 +1,4 @@
-// <AppTriggers> -*- C++ -*-
+// <AppTriggers.hpp> -*- C++ -*-
 
 
 /*!
@@ -6,8 +6,7 @@
  * \brief Application-infrastructure triggers.
  */
 
-#ifndef __APP_TRIGGERS_H__
-#define __APP_TRIGGERS_H__
+#pragma once
 
 
 #include "sparta/sparta.hpp"
@@ -139,5 +138,3 @@ public:
 
     } // namespace app
 } // namespace sparta
-
-#endif // #ifndef __APP_TRIGGERS_H__

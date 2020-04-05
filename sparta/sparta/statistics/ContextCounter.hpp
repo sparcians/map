@@ -1,8 +1,7 @@
 // <ContextCounter> -*- C++ -*-
 
 
-#ifndef __CONTEXT_COUNTER_H__
-#define __CONTEXT_COUNTER_H__
+#pragma once
 
 #include <boost/lexical_cast.hpp>
 #include <cstddef>
@@ -485,5 +484,3 @@ namespace sparta
         registerContextCounterAggregateFcn(handler, this, #method, aggregated_value); \
     }
 
-// __CONTEXT_COUNTER_H__
-#endif

@@ -5,8 +5,7 @@
  * \brief  File that defines typedefs for addressing
  */
 
-#ifndef __ADDRESS_TYPES_H__
-#define __ADDRESS_TYPES_H__
+#pragma once
 
 #include <inttypes.h>
 
@@ -26,4 +25,3 @@ namespace sparta
     }
 }
 
-#endif

@@ -1,6 +1,5 @@
 
-#ifndef _SPA_CACHE_REPLACEMENT_IF_H_
-#define _SPA_CACHE_REPLACEMENT_IF_H_
+#pragma once
 
 #include "inttypes.h"
 #include "sparta/utils/SpartaAssert.hpp"
@@ -56,4 +55,3 @@ namespace sparta
 
 }; // namespace sparta
 
-#endif //  _SPA_CACHE_REPLACEMENT_IF_H_

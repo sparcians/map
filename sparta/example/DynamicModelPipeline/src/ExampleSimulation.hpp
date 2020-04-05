@@ -1,8 +1,7 @@
 // <Simulation.h> -*- C++ -*-
 
 
-#ifndef __EXAMPLE_SIMULATOR_H__
-#define __EXAMPLE_SIMULATOR_H__
+#pragma once
 
 #include "sparta/app/Simulation.hpp"
 
@@ -132,5 +131,3 @@ private:
     bool simdb_perf_async_ctrl_enabled_ = false;
 };
 
-// __EXAMPLE_SIMULATOR_H__
-#endif

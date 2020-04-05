@@ -6,8 +6,7 @@
  * \brief Cool string utilities
  */
 
-#ifndef __SPARTA_UTILS_STRING_UTILS_H__
-#define __SPARTA_UTILS_STRING_UTILS_H__
+#pragma once
 
 #include <cinttypes>
 #include <cstring>
@@ -530,4 +529,3 @@ inline bool operator!=(const std::string & one,
 }
 }
 
-#endif

@@ -7,8 +7,7 @@
  *        Array
  */
 
-#ifndef __FRONT_ARRAY_H__
-#define __FRONT_ARRAY_H__
+#pragma once
 
 #include "sparta/resources/Array.hpp"
 
@@ -153,4 +152,3 @@ namespace sparta{
     };
 }
 
-#endif //__FRONT_ARRAY_H__

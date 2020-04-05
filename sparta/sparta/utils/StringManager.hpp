@@ -1,7 +1,6 @@
 // <StringManager> -*- C++ -*-
 
-#ifndef __STRING_MANAGER_H__
-#define __STRING_MANAGER_H__
+#pragma once
 
 #include <string>
 #include <map>
@@ -241,5 +240,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __STRING_MANAGER_H__
-#endif

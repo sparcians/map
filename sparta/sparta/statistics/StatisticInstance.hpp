@@ -6,8 +6,7 @@
  * and some local state to compute a value over a specific sample range
  */
 
-#ifndef __STATISTIC_INSTANCE_H__
-#define __STATISTIC_INSTANCE_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -1366,5 +1365,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __STATISTIC_INSTANCE_H__
-#endif

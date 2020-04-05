@@ -5,8 +5,7 @@
  *
  */
 
-#ifndef __SPARTA_STAT_INST_CALCULATOR_H__
-#define __SPARTA_STAT_INST_CALCULATOR_H__
+#pragma once
 
 #include "sparta/kernel/SpartaHandler.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
@@ -95,4 +94,3 @@ private:
 
 }
 
-#endif

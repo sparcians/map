@@ -8,8 +8,7 @@
  *
  */
 
-#ifndef _H_SPARTA_TAG
-#define _H_SPARTA_TAG
+#pragma once
 
 #include <inttypes.h>
 #include <string>
@@ -198,4 +197,3 @@ inline std::ostream& operator<<(std::ostream& os, const Tag* tag)
         Tag::SequenceType Tag::global_seq_ = 1; \
     }
 
-#endif //_H_SPARTA_TAG

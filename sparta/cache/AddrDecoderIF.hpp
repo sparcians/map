@@ -1,7 +1,6 @@
 
 
-#ifndef _SPA_CACHE_ADDR_DECODER_IF_H__
-#define _SPA_CACHE_ADDR_DECODER_IF_H__
+#pragma once
 
 /*!
  * \file AddrDecoder.h
@@ -50,4 +49,3 @@ public:
 
 }; // namespace sparta
 
-#endif //  _SPA_CACHE_ADDR_DECODER_IF_H__

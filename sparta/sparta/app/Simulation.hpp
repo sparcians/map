@@ -5,9 +5,7 @@
  * \file Simulation.hpp
  * \brief Simulation setup base class
  */
-
-#ifndef __SPARTA_SIMULATION_H__
-#define __SPARTA_SIMULATION_H__
+#pragma once
 
 #include <vector>
 
@@ -1015,7 +1013,3 @@ private:
 
 } // namespace app
 } // namespace sparta
-
-
-// __SPARTA_SIMULATION_H__
-#endif

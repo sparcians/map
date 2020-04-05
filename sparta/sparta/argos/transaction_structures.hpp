@@ -3,8 +3,7 @@
  *
  */
 
-#ifndef __TRANSACTION_STRUCTURES_H__
-#define __TRANSACTION_STRUCTURES_H__
+#pragma once
 
 #include <inttypes.h>
 #include <utility>
@@ -75,8 +74,8 @@ struct __attribute__ ((__packed__)) transaction_t  {
 
     //! Parameterized Constructor
     transaction_t(uint64_t time_Start, uint64_t time_End, uint64_t parent_ID,
-        uint64_t transaction_ID, uint32_t location_ID, uint16_t flags,
-        uint16_t control_Process_ID) : 
+                  uint64_t transaction_ID, uint32_t location_ID, uint16_t flags,
+                  uint16_t control_Process_ID) :
         time_Start(time_Start), time_End(time_End), parent_ID(parent_ID),
         transaction_ID(transaction_ID), location_ID(location_ID), flags(flags),
         control_Process_ID(control_Process_ID) {}
@@ -90,7 +89,7 @@ struct __attribute__ ((__packed__)) transaction_t  {
         location_ID(old_obj.location_ID),
         flags(old_obj.flags),
         control_Process_ID(old_obj.control_Process_ID)
-        {;}
+    {;}
 };
 
 // Instruction Event
@@ -152,13 +151,13 @@ struct pair_t : public transaction_t {
     // The Unique pair id for every Name-Value class collected.
     uint16_t pairId {0};
 
-    // Vector of 2 Byte unsigned ints which contains the 
+    // Vector of 2 Byte unsigned ints which contains the
     // sizeofs of every different pair value in a record
     std::vector<uint16_t> sizeOfVector;
 
-    // Vector of 8 Byte unsigned ints which contains the 
+    // Vector of 8 Byte unsigned ints which contains the
     // actual value or the Integral representation of the
-    // actual values of every Name string in a record. 
+    // actual values of every Name string in a record.
     // We only store these values in the database.
     typedef std::pair<uint64_t, bool> ValidPair;
     std::vector<ValidPair> valueVector;
@@ -166,9 +165,9 @@ struct pair_t : public transaction_t {
     // Vector of the different Name Strings in a record.
     std::vector<std::string> nameVector;
 
-    // Vector of the actual String Values which we need to 
+    // Vector of the actual String Values which we need to
     // lookup while displaying in Argos.
-    // If a field value has no string representation, 
+    // If a field value has no string representation,
     // the enum vector field is empty at that position.
     std::vector<std::string> stringVector;
 
@@ -176,10 +175,10 @@ struct pair_t : public transaction_t {
     std::vector<std::string> delimVector;
 
     // The default constructor suffices for this structure.
-    // No Move Constructor needed for this structure as there 
+    // No Move Constructor needed for this structure as there
     // is no older version of such a structure.
     pair_t() = default;
-      
+
     //! Parameterized Constructor
     pair_t(uint64_t time_Start,
            uint64_t time_End,
@@ -196,5 +195,4 @@ struct pair_t : public transaction_t {
             location_ID,
             flags,
             control_Process_ID) {}
-}; // __TRANSACTION_STRUCTURES_H__
-#endif
+};

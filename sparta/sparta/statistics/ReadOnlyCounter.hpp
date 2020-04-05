@@ -1,8 +1,7 @@
 // <Counter> -*- C++ -*-
 
 
-#ifndef __READ_ONLY_COUNTER_H__
-#define __READ_ONLY_COUNTER_H__
+#pragma once
 
 #include "sparta/utils/ByteOrder.hpp"
 #include "sparta/statistics/CounterBase.hpp"
@@ -302,5 +301,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __READ_ONLY_COUNTER_H__
-#endif

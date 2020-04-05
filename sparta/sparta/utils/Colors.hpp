@@ -6,8 +6,7 @@
  * \brief Color code for SPARTA
  */
 
-#ifndef __SPARTA_COLORS_H__
-#define __SPARTA_COLORS_H__
+#pragma once
 #include "sparta/utils/StaticInit.hpp"
 #include <vector>
 #include "sparta/utils/SpartaException.hpp"
@@ -227,4 +226,4 @@ namespace color {
 } // namespace color
 } // namespace sparta
 
-#endif // #ifndef __SPARTA_CURRENT_COLORS_H__
+#pragma once

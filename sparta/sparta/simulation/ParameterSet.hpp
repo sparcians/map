@@ -1,7 +1,6 @@
 // <ParameterSet> -*- C++ -*-
 
-#ifndef __PARAMETER_SET_H__
-#define __PARAMETER_SET_H__
+#pragma once
 
 #include <iostream>
 #include <iomanip>
@@ -813,5 +812,3 @@ inline std::ostream& operator<< (std::ostream& out, sparta::ParameterSet const *
     constexpr char sparta::ParameterSet::PARAMETER_SET_NODE_TAG[];     \
 
 
-// __PARAMETER_SET_H__
-#endif

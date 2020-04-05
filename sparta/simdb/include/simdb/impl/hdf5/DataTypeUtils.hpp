@@ -1,7 +1,6 @@
 // <DataTypeUtils> -*- C++ -*-
 
-#ifndef __SIMDB_HDF5_DATA_TYPE_UTILS_H__
-#define __SIMDB_HDF5_DATA_TYPE_UTILS_H__
+#pragma once
 
 #include "simdb/schema/ColumnMetaStructs.hpp"
 #include "simdb/Errors.hpp"
@@ -227,4 +226,3 @@ ColumnDataType getPODColumnDTypeFromHDF5(const hid_t tid)
 
 }
 
-#endif

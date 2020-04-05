@@ -1,7 +1,6 @@
 // <TableSummaries> -*- C++ -*-
 
-#ifndef __SIMDB_TABLE_SUMMARIES_H__
-#define __SIMDB_TABLE_SUMMARIES_H__
+#pragma once
 
 #include "simdb/schema/Schema.hpp"
 #include "simdb/schema/TableTypedefs.hpp"
@@ -82,4 +81,3 @@ private:
 
 }
 
-#endif

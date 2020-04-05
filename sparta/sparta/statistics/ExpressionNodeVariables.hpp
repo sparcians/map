@@ -6,8 +6,7 @@
  * SimVariable: Expression -> StatVarible -> StatisticInstance -> Expression
  */
 
-#ifndef __EXPRESSION_NODE_VARIABLES_H__
-#define __EXPRESSION_NODE_VARIABLES_H__
+#pragma once
 
 #include <memory>
 
@@ -308,4 +307,4 @@ private:
     } // namespace statistics
 } // namespace sparta
 
-#endif // #ifndef __EXPRESSION_NODE_VARIABLES_H__
+#pragma once

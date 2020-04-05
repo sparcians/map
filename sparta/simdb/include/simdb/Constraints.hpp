@@ -1,7 +1,6 @@
 // <Constraints> -*- C++ -*-
 
-#ifndef __SIMDB_CONSTRAINTS_H__
-#define __SIMDB_CONSTRAINTS_H__
+#pragma once
 
 #include "simdb/Errors.hpp"
 
@@ -45,4 +44,3 @@ inline std::ostream & operator<<(std::ostream & os,
     
 } // namespace simdb
 
-#endif

@@ -1,7 +1,6 @@
-// <LexicalCast> -*- C++ -*-
+// <LexicalCast.hpp> -*- C++ -*-
 
-#ifndef __LEXICAL_CAST_H__
-#define __LEXICAL_CAST_H__
+#pragma once
 
 #include <cstdlib>
 #include <iostream>
@@ -196,7 +195,3 @@ namespace sparta
     }
 
 } // namespace sparta
-
-
-// __LEXICAL_CAST_H__
-#endif

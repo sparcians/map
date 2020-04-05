@@ -1,6 +1,5 @@
 
-#ifndef __SLEEPER_THREAD_BASE_H__
-#define __SLEEPER_THREAD_BASE_H__
+#pragma once
 
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/events/Scheduleable.hpp"
@@ -97,4 +96,3 @@ public:
 
 } // namespace sparta
 
-#endif // __SLEEPER_THREAD_BASE_H__

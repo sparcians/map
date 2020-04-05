@@ -5,8 +5,7 @@
  * \brief JSON Report output formatter
  */
 
-#ifndef __SPARTA_REPORT_FORMAT_JSON_H__
-#define __SPARTA_REPORT_FORMAT_JSON_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -131,5 +130,3 @@ inline std::ostream& operator<< (std::ostream& out, JSON & f) {
     } // namespace report
 } // namespace sparta
 
-// __SPARTA_REPORT_FORMAT_JSON_H__
-#endif

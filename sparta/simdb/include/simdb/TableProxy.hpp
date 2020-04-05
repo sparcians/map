@@ -1,7 +1,6 @@
 // <TableProxy> -*- C++ -*-
 
-#ifndef __SIMDB_TABLE_PROXY_H__
-#define __SIMDB_TABLE_PROXY_H__
+#pragma once
 
 #include "simdb/schema/DatabaseRoot.hpp"
 #include "simdb/TableRef.hpp"
@@ -78,4 +77,3 @@ private:
 
 } // namespace simdb
 
-#endif

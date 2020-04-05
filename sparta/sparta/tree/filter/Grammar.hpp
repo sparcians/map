@@ -6,8 +6,7 @@
  * their attributes
  */
 
-#ifndef __TREE_FILTER_GRAMMAR_H__
-#define __TREE_FILTER_GRAMMAR_H__
+#pragma once
 
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
@@ -328,4 +327,4 @@ public:
     } // namespace tree
 } // namespace sparta
 
-#endif // #ifndef __TREE_FILTER_GRAMMAR_H__
+#pragma once

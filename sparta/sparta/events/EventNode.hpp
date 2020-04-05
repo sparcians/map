@@ -7,8 +7,7 @@
  * \brief  File that defines the EventNode class
  */
 
-#ifndef __EVENT_NODE_H__
-#define __EVENT_NODE_H__
+#pragma once
 
 #include <set>
 #include <memory>
@@ -109,5 +108,3 @@ namespace sparta
 }
 
 
-// __EVENT_NODE_H__
-#endif

@@ -5,8 +5,7 @@
  * \brief PythonDict Report output formatter
  */
 
-#ifndef __SPARTA_REPORT_FORMAT_PYTHONDICT_H__
-#define __SPARTA_REPORT_FORMAT_PYTHONDICT_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -146,5 +145,3 @@ inline std::ostream& operator<< (std::ostream& out, PythonDict & f) {
     } // namespace report
 } // namespace sparta
 
-// __SPARTA_REPORT_FORMAT_PYTHONDICT_H__
-#endif

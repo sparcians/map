@@ -1,7 +1,6 @@
 // <Schema> -*- C++ -*-
 
-#ifndef __SIMDB_SCHEMA_H__
-#define __SIMDB_SCHEMA_H__
+#pragma once
 
 #include "simdb/schema/ColumnMetaStructs.hpp"
 #include "simdb/schema/ColumnTypedefs.hpp"
@@ -1060,4 +1059,3 @@ private:
 
 } // namespace simdb
 
-#endif

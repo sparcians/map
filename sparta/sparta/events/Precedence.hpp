@@ -1,8 +1,6 @@
 // <Precedence.hpp> -*- C++ -*-
 
-
-#ifndef __PRECEDENCE__H__
-#define __PRECEDENCE__H__
+#pragma once
 
 #include <type_traits>
 
@@ -136,7 +134,7 @@ namespace sparta
         return consumer;
     }
 
-#define __SPARTA_PHASE_ERROR_MSG                                          \
+#define __SPARTA_PHASE_ERROR_MSG                                        \
     "\nERROR: You cannot set a precedence on two Scheduleable types"    \
     " that are on different phases.  This will happen automatically by the framework."
 
@@ -1098,6 +1096,3 @@ namespace sparta
     }
 
 }
-
-// __PRECEDENCE__H__
-#endif

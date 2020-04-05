@@ -5,8 +5,7 @@
  * \brief Base class for Triggerable types
  *
  */
-#ifndef __SPARTA_TRIGGERABLE_H__
-#define __SPARTA_TRIGGERABLE_H__
+#pragma once
 
 namespace sparta
 {
@@ -40,4 +39,3 @@ public:
     }// namespace trigger
 }// namespace sparta
 
-#endif //__SPARTA_TRIGGERABLE_H__

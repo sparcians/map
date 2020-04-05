@@ -1,7 +1,6 @@
 // <ReportVerifier> -*- C++ -*-
 
-#ifndef __SPARTA_SIMDB_REPORT_VERIFIER_H__
-#define __SPARTA_SIMDB_REPORT_VERIFIER_H__
+#pragma once
 
 #include <map>
 #include <memory>
@@ -162,4 +161,3 @@ private:
 } // namespace db
 } // namespace sparta
 
-#endif

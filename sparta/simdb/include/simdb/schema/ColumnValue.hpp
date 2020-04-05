@@ -1,7 +1,6 @@
 // <ColumnValue> -*- C++ -*-
 
-#ifndef __SIMDB_SCHEMA_COLUMN_VALUE_H__
-#define __SIMDB_SCHEMA_COLUMN_VALUE_H__
+#pragma once
 
 //! SimDB column values can be numeric, strings, or
 //! blobs, and in all cases they can be represented
@@ -324,4 +323,3 @@ public:
 
 }
 
-#endif

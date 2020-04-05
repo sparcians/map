@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __SPARTA_SHARED_POINTER__H__
-#define __SPARTA_SHARED_POINTER__H__
+#pragma once
 
 #include <cinttypes>
 #include <type_traits>
@@ -804,5 +803,3 @@ namespace MetaStruct {
     struct remove_any_pointer<sparta::SpartaSharedPointer<T> const &> { using type = T; };
 }
 
-// __REF_POINTER__H__
-#endif

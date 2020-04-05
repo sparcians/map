@@ -6,8 +6,7 @@
  * \brief Class to facilitate pipeline collection operations.
  */
 
-#ifndef __PIPELINE_COLLECTOR_H__
-#define __PIPELINE_COLLECTOR_H__
+#pragma once
 
 #include <set>
 #include <map>
@@ -645,5 +644,3 @@ namespace collection
 }// namespace sparta
 
 
-//__PIPELINE_COLLECTOR_H__
-#endif

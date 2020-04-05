@@ -7,8 +7,7 @@
  * \brief  File that defines a LockedValue
  */
 
-#ifndef __LOCKED_VALUE_H__
-#define __LOCKED_VALUE_H__
+#pragma once
 
 #include "sparta/utils/SpartaAssert.hpp"
 
@@ -133,4 +132,3 @@ std::ostream& operator << (std::ostream& os, const sparta::utils::LockedValue<T>
 } // LockedValue
 } // namespace utils
 } // namespace sparta
-#endif

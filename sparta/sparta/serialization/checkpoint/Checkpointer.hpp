@@ -1,7 +1,6 @@
 // <Checkpointer> -*- C++ -*-
 
-#ifndef __CHECKPOINTER_H__
-#define __CHECKPOINTER_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -868,5 +867,3 @@ inline std::ostream& operator<<(std::ostream& o, const sparta::serialization::ch
     return o;
 }
 
-// __CHECKPOINTER_H__
-#endif
