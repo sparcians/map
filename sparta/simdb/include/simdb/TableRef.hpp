@@ -1,7 +1,6 @@
 // <TableRef> -*- C++ -*-
 
-#ifndef __SIMDB_TABLE_REF_H__
-#define __SIMDB_TABLE_REF_H__
+#pragma once
 
 #include "simdb/schema/ColumnValueContainer.hpp"
 #include "simdb/schema/ColumnTypedefs.hpp"
@@ -636,4 +635,3 @@ private:
 
 } // namespace simdb
 
-#endif

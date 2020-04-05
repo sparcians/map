@@ -5,8 +5,7 @@
  *
  */
 
-#ifndef __SPARTA_COMPARATOR_H__
-#define __SPARTA_COMPARATOR_H__
+#pragma once
 
 /*!
  * \brief Generic classes for comparing one dynamic value against
@@ -99,5 +98,3 @@ std::unique_ptr<ComparatorBase<DataT>> createComparator(const std::string & op, 
 // namespace sparta
 }
 
-// __SPARTA_COMPARATOR_H__
-#endif

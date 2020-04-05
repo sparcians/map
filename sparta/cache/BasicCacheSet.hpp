@@ -1,7 +1,6 @@
 
 
-#ifndef _SPA_BASIC_CACHE_SET_H_
-#define _SPA_BASIC_CACHE_SET_H_
+#pragma once
 
 #include <vector>
 #include "sparta/utils/MathUtils.hpp"
@@ -224,4 +223,3 @@ namespace sparta
 
 }; // namespace sparta
 
-#endif // _SPA_BASIC_CACHE_SET_H_

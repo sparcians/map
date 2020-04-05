@@ -1,7 +1,6 @@
 // <Producer.hpp> -*- C++ -*-
 
-#ifndef _PRODUCER_H_
-#define _PRODUCER_H_
+#pragma once
 
 #include <cinttypes>
 #include <string>
@@ -78,4 +77,3 @@ private:
     sparta::log::MessageSource producer_info_;
 };
 
-#endif

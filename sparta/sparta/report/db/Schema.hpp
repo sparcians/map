@@ -1,7 +1,6 @@
 // <Schema> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTICS_DATABASE_SCHEMA_H__
-#define __SPARTA_STATISTICS_DATABASE_SCHEMA_H__
+#pragma once
 
 #include "simdb/schema/Schema.hpp"
 
@@ -32,4 +31,3 @@ enum class MajorOrdering : int32_t
 } // namespace db
 } // namespace sparta
 
-#endif

@@ -1,6 +1,5 @@
 
-#ifndef __SIMPLE_DL1_H__
-#define __SIMPLE_DL1_H__
+#pragma once
 
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/MathUtils.hpp"
@@ -166,4 +165,3 @@ namespace core_example
 
 } // namespace core_example
 
-#endif //__SIMPLE_DL1_H__

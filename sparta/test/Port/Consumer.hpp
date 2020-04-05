@@ -1,7 +1,5 @@
 
-
-#ifndef CONSUMER_H_
-#define CONSUMER_H_
+#pragma once
 
 #include "sparta/simulation/Resource.hpp"
 #include "sparta/simulation/Clock.hpp"
@@ -82,5 +80,3 @@ private:
     sparta::Event<sparta::SchedulingPhase::PortUpdate> bad_event_{&event_set_, "bad_event", CREATE_SPARTA_HANDLER(Consumer, mySignalEventHandler)};
 
 };
-
-#endif

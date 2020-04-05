@@ -3,8 +3,7 @@
 /*
  */
 
-#ifndef __SPARTA_ITERABLE_OBJECT_COLLECTOR_HPP__
-#define __SPARTA_ITERABLE_OBJECT_COLLECTOR_HPP__
+#pragma once
 
 #include <memory>
 #include <sstream>
@@ -259,4 +258,3 @@ private:
 } // namespace collection
 } // namespace sparta
 
-#endif

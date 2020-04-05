@@ -1,7 +1,6 @@
 // <ColumnTypedefs> -*- C++ -*-
 
-#ifndef __SIMDB_COLUMN_TYPEDEFS_H__
-#define __SIMDB_COLUMN_TYPEDEFS_H__
+#pragma once
 
 #include <cstdint>
 #include <cstddef>
@@ -41,4 +40,3 @@ struct Blob {
 
 }
 
-#endif

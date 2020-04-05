@@ -1,7 +1,6 @@
 /*
  */
-#ifndef __SPARTA_UTILS_BIT_ARRAY_H__
-#define __SPARTA_UTILS_BIT_ARRAY_H__
+#pragma once
 
 #include <vector>
 #include <iomanip>
@@ -339,4 +338,3 @@ namespace sparta {
 
     } /* namespace utils */
 } /* namespace sparta */
-#endif /* __SPARTA_UTILS_BIT_ARRAY_H__ */

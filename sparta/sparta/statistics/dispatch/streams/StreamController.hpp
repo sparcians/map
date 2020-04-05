@@ -1,7 +1,6 @@
 // <StreamController> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTICS_STREAM_CONTROLLER_H__
-#define __SPARTA_STATISTICS_STREAM_CONTROLLER_H__
+#pragma once
 
 namespace sparta {
 namespace statistics {
@@ -64,4 +63,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif

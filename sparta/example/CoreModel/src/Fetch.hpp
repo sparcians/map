@@ -6,8 +6,7 @@
 //!
 
 
-#ifndef __FETCH_H__
-#define __FETCH_H__
+#pragma once
 
 #include <string>
 #include "sparta/ports/DataPort.hpp"
@@ -128,5 +127,3 @@ namespace core_example
     };
 
 }
-//__FETCH_H__
-#endif

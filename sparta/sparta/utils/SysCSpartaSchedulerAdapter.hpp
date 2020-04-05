@@ -8,8 +8,7 @@
  *
  */
 
-#ifndef __SYSCSpartaSCHEDULERADAPTER_H__
-#define __SYSCSpartaSCHEDULERADAPTER_H__
+#pragma once
 
 #include <climits>
 
@@ -252,4 +251,3 @@ private:
 
 }
 
-#endif

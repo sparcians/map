@@ -1,8 +1,7 @@
 // <StateTracker> -*- C++ -*-
 
 
-#ifndef __STATE_TRACKER__H__
-#define __STATE_TRACKER__H__
+#pragma once
 
 #include <inttypes.h>
 #include <memory>
@@ -682,6 +681,5 @@ namespace sparta {
             StateSet<EnumT> state_set_ {};
         };
     }
-}// __STATE_TRACKER__H__
 
-#endif
+}

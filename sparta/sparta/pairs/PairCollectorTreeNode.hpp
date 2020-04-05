@@ -1,5 +1,4 @@
-#ifndef __PAIR_COLLECTOR_NODE_H_
-#define __PAIR_COLLECTOR_NODE_H_
+#pragma once
 
 
 #include "sparta/simulation/TreeNode.hpp"
@@ -45,4 +44,3 @@ namespace sparta{
 
 } // namespace sparta
 
-#endif //__PAIR_COLLECTOR_NODE_H_

@@ -5,8 +5,7 @@
  **  \brief Outputs Transactions to record file and builds index file while running *
  */
 
-#ifndef __OUTPUTTER_H__
-#define __OUTPUTTER_H__
+#pragma once
 
 #include <iostream>
 #include <fstream>
@@ -81,11 +80,11 @@ namespace sparta{
         void writeTransaction(const R_Type& dat)
         {
             last_record_pos_ = record_file_.tellg();
-            #ifdef PIPELINE_DBG
+#ifdef PIPELINE_DBG
             std::cout << "writing transaction at: " << last_record_pos_ << " TMST: "
             << dat.time_Start << " TMEN: " << dat.time_End <<  std::endl;
-            #endif
             writeData_(record_file_, reinterpret_cast<const char *>(&dat), sizeof(R_Type));
+#endif
         }
 
         /**
@@ -263,5 +262,3 @@ namespace sparta{
         }
     }//namespace argos
 }//namespace sparta
-//__OUTPUTTER_H__
-#endif

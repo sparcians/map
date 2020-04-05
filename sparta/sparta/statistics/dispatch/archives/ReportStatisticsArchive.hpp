@@ -1,7 +1,6 @@
 // <ReportStatisticsArchive> -*- C++ -*-
 
-#ifndef __SPARTA_REPORT_STATISTICS_ARCHIVE_H__
-#define __SPARTA_REPORT_STATISTICS_ARCHIVE_H__
+#pragma once
 
 #include "sparta/statistics/dispatch/archives/ReportStatisticsAggregator.hpp"
 #include "sparta/statistics/dispatch/archives/ArchiveDispatcher.hpp"
@@ -184,4 +183,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif

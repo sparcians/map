@@ -1,7 +1,6 @@
 // <BinaryOArchive> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTICS_BINARY_OARCHIVE_H__
-#define __SPARTA_STATISTICS_BINARY_OARCHIVE_H__
+#pragma once
 
 #include "sparta/statistics/dispatch/archives/ArchiveSink.hpp"
 #include "sparta/statistics/dispatch/archives/RootArchiveNode.hpp"
@@ -141,4 +140,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif

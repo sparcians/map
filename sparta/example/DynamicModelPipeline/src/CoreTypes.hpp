@@ -1,7 +1,6 @@
 
 
-#ifndef __CORE_TYPES_H__
-#define __CORE_TYPES_H__
+#pragma once
 
 // #define BOOST_SP_NO_ATOMIC_ACCESS 1
 // #include <boost/shared_ptr.hpp>
@@ -31,4 +30,3 @@ namespace core_example
 
 }
 
-#endif

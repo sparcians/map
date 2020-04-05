@@ -1,7 +1,6 @@
 // <ObjectManager> -*- C++ -*-
 
-#ifndef __SIMDB_OBJECT_MANAGER_H__
-#define __SIMDB_OBJECT_MANAGER_H__
+#pragma once
 
 #include "simdb/schema/Schema.hpp"
 #include "simdb/ObjectFactory.hpp"
@@ -635,4 +634,3 @@ private:
 
 } // namespace simdb
 
-#endif

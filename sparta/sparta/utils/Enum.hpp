@@ -1,10 +1,7 @@
 // <Enum> -*- C++ -*-
+#pragma once
 
-
-#ifndef _H_SPARTA_ENUM
-#define _H_SPARTA_ENUM
-
-#include <inttypes.h>
+#include <cinttypes>
 #include <string>
 #include <memory>
 #include <vector>
@@ -209,4 +206,3 @@ namespace utils
 
 } // utils
 } // sparta
-#endif //_H_SPARTA_ENUM

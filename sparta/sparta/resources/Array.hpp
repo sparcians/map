@@ -5,8 +5,7 @@
  * \brief Defines the Array class
  *
  */
-#ifndef __SPARTA_ARRAY_H__
-#define __SPARTA_ARRAY_H__
+#pragma once
 
 #include <vector>
 #include <map>
@@ -950,4 +949,3 @@ namespace sparta
 
 }
 
-#endif

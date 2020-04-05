@@ -8,8 +8,7 @@
  * \brief File that defines Preloadable.
  */
 
-#ifndef __SPARTA_PRELOADABLE_H__
-#define __SPARTA_PRELOADABLE_H__
+#pragma once
 
 #include <string>
 #include "sparta/simulation/TreeNode.hpp"
@@ -89,4 +88,3 @@ namespace cache {
 
 } // namespace sparta
 
-#endif //__SPARTA_PRELOADABLE_H__

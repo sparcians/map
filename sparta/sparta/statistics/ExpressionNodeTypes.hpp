@@ -1,7 +1,6 @@
 // <ExpressionNodeTypes> -*- C++ -*-
 
-#ifndef __EXPRESSION_NODE_TYPES_H__
-#define __EXPRESSION_NODE_TYPES_H__
+#pragma once
 
 #include <vector>
 #include <memory>
@@ -661,4 +660,4 @@ private:
     } // namespace statistics
 } // namespace sparta
 
-#endif // #ifndef __EXPRESSION_NODE_TYPES_H__
+#pragma once

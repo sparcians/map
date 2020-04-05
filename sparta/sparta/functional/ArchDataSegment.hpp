@@ -1,7 +1,6 @@
 // <ArchDataSegment> -*- C++ -*-
 
-#ifndef __ARCH_DATA_SEGMENT_H__
-#define __ARCH_DATA_SEGMENT_H__
+#pragma once
 
 #include <iostream>
 #include <math.h>
@@ -203,5 +202,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __ARCH_DATA_SEGMENT_H__
-#endif

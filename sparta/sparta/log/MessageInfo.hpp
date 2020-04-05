@@ -1,7 +1,6 @@
 // <MessageInfo> -*- C++ -*-
 
-#ifndef __MESSAGE_INFO_H__
-#define __MESSAGE_INFO_H__
+#pragma once
 
 #include <cstdint>
 #include <iostream>
@@ -58,5 +57,3 @@ class TreeNode;
     } // namespace log
 } // namespace sparta
 
-// __MESSAGE_INFO_H__
-#endif

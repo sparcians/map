@@ -7,8 +7,7 @@
  * \brief  File that defines the Event class
  */
 
-#ifndef __EVENT_H__
-#define __EVENT_H__
+#pragma once
 
 #include <set>
 #include <memory>
@@ -128,5 +127,3 @@ namespace sparta
 }
 
 
-// __EVENT_H__
-#endif

@@ -5,8 +5,7 @@
  *
  */
 
-#ifndef __SPARTA_TREE_NODE_EXTENSIONS_H__
-#define __SPARTA_TREE_NODE_EXTENSIONS_H__
+#pragma once
 
 #include <memory>
 #include <string>
@@ -82,5 +81,3 @@ ExtensionDescriptorVec createExtensionDescriptorsFromDefinitionString(
 
 }
 
-// __SPARTA_TREE_NODE_EXTENSIONS_H__
-#endif

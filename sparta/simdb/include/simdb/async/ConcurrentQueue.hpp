@@ -1,7 +1,6 @@
 // <ConcurrentQueue> -*- C++ -*-
 
-#ifndef __SIMDB_CONCURRENT_QUEUE_H__
-#define __SIMDB_CONCURRENT_QUEUE_H__
+#pragma once
 
 #include <mutex>
 #include <queue>
@@ -56,5 +55,4 @@ private:
 
 } // namespace simdb
 
-#endif
 

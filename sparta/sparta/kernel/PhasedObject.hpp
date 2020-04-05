@@ -5,8 +5,7 @@
  * \brief Basic Node framework in sparta device tree composite pattern
  */
 
-#ifndef __PHASED_OBJECT_H__
-#define __PHASED_OBJECT_H__
+#pragma once
 
 #include "sparta/utils/Utils.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -266,5 +265,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __PHASED_OBJECT_H__
-#endif

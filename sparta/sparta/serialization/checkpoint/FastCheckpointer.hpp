@@ -1,7 +1,6 @@
 // <FastCheckpointer> -*- C++ -*-
 
-#ifndef __FAST_CHECKPOINTER_H__
-#define __FAST_CHECKPOINTER_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -735,5 +734,3 @@ namespace checkpoint
 } // namespace serialization
 } // namespace sparta
 
-// __FAST_CHECKPOINTER_H__
-#endif

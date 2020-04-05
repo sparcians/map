@@ -7,8 +7,7 @@
  *        operators, member-fields and methods by name in any class.
  */
 
-#ifndef __SPARTA_UTILS_DETECT_MEMBER_UTILS_H__
-#define __SPARTA_UTILS_DETECT_MEMBER_UTILS_H__
+#pragma once
 
 #include <iostream>
 
@@ -74,4 +73,3 @@ template<typename T>
 struct has_ostream_operator : has_ostream_operator_impl::has_ostream_operator<T>{};
 } // namespace utils
 } // namespace sparta
-#endif

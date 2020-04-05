@@ -7,8 +7,7 @@
  * \brief  File that defines the PhasedSingleCycleUniqueEvent class
  */
 
-#ifndef __PHASED_SINGLE_CYCLE_UNIQUE_EVENT_H__
-#define __PHASED_SINGLE_CYCLE_UNIQUE_EVENT_H__
+#pragma once
 
 #include <array>
 #include <memory>
@@ -191,5 +190,3 @@ namespace sparta
 }
 
 
-// __UNIQUE_EVENT_H__
-#endif

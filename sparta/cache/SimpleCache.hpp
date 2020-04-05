@@ -1,5 +1,4 @@
-#ifndef _SIMPLE_CACHE_H__
-#define _SIMPLE_CACHE_H__
+#pragma once
 
 
 #include <string>
@@ -343,4 +342,3 @@ namespace sparta
 
 }; // namespace sparta
 
-#endif // _SIMPLE_CACHE_H__

@@ -5,8 +5,7 @@
  * \brief  File that defines Translation classes and typedefs for addressing
  */
 
-#ifndef __TRANSLATION_H__
-#define __TRANSLATION_H__
+#pragma once
 
 #include "sparta/memory/AddressTypes.hpp"
 
@@ -80,4 +79,3 @@ namespace sparta
 
 }
 
-#endif

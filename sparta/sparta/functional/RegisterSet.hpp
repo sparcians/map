@@ -1,7 +1,6 @@
 // <RegisterSet> -*- C++ -*-
 
-#ifndef __REGISTER_SET_H__
-#define __REGISTER_SET_H__
+#pragma once
 
 #include <cstdint>
 #include <iostream>
@@ -1118,5 +1117,3 @@ inline std::ostream &operator<<(std::ostream &o, const sparta::RegisterSet *rs)
     return o;
 }
 
-// __REGISTER_SET_H__
-#endif

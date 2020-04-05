@@ -1,8 +1,7 @@
 // <ResourceFactory> -*- C++ -*-
 
 
-#ifndef __RESOURCE_FACTORY__
-#define __RESOURCE_FACTORY__
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -369,4 +368,3 @@ namespace sparta
 } // namespace sparta
 
 // __RESOURCE_FACTORY__
-#endif

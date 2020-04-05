@@ -4,8 +4,7 @@
  * \file PeventTrigger
  *
  */
-#ifndef __SPARTA_PEVENT_TRIGGER_H__
-#define __SPARTA_PEVENT_TRIGGER_H__
+#pragma once
 #include "sparta/trigger/Triggerable.hpp"
 #include "sparta/pevents/PeventTreeNode.hpp"
 #include "sparta/simulation/TreeNodePrivateAttorney.hpp"
@@ -62,4 +61,3 @@ private:
     }//namespace trigger
 }//namespace sparta
 
-#endif //__SPARTA_PEVENT_TRIGGER_H__

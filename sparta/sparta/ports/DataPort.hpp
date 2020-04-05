@@ -7,8 +7,7 @@
  * \brief  File that defines Data[In,Out]Port<DataT>
  */
 
-#ifndef __DATA_PORT_H__
-#define __DATA_PORT_H__
+#pragma once
 
 #include <set>
 #include <vector>
@@ -555,5 +554,3 @@ namespace sparta
 
 
 
-// __DATA_PORT_H__
-#endif

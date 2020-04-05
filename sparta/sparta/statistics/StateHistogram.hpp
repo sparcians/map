@@ -6,8 +6,7 @@
  * \brief StateHistogram implementation using sparta Counters
  */
 
-#ifndef __SPARTA_STATE_HISTOGRAM_H__
-#define __SPARTA_STATE_HISTOGRAM_H__
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -239,4 +238,3 @@ private:
 }; // class StateHistogram
 
 }; // namespace sparta
-#endif // __SPARTA_STATE_HISTOGRAM_H__

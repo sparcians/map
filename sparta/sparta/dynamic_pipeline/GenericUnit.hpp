@@ -1,8 +1,7 @@
 // <GenericUnit.h> -*- C++ -*-
 
 
-#ifndef __GENERIC_UNIT_H__
-#define __GENERIC_UNIT_H__
+#pragma once
 
 #include <string>
 #include "sparta/ports/DataPort.hpp"
@@ -36,4 +35,3 @@ public:
 }; // class GenericUnit
 }  // namespace dynamic_pipeline
 }  // namespace sparta
-#endif

@@ -8,8 +8,7 @@
  *        using sparta::PayloadEvent instead
  */
 
-#ifndef __PHASED_PAYLOAD_EVENT_H__
-#define __PHASED_PAYLOAD_EVENT_H__
+#pragma once
 
 #include <list>
 #include <memory>
@@ -621,5 +620,3 @@ namespace sparta
 }
 
 
-// __PHASED_PAYLOAD_EVENT_H__
-#endif

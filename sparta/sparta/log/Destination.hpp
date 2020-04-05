@@ -1,7 +1,6 @@
 // <Destination> -*- C++ -*-
 
-#ifndef __DESTINATION_H__
-#define __DESTINATION_H__
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -671,5 +670,3 @@ inline std::ostream& operator<< (std::ostream& out, sparta::log::Destination con
     return out;
 }
 
-// __DESTINATION_H__
-#endif

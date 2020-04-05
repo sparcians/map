@@ -1,7 +1,6 @@
 // <ReportStatisticsHierTree> -*- C++ -*-
 
-#ifndef __SPARTA_REPORT_STATISTICS_HIER_TREE_H__
-#define __SPARTA_REPORT_STATISTICS_HIER_TREE_H__
+#pragma once
 
 #include "sparta/report/Report.hpp"
 
@@ -126,4 +125,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif

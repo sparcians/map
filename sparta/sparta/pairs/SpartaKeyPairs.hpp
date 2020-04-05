@@ -8,8 +8,7 @@
  * concepts.
  */
 
-#ifndef __KEY_PAIR_SPARTA_H__
-#define __KEY_PAIR_SPARTA_H__
+#pragma once
 
 #include <memory>
 #include <sstream>
@@ -2294,4 +2293,3 @@ namespace sparta {
     };
 } //namespace sparta
 
-#endif //__KEY_PAIR_SPARTA_H__

@@ -5,8 +5,7 @@
  * \brief  File that contains the macro used to generate the class callbacks.
  */
 
-#ifndef __SPARTA_HANDLER_H__
-#define __SPARTA_HANDLER_H__
+#pragma once
 
 #include <iostream>
 #include <cinttypes>
@@ -518,4 +517,3 @@ namespace sparta
     (obj, #clname"::"#meth"("#dataT")")
 }
 
-#endif

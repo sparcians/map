@@ -8,8 +8,7 @@
  *
  */
 
-#ifndef __CIRCULARBUFFER_EXP_H__
-#define __CIRCULARBUFFER_EXP_H__
+#pragma once
 
 #include <cinttypes>
 #include <list>
@@ -875,5 +874,3 @@ namespace sparta
 
 }
 
-// __CIRCULARBUFFER__H__
-#endif

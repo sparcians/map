@@ -1,7 +1,6 @@
 // <TableTypedefs> -*- C++ -*-
 
-#ifndef __SIMDB_TABLE_TYPEDEFS_H__
-#define __SIMDB_TABLE_TYPEDEFS_H__
+#pragma once
 
 #include "simdb_fwd.hpp"
 
@@ -91,4 +90,3 @@ using NamedSummaryFunctions = std::map<std::string, SummaryFunction>;
 
 }
 
-#endif

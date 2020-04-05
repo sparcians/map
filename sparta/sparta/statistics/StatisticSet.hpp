@@ -7,8 +7,7 @@
  * \brief  File that defines the StatisticSet class
  */
 
-#ifndef __STATISTIC_SET_H__
-#define __STATISTIC_SET_H__
+#pragma once
 
 #include <iostream>
 
@@ -314,5 +313,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __STATISTIC_SET_H__
-#endif

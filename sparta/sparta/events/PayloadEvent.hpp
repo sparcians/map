@@ -7,8 +7,7 @@
  * \brief  File that defines the PayloadEvent class
  */
 
-#ifndef __PAYLOAD_EVENT_H__
-#define __PAYLOAD_EVENT_H__
+#pragma once
 
 #include <set>
 #include <memory>
@@ -128,5 +127,3 @@ namespace sparta
 }
 
 
-// __PAYLOAD_EVENT_H__
-#endif

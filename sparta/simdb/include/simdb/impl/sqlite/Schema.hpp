@@ -1,7 +1,6 @@
 // <Schema> -*- C++ -*-
 
-#ifndef __SIMDB_SQLITE_SCHEMA_H__
-#define __SIMDB_SQLITE_SCHEMA_H__
+#pragma once
 
 #include "simdb/schema/Schema.hpp"
 
@@ -47,4 +46,3 @@ inline std::ostream & operator<<(std::ostream & os, const ColumnDataType dtype)
 
 } // namespace simdb
 
-#endif

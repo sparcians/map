@@ -8,8 +8,7 @@
  *        preload data.
  */
 
-#ifndef __SPARTA_PRELOAD_DUMPABLE_H__
-#define __SPARTA_PRELOAD_DUMPABLE_H__
+#pragma once
 #include "cache/preload/PreloadEmitter.hpp"
 namespace sparta {
 namespace cache {
@@ -52,4 +51,3 @@ namespace cache {
     };
 } //namespace cache
 } //namespace sparta
-#endif // __SPARTA_PRELOAD_DUMPABLE_H__

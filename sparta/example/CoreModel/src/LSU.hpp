@@ -1,6 +1,5 @@
 
-#ifndef __LSU_H__
-#define __LSU_H__
+#pragma once
 
 #include "sparta/ports/PortSet.hpp"
 #include "sparta/ports/SignalPort.hpp"
@@ -595,4 +594,3 @@ namespace core_example
         return os;
     }
 } // namespace core_example
-#endif //__LSU_H__

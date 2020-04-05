@@ -1,7 +1,6 @@
 // <TimerThread> -*- C++ -*-
 
-#ifndef __SIMDB_TIMER_THREAD_H__
-#define __SIMDB_TIMER_THREAD_H__
+#pragma once
 
 #include "simdb/Errors.hpp"
 
@@ -244,5 +243,4 @@ private:
 
 } // namespace simdb
 
-#endif
 

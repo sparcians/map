@@ -1,7 +1,6 @@
 // <StatisticsStreams> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTICS_STREAMS_H__
-#define __SPARTA_STATISTICS_STREAMS_H__
+#pragma once
 
 #include "sparta/statistics/dispatch/StatisticsHierRootNodes.hpp"
 #include "sparta/statistics/dispatch/streams/StreamNode.hpp"
@@ -73,4 +72,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif

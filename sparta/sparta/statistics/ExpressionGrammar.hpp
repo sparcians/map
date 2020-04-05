@@ -2,8 +2,7 @@
 
 #define BOOST_SPIRIT_USE_PHOENIX_V3 0
 
-#ifndef __EXPRESSION_GRAMMAR_H__
-#define __EXPRESSION_GRAMMAR_H__
+#pragma once
 
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
@@ -227,4 +226,4 @@ public:
     } // namespace statistics
 } // namespace sparta
 
-#endif // #ifndef __EXPRESSION_GRAMMAR_H__
+#pragma once

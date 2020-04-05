@@ -7,8 +7,7 @@
  * \brief  File that defines the DataContainer class
  */
 
-#ifndef __DATA_CONTAINER_H__
-#define __DATA_CONTAINER_H__
+#pragma once
 
 #include "sparta/utils/ValidValue.hpp"
 #include "sparta/simulation/Clock.hpp"
@@ -124,4 +123,3 @@ namespace sparta
     };
 }
 
-#endif

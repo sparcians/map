@@ -1,12 +1,13 @@
-// <State> -*- C++ -*-
+// <State.hpp> -*- C++ -*-
+#pragma once
 
-
-#ifndef __STATE__H__
-#define __STATE__H__
-
+#include "sparta/utils/Enum.hpp"
+#include "sparta/kernel/Scheduler.hpp"
 #include "sparta/simulation/Audience.hpp"
 #include "sparta/events/Scheduleable.hpp"
 #include "sparta/simulation/StateTracker.hpp"
+#include "sparta/utils/SpartaAssert.hpp"
+#include "sparta/utils/SpartaException.hpp"
 
 namespace sparta
 {
@@ -130,7 +131,7 @@ namespace sparta
         //! Convert the EnumT to a EnumT::Value or BoolEnum type.
         typedef typename std::conditional<
             !std::is_same<EnumT, bool>::value,
-            typename sparta::utils::Enum<EnumT>::Value,
+            typename utils::Enum<EnumT>::Value,
             BoolEnum>::type
         EnumTValueType;
 
@@ -458,8 +459,8 @@ namespace sparta
             // in its internal map, along with a unique ID, which separates all the different
             // StatePool instantiations form each other.
             state_tracker_unit_(std::move(
-                tracker::StatePoolManager::getInstance().
-                    dispatchNewTracker<EnumType>()))
+                                    tracker::StatePoolManager::getInstance().
+                                    dispatchNewTracker<EnumType>()))
         {
 
             // If tracking is disabled, this internal
@@ -473,13 +474,13 @@ namespace sparta
                 marker_set_[i].transition_val_ = static_cast<EnumType>(i);
             }
             static_assert(std::is_enum<EnumType>::value,
-            "ERROR: State classes must be templatized on a valid enum or enum class type");
+                          "ERROR: State classes must be templatized on a valid enum or enum class type");
             attemptSetValue_();
         }
 
         //! Copy Constructor for State
-        State(const State &other) : 
-            initial_value_{other.initial_value_}, 
+        State(const State &other) :
+            initial_value_{other.initial_value_},
             current_state_{other.current_state_},
             marker_set_{other.marker_set_},
             state_tracker_unit_{other.state_tracker_unit_ ? new auto {*other.state_tracker_unit_} : nullptr}
@@ -689,7 +690,7 @@ namespace sparta
          * \param ev_hand The Scheduleable that needs to be withdrawn
          */
         void withdraw(const EnumTValueType & val,
-                     const ScheduleableHandle & ev_hand)
+                      const ScheduleableHandle & ev_hand)
         {
             marker_set_[val].withdraw(ev_hand);
         }
@@ -733,7 +734,7 @@ namespace sparta
         // Debug API for testing only.
         // This only tests the stats accumulated by a
         // single sparta::State instance.
-        const std::vector<sparta::Scheduler::Tick> & getRawAccumulatedTime() const {
+        const std::vector<Scheduler::Tick> & getRawAccumulatedTime() const {
             sparta_assert(state_tracker_unit_ != nullptr);
             return state_tracker_unit_->getStateSet().state_delta_set;
         }
@@ -743,7 +744,7 @@ namespace sparta
         ////////////////////////////////////////////////////////////
         // State Privates
         const EnumType initial_value_;
-        sparta::utils::ValidValue<EnumTValueType> current_state_;
+        utils::ValidValue<EnumTValueType> current_state_;
         std::array<MarkerSet, static_cast<uint32_t>(EnumType::__LAST)> marker_set_;
 
         //! Personal State Tracker Unit for an instance of this class.
@@ -761,16 +762,14 @@ namespace sparta
     // queued up in their respective queues.
     template<typename T>
     class State<T,
-        typename std::enable_if<
-            std::is_same<T, sparta::PhasedObject::TreePhase>::value>::type> {
+                typename std::enable_if<
+                    std::is_same<T, PhasedObject::TreePhase>::value>::type> {
     public:
-        State(sparta::app::Simulation * sim);
+        State(app::Simulation * sim);
         void configure();
         ~State();
 
     private:
-        sparta::app::Simulation * sim_ = nullptr;
+        app::Simulation * sim_ = nullptr;
     };
 }
-// __STATE__H__
-#endif

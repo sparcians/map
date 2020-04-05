@@ -8,8 +8,7 @@
  *
  */
 
-#ifndef __SPARTA_EXCEPTION_H__
-#define __SPARTA_EXCEPTION_H__
+#pragma once
 
 #include <exception>
 #include <sstream>
@@ -224,5 +223,3 @@ namespace sparta
 
 }
 
-// __SPARTA_EXCEPTION_H__
-#endif

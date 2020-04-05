@@ -7,8 +7,7 @@
  * with the command-line "--feature <name> value" option.
  */
 
-#ifndef __FEATURE_CONFIGURATION_H__
-#define __FEATURE_CONFIGURATION_H__
+#pragma once
 
 #include "sparta/simulation/ParameterTree.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -327,4 +326,3 @@ GetFeatureOptions(
 
 } // namespace sparta
 
-#endif

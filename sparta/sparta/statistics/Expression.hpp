@@ -1,7 +1,6 @@
 // <Expression.hpp> -*- C++ -*-
 
-#ifndef __EXPRESSION_H__
-#define __EXPRESSION_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -780,4 +779,4 @@ inline std::ostream& operator<<(std::ostream& o, const sparta::statistics::expre
     } // namespace statistics
 } // namespace sparta
 
-#endif // #ifndef __EXPRESSION_H__
+#pragma once

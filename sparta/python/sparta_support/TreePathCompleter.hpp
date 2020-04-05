@@ -6,8 +6,7 @@
  * \brief Argument Tab-completer for methods accepting tree-paths.
  */
 
-#ifndef __TREE_PATH_COMPLETER_H__
-#define __TREE_PATH_COMPLETER_H__
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -652,4 +651,3 @@ namespace sparta{
                                                  std::string>> name_map_;
     };
 } // namespace sparta
-#endif

@@ -5,8 +5,7 @@
  * \brief JavascriptObject Report output formatter
  */
 
-#ifndef __SPARTA_REPORT_FORMAT_JAVASCRIPTOBJECT_H__
-#define __SPARTA_REPORT_FORMAT_JAVASCRIPTOBJECT_H__
+#pragma once
 
 #include <math.h>
 #include <cstdint>
@@ -174,5 +173,3 @@ inline std::ostream& operator<< (std::ostream& out, JavascriptObject & f) {
     } // namespace report
 } // namespace sparta
 
-// __SPARTA_REPORT_FORMAT_JAVASCRIPTOBJECT_H__
-#endif

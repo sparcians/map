@@ -1,7 +1,6 @@
 
 
-#ifndef _SPA_CACHE_LINE_DATA_H__
-#define _SPA_CACHE_LINE_DATA_H__
+#pragma once
 
 
 #include <cstring>
@@ -148,4 +147,3 @@ namespace sparta
 
 }; // namespace sparta
 
-#endif // _SPA_CACHE_LINE_DATA_H__

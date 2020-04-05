@@ -1,8 +1,7 @@
 // <ROB.h> -*- C++ -*-
 
 
-#ifndef __ROB_H__
-#define __ROB_H__
+#pragma once
 #include <string>
 
 #include "sparta/ports/DataPort.hpp"
@@ -109,5 +108,3 @@ namespace core_example
     };
 }
 
-//__ROB_H__
-#endif

@@ -5,8 +5,7 @@
  * \brief Object with a name which holds a Resource
  */
 
-#ifndef __RESOURCE_CONTAINER_H__
-#define __RESOURCE_CONTAINER_H__
+#pragma once
 
 #include "sparta/kernel/PhasedObject.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -375,5 +374,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __RESOURCE_CONTAINER_H__
-#endif

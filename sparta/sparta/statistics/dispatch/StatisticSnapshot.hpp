@@ -1,7 +1,6 @@
 // <StatisticSnapshot> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTIC_SNAPSHOT_H__
-#define __SPARTA_STATISTIC_SNAPSHOT_H__
+#pragma once
 
 namespace sparta {
 namespace statistics {
@@ -34,4 +33,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif

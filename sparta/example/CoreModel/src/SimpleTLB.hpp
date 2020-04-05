@@ -1,6 +1,5 @@
 
-#ifndef __SIMPLE_TLB_H__
-#define __SIMPLE_TLB_H__
+#pragma once
 
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/MathUtils.hpp"
@@ -125,4 +124,3 @@ namespace core_example
 
 } // namespace core_example
 
-#endif //__SIMPLE_TLB_H__

@@ -4,8 +4,7 @@
  * \brief  File that contains checkpoint exception types
  */
 
-#ifndef __CHECKPOINT_EXCEPTIONS_H__
-#define __CHECKPOINT_EXCEPTIONS_H__
+#pragma once
 
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/memory/AddressTypes.hpp"
@@ -37,4 +36,3 @@ namespace checkpoint
 } // namespace memory
 } // namespace sparta
 
-#endif // __CHECKPOINT_EXCEPTIONS_H__

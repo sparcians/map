@@ -1,7 +1,6 @@
 // <ExpressionNode> -*- C++ -*-
 
-#ifndef __EXPRESSION_NODE_H__
-#define __EXPRESSION_NODE_H__
+#pragma once
 
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -136,4 +135,4 @@ private:
     } // namespace statistics
 } // namespace sparta
 
-#endif // #ifndef __EXPRESSION_NODE_H__
+#pragma once

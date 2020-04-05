@@ -1,8 +1,7 @@
 // <Vertex> -*- C++ -*-
 
 
-#ifndef __VERTEX__H__
-#define __VERTEX__H__
+#pragma once
 
 #include <string>
 #include <iostream>
@@ -340,4 +339,3 @@ namespace sparta
 
 } // namespace sparta
 
-#endif

@@ -6,8 +6,7 @@
  * \brief HistogramEnum implementation using sparta Counters
  */
 
-#ifndef __SPARTA_HISTOGRAMENUM_H__
-#define __SPARTA_HISTOGRAMENUM_H__
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -227,4 +226,3 @@ private:
 }; // class EnumHistogram
 
 }; // namespace sparta
-#endif // __SPARTA_HISTOGRAMENUM_H__

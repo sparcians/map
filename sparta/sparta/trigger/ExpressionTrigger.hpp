@@ -5,8 +5,7 @@
  *
  */
 
-#ifndef __SPARTA_EXPRESSION_TRIGGER_H__
-#define __SPARTA_EXPRESSION_TRIGGER_H__
+#pragma once
 
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/algorithm/string/finder.hpp>
@@ -1798,5 +1797,3 @@ inline bool operator!=(const ExpressionTrigger::ExpressionTriggerInternals & int
 } // namespace trigger
 } // namespace sparta
 
-// __SPARTA_EXPRESSION_TRIGGER_H__
-#endif

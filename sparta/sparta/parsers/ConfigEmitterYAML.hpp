@@ -1,7 +1,6 @@
 // <ConfigEmitterYAML> -*- C++ -*-
 
-#ifndef __CONFIG_EMITTER_YAML_H__
-#define __CONFIG_EMITTER_YAML_H__
+#pragma once
 
 #include <iostream>
 #include <fstream>
@@ -391,4 +390,3 @@ private:
 }; // namespace sparta
 
 // __CONFIG_EMITTER_YAML__
-#endif

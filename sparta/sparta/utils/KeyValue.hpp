@@ -1,7 +1,6 @@
 // <KeyValue> -*- C++ -*-
 
-#ifndef __KEY_VALUE_H__
-#define __KEY_VALUE_H__
+#pragma once
 
 #include <inttypes.h>
 #include <vector>
@@ -368,5 +367,3 @@ namespace sparta
     static NameMapper mapper;                                           \
     }
 
-// __KEYVALUE_H__
-#endif

@@ -7,8 +7,7 @@
  *
  */
 
-#ifndef __SHARED_DATA_H__
-#define __SHARED_DATA_H__
+#pragma once
 
 #include <array>
 #include "sparta/utils/ValidValue.hpp"
@@ -212,5 +211,3 @@ namespace sparta
     };
 }
 
-// __SHARED_DATA_H__
-#endif

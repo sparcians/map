@@ -1,8 +1,7 @@
 // <Rename.h> -*- C++ -*-
 
 
-#ifndef __RENAME_H__
-#define __RENAME_H__
+#pragma once
 
 #include <string>
 
@@ -87,5 +86,3 @@ namespace core_example
 
     };
 }
-//__RENAME_H__
-#endif

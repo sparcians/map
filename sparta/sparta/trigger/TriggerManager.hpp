@@ -8,8 +8,7 @@
  * own triggers.
  */
 
-#ifndef __TRIGGER_MANAGER_H__
-#define __TRIGGER_MANAGER_H__
+#pragma once
 
 #include <cstdint>
 #include <map>
@@ -427,4 +426,3 @@ private:
     } // namespace trigger
 } // namespace sparta
 
-#endif

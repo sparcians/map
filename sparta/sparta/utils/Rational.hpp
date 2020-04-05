@@ -1,5 +1,6 @@
-#ifndef _H_RATIONAL
-#define _H_RATIONAL
+// <Rational.hpp> -*- C++ -*-
+
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -208,4 +209,3 @@ namespace utils
 
 } // utils
 } // sparta
-#endif

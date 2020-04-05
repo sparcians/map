@@ -1,6 +1,5 @@
 
-#ifndef __SKIPPED_ANNOTATORS_H__
-#define __SKIPPED_ANNOTATORS_H__
+#pragma once
 
 #include "sparta/app/ReportDescriptor.hpp"
 #include "sparta/kernel/Scheduler.hpp"
@@ -123,4 +122,3 @@ private:
 }
 }
 
-#endif

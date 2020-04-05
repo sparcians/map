@@ -1,7 +1,6 @@
 // <DbConnProxy> -*- C++ -*-
 
-#ifndef __SIMDB_CONN_PROXY_H__
-#define __SIMDB_CONN_PROXY_H__
+#pragma once
 
 #include "simdb/schema/ColumnValue.hpp"
 #include "simdb/ObjectFactory.hpp"
@@ -241,4 +240,3 @@ private:
 
 } // namespace simdb
 
-#endif

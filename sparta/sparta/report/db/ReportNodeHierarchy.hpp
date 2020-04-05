@@ -1,7 +1,6 @@
 // <ReportNodeHierarchy> -*- C++ -*-
 
-#ifndef __SPARTA_REPORT_NODE_HIERARCHY_H__
-#define __SPARTA_REPORT_NODE_HIERARCHY_H__
+#pragma once
 
 #include "sparta/report/Report.hpp"
 #include "simdb/ObjectManager.hpp"
@@ -484,4 +483,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif

@@ -1,8 +1,7 @@
 // <ConfigParserYAML> -*- C++ -*-
 
 
-#ifndef __CONFIG_PARSER_YAML_H__
-#define __CONFIG_PARSER_YAML_H__
+#pragma once
 
 #include <iostream>
 #include <fstream>
@@ -610,7 +609,6 @@ namespace sparta
 }; // namespace sparta
 
 // __CONFIG_PARSER_YAML)_
-#endif
 
 /*!
   \page YAML_Parameter_Files

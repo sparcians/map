@@ -4,8 +4,7 @@
  * \brief  File that contains SimpleMemoryMapNode
  */
 
-#ifndef __SIMPLE_MEMORY_MAP_NODE_H__
-#define __SIMPLE_MEMORY_MAP_NODE_H__
+#pragma once
 
 #include "sparta/memory/BlockingMemoryIFNode.hpp"
 #include "sparta/memory/SimpleMemoryMap.hpp"
@@ -248,4 +247,3 @@ namespace sparta
     }; // namespace memory
 }; // namespace sparta
 
-#endif // __SIMPLE_MEMORY_MAP_NODE_H__

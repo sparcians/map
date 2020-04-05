@@ -1,7 +1,6 @@
 // <ReportTimeseries> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTICS_DATABASE_REPORT_TIMESERIES_H__
-#define __SPARTA_STATISTICS_DATABASE_REPORT_TIMESERIES_H__
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -166,4 +165,3 @@ private:
 } // namespace db
 } // namespace sparta
 
-#endif

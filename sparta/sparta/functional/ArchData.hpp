@@ -1,7 +1,6 @@
-// <ArchData> -*- C++ -*-
+// <ArchData.hpp> -*- C++ -*-
 
-#ifndef __ARCH_DATA_H__
-#define __ARCH_DATA_H__
+#pragma once
 
 #include <iostream>
 #include <ios>
@@ -127,22 +126,22 @@ namespace sparta
          */
         static void fillValue(uint8_t* buf, uint32_t size, uint64_t fill, uint16_t fill_val_size, uint16_t fill_pattern_offset=0) {
             switch(fill_val_size) {
-            case 1:
-                memset(buf, fill, size); // Initialze with fill_val_size (pattern offset does not matter)
-                break;
-            case 2:
-                fillWith_<uint16_t>(buf, size, static_cast<uint16_t>(fill), fill_pattern_offset);
-                break;
-            case 4:
-                fillWith_<uint32_t>(buf, size, static_cast<uint32_t>(fill), fill_pattern_offset);
-                break;
-            case 8:
-                fillWith_<uint64_t>(buf, size, static_cast<uint64_t>(fill), fill_pattern_offset);
-                break;
-            default:
-                throw SpartaException("Failed to fill ArchData Line with fill value ")
-                      << std::hex << fill << " because fill value size was " << std::dec
-                      << fill_val_size;
+                case 1:
+                    memset(buf, fill, size); // Initialze with fill_val_size (pattern offset does not matter)
+                    break;
+                case 2:
+                    fillWith_<uint16_t>(buf, size, static_cast<uint16_t>(fill), fill_pattern_offset);
+                    break;
+                case 4:
+                    fillWith_<uint32_t>(buf, size, static_cast<uint32_t>(fill), fill_pattern_offset);
+                    break;
+                case 8:
+                    fillWith_<uint64_t>(buf, size, static_cast<uint64_t>(fill), fill_pattern_offset);
+                    break;
+                default:
+                    throw SpartaException("Failed to fill ArchData Line with fill value ")
+                        << std::hex << fill << " because fill value size was " << std::dec
+                        << fill_val_size;
             }
         }
 
@@ -317,8 +316,8 @@ namespace sparta
             T read(offset_type offset, uint32_t idx=0) const {
                 offset_type loc = offset + (idx*sizeof(T));
                 sparta_assert(loc + sizeof(T) <= size_,
-                                  "Read at ArchData::line offset 0x" << std::hex
-                                  << loc << " with size " << std::dec << sizeof(T) << " B");
+                              "Read at ArchData::line offset 0x" << std::hex
+                              << loc << " with size " << std::dec << sizeof(T) << " B");
 
                 uint8_t* d = data_ + loc;
 
@@ -335,8 +334,8 @@ namespace sparta
              */
             void read(offset_type offset, offset_type size, uint8_t* data) const {
                 sparta_assert(offset + size <= size_,
-                                  "Read on ArchData::line offset 0x" << std::hex
-                                  << offset << " with size " << std::dec << size << " B");
+                              "Read on ArchData::line offset 0x" << std::hex
+                              << offset << " with size " << std::dec << size << " B");
 
                 memcpy(data, data_ + offset, size);
             }
@@ -355,8 +354,8 @@ namespace sparta
             void write(offset_type offset, const T& t, uint32_t idx=0) {
                 offset_type loc = offset + (idx*sizeof(T));
                 sparta_assert(loc + sizeof(T) <= size_,
-                                  "Write on ArchData::line offset 0x" << std::hex
-                                  << loc << " with size " << std::dec << sizeof(T) << " B");
+                              "Write on ArchData::line offset 0x" << std::hex
+                              << loc << " with size " << std::dec << sizeof(T) << " B");
 
                 uint8_t* d = data_ + loc;
 
@@ -375,8 +374,8 @@ namespace sparta
              */
             void write(offset_type offset, offset_type size, const uint8_t* data) const {
                 sparta_assert(offset + size <= size_,
-                                  "Read on ArchData::line offset 0x" << std::hex
-                                  << offset << " with size " << std::dec << size << " B");
+                              "Read on ArchData::line offset 0x" << std::hex
+                              << offset << " with size " << std::dec << size << " B");
 
                 memcpy(data_ + offset, data, size);
                 dirty_ = true;
@@ -465,11 +464,11 @@ namespace sparta
             can_free_lines_(can_free_lines)
         {
             sparta_assert(initial_val_size_ > 0 && initial_val_size_ <= 8 && isPowerOf2(initial_val_size_),
-                              "ArchData initial_val_size type must be a power of 2 between 1 and 8 inclusive, is "
-                              << initial_val_size_);
+                          "ArchData initial_val_size type must be a power of 2 between 1 and 8 inclusive, is "
+                          << initial_val_size_);
             sparta_assert((initial_val_size_ == 8) || (initial >> (uint64_t)(8*initial_val_size_) == 0),
-                              "ArchData initial val has nonzero bits above initial_val_size. initial val: "
-                              << std::hex << initial_ << " initial_val_size:" << std::dec << initial_val_size_);
+                          "ArchData initial val has nonzero bits above initial_val_size. initial val: "
+                          << std::hex << initial_ << " initial_val_size:" << std::dec << initial_val_size_);
 
             if(line_size >= 1){
                 sparta_assert(line_size <= MAX_LINE_SIZE);
@@ -663,9 +662,9 @@ namespace sparta
          */
         Line& getLine(offset_type offset) {
             sparta_assert(containsAddress(offset),
-                              "Cannot access this ArchData at offset: 0x"
-                              << std::hex << offset << " ArchData size= "
-                              << size_ << " B.");
+                          "Cannot access this ArchData at offset: 0x"
+                          << std::hex << offset << " ArchData size= "
+                          << size_ << " B.");
 
             line_idx_type ln_idx = getLineIndex(offset);
             Line* ln;
@@ -697,9 +696,9 @@ namespace sparta
          */
         const Line* tryGetLine(offset_type offset) const {
             sparta_assert(containsAddress(offset),
-                              "Cannot access this ArchData at offset: 0x"
-                              << std::hex << offset << " ArchData size= "
-                              << size_ << " B.");
+                          "Cannot access this ArchData at offset: 0x"
+                          << std::hex << offset << " ArchData size= "
+                          << size_ << " B.");
 
             line_idx_type ln_idx = getLineIndex(offset);
             //LineMap::const_iterator lnitr;
@@ -847,8 +846,8 @@ namespace sparta
         void checkCanAccess(offset_type offset, offset_type bytes) const {
             checkInSingleLine(offset, bytes);
             sparta_assert(offset + bytes <= size_,
-                              "Generic access validity test on ArchData::line offset 0x" << std::hex
-                              << offset << " with size " << std::dec << bytes << " B");
+                          "Generic access validity test on ArchData::line offset 0x" << std::hex
+                          << offset << " with size " << std::dec << bytes << " B");
         }
 
         /*!
@@ -964,7 +963,7 @@ namespace sparta
         void save(StorageT& out) {
             // Iterate lines and restore
             sparta_assert(out.good(),
-                              "Saving delta checkpoint to bad ostream for " << getOwnerNode()->getLocation());
+                          "Saving delta checkpoint to bad ostream for " << getOwnerNode()->getLocation());
 
             for(LineMap::iterator itr = line_map_.begin(); itr != line_map_.end(); ++itr){
                 Line* ln = *itr;
@@ -984,7 +983,7 @@ namespace sparta
         template <typename StorageT>
         void saveAll(StorageT& out) {
             sparta_assert(out.good(),
-                        "Saving delta checkpoint to bad ostream for " << getOwnerNode()->getLocation());
+                          "Saving delta checkpoint to bad ostream for " << getOwnerNode()->getLocation());
 
             for(LineMap::iterator itr = line_map_.begin(); itr != line_map_.end(); ++itr){
                 Line* ln = *itr;
@@ -1007,7 +1006,7 @@ namespace sparta
         void restore(StorageT& in) {
             // Iterate lines and restore
             sparta_assert(in.good(),
-                              "Encountered bad checkpoint data (invalid stream) for " << getOwnerNode()->getLocation());
+                          "Encountered bad checkpoint data (invalid stream) for " << getOwnerNode()->getLocation());
 
             while(1){
                 line_idx_type ln_idx = in.getNextRestoreLine();
@@ -1224,9 +1223,9 @@ namespace sparta
         template <typename FillT>
         static void fillWith_(uint8_t* buf, uint32_t size, FillT fill, uint16_t buf_offset=0) {
             sparta_assert(buf != nullptr,
-                        "Null buf given");
+                          "Null buf given");
             sparta_assert(buf_offset < sizeof(FillT),
-                        "Cannot have a buf_offset larger than FillT size. Must be buffer offset % fill size");
+                          "Cannot have a buf_offset larger than FillT size. Must be buffer offset % fill size");
 
             // Realign the pattern so it coincides with the misalignment of buf
             const FillT shifted_fill = (fill >> (buf_offset * 8)) | (fill << ((sizeof(FillT) - buf_offset) * 8));
@@ -1244,7 +1243,7 @@ namespace sparta
             // Address of first byte followinf buf which is not written
             const uint8_t* const end = buf + size;
             sparta_assert(end > buf,
-                        "buf (" << (void*)buf << ") was too large and adding size (" << size << ") rolled over to 0");
+                          "buf (" << (void*)buf << ") was too large and adding size (" << size << ") rolled over to 0");
 
             // Stop point before writing last, partial value
             const uint8_t* const stop = end - sizeof(FillT);
@@ -1262,11 +1261,11 @@ namespace sparta
             // Write remainder of buffer size
             int32_t rem = end - ptr;
             sparta_assert(rem <= (int32_t)sizeof(FillT) && rem >= 0,
-                              "fillWith_ remainder size was 0x" << std::hex << rem
-                              << " ptr=" << (void*)ptr << " end=" << (const void*)end
-                              << " sizeof(FillT)=" << sizeof(FillT));
+                          "fillWith_ remainder size was 0x" << std::hex << rem
+                          << " ptr=" << (void*)ptr << " end=" << (const void*)end
+                          << " sizeof(FillT)=" << sizeof(FillT));
             sparta_assert(ptr != nullptr,
-                        "Somehow encountered a null pointer during arithmetic based on a pointer at " << (void*) buf);
+                          "Somehow encountered a null pointer during arithmetic based on a pointer at " << (void*) buf);
 
             if(rem > 0) {
                 // Remaining size is 1,2, or 4 bytes and rem fill value is same size or
@@ -1502,9 +1501,9 @@ namespace sparta
 
             if(seg->isPlaced()){
                 /*
-                for(uint32_t i=0; i<depth; ++i){ std::cout << " "; }
-                std::cout << "seg " << std::dec << seg->getLayoutID() << " is already placed @ 0x"
-                          << std::hex << seg->getOffset() << std::dec << std::endl;
+                  for(uint32_t i=0; i<depth; ++i){ std::cout << " "; }
+                  std::cout << "seg " << std::dec << seg->getLayoutID() << " is already placed @ 0x"
+                  << std::hex << seg->getOffset() << std::dec << std::endl;
                 */
                 return; // Done
             }
@@ -1683,8 +1682,4 @@ namespace sparta
 
 
 //! \brief Required in simulator source to define some globals.
-#define SPARTA_ARCHDATA_BODY \
-
-
-// __ARCH_DATA_H__
-#endif
+#define SPARTA_ARCHDATA_BODY

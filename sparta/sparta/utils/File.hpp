@@ -7,8 +7,7 @@
  * \brief  Utilities for file I/O
  */
 
-#ifndef __SPARTA_UTILS_FILE_H__
-#define __SPARTA_UTILS_FILE_H__
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -63,6 +62,4 @@ namespace sparta
     } // namespace utils
 } // namespace sparta
 
-// __SPARTA_UTILS_FILE_H__
 
-#endif

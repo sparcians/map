@@ -1,6 +1,5 @@
 
-#ifndef __SAMPLE_DEVICE_H__
-#define __SAMPLE_DEVICE_H__
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -290,5 +289,3 @@ public:
     {}
 };
 
-// __SAMPLE_DEVICE_H__
-#endif

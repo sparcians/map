@@ -4,8 +4,7 @@
  * \brief  File that contains BlockingMemoryIFNode
  */
 
-#ifndef __BLOCKING_MEMORY_IF_NODE_H__
-#define __BLOCKING_MEMORY_IF_NODE_H__
+#pragma once
 
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/simulation/TreeNode.hpp"
@@ -536,4 +535,3 @@ namespace sparta
     }; // namespace memory
 }; // namespace sparta
 
-#endif // __BLOCKING_MEMORY_IF_NODE_H__

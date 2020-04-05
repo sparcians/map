@@ -5,8 +5,7 @@
  * \brief TreeNode refinement representing the root (or "top") of a device tree
  */
 
-#ifndef __ROOT_TREE_NODE_H__
-#define __ROOT_TREE_NODE_H__
+#pragma once
 
 #include <memory>
 #include <ostream>
@@ -556,5 +555,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __ROOT_TREE_NODE_H__
-#endif

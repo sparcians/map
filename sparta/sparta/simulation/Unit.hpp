@@ -8,8 +8,7 @@
  */
 
 
-#ifndef __UNIT__H__
-#define __UNIT__H__
+#pragma once
 
 #include <string>
 
@@ -175,5 +174,3 @@ namespace sparta {
     constexpr const char * sparta::Unit::WARN_LOG;       \
     constexpr const char * sparta::Unit::DEBUG_LOG;
 
-// __UNIT__H__
-#endif
