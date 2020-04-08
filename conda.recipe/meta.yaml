@@ -44,6 +44,9 @@ requirements:
     - sqlite
     - hdf5
     - rapidjson
+  run:
+    - boost-cpp
+    - yaml-cpp
   run_constrained:
     # make sure that mac has good enough SDK
     # See https://conda-forge.org/docs/maintainer/knowledge_base.html?highlight=feature#requiring-newer-macos-sdks
