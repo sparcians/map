@@ -29,7 +29,21 @@ macos_min_version:             # [osx]
 MACOSX_DEPLOYMENT_TARGET:      # [osx]
   - 10.13                      # [osx]
 
-zip_keys:                       # [osx]
+zip_keys:
+  -
+    - boost
+    - boost-cpp
   -                             # [osx]
     - macos_min_version         # [osx]
     - MACOSX_DEPLOYMENT_TARGET  # [osx]
+
+
+# set boost to 1.69 because that's what the damn Dabble people have been using
+boost:
+    - 1.69.0
+    - 1.70.0
+    - 1.72.0
+boost-cpp:
+    - 1.69.0
+    - 1.70.0
+    - 1.72.0
