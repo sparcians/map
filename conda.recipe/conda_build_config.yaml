@@ -32,7 +32,7 @@ MACOSX_DEPLOYMENT_TARGET:      # [osx]
 zip_keys:
   -
     - boost
-    - boost-cpp
+    - boost_cpp
   -                             # [osx]
     - macos_min_version         # [osx]
     - MACOSX_DEPLOYMENT_TARGET  # [osx]
@@ -43,7 +43,7 @@ boost:
     - 1.69.0
     - 1.70.0
     - 1.72.0
-boost-cpp:
+boost_cpp:
     - 1.69.0
     - 1.70.0
     - 1.72.0
