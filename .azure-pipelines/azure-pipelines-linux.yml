@@ -10,8 +10,16 @@ jobs:
   strategy:
     maxParallel: 8
     matrix:
-      linux_:
-        CONFIG: linux_
+      linux_boost_cpp1.69.0:
+        CONFIG: linux_boost_cpp1.69.0
+        UPLOAD_PACKAGES: True
+        DOCKER_IMAGE: condaforge/linux-anvil-comp7
+      linux_boost_cpp1.70.0:
+        CONFIG: linux_boost_cpp1.70.0
+        UPLOAD_PACKAGES: True
+        DOCKER_IMAGE: condaforge/linux-anvil-comp7
+      linux_boost_cpp1.72.0:
+        CONFIG: linux_boost_cpp1.72.0
         UPLOAD_PACKAGES: True
         DOCKER_IMAGE: condaforge/linux-anvil-comp7
   steps:
@@ -27,7 +35,6 @@ jobs:
         export CI=azure
         export GIT_BRANCH=$BUILD_SOURCEBRANCHNAME
         .scripts/run_docker_build.sh
-        ls $SYSTEM_DEFAULTWORKINGDIR
     displayName: Run docker build
     env:
       BINSTAR_TOKEN: $(BINSTAR_TOKEN)
