@@ -679,6 +679,15 @@ namespace sparta
         }
 
         /**
+         * \brief Query if the buffer is empty
+         *
+         */
+        bool empty() const
+        {
+            return num_valid_ == 0;
+        }
+
+        /**
          * \brief Request that this queue begin collecting its
          *        contents for pipeline collection.
          * \param parent A pointer to the parent treenode for which to add
