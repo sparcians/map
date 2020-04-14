@@ -31,9 +31,9 @@ set (Boost_USE_STATIC_LIBS OFF)
 set (existing_build_shared ${BUILD_SHARED_LIBS})
 set (BUILD_SHARED_LIBS ON)
 
-execute_process (COMMAND ${CXX_COMPILER_LAUNCHER} --version OUTPUT_VARIABLE CXX_VERSION_STRING RESULT_VARIABLE rc)
+execute_process (COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE CXX_VERSION_STRING RESULT_VARIABLE rc)
 if (NOT rc EQUAL "0")
-    message (FATAL_ERROR "could not run compiler command '${CXX_COMPILER_LAUNCHER} --version', rc=${rc}")
+    message (FATAL_ERROR "could not run compiler command '${CMAKE_CXX_COMPILER} --version', rc=${rc}")
 endif ()
 
 if (CXX_VERSION_STRING MATCHES "conda")
@@ -94,6 +94,7 @@ endif ()
 # Conda support
 #
 if (USING_CONDA)
+    message ("-- Using CONDA toolchain")
     # if you don't do this, cmake won't pass the conda $PREFIX/include to
     # the conda compiler and things get crazy
     unset(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES)
