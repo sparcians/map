@@ -9,8 +9,6 @@ package:
 
 source:
   git_url: {{ environ.get('FEEDSTOCK_ROOT', '..') }}
-  patches:
-    - patches/0001-Fix-build-to-work-with-Anaconda-compiler-toolchain.patch
 
 build:
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', '0') }}
