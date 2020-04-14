@@ -38,12 +38,12 @@ env | sort
 
 ################################################################################
 #
-#  BUILD & TEST SPARTA
+#  BUILD & TEST MAP
 #
 ################################################################################
 
-mkdir -p sparta/release
-pushd sparta/release
+mkdir -p release
+pushd release
 cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX:PATH="$PREFIX" \
       "${CMAKE_PLATFORM_FLAGS[@]}" \
@@ -57,7 +57,7 @@ cmake --build . -j "$CPU_COUNT" --target simdb_regress
 # by cd'ing into the example subdir and running ctest
 # because not all of the subdirs of example create their
 # own <subdir>_regress target like the core example.
-(cd example && ctest -j "$CPU_COUNT" --test-action test)
+(cd sparta/example && ctest -j "$CPU_COUNT" --test-action test)
 
 # if we want to create individual packages this should move into a separate install script for only SPARTA
 # and we might want to create separate install targets for the headers and the libs and the doc
