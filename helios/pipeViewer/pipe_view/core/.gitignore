@@ -1,3 +1,4 @@
 bld-Linux_x86_64-gcc6.3
 bld-Linux_x86_64-gcc4.7
 /src/logsearch.cpp
+/*.so
