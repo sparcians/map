@@ -13,10 +13,10 @@ source:
 build:
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', '0') }}
   string: {{ [PKG_BUILDNUM, ('h' + PKG_HASH), environ.get('GIT_DESCRIBE_HASH', '')]|join('_') }}
-  # python2 is not supported
-  skip: True # [py2k]
+  # python2 is not supported by MAP
+  # python<3.7 is not supported by conda-forge wxpython
   # Native Windows isn't supported either, use WSL or Docker
-  skip: True # [win]
+  skip: True # [win or py<37]
   script_env:
     - SYSTEM_DEFAULTWORKINGDIRECTORY # allow Azure variable into build.sh so that we can rescue our Test.xml files
 
