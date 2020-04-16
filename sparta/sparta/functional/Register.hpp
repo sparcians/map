@@ -704,7 +704,7 @@ public:
      * marked as read-only regardless of any read-write fields containing those
      * bits
      */
-    RegisterBase(TreeNode *parent, const Definition def)
+    RegisterBase(TreeNode *parent, const Definition & def)
         : TreeNode(nullptr,
                    NULL_TO_EMPTY_STR(def.name),
                    NULL_TO_EMPTY_STR(def.group),
@@ -751,7 +751,7 @@ public:
         }
 
         // Add all fields
-        for(const auto & fdp : def_.fields){
+        for(auto & fdp : def_.fields){
             addField(fdp);
         }
 
@@ -949,7 +949,7 @@ public:
      * \return References to the same const Definition object supplied at
      * construction.
      */
-    const Definition getDefinition() const {
+    const Definition& getDefinition() const {
         return def_;
     }
 
@@ -1353,7 +1353,7 @@ private:
     }
 
     /*!
-     * \brief Register definition given at construction (not copied)
+     * \brief Register definition given at construction
      */
     const Definition def_;
 
