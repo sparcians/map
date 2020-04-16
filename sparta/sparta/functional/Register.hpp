@@ -220,23 +220,23 @@ public:
         {
             setExpectedParent_(&reg);
 
-            sparta_assert(def.name != 0, "Register::Field::Definition::name cannot be empty");
+            sparta_assert(def_.name != 0, "Register::Field::Definition::name cannot be empty");
 
-            if(def.high_bit < def.low_bit){
+            if(def_.high_bit < def_.low_bit){
                 throw SpartaException("Register Field ")
-                    << getLocation() << " definition contains high bit (" << def.high_bit
-                    << ") less than a low bit (" << def.low_bit << ")";
+                    << getLocation() << " definition contains high bit (" << def_.high_bit
+                    << ") less than a low bit (" << def_.low_bit << ")";
             }
 
-            if(def.low_bit >= reg.getNumBits()){
+            if(def_.low_bit >= reg.getNumBits()){
                 throw SpartaException("Register Field ")
-                    << getLocation() << " definition contains a low bit (" << def.low_bit
+                    << getLocation() << " definition contains a low bit (" << def_.low_bit
                     << ") greater than or equal to the number of bits in the register ("
                     << reg.getNumBits() << ")";
             }
-            if(def.high_bit >= reg.getNumBits()){
+            if(def_.high_bit >= reg.getNumBits()){
                 throw SpartaException("Register Field ")
-                    << getLocation() << " definition contains a high bit (" << def.high_bit
+                    << getLocation() << " definition contains a high bit (" << def_.high_bit
                     << ") greater than or equal to the number of bits in the register ("
                     << reg.getNumBits() << ")";
             }
