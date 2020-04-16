@@ -506,7 +506,7 @@ protected:
     void insertRegisterInBank_(RegisterT *r, GroupVector& bank)
     {
         sparta_assert(r != nullptr);
-        const auto &rdef = r->getDefinition();
+        const auto rdef = r->getDefinition();
         while(rdef.group_num >= bank.size()){
             bank.push_back(RegisterMap());
         }
