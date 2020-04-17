@@ -20,12 +20,14 @@ jobs:
   - script: |
       docker run --rm --privileged multiarch/qemu-user-static:register --reset --credential yes
       ls /proc/sys/fs/binfmt_misc/
+      df -h /
     condition: not(startsWith(variables['CONFIG'], 'linux_64'))
     displayName: Configure binfmt_misc
 
   - script: |
         export CI=azure
         export GIT_BRANCH=$BUILD_SOURCEBRANCHNAME
+        df -h /
         .scripts/run_docker_build.sh
     displayName: Run docker build
     env:
