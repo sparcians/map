@@ -54,6 +54,7 @@ void func(const sparta::SpartaSharedPointer<MyType> & my_ref, const unsigned int
     sparta::SpartaSharedPointer<MyType> another_ref(my_ref);
     sparta::SpartaSharedPointer<MyType> another_ref2;
     EXPECT_TRUE(another_ref2 == nullptr);
+    EXPECT_TRUE(nullptr == another_ref2);
     another_ref2 = my_ref;
     EXPECT_TRUE(another_ref2 != nullptr);
 
@@ -88,6 +89,7 @@ void testBasicSpartaSharedPointer()
 
     sparta::SpartaSharedPointer<MyType> ptr5;
     EXPECT_TRUE(ptr5 == nullptr);
+    EXPECT_TRUE(nullptr == ptr5);
 
     MyType * t2 = new MyType;
     ptr5.reset(t2);
@@ -172,9 +174,9 @@ void testMoveSupport()
     EXPECT_EQUAL(ptr7.use_count(), 0);
     EXPECT_EQUAL(ptr8.use_count(), 0);
 
-    EXPECT_THROW(ptr5.get());
+    EXPECT_NOTHROW(ptr5.get());
     EXPECT_EQUAL(ptr6.get(), nullptr);
-    EXPECT_THROW(ptr7.get());
+    EXPECT_NOTHROW(ptr7.get());
     EXPECT_EQUAL(ptr8.get(), nullptr);
 
     EXPECT_NOTHROW(ptr5 = ptr8);

@@ -102,14 +102,14 @@ namespace sparta
          * ownership of the given object pointer.
          */
         explicit SpartaSharedPointer(PointerT * p = nullptr) noexcept :
-            ref_count_(new RefCount(p)){}
+            ref_count_(p == nullptr ? nullptr : new RefCount(p)) {}
 
         /**
          * \brief Constructor for SpartaSharedPointer<T> ptr = nullptr;
          * \param nullptr_t
          */
         constexpr SpartaSharedPointer(std::nullptr_t) noexcept :
-            ref_count_(new RefCount(nullptr)){}
+            ref_count_(nullptr) {}
 
         /**
          * \brief Construct a reference pointer given another reference pointer
@@ -195,7 +195,7 @@ namespace sparta
          * \endcode
          */
         bool operator!() const {
-            return (ref_count_ && ref_count_->p == nullptr);
+            return (ref_count_ == nullptr) || (ref_count_->p == nullptr);
         }
 
         /**
@@ -217,8 +217,7 @@ namespace sparta
          * \return The pointer pointed to by this RefPointer
          */
         PointerT * operator->() const {
-            sparta_assert(ref_count_ != nullptr, "This is a dead SpartaSharedPointer");
-            return ref_count_->p;
+            return (ref_count_ ? ref_count_->p : nullptr);
         }
 
         /**
@@ -226,7 +225,7 @@ namespace sparta
          * \return The pointer pointed to by this RefPointer
          */
         PointerT & operator*() const {
-            sparta_assert(ref_count_ != nullptr, "This is a dead SpartaSharedPointer");
+            sparta_assert(ref_count_ != nullptr, "This is a null SpartaSharedPointer");
             return *(ref_count_->p);
         }
 
@@ -235,8 +234,7 @@ namespace sparta
          * \return The underlying pointer
          */
         PointerT * get() const {
-            sparta_assert(ref_count_ != nullptr, "This is a dead SpartaSharedPointer");
-            return ref_count_->p;
+            return (ref_count_ ? ref_count_->p : nullptr);
         }
 
         /**
@@ -245,7 +243,7 @@ namespace sparta
          */
         void reset(PointerT * p = nullptr) {
             unlink_();
-            ref_count_     = new RefCount(p);
+            ref_count_     = p == nullptr ? nullptr : new RefCount(p);
             memory_block_  = nullptr;
         }
 
