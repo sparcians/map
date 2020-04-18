@@ -60,11 +60,6 @@ All great projects have great documentation.  The Sparta team is striving to hav
 
 Specifically, start with the Doxygen.  After cloning the repo, ensure Doxygen and dot (part of the Graphviz tool suite) are installed.  Then `cd doc; make`.  On the Mac, type `open html/index.html` and peruse the documentation about the `SkeletalPipeline` and the `Core Example`.
 
-The following are Google Presentations:
-- [Sparta Executive Overview](https://docs.google.com/presentation/d/1_JzBj0do0KaF_Q5c48AvBeBEuXgZ4307CFEoH3yty68/edit?usp=sharing) -- Very high level
-- [Sparta Overview](https://docs.google.com/presentation/d/1mDnTIVf8dFqcs0cE5Dd0Lb_UNrarF9wLFTqze_Tng2o/edit?usp=sharing) -- A little deeper
-- [Building a DES Performance Simulator Using Sparta](https://docs.google.com/presentation/d/1Z1wv3eETH9WhPXzdCDCuNlN2PS4C3-7kTnXbj5sdj-E/edit?usp=sharing) -- An overview of building a DES simulator and pointers using Sparta
-
 ## Getting Sparta to build on MacOS X
 
 ### Time to Brew

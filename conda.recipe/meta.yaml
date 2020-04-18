@@ -35,8 +35,8 @@ requirements:
     - {{ compiler('cxx') }}
     - {{ compiler('c') }}
     # add duplicate clang dep per https://gitter.im/conda-forge/conda-forge.github.io?at=5e5feaf7ec7f8746aab200c4
-    - clang
-    - clangxx
+    - clang 9
+    - clangxx 9
     - rsync
   host:  # target-arch buildtime deps
     - boost-cpp
@@ -44,6 +44,9 @@ requirements:
     - sqlite
     - hdf5
     - rapidjson
+  run:
+    - boost-cpp
+    - yaml-cpp
   run_constrained:
     # make sure that mac has good enough SDK
     # See https://conda-forge.org/docs/maintainer/knowledge_base.html?highlight=feature#requiring-newer-macos-sdks

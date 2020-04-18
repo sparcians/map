@@ -153,6 +153,7 @@ int main()
     }
 
     // Test an empty buffer
+    EXPECT_TRUE(buf_inf.empty());
     uint32_t i = 0;
     for(sparta::Buffer<double>::iterator buf10_iter = buf10.begin();
         buf10_iter != buf10.end(); buf10_iter++)
@@ -164,6 +165,7 @@ int main()
     {
         // Insert the only value this Finite Buffer can hold.
         EXPECT_NOTHROW(buf_inf.push_back(0));
+        EXPECT_FALSE(buf_inf.empty());
 
         // Normal Finite Buffer should throw on any subsequent push_back.
         for(size_t i = 1; i < 10000; ++i) {

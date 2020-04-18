@@ -896,7 +896,7 @@ private:
     {
         sparta_assert(false == adata_.isLaidOut());// Cannot addRegister_ after the ArchData has been layed out
         sparta_assert(reg_proxies_.size() == 0); // Cannot addRegister_ once a proxy has been added
-        auto r = new RegisterT(nullptr, rdef, &adata_);
+        auto r = new RegisterT(nullptr, *rdef, &adata_);
 
         // Attempt to insert the register into the bank table
         banks_.addRegister(r); // Throws if unable to add
