@@ -3,7 +3,9 @@
 
 language: generic
 
-
+branches:
+  only:
+    - master
 
 matrix:
   include:
