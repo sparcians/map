@@ -159,7 +159,7 @@ namespace sparta
 
                 sparta_assert(allocation_idx_ < 100000,
                               "The PayloadEvent: '" << getLocation() <<
-                              "' has allocatged over 100000 outstanding events -- does that seem right?");
+                              "' has allocated over 100000 outstanding events -- does that seem right?");
             }
             inflight_pl_.push_front(proxy);
             proxy->setInFlightLocation_(inflight_pl_.begin());
