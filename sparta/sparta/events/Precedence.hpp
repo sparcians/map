@@ -264,7 +264,7 @@ namespace sparta
                                                         SingleCycleUniqueEvent<PayloadPhaseT2> & consumer)
     {
         static_assert(PayloadPhaseT1 == PayloadPhaseT2, __SPARTA_PHASE_ERROR_MSG);
-        producer.precedes(consumer.getScheduleable());
+        producer.getScheduleable().precedes(consumer.getScheduleable());
         return consumer;
     }
 
