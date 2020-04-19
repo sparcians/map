@@ -1,8 +1,7 @@
 // <Printing.hpp> -*- C++ -*-
 
 
-#ifndef __PRINTING_H__
-#define __PRINTING_H__
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -215,5 +214,3 @@ inline std::vector<T>& operator<< (std::vector<T>& v, const U& e){
 }
 
 
-// __PRINTING_H__
-#endif

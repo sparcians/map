@@ -1,7 +1,6 @@
 // <DataView> -*- C++ -*-
 
-#ifndef __DATA_VIEW_H__
-#define __DATA_VIEW_H__
+#pragma once
 
 #include <iostream>
 #include <ios>
@@ -453,7 +452,4 @@ namespace sparta
 
 //! \brief Required in simulator source to define some globals.
 #define SPARTA_DATAVIEW_BODY                                              \
-    const std::string sparta::DataView::DATAVIEW_UNPLACED_STR = "dataview-unplaced"; \
-
-// __DATA_VIEW_H__
-#endif
+    const std::string sparta::DataView::DATAVIEW_UNPLACED_STR = "dataview-unplaced";

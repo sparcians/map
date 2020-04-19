@@ -1,7 +1,6 @@
 // <BinaryIArchive> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTICS_BINARY_IARCHIVE_H__
-#define __SPARTA_STATISTICS_BINARY_IARCHIVE_H__
+#pragma once
 
 #include "sparta/statistics/dispatch/archives/ArchiveSource.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
@@ -65,4 +64,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif

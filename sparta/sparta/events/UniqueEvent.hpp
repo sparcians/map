@@ -7,8 +7,7 @@
  * \brief  File that defines the UniqueEvent class
  */
 
-#ifndef __UNIQUE_EVENT_H__
-#define __UNIQUE_EVENT_H__
+#pragma once
 
 #include <set>
 #include <memory>
@@ -113,5 +112,3 @@ namespace sparta
 }
 
 
-// __UNIQUE_EVENT_H__
-#endif

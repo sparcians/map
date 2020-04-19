@@ -1,7 +1,6 @@
 // <CategoryManager> -*- C++ -*-
 
-#ifndef __CATEGORY_MANAGER_H__
-#define __CATEGORY_MANAGER_H__
+#pragma once
 
 #include <string>
 
@@ -29,5 +28,3 @@ namespace sparta
     } // namespace log
 } // namespace sparta
 
-// __CATEGORY_MANAGER_H__
-#endif

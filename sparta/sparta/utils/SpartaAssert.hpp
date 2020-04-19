@@ -1,8 +1,6 @@
 // <SpartaAssert.hpp> -*- C++ -*-
 
-
-#ifndef __SPARTA_ASSERT_H__
-#define __SPARTA_ASSERT_H__
+#pragma once
 
 #include <exception>
 #include <string>
@@ -45,11 +43,11 @@
     ex << ": in file: '" << file << "', on line: " << std::dec << line;
 
 #define SPARTA_THROW_EXCEPTION(reason, file, line)             \
-    sparta::SpartaException ex(reason);                          \
-    ADD_FILE_INFORMATION(ex, file, line)                     \
+    sparta::SpartaException ex(reason);                      \
+    ADD_FILE_INFORMATION(ex, file, line)                       \
     throw ex;
 
-#define SPARTA_ABORT(reason, file, line)                      \
+#define SPARTA_ABORT(reason, file, line)                    \
     std::stringstream msg(reason);                          \
     ADD_FILE_INFORMATION(msg, file, line)                   \
     std::cerr << msg.str() << std::endl;                    \
@@ -145,6 +143,3 @@
  * Mental thought "Make sure that condition is true.  If not print message and abort"
  */
 #define sparta_abort(...) sparta_abort_impl(VA_NARGS(__VA_ARGS__), __VA_ARGS__)
-
-// __SPARTA_ASSERT_H__
-#endif

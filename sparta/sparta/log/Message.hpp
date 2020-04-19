@@ -1,7 +1,6 @@
 // <Message> -*- C++ -*-
 
-#ifndef __MESSAGE_H__
-#define __MESSAGE_H__
+#pragma once
 
 #include "sparta/log/MessageInfo.hpp"
 
@@ -24,5 +23,3 @@ namespace sparta
     } // namespace log
 } // namespace sparta
 
-// __MESSAGE_H__
-#endif

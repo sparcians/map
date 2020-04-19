@@ -1,7 +1,6 @@
 // <ConfigParser> -*- C++ -*-
 
-#ifndef __CONFIG_PARSER_H__
-#define __CONFIG_PARSER_H__
+#pragma once
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -46,5 +45,3 @@ namespace sparta
     }
 } // namespace sparta
 
-// __CONFIG_PARSER_H__
-#endif

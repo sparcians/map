@@ -1,8 +1,7 @@
 // <CPUTopology.h> -*- C++ -*-
 
 
-#ifndef __CPU_TOPOLOGY_H__
-#define __CPU_TOPOLOGY_H__
+#pragma once
 
 #include <memory>
 
@@ -134,4 +133,3 @@ public:
     CoreTopology_1();
 }; // class CoreTopology_1
 }  // namespace core_example
-#endif

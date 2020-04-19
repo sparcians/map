@@ -1,7 +1,6 @@
 // <SkeletonSimulation.hpp> -*- C++ -*-
 
-#ifndef __SKELETON_SIMULATOR_H__
-#define __SKELETON_SIMULATOR_H__
+#pragma once
 
 #include <cinttypes>
 
@@ -43,5 +42,3 @@ private:
     const bool be_noisy_ = false;
 };
 
-// __SKELETON_SIMULATOR_H__
-#endif

@@ -5,8 +5,7 @@
  * \brief Contains a number of ArchData pointers
  */
 
-#ifndef __ARCHDATA_CONTAINER_H__
-#define __ARCHDATA_CONTAINER_H__
+#pragma once
 
 #include <vector>
 
@@ -148,5 +147,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __ARCHDATA_CONTAINER_H__
-#endif

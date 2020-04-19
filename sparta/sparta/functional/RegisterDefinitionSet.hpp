@@ -1,5 +1,4 @@
-#ifndef __REGISTER_DEFINITION_SET_H__
-#define __REGISTER_DEFINITION_SET_H__
+#pragma once
 
 #include "sparta/functional/Register.hpp"
 #include "sparta/functional/RegisterSet.hpp"
@@ -63,4 +62,3 @@ using ProxyDefinitionSet =
     __RegisterDefintionSet<sparta::RegisterProxyBase>;
 
 } /* namespace sparta */
-#endif /* __REGISTER_DEFINITION_SET_H__ */

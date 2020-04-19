@@ -6,8 +6,7 @@
  * \brief Contains Clockfilewriter class
  */
 
-#ifndef __CLOCK_FILE_WRITER_H__
-#define __CLOCK_FILE_WRITER_H__
+#pragma once
 
 #include <iostream>
 #include <fstream>
@@ -131,5 +130,3 @@ namespace pipeViewer
 }//namespace pipeViewer
 }//namespace sparta
 
-// __CLOCK_FILE_WRITER_H__
-#endif

@@ -1,5 +1,4 @@
-#ifndef _BLOCKING_MEMORY_IF_H__
-#define _BLOCKING_MEMORY_IF_H__
+#pragma once
 
 #include "cache/Cache.hpp"
 #include "sparta/utils/ByteOrder.hpp"
@@ -25,4 +24,3 @@ namespace sparta
 
 }; // namespace sparta
 
-#endif // _BLOCKING_MEMORY_IF_H__

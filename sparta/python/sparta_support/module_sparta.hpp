@@ -6,8 +6,7 @@
  * \brief "sparta" python module
  */
 
-#ifndef __SPARTA_MODULE_SPARTA_H__
-#define __SPARTA_MODULE_SPARTA_H__
+#pragma once
 
 
 #include "sparta/sparta.hpp" // For global defines
@@ -867,4 +866,4 @@ public:
     }
 };
 
-#endif // #ifndef __SPARTA_MODULE_SPARTA_H__
+#pragma once

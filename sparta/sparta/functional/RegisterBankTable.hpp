@@ -1,7 +1,6 @@
 // <RegisterBankTable> -*- C++ -*-
 
-#ifndef __REGISTER_BANK_TABLE_H__
-#define __REGISTER_BANK_TABLE_H__
+#pragma once
 
 #include <iostream>
 #include <unordered_map>
@@ -506,7 +505,7 @@ protected:
     void insertRegisterInBank_(RegisterT *r, GroupVector& bank)
     {
         sparta_assert(r != nullptr);
-        const auto &rdef = r->getDefinition();
+        const auto rdef = r->getDefinition();
         while(rdef.group_num >= bank.size()){
             bank.push_back(RegisterMap());
         }
@@ -550,5 +549,3 @@ private:
 
 } // namespace sparta
 
-// __REGISTER_BANK_TABLE_H__
-#endif

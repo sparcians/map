@@ -6,8 +6,7 @@
  *        on their attributes
  */
 
-#ifndef __TREE_FILTER_EXPRESSION_H__
-#define __TREE_FILTER_EXPRESSION_H__
+#pragma once
 
 #include "sparta/statistics/StatisticDef.hpp"
 #include "sparta/statistics/CounterBase.hpp"
@@ -435,4 +434,4 @@ inline std::ostream& operator<<(std::ostream& out, const Expression& e){
     } // namespace tree
 } // namespace sparta
 
-#endif // #ifndef __TREE_FILTER_EXPRESSION_H__
+#pragma once

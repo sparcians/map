@@ -1,6 +1,5 @@
 
-#ifndef __CUSTOM_HIST_STATS_H__
-#define __CUSTOM_HIST_STATS_H__
+#pragma once
 
 #include "sparta/statistics/Histogram.hpp"
 #include "sparta/statistics/CycleHistogram.hpp"
@@ -360,4 +359,3 @@ double fraction_coverage_lesserThan2StdDev_h(const sparta::HistogramTreeNode* h)
     }
     return total;
 }
-#endif

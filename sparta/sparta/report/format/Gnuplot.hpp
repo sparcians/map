@@ -5,8 +5,7 @@
  * \brief Gnuplot Report output formatter
  */
 
-#ifndef __SPARTA_REPORT_FORMAT_GNUPLOT_H__
-#define __SPARTA_REPORT_FORMAT_GNUPLOT_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -139,5 +138,3 @@ inline std::ostream& operator<< (std::ostream& out, Gnuplot & f) {
     } // namespace report
 } // namespace sparta
 
-// __SPARTA_REPORT_FORMAT_GNUPLOT_H__
-#endif

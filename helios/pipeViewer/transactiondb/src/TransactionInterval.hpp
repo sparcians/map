@@ -5,8 +5,7 @@
  * \copyright
  */
 
-#ifndef __TRANSACTION_INTERVAL_H__
-#define __TRANSACTION_INTERVAL_H__
+#pragma once
 
 #include <iostream>
 #include "sparta/utils/SpartaAssert.hpp"
@@ -190,4 +189,4 @@ public:
 }//NAMESPACE:pipeViewer
 }//NAMESPACE:sparta
 
-#endif // #ifndef __TRANSACTION_INTERVAL_H__
+#pragma once

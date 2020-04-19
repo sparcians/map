@@ -6,8 +6,7 @@
  * \brief Basic Node framework in sparta device tree composite pattern
  */
 
-#ifndef __TREE_NODE_H__
-#define __TREE_NODE_H__
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -3064,7 +3063,7 @@ namespace sparta
             // is of no use to us if nodes are generating Notifications that no
             // observer can possible expect by examining the tree.
             // Skip this in production builds for performance
-        #ifndef NDEBUG
+#ifndef NDEBUG
             sparta_assert(origin);
             sparta_assert(name_id);
             NotificationInfo info(origin, &typeid(DataT), name_id);
@@ -3075,7 +3074,7 @@ namespace sparta
                     << "\", \"" << *name_id
                     << "\"> which it did not properly announce through canGenerateNotification";
             }
-        #endif
+#endif
             propagateNotification_(origin, data, name_id);
 
             // Post to the global virtual node
@@ -4518,6 +4517,3 @@ namespace sparta
         return out;
     }
 } // namespace sparta
-
-// __TREE_NODE_H__
-#endif

@@ -1,7 +1,6 @@
 // <Stringifiers> -*- C++ -*-
 
-#ifndef __SIMDB_STRINGIFY_UTILS_H__
-#define __SIMDB_STRINGIFY_UTILS_H__
+#pragma once
 
 #include "simdb/schema/GeneralMetaStructs.hpp"
 
@@ -102,4 +101,3 @@ stringify(ColumnT val)
 
 } // namespace simdb
 
-#endif

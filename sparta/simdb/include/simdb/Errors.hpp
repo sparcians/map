@@ -1,7 +1,6 @@
 // <Errors> -*- C++ -*-
 
-#ifndef __SIMDB_ERRORS_H__
-#define __SIMDB_ERRORS_H__
+#pragma once
 
 #include <exception>
 #include <string>
@@ -106,4 +105,3 @@ class DBAccessException : public DBException
       throw ex;                                                   \
   }
 
-#endif

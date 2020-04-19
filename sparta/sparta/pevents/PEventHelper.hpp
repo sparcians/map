@@ -1,5 +1,4 @@
-#ifndef __PEVENT_HELPER_H__
-#define __PEVENT_HELPER_H__
+#pragma once
 
 #include <tuple>
 #include <array>
@@ -358,4 +357,3 @@ public:
 
 
 
-#endif //__PEVENT_HELPER_H__

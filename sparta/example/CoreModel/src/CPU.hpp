@@ -1,8 +1,7 @@
 // <CPU.h> -*- C++ -*-
 
 
-#ifndef __CPU_H__
-#define __CPU_H__
+#pragma once
 
 #include <string>
 
@@ -68,4 +67,3 @@ private:
     std::string vpclass_;
 }; // class CPU
 }  // namespace core_example
-#endif

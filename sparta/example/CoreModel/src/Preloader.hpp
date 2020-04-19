@@ -1,7 +1,6 @@
 // <Preloader.hpp> -*- C++ -*-
 
-#ifndef __EX_PRELOADER_H__
-#define __EX_PRELOADER_H__
+#pragma once
 
 #include "sparta/simulation/Resource.hpp"
 #include "sparta/simulation/RootTreeNode.hpp"
@@ -63,4 +62,3 @@ namespace core_example
 
 }
 
-#endif //__EX_PRELOADER_H__

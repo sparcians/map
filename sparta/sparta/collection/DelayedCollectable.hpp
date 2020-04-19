@@ -7,8 +7,7 @@
  * a user to collect an object into an pipeViewer pipeline file
  */
 
-#ifndef __DELAYED_PIPELINE_COLLECTABLE_H__
-#define __DELAYED_PIPELINE_COLLECTABLE_H__
+#pragma once
 
 #include <sstream>
 #include <functional>
@@ -179,4 +178,3 @@ namespace collection
 }//namespace collection
 }//namespace sparta
 
-#endif

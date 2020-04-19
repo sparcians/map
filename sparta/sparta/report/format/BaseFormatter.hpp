@@ -5,8 +5,7 @@
  * \brief Basic HTML Report output formatter
  */
 
-#ifndef __SPARTA_REPORT_FORMAT_BASE_FORMATTER_H__
-#define __SPARTA_REPORT_FORMAT_BASE_FORMATTER_H__
+#pragma once
 
 #include <math.h>
 #include <cstddef>
@@ -559,5 +558,3 @@ private:
     } // namespace report
 } // namespace sparta
 
-// __SPARTA_REPORT_FORMAT_BASE_FORMATTER_H__
-#endif

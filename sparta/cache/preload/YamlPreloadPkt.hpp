@@ -8,8 +8,7 @@
  *        that just wraps a yaml-cpp tree.
  */
 
-#ifndef __YAML_PRELOAD_PKT_H__
-#define __YAML_PRELOAD_PKT_H__
+#pragma once
 #include "cache/preload/PreloadPkt.hpp"
 #include <yaml-cpp/yaml.h>
 #include <memory>
@@ -129,4 +128,3 @@ namespace cache {
 } // namespace cache
 } //namespace sparta
 
-#endif //__YAML_PRELOAD_PKT_H__

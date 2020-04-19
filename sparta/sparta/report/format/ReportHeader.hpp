@@ -8,8 +8,7 @@
  * after the first call to the 'writeHeaderToStreams()' method.
  */
 
-#ifndef __SPARTA_REPORT_HEADER_H__
-#define __SPARTA_REPORT_HEADER_H__
+#pragma once
 
 #include "sparta/utils/SpartaException.hpp"
 
@@ -299,4 +298,3 @@ private:
 } // namespace report
 } // namespace sparta
 
-#endif

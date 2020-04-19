@@ -7,8 +7,7 @@
  *
  */
 
-#ifndef __BUFFER_EXP_H__
-#define __BUFFER_EXP_H__
+#pragma once
 
 #include <inttypes.h>
 
@@ -1066,5 +1065,3 @@ namespace sparta
     }
 }
 
-// __BUFFER__H__
-#endif

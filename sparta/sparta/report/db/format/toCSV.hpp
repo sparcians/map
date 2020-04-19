@@ -1,7 +1,6 @@
 // <toCSV> -*- C++ -*-
 
-#ifndef __SPARTA_DATABASE_REPORT_TIMESERIES_TO_CSV_H__
-#define __SPARTA_DATABASE_REPORT_TIMESERIES_TO_CSV_H__
+#pragma once
 
 #include "sparta/report/db/ReportTimeseries.hpp"
 #include "sparta/report/db/ReportHeader.hpp"
@@ -143,4 +142,3 @@ inline void toCSV(ReportTimeseries * ts, const std::string & filename)
 } // namespace db
 } // namespace sparta
 
-#endif

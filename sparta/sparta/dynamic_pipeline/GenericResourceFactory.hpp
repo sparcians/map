@@ -1,8 +1,7 @@
 // <GenericResourceFactory.h> -*- C++ -*-
 
 
-#ifndef __GENERIC_FACTORY_H__
-#define __GENERIC_FACTORY_H__
+#pragma once
 
 #include "sparta/dynamic_pipeline/GenericUnit.hpp"
 #include "sparta/simulation/ResourceFactory.hpp"
@@ -25,4 +24,3 @@ private:
 }; // struct GenericResourceFactory
 }  // namespace dynamic_pipeline
 }  // namespace sparta
-#endif

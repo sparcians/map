@@ -4,8 +4,7 @@
  * \brief  File that contains MemoryObject
  */
 
-#ifndef __MEMORY_OBJECT_H__
-#define __MEMORY_OBJECT_H__
+#pragma once
 
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/memory/MemoryExceptions.hpp"
@@ -436,4 +435,3 @@ inline std::ostream& operator<<(std::ostream& out, const sparta::memory::MemoryO
     return out;
 }
 
-#endif // __MEMORY_OBJECT_H__

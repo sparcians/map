@@ -7,8 +7,7 @@
  *        a user to collect an object into an pipeViewer pipeline file
  */
 
-#ifndef __PIPELINE_COLLECTABLE_H__
-#define __PIPELINE_COLLECTABLE_H__
+#pragma once
 
 #include <algorithm>
 #include <sstream>
@@ -867,4 +866,3 @@ namespace sparta{
         };
     }//namespace collection
 }//namespace sparta
-#endif

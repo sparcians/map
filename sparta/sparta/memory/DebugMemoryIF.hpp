@@ -4,8 +4,7 @@
  * \brief  File that contains DebugMemoryIF
  */
 
-#ifndef __DEBUG_MEMORY_IF_H__
-#define __DEBUG_MEMORY_IF_H__
+#pragma once
 
 #include <math.h>
 
@@ -637,4 +636,3 @@ namespace sparta
     }; // namespace memory
 }; // namespace sparta
 
-#endif // __DEBUG_MEMORY_IF_H__

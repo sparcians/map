@@ -1,6 +1,5 @@
 
-#ifndef __PYTHON_FACADE_REPORT_DESCRIPTOR_H__
-#define __PYTHON_FACADE_REPORT_DESCRIPTOR_H__
+#pragma once
 
 #include "sparta/app/ReportDescriptor.hpp"
 #include "python/sparta_support/facade/ReportTriggers.hpp"
@@ -199,4 +198,3 @@ inline object ReportDescriptor_ctor_with_kwargs(tuple args, const dict & kwargs)
 } // namespace python
 } // namespace boost
 
-#endif

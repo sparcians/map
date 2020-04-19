@@ -7,8 +7,7 @@
  *
  * \brief File that defines PreloadableNode.
  */
-#ifndef __SPARTA_PRELOADABLE_NODE_H__
-#define __SPARTA_PRELOADABLE_NODE_H__
+#pragma once
 #include <functional>
 #include "cache/preload/PreloadableIF.hpp"
 #include "cache/preload/PreloadDumpableIF.hpp"
@@ -101,4 +100,3 @@ namespace cache {
     };
 } // namespace cache
 } //namespace sparta
-#endif //__SPARTA_PRELOADABLE_NODE_H__

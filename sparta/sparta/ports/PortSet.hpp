@@ -7,8 +7,7 @@
  * \brief File that defines the PortSet class
  */
 
-#ifndef __PORT_SET_H__
-#define __PORT_SET_H__
+#pragma once
 #include <set>
 #include <list>
 #include <unordered_map>
@@ -147,5 +146,3 @@ namespace sparta
 
 
 
-// __PORT_SET_H__
-#endif

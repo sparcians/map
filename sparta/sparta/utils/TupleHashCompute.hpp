@@ -9,8 +9,7 @@
  *  the std::hash() for std::tuples, this file was
  *  necessary to implement.
  */
-#ifndef __TUPLE_HASH_COMPUTE_H__
-#define __TUPLE_HASH_COMPUTE_H__
+#pragma once
 
 namespace hashtuple {
     template<typename TT>
@@ -65,4 +64,3 @@ namespace hashtuple {
         }
     };
 } // namespace hashtuple
-#endif

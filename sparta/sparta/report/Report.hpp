@@ -7,8 +7,7 @@
  * instances of other Reports to present a set of associated simuation metrics
  */
 
-#ifndef __REPORT_H__
-#define __REPORT_H__
+#pragma once
 
 #include <iostream>
 #include <iomanip>
@@ -1691,5 +1690,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __REPORT_H__
-#endif

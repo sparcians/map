@@ -1,7 +1,6 @@
 // <AsyncTaskEval> -*- C++ -*-
 
-#ifndef __SIMDB_ASYNC_TASK_EVAL_H__
-#define __SIMDB_ASYNC_TASK_EVAL_H__
+#pragma once
 
 #include "simdb/async/TimerThread.hpp"
 #include "simdb/async/ConcurrentQueue.hpp"
@@ -629,4 +628,3 @@ inline void AsyncTaskController::emitPreFlushNotification()
 
 } // namespace simdb
 
-#endif

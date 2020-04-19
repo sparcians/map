@@ -9,8 +9,7 @@
  *  Metatype_lists are extremely useful in Template MetaProgramming.
  */
 
-#ifndef __META_TYPE_LIST_H__
-#define __META_TYPE_LIST_H__
+#pragma once
 
 #include <type_traits>
 #include <memory> // For unique_ptr
@@ -267,4 +266,3 @@ namespace MetaTypeList {
 
 } // namespace MetaTypeList
 
-#endif //__META_TYPE_LIST_H__

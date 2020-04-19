@@ -4,8 +4,7 @@
  * \brief  File that contains BlockingMemoryIF
  */
 
-#ifndef __BLOCKING_MEMORY_IF_H__
-#define __BLOCKING_MEMORY_IF_H__
+#pragma once
 
 #include "sparta/memory/MemoryExceptions.hpp"
 #include "sparta/memory/AddressTypes.hpp"
@@ -369,4 +368,3 @@ inline std::ostream& operator<<(std::ostream& out, const sparta::memory::Blockin
     return out;
 }
 
-#endif // __BLOCKING_MEMORY_IF_H__

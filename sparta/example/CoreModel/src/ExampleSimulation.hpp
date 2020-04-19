@@ -1,8 +1,7 @@
 // <Simulation.h> -*- C++ -*-
 
 
-#ifndef __EXAMPLE_SIMULATOR_H__
-#define __EXAMPLE_SIMULATOR_H__
+#pragma once
 
 #include "sparta/app/Simulation.hpp"
 #include "sparta/trigger/ExpiringExpressionTrigger.hpp"
@@ -173,5 +172,3 @@ private:
     std::shared_ptr<sparta_simdb::DatabaseTester> simdb_tester_;
 };
 
-// __EXAMPLE_SIMULATOR_H__
-#endif

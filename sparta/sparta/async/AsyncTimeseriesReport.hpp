@@ -1,7 +1,6 @@
 // <AsyncTimeseriesReport> -*- C++ -*-
 
-#ifndef __SPARTA_ASYNC_TIMESERIES_REPORT_H__
-#define __SPARTA_ASYNC_TIMESERIES_REPORT_H__
+#pragma once
 
 #include <math.h>
 #include <cstddef>
@@ -742,4 +741,3 @@ private:
 } // namespace async
 } // namespace sparta
 
-#endif

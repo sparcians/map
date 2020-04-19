@@ -1,6 +1,5 @@
 
-#ifndef __REPORT_SUB_CONTAINER_H__
-#define __REPORT_SUB_CONTAINER_H__
+#pragma once
 
 #include "sparta/utils/SpartaException.hpp"
 
@@ -74,4 +73,3 @@ private:
 
 }
 
-#endif

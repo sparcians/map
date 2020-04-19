@@ -6,8 +6,7 @@
  * \brief  Defines the Pipeline class
  */
 
-#ifndef __PIPELINE_HPP__
-#define __PIPELINE_HPP__
+#pragma once
 
 #include <cinttypes>
 #include <memory>
@@ -955,4 +954,3 @@ namespace sparta
 
 }
 
-#endif

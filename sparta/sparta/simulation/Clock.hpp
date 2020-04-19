@@ -1,8 +1,7 @@
 // <Clock> -*- C++ -*-
 
 
-#ifndef __CLOCK__H__
-#define __CLOCK__H__
+#pragma once
 
 /**
  * \file   Clock.hpp
@@ -546,5 +545,3 @@ inline Scheduler::Tick calculateReverseClockCrossingDelay(Scheduler::Tick dst_ar
         bool Clock::normalized_ = false;        \
     }
 
-// __CLOCK__H__
-#endif

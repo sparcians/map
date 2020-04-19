@@ -8,8 +8,7 @@
  *        that just wraps a unordered_map.
  */
 
-#ifndef __MAP_PRELOAD_PKT_H__
-#define __MAP_PRELOAD_PKT_H__
+#pragma once
 
 #include <unordered_map>
 
@@ -84,4 +83,3 @@ namespace cache {
 } // namespace cache
 } // namespace sparta
 
-#endif // __MAP_PRELOAD_PKT_H__

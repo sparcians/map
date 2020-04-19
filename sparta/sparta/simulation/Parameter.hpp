@@ -1,8 +1,7 @@
 // <Parameter> -*- C++ -*-
 
 
-#ifndef __PARAMETER_H__
-#define __PARAMETER_H__
+#pragma once
 
 #include <cassert>
 #include <cstddef>
@@ -2546,5 +2545,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __PARAMETER_H__
-#endif

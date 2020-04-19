@@ -6,8 +6,7 @@
  * \brief Contains LocationFileWriter class
  */
 
-#ifndef __LOCATION_FILE_WRITER_H__
-#define __LOCATION_FILE_WRITER_H__
+#pragma once
 
 #include <iostream>
 #include <fstream>
@@ -190,5 +189,3 @@ namespace pipeViewer
 }//namespace pipeViewer
 }//namespace sparta
 
-// __LOCATION_FILE_WRITER_H__
-#endif

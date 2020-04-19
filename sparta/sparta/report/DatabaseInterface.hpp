@@ -1,7 +1,6 @@
 // <DatabaseInterface> -*- C++ -*-
 
-#ifndef __SPARTA_DATABASE_INTERFACE_H__
-#define __SPARTA_DATABASE_INTERFACE_H__
+#pragma once
 
 #include "sparta/app/Simulation.hpp"
 #include "sparta/simulation/RootTreeNode.hpp"
@@ -386,4 +385,3 @@ struct DatabaseInterface<T,
 
 }
 
-#endif

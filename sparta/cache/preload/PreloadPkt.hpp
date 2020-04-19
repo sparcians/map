@@ -8,8 +8,7 @@
  *        with value read checking similar to parameters.
  */
 
-#ifndef __SPARTA_PRELOADPKT_H__
-#define __SPARTA_PRELOADPKT_H__
+#pragma once
 #include <unordered_map>
 #include "sparta/utils/LexicalCast.hpp"
 namespace sparta {
@@ -134,4 +133,3 @@ namespace cache {
 
 } // namespace sparta
 
-#endif //__SPARTA_PRELOADPKT_H__

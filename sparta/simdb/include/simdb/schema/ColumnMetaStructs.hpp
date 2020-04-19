@@ -1,7 +1,6 @@
 // <MetaStructs> -*- C++ -*-
 
-#ifndef __SIMDB_COLUMN_META_STRUCTS_H__
-#define __SIMDB_COLUMN_META_STRUCTS_H__
+#pragma once
 
 /*!
  * \brief Metaprogramming utilities for use
@@ -297,4 +296,3 @@ inline size_t getFixedNumBytesForColumnDType(
 
 }
 
-#endif

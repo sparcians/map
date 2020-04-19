@@ -1,7 +1,6 @@
 // <SINodeHierarchy> -*- C++ -*-
 
-#ifndef __SPARTA_SI_NODE_HIERARCHY_H__
-#define __SPARTA_SI_NODE_HIERARCHY_H__
+#pragma once
 
 #include <memory>
 
@@ -61,4 +60,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif

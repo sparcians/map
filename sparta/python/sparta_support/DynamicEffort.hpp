@@ -6,8 +6,7 @@
  * \brief "sparta" python export class
  */
 
-#ifndef __DYNAMIC_EFFORT_H__
-#define __DYNAMIC_EFFORT_H__
+#pragma once
 
 namespace rdp = sparta::dynamic_pipeline;
 using GU = rdp::GenericUnit;
@@ -142,4 +141,3 @@ class_<sparta::CycleCounter, bases<sparta::CounterBase>, boost::noncopyable>
     ("CycleCounter", init<sparta::TreeNode*, const std::string&, const std::string&,
                           sparta::CounterBase::CounterBehavior, const sparta::Clock*>());
 
-#endif

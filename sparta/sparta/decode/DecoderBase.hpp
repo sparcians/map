@@ -7,8 +7,7 @@
  */
 
 
-#ifndef __DECODER_BASE_H__
-#define __DECODER_BASE_H__
+#pragma once
 
 #include <inttypes.h>
 #include <vector>
@@ -51,4 +50,3 @@ namespace sparta
     }
 }
 
-#endif

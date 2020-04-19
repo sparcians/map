@@ -7,8 +7,7 @@
  * \brief  File that defines the EventSet class
  */
 
-#ifndef __EVENT_SET_H__
-#define __EVENT_SET_H__
+#pragma once
 
 #include <iostream>
 #include <array>
@@ -117,5 +116,3 @@ namespace sparta
     };
 }
 
-// __EVENT_SET_H__
-#endif

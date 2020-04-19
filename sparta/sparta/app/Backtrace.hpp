@@ -1,12 +1,11 @@
-// <Backtrace.h> -*- C++ -*-
+// <Backtrace.hpp> -*- C++ -*-
 
 /**
  * \file Backtrace.hpp
  * \brief Handles writing backtraces on errors
  */
 
-#ifndef __SPARTA_APP_BACKTRACE_H__
-#define __SPARTA_APP_BACKTRACE_H__
+#pragma once
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -118,4 +117,3 @@ public:
 
     } // namespace app
 } // namespace sparta
-#endif // __SPARTA_APP_BACKTRACE_H__

@@ -1,8 +1,7 @@
 // <Counter> -*- C++ -*-
 
 
-#ifndef __COUNTER_BASE_H__
-#define __COUNTER_BASE_H__
+#pragma once
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/statistics/InstrumentationNode.hpp"
@@ -304,5 +303,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __COUNTER_BASE_H__
-#endif

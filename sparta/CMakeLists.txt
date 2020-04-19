@@ -136,7 +136,7 @@ if (CCACHE_PROGRAM)
 endif ()
 
 # -Wpedantic
-set (CMAKE_CXX_FLAGS "${OPT_FLAGS} \
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPT_FLAGS} \
  -DSPARTA_VERSION='\"${GIT_REPO_VERSION}\"' -g -Werror -fPIC \
  -Wall -Wextra -Winline -Winit-self -Wno-unused-function \
  -Wuninitialized -Wno-sequence-point -Wno-inline -Wno-unknown-pragmas \

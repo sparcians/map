@@ -1,8 +1,7 @@
 // <Audience> -*- C++ -*-
 
 
-#ifndef __AUDIENCE__H__
-#define __AUDIENCE__H__
+#pragma once
 
 #include <string>
 #include <list>
@@ -85,5 +84,3 @@ namespace sparta
         ScheduleableHandleList         registry_;
     };
 }
-// __AUDIENCE__H__
-#endif

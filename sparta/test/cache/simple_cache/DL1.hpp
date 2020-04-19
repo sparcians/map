@@ -1,5 +1,4 @@
-#ifndef DL1_HPP_
-#define DL1_HPP_
+#pragma once
 
 #include "cache/SimpleCache.hpp"
 #include "cache/TreePLRUReplacement.hpp"
@@ -64,5 +63,3 @@ private:
     sparta::BlockingMemoryIF *l2_ = nullptr;
 
 }; // DL1
-
-#endif

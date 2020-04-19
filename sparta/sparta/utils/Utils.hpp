@@ -1,7 +1,6 @@
 // <Utils> -*- C++ -*-
 
-#ifndef __UTILS_H__
-#define __UTILS_H__
+#pragma once
 
 #include <string>
 #include <math.h>
@@ -734,5 +733,3 @@ public:
         enum { value = sizeof(test<T>(nullptr)) == sizeof(one) };       \
     };
 
-// __UTILS_H__
-#endif

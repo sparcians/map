@@ -6,8 +6,7 @@
  * \brief CycleHistogram implementation using sparta CycleCounter
  */
 
-#ifndef __SPARTA_CYCLE_HISTOGRAM_H__
-#define __SPARTA_CYCLE_HISTOGRAM_H__
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -801,4 +800,3 @@ namespace sparta
     using CycleHistogram = CycleHistogramTreeNode;
 
 }; // namespace sparta
-#endif // __SPARTA_CYCLE_HISTOGRAM_H__

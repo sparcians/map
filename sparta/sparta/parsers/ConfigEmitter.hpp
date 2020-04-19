@@ -1,7 +1,6 @@
 // <ConfigEmitter> -*- C++ -*-
 
-#ifndef __CONFIG_EMITTER_H__
-#define __CONFIG_EMITTER_H__
+#pragma once
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -35,5 +34,3 @@ namespace sparta
     }
 } // namespace sparta
 
-// __CONFIG_EMITTER_H__
-#endif

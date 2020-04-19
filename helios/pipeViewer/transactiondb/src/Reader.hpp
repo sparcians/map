@@ -6,8 +6,7 @@
  *
 */
 
-#ifndef __READER_H__
-#define __READER_H__
+#pragma once
 
 #include <functional>
 #include <iostream>
@@ -1217,5 +1216,3 @@ namespace pipeViewer{
     };
 }//NAMESPACE:pipeViewer
 }//NAMESPACE:sparta
-// __READER_H__
-#endif

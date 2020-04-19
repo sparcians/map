@@ -1,6 +1,5 @@
 
-#ifndef __SPARTA_STATISTIC_DEF_TRIGGER_H__
-#define __SPARTA_STATISTIC_DEF_TRIGGER_H__
+#pragma once
 
 #include "sparta/trigger/ManagedTrigger.hpp"
 #include "sparta/trigger/Comparator.hpp"
@@ -73,4 +72,3 @@ private:
 } // namespace trigger
 } // namespace sparta
 
-#endif

@@ -1,7 +1,6 @@
 // <ObjectQuery> -*- C++ -*-
 
-#ifndef __SIMDB_OBJECT_QUERY_H__
-#define __SIMDB_OBJECT_QUERY_H__
+#pragma once
 
 /*!
  * \file ObjectQuery.h
@@ -805,4 +804,3 @@ private:
 
 } // namespace simdb
 
-#endif

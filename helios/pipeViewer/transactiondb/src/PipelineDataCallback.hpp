@@ -1,7 +1,6 @@
 // <PipelineDataCallback> -*- C++ -*-
 
-#ifndef __PIPELINE_DATA_CALLBACK__
-#define __PIPELINE_DATA_CALLBACK__
+#pragma once
 
 #include <fstream>
 #include <iostream>
@@ -34,4 +33,3 @@ namespace pipeViewer{
     };
 }//NAMESPACE:pipeViewer
 }//NAMESPACE:sparta
-#endif

@@ -5,8 +5,7 @@
  * \brief String utilities used in SimDB
  */
 
-#ifndef __SIMDB_STRING_UTILS_H__
-#define __SIMDB_STRING_UTILS_H__
+#pragma once
 
 #include "simdb/utils/uuids.hpp"
 
@@ -205,4 +204,3 @@ inline bool operator!=(const std::string & one,
 } // namespace utils
 } // namespace simdb
 
-#endif

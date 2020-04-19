@@ -4,8 +4,7 @@
  * \brief  File that contains SimpleMemoryMap
  */
 
-#ifndef __SIMPLE_MEMORY_MAP_H__
-#define __SIMPLE_MEMORY_MAP_H__
+#pragma once
 
 #include "sparta/memory/MemoryExceptions.hpp"
 #include "sparta/memory/AddressTypes.hpp"
@@ -1007,4 +1006,3 @@ inline std::ostream& operator<<(std::ostream& out, const sparta::memory::SimpleM
     return out;
 }
 
-#endif // __SIMPLE_MEMORY_MAP_H__

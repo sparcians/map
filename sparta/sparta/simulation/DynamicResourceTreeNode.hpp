@@ -1,7 +1,6 @@
 // <DynamicResourceTreeNode> -*- C++ -*-
 
-#ifndef __DYNAMIC_RESOURCE_TREE_NODE_H__
-#define __DYNAMIC_RESOURCE_TREE_NODE_H__
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -263,5 +262,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __DYNAMIC_RESOURCE_TREE_NODE_H__
-#endif

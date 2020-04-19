@@ -5,8 +5,7 @@
  *        the Helois tools.
  **/
 
-#ifndef __INTERVAL_WINDOW_H__
-#define __INTERVAL_WINDOW_H__
+#pragma once
 
 #include <inttypes.h>
 #include <list>
@@ -302,4 +301,3 @@ namespace pipeViewer {
     };// CLASS:IntervalWindow
 }// NAMESPACE:pipeViewer
 }// NAMESPACE:Sparta
-#endif // #ifndef __INTERVAL_WINDOW_H__

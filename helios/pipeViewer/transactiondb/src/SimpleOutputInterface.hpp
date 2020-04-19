@@ -1,5 +1,4 @@
-#ifndef __SPARTA_SIMPLE_OUTPUT_INTERFACE_H__
-#define __SPARTA_SIMPLE_OUTPUT_INTERFACE_H__
+#pragma once
 
 #include "sparta/pipeViewer/Outputter.hpp"
 #include "sparta/pipeViewer/transaction_structures.hpp"
@@ -79,4 +78,3 @@ namespace sparta{
 } // namespace sparta
 
 
-#endif

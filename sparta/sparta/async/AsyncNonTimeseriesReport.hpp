@@ -1,7 +1,6 @@
 // <AsyncNonTimeseriesReport> -*- C++ -*-
 
-#ifndef __SPARTA_ASYNC_NON_TIMESERIES_REPORT_H__
-#define __SPARTA_ASYNC_NON_TIMESERIES_REPORT_H__
+#pragma once
 
 #include <map>
 #include <memory>
@@ -246,4 +245,3 @@ private:
 } // namespace async
 } // namespace sparta
 
-#endif

@@ -7,8 +7,7 @@
  * simulation.
  */
 
-#ifndef __SPARTA_SIMULATION_INFO_H__
-#define __SPARTA_SIMULATION_INFO_H__
+#pragma once
 
 #include <errno.h>
 #include <rapidjson/rapidjson.h>
@@ -611,4 +610,3 @@ inline std::ostream& operator<<(std::ostream& o, const SimulationInfo& info) {
 }
 
 } // namespace sparta
-#endif // __SPARTA_SIMULATION_INFO_H__

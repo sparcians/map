@@ -7,8 +7,7 @@
  * \brief  File that defines the ObjectAllocator class
  */
 
-#ifndef __OBJECT_ALLOCATOR_H__
-#define __OBJECT_ALLOCATOR_H__
+#pragma once
 
 #include <inttypes.h>
 #include <queue>
@@ -148,4 +147,3 @@ namespace sparta
     // public:
     };
 }
-#endif

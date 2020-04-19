@@ -1,7 +1,6 @@
 // <StatInstValueLookup> -*- C++ -*-
 
-#ifndef __SPARTA_STAT_INST_VALUE_LOOKUP_H__
-#define __SPARTA_STAT_INST_VALUE_LOOKUP_H__
+#pragma once
 
 #include "sparta/report/db/StatInstRowIterator.hpp"
 
@@ -159,4 +158,3 @@ private:
 
 } // namespace placeholders
 
-#endif

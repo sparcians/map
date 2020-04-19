@@ -2,8 +2,7 @@
 // <VertexFactory> -*- C++ -*-
 
 
-#ifndef __VERTEXFACTORY__H__
-#define __VERTEXFACTORY__H__
+#pragma once
 
 #include "sparta/kernel/Vertex.hpp"
 #include <string>
@@ -55,4 +54,3 @@ private:
 
 } // namespace sparta
 
-#endif

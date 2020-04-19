@@ -1,7 +1,6 @@
 
+#pragma once
 
-#ifndef PRODUCER_H_
-#define PRODUCER_H_
 
 /* Controls the rate at which Jobs arrive at the Machine */
 #include <inttypes.h>
@@ -58,5 +57,3 @@ private:
     uint32_t non_cont_count_ = 0;
 
 };
-
-#endif

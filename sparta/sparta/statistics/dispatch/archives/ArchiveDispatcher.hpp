@@ -1,7 +1,6 @@
 // <ArchiveDispatcher> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTICS_ARCHIVE_DISPATCHER_H__
-#define __SPARTA_STATISTICS_ARCHIVE_DISPATCHER_H__
+#pragma once
 
 #include "sparta/statistics/dispatch/archives/ArchiveSource.hpp"
 #include "sparta/statistics/dispatch/archives/ArchiveSink.hpp"
@@ -63,4 +62,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif
