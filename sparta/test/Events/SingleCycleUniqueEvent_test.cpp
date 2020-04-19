@@ -25,6 +25,8 @@ public:
         test_handler_for_called_once(CREATE_SPARTA_HANDLER(SCUEEventHandler, testCalledOncePerCycle_)),
         test_handler_for_precedence_called_first(CREATE_SPARTA_HANDLER(SCUEEventHandler, testPrecedenceCalledFirst_)),
         test_handler_for_precedence_called_second(CREATE_SPARTA_HANDLER(SCUEEventHandler, testPrecedenceCalledSecond_)),
+        do_nothing(CREATE_SPARTA_HANDLER(SCUEEventHandler, doNothing_)),
+        do_nothing_data(CREATE_SPARTA_HANDLER_WITH_DATA(SCUEEventHandler, doNothingData_, int)),
         clk_(clk)
     {}
 
@@ -32,6 +34,8 @@ public:
 
     sparta::SpartaHandler test_handler_for_precedence_called_first;
     sparta::SpartaHandler test_handler_for_precedence_called_second;
+    sparta::SpartaHandler do_nothing;
+    sparta::SpartaHandler do_nothing_data;
 
     uint32_t getCalledCount() const {
         return called_;
@@ -75,6 +79,9 @@ private:
         adjusted_time_ = 1;
     }
     uint32_t called_ = 0;
+
+    void doNothing_() {}
+    void doNothingData_(const int&) {}
 
     // time is 1-based
     sparta::Clock::Cycle last_time_called_ = 1;
@@ -232,8 +239,18 @@ void testPrecedence()
                                                         "sc_uniq_event_second",
                                                         scue_to_scue_handler.test_handler_for_precedence_called_second);
 
+    sparta::UniqueEvent<> uniq_event(&event_set, "uniq_event", scue_to_scue_handler.do_nothing);
+    sparta::UniqueEvent<> uniq_event2(&event_set, "uniq_event2", scue_to_scue_handler.do_nothing);
+    sparta::PayloadEvent<int> ple_event(&event_set, "ple_event", scue_to_scue_handler.do_nothing_data);
+    sparta::PayloadEvent<int> ple_event2(&event_set, "ple_event2", scue_to_scue_handler.do_nothing_data);
+
     sc_uniq_event_first >> sc_uniq_event_second;
 
+    uniq_event >> sc_uniq_event_first;
+    sc_uniq_event_first >> uniq_event2;
+
+    ple_event >> sc_uniq_event_first;
+    sc_uniq_event_first >> ple_event2;
 
     basic_scheduler.finalize();
     rtn.enterConfiguring();
