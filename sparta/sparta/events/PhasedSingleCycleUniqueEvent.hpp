@@ -164,7 +164,7 @@ namespace sparta
          */
         template<class ScheduleableT>
         void precedes(ScheduleableT & consumer, const std::string & reason = "") {
-            single_cycle_event_scheduleable_.precedes(consumer);
+            single_cycle_event_scheduleable_.precedes(consumer, reason);
         }
 
 #ifndef DO_NOT_DOCUMENT
