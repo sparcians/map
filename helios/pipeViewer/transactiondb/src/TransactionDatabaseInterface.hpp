@@ -3,7 +3,7 @@
 #pragma once
 
 // Required to enable std::this_thread::sleep_for
-#pragma once
+#ifndef _GLIBCXX_USE_NANOSLEEP
 #define _GLIBCXX_USE_NANOSLEEP
 #endif
 
