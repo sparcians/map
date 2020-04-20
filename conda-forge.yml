@@ -13,7 +13,7 @@ skip_render:
   - .github/workflows/main.yml
   - .github/workflows/webservices.yml
 provider:
-  linux: azure
+  linux: travis
   osx: azure
   win: None
   linux_ppc64le: None

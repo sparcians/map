@@ -10,8 +10,8 @@ jobs:
   strategy:
     maxParallel: 8
     matrix:
-      osx_:
-        CONFIG: osx_
+      osx_python3.7.____cpython:
+        CONFIG: osx_python3.7.____cpython
         UPLOAD_PACKAGES: True
 
   steps:
@@ -42,7 +42,7 @@ jobs:
       source activate base
       echo "Configuring conda."
 
-      setup_conda_rc ./ ./conda.recipe ./.ci_support/${CONFIG}.yaml
+      setup_conda_rc ./ "./conda.recipe" ./.ci_support/${CONFIG}.yaml
       export CI=azure
       source run_conda_forge_build_setup
       conda update --yes --quiet --override-channels -c conda-forge -c defaults --all
@@ -53,19 +53,17 @@ jobs:
 
   - script: |
       source activate base
-      mangle_compiler ./ ./conda.recipe ./.ci_support/${CONFIG}.yaml
+      mangle_compiler ./ "./conda.recipe" ./.ci_support/${CONFIG}.yaml
     displayName: Mangle compiler
 
   - script: |
       source activate base
-      make_build_number ./ ./conda.recipe ./.ci_support/${CONFIG}.yaml
+      make_build_number ./ "./conda.recipe" ./.ci_support/${CONFIG}.yaml
     displayName: Generate build number clobber file
 
   - script: |
       source activate base
-      set -x
-      env | sort
-      conda build ./conda.recipe -m ./.ci_support/${CONFIG}.yaml --clobber-file ./.ci_support/clobber_${CONFIG}.yaml
+      conda build "./conda.recipe" -m ./.ci_support/${CONFIG}.yaml --clobber-file ./.ci_support/clobber_${CONFIG}.yaml
     displayName: Build recipe
 
   - task: PublishTestResults@2
@@ -79,7 +77,7 @@ jobs:
   - script: |
       source activate base
       export GIT_BRANCH=$BUILD_SOURCEBRANCHNAME
-      upload_package ./ ./conda.recipe ./.ci_support/${CONFIG}.yaml
+      upload_package ./ "./conda.recipe" ./.ci_support/${CONFIG}.yaml
     displayName: Upload package
     env:
       BINSTAR_TOKEN: $(BINSTAR_TOKEN)

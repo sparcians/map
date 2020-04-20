@@ -1,5 +1,5 @@
-#include "sparta/argos/Reader.hpp"
-#include "sparta/argos/PipelineDataCallback.hpp"
+#include "sparta/pipeViewer/Reader.hpp"
+#include "sparta/pipeViewer/PipelineDataCallback.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 #include <iomanip>
@@ -9,7 +9,7 @@
 
 /**
  * \file Database_dumper.cpp
- * \brief dump an argos database to a human readable format.
+ * \brief dump an pipeViewer database to a human readable format.
  * Instructions, run ./ArgosDumper <path+database prefix>
  * the database prefix should be the same prefix passed to the simulator when creating the database
  * example
@@ -21,7 +21,7 @@
  */
 namespace sparta
 {
-namespace argos
+namespace pipeViewer
 {
     class DumpCallback : public PipelineDataCallback
     {
@@ -183,7 +183,7 @@ namespace argos
     };
 
 }//namespace sparta
-}//namespace argos
+}//namespace pipeViewer
 
 void usage()
 {
@@ -196,7 +196,7 @@ void usage()
 
 int main(int argc, char ** argv)
 {
-    sparta::argos::DumpCallback cb;
+    sparta::pipeViewer::DumpCallback cb;
     std::string db_path = "db_pipeout/pipeout";
     if (argc > 1) {
         db_path = argv[1];
@@ -206,7 +206,7 @@ int main(int argc, char ** argv)
 
     cb.setFlags(merge_transactions, sort_by_end_time);
 
-    sparta::argos::Reader reader(db_path, &cb);
+    sparta::pipeViewer::Reader reader(db_path, &cb);
 
     // Get data
     reader.getWindow(reader.getCycleFirst(), reader.getCycleLast());

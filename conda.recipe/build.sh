@@ -2,6 +2,9 @@
 
 set -x
 
+# before building, cleanup conda prefix to cut down on disk usage
+conda clean -y -a
+
 declare -a CMAKE_PLATFORM_FLAGS
 if [[ $(uname) == Darwin ]]; then
     # note, conda-forge-ci-setup's run_conda_forge_build_setup_osx
@@ -38,30 +41,39 @@ env | sort
 
 ################################################################################
 #
-#  BUILD & TEST SPARTA
+#  BUILD & TEST MAP
 #
 ################################################################################
 
-mkdir -p sparta/release
-pushd sparta/release
+df -h /
+
+mkdir -p release
+pushd release
 cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX:PATH="$PREFIX" \
       "${CMAKE_PLATFORM_FLAGS[@]}" \
       ..
+
+df -h /
 cmake --build . -j "$CPU_COUNT" || cmake --build . -v
+df -h /
 cmake --build . -j "$CPU_COUNT" --target regress
+df -h /
 cmake --build . -j "$CPU_COUNT" --target simdb_regress
+df -h /
 
 # The example tests are built as a part of the toplevel 'regress'
 # target but they aren't run.  We have to explicitly run
 # by cd'ing into the example subdir and running ctest
 # because not all of the subdirs of example create their
 # own <subdir>_regress target like the core example.
-(cd example && ctest -j "$CPU_COUNT" --test-action test)
+(cd sparta/example && ctest -j "$CPU_COUNT" --test-action test)
+df -h /
 
 # if we want to create individual packages this should move into a separate install script for only SPARTA
 # and we might want to create separate install targets for the headers and the libs and the doc
 cmake --build . --target install
+df -h /
 
 popd
 

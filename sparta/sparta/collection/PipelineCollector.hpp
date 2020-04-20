@@ -20,9 +20,9 @@
 #include "sparta/events/UniqueEvent.hpp"
 #include "sparta/kernel/Scheduler.hpp"
 
-#include "sparta/argos/Outputter.hpp"
-#include "sparta/argos/ClockFileWriter.hpp"
-#include "sparta/argos/LocationFileWriter.hpp"
+#include "sparta/pipeViewer/Outputter.hpp"
+#include "sparta/pipeViewer/ClockFileWriter.hpp"
+#include "sparta/pipeViewer/LocationFileWriter.hpp"
 #include "sparta/simulation/TreeNodePrivateAttorney.hpp"
 
 namespace sparta{
@@ -261,7 +261,7 @@ namespace collection
                 sparta_assert(fastest_clk->getPeriod() != 0);
                 heartbeat_interval = fastest_clk->getPeriod() * heartbeat_multiplier;                //round up to the nearest multiple of 100
                 heartbeat_interval = heartbeat_interval + (100 - (heartbeat_interval % 100));
-                // Argos requires that intervals be a multiple of 100.
+                // pipeViewer requires that intervals be a multiple of 100.
                 sparta_assert(heartbeat_interval % 100 == 0)
             }
 
@@ -325,7 +325,7 @@ namespace collection
             if(collection_active_ == false)
             {
                 // Create the outputter used for writing transactions to disk.
-                writer_.reset(new argos::Outputter(filepath_, heartbeat_interval_));
+                writer_.reset(new pipeViewer::Outputter(filepath_, heartbeat_interval_));
 
                 // We need to write an index on the start BEFORE any transactions have been written.
                 writer_->writeIndex();
@@ -334,7 +334,7 @@ namespace collection
                 writeClockFile_();
 
                 // Open the locations file
-                location_writer_.reset(new argos::LocationFileWriter(filepath_));
+                location_writer_.reset(new pipeViewer::LocationFileWriter(filepath_));
 
                 // The reader needs heartbeat indexes up to the current
                 // collection point.  This can happen on delayed pipeline
@@ -567,7 +567,7 @@ namespace collection
             // We only need the ClockFileWriter to exist during the writing of the clock file.
             // there for it was created on the stack.
             //std::cout << "Writing Pipeline Collection clock file. " << std::endl;
-            argos::ClockFileWriter clock_writer(filepath_);
+            pipeViewer::ClockFileWriter clock_writer(filepath_);
             clock_writer << (*root_clk_);
         }
 
@@ -597,11 +597,11 @@ namespace collection
 
         //! A pointer to the outputter class used for writing
         //! transactions to physical disk.
-        std::unique_ptr<argos::Outputter> writer_;
+        std::unique_ptr<pipeViewer::Outputter> writer_;
 
         //! A pointer to the root sparta TreeNode of the
         //! simulation. Important for writing the location map file.
-        std::unique_ptr<argos::LocationFileWriter> location_writer_;
+        std::unique_ptr<pipeViewer::LocationFileWriter> location_writer_;
         //sparta::TreeNode* collected_treenode_ = nullptr;
 
         //! Pointer to the root clock.  This clock is considered the

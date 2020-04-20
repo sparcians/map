@@ -16,7 +16,7 @@
 #include "sparta/utils/SpartaTester.hpp"
 #include "sparta/utils/Utils.hpp"
 
-#include "sparta/argos/TransactionDatabaseInterface.hpp"
+#include "sparta/pipeViewer/TransactionDatabaseInterface.hpp"
 
 /*!
  * \file TransactionDatabaseAPI_main.cpp
@@ -28,7 +28,7 @@ TEST_INIT;
 #define QUERIES_PER_SEC(num, boost_timer) ((num)/(boost_timer.elapsed().user/1000000000.0))
 #define SEC_PER_QUERY(num, boost_timer) ((boost_timer.elapsed().user/1000000000.0)/float(num))
 
-using sparta::argos::TransactionDatabaseInterface;
+using sparta::pipeViewer::TransactionDatabaseInterface;
 
 /*!
  * \brief Helper for handling query responses

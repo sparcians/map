@@ -37,6 +37,6 @@ add_test(NAME TransactionDatabaseAPI_test COMMAND
 
 sparta_regress(TransactionDatabaseAPI_test_sh_driver)
 
-# We need the argos files copied over. 
+# We need the pipeViewer files copied over. 
 sparta_copy(TransactionDatabaseAPI_test_sh_driver data_test_0* .)
 add_subdirectory(cpp_interface)

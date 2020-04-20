@@ -10,8 +10,8 @@ jobs:
   strategy:
     maxParallel: 8
     matrix:
-      linux_:
-        CONFIG: linux_
+      linux_python3.7.____cpython:
+        CONFIG: linux_python3.7.____cpython
         UPLOAD_PACKAGES: True
         DOCKER_IMAGE: condaforge/linux-anvil-comp7
   steps:
@@ -20,14 +20,15 @@ jobs:
   - script: |
       docker run --rm --privileged multiarch/qemu-user-static:register --reset --credential yes
       ls /proc/sys/fs/binfmt_misc/
+      df -h /
     condition: not(startsWith(variables['CONFIG'], 'linux_64'))
     displayName: Configure binfmt_misc
 
   - script: |
         export CI=azure
         export GIT_BRANCH=$BUILD_SOURCEBRANCHNAME
+        df -h /
         .scripts/run_docker_build.sh
-        ls $SYSTEM_DEFAULTWORKINGDIR
     displayName: Run docker build
     env:
       BINSTAR_TOKEN: $(BINSTAR_TOKEN)
