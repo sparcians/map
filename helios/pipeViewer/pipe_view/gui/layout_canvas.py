@@ -391,7 +391,7 @@ class Layout_Canvas(wx.ScrolledWindow):
         if self.__hover_preview.show:
             dc.SetFont(self.__fnt_layout)
             self.DoHoverTextDraw(dc)
-        dc = wx.BufferedPaintDC(self, self.__buffer)
+        dc = wx.BufferedDC(wx.ClientDC(self), self.__buffer)
 
     # # Returns Hover Preview
     def GetHoverPreview(self):
