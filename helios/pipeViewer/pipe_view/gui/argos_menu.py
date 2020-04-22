@@ -353,16 +353,16 @@ class Argos_Menu(wx.MenuBar):
         self.__edit_toolbar.Show(False)
 
         # File operations
-        self.toolbarNew = self.__edit_toolbar.AddTool(wx.NewId(), 'New', wx.ArtProvider.GetBitmap('gtk-new'), shortHelp = 'New layout')
+        self.toolbarNew = self.__edit_toolbar.AddTool(wx.NewId(), 'New', wx.ArtProvider.GetBitmap(wx.ART_NEW), shortHelp = 'New layout')
         self.toolbarOpen = self.__edit_toolbar.AddTool(wx.NewId(), 'Open', wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN), shortHelp = 'Open layout...')
         self.toolbarSave = self.__edit_toolbar.AddTool(wx.NewId(), 'Save', wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE), shortHelp = 'Save current layout')
         self.toolbarSaveAs = self.__edit_toolbar.AddTool(wx.NewId(), 'Save As', wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE_AS), shortHelp = 'Save current layout as...')
-        self.toolbarEditMode = self.__edit_toolbar.AddTool(wx.NewId(), 'Stop Editing', wx.ArtProvider.GetBitmap('gtk-apply'), shortHelp = 'Leave edit mode')
+        self.toolbarEditMode = self.__edit_toolbar.AddTool(wx.NewId(), 'Stop Editing', wx.ArtProvider.GetBitmap(wx.ART_TICK_MARK), shortHelp = 'Leave edit mode')
 
         self.__edit_toolbar.AddSeparator()
 
         # Undo/Redo
-        self.toolbarUndo = self.__edit_toolbar.AddTool(wx.NewId(), 'Undo', wx.ArtProvider.GetBitmap('gtk-undo'), shortHelp = 'Undo')
+        self.toolbarUndo = self.__edit_toolbar.AddTool(wx.NewId(), 'Undo', wx.ArtProvider.GetBitmap(wx.ART_UNDO), shortHelp = 'Undo')
 
         redo_icon = wx.ArtProvider.GetBitmap(wx.ART_REDO, wx.ART_TOOLBAR)
         self.toolbarRedo = self.__edit_toolbar.AddTool(wx.NewId(), 'Redo', redo_icon, shortHelp = 'Redo')
@@ -370,9 +370,9 @@ class Argos_Menu(wx.MenuBar):
         self.__edit_toolbar.AddSeparator()
 
         # Add/Duplicate/Delete Elements
-        self.toolbarAddElement = self.__edit_toolbar.AddTool(wx.NewId(), 'Add Element', wx.ArtProvider.GetBitmap('gtk-add'), shortHelp = 'Add an element')
+        self.toolbarAddElement = self.__edit_toolbar.AddTool(wx.NewId(), 'Add Element', wx.ArtProvider.GetBitmap(wx.ART_PLUS), shortHelp = 'Add an element')
         self.toolbarCloneElement = self.__edit_toolbar.AddTool(wx.NewId(), 'Duplicate Element', wx.ArtProvider.GetBitmap(wx.ART_COPY), shortHelp = 'Duplicate an element')
-        self.toolbarDeleteElement = self.__edit_toolbar.AddTool(wx.NewId(), 'Delete Element(s)', wx.ArtProvider.GetBitmap('gtk-remove'), shortHelp = 'Delete selected element(s)')
+        self.toolbarDeleteElement = self.__edit_toolbar.AddTool(wx.NewId(), 'Delete Element(s)', wx.ArtProvider.GetBitmap(wx.ART_MINUS), shortHelp = 'Delete selected element(s)')
 
         self.__edit_toolbar.AddSeparator()
 
