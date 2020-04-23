@@ -1,0 +1,116 @@
+/*
+
+Little title-bar-sized icons that have a character in front of them.
+
+In raw HTML, use like:
+
+    <div class="triangle-icon">
+    <div class="icon-label">A</div>
+    </div>
+
+    <div class="triangle-icon" style="border-bottom-color:#0cf;">
+    <div class="icon-label">B</div>
+    </div>
+
+    <div class="circle-icon" style="background-color:#0d0;">
+    <div class="icon-label">C</div>
+    </div>
+
+    <div class="square-icon" style="background-color:#f00;">
+    <div class="icon-label">D</div>
+    </div>
+
+    <!-- background color must be done in css to affect :before and :after elements -->
+    <div class="hex-icon" style="">
+    <div class="icon-label">E</div>
+    </div>
+
+A javascript utility should be able to generate these as-needed with proper colorings
+
+*/
+
+div.triangle-icon {
+    box-sizing: border-box;
+    display: inline-block;
+    width: 24px;
+    height:40px;
+    border: 12px solid #00000000;
+    border-bottom: 20px solid orange;
+    margin:0px;
+    padding:0px;
+    margin-top: -14px;
+    margin-bottom: -14px;
+    position: relative;
+    top: -14px;
+}
+
+.triangle-icon div.icon-label {
+    top:20px;
+}
+
+div.circle-icon {
+    box-sizing: border-box;
+    display: inline-block;
+    width: 16px;
+    height:16px;
+    border: none;
+    border-radius: 8px;
+    margin: 0px;
+    padding: 0px;
+    position: relative;
+    background-color: orange;
+}
+
+div.square-icon {
+    box-sizing: border-box;
+    display: inline-block;
+    width: 20px;
+    height:20px;
+    border: none;
+    margin: 0px;
+    padding: 0px;
+    position: relative;
+    background-color: orange;
+}
+
+.hex-icon:before {
+    content: " ";
+    width: 0; height: 0;
+    border-right: 6px solid orange;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    position: absolute;
+    left: -6px;
+}
+
+.hex-icon {
+    display: inline-block;
+    width: 12px;
+    height: 20px;
+    background-color: orange;
+    border: none;
+    padding: 0px;
+    margin: 0px 6px 0px 6px;
+    position: relative;
+}
+
+.hex-icon:after {
+    content: "";
+    width: 0;
+    position: absolute;
+    right: -6px;
+    border-left: 6px solid orange;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+}
+
+div.icon-label {
+    font-size: 11px;
+    display: inline-block;
+    position: absolute;
+    left:50%;
+    top:50%;
+    transform: translate(-50%, -50%);
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bolder;
+}

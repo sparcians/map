@@ -1,0 +1,12 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+{% block head %} {% endblock %}
+<title>{% block title %}plato{% endblock %}</title>
+</head>
+<body>
+	<div>{% block content %} {% endblock %}</div>
+</body>
+</html>

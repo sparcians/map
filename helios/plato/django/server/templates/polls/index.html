@@ -1,0 +1,35 @@
+<html>
+<head>
+<title>{{ title | safe }}</title>
+<link rel="icon" sizes="192x192"
+	href="https://static.djangoproject.com/img/icon-touch.e4872c4da341.png">
+<link href="https://cdn.pydata.org/bokeh/release/bokeh-1.3.1.min.css"
+	rel="stylesheet" type="text/css" />
+<link
+	href="https://cdn.pydata.org/bokeh/release/bokeh-widgets-1.3.1.min.css"
+	rel="stylesheet" type="text/css" />
+<link
+	href="https://cdn.pydata.org/bokeh/release/bokeh-tables-1.3.1.min.css"
+	rel="stylesheet" type="text/css" />
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min.js"></script>
+<script src="https://cdn.pydata.org/bokeh/release/bokeh-1.3.1.min.js"></script>
+<script
+	src="https://cdn.pydata.org/bokeh/release/bokeh-widgets-1.3.1.min.js"></script>
+<script src="https://cdn.pydata.org/bokeh/release/bokeh-gl-1.3.1.min.js"></script>
+<script
+	src="https://cdn.pydata.org/bokeh/release/bokeh-tables-1.3.1.min.js"></script>
+{% load static %}
+<script src="{% static "js/updates.js" %}"></script>
+</head>
+{% load staticfiles %}
+<body>
+	{{ div | safe }} {{ script | safe }}
+	<input type="hidden" name="processorId" id="processorId"
+		value="{{ processorId | safe}}" />
+	<input type="hidden" name="firstCycle" id="firstCycle"
+		value="{{ firstCycle | safe}}" />
+	<input type="hidden" name="lastCycle" id="lastCycle"
+		value="{{ lastCycle | safe}}" />
+</body>
+</html>

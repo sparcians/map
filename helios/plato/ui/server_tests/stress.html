@@ -1,0 +1,57 @@
+<html>
+<head>
+    <script src="../external/jquery-3.4.1.min.js"></script>
+    <script src="stress.js"></script>
+    <style type="text/css">
+        .msg {
+            color: #909090;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .happy {
+            color: green;
+        }
+
+        label {
+            background-color: #d0d0d0;
+            display: inline-block;
+            width: 200px;
+            padding: 1px 0px 2px 8px;
+            margin-bottom:8px;
+            border-radius: 6px 0 0 6px
+        }
+
+        input {
+            width: 100px;
+        }
+
+        p {
+            width:600px
+        }
+    </style>
+</head>
+<body>
+<h2>plato Stress Test</h2>
+<p>Submits a number of requests for slightly-different data sequentially and reports how many responses came back before timeout (or until all responses were received).</p>
+<form>
+    <fieldset>
+        <legend>Stress-Test Configuration</legend>
+        <label for="uri">URI</label><input id="uri" type="text" style="width:500px;" value='ws://cbatch67045:8001/ws/getData'/><br/>
+        <label for="processor_id">Processor Id</label><input id="processor_id" type="text" value="B"/><br/>
+        <label for="num_reqs">Num requests</label><input id="num_reqs" type="text" value="10000"/><br/>
+        <label for="req_report_freq">Request Report Frequency</label><input id="req_report_freq" type="text" value="10000"/><br/>
+        <label for="resp_report_freq">Response Report Frequency</label><input id="resp_report_freq" type="text" value="1000"/><br/>
+        <label for="test_timeout_s">Test timeout (seconds)</label><input id="test_timeout_s" type="text" value="60"/><br/>
+        <br/>
+        <input type="button" onclick="run_stress_test();" value="Run Test"/>
+    </fieldset>
+</form>
+
+<h4>Results:</h4>
+<hr/>
+<div id="stress_output"></div>
+</body>
+</html>
