@@ -12,7 +12,7 @@ jobs:
     matrix:
       osx_python3.7.____cpython:
         CONFIG: osx_python3.7.____cpython
-        UPLOAD_PACKAGES: True
+        UPLOAD_PACKAGES: False
 
   steps:
   # TODO: Fast finish on azure pipelines?
