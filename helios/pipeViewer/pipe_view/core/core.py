@@ -217,6 +217,9 @@ class Renderer(object):
             wx_str = 'm' # Some character... it's fixed pitch
             size = dc.GetTextExtent(wx_str)
             self.c_char_width, self.c_char_height = size
+            assert self.c_char_width != NoneType
+            assert self.c_char_height != NoneType
+            print (size)
 
     def drawInfoRectangle(self,
                             dc,

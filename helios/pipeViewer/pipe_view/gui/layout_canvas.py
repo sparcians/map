@@ -91,10 +91,10 @@ class Layout_Canvas(wx.ScrolledWindow):
         self.__mongoose_image = self.GetMongooseLogo()
 
         try:
-            self.__fnt_layout = wx.Font(8, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, face = 'Monospace')
+            self.__fnt_layout = wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, face = 'Monospace')
         except:
             # Pick a fallback generic modern font (not by name)
-            self.__fnt_layout = wx.Font(8, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
+            self.__fnt_layout = wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
         # set up font
         #temp_dc = wx.MemoryDC()
@@ -392,6 +392,8 @@ class Layout_Canvas(wx.ScrolledWindow):
             dc.SetFont(self.__fnt_layout)
             self.DoHoverTextDraw(dc)
         dc = wx.BufferedPaintDC(self, self.__buffer)
+
+
 
     # # Returns Hover Preview
     def GetHoverPreview(self):

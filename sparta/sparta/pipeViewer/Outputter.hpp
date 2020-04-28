@@ -24,91 +24,91 @@
 namespace sparta{
     namespace pipeViewer{
 
-    /**
-    *  \class Outputter
-    * @ brief A class that facilitates taking in Record objects and writing
-    * them to the record file, and building the index as it goes.
-    *
-    * The index file is a list of uint64_t pointers into the record
-    * file for the first transaction that ended at a multiple of a
-    * standard offset, such as there is an index for every "interval"
-    * of cycles.
-    *
-    * (Note) the first entry in the index file will always be the interval amount
-    * (Note) the last entry in the index file will always point to the last record
-    * written to file.
-    *
-    */
-    class Outputter
-    {
         /**
-        * \brief Safely write data to a file with error checking.
-        */
-        void writeData_(std::fstream& ss, const char * data, const std::size_t size)
+         *  \class Outputter
+         * @ brief A class that facilitates taking in Record objects and writing
+         * them to the record file, and building the index as it goes.
+         *
+         * The index file is a list of uint64_t pointers into the record
+         * file for the first transaction that ended at a multiple of a
+         * standard offset, such as there is an index for every "interval"
+         * of cycles.
+         *
+         * (Note) the first entry in the index file will always be the interval amount
+         * (Note) the last entry in the index file will always point to the last record
+         * written to file.
+         *
+         */
+        class Outputter
         {
-            ss.write(data, size);
-        }
+            /**
+             * \brief Safely write data to a file with error checking.
+             */
+            void writeData_(std::fstream& ss, const char * data, const std::size_t size)
+            {
+                ss.write(data, size);
+            }
 
         public:
 
-        /*!
-        * \brief File format version written by this outputter.
-        * This must be incremented on any change to the transaction type
-        * \note If you are incrementing this, be sure pipeViewer::Reader is up to
-        * date and backward compatible
-        */
-        static constexpr uint32_t FILE_VERSION = 2;
+            /*!
+             * \brief File format version written by this outputter.
+             * This must be incremented on any change to the transaction type
+             * \note If you are incrementing this, be sure pipeViewer::Reader is up to
+             * date and backward compatible
+             */
+            static constexpr uint32_t FILE_VERSION = 2;
 
-        /**
-        * \brief Construct an Outputter
-        * \param file_path the path to the folder to store output files.
-        * \param interval The number of cycles between indexes
-        */
-        Outputter(const std::string& filepath, const uint64_t interval);
+            /**
+             * \brief Construct an Outputter
+             * \param file_path the path to the folder to store output files.
+             * \param interval The number of cycles between indexes
+             */
+            Outputter(const std::string& filepath, const uint64_t interval);
 
-        /**
-        * \brief Close the Record file and the index file.
-        * also writes an index pointing to the end of the record file.
-        */
-        virtual ~Outputter();
+            /**
+             * \brief Close the Record file and the index file.
+             * also writes an index pointing to the end of the record file.
+             */
+            virtual ~Outputter();
 
-        /**
-        * \brief Write a generic transaction to the record file, and update the index file.
-        * \param dat The transaction to be written.
-        */
-        template<class R_Type>
-        void writeTransaction(const R_Type& dat)
-        {
-            last_record_pos_ = record_file_.tellg();
+            /**
+             * \brief Write a generic transaction to the record file, and update the index file.
+             * \param dat The transaction to be written.
+             */
+            template<class R_Type>
+            void writeTransaction(const R_Type& dat)
+            {
+                last_record_pos_ = record_file_.tellg();
 #ifdef PIPELINE_DBG
-            std::cout << "writing transaction at: " << last_record_pos_ << " TMST: "
-            << dat.time_Start << " TMEN: " << dat.time_End <<  std::endl;
-            writeData_(record_file_, reinterpret_cast<const char *>(&dat), sizeof(R_Type));
+                std::cout << "writing transaction at: " << last_record_pos_ << " TMST: "
+                          << dat.time_Start << " TMEN: " << dat.time_End <<  std::endl;
 #endif
-        }
+                writeData_(record_file_, reinterpret_cast<const char *>(&dat), sizeof(R_Type));
+            }
 
-        /**
-        * \brief A method that marks a pointer to the record file's current location.
-        * This method will likely be set to run on the schedular on a given interval.
-        */
-        void writeIndex();
+            /**
+             * \brief A method that marks a pointer to the record file's current location.
+             * This method will likely be set to run on the schedular on a given interval.
+             */
+            void writeIndex();
         private:
-        std::fstream record_file_; /*!< notice that fstream was used instead of ofstream bc we need to access tellg() */
-        std::fstream index_file_; /*!< The file stream for index file being created */
-        std::fstream map_file_; /*!< The file stream for map file which maps Location ID to Pair ID */
-        std::fstream data_file_;/*! The file stream for data file which contains Name, Size, Pair number */
-        std::fstream string_file_;/*! The file stream for string_map file which has the String representation */
-        std::fstream display_format_file_;
+            std::fstream record_file_; /*!< notice that fstream was used instead of ofstream bc we need to access tellg() */
+            std::fstream index_file_; /*!< The file stream for index file being created */
+            std::fstream map_file_; /*!< The file stream for map file which maps Location ID to Pair ID */
+            std::fstream data_file_;/*! The file stream for data file which contains Name, Size, Pair number */
+            std::fstream string_file_;/*! The file stream for string_map file which has the String representation */
+            std::fstream display_format_file_;
 
-        uint64_t last_record_pos_; /*!< A pointer to the last record written */
-};
+            uint64_t last_record_pos_; /*!< A pointer to the last record written */
+        };
 
         /*!
-        * \brief Write an annotation transaction to the record file.
-        * notice that an annotation needs special attention in order
-        * to take care of outputting ANNT data itself properly
-        * \warning this deletes the memory for ANNT in the dat passed
-        */
+         * \brief Write an annotation transaction to the record file.
+         * notice that an annotation needs special attention in order
+         * to take care of outputting ANNT data itself properly
+         * \warning this deletes the memory for ANNT in the dat passed
+         */
         template<>
         inline void Outputter::writeTransaction(const annotation_t& dat)
         {
@@ -121,8 +121,8 @@ namespace sparta{
         }
 
         /*!
-        * \brief Write a pair transaction to the record file.
-        */
+         * \brief Write a pair transaction to the record file.
+         */
         template<>
         inline void Outputter::writeTransaction(const pair_t & dat){
 
@@ -173,7 +173,7 @@ namespace sparta{
                         // We write the Value for field "i" and only write as much Bytes
                         // as it needs to by checking Sizes[i].
                         writeData_(record_file_,
-                            reinterpret_cast<const char*>(&dat.valueVector[i].first), dat.sizeOfVector[i]);
+                                   reinterpret_cast<const char*>(&dat.valueVector[i].first), dat.sizeOfVector[i]);
 
                         // We check if the value at field "i" has any String Representation.
                         // If it has, then its corresponding string vector field will not be empty.
@@ -225,7 +225,7 @@ namespace sparta{
                         // We write the Value for field "i" and only write as much Bytes
                         // as it needs to by checking Sizes[i].
                         writeData_(record_file_,
-                            reinterpret_cast<const char*>(&dat.valueVector[i].first), dat.sizeOfVector[i]);
+                                   reinterpret_cast<const char*>(&dat.valueVector[i].first), dat.sizeOfVector[i]);
 
                         // We check if the value at field "i" has any String Representation.
                         // If it has, then its corresponding string vector field will not be empty.

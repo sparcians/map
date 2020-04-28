@@ -500,6 +500,8 @@ class QuerySet:
             for ns in node_states:
                 logging.debug('  {}'.format(ns))
 
+        logging.debug('Done')
+
         # print 'Node 0 dump:\n'
         # print self.__layout_context.dbhandle.api.getNodeDump(0, 890, 905, 40);
 
@@ -521,4 +523,3 @@ class QuerySet:
                 res += '\n\t'
             res += '\n'
         return res
-
