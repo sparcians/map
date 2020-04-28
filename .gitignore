@@ -1,5 +1,6 @@
 # conda smithy ci-skeleton start
 *.pyc
-
+[Rr]elease
+[Dd]ebug
 build_artifacts
 # conda smithy ci-skeleton end
