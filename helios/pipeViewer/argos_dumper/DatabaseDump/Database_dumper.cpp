@@ -1,5 +1,6 @@
-#include "sparta/pipeViewer/Reader.hpp"
-#include "sparta/pipeViewer/PipelineDataCallback.hpp"
+
+#include "transactiondb/src/Reader.hpp"
+#include "transactiondb/src/PipelineDataCallback.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 #include <iomanip>

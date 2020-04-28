@@ -1,9 +1,8 @@
 /*
  */
 
-
-#include "sparta/argos/Reader.h"
-#include "sparta/argos/PipelineDataCallback.h"
+#include "transactiondb/src/Reader.hpp"
+#include "transactiondb/src/PipelineDataCallback.hpp"
 #include <iostream>
 #include <string>
 #include <set>
@@ -92,10 +91,10 @@ void handleResultOutput(pair_t* pairt) {
 }
 
 namespace sparta {
-    namespace argos {
+    namespace pipeViewer {
         /*! \brief Callback that compares annotations to regex using Boost library
          */
-        class SearchStringCallback : public PipelineDataCallback {
+        class SearchStringCallback : public pipeViewer::PipelineDataCallback {
             virtual void foundAnnotationRecord(annotation_t* annotation) override {
                 handleProgressOutput(annotation->time_Start);
                 global_recs_viewed++;
@@ -144,7 +143,7 @@ namespace sparta {
 
         /*! \brief Callback that compares annotations to regex using Boost library
          */
-        class SearchBoostRegexCallback : public PipelineDataCallback {
+        class SearchBoostRegexCallback : public pipeViewer::PipelineDataCallback {
             virtual void foundAnnotationRecord(annotation_t* annotation) override {
                 handleProgressOutput(annotation->time_Start);
                 global_recs_viewed++;
@@ -180,7 +179,7 @@ namespace sparta {
                 global_recs_with_pair++;
             }
         };
-    } //namespace argos
+    } //namespace pipeViewer
 } //namespace sparta
 
 /*!
@@ -203,16 +202,16 @@ int main(int argc, char** argv) {
         std::cout << "Usage: transactionsearch <transaction db> <string|regex> <query> <invert> <start tick> <end tick> <locations> " << std::endl;
         return 1;
     }
-    sparta::argos::Reader* reader;
-    sparta::argos::SearchStringCallback srcallback;
-    sparta::argos::SearchBoostRegexCallback srcallback_boost;
+    sparta::pipeViewer::Reader* reader;
+    sparta::pipeViewer::SearchStringCallback srcallback;
+    sparta::pipeViewer::SearchBoostRegexCallback srcallback_boost;
     if (std::string(argv[2]) == std::string("string"))  {
         global_string_query = std::string(argv[3]);
-        reader = new sparta::argos::Reader(argv[1], &srcallback);
+        reader = new sparta::pipeViewer::Reader(argv[1], &srcallback);
     }
     else if (std::string(argv[2]) == std::string("regex"))  {
         global_regular_expression = boost::regex(argv[3]);
-        reader = new sparta::argos::Reader(argv[1], &srcallback_boost);
+        reader = new sparta::pipeViewer::Reader(argv[1], &srcallback_boost);
     }
     else {
         std::cerr << "unknown search type " << argv[2] << std::endl;

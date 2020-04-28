@@ -26,7 +26,7 @@ missing_cmd=0
 req_cmds=(jq yq)
 for cmd in "${req_cmds[@]}"; do
     if ! type $cmd; then
-	echo "Please 'conda install $cmd'"
+	echo "Please 'conda install -c conda-forge $cmd'"
 	missing_cmd=1
     fi
 done
@@ -88,6 +88,6 @@ export SYSTEM_DEFAULTWORKINGDIRECTORY="$PWD"
 
 
 # Render the recipe into a fully-resolved yaml file
-(set -x; conda render -m "$variant_file" --file "$rendered_output" conda.recipe) 
+(set -x; conda render -m "$variant_file" --file "$rendered_output" conda.recipe)
 
 echo "::SUCCESS:: Rendered recipe written to '$rendered_output'"

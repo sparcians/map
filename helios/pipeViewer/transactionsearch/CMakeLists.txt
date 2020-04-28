@@ -1,11 +1,10 @@
 project(TransactionSearch)
 
+add_executable(transactionsearch src/transaction_search.cpp)
+add_dependencies(transactionsearch sparta simdb)
 
-if (COMPILE_32_MODE)
-    message("Disabling transactionsearch build for 32 bit mode")
-else()
-    add_executable(transactionsearch src/transaction_search.cpp)
-    add_dependencies(transactionsearch sparta simdb)
-    target_link_libraries(transactionsearch ${REQUIRED_SPARTA_LIBS} $ENV{BOOST_LD_FLAGS})
-    target_link_libraries(transactionsearch -L${PROJECT_BINARY_DIR}/../.. -L${PROJECT_BINARY_DIR}/../../simdb)
-endif()
+set(Boost_USE_STATIC_LIBS OFF)
+set(BUILD_SHARED_LIBS ON)
+
+find_package(Boost 1.49.0 REQUIRED COMPONENTS regex)
+target_link_libraries(transactionsearch ${Sparta_LIBS} Boost::regex)
