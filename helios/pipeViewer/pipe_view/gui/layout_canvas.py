@@ -391,8 +391,8 @@ class Layout_Canvas(wx.ScrolledWindow):
         if self.__hover_preview.show:
             dc.SetFont(self.__fnt_layout)
             self.DoHoverTextDraw(dc)
-        # This doesn't work anymore -- no clue how to fix it
-        #wx.BufferedPaintDC(self, self.__buffer)
+        client_dc = wx.ClientDC(self)
+        wx.BufferedDC(client_dc, self.__buffer)
 
 
     # # Returns Hover Preview

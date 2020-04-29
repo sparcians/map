@@ -773,8 +773,7 @@ class Argos_Menu(wx.MenuBar):
 
     def OnHoverOptions(self, evt):
         self.hover_options_dialog = HoverPreviewOptionsDialog(self, self.__parent.GetCanvas().GetHoverPreview())
-        self.hover_options_dialog.ShowModal()
-        self.hover_options_dialog.Center()
+        self.hover_options_dialog.ShowWindowModal()
 
     def OnElementSettings(self, evt):
         dialog = self.__parent.GetCanvas().GetDialog()
