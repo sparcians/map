@@ -489,6 +489,7 @@ class QuerySet:
         t_start = time.monotonic()
         try:
             self.__layout_context.dbhandle.query(ordered_ticks[0], ordered_ticks[-1], callback, True)
+            logging.debug("Done with db query")
         except Exception as ex:
             logging.debug('Exception while querying!: {}'.format(ex))
             raise

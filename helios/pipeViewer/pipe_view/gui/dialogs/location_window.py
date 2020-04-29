@@ -61,7 +61,7 @@ class LocationWindow(wx.Frame):
         self.__root = self.__tree_ctrl.AddRoot('<root>')
         self.__use_filter = False
         self.__SetLocationTree(tree)
-        # User preference is to NOT expand tree. ##self.__tree_ctrl.ExpandAll(root)
+        # User preference is to NOT expand tree. ## self.__tree_ctrl.ExpandAll()
 
         self.__btn_create_element = wx.Button(self, -1, "Create Element(s)", style = wx.BU_EXACTFIT)
         self.__btn_create_element.SetToolTip('Creates a new element for each of the selected ' \

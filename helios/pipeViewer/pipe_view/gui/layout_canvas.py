@@ -97,10 +97,10 @@ class Layout_Canvas(wx.ScrolledWindow):
             self.__fnt_layout = wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
         # set up font
-        #temp_dc = wx.MemoryDC()
-        #temp_dc.SetFont(self.__fnt_layout)
-        #self.__renderer.setFontFromDC(temp_dc)
-        #del temp_dc
+        temp_dc = wx.MemoryDC()
+        temp_dc.SetFont(self.__fnt_layout)
+        self.__renderer.setFontFromDC(temp_dc)
+        del temp_dc
 
         # Disable background erasing
         def disable_event(*pargs, **kwargs):
@@ -391,8 +391,8 @@ class Layout_Canvas(wx.ScrolledWindow):
         if self.__hover_preview.show:
             dc.SetFont(self.__fnt_layout)
             self.DoHoverTextDraw(dc)
-        dc = wx.BufferedPaintDC(self, self.__buffer)
-
+        # This doesn't work anymore -- no clue how to fix it
+        #wx.BufferedPaintDC(self, self.__buffer)
 
 
     # # Returns Hover Preview
