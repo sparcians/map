@@ -11,10 +11,12 @@
 #include "sparta/sparta.hpp" // For macro definitions
 #include "simdb_fwd.hpp"
 
-#pragma once
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-#pragma once
+
+#ifndef __USE_GNU
+#define __USE_GNU
 #endif
 
 #include <signal.h>
@@ -206,5 +208,3 @@ namespace python {
 
 } // namespace python
 } // namespace sparta
-
-#pragma once
