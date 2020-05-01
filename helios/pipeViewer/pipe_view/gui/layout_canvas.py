@@ -46,7 +46,7 @@ class Layout_Canvas(wx.ScrolledWindow):
                  size = wx.DefaultSize,
                  style = wx.NO_FULL_REPAINT_ON_RESIZE):
 
-        self.__win = wx.ScrolledWindow.__init__(self, parent)
+        wx.ScrolledWindow.__init__(self, parent)
         self.__renderer = core.Renderer()
         assert len(autocoloring.REASON_BRUSHES) > 0 and len(autocoloring.BACKGROUND_BRUSHES) > 0
         self.SetRendererBrushes()
