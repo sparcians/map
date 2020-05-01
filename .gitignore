@@ -3,3 +3,6 @@
 
 build_artifacts
 # conda smithy ci-skeleton end
+[Rr]elease*
+[Dd]ebug*
+rendered_recipe*
