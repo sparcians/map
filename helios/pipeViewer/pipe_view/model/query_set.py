@@ -69,6 +69,8 @@ class QuerySet:
             t_off = period * t_off_property
             pair.SetClockPeriod(period)
 
+        #import pdb; pdb.set_trace()
+
         if e.GetQueryFrame(period):
             self.__range_pairs.append(pair)
         else:

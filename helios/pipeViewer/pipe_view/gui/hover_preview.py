@@ -267,7 +267,8 @@ class HoverPreview:
         if closest is not None:
             self.__context.GoToHC(closest)
 
-        wx.EndBusyCursor()
+        if wx.IsBusy():
+            wx.EndBusyCursor()
 
     # # Handle click on the "Previous Change in Annotation"
     def __OnPrevAnno(self, evt = None):
@@ -278,21 +279,23 @@ class HoverPreview:
 
     def __GotoPrevAnno(self, el):
         if not el.HasProperty('LocationString'):
-            location_str = el.GetProperty('LocationString')
-            results = self.__context.dbhandle.database.location_manager.getLocationInfo(location_str, {})
-            if results == self.__context.dbhandle.database.location_manager.LOC_NOT_FOUND:
-                return # # \todo Prevent this command from being called without a valid location
-            location_id, _, clock = results
+            return
 
-            # # @todo Current tick should be based on this element's t_offset.
-            cur_tick = self.__context.GetHC()
+        location_str = el.GetProperty('LocationString')
+        results = self.__context.dbhandle.database.location_manager.getLocationInfo(location_str, {})
+        if results == self.__context.dbhandle.database.location_manager.LOC_NOT_FOUND:
+            return # # \todo Prevent this command from being called without a valid location
+        location_id, _, clock = results
 
-            results = self.__context.GetTransactionFields(cur_tick,
-                                                          location_str,
-                                                          ['annotation'])
-            cur_annotation = results.get('annotation')
-            if cur_annotation is None:
-                cur_annotation = ''
+        # # @todo Current tick should be based on this element's t_offset.
+        cur_tick = self.__context.GetHC()
+
+        results = self.__context.GetTransactionFields(cur_tick,
+                                                      location_str,
+                                                      ['annotation'])
+        cur_annotation = results.get('annotation')
+        if cur_annotation is None:
+            cur_annotation = ''
 
         def progress_cb(self, percent, *args):
             cont = True
@@ -325,7 +328,8 @@ class HoverPreview:
         if closest is not None:
             self.__context.GoToHC(max(0, closest - 1))
 
-        wx.EndBusyCursor()
+        if wx.IsBusy():
+            wx.EndBusyCursor()
 
     def __AddWatch(self, relative):
         frame = self.__context.GetFrame()
@@ -499,4 +503,3 @@ class HoverPreviewOptionsDialog(wx.Dialog):
     def OnDone(self, evt):
         self.EndModal(wx.ID_OK)
         self.hover_preview.SetFields(self.GetOptions())
-
