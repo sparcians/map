@@ -11,4 +11,4 @@ MAP is broken into two parts:
 ## Current build status
 
 [![Linux Build Status](https://img.shields.io/travis/com/sparcians/map/master.svg?label=Linux)](https://travis-ci.com/sparcians/map/branches)
-[![MacOS Build Status](https://dev.azure.com/sparcians/map/_apis/build/status/sparcians.map?branchName=master&label=MacOS)](https://dev.azure.com/sparcians/map/_build/latest?definitionId=1&br
+[![MacOS Build Status](https://dev.azure.com/sparcians/map/_apis/build/status/sparcians.map?branchName=master&label=MacOS)](https://dev.azure.com/sparcians/map/_build/latest?definitionId=1&branchName=master)
