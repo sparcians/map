@@ -352,18 +352,24 @@ void PythonInterpreter::publishStatisticsStreams(statistics::StatisticsStreams *
         //Put a hidden singleton in the Python namespace which can make
         //the connection between wrapped C++ StreamNode's and Python
         //sink objects.
-        PyRun_SimpleString("import streaming");
-        PyRun_SimpleString("__stream_manager = streaming.StreamManager()");
-
-        global_ns["stream_config"] = WrapperCache<statistics::StatisticsStreams>().wrap(streams);
-        std::cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n"
-                  << "* Statistics Streams:                                                    \n"
-                  << "* * * You can now configure any simulation statistic(s) to stream to a   \n"
-                  << "* * * Python object of your choice using the 'stream_config' object.     \n"
-                  << "* * * These streams can be instantiated now, or at any time during the   \n"
-                  << "* * * simulation. SPARTA will make the connection from the simulation      \n"
-                  << "* * * statistics to your Python object on the fly.                       \n"
-                  << "* * * " << std::endl;
+        if(PyRun_SimpleString("import streaming") == 0) {
+            PyRun_SimpleString("__stream_manager = streaming.StreamManager()");
+            global_ns["stream_config"] = WrapperCache<statistics::StatisticsStreams>().wrap(streams);
+            std::cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n"
+                      << "* Statistics Streams:                                                    \n"
+                      << "* * * You can now configure any simulation statistic(s) to stream to a   \n"
+                      << "* * * Python object of your choice using the 'stream_config' object.     \n"
+                      << "* * * These streams can be instantiated now, or at any time during the   \n"
+                      << "* * * simulation. SPARTA will make the connection from the simulation      \n"
+                      << "* * * statistics to your Python object on the fly.                       \n"
+                      << "* * * " << std::endl;
+        }
+        else {
+            std::cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \n"
+                      << "* Statistics Streams:                                                     \n"
+                      << "* * * Could not load streaming.py.  Make sure streaming.py is in your path\n"
+                      << "* * * " << std::endl;
+        }
     } catch (bp::error_already_set) {
         PyErr_Print();
     }
