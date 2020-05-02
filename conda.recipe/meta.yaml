@@ -39,13 +39,14 @@ requirements:
     - clang 9
     - clangxx 9
     - rsync
-    # add runtime requirements for argos to make it easier to script 
+    # add runtime requirements for argos to make it easier to script
     # creation of a 'dev' environment that can also run Argos
     - matplotlib-base
     - numpy
     - pillow
     - pyyaml
     - wxpython
+    - boost
   host:  # target-arch buildtime deps
     - boost-cpp
     - yaml-cpp
@@ -60,6 +61,7 @@ requirements:
     - python
     - pyyaml
     - wxpython
+    - ipython
     # duplicate required host libs to make it easier to script creation of run environent
     - boost-cpp
     - yaml-cpp

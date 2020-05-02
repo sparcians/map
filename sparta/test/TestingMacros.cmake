@@ -26,7 +26,6 @@ function (sparta_fully_named_test name target run_valgrind)
           set_tests_properties (valgrind_${name} PROPERTIES LABELS ${VALGRIND_TEST_LABEL})
     endif ()
   endif ()
-  target_link_libraries (${target} ${Sparta_LIBS})
 endfunction (sparta_fully_named_test)
 
 # Tell sparta to run the following target with the following name.
