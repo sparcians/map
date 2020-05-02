@@ -41,16 +41,16 @@ class StreamManager():
         sink.initialize(cpp_source_node)
 
         # Message printout
-        print 'A new Python sink has been added:'
-        print '\t' + str(sink)
-        print '\t' + str(cpp_source_node)
+        print ('A new Python sink has been added:')
+        print ('\t' + str(sink))
+        print ('\t' + str(cpp_source_node))
 
     # Get all buffered data from the C++ source nodes, and
     # send those data packets down to the Python sinks.
     def processStreams(self):
         for source_path,sinks in self._streams.iteritems():
             if source_path not in self._stream_paths:
-                print 'Could not get the source object for path: ' + source_path
+                print ('Could not get the source object for path: ' + source_path)
                 continue
             source_node = self._stream_paths[source_path]
 
@@ -60,4 +60,3 @@ class StreamManager():
                 # There is some more data. Send it to the clients.
                 for sink in sinks:
                     sink.processStreamPacket(data)
-
