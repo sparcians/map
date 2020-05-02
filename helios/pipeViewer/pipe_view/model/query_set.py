@@ -489,6 +489,7 @@ class QuerySet:
         t_start = time.monotonic()
         try:
             self.__layout_context.dbhandle.query(ordered_ticks[0], ordered_ticks[-1], callback, True)
+            logging.debug("Done with db query")
         except Exception as ex:
             logging.debug('Exception while querying!: {}'.format(ex))
             raise
@@ -499,6 +500,8 @@ class QuerySet:
             node_states = self.__layout_context.dbhandle.api.getNodeStates().decode('utf-8').split('\n')
             for ns in node_states:
                 logging.debug('  {}'.format(ns))
+
+        logging.debug('Done')
 
         # print 'Node 0 dump:\n'
         # print self.__layout_context.dbhandle.api.getNodeDump(0, 890, 905, 40);
@@ -521,4 +524,3 @@ class QuerySet:
                 res += '\n\t'
             res += '\n'
         return res
-

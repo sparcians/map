@@ -71,9 +71,9 @@ class FramePlaybackBar(wx.Panel):
 
         # Fonts & Colors
 
-        self.__fnt_tiny = wx.Font(7, wx.NORMAL, wx.NORMAL, wx.NORMAL)
-        self.__fnt_bold_med = wx.Font(9, wx.NORMAL, wx.NORMAL, wx.BOLD)
-        self.__fnt = wx.Font(8, wx.NORMAL, wx.NORMAL, wx.NORMAL)
+        self.__fnt_tiny = wx.Font(12, wx.NORMAL, wx.NORMAL, wx.NORMAL)
+        self.__fnt_bold_med = wx.Font(12, wx.NORMAL, wx.NORMAL, wx.BOLD)
+        self.__fnt = wx.Font(12, wx.NORMAL, wx.NORMAL, wx.NORMAL)
         self.SetFont(self.__fnt)
         self.__med_blue = wx.Colour(0, 0, 220)
 

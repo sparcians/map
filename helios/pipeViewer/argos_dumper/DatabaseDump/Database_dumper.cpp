@@ -1,5 +1,6 @@
-#include "sparta/pipeViewer/Reader.hpp"
-#include "sparta/pipeViewer/PipelineDataCallback.hpp"
+
+#include "transactiondb/src/Reader.hpp"
+#include "transactiondb/src/PipelineDataCallback.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 #include <iomanip>
@@ -145,8 +146,14 @@ namespace pipeViewer
             genericTransactionHandler<memoryoperation_t>(t, printMemOp);
         }
 
-        static void printPairOp(pair_t * , std::ostream & ){
-         }
+        static void printPairOp(pair_t * p, std::ostream & os){
+            os << "pair_t: \n";
+            std::for_each(p->nameVector.begin(),
+                          p->nameVector.end(), [&os] (const auto & str) {
+                              os << str << " ";
+                          });
+            os << std::endl;
+        }
 
         virtual void foundPairRecord(pair_t * t){
             genericTransactionHandler<pair_t>(t, printPairOp);

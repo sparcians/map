@@ -109,6 +109,10 @@ if (NOT rc EQUAL "0")
   message (FATAL_ERROR "could not run git command 'git describe --tags --always', rc=${rc}")
 endif ()
 
+if (USE_LTO)
+  set (LTO_FLAGS "-flto -Ofast")
+endif()
+
 #
 # Debug and Release are cmake internal build types.  Release will add
 # the appropriate optimization flags and turn on NDEBUG automatically.
@@ -136,7 +140,7 @@ if (CCACHE_PROGRAM)
 endif ()
 
 # -Wpedantic
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPT_FLAGS} \
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPT_FLAGS} ${LTO_FLAGS} \
  -DSPARTA_VERSION='\"${GIT_REPO_VERSION}\"' -g -Werror -fPIC \
  -Wall -Wextra -Winline -Winit-self -Wno-unused-function \
  -Wuninitialized -Wno-sequence-point -Wno-inline -Wno-unknown-pragmas \
@@ -186,4 +190,3 @@ add_subdirectory (example EXCLUDE_FROM_ALL)
 #
 install(DIRECTORY sparta/ DESTINATION include/sparta)
 install(FILES ${SPARTA_STATIC_LIBS} DESTINATION lib)
-

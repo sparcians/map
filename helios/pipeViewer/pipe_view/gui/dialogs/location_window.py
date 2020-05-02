@@ -36,7 +36,7 @@ class LocationWindow(wx.Frame):
         wx.Frame.__init__(self, parent, -1, title, size = (1025, 600),
                           style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX)
 
-        self.__fnt_small = wx.Font(8, wx.NORMAL, wx.NORMAL, wx.NORMAL)
+        self.__fnt_small = wx.Font(12, wx.NORMAL, wx.NORMAL, wx.NORMAL)
 
         static_heading = wx.StaticText(self, -1, "Showing all locations for:")
         static_filename = wx.StaticText(self, -1, self.__db.filename)
@@ -61,7 +61,7 @@ class LocationWindow(wx.Frame):
         self.__root = self.__tree_ctrl.AddRoot('<root>')
         self.__use_filter = False
         self.__SetLocationTree(tree)
-        # User preference is to NOT expand tree. ##self.__tree_ctrl.ExpandAll(root)
+        # User preference is to NOT expand tree. ## self.__tree_ctrl.ExpandAll()
 
         self.__btn_create_element = wx.Button(self, -1, "Create Element(s)", style = wx.BU_EXACTFIT)
         self.__btn_create_element.SetToolTip('Creates a new element for each of the selected ' \

@@ -1,6 +1,5 @@
 // <Scheduleable> -*- C++ -*-
 
-
 #include "sparta/utils/SpartaTester.hpp"
 
 #include "sparta/collection/Collectable.hpp"
@@ -87,7 +86,8 @@ int main()
     sparta::RootTreeNode root_clks("clocks",
                                  "Clock Tree Root",
                                  root_node.getSearchScope());
-    sparta::ClockManager cm;
+    sparta::Scheduler sched;
+    sparta::ClockManager cm(&sched);
     sparta::Clock::Handle root_clk = cm.makeRoot(&root_clks);
     sparta::Clock::Handle clk_1000 = cm.makeClock("clk_1000", root_clk, 1000.0);
     sparta::Clock::Handle clk_100  = cm.makeClock("clk_100",  root_clk,  100.0);
@@ -117,17 +117,17 @@ int main()
 
     sparta::collection::PipelineCollector pc("testPipe", 0, root_node.getClock(), &root_node);
 
-    sparta::Scheduler::getScheduler()->finalize();
+    sched.finalize();
 
     pc.startCollection(&root_node);
 
     pc.printMap();
 
-    sparta::Scheduler::getScheduler()->run(100000);
+    sched.run(100000);
     pc.stopCollection();
-    sparta::Scheduler::getScheduler()->run(100000);
+    sched.run(100000);
     pc.startCollection(&root_node);
-    sparta::Scheduler::getScheduler()->run(100000);
+    sched.run(100000);
 
     pc.stopCollection(&root_node);
     pc.destroy();

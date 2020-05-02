@@ -23,7 +23,7 @@ class TranslateElementsDlg(wx.Dialog):
                           size = (-1, -1),
                           style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX)
 
-        self.__fnt_numbers = wx.Font(8, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, face = 'Monospace')
+        self.__fnt_numbers = wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, face = 'Monospace')
 
         panel = wx.Panel(self)
 
@@ -272,4 +272,3 @@ class TranslateElementsDlg(wx.Dialog):
         self.__lbl_sel_lt.SetLabel(bbox_lt)
         self.__lbl_sel_wh.SetLabel(bbox_wh)
         self.__lbl_sel_rb.SetLabel(bbox_rb)
-

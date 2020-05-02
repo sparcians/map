@@ -57,10 +57,10 @@ class SpeedoWidget(wx.Control):
     def SetValue(self, val):
         self.__speed_text.SetLabel(self.__speed_text_format.format(val))
         self.__speedo.SetSpeedValue(val)
-    
+
     def SetAngleRange(self, start, end):
         self.__speedo.SetAngleRange(start, end)
-    
+
     def SetIntervals(self, intervals):
         self.__speedo.SetIntervals(intervals)
 
@@ -72,7 +72,7 @@ class SpeedoWidget(wx.Control):
 
     def SetNumberOfSecondaryTicks(self, num):
         self.__speedo.SetNumberOfSecondaryTicks(num)
-    
+
     def SetTicksFont(self, font):
         self.__speedo.SetTicksFont(font)
 
@@ -87,7 +87,7 @@ class SpeedoWidget(wx.Control):
 
     def SetHandColor(self, color):
         self.__speedo.SetHandColour(color)
-    
+
     def DrawExternalArc(self, draw):
         self.__speedo.DrawExternalArc(draw)
 
@@ -120,13 +120,13 @@ class SpeedoElement(WidgetElement):
                             'error_color' : ((255, 0, 0), valid.validateColor),
                             'text_color' : ((0, 0, 0), valid.validateColor),
                             'hand_color' : ((255, 0, 0), valid.validateColor),
-                            'tick_font_size' : (7, valid.validateOffset),
-                            'center_font_size' : (8, valid.validateOffset),
+                            'tick_font_size' : (12, valid.validateOffset),
+                            'center_font_size' : (12, valid.validateOffset),
                             'draw_external_arc' : (False, valid.validateBool),
                             'speedo_delay' : (0, valid.validateOffset),
                             'show_text_value' : (False, valid.validateBool),
                             'text_value_format' : ('{:03.2f}', valid.validateString),
-                            'text_value_font_size' : (8, valid.validateOffset),
+                            'text_value_font_size' : (12, valid.validateOffset),
                             'text_value_color' : ((0, 0, 0), valid.validateColor),
                             'text_value_position' : ((50, 90), valid.validatePos),
                          }
@@ -136,7 +136,7 @@ class SpeedoElement(WidgetElement):
 
     _DEFAULT_VALUE = 0
     _DEFAULT_DIMENSIONS = (100, 100)
-    
+
     @staticmethod
     def GetType():
         return 'speedo'
@@ -157,7 +157,7 @@ class SpeedoElement(WidgetElement):
 
     def __UpdateSpeedoBackgroundColor(self):
         self.__SetSpeedoBackgroundColor(self.GetProperty('bg_color'))
-    
+
     def __SetSpeedoError(self, error):
         if error:
             self.__SetSpeedoBackgroundColor(self.GetProperty('error_color'))
@@ -249,7 +249,7 @@ class SpeedoElement(WidgetElement):
 
         # Set The Current Value For The SpeedMeter
         self._GetWidget().SetValue(SpeedoElement._DEFAULT_VALUE)
-        
+
         size = self._GetCanvas().GetSize()
         self._GetWidget().dim = size
         self._GetWidget().SetSize(size)
@@ -261,4 +261,3 @@ class SpeedoElement(WidgetElement):
 
 SpeedoElement._ALL_PROPERTIES['dimensions'] = (SpeedoElement._DEFAULT_DIMENSIONS, valid.validateDim)
 SpeedoElement._ALL_PROPERTIES['type'] = (SpeedoElement.GetType(), valid.validateString)
-
