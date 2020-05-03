@@ -1,6 +1,6 @@
 project(EnumCycleHistogram_test)
 
-add_executable(EnumCycleHistogram_test EnumCycleHistogram_test.cpp)
+sparta_add_executable(EnumCycleHistogram_test EnumCycleHistogram_test.cpp)
 
 include(../TestingMacros.cmake)
 

@@ -1,6 +1,6 @@
 project(Syncport_test)
 
-add_executable(SyncPort_test SyncPort_test.cpp)
+sparta_add_executable(SyncPort_test SyncPort_test.cpp)
 
 include(../TestingMacros.cmake)
 

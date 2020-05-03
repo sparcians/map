@@ -1,6 +1,6 @@
 project(Report_test)
 
-add_executable(Report_test Report_test.cpp)
+sparta_add_executable(Report_test Report_test.cpp)
 
 include(../TestingMacros.cmake)
 

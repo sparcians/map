@@ -1,6 +1,6 @@
 project(Pipeline_test)
 
-add_executable(Pipeline_test Pipeline_test.cpp)
+sparta_add_executable(Pipeline_test Pipeline_test.cpp)
 
 include(../TestingMacros.cmake)
 

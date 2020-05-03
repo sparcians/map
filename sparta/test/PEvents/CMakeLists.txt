@@ -1,6 +1,6 @@
 project(Peventhelper)
 
-add_executable(PEventHelper PEventHelper_test.cpp)
+sparta_add_executable(PEventHelper PEventHelper_test.cpp)
 
 include(../TestingMacros.cmake)
 

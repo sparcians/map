@@ -64,7 +64,11 @@ endmacro (sparta_recursive_copy)
 #
 # Create a sparta test executable
 #
-macro (sparta_add_executable target srcs)
+macro (sparta_add_executable target)
+  set (srcs "")
+  foreach(src_file ${ARGN})
+    list (APPEND srcs ${src_file})
+  endforeach()
   add_executable (${target} ${srcs})
   target_link_libraries(${target} ${Sparta_LIBS})
 endmacro (sparta_add_executable)

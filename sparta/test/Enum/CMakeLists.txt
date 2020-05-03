@@ -1,6 +1,6 @@
 project(Enum_test)
 
-add_executable(Enum_test Enum_main.cpp)
+sparta_add_executable(Enum_test Enum_main.cpp)
 
 include(../TestingMacros.cmake)
 
