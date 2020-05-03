@@ -155,7 +155,7 @@ endif ()
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # using Clang
   # -stdlib=libc++
-  add_compile_options("-Wpedantic -Wno-gnu-zero-variadic-macro-arguments ")
+  add_compile_options(-Wpedantic -Wno-gnu-zero-variadic-macro-arguments)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   # using GCC
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
