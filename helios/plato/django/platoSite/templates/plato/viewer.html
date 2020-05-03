@@ -1,0 +1,303 @@
+<html lang="en-US">
+<head>
+    <title>plato user({{ userName | safe}})</title>
+    <meta charset="UTF-8">
+    <!-- meta http-equiv="Content-Security-Policy" content="default-src http: ws: connect-src ws:" /-->
+    <link rel="stylesheet" href="http://{{ currentHost | safe }}:{{ assetPort | safe}}/css/icons.css" />
+    <link rel="shortcut icon" type="image/jpg" href="http://{{ currentHost | safe}}:{{ assetPort | safe}}/images/plato.jpg" />
+    <link href="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/external/bokeh-widgets-1.3.1.min.css" rel="stylesheet" type="text/css" />
+    <link href="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/external/bokeh-tables-1.3.1.min.css" rel="stylesheet" type="text/css" />
+    <!-- script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min.js"></script-->
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/external/bokeh-1.3.1.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/external/bokeh-widgets-1.3.1.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/external/bokeh-gl-1.3.1.min.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/external/bokeh-tables-1.3.1.min.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/external/bokeh-api-1.3.1.min.js"></script>
+    <link rel="stylesheet" href="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/external/jquery-ui-1.12.1.custom/jquery-ui.css">
+
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/external/plotly-latest.min.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/external/dom-to-image.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/external/jquery-3.4.1.min.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/external/jquery-ui-1.12.1.custom/jquery-ui.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/external/js.cookie.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/external/color-scheme.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/external/palette.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/jquery-ui.slider.custom.js"></script>
+    <link rel="stylesheet" href="http://{{ currentHost | safe }}:{{ assetPort | safe}}/css/viewer.css" />
+    <link href="http://{{ currentHost | safe }}:{{ assetPort | safe}}/css/heatmap.css" rel="stylesheet" type="text/css" media="all">
+
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/options.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/utils.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/address.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/common.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/cookie-names.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/remote-dir-browser.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/layout-io.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/response-buffer.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/draw-scheduler.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/data-manager.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/websocket-wrapper.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/time-slider.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/widget-data.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/base-widget.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/branch-filter-control.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/shp-geometry-filter-controls.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/heatmap-cell-filter-apply-dialog.js"></script>
+
+    <!-- Widgets Types -->
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/custom-request-widget.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/branch-html-widget-base.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/heatmap-widget.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/simple-line-plot-widget.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/bp-line-plot-widget.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/simdb-line-plot-widget.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/simdb-correlation-widget.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/branch-history-list-widget.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/branch-profile-widget.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/minimal-heatmap-widget.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/pevent-heatmap.js"></script>
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/pevent-waterfall.js"></script>
+
+    <!-- Main Viewer (generally depends on everything above) -->
+    <script src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/js/viewer.js"></script>
+    <title>plato</title>
+</head>
+<body>
+    <!-- show disconnected status and prevent some interactions -->
+    <div id="disconnected-div" class="fullscreen-div" style="display:none;">
+        <p>
+            Connection to server lost. Reconnecting...<br/>
+            <span style="font-weight:normal; font-size:14px;">See developer console log for details</span>
+        </p>
+    </div>
+    <!-- show busy state -->
+    <div id="widgets-busy-div" class="fullscreen-div" style="display:none;">
+        <div>
+            <h1>Busy...</h1>
+            <p></p>
+        </div>
+    </div>
+    <!-- message popup -->
+    <div id="message-popup" class="popup-div" style="display:none;">
+        <div class="popup-div-body">
+            <h3 id="message-heading"></h3>
+            <p id="message-details"></p>
+            <br/>
+            <br/>
+            <span class="smalltext">See browser console log for old error messages</span><br/>
+            <div id="close-popup-button">
+                <span class="ui-icon ui-icon-triangle-1-n"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation control + menu -->
+    <div id="navbar">
+        <img src="http://{{ currentHost | safe }}:{{ assetPort | safe}}/images/plato.jpg" alt="plato" style="position:absolute; left:0px; top:0px; height:var(--navbar-header-height);">
+        <div id="navbar-header">
+            <!-- this div contains the title and menu. It should not contain elements that have to do with data since it will be exposed when disconnected -->
+            <span class="navbar-title">plato</span>
+            <div style="display:inline-block; width:10px;"></div>
+            <div class="navbar-title-group">
+                User
+                <span class="navbar-title-group-item" id="user-username">{{ userName | safe }}</span> |
+                SHA1 <span class="navbar-title-group-item" id="sha1-value">{{ sha1Value | safe }}</span> |
+                <a class="navbar-title-group-item" href="javascript:void(0);" onclick="viewer.logout();">logout</a>
+                <input type="hidden" id="sha1" name="sha1", value="{{ sha1Long | safe}}" />
+                <input type="hidden" id="username" name="username" value="{{ userName | safe}}" />
+                <input type="hidden" id="asgiServer" name="asgiServer" value="ws://{{ asgiServer | safe }}" />
+            </div>
+            <div class="navbar-title-group">
+                Workspace
+                <a class="navbar-title-group-item" href="javascript:void(0);" onclick="viewer.download_layout();">save(disk)</a> |
+                <a class="navbar-title-group-item" href="javascript:void(0);" onclick="viewer.load_layout();">load(disk)</a> |
+                <a class="navbar-title-group-item" href="javascript:void(0);" onclick="viewer.save_as_to_server();">save-as</a> |
+                <a class="navbar-title-group-item" href="javascript:void(0);" onclick="viewer.clear_layout();">clear</a>
+            </div>
+            <div class="navbar-title-group">
+                Processing
+                <span class="navbar-title-group-item" id="server-uri"></span> |
+                <span class="navbar-title-group-item" id="server-num-requests" style="width:60px;"></span> |
+                <span class="navbar-title-group-item" id="server-latency" style="width:40px;"></span>
+            </div>
+            <div class="navbar-title-group">
+                Data Source
+                <span class="navbar-title-group-item" id="data-server-status" style="width:60px;"></span> |
+                <span class="navbar-title-group-item" id="data-source-path"></span> |
+                <span class="navbar-title-group-item" id="data-source-count"></span> |
+            </div>
+        </div>
+        <div id="time-slider-complex-1">
+            <div style="grid-area: animation; text-align:right; font-size: var(--nav-font-size);">
+                <input id="animation-run-stop" type="button" class="animation-control" value="run">
+                <input id="animation-step-size" type="text" class="animation-control" value="100" style="width:60px;"> <span class="tinytext">unit/step @</span>
+                <input id="animation-steps-per-second" type="text" class="animation-control" value="5" maxlength="2" style="width:24px;"><span class="tinytext">/sec </span>
+                <br/>
+                <div class="rs-select-div">
+                <input type="radio" value="play-left" name="range-slider-play" id="rs-play-left" class="rs-select-button" />
+                <label for="rs-play-left">L</label>
+                <input type="radio" value="play-both" name="range-slider-play" id="rs-play-both" class="rs-select-button" checked/>
+                <label for="rs-play-both">LR</label>
+                <input type="radio" value="play-right" name="range-slider-play" id="rs-play-right" class="rs-select-button" />
+                <label for="rs-play-right">R</label>
+                </div>
+                Units: <select id="select-current-units" style="font-size: var(--nav-font-size);" title="Select current operational units. This is a set of all units supported by any data sources loaded. Units marked (exclusive) are not available in all data-sources currently loaded">
+                </select>
+            </div>
+            <div id="time-slider-label-left" style="grid-area: left; text-align:right; font-size: var(--nav-font-size);">left</div>
+            <div style="grid-area: slider;">
+                <div id="time-slider">
+                    <div class="time-slider-handle1 ui-slider-handle"></div>
+                    <div class="time-slider-handle2 ui-slider-handle"></div>
+                </div>
+            </div>
+            <div id="time-slider-label-right" style="grid-area: right; text-align:left; font-size: var(--nav-font-size)">right</div>
+            <div id="time-slider-label-right-edge" style="grid-area: right-edge; text-align:left; font-size: var(--nav-font-size); position: relative;">
+                <a href="javascript:void(0);" onclick="viewer.zoom_out_all();"><span class="ui-icon ui-icon-zoomout"></span>ALL</a>
+            </div>
+        </div>
+    </div>
+    <div>
+        <!-- panel with data/widget selection and info -->
+        <div id="data-panel">
+            <div id="data-panel-sections">
+                <div class="data-panel-section-header">
+                    <b>Sources</b>
+                </div>
+                <div id="data-source-panel-container" class="no-margin-no-padding">
+                    <span class="smalltext" style="display:inline-block; margin-left:10px;">
+                        1. Drag a <u>stat</u> to a <u>widget type</u> below to display a new widget<br/>
+                        <div style="display:inline-block; height:4px;"></div><br/>
+                        2. Drag an entire data-source to a widget to change its source.
+                    </span>
+                    <!-- note that the height of this div is based on the height of the span above and could be
+                    dynamically calculated. It is meant to leave a small margin at the bottom of the panel-->
+                    <div id="data-source-bin" class="widget-bin">
+                    </div>
+                </div>
+                <div class="data-panel-section-header">
+                    <b>Widget Types</b>
+                </div>
+                <div id="widget-panel-container" class="no-margin-no-padding">
+                    <!--<span class="smalltext" style="margin-left:20px;">Drag to <u>data source</u> to create</span>-->
+                    <div id="new-widget-bin" class="widget-bin">
+                    </div>
+                </div>
+                <div class="data-panel-section-header">
+                    <b>Branch Filtering (BP)</b>
+                </div>
+                <div id="branch-filtering-panel-container" class="no-margin-no-padding" style="overflow:hidden;">
+                    <div id="branch-class-filtering" style="height:calc(100% - 20px); overflow-y:scroll;"></div>
+                    <div class="no-margin-no-padding" style="height:20px;"></div>
+                </div>
+                <div class="data-panel-section-header" start-collapsed>
+                    <b>Trashed Widgets</b>
+                </div>
+                <div id="trashed-widgets-panel-container" class="no-margin-no-padding">
+                    <span class="tinytext" style="margin-left:20px;">Click to restore, hover for preview</span>
+                    <div id="widget-trash-bin" class="widget-bin">
+                    </div>
+                    <!-- TODO: This text is hidden! -->
+                    <span class="tinytext">*trash is not saved between sessions</span>
+                </div>
+                <div class="data-panel-section-header" start-collapsed>
+                    <b>My Layouts</b>
+                </div>
+                <div id="my-layouts-panel-container" class="no-margin-no-padding">
+                    <!--<span class="tinytext" style="margin-left:20px;">???</span>-->
+                    <div id="layout-bin" class="widget-bin">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- space where widgets live -->
+        <div id="widget-area">
+            <div id="no-widgets-explanation">
+                <h2>No Widgets</h2>
+                <p>
+                    Add widgets by expanding one of the data sources in the "Sources" panel on the left and dragging a
+                    stat from that data source to a widget type in the "Widget Types" panel.
+                </p>
+                <p>
+                    You can also restore deleted widgets from the trash in the data panel to the left.
+                </p>
+            </div>
+            <div id="widget-area-trailer" class="ui-state-disabled" style="width:100%; height:500px;" >
+                <!-- placeholder to make resizing widget at bottom not fight with window size. This is a patch-job and should be addressed better-->
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden items -->
+
+    <!-- layout sharing dialog -->
+    <div id="share-layout-dialog" title="Share a Layout">
+        <span class="dialog-text">
+            Other users can load your layouts and save copies as their own!<br/>
+            <div class="dialog-detail-text">
+                Don't worry, your layouts can not be modified or overwritten by other users.<br/>
+                If you save this layout again, users who open this link will see your changes.<br/>
+            </div>
+            <br/>
+            Copy this URL to share<br/>
+        </span>
+        <span id="share-layout-url" style="font-family:monospace; display:inline-block; padding:10px; background: #e0e0e0; border-radius: 8px; margin-top:10px;"></span>
+    </div>
+
+    <!-- layout file load dialog -->
+    <div id="load-layout-dialog" title="Load layout File">
+        <p>Select a layout file to open</p>
+        <fieldset>
+            <label for="load-layout-file">Layout file</label> <input type="file" id="load-layout-file" style="width:100%;" />
+        </fieldset>
+    </div>
+
+    <!-- layout for server-save dialog -->
+    <div id="server-save-layout-dialog" title="Save Layout File">
+        <span class="smalltext">This name is unique to you as a user<br/>
+            Existing files will not be overwritten unless requested<br/>
+        </span>
+        <br/>
+        <fieldset>
+            <label for="server-save-filename">Name</label>&nbsp;<input type="text" id="server-save-filename" style="width:500px; margin-bottom:10px;" /><br/>
+            <input type="checkbox" id="server-save-overwrite" /><label for="server-save-overwrite" class="smalltext">Overwrite if exists</label>
+        </fieldset>
+    </div>
+
+    <!-- layout for login -->
+    <div id="login-dialog" title="Login">
+        <span class="dialog-text">
+            Enter your username<br/>
+            <div class="dialog-detail-text">
+                Make sure you enter this correctly. There is currently no authentication/verification at this time.<br/>
+                Logging in as another different user will disrupt their auto-save functionality.
+            </div>
+
+            <br/>
+        </span>
+        <label for="login-username">Username</label>&nbsp;<input type="text" id="login-username" style="width:500px; margin-bottom:10px;" />
+    </div>
+
+    <!-- Dialog for applying a selection from one widget to another widget (or widgets) -->
+    <div id="apply-widget-state" title="Apply new state to other widget(s)" style="display:none;">
+        <br/>
+        <div>
+            <span class="smalltext">The following state will be applied to any widgets selected below<br/>
+            </span>
+            <br/>
+            <div class="state-description" style="border: 1px solid #ccc; background-color: #eee; font-size: 12px; padding: 10px">
+                Filter on bank 1, table 3, row 534
+            </div>
+            <br/>
+            <span class="smalltext">Select any widgets which should receive this new state. This list contains only widgets that can accept this state.<br/>
+            <div class="active-widget-list" style="overflow-y:scroll; height: 200px; padding: 0px; border: 1px solid #ddd;">
+                <input type="checkbox" id="select-2" /><label for="select-2" class="smalltext" style="margin: 4px; padding: 2px;">Widget 5 (bpheatmap) #2</label><br/>
+                <input type="checkbox" id="select-6" /><label for="select-6" class="smalltext" style="margin: 4px; padding: 2px;">Widget 6 (bpheatmap) #6</label>
+            </div>
+            <span class="smalltext"><span id="num-selected">X</span> widgets selected.<br/>
+        </div>
+        <br/>
+    </div>
+
+</body>
+</html>

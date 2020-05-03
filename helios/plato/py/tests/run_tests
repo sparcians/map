@@ -1,0 +1,69 @@
+#!/bin/bash
+# Tests for plato backend data processing. This just runs a bunch of scripts which usually have some asserts.
+# This does not validate some hard-to-validate things like whether plots look right. Running scripts without
+# BLOCKING_SHOW=0 (set below) will cause plots to be shown for inspection. This becomes very tedious though.
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+cd $DIR
+
+# This file should be moved somewhere common but not be checked in since it is too big
+INPUT=/home/nicholas.haw/SPA/git/plato/prototyping/python-processing/data-sources/data/Geekbench.v5.drop12.clang7.0.2.aarch64.20190109.220_TextRender-shptrace-long.2.hdf5
+
+# Do not show plots. Scripts should use this as an arugment to matplotlib.pyplot.show(block=...)
+export BLOCKING_SHOW=0
+
+function runtestscript {
+    script=$1
+    arg=$2
+
+    printf '\nRunning %s\n' $script
+    #python $script $arg > /tmp/$USER.tests.log 2>&1
+    time (python $script $arg > /tmp/$USER.tests.log 2<&1)
+
+    result=$?
+    if [ $result -ne 0 ]; then
+        cat /tmp/$USER.tests.log
+        printf 'Result for %s:  %d' $script $result
+        exit;A
+    else
+        echo ok
+    fi
+}
+
+# Dataless tests
+runtestscript heatmap_diff_test.py
+runtestscript nrucache_test.py
+runtestscript branch_filter_equality_test.py
+
+
+# Tests with data but no plotting
+runtestscript datasource_test.py $INPUT
+runtestscript branch_profile_table_test.py $INPUT
+runtestscript crash_debugging.py $INPUT
+runtestscript heatmap_units_test.py $INPUT
+
+
+# Tests with data and plotting
+runtestscript branch_trace_line_plot.py $INPUT
+runtestscript branch_trace_line_plot_filtering.py $INPUT
+runtestscript branch_trace_table_test.py $INPUT
+runtestscript branch_trace_table_shp_bank_filtering_test.py $INPUT
+runtestscript compound_stat_tests.py $INPUT
+runtestscript generator_example.py $INPUT
+runtestscript heatmap_delta_weight_sum_investigation.py $INPUT
+runtestscript heatmap_filtering.py $INPUT
+runtestscript heatmap_generator_test.py $INPUT
+runtestscript line_plot_caching.py $INPUT
+runtestscript line_plot_experiments.py $INPUT
+runtestscript line_plot_table_thrashing.py $INPUT
+
+
+# Tests with plotting and no data
+runtestscript random_trace_adapter_test.py
+
+
+# Known to be broken
+#runtestscript sparta_stats_line_test.py
+
+
+echo All tests done

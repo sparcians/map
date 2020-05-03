@@ -1,0 +1,35 @@
+{% extends "plato/base.html" %}
+{% block head %}
+<link rel="stylesheet" href="http://{{ currentHost | safe }}:{{ assetPort | safe}}/css/login.css">
+<link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+{% endblock %}
+
+{% block content %}
+    <div id="login" class="main">
+        <p class="sign" align="center">Sign In</p>
+        <form class="form-horizontal" name="LoginForm" action="/plato/login/" method="post" class="form1">
+        {% csrf_token %}
+        {% if next %}
+            <input type="hidden" name="next" value="{{ next }}" />
+        {% endif %}
+        <div class="control-group">
+            <label class="control-label" for="username">Username</label>
+            <div class="controls">
+                <input class="un" type="text" align="center" id="username" name="username"  placeholder="Username">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="password">Password</label>
+            <div class="controls">
+                <input class="pass" type="password" align="center" name="password" id="password" placeholder="Password">
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button type="submit" align="center" class="submit">Login</button>
+            </div>
+        </div>
+        </form>
+    </div>
+{% endblock %}

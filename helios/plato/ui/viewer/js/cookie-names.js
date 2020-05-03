@@ -1,0 +1,3 @@
+CookieNames = {
+    USERNAME: 'username',
+}

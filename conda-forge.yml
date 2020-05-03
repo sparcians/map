@@ -20,3 +20,7 @@ provider:
   linux_aarch64: None
 azure:
   force: False
+  upload_packages: False
+github:
+  user_or_org: sparcians
+  repo_name: map
