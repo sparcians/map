@@ -1,6 +1,6 @@
 project(LockedValue_test)
 
-add_executable(LockedValue_test LockedValue_test.cpp)
+sparta_add_executable(LockedValue_test LockedValue_test.cpp)
 
 include(../TestingMacros.cmake)
 

@@ -1,6 +1,6 @@
 project(Notification_test.cpp)
 
-add_executable(Notification_test Notification_test.cpp)
+sparta_add_executable(Notification_test Notification_test.cpp)
 
 include(../TestingMacros.cmake)
 

@@ -1,6 +1,6 @@
 project(Transactiondatabaseapi_cpp_test_cpp_interface)
 
-add_executable(TransactionDatabaseAPI_cpp_test TransactionDatabaseAPI_main.cpp)
+sparta_add_executable(TransactionDatabaseAPI_cpp_test TransactionDatabaseAPI_main.cpp)
 
 include(../TestingMacros.cmake)
 

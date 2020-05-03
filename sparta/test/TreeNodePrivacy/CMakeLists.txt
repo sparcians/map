@@ -1,6 +1,6 @@
 project(TreeNodePrivacy_test)
 
-add_executable(TreeNodePrivacy_test TreeNodePrivacy_test.cpp)
+sparta_add_executable(TreeNodePrivacy_test TreeNodePrivacy_test.cpp)
 
 include(../TestingMacros.cmake)
 
