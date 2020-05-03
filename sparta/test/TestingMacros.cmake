@@ -60,3 +60,11 @@ macro (sparta_recursive_copy build_target cp_file)
     add_custom_command (TARGET ${build_target} PRE_BUILD
       COMMAND cp -r ${CMAKE_CURRENT_SOURCE_DIR}/${cp_file} ${CMAKE_CURRENT_BINARY_DIR}/)
 endmacro (sparta_recursive_copy)
+
+#
+# Create a sparta test executable
+#
+macro (sparta_add_executable target srcs)
+  add_executable (${target} ${srcs})
+  target_link_libraries(${target} ${Sparta_LIBS})
+endmacro (sparta_add_executable)
