@@ -1,6 +1,6 @@
 project(SchedulerTimeout_test)
 
-add_executable(SchedulerTimeout_test Timeout_test.cpp)
+sparta_add_executable(SchedulerTimeout_test Timeout_test.cpp)
 
 include(../../TestingMacros.cmake)
 

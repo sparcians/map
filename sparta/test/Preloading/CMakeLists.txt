@@ -1,6 +1,6 @@
 project(Preloading_test)
 
-add_executable(Preloading_test Preloading_main.cpp)
+sparta_add_executable(Preloading_test Preloading_main.cpp)
 
 include(../TestingMacros.cmake)
 

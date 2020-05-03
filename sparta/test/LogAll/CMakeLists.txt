@@ -1,6 +1,6 @@
 project(Logall_test)
 
-add_executable(LogAll_test LogAll_test.cpp)
+sparta_add_executable(LogAll_test LogAll_test.cpp)
 
 include(../TestingMacros.cmake)
 
