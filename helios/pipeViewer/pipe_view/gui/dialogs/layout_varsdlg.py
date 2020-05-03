@@ -125,7 +125,7 @@ class LayoutVariablesDialog(wx.Frame):
         wx.Frame.__init__(self, parent, id, title + " properties dialog", size,
                           style = wx.RESIZE_BORDER | wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX | wx.CLIP_CHILDREN)
 
-        self.__fnt_location = wx.Font(9, wx.NORMAL, wx.NORMAL, wx.NORMAL)
+        self.__fnt_location = wx.Font(12, wx.NORMAL, wx.NORMAL, wx.NORMAL)
         self.SetFont(self.__fnt_location)
 
         # work could be done to make these prettier

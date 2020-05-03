@@ -207,16 +207,16 @@ class Renderer(object):
         return string_to_display, wx.TheBrushList.FindOrCreateBrush(wx.WHITE, wx.SOLID)
 
     def setFontFromDC(self, dc):
-
         font = dc.GetFont()
         self.c_font = font
         self.c_bold_font = Font(self.c_font)
         self.c_bold_font.MakeBold()
-
         if self.c_font.IsFixedWidth():
             wx_str = 'm' # Some character... it's fixed pitch
             size = dc.GetTextExtent(wx_str)
             self.c_char_width, self.c_char_height = size
+            assert self.c_char_width != None
+            assert self.c_char_height != None
 
     def drawInfoRectangle(self,
                             dc,

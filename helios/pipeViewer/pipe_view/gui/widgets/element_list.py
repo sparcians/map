@@ -4,7 +4,7 @@ import wx
 class ElementList(wx.ListCtrl):
     def __init__(self, parent, id, canvas, name='', style=wx.LC_REPORT|wx.SUNKEN_BORDER, properties=['element']):
         wx.ListCtrl.__init__(self, parent=parent, id=wx.NewId(), name=name, style=style)
-        self.SetFont(wx.Font(8, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, face='Monospace'))
+        self.SetFont(wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, face='Monospace'))
 
         # used for coloring
         self.__canvas = canvas

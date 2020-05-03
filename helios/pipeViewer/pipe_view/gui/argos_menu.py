@@ -357,7 +357,7 @@ class Argos_Menu(wx.MenuBar):
         self.toolbarOpen = self.__edit_toolbar.AddTool(wx.NewId(), 'Open', wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN), shortHelp = 'Open layout...')
         self.toolbarSave = self.__edit_toolbar.AddTool(wx.NewId(), 'Save', wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE), shortHelp = 'Save current layout')
         self.toolbarSaveAs = self.__edit_toolbar.AddTool(wx.NewId(), 'Save As', wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE_AS), shortHelp = 'Save current layout as...')
-        self.toolbarEditMode = self.__edit_toolbar.AddTool(wx.NewId(), 'Stop Editing', wx.ArtProvider.GetBitmap(wx.ART_TICK_MARK), shortHelp = 'Leave edit mode')
+        self.toolbarEditMode = self.__edit_toolbar.AddTool(wx.NewId(), 'Stop Editing', wx.ArtProvider.GetBitmap(wx.ART_CLOSE), shortHelp = 'Leave edit mode')
 
         self.__edit_toolbar.AddSeparator()
 
@@ -773,8 +773,7 @@ class Argos_Menu(wx.MenuBar):
 
     def OnHoverOptions(self, evt):
         self.hover_options_dialog = HoverPreviewOptionsDialog(self, self.__parent.GetCanvas().GetHoverPreview())
-        self.hover_options_dialog.ShowModal()
-        self.hover_options_dialog.Center()
+        self.hover_options_dialog.ShowWindowModal()
 
     def OnElementSettings(self, evt):
         dialog = self.__parent.GetCanvas().GetDialog()

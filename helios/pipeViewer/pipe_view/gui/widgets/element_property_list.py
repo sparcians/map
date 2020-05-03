@@ -282,8 +282,8 @@ class DropdownCellEditor(wx.grid.PyGridCellEditor):
             else:
                 offset = 4
             self.__chooser.SetDimensions(rect.x, rect.y,
-                                    rect.width + offset, rect.height + offset,
-                                    wx.SIZE_ALLOW_MINUS_ONE)
+                                         rect.width + offset, rect.height + offset,
+                                         wx.SIZE_ALLOW_MINUS_ONE)
 
     def BeginEdit(self, row, column, grid):
         if self.__event_handler:
@@ -350,9 +350,9 @@ class PopupCellEditor(wx.grid.PyGridCellEditor):
             else:
                 offset = 4
             (popup_width, popup_height) = self.__popup.GetControl().GetBestSize()
-            self.__chooser.SetDimensions(rect.x, rect.y,
-                                    rect.width + offset, rect.height + offset,
-                                    wx.SIZE_ALLOW_MINUS_ONE)
+            self.__chooser.setSize(rect.x, rect.y,
+                                         rect.width + offset, rect.height + offset,
+                                         wx.SIZE_ALLOW_MINUS_ONE)
             self.__chooser.SetPopupMinWidth(popup_width)
 
     def BeginEdit(self, row, column, grid):
@@ -669,4 +669,3 @@ class TreeCellEditor(PopupCellEditor):
             self.GetPopup().SetUpdateText(True)
         else:
             evt.Skip()
-

@@ -24,7 +24,7 @@ class Element_PropsDlg(wx.Frame):
         self.SetBackgroundColour("WHITE")
         self.CreateStatusBar()
 
-        self.__fnt_location = wx.Font(9, wx.NORMAL, wx.NORMAL, wx.NORMAL)
+        self.__fnt_location = wx.Font(12, wx.NORMAL, wx.NORMAL, wx.NORMAL)
         self.SetFont(self.__fnt_location)
 
         self.__sizer = wx.BoxSizer(wx.VERTICAL)
@@ -130,4 +130,3 @@ class ElementTypeSelectionDialog(wx.Dialog):
         self.__type_string = self.creatables[int(self.__drop_down.GetSelection())]
         # close off selection
         self.EndModal(wx.ID_OK)
-

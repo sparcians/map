@@ -15,7 +15,7 @@
 # Find Boost
 set (_BOOST_COMPONENTS filesystem date_time iostreams serialization timer program_options)
 if (COMPILE_WITH_PYTHON)
-  list (APPEND _BOOST_COMPONENTS python37)
+  list (APPEND _BOOST_COMPONENTS python)
 endif ()
 
 
@@ -87,7 +87,7 @@ if (COMPILE_WITH_PYTHON)
   find_package (Python 3.0 REQUIRED COMPONENTS Development)
   add_definitions (-DSPARTA_PYTHON_SUPPORT -DPYTHONHOME="${Python_LIBRARY_DIRS}")
   include_directories (SYSTEM ${Python_INCLUDE_DIRS})
-  list (APPEND Sparta_LIBS Python::Python Boost::python37)
+  list (APPEND Sparta_LIBS Python::Python Boost::python)
 endif ()
 
 #

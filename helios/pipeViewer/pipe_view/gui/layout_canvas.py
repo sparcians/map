@@ -91,16 +91,16 @@ class Layout_Canvas(wx.ScrolledWindow):
         self.__mongoose_image = self.GetMongooseLogo()
 
         try:
-            self.__fnt_layout = wx.Font(8, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, face = 'Monospace')
+            self.__fnt_layout = wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, face = 'Monospace')
         except:
             # Pick a fallback generic modern font (not by name)
-            self.__fnt_layout = wx.Font(8, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
+            self.__fnt_layout = wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
         # set up font
-        #temp_dc = wx.MemoryDC()
-        #temp_dc.SetFont(self.__fnt_layout)
-        #self.__renderer.setFontFromDC(temp_dc)
-        #del temp_dc
+        temp_dc = wx.MemoryDC()
+        temp_dc.SetFont(self.__fnt_layout)
+        self.__renderer.setFontFromDC(temp_dc)
+        del temp_dc
 
         # Disable background erasing
         def disable_event(*pargs, **kwargs):
@@ -391,7 +391,8 @@ class Layout_Canvas(wx.ScrolledWindow):
         if self.__hover_preview.show:
             dc.SetFont(self.__fnt_layout)
             self.DoHoverTextDraw(dc)
-        dc = wx.BufferedDC(wx.ClientDC(self), self.__buffer)
+        client_dc = wx.ClientDC(self)
+        wx.BufferedDC(client_dc, self.__buffer)
 
     # # Returns Hover Preview
     def GetHoverPreview(self):

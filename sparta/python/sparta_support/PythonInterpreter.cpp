@@ -114,7 +114,7 @@ void sigint_handler(int sig_num, siginfo_t * info, void * ucontext)
 }
 
 PythonInterpreter::PythonInterpreter(const std::string& progname, const std::string& homedir,
-                                int argc, char** argv) :
+                                     int argc, char** argv) :
     sif_(this),
     ipython_inst_(nullptr, [](PyObject* p)->void{Py_XDECREF(p);})
 {
