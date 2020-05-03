@@ -1,6 +1,6 @@
 project(State_test)
 
-add_executable(State_test State_main.cpp)
+sparta_add_executable(State_test State_main.cpp)
 
 include(../TestingMacros.cmake)
 

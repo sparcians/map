@@ -1,6 +1,6 @@
 project(Register_test)
 
-add_executable(Register_test Register_test.cpp)
+sparta_add_executable(Register_test Register_test.cpp)
 
 include(../TestingMacros.cmake)
 

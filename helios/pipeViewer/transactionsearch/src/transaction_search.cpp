@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 #include <set>
-#include <boost/regex.hpp>
+#include <regex>
 
 
 #define RESULT_TAG 'r'
@@ -18,7 +18,7 @@
 #define NUMBER_OF_PROGRESS_UPDATES 50
 
 /*! Stores regular expression for comparison in callbacks */
-boost::regex global_regular_expression;
+std::regex global_regular_expression;
 
 /*! Stores string query for comparison in callbacks */
 std::string global_string_query;
@@ -157,7 +157,7 @@ namespace sparta {
                 }
                 if (annt_string.size()) {
                     global_recs_with_non_null_annot++;
-                    if ((!global_invert_search) == boost::regex_search(annt_string, boost::regex(global_regular_expression))) {
+                    if ((!global_invert_search) == std::regex_search(annt_string, std::regex(global_regular_expression))) {
                         handleResultOutput(annotation);
                         global_hits++;
                     }
@@ -210,7 +210,7 @@ int main(int argc, char** argv) {
         reader = new sparta::pipeViewer::Reader(argv[1], &srcallback);
     }
     else if (std::string(argv[2]) == std::string("regex"))  {
-        global_regular_expression = boost::regex(argv[3]);
+        global_regular_expression = std::regex(argv[3]);
         reader = new sparta::pipeViewer::Reader(argv[1], &srcallback_boost);
     }
     else {

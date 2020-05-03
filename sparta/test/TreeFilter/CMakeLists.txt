@@ -1,6 +1,6 @@
 project(Treefilter_test)
 
-add_executable(TreeFilter_test TreeFilter_main.cpp)
+sparta_add_executable(TreeFilter_test TreeFilter_main.cpp)
 
 include(../TestingMacros.cmake)
 
