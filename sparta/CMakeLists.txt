@@ -109,10 +109,6 @@ if (NOT rc EQUAL "0")
   message (FATAL_ERROR "could not run git command 'git describe --tags --always', rc=${rc}")
 endif ()
 
-if (USE_LTO)
-  add_compile_options (-flto -Ofast)
-endif()
-
 #
 # Debug and Release are cmake internal build types.  Release will add
 # the appropriate optimization flags and turn on NDEBUG automatically.
