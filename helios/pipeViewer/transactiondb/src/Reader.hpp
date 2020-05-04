@@ -550,9 +550,23 @@ namespace pipeViewer{
                                     pairt.valueVector[i].second = false;
                                 }
 
-                                // Else, we push empty string in the enum vector at this index.
+                                // Else, we convert integer value to string
                                 else{
-                                    pairt.stringVector.emplace_back(std::to_string(pairt.valueVector[i].first));
+                                    const std::string &field_name = st.names[i];
+
+                                    const pair_t::IntT &int_value = pairt.valueVector[i].first;
+
+                                    if (int_value == std::numeric_limits<pair_t::IntT>::max()) {
+                                        // Max value, so probably bad...push empty string
+                                        pairt.stringVector.emplace_back("");
+                                    } else if (field_name == "pc") {
+                                        // This is a hex field
+                                        std::stringstream int_str;
+                                        int_str << "0x" << std::hex << int_value;
+                                        pairt.stringVector.emplace_back(int_str.str());
+                                    } else {
+                                        pairt.stringVector.emplace_back(std::to_string(int_value));
+                                    }
                                 }
                             }
                             else if(st.types[i] == 1){

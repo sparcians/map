@@ -159,7 +159,8 @@ struct pair_t : public transaction_t {
     // actual value or the Integral representation of the
     // actual values of every Name string in a record.
     // We only store these values in the database.
-    typedef std::pair<uint64_t, bool> ValidPair;
+    typedef uint64_t IntT;
+    typedef std::pair<IntT, bool> ValidPair;
     std::vector<ValidPair> valueVector;
 
     // Vector of the different Name Strings in a record.
