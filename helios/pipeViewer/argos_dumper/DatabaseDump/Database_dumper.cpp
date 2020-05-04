@@ -120,12 +120,12 @@ namespace pipeViewer
 
         }
 
-        static void printInst(instruction_t *t, std::ostream & sout)
+        static void printInst(instruction_t *t, std::ostream & os)
         {
-            sout << std::setbase(10);
-            sout << "*instruction* " << t->transaction_ID << " @ " << t->location_ID << " start: " << t->time_Start << " end: "<<t->time_End;
-            sout << " opcode: " << std::setbase(16) << std::showbase << t->operation_Code << " vaddr: " << t->virtual_ADR;
-            sout << " real_addr: " << t->real_ADR << std::endl;
+            os << std::setbase(10);
+            os << "*instruction* " << t->transaction_ID << " @ " << t->location_ID << " start: " << t->time_Start << " end: "<<t->time_End;
+            os << " opcode: " << std::setbase(16) << std::showbase << t->operation_Code << " vaddr: " << t->virtual_ADR;
+            os << " real_addr: " << t->real_ADR << std::endl;
         }
 
         virtual void foundInstRecord(instruction_t*t)
@@ -133,12 +133,12 @@ namespace pipeViewer
             genericTransactionHandler<instruction_t>(t, &printInst);
         }
 
-        static void printMemOp(memoryoperation_t *t, std::ostream & sout)
+        static void printMemOp(memoryoperation_t *t, std::ostream & os)
         {
-            sout << std::setbase(10);
-            sout << "*memop* " << t->transaction_ID << " @ " << t->location_ID << " start: " << t->time_Start << " end: "<<t->time_End;
-            sout << std::setbase(16) << std::showbase << " vaddr: " << t->virtual_ADR;
-            sout << " real_addr: " << t->real_ADR << std::endl;
+            os << std::setbase(10);
+            os << "*memop* " << t->transaction_ID << " @ " << t->location_ID << " start: " << t->time_Start << " end: "<<t->time_End;
+            os << std::setbase(16) << std::showbase << " vaddr: " << t->virtual_ADR;
+            os << " real_addr: " << t->real_ADR << std::endl;
         }
 
         virtual void foundMemRecord(memoryoperation_t*t)
@@ -147,7 +147,7 @@ namespace pipeViewer
         }
 
         static void printPairOp(pair_t * p, std::ostream & os){
-            os << "pair_t: \n";
+            os << "*pair* ";
             for (uint32_t i = 0; i < p->nameVector.size(); ++i) {
                 os << p->nameVector[i] << "(" << p->stringVector[i] << ") ";
             }
