@@ -6,7 +6,7 @@ include_directories(${SYSTEMC_BASE}/include)
 link_directories(${SYSTEMC_BASE}/lib-linux64)
 
 
-sparta_add_executable(SystemC_test SystemC_test.cpp)
+sparta_add_test_executable(SystemC_test SystemC_test.cpp)
 
 include(../TestingMacros.cmake)
 

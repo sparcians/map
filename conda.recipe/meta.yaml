@@ -46,6 +46,7 @@ requirements:
     - pillow
     - pyyaml
     - wxpython
+    - ipython
     - boost
   host:  # target-arch buildtime deps
     - boost-cpp
@@ -67,6 +68,7 @@ requirements:
     - yaml-cpp
     - sqlite
     - hdf5
+    - boost
   run_constrained:
     # make sure that mac has good enough SDK
     # See https://conda-forge.org/docs/maintainer/knowledge_base.html?highlight=feature#requiring-newer-macos-sdks

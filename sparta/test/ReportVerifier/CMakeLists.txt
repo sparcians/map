@@ -1,6 +1,6 @@
 project(ReportVerifier_test)
 
-sparta_add_executable(ReportVerifier_test ReportVerifier.cpp)
+sparta_add_test_executable(ReportVerifier_test ReportVerifier.cpp)
 
 include(../TestingMacros.cmake)
 

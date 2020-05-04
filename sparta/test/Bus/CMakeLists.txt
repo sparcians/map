@@ -1,6 +1,6 @@
 project(Bus_test)
 
-sparta_add_executable(Bus_test Bus_main.cpp)
+sparta_add_test_executable(Bus_test Bus_main.cpp)
 
 include(../TestingMacros.cmake)
 

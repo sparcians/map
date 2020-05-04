@@ -1,6 +1,6 @@
 project(Fastcheckpoint_test)
 
-sparta_add_executable(FastCheckpoint_test FastCheckpoint_test.cpp)
+sparta_add_test_executable(FastCheckpoint_test FastCheckpoint_test.cpp)
 
 include(../TestingMacros.cmake)
 

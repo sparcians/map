@@ -1,6 +1,6 @@
 project(Port_test)
 
-sparta_add_executable(Port_test Producer.cpp Consumer.cpp Port_test.cpp)
+sparta_add_test_executable(Port_test Producer.cpp Consumer.cpp Port_test.cpp)
 
 include(../TestingMacros.cmake)
 

@@ -1,6 +1,6 @@
 project(CircularBuffer_test)
 
-sparta_add_executable(CircularBuffer_test CircularBuffer_test.cpp)
+sparta_add_test_executable(CircularBuffer_test CircularBuffer_test.cpp)
 
 include(../TestingMacros.cmake)
 

@@ -1,6 +1,6 @@
 project(Rational_test)
 
-sparta_add_executable(Rational_test main.cpp)
+sparta_add_test_executable(Rational_test main.cpp)
 
 include(../TestingMacros.cmake)
 

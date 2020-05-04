@@ -1,6 +1,6 @@
 project(Memorymap_test)
 
-sparta_add_executable(MemoryMap_test MemoryMap_test.cpp)
+sparta_add_test_executable(MemoryMap_test MemoryMap_test.cpp)
 
 include(../TestingMacros.cmake)
 

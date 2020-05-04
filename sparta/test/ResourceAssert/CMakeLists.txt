@@ -1,6 +1,6 @@
 project(Resourceassert_test)
 
-sparta_add_executable(ResourceAssert_test ResourceAssert_test.cpp)
+sparta_add_test_executable(ResourceAssert_test ResourceAssert_test.cpp)
 
 include(../TestingMacros.cmake)
 

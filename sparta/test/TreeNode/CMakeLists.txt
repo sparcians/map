@@ -1,6 +1,6 @@
 project(Treenode_test)
 
-sparta_add_executable(TreeNode_test TreeNode_test.cpp)
+sparta_add_test_executable(TreeNode_test TreeNode_test.cpp)
 
 include(../TestingMacros.cmake)
 

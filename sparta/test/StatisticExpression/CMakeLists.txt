@@ -1,6 +1,6 @@
 project(Statisticexpression_test)
 
-sparta_add_executable(StatisticExpression_test StatisticExpression_test.cpp)
+sparta_add_test_executable(StatisticExpression_test StatisticExpression_test.cpp)
 
 include(../TestingMacros.cmake)
 

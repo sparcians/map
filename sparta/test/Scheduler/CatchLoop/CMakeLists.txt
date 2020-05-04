@@ -1,6 +1,6 @@
 project(SchedulerCatchLoop_test)
 
-sparta_add_executable(SchedulerCatchLoop_test CatchLoop_test.cpp)
+sparta_add_test_executable(SchedulerCatchLoop_test CatchLoop_test.cpp)
 
 include(../../TestingMacros.cmake)
 

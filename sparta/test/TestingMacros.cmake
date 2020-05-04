@@ -62,13 +62,10 @@ macro (sparta_recursive_copy build_target cp_file)
 endmacro (sparta_recursive_copy)
 
 #
-# Create a sparta test executable
+# Create a sparta test executable -- this is where the linking
+# libraries for all of the test are defined.
 #
-macro (sparta_add_executable target)
-  set (srcs "")
-  foreach(src_file ${ARGN})
-    list (APPEND srcs ${src_file})
-  endforeach()
-  add_executable (${target} ${srcs})
+macro (sparta_add_test_executable target)
+  add_executable (${target} ${ARGN})
   target_link_libraries(${target} ${Sparta_LIBS})
-endmacro (sparta_add_executable)
+endmacro (sparta_add_test_executable)

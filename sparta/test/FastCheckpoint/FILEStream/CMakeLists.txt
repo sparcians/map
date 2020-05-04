@@ -1,6 +1,6 @@
 project(FILEStream_test)
 
-sparta_add_executable(FILEStream_test FILEStream_test.cpp)
+sparta_add_test_executable(FILEStream_test FILEStream_test.cpp)
 
 include(../../TestingMacros.cmake)
 

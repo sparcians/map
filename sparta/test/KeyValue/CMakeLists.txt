@@ -1,6 +1,6 @@
 project(Keyvalue_test)
 
-sparta_add_executable(KeyValue_test KeyValue_test.cpp)
+sparta_add_test_executable(KeyValue_test KeyValue_test.cpp)
 
 include(../TestingMacros.cmake)
 

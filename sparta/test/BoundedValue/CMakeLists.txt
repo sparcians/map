@@ -1,6 +1,6 @@
 project(BoundedValue_test)
 
-sparta_add_executable(BoundedValue_test BoundedValue_test.cpp)
+sparta_add_test_executable(BoundedValue_test BoundedValue_test.cpp)
 
 include(../TestingMacros.cmake)
 

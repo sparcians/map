@@ -1,6 +1,6 @@
 project(StateTimer_test)
 
-sparta_add_executable(StateTimer_test StateTimer_test.cpp)
+sparta_add_test_executable(StateTimer_test StateTimer_test.cpp)
 
 include(../TestingMacros.cmake)
 
