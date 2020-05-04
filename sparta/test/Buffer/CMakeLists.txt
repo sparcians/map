@@ -1,6 +1,6 @@
 project(Buffer_test)
 
-add_executable(Buffer_test Buffer_test.cpp)
+sparta_add_test_executable(Buffer_test Buffer_test.cpp)
 
 include(../TestingMacros.cmake)
 

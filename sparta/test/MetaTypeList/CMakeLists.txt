@@ -1,6 +1,6 @@
 project(MetaTypeList)
 
-add_executable(MetaTypeList MetaTypeList_test.cpp)
+sparta_add_test_executable(MetaTypeList MetaTypeList_test.cpp)
 
 include(../TestingMacros.cmake)
 

@@ -1,6 +1,6 @@
 project(MirrorNotifications_test)
 
-add_executable(MirrorNotifications_test MirrorNotifications_test.cpp)
+sparta_add_test_executable(MirrorNotifications_test MirrorNotifications_test.cpp)
 
 include(../TestingMacros.cmake)
 

@@ -1,6 +1,6 @@
 project(Keypaircollect)
 
-add_executable(KeyPairCollect KeyPairCollect_test.cpp)
+sparta_add_test_executable(KeyPairCollect KeyPairCollect_test.cpp)
 
 include(../TestingMacros.cmake)
 

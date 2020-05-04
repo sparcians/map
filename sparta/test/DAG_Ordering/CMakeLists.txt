@@ -1,6 +1,6 @@
 project(Dag_ordering)
 
-add_executable(DAG_ordering DAG_Ordering_main.cpp)
+sparta_add_test_executable(DAG_ordering DAG_Ordering_main.cpp)
 
 include(../TestingMacros.cmake)
 

@@ -39,13 +39,15 @@ requirements:
     - clang 9
     - clangxx 9
     - rsync
-    # add runtime requirements for argos to make it easier to script 
+    # add runtime requirements for argos to make it easier to script
     # creation of a 'dev' environment that can also run Argos
     - matplotlib-base
     - numpy
     - pillow
     - pyyaml
     - wxpython
+    - ipython
+    - boost
   host:  # target-arch buildtime deps
     - boost-cpp
     - yaml-cpp
@@ -60,11 +62,13 @@ requirements:
     - python
     - pyyaml
     - wxpython
+    - ipython
     # duplicate required host libs to make it easier to script creation of run environent
     - boost-cpp
     - yaml-cpp
     - sqlite
     - hdf5
+    - boost
   run_constrained:
     # make sure that mac has good enough SDK
     # See https://conda-forge.org/docs/maintainer/knowledge_base.html?highlight=feature#requiring-newer-macos-sdks
