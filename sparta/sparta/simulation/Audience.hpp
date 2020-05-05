@@ -1,5 +1,4 @@
-// <Audience> -*- C++ -*-
-
+// <Audience.hpp> -*- C++ -*-
 
 #pragma once
 
