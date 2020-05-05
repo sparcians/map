@@ -468,13 +468,14 @@ namespace pipeViewer{
                         }
 
                         pairt.nameVector.reserve(pairt.length);
-                        pairt.valueVector.reserve(pairt.length);
                         pairt.sizeOfVector.reserve(pairt.length);
+                        pairt.valueVector.reserve(pairt.length);
                         pairt.stringVector.reserve(pairt.length);
+
                         pairt.nameVector.emplace_back("pairid");
-                        pairt.valueVector.emplace_back(std::make_pair(st.UniqueID, false));
                         pairt.sizeOfVector.emplace_back(sizeof(uint16_t));
-                        pairt.stringVector.emplace_back(" ");
+                        pairt.valueVector.emplace_back(std::make_pair(st.UniqueID, false));
+                        pairt.stringVector.emplace_back(std::to_string(st.UniqueID));
 
                         for(std::size_t i = 1; i != st.length; ++i){
                             pairt.nameVector.emplace_back(st.names[i]);
@@ -559,7 +560,9 @@ namespace pipeViewer{
                                     if (int_value == std::numeric_limits<pair_t::IntT>::max()) {
                                         // Max value, so probably bad...push empty string
                                         pairt.stringVector.emplace_back("");
-                                    } else if (field_name == "pc") {
+                                    } else if (field_name == "pc" ||
+                                               field_name == "pred_target" ||
+                                               field_name == "vaddr") {
                                         // This is a hex field
                                         std::stringstream int_str;
                                         int_str << "0x" << std::hex << int_value;
@@ -579,6 +582,7 @@ namespace pipeViewer{
                                 record_file_.read(annot_ptr.get(), annotationLength);
                                 pos += annotationLength;
                                 std::string annot_str(annot_ptr.get(), annotationLength);
+                                annot_str = std::string(annot_str.c_str());  // Get rid of terminating null
                                 pairt.stringVector.emplace_back(annot_str);
                                 pairt.valueVector.emplace_back(std::make_pair(std::numeric_limits<uint64_t>::max(), false));
                                 // This bool value describes if this field has a string-only value.
@@ -589,6 +593,9 @@ namespace pipeViewer{
                                     std::numeric_limits<
                                         typename decltype(pairt.valueVector)::value_type::first_type>::max(),
                                     string_only_field));
+                            } else {
+                                pairt.stringVector.emplace_back("none");
+                                pairt.valueVector.emplace_back(std::make_pair(0, false));
                             }
                         }
                         break;
