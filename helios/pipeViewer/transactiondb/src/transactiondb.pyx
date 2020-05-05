@@ -4,6 +4,7 @@
 ## @package Setup file for transactiondb Python module
 
 import sys
+import re
 
 from common cimport *
 from libcpp.vector cimport vector
@@ -258,7 +259,11 @@ cdef class Transaction(object):
                 py_str += str(self.__trans.nameVector[i]).encode('utf-8') + b'(' + str(self.__trans.stringVector[i]).encode('utf-8') + b')' + b' '
 
         # TODO this could already be a string to avoid decoding over and over
-        return py_str.decode('utf-8')
+
+        decoded_str = re.sub("b'(.*?)'", r'\1', py_str.decode('utf-8'))    # Remove b'' strings
+#        decoded_str = decoded_str.replace('\x00', '')    # Remove null bytes
+        decoded_str = decoded_str.replace(r'\x00', '')    # Remove null byte strings
+        return decoded_str
 
     def getLeft(self):
         """
