@@ -10,9 +10,9 @@
 #include "sparta/events/UniqueEvent.hpp"
 #include "sparta/events/PayloadEvent.hpp"
 #include "sparta/events/SingleCycleUniqueEvent.hpp"
+#include "sparta/events/GlobalOrderingPoint.hpp"
 #include "sparta/ports/Port.hpp"
 #include "sparta/ports/Bus.hpp"
-#include "sparta/kernel/Vertex.hpp"
 
 /**
  * \file   Precedence.hpp
@@ -27,7 +27,7 @@ namespace sparta
     /*! \page precedence_rules Precedence operators for EventNode/Scheduleables
      *
      * Precedence operators, since folks use unique_ptrs, pointers,
-     * GOPoints, references, etc..  The compilation errors get pretty
+     * GlobalOrderingPoint, references, etc..  The compilation errors get pretty
      * nasty if a simple operator isn't found.
      *
      * Some combinations:
@@ -47,7 +47,8 @@ namespace sparta
      *    concrete_event >> std::unique_ptr<eventT>;
      *    event_pointer >> std::unique_ptr<eventT>;
      *
-     *    // GOP
+     *    // GlobalOrderingPoint
+     *    sparta::GlobalOrderingPoint gop(node, "gop");
      *    gop >> concrete_event;
      *    gop >> event_pointer;
      *    gop >> std::unique_ptr<eventT>;
@@ -63,10 +64,10 @@ namespace sparta
     ////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief Place a precedence between a Scheduleable object and a DAG::GOPoint
+     * \brief Place a precedence between a Scheduleable object and a GlobalOrderingPoint
      *
      * \param producer The producer (LHS) must come before consumer (RHS)
-     * \param consumer The DAG to succeed the ScheduleableType
+     * \param consumer The GlobalOrderingPoint (Vertex type) to succeed the ScheduleableType
      *
      * \return The \i consumer
      *
@@ -82,26 +83,25 @@ namespace sparta
      * \endcode
      *
      * This implementation of the precedence operator catches a
-     * Scheduleable on the LHS preceding a DAG point (which is not a
-     * Scheduleable type) and ensures the two events are within the
-     * same phase.
+     * Scheduleable on the LHS preceding a GlobalOrderingPoint point
+     * and ensures the two events are within the same phase.
      *
      * \code
-     * (UniqueEvent, PayloadEvent, SingleCycleUniqueEvent, Event) >> GOPoint;
+     * (UniqueEvent, PayloadEvent, SingleCycleUniqueEvent, Event) >> GlobalOrderingPoint(node, "gop");
      * \endcode
      */
     template<class ScheduleableTypeA>
-    typename std::enable_if<std::is_base_of<EventNode, ScheduleableTypeA>::value, Vertex>::
-    type & operator>>(ScheduleableTypeA & producer, Vertex & consumer)
+    typename std::enable_if<std::is_base_of<EventNode, ScheduleableTypeA>::value, const GlobalOrderingPoint>::
+    type & operator>>(ScheduleableTypeA & producer, const GlobalOrderingPoint & consumer)
     {
-        producer.getScheduleable().precedes(consumer);
+        producer.getScheduleable().precedes(*consumer.getGOPoint());
         return consumer;
     }
 
-     /**
-     * \brief Place a precedence between a Scheduleable object and a DAG::GOPoint
+    /**
+     * \brief Place a precedence between a Scheduleable object and a GlobalOrderingPoint
      *
-     * \param producer The DAG to succeed the ScheduleableType
+     * \param producer The GlobalOrderingPoint to succeed the ScheduleableType
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
      * \return The \i consumer
@@ -118,19 +118,82 @@ namespace sparta
      * \endcode
      *
      * This implementation of the precedence operator catches a
-     * Scheduleable on the LHS preceding a DAG point (which is not a
-     * Scheduleable type) and ensures the two events are within the
-     * same phase.
+     * GlobalOrderingPoint on the LHS preceding a Scheduleable type
+     * and ensures the two events are within the same phase.
      *
      * \code
-     * GOPoint >> EventNode type (UniqueEvent, PayloadEvent, SingleCycleUniqueEvent, Event)
+     * GlobalOrderingPoint(node, "gop") >> (UniqueEvent, PayloadEvent, SingleCycleUniqueEvent, Event);
      * \endcode
      */
     template<class ScheduleableTypeA>
     typename std::enable_if<std::is_base_of<EventNode, ScheduleableTypeA>::value, ScheduleableTypeA>::
-    type & operator>>(Vertex & producer, ScheduleableTypeA & consumer)
+    type & operator>>(const GlobalOrderingPoint & producer, ScheduleableTypeA & consumer)
     {
-        producer.precedes(consumer.getScheduleable());
+        producer.getGOPoint()->precedes(consumer.getScheduleable());
+        return consumer;
+    }
+
+    /**
+     * \brief Place a precedence between a GlobalOrderingPoint and an InPort
+     *
+     * \param producer The GlobalOrderingPoint to succeed the ScheduleableType
+     * \param consumer The producer (LHS) must come before consumer (RHS)
+     *
+     * \return The \i consumer
+     *
+     * \note This function returns the \i consumer (RHS) of the
+     *       operation instead of the \i producer (LHS).  This is
+     *       opposite of typical behavior of >> operators.
+     *
+     * Place a precedence on a producer to the consumer.  The consumer
+     * is returned, \b not the producer.  This is to allow chaining:
+     *
+     * \code
+     *    my_producer_event_ >> my_consumer_event_ >> my_event_following_consumption_;
+     * \endcode
+     *
+     * This implementation of the precedence operator catches a
+     * GlobalOrderingPoint on the LHS preceding a InPort and ensures
+     * the two events are within the same phase.
+     *
+     * \code
+     * GlobalOrderingPoint(node, "gop") >> InPort
+     * \endcode
+     */
+    inline InPort & operator>>(const GlobalOrderingPoint & producer, InPort & consumer) {
+        producer.getGOPoint()->precedes(consumer.getScheduleable_());
+        return consumer;
+    }
+
+    /**
+     * \brief Place a precedence between a Scheduleable object and a GlobalOrderingPoint
+     *
+     * \param producer The GlobalOrderingPoint to succeed the ScheduleableType
+     * \param consumer The producer (LHS) must come before consumer (RHS)
+     *
+     * \return The \i consumer
+     *
+     * \note This function returns the \i consumer (RHS) of the
+     *       operation instead of the \i producer (LHS).  This is
+     *       opposite of typical behavior of >> operators.
+     *
+     * Place a precedence on a producer to the consumer.  The consumer
+     * is returned, \b not the producer.  This is to allow chaining:
+     *
+     * \code
+     *    my_producer_event_ >> my_consumer_event_ >> my_event_following_consumption_;
+     * \endcode
+     *
+     * This implementation of the precedence operator catches a InPort
+     * on the LHS preceding a GlobalOrderingPoint (which is a Vertex
+     * type) and ensures the two events are within the same phase.
+     *
+     * \code
+     * InPort >> GlobalOrderingPoint(node, "gop");
+     * \endcode
+     */
+    inline const GlobalOrderingPoint & operator>>(InPort & producer, const GlobalOrderingPoint & consumer) {
+        producer.getScheduleable_().precedes(*consumer.getGOPoint());
         return consumer;
     }
 
