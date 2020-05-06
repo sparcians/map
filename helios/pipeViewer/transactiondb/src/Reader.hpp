@@ -481,6 +481,7 @@ namespace pipeViewer{
                             pairt.nameVector.emplace_back(st.names[i]);
                             pairt.sizeOfVector.emplace_back(st.sizes[i]);
                             if(st.types[i] == 0){
+                                // Type 0 = integer
                                 switch(pairt.sizeOfVector[i]){
                                     case sizeof(uint8_t) : {
                                         uint8_t tmp;
@@ -573,9 +574,11 @@ namespace pipeViewer{
                                 }
                             }
                             else if(st.types[i] == 1){
+                                // Type 1 = string
                                 uint16_t annotationLength;
                                 record_file_.read(reinterpret_cast<char*>(&annotationLength), sizeof(uint16_t));
                                 pos += sizeof(uint16_t);
+
                                 std::unique_ptr<char[] , std::function<void(char * ptr)>>
                                     annot_ptr(new char[annotationLength + 1],
                                         [&](char * ptr) { delete [] ptr; });
@@ -584,7 +587,7 @@ namespace pipeViewer{
                                 std::string annot_str(annot_ptr.get(), annotationLength);
                                 annot_str = std::string(annot_str.c_str());  // Get rid of terminating null
                                 pairt.stringVector.emplace_back(annot_str);
-                                pairt.valueVector.emplace_back(std::make_pair(std::numeric_limits<uint64_t>::max(), false));
+
                                 // This bool value describes if this field has a string-only value.
                                 // String only values are those values which are stored in database as
                                 // strings and has no integral representation of itself.
