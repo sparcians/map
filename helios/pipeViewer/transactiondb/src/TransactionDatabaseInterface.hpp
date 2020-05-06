@@ -273,9 +273,11 @@ private:
                     break;
                 }
                 auto trans = all_intervals_[tids];
-                o << "Transaction " << std::dec << trans.transaction_ID << " loc="
-                  << std::dec << trans.location_ID << " @ [" << trans.getLeft() << ','
-                  << trans.getRight() << ")\n";
+                o << "Transaction " << std::dec << trans.transaction_ID
+                  << " disp=" << trans.display_ID
+                  << " loc="  << trans.location_ID
+                  << " @ ["   << trans.getLeft()
+                  << ", "     << trans.getRight() << ")\n";
             }
         }
 
@@ -342,6 +344,7 @@ private:
                             Transaction::IntervalDataT time_End,
                             uint16_t control_Process_ID,
                             uint64_t transaction_ID,
+                            uint64_t display_ID,
                             uint32_t location_ID,
                             _Args&&... __args)
         {
@@ -375,6 +378,7 @@ private:
                                         time_End, // Use original ending
                                         control_Process_ID,
                                         transaction_ID,
+                                        display_ID,
                                         location_ID,
                                         __args...);
             transaction_bytes_ += all_intervals_.back().getSizeInBytes();
@@ -492,9 +496,10 @@ private:
                     sparta_assert(marked_start,
                                       "Somehow made it through a transaction insertion into node \""
                                       << stringize() << "\" without marking the start in a TickData. "
-                                      "Transaction " << std::dec
-                                      << transaction_ID << " loc=" << std::dec << location_ID
-                                      << " @ [" << time_Start << ',' << time_End << ")\n");
+                                      "Transaction " << std::dec << transaction_ID
+                                  << " disp=" << std::dec << display_ID
+                                  << " loc=" << std::dec << location_ID
+                                  << " @ [" << time_Start << ',' << time_End << ")\n");
                 }else{
                     // Finished iterating all the TickDatas. Add remaining entries
 
@@ -755,6 +760,7 @@ private:
                              Transaction::IntervalDataT time_End,
                              uint16_t control_Process_ID,
                              uint64_t transaction_ID,
+                             uint64_t display_ID,
                              uint32_t location_ID,
                              uint16_t flags,
                              _Args&&... __args)
@@ -781,6 +787,7 @@ private:
                                                     time_End,
                                                     control_Process_ID,
                                                     transaction_ID,
+                                                    display_ID,
                                                     location_ID,
                                                     flags,
                                                     __args...);
@@ -794,29 +801,29 @@ private:
          * \brief Callback from PipelineDataCallback
          */
         void foundTransactionRecord(transaction_t* loc) {
-            addTransaction_(loc->time_Start,loc->time_End,loc->control_Process_ID,
-                            loc->transaction_ID,loc->location_ID,loc->flags);
+            addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
+                            loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags);
         }
         void foundInstRecord(instruction_t* loc) {
-            addTransaction_(loc->time_Start,loc->time_End,loc->control_Process_ID,
-                            loc->transaction_ID,loc->location_ID,loc->flags,
-                            (uint16_t)loc->parent_ID,loc->operation_Code,loc->virtual_ADR,
+            addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
+                            loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
+                            (uint16_t)loc->parent_ID, loc->operation_Code, loc->virtual_ADR,
                             loc->real_ADR);
         }
         void foundMemRecord(memoryoperation_t* loc) {
-            addTransaction_(loc->time_Start,loc->time_End,loc->control_Process_ID,
-                            loc->transaction_ID,loc->location_ID,loc->flags,
-                            (uint16_t)loc->parent_ID,loc->virtual_ADR,loc->real_ADR);
+            addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
+                            loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
+                            (uint16_t)loc->parent_ID, loc->virtual_ADR, loc->real_ADR);
         }
         void foundAnnotationRecord(annotation_t* loc) {
-            addTransaction_(loc->time_Start,loc->time_End,loc->control_Process_ID,
-                            loc->transaction_ID,loc->location_ID,loc->flags,
-                            (uint16_t)loc->parent_ID,loc->length,(const char*)loc->annt);
+            addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
+                            loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
+                            (uint16_t)loc->parent_ID, loc->length, (const char*)loc->annt);
         }
 
         void foundPairRecord(pair_t* loc) {
-            addTransaction_(loc->time_Start,loc->time_End,loc->control_Process_ID,
-                            loc->transaction_ID,loc->location_ID,loc->flags,
+            addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
+                            loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
                             (uint16_t)loc->parent_ID, loc->length, loc->pairId, loc->sizeOfVector,
                             loc->valueVector, loc->nameVector,
                             loc->stringVector, loc->delimVector);

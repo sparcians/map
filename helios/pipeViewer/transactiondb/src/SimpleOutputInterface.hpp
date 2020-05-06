@@ -8,6 +8,8 @@ namespace sparta{
 
         class SimpleOutputInterface {
         public:
+            static constexpr uint64_t BAD_DISPLAY_ID = 0x1000;  // anything higher than 0xfff is out of bounds
+
             SimpleOutputInterface(const std::string& filepath, const uint64_t interval, bool debug = false) :
             outputter_(filepath, interval)
             {
@@ -22,6 +24,7 @@ namespace sparta{
                 annot_struct_.parent_ID = 0;
                 annot_struct_.control_Process_ID = 0;
                 annot_struct_.transaction_ID = 0;
+                annot_struct_.display_ID = BAD_DISPLAY_ID;
                 annot_struct_.location_ID = 0;
                 annot_struct_.flags = is_Annotation;
                 annot_struct_.length = 0;

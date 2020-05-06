@@ -48,7 +48,7 @@ namespace sparta{
             t << "sparta_pipeout_version:" << std::setw(4) << FILE_VERSION << "\n";
             const std::string header = t.str();
             sparta_assert(header.size() == 28); // Do not change the header format
-            static_assert(sizeof(transaction_t) == 40,
+            static_assert(sizeof(transaction_t) == 48,
                           "size of a transaction changed. May want to increase file format version. "
                           "If no changes were made to SPARTA, compiler is generating a structure "
                           "layout that is incompatible with pipeViewer");

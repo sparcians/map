@@ -49,6 +49,7 @@ namespace sparta{
         class Collectable : public CollectableTreeNode
         {
         public:
+            static constexpr uint64_t BAD_DISPLAY_ID = 0x1000;
 
             /**
              * \brief Construct the Collectable, no data object associated, part of a group
@@ -462,7 +463,7 @@ namespace sparta{
                         const std::string & desc = "Collectable <manual, no desc>") :
                 sparta::PairCollector<PairDef_t>(),
                 CollectableTreeNode(sparta::notNull(parent), name, group, index, desc),
-                argos_record_(pair_t(0, 1, parentid, 0,
+                argos_record_(pair_t(0, 1, parentid, 0, BAD_DISPLAY_ID,
                     boost::numeric::converter<decltype(argos_record_.location_ID),
                         decltype(getNodeUID())>::convert(getNodeUID()),
                             is_Pair, 0)),
@@ -783,6 +784,10 @@ namespace sparta{
                 argos_record_.stringVector = getStringVector();
                 argos_record_.length = argos_record_.nameVector.size();
                 argos_record_.delimVector.emplace_back(getArgosFormatGuide());
+
+                if (argos_record_.nameVector[0] == "DID") {
+                    argos_record_.display_ID = argos_record_.valueVector[0].first & 0x0fff;
+                }
 
                 // Capture the end time
                 argos_record_.time_End =

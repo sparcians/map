@@ -180,8 +180,9 @@ namespace pipeViewer {
         void foundTransactionRecord(transaction_t* loc) {
             if((loc->time_End <= loading_Range_R_) && (loc->time_End > loading_Range_L_)){
                 transactionInterval<uint64_t> *temp;
-                temp = new transactionInterval<uint64_t>(loc->time_Start,loc->time_End,loc->control_Process_ID,
-                                                        loc->transaction_ID,loc->location_ID,loc->flags);
+                temp = new transactionInterval<uint64_t>(loc->time_Start, loc->time_End, loc->control_Process_ID,
+                                                         loc->transaction_ID, loc->display_ID, loc->location_ID,
+                                                         loc->flags);
                 iarray_.push_back(temp);
                 isList->insert(temp);
             }
@@ -189,10 +190,11 @@ namespace pipeViewer {
         void foundInstRecord(instruction_t* loc) {
             if((loc->time_End <= loading_Range_R_) && (loc->time_End > loading_Range_L_)){
                 transactionInterval<uint64_t> *temp;
-                temp = new transactionInterval<uint64_t>(loc->time_Start,loc->time_End,loc->control_Process_ID,
-                                                        loc->transaction_ID,loc->location_ID,loc->flags,
-                                                        loc->parent_ID,loc->operation_Code,loc->virtual_ADR,
-                                                        loc->real_ADR);
+                temp = new transactionInterval<uint64_t>(loc->time_Start, loc->time_End, loc->control_Process_ID,
+                                                         loc->transaction_ID, loc->display_ID, loc->location_ID,
+                                                         loc->flags,
+                                                         loc->parent_ID, loc->operation_Code, loc->virtual_ADR,
+                                                         loc->real_ADR);
                 iarray_.push_back(temp);
                 isList->insert(temp);
             }
@@ -200,9 +202,10 @@ namespace pipeViewer {
         void foundMemRecord(memoryoperation_t* loc) {
             if((loc->time_End <= loading_Range_R_) && (loc->time_End > loading_Range_L_)){
                 transactionInterval<uint64_t> *temp;
-                temp = new transactionInterval<uint64_t>(loc->time_Start,loc->time_End,loc->control_Process_ID,
-                                                        loc->transaction_ID,loc->location_ID,loc->flags,
-                                                        loc->parent_ID,loc->virtual_ADR,loc->real_ADR);
+                temp = new transactionInterval<uint64_t>(loc->time_Start, loc->time_End, loc->control_Process_ID,
+                                                         loc->transaction_ID, loc->display_ID, loc->location_ID,
+                                                         loc->flags,
+                                                         loc->parent_ID, loc->virtual_ADR, loc->real_ADR);
                 iarray_.push_back(temp);
                 isList->insert(temp);
             }
@@ -212,10 +215,10 @@ namespace pipeViewer {
             if((loc->time_End <= loading_Range_R_ ) && (loc->time_End > loading_Range_L_)) {
                 transactionInterval<uint64_t> *temp;
                 temp = new transactionInterval<uint64_t>(loc->time_Start, loc->time_End, loc->control_Process_ID,
-                                                        loc->transaction_ID, loc->location_ID, loc->flags,
-                                                        loc->parent_ID, loc->length, loc->pairId,
-                                                        loc->sizeOfVector, loc->valueVector, loc->nameVector,
-                                                        loc->stringVector, loc->delimVector);
+                                                         loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
+                                                         loc->parent_ID, loc->length, loc->pairId,
+                                                         loc->sizeOfVector, loc->valueVector, loc->nameVector,
+                                                         loc->stringVector, loc->delimVector);
                 iarray_.push_back(temp);
                 isList->insert(temp);
             }
@@ -224,9 +227,10 @@ namespace pipeViewer {
         void foundAnnotationRecord(annotation_t* loc) {
             if((loc->time_End <= loading_Range_R_) && (loc->time_End > loading_Range_L_)){
                 transactionInterval<uint64_t> *temp;
-                temp = new transactionInterval<uint64_t>(loc->time_Start,loc->time_End,loc->control_Process_ID,
-                                                         loc->transaction_ID,loc->location_ID,loc->flags,
-                                                         loc->parent_ID,loc->length,(char*)loc->annt);
+                temp = new transactionInterval<uint64_t>(loc->time_Start, loc->time_End, loc->control_Process_ID,
+                                                         loc->transaction_ID, loc->display_ID, loc->location_ID,
+                                                         loc->flags,
+                                                         loc->parent_ID, loc->length, (char*)loc->annt);
                 iarray_.push_back(temp);
                 isList->insert(temp);
             }

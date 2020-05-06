@@ -16,6 +16,8 @@
 #define TYPE_MASK 0x7//!< Mask used for extracting type ID portion from transaction flags
 #define CONTINUE_FLAG 0x10 //!< Flag used to indicate if this transaction should be considered a continuation of the previous transaction
 
+static constexpr uint64_t BAD_DISPLAY_ID = 0x1000;
+
 /*!
  * \brief Old version of the transaction structures namespace
  */
@@ -25,6 +27,10 @@ namespace version1 {
         uint64_t time_End;  //! Event End Time     8 Bytes
         uint64_t parent_ID;  //! Parent Transaction ID 8 Bytes
         uint64_t transaction_ID;  //! TRnasaction ID     8 Bytes
+
+        // Any value above 0x0fff is an invalid value for this field
+        uint64_t display_ID = BAD_DISPLAY_ID;      //! Display ID         8 Bytes
+
         uint16_t control_Process_ID;  //! Control Process ID 2 Bytes
         uint16_t location_ID;  //! Location           2 Bytes
         uint16_t flags;  //! Flags/Trans Type   2 Bytes
@@ -65,7 +71,11 @@ struct __attribute__ ((__packed__)) transaction_t  {
     uint64_t time_Start;  //! Event Start Time   8 Bytes
     uint64_t time_End;  //! Event End Time     8 Bytes
     uint64_t parent_ID;  //! Parent Transaction ID 8 Bytes
-    uint64_t transaction_ID;  //! TRnasaction ID     8 Bytes
+    uint64_t transaction_ID;  //! Transaction ID     8 Bytes
+
+    // Any value above 0x0fff is an invalid value for this field
+    uint64_t display_ID = BAD_DISPLAY_ID;      //! Display ID         8 Bytes
+
     uint32_t location_ID;  //! Location           4 Bytes
     uint16_t flags;  //! Flags/Trans Type   2 Bytes
     uint16_t control_Process_ID;  //! Control Process ID 2 Bytes
@@ -74,10 +84,10 @@ struct __attribute__ ((__packed__)) transaction_t  {
 
     //! Parameterized Constructor
     transaction_t(uint64_t time_Start, uint64_t time_End, uint64_t parent_ID,
-                  uint64_t transaction_ID, uint32_t location_ID, uint16_t flags,
+                  uint64_t transaction_ID, uint64_t display_ID, uint32_t location_ID, uint16_t flags,
                   uint16_t control_Process_ID) :
         time_Start(time_Start), time_End(time_End), parent_ID(parent_ID),
-        transaction_ID(transaction_ID), location_ID(location_ID), flags(flags),
+        transaction_ID(transaction_ID), display_ID(display_ID), location_ID(location_ID), flags(flags),
         control_Process_ID(control_Process_ID) {}
 
     // Version conversion move constructors
@@ -86,6 +96,7 @@ struct __attribute__ ((__packed__)) transaction_t  {
         time_End(old_obj.time_End),
         parent_ID(old_obj.parent_ID),
         transaction_ID(old_obj.transaction_ID),
+        display_ID(old_obj.display_ID),
         location_ID(old_obj.location_ID),
         flags(old_obj.flags),
         control_Process_ID(old_obj.control_Process_ID)
@@ -185,6 +196,7 @@ struct pair_t : public transaction_t {
            uint64_t time_End,
            uint64_t parent_ID,
            uint64_t transaction_ID,
+           uint64_t display_ID,
            uint32_t location_ID,
            uint16_t flags,
            uint16_t control_Process_ID) :
@@ -193,6 +205,7 @@ struct pair_t : public transaction_t {
             time_End,
             parent_ID,
             transaction_ID,
+            display_ID,
             location_ID,
             flags,
             control_Process_ID) {}

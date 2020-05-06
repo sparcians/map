@@ -204,6 +204,11 @@ cdef class Transaction(object):
             return None
         return self.__trans.transaction_ID
 
+    def getDisplayID(self):
+        if self.__trans == NULL:
+            return None
+        return self.__trans.display_ID
+
     def getLocationID(self):
         if self.__trans == NULL:
             return None
@@ -254,7 +259,9 @@ cdef class Transaction(object):
                 py_str = ann
         else:
             py_str = b''
-            py_str = py_str + str(self.__trans.transaction_ID).encode('utf-8') + b' '
+
+            my_display_id = self.__trans.display_ID if self.__trans.display_ID < 0x1000 else self.__trans.transaction_ID
+            py_str = py_str + format(my_display_id, 'x').encode('utf-8') + b' '
             for i in range(1, self.__trans.length):
                 py_str += str(self.__trans.nameVector[i]).encode('utf-8') + b'(' + str(self.__trans.stringVector[i]).encode('utf-8') + b')' + b' '
 
@@ -583,7 +590,9 @@ cdef class TransactionDatabase:
 
         else:
             py_str = b''
-            py_str = py_str + str(self.__trans.transaction_ID).encode('utf-8') + b' '
+
+            my_display_id = self.__trans.display_ID if self.__trans.display_ID < 0x1000 else self.__trans.transaction_ID
+            py_str = py_str + str(my_display_id).encode('utf-8') + b' '
             for i in range(1, self.__trans.length):
                 py_str += str(self.__trans.nameVector[i]).encode('utf-8') + b'(' + str(self.__trans.stringVector[i]).encode('utf-8') + b')' + b' '
 
@@ -602,6 +611,13 @@ cdef class TransactionDatabase:
         if c_trans == NULL:
             return None
         return <int>c_trans.transaction_ID
+
+    def getDisplayID(self, uint32_t loc):
+        cdef c_TransactionInterval_uint64_const_t* c_trans
+        c_trans = self._getTransaction(loc)
+        if c_trans == NULL:
+            return None
+        return <int>c_trans.display_ID
 
     def getLocationMap(self):
         cdef list results = []*<int>self.__cur_content_len

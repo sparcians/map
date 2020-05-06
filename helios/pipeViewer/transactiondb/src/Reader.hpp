@@ -47,19 +47,16 @@ namespace pipeViewer{
         {;}
 
         virtual void foundTransactionRecord(transaction_t* r) override {
-            if(r->time_Start < start){
-                  std::cout << "Bounds on transactions were outside of heartbeat range " << start
-                            << "," << end << ". transaction: idx: " << r->transaction_ID << " loc: "
-                            << r->location_ID << " start: "
-                            << r->time_Start << " end: " << r->time_End
-                            << " parent: " << r->parent_ID << std::endl;
-            }
-            if(r->time_End > end){
-              std::cout << "Bounds on transactions were outside of heartbeat range " << start
-                        << "," << end << ". transaction: idx: " << r->transaction_ID << " loc: "
-                        << r->location_ID << " start: "
-                        << r->time_Start << " end: " << r->time_End
-                        << " parent: " << r->parent_ID << std::endl;
+            if (r->time_Start < start ||
+                r->time_End   > end) {
+                std::cout << "Bounds on transactions were outside of heartbeat range " << start
+                          << ", " << end << ". transaction:"
+                          << " idx: "    << r->transaction_ID
+                          << " disp: "   << r->display_ID
+                          << " loc: "    << r->location_ID
+                          << " start: "  << r->time_Start
+                          << " end: "    << r->time_End
+                          << " parent: " << r->parent_ID << std::endl;
             }
         }
 

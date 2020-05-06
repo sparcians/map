@@ -34,6 +34,7 @@ cdef extern from "TransactionInterval.hpp" namespace "sparta::pipeViewer":
 
         uint16_t control_ProcessID
         uint64_t transaction_ID
+        uint64_t display_ID
         uint32_t location_ID
         uint16_t flags
         uint64_t parent_ID

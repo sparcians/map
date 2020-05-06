@@ -41,6 +41,7 @@ cdef extern from "TransactionInterval.hpp" namespace "sparta::pipeViewer":
 
         uint16_t control_ProcessID
         uint64_t transaction_ID
+        uint64_t display_ID
         uint16_t location_ID
         uint16_t flags
         uint64_t parent_ID
@@ -241,6 +242,11 @@ cdef class Transaction(object):
             return None
         return self.__trans.transaction_ID
 
+    def getDisplayID(self):
+        if self.__trans == NULL:
+            return None
+        return self.__trans.display_ID
+
     def getLocationID(self):
         if self.__trans == NULL:
             return None
@@ -292,7 +298,9 @@ cdef class Transaction(object):
 
         else:
             py_str = b''
-            py_str = py_str + str(self.__trans.transaction_ID).encode('utf-8') + b' '
+
+            my_display_id = self.__trans.display_ID if self.__trans.display_ID < 0x1000 else self.__trans.transaction_ID
+            py_str = py_str + format(my_display_id, 'x').encode('utf-8') + b' '
             for i in range(1, self.__trans.length):
                 py_str += str(self.__trans.nameVector[i]).encode('utf-8') + b'(' + str(self.__trans.stringVector[i]).encode('utf-8') + b')' + b' '
 

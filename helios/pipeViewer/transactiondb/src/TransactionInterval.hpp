@@ -21,6 +21,7 @@ public:
     typedef Dat_t IntervalDataT;
     uint16_t control_ProcessID;    /*! Core ID*/
     uint64_t transaction_ID;    /*! Transaction ID*/
+    uint64_t display_ID;      /*! Use to control display character and color */
     uint16_t location_ID;    /*! Location ID*/
     uint16_t flags;    /*! Assorted Transaction Flags*/
     uint64_t parent_ID;    /*! Parent Transaction ID*/
@@ -38,10 +39,10 @@ public:
 
     // Constructor for transaction_t
     transactionInterval( const Dat_t &lval, const Dat_t &rval,
-        const uint16_t &cpid, const uint64_t &trid,
-        const uint64_t &lctn, const uint16_t &flgs) :
+                         const uint16_t &cpid, const uint64_t &trid, const uint64_t &dispid,
+                         const uint64_t &lctn, const uint16_t &flgs) :
         time_Start_(lval), time_End_(rval), control_ProcessID(cpid),
-        transaction_ID(trid), location_ID(lctn), flags(flgs) ,
+        transaction_ID(trid), display_ID(dispid), location_ID(lctn), flags(flgs) ,
         parent_ID(0), operation_Code(0), virtual_ADR(0), real_ADR(0),
         length(0), annt(nullptr), pairId(0), sizeOfVector(), valueVector(),
         nameVector(), stringVector(), delimVector(){
@@ -50,10 +51,10 @@ public:
 
     // Constructor for annotation_t
     transactionInterval( const Dat_t &lval, const Dat_t &rval,
-        const uint16_t &cpid, const uint64_t &trid,
+        const uint16_t &cpid, const uint64_t &trid, const uint64_t &dispid,
         const uint64_t &lctn, const uint16_t &flgs,
         const uint64_t &ptid, const uint16_t &lngt, const char *iannt) :
-        transactionInterval(lval, rval, cpid, trid, lctn, flgs)
+        transactionInterval(lval, rval, cpid, trid, dispid, lctn, flgs)
         {
             length = lngt;
             annt = nullptr;
@@ -67,11 +68,11 @@ public:
 
     // Constructor for instrucation_t
     transactionInterval( const Dat_t &lval, const Dat_t &rval,
-        const uint16_t &cpid, const uint64_t &trid,
+        const uint16_t &cpid, const uint64_t &trid, const uint64_t &dispid,
         const uint64_t &lctn, const uint16_t &flgs,
         const uint64_t &ptid, const uint32_t &opcd,
         const uint64_t &vadr, const uint64_t &radr) :
-        transactionInterval(lval, rval, cpid, trid, lctn, flgs)
+        transactionInterval(lval, rval, cpid, trid, dispid, lctn, flgs)
         {
             parent_ID = ptid;
             operation_Code = opcd;
@@ -82,11 +83,11 @@ public:
 
     // Constructor for memoryoperation_t
     transactionInterval( const Dat_t &lval, const Dat_t &rval,
-        const uint16_t &cpid, const uint64_t &trid,
+        const uint16_t &cpid, const uint64_t &trid, const uint64_t &dispid,
         const uint64_t &lctn, const uint16_t &flgs,
         const uint64_t &ptid, const uint64_t &vadr,
         const uint64_t &radr) :
-        transactionInterval(lval, rval, cpid, trid, lctn, flgs)
+        transactionInterval(lval, rval, cpid, trid, dispid, lctn, flgs)
         {
             parent_ID = ptid;
             virtual_ADR = vadr;
@@ -96,7 +97,7 @@ public:
 
     // Constructor for pair_t
     transactionInterval(const Dat_t& lval, const Dat_t& rval,
-        const uint16_t& cpid, const uint64_t& trid,
+        const uint16_t& cpid, const uint64_t& trid, const uint64_t& dispid,
         const uint64_t& lctn, const uint16_t& flgs,
         const uint64_t& ptid, const uint16_t& lngt,
         const uint16_t pair_id, const std::vector<uint16_t>& sz,
@@ -104,7 +105,7 @@ public:
         const std::vector<std::string>& nams,
         const std::vector<std::string>& str,
         const std::vector<std::string>& del) :
-        transactionInterval(lval, rval, cpid, trid, lctn, flgs) {
+        transactionInterval(lval, rval, cpid, trid, dispid, lctn, flgs) {
         sparta_assert(time_Start_ <= time_End_);
         parent_ID = ptid;
         length = lngt;
@@ -118,24 +119,25 @@ public:
 
     // Copy Constructor
     transactionInterval( const transactionInterval<Dat_t>& rhp ) :
-        time_Start_(rhp.time_Start_),
-        time_End_(rhp.time_End_),
+        time_Start_      (rhp.time_Start_),
+        time_End_        (rhp.time_End_),
         control_ProcessID(rhp.control_ProcessID),
-        transaction_ID(rhp.transaction_ID),
-        location_ID(rhp.location_ID),
-        flags(rhp.flags),
-        parent_ID(rhp.parent_ID),
-        operation_Code(rhp.operation_Code),
-        virtual_ADR(rhp.virtual_ADR),
-        real_ADR(rhp.real_ADR),
-        length(rhp.length),
-        annt(rhp.annt),
-        pairId(rhp.pairId),
-        sizeOfVector(rhp.sizeOfVector),
-        valueVector(rhp.valueVector),
-        nameVector(rhp.nameVector),
-        stringVector(rhp.stringVector),
-        delimVector(rhp.delimVector)
+        transaction_ID   (rhp.transaction_ID),
+        display_ID       (rhp.display_ID),
+        location_ID      (rhp.location_ID),
+        flags            (rhp.flags),
+        parent_ID        (rhp.parent_ID),
+        operation_Code   (rhp.operation_Code),
+        virtual_ADR      (rhp.virtual_ADR),
+        real_ADR         (rhp.real_ADR),
+        length           (rhp.length),
+        annt             (rhp.annt),
+        pairId           (rhp.pairId),
+        sizeOfVector     (rhp.sizeOfVector),
+        valueVector      (rhp.valueVector),
+        nameVector       (rhp.nameVector),
+        stringVector     (rhp.stringVector),
+        delimVector      (rhp.delimVector)
         {
             if(rhp.annt){
                 assert(length > 0);
