@@ -1,6 +1,6 @@
 project(Staticinit_test)
 
-add_executable(StaticInit_test StaticInit_test.cpp)
+sparta_add_test_executable(StaticInit_test StaticInit_test.cpp)
 
 include(../TestingMacros.cmake)
 

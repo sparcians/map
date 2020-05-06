@@ -1,6 +1,6 @@
 project(Vpt_test)
 
-add_executable(VPT_test VPT_test.cpp)
+sparta_add_test_executable(VPT_test VPT_test.cpp)
 
 include(../TestingMacros.cmake)
 # We need to copy the tile to the build directory.

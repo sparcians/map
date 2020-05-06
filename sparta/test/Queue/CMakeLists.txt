@@ -1,6 +1,6 @@
 project(Queue_test)
 
-add_executable(Queue_test Queue_test.cpp)
+sparta_add_test_executable(Queue_test Queue_test.cpp)
 
 include(../TestingMacros.cmake)
 

@@ -1,11 +1,11 @@
-project(Argos_test)
+project(Argos_dumper)
 
 # Enable testing
 enable_testing ()
 
-add_executable(Argos_test ArgosCollection_test.cpp)
-add_test (NAME Argos_test_RUN COMMAND Argos_test)
+add_executable(Argos_dumper ArgosCollection_test.cpp)
+add_test (NAME Argos_dumper_RUN COMMAND Argos_dumper)
 
-target_link_libraries (Argos_test ${Sparta_LIBS})
+target_link_libraries (Argos_dumper ${Sparta_LIBS})
 
 add_subdirectory(DatabaseDump)

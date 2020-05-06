@@ -1,6 +1,6 @@
 project(Tag_test)
 
-add_executable(Tag_test Tag_main.cpp)
+sparta_add_test_executable(Tag_test Tag_main.cpp)
 
 include(../TestingMacros.cmake)
 

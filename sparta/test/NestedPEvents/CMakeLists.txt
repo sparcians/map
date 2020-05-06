@@ -1,6 +1,6 @@
 project(NestedPeventhelper)
 
-add_executable(NestedPEventHelper NestedPEventHelper_test.cpp)
+sparta_add_test_executable(NestedPEventHelper NestedPEventHelper_test.cpp)
 
 include(../TestingMacros.cmake)
 

@@ -16,6 +16,7 @@
 #include "sparta/events/Precedence.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 #include "sparta/utils/MetaStructs.hpp"
+#include "sparta/events/GlobalOrderingPoint.hpp"
 
 TEST_INIT;
 
@@ -128,11 +129,12 @@ int main()
 
     sparta::RootTreeNode rtn;
     sparta::EventSet event_set(&rtn);
+    rtn.setClock(&clk);
     event_set.setClock(&clk);
     EventHandler ev_handler;
 
-    sparta::Vertex gop("test_gop", &scheduler);
-    sparta::Vertex gop2("test_gop", &scheduler);
+    sparta::GlobalOrderingPoint gop (&rtn, "test_gop");
+    sparta::GlobalOrderingPoint gop2(&rtn, "test_gop2");
 
     sparta::PayloadEvent<uint32_t>
         pld_data_event(&event_set, "good_event",

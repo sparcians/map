@@ -1,6 +1,6 @@
 project(Histogram_test)
 
-add_executable(Histogram_test Histogram_test.cpp)
+sparta_add_test_executable(Histogram_test Histogram_test.cpp)
 
 include(../TestingMacros.cmake)
 

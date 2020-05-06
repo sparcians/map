@@ -26,7 +26,6 @@ function (sparta_fully_named_test name target run_valgrind)
           set_tests_properties (valgrind_${name} PROPERTIES LABELS ${VALGRIND_TEST_LABEL})
     endif ()
   endif ()
-  target_link_libraries (${target} ${Sparta_LIBS})
 endfunction (sparta_fully_named_test)
 
 # Tell sparta to run the following target with the following name.
@@ -61,3 +60,12 @@ macro (sparta_recursive_copy build_target cp_file)
     add_custom_command (TARGET ${build_target} PRE_BUILD
       COMMAND cp -r ${CMAKE_CURRENT_SOURCE_DIR}/${cp_file} ${CMAKE_CURRENT_BINARY_DIR}/)
 endmacro (sparta_recursive_copy)
+
+#
+# Create a sparta test executable -- this is where the linking
+# libraries for all of the test are defined.
+#
+macro (sparta_add_test_executable target)
+  add_executable (${target} ${ARGN})
+  target_link_libraries(${target} ${Sparta_LIBS})
+endmacro (sparta_add_test_executable)

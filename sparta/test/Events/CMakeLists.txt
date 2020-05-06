@@ -2,11 +2,11 @@ project(Events_test)
 
 include(../TestingMacros.cmake)
 
-add_executable(Events_test Events.cpp)
-add_executable(AsyncEvent_test AsyncEvent.cpp)
-add_executable(GlobalEvent_test GlobalEvent_test.cpp)
-add_executable(SingleCycleUniqueEvent_test SingleCycleUniqueEvent_test.cpp)
-add_executable(EventsPerfTest_test EventsPerfTest.cpp)
+sparta_add_test_executable(Events_test Events.cpp)
+sparta_add_test_executable(AsyncEvent_test AsyncEvent.cpp)
+sparta_add_test_executable(GlobalEvent_test GlobalEvent_test.cpp)
+sparta_add_test_executable(SingleCycleUniqueEvent_test SingleCycleUniqueEvent_test.cpp)
+sparta_add_test_executable(EventsPerfTest_test EventsPerfTest.cpp)
 
 sparta_test(Events_test Events_test_RUN)
 sparta_test(AsyncEvent_test AsyncEvent_test_RUN)

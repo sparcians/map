@@ -1,6 +1,6 @@
 project(Methoddelegate_test)
 
-add_executable(MethodDelegate_test main.cpp)
+sparta_add_test_executable(MethodDelegate_test main.cpp)
 
 include(../TestingMacros.cmake)
 

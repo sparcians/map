@@ -1,6 +1,6 @@
 project(SharedData)
 
-add_executable(SharedData_test SharedData_test.cpp)
+sparta_add_test_executable(SharedData_test SharedData_test.cpp)
 
 include(../TestingMacros.cmake)
 

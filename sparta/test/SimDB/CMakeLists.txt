@@ -1,6 +1,6 @@
 project(SimDB_test)
 
-add_executable(SimDB_test SimDB_test.cpp)
+sparta_add_test_executable(SimDB_test SimDB_test.cpp)
 
 include(../TestingMacros.cmake)
 
