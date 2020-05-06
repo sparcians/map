@@ -2690,8 +2690,9 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
                   std::sregex_token_iterator() };
 
             const ParameterTree::Node * extension_node = ptree.getRoot();
-            for (size_t path_elem_idx = 0; path_elem_idx < path_elems.size(); ++path_elem_idx) {
-                ParameterTree::Node * child_node = extension_node->getChild(path_elems[path_elem_idx]);
+            for (auto elems : path_elems)
+            {
+                ParameterTree::Node * child_node = extension_node->getChild(elems);
                 if (child_node == nullptr) {
                     extension_node = nullptr;
                     break;
@@ -2724,10 +2725,11 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
     auto resolve_named_extension_node =
         [&extension_name] (const ParameterTree::Node * node) -> const ParameterTree::Node*
         {
+            sparta_assert(node != nullptr);
+            node = node->getChild("extension");
+
             if (node != nullptr) {
-                node = node->getChild("extension");
-            }
-            if (node != nullptr) {
+                // Look for the extension name under this node
                 std::vector<const ParameterTree::Node*> children = node->getChildren();
                 for (const ParameterTree::Node * child : children) {
                     if (child->getName() == extension_name) {
@@ -2764,9 +2766,9 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
 
                 for(auto param : *(extensions_ps))
                 {
-                    auto extens_tn = extensions_pt.tryGet(param->getLocation());
+                    auto extens_tn = extension_node->getChild(param->getName());
                     if(extens_tn) {
-                        app::ParameterDefaultApplicator pa("", extens_tn->getValue());
+                        app::ParameterApplicator pa("", extens_tn->getValue());
                         pa.apply(param);
                     }
                 }
