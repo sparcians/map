@@ -1,0 +1,118 @@
+(probably stale) notes on requirements for heatmap tool which are not in the current plato
+
+
+ - Some way to annotate things with text?
+
+ - From Brad:
+ 	- New widget for "history correlation"
+ 		- Will need to store history bits!
+ 	- FFT on branch history correlation? Need to flesh out details
+
+ - Read shp geometry from trace file!
+ - Time series plot of num training events
+ - should be able to generate the individual plots we have in bp tool easily in jupyter
+
+ - High-density branch-trace view (take branch trace and plot as a timeline heatmap)
+
+ - Email chain about brad's concrete example w/ 
+  	- trc060/328/Geekbench.v5.drop12.clang7.0.2.aarch64.20190109.220_TextRender.stf.xz
+
+ - Filtere timeseries plots
+	 - Filtered plot of training event frequency (compare vs mispredict)
+	 - Filtered plot of mispredict rate (per brach)
+	 - Plot of mispredict rate with a series for EACH BRANCH!
+
+ - Time Range improvements
+ 	- TextBoxes for from, to, range
+ 	- Dropdown for selecting ticks, cyclcles (and clock), or branch index, or abitrary
+ 		- Implies data sources need to clearly define these "time" units for translation
+
+ - Widgets have notion of time and 'fixed' time. So same widget can view two areas of the results at the same time with the same "view" settings
+
+ - Fuzhou's LHP classification and analysis tool
+ 	- Replicate or integrate?
+ 	- Key points
+ 		- Characterize LHP patterns into succinct information when looking at a branch
+ 		- Show "predictable or not"
+
+ - Selecting ROW cell from branch trace table and seeing all weights that contributed to it in the selected range
+ 	- display these in tracked cells?
+ 
+ - Notion of more than one loaded data set for comparison
+ 	- Side-by side views?
+ 	- names for each
+ 	- not limited to just 2 or 3 - any number
+ 	- efficient side-by-side viewers or cluster heatmaps maybe
+ 	- global controls (or at least global synchronization)
+ 	- auto-correlation features
+ 	- "diff" heatmap showing comparison or some other arithmetic
+
+ - Brad's topoology viewer idea
+ 	- requires ghist/phist
+ 	- requires knowing hash of gist/phist
+ 	- maybe use Eval
+
+ - What-if features
+ 	- (PROBABLY NOT PRACTICAL)
+ 	- store ghist/phist
+ 		- or ability to generate them on the fly
+ 	- manipulate hashes?
+ 	- this is basically re-running the experiment though since weight tables will need to be updated from the start
+
+ - Display geometry must come from the trace file
+    - e.g. num rows, num tables, num banks, etc.
+
+ - Disasm viewer (show opcode and mnemonic)
+    - applies to profile and trace views
+
+ - Code context profile view
+ 	- Summary stats for branches in a source code viewer
+ 		- both C code (if available) and assembly
+ 		- if no C code, at least some function/call-stack annotations
+
+ - Call stack view
+    - Load up elf on server-side and determine callstack from branch trace
+    	- may require simulator to provide this
+
+ - Tool should be a base for arbitrary stats views as well
+    - time-series selection and resizing (a la Grafana)
+    - custom widgets: some specific, others general.
+    - layout w/ docking using ?
+    	- https://www.jqwidgets.com/jquery-widgets-documentation/documentation/jqxdocking/jquery-docking-getting-started.htm?search=
+
+ - Client-Server architecture
+ 	- Data loading and heavy computation on server
+ 	- Some rendering on server, some on client.
+
+ - Arbitarary strings to combine saved data into metrics/stats
+ 	- E.g. num weights correct divided by num weights incorrect
+
+ - Collapsible panels
+
+ - Rearrangable panels (to an extent)
+  	- Possibly a div-based flow
+
+ - tooltips on all controls
+
+ - Linkage of some plots to others
+ 	- there may be some "eagle's view" plots while others in "groups" should all zoom in together
+ 	- zooming in on one plot should affect some others in the same "group"
+
+ - Simple writer code block that can be integrated into any project with ease
+
+ - Workspace concept
+    - Saving views and configuration for later use and sharing
+    - Cloning of workspaces for modification
+ 	- Ability to mark interesting ranges of time on the timeline for later viewing
+
+ - Flame graphs or some other kind of navigable code context view below timeline charts
+
+ - Could reimplement pipeViewer in this tool?
+
+ - Datasources?
+  	- time series
+  	- branch traces
+  	- elf files 
+  	- study results
+  	- bt9?
+  	- pipeViewer transactiondb?

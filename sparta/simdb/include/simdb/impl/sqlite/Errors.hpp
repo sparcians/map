@@ -1,7 +1,6 @@
 // <Errors> -*- C++ -*-
 
-#ifndef __SIMDB_SQLITE_ERRORS_H__
-#define __SIMDB_SQLITE_ERRORS_H__
+#pragma once
 
 #include "simdb/Errors.hpp"
 
@@ -20,4 +19,3 @@ protected:
 
 } // namespace simdb
 
-#endif

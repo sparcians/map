@@ -5,8 +5,7 @@
  * \brief  Simple class to see where memory is being used.  Generates reports
  */
 
-#ifndef __SPARTA_MEMORY_PROFILER_H__
-#define __SPARTA_MEMORY_PROFILER_H__
+#pragma once
 
 #include <memory>
 #include <string>
@@ -53,4 +52,3 @@ private:
 
 }
 
-#endif

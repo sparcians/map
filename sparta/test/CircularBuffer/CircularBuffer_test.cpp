@@ -22,7 +22,7 @@ struct dummy_struct
     std::string s_field;
 
     dummy_struct() = default;
-    dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) : 
+    dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) :
         int16_field{int16_field},
         int32_field{int32_field},
         s_field{s_field} {}
@@ -194,6 +194,11 @@ void testForwardIterators()
     sparta::CircularBuffer<uint32_t>::iterator valid_bit = cir_buffer.begin();
     EXPECT_TRUE(valid_bit.isValid());
     EXPECT_EQUAL(*valid_bit, 0);
+
+    auto const & cbuff = cir_buffer;
+    sparta::CircularBuffer<uint32_t>::const_iterator citer = cbuff.begin();
+    EXPECT_EQUAL(*valid_bit, *citer);
+
 
     sparta::CircularBuffer<uint32_t>::iterator next_valid_it = valid_bit;
     next_valid_it++;
@@ -438,8 +443,6 @@ void testEraseInsert()
     rtn.enterTeardown();
 }
 
-// This code works with GCC v4.9 or higher
-#if SPARTA_GCC_VERSION > 40800
 void testCollection()
 {
     sparta::RootTreeNode  rtn;
@@ -454,16 +457,16 @@ void testCollection()
     // Buffer setup
     const uint32_t BUF_SIZE = 10;
     sparta::CircularBuffer<uint32_t> cir_buffer("test_circ_buffer", BUF_SIZE,
-                                              root_clk.get(), &buf10_stats);
+                                                root_clk.get(), &buf10_stats);
     cir_buffer.enableCollection(&rtn);
 
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
     sparta::collection::PipelineCollector pc("testCircBuffer", 1000000,
-                                           root_clk.get(), &rtn);
+                                             root_clk.get(), &rtn);
 
-    sparta::Scheduler::getScheduler()->finalize();
+    sched.finalize();
 
     for(uint32_t i = 0; i < BUF_SIZE/2; ++i) {
         cir_buffer.push_back(i);
@@ -486,7 +489,6 @@ void testCollection()
 
     rtn.enterTeardown();
 }
-#endif
 
 void testStatsOutput()
 {
@@ -536,6 +538,20 @@ content:
 
     rtn.enterTeardown();
 }
+struct Entry
+{
+    uint64_t aval;
+    bool bval;
+
+    explicit Entry(uint64_t v, bool b) : aval(v) , bval(b) { }
+
+    friend std::ostream& operator<<(std::ostream& o, Entry const&);
+};
+
+std::ostream& operator<<(std::ostream& o, Entry const&)
+{
+    return o;
+}
 
 void testStruct()
 {
@@ -549,17 +565,7 @@ void testStruct()
     sparta::Report r1("report 1", &rtn);
 
     sparta::StatisticSet stats(&rtn);
-    struct Entry
-    {
-        uint64_t aval;
-        bool bval;
 
-        explicit Entry(uint64_t v, bool b)
-        : aval(v)
-        , bval(b)
-        {
-        }
-    };
     sparta::CircularBuffer<Entry> b("buf_struct_test", 10,
                                      root_clk.get(), &stats);
 
@@ -585,11 +591,7 @@ int main()
     testStatsOutput();
     testStruct();
 
-    // Cannot test collection until we move to gcc4.9 or higher.  Bug
-    // in gcc -- gets confused on the const iterators
-#if SPARTA_GCC_VERSION > 40800
     testCollection();
-#endif
 
     REPORT_ERROR;
     return ERROR_CODE;

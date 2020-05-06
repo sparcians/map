@@ -1,0 +1,7 @@
+# conda env
+PATH=/sarc-c/gmod/tools/conda/gmod-1/bin/:$PATH
+PATH=/sarc-c/gmod/tools/conda/gmod-1/lib/python3.6/site-packages/django/bin/:$PATH
+
+# After sourcing, packages can be added just for a specific user:
+#   pip  install --user --trusted-host pypi.python.org  --trusted-host pypi.org --trusted-host files.pythonhosted.org -U numba
+    

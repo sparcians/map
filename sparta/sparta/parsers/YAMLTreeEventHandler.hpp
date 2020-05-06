@@ -6,8 +6,7 @@
  * \brief Tree event handler classs for yaml-cpp that maintains a stack of a tree
  */
 
-#ifndef __YAML_TREE_EVENT_HANDLER_H__
-#define __YAML_TREE_EVENT_HANDLER_H__
+#pragma once
 
 #include <yaml-cpp/anchor.h>
 #include <yaml-cpp/emitterstyle.h>
@@ -737,5 +736,3 @@ private:
 
 }; // namespace sparta
 
-// __YAML_TREE_EVENT_HANDLER_H__
-#endif

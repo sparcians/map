@@ -2,8 +2,7 @@
 
 
 
-#ifndef __DECODE_H__
-#define __DECODE_H__
+#pragma once
 
 #include <string>
 #include "sparta/ports/DataPort.hpp"
@@ -84,5 +83,3 @@ namespace core_example
         const uint32_t num_to_decode_;
     };
 }
-//__DECODE_H__
-#endif

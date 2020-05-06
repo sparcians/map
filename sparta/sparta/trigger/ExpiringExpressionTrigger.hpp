@@ -5,8 +5,7 @@
  *
  */
 
-#ifndef __SPARTA_EXPIRING_EXPRESSION_TRIGGER_H__
-#define __SPARTA_EXPIRING_EXPRESSION_TRIGGER_H__
+#pragma once
 
 #include "sparta/trigger/ExpressionTrigger.hpp"
 
@@ -111,4 +110,3 @@ private:
 } // namespace trigger
 } // namespace sparta
 
-#endif

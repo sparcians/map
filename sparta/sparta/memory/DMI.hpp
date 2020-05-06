@@ -1,6 +1,5 @@
 
-#ifndef __SPARTA_DMI_H__
-#define __SPARTA_DMI_H__
+#pragma once
 
 #include <vector>
 #include <functional>
@@ -133,4 +132,3 @@ namespace sparta {
 
     } // namespace memory
 } // namespace sparta
-#endif //__SPARTA_DMI_H__

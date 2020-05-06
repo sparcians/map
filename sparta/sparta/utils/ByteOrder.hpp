@@ -1,4 +1,4 @@
-// <ByteOrder> -*- C++ -*-
+// <ByteOrder.hpp> -*- C++ -*-
 
 /*!
  * \file ByteOrder.hpp
@@ -7,8 +7,7 @@
  * Contains byte_swap methods for a number of types.
  */
 
-#ifndef __BYTE_ORDER_H__
-#define __BYTE_ORDER_H__
+#pragma once
 
 #include <iostream>
 
@@ -155,6 +154,3 @@ namespace sparta
     }
 
 } // namespace sparta
-
-// __BYTE_ORDER_H__
-#endif

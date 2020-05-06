@@ -8,8 +8,7 @@
  * Extends c++11+'s trait types
  */
 
-#ifndef __TRAITS_H__
-#define __TRAITS_H__
+#pragma once
 
 #include <type_traits>
 
@@ -83,4 +82,3 @@ getAsPointer(const value_type & obj)
 //     return obj;
 // }
 
-#endif

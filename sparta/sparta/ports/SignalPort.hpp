@@ -6,8 +6,7 @@
  * \brief  File that defines the SignalInPort
  */
 
-#ifndef __SIGNAL_PORT_H__
-#define __SIGNAL_PORT_H__
+#pragma once
 #include <set>
 #include <list>
 #include <unordered_map>
@@ -359,5 +358,3 @@ namespace sparta
 
 
 
-// __SIGNAL_PORT_H__
-#endif

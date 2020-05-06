@@ -8,8 +8,7 @@
  *\brief define a CollectableTreeNode type TreeNode.
  */
 
-#ifndef __SPARTA_COLLECTABLE_TREE_NODE_H__
-#define __SPARTA_COLLECTABLE_TREE_NODE_H__
+#pragma once
 
 #include <string>
 #include <inttypes.h>
@@ -134,5 +133,3 @@ namespace collection
 }
 }
 
- //__COLLECTABLE_TREE_NODE_H__
- #endif

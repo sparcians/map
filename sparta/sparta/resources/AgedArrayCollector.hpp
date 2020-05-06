@@ -4,8 +4,7 @@
  * \file ArrayCollector.hpp
  * \brief Class used by the sparta::Array class
  */
-#ifndef __SPARTA_AGED_ARRAY_COLLECTOR_H__
-#define __SPARTA_AGED_ARRAY_COLLECTOR_H__
+#pragma once
 
 #include <inttypes.h>
 
@@ -70,5 +69,3 @@ namespace collection
 }//namespace sparta
 
 
-//__SPARTA_AGED_ARRAY_COLLECTOR_H__
-#endif

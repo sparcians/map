@@ -1,7 +1,6 @@
 // <TimeManager> -*- C++ -*-
 
-#ifndef __TIME_MANAGER_H__
-#define __TIME_MANAGER_H__
+#pragma once
 
 #include <string>
 #include <sys/time.h>
@@ -97,5 +96,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __STRING_MANAGER_H__
-#endif

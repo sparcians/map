@@ -6,8 +6,7 @@
  * \see SpartaStaticInitializer
  */
 
-#ifndef __STATIC_INIT_H__
-#define __STATIC_INIT_H__
+#pragma once
 
 #include <iostream>
 
@@ -42,4 +41,3 @@ namespace sparta
 
 } // namespace sparta
 
-#endif // #ifdef __STATIC_INIT_H__

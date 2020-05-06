@@ -1,7 +1,6 @@
 // <VirtualGlobalTreeNode> -*- C++ -*-
 
-#ifndef __VIRTUAL_GLOBAL_TREE_NODE_H__
-#define __VIRTUAL_GLOBAL_TREE_NODE_H__
+#pragma once
 
 #include <regex>
 #include <string>
@@ -234,5 +233,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __VIRTUAL_GLOBAL_TREE_NODE_H__
-#endif

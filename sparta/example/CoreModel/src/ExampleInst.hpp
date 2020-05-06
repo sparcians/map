@@ -1,8 +1,7 @@
 // <ExampleInst.h> -*- C++ -*-
 
 
-#ifndef __EXAMPLE_INST_H__
-#define __EXAMPLE_INST_H__
+#pragma once
 
 #include "sparta/decode/DecoderBase.hpp"
 #include "sparta/memory/AddressTypes.hpp"
@@ -249,4 +248,3 @@ namespace core_example
                               SPARTA_ADDPAIR("vaddr", &ExampleInst::getVAdr, std::ios::hex));
     };
 }
-#endif

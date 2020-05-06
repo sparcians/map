@@ -1,7 +1,6 @@
 // <ReportHeader> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTICS_DATABASE_REPORT_HEADER_H__
-#define __SPARTA_STATISTICS_DATABASE_REPORT_HEADER_H__
+#pragma once
 
 #include <cstdint>
 #include <map>
@@ -115,4 +114,3 @@ private:
 } // namespace db
 } // namespace sparta
 
-#endif

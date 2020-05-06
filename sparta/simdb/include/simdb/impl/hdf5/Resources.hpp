@@ -1,7 +1,6 @@
 // <Resources> -*- C++ -*-
 
-#ifndef __SIMDB_HDF5_RESOURCES_H__
-#define __SIMDB_HDF5_RESOURCES_H__
+#pragma once
 
 #include "hdf5.h"
 
@@ -187,4 +186,3 @@ typedef H5Resource<H5PDeleter> H5PResource;
 
 }
 
-#endif

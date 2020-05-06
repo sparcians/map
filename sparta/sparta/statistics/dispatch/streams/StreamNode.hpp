@@ -1,7 +1,6 @@
 // <StreamNode> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTICS_STREAM_NODE_H__
-#define __SPARTA_STATISTICS_STREAM_NODE_H__
+#pragma once
 
 #include "sparta/report/Report.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
@@ -398,4 +397,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif

@@ -4,8 +4,7 @@
  * \brief  File that contains some exception types related to memory interfaces
  */
 
-#ifndef __MEMORY_EXCEPTIONS_H__
-#define __MEMORY_EXCEPTIONS_H__
+#pragma once
 
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/memory/AddressTypes.hpp"
@@ -107,4 +106,3 @@ namespace sparta
     }; // namespace memory
 }; // namespace sparta
 
-#endif // __MEMORY_EXCEPTIONS_H__

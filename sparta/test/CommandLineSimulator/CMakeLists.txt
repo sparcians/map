@@ -1,6 +1,6 @@
 project(CommandLineSimulator_test)
 
-add_executable(CommandLineSimulator_test CommandLineSimulator_test.cpp)
+sparta_add_test_executable(CommandLineSimulator_test CommandLineSimulator_test.cpp)
 
 include(../TestingMacros.cmake)
 

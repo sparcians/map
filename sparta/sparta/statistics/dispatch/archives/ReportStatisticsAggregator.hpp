@@ -1,7 +1,6 @@
 // <ReportStatisticsAggregator> -*- C++ -*-
 
-#ifndef __SPARTA_REPORT_STATISTICS_AGGREGATOR_H__
-#define __SPARTA_REPORT_STATISTICS_AGGREGATOR_H__
+#pragma once
 
 #include "sparta/statistics/dispatch/archives/ArchiveNode.hpp"
 #include "sparta/statistics/dispatch/archives/RootArchiveNode.hpp"
@@ -76,4 +75,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif

@@ -1,6 +1,5 @@
 
-#ifndef _TREE_PLRU_REPLACEMENT_H_
-#define _TREE_PLRU_REPLACEMENT_H_
+#pragma once
 
 #include <bitset>
 #include <iostream>
@@ -150,4 +149,3 @@ namespace sparta
     }; // namespace cache
 
 }; // namespace sparta
-#endif  // _TREE_PLRU_REPLACEMENT_H_

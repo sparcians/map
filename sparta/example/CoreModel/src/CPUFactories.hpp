@@ -1,8 +1,7 @@
 // <CPUFactories.h> -*- C++ -*-
 
 
-#ifndef __CPU_FACTORIES_H__
-#define __CPU_FACTORIES_H__
+#pragma once
 
 #include "sparta/simulation/ResourceFactory.hpp"
 #include "Core.hpp"
@@ -85,4 +84,3 @@ struct CPUFactories{
                           core_example::Preloader::PreloaderParameterSet> preloader_rf;
 }; // struct CPUFactories
 }  // namespace core_example
-#endif

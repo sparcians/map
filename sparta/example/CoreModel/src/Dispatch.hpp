@@ -1,8 +1,7 @@
 // <Dispatch.h> -*- C++ -*-
 
 
-#ifndef __DISPATCH_H__
-#define __DISPATCH_H__
+#pragma once
 
 #include <string>
 #include <array>
@@ -224,5 +223,3 @@ namespace core_example
         };
     };
 }
-//__DISPATCH_H__
-#endif

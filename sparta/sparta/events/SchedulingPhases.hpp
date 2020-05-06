@@ -7,8 +7,7 @@
  * \brief File that defines the phases used in simulation.
  */
 
-#ifndef __SCHEDULING_PHASES_H__
-#define __SCHEDULING_PHASES_H__
+#pragma once
 
 #include <cinttypes>
 #include <iostream>
@@ -117,4 +116,3 @@ namespace sparta
 
 }
 
-#endif

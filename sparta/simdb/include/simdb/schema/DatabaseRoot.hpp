@@ -1,7 +1,6 @@
 // <DatabaseRoot> -*- C++ -*-
 
-#ifndef __SIMDB_ROOT_DATABASE_H__
-#define __SIMDB_ROOT_DATABASE_H__
+#pragma once
 
 #include "simdb/ObjectManager.hpp"
 #include "simdb/schema/Schema.hpp"
@@ -649,4 +648,3 @@ inline void DatabaseNamespace::appendSchemaToConnectionIfOpen_(
 
 }
 
-#endif

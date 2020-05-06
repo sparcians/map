@@ -1,7 +1,6 @@
 // <ArchiveSink> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTICS_ARCHIVE_SINK_H__
-#define __SPARTA_STATISTICS_ARCHIVE_SINK_H__
+#pragma once
 
 #include "sparta/statistics/dispatch/archives/ArchiveStream.hpp"
 
@@ -45,4 +44,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif

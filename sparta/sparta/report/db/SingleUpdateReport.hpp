@@ -1,7 +1,6 @@
 // <SingleUpdateReport> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTICS_DATABASE_SINGLE_UPDATE_REPORT_H__
-#define __SPARTA_STATISTICS_DATABASE_SINGLE_UPDATE_REPORT_H__
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -78,4 +77,3 @@ private:
 } // namespace db
 } // namespace sparta
 
-#endif

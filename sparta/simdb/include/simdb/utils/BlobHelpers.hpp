@@ -1,7 +1,6 @@
 // <BlobHelpers> -*- C++ -*-
 
-#ifndef __SIMDB_BLOB_HELPERS_H__
-#define __SIMDB_BLOB_HELPERS_H__
+#pragma once
 
 #include <vector>
 
@@ -83,4 +82,3 @@ private:
   
 } // namespace simdb
 
-#endif

@@ -1,7 +1,6 @@
 // <NotificationSource> -*- C++ -*-
 
-#ifndef __NOTIFICATION_SOURCE_H__
-#define __NOTIFICATION_SOURCE_H__
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -1232,5 +1231,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __NOTIFICATION_SOURCE_H__
-#endif

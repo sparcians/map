@@ -68,8 +68,7 @@
  *    was sent.
  */
 
-#ifndef __SPARTA_SYNC_PORT_H__
-#define __SPARTA_SYNC_PORT_H__
+#pragma once
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/utils/DataContainer.hpp"
@@ -961,4 +960,3 @@ namespace sparta
     };
 }
 
-#endif

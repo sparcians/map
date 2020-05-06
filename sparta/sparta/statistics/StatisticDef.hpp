@@ -7,8 +7,7 @@
  * computed)
  */
 
-#ifndef __STATISTIC_DEF_H__
-#define __STATISTIC_DEF_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -706,5 +705,3 @@ private:
 
 } // namespace sparta
 
-// __STATISTIC_DEF_H__
-#endif

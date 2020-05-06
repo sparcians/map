@@ -7,8 +7,7 @@
  *
  */
 
-#ifndef __QUEUE_EXP_H__
-#define __QUEUE_EXP_H__
+#pragma once
 
 #include <inttypes.h>
 #include <vector>
@@ -735,5 +734,3 @@ namespace sparta
     };
 
 }
-// __QUEUE__H__
-#endif

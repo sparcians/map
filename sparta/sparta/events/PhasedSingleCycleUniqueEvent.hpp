@@ -7,8 +7,7 @@
  * \brief  File that defines the PhasedSingleCycleUniqueEvent class
  */
 
-#ifndef __PHASED_SINGLE_CYCLE_UNIQUE_EVENT_H__
-#define __PHASED_SINGLE_CYCLE_UNIQUE_EVENT_H__
+#pragma once
 
 #include <array>
 #include <memory>
@@ -155,6 +154,19 @@ namespace sparta
             }
         }
 
+        /**
+         * \brief Have this SingleCycleUniqueEvent precede another
+         * \param consumer The Scheduleable to follow this Scheduleable
+         * \param reason The reason for the precedence
+         *
+         *  \a this will preceed, or come before, the consumer
+         *
+         */
+        template<class ScheduleableT>
+        void precedes(ScheduleableT & consumer, const std::string & reason = "") {
+            single_cycle_event_scheduleable_.precedes(consumer, reason);
+        }
+
 #ifndef DO_NOT_DOCUMENT
         // Used by EventNode and auto-precedence.  Return the
         // Scheduleable (this)
@@ -189,7 +201,3 @@ namespace sparta
     };
 
 }
-
-
-// __UNIQUE_EVENT_H__
-#endif

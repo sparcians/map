@@ -7,8 +7,7 @@
  * collector.
  */
 
-#ifndef __NESTED_PEVENT_KEY_PAIR_COLLECTOR__
-#define __NESTED_PEVENT_KEY_PAIR_COLLECTOR__
+#pragma once
 
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/pairs/SpartaKeyPairs.hpp"
@@ -225,4 +224,3 @@ namespace pevents {
 } // namespace pevents
 } // namespace sparta
 
-#endif // __NESTED_PEVENT_KEY_PAIR_COLLECTOR__

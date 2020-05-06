@@ -1,7 +1,6 @@
 // <RootArchiveNode> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTICS_ROOT_ARCHIVE_NODE_H__
-#define __SPARTA_STATISTICS_ROOT_ARCHIVE_NODE_H__
+#pragma once
 
 #include "sparta/statistics/dispatch/archives/ArchiveNode.hpp"
 #include "sparta/app/ReportDescriptor.hpp"
@@ -191,4 +190,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif

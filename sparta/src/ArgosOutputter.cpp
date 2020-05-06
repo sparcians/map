@@ -10,14 +10,14 @@
 #include <iostream>
 #include <string>
 
-#include "sparta/argos/Outputter.hpp"
+#include "sparta/pipeViewer/Outputter.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/SpartaException.hpp"
-#include "sparta/argos/transaction_structures.hpp"
+#include "sparta/pipeViewer/transaction_structures.hpp"
 
 // #define PIPELINE_DBG 1
 namespace sparta{
-    namespace argos{
+    namespace pipeViewer{
         constexpr uint32_t Outputter::FILE_VERSION;
         Outputter::Outputter(const std::string& filepath, const uint64_t interval) :
             record_file_(),
@@ -51,7 +51,7 @@ namespace sparta{
             static_assert(sizeof(transaction_t) == 40,
                           "size of a transaction changed. May want to increase file format version. "
                           "If no changes were made to SPARTA, compiler is generating a structure "
-                          "layout that is incompatible with Argos");
+                          "layout that is incompatible with pipeViewer");
             writeData_(index_file_, header.c_str(), header.size());
             // Notice that we write the interval offset first.
             writeData_(index_file_,reinterpret_cast<const char *>(&interval), sizeof(uint64_t));
@@ -77,5 +77,5 @@ namespace sparta{
             writeData_(index_file_, reinterpret_cast<const char *>(&current_record_pos), sizeof(uint64_t));
             index_file_.flush();
         }
-    }//namespace argos
+    }//namespace pipeViewer
 }//namespace sparta

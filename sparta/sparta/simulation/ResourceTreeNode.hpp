@@ -1,7 +1,6 @@
 // <ResourceTreeNode> -*- C++ -*-
 
-#ifndef __RESOURCE_TREE_NODE_H__
-#define __RESOURCE_TREE_NODE_H__
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -399,5 +398,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __RESOURCE_TREE_NODE_H__
-#endif

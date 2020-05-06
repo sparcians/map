@@ -7,8 +7,7 @@
  *
  */
 
-#ifndef __BUFFER_EXP_H__
-#define __BUFFER_EXP_H__
+#pragma once
 
 #include <inttypes.h>
 
@@ -679,6 +678,15 @@ namespace sparta
         }
 
         /**
+         * \brief Query if the buffer is empty
+         *
+         */
+        bool empty() const
+        {
+            return num_valid_ == 0;
+        }
+
+        /**
          * \brief Request that this queue begin collecting its
          *        contents for pipeline collection.
          * \param parent A pointer to the parent treenode for which to add
@@ -1057,5 +1065,3 @@ namespace sparta
     }
 }
 
-// __BUFFER__H__
-#endif

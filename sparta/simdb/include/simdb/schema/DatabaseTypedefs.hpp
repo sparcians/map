@@ -1,7 +1,6 @@
 // <DatabaseTypedefs> -*- C++ -*-
 
-#ifndef __SIMDB_GENERAL_TYPEDEFS_H__
-#define __SIMDB_GENERAL_TYPEDEFS_H__
+#pragma once
 
 namespace simdb {
 
@@ -10,4 +9,3 @@ typedef int DatabaseID;
 
 }
 
-#endif

@@ -8,8 +8,7 @@
  *
  */
 
-#ifndef __PIPE_EXP_HPP__
-#define __PIPE_EXP_HPP__
+#pragma once
 
 #include <cinttypes>
 #include <memory>
@@ -567,4 +566,3 @@ private:
 
 }
 
-#endif

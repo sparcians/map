@@ -1,6 +1,5 @@
 
-#ifndef __MSS_H__
-#define __MSS_H__
+#pragma once
 
 #include "sparta/ports/PortSet.hpp"
 #include "sparta/ports/SignalPort.hpp"
@@ -100,4 +99,3 @@ namespace core_example
     };
 }
 
-#endif

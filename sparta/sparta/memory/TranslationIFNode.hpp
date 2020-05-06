@@ -5,8 +5,7 @@
  * \brief  Contains class for publishing a TranslationIF as a TreeNode
  */
 
-#ifndef __TRANSLATION_INTERFACE_NODE_H__
-#define __TRANSLATION_INTERFACE_NODE_H__
+#pragma once
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/memory/TranslationIFNode.hpp"
@@ -126,4 +125,3 @@ namespace sparta
     } // namespace memory
 } // namespace sparta
 
-#endif // __TRANSLATION_IF_NODE_H__

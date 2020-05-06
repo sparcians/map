@@ -1,7 +1,6 @@
 // <StatisticsHierRootNodes> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTICS_HIER_ROOT_NODES_H__
-#define __SPARTA_STATISTICS_HIER_ROOT_NODES_H__
+#pragma once
 
 #include <memory>
 #include <string>
@@ -108,4 +107,3 @@ private:
 } // namespace sparta
 } // namespace statistics
 
-#endif

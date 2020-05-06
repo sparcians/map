@@ -1,6 +1,6 @@
 project(HierarchicalBuilding_test)
 
-add_executable(HierarchicalBuilding_test HierarchicalBuilding_test.cpp)
+sparta_add_test_executable(HierarchicalBuilding_test HierarchicalBuilding_test.cpp)
 
 include(../TestingMacros.cmake)
 

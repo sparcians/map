@@ -9,8 +9,7 @@
  * instances
  */
 
-#ifndef __GLOBAL_TREE_NODE_H__
-#define __GLOBAL_TREE_NODE_H__
+#pragma once
 
 #include "sparta/simulation/TreeNode.hpp"
 
@@ -108,5 +107,3 @@ namespace sparta
 #define SPARTA_GLOBAL_TREENODE_BODY                               \
     constexpr char sparta::GlobalTreeNode::GLOBAL_NODE_NAME[];
 
-// __GLOBAL_TREE_NODE_H__
-#endif

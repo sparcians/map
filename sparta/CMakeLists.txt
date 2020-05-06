@@ -136,22 +136,22 @@ if (CCACHE_PROGRAM)
 endif ()
 
 # -Wpedantic
-set (CMAKE_CXX_FLAGS "${OPT_FLAGS} \
- -DSPARTA_VERSION='\"${GIT_REPO_VERSION}\"' -g -Werror -fPIC \
- -Wall -Wextra -Winline -Winit-self -Wno-unused-function \
- -Wuninitialized -Wno-sequence-point -Wno-inline -Wno-unknown-pragmas \
- -Woverloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers")
+add_definitions(-DSPARTA_VERSION=\"${GIT_REPO_VERSION}\")
+add_compile_options(-g -Werror -fPIC
+  -Wall -Wextra -Winline -Winit-self -Wno-unused-function
+  -Wuninitialized -Wno-sequence-point -Wno-inline -Wno-unknown-pragmas
+  -Woverloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers)
 
 if (ENABLE_SANITIZERS)
     message ("-- Building with address and undefined behavior sanitizers")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
+    add_compile_options(-fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined)
     set (CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
 endif ()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # using Clang
   # -stdlib=libc++
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpedantic -Wno-gnu-zero-variadic-macro-arguments ")
+  add_compile_options(-Wpedantic -Wno-gnu-zero-variadic-macro-arguments)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   # using GCC
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
@@ -186,4 +186,3 @@ add_subdirectory (example EXCLUDE_FROM_ALL)
 #
 install(DIRECTORY sparta/ DESTINATION include/sparta)
 install(FILES ${SPARTA_STATIC_LIBS} DESTINATION lib)
-

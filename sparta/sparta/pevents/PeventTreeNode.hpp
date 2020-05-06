@@ -1,5 +1,4 @@
-#ifndef __PEVENT_KEY_PAIR_TREENODE__
-#define __PEVENT_KEY_PAIR_TREENODE__
+#pragma once
 
 #include "sparta/pairs/SpartaKeyPairs.hpp"
 #include "sparta/pairs/PairCollectorTreeNode.hpp"
@@ -28,4 +27,3 @@ namespace pevents{
 } // namespace sparta
 
 
-#endif // __PEVENT_KEY_PAIR_TREENODE__

@@ -1,7 +1,6 @@
 // <RegisterSet> -*- C++ -*-
 
-#ifndef __REGISTER_SET_H__
-#define __REGISTER_SET_H__
+#pragma once
 
 #include <cstdint>
 #include <iostream>
@@ -897,7 +896,7 @@ private:
     {
         sparta_assert(false == adata_.isLaidOut());// Cannot addRegister_ after the ArchData has been layed out
         sparta_assert(reg_proxies_.size() == 0); // Cannot addRegister_ once a proxy has been added
-        auto r = new RegisterT(nullptr, rdef, &adata_);
+        auto r = new RegisterT(nullptr, *rdef, &adata_);
 
         // Attempt to insert the register into the bank table
         banks_.addRegister(r); // Throws if unable to add
@@ -1118,5 +1117,3 @@ inline std::ostream &operator<<(std::ostream &o, const sparta::RegisterSet *rs)
     return o;
 }
 
-// __REGISTER_SET_H__
-#endif

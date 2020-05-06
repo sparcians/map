@@ -8,8 +8,7 @@
  *
  */
 
-#ifndef __EXECUTE_H__
-#define __EXECUTE_H__
+#pragma once
 
 #include "sparta/ports/PortSet.hpp"
 #include "sparta/ports/SignalPort.hpp"
@@ -121,5 +120,3 @@ namespace core_example
     };
 } // namespace core_example
 
-//__EXECUTE_H__
-#endif

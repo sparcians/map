@@ -1,6 +1,5 @@
 
-#ifndef __BIU_H__
-#define __BIU_H__
+#pragma once
 
 #include "sparta/ports/PortSet.hpp"
 #include "sparta/ports/SignalPort.hpp"
@@ -129,4 +128,3 @@ namespace core_example
     };
 }
 
-#endif

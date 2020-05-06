@@ -1,7 +1,6 @@
-// <ParameterTree> -*- C++ -*-
+// <ParameterTree.hpp> -*- C++ -*-
 
-#ifndef __PARAMETER_TREE_H__
-#define __PARAMETER_TREE_H__
+#pragma once
 
 #include <vector>
 #include <sstream>
@@ -1300,6 +1299,3 @@ namespace sparta
     }
 
 } // namespace sparta
-
-// __PARAMETER_TREE_H__
-#endif

@@ -1,7 +1,6 @@
 // <SimDBTester> -*- C++ -*-
 
-#ifndef __SIMDB_TESTER_H__
-#define __SIMDB_TESTER_H__
+#pragma once
 
 /**
  * \brief SimDBTester implementation. Utility class and
@@ -861,5 +860,3 @@ namespace simdb
     }
 }
 
-// __SIMDB_TESTER_H__
-#endif

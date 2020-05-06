@@ -1,0 +1,274 @@
+<html>
+<head>
+  <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.css">
+
+  <!-- too new for slicktable -->
+  <script src="jquery-3.4.1.min.js"></script>
+
+  <script src="jquery-ui-1.12.1.custom/jquery-ui.js"></script>
+
+  <link rel="stylesheet" href="ion-rangeslider/2.3.0/css/ion.rangeSlider.min.css"/>    
+  <script src="ion-rangeslider/2.3.0/js/ion.rangeSlider.min.js"></script>
+
+  <link rel="stylesheet" href="jquery.bootgrid-1.3.1/jquery.bootgrid.min.css"/>    
+  <script src="jquery.bootgrid-1.3.1/jquery.bootgrid.min.js"></script>
+  <script src="jquery.bootgrid-1.3.1/jquery.bootgrid.fa.min.js"></script>
+
+  <link rel="stylesheet" href="jspkg-archive/jquery.dynatable.css"/>    
+  <script src="jspkg-archive/jquery.dynatable.js"></script>
+
+  <!-- incompatible w/ jquery 3+-->
+  <!--<script src="jquery.event.drag-2.2/jquery.event.drag-2.2.js"></script>-->
+  <!--<script src="jquery.event.drag-2.2/jquery.event.drag.live-2.2.js"></script>-->
+  <!--<script src="jquery.event.drop-2.2/jquery.event.drop-2.2.js"></script>-->
+  <!--<script src="jquery.event.drop-2.2/jquery.event.drop.live-2.2.js"></script>-->
+
+  <!--<link rel="stylesheet" href="SlickGrid-master/slick.grid.css" type="text/css"/>-->
+  <!-- missing: <link rel="stylesheet" href="SlickGrid-master/css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css"/>-->
+  <!--<link rel="stylesheet" href="SlickGrid-master/examples/examples.css" type="text/css"/>--?
+
+
+<!--
+  <script src="SlickGrid-master/slick.core.js"></script>
+  <script src="SlickGrid-master/slick.formatters.js"></script>
+  <script src="SlickGrid-master/slick.editors.js"></script>
+  <script src="SlickGrid-master/slick.grid.js"></script>
+  <script src="SlickGrid-master/slick.dataview.js"></script>
+-->
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+
+
+<!--jsTreeTable-->
+<script src="http://culmat.github.io/jsTreeTable/treeTable.js"></script>
+
+<style>
+	table.callStackTable {
+		width:100%;
+	}
+	table.callStackTable tr {
+		background-color: #f0f0f0;
+	}
+</style>
+
+
+  <script type="text/javascript">
+
+	$(document).ready(function () {
+
+		// define a short hand
+		var jsTT = com_github_culmat_jsTreeTable
+		//alert(jsTT.jsTreeTable)
+
+		// register on the window object
+		com_github_culmat_jsTreeTable.register(this)
+		//alert(jsTreeTable)
+		jsTT.treeTable($('#table'));
+
+				var data = [{
+			      id : 'Harold',
+			      geb : 1933,
+			      parent : 'Robert'
+			    }, {
+			      id : 'Robert',
+			      geb : 1903,
+			      parent : 'John'
+			    }, {
+			      id : 'Thomas',
+			      geb : 2008,
+			      parent : 'Mathew'
+			    }, {
+			      id : 'Mathew',
+			      geb : 1977,
+			      parent : 'Harold'
+			    }, {
+			      id : 'Andrew',
+			      geb : 1974,
+			      parent : 'Harold'
+			    }, {
+			      id : 'Kate',
+			      geb : 2008,
+			      parent : 'Mathew'
+			    }, {
+			      id : 'Walter',
+			      geb : 1900,
+			      parent : 'John'
+			    }, {
+			      id : 'Michelle',
+			      geb : 2023,
+			      parent : 'Thomas'
+			    }
+			    , {
+			      id : 'James',
+			      geb : 1900,
+			      parent : 'Kate'
+			    }]
+			    
+		var tree = jsTT.makeTree(data);
+		$('body').append('<pre class="prettyprint left"><code>' + JSON.stringify(tree, null, 2) + '</code></pre>');
+		
+		// WORKS
+		var rendered = jsTT.renderTree(tree, 'children', 'id', {'id':'ID','geb':'GEB'}, null, {'class':'callStackTable'});
+		var final = jsTT.treeTable(rendered);
+		final.insertAfter($('#treetable-rendered'))
+
+
+		//$('#jstree_demo_div').jstree({'core': {
+		//	'data': [
+		//	{"id": "1", "parent": "#", "text":  "root 1" },
+		//	{"id": "2", "parent": "#", "text":  "root 2" },
+		//	{"id": "3", "parent": "1", "text":  "1.1" },
+		//	{"id": "4", "parent": "1", "text":  "1.2" },
+		//	]
+		//}});
+	});
+/*  	$(document).ready(function() {
+  		  // initialize the grid
+
+			function requiredFieldValidator(value) {
+			  if (value == null || value == undefined || !value.length) {
+			    return {valid: false, msg: "This is a required field"};
+			  } else {
+			    return {valid: true, msg: null};
+			  }
+			}
+
+  		  var TaskNameFormatter = function (row, cell, value, columnDef, dataContext) {
+		    value = value.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+		    var spacer = "<span style='display:inline-block;height:1px;width:" + (15 * dataContext["indent"]) + "px'></span>";
+		    var idx = dataView.getIdxById(dataContext.id);
+		    if (data[idx + 1] && data[idx + 1].indent > data[idx].indent) {
+		      if (dataContext._collapsed) {
+		        return spacer + " <span class='toggle expand'></span>&nbsp;" + value;
+		      } else {
+		        return spacer + " <span class='toggle collapse'></span>&nbsp;" + value;
+		      }
+		    } else {
+		      return spacer + " <span class='toggle'></span>&nbsp;" + value;
+		    }
+		  };
+
+  		  function myFilter(item) { return true; }
+
+  		  var data = [];
+		  var columns = [
+		    {id: "title", name: "Title", field: "title", width: 220, cssClass: "cell-title", formatter: TaskNameFormatter, editor: Slick.Editors.Text, validator: requiredFieldValidator},
+		    {id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text},
+		    {id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete},
+		    {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date},
+		    {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date},
+		    {id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox, cannotTriggerInsert: true}
+		  ];
+
+
+		  // initialize the model
+		  dataView = new Slick.Data.DataView({ inlineFilters: true });
+		  dataView.beginUpdate();
+		  dataView.setItems(data);
+		  dataView.setFilter(myFilter);
+		  dataView.endUpdate();
+
+		  var options = {
+		    editable: true,
+		    enableAddRow: true,
+		    enableCellNavigation: true,
+		    asyncEditorLoading: false
+		  };
+
+		  grid = new Slick.Grid("#myGrid", dataView, columns, options);
+
+	});*/
+  </script>
+</head>
+<body>
+	treedable-dynamic:
+	<div id="treetable-rendered"></div>
+	<br/>
+	treetable:
+	<table id="table">
+		<tr>
+			<th>name</th>
+			<th>area (km²)</th>
+		</tr>
+		<tr data-tt-id="america">
+			<td>America</td>
+			<td></td>
+		</tr>
+		<tr data-tt-id="NA" data-tt-parent-id="america">
+			<td>North America</td>
+			<td></td>
+		</tr>
+		<tr data-tt-id="SA" data-tt-parent-id="america">
+			<td>South America</td>
+			<td></td>
+		</tr>
+		<tr data-tt-id="arg" data-tt-parent-id="SA">
+			<td>Argentina</td>
+			<td>2766890</td>
+		</tr>
+		<tr data-tt-id="bol" data-tt-parent-id="SA">
+			<td>Bolivia</td>
+			<td>1098580</td>
+		</tr>
+		<tr data-tt-id="bra" data-tt-parent-id="SA">
+			<td>Brazil</td>
+			<td>8511965</td>
+		</tr>
+		<tr data-tt-id="para" data-tt-parent-id="bra">
+			<td>Para</td>
+			<td>1247689</td>
+		</tr>
+	</table>
+	<script type="text/javascript">
+		com_github_culmat_jsTreeTable.register(this)
+		
+		treeTable($('#table'))
+	</script>
+	tree:
+	  <div id="jstree_demo_div" style="border:1px solid black; height:300px; width:300px;"></div>
+	  grid:
+	<div id="myGrid">
+	</div>
+<table id="grid-keep-selection" class="table table-condensed table-hover table-striped">
+    <thead>
+        <tr>
+            <th data-column-id="id" data-type="numeric" data-identifier="true">ID</th>
+            <th data-column-id="sender">Sender</th>
+            <th data-column-id="received" data-order="desc">Received</th>
+            <th data-column-id="link" data-formatter="link" data-sortable="false">Link</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        	<td>1</td>
+        	<td>1</td>
+        	<td>1</td>
+        	<td>1</td>
+        </tr>
+        <tr>
+        	<td>2</td>
+        	<td>2</td>
+        	<td>2</td>
+        	<td>2</td>
+        </tr>
+    </tbody>
+</table>
+<hr/>
+<table id="my-table">
+	<thead>
+        <tr>
+            <th>A</th>
+            <th>B</th>
+            <th>C</th>
+            <th>D</th>
+        </tr>
+    </thead>
+</table>
+
+ <form method="post" enctype="multipart/form-data">
+        Data: <input type="file" id="file" name="files" multiple />
+        <output id="list"></output>
+    </form>
+</body>
+</html>

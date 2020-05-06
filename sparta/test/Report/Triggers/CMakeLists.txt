@@ -1,6 +1,6 @@
 project(Report_triggers_test)
 
-add_executable(Report_triggers_test Report_triggers.cpp)
+sparta_add_test_executable(Report_triggers_test Report_triggers.cpp)
 
 include(../../TestingMacros.cmake)
 

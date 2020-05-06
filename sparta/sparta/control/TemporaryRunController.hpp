@@ -1,7 +1,6 @@
 // <TemporaryRunController.hpp> -*- C++ -*-
 
-#ifndef __SPARTA_TEMPORARY_RUN_CONTROLLER_H__
-#define __SPARTA_TEMPORARY_RUN_CONTROLLER_H__
+#pragma once
 
 #include "sparta/kernel/SpartaHandler.hpp"
 #include "sparta/kernel/Scheduler.hpp"
@@ -128,4 +127,4 @@ private:
 } // namespace control
 } // namespace sparta
 
-#endif // #ifndef __SPARTA_TEMPORARY_RUN_CONTROLLER_H__
+#pragma once

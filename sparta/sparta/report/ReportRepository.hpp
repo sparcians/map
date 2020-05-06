@@ -37,8 +37,7 @@
  * post-processing, etc. but most of the time, you should not need to release them at all.
  */
 
-#ifndef __REPORT_REPOSITORY_H__
-#define __REPORT_REPOSITORY_H__
+#pragma once
 
 #include <map>
 #include <memory>
@@ -160,5 +159,3 @@ private:
 
 } // namespace sparta
 
-// __REPORT_REPOSITORY_H__
-#endif

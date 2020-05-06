@@ -1,7 +1,6 @@
 // <ExpressionParser> -*- C++ -*-
 
-#ifndef __EXPRESSION_PARSER_H__
-#define __EXPRESSION_PARSER_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -73,4 +72,4 @@ public:
     } // namespace statistics
 } // namespace sparta
 
-#endif // #ifndef __EXPRESSION_PARSER_H__
+#pragma once

@@ -1,7 +1,6 @@
 // <ColumnValueContainer> -*- C++ -*-
 
-#ifndef __SIMDB_COLUMN_VALUE_CONTAINER_H__
-#define __SIMDB_COLUMN_VALUE_CONTAINER_H__
+#pragma once
 
 #include "simdb/schema/ColumnValue.hpp"
 #include "simdb_fwd.hpp"
@@ -301,4 +300,3 @@ private:
 
 }
 
-#endif

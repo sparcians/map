@@ -1,7 +1,6 @@
 // <SIValuesBuffer> -*- C++ -*-
 
-#ifndef __SPARTA_SI_VALUES_BUFFER_H__
-#define __SPARTA_SI_VALUES_BUFFER_H__
+#pragma once
 
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "simdb/schema/Schema.hpp"
@@ -347,4 +346,3 @@ private:
 } // namespace statistics
 } // namespace sparta
 
-#endif

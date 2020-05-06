@@ -1,17 +1,14 @@
-// <Buffer.h> -*- C++ -*-
+// <CircularBuffer.h> -*- C++ -*-
 
 
 /**
- * \file   Buffer.hpp
+ * \file   CircularBuffer.hpp
  *
  * \brief  Defines the CircularBuffer class
  *
  */
 
-#ifndef __CIRCULARBUFFER_EXP_H__
-#define __CIRCULARBUFFER_EXP_H__
-
-#define SPARTA_GCC_VERSION 0
+#pragma once
 
 #include <cinttypes>
 #include <list>
@@ -153,14 +150,10 @@ namespace sparta
             // Pointer to the CircularBuffer which created this entry
             CircularBufferPointerType attached_circularbuffer_ = nullptr;
 
-#if SPARTA_GCC_VERSION > 40800
             typedef typename std::conditional<is_const_iterator,
                                               InternalCircularBufferConstIterator,
                                               InternalCircularBufferIterator>::type SpecificCircularBufferIterator;
             SpecificCircularBufferIterator circularbuffer_entry_;
-#else
-            InternalCircularBufferIterator circularbuffer_entry_;
-#endif
 
             //! The validity ID
             uint64_t window_idx_ = std::numeric_limits<uint64_t>::max();
@@ -171,11 +164,7 @@ namespace sparta
              * \param index The index this iterator points to in the CircularBuffer
              */
             CircularBufferIterator(CircularBufferPointerType circularbuffer,
-#if SPARTA_GCC_VERSION > 40800
                                    SpecificCircularBufferIterator entry,
-#else
-                                   InternalCircularBufferIterator entry,
-#endif
                                    const uint64_t window_idx) :
                 attached_circularbuffer_(circularbuffer),
                 circularbuffer_entry_(entry),
@@ -184,12 +173,7 @@ namespace sparta
 
             // Used by the CircularBuffer to get the position in the
             // internal CircularBuffer
-#if SPARTA_GCC_VERSION > 40800
-            SpecificCircularBufferIterator
-#else
-            InternalCircularBufferIterator
-#endif
-            getInternalBufferEntry_() const {
+            SpecificCircularBufferIterator getInternalBufferEntry_() const {
                 return circularbuffer_entry_;
             }
 
@@ -338,12 +322,10 @@ namespace sparta
         class CircularBufferReverseIterator : public std::reverse_iterator<iter_type>
         {
         public:
-#if SPARTA_GCC_VERSION > 40800
             typedef typename std::conditional<iter_type::is_const_iterator_type,
                                               InternalCircularBufferConstIterator,
                                               InternalCircularBufferIterator>::type SpecificCircularBufferIterator;
             SpecificCircularBufferIterator circularbuffer_entry_;
-#endif
 
             explicit CircularBufferReverseIterator(const iter_type & it) :
                 std::reverse_iterator<iter_type>(it)
@@ -366,12 +348,7 @@ namespace sparta
             }
         private:
             friend class CircularBuffer<value_type>;
-#if SPARTA_GCC_VERSION > 40800
-            SpecificCircularBufferIterator
-#else
-            InternalCircularBufferIterator
-#endif
-           getInternalBufferEntry_() const {
+            SpecificCircularBufferIterator getInternalBufferEntry_() const {
                 auto it = std::reverse_iterator<iter_type>::base();
                 return (--it).circularbuffer_entry_;
             }
@@ -451,13 +428,13 @@ namespace sparta
          *       collection. collection must be started with an
          *       instatiation of the PipelineCollector
          */
-#if SPARTA_GCC_VERSION > 40800
         void enableCollection(TreeNode * parent) {
             collector_.
                 reset(new collection::IterableCollector<CircularBuffer<DataT> >(parent, getName(),
                                                                                 *this, capacity()));
         }
-#endif
+
+        //! Get this CircularBuffer's name
         std::string getName() const {
             return name_;
         }
@@ -511,7 +488,7 @@ namespace sparta
         {
             push_backImpl_(dat);
         }
-        
+
         /**
          * \brief Append data to the end of CircularBuffer, and return a CircularBufferIterator
          * \param dat Data to be pushed back into the CircularBuffer
@@ -626,7 +603,6 @@ namespace sparta
             return iterator(this, circularbuffer_data_.end(), end_idx_);
         }
 
-#if SPARTA_GCC_VERSION > 40800
         /**
          * \brief Get the iterator pointing to the oldest entry of
          *        CircularBuffer
@@ -649,7 +625,7 @@ namespace sparta
         const_iterator end() const {
             return const_iterator(this, circularbuffer_data_.end(), end_idx_);
         }
-#endif
+
         /**
          * \brief Get the iterator pointing to the oldest entry of
          *        CircularBuffer
@@ -666,7 +642,6 @@ namespace sparta
          */
         reverse_iterator rend() { return reverse_iterator(begin()); }
 
-#if SPARTA_GCC_VERSION > 40800
         /**
          * \brief Get the iterator pointing to the oldest entry of
          *        CircularBuffer
@@ -682,7 +657,7 @@ namespace sparta
          *        newest element in the CircularBuffer
          */
         const_reverse_iterator rend() const { return const_reverse_iterator(begin());}
-#endif
+
         /**
          * \brief Returns the data at the given index.  Will assert if
          * out of range
@@ -800,9 +775,7 @@ namespace sparta
 
         //////////////////////////////////////////////////////////////////////
         // Collectors
-#if SPARTA_GCC_VERSION > 40800
         std::unique_ptr<collection::IterableCollector<CircularBuffer<value_type> > > collector_;
-#endif
     };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -901,5 +874,3 @@ namespace sparta
 
 }
 
-// __CIRCULARBUFFER__H__
-#endif

@@ -1,7 +1,6 @@
 // <ObjectRef> -*- C++ -*-
 
-#ifndef __SIMDB_OBJECT_REF_H__
-#define __SIMDB_OBJECT_REF_H__
+#pragma once
 
 #include "simdb/ObjectManager.hpp"
 #include "simdb_fwd.hpp"
@@ -205,5 +204,4 @@ void ObjectRef::getPropertyBlob(const std::string & prop_name,
 
 } // namespace simdb
 
-#endif
 

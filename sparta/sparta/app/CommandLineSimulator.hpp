@@ -6,8 +6,7 @@
  * \brief Class for creating a simulator based on command-line arguments
  */
 
-#ifndef __COMMAND_LINE_SIMULATOR_H__
-#define __COMMAND_LINE_SIMULATOR_H__
+#pragma once
 
 #include <boost/program_options.hpp>
 #include <boost/program_options/cmdline.hpp>
@@ -526,7 +525,7 @@ private:
 
     /*!
      * \brief Open and parse a given ALF file for pipeline node
-     * restriction (part of --argos-collection-at command line)
+     * restriction (part of --pipeViewer-collection-at command line)
      * \return true if all good; false otherwise
      */
     bool openALFAndFindPipelineNodes_(const std::string & alf_filename);
@@ -628,5 +627,3 @@ private:
 
     } // namespace app
 } // namespace sparta
-
-#endif // #ifndef __COMMAND_LINE_SIMULATOR_H__

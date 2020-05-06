@@ -1,6 +1,5 @@
 
-#ifndef __THREADED_CONTEXT_COUNTER_H__
-#define __THREADED_CONTEXT_COUNTER_H__
+#pragma once
 
 #include "sparta/statistics/ContextCounter.hpp"
 #include "sparta/statistics/StatisticSet.hpp"
@@ -122,4 +121,3 @@ private:
 
 } // namespace sparta
 
-#endif

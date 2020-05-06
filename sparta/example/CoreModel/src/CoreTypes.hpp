@@ -1,7 +1,6 @@
 
 
-#ifndef __CORE_TYPES_H__
-#define __CORE_TYPES_H__
+#pragma once
 
 #include <vector>
 
@@ -25,4 +24,3 @@ namespace core_example
 
 }
 
-#endif

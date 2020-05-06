@@ -15,7 +15,8 @@
 # Find Boost
 set (_BOOST_COMPONENTS filesystem date_time iostreams serialization timer program_options)
 if (COMPILE_WITH_PYTHON)
-  list (APPEND _BOOST_COMPONENTS python37)
+  list (APPEND _BOOST_COMPONENTS python)
+  find_package (Python COMPONENTS Interpreter Development)
 endif ()
 
 
@@ -31,15 +32,28 @@ set (Boost_USE_STATIC_LIBS OFF)
 set (existing_build_shared ${BUILD_SHARED_LIBS})
 set (BUILD_SHARED_LIBS ON)
 
-if (APPLE)
+execute_process (COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE CXX_VERSION_STRING RESULT_VARIABLE rc)
+if (NOT rc EQUAL "0")
+    message (FATAL_ERROR "could not run compiler command '${CMAKE_CXX_COMPILER} --version', rc=${rc}")
+endif ()
+
+if (CXX_VERSION_STRING MATCHES "conda")
+    set (USING_CONDA ON)
+elseif (APPLE AND NOT CXX_VERSION_STRING MATCHES "^Apple")
+    set (USING_CONDA ON)
+else ()
+    set (USING_CONDA OFF)
+endif ()
+
+
+if (APPLE AND NOT USING_CONDA)
   set (Boost_NO_BOOST_CMAKE ON)
   set (CMAKE_CXX_COMPILER_VERSION 10.0)
-  find_package (Boost 1.49.0 REQUIRED HINTS /usr/local/Cellar/boost/* COMPONENTS ${_BOOST_COMPONENTS})
+  find_package (Boost 1.65.0 REQUIRED HINTS /usr/local/Cellar/boost/* COMPONENTS ${_BOOST_COMPONENTS})
 else ()
-
-  find_package (Boost 1.49.0 REQUIRED COMPONENTS ${_BOOST_COMPONENTS})
-
+  find_package (Boost 1.65.0 REQUIRED COMPONENTS ${_BOOST_COMPONENTS})
 endif ()
+
 set (BUILD_SHARED_LIBS ${existing_build_shared})
 message ("-- Using BOOST ${Boost_VERSION_STRING}")
 
@@ -73,7 +87,24 @@ if (COMPILE_WITH_PYTHON)
   find_package (Python 3.0 REQUIRED COMPONENTS Development)
   add_definitions (-DSPARTA_PYTHON_SUPPORT -DPYTHONHOME="${Python_LIBRARY_DIRS}")
   include_directories (SYSTEM ${Python_INCLUDE_DIRS})
-  list (APPEND Sparta_LIBS Python::Python Boost::python37)
+  list (APPEND Sparta_LIBS Python::Python Boost::python)
+endif ()
+
+#
+# Conda support
+#
+if (USING_CONDA)
+    message ("-- Using CONDA toolchain")
+    # if you don't do this, cmake won't pass the conda $PREFIX/include to
+    # the conda compiler and things get crazy
+    unset(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES)
+    unset(CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES)
+    # This has to be done after sparta-config.cmake and before include directories because
+    # those variables are maintained as directory properties and will propagate to the subdirectories
+    # when we start doing include_directories.  If we clear them after, the toplevel sources will
+    # build but the subdirs won't
+    #
+    # See also https://gitlab.kitware.com/cmake/cmake/issues/17966#note_408480
 endif ()
 
 #

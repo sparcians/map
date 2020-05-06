@@ -6,8 +6,7 @@
  * \brief Instantiates python interpreter instance
  */
 
-#ifndef __SPARTA_PYTHONINTERPRETER_H__
-#define __SPARTA_PYTHONINTERPRETER_H__
+#pragma once
 
 #include "sparta/sparta.hpp" // For macro definitions
 #include "simdb_fwd.hpp"
@@ -15,6 +14,7 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+
 #ifndef __USE_GNU
 #define __USE_GNU
 #endif
@@ -208,5 +208,3 @@ namespace python {
 
 } // namespace python
 } // namespace sparta
-
-#endif // #ifndef __SPARTA_PYTHONINTERPRETER_H__

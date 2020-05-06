@@ -8,8 +8,7 @@
  *        using sparta::PayloadEvent instead
  */
 
-#ifndef __PHASED_PAYLOAD_EVENT_H__
-#define __PHASED_PAYLOAD_EVENT_H__
+#pragma once
 
 #include <list>
 #include <memory>
@@ -160,7 +159,7 @@ namespace sparta
 
                 sparta_assert(allocation_idx_ < 100000,
                               "The PayloadEvent: '" << getLocation() <<
-                              "' has allocatged over 100000 outstanding events -- does that seem right?");
+                              "' has allocated over 100000 outstanding events -- does that seem right?");
             }
             inflight_pl_.push_front(proxy);
             proxy->setInFlightLocation_(inflight_pl_.begin());
@@ -621,5 +620,3 @@ namespace sparta
 }
 
 
-// __PHASED_PAYLOAD_EVENT_H__
-#endif

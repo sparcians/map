@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __SCHEDULER_SET_H__
-#define __SCHEDULER_SET_H__
+#pragma once
 
 #include <ctime>
 #include <unistd.h>
@@ -1158,5 +1157,3 @@ inline void Scheduler::printNextCycleEventTree(StreamType& os,
 
 }
 
-// __SCHEDULER_SET_H__
-#endif

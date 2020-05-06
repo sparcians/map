@@ -4,8 +4,7 @@
  * \brief Macros for handling exponential backoff
  */
 
-#ifndef __SPARTA_EXP_BACKOFF_H__
-#define __SPARTA_EXP_BACKOFF_H__
+#pragma once
 
 
 namespace sparta {
@@ -64,4 +63,3 @@ typedef uint32_t counter_t;
     } // namespace exp_backoff
 } // namespace sparta
 
-#endif // __SPARTA_EXP_BACKOFF_H__

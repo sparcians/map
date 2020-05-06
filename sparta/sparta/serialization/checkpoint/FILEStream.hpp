@@ -1,7 +1,6 @@
 // <FILEStream> -*- C++ -*-
 
-#ifndef __FILE_STREAM_H__
-#define __FILE_STREAM_H__
+#pragma once
 
 #include <ios>
 #include <iostream>
@@ -304,4 +303,3 @@ private:
 };
 
 
-#endif // __FILE_STREAM_H__

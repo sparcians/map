@@ -7,8 +7,7 @@
  * \brief  File that defines the Bus, BusSet and helper binding classes
  */
 
-#ifndef __BUS_H__
-#define __BUS_H__
+#pragma once
 
 #include <sstream>
 #include <algorithm>
@@ -373,5 +372,3 @@ namespace sparta
     }
 }
 
-// __BUS_H__
-#endif

@@ -1,6 +1,6 @@
 project(Dataview_test)
 
-add_executable(DataView_test DataView_test.cpp)
+sparta_add_test_executable(DataView_test DataView_test.cpp)
 
 include(../TestingMacros.cmake)
 

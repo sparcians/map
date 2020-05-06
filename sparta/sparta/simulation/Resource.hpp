@@ -6,8 +6,7 @@
  * \brief  File that defines the Resource class. Consider using sparta::Unit instead
  */
 
-#ifndef __RESOURCE__H__
-#define __RESOURCE__H__
+#pragma once
 
 #include <string>
 #include <ostream>
@@ -409,5 +408,3 @@ namespace sparta {
 
 
 } // namespace sparta
-// __RESOURCE__H__
-#endif

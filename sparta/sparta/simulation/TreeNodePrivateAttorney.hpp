@@ -1,8 +1,7 @@
 // <TreeNode> -*- C++ -*-
 
 
-#ifndef __TREENODE_PRIVATE_ATTORNEY__
-#define __TREENODE_PRIVATE_ATTORNEY__
+#pragma once
 
 #include "sparta/simulation/TreeNode.hpp"
 
@@ -105,4 +104,3 @@ namespace sparta {
 
 } // namespace sparta
 
-#endif // __TREENODE_PRIVATE_ATTORNEY__

@@ -5,9 +5,7 @@
  * \file Simulation.hpp
  * \brief Simulation setup base class
  */
-
-#ifndef __SPARTA_SIMULATION_H__
-#define __SPARTA_SIMULATION_H__
+#pragma once
 
 #include <vector>
 
@@ -26,7 +24,7 @@
 #include "sparta/app/SimulationConfiguration.hpp"
 #include "sparta/control/TemporaryRunController.hpp"
 #include "sparta/simulation/State.hpp"
-#include "sparta/argos/InformationWriter.hpp"
+#include "sparta/pipeViewer/InformationWriter.hpp"
 
 namespace YP = YAML; // Prevent collision with YAML class in ConfigParser namespace.
 
@@ -1015,7 +1013,3 @@ private:
 
 } // namespace app
 } // namespace sparta
-
-
-// __SPARTA_SIMULATION_H__
-#endif

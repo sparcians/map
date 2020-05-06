@@ -6,8 +6,7 @@
  * \brief Configuration Applicators
  */
 
-#ifndef __CONFIG_APPLICATORS_H__
-#define __CONFIG_APPLICATORS_H__
+#pragma once
 
 #include <cinttypes>
 #include <string>
@@ -683,5 +682,3 @@ typedef std::vector<std::unique_ptr<ConfigApplicator>>   ConfigVec;
 } // namespace sparta
 
 
-// __CONFIG_APPLICATORS_H__
-#endif

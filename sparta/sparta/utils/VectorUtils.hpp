@@ -1,7 +1,6 @@
 // <VectorUtils.hpp> -*- C++ -*-
 
-#ifndef __SPARTA_VECTOR_UTILS_H__
-#define __SPARTA_VECTOR_UTILS_H__
+#pragma once
 
 #include <memory>
 
@@ -141,5 +140,3 @@ void copyVectorExtractRawPointers(const std::vector<C<T>>& input,
 } // namepace utils
 } // namespace sparta
 
-// __SPARTA_VECTOR_UTILS_H__
-#endif

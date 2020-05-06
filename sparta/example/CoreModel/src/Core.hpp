@@ -1,7 +1,6 @@
 
 
-#ifndef __CORE_H__
-#define __CORE_H__
+#pragma once
 
 #include <string>
 
@@ -79,5 +78,3 @@ namespace core_example
     };
 }
 
-// __CORE_H__
-#endif

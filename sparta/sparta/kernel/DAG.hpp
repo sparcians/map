@@ -7,8 +7,7 @@
  */
 
 
-#ifndef __DAG__H__
-#define __DAG__H__
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -239,4 +238,3 @@ namespace sparta
 
 } // namespace sparta
 
-#endif

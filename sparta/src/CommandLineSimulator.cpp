@@ -63,7 +63,7 @@
 #include "sparta/app/AppTriggers.hpp"
 #include "sparta/app/MetaTreeNode.hpp"
 #include "sparta/app/Simulation.hpp"
-#include "sparta/argos/InformationWriter.hpp"
+#include "sparta/pipeViewer/InformationWriter.hpp"
 #include "sparta/log/Destination.hpp"
 #include "sparta/log/MessageSource.hpp"
 #include "sparta/log/Tap.hpp"
@@ -158,7 +158,7 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
         "collection. The heartbeat also represents the longest life duration of lingering "
         "transactions. Transactions with a life span longer than the heartbeat will be finalized "
         "and then restarted with a new start time. Must be a multiple of 100 for efficient reading "
-        "by Argos. Large values will reduce responsiveness of Argos when jumping to different "
+        "by pipeViewer. Large values will reduce responsiveness of pipeViewer when jumping to different "
         "areas of the file and loading.\nDefault = "
         << DefaultHeartbeat << " ticks.\n";
 
@@ -369,10 +369,10 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "Specify a treenode to recursively turn on at and below for pipeline collection."
          "Example: \"--collection-at top.core0.rename\" "
          "This option can be specified none or many times.") // Brief
-        ("argos-collection-at,K",
+        ("pipeViewer-collection-at,K",
          named_value<std::vector<std::string>>("ALFFILE", 1, 1),
-         "Specify an Argos ALFFILE file to restrict pipeline collection to only those nodes found in the ALF."
-         "Example: \"--argos-collection-at layouts/exe40.alf\" "
+         "Specify an pipeViewer ALFFILE file to restrict pipeline collection to only those nodes found in the ALF."
+         "Example: \"--pipeViewer-collection-at layouts/exe40.alf\" "
          "This option can be specified none or many times.") // Brief
         ("heartbeat",
          named_value<std::string>("HEARTBEAT", &pipeline_heartbeat_)->default_value(pipeline_heartbeat_),
@@ -1180,10 +1180,10 @@ bool CommandLineSimulator::parse(int argc,
                     err_code = 1;
                     return false;
                 }
-                if(o.string_key.find("argos") != std::string::npos) {
-                    // --argos-collection-at <file>
+                if(o.string_key.find("pipeViewer") != std::string::npos) {
+                    // --pipeViewer-collection-at <file>
                     if(!openALFAndFindPipelineNodes_(o.value.at(0))) {
-                        std::cerr << "Could not open/parse Argos ALF file: " << o.value.at(0)
+                        std::cerr << "Could not open/parse pipeViewer ALF file: " << o.value.at(0)
                                   << std::endl;
                         err_code = 1;
                         return false;

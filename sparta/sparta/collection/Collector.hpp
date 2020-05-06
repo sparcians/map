@@ -6,8 +6,7 @@
  * \brief Define a base Collector class.
  */
 
-#ifndef __COLLECTOR_H__
-#define __COLLECTOR_H__
+#pragma once
 
 #include <string>
 
@@ -51,4 +50,3 @@ namespace collection
 }//namespace collection
 }//namespace sparta
 
-#endif

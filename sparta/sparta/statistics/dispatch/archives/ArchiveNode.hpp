@@ -1,7 +1,6 @@
 // <ArchiveNode> -*- C++ -*-
 
-#ifndef __SPARTA_STATISTICS_ARCHIVE_NODE_H__
-#define __SPARTA_STATISTICS_ARCHIVE_NODE_H__
+#pragma once
 
 #include "sparta/app/ReportDescriptor.hpp"
 
@@ -320,4 +319,3 @@ void serialize(Archive & ar,
 } // namespace serialization
 } // namespace boost
 
-#endif

@@ -1,6 +1,5 @@
 
-#ifndef __SPARTA_MANAGED_TRIGGER_H__
-#define __SPARTA_MANAGED_TRIGGER_H__
+#pragma once
 
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/kernel/SpartaHandler.hpp"
@@ -116,4 +115,3 @@ private:
 } // namespace trigger
 } // namespace sparta
 
-#endif

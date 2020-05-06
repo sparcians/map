@@ -1,7 +1,6 @@
 // <SimInfoSerializer> -*- C++ -*-
 
-#ifndef __SPARTA_SIMDB_SIMINFO_SERIALIZER_H__
-#define __SPARTA_SIMDB_SIMINFO_SERIALIZER_H__
+#pragma once
 
 #include "simdb/ObjectManager.hpp"
 #include "simdb/utils/ObjectQuery.hpp"
@@ -181,4 +180,3 @@ private:
 } // namespace db
 } // namespace sparta
 
-#endif

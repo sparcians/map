@@ -1,7 +1,6 @@
 // <Tap> -*- C++ -*-
 
-#ifndef __TAP_H__
-#define __TAP_H__
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -344,5 +343,3 @@ namespace sparta
 } // namespace sparta
 
 
-// __TAP_H__
-#endif

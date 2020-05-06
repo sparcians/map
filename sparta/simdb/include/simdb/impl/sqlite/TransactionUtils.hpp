@@ -1,7 +1,6 @@
 // <TransactionUtils> -*- C++ -*-
 
-#ifndef __SIMDB_SQLITE_TRANSACTION_UTILS_H__
-#define __SIMDB_SQLITE_TRANSACTION_UTILS_H__
+#pragma once
 
 #include "simdb/Errors.hpp"
 #include "simdb_fwd.hpp"
@@ -111,4 +110,3 @@ void eval_sql_select(const SQLiteConnProxy * db_proxy,
 
 } // namespace simdb
 
-#endif

@@ -8,8 +8,7 @@
  * for Template Metaprogramming.
  */
 
-#ifndef __META_STRUCTS_H__
-#define __META_STRUCTS_H__
+#pragma once
 
 #include <vector>
 #include <array>
@@ -642,4 +641,3 @@ namespace MetaStruct {
     template<typename T>
     struct is_sparta_enum<sparta::utils::Enum<T>> : public std::true_type {};
 } // namespace MetaStruct
-#endif // __META_STRUCTS_H__

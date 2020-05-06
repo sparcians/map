@@ -6,8 +6,7 @@
  * stats, nontifications).
  */
 
-#ifndef __INSTRUMENTATION_NODE__
-#define __INSTRUMENTATION_NODE__
+#pragma once
 
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
@@ -592,4 +591,3 @@ private:
 } // namespace sparta
 
 // __INSTRUMENTATION_NODE__
-#endif

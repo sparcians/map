@@ -1,7 +1,6 @@
 // <ObjectProxy> -*- C++ -*-
 
-#ifndef __SIMDB_OBJECT_PROXY_H__
-#define __SIMDB_OBJECT_PROXY_H__
+#pragma once
 
 #include <functional>
 #include <string>
@@ -98,4 +97,3 @@ private:
     mutable std::shared_ptr<ObjectRef> realized_obj_;
 };
 
-#endif

@@ -1,7 +1,6 @@
 // <simdb_fwd> -*- C++ -*-
 
-#ifndef __SIMDB_FORWARD_DECLARATIONS_H__
-#define __SIMDB_FORWARD_DECLARATIONS_H__
+#pragma once
 
 #include "simdb/schema/DatabaseTypedefs.hpp"
 
@@ -41,4 +40,3 @@ class ConcurrentQueue;
 
 }
 
-#endif

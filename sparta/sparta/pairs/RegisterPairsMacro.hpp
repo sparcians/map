@@ -9,8 +9,7 @@
  * concepts.
  */
 
-#ifndef __REGISTER_PAIRS_MACRO_H__
-#define __REGISTER_PAIRS_MACRO_H__
+#pragma once
 
 // My reference for understanding preprocessor metaprogramming :
 // 1. codecraft.co/2014/11/25/variadic-macros-tricks/
@@ -233,4 +232,3 @@
     _REGISTER_PAIRS_UTIL(COUNT_NARG(__VA_ARGS__), __VA_ARGS__)                                               \
     _FUNCTION_STOP
 
-#endif

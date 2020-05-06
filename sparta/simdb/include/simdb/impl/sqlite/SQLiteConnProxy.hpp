@@ -1,7 +1,6 @@
 // <SQLiteConnProxy> -*- C++ -*-
 
-#ifndef __SIMDB_SQLITE_CONN_PROXY_H__
-#define __SIMDB_SQLITE_CONN_PROXY_H__
+#pragma once
 
 #include "simdb/DbConnProxy.hpp"
 
@@ -165,4 +164,3 @@ private:
 
 } // namespace simdb
 
-#endif

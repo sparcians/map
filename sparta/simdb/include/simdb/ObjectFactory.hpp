@@ -1,7 +1,6 @@
 // <ObjectFactory> -*- C++ -*-
 
-#ifndef __SIMDB_OBJECT_FACTORY_H__
-#define __SIMDB_OBJECT_FACTORY_H__
+#pragma once
 
 #include "simdb/schema/DatabaseTypedefs.hpp"
 #include "simdb/schema/ColumnValue.hpp"
@@ -34,4 +33,3 @@ using FixedSizeObjectFactory = std::function<
 
 }
 
-#endif

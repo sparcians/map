@@ -7,8 +7,7 @@
  * \brief  File that defines the Port base class
  */
 
-#ifndef __PORT_H__
-#define __PORT_H__
+#pragma once
 #include <set>
 #include <list>
 #include <unordered_map>
@@ -29,6 +28,9 @@
 
 namespace sparta
 {
+    // Used for DAG predence rules
+    class GlobalOrderingPoint;
+
     /**
      * \class Port
      * \brief The port interface used to bind port types together and
@@ -423,6 +425,10 @@ namespace sparta
         //! The OutPort will call bind_ and setProducerPrecedence_
         friend OutPort;
 
+        //! Methods used for precedence have access to the internal scheduleable
+        friend InPort& operator>>(const GlobalOrderingPoint&, InPort&);
+        friend const GlobalOrderingPoint& operator>>(InPort&, const GlobalOrderingPoint&);
+
         //! Let derived classes look over the registered consumer handler
         virtual void registerConsumerHandler_(const sparta::SpartaHandler &) {}
 
@@ -690,8 +696,3 @@ namespace sparta
         bind(&p1, p2);
     }
 }
-
-
-
-// __PORT_H__
-#endif

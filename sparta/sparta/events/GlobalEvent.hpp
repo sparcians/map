@@ -6,8 +6,7 @@
  * \brief  File that defines the GlobalEvent class
  */
 
-#ifndef __GLOBAL_EVENT_H__
-#define __GLOBAL_EVENT_H__
+#pragma once
 
 #include <memory>
 #include "sparta/simulation/Clock.hpp"
@@ -142,5 +141,3 @@ namespace sparta
 }
 
 
-// __GLOBAL_EVENT_H__
-#endif

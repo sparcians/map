@@ -6,8 +6,7 @@
  * Class for configuring a simulation
  */
 
-#ifndef __SIMULATION_CONFIGURATION_H__
-#define __SIMULATION_CONFIGURATION_H__
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -755,5 +754,3 @@ private:
 
 } // namespace app
 } // namespace sparta
-
-#endif // #ifndef __SIMULATION_CONFIGURATION_H__

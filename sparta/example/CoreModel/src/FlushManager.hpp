@@ -7,8 +7,7 @@
  * \brief  File that defines support for event flushing in SPARTA
  */
 
-#ifndef __FLUSH_MANAGER_H__
-#define __FLUSH_MANAGER_H__
+#pragma once
 
 #include <cinttypes>
 #include <string>
@@ -97,5 +96,3 @@ namespace core_example
     };
 }
 
-// __FLUSH_MANAGER_H__
-#endif

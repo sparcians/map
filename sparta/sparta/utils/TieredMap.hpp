@@ -1,7 +1,6 @@
 // <TieredMap> -*- C++ -*-
 
-#ifndef __TIERED_MAP_H__
-#define __TIERED_MAP_H__
+#pragma once
 
 #include <iostream>
 #include <utility>
@@ -548,5 +547,3 @@ namespace sparta
 
 } // namespace sparta
 
-// __TIERED_MAP_H__
-#endif

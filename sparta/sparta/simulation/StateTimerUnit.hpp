@@ -1,8 +1,7 @@
 // <StateTimerUnit> -*- C++ -*-
 
 
-#ifndef __STATE_TIMER_UNIT_H__
-#define __STATE_TIMER_UNIT_H__
+#pragma once
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/statistics/InstrumentationNode.hpp"
@@ -776,4 +775,3 @@ inline StateTimerUnit::StateTimerUnit(TreeNode * parent,
 
 }; // namespace sparta
 
-#endif // __STATE_TIMER_UNIT_H__

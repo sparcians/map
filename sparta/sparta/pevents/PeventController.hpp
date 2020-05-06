@@ -1,5 +1,4 @@
-#ifndef __PEVENT_KEY_PAIR_COLLECTOR_H__
-#define __PEVENT_KEY_PAIR_COLLECTOR_H__
+#pragma once
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/pevents/PeventCollector.hpp"
@@ -132,4 +131,3 @@ namespace pevents{
 }// namespace pevents
 }// namspace sparta
 
-#endif //  __PEVENT_KEY_PAIR_COLLECTOR_H__

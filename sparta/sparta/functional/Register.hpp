@@ -1,7 +1,6 @@
 // <Register> -*- C++ -*-
 
-#ifndef __REGISTER_H__
-#define __REGISTER_H__
+#pragma once
 
 #include <iostream>
 #include <ios>
@@ -137,6 +136,15 @@ public:
      */
     class Field : public TreeNode
     {
+        utils::BitArray computeFieldMask_(uint32_t start, uint32_t end, uint32_t reg_size)
+        {
+            const auto num_ones = start - end + 1;
+            // For 31-0:
+            // max() & (max() >> ((8 * 8) - 31))
+            return utils::BitArray(((std::numeric_limits<uint64_t>::max()
+                                     & (std::numeric_limits<uint64_t>::max() >> ((sizeof(uint64_t) * CHAR_BIT) - num_ones)))), reg_size) << end;
+        }
+
     public:
 
         /*!
@@ -201,35 +209,33 @@ public:
          *
          * Constructs Field from the given definition
          */
-        Field(RegisterBase &reg, const Definition &def)
-        : TreeNode(NULL_TO_EMPTY_STR(def.name),
-                   TreeNode::GROUP_NAME_NONE,
-                   TreeNode::GROUP_IDX_NONE,
-                   NULL_TO_EMPTY_STR(def.desc))
-        , reg_(reg)
-        , def_(def)
-        , reg_size_(reg_.getNumBytes())
-        , mask_(computeMask_(def.low_bit, def.high_bit, reg_.getNumBytes()))
+        Field(RegisterBase &reg, const Definition &def) :
+            TreeNode(NULL_TO_EMPTY_STR(def.name), TreeNode::GROUP_NAME_NONE,
+                     TreeNode::GROUP_IDX_NONE, NULL_TO_EMPTY_STR(def.desc)),
+            reg_(reg),
+            def_(def),
+            reg_size_(reg_.getNumBytes()),
+            field_mask_(computeFieldMask_(def.high_bit, def.low_bit, reg_.getNumBytes()))
         {
             setExpectedParent_(&reg);
 
-            sparta_assert(def.name != 0, "Register::Field::Definition::name cannot be empty");
+            sparta_assert(def_.name != 0, "Register::Field::Definition::name cannot be empty");
 
-            if(def.high_bit < def.low_bit){
+            if(def_.high_bit < def_.low_bit){
                 throw SpartaException("Register Field ")
-                    << getLocation() << " definition contains high bit (" << def.high_bit
-                    << ") less than a low bit (" << def.low_bit << ")";
+                    << getLocation() << " definition contains high bit (" << def_.high_bit
+                    << ") less than a low bit (" << def_.low_bit << ")";
             }
 
-            if(def.low_bit >= reg.getNumBits()){
+            if(def_.low_bit >= reg.getNumBits()){
                 throw SpartaException("Register Field ")
-                    << getLocation() << " definition contains a low bit (" << def.low_bit
+                    << getLocation() << " definition contains a low bit (" << def_.low_bit
                     << ") greater than or equal to the number of bits in the register ("
                     << reg.getNumBits() << ")";
             }
-            if(def.high_bit >= reg.getNumBits()){
+            if(def_.high_bit >= reg.getNumBits()){
                 throw SpartaException("Register Field ")
-                    << getLocation() << " definition contains a high bit (" << def.high_bit
+                    << getLocation() << " definition contains a high bit (" << def_.high_bit
                     << ") greater than or equal to the number of bits in the register ("
                     << reg.getNumBits() << ")";
             }
@@ -255,7 +261,7 @@ public:
          */
         access_type read()
         {
-            return ((readBitArray_() & mask_) >> getLowBit()).getValue<access_type>();
+            return ((readBitArray_() & field_mask_) >> getLowBit()).getValue<access_type>();
         }
 
         /*!
@@ -265,7 +271,7 @@ public:
          */
         access_type peek() const
         {
-            return ((peekBitArray_() & mask_) >> getLowBit()).getValue<access_type>();
+            return ((peekBitArray_() & field_mask_) >> getLowBit()).getValue<access_type>();
         }
 
         /*!
@@ -387,24 +393,18 @@ public:
             reg_.pokeUnmasked(value.getValue(), value.getSize(), 0);
         }
 
-        utils::BitArray newRegisterValue_(access_type t) const
+        utils::BitArray newRegisterValue_(access_type value) const
         {
-            const auto old = peekBitArray_();
-            const auto val = utils::BitArray(t, reg_size_) << getLowBit();
+            const auto old_register_value  = peekBitArray_();
+            const auto field_value_to_be_written_shifted = utils::BitArray(value, reg_size_) << getLowBit();
 
-            sparta_assert(
-                (val & ~mask_) == utils::BitArray(access_type(0), reg_size_),
-                "Value of " << t <<  " too large for bit field "
-                << getLocation() << " of size " << getNumBits());
+            // Check to see if the number of bits being written to the
+            // field is larger than the field itself.
+            sparta_assert((field_value_to_be_written_shifted & ~field_mask_) == utils::BitArray(access_type(0), reg_size_),
+                          "Value of " << value <<  " too large for bit field "
+                          << getLocation() << " of size " << getNumBits());
 
-            return (old & ~mask_) | val;
-        }
-
-        utils::BitArray computeMask_(size_t low, size_t hig, size_t size) const
-        {
-            sparta_assert(hig >= low);
-            const auto bits = hig - low + 1;
-            return utils::BitArray(((size_type(1) << bits) - 1), size) << low;
+            return (old_register_value & ~field_mask_) | field_value_to_be_written_shifted;
         }
 
         /*!
@@ -423,9 +423,10 @@ public:
         const RegisterBase::size_type reg_size_ = 0;
 
         /*!
-         * Used to mask out the bits of this field
+         * Used to mask out the bits in the register of this field --
+         * the 'not' bits of the register.
          */
-        const utils::BitArray mask_;
+        const utils::BitArray field_mask_;
 
     }; // class Field
 
@@ -702,62 +703,59 @@ public:
      * marked as read-only regardless of any read-write fields containing those
      * bits
      */
-    RegisterBase(TreeNode *parent, const Definition *def)
+    RegisterBase(TreeNode *parent, const Definition & def)
         : TreeNode(nullptr,
-                   NULL_TO_EMPTY_STR(def->name),
-                   NULL_TO_EMPTY_STR(def->group),
-                   def->group_idx,
-                   NULL_TO_EMPTY_STR(def->desc),
-                   false)
-        , def_(def)
-        , bits_(def->bytes * 8)
-        , mask_(computeWriteMask_(def))
-        , post_write_noti_(
-            this,
-            "post_write",
-            "Notification immediately after the register has been written",
-            "post_write")
-        , post_read_noti_(
-            this,
-            "post_read",
-            "Notification immediately after the register has been read",
-            "post_read")
+                   NULL_TO_EMPTY_STR(def.name),
+                   NULL_TO_EMPTY_STR(def.group),
+                   def.group_idx,
+                   NULL_TO_EMPTY_STR(def.desc),
+                   false),
+          def_(def),
+          bits_(def.bytes * 8),
+          mask_(computeWriteMask_(&def_)),
+          post_write_noti_(this,
+                           "post_write",
+                           "Notification immediately after the register has been written",
+                           "post_write"),
+          post_read_noti_(this,
+                          "post_read",
+                          "Notification immediately after the register has been read",
+                          "post_read")
     {
         if(parent != nullptr){
             setExpectedParent_(parent);
         }
 
-        sparta_assert(def, "Cannot construct a register with a null definition");
-        sparta_assert(def->name != 0, "Cannot have a null name in a register definition");
+        sparta_assert(def.name != 0, "Cannot have a null name in a register definition");
 
-        if(!strcmp(def->group, GROUP_NAME_NONE) && (def->group_num != GROUP_NUM_NONE)){
+        if(!strcmp(def_.group, GROUP_NAME_NONE) && (def.group_num != GROUP_NUM_NONE)){
             throw SpartaException("Attempted to add register \"")
-                << getLocation() << "\" which had group number " << def->group_num
+                << getLocation() << "\" which had group number " << def.group_num
                 << " but had group name \"\". A group name is required if a group number is specified.";
         }
 
-        if(strcmp(def->group, GROUP_NAME_NONE) && (def->group_num == GROUP_NUM_NONE)){
+        if(strcmp(def.group, GROUP_NAME_NONE) && (def.group_num == GROUP_NUM_NONE)){
             throw SpartaException("Attempted to add register \"")
                 << getLocation() << "\" which had group number GROUP_NUM_NONE"
-                << " but had group name \"" << def->group
+                << " but had group name \"" << def.group
                 << "\". A group number is required if a group name is specified.\"" << GROUP_NAME_NONE << "\"";
         }
 
         // Ensure byte-size is valid
-        static_assert(std::is_unsigned<decltype(def->bytes)>::value == true);
-        if(!isPowerOf2(def->bytes) || def->bytes == 0){
+        static_assert(std::is_unsigned<decltype(def.bytes)>::value == true);
+        if(!isPowerOf2(def.bytes) || def.bytes == 0){
             throw SpartaException("Register \"")
                 << getName() << "\" size in bytes must be a power of 2 larger than 0, is "
-                << def->bytes;
+                << def.bytes;
         }
 
         // Add all fields
-        for(auto & fdp : def->fields){
+        for(auto & fdp : def_.fields){
             addField(fdp);
         }
 
         // Add all aliases
-        const char* const * ap = def->aliases;
+        const char* const * ap = def_.aliases;
         if(ap != 0){
             while(*ap != 0){
                 addAlias(*ap); // From sparta::TreeNode
@@ -789,11 +787,11 @@ public:
      */
     void reset(bool unmasked=true) {
         // Poke the whole value, one-byte at a time
-        for(size_type i=0; i<def_->bytes; i++){
+        for(size_type i=0; i<def_.bytes; i++){
             if(unmasked){
-                pokeUnmasked(def_->initial_value[i], i);
+                pokeUnmasked(def_.initial_value[i], i);
             }else{
-                poke(def_->initial_value[i], i);
+                poke(def_.initial_value[i], i);
             }
         }
     }
@@ -829,13 +827,13 @@ public:
     /*!
      * \brief Gets the ID of this register as specified in its definition
      */
-    ident_type getID() const { return def_->id; }
+    ident_type getID() const { return def_.id; }
 
     /*!
      * \brief Gets the group number of this register as specified in its
      * definition
      */
-    group_num_type getGroupNum() const { return def_->group_num; }
+    group_num_type getGroupNum() const { return def_.group_num; }
 
     /*!
      * \brief Gets the name of the group to which this register belongs
@@ -844,19 +842,19 @@ public:
      */
     std::string getGroupName() const {
         // Return group. Guaranteed not to be null by Register::Register
-        return def_->group;
+        return def_.group;
     }
 
     /*!
      * \brief Gets the group index of this register as specified in its
      * definition
      */
-    group_idx_type getGroupIdx() const { return def_->group_idx; }
+    group_idx_type getGroupIdx() const { return def_.group_idx; }
 
     /*!
      * \brief Gets the size of this register's value in bytes
      */
-    size_type getNumBytes() const { return def_->bytes; }
+    size_type getNumBytes() const { return def_.bytes; }
 
     /*!
      * \brief Gets the size of this register's value in bits
@@ -888,8 +886,8 @@ public:
             return true;
         }
 
-        auto itr = std::find(def_->bank_membership.begin(), def_->bank_membership.end(), bank);
-        return itr != def_->bank_membership.end();
+        auto itr = std::find(def_.bank_membership.begin(), def_.bank_membership.end(), bank);
+        return itr != def_.bank_membership.end();
     }
 
     /*!
@@ -899,7 +897,7 @@ public:
      * had 0 elements in its definition's bank membership vector)
      */
     bool isBanked() const {
-        return def_->bank_membership.size() != 0;
+        return def_.bank_membership.size() != 0;
     }
 
     /*!
@@ -919,7 +917,7 @@ public:
      * \return ID of register of which this is a subset if any. If none,
      * returns INVALID_ID
      */
-    ident_type getSubsetOf() const { return def_->subset_of; }
+    ident_type getSubsetOf() const { return def_.subset_of; }
 
     /*!
      * \brief Returns the byte offset into the compound Register of which
@@ -930,19 +928,19 @@ public:
      * (getSubsetOf() == INVALID_ID), returns
      * returns INVALID_ID
      */
-    size_type getSubsetOffset() const { return def_->subset_offset; }
+    size_type getSubsetOffset() const { return def_.subset_offset; }
 
     /*!
      * \brief Returns the hint flags for this type.
      * \see HintFlag
      */
-    Definition::HintsT getHintFlags() const { return def_->hints; }
+    Definition::HintsT getHintFlags() const { return def_.hints; }
 
     /*!
      * \brief Returns the regdomain for this type.
      * \see RegdomainFlag
      */
-    Definition::RegDomainT getRegDomain() const { return def_->regdomain; }
+    Definition::RegDomainT getRegDomain() const { return def_.regdomain; }
 
     /*!
      * \brief Gets the definition supplied during the construciton of this
@@ -951,7 +949,7 @@ public:
      * construction.
      */
     const Definition& getDefinition() const {
-        return *def_;
+        return def_;
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -1354,9 +1352,9 @@ private:
     }
 
     /*!
-     * \brief Register definition given at construction (not copied)
+     * \brief Register definition given at construction
      */
-    const Definition* def_;
+    const Definition def_;
 
     /*!
      * \brief All Fields allocated by this set. These fields are deleted
@@ -1464,17 +1462,12 @@ inline bool operator!=(const RegisterBase::Definition &a,
 class Register : public RegisterBase
 {
 public:
-    Register(TreeNode *parent, const Definition *def, ArchData *adata)
-    : RegisterBase(parent, def)
-    , dview_(adata,
-             def->id,
-             def->bytes,
-             def->subset_of,
-             def->subset_offset,
-             def->initial_value)
-    , prior_val_dview_(adata, DataView::INVALID_ID, def->bytes)
-    , post_write_noti_data_(this, &prior_val_dview_, &dview_)
-    , post_read_noti_data_(this, &dview_)
+    Register(TreeNode *parent, const Definition def, ArchData *adata) :
+        RegisterBase(parent, def),
+        dview_(adata, def.id, def.bytes, def.subset_of, def.subset_offset, def.initial_value),
+        prior_val_dview_(adata, DataView::INVALID_ID, def.bytes),
+        post_write_noti_data_(this, &prior_val_dview_, &dview_),
+        post_read_noti_data_(this, &dview_)
     {
     }
 
@@ -1620,5 +1613,3 @@ inline std::ostream& operator<<(std::ostream& o, const sparta::Register::Field* 
     const sparta::RegisterBase::Definition sparta::RegisterBase::DEFINITION_END{0, nullptr, 0, nullptr, 0, nullptr, 0, { }, { }, nullptr, 0, 0, 0, 0, 0};
 
 
-// __REGISTER_H__
-#endif

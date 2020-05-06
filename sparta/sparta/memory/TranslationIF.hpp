@@ -5,8 +5,7 @@
  * \brief  File that defines translation interface
  */
 
-#ifndef __TRANSLATION_INTERFACE_H__
-#define __TRANSLATION_INTERFACE_H__
+#pragma once
 
 #include "sparta/memory/AddressTypes.hpp"
 #include "sparta/memory/Translation.hpp"
@@ -153,4 +152,3 @@ namespace sparta
     } // namespace memory
 } // namespace sparta
 
-#endif // __TRANSLATION_INTERFACE_H__

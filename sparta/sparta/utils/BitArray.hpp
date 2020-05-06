@@ -1,7 +1,6 @@
 /*
  */
-#ifndef __SPARTA_UTILS_BIT_ARRAY_H__
-#define __SPARTA_UTILS_BIT_ARRAY_H__
+#pragma once
 
 #include <vector>
 #include <iomanip>
@@ -225,7 +224,6 @@ namespace sparta {
                 } else {
                     data_ = data_ss_;
                 }
-                std::fill(data_, data_ + data_size, 0);
 
                 /* Update size after allocating data to maintain the invariant that
                  * data_size_ matches the allocated memory size in case new throws */
@@ -329,7 +327,7 @@ namespace sparta {
             std::vector<data_type> data_ls_;
 
             /** Used to store small arrays */
-            data_type data_ss_[SMALL_OPTIMIZATION_SIZE / sizeof(data_type)];
+            data_type data_ss_[SMALL_OPTIMIZATION_SIZE / sizeof(data_type)] = {0};
 
             /** Points to either data_ls_ or data_ss_ depending on the size of the array */
             data_type *data_ = nullptr;
@@ -340,4 +338,3 @@ namespace sparta {
 
     } /* namespace utils */
 } /* namespace sparta */
-#endif /* __SPARTA_UTILS_BIT_ARRAY_H__ */

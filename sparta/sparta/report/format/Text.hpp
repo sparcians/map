@@ -5,8 +5,7 @@
  * \brief Plaintext Report output formatter
  */
 
-#ifndef __SPARTA_REPORT_FORMAT_TEXT_H__
-#define __SPARTA_REPORT_FORMAT_TEXT_H__
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -473,5 +472,3 @@ inline std::ostream& operator<< (std::ostream& out, Text & f) {
     } // namespace report
 } // namespace sparta
 
-// __SPARTA_REPORT_FORMAT_TEXT_H__
-#endif

@@ -1,7 +1,6 @@
 // <StatsMapping> -*- C++ -*-
 
-#ifndef __SPARTA_REPORT_FORMAT_STATS_MAPPING_H__
-#define __SPARTA_REPORT_FORMAT_STATS_MAPPING_H__
+#pragma once
 
 #include <iosfwd>
 #include <string>
@@ -51,4 +50,3 @@ inline std::ostream & operator<<(std::ostream & out, StatsMapping & f) {
 } // namespace report
 } // namespace sparta
 
-#endif

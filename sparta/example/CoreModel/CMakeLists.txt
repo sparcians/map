@@ -140,3 +140,6 @@ sparta_named_test_no_valgrind(sparta_core_example_simdb_configure_opts6_wildcard
 sparta_named_test_no_valgrind(sparta_core_example_simdb_perf_async_task_controller sparta_core_example -i 50k --feature simdb-perf-async-ctrl 1)
 sparta_named_test(sparta_core_example_collect_legacy_reports sparta_core_example -i 10k --report all_json_formats.yaml --collect-legacy-reports collection/dir)
 sparta_named_test(sparta_core_example_collect_legacy_reports_specific_format sparta_core_example -i 10k --report all_json_formats.yaml --collect-legacy-reports collection/dir json json_reduced)
+
+# get_target_property(OUT sparta_core_example LINK_LIBRARIES)
+# message(STATUS "THIS OUT: ${OUT}")

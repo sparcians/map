@@ -1,0 +1,88 @@
+Some notes on what to check for before releases:
+
+
+
+always be looking for ui bug and obvious problems
+
+load with a specific data-source
+	use query param ?
+ensure page displays username and sha
+	ensure sha is in the console log
+if there are widgets, use (clear) to delete them all
+create a widget with no data
+	click on the widget type (e.g. bp-line-plot)
+	make sure widget was created
+drag data-source to the widget
+	widget will use a default stat
+	make sure the widget loads a processor
+	make sure widget shows the progress bar if waiting a while
+	make sure widget shows data eventually
+drag a new stat to the widget
+	expand the 'bp' data-source and  drag a stat (without table[t] in the name) to the widget (e.g. 'correct')
+	make sure widget shows the new data quickly
+drag a new data-source to the widget
+	ensure that you are prompted about changing data-sources and choose ok.
+	ensure that data shows up the plot looks correct
+
+drag a stat from the first data-source to the bp-line-plot widget type box to create a new widget
+	(e.g. yout)
+	ensure plot shows data
+drag another stat from the first dta-source to the newly-created line plot 
+	(e.g. bias_at_training)
+	ensure plot shows data
+click on the 'yout' on the new line plot
+	ensure the 'yout' line was removed from the plot and only the bias_at_training line remains
+
+drag stat 'table[t].d_unique' to the 'bp-heatmap' widget type to create one
+	ensure widget appears and looks correct
+
+attempt to toggle the per-table stat list for the shp heatmap (box that looks like [|<] )
+	Table of numbers should disappear and then reappear when clicked again
+
+check bp filtering click
+
+checkmanual vs follow
+
+test time slider dragging
+	reduce the range to ~1/10 of the total range
+		ensure widgets all updated
+		(wait if they are in-progress)
+	drag entire slider left right and ensure all widgets update
+		veirfy no errors in the console
+	drag slider all the way to the right and ensure all widgets update
+	drag slider all the way to the left and ensure all widgets update
+
+test time-slider animation
+	with slider starting at the left, click 'run'
+		ensure slider moves (slowly, probably)
+		ensure widgets are updating periodically
+		ensure no errors in console
+
+switch units if available, and repeat these time-slider dragging and animation
+switch back to default units (i.e. training-index for bp)
+
+
+
+
+
+
+
+
+
+
+check the browser console and ensure no errors and only familiar warnings are printed
+	e.g. Javascript "Forced reflow while executing", etc.
+
+
+verify save/load
+	save layout manually, reload, load it back manually
+	verify same widgets, order, collapsed state, etc.
+		(Could do a screenshot before and after to verify)
+	verify that widgets load data quickly since they should be in the cache
+verify autosave works 
+	make change, wait 30s, reload
+
+
+
+other notes:
+	pay attention to anything that takes a suprisingly long time.

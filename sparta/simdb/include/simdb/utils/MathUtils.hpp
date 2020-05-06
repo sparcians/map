@@ -1,7 +1,6 @@
 // <MathUtils> -*- C++ -*-
 
-#ifndef __SIMDB_MATH_UTILS_H__
-#define __SIMDB_MATH_UTILS_H__
+#pragma once
 
 #include <cmath>
 #include <cinttypes>
@@ -61,4 +60,3 @@ chooseRand()
 } // namespace utils
 } // namespace simdb
 
-#endif

@@ -1,8 +1,6 @@
-// <SpartaTester> -*- C++ -*-
+// <SpartaTester.hpp> -*- C++ -*-
 
-
-#ifndef __SPARTA_TESTER_H__
-#define __SPARTA_TESTER_H__
+#pragma once
 
 /**
  * \file   SpartaTester.hpp
@@ -745,6 +743,3 @@ namespace sparta
                   << "TESTS PASSED -- No errors found during test.\n" << std::endl; \
     }
 }
-
-// __SPARTA_TESTER_H__
-#endif

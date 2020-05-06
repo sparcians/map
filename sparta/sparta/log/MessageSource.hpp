@@ -1,7 +1,6 @@
 // <MessageSource> -*- C++ -*-
 
-#ifndef __MESSAGE_SOURCE_H__
-#define __MESSAGE_SOURCE_H__
+#pragma once
 
 #include <cstdint>
 #include <iostream>
@@ -272,5 +271,3 @@ namespace sparta
     } // namespace log
 } // namespace sparta
 
-// __MESSAGE_SOURCE_H__
-#endif

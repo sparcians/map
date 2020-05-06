@@ -1,11 +1,11 @@
+// <DeltaCheckpoint.hpp> -*- C++ -*-
 
 /**
  * \file DMI_DEPRECATED.hpp
  * \brief Define sparta::DMI_DEPRECATED
  */
 
-#ifndef __SPARTA_DMI_DEPRECATED_H__
-#define __SPARTA_DMI_DEPRECATED_H__
+#pragma once
 
 //#define SAFE_DMI 1
 
@@ -163,5 +163,3 @@ namespace sparta {
         };
     } // namespace memory
 } // namespace sparta
-
-#endif //__SPARTA_DMI_DEPRECATED_H__

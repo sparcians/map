@@ -5,8 +5,7 @@
  *
  */
 
-#ifndef __SLEEPER_THREAD_H__
-#define __SLEEPER_THREAD_H__
+#pragma once
 
 #include "sparta/kernel/SleeperThreadBase.hpp"
 
@@ -430,5 +429,3 @@ private:
 };
 
 }
-// __SLEEPER_THREAD_H__
-#endif

@@ -1,6 +1,6 @@
 project(Smartlexcast_test)
 
-add_executable(SmartLexCast_test SmartLexCast_test.cpp)
+sparta_add_test_executable(SmartLexCast_test SmartLexCast_test.cpp)
 
 include(../TestingMacros.cmake)
 
