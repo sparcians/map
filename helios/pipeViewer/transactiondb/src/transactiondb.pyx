@@ -263,7 +263,9 @@ cdef class Transaction(object):
             my_display_id = self.__trans.display_ID if self.__trans.display_ID < 0x1000 else self.__trans.transaction_ID
             py_str = py_str + format(my_display_id, 'x').encode('utf-8') + b' '
             for i in range(1, self.__trans.length):
-                py_str += str(self.__trans.nameVector[i]).encode('utf-8') + b'(' + str(self.__trans.stringVector[i]).encode('utf-8') + b')' + b' '
+                my_name = str(self.__trans.nameVector[i])
+                if my_name != "b'DID'":
+                    py_str += my_name.encode('utf-8') + b'(' + str(self.__trans.stringVector[i]).encode('utf-8') + b')' + b' '
 
         # TODO this could already be a string to avoid decoding over and over
 
@@ -592,9 +594,11 @@ cdef class TransactionDatabase:
             py_str = b''
 
             my_display_id = self.__trans.display_ID if self.__trans.display_ID < 0x1000 else self.__trans.transaction_ID
-            py_str = py_str + str(my_display_id).encode('utf-8') + b' '
+            py_str = py_str + format(my_display_id, 'x').encode('utf-8') + b' '
             for i in range(1, self.__trans.length):
-                py_str += str(self.__trans.nameVector[i]).encode('utf-8') + b'(' + str(self.__trans.stringVector[i]).encode('utf-8') + b')' + b' '
+                my_name = str(self.__trans.nameVector[i])
+                if my_name != "b'DID'":
+                    py_str += my_name.encode('utf-8') + b'(' + str(self.__trans.stringVector[i]).encode('utf-8') + b')' + b' '
 
         # Randomly remove from cache
         if len(self.__cached_annotations) > 30000:

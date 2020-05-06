@@ -302,7 +302,9 @@ cdef class Transaction(object):
             my_display_id = self.__trans.display_ID if self.__trans.display_ID < 0x1000 else self.__trans.transaction_ID
             py_str = py_str + format(my_display_id, 'x').encode('utf-8') + b' '
             for i in range(1, self.__trans.length):
-                py_str += str(self.__trans.nameVector[i]).encode('utf-8') + b'(' + str(self.__trans.stringVector[i]).encode('utf-8') + b')' + b' '
+                my_name = str(self.__trans.nameVector[i])
+                if my_name != "b'DID'":
+                    py_str += my_name.encode('utf-8') + b'(' + str(self.__trans.stringVector[i]).encode('utf-8') + b')' + b' '
 
         return py_str.decode('utf-8')
 
