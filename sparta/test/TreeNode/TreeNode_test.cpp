@@ -591,7 +591,11 @@ int main()
         EXPECT_NOTHROW(top.addChild(&a));
         EXPECT_EQUAL(b.getLocation(), "top.a.b");
         EXPECT_NOTHROW(  a.addChild(&b1));
-        EXPECT_NOTHROW(b1.getChild("leaf")); // Created by b1
+
+        // This test is no longer valid.  The subtrees are not created
+        // via the factories immediately on construction.  They are
+        // now done on configuration to allow factory subtrees to use extensions.
+        // EXPECT_NOTHROW(b1.getChild("leaf")); // Created by b1
 
         // Illegal building (fails)
         EXPECT_THROW(b.addChild(&b)); // ERROR: self-child

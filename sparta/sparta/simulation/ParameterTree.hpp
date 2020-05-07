@@ -39,17 +39,19 @@ namespace sparta
     public:
 
         /*!
-         * \brief Node containing a Parameter and value to apply. Can be used to describes a value
-         * extracted from the tree when using get or tryGet. This is a copy of the value and is not
+         * \brief Node containing a Parameter and value to apply. Can
+         * be used to describes a value extracted from the tree when
+         * using get or tryGet. This is a copy of the value and is not
          * in any way synchronized with the tree.
          *
-         * It is illegal to try and read the value if there is no value set (see hasValue) - An
-         * exception will be thrown.
+         * It is illegal to try and read the value if there is no
+         * value set (see hasValue) - An exception will be thrown.
          *
          * Can be written as well
          *
-         * Contains a string that can be lexically cast using the getAs<T> method. Supports all
-         * types supported by sparta::lexicalCast
+         * Contains a string that can be lexically cast using the
+         * getAs<T> method. Supports all types supported by
+         * sparta::lexicalCast
          */
         class Node
         {

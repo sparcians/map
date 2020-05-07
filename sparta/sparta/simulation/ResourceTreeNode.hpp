@@ -229,7 +229,8 @@ namespace sparta
          * Creates resource if all preconditions met and all parameters are
          * valid.
          */
-        virtual void createResource_() override {
+        virtual void createResource_() override
+        {
             if(getPhase() != TREE_FINALIZING){
                 throw SpartaException("Tried to create resource on ")
                     << getLocation() << " but tree was not in TREE_FINALIZING phase";
@@ -280,9 +281,9 @@ namespace sparta
             // Note, parameters have been reset to 0 read-counts when the
             // parameter set was constructed
 
-            Resource* r = res_fact_->createResource(this,
-                                                    params_);
+            Resource* r = res_fact_->createResource(this, params_);
             sparta_assert(r != nullptr); // Resource created must not be NULL
+
             if(getResource_() == nullptr){
                 throw SpartaException("ResourceTreeNode ") << getLocation()
                     << " created a resource of type " << res_fact_->getResourceType()
@@ -321,6 +322,14 @@ namespace sparta
                     << getLocation() << "\". This tree has exited the TREE_BUILDING "
                     << "phase and ResourceTreeNodes can no longer be added.";
             }
+        }
+
+        /*!
+         * \brief When the framework is entering the configuration phase
+         */
+        void onConfiguring_() override {
+            // Create subtree, which may want to look at parameters
+            res_fact_->createSubtree(this);
         }
 
         /*!
@@ -365,9 +374,6 @@ namespace sparta
             sparta_assert(params_ != 0); // Params must not be NULL
             params_->resetReadCounts(); // Reset read-counts to 0
 
-            // Create subtree, which may want to look at parameters
-            res_fact_->createSubtree(this);
-
             std::string res_type = res_fact_->getResourceType();
             if(res_type == ""){
                 throw SpartaException("resource type for ResourceFactory associated with ")
@@ -391,4 +397,3 @@ namespace sparta
 
 
 } // namespace sparta
-

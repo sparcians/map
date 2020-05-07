@@ -2164,6 +2164,8 @@ void TreeNode::enterFinalized_() {
 void TreeNode::enterConfig_() noexcept {
     setPhase_(TREE_CONFIGURING);
 
+    onConfiguring_();
+
     for(TreeNode* child : children_){
         child->enterConfig_();
     }
@@ -2678,80 +2680,113 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
 
     ExtensionsBase * obj = nullptr;
 
-    if (extension != nullptr) {
+    auto resolve_extension_node =
+        [&](const ParameterTree & ptree) -> const ParameterTree::Node*
+        {
+            const std::string loc = getLocation();
+            std::regex path_separator("[\\.,]");
+            std::vector<std::string> path_elems =
+                { std::sregex_token_iterator(loc.begin(), loc.end(), path_separator, -1),
+                  std::sregex_token_iterator() };
+
+            const ParameterTree::Node * extension_node = ptree.getRoot();
+            for (auto elems : path_elems)
+            {
+                ParameterTree::Node * child_node = extension_node->getChild(elems);
+                if (child_node == nullptr) {
+                    extension_node = nullptr;
+                    break;
+                }
+                extension_node = child_node;
+            }
+
+            //If the extension node is null at this point, it means a bad node path was
+            //given in the config-file that does not correspond to 'this' tree node's
+            //location in the device tree
+            if (extension_node == nullptr) {
+                if (extension_name != "*") {
+                    std::ostringstream oss;
+                    ptree.getRoot()->recursPrint(oss);
+                    const std::string tree_str = oss.str();
+                    if (!tree_str.empty() && tree_str != "\n") {
+                        std::cerr << "Invalid node path found in arch/config/extensions file YAML. The tree node\n"
+                                  << "that requested extension '" << extension_name
+                                  << "' has the following device tree location:\n"
+                                  << "\t" << getLocation() << "\n"
+                                  << "This doesn't match anything in the extensions tree. Expansion:\n"
+                                  << "\t"
+                                  << tree_str << std::endl;
+                    }
+                }
+            }
+            return extension_node;
+        };
+
+    auto resolve_named_extension_node =
+        [&extension_name] (const ParameterTree::Node * node) -> const ParameterTree::Node*
+        {
+            sparta_assert(node != nullptr);
+            node = node->getChild("extension");
+
+            if (node != nullptr) {
+                // Look for the extension name under this node
+                std::vector<const ParameterTree::Node*> children = node->getChildren();
+                for (const ParameterTree::Node * child : children) {
+                    if (child->getName() == extension_name) {
+                        return child;
+                    }
+                }
+            }
+            return nullptr;
+        };
+
+    if (extension != nullptr)
+    {
         extension->setParameters(std::move(extension_parameters));
         extension->postCreate();
         obj = extension.get();
         extensions_[extension_name] = std::move(extension);
+
+        app::Simulation * sim = getSimulation();
+        if(sim != nullptr)
+        {
+            // Apply extensions from the virtual extensions tree
+            app::SimulationConfiguration * cfg = sim->getSimulationConfiguration();
+            auto extensions_pt  = cfg->getExtensionsUnboundParameterTree();
+            auto extension_node = resolve_extension_node(extensions_pt);
+            if (extension_node != nullptr) {
+                extension_node = resolve_named_extension_node(extension_node);
+            }
+
+            // If the extension_node is null, then there are no
+            // extension files provided populating the virtual parameter tree
+            if(extension_node != nullptr)
+            {
+                auto extensions_ps = obj->getParameters();
+
+                for(auto param : *(extensions_ps))
+                {
+                    auto extens_tn = extension_node->getChild(param->getName());
+                    if(extens_tn) {
+                        app::ParameterApplicator pa("", extens_tn->getValue());
+                        pa.apply(param);
+                    }
+                }
+            }
+        }
     }
 
     else {
-        //See if we can go through the virtual parameter tree to build the extension
-        //object ourselves
+        // See if we can go through the virtual parameter tree to build the extension
+        // object ourselves
         app::Simulation * sim = getSimulation();
         if (sim == nullptr) {
             return nullptr;
         }
         app::SimulationConfiguration * cfg = sim->getSimulationConfiguration();
         if (cfg != nullptr) {
-            const std::string loc = getLocation();
-            std::regex path_separator(is_attached_ ? "\\." : ",");
-            std::vector<std::string> path_elems =
-                { std::sregex_token_iterator(loc.begin(), loc.end(), path_separator, -1),
-                  std::sregex_token_iterator() };
-
-            auto resolve_extension_node = [&](const ParameterTree & ptree) ->
-                const ParameterTree::Node* {
-                                              const ParameterTree::Node * extension_node = ptree.getRoot();
-                                              for (size_t path_elem_idx = 0; path_elem_idx < path_elems.size(); ++path_elem_idx) {
-                                                  ParameterTree::Node * child_node = extension_node->getChild(path_elems[path_elem_idx]);
-                                                  if (child_node == nullptr) {
-                                                      extension_node = nullptr;
-                                                      break;
-                                                  }
-                                                  extension_node = child_node;
-                                              }
-
-                                              //If the extension node is null at this point, it means a bad node path was
-                                              //given in the config-file that does not correspond to 'this' tree node's
-                                              //location in the device tree
-                                              if (extension_node == nullptr) {
-                                                  if (extension_name != "*") {
-                                                      std::ostringstream oss;
-                                                      ptree.getRoot()->recursPrint(oss);
-                                                      const std::string tree_str = oss.str();
-                                                      if (!tree_str.empty() && tree_str != "\n") {
-                                                          std::cerr << "Invalid node path found in arch/config/extensions file YAML. The tree node\n"
-                                                                    << "that was asked for its extensions has the following device tree location:\n"
-                                                                    << "\t" << getLocation() << "\n"
-                                                                    << "and the tree node extensions expand to this:\n"
-                                                                    << "\t"
-                                                                    << tree_str << std::endl;
-                                                      }
-                                                  }
-                                              }
-                                              return extension_node;
-                                          };
-
             const ParameterTree::Node * extension_node = nullptr;
             const ParameterTree::Node * arch_extension_node = nullptr;
-
-            auto resolve_named_extension_node = [&extension_name]
-                (const ParameterTree::Node * node) -> const ParameterTree::Node*
-                                                {
-                                                    if (node != nullptr) {
-                                                        node = node->getChild("extension");
-                                                    }
-                                                    if (node != nullptr) {
-                                                        std::vector<const ParameterTree::Node*> children = node->getChildren();
-                                                        for (const ParameterTree::Node * child : children) {
-                                                            if (child->getName() == extension_name) {
-                                                                return child;
-                                                            }
-                                                        }
-                                                    }
-                                                    return nullptr;
-                                                };
 
             if (extension_name != "*") {
                 extension_node = resolve_extension_node(
@@ -2782,9 +2817,11 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
                 return nullptr;
             }
 
-            //Right now, extension_node points to the extension belonging to the equivalent
-            //location in the device tree. The full path to the parameter node in the unbound
-            //parameter tree is something like 'top.core0.fpu.extension.user_data'
+            // Right now, extension_node points to the extension
+            // belonging to the equivalent location in the device
+            // tree. The full path to the parameter node in the
+            // unbound parameter tree is something like
+            // 'top.core0.fpu.extension.user_data'
             if (extension_node != nullptr) {
                 const std::string ext_name = extension_node->getName();
                 auto children = extension_node->getChildren();
@@ -2802,21 +2839,22 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
                 }
 
                 if (!any_params_have_a_value) {
-                        std::cerr << "WARNING: Found a malformed extension: '"
-                                  << extension_name << "' location: '"
-                                  << extension_node->getOrigin() << "'\n\t"
-                                  << "Expected 'name: value' pairs for the named extension, but found none"
-                                  << std::endl;
+                    std::cerr << "WARNING: Found a malformed extension: '"
+                              << extension_name << "' location: '"
+                              << extension_node->getOrigin() << "'\n\t"
+                              << "Expected 'name: value' pairs for the named extension, but found none"
+                              << std::endl;
                     return nullptr;
                 }
 
                 addExtensionParameters(ext_name, desc->cloneParameters());
                 extension_descs_.emplace_back(desc.release());
 
-                //If someone already gave us a factory for this extension type, great.
-                //If not, merge the root node's factories with ours. The simulation
-                //object, if there is one present, may have given the root node the
-                //factories to use.
+                // If someone already gave us a factory for this
+                // extension type, great.  If not, merge the root
+                // node's factories with ours. The simulation object,
+                // if there is one present, may have given the root
+                // node the factories to use.
                 if (extension_factories_.find(ext_name) == extension_factories_.end() &&
                     getRoot() != this && getSimulation() != nullptr) {
                     auto iter = getRoot()->extension_factories_.find(ext_name);
