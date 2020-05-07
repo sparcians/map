@@ -160,11 +160,11 @@ class Renderer(object):
                 return string_to_display, brush
             else:
                 seq_id_str = string_to_display[:3].strip()
-
                 if (len(seq_id_str) >= 3 and seq_id_str[0] == 'R'):
                     #--------------------------------------------------
                     # This is a "reason" instead of a "uop"
                     #
+                    seq_id_str = seq_id_str[1:]  # Ignore 'R'
                     if all(char in string.hexdigits for char in seq_id_str):
                         c_seq_id = int(seq_id_str[1], 16) # hex
                         #--------------------------------------------------

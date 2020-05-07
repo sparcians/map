@@ -286,21 +286,25 @@ cdef class Transaction(object):
         if self.__trans == NULL:
             return None
         cdef bytes py_str
-        cdef char * ann
+        cdef char *value_str
         cdef int i
 
+        bytes_re = re.compile("b'(.*?)'")  # Look for b'xxx'
+
         if self.getType() == ANNOTATION:
-            ann = <char*>self.__trans.annt
-            if ann == NULL:
+            value_str = <char*>self.__trans.annt
+            if value_str == NULL:
                 py_str = b''
             else:
-                py_str = ann
-
+                value_string = bytes_re.sub('r\1', str(value_str))  # Replace b'xxx' with xxx
+                hex_string = format(int(value_str) & 0xf, 'x')
+                my_display_id = "R" + hex_string + hex_string
+                py_str = my_display_id.encode('utf-8') + b' ' + value_str
         else:
             py_str = b''
 
             my_display_id = self.__trans.display_ID if self.__trans.display_ID < 0x1000 else self.__trans.transaction_ID
-            py_str = py_str + format(my_display_id, 'x').encode('utf-8') + b' '
+            py_str += format(my_display_id, '03x').encode('utf-8') + b' '
             for i in range(1, self.__trans.length):
                 my_name = str(self.__trans.nameVector[i])
                 if my_name != "b'DID'":
