@@ -285,32 +285,51 @@ cdef class Transaction(object):
     def getAnnotation(self):
         if self.__trans == NULL:
             return None
-        cdef bytes py_str
+        cdef bytes py_str_preamble
+        cdef bytes py_str_body
         cdef char *value_str
         cdef int i
 
         bytes_re = re.compile("b'(.*?)'")  # Look for b'xxx'
 
+        py_str_preamble = b''
+        py_str_body     = b''
         if self.getType() == ANNOTATION:
             value_str = <char*>self.__trans.annt
-            if value_str == NULL:
-                py_str = b''
-            else:
+            if value_str != NULL:
                 value_string = bytes_re.sub('r\1', str(value_str))  # Replace b'xxx' with xxx
                 hex_string = format(int(value_str) & 0xf, 'x')
                 my_display_id = "R" + hex_string + hex_string
-                py_str = my_display_id.encode('utf-8') + b' ' + value_str
+                py_str_body = my_display_id.encode('utf-8') + b' ' + value_str
         else:
-            py_str = b''
-
             my_display_id = self.__trans.display_ID if self.__trans.display_ID < 0x1000 else self.__trans.transaction_ID
-            py_str += format(my_display_id, '03x').encode('utf-8') + b' '
-            for i in range(1, self.__trans.length):
-                my_name = str(self.__trans.nameVector[i])
-                if my_name != "b'DID'":
-                    py_str += my_name.encode('utf-8') + b'(' + str(self.__trans.stringVector[i]).encode('utf-8') + b')' + b' '
+            py_str_preamble += format(my_display_id, '>03x').encode('utf-8') + b' '
 
-        return py_str.decode('utf-8')
+            for i in range(1, self.__trans.length):
+                my_name  = bytes_re.sub(r'\1', str(self.__trans.nameVector[i]))
+                my_value = bytes_re.sub(r'\1', str(self.__trans.stringVector[i]))
+                if my_name != "DID":
+                    py_str_body += my_name.encode('utf-8') + b'(' + my_value.encode('utf-8') + b')' + b' '
+
+                if my_name == "uid":
+                    value_string = "u" + format(int(my_value) % 10000, '>4d') + " "
+                    py_str_preamble += value_string.encode('utf-8')
+
+                elif my_name == "pc":
+                    value_string = "0x" + format(int(my_value, 16) & 0xffff, '>04x') + " "
+                    py_str_preamble += value_string.encode('utf-8')
+
+                elif my_name == "mnemonic":
+                    value_string = format(my_value[0:7], '<7') + " "
+                    py_str_preamble += value_string.encode('utf-8')
+
+
+        # TODO this could already be a string to avoid decoding over and over
+
+        decoded_str = bytes_re.sub(r'\1', (py_str_preamble + py_str_body).decode('utf-8'))    # Replace b'xxx' with xxx
+#        decoded_str = decoded_str.replace('\x00', '')    # Remove null bytes
+        decoded_str = decoded_str.replace(r'\x00', '')    # Remove null byte strings
+        return decoded_str
 
     def getLeft(self):
         """Gets the left endpoint of the transaction in hypercycles
