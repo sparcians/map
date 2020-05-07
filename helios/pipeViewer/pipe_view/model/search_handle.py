@@ -14,26 +14,23 @@ else:
     # keep looking if not explicitly stated
     # try to figure out based on transactiondb path
     __MODULE_ENV_VAR_NAME = 'TRANSACTIONDB_MODULE_DIR'
-    transaction_module_path = os.environ.get(__MODULE_ENV_VAR_NAME, os.getcwd())
+    env_var = os.environ.get(__MODULE_ENV_VAR_NAME)
+    if env_var is None:
+        added_path = os.path.dirname(__file__) + "/../../../../release/helios/pipeViewer/transactionsearch"
+        added_path = os.path.abspath(added_path)
+        can_search = True
+        if not os.path.isdir(added_path):
+            can_search = False
+        transaction_module_path = added_path
+    else:
+        transaction_module_path = os.environ.get(__MODULE_ENV_VAR_NAME, os.getcwd())
+
     build_folder_name = transaction_module_path.strip(os.path.sep).split(os.path.sep)[-1]
     TRANSACTION_SEARCH_PROGRAM = os.path.join(transaction_module_path,
-                                    '../../../tools/transactionsearch',
-                                    build_folder_name,
-                                    'transactionsearch')
+                                              'transactionsearch')
     TRANSACTION_SEARCH_PROGRAM = os.path.normpath(TRANSACTION_SEARCH_PROGRAM)
     if os.path.isfile(TRANSACTION_SEARCH_PROGRAM):
         can_search = True
-    else:
-
-        # Try with no build folder now that CMake is being used
-        TRANSACTION_SEARCH_PROGRAM = os.path.join(transaction_module_path,
-                                    '../../../tools/transactionsearch',
-                                    'transactionsearch')
-        TRANSACTION_SEARCH_PROGRAM = os.path.normpath(TRANSACTION_SEARCH_PROGRAM)
-        if os.path.isfile(TRANSACTION_SEARCH_PROGRAM):
-            can_search = True
-        else:
-            can_search = False
 
 if can_search:
     print('transaction search initialized: you will be able to use search.')
@@ -148,4 +145,3 @@ class SearchHandle:
         # #print 'Search results = ', len(results)
 
         return results
-

@@ -11,7 +11,16 @@ from .clock_manager import ClockManager
 
 # Import Argos transaction database module from SPARTA
 __MODULE_ENV_VAR_NAME = 'TRANSACTIONDB_MODULE_DIR'
-added_path = os.environ.get(__MODULE_ENV_VAR_NAME, os.getcwd())
+env_var = os.environ.get(__MODULE_ENV_VAR_NAME)
+if env_var == None:
+    # Try to find the transaction module in the Helios release dir
+    added_path = os.path.dirname(__file__) + "/../../../../release/helios/pipeViewer/transactiondb/lib"
+    added_path = os.path.abspath(added_path)
+    if not os.path.isdir(added_path):
+        error('Argos cannot find the transactiondb directory: {0}'.format(added_path))
+        sys.exit(1)
+else:
+    added_path = os.environ.get(__MODULE_ENV_VAR_NAME, os.getcwd())
 
 sys.path.insert(0, added_path) # Add temporary search path
 try:

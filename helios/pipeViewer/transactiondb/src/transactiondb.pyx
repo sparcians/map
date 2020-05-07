@@ -643,8 +643,9 @@ cdef class TransactionDatabase:
             self.__cached_annotations.clear()
 
         # Update cache
-        self.__cached_annotations[c_trans.transaction_ID] = py_str.decode('utf-8')
-        return py_str.decode('utf-8')
+        decoded_str = bytes_re.sub(r'\1', (py_str_preamble + py_str_body).decode('utf-8'))    # Replace b'xxx' with xxx
+        self.__cached_annotations[c_trans.transaction_ID] = decoded_str
+        return decoded_str
 
     def getTransactionID(self, uint32_t loc):
         cdef c_TransactionInterval_uint64_const_t* c_trans

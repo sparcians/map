@@ -51,7 +51,7 @@ class FramePlaybackBar(wx.Panel):
     def __init__(self, frame, layout):
         self.__parent = frame
         self.__layout = layout
-        wx.Panel.__init__(self, self.__parent, -1, size = (-1, 62))
+        wx.Panel.__init__(self, self.__parent, wx.ID_ANY)
 
         self.__db = self.__parent.GetContext().dbhandle.database
         self.__qapi = self.__parent.GetContext().dbhandle.api
@@ -81,14 +81,14 @@ class FramePlaybackBar(wx.Panel):
 
         self.__play_timer = wx.Timer(self) # Placeholder. Will be created as needed
 
-        self.__hl_start = hl.HyperLinkCtrl(self, -1, label = ' ', URL = '')
+        self.__hl_start = hl.HyperLinkCtrl(self, wx.ID_ANY, label = ' ', URL = '')
         self.__hl_start.SetToolTip('Jump to first cycle in the transaction database')
         self.__hl_start.AutoBrowse(False)
-        self.__hl_end = hl.HyperLinkCtrl(self, -1, label = ' ', URL = '')
+        self.__hl_end = hl.HyperLinkCtrl(self, wx.ID_ANY, label = ' ', URL = '')
         self.__hl_end.SetToolTip('Jump to final cycle in the transaction database')
         self.__hl_end.AutoBrowse(False)
 
-        self.__time_slider = wx.Slider(self, -1)
+        self.__time_slider = wx.Slider(self, wx.ID_ANY)
         self.__time_slider.SetToolTip('Displays the current position in the transaction database. Slide this bar to quickly move around')
         # self.__time_slider.SetThumbLength(2)
         # self.__time_slider.SetLineSize(1)
@@ -114,57 +114,57 @@ class FramePlaybackBar(wx.Panel):
         curtime_msg = 'Current cycle in the current clock domain. Also shows ' \
                       'the hyper-tick (common time) tick count of this frame'
 
-        self.__static_curcycle = wx.StaticText(self, -1, size = (90, -1))
+        self.__static_curcycle = wx.StaticText(self, wx.ID_ANY, size = (90, -1))
         self.__static_curcycle.SetToolTip(curtime_msg)
         self.__static_curcycle.SetForegroundColour(self.__med_blue)
         self.__static_curcycle.SetFont(self.__fnt_bold_med)
 
-        self.__static_curtick = wx.StaticText(self, -1, size = (90, -1))
+        self.__static_curtick = wx.StaticText(self, wx.ID_ANY, size = (90, -1))
         self.__static_curtick.SetToolTip(curtime_msg)
         self.__static_curtick.SetForegroundColour(self.__med_blue)
         self.__static_curtick.SetFont(self.__fnt_tiny)
 
-        self.__btn_rw_hold = ShyButton(self, -1, '<<', style = wx.BU_EXACTFIT)
+        self.__btn_rw_hold = ShyButton(self, wx.ID_ANY, '<<', style = wx.BU_EXACTFIT)
         self.__btn_rw_hold.SetToolTip('Rewinds while left-mouse is held. Using space or enter to activate ' \
                                             'this control also rewinds but rate is dictated by keyboard repeat rate')
-        self.__btn_back30 = ShyButton(self, -1, '-30', style = wx.BU_EXACTFIT)
+        self.__btn_back30 = ShyButton(self, wx.ID_ANY, '-30', style = wx.BU_EXACTFIT)
         self.__btn_back30.SetToolTip('Steps back 30 cycle in the current clock domain')
-        self.__btn_back10 = ShyButton(self, -1, '-10', style = wx.BU_EXACTFIT)
+        self.__btn_back10 = ShyButton(self, wx.ID_ANY, '-10', style = wx.BU_EXACTFIT)
         self.__btn_back10.SetToolTip('Steps back 10 cycle in the current clock domain')
-        self.__btn_back3 = ShyButton(self, -1, '-3', style = wx.BU_EXACTFIT)
+        self.__btn_back3 = ShyButton(self, wx.ID_ANY, '-3', style = wx.BU_EXACTFIT)
         self.__btn_back3.SetToolTip('Steps back 3 cycle in the current clock domain')
-        self.__btn_back1 = ShyButton(self, -1, '-1', style = wx.BU_EXACTFIT)
+        self.__btn_back1 = ShyButton(self, wx.ID_ANY, '-1', style = wx.BU_EXACTFIT)
         self.__btn_back1.SetToolTip('Steps back 1 cycle in the current clock domain')
-        self.__btn_forward1 = ShyButton(self, -1, '+1', style = wx.BU_EXACTFIT)
+        self.__btn_forward1 = ShyButton(self, wx.ID_ANY, '+1', style = wx.BU_EXACTFIT)
         self.__btn_forward1.SetToolTip('Steps forward 1 cycle in the current clock domain')
-        self.__btn_forward3 = ShyButton(self, -1, '+3', style = wx.BU_EXACTFIT)
+        self.__btn_forward3 = ShyButton(self, wx.ID_ANY, '+3', style = wx.BU_EXACTFIT)
         self.__btn_forward3.SetToolTip('Steps forward 3 cycle in the current clock domain')
-        self.__btn_forward10 = ShyButton(self, -1, '+10', style = wx.BU_EXACTFIT)
+        self.__btn_forward10 = ShyButton(self, wx.ID_ANY, '+10', style = wx.BU_EXACTFIT)
         self.__btn_forward10.SetToolTip('Steps forward 10 cycle in the current clock domain')
-        self.__btn_forward30 = ShyButton(self, -1, '+30', style = wx.BU_EXACTFIT)
+        self.__btn_forward30 = ShyButton(self, wx.ID_ANY, '+30', style = wx.BU_EXACTFIT)
         self.__btn_forward30.SetToolTip('Steps forward 30 cycle in the current clock domain')
-        self.__btn_ff_hold = ShyButton(self, -1, '>>', style = wx.BU_EXACTFIT)
+        self.__btn_ff_hold = ShyButton(self, wx.ID_ANY, '>>', style = wx.BU_EXACTFIT)
         self.__btn_ff_hold.SetToolTip('Fast-Forwards while left-mouse is held. Using space or enter to activate ' \
                                             'this control also fast-forwards but rate is dictated by keyboard repeat rate')
 
-        self.__txt_goto = wx.TextCtrl(self, -1, size = (60, -1), value = '+10')
+        self.__txt_goto = wx.TextCtrl(self, wx.ID_ANY, size = (60, -1), value = '+10')
         self.__txt_goto.SetToolTip('Enter an absolute or relative cycle number (in the current clock domain) ' \
                                          'to jump to. Decimal, octal (0NNN), hex (0xNNN), or binary (0bNNN) ' \
                                          'literals are all acceptable inputs. Prefixing the number with a + or ' \
                                          '- sign will result in this value being interpreted as a relative value ' \
                                          'from the current cycle. Press Enter or click "jump" to jump to the ' \
                                          'specified cycle')
-        self.__btn_goto = ShyButton(self, -1, 'jump', size = (45, -1), style = wx.BU_EXACTFIT)
+        self.__btn_goto = ShyButton(self, wx.ID_ANY, 'jump', style = wx.BU_EXACTFIT)
         self.__btn_goto.SetToolTip('Jump to the absolute or relative cycle specified in the jump text control')
 
-        self.__static_playback_speed_units = wx.StaticText(self, -1, 'cyc/\nsec')
-        self.__spin_playback_speed = wx.SpinCtrl(self, -1, '1', size = (50, -1))
+        self.__static_playback_speed_units = wx.StaticText(self, wx.ID_ANY, 'cyc/\nsec')
+        self.__spin_playback_speed = wx.SpinCtrl(self, wx.ID_ANY, '1')
         self.__spin_playback_speed.SetToolTip('Set the number of cycles (in current clock domain) to display ' \
                                                     'per second during playback. This can be positive or negative. ' \
                                                     'A value of 0 prevents playing')
         self.__spin_playback_speed.SetRange(-self.MAX_PLAY_RATE, self.MAX_PLAY_RATE)
         self.__spin_playback_speed.SetValue(1.5)
-        self.__btn_playpause = ShyButton(self, -1, self.LABEL_PLAY, size = (45, -1), style = wx.BU_EXACTFIT)
+        self.__btn_playpause = ShyButton(self, wx.ID_ANY, self.LABEL_PLAY, size = (45, -1), style = wx.BU_EXACTFIT)
         self.__btn_playpause.SetToolTip('Automatically steps through cycles (in the current clock domain) at ' \
                                               'the rate (positive or negative) specified by the "cyc/sec" ' \
                                               'spin-control beside this button')
@@ -234,12 +234,12 @@ class FramePlaybackBar(wx.Panel):
         row2.Add(self.__btn_forward30, 0, wx.ALIGN_CENTER_VERTICAL)
         row2.Add(self.__btn_ff_hold, 0, wx.ALIGN_CENTER_VERTICAL)
         row2.Add((1, 1), 1, wx.EXPAND) # Space sink
-        row2.Add(wx.StaticLine(self, -1, style = wx.VERTICAL), 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 2)
+        row2.Add(wx.StaticLine(self, wx.ID_ANY, style = wx.VERTICAL), 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 2)
         row2.Add((1, 1), 1, wx.EXPAND) # Space sink
         row2.Add(self.__txt_goto, 0, wx.ALIGN_CENTER_VERTICAL)
         row2.Add(self.__btn_goto, 0, wx.ALIGN_CENTER_VERTICAL)
         row2.Add((1, 1), 1, wx.EXPAND) # Space sink
-        row2.Add(wx.StaticLine(self, -1, style = wx.VERTICAL), 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 2)
+        row2.Add(wx.StaticLine(self, wx.ID_ANY, style = wx.VERTICAL), 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 2)
         row2.Add((1, 1), 1, wx.EXPAND) # Space sink
         row2.Add(self.__btn_playpause, 0, wx.ALIGN_CENTER_VERTICAL)
         row2.Add(self.__static_playback_speed_units, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 2)
@@ -248,7 +248,7 @@ class FramePlaybackBar(wx.Panel):
         rows = wx.BoxSizer(wx.VERTICAL)
         rows.Add((1, 2), 0, wx.EXPAND)
         rows.Add(row2, 0, wx.EXPAND)
-        rows.Add(wx.StaticLine(self, -1), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 4)
+        rows.Add(wx.StaticLine(self, wx.ID_ANY), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 4)
         rows.Add(row1, 0, wx.EXPAND)
 
         self.SetSizer(rows)
