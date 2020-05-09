@@ -8,6 +8,7 @@ from logging import debug, error, info
 __SEARCH_PROGRAM_ENV_VAR_NAME = 'TRANSACTIONSEARCH_PROGRAM'
 TRANSACTION_SEARCH_PROGRAM = os.environ.get(__SEARCH_PROGRAM_ENV_VAR_NAME, os.getcwd())
 
+can_search = False
 if os.path.isfile(TRANSACTION_SEARCH_PROGRAM):
     can_search = True
 else:
