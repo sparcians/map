@@ -24,11 +24,54 @@
 namespace sparta
 {
     ////////////////////////////////////////////////////////////////////////////////
-    /*! \page precedence_rules Precedence operators for EventNode/Scheduleables
+    /*! \page precedence_rules %Precedence operators for EventNode/Scheduleables
      *
-     * Precedence operators, since folks use unique_ptrs, pointers,
-     * GlobalOrderingPoint, references, etc..  The compilation errors get pretty
-     * nasty if a simple operator isn't found.
+     * Ordering events in Sparta is one of the key features Sparta has
+     * over other simulation frameworks.  Being able to indicate that
+     * a modeler _requires_ one event to be scheduled/fired before
+     * another is not only handy, but critical to a deterministic
+     * model.  Sparta enables ordering through precedence operations,
+     * documented here.
+     *
+     * Sparta main precedence operator is the C++ `operator>>` and are
+     * documented in namespace sparta. An example of setting
+     * precedence between two events:
+     *
+     * \code
+     * sparta::Event<> * event1(...);
+     * sparta::Event<> event2(...);
+     *
+     * // Make sure event1 is always scheduled before event2
+     * event1 >> event2;
+     *
+     * \endcode
+     *
+     * This code will guarantee that `event1` will always be scheduled
+     * and fired before `event2` in simulation, not matter which event
+     * is scheduled first.  However, if `event2` attempts to schedule
+     * `event1` _on the same cycle_, the framework will throw an
+     * exception:
+     *
+     * \code
+     * void MyUnit::event2Handler()
+     * {
+     *     event1.schedule(sparta::Clock::Cycle(0));  // ERROR!  Event1 is supposed to fire before event2
+     * }
+     *
+     * void MyUnit::event1Handler()
+     * {
+     *     event2.schedule(sparta::Clock::Cycle(0));  // OK Event2 is supposed to fire after event1
+     * }
+     * \endcode
+     *
+     * This, however, is ok to do:
+     *
+     * \code
+     * void MyUnit::event2Handler()
+     * {
+     *     event1.schedule(sparta::Clock::Cycle(1));  // Ok, this is being scheduled next cycle
+     * }
+     * \endcode
      *
      * Some combinations:
      * \code
@@ -69,10 +112,10 @@ namespace sparta
      * \param producer The producer (LHS) must come before consumer (RHS)
      * \param consumer The GlobalOrderingPoint (Vertex type) to succeed the ScheduleableType
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -104,10 +147,10 @@ namespace sparta
      * \param producer The GlobalOrderingPoint to succeed the ScheduleableType
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -139,10 +182,10 @@ namespace sparta
      * \param producer The GlobalOrderingPoint to succeed the ScheduleableType
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -171,10 +214,10 @@ namespace sparta
      * \param producer The GlobalOrderingPoint to succeed the ScheduleableType
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -197,9 +240,11 @@ namespace sparta
         return consumer;
     }
 
+#ifndef DO_NOT_DOCUMENT
 #define __SPARTA_PHASE_ERROR_MSG                                        \
     "\nERROR: You cannot set a precedence on two Scheduleable types"    \
     " that are on different phases.  This will happen automatically by the framework."
+#endif
 
     ////////////////////////////////////////////////////////////////////////////////
     // Start with easy, concrete, derived types
@@ -224,10 +269,10 @@ namespace sparta
      * \param producer The PayloadEvent to succeed another PayloadEvent
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -261,10 +306,10 @@ namespace sparta
      * \param producer The PayloadEvent to succeed UniqueEvent
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -299,10 +344,10 @@ namespace sparta
      * \param producer The PayloadEvent to succeed SingleCycleUniqueEvent
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -337,10 +382,10 @@ namespace sparta
      * \param producer The PayloadEvent to succeed an Event
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -375,10 +420,10 @@ namespace sparta
      * \param producer The UniqueEvent to succeed a PayloadEvent
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -413,10 +458,10 @@ namespace sparta
      * \param producer The SingleCycleUniqueEvent to succeed a PayloadEvent
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -451,10 +496,10 @@ namespace sparta
      * \param producer The Event to succeed a PayloadEvent
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -497,10 +542,10 @@ namespace sparta
      * \param producer The UniqueEvent to succeed a UniqueEvent
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -534,10 +579,10 @@ namespace sparta
      * \param producer The UniqueEvent to succeed a SingleCycleUniqueEvent
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -571,10 +616,10 @@ namespace sparta
      * \param producer The SingleCycleUniqueEvent to succeed an UniqueEvent
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -611,10 +656,10 @@ namespace sparta
      * \param producer The SingleCycleUniqueEvent to succeed a SingleCycleUniqueEvent
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -650,10 +695,10 @@ namespace sparta
      * \param producer The Event to succeed a Event
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -693,10 +738,10 @@ namespace sparta
      * \param producer The EventT1 to succeed a EventT2
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -728,10 +773,10 @@ namespace sparta
      * \param producer The EventT1 to succeed a EventT2
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -762,10 +807,10 @@ namespace sparta
      * \param producer The EventT1 to succeed a EventT2
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -800,10 +845,10 @@ namespace sparta
      * \param producer The Scheduleable to succeed the PayloadEvent
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -837,10 +882,10 @@ namespace sparta
      * \param producer The PayloadEvent to succeed a Scheduleable
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -881,10 +926,10 @@ namespace sparta
      * \param producer The Scheduleable to succeed a Bus
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
@@ -923,10 +968,10 @@ namespace sparta
      * \param producer The Bus to succeed a Scheduleable
      * \param consumer The producer (LHS) must come before consumer (RHS)
      *
-     * \return The \i consumer
+     * \return The consumer
      *
-     * \note This function returns the \i consumer (RHS) of the
-     *       operation instead of the \i producer (LHS).  This is
+     * \note This function returns the consumer (RHS) of the
+     *       operation instead of the producer (LHS).  This is
      *       opposite of typical behavior of >> operators.
      *
      * Place a precedence on a producer to the consumer.  The consumer
