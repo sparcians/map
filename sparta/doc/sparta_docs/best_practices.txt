@@ -4,6 +4,10 @@
   \page best_practices Best Practices, Suggestions on using Sparta
   \tableofcontents
 
+  This page, coupled with the \ref sparta_faq can help the modeler
+  develop, debug, contribute and understand how to use Sparta
+  effectively.
+
   \section sparta_asserts Using Sparta Asserts
 
   Sparta provides a nifty error dumping/handling mechanism triggered

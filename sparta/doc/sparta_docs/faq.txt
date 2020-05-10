@@ -1,0 +1,150 @@
+/*!
+  \page sparta_faq Sparta FAQ
+  \tableofcontents
+
+  \section modeling_determinism Modeling Determinism
+
+  -# Is determinism a good thing or bad thing in DES based models?
+  -# How do we ensure determinism in DES when we need it?
+  -# If there is a component with multiple events E1, E2, E3 which
+     hasn’t been explicitly ordered, how does Sparta schedule them? Is
+     this schedule deterministic within the run and across runs?
+
+  Sparta contains a Discrete Event Simulation (DES) engine.  This
+  means that a modeler is allowed to schedule events, or work, only
+  when there's work to do.  This naturally allows for faster
+  simulation times and "fast forwarding" of simulation, skipping time
+  when there's nothing for the scheduler to do.
+
+  Unfortunately, in most other DES-based simulation engines, a level
+  of indeterminism is introduced due to random scheduling of events
+  into the simulation kernel, especially if a developer introduces a
+  timing or functional change.
+
+  As a pure C++ development platform, Sparta does not suffer from
+  indeterminism _between one simulation run and another_.  All events
+  in a Sparta-based model are registered during construction time.
+  Sparta will then map out those events with dependencies (either
+  explicit or implicit) in a Directed Acyclic Graph (DAG).  Those
+  dependencies are established using precedence rules (see
+  \ref precedence_rules).
+
+  Those events that do not have any explicit dependencies are "free
+  form," but deterministic as long as the modeler does not introduce
+  random behaviors during a running simulation: i.e. each run of the
+  _same_ workload will be exactly the _same_ with the _same_
+  parameters.
+
+  However, those "free form" events have the potential to be scheduled
+  in a different order _between_ different workloads or with
+  _different_ simulation parameters.  This is mostly harmless, but can
+  cause headache especially if the modeler assumes one event will be
+  fired before another.  To avoid that, the suggestion to the modeler
+  is to provide a clean, clear design of their model and to draw
+  ordering lines between items of work and establish precedence
+  between Events.  This will ensure determinism in the DES.
+
+  \section des_debugging DES Debugging Techniques
+
+  Debugging a DES based model has challenges.  Some known problems to solve:
+   -# The frameworks says I have a DAG cycle -- what is it and how do I debug this?
+   -# Why *was* a particular event scheduled?
+   -# Why *wasn't* a particular event scheduled?
+   -# Who scheduled that event?
+   -# Why does one event happen before the other?
+   -# Can I get a dependency graph of events?
+
+  ### Understanding/Looking at the Directed Acyclic Graph (DAG)
+
+  First, if you are using sparta::app::CommandLineSimulator class, you
+  can always dump the internal DAG that defines the given
+  relationships between sparta::Scheduleable objects:
+
+  \code
+    ./sparta_core_example --show-dag --no-run
+  \endcode
+
+  Take an example from the DAG output and analyze it:
+
+  \code
+  V[in_uop_queue_credits<DataInPort>[Decode::receiveUopQueueCredits_(uint32_t)]]: id: 22, marker=white, edges(in=2, out=2), group: 17
+        -> GOP[Tick]: id: 5, marker=white, edges(in=38, out=2), group: 21
+        -> V[decode_insts_event[Decode::decodeInsts_()]]: id: 24, marker=white, edges(in=3, out=3), group: 18
+  \endcode
+
+  This ordering is an implicit ordering between functions within the
+  Decode block, specifically the receiving of uop credits from Rename
+  (not listed) on a sparta::DataInPort (named
+  `receiveUopQueueCredits`) and decoding of instructions (named
+  `decodeInsts_`).  (See \ref core_example).
+
+  The `V` symbol represents a vertex in the DAG, which is one
+  sparta::Scheduleable.  This sparta::Scheduleable is a
+  sparta::PayloadEvent inside the sparta::DataInPort named
+  `in_uop_queue_credits<DataInPort>[Decode::receiveUopQueueCredits_(uint32_t)]`.
+  Specifically, this internal sparta::PayloadEvent that will call the
+  method `Decode::receiveUopQueueCredits_(uint32_t)` when data is to
+  be delivered from the port.
+
+  This vertex has 2 edges in and 2 edges out.  Those edges going out
+  are listed, one being a GOP or sparta::GlobalOrderingPoint and the
+  other is a registered triggered event that is designated to be
+  scheduled after receiving of Uop Queue credits.
+
+  If the modeler introduces DAG cycle, the framework with throw and
+  exception and generate `dag_cycle.dot` file.  Using Graphviz tools
+  (or the like), the modeler can visualize the DAG cycle graphically.
+  Some common ways to solve cycles:
+
+  -# Within a unit/block: introduce an order between the events using
+     the precedence rules (see \ref precedence_rules)
+  -# Between blocks (different sparta::Unit or sparta::Resource), use
+     a sparta::GlobalOrderingPoint
+  -# Between an event and port, use methods like
+     sparta::InPort::registerConsumerEvent and
+     sparta::OutPort::registerProducingEvent
+  -# Place an event on an earlier (or later) sparta::SchedulingPhase
+
+  ### Dumping Out Scheduler Information
+
+  To determine which event is scheduling another event, the
+  sparta::Scheduler has an internal debugging logger (called `debug`)
+  to help.  To invoke the logger, use the the
+
+  \code
+  -l [ --log ] PATTERN CATEGORY DEST
+  \endcode
+
+  command line option if the model uses
+  sparta::app::CommandLineSimulator class:
+
+  \code
+  ./sparta_core_example -l scheduler debug 1 | less -R
+  \endcode
+
+  The above example will dump the sparta::Scheduler debug logger to
+  stdout which is fed through a pipe to the `less` command with escape
+  sequences displayed (`-R`).  Using `less`, search for the named
+  event of interest.  For example, taking the output from the
+  sparta_core_example, search for `dispatchInstructions_` to see which
+  event caused it to be triggered:
+
+  \code
+  {0000000000 -------- scheduler debug} --> SCHEDULER: Firing retire_insts[ROB::retireEvent_()] at time: 10000 group: 12
+  {0000000000 -------- scheduler debug} scheduling: dispatch_event[Dispatch::dispatchInstructions_()] at tick: 10000 rel_time: 0 group: 14 continuing: true
+  \endcode
+
+  From the lines above, the modeler can see the event
+  `dispatchInstructions_` was scheduled when the event `retireEvent_`
+  was fired.
+
+  Remember that logging and the command line flag
+
+  \code
+  --debug-on [CLOCK] CYCLE
+  \endcode
+
+  can be used together to *only* dump a log starting at the
+  given cycle.
+
+*/
