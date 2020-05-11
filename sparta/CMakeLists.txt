@@ -101,9 +101,6 @@ if (COMPILE_WITH_PYTHON)
     python/sparta_support/Completer.cpp)
 endif ()
 
-add_library (sparta ${SourceCppFiles})
-set (SPARTA_STATIC_LIBS ${PROJECT_BINARY_DIR}/libsparta.a)
-
 execute_process (COMMAND bash "-c" "git describe --tags --always" OUTPUT_VARIABLE GIT_REPO_VERSION RESULT_VARIABLE rc)
 if (NOT rc EQUAL "0")
   message (FATAL_ERROR "could not run git command 'git describe --tags --always', rc=${rc}")
@@ -148,6 +145,31 @@ if (ENABLE_SANITIZERS)
     set (CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
 endif ()
 
+#
+# If we're using CONDA, we might be using the one suggested for
+# Sparta.  Need to use the llvm-ar found in the conda package to
+# prevent irritating linker issues
+#
+if (USING_CONDA)
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    unset(LLVM_AR)
+    unset(LLVM_AR CACHE)
+    find_program(LLVM_AR "llvm-ar")
+    if (NOT LLVM_AR)
+      unset(LLVM_AR)
+      unset(LLVM_AR CACHE)
+      find_program(LLVM_AR "llvm-ar-9")
+      if (NOT LLVM_AR)
+        message(FATAL_ERROR "llvm-ar is needed to link trace_tools on this system")
+      else()
+        SET(CMAKE_AR "llvm-ar-9")
+      endif()
+    else()
+      SET(CMAKE_AR "llvm-ar")
+    endif()
+  endif()
+endif()
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # using Clang
   # -stdlib=libc++
@@ -170,6 +192,9 @@ set (CPPCHECK_EXCLUDES
   ${SPARTA_BASE}/test
 )
 find_package (Cppcheck)
+
+add_library (sparta ${SourceCppFiles})
+set (SPARTA_STATIC_LIBS ${PROJECT_BINARY_DIR}/libsparta.a)
 
 # Build the SimDB library
 add_subdirectory (simdb)
