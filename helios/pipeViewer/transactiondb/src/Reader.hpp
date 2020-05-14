@@ -560,7 +560,9 @@ namespace pipeViewer{
                                         pairt.stringVector.emplace_back("");
                                     } else if (field_name == "pc" ||
                                                field_name == "pred_target" ||
-                                               field_name == "vaddr") {
+                                               field_name == "vaddr" ||
+                                               field_name == "va" ||
+                                               field_name == "stf_va") {
                                         // This is a hex field
                                         std::stringstream int_str;
                                         int_str << "0x" << std::hex << int_value;
