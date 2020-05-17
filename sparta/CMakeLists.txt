@@ -5,6 +5,8 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project (sparta CXX)
 
+set (GEN_DEBUG_INFO ON CACHE BOOL "Genearate debug info in compile & link -g")
+
 set (SPARTA_BASE ${CMAKE_CURRENT_SOURCE_DIR})
 include (${SPARTA_BASE}/cmake/sparta-config.cmake)
 
@@ -134,10 +136,18 @@ endif ()
 
 # -Wpedantic
 add_definitions(-DSPARTA_VERSION=\"${GIT_REPO_VERSION}\")
-add_compile_options(-g -Werror -fPIC
+add_compile_options(-Werror -fPIC
   -Wall -Wextra -Winline -Winit-self -Wno-unused-function
   -Wuninitialized -Wno-sequence-point -Wno-inline -Wno-unknown-pragmas
   -Woverloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers)
+
+if (GEN_DEBUG_INFO)
+  message ("-- Building with debug info -g")
+  add_compile_options ( -g )
+  add_link_options( -g )
+else ()
+  message ("-- Building without debug info -g")
+endif ()
 
 if (ENABLE_SANITIZERS)
     message ("-- Building with address and undefined behavior sanitizers")
