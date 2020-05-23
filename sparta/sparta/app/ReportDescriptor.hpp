@@ -544,7 +544,7 @@ namespace sparta {
                 std::vector<Report*> pending = getPendingInstantiations();
 
                 std::unordered_set<Report*> all(pending.begin(), pending.end());
-                for (const auto cur : current) {
+                for (const auto & cur : current) {
                     all.insert(cur.first);
                 }
                 return std::vector<Report*>(all.begin(), all.end());
