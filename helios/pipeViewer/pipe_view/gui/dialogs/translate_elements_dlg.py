@@ -23,7 +23,7 @@ class TranslateElementsDlg(wx.Dialog):
                           size = (-1, -1),
                           style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX)
 
-        self.__fnt_numbers = wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, face = 'Monospace')
+        self.__fnt_numbers = wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, faceName = 'Monospace')
 
         panel = wx.Panel(self)
 

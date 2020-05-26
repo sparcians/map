@@ -91,7 +91,7 @@ class Layout_Canvas(wx.ScrolledWindow):
         self.__mongoose_image = self.GetMongooseLogo()
 
         try:
-            self.__fnt_layout = wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, face = 'Monospace')
+            self.__fnt_layout = wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, faceName = 'Monospace')
         except:
             # Pick a fallback generic modern font (not by name)
             self.__fnt_layout = wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
