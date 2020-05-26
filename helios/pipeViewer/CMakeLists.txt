@@ -18,6 +18,7 @@ set(PY_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/build")
 add_custom_command(OUTPUT "${PY_OUTPUT}"
 		   COMMAND TARGETDIR=${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core ${PYTHON} ${SETUP_PY} build_ext --inplace
                    COMMAND ${CMAKE_COMMAND} -E touch ${PY_OUTPUT}
+                   DEPENDS ${SETUP_PY}
                    )
 add_custom_target(pipe_view_py ALL DEPENDS "${PY_OUTPUT}")
 

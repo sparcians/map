@@ -23,8 +23,16 @@ from Cython.Build import cythonize
 from pathlib import Path
 
 # Environment Setup
+if 'TARGETDIR' not in os.environ:
+    print("must set TARGETDIR in env, not currently set")
+    sys.exit(1)
 destination_dir = os.environ["TARGETDIR"]
 extension = os.environ.get("BUILD", '') # Required from caller for choosing an extension to build
+
+# cython likes to do things like #include "string", so this fixes that
+if "clang" in os.environ.get("CC",""):
+    system_include_dirs.append(join(dirname(dirname(spawn.find_executable(os.environ["CC"]))), "include", "c++", "v1"))
+
 py_src_dir = Path(__file__).parent.resolve() / 'src'
 
 flags = subprocess.check_output(['wx-config', '--cppflags']).decode('utf-8')
@@ -67,9 +75,10 @@ else:
     compile_args.extend(('-g3', '-O3'))
 
 # conda python sysconfig data contains '-Wl,export_dynamic' which the linker isn't using
-# causes a warning that gets treated like an error, let's not care about unused linker args
+# causes a LLVM warning that gets treated like an error, let's not care about unused linker args
 # for right now
-compile_args.extend(('-Wno-unused-command-line-argument',))
+if "clang" in os.environ.get("CC",""):
+    compile_args.extend(('-Wno-unused-command-line-argument',))
 
 # Modules to build
 PYTHON_STATIC_LIBS = get_config_vars()['LIBDIR']
@@ -93,7 +102,7 @@ if False:
 else:
     modules = MODULES
 
-me = "argos_view/core/setup.py: "
+me = "pipe_view/core/setup.py: "
 print(me, "def_macros: ", def_macros)
 print(me, "inc_dirs:   ", inc_dirs)
 print(me, "link_args:  ", link_args)
@@ -116,8 +125,6 @@ for module_name, module_info in modules.items():
     # Source Files
     sources = [os.path.join(py_src_dir, source_file) for source_file in source_files]
 
-    print((me, "CFLAGS: ", os.environ.get('CFLAGS', '""')))
-    print((me, "CPPFLAGS: ", os.environ.get('CPPFLAGS', '""')))
     ext_def = Extension(module_name,
                         sources,
                         include_dirs = inc_dirs,
@@ -127,7 +134,11 @@ for module_name, module_info in modules.items():
                         language = 'c++',
                         )
 
-    # Build
+    # Build 
+    print((me, "CC orig: ", os.environ.get('CC', '""')))
+    print((me, "CXX orig: ", os.environ.get('CXX', '""')))
+    print((me, "CFLAGS: ", os.environ.get('CFLAGS', '""')))
+    print((me, "CPPFLAGS: ", os.environ.get('CPPFLAGS', '""')))
     setup(cmdclass = {'build_ext': build_ext},
           ext_modules = cythonize([ext_def],
                                   language_level = 3,
