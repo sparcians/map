@@ -22,6 +22,9 @@ from Cython.Distutils import build_ext
 from Cython.Build import cythonize
 from pathlib import Path
 
+import wx
+inc_dirs = [os.path.join(os.path.dirname(wx.__file__), 'include')]
+
 # Environment Setup
 destination_dir = os.environ["TARGETDIR"]
 extension = os.environ.get("BUILD", '') # Required from caller for choosing an extension to build
@@ -51,7 +54,7 @@ compile_args = ['--std=c++17'] # Required for ISL C++ code
 compile_args += ['-Wno-cast-qual', '-Wno-deprecated-declarations', '-Wno-strict-aliasing', '-Wall', '-Werror', '-Wpedantic']
 
 def_macros = wx_defines[:] + [('_ARGOS_VERSION', '"\'' + os.environ.get('ARGOS_VERSION', 'unknown') + '\'"')]
-inc_dirs = wx_inc_dirs[:]
+inc_dirs += wx_inc_dirs[:]
 link_args = wx_link_args[:] # Building statically does not work in RHEL6.5 at this point # + ['-static', '-fPIC']
 
 
@@ -79,7 +82,7 @@ MODULES = {'logsearch' : {'sources': ('logsearch.pyx', 'log_search.cpp',)},
 
 # core.pyx needs to be updated to wxpython 4.0+ internals
 # prevent it from being built until it is updated
-del MODULES['core']
+#del MODULES['core']
 
 
 if False:
