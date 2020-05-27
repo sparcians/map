@@ -80,10 +80,6 @@ MODULES = {'logsearch' : {'sources': ('logsearch.pyx', 'log_search.cpp',)},
            'core' : {'sources': ('core.pyx',)},
            }
 
-# core.pyx needs to be updated to wxpython 4.0+ internals
-# prevent it from being built until it is updated
-#del MODULES['core']
-
 
 if False:
     # Select the module from the environment variable
