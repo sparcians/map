@@ -6,7 +6,7 @@ import sys
 
 import model.element_types as eltypes
 from gui.widgets.element_property_list import ElementPropertyList
-
+from gui.font_utils import ScaleFont
 
 # # The GUI-side window for editing the properties of an Element
 class Element_PropsDlg(wx.Frame):
@@ -24,7 +24,7 @@ class Element_PropsDlg(wx.Frame):
         self.SetBackgroundColour("WHITE")
         self.CreateStatusBar()
 
-        self.__fnt_location = wx.Font(12, wx.NORMAL, wx.NORMAL, wx.NORMAL)
+        self.__fnt_location = wx.Font(ScaleFont(12), wx.NORMAL, wx.NORMAL, wx.NORMAL)
         self.SetFont(self.__fnt_location)
 
         self.__sizer = wx.BoxSizer(wx.VERTICAL)
