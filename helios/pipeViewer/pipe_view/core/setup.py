@@ -23,8 +23,9 @@ from Cython.Distutils import build_ext
 from Cython.Build import cythonize
 from pathlib import Path
 
-import wx
-inc_dirs = [os.path.join(os.path.dirname(wx.__file__), 'include')]
+import pkgutil
+wx_pkg = pkgutil.get_loader('wx')
+inc_dirs = [os.path.join(os.path.dirname(wx_pkg.get_filename()), 'include')]
 
 # Environment Setup
 if 'TARGETDIR' not in os.environ:
