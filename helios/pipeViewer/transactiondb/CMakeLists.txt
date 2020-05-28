@@ -39,7 +39,6 @@ add_custom_command(OUTPUT lib/transactiondb.so
 add_custom_target (transactiondb_driver ALL DEPENDS
   lib/transactiondb.so
   ${TRANSACTIONDB_SRC_DIR}/common.pxd
-  ${TRANSACTIONDB_SRC_DIR}/intervalwindow.pyx
   ${TRANSACTIONDB_SRC_DIR}/transactiondb.pyx
   ${CMAKE_CURRENT_SOURCE_DIR}/setup.py
   ${TRANSACTIONDB_SRC_DIR}/Reader.hpp

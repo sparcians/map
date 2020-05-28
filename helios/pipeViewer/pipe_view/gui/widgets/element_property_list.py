@@ -235,7 +235,7 @@ class ElementPropertyList(wx.grid.Grid):
                     hinttext = ''
                 if self.IsReadOnly(row, col):
                     hinttext = "(read-only attribute)" + hinttext
-                self.GetGridWindow().SetToolTipString(hinttext)
+                self.GetGridWindow().SetToolTip(hinttext)
             evt.Skip()
 
         #wx.EVT_MOTION(self.GetGridWindow(), OnMouseMotion)

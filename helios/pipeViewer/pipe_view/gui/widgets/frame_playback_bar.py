@@ -6,6 +6,7 @@ import time
 
 from model.layout import Layout
 from model.clock_manager import ClockManager
+from gui.font_utils import ScaleFont
 
 # # @package frame_playback_bar.py
 #  @brief Contains FramePlaybackBar which holds all playback controls for a single
@@ -71,9 +72,9 @@ class FramePlaybackBar(wx.Panel):
 
         # Fonts & Colors
 
-        self.__fnt_tiny = wx.Font(12, wx.NORMAL, wx.NORMAL, wx.NORMAL)
-        self.__fnt_bold_med = wx.Font(12, wx.NORMAL, wx.NORMAL, wx.BOLD)
-        self.__fnt = wx.Font(12, wx.NORMAL, wx.NORMAL, wx.NORMAL)
+        self.__fnt_tiny = wx.Font(ScaleFont(12), wx.NORMAL, wx.NORMAL, wx.NORMAL)
+        self.__fnt_bold_med = wx.Font(ScaleFont(12), wx.NORMAL, wx.NORMAL, wx.BOLD)
+        self.__fnt = wx.Font(ScaleFont(12), wx.NORMAL, wx.NORMAL, wx.NORMAL)
         self.SetFont(self.__fnt)
         self.__med_blue = wx.Colour(0, 0, 220)
 

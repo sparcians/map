@@ -42,7 +42,7 @@ class FindElementDialog(wx.Frame):
                                           choices = self.__choices,
                                           size = (150, -1),
                                           style = wx.CB_DROPDOWN | wx.CB_READONLY)
-        self.__drop_content.SetToolTipString('Select a content option on which to search')
+        self.__drop_content.SetToolTip('Select a content option on which to search')
         DEFAULT_CHOICE = 'name'
         if DEFAULT_CHOICE in self.__choices:
             self.__drop_content.SetValue(DEFAULT_CHOICE)

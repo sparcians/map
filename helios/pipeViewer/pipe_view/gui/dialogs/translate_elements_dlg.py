@@ -4,6 +4,7 @@ import sys
 import wx
 from functools import partial
 from gui.widgets.element_list import ElementList
+from gui.font_utils import ScaleFont
 
 
 # # TranslateElementsDlg allows relative or absolute translation of a group of
@@ -23,7 +24,7 @@ class TranslateElementsDlg(wx.Dialog):
                           size = (-1, -1),
                           style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX)
 
-        self.__fnt_numbers = wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, faceName = 'Monospace')
+        self.__fnt_numbers = wx.Font(ScaleFont(12), wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, faceName = 'Monospace')
 
         panel = wx.Panel(self)
 
