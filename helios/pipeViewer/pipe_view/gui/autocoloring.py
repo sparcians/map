@@ -43,9 +43,9 @@ class BrushRepository(object):
 
     def generate_shuffled_palette(self, shuffle_mode, color_dict):
         self.validate_shuffle_mode(shuffle_mode)
-        if shuffle_mode is 'default':
+        if shuffle_mode == 'default':
             return color_dict
-        elif shuffle_mode is 'shuffled':
+        elif shuffle_mode == 'shuffled':
             # Shuffle the colors around
             new_dict = {(3 * key) % len(color_dict) : value for key, value in color_dict.items()}
             # Make sure the shuffle didn't leave out any of the original keys
