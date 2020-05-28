@@ -1,5 +1,5 @@
 import wx
-from gui.font_utils import ScaleFont
+from gui.font_utils import GetMonospaceFont
 
 
 # # This class is a GUI list control element that shows transactions.
@@ -7,7 +7,7 @@ class TransactionList(wx.ListCtrl):
 
     def __init__(self, parent, id, canvas, name = '', style = wx.LC_REPORT | wx.SUNKEN_BORDER):
         wx.ListCtrl.__init__(self, parent = parent, id = wx.NewId(), name = name, style = style)
-        self.SetFont(wx.Font(ScaleFont(12), wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, faceName = 'Monospace'))
+        self.SetFont(GetMonospaceFont(12))
 
         # used for coloring
         self.__canvas = canvas

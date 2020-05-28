@@ -1,11 +1,11 @@
 import wx
-from gui.font_utils import ScaleFont
+from gui.font_utils import GetMonospaceFont
 
 ## This class is a GUI list control element that shows elements and allows selection of them.
 class ElementList(wx.ListCtrl):
     def __init__(self, parent, id, canvas, name='', style=wx.LC_REPORT|wx.SUNKEN_BORDER, properties=['element']):
         wx.ListCtrl.__init__(self, parent=parent, id=wx.NewId(), name=name, style=style)
-        self.SetFont(wx.Font(ScaleFont(12), wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, faceName='Monospace'))
+        self.SetFont(GetMonospaceFont(12))
 
         # used for coloring
         self.__canvas = canvas

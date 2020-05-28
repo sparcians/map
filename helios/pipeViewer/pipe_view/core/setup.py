@@ -5,6 +5,7 @@ import sys
 import os
 import os.path
 import glob
+import distutils
 
 # Force use of a different Cython
 cython_dir = os.environ.get('CYTHON_DIR', None)
@@ -32,9 +33,10 @@ if 'TARGETDIR' not in os.environ:
 destination_dir = os.environ["TARGETDIR"]
 extension = os.environ.get("BUILD", '') # Required from caller for choosing an extension to build
 
+system_include_dirs = []
 # cython likes to do things like #include "string", so this fixes that
 if "clang" in os.environ.get("CC",""):
-    system_include_dirs.append(join(dirname(dirname(spawn.find_executable(os.environ["CC"]))), "include", "c++", "v1"))
+    system_include_dirs.append(os.path.join(os.path.dirname(os.path.dirname(distutils.spawn.find_executable(os.environ["CC"]))), "include", "c++", "v1"))
 
 py_src_dir = Path(__file__).parent.resolve() / 'src'
 
@@ -82,6 +84,9 @@ else:
 # for right now
 if "clang" in os.environ.get("CC",""):
     compile_args.extend(('-Wno-unused-command-line-argument',))
+
+for d in system_include_dirs:
+    compile_args.append('-isystem' + d)
 
 # Modules to build
 PYTHON_STATIC_LIBS = get_config_vars()['LIBDIR']
