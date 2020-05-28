@@ -11,7 +11,7 @@ class ConsoleDlg(wx.Frame):
         
         # create GUI
         wx.Frame.__init__(self, parent, -1, 'Python Console', size=(500,300),
-                       style=wx.MAXIMIZE_BOX|wx.RESIZE_BORDER|wx.CAPTION|wx.CLOSE_BOX)
+                       style=wx.MAXIMIZE_BOX|wx.RESIZE_BORDER|wx.CAPTION|wx.CLOSE_BOX|wx.SYSTEM_MENU)
 
         menu_bar = wx.MenuBar()
         menu = wx.Menu()

@@ -24,7 +24,7 @@ class FindElementDialog(wx.Frame):
                           -1,
                           'Find Element in {}'.format(self.__layout_frame.ComputeTitle()),
                           size = (900, 600),
-                          style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX)
+                          style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
 
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(main_sizer)

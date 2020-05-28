@@ -35,7 +35,7 @@ class LocationWindow(wx.Frame):
 
         title = "Locations for {0}".format(self.__db.filename)
         wx.Frame.__init__(self, parent, -1, title, size = (1025, 600),
-                          style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX)
+                          style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
 
         self.__fnt_small = wx.Font(ScaleFont(12), wx.NORMAL, wx.NORMAL, wx.NORMAL)
 

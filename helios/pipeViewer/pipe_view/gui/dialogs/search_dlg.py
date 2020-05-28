@@ -20,7 +20,7 @@ class SearchDialog(wx.Frame):
         self.__filters = []
         # initialize graphical part
         wx.Frame.__init__(self, parent, -1, 'Search', size=(700,600),
-            style=wx.MAXIMIZE_BOX|wx.RESIZE_BORDER|wx.CAPTION|wx.CLOSE_BOX)
+            style=wx.MAXIMIZE_BOX|wx.RESIZE_BORDER|wx.CAPTION|wx.CLOSE_BOX|wx.SYSTEM_MENU)
 
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.__filter_sizer = wx.BoxSizer(wx.VERTICAL)

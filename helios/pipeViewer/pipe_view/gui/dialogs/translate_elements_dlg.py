@@ -22,7 +22,7 @@ class TranslateElementsDlg(wx.Dialog):
                           -1,
                           'Translate Elements - {}'.format(self.__layout_frame.ComputeTitle()),
                           size = (-1, -1),
-                          style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX)
+                          style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
 
         self.__fnt_numbers = GetMonospaceFont(12)
 
