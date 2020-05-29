@@ -13,7 +13,7 @@ _BLACK_PEN = None
 def InitWhiteBrush():
     global _WHITE_BRUSH
     if _WHITE_BRUSH is None:
-        _WHITE_BRUSH = wx.Brush((255, 255, 255), 1)
+        _WHITE_BRUSH = wx.Brush((255, 255, 255))
 
 
 # # Get the white brush
@@ -483,7 +483,7 @@ class ScheduleElement(MultiElement):
         InitBlackPen()
         # Check that the clock name (if any) is valid.
         clock_name = self.GetProperty('clock')
-        if clock_name is not '':
+        if clock_name:
             if self.__FindClockOrWarn(clock_name) is not None:
                 # If it is, go ahead and refresh the scale and offset parameters
                 self.__RefreshProperty('pixels_per_cycle')
@@ -532,7 +532,7 @@ class ScheduleElement(MultiElement):
     def SetProperty(self, key, val):
         MultiElement.SetProperty(self, key, val)
         if key == 'clock':
-            if val is not '':
+            if val:
                 self.__RefreshProperty('pixels_per_cycle')
                 self.__RefreshProperty('cycle_offset')
         elif key == 'pixels_per_cycle':

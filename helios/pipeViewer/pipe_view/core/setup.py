@@ -5,6 +5,7 @@ import sys
 import os
 import os.path
 import glob
+import distutils
 
 # Force use of a different Cython
 cython_dir = os.environ.get('CYTHON_DIR', None)
@@ -22,9 +23,22 @@ from Cython.Distutils import build_ext
 from Cython.Build import cythonize
 from pathlib import Path
 
+import pkgutil
+wx_pkg = pkgutil.get_loader('wx')
+inc_dirs = [os.path.join(os.path.dirname(wx_pkg.get_filename()), 'include')]
+
 # Environment Setup
+if 'TARGETDIR' not in os.environ:
+    print("must set TARGETDIR in env, not currently set")
+    sys.exit(1)
 destination_dir = os.environ["TARGETDIR"]
 extension = os.environ.get("BUILD", '') # Required from caller for choosing an extension to build
+
+system_include_dirs = []
+# cython likes to do things like #include "string", so this fixes that
+if "clang" in os.environ.get("CC",""):
+    system_include_dirs.append(os.path.join(os.path.dirname(os.path.dirname(distutils.spawn.find_executable(os.environ["CC"]))), "include", "c++", "v1"))
+
 py_src_dir = Path(__file__).parent.resolve() / 'src'
 
 flags = subprocess.check_output(['wx-config', '--cppflags']).decode('utf-8')
@@ -51,7 +65,7 @@ compile_args = ['--std=c++17'] # Required for ISL C++ code
 compile_args += ['-Wno-cast-qual', '-Wno-deprecated-declarations', '-Wno-strict-aliasing', '-Wall', '-Werror', '-Wpedantic']
 
 def_macros = wx_defines[:] + [('_ARGOS_VERSION', '"\'' + os.environ.get('ARGOS_VERSION', 'unknown') + '\'"')]
-inc_dirs = wx_inc_dirs[:]
+inc_dirs += wx_inc_dirs[:]
 link_args = wx_link_args[:] # Building statically does not work in RHEL6.5 at this point # + ['-static', '-fPIC']
 
 
@@ -67,19 +81,19 @@ else:
     compile_args.extend(('-g3', '-O3'))
 
 # conda python sysconfig data contains '-Wl,export_dynamic' which the linker isn't using
-# causes a warning that gets treated like an error, let's not care about unused linker args
+# causes a LLVM warning that gets treated like an error, let's not care about unused linker args
 # for right now
-compile_args.extend(('-Wno-unused-command-line-argument',))
+if "clang" in os.environ.get("CC",""):
+    compile_args.extend(('-Wno-unused-command-line-argument',))
+
+for d in system_include_dirs:
+    compile_args.append('-isystem' + d)
 
 # Modules to build
 PYTHON_STATIC_LIBS = get_config_vars()['LIBDIR']
 MODULES = {'logsearch' : {'sources': ('logsearch.pyx', 'log_search.cpp',)},
            'core' : {'sources': ('core.pyx',)},
            }
-
-# core.pyx needs to be updated to wxpython 4.0+ internals
-# prevent it from being built until it is updated
-del MODULES['core']
 
 
 if False:
@@ -93,7 +107,7 @@ if False:
 else:
     modules = MODULES
 
-me = "argos_view/core/setup.py: "
+me = "pipe_view/core/setup.py: "
 print(me, "def_macros: ", def_macros)
 print(me, "inc_dirs:   ", inc_dirs)
 print(me, "link_args:  ", link_args)
@@ -116,8 +130,6 @@ for module_name, module_info in modules.items():
     # Source Files
     sources = [os.path.join(py_src_dir, source_file) for source_file in source_files]
 
-    print((me, "CFLAGS: ", os.environ.get('CFLAGS', '""')))
-    print((me, "CPPFLAGS: ", os.environ.get('CPPFLAGS', '""')))
     ext_def = Extension(module_name,
                         sources,
                         include_dirs = inc_dirs,
@@ -127,7 +139,11 @@ for module_name, module_info in modules.items():
                         language = 'c++',
                         )
 
-    # Build
+    # Build 
+    print((me, "CC orig: ", os.environ.get('CC', '""')))
+    print((me, "CXX orig: ", os.environ.get('CXX', '""')))
+    print((me, "CFLAGS: ", os.environ.get('CFLAGS', '""')))
+    print((me, "CPPFLAGS: ", os.environ.get('CPPFLAGS', '""')))
     setup(cmdclass = {'build_ext': build_ext},
           ext_modules = cythonize([ext_def],
                                   language_level = 3,

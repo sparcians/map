@@ -4,6 +4,7 @@ import wx
 import os
 
 import wx.lib.platebtn as platebtn
+from gui.font_utils import ScaleFont
 
 ## SearchDialog is a window that enables the user to enter a string, conduct a search and
 # jump to a location and transaction based on the result. It gets its data from search_handle.py
@@ -17,7 +18,7 @@ class LayoutExitDialog(wx.Dialog):
         else:
             layout_name = '<unsaved layout>'
 
-        fnt_filename = wx.Font(13, wx.NORMAL, wx.NORMAL, wx.NORMAL, wx.FONTWEIGHT_BOLD)
+        fnt_filename = wx.Font(ScaleFont(13), wx.NORMAL, wx.NORMAL, wx.NORMAL, wx.FONTWEIGHT_BOLD)
 
         lbl_filename = wx.StaticText(self, -1, layout_name)
         lbl_filename.SetFont(fnt_filename)

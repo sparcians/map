@@ -24,7 +24,7 @@ class FindElementDialog(wx.Frame):
                           -1,
                           'Find Element in {}'.format(self.__layout_frame.ComputeTitle()),
                           size = (900, 600),
-                          style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX)
+                          style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
 
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(main_sizer)
@@ -42,7 +42,7 @@ class FindElementDialog(wx.Frame):
                                           choices = self.__choices,
                                           size = (150, -1),
                                           style = wx.CB_DROPDOWN | wx.CB_READONLY)
-        self.__drop_content.SetToolTipString('Select a content option on which to search')
+        self.__drop_content.SetToolTip('Select a content option on which to search')
         DEFAULT_CHOICE = 'name'
         if DEFAULT_CHOICE in self.__choices:
             self.__drop_content.SetValue(DEFAULT_CHOICE)

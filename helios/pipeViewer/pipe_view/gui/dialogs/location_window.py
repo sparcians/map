@@ -3,6 +3,7 @@ from gui.dialogs.element_propsdlg import ElementTypeSelectionDialog
 import logging
 import wx
 import wx.lib.gizmos
+from gui.font_utils import ScaleFont
 
 
 class LocationWindow(wx.Frame):
@@ -34,9 +35,9 @@ class LocationWindow(wx.Frame):
 
         title = "Locations for {0}".format(self.__db.filename)
         wx.Frame.__init__(self, parent, -1, title, size = (1025, 600),
-                          style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX)
+                          style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
 
-        self.__fnt_small = wx.Font(12, wx.NORMAL, wx.NORMAL, wx.NORMAL)
+        self.__fnt_small = wx.Font(ScaleFont(12), wx.NORMAL, wx.NORMAL, wx.NORMAL)
 
         static_heading = wx.StaticText(self, -1, "Showing all locations for:")
         static_filename = wx.StaticText(self, -1, self.__db.filename)

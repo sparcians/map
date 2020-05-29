@@ -12,6 +12,7 @@ from .hover_preview import HoverPreview, HoverRedrawEvent, EVT_HOVER_REDRAW
 from functools import partial
 from . import autocoloring
 import model.highlighting_utils as highlighting_utils
+from gui.font_utils import GetMonospaceFont
 
 # Import Argos transaction database module from SPARTA
 # #__MODULE_ENV_VAR_NAME = 'RENDERED_MODULE_DIR'
@@ -90,11 +91,7 @@ class Layout_Canvas(wx.ScrolledWindow):
         # # \todo Use a image map
         self.__mongoose_image = self.GetMongooseLogo()
 
-        try:
-            self.__fnt_layout = wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, face = 'Monospace')
-        except:
-            # Pick a fallback generic modern font (not by name)
-            self.__fnt_layout = wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
+        self.__fnt_layout = GetMonospaceFont(12)
 
         # set up font
         temp_dc = wx.MemoryDC()
