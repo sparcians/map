@@ -103,11 +103,7 @@ class Element_PropsDlg(wx.Frame):
 class ElementTypeSelectionDialog(wx.Dialog):
 
     def __init__(self, parent):
-        if wx.MAJOR_VERSION == 3:
-            height = 100
-        else:
-            height = 70
-        wx.Dialog.__init__(self, parent, wx.NewId(), 'Select an Element Type', size = (200, height))
+        wx.Dialog.__init__(self, parent, wx.NewId(), 'Select an Element Type', size = (200, 70))
 
         self.creatables = list(eltypes.creatables.keys())
         self.__drop_down = wx.ComboBox(self, wx.NewId(), choices = self.creatables, style = wx.TE_PROCESS_ENTER)
