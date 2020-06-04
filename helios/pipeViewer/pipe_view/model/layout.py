@@ -586,8 +586,8 @@ class Layout(object):
                          .format(precompiled_filename))
         else:
             try:
-                f.write(self.PRECOMPILED_VERSION_CODE + '\n')
-                f.write(str(self.__file_checksum) + '\n')
+                f.write((self.PRECOMPILED_VERSION_CODE + '\n').encode('utf-8'))
+                f.write((str(self.__file_checksum) + '\n').encode('utf-8'))
                 f.write(pickle.dumps([self.__MakeSerializable(el) for el in self.__elements],
                                       pickle.HIGHEST_PROTOCOL))
             except Exception as ex:
