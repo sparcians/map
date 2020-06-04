@@ -5,12 +5,6 @@
 
   \subsection spartaparts Sparta Pieces/Parts
 
-  This listing should look mostly familiar, especially if one does an
-  `ls -1 sparta`.
-
-  -# \ref resources_overview
-  -# \ref simulation_overview
-
   ================================================================================
   \subsection app_overview Sparta Application APIs (sparta/app)
 
@@ -30,7 +24,7 @@
   ================================================================================
   \subsection events_overview Sparta Events API (sparta/events)
 
-  Utility                     | Brief Description
+  Class                       | Brief Description
   --------------------------- | ------------------
   sparta::AsyncEvent | \copybrief sparta::AsyncEvent &nbsp;
   sparta::Event | \copybrief sparta::Event &nbsp;
@@ -52,7 +46,7 @@
   ================================================================================
   \subsection ports_overview Sparta Ports API (sparta/ports)
 
-  Utility                     | Brief Description
+  Class                       | Brief Description
   --------------------------- | ------------------
   sparta::Bus | \copybrief sparta::Bus &nbsp;
   sparta::DataInPort | \copybrief sparta::DataInPort &nbsp;
@@ -67,7 +61,7 @@
   ================================================================================
   \subsection statistics_overview Sparta Statistics/Counter API (sparta/statistics)
 
-  Utility                     | Brief Description
+  Class                       | Brief Description
   --------------------------- | ------------------
   sparta::ContextCounter | \copybrief sparta::ContextCounter &nbsp;
   sparta::Counter | \copybrief sparta::Counter &nbsp;
@@ -101,16 +95,30 @@
   sparta::collection::PipelineCollector | \copybrief sparta::collection::PipelineCollector &nbsp;
 
   ================================================================================
+  \subsection functional_parts Sparta for Functional Modeling (sparta/functional)
+
+  Class                       | Brief Description
+  --------------------------- | ------------------
+  sparta::ArchDataContainer   | \copybrief sparta::ArchDataContainer &nbsp;
+  sparta::ArchData            | \copybrief sparta::ArchData &nbsp;
+  sparta::DataView            | \copybrief sparta::DataView &nbsp;
+  sparta::RegisterBankTable   | \copybrief sparta::RegisterBankTable &nbsp;
+  sparta::RegisterDefinitionSet  | \copybrief sparta::RegisterDefinitionSet &nbsp;
+  sparta::Register            | \copybrief sparta::Register &nbsp;
+  sparta::RegisterSet         | \copybrief sparta::RegisterSet &nbsp;
+
+
+  ================================================================================
   \subsection memory_overview Sparta Memory Interface APIs (sparta/memory)
 
-  Utility                     | Brief Description
+  Class                       | Brief Description
   --------------------------- | ------------------
   sparta::memory::BlockingMemoryIF     | \copybrief sparta::memory::BlockingMemoryIF &nbsp;
   sparta::memory::BlockingMemoryIFNode | \copybrief sparta::memory::BlockingMemoryIFNode &nbsp;
   sparta::memory::DMI                  | \copybrief sparta::memory::DMI &nbsp;
   sparta::memory::DMIBlockingMemoryIF  | \copybrief sparta::memory::DMIBlockingMemoryIF &nbsp;
   sparta::memory::DebugMemoryIF        | \copybrief sparta::memory::DebugMemoryIF &nbsp;
-  MemoryExceptions     | Group of classes defining various Memory-related simulation errors
+  MemoryExceptions                     | Group of classes defining various Memory-related simulation errors
   sparta::memory::MemoryObject         | \copybrief sparta::memory::MemoryObject &nbsp;
   sparta::memory::SimpleMemoryMap      | \copybrief sparta::memory::SimpleMemoryMap &nbsp;
   sparta::memory::SimpleMemoryMapNode  | \copybrief sparta::memory::SimpleMemoryMapNode &nbsp;
