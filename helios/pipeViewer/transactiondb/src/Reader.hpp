@@ -4,7 +4,7 @@
  *
  * \brief Reads transctions using the record and index file
  *
-*/
+ */
 
 #pragma once
 
@@ -29,7 +29,7 @@
 #endif
 
 namespace sparta{
-namespace pipeViewer{
+    namespace pipeViewer{
 
     /*!
      * \brief Sanity checker for records. Used when doing a dump of the index
@@ -202,21 +202,21 @@ namespace pipeViewer{
         /*!
          * \brief Read a record of any format. Older formats are upconverted to new format.
          */
-         void readRecord_(int64_t& pos, uint64_t start, uint64_t end) {
+        void readRecord_(int64_t& pos, uint64_t start, uint64_t end) {
             if(version_ == 1){
                 readRecord_v1_(pos, start, end);
             }else if(version_ == 2){
                 readRecord_v2_(pos, start, end);
             }else{
                 throw SpartaException("This pipeViewer reader library does not know how to read a record "
-                                    " for version ") << version_ << " file " << filepath_;
+                                      " for version ") << version_ << " file " << filepath_;
             }
         }
 
         /*!
          * \brief Implementation of readRecord_ function which accepts the version 1 format)
          */
-       void readRecord_v1_(int64_t& pos, uint64_t start, uint64_t end) {
+        void readRecord_v1_(int64_t& pos, uint64_t start, uint64_t end) {
             const uint32_t MAX_ANNT_LEN = 16384;
             const uint32_t ANNT_BUF_SIZE = MAX_ANNT_LEN + 1;
             char annt_buf[ANNT_BUF_SIZE];
@@ -296,7 +296,7 @@ namespace pipeViewer{
                 return;
             }else{
                 throw sparta::SpartaException("An unidentifiable transaction type found in this record."
-                                          " It is possible the data may be corrupt.");
+                                              " It is possible the data may be corrupt.");
             }
         }
 
@@ -311,6 +311,8 @@ namespace pipeViewer{
 
             transaction_t transaction;
             record_file_.read(reinterpret_cast<char*>(&transaction), sizeof(transaction_t));
+            sparta_assert(record_file_.good(), "Previous read of the argos DB failed");
+
             pos += sizeof(transaction_t);
 
             // some struct to populate the record too.
@@ -321,7 +323,7 @@ namespace pipeViewer{
 
             switch (transaction.flags & TYPE_MASK)
             {
-            case is_Annotation :
+                case is_Annotation :
                 {
 
                     memcpy(&annot, &transaction, sizeof(transaction_t));
@@ -361,257 +363,257 @@ namespace pipeViewer{
                     (void) end;
                     // Only send along transaction in the query range
                     if(transaction.time_End < start || transaction.time_Start > end){
-                        #if READER_DBG
-                            // Skip transactions by not sending them along to the callback.
-                            // read is faster than seekg aparently. This DOES help performance
-                            std::cerr << "READER: skipped transaction outside of window [" << start << ", "
+#if READER_DBG
+                        // Skip transactions by not sending them along to the callback.
+                        // read is faster than seekg aparently. This DOES help performance
+                        std::cerr << "READER: skipped transaction outside of window [" << start << ", "
                                   << end << "). start: " << transaction.time_Start << " end: "
                                   << transaction.time_End
                                   << " parent: " << transaction.parent_ID << std::endl;
-                        #endif
+#endif
                     }else{
-                        #ifdef READER_DBG
-                            std::cout << "READER: found annt. " << "loc: " << annot.location_ID << " start: "
+#ifdef READER_DBG
+                        std::cout << "READER: found annt. " << "loc: " << annot.location_ID << " start: "
                                   << annot.time_Start << " end: " << annot.time_End
                                   << " parent: " << annot.parent_ID << std::endl;
-                        #endif
+#endif
                         data_callback_->foundAnnotationRecord(&annot);
                     }
                 } break;
 
-            case is_Instruction:
+                case is_Instruction:
                 {
                     record_file_.seekg(-sizeof(transaction_t), std::ios::cur);
                     pos -= sizeof(transaction_t);
 
                     record_file_.read(reinterpret_cast<char*>(&inst), sizeof(instruction_t));
                     pos += sizeof(instruction_t);
-                    #ifdef READER_DBG
-                        std::cout << "READER: found inst. start: " << inst.time_Start << " end: " << inst.time_End << std::endl;
-                    #endif
+#ifdef READER_DBG
+                    std::cout << "READER: found inst. start: " << inst.time_Start << " end: " << inst.time_End << std::endl;
+#endif
                     data_callback_->foundInstRecord(&inst);
                 } break;
 
-            case is_MemoryOperation:
+                case is_MemoryOperation:
                 {
                     record_file_.seekg(-sizeof(transaction_t), std::ios::cur);
                     pos -= sizeof(transaction_t);
 
                     record_file_.read(reinterpret_cast<char*>(&memop), sizeof(memoryoperation_t));
                     pos += sizeof(memoryoperation_t);
-                    #ifdef READER_DBG
-                        std::cout << "READER: found inst. start: " << memop.time_Start << " end: " << memop.time_End << std::endl;
-                    #endif
+#ifdef READER_DBG
+                    std::cout << "READER: found inst. start: " << memop.time_Start << " end: " << memop.time_End << std::endl;
+#endif
                     data_callback_->foundMemRecord(&memop);
                 } break;
 
-            // If we have found a record which is of Pair Type,
-            // then we enter into this switch case
-            // which contains the logic to read back records of
-            // pair type using record file, map file
-            // and In-memory data structures and rebuild the pair
-            // record one by one.
-            case is_Pair : {
+                // If we have found a record which is of Pair Type,
+                // then we enter into this switch case
+                // which contains the logic to read back records of
+                // pair type using record file, map file
+                // and In-memory data structures and rebuild the pair
+                // record one by one.
+                case is_Pair : {
 
-                // First, we do a simple memcpy of the generic transaction structure
-                // we read into our pair structure
-                memcpy(&pairt, &transaction, sizeof(transaction_t));
+                    // First, we do a simple memcpy of the generic transaction structure
+                    // we read into our pair structure
+                    memcpy(&pairt, &transaction, sizeof(transaction_t));
 
-                // We grab the location Id of this record we are about to read from
-                // the generic transaction structure
-                unsigned long long location_ID = transaction.location_ID;
-                std::string delim = ":";
+                    // We grab the location Id of this record we are about to read from
+                    // the generic transaction structure
+                    unsigned long long location_ID = transaction.location_ID;
+                    std::string delim = ":";
 
-                // The loc_map is an In-memory Map which contains a mapping
-                // of Location ID to Pair ID.
-                // We are going to use this map to lookup the Location ID we
-                // just read from this current record
-                // and find out the pair id of such a record
-                std::string token = loc_map_[std::to_string(location_ID)];
+                    // The loc_map is an In-memory Map which contains a mapping
+                    // of Location ID to Pair ID.
+                    // We are going to use this map to lookup the Location ID we
+                    // just read from this current record
+                    // and find out the pair id of such a record
+                    std::string token = loc_map_[std::to_string(location_ID)];
 
-                // We are now going to use the In-memory data structure we built
-                //during the Reader construction.
-                // This Data Structure contains information about the name strings
-                // and their sizeof data
-                // for every different type of pair we have collected.
-                // So, we retrieve records from this structure one by one,
-                // till we find that the pair id of the record we just read
-                // from the record file
-                // matches the pair id of the current record we retrieved from
-                // the In-memory data Structure.
-                for(auto & st : map_){
-                    if(st.UniqueID == std::stoull(token)){
+                    // We are now going to use the In-memory data structure we built
+                    //during the Reader construction.
+                    // This Data Structure contains information about the name strings
+                    // and their sizeof data
+                    // for every different type of pair we have collected.
+                    // So, we retrieve records from this structure one by one,
+                    // till we find that the pair id of the record we just read
+                    // from the record file
+                    // matches the pair id of the current record we retrieved from
+                    // the In-memory data Structure.
+                    for(auto & st : map_){
+                        if(st.UniqueID == std::stoull(token)){
 
-                        // We lookup the length, the name strings and the sizeofs of
-                        // every anme string from the retrieved
-                        // record of the Data Struture and copy the values into out
-                        // live Pair Transaction record
-                        pairt.length = st.length;
-                        std::string token = "#";
-                        std::string guideString = st.formatGuide;
-                        while(guideString.size()){
-                            if(guideString.find(token) != std::string::npos){
-                                uint16_t index = guideString.find(token);
-                                pairt.delimVector.emplace_back(guideString.substr(0, index));
-                                guideString = guideString.substr(index + token.size());
-                                if(guideString.empty()){
-                                    pairt.delimVector.emplace_back(guideString);
-                                }
-                            }
-                            else{
-                                pairt.delimVector.emplace_back(guideString);
-                                guideString = "";
-                            }
-                        }
-
-                        pairt.nameVector.reserve(pairt.length);
-                        pairt.sizeOfVector.reserve(pairt.length);
-                        pairt.valueVector.reserve(pairt.length);
-                        pairt.stringVector.reserve(pairt.length);
-
-                        pairt.nameVector.emplace_back("pairid");
-                        pairt.sizeOfVector.emplace_back(sizeof(uint16_t));
-                        pairt.valueVector.emplace_back(std::make_pair(st.UniqueID, false));
-                        pairt.stringVector.emplace_back(std::to_string(st.UniqueID));
-
-                        for(std::size_t i = 1; i != st.length; ++i){
-                            pairt.nameVector.emplace_back(st.names[i]);
-                            pairt.sizeOfVector.emplace_back(st.sizes[i]);
-                            if(st.types[i] == 0){
-                                // Type 0 = integer
-                                switch(pairt.sizeOfVector[i]){
-                                    case sizeof(uint8_t) : {
-                                        uint8_t tmp;
-
-                                        // We read exactly the number of bytes
-                                        // this value occupies from the database.
-                                        // This is a crucial step else if we read
-                                        // wrong number of bytes, our read procedure
-                                        // will crash in near future.
-                                        record_file_.read(reinterpret_cast<char*>(&tmp), sizeof(uint8_t));
-                                        pos += sizeof(uint8_t);
-                                        pairt.valueVector.emplace_back(std::make_pair(tmp, true));
-                                    }break;
-                                    case sizeof(uint16_t) : {
-                                        uint16_t tmp;
-
-                                        // We read exactly the number of bytes this
-                                        // value occupies from the database.
-                                        // This is a crucial step else if we read wrong
-                                        // number of bytes, our read procedure will crash in near future.
-                                        record_file_.read(reinterpret_cast<char*>(&tmp), sizeof(uint16_t));
-                                        pos += sizeof(uint16_t);
-                                        pairt.valueVector.emplace_back(std::make_pair(tmp, true));
-                                    }break;
-                                    case sizeof(uint32_t) : {
-                                        uint32_t tmp;
-
-                                        // We read exactly the number of bytes
-                                        // this value occupies from the database.
-                                        // This is a crucial step else if we read
-                                        // wrong number of bytes, our read procedure
-                                        // will crash in near future.
-                                        record_file_.read(reinterpret_cast<char*>(&tmp), sizeof(uint32_t));
-                                        pos += sizeof(uint32_t);
-                                        pairt.valueVector.emplace_back(std::make_pair(tmp, true));
-                                    }break;
-                                    case sizeof(uint64_t) : {
-                                        uint64_t tmp;
-
-                                        // We read exactly the number of bytes
-                                        // this value occupies from the database.
-                                        // This is a crucial step else if we read
-                                        // wrong number of bytes, our read procedure
-                                        // will crash in near future.
-                                        record_file_.read(reinterpret_cast<char*>(&tmp), sizeof(uint64_t));
-                                        pos += sizeof(uint64_t);
-                                        pairt.valueVector.emplace_back(std::make_pair(tmp, true));
-                                    }break;
-                                    default : {
-                                    throw sparta::SpartaException(
-                                        "Data Type not supported for reading/writing.");
+                            // We lookup the length, the name strings and the sizeofs of
+                            // every anme string from the retrieved
+                            // record of the Data Struture and copy the values into out
+                            // live Pair Transaction record
+                            pairt.length = st.length;
+                            std::string token = "#";
+                            std::string guideString = st.formatGuide;
+                            while(guideString.size()){
+                                if(guideString.find(token) != std::string::npos){
+                                    uint16_t index = guideString.find(token);
+                                    pairt.delimVector.emplace_back(guideString.substr(0, index));
+                                    guideString = guideString.substr(index + token.size());
+                                    if(guideString.empty()){
+                                        pairt.delimVector.emplace_back(guideString);
                                     }
                                 }
-
-                                // Finally for a certain field "i", we check if there is a string
-                                // representation for the integral value, by checking,
-                                // if a key with current pair id, current field id, current integral value
-                                // exists in the In-memory String Map. If yes, we grab the value
-                                // and place it in the enum vector.
-                                if(stringMap_.find(std::make_tuple(pairt.valueVector[0].first,
-                                                                   i - 1,
-                                                                   pairt.valueVector[i].first)) !=
-                                                                   stringMap_.end()){
-                                    pairt.stringVector.emplace_back(stringMap_[std::make_tuple(
-                                                                               pairt.valueVector[0].first,
-                                                                               i - 1,
-                                                                               pairt.valueVector[i].first)]);
-                                    pairt.valueVector[i].second = false;
-                                }
-
-                                // Else, we convert integer value to string
                                 else{
-                                    const std::string &field_name = st.names[i];
-
-                                    const pair_t::IntT &int_value = pairt.valueVector[i].first;
-
-                                    if (int_value == std::numeric_limits<pair_t::IntT>::max()) {
-                                        // Max value, so probably bad...push empty string
-                                        pairt.stringVector.emplace_back("");
-                                    } else if (field_name == "pc" ||
-                                               field_name == "pred_target" ||
-                                               field_name == "vaddr" ||
-                                               field_name == "va" ||
-                                               field_name == "stf_va" ||
-                                               field_name == "pa") {
-                                        // This is a hex field
-                                        std::stringstream int_str;
-                                        int_str << "0x" << std::hex << int_value;
-                                        pairt.stringVector.emplace_back(int_str.str());
-                                    } else {
-                                        pairt.stringVector.emplace_back(std::to_string(int_value));
-                                    }
+                                    pairt.delimVector.emplace_back(guideString);
+                                    guideString = "";
                                 }
                             }
-                            else if(st.types[i] == 1){
-                                // Type 1 = string
-                                uint16_t annotationLength;
-                                record_file_.read(reinterpret_cast<char*>(&annotationLength), sizeof(uint16_t));
-                                pos += sizeof(uint16_t);
 
-                                std::unique_ptr<char[] , std::function<void(char * ptr)>>
-                                    annot_ptr(new char[annotationLength + 1],
-                                        [&](char * ptr) { delete [] ptr; });
-                                record_file_.read(annot_ptr.get(), annotationLength);
-                                pos += annotationLength;
-                                std::string annot_str(annot_ptr.get(), annotationLength);
-                                annot_str = std::string(annot_str.c_str());  // Get rid of terminating null
-                                pairt.stringVector.emplace_back(annot_str);
+                            pairt.nameVector.reserve(pairt.length);
+                            pairt.sizeOfVector.reserve(pairt.length);
+                            pairt.valueVector.reserve(pairt.length);
+                            pairt.stringVector.reserve(pairt.length);
 
-                                // This bool value describes if this field has a string-only value.
-                                // String only values are those values which are stored in database as
-                                // strings and has no integral representation of itself.
-                                const bool string_only_field = true;
-                                pairt.valueVector.emplace_back(std::make_pair(
-                                    std::numeric_limits<
-                                        typename decltype(pairt.valueVector)::value_type::first_type>::max(),
-                                    string_only_field));
-                            } else {
-                                pairt.stringVector.emplace_back("none");
-                                pairt.valueVector.emplace_back(std::make_pair(0, false));
+                            pairt.nameVector.emplace_back("pairid");
+                            pairt.sizeOfVector.emplace_back(sizeof(uint16_t));
+                            pairt.valueVector.emplace_back(std::make_pair(st.UniqueID, false));
+                            pairt.stringVector.emplace_back(std::to_string(st.UniqueID));
+
+                            for(std::size_t i = 1; i != st.length; ++i){
+                                pairt.nameVector.emplace_back(st.names[i]);
+                                pairt.sizeOfVector.emplace_back(st.sizes[i]);
+                                if(st.types[i] == 0){
+                                    // Type 0 = integer
+                                    switch(pairt.sizeOfVector[i]){
+                                        case sizeof(uint8_t) : {
+                                            uint8_t tmp;
+
+                                            // We read exactly the number of bytes
+                                            // this value occupies from the database.
+                                            // This is a crucial step else if we read
+                                            // wrong number of bytes, our read procedure
+                                            // will crash in near future.
+                                            record_file_.read(reinterpret_cast<char*>(&tmp), sizeof(uint8_t));
+                                            pos += sizeof(uint8_t);
+                                            pairt.valueVector.emplace_back(std::make_pair(tmp, true));
+                                        }break;
+                                        case sizeof(uint16_t) : {
+                                            uint16_t tmp;
+
+                                            // We read exactly the number of bytes this
+                                            // value occupies from the database.
+                                            // This is a crucial step else if we read wrong
+                                            // number of bytes, our read procedure will crash in near future.
+                                            record_file_.read(reinterpret_cast<char*>(&tmp), sizeof(uint16_t));
+                                            pos += sizeof(uint16_t);
+                                            pairt.valueVector.emplace_back(std::make_pair(tmp, true));
+                                        }break;
+                                        case sizeof(uint32_t) : {
+                                            uint32_t tmp;
+
+                                            // We read exactly the number of bytes
+                                            // this value occupies from the database.
+                                            // This is a crucial step else if we read
+                                            // wrong number of bytes, our read procedure
+                                            // will crash in near future.
+                                            record_file_.read(reinterpret_cast<char*>(&tmp), sizeof(uint32_t));
+                                            pos += sizeof(uint32_t);
+                                            pairt.valueVector.emplace_back(std::make_pair(tmp, true));
+                                        }break;
+                                        case sizeof(uint64_t) : {
+                                            uint64_t tmp;
+
+                                            // We read exactly the number of bytes
+                                            // this value occupies from the database.
+                                            // This is a crucial step else if we read
+                                            // wrong number of bytes, our read procedure
+                                            // will crash in near future.
+                                            record_file_.read(reinterpret_cast<char*>(&tmp), sizeof(uint64_t));
+                                            pos += sizeof(uint64_t);
+                                            pairt.valueVector.emplace_back(std::make_pair(tmp, true));
+                                        }break;
+                                        default : {
+                                            throw sparta::SpartaException(
+                                                "Data Type not supported for reading/writing.");
+                                        }
+                                    }
+
+                                    // Finally for a certain field "i", we check if there is a string
+                                    // representation for the integral value, by checking,
+                                    // if a key with current pair id, current field id, current integral value
+                                    // exists in the In-memory String Map. If yes, we grab the value
+                                    // and place it in the enum vector.
+                                    if(stringMap_.find(std::make_tuple(pairt.valueVector[0].first,
+                                                                       i - 1,
+                                                                       pairt.valueVector[i].first)) !=
+                                       stringMap_.end()){
+                                        pairt.stringVector.emplace_back(stringMap_[std::make_tuple(
+                                                                                pairt.valueVector[0].first,
+                                                                                i - 1,
+                                                                                pairt.valueVector[i].first)]);
+                                        pairt.valueVector[i].second = false;
+                                    }
+
+                                    // Else, we convert integer value to string
+                                    else{
+                                        const std::string &field_name = st.names[i];
+
+                                        const pair_t::IntT &int_value = pairt.valueVector[i].first;
+
+                                        if (int_value == std::numeric_limits<pair_t::IntT>::max()) {
+                                            // Max value, so probably bad...push empty string
+                                            pairt.stringVector.emplace_back("");
+                                        } else if (field_name == "pc" ||
+                                                   field_name == "pred_target" ||
+                                                   field_name == "vaddr" ||
+                                                   field_name == "va" ||
+                                                   field_name == "stf_va" ||
+                                                   field_name == "pa") {
+                                            // This is a hex field
+                                            std::stringstream int_str;
+                                            int_str << "0x" << std::hex << int_value;
+                                            pairt.stringVector.emplace_back(int_str.str());
+                                        } else {
+                                            pairt.stringVector.emplace_back(std::to_string(int_value));
+                                        }
+                                    }
+                                }
+                                else if(st.types[i] == 1){
+                                    // Type 1 = string
+                                    uint16_t annotationLength;
+                                    record_file_.read(reinterpret_cast<char*>(&annotationLength), sizeof(uint16_t));
+                                    pos += sizeof(uint16_t);
+
+                                    std::unique_ptr<char[] , std::function<void(char * ptr)>>
+                                        annot_ptr(new char[annotationLength + 1],
+                                                  [&](char * ptr) { delete [] ptr; });
+                                    record_file_.read(annot_ptr.get(), annotationLength);
+                                    pos += annotationLength;
+                                    std::string annot_str(annot_ptr.get(), annotationLength);
+                                    annot_str = std::string(annot_str.c_str());  // Get rid of terminating null
+                                    pairt.stringVector.emplace_back(annot_str);
+
+                                    // This bool value describes if this field has a string-only value.
+                                    // String only values are those values which are stored in database as
+                                    // strings and has no integral representation of itself.
+                                    const bool string_only_field = true;
+                                    pairt.valueVector.emplace_back(std::make_pair(
+                                                                       std::numeric_limits<
+                                                                       typename decltype(pairt.valueVector)::value_type::first_type>::max(),
+                                                                       string_only_field));
+                                } else {
+                                    pairt.stringVector.emplace_back("none");
+                                    pairt.valueVector.emplace_back(std::make_pair(0, false));
+                                }
                             }
+                            break;
                         }
-                        break;
                     }
-                }
-                #ifdef READER_DBG
+#ifdef READER_DBG
                     std::cout << "READER: found pair. start: " << pairt.time_Start << " end: " << pairt.time_End << std::endl;
-                #endif
-                data_callback_->foundPairRecord(&pairt);
-            }
-            break;
+#endif
+                    data_callback_->foundPairRecord(&pairt);
+                }
+                    break;
 
-            default:
+                default:
                 {
                     throw sparta::SpartaException("Unknown Transaction Found. Data might be corrupt.");
                 }
@@ -703,14 +705,20 @@ namespace pipeViewer{
             {
                 throw sparta::SpartaException("Failed to open file, "+filepath+"record.bin");
             }
-            if(!index_file_.is_open())
-            {
-                throw sparta::SpartaException("Failed to open file, "+filepath+"index.bin");
+            if(record_file_.peek() == std::ifstream::traits_type::eof()) {
+                throw sparta::SpartaException("Database file is empty.  Anything recorded? "+filepath+"record.bin");
             }
 
-            #ifdef READER_LOG
+            if(!index_file_.is_open()) {
+                throw sparta::SpartaException("Failed to open file, "+filepath+"index.bin");
+            }
+            if(index_file_.peek() == std::ifstream::traits_type::eof()) {
+                throw sparta::SpartaException("Index file is empty.  Argos database collection complete? "+filepath+"record.bin");
+            }
+
+#ifdef READER_LOG
             std::cout << "READER: pipeViewer reader opened: " << filepath << "record.bin" << std::endl;
-            #endif
+#endif
 
             // Read header from index file
             char header_buf[64];
@@ -734,13 +742,13 @@ namespace pipeViewer{
                 version_ = sparta::lexicalCast<decltype(version_)>(header_buf+EXPECTED_HEADER_PREFIX.size());
             }
             sparta_assert(version_ > 0 && version_ <= Outputter::FILE_VERSION,
-                        "pipeout file " << filepath << " determined to be format "
-                        << version_ << " which is not known by this version of SPARTA. Version "
-                        "expected to be in range [1, " << Outputter::FILE_VERSION << "]");
+                          "pipeout file " << filepath << " determined to be format "
+                          << version_ << " which is not known by this version of SPARTA. Version "
+                          "expected to be in range [1, " << Outputter::FILE_VERSION << "]");
             sparta_assert(index_file_.good(),
-                        "Finished reading index file header for " << filepath << " but "
-                        "ended up with non-good file handle somehow. This is a bug in the "
-                        "header-reading logic");
+                          "Finished reading index file header for " << filepath << " but "
+                          "ended up with non-good file handle somehow. This is a bug in the "
+                          "header-reading logic");
 
             // Read the heartbeat size from our index file.
             // This will be the first integer in the file except for the header if there is one
@@ -751,12 +759,12 @@ namespace pipeViewer{
             // Save the first index entry position
             first_index_ = index_file_.tellg();
 
-            #ifdef READER_LOG
+#ifdef READER_LOG
             std::cout << "READER: Heartbeat is: " << heartbeat_ << std::endl;
-            #endif
+#endif
             sparta_assert(heartbeat_ != 0,
-                        "Pipeout database \"" << filepath << "\" had a heartbeat of 0. This "
-                        "would be too slow to actually load");
+                          "Pipeout database \"" << filepath << "\" had a heartbeat of 0. This "
+                          "would be too slow to actually load");
 
             //Determine the size of our index file
             index_file_.seekg(0, std::fstream::end);
@@ -1000,9 +1008,9 @@ namespace pipeViewer{
          */
         void getWindow(uint64_t start, uint64_t end)
         {
-            #ifdef READER_LOG
+#ifdef READER_LOG
             std::cout << "\nREADER: returning window. START: " << start << " END: " << end << std::endl;
-            #endif
+#endif
             // sparta_assert(//start < end, "Cannot return a window where the start value is greater than the end value");
 
             //Make sure the user is not abusing our NON thread safe method.
@@ -1010,9 +1018,9 @@ namespace pipeViewer{
             lock = true;
             //round the end up to the nearest interval.
             uint64_t chunk_end = roundUp_(end);
-            #ifdef READER_LOG
+#ifdef READER_LOG
             std::cout << "READER: end rounded to: " << chunk_end << std::endl;
-            #endif
+#endif
             //First we will want to make sure we are ready to read at the correct
             //position in the record file.
             int64_t pos = findRecordReadPos_(start);
@@ -1023,9 +1031,9 @@ namespace pipeViewer{
             //Now start processing the chunk.
             int64_t end_pos = pos + full_data_size;
 
-            #ifdef READER_LOG
+#ifdef READER_LOG
             std::cout << "READER: start_pos: " << pos << " end_pos: " << end_pos << std::endl;
-            #endif
+#endif
 
             //Make sure we have not passed the end position, also make sure we
             //are not at -1 bc that means we reached the end of the file!
@@ -1036,12 +1044,12 @@ namespace pipeViewer{
 
             uint32_t recsread = 0;
             if(version_ == 1){
-            while(pos < end_pos && pos != -1)
-            {
-                // Read, checking for chunk_end
-                readRecord_v1_(pos, start, chunk_end);
-                recsread++;
-            }
+                while(pos < end_pos && pos != -1)
+                {
+                    // Read, checking for chunk_end
+                    readRecord_v1_(pos, start, chunk_end);
+                    recsread++;
+                }
             }else if(version_ == 2){
                 while(pos < end_pos && pos != -1)
                 {
@@ -1051,12 +1059,12 @@ namespace pipeViewer{
                 }
             }else{
                 throw SpartaException("This pipeViewer reader library does not know how to read a window "
-                                    " for version ") << version_ << " file: " << filepath_;
+                                      " for version ") << version_ << " file: " << filepath_;
             }
 
-            #ifdef READER_LOG
+#ifdef READER_LOG
             std::cout << "READER: read " << std::dec << recsread << " records" << std::endl;
-            #endif
+#endif
             //unlock our assertion test.
             sparta_assert(lock);
             lock = false;
@@ -1152,9 +1160,9 @@ namespace pipeViewer{
          */
         uint64_t getCycleFirst() const
         {
-            #ifdef READER_DBG
+#ifdef READER_DBG
             std::cout << "READER: Returning first cycle: " << lowest_cycle_ << std::endl;
-            #endif
+#endif
             //This needs to be changed.
             //BUG When this returns 0, we miss many transactions in the viewer.
             return lowest_cycle_;
@@ -1166,9 +1174,9 @@ namespace pipeViewer{
          */
         uint64_t getCycleLast() const
         {
-            #ifdef READER_DBG
+#ifdef READER_DBG
             std::cout << "READER: Returning last cycle: " << highest_cycle_ << std::endl;
-            #endif
+#endif
             return highest_cycle_;
 
         }
@@ -1233,10 +1241,10 @@ namespace pipeViewer{
         // field number and field value to the actual String
         // we want to display in pipeViewer
         std::unordered_map<std::tuple<
-            uint64_t, uint64_t, uint64_t>,
-            std::string, hashtuple::hash<
-            std::tuple<uint64_t, uint64_t, uint64_t>>>
-            stringMap_;
+                               uint64_t, uint64_t, uint64_t>,
+                           std::string, hashtuple::hash<
+                                            std::tuple<uint64_t, uint64_t, uint64_t>>>
+        stringMap_;
     };
 }//NAMESPACE:pipeViewer
 }//NAMESPACE:sparta
