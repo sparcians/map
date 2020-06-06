@@ -60,7 +60,7 @@ void testEmptyCollection()
     pc.destroy();
 
     std::fstream record_file("emptyPiperecord.bin", std::fstream::in | std::fstream::binary );
-    EXPECT_TRUE(record_file.peek() != std::ifstream::traits_type::eof());
+    EXPECT_TRUE(record_file.peek() == std::ifstream::traits_type::eof());
 }
 
 int main()
