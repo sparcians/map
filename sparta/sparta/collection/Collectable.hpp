@@ -303,11 +303,10 @@ namespace sparta{
                 sparta_assert(pipeline_col_ != nullptr,
                             "Collectables can only added to PipelineCollectors... for now");
 
-                if(collect) {
+                if(collect && !prev_annot_.empty()) {
                     // Set the start time for this transaction to be
-                    // moment collection is enabled, even if the annotation is empty
+                    // moment collection is enabled.
                     startNewRecord_();
-                    record_closed_ = false;
                 }
 
                 // If the collected object is null, this Collectable
