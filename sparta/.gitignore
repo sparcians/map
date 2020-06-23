@@ -8,4 +8,6 @@ test/**/*.cmake
 build*
 [Rr]elease*
 [Dd]ebug*
+[Ff]ast[Dd]ebug*
+cmake-build-*
 *~
