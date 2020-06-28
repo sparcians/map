@@ -185,6 +185,8 @@ int main(int argc, char **argv)
     cls.getSimulationConfiguration().signal_mode =
          sparta::app::SimulationConfiguration::SignalMode::DISABLE_BACKTRACE_SIGNALS;
 #endif
+    std::cout << "Arch search path: " << cls.getSimulationConfiguration().getArchSearchPath() << std::endl;
+    std::cout << "Configu search path: " << cls.getSimulationConfiguration().getConfigSearchPath() << std::endl;
 
     // Parse command line options and configure simulator
     int err_code = 0;
