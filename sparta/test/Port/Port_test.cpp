@@ -8,6 +8,7 @@
 #include "Consumer.hpp"
 
 #include "sparta/simulation/Clock.hpp"
+#include "sparta/simulation/ClockManager.hpp"
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 #include "sparta/sparta.hpp"
@@ -18,6 +19,8 @@
 #include "sparta/sparta.hpp"
 
 TEST_INIT;
+
+//#define TEST_PIPEOUT_COLLECTION
 
 /*
  * This test creates a producer and a consumer for Ports (not
@@ -38,9 +41,12 @@ int main ()
 
     // Test communication between blocks using ports
     sparta::Scheduler sched;
-    sparta::Clock clk("clock", &sched);
+    sparta::ClockManager cm(&sched);
     sparta::RootTreeNode rtn;
-    rtn.setClock(&clk);
+    sparta::Clock::Handle root_clk;
+    root_clk = cm.makeRoot(&rtn, "root_clk");
+    cm.normalize();
+    rtn.setClock(root_clk.get());
 
     sparta::PortSet ps(&rtn, "bogus_port_set");
     sparta::DataInPort<double> delay0_in(&ps, "delay0_in", sparta::SchedulingPhase::Tick, 0);
@@ -59,6 +65,9 @@ int main ()
     signal_in.precedes(signal_prec_check);
     delay10_in.precedes(precedence_check);
 
+    delay0_in.enableCollection (&rtn);
+    delay1_in.enableCollection (&rtn);
+    delay10_in.enableCollection(&rtn);
 
     sparta::SignalOutPort unbound_signal_out(&ps, "unbound_signal_out");
     sparta::DataOutPort<double> unbound_data_out(&ps, "unbound_data_out");
@@ -76,7 +85,7 @@ int main ()
                                              &delay10_out,
                                              &delay1_out_non_continuing,
                                              &signal_out,
-                                             &clk));
+                                             root_clk.get()));
 
     sparta::TreeNode cons_tn(&rtn, "consumer", "consumer");
     std::unique_ptr<Consumer> c(new Consumer(&cons_tn,
@@ -85,7 +94,7 @@ int main ()
                                              &delay10_in,
                                              &delay1_in_non_continuing,
                                              &signal_in,
-                                             &clk));
+                                             root_clk.get()));
 
     EXPECT_THROW(unbound_signal_out.send());
     EXPECT_THROW(unbound_data_out.send(1.0));
@@ -108,8 +117,15 @@ int main ()
 
     rtn.enterConfiguring();
     rtn.enterFinalized();
+
+    sparta::collection::PipelineCollector pc("testPipe", 1000000,
+                                             root_clk.get(), &rtn);
+
     sched.finalize();
 
+#ifdef TEST_PIPEOUT_COLLECTION
+    pc.startCollection(&rtn);
+#endif
 
     // sparta::log::Tap scheduler_debug(sparta::TreeNode::getVirtualGlobalNode(),
     //                                sparta::log::categories::DEBUG, std::cout);
@@ -127,6 +143,10 @@ int main ()
     EXPECT_FALSE(delay10_out.isDriven());
 
     rtn.enterTeardown();
+
+#ifdef TEST_PIPEOUT_COLLECTION
+    pc.destroy();
+#endif
 
     // Returns error if one
     REPORT_ERROR;

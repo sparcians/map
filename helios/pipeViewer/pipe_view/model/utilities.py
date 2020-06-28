@@ -47,7 +47,7 @@ class LogFormatter(logging.Formatter):
 
     baseFormats = {logging.DEBUG : "DEBUG: {funcName}:{lineno}: {message}",
                    logging.WARNING: "WARN: {message}",
-                   logging.ERROR : "ERROR: {func}: {message}",
+                   logging.ERROR : "ERROR: {funcName}: {message}",
                    logging.INFO : "{message}",
                    'DEFAULT' : "{levelname}: {message}"}
 

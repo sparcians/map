@@ -242,7 +242,7 @@ class ElementPropertyList(wx.grid.Grid):
         self.GetGridWindow().Bind(wx.EVT_MOTION, OnMouseMotion, id = wx.ID_NONE)
 
 # # Class which displays drop-down-list formatted options when the user edits a cell
-class DropdownCellEditor(wx.grid.PyGridCellEditor):
+class DropdownCellEditor(wx.grid.GridCellEditor):
 
     # # options is a list of options.
     def __init__(self, options):
@@ -259,10 +259,7 @@ class DropdownCellEditor(wx.grid.PyGridCellEditor):
             new_val = self.__chooser.GetString(new_idx)
             self.__chooser.SetSelection(new_idx)
             self.__grid.SetCellValue(self.__row, self.__column, new_val)
-            if wx.MAJOR_VERSION == 3:
-                grid_evt = wx.grid.GridEvent(id = wx.NewId(), type = wx.grid.EVT_GRID_CELL_CHANGE.typeId, obj = self.__chooser.GetParent(), row = self.__row, col = self.__column)
-            else:
-                grid_evt = wx.grid.GridEvent(id = wx.NewId(), type = wx.grid.EVT_GRID_CELL_CHANGE.typeId, obj = self.__grid, row = self.__row, col = self.__column)
+            grid_evt = wx.grid.GridEvent(id = wx.NewId(), type = wx.grid.EVT_GRID_CELL_CHANGED.typeId, obj = self.__grid, row = self.__row, col = self.__column)
             wx.PostEvent(self.__chooser.GetParent(), grid_evt)
 
     # make the selection dialog
@@ -277,13 +274,10 @@ class DropdownCellEditor(wx.grid.PyGridCellEditor):
 
     def SetSize(self, rect):
         if self.__chooser:
-            if wx.MAJOR_VERSION == 3:
-                offset = 0
-            else:
-                offset = 4
-            self.__chooser.SetDimensions(rect.x, rect.y,
-                                         rect.width + offset, rect.height + offset,
-                                         wx.SIZE_ALLOW_MINUS_ONE)
+            offset = 4
+            self.__chooser.SetSize(rect.x, rect.y,
+                                   rect.width + offset, rect.height + offset,
+                                   wx.SIZE_ALLOW_MINUS_ONE)
 
     def BeginEdit(self, row, column, grid):
         if self.__event_handler:
@@ -295,14 +289,17 @@ class DropdownCellEditor(wx.grid.PyGridCellEditor):
         self.__chooser.SetStringSelection(self.__init_val)
         self.__chooser.SetFocus()
 
+    def ApplyEdit(self, row, column, grid):
+        grid.SetCellValue(row, column, self.__new_val)
+
     def EndEdit(self, row, column, grid, old_val = None, new_val = None):
         if self.__event_handler:
             self.__chooser.PushEventHandler(self.__event_handler)
         new_val = self.__chooser.GetStringSelection()
         if new_val != self.__init_val:
-            grid.SetCellValue(row, column, new_val)
-            return True
-        return False
+            self.__new_val = new_val
+            return str(new_val)
+        return None
 
     def Reset(self):
         self.__chooser.SetStringSelection(self.__init_val)
@@ -312,7 +309,7 @@ class DropdownCellEditor(wx.grid.PyGridCellEditor):
 
 
 # # Class which allows user to edit a cell with text entry or a popup window
-class PopupCellEditor(wx.grid.PyGridCellEditor):
+class PopupCellEditor(wx.grid.GridCellEditor):
     __chooser = None
     __popup = None
     __grid = None
@@ -345,10 +342,7 @@ class PopupCellEditor(wx.grid.PyGridCellEditor):
 
     def SetSize(self, rect):
         if self.__chooser:
-            if wx.MAJOR_VERSION == 3:
-                offset = 0
-            else:
-                offset = 4
+            offset = 4
             (popup_width, popup_height) = self.__popup.GetControl().GetBestSize()
             self.__chooser.setSize(rect.x, rect.y,
                                          rect.width + offset, rect.height + offset,
@@ -364,8 +358,6 @@ class PopupCellEditor(wx.grid.PyGridCellEditor):
         self.__column = column
         self.__chooser.SetValue(self.__init_val)
         # wx v2.8 has issues with this
-        if wx.MAJOR_VERSION == 3:
-            self.__chooser.Bind(wx.EVT_KILL_FOCUS, self.FocusLost)
         self.__chooser.SetFocus()
 
     def GetChooser(self):
@@ -390,7 +382,7 @@ class PopupCellEditor(wx.grid.PyGridCellEditor):
                 if self.__event_handler:
                     self.__chooser.PushEventHandler(self.__event_handler)
                 self.UpdateGrid()
-                grid_evt = wx.grid.GridEvent(id = wx.NewId(), type = wx.grid.EVT_GRID_CELL_CHANGE.typeId, obj = self.GetChooser().GetParent(), row = self.GetRow(), col = self.GetColumn())
+                grid_evt = wx.grid.GridEvent(id = wx.NewId(), type = wx.grid.EVT_GRID_CELL_CHANGED.typeId, obj = self.GetChooser().GetParent(), row = self.GetRow(), col = self.GetColumn())
                 wx.PostEvent(self.GetChooser().GetParent(), grid_evt)
             else:
                 self.__in_update_handler = False
@@ -399,14 +391,17 @@ class PopupCellEditor(wx.grid.PyGridCellEditor):
         new_val = self.GetChooser().GetValue()
         self.GetGrid().SetCellValue(self.GetRow(), self.GetColumn(), new_val)
 
+    def ApplyEdit(self, row, column, grid):
+        grid.SetCellValue(row, column, self.__new_val)
+
     def EndEdit(self, row, column, grid, old_val = None, new_val = None):
         if self.__event_handler:
             self.__chooser.PushEventHandler(self.__event_handler)
         new_val = self.__chooser.GetValue()
         if new_val != self.__init_val:
-            grid.SetCellValue(row, column, new_val)
-            return True
-        return False
+            self.__new_val = new_val
+            return str(new_val)
+        return None
 
     def Reset(self):
         self.__chooser.SetValue(self.__init_val)
@@ -488,8 +483,6 @@ class ColorCellEditor(PopupCellEditor):
     def Create(self, parent, id, event_handler):
         super(ColorCellEditor, self).Create(parent, id, event_handler)
         # This event doesn't exist in wx v2.8
-        if wx.MAJOR_VERSION == 3:
-            self.GetChooser().Bind(wx.EVT_COMBOBOX_CLOSEUP, self.OnColorPickerChanged)
         self.GetChooser().Bind(wx.EVT_TEXT_ENTER, self.OnColorPickerChanged)
         self.GetChooser().Bind(wx.EVT_TEXT, self.OnTextChanged)
 
@@ -650,8 +643,6 @@ class TreeCellEditor(PopupCellEditor):
     def Create(self, parent, id, event_handler):
         super(TreeCellEditor, self).Create(parent, id, event_handler)
         self.GetPopup().SetLocationTree(self.__loc_tree)
-        if wx.MAJOR_VERSION == 3:
-            self.GetChooser().Bind(wx.EVT_COMBOBOX_CLOSEUP, self.OnTreeChanged)
         self.GetChooser().Bind(wx.EVT_TEXT, self.OnTextChanged)
         self.GetChooser().Bind(wx.EVT_TEXT_ENTER, self.OnTreeChanged)
 

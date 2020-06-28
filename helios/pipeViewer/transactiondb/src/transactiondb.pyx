@@ -259,10 +259,12 @@ cdef class Transaction(object):
         if self.getType() == ANNOTATION:
             value_str = <char*>self.__trans.annt
             if value_str != NULL:
-                value_string = bytes_re.sub('r\1', str(value_str))  # Replace b'xxx' with xxx
-                hex_string = format(int(value_str) & 0xf, 'x')
-                my_display_id = "R" + hex_string + hex_string
-                py_str_body = my_display_id.encode('utf-8') + b' ' + value_str
+                if str(value_str).isnumeric():
+                    hex_string = format(int(value_str) & 0xf, 'x')
+                    my_display_id = "R" + hex_string + hex_string
+                    py_str_body = my_display_id.encode('utf-8') + b' ' + value_str
+                else:
+                    py_str_body = value_str
         else:
             my_display_id = self.__trans.display_ID if self.__trans.display_ID < 0x1000 else self.__trans.transaction_ID
             py_str_preamble += format(my_display_id, '>03x').encode('utf-8') + b' '
