@@ -292,11 +292,27 @@ public:
     }
 
     /*!
+     * \brief Get the arch search paths
+     * \return A vector of strings of the search paths
+     */
+    const std::vector<std::string> &getArchSearchPath() const {
+        return arch_search_paths_;
+    }
+
+    /*!
      * Append to the front of the configuration directory path list
      * the given directory
      */
     void addConfigSearchPath(const std::string & dir) {
         config_search_paths_.emplace(config_search_paths_.begin(), dir);
+    }
+
+    /*!
+     * \brief Get the search paths for the configure files
+     * \return A vector of strings of the search paths
+     */
+    const std::vector<std::string> & getConfigSearchPath() const {
+        return config_search_paths_;
     }
 
     /*!
