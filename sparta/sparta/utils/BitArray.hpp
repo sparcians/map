@@ -64,11 +64,7 @@ namespace sparta {
                 }
 
                 initializeStorage_(roundUpTo_(array_size, sizeof(data_type)));
-                size_t offset = 0;
-                do {
-                    std::memcpy(data_ + offset, data, std::min(data_size, array_size - offset));
-                    offset += std::min(data_size, array_size - offset);
-                } while (offset < array_size);
+                std::memcpy(data_, data, std::min(data_size, array_size));
             }
 
             /**
