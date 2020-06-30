@@ -219,7 +219,7 @@ namespace sparta {
                 sparta_assert(data_ == nullptr);
 
                 if (data_size > SMALL_OPTIMIZATION_SIZE) {
-                    data_ls_.reserve(data_size);
+                    data_ls_.resize(data_size, 0);
                     data_ = &data_ls_[0];
                 } else {
                     data_ = data_ss_;
