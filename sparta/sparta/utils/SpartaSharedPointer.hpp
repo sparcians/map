@@ -366,7 +366,7 @@ namespace sparta
          *     };
          *
          *     // The Allocator to use with the class
-         *     exterm sparta::SpartaSharedPointer<MyClassIUseALot>::
+         *     extern sparta::SpartaSharedPointer<MyClassIUseALot>::
          *         SpartaSharedPointerAllocator my_class_i_use_a_lot_allocator;
          * }
          *
@@ -800,4 +800,3 @@ namespace MetaStruct {
     template<typename T>
     struct remove_any_pointer<sparta::SpartaSharedPointer<T> const &> { using type = T; };
 }
-
