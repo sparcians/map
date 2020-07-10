@@ -138,8 +138,8 @@ cdef class Transaction(object):
                         self.getVirtualAddress(), self.getRealAddress(), \
                         self.getParentTransactionID())
         elif type_flags == PAIR:
-            return '<Pair ID:{0} LOC:{1} [{2},{3}] parent:{4} "{5}">'\
-                .format(self.getTransactionID(), self.getLocationID(), self.getLeft(), self.getRight(),\
+            return '<Pair ID:{0} pairID:{1} LOC:{2} [{3},{4}] parent:{5} "{6}">'\
+                .format(self.getTransactionID(), self.getPairID(), self.getLocationID(), self.getLeft(), self.getRight(),\
                     self.getParentTransactionID(), self.getAnnotation())
         else:
             return '<UnkonwnTransactionType ID:{0} LOC:{1} [{2},{3}] op:{4:#x} v:{5:#x} p:{6:#x} parent:{7}>' \
@@ -203,6 +203,11 @@ cdef class Transaction(object):
         if self.__trans == NULL:
             return None
         return self.__trans.transaction_ID
+
+    def getPairID(self):
+        if self.__trans == NULL:
+            return None
+        return self.__trans.pairId
 
     def getDisplayID(self):
         if self.__trans == NULL:
@@ -648,6 +653,13 @@ cdef class TransactionDatabase:
         decoded_str = bytes_re.sub(r'\1', (py_str_preamble + py_str_body).decode('utf-8'))    # Replace b'xxx' with xxx
         self.__cached_annotations[c_trans.transaction_ID] = decoded_str
         return decoded_str
+
+    def getPairID(self, uint32_t loc):
+        cdef c_TransactionInterval_uint64_const_t* c_trans
+        c_trans = self._getTransaction(loc)
+        if c_trans == NULL:
+            return None
+        return <int>c_trans.pairId
 
     def getTransactionID(self, uint32_t loc):
         cdef c_TransactionInterval_uint64_const_t* c_trans

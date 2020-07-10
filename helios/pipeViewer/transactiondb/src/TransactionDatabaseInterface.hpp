@@ -412,6 +412,7 @@ private:
                     }
                     td.data[loc_id] = trans_pos;
                     marked_start = true;
+                    marked_ending |= single_tick_entry;
                 }else{
                     // td.tick_offset > start_cycle_offset
                      if(td.tick_offset > start_cycle_offset){
