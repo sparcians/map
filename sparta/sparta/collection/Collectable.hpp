@@ -781,7 +781,7 @@ namespace sparta{
                 argos_record_.pairId = getUniquePairID_();
                 argos_record_.nameVector = getNameStrings();
                 argos_record_.sizeOfVector = getSizeOfVector();
-                argos_record_.valueVector = getDataVector();
+                argos_record_.valueVector = last_record_values_;
                 argos_record_.stringVector = getStringVector();
                 argos_record_.length = argos_record_.nameVector.size();
                 argos_record_.delimVector.emplace_back(getArgosFormatGuide());

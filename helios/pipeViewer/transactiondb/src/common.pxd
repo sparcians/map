@@ -43,6 +43,7 @@ cdef extern from "TransactionInterval.hpp" namespace "sparta::pipeViewer":
         uint64_t real_ADR
         uint16_t length
         uint8_t *annt
+        uint16_t pairId
         vector[uint16_t] sizeOfVector
         vector[pair[uint64_t, bint]] valueVector
         vector[string] nameVector
