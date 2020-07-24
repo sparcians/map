@@ -1,12 +1,12 @@
 import wx
 import wx.grid
-import wx.lib.colourchooser.pycolourchooser
-
+from wx.lib.colourchooser.pycolourchooser import PyColourChooser, EVT_COLOUR_CHANGED
 import model.content_options as copts
 from model.schedule_element import ScheduleLineElement
 from model.element import LocationallyKeyedElement
 from model.rpc_element import RPCElement
 from ast import literal_eval
+from functools import cmp_to_key
 
 MULTIPLE_VALS_STR = '<multiple values>'
 MULTIPLE_VALS_COLOR = wx.Colour(200, 200, 100)
@@ -39,7 +39,7 @@ class ElementPropertyList(wx.grid.Grid):
 
     def OnResize(self, evt):
         # #self.AutoSizeColumn(0, False)
-        remaining = self.GetClientSize()[0] - self.GetRowLabelSize()
+        remaining = max(0, self.GetClientSize()[0] - self.GetRowLabelSize())
 
         # UPdate column sizes with recursion prevention
         if self.__in_resize == False and remaining != 0:
@@ -335,6 +335,7 @@ class PopupCellEditor(wx.grid.GridCellEditor):
         self.__event_handler = event_handler
         if event_handler:
             self.__chooser.PushEventHandler(event_handler)
+        self.__chooser.Bind(wx.EVT_KILL_FOCUS, self.FocusLost)
 
     def SetPopup(self, popup):
         self.__popup = popup
@@ -344,9 +345,9 @@ class PopupCellEditor(wx.grid.GridCellEditor):
         if self.__chooser:
             offset = 4
             (popup_width, popup_height) = self.__popup.GetControl().GetBestSize()
-            self.__chooser.setSize(rect.x, rect.y,
-                                         rect.width + offset, rect.height + offset,
-                                         wx.SIZE_ALLOW_MINUS_ONE)
+            self.__chooser.SetSize(rect.x, rect.y,
+                                   rect.width + offset, rect.height + offset,
+                                   wx.SIZE_ALLOW_MINUS_ONE)
             self.__chooser.SetPopupMinWidth(popup_width)
 
     def BeginEdit(self, row, column, grid):
@@ -424,23 +425,6 @@ class TextUpdatePopup(wx.ComboPopup):
         return self.__should_update_text
 
 
-# Special event fired by an ArgosColorChooser when the color has been changed
-ColorChangedEvent, EVT_COLOR_CHANGED_EVENT = wx.lib.newevent.NewEvent()
-
-
-# Simple subclass of PyColourChooser that also fires a ColorChangedEvent when they color is changed
-class ArgosColorChooser(wx.lib.colourchooser.pycolourchooser.PyColourChooser):
-
-    def __init__(self, parent, id):
-        super(ArgosColorChooser, self).__init__(parent, id)
-
-    def UpdateColour(self, colour):
-        super(ArgosColorChooser, self).UpdateColour(colour)
-        evt = ColorChangedEvent()
-        evt.SetEventObject(self)
-        self.GetEventHandler().ProcessEvent(evt)
-
-
 # Color chooser popup class
 class ColorPopup(TextUpdatePopup):
 
@@ -450,13 +434,13 @@ class ColorPopup(TextUpdatePopup):
         self.__should_update_text = True
 
     def Create(self, parent):
-        self.__colour_chooser = ArgosColorChooser(parent, wx.NewId())
-        self.__colour_chooser.Bind(EVT_COLOR_CHANGED_EVENT, self.OnColorChanged)
+        self.__colour_chooser = PyColourChooser(parent, wx.NewId())
+        self.__colour_chooser.Bind(EVT_COLOUR_CHANGED, self.OnColorChanged)
         return True
 
     def OnColorChanged(self, evt):
         if self.ShouldUpdateText():
-            self.GetCombo().SetText(str(self.__colour_chooser.GetValue().Get()))
+            self.GetComboCtrl().SetText(str(self.__colour_chooser.GetValue().Get(includeAlpha=False)))
 
     def SetValue(self, color):
         self.__colour_chooser.SetValue(color)
@@ -522,7 +506,7 @@ class TreePopup(TextUpdatePopup):
         self.__loc_tree = loc_tree
         self.__tree.DeleteChildren(self.__root)
         self.__tree_dict = {}
-        for key in self.__loc_tree.iterkeys():
+        for key in self.__loc_tree.keys():
             child = self.__tree.AppendItem(self.__root, key)
             if self.__loc_tree[key] != {}:
                 self.__tree.SetItemHasChildren(child, True)
@@ -542,7 +526,7 @@ class TreePopup(TextUpdatePopup):
 
     # Update the ComboCtrl text box with the selected value in the tree
     def UpdateParentValue(self):
-        self.GetCombo().SetValue(self.GetValue())
+        self.GetComboCtrl().SetValue(self.GetValue())
 
     def OnSelChanged(self, evt):
         if self.ShouldUpdateText():
@@ -563,7 +547,7 @@ class TreePopup(TextUpdatePopup):
     def AutoSize(self):
         (width, height) = self.__tree.GetBestSize()
         self.__tree.SetSize((width, -1))
-        self.GetCombo().GetPopupWindow().SetSize((width, -1))
+        self.GetComboCtrl().GetPopupWindow().SetSize((width, -1))
 
     def OnExpandedItem(self, evt):
         self.AutoSize()
@@ -603,7 +587,7 @@ class TreePopup(TextUpdatePopup):
                 curdict = curdict[token]
             # Otherwise, expand the tree from the deepest existing node until all necessary nodes are added
             while val not in self.__tree_dict:
-                for i in xrange(len(tokens) - 1, -1, -1):
+                for i in range(len(tokens) - 1, -1, -1):
                     cur_path = '.'.join(tokens[:i])
                     if cur_path in self.__tree_dict:
                         self.__tree.Expand(self.__tree_dict[cur_path])
@@ -616,8 +600,8 @@ class TreePopup(TextUpdatePopup):
         if not item:
             item = self.__root
         # Sort keys by length ascending then string-comparison alphabetically
-        for k, v in sorted(tree.iteritems(),
-                          lambda x, y: cmp(len(x[0]), len(y[0])) if len(x[0]) != len(y[0]) else cmp(x[0], y[0])):
+        for k, v in sorted(tree.items(),
+                           key=cmp_to_key(lambda x, y: cmp(len(x[0]), len(y[0])) if len(x[0]) != len(y[0]) else cmp(x[0], y[0]))):
             if len(path) == 0:
                 child_path = k
             else:
