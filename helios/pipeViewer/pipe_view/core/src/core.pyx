@@ -470,7 +470,8 @@ cdef class Renderer(object):
 
         if content_type == 'image':
             # Draw an image
-            dc.DrawBitmap(canvas.GetMongooseImage(), c_x, c_y)
+            #dc.DrawBitmap(image, c_x, c_y)
+            pass
         else: # auto
             # Draw text clipped to this element
 

@@ -88,8 +88,6 @@ class Layout_Canvas(wx.ScrolledWindow):
 
         self.__hover_preview = HoverPreview(self, context)
         # Load images
-        # # \todo Use a image map
-        self.__mongoose_image = self.GetMongooseLogo()
 
         self.__fnt_layout = GetMonospaceFont(12)
 
@@ -162,17 +160,6 @@ class Layout_Canvas(wx.ScrolledWindow):
     @property
     def context(self):
         return self.__context
-
-    # # Returns bitmap of Mongoose logo
-    # Currently hardcoded
-    def GetMongooseLogo(self):
-        this_script_filename = os.path.join(os.getcwd(), __file__)
-        mongoose_logo_filename = os.path.dirname(os.path.dirname(this_script_filename)) + "/resources/mongoose_small.png"
-
-        if os.path.exists(mongoose_logo_filename):
-            return wx.Bitmap(mongoose_logo_filename, wx.BITMAP_TYPE_PNG)
-        else:
-            return wx.EmptyBitmapRGBA(10, 10)
 
     # # Returns the parent frame which owns this Canvas
     def GetFrame(self):
@@ -273,39 +260,6 @@ class Layout_Canvas(wx.ScrolledWindow):
         self.__renderer.drawElements(dc, self, self.__context.GetHC())
 
         logging.debug('{0}s: C drawing'.format(time.monotonic() - t_start))
-
-        # #t_start = time.monotonic()
-        # #
-        # ## Draw elements in draw-order
-        # #for pair in self.__context.GetElements():
-        # #    e = pair.GetElement()
-        # #    string_to_display = pair.GetVal()
-        # #    (x,y),(w,h) = e.GetProperty('position'),e.GetProperty('dimensions')
-        # #    (x,y) = (x-xoff, y-yoff)
-        # #
-        # #    pen  = wx.Pen(e.GetProperty('color'), 1)
-        # #    dc.SetPen(pen)
-        # #
-        # #    uop_id = string_to_display[:1]
-        # #    if uop_id in self.__background_brushes \
-        # #       and e.GetProperty('Content') == 'auto_color_annotation':
-        # #        dc.SetBrush(self.__background_brushes[uop_id])
-        # #    else:
-        # #        dc.SetBrush(dc.GetBackground())
-        # #
-        # #    dc.DrawRectangle(x,y,w,h)
-        # #
-        # #    # Draw text clipped to this element
-        # #    dc.SetClippingRegion(x,y,w,h)
-        # #
-        # #    if e.GetProperty('Content') == 'image':
-        # #        dc.DrawBitmap(self.__mongoose_image, x, y)
-        # #    else:
-        # #        dc.DrawText(string_to_display,x+2,y+2)
-        # #
-        # #    dc.DestroyClippingRegion()
-        # #
-        # #logging.debug('Py drawing took {0}s'.format(time.monotonic() - t_start))
 
     # # Flip the front and back buffers
     def __flip(self):
@@ -457,10 +411,6 @@ class Layout_Canvas(wx.ScrolledWindow):
 
     def GetVisibilityTick(self):
         return self.__context.GetVisibilityTick()
-
-    # # Return stored image
-    def GetMongooseImage(self):
-        return self.__mongoose_image
 
     # # Set the brushes in the renderer to the current brush set
     def SetRendererBrushes(self):
