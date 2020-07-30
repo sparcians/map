@@ -254,6 +254,7 @@ class Layout_Canvas(wx.ScrolledWindow):
     # # Execute all drawing logic
     def OnPaint(self, event):
         paint_dc = wx.AutoBufferedPaintDC(self)
+        paint_dc.Clear();
         context = wx.GraphicsContext.Create(paint_dc)
         dc = wx.GCDC(context)
         dc.SetLogicalScale(self.__canvas_scale, self.__canvas_scale)

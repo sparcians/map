@@ -686,11 +686,18 @@ class ScheduleElement(MultiElement):
                 clip_region = (0, 0, i_d_p, box_size[1])
 
             time_range = (start_range, end_range)
-            # crude copy
-            temp = self.__buffer.GetSubBitmap((0, 0, self.__buffer.GetWidth(), self.__buffer.GetHeight()))
-            # shift
-            self.__dc.DrawBitmap(temp, canvas.MAX_ZOOM * i_d_p, 0)
-            del temp
+            if i_d_p < 0:
+                sub_x = -canvas.MAX_ZOOM * i_d_p
+                sub_width = self.__buffer.GetWidth() - sub_x
+                dest_x = 0
+            else:
+                sub_x = 0
+                dest_x = canvas.MAX_ZOOM * i_d_p
+                sub_width = self.__buffer.GetWidth() - dest_x
+
+            self.__graphics_dc.SetLogicalScale(1, 1)
+            self.__dc.Blit(dest_x, 0, sub_width, self.__buffer.GetHeight(), self.__dc, sub_x, 0)
+            self.__graphics_dc.SetLogicalScale(canvas.MAX_ZOOM, canvas.MAX_ZOOM)
 
         # --Render Loop--
         for child_idx, child in enumerate(children):
