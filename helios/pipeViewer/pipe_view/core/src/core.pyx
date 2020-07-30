@@ -117,9 +117,9 @@ cdef extern from "wx/font.h":
         wxFONTWEIGHT_BOLD,
         wxFONTWEIGHT_MAX
 
-cdef extern from "wx/dc.h":
+cdef extern from "wx/dcgraph.h":
 
-    cdef cppclass wxDC:
+    cdef cppclass wxGCDC:
         void SetFont(wxFont font) # const &
         void SetPen(wxPen pen) # const &
         void SetBrush(wxBrush brush) # const &
@@ -167,17 +167,17 @@ cdef extern from "wx/dc.h":
                   wxCoord ydest,
                   wxCoord width,
                   wxCoord height,
-                  wxDC * source,
+                  wxGCDC * source,
                   wxCoord xsrc,
                   wxCoord ysrc) # Truncated argument list
 
 
 cdef extern from "helpers.h":
     bool wxPyConvertWrappedPtr(PyObject* obj, void **ptr, const wxString& className)
-    wxDC* getDC_wrapped(PyObject* dc) except +
+    wxGCDC* getDC_wrapped(PyObject* dc) except +
     wxFont* getFont_wrapped(PyObject* font) except +
     wxBrush* getBrush_wrapped(PyObject* brush) except +
-    void getTextExtent(wxDC* dc, long* char_width, long* char_height)
+    void getTextExtent(wxGCDC* dc, long* char_width, long* char_height)
 
 def get_argos_version():
     return 1;
@@ -194,7 +194,7 @@ cpdef str extract_value(str s, str key, str separators = '=:', long skip_chars =
         return not_found
     return matches[0][skip_chars:]
 
-cdef wxDC* getDC(dc):
+cdef wxGCDC* getDC(dc):
     return getDC_wrapped(<PyObject*>dc)
 
 cdef wxFont* getFont(font):
@@ -419,7 +419,7 @@ cdef class Renderer(object):
                             schedule_settings = None,
                             short_format = ''):
                             # schedule_settings: (period_width, 0/1/2 (none/dots/boxed))
-        cdef wxDC * c_dc = getDC(dc)
+        cdef wxGCDC * c_dc = getDC(dc)
 
         cdef int c_x
         cdef int c_y
@@ -554,11 +554,12 @@ cdef class Renderer(object):
         """
         Draw elements in the list to the given dc
         """
+
         elements = canvas.GetDrawPairs() # Uses bounds
         xoff, yoff = canvas.GetRenderOffsets()
         _, reason_brushes = canvas.GetBrushes()
 
-        cdef wxDC * c_dc = getDC(dc)
+        cdef wxGCDC * c_dc = getDC(dc)
 
         cdef wxColour c_color
         cdef wxPen c_pen

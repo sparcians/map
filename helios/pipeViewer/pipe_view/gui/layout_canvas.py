@@ -2,6 +2,7 @@ import wx
 import wx.lib.dragscroller as drgscrlr
 import os
 import colorsys # For easy HSL to RGB conversion
+import math
 import sys
 import time
 import logging
@@ -32,6 +33,8 @@ class Layout_Canvas(wx.ScrolledWindow):
 
     MIN_WIDTH = 500
     MIN_HEIGHT = 500
+    MIN_ZOOM = 0.1
+    MAX_ZOOM = 2
 
     # # Construct a Layout_Canvas
     #  @param parent Parent Layout_Frame
@@ -48,6 +51,8 @@ class Layout_Canvas(wx.ScrolledWindow):
                  style = wx.NO_FULL_REPAINT_ON_RESIZE):
 
         wx.ScrolledWindow.__init__(self, parent)
+        self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
+        self.SetBackgroundColour(wx.WHITE)
         self.__renderer = core.Renderer()
         assert len(autocoloring.REASON_BRUSHES) > 0 and len(autocoloring.BACKGROUND_BRUSHES) > 0
         self.SetRendererBrushes()
@@ -74,12 +79,8 @@ class Layout_Canvas(wx.ScrolledWindow):
         #End TODO ###########################################
         self.__selection = Selection_Mgr(self, dialog)
         self.__user_handler = Input_Decoder(self, self.__selection)
-        self.__buffer = None
-        self.__backbuffer = None
-        # used to store original image segment when hover text drawn
-        self.__dirty_position = None
-        self.__clean_buffer = None
 
+        self.__set_renderer_font = False
         self.__schedule_line_draw_style = 4 # classic
         self.__schedule_scale = 1.0
 
@@ -89,13 +90,7 @@ class Layout_Canvas(wx.ScrolledWindow):
         self.__hover_preview = HoverPreview(self, context)
         # Load images
 
-        self.__fnt_layout = GetMonospaceFont(12)
-
-        # set up font
-        temp_dc = wx.MemoryDC()
-        temp_dc.SetFont(self.__fnt_layout)
-        self.__renderer.setFontFromDC(temp_dc)
-        del temp_dc
+        self.__fnt_layout = GetMonospaceFont(11)
 
         # Disable background erasing
         def disable_event(*pargs, **kwargs):
@@ -104,8 +99,7 @@ class Layout_Canvas(wx.ScrolledWindow):
         self.Bind(wx.EVT_ERASE_BACKGROUND, disable_event)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
-        # Ensure that the buffers are setup correctly
-        self.OnSize(None)
+
         # Bindings for mouse events
         self.Bind(wx.EVT_LEFT_DOWN,
                   partial(self.__user_handler.LeftDown, canvas = self,
@@ -139,9 +133,7 @@ class Layout_Canvas(wx.ScrolledWindow):
         # required to actually receive key events
         self.SetFocus()
 
-        self.Bind(wx.EVT_SCROLLWIN, self.Scrollin)
-
-        self.Bind(EVT_HOVER_REDRAW, self.OnHoverRedraw)
+        self.Bind(wx.EVT_SCROLLWIN, self.ScrollWin)
 
     # # Size of the canvas grid
     @property
@@ -193,56 +185,10 @@ class Layout_Canvas(wx.ScrolledWindow):
 
         return string_to_display, brush
 
-    # # Draw hover text onto specified DC.
-    # Function called by either OnPaint or OnHoverRedraw
-    def DoHoverTextDraw(self, dc):
-
-        string_to_display, brush = self.UpdateTransactionColor(self.__hover_preview.element, \
-                                                               self.__hover_preview.annotation)
-
-        # set brush and pen
-        dc.SetBrush(brush)
-        BORDER_LIGHTNESS = 0.7
-        dc.SetPen(wx.Pen((int(brush.Colour[0] * BORDER_LIGHTNESS),
-                          int(brush.Colour[1] * BORDER_LIGHTNESS),
-                          int(brush.Colour[2] * BORDER_LIGHTNESS)), 1)) # Darker border around brush
-        # draw text and box
-        text = self.__hover_preview.GetText()
-
-        if text == '':
-            return # Do not draw an empty rectangle here. It causes dirt to be
-                   # left behind when the 1px-wide buffer is restored
-
-        tr = self.__hover_preview.position
-
-        br = dc.GetMultiLineTextExtent(text)
-
-        rect_mop = [tr[0], tr[1], br[0] + 1, br[1] + 1]
-
-        visible_area = self.GetVisibleArea()
-        box_right = rect_mop[0] + rect_mop[2]
-        box_bottom = rect_mop[1] + rect_mop[3]
-        if box_right > visible_area[2]: # off the right edge
-            # shift left
-            rect_mop[0] -= (box_right - visible_area[2])
-        if box_bottom > visible_area[3]:
-            rect_mop[1] -= (box_bottom - visible_area[3])
-
-        if rect_mop[0] < 0 or rect_mop[1] < 0:
-            return # screen too small
-        # capture old swatch and position so we can patch it later.
-        self.__clean_buffer = self.__buffer.GetSubBitmap(rect_mop)
-        self.__dirty_position = rect_mop[0], rect_mop[1]
-
-        dc.DrawRectangle(*rect_mop)
-        dc.DrawLabel(text, rect = rect_mop)
-
     # # Here the canvas does all it's drawing
     def DoDraw(self, dc):
         logging.debug('xxx: Started C drawing')
 
-        # Reapply font
-        dc.SetFont(self.__fnt_layout)
         # Draw grid
         # This has effectively 0 cost
         if self.__draw_grid:
@@ -261,28 +207,19 @@ class Layout_Canvas(wx.ScrolledWindow):
 
         logging.debug('{0}s: C drawing'.format(time.monotonic() - t_start))
 
-    # # Flip the front and back buffers
-    def __flip(self):
-        self.__buffer, self.__backbuffer = self.__backbuffer, self.__buffer
-        self.Update()
-        self.Refresh()
-
-    def Scrollin(self, evt):
-        wx.ScrolledWindow.Refresh(self)
+    def ScrollWin(self, evt):
+        super(self.__class__, self).Refresh()
 
         bounds = self.__GetScrollBounds()
         x_bound = bounds[0] - self.scrollrate
         y_bound = bounds[1] - self.scrollrate
 
         w_pix, h_pix = self.GetClientSize()
-        percent_bar_x = w_pix / (1.0 * self.__WIDTH * self.__canvas_scale)
-        percent_bar_y = h_pix / (1.0 * self.__HEIGHT * self.__canvas_scale)
+        percent_bar_x = w_pix / (1.0 * self.__WIDTH)
+        percent_bar_y = h_pix / (1.0 * self.__HEIGHT)
 
         self.__scroll_ratios = self.GetScrollPos(wx.HORIZONTAL) / (x_bound * 1.0) + percent_bar_x / 4.0, \
                               self.GetScrollPos(wx.VERTICAL) / (y_bound * 1.0) + percent_bar_y / 4.0
-
-        # don't let old clean buffer be written in wrong spot
-        self.__clean_buffer = None
 
         # If we're in edit mode, update the cursor location in the toolbar
         if self.__user_handler.GetEditMode():
@@ -297,13 +234,15 @@ class Layout_Canvas(wx.ScrolledWindow):
 
             self.__parent.UpdateMouseLocation(x, y)
 
+        mousePos = wx.GetMousePosition()
+        self.__hover_preview.HandleMouseMove(mousePos, self)
         evt.Skip()
 
     # # Returns the position of the mouse within the canvas
     def GetMousePosition(self):
         return self.CalcUnscrolledPosition(self.ScreenToClient(wx.GetMousePosition()))
 
-    # # Execute all drawing logic, flip buffers
+    # # Execute all drawing logic
     def FullUpdate(self):
 
         # update quad tree (if needed)
@@ -312,38 +251,18 @@ class Layout_Canvas(wx.ScrolledWindow):
         # Tell the Element Prop's Dlg window to update itself
         self.__dlg.Refresh()
 
-    # # Execute all drawing logic, flip the buffers, blit the front buffer to
-    #  the screen
+    # # Execute all drawing logic
     def OnPaint(self, event):
-        dc = wx.MemoryDC()
-        dc.SelectObject(self.__backbuffer)
-        dc.Clear()
-        dc.SetUserScale(self.__canvas_scale, self.__canvas_scale)
+        paint_dc = wx.AutoBufferedPaintDC(self)
+        context = wx.GraphicsContext.Create(paint_dc)
+        dc = wx.GCDC(context)
+        dc.SetLogicalScale(self.__canvas_scale, self.__canvas_scale)
+        dc.SetFont(self.__fnt_layout)
+        if not self.__set_renderer_font:
+            self.__renderer.setFontFromDC(dc)
+            self.__set_renderer_font = True
         self.DoDraw(dc)
         self.__selection.Draw(dc)
-
-        self.__buffer, self.__backbuffer = self.__backbuffer, self.__buffer
-        dc = wx.BufferedPaintDC(self, self.__buffer)
-
-        # update the hover
-        if self.__hover_preview.IsEnabled():
-            mousePos = wx.GetMousePosition()
-            screenPos = self.GetScreenPosition()
-            localMousePos = (mousePos[0] - screenPos[0], mousePos[1] - screenPos[1])
-            self.__hover_preview.HandleMouseMove(localMousePos, self)
-
-    # # Perform limited redraw.
-    # Only updates the hover text that appears when object is moused over.
-    def OnHoverRedraw(self, event):
-        dc = wx.MemoryDC()
-        dc.SelectObject(self.__buffer)
-        if self.__clean_buffer:
-            dc.DrawBitmap(self.__clean_buffer, self.__dirty_position[0], self.__dirty_position[1])
-        if self.__hover_preview.show:
-            dc.SetFont(self.__fnt_layout)
-            self.DoHoverTextDraw(dc)
-        client_dc = wx.ClientDC(self)
-        wx.BufferedDC(client_dc, self.__buffer)
 
     # # Returns Hover Preview
     def GetHoverPreview(self):
@@ -365,16 +284,7 @@ class Layout_Canvas(wx.ScrolledWindow):
 
     # # Gets called when the window is resized, and when the canvas is initialized
     def OnSize(self, event):
-        # Here we need to create a new off-screen buffer to hold
-        # the in-progress drawings on.
-        width, height = self.GetClientSize()
-        if width == 0:
-            width = 1
-        if height == 0:
-            height = 1
-        self.__buffer = wx.Bitmap(width, height)
-        self.__backbuffer = wx.Bitmap(width, height)
-        # Now update the screen
+        # update the screen
         self.FullUpdate()
 
     # # Gets the selection manager for this canvas
@@ -404,9 +314,37 @@ class Layout_Canvas(wx.ScrolledWindow):
                   mins[1] + height / self.__canvas_scale)
         return bounds
 
+    # Gets the update region relative to the current visible area
+    # Coordinates are scaled to account for current zoom factor
+    # Used by schedule elements to determine where to blit
+    def GetScaledUpdateRegion(self):
+        box = self.GetUpdateRegion().GetBox()
+        box = wx.Rect(math.floor(box[0] / self.__canvas_scale),
+                      math.floor(box[1] / self.__canvas_scale),
+                      math.ceil(box[2] / self.__canvas_scale),
+                      math.ceil(box[3] / self.__canvas_scale))
+
+        box.Inflate(10, 10) # Fudge factor to ensure no dirt is left behind
+        return box
+
+    # Gets the update region relative to the origin of the scrolled area
+    # Region is scaled to account for current zoom factor
+    # Used to determine which elements need to be updated
+    def GetScrolledUpdateRegion(self):
+        box = self.GetUpdateRegion().GetBox()
+        box.SetPosition(self.CalcUnscrolledPosition(box.GetTopLeft()))
+        box.SetHeight(math.ceil(box.GetHeight() / self.__canvas_scale))
+        box.SetWidth(math.ceil(box.GetWidth() / self.__canvas_scale))
+
+        box.Inflate(10, 10) # Fudge factor to ensure no dirt is left behind
+        return box
+
     # # Returns element pairs suitable for drawing
     def GetDrawPairs(self):
-        bounds = self.GetBounds()
+        box = self.GetScrolledUpdateRegion()
+        top_left = box.GetTopLeft()
+        bottom_right = box.GetBottomRight()
+        bounds = (top_left[0], top_left[1], bottom_right[0], bottom_right[1])
         return self.__context.GetDrawPairs(bounds)
 
     def GetVisibilityTick(self):
@@ -499,12 +437,8 @@ class Layout_Canvas(wx.ScrolledWindow):
 
     def SetScale(self, scale):
         # cap at 2x zoom in
-        if scale > 2:
-            self.__canvas_scale = 2
-        else:
-            self.__canvas_scale = scale
-        # purge outdated buffer
-        self.__clean_buffer = None
+        self.__canvas_scale = min(max(self.MIN_ZOOM, scale), self.MAX_ZOOM)
+
         self.__CalcCanvasSize()
         self.__UpdateScrollbars()
         self.__UpdateGrid(self.__gridsize)
@@ -513,8 +447,6 @@ class Layout_Canvas(wx.ScrolledWindow):
 
     def SetScheduleScale(self, scale):
         self.__schedule_scale = scale
-        # purge outdated buffer
-        self.__clean_buffer = None
         self.__context.FullUpdate()
         self.Refresh()
 
@@ -524,8 +456,9 @@ class Layout_Canvas(wx.ScrolledWindow):
 
     # # override to handle full-canvas scale
     def CalcUnscrolledPosition(self, position):
-        x0, y0 = self.GetViewStart()[0] / self.__canvas_scale * self.scrollrate, \
-                        self.GetViewStart()[1] / self.__canvas_scale * self.scrollrate
+        view_start = self.GetViewStart()
+        x0 = view_start[0] * self.scrollrate / self.__canvas_scale
+        y0 = view_start[1] * self.scrollrate / self.__canvas_scale
         return x0 + position[0] / self.__canvas_scale, y0 + position[1] / self.__canvas_scale
 
     # # Calculate the canvas size based on all elements
@@ -533,6 +466,8 @@ class Layout_Canvas(wx.ScrolledWindow):
     def __CalcCanvasSize(self):
 
         l, t, r, b = self.__context.GetElementExtents()
+        r *= self.__canvas_scale
+        b *= self.__canvas_scale
 
         width = max(self.MIN_WIDTH, r + self.__AUTO_CANVAS_SIZE_MARGIN)
         height = max(self.MIN_HEIGHT, b + self.__AUTO_CANVAS_SIZE_MARGIN)
@@ -546,7 +481,7 @@ class Layout_Canvas(wx.ScrolledWindow):
 
     def __GetScrollBounds(self):
         sr = float(self.scrollrate)
-        return self.__WIDTH * self.__canvas_scale / sr, self.__HEIGHT * self.__canvas_scale / sr
+        return self.__WIDTH / sr, self.__HEIGHT / sr
 
     # # Update the scrollbars based on a new canvas size
     #  Restores prior scroll offsets
@@ -557,8 +492,8 @@ class Layout_Canvas(wx.ScrolledWindow):
         w_pix, h_pix = self.GetClientSize()
         x_bound, y_bound = self.__GetScrollBounds()
         x, y = self.__scroll_ratios
-        percent_bar_x = w_pix / (1.0 * self.__WIDTH * self.__canvas_scale)
-        percent_bar_y = h_pix / (1.0 * self.__HEIGHT * self.__canvas_scale)
+        percent_bar_x = w_pix / (1.0 * self.__WIDTH)
+        percent_bar_y = h_pix / (1.0 * self.__HEIGHT)
         if percent_bar_x > 1:
             percent_bar_x = 1
         if percent_bar_y > 1:
