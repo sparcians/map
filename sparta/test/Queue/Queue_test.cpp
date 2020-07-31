@@ -436,6 +436,27 @@ void testPopBack()
         EXPECT_FALSE(itr.isValid());
     }
 
+    const uint32_t sz = pop_backer.size();
+    for(uint32_t i = 0; i < sz; ++i) {
+        pop_backer.pop_back();
+    }
+
+    EXPECT_THROW(pop_backer.pop_back());
+
+    for(auto & itr : iters) {
+        EXPECT_TRUE(!itr.isValid());
+    }
+
+    // Rebuild the queue
+    for(uint32_t i = 0; i < pop_backer.capacity(); ++i) {
+        pop_backer.push(i);
+    }
+
+    // The iterators should still remain invalid -- they are old
+    for(auto & itr : iters) {
+        EXPECT_TRUE(!itr.isValid());
+    }
+
     // for(uint32_t i = 0; i < pop_backer.size(); ++i) {
     //     std::cout << pop_backer.access(i) << std::endl;
     // }
