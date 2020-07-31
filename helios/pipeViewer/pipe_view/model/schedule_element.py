@@ -79,8 +79,6 @@ class ScheduleLineElement(LocationallyKeyedElement):
         self.__buffer = None
         self.__hc = 0
         self.__line_style = self.DRAW_LOOKUP[self.GetProperty('line_style')]
-        # used for horizontal zoom
-        self._scale_factor = 1.0
         InitWhiteBrush()
 
     @staticmethod
@@ -121,14 +119,13 @@ class ScheduleLineElement(LocationallyKeyedElement):
                 return x_ppos, y_pos
         elif key == 'time_scale':
             if parent:
-                return parent.GetProperty(key) * self._scale_factor
+                return parent.GetProperty(key)
             else:
-                return self._properties[key] * self._scale_factor
+                return self._properties[key]
         elif key == 't_offset':
             if parent:
                 # assume parent is schedule (for now)
-                return -parent.GetProperty('pixel_offset') * self._scale_factor * \
-                            parent.GetProperty('time_scale') / (1.0 * period)
+                return -parent.GetProperty('pixel_offset') * parent.GetProperty('time_scale') / period
         return self._properties[key]
 
     def SetProperty(self, key, val):
@@ -163,7 +160,6 @@ class ScheduleLineElement(LocationallyKeyedElement):
                     render_box = None,
                     fixed_offset = None):
 
-        self._scale_factor = canvas.GetScheduleScale()
         # -Set up draw style-
         line_style = self.__line_style
         dc.SetPen(self._pen)
@@ -241,7 +237,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
             dc.DrawLine(clip[0], c_y, end_x, c_y)
 
             current_pixel = (time_range[0] - time_range[0] % period - self.__hc - t_offset * period) / t_scale
-            width = period / t_scale * 1.0
+            width = period / t_scale
 
             while current_pixel <= end_x:
                 start = int(current_pixel)
@@ -318,7 +314,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
         if parent:
             getParentProperty = parent.GetProperty
             # assume parent is schedule (for now)
-            time_scale = getParentProperty('time_scale') * self._scale_factor
+            time_scale = getParentProperty('time_scale')
             offs = -getParentProperty('pixel_offset') * time_scale
             return (int(offs - period), int((offs + period) + self.GetXDim() * time_scale))
         else:
@@ -338,7 +334,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
         offs += t_scale * pt[0]
 
         location = self.GetProperty('LocationString')
-        t_offset = offs / (1.0 * period)
+        t_offset = offs / period
 
         fake_element = FakeElement()
         fake_element.SetProperty('LocationString', location)
@@ -400,7 +396,6 @@ class ScheduleLineRulerElement(ScheduleLineElement):
                     render_box = None,
                     fixed_offset = None):
 
-        self._scale_factor = canvas.GetScheduleScale()
         # render box is disregarded so shift is
         # over-written when acting as a child of a container
         hc = self.GetTime()
@@ -610,8 +605,6 @@ class ScheduleElement(MultiElement):
             if ycpos < highest_y:
                 highest_y = ycpos
 
-            # push current scale factor
-            child._scale_factor = canvas.GetScheduleScale()
             # collect pairs from elements
             pair = canvas.context.GetElementPair(child)
             pairs.append(pair)

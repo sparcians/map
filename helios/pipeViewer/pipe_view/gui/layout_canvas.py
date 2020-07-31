@@ -82,7 +82,6 @@ class Layout_Canvas(wx.ScrolledWindow):
 
         self.__set_renderer_font = False
         self.__schedule_line_draw_style = 4 # classic
-        self.__schedule_scale = 1.0
 
         # used for color highlighting of transactions
         self.__colored_transactions = {}
@@ -215,11 +214,11 @@ class Layout_Canvas(wx.ScrolledWindow):
         y_bound = bounds[1] - self.scrollrate
 
         w_pix, h_pix = self.GetClientSize()
-        percent_bar_x = w_pix / (1.0 * self.__WIDTH)
-        percent_bar_y = h_pix / (1.0 * self.__HEIGHT)
+        percent_bar_x = w_pix / self.__WIDTH
+        percent_bar_y = h_pix / self.__HEIGHT
 
-        self.__scroll_ratios = self.GetScrollPos(wx.HORIZONTAL) / (x_bound * 1.0) + percent_bar_x / 4.0, \
-                              self.GetScrollPos(wx.VERTICAL) / (y_bound * 1.0) + percent_bar_y / 4.0
+        self.__scroll_ratios = (self.GetScrollPos(wx.HORIZONTAL) / x_bound + percent_bar_x / 4.0,
+                                self.GetScrollPos(wx.VERTICAL) / y_bound + percent_bar_y / 4.0)
 
         # If we're in edit mode, update the cursor location in the toolbar
         if self.__user_handler.GetEditMode():
@@ -383,9 +382,6 @@ class Layout_Canvas(wx.ScrolledWindow):
     def GetScale(self):
         return self.__canvas_scale
 
-    def GetScheduleScale(self):
-        return self.__schedule_scale
-
     # # Updates the highlighting state of all cached transactions
     def UpdateTransactionHighlighting(self):
         for key, val in self.__colored_transactions.items():
@@ -446,11 +442,6 @@ class Layout_Canvas(wx.ScrolledWindow):
 
         super(self.__class__, self).Refresh()
 
-    def SetScheduleScale(self, scale):
-        self.__schedule_scale = scale
-        self.__context.FullUpdate()
-        self.Refresh()
-
     # # Returns a list of all Elements beneath the given point
     def DetectCollision(self, pt):
         return self.__context.DetectCollision(pt)
@@ -493,8 +484,8 @@ class Layout_Canvas(wx.ScrolledWindow):
         w_pix, h_pix = self.GetClientSize()
         x_bound, y_bound = self.__GetScrollBounds()
         x, y = self.__scroll_ratios
-        percent_bar_x = w_pix / (1.0 * self.__WIDTH)
-        percent_bar_y = h_pix / (1.0 * self.__HEIGHT)
+        percent_bar_x = w_pix / self.__WIDTH
+        percent_bar_y = h_pix / self.__HEIGHT
         if percent_bar_x > 1:
             percent_bar_x = 1
         if percent_bar_y > 1:
