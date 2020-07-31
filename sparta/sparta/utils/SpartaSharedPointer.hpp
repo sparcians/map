@@ -50,6 +50,34 @@ namespace sparta
     template <class PointerT>
     class SpartaSharedPointer
     {
+
+        class SpartaWeakPointer
+        {
+        public:
+            explicit SpartaWeakPointer() : cnt_(&dead_cnt_) { cnt_.count = 0; }
+            explicit SpartaWeakPointer(const sparta::SpartaSharedPointer & sp) :
+                SpartaWeakPointer(sp.getRefCountPtr_())
+            {}
+
+            long use_count() const noexcept { return cnt.count; }
+            bool expired() const noexcept { return cnt.count == 0; }
+
+            SpartaWeakPointer(const SpartaWeakPointer &)  = default;
+            SpartaWeakPointer(      SpartaWeakPointer &&) = default;
+            SpartaWeakPointer & operator=(const SpartaWeakPointer &)  = default;
+            SpartaWeakPointer & operator=(      SpartaWeakPointer &&) = default;
+
+        private:
+            friend class SpartaSharedPointer;
+            SpartaWeakPointer(Refcount * cnt) : cnt_(cnt) {
+                cnt->wp_(this);
+            }
+            void detach_() { cnt = &dummy_cnt_; }
+
+            const Refcount * cnt_ = nullptr;
+            const Refcount dead_cnt_{nullptr, false};
+        };
+
         /// Internal structure to keep track of the reference
         struct RefCount
         {
