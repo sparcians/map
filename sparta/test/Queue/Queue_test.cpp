@@ -21,6 +21,7 @@ TEST_INIT;
 #define PIPEOUT_GEN
 
 void testStatsOutput();
+void testPopBack();
 
 struct dummy_struct
 {
@@ -358,7 +359,27 @@ int main()
     ++it;
     EXPECT_EQUAL(*it, 9);
 
+    ////////////////////////////////////////////////////////////////////////////////
+    // Test dead iterators
+    sparta::Queue<dummy_struct>::iterator dead_it;
+    EXPECT_FALSE(dead_it.isValid());
+    EXPECT_THROW(*dead_it);
+    EXPECT_THROW(dead_it++);
+    EXPECT_THROW(++dead_it);
+    EXPECT_THROW(dead_it->s_field);
+    EXPECT_THROW(dead_it.getIndex());
+
+    EXPECT_TRUE(dummy_struct_queue_up.size() > 0);
+    dead_it = dummy_struct_queue_up.begin();
+    EXPECT_TRUE(dead_it.isValid());
+    EXPECT_NOTHROW(*dead_it);
+    EXPECT_NOTHROW(dead_it++);
+    EXPECT_NOTHROW(++dead_it);
+    EXPECT_NOTHROW(dead_it->s_field);
+    EXPECT_NOTHROW(dead_it.getIndex());
+
     testStatsOutput();
+    testPopBack();
 
     rtn.enterTeardown();
 #ifdef PIPEOUT_GEN
@@ -367,6 +388,58 @@ int main()
 
     REPORT_ERROR;
     return ERROR_CODE;
+}
+
+void testPopBack()
+{
+    sparta::Queue<uint32_t> pop_backer("pop_back_test", 100, nullptr);
+    std::vector<sparta::Queue<uint32_t>::iterator> iters;
+    iters.reserve(pop_backer.capacity());
+    EXPECT_EQUAL(iters.capacity(), pop_backer.capacity());
+
+    for(uint32_t i = 0; i < pop_backer.capacity(); ++i) {
+        iters.emplace_back(pop_backer.push(i));
+    }
+    EXPECT_EQUAL(pop_backer.size(), pop_backer.capacity());
+    uint32_t i = 0;
+    for(auto & itr : iters) {
+        EXPECT_EQUAL(*itr, i);
+        ++i;
+    }
+
+    const uint32_t invalidate_count = 10;
+    std::vector<sparta::Queue<uint32_t>::iterator> invalid_iters;
+    invalid_iters.reserve(invalidate_count);
+
+    // Pop 99 -> 89
+    for(uint32_t i = 0; i < invalidate_count; ++i) {
+        invalid_iters.emplace_back(iters.back());
+        pop_backer.pop_back();
+        iters.pop_back();
+    }
+
+    EXPECT_EQUAL(pop_backer.size(), 90);
+    EXPECT_EQUAL(iters.size(), 90);
+    EXPECT_EQUAL(pop_backer.back(), 89);
+
+    i = 0;
+    for(auto & itr : iters) {
+        if(!itr.isValid()) {
+            EXPECT_TRUE(itr.isValid());
+            std::cout << "Error: " << i << " is not valid" << std::endl;
+        }
+        ++i;
+    }
+
+    // These iterators were cut from the queue.  They should be invalidated
+    for(auto & itr : invalid_iters) {
+        EXPECT_FALSE(itr.isValid());
+    }
+
+    // for(uint32_t i = 0; i < pop_backer.size(); ++i) {
+    //     std::cout << pop_backer.access(i) << std::endl;
+    // }
+
 }
 
 void testStatsOutput()
