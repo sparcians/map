@@ -79,8 +79,6 @@ class ScheduleLineElement(LocationallyKeyedElement):
         self.__buffer = None
         self.__hc = 0
         self.__line_style = self.DRAW_LOOKUP[self.GetProperty('line_style')]
-        # used for horizontal zoom
-        self._scale_factor = 1.0
         InitWhiteBrush()
 
     @staticmethod
@@ -121,14 +119,13 @@ class ScheduleLineElement(LocationallyKeyedElement):
                 return x_ppos, y_pos
         elif key == 'time_scale':
             if parent:
-                return parent.GetProperty(key) * self._scale_factor
+                return parent.GetProperty(key)
             else:
-                return self._properties[key] * self._scale_factor
+                return self._properties[key]
         elif key == 't_offset':
             if parent:
                 # assume parent is schedule (for now)
-                return -parent.GetProperty('pixel_offset') * self._scale_factor * \
-                            parent.GetProperty('time_scale') / (1.0 * period)
+                return -parent.GetProperty('pixel_offset') * parent.GetProperty('time_scale') / period
         return self._properties[key]
 
     def SetProperty(self, key, val):
@@ -163,7 +160,6 @@ class ScheduleLineElement(LocationallyKeyedElement):
                     render_box = None,
                     fixed_offset = None):
 
-        self._scale_factor = canvas.GetScheduleScale()
         # -Set up draw style-
         line_style = self.__line_style
         dc.SetPen(self._pen)
@@ -241,7 +237,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
             dc.DrawLine(clip[0], c_y, end_x, c_y)
 
             current_pixel = (time_range[0] - time_range[0] % period - self.__hc - t_offset * period) / t_scale
-            width = period / t_scale * 1.0
+            width = period / t_scale
 
             while current_pixel <= end_x:
                 start = int(current_pixel)
@@ -318,7 +314,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
         if parent:
             getParentProperty = parent.GetProperty
             # assume parent is schedule (for now)
-            time_scale = getParentProperty('time_scale') * self._scale_factor
+            time_scale = getParentProperty('time_scale')
             offs = -getParentProperty('pixel_offset') * time_scale
             return (int(offs - period), int((offs + period) + self.GetXDim() * time_scale))
         else:
@@ -338,7 +334,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
         offs += t_scale * pt[0]
 
         location = self.GetProperty('LocationString')
-        t_offset = offs / (1.0 * period)
+        t_offset = offs / period
 
         fake_element = FakeElement()
         fake_element.SetProperty('LocationString', location)
@@ -400,7 +396,6 @@ class ScheduleLineRulerElement(ScheduleLineElement):
                     render_box = None,
                     fixed_offset = None):
 
-        self._scale_factor = canvas.GetScheduleScale()
         # render box is disregarded so shift is
         # over-written when acting as a child of a container
         hc = self.GetTime()
@@ -475,6 +470,7 @@ class ScheduleElement(MultiElement):
         MultiElement.__init__(self, *args, **kwargs)
         self.__buffer = None
         self.__dc = wx.MemoryDC() # store our own DC
+        self.__graphics_dc = None
 
         self.__old_dimensions = None
         self.__last_hc = None
@@ -551,6 +547,13 @@ class ScheduleElement(MultiElement):
                 pixel_offset = int(clock_domain.tick_period * float(val) / self.GetProperty('time_scale'))
                 self.SetProperty('pixel_offset', pixel_offset)
 
+    def __ReinitializeBuffer(self, canvas, width, height):
+        self.__buffer = wx.Bitmap(canvas.MAX_ZOOM * width, canvas.MAX_ZOOM * height)
+        self.__dc.SelectObject(self.__buffer)
+        self.__graphics_dc = wx.GCDC(self.__dc)
+        self.__graphics_dc.SetFont(self.__dc.GetFont())
+        self.__graphics_dc.SetLogicalScale(canvas.MAX_ZOOM, canvas.MAX_ZOOM)
+
     def DrawRoutine(self, pair, dc, canvas, tick):
         children = self.GetChildren()
         if not children:
@@ -602,8 +605,6 @@ class ScheduleElement(MultiElement):
             if ycpos < highest_y:
                 highest_y = ycpos
 
-            # push current scale factor
-            child._scale_factor = canvas.GetScheduleScale()
             # collect pairs from elements
             pair = canvas.context.GetElementPair(child)
             pairs.append(pair)
@@ -649,26 +650,25 @@ class ScheduleElement(MultiElement):
                 start_range = hc
                 end_range = hc
 
+        sched_height = lowest_y - highest_y
         # # Execute the set update type
         if not self.__buffer:
             time_range = None # draw full frame
             clip_region = None
             self.__dc.SetFont(dc.GetFont())
-            self.__buffer = wx.Bitmap(c_w, lowest_y - highest_y)
-            self.__dc.SelectObject(self.__buffer)
+            self.__ReinitializeBuffer(canvas, c_w, sched_height)
             self.__dc.Clear()
         elif full_update:
             time_range = None
             clip_region = None
-            if self.__old_dimensions != (c_w, lowest_y - highest_y):
+            if self.__old_dimensions != (c_w, sched_height):
                 # we need to make a new buffer
-                self.__buffer = wx.Bitmap(c_w, lowest_y - highest_y)
-                self.__dc.SelectObject(self.__buffer)
+                self.__ReinitializeBuffer(canvas, c_w, sched_height)
             self.__dc.Clear()
         else:
             # make box
             left_top = (c_x, highest_y)
-            box_size = (c_w, lowest_y - highest_y)
+            box_size = (c_w, sched_height)
 
             clip_region = None
             if i_d_p < 0:
@@ -679,24 +679,63 @@ class ScheduleElement(MultiElement):
                 clip_region = (0, 0, i_d_p, box_size[1])
 
             time_range = (start_range, end_range)
-            # crude copy
-            temp = self.__buffer.GetSubBitmap((0, 0,
-                                self.__buffer.GetWidth(), self.__buffer.GetHeight()))
-            # shift
-            self.__dc.DrawBitmap(temp, i_d_p, 0)
-            del temp
+            if i_d_p < 0:
+                sub_x = -canvas.MAX_ZOOM * i_d_p
+                sub_width = self.__buffer.GetWidth() - sub_x
+                dest_x = 0
+            else:
+                sub_x = 0
+                dest_x = canvas.MAX_ZOOM * i_d_p
+                sub_width = self.__buffer.GetWidth() - dest_x
+
+            self.__graphics_dc.SetLogicalScale(1, 1)
+            self.__dc.Blit(dest_x, 0, sub_width, self.__buffer.GetHeight(), self.__dc, sub_x, 0)
+            self.__graphics_dc.SetLogicalScale(canvas.MAX_ZOOM, canvas.MAX_ZOOM)
 
         # --Render Loop--
         for child_idx, child in enumerate(children):
             child.DrawRoutine(pairs[child_idx],
-                              self.__dc,
+                              self.__graphics_dc,
                               canvas,
                               tick,
                               time_range,
                               clip_region,
                               fixed_offset = (absolute_x, highest_y))
 
-        dc.DrawBitmap(self.__buffer, c_x, highest_y - yoff)
+        # Calculate the blit destination location, width, and height
+        update_box = canvas.GetScaledUpdateRegion()
+        update_top_left = update_box.GetTopLeft()
+        update_bottom_right = update_box.GetBottomRight()
+        sched_x = c_x
+        sched_y = highest_y - yoff
+        scale = canvas.GetScale()
+        sched_x_end = sched_x + c_w
+        sched_y_end = sched_y + sched_height
+        blit_x = max(sched_x, update_top_left[0])
+        blit_y = max(sched_y, update_top_left[1])
+        blit_x_end = min(update_bottom_right[0], sched_x_end)
+        blit_y_end = min(update_bottom_right[1], sched_y_end)
+        blit_width = max(0, blit_x_end - blit_x)
+        blit_height = max(0, blit_y_end - blit_y)
+
+        # Calculate offsets, width, and height within our buffer
+        blit_x_offset = canvas.MAX_ZOOM * (blit_x - sched_x)
+        blit_y_offset = canvas.MAX_ZOOM * (blit_y - sched_y)
+        blit_src_width = canvas.MAX_ZOOM * blit_width
+        blit_src_height = canvas.MAX_ZOOM * blit_height
+
+        assert blit_src_width <= self.__buffer.GetWidth()
+        assert blit_src_height <= self.__buffer.GetHeight()
+
+        dc.StretchBlit(blit_x,
+                       blit_y,
+                       blit_width,
+                       blit_height,
+                       self.__dc,
+                       blit_x_offset,
+                       blit_y_offset,
+                       blit_src_width,
+                       blit_src_height)
 
         # draw vertical line at offset 0
         dc.SetPen(GetBlackPen())
@@ -707,7 +746,7 @@ class ScheduleElement(MultiElement):
             self.__remainder_dp = d_p - i_d_p
             # only update if we've progressed the pixels. This cuts down on rounding error.
             self.__last_hc = hc
-        self.__old_dimensions = (c_w, lowest_y - highest_y)
+        self.__old_dimensions = (c_w, sched_height)
 
         self._MarkAsUnchanged()
         self.UnsetNeedsRedraw()

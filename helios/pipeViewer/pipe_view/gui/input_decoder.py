@@ -330,20 +330,8 @@ class Input_Decoder():
             mouse_over_preview.HandleMouseMove(event.GetPosition(), canvas)
 
     def MouseWheel(self, event, canvas):
-        # schedule scale
-        if event.ControlDown() and not event.AltDown():
-            rotation = event.GetWheelRotation()/event.GetWheelDelta()
-            if rotation > 0:
-                factor = 1.05
-            else:
-                factor = 0.95
-            new_scale = canvas.GetScheduleScale()*factor
-            # cap at 3x
-            if new_scale > 3:
-                new_scale = 3
-            canvas.SetScheduleScale(new_scale)
         # canvas scale
-        elif event.ControlDown() and event.AltDown():
+        if event.GetModifiers() == wx.MOD_CONTROL:
             rotation = event.GetWheelRotation()/event.GetWheelDelta()
             if rotation > 0:
                 factor = 1.05
