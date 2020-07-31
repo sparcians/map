@@ -197,7 +197,7 @@ class SearchDialog(wx.Frame):
         else:
              for start, end, loc, annotation in results:
                 loc = convert_id_to_str(loc)
-                loc = str(loc).translate(None, '[]')
+                loc = str(loc).translate({ord(c): None for c in '[]'})
                 if loc.startswith(location_root_search):
                     entry = {'start':start, 'location':loc, 'annotation':annotation}
                     self.__full_results.append(entry)

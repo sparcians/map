@@ -44,7 +44,7 @@ class VarsListCtrl(wx.ListCtrl,
 
     # # Get's called when something is edited in the ListCtrl (in the GUI
     #  window, by the user)
-    def SetStringItem(self, index, col, data, is_init = False):
+    def SetItem(self, index, col, data, is_init = False):
         # hopefully whatever the user input is valid... (data will pass
         # through the validation steps on the Element side)
         if not is_init:
@@ -85,9 +85,9 @@ class VarsListCtrl(wx.ListCtrl,
         index = 0
         for var in sorted(self.__vars.keys()):
             self.__keys.append(var)
-            self.InsertStringItem(index, str(var))
+            self.InsertItem(index, str(var))
             self.__UpdateItem(index)
-            # #self.SetStringItem(index, 1, str(val), is_init = True)
+            # #self.SetItem(index, 1, str(val), is_init = True)
             # #self.SetItemBackgroundColour(index, self.GetItemBackgroundColour(index))
             index += 1
 
@@ -107,12 +107,12 @@ class VarsListCtrl(wx.ListCtrl,
         self.SetItemBackgroundColour(index, self.GetItemBackgroundColour(index)) # Default background color
 
         if len(self.__vars) == 0:
-            super(VarsListCtrl, self).SetStringItem(index, 1, '') # Set to no value. Whole window should be disabled
+            super(VarsListCtrl, self).SetItem(index, 1, '') # Set to no value. Whole window should be disabled
             return
 
         val = self.__vars[self.__keys[index]]
 
-        super(VarsListCtrl, self).SetStringItem(index, 1, val)
+        super(VarsListCtrl, self).SetItem(index, 1, val)
 
 
 # # The GUI-side window for editing the properties of an Element
