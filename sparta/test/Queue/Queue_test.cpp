@@ -20,6 +20,7 @@ TEST_INIT;
 
 #define PIPEOUT_GEN
 
+void testPushClearAccess();
 void testStatsOutput();
 void testPopBack();
 
@@ -378,6 +379,7 @@ int main()
     EXPECT_NOTHROW((void)dead_it->s_field);
     EXPECT_NOTHROW(dead_it.getIndex());
 
+    testPushClearAccess();
     testStatsOutput();
     testPopBack();
 
@@ -388,6 +390,30 @@ int main()
 
     REPORT_ERROR;
     return ERROR_CODE;
+}
+
+void testPushClearAccess()
+{
+    sparta::Queue<uint32_t> queue_test("pop_back_test", 6, nullptr);
+    for(uint32_t i = 0; i < queue_test.capacity(); ++i) {
+        queue_test.push(i);
+    }
+    uint32_t access = queue_test.access(0);
+    EXPECT_EQUAL(access, 0);
+    queue_test.pop();
+    access = queue_test.access(0);
+    EXPECT_EQUAL(access, 1);
+    queue_test.pop();
+    access = queue_test.access(0);
+    EXPECT_EQUAL(access, 2);
+
+    // This will force a "wrap around" in the queue
+    queue_test.push(10);
+    access = queue_test.access(0);
+    EXPECT_EQUAL(access, 2);
+
+    access = queue_test.access(queue_test.size() - 1);
+    EXPECT_EQUAL(access, 10);
 }
 
 void testPopBack()

@@ -159,11 +159,6 @@ namespace sparta
             return rollPhysicalIndex_(val - 1);
         }
 
-        /// Check to see if the raw index is valid (used by iterators)
-        bool isValidPhysical_(uint32_t physical_idx) const {
-            return (physical_idx >= current_head_idx_) && (physical_idx < current_write_idx_);
-        }
-
         /// The QueueData
         struct QueueData {
             template<class DataTRef>
@@ -457,7 +452,7 @@ namespace sparta
          *
          */
         bool isValid(uint32_t idx) const {
-            return isValidPhysical_(getPhysicalIndex_(idx));
+            return (idx < size());
         }
 
         /**
@@ -686,16 +681,20 @@ namespace sparta
         template<typename IteratorType>
         bool determineIteratorValidity_(IteratorType * itr) const
         {
-            if((itr->logical_idx_ == invalid_index_)) {
+            const auto logical_idx = itr->logical_idx_;
+
+            if(logical_idx == invalid_index_) {
                 return false;
             }
 
             // Short cut... if we're empty, the iterator ain't valid
             if(empty()) { return false; }
 
-            const uint32_t phys_idx = getPhysicalIndex_(itr->logical_idx_);
-            return (isValidPhysical_(phys_idx) &&
-                    (queue_data_[phys_idx].obj_id == itr->obj_id_));
+            if(logical_idx < size()) {
+                const uint32_t phys_idx = getPhysicalIndex_(itr->logical_idx_);
+                return (queue_data_[phys_idx].obj_id == itr->obj_id_);
+            }
+            return false;
         }
 
         template<typename IteratorType>
@@ -704,43 +703,47 @@ namespace sparta
             sparta_assert(itr->logical_idx_ != 0, name_ <<
                           ": Iterator is not valid for decrementing");
 
-            const uint32_t log_idx = itr->logical_idx_;
+            const uint32_t logical_idx = itr->logical_idx_;
 
             // If it's the end iterator, go to the back - 1
-            if(log_idx == invalid_index_) {
+            if(logical_idx == invalid_index_) {
                 itr->logical_idx_ = size() - 1;
                 const uint32_t phys_idx = getPhysicalIndex_(itr->logical_idx_);
                 itr->obj_id_ = queue_data_[phys_idx].obj_id;
-                return;
-            }
-
-            // See if decrementing this iterator puts into the weeds.
-            // If so, invalidate it.
-            const uint32_t phys_idx = getPhysicalIndex_(log_idx - 1);
-            if(isValidPhysical_(phys_idx)) {
-                --itr->logical_idx_;
-                itr->obj_id_ = queue_data_[phys_idx].obj_id;
             }
             else {
-                itr->logical_idx_ = invalid_index_;
+                // See if decrementing this iterator puts into the weeds.
+                // If so, invalidate it.
+                if(logical_idx != 0) {
+                    --itr->logical_idx_;
+                    const uint32_t phys_idx = getPhysicalIndex_(logical_idx - 1);
+                    itr->obj_id_ = queue_data_[phys_idx].obj_id;
+                }
+                else {
+                    itr->logical_idx_ = invalid_index_;
+                }
             }
         }
 
         template<typename IteratorType>
         void incrementIterator_(IteratorType * itr) const
         {
+            uint32_t logical_idx = itr->logical_idx_;
+
             // See if incrementing this iterator puts it at the end.
             // If so, put it there.
-            sparta_assert(itr->logical_idx_ != invalid_index_,
+            sparta_assert(logical_idx != invalid_index_,
                           name_ << ": Trying to increment an invalid iterator");
+
+            ++logical_idx;
 
             // See if the old logical index was valid.  We could be
             // incrementing to end()
-            const uint32_t phys_idx = getPhysicalIndex_(itr->logical_idx_ + 1);
-            if(isValidPhysical_(phys_idx))
+            if(logical_idx != size())
             {
                 // Safe to increment the logical index
                 ++itr->logical_idx_;
+                const uint32_t phys_idx = getPhysicalIndex_(itr->logical_idx_);
                 itr->obj_id_ = queue_data_[phys_idx].obj_id;
             }
             else {
