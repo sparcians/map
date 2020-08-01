@@ -366,7 +366,7 @@ int main()
     EXPECT_THROW(*dead_it);
     EXPECT_THROW(dead_it++);
     EXPECT_THROW(++dead_it);
-    EXPECT_THROW(dead_it->s_field);
+    EXPECT_THROW((void)dead_it->s_field);
     EXPECT_THROW(dead_it.getIndex());
 
     EXPECT_TRUE(dummy_struct_queue_up.size() > 0);
@@ -375,7 +375,7 @@ int main()
     EXPECT_NOTHROW(*dead_it);
     EXPECT_NOTHROW(dead_it++);
     EXPECT_NOTHROW(++dead_it);
-    EXPECT_NOTHROW(dead_it->s_field);
+    EXPECT_NOTHROW((void)dead_it->s_field);
     EXPECT_NOTHROW(dead_it.getIndex());
 
     testStatsOutput();
