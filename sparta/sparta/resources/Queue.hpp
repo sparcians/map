@@ -67,6 +67,19 @@ namespace sparta
     template <class DataT>
     class Queue
     {
+    public:
+
+        /// Typedef for the DataT
+        using value_type = DataT;
+
+        /// Typedef for the QueueType
+        using QueueType = Queue<value_type>;
+
+        // Typedef for size_type
+        using size_type = uint32_t;
+
+    private:
+
         //
         // How the Queue works internally.
         //
@@ -74,7 +87,8 @@ namespace sparta
         // for efficiency.  So, if the user creates a Queue of 12
         // elements, the internal storage will be 16.
         //
-        // There are two pointers:
+        // There are two pointers, each represents the _physical_
+        // location in the array, not the logical.
         //
         //   current_write_idx_ -- the insertion point used by push()
         //   current_head_idx_  -- the top of the queue, used by pop()
@@ -136,26 +150,26 @@ namespace sparta
         }
 
         /// Roll (or wrap) the physical index
-        uint32_t rollPhysicalIndex_(uint32_t phys_idx) const {
+        uint32_t rollPhysicalIndex_(const uint32_t phys_idx) const {
             return (vector_size_ - 1) & (phys_idx);
         }
 
         /// Utility to convert a given logical index to a physical one
-        uint32_t getPhysicalIndex_(uint32_t logical_idx) const {
+        uint32_t getPhysicalIndex_(const uint32_t logical_idx) const {
             return rollPhysicalIndex_(logical_idx + current_head_idx_);
         }
 
         /// Increment an index value. It is important to make sure
         /// that the index rolls over to zero if it goes above the
         /// bounds of our list.
-        uint32_t incrementIndexValue_(uint32_t & val) const {
+        uint32_t incrementIndexValue_(const uint32_t val) const {
             return rollPhysicalIndex_(val + 1);
         }
 
         /// Decrement an index value. It is important to make sure
         /// that the index rolls over to zero if it goes above the
         /// bounds of our list.
-        uint32_t decrementIndexValue_(uint32_t val) const {
+        uint32_t decrementIndexValue_(const uint32_t val) const {
             return rollPhysicalIndex_(val - 1);
         }
 
@@ -171,16 +185,45 @@ namespace sparta
             uint64_t obj_id = 0;
         };
 
+        /// Read the data at the physical localation, const
+        const value_type & readPhysical_(const uint32_t phys_idx) const
+        {
+            return queue_data_[phys_idx].data;
+        }
+
+        /// Access the data at the physical localation, non-const
+        value_type & accessPhysical_(const uint32_t phys_idx)
+        {
+            return queue_data_[phys_idx].data;
+        }
+
+        /// Convert the physical index to the logical one
+        uint32_t physicalToLogical_(const uint32_t physical_idx) const {
+            if(physical_idx == invalid_index_) { return invalid_index_; }
+
+            uint32_t logical_idx = current_head_idx_;
+            while(logical_idx != physical_idx) {
+                logical_idx = incrementIndexValue_(logical_idx);
+            }
+            return logical_idx;
+        }
+
+        /// Is the physical index within the current range
+        bool isValidPhysical_(const uint32_t physical_idx) const
+        {
+            if(physical_idx == invalid_index_) { return false; }
+
+            if(current_head_idx_ < current_write_idx_) {
+                return (physical_idx >= current_head_idx_ && physical_idx < current_write_idx_);
+            }
+
+            // This is the "wrap" situation, where the write index has wrapped around
+            if(physical_idx >= current_head_idx_) { return true; }
+
+            return physical_idx < current_write_idx_;
+        }
+
     public:
-
-        /// Typedef for the DataT
-        using value_type = DataT;
-
-        /// Typedef for the QueueType
-        using QueueType = Queue<value_type>;
-
-        // Typedef for size_type
-        using size_type = uint32_t;
 
         /**
          * \class QueueIterator
@@ -205,9 +248,9 @@ namespace sparta
              * \param q  a pointer to the underlaying queue.
              * \param begin_itr if true iterator points to tail (begin()), if false points to head (end())
              */
-            QueueIterator(QueuePointerType q, uint32_t logical_idx, uint32_t obj_id) :
+            QueueIterator(QueuePointerType q, uint32_t physical_index, uint32_t obj_id) :
                 attached_queue_(q),
-                logical_idx_(logical_idx),
+                physical_index_(physical_index),
                 obj_id_(obj_id)
             { }
 
@@ -232,7 +275,7 @@ namespace sparta
              */
             QueueIterator(const QueueIterator<false> & iter) :
                 attached_queue_(iter.attached_queue_),
-                logical_idx_(iter.logical_idx_),
+                physical_index_(iter.physical_index_),
                 obj_id_(iter.obj_id_)
             {}
 
@@ -241,7 +284,7 @@ namespace sparta
              */
             QueueIterator(const QueueIterator<true> & iter) :
                 attached_queue_(iter.attached_queue_),
-                logical_idx_(iter.logical_idx_),
+                physical_index_(iter.physical_index_),
                 obj_id_(iter.obj_id_)
             {}
 
@@ -255,8 +298,6 @@ namespace sparta
 
             /**
              * \brief Assignment operator
-             * The copy also alerts the validator_ item that another QueueIterator is
-             * now attached to it.
              */
             QueueIterator& operator=(const QueueIterator& rhs) = default;
 
@@ -281,7 +322,7 @@ namespace sparta
             {
                 sparta_assert(attached_queue_ == rhs.attached_queue_,
                               "Cannot compare QueueIterators created by different Queues");
-                return getIndex() == rhs.getIndex();
+                return (physical_index_ == rhs.physical_index_) && (obj_id_ == rhs.obj_id_);
             }
 
             /// overload the comparison operator.
@@ -341,26 +382,29 @@ namespace sparta
             }
 
             /// Get the logical index of this entry in the queue.
+            /// This is expensive and should be avoided.  It makes
+            /// better sense to simply retrieve the object directly
+            /// from the iterator.
             uint32_t getIndex() const
             {
                 sparta_assert(isAttached_(), "This is an invalid iterator");
-                return logical_idx_;
+                return attached_queue_->physicalToLogical_(physical_index_);
             }
 
         private:
 
             QueuePointerType attached_queue_ {nullptr};
-            uint32_t logical_idx_ = std::numeric_limits<uint32_t>::max();
+            uint32_t physical_index_ = std::numeric_limits<uint32_t>::max();
             uint64_t obj_id_ = 0;
 
             /// Get access on a non-const iterator
             DataReferenceType getAccess_(std::false_type) const {
-                return attached_queue_->access(logical_idx_);
+                return attached_queue_->accessPhysical_(physical_index_);
             }
 
             /// Get access on a const iterator
             DataReferenceType getAccess_(std::true_type) const {
-                return attached_queue_->read(logical_idx_);
+                return attached_queue_->readPhysical_(physical_index_);
             }
         };
 
@@ -462,7 +506,7 @@ namespace sparta
          */
         const value_type & read(uint32_t idx) const {
             sparta_assert(isValid(idx), "Cannot read an invalid index");
-            return queue_data_[getPhysicalIndex_(idx)].data;
+            return readPhysical_(getPhysicalIndex_(idx));
         }
 
         /**
@@ -474,7 +518,7 @@ namespace sparta
          */
         value_type & access(uint32_t idx) {
             sparta_assert(isValid(idx), "Cannot read an invalid index");
-            return queue_data_[getPhysicalIndex_(idx)].data;
+            return accessPhysical_(getPhysicalIndex_(idx));
         }
 
         /**
@@ -632,7 +676,7 @@ namespace sparta
                 return end();
             }
             else {
-                return iterator(this, 0, queue_data_[current_head_idx_].obj_id);
+                return iterator(this, current_head_idx_, queue_data_[current_head_idx_].obj_id);
             }
         }
 
@@ -647,7 +691,7 @@ namespace sparta
                 return end();
             }
             else {
-                return const_iterator(this, 0, queue_data_[current_head_idx_].obj_id);
+                return const_iterator(this, current_head_idx_, queue_data_[current_head_idx_].obj_id);
             }
         }
 
@@ -667,6 +711,7 @@ namespace sparta
             new (queue_data_.get() + current_write_idx_) QueueData(std::forward<U>(dat), ++obj_id_);
 
             // move the write index up.
+            const uint32_t write_idx = current_write_idx_;
             current_write_idx_ = incrementIndexValue_(current_write_idx_);
 
             // either process now or schedule for later at the correct precedence.
@@ -675,24 +720,23 @@ namespace sparta
 
             updateUtilizationCounters_();
 
-            return iterator(this, size() - 1, obj_id_);
+            return iterator(this, write_idx, obj_id_);
         }
 
         template<typename IteratorType>
         bool determineIteratorValidity_(IteratorType * itr) const
         {
-            const auto logical_idx = itr->logical_idx_;
+            const auto physical_index = itr->physical_index_;
 
-            if(logical_idx == invalid_index_) {
+            if(physical_index == invalid_index_) {
                 return false;
             }
 
             // Short cut... if we're empty, the iterator ain't valid
             if(empty()) { return false; }
 
-            if(logical_idx < size()) {
-                const uint32_t phys_idx = getPhysicalIndex_(itr->logical_idx_);
-                return (queue_data_[phys_idx].obj_id == itr->obj_id_);
+            if(isValidPhysical_(physical_index)) {
+                return (queue_data_[physical_index].obj_id == itr->obj_id_);
             }
             return false;
         }
@@ -700,56 +744,57 @@ namespace sparta
         template<typename IteratorType>
         void decrementIterator_(IteratorType * itr) const
         {
-            sparta_assert(itr->logical_idx_ != 0, name_ <<
+            sparta_assert(itr->physical_index_ != 0, name_ <<
                           ": Iterator is not valid for decrementing");
 
-            const uint32_t logical_idx = itr->logical_idx_;
+            uint32_t physical_index = itr->physical_index_;
 
             // If it's the end iterator, go to the back - 1
-            if(logical_idx == invalid_index_) {
-                itr->logical_idx_ = size() - 1;
-                const uint32_t phys_idx = getPhysicalIndex_(itr->logical_idx_);
+            if(SPARTA_EXPECT_FALSE(physical_index == invalid_index_)) {
+                const uint32_t phys_idx = current_write_idx_ - 1;
+                itr->physical_index_ = phys_idx;
                 itr->obj_id_ = queue_data_[phys_idx].obj_id;
             }
             else {
                 // See if decrementing this iterator puts into the weeds.
                 // If so, invalidate it.
-                if(logical_idx != 0) {
-                    --itr->logical_idx_;
-                    const uint32_t phys_idx = getPhysicalIndex_(logical_idx - 1);
-                    itr->obj_id_ = queue_data_[phys_idx].obj_id;
+                --physical_index;
+                if(isValidPhysical_(physical_index)) {
+                    itr->physical_index_ = physical_index;
+                    itr->obj_id_ = queue_data_[physical_index].obj_id;
                 }
                 else {
-                    itr->logical_idx_ = invalid_index_;
-                }
+                    itr->physical_index_ = invalid_index_;
+                    itr->obj_id_ = invalid_index_;
+               }
             }
         }
 
         template<typename IteratorType>
         void incrementIterator_(IteratorType * itr) const
         {
-            uint32_t logical_idx = itr->logical_idx_;
+            uint32_t physical_index = itr->physical_index_;
 
             // See if incrementing this iterator puts it at the end.
             // If so, put it there.
-            sparta_assert(logical_idx != invalid_index_,
+            sparta_assert(physical_index != invalid_index_,
                           name_ << ": Trying to increment an invalid iterator");
 
-            ++logical_idx;
+            ++physical_index;
 
             // See if the old logical index was valid.  We could be
             // incrementing to end()
-            if(logical_idx != size())
+            if(isValidPhysical_(physical_index))
             {
                 // Safe to increment the logical index
-                ++itr->logical_idx_;
-                const uint32_t phys_idx = getPhysicalIndex_(itr->logical_idx_);
-                itr->obj_id_ = queue_data_[phys_idx].obj_id;
+                itr->physical_index_ = physical_index;
+                itr->obj_id_ = queue_data_[physical_index].obj_id;
             }
             else {
                 // No longer valid index, but we could be rolling off
                 // to the end().
-                itr->logical_idx_ = invalid_index_;
+                itr->physical_index_ = invalid_index_;
+                itr->obj_id_ = invalid_index_;
             }
         }
 

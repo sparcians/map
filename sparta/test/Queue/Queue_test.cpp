@@ -20,6 +20,7 @@ TEST_INIT;
 
 #define PIPEOUT_GEN
 
+void testIteratorValidity();
 void testPushClearAccess();
 void testStatsOutput();
 void testPopBack();
@@ -379,6 +380,7 @@ int main()
     EXPECT_NOTHROW((void)dead_it->s_field);
     EXPECT_NOTHROW(dead_it.getIndex());
 
+    testIteratorValidity();
     testPushClearAccess();
     testStatsOutput();
     testPopBack();
@@ -392,9 +394,33 @@ int main()
     return ERROR_CODE;
 }
 
+void testIteratorValidity()
+{
+    sparta::Queue<uint32_t> queue_test("iterator_test", 6, nullptr);
+    auto itr1 = queue_test.push(1);
+    auto itr2 = queue_test.push(2);
+    auto itr3 = queue_test.push(3);
+
+    EXPECT_TRUE(itr1.isValid());
+    EXPECT_TRUE(itr2.isValid());
+    EXPECT_TRUE(itr3.isValid());
+
+    queue_test.pop();
+
+    EXPECT_FALSE(itr1.isValid());
+    EXPECT_TRUE(itr2.isValid());
+    EXPECT_TRUE(itr3.isValid());
+
+    auto itr4 = queue_test.push(4);
+    EXPECT_FALSE(itr1.isValid());
+    EXPECT_TRUE(itr2.isValid());
+    EXPECT_TRUE(itr3.isValid());
+    EXPECT_TRUE(itr4.isValid());
+}
+
 void testPushClearAccess()
 {
-    sparta::Queue<uint32_t> queue_test("pop_back_test", 6, nullptr);
+    sparta::Queue<uint32_t> queue_test("push_clear_test", 6, nullptr);
     for(uint32_t i = 0; i < queue_test.capacity(); ++i) {
         queue_test.push(i);
     }
