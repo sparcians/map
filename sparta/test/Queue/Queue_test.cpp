@@ -505,7 +505,7 @@ void testIteratorValidity()
     queue_test.clear();
 
     // Force the queue to wrap around
-    for(uint32_t i = 0; i < 15; ++i) {
+    for(uint32_t i = 0; i < 13; ++i) {
         queue_test.push(i);
         queue_test.pop();
     }
@@ -513,12 +513,21 @@ void testIteratorValidity()
     auto itr100 = queue_test.push(100);
     auto itr101 = queue_test.push(101);
     auto itr102 = queue_test.push(102);
+    auto itr103 = queue_test.push(103);
+    auto itr104 = queue_test.push(104);
+    auto itr105 = queue_test.push(105);
     EXPECT_TRUE(itr100.isValid());
     EXPECT_TRUE(itr101.isValid());
     EXPECT_TRUE(itr102.isValid());
+    EXPECT_TRUE(itr103.isValid());
+    EXPECT_TRUE(itr104.isValid());
+    EXPECT_TRUE(itr105.isValid());
     EXPECT_EQUAL(queue_test.access(itr100.getIndex()), 100);
     EXPECT_EQUAL(queue_test.access(itr101.getIndex()), 101);
     EXPECT_EQUAL(queue_test.access(itr102.getIndex()), 102);
+    EXPECT_EQUAL(queue_test.access(itr103.getIndex()), 103);
+    EXPECT_EQUAL(queue_test.access(itr104.getIndex()), 104);
+    EXPECT_EQUAL(queue_test.access(itr105.getIndex()), 105);
 }
 
 

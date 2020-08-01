@@ -207,20 +207,20 @@ namespace sparta
                 idx = incrementIndexValue_(idx);
                 ++logical_idx;
             }
-
-            // if(current_head_idx_ < current_write_idx_) {
-            //     assert(logical_idx == physical_idx - current_head_idx_);
-            // }
-            // else {
-            //     if(physical_idx >= current_head_idx_) {
-            //         assert(logical_idx == physical_idx - current_head_idx_);
-            //     }
-            //     else {
-            //         assert(logical_idx == ((current_head_idx_ - (vector_size_ - 1)) +
-            //                                (current_write_idx_ - physical_idx - 1)));
-            //     }
-            // }
-
+#if 0
+            if(current_head_idx_ < current_write_idx_) {
+                assert(logical_idx == physical_idx - current_head_idx_);
+            }
+            else {
+                if(physical_idx >= current_head_idx_) {
+                    assert(logical_idx == physical_idx - current_head_idx_);
+                }
+                else {
+                    assert(logical_idx == ((current_head_idx_ - (vector_size_ - 1)) +
+                                           (physical_idx + 1)));
+                }
+            }
+#endif
             return logical_idx;
         }
 
@@ -767,7 +767,7 @@ namespace sparta
 
             // If it's the end iterator, go to the back - 1
             if(SPARTA_EXPECT_FALSE(physical_index == invalid_index_)) {
-                const uint32_t phys_idx = current_write_idx_ - 1;
+                const uint32_t phys_idx = decrementIndexValue_(current_write_idx_);
                 itr->physical_index_ = phys_idx;
                 itr->obj_id_ = queue_data_[phys_idx].obj_id;
             }
