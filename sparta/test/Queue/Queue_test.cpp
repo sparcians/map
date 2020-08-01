@@ -416,7 +416,111 @@ void testIteratorValidity()
     EXPECT_TRUE(itr2.isValid());
     EXPECT_TRUE(itr3.isValid());
     EXPECT_TRUE(itr4.isValid());
+
+    EXPECT_EQUAL(queue_test.access(itr4.getIndex()), 4);
+
+    auto itr5 = queue_test.push(5);
+    EXPECT_FALSE(itr1.isValid());
+    EXPECT_TRUE(itr2.isValid());
+    EXPECT_TRUE(itr3.isValid());
+    EXPECT_TRUE(itr4.isValid());
+
+    auto itr6 = queue_test.push(6);
+    auto itr7 = queue_test.push(7);
+    EXPECT_FALSE(itr1.isValid());
+    EXPECT_TRUE(itr2.isValid());
+    EXPECT_TRUE(itr3.isValid());
+    EXPECT_TRUE(itr4.isValid());
+    EXPECT_TRUE(itr5.isValid());
+    EXPECT_TRUE(itr6.isValid());
+    EXPECT_TRUE(itr7.isValid());
+
+    queue_test.pop();
+    queue_test.pop();
+    queue_test.pop();
+    EXPECT_FALSE(itr1.isValid());
+    EXPECT_FALSE(itr2.isValid());
+    EXPECT_FALSE(itr3.isValid());
+    EXPECT_FALSE(itr4.isValid());
+    EXPECT_TRUE(itr5.isValid());
+    EXPECT_TRUE(itr6.isValid());
+    EXPECT_TRUE(itr7.isValid());
+
+    EXPECT_EQUAL(queue_test.access(itr5.getIndex()), 5);
+    EXPECT_EQUAL(queue_test.access(itr6.getIndex()), 6);
+    EXPECT_EQUAL(queue_test.access(itr7.getIndex()), 7);
+
+    auto itr8 = queue_test.push(8);
+    auto itr9 = queue_test.push(9);
+    auto itr10 = queue_test.push(10);
+
+    EXPECT_EQUAL(queue_test.size(), 6);
+
+    EXPECT_FALSE(itr1.isValid());
+    EXPECT_FALSE(itr2.isValid());
+    EXPECT_FALSE(itr3.isValid());
+    EXPECT_FALSE(itr4.isValid());
+    EXPECT_TRUE(itr5.isValid());
+    EXPECT_TRUE(itr6.isValid());
+    EXPECT_TRUE(itr7.isValid());
+    EXPECT_TRUE(itr8.isValid());
+    EXPECT_TRUE(itr9.isValid());
+    EXPECT_TRUE(itr10.isValid());
+
+    EXPECT_EQUAL(queue_test.access(itr5.getIndex()), 5);
+    EXPECT_EQUAL(queue_test.access(itr6.getIndex()), 6);
+    EXPECT_EQUAL(queue_test.access(itr7.getIndex()), 7);
+    EXPECT_EQUAL(queue_test.access(itr8.getIndex()), 8);
+    EXPECT_EQUAL(queue_test.access(itr9.getIndex()), 9);
+    EXPECT_EQUAL(queue_test.access(itr10.getIndex()), 10);
+
+    queue_test.pop();
+    queue_test.pop();
+    queue_test.pop();
+    auto itr11 = queue_test.push(11);
+    auto itr12 = queue_test.push(12);
+    auto itr13 = queue_test.push(13);
+
+    EXPECT_FALSE(itr1.isValid());
+    EXPECT_FALSE(itr2.isValid());
+    EXPECT_FALSE(itr3.isValid());
+    EXPECT_FALSE(itr4.isValid());
+    EXPECT_FALSE(itr5.isValid());
+    EXPECT_FALSE(itr6.isValid());
+    EXPECT_FALSE(itr7.isValid());
+    EXPECT_TRUE(itr8.isValid());
+    EXPECT_TRUE(itr9.isValid());
+    EXPECT_TRUE(itr10.isValid());
+    EXPECT_TRUE(itr11.isValid());
+    EXPECT_TRUE(itr12.isValid());
+    EXPECT_TRUE(itr13.isValid());
+
+    EXPECT_EQUAL(queue_test.access(itr8.getIndex()), 8);
+    EXPECT_EQUAL(queue_test.access(itr9.getIndex()), 9);
+    EXPECT_EQUAL(queue_test.access(itr10.getIndex()), 10);
+    EXPECT_EQUAL(queue_test.access(itr11.getIndex()), 11);
+    EXPECT_EQUAL(queue_test.access(itr12.getIndex()), 12);
+    EXPECT_EQUAL(queue_test.access(itr13.getIndex()), 13);
+
+    queue_test.clear();
+
+    // Force the queue to wrap around
+    for(uint32_t i = 0; i < 15; ++i) {
+        queue_test.push(i);
+        queue_test.pop();
+    }
+
+    auto itr100 = queue_test.push(100);
+    auto itr101 = queue_test.push(101);
+    auto itr102 = queue_test.push(102);
+    EXPECT_TRUE(itr100.isValid());
+    EXPECT_TRUE(itr101.isValid());
+    EXPECT_TRUE(itr102.isValid());
+    EXPECT_EQUAL(queue_test.access(itr100.getIndex()), 100);
+    EXPECT_EQUAL(queue_test.access(itr101.getIndex()), 101);
+    EXPECT_EQUAL(queue_test.access(itr102.getIndex()), 102);
 }
+
 
 void testPushClearAccess()
 {

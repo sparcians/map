@@ -201,10 +201,26 @@ namespace sparta
         uint32_t physicalToLogical_(const uint32_t physical_idx) const {
             if(physical_idx == invalid_index_) { return invalid_index_; }
 
-            uint32_t logical_idx = current_head_idx_;
-            while(logical_idx != physical_idx) {
-                logical_idx = incrementIndexValue_(logical_idx);
+            uint32_t logical_idx = 0;
+            uint32_t idx = current_head_idx_;
+            while(idx != physical_idx) {
+                idx = incrementIndexValue_(idx);
+                ++logical_idx;
             }
+
+            // if(current_head_idx_ < current_write_idx_) {
+            //     assert(logical_idx == physical_idx - current_head_idx_);
+            // }
+            // else {
+            //     if(physical_idx >= current_head_idx_) {
+            //         assert(logical_idx == physical_idx - current_head_idx_);
+            //     }
+            //     else {
+            //         assert(logical_idx == ((current_head_idx_ - (vector_size_ - 1)) +
+            //                                (current_write_idx_ - physical_idx - 1)));
+            //     }
+            // }
+
             return logical_idx;
         }
 
@@ -517,7 +533,7 @@ namespace sparta
          * Use the read() equivalent for const access
          */
         value_type & access(uint32_t idx) {
-            sparta_assert(isValid(idx), "Cannot read an invalid index");
+            sparta_assert(isValid(idx), name_ << ": Cannot read an invalid index");
             return accessPhysical_(getPhysicalIndex_(idx));
         }
 
