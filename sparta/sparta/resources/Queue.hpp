@@ -200,43 +200,15 @@ namespace sparta
         /// Convert the physical index to the logical one
         uint32_t physicalToLogical_(const uint32_t physical_idx) const {
             if(physical_idx == invalid_index_) { return invalid_index_; }
-
-            uint32_t logical_idx = 0;
-            uint32_t idx = current_head_idx_;
-            while(idx != physical_idx) {
-                idx = incrementIndexValue_(idx);
-                ++logical_idx;
-            }
-#if 0
-            if(current_head_idx_ < current_write_idx_) {
-                assert(logical_idx == physical_idx - current_head_idx_);
-            }
-            else {
-                if(physical_idx >= current_head_idx_) {
-                    assert(logical_idx == physical_idx - current_head_idx_);
-                }
-                else {
-                    assert(logical_idx == ((current_head_idx_ - (vector_size_ - 1)) +
-                                           (physical_idx + 1)));
-                }
-            }
-#endif
-            return logical_idx;
+            // Neat trick from the previous author...
+            return rollPhysicalIndex_(physical_idx - current_head_idx_);
         }
 
         /// Is the physical index within the current range
         bool isValidPhysical_(const uint32_t physical_idx) const
         {
-            if(physical_idx == invalid_index_) { return false; }
-
-            if(current_head_idx_ < current_write_idx_) {
-                return (physical_idx >= current_head_idx_ && physical_idx < current_write_idx_);
-            }
-
-            // This is the "wrap" situation, where the write index has wrapped around
-            if(physical_idx >= current_head_idx_) { return true; }
-
-            return physical_idx < current_write_idx_;
+            const auto log_idx = physicalToLogical_(physical_idx);
+            return (log_idx < size());
         }
 
     public:
@@ -802,7 +774,7 @@ namespace sparta
             // incrementing to end()
             if(isValidPhysical_(physical_index))
             {
-                // Safe to increment the logical index
+                // Safe to increment the physical_index
                 itr->physical_index_ = physical_index;
                 itr->obj_id_ = queue_data_[physical_index].obj_id;
             }
