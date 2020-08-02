@@ -774,7 +774,7 @@ namespace sparta
             else {
                 // See if decrementing this iterator puts into the weeds.
                 // If so, invalidate it.
-                --physical_index;
+                physical_index = decrementIndexValue_(physical_index);
                 if(isValidPhysical_(physical_index)) {
                     itr->physical_index_ = physical_index;
                     itr->obj_id_ = queue_data_[physical_index].obj_id;
@@ -796,7 +796,7 @@ namespace sparta
             sparta_assert(physical_index != invalid_index_,
                           name_ << ": Trying to increment an invalid iterator");
 
-            ++physical_index;
+            physical_index = incrementIndexValue_(physical_index);
 
             // See if the old logical index was valid.  We could be
             // incrementing to end()

@@ -21,6 +21,7 @@ TEST_INIT;
 #define PIPEOUT_GEN
 
 void testIteratorValidity();
+void testIteratorValidity2();
 void testPushClearAccess();
 void testStatsOutput();
 void testPopBack();
@@ -381,6 +382,7 @@ int main()
     EXPECT_NOTHROW(dead_it.getIndex());
 
     testIteratorValidity();
+    testIteratorValidity2();
     testPushClearAccess();
     testStatsOutput();
     testPopBack();
@@ -393,7 +395,6 @@ int main()
     REPORT_ERROR;
     return ERROR_CODE;
 }
-
 void testIteratorValidity()
 {
     sparta::Queue<uint32_t> queue_test("iterator_test", 6, nullptr);
@@ -528,6 +529,24 @@ void testIteratorValidity()
     EXPECT_EQUAL(queue_test.access(itr103.getIndex()), 103);
     EXPECT_EQUAL(queue_test.access(itr104.getIndex()), 104);
     EXPECT_EQUAL(queue_test.access(itr105.getIndex()), 105);
+}
+
+
+void testIteratorValidity2()
+{
+    sparta::Queue<uint32_t> queue_test("iterator_test", 16, nullptr);
+    for(uint32_t i = 0; i < queue_test.capacity(); ++i)
+    {
+        queue_test.push(i);
+    }
+    auto itr = queue_test.begin();
+
+    for(uint32_t i = 0; i < queue_test.capacity(); ++i)
+    {
+        EXPECT_TRUE(itr.isValid());
+        (void)itr.getIndex();
+        ++itr;
+    }
 }
 
 
