@@ -24,6 +24,9 @@ TEST_INIT;
     std::cout << x << std::endl
 
 void testConstIterator();
+void testInvalidates();
+
+uint32_t dummy_allocs = 0;
 
 struct dummy_struct
 {
@@ -31,11 +34,20 @@ struct dummy_struct
     uint32_t int32_field;
     std::string s_field;
 
-    dummy_struct() = default;
-    dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) : 
+    dummy_struct() {
+        ++dummy_allocs;
+    }
+
+    ~dummy_struct() {
+        --dummy_allocs;
+    }
+    dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) :
         int16_field{int16_field},
         int32_field{int32_field},
-        s_field{s_field} {}
+        s_field{s_field}
+    {
+        ++dummy_allocs;
+    }
 };
 std::ostream &operator<<(std::ostream &os, const dummy_struct &obj)
 {
@@ -527,6 +539,7 @@ int main()
     sched.run(5);
 
     testConstIterator();
+    testInvalidates();
 
     rtn.enterTeardown();
 #ifdef PIPEOUT_GEN
@@ -624,4 +637,16 @@ content:
     std::cout << r1 << std::endl;
 
     rtn.enterTeardown();
+}
+
+void testInvalidates()
+{
+    const uint32_t starting_allocs = dummy_allocs;
+
+    sparta::Buffer<dummy_struct> my_buff("my_dummy_buff", 10, nullptr);
+    EXPECT_EQUAL(starting_allocs, dummy_allocs);
+    my_buff.push_back(dummy_struct(1, 2, "XYZ"));
+    EXPECT_EQUAL(starting_allocs+1, dummy_allocs);
+
+
 }

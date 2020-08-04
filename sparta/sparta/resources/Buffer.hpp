@@ -563,7 +563,7 @@ namespace sparta
         {
             return insert(entry.getIndex_(), dat);
         }
-        
+
         //! Do an insert before a BufferIterator see insert method above
         iterator insert(const const_iterator & entry, value_type&& dat)
         {
@@ -600,11 +600,14 @@ namespace sparta
         {
             // Make sure we are invalidating an already valid object.
             sparta_assert(idx < size(), "Cannot erase an index that is not already valid");
+
             // Do the invalidation immediately
             // 1. Move the free space pointer to the erased position.
-            // 2. Set the current free space pointer's next to the old free position
+            // 2. Call the DataT's destructor
+            // 3. Set the current free space pointer's next to the old free position
             DataPointer* oldFree = free_position_;
             free_position_ = buffer_map_[idx];
+            free_position_->data.~DataT(); // Destruct the data object
             free_position_->next_free = oldFree;
 
             // Mark DataPointer as invalid
@@ -665,6 +668,12 @@ namespace sparta
         void clear()
         {
             num_valid_ = 0;
+            std::for_each(buffer_map_.begin(), buffer_map_.end(), [] (auto map_entry)
+                                                                  {
+                                                                      if(map_entry) {
+                                                                          map_entry->data.~DataT();
+                                                                      }
+                                                                  });
             std::fill(buffer_map_.begin(), buffer_map_.end(), nullptr);
             for(uint32_t i = 0; i < data_pool_size_ - 1; ++i) {
                 data_pool_[i].next_free = &data_pool_[i + 1];
@@ -1064,4 +1073,3 @@ namespace sparta
         }
     }
 }
-
