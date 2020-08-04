@@ -23,6 +23,7 @@ TEST_INIT;
 #define QUICK_PRINT(x) \
     std::cout << x << std::endl
 
+void generalTest();
 void testConstIterator();
 void testInvalidates();
 
@@ -33,18 +34,27 @@ struct dummy_struct
     uint16_t int16_field;
     uint32_t int32_field;
     std::string s_field;
+    bool valueless = true;
 
     dummy_struct() {
         ++dummy_allocs;
     }
 
-    ~dummy_struct() {
-        --dummy_allocs;
-    }
+    // For forwarding rvalue
+    dummy_struct(dummy_struct &&) = default;
+    dummy_struct & operator=(dummy_struct &&) = default;
+
+    // For non-forwarding
+    dummy_struct(const dummy_struct &) = default;
+    dummy_struct & operator=(const dummy_struct &) = default;
+
+    ~dummy_struct() { --dummy_allocs; }
+
     dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) :
         int16_field{int16_field},
         int32_field{int32_field},
-        s_field{s_field}
+        s_field{s_field},
+        valueless(false)
     {
         ++dummy_allocs;
     }
@@ -56,6 +66,17 @@ std::ostream &operator<<(std::ostream &os, const dummy_struct &obj)
 }
 
 int main()
+{
+
+    generalTest();
+    testConstIterator();
+    testInvalidates();
+
+    REPORT_ERROR;
+    return ERROR_CODE;
+}
+
+void generalTest()
 {
     sparta::RootTreeNode rtn;
     sparta::Scheduler sched;
@@ -109,6 +130,7 @@ int main()
         auto dummy_2 = dummy_struct(3, 4, "DEF");
         auto dummy_3 = dummy_struct(5, 6, "GHI");
         auto dummy_4 = dummy_struct(7, 8, "JKL");
+        const auto dummy_allocs_before = dummy_allocs;
         buf_dummy.push_back(std::move(dummy_1));
         EXPECT_TRUE(dummy_1.s_field.size() == 0);
         EXPECT_TRUE(buf_dummy.read(0).s_field == "ABC");
@@ -123,6 +145,12 @@ int main()
         buf_dummy.insert(++ritr, std::move(dummy_4));
         EXPECT_TRUE(dummy_4.s_field.size() == 0);
         EXPECT_TRUE(buf_dummy.read(2).s_field == "JKL");
+        EXPECT_EQUAL(dummy_allocs_before, dummy_allocs);
+        // The move constructor/assignment do not update dummy_allocs
+        // (reason for the test -- make sure the normal
+        // constructors/assignment operators are not called).  For the
+        // rest of this tester, adjust dummy_allocs
+        dummy_allocs += 4; // 4 move operations here
     }
 
     // Test perfect forwarding Buffer copy
@@ -538,18 +566,11 @@ int main()
 
     sched.run(5);
 
-    testConstIterator();
-    testInvalidates();
-
     rtn.enterTeardown();
 #ifdef PIPEOUT_GEN
     pc.destroy();
 #endif
-
-    REPORT_ERROR;
-    return ERROR_CODE;
 }
-
 
 struct B {
     uint32_t val = 5;
@@ -641,12 +662,26 @@ content:
 
 void testInvalidates()
 {
-    const uint32_t starting_allocs = dummy_allocs;
+    EXPECT_EQUAL(dummy_allocs, 0);
+    uint32_t starting_allocs = 20;
 
+    // The buffer will allocate 2x the number of elements
     sparta::Buffer<dummy_struct> my_buff("my_dummy_buff", 10, nullptr);
     EXPECT_EQUAL(starting_allocs, dummy_allocs);
+
     my_buff.push_back(dummy_struct(1, 2, "XYZ"));
-    EXPECT_EQUAL(starting_allocs+1, dummy_allocs);
+    // Nothing new should have been allocated
+    EXPECT_EQUAL(starting_allocs, dummy_allocs);
 
+    my_buff.push_back(dummy_struct(3, 4, "ABC"));
+    // Nothing new should have been allocated
+    EXPECT_EQUAL(starting_allocs, dummy_allocs);
 
+    my_buff.erase(my_buff.begin());
+    // Should have one deallocation
+    EXPECT_EQUAL(starting_allocs - 1, dummy_allocs);
+
+    sparta::Buffer<uint32_t> my_simple_buff("my_simple_buff", 10, nullptr);
+    my_simple_buff.push_back(1);
+    my_simple_buff.erase(my_simple_buff.begin());
 }

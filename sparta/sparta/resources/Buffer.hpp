@@ -628,15 +628,16 @@ namespace sparta
                 address_map_[i] = address_map_[i + 1];
                 ++i;
             }
+
             // the entry at the old num_valid_ in the map now points to nullptr
             buffer_map_[top_idx_of_buffer] = nullptr;
 
             // Remove this entry of the address map as it becomes a free position.
             address_map_.erase(top_idx_of_buffer);
+
             // update counts.
             --num_valid_;
             updateUtilizationCounters_();
-
         }
 
         /**
