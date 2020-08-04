@@ -20,7 +20,11 @@ TEST_INIT;
 
 #define PIPEOUT_GEN
 
+void testIteratorValidity();
+void testIteratorValidity2();
+void testPushClearAccess();
 void testStatsOutput();
+void testPopBack();
 
 struct dummy_struct
 {
@@ -358,7 +362,30 @@ int main()
     ++it;
     EXPECT_EQUAL(*it, 9);
 
+    ////////////////////////////////////////////////////////////////////////////////
+    // Test dead iterators
+    sparta::Queue<dummy_struct>::iterator dead_it;
+    EXPECT_FALSE(dead_it.isValid());
+    EXPECT_THROW(*dead_it);
+    EXPECT_THROW(dead_it++);
+    EXPECT_THROW(++dead_it);
+    EXPECT_THROW((void)dead_it->s_field);
+    EXPECT_THROW(dead_it.getIndex());
+
+    EXPECT_TRUE(dummy_struct_queue_up.size() > 0);
+    dead_it = dummy_struct_queue_up.begin();
+    EXPECT_TRUE(dead_it.isValid());
+    EXPECT_NOTHROW(*dead_it);
+    EXPECT_NOTHROW(dead_it++);
+    EXPECT_NOTHROW(++dead_it);
+    EXPECT_NOTHROW((void)dead_it->s_field);
+    EXPECT_NOTHROW(dead_it.getIndex());
+
+    testIteratorValidity();
+    testIteratorValidity2();
+    testPushClearAccess();
     testStatsOutput();
+    testPopBack();
 
     rtn.enterTeardown();
 #ifdef PIPEOUT_GEN
@@ -367,6 +394,257 @@ int main()
 
     REPORT_ERROR;
     return ERROR_CODE;
+}
+void testIteratorValidity()
+{
+    sparta::Queue<uint32_t> queue_test("iterator_test", 6, nullptr);
+    auto itr1 = queue_test.push(1);
+    auto itr2 = queue_test.push(2);
+    auto itr3 = queue_test.push(3);
+
+    EXPECT_TRUE(itr1.isValid());
+    EXPECT_TRUE(itr2.isValid());
+    EXPECT_TRUE(itr3.isValid());
+
+    queue_test.pop();
+
+    EXPECT_FALSE(itr1.isValid());
+    EXPECT_TRUE(itr2.isValid());
+    EXPECT_TRUE(itr3.isValid());
+
+    auto itr4 = queue_test.push(4);
+    EXPECT_FALSE(itr1.isValid());
+    EXPECT_TRUE(itr2.isValid());
+    EXPECT_TRUE(itr3.isValid());
+    EXPECT_TRUE(itr4.isValid());
+
+    EXPECT_EQUAL(queue_test.access(itr4.getIndex()), 4);
+
+    auto itr5 = queue_test.push(5);
+    EXPECT_FALSE(itr1.isValid());
+    EXPECT_TRUE(itr2.isValid());
+    EXPECT_TRUE(itr3.isValid());
+    EXPECT_TRUE(itr4.isValid());
+
+    auto itr6 = queue_test.push(6);
+    auto itr7 = queue_test.push(7);
+    EXPECT_FALSE(itr1.isValid());
+    EXPECT_TRUE(itr2.isValid());
+    EXPECT_TRUE(itr3.isValid());
+    EXPECT_TRUE(itr4.isValid());
+    EXPECT_TRUE(itr5.isValid());
+    EXPECT_TRUE(itr6.isValid());
+    EXPECT_TRUE(itr7.isValid());
+
+    queue_test.pop();
+    queue_test.pop();
+    queue_test.pop();
+    EXPECT_FALSE(itr1.isValid());
+    EXPECT_FALSE(itr2.isValid());
+    EXPECT_FALSE(itr3.isValid());
+    EXPECT_FALSE(itr4.isValid());
+    EXPECT_TRUE(itr5.isValid());
+    EXPECT_TRUE(itr6.isValid());
+    EXPECT_TRUE(itr7.isValid());
+
+    EXPECT_EQUAL(queue_test.access(itr5.getIndex()), 5);
+    EXPECT_EQUAL(queue_test.access(itr6.getIndex()), 6);
+    EXPECT_EQUAL(queue_test.access(itr7.getIndex()), 7);
+
+    auto itr8 = queue_test.push(8);
+    auto itr9 = queue_test.push(9);
+    auto itr10 = queue_test.push(10);
+
+    EXPECT_EQUAL(queue_test.size(), 6);
+
+    EXPECT_FALSE(itr1.isValid());
+    EXPECT_FALSE(itr2.isValid());
+    EXPECT_FALSE(itr3.isValid());
+    EXPECT_FALSE(itr4.isValid());
+    EXPECT_TRUE(itr5.isValid());
+    EXPECT_TRUE(itr6.isValid());
+    EXPECT_TRUE(itr7.isValid());
+    EXPECT_TRUE(itr8.isValid());
+    EXPECT_TRUE(itr9.isValid());
+    EXPECT_TRUE(itr10.isValid());
+
+    EXPECT_EQUAL(queue_test.access(itr5.getIndex()), 5);
+    EXPECT_EQUAL(queue_test.access(itr6.getIndex()), 6);
+    EXPECT_EQUAL(queue_test.access(itr7.getIndex()), 7);
+    EXPECT_EQUAL(queue_test.access(itr8.getIndex()), 8);
+    EXPECT_EQUAL(queue_test.access(itr9.getIndex()), 9);
+    EXPECT_EQUAL(queue_test.access(itr10.getIndex()), 10);
+
+    queue_test.pop();
+    queue_test.pop();
+    queue_test.pop();
+    auto itr11 = queue_test.push(11);
+    auto itr12 = queue_test.push(12);
+    auto itr13 = queue_test.push(13);
+
+    EXPECT_FALSE(itr1.isValid());
+    EXPECT_FALSE(itr2.isValid());
+    EXPECT_FALSE(itr3.isValid());
+    EXPECT_FALSE(itr4.isValid());
+    EXPECT_FALSE(itr5.isValid());
+    EXPECT_FALSE(itr6.isValid());
+    EXPECT_FALSE(itr7.isValid());
+    EXPECT_TRUE(itr8.isValid());
+    EXPECT_TRUE(itr9.isValid());
+    EXPECT_TRUE(itr10.isValid());
+    EXPECT_TRUE(itr11.isValid());
+    EXPECT_TRUE(itr12.isValid());
+    EXPECT_TRUE(itr13.isValid());
+
+    EXPECT_EQUAL(queue_test.access(itr8.getIndex()), 8);
+    EXPECT_EQUAL(queue_test.access(itr9.getIndex()), 9);
+    EXPECT_EQUAL(queue_test.access(itr10.getIndex()), 10);
+    EXPECT_EQUAL(queue_test.access(itr11.getIndex()), 11);
+    EXPECT_EQUAL(queue_test.access(itr12.getIndex()), 12);
+    EXPECT_EQUAL(queue_test.access(itr13.getIndex()), 13);
+
+    queue_test.clear();
+
+    // Force the queue to wrap around
+    for(uint32_t i = 0; i < 13; ++i) {
+        queue_test.push(i);
+        queue_test.pop();
+    }
+
+    auto itr100 = queue_test.push(100);
+    auto itr101 = queue_test.push(101);
+    auto itr102 = queue_test.push(102);
+    auto itr103 = queue_test.push(103);
+    auto itr104 = queue_test.push(104);
+    auto itr105 = queue_test.push(105);
+    EXPECT_TRUE(itr100.isValid());
+    EXPECT_TRUE(itr101.isValid());
+    EXPECT_TRUE(itr102.isValid());
+    EXPECT_TRUE(itr103.isValid());
+    EXPECT_TRUE(itr104.isValid());
+    EXPECT_TRUE(itr105.isValid());
+    EXPECT_EQUAL(queue_test.access(itr100.getIndex()), 100);
+    EXPECT_EQUAL(queue_test.access(itr101.getIndex()), 101);
+    EXPECT_EQUAL(queue_test.access(itr102.getIndex()), 102);
+    EXPECT_EQUAL(queue_test.access(itr103.getIndex()), 103);
+    EXPECT_EQUAL(queue_test.access(itr104.getIndex()), 104);
+    EXPECT_EQUAL(queue_test.access(itr105.getIndex()), 105);
+}
+
+
+void testIteratorValidity2()
+{
+    sparta::Queue<uint32_t> queue_test("iterator_test", 16, nullptr);
+    for(uint32_t i = 0; i < queue_test.capacity(); ++i)
+    {
+        queue_test.push(i);
+    }
+    auto itr = queue_test.begin();
+
+    for(uint32_t i = 0; i < queue_test.capacity(); ++i)
+    {
+        EXPECT_TRUE(itr.isValid());
+        (void)itr.getIndex();
+        ++itr;
+    }
+}
+
+
+void testPushClearAccess()
+{
+    sparta::Queue<uint32_t> queue_test("push_clear_test", 6, nullptr);
+    for(uint32_t i = 0; i < queue_test.capacity(); ++i) {
+        queue_test.push(i);
+    }
+    uint32_t access = queue_test.access(0);
+    EXPECT_EQUAL(access, 0);
+    queue_test.pop();
+    access = queue_test.access(0);
+    EXPECT_EQUAL(access, 1);
+    queue_test.pop();
+    access = queue_test.access(0);
+    EXPECT_EQUAL(access, 2);
+
+    // This will force a "wrap around" in the queue
+    queue_test.push(10);
+    access = queue_test.access(0);
+    EXPECT_EQUAL(access, 2);
+
+    access = queue_test.access(queue_test.size() - 1);
+    EXPECT_EQUAL(access, 10);
+}
+
+void testPopBack()
+{
+    sparta::Queue<uint32_t> pop_backer("pop_back_test", 100, nullptr);
+    std::vector<sparta::Queue<uint32_t>::iterator> iters;
+    iters.reserve(pop_backer.capacity());
+    EXPECT_EQUAL(iters.capacity(), pop_backer.capacity());
+
+    for(uint32_t i = 0; i < pop_backer.capacity(); ++i) {
+        iters.emplace_back(pop_backer.push(i));
+    }
+    EXPECT_EQUAL(pop_backer.size(), pop_backer.capacity());
+    uint32_t i = 0;
+    for(auto & itr : iters) {
+        EXPECT_EQUAL(*itr, i);
+        ++i;
+    }
+
+    const uint32_t invalidate_count = 10;
+    std::vector<sparta::Queue<uint32_t>::iterator> invalid_iters;
+    invalid_iters.reserve(invalidate_count);
+
+    // Pop 99 -> 89
+    for(uint32_t i = 0; i < invalidate_count; ++i) {
+        invalid_iters.emplace_back(iters.back());
+        pop_backer.pop_back();
+        iters.pop_back();
+    }
+
+    EXPECT_EQUAL(pop_backer.size(), 90);
+    EXPECT_EQUAL(iters.size(), 90);
+    EXPECT_EQUAL(pop_backer.back(), 89);
+
+    i = 0;
+    for(auto & itr : iters) {
+        if(!itr.isValid()) {
+            EXPECT_TRUE(itr.isValid());
+            std::cout << "Error: " << i << " is not valid" << std::endl;
+        }
+        ++i;
+    }
+
+    // These iterators were cut from the queue.  They should be invalidated
+    for(auto & itr : invalid_iters) {
+        EXPECT_FALSE(itr.isValid());
+    }
+
+    const uint32_t sz = pop_backer.size();
+    for(uint32_t i = 0; i < sz; ++i) {
+        pop_backer.pop_back();
+    }
+
+    EXPECT_THROW(pop_backer.pop_back());
+
+    for(auto & itr : iters) {
+        EXPECT_TRUE(!itr.isValid());
+    }
+
+    // Rebuild the queue
+    for(uint32_t i = 0; i < pop_backer.capacity(); ++i) {
+        pop_backer.push(i);
+    }
+
+    // The iterators should still remain invalid -- they are old
+    for(auto & itr : iters) {
+        EXPECT_TRUE(!itr.isValid());
+    }
+
+    // for(uint32_t i = 0; i < pop_backer.size(); ++i) {
+    //     std::cout << pop_backer.access(i) << std::endl;
+    // }
+
 }
 
 void testStatsOutput()
