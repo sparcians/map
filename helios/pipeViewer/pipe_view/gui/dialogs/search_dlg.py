@@ -177,7 +177,7 @@ class SearchDialog(wx.Frame):
         self.__results_box.RefreshAll()
         visible_locations = self.__context.GetVisibleLocations()
 
-        #location_root_search = str(self.__location_to_search.GetValue()).translate(None, '[]')
+        #location_root_search = str(self.__location_to_search.GetValue()).translate({ord(c): None for c in '[]'})
         location_root_search = self.__location_to_search.GetValue()
         if location_root_search is None:
             location_root_search = "[]"
@@ -186,7 +186,7 @@ class SearchDialog(wx.Frame):
         if self.__exclude_locations_not_shown.GetValue():
             for start, end, loc_id, annotation in results:
                 loc = convert_id_to_str(loc_id)
-                loc = str(loc).translate(None, '[]')
+                loc = str(loc).translate({ord(c): None for c in '[]'})
                 if loc.startswith(location_root_search) and loc_id in visible_locations:
                     entry = {'start':start, 'location':loc, 'annotation':annotation}
                     self.__full_results.append(entry)
@@ -216,7 +216,7 @@ class SearchDialog(wx.Frame):
         if truncated is True:
             msg = 'Truncated search results to first {} results of {} total'.format(SEARCH_LIMIT, len(results))
             # Do not truncate here. This contains other locations.
-            print >> sys.stderr, msg
+            print(msg, file=sys.stderr)
             wx.MessageBox(msg)
 
     ## deletes filter and updates results.
