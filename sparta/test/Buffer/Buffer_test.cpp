@@ -660,6 +660,27 @@ content:
     rtn.enterTeardown();
 }
 
+struct SimpleStruct
+{
+    SimpleStruct(int i = 0) : idx_(i)
+    {
+        ++simple_allocs;
+    }
+
+    ~SimpleStruct()
+    {
+        --simple_allocs;
+    }
+
+    uint32_t idx_ = 0;
+    static uint32_t simple_allocs;
+};
+uint32_t SimpleStruct::simple_allocs = 0;
+std::ostream & operator<<(std::ostream &os, const SimpleStruct &)
+{
+    return os;
+}
+
 void testInvalidates()
 {
     EXPECT_EQUAL(dummy_allocs, 0);
@@ -681,7 +702,24 @@ void testInvalidates()
     // Should have one deallocation
     EXPECT_EQUAL(starting_allocs - 1, dummy_allocs);
 
+    my_buff.erase(my_buff.begin());
+
+    EXPECT_EQUAL(starting_allocs - 2, dummy_allocs);
+    for(uint32_t i = 0; i < my_buff.capacity(); ++i) {
+        my_buff.push_back(dummy_struct(i, i+1, "XYZ"));
+    }
+    EXPECT_EQUAL(starting_allocs - 2, dummy_allocs);
+
+    my_buff.clear();
+    EXPECT_EQUAL(starting_allocs - 12, dummy_allocs);
+
     sparta::Buffer<uint32_t> my_simple_buff("my_simple_buff", 10, nullptr);
     my_simple_buff.push_back(1);
     my_simple_buff.erase(my_simple_buff.begin());
+
+    EXPECT_EQUAL(SimpleStruct::simple_allocs, 0);
+    sparta::Buffer<SimpleStruct> my_simple_struct("my_simple_struct", 10, nullptr);
+    EXPECT_EQUAL(SimpleStruct::simple_allocs, 20);
+    my_simple_struct.push_back(SimpleStruct(0));
+    EXPECT_EQUAL(SimpleStruct::simple_allocs, 20);
 }
