@@ -57,11 +57,11 @@ cd map
 
 # Linux
 python3 helios/pipeViewer/pipe_view/argos.py \
-    -l release/sparta/example/CoreModel/cpu_layout.alf \
-    -d release/sparta/release/example/CoreModel/my_pipeout
+    -l sparta/example/CoreModel/cpu_layout.alf \
+    -d release/sparta/example/CoreModel/my_pipeout
 
 # MacOS
-pythonw helios/pipeViewer/pipe_view/argos.py \
-    -l release/sparta/example/CoreModel/cpu_layout.alf \
-    -d release/sparta/release/example/CoreModel/my_pipeout
+python3 helios/pipeViewer/pipe_view/argos.py \
+    -l sparta/example/CoreModel/cpu_layout.alf \
+    -d release/sparta/example/CoreModel/my_pipeout
 ```
