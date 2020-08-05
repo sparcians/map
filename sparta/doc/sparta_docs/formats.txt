@@ -31,10 +31,10 @@
   \code
   # YAML comment. Lost during interpretation
   top:
-  a:
-  params:
-  param1: 1
-  param2: foo
+     a:
+      params:
+      param1: 1
+      param2: foo
   \endcode
 
   This tree assigns values "1" and "foo" to the sparta::Parameter nodes located at "top.a.params.param1"
@@ -46,8 +46,8 @@
 
   \code
   top.a.params:
-  param1: 1
-  param2: foo
+     param1: 1
+     param2: foo
   \endcode
 
   For sparta::Parameter's which are vectors (or nested vectors), YAML in-line sequence syntax can be used
@@ -74,10 +74,10 @@
   \code
   # top_a.yaml
   top:
-  a.params:
-  a_param_1: 1
-  a_param_2: 2
-  b:
+     a.params:
+        a_param_1: 1
+        a_param_2: 2
+     b:
   include: b.yaml # Applies b.yaml configuration in this context (top.b)
   \endcode
 
@@ -85,8 +85,8 @@
   # b.yaml
   # To be applied at top.b
   params:
-  b_param_1: 1 # Assigns "1" to top.b.params.b_param_1
-  b_param_2: 2
+     b_param_1: 1 # Assigns "1" to top.b.params.b_param_1
+     b_param_2: 2
   \endcode
 
   Note that "#include" or "include" can be used as the key. If the former is used, double-quotes are
@@ -102,7 +102,7 @@
   were a typical value being assigned to a parameter. These attribute names are <b>case-sensitive</b>.
   \code
   top.foo.params:
-  myparam: <ATTRIBUTE>
+      myparam: <ATTRIBUTE>
   \endcode
 
   Parameter paths which include wildcards are welcome. Additional value-assignments of parameters
@@ -119,8 +119,8 @@
 
   \code
   top.foo.params:
-  param_that_does_not_exist: 12345
-  param_that_does_not_exist: <OPTIONAL>
+     param_that_does_not_exist: 12345
+     param_that_does_not_exist: <OPTIONAL>
   \endcode
 
   With this, a user can inherit from other configuration files even if those files
@@ -131,10 +131,10 @@
   from the version 1 file as optional.
   \code
   top:
-  core*:
-  version_1_component:
-  params:
-  "*": <OPTIONAL>
+     core*:
+        version_1_component:
+        params:
+        "*": <OPTIONAL>
   \endcode
 
   This can also be used to generalize parameter files by assigning values using overly-broad paths
@@ -148,35 +148,36 @@
   "//a.params.param1": 1 # Interpreted as commented line
   "//": "this is a test device tree configuration file"
   top:
-  a:
-  params:
-  param1: 12
+     a:
+       params:
+       param1: 12
   top.a:
-  "b":
-  {
-  "params.param1": 56,
-  "params": {
-  "#include" : "test_other.yaml"
-  }
-  }
-  params:
-  "param5":   [1.0, 1.1, 2, 3, 5.5]
-  "param6": "0xdeadbeef"
-  param7: "070"
-  param8: [0xa1, 0xb2, 0xc3]
+    "b":
+     {
+        "params.param1": 56,
+         "params": {
+         "#include" : "test_other.yaml"
+         }
+     }
+     params:
+       "param5":   [1.0, 1.1, 2, 3, 5.5]
+       "param6": "0xdeadbeef"
+       param7: "070"
+       param8: [0xa1, 0xb2, 0xc3]
 
-  # This is a comment that will be lost
+       # This is a comment that will be lost
   "top.a.params.param2": 34
   "top.a.params.param3": [5,6,7,8]
   top.a.params.param9 : string with spaces
   "// block comment":
   {
-  # This is all ignored because the key associated with this mapping begins with "//"
-  "a.paramsnonexistant_param": false,
-  "b": {
-  params.nonexistant_param": false
-  }
-  }
+      # This is all ignored because the key associated with this mapping begins with "//"
+       "a.paramsnonexistant_param": false,
+       "b": {
+          params.nonexistant_param": false
+       }
+   }
+
   \endcode
 
   It is up to the user to identify the types of each parameter. This can most easily done by
@@ -187,9 +188,7 @@
   \tableofcontents
   This page describes the grammar and usage of a report definition file
 
-  Until this page is complete, additional (somewhat dated) documentation on reports can be found: TBD
-
-  \section report_def_overveiew Overview
+  \section report_def_overview Overview
   Report definitions are YAML files which describe to the sparta simulation framework how to construct
   the content of a report from a given context in a Sparta device tree. Specifically, the report
   definition defines exactly what counters and statistics are added to a report and how they are named
@@ -275,26 +274,26 @@
   #
   name: "Example Report"
   style:
-  decimal_places: 2
+    decimal_places: 2
   content:
-  top: # Changes scope to TOP
-  subreport:
-  name: Automatic Summary
-  style:
-  show_descriptions: true
-  content:
-  autopopulate:
-  attributes: vis:summary
-  max_report_depth: 1
-  subreport:
-  name: Misc Stats
-  content:
-  core0.foo.stats.bar : BAR 0
-  core1.foo.stats.bar : BAR 1
-  core*.foo.stats.bin : BIN %1
-  core0:
-  foo.stats:
-  buz : "BUZ 0"
+    top: # Changes scope to TOP
+    subreport:
+       name: Automatic Summary
+       style:
+         show_descriptions: true
+       content:
+          autopopulate:
+             attributes: vis:summary
+          max_report_depth: 1
+    subreport:
+        name: Misc Stats
+        content:
+           core0.foo.stats.bar : BAR 0
+           core1.foo.stats.bar : BAR 1
+           core*.foo.stats.bin : BIN %1
+           core0:
+              foo.stats:
+                 buz : "BUZ 0"
   \endcode
 
   Assume a device tree which looks like this:
@@ -392,8 +391,8 @@
   The final few lines of this content section are just nested scope qualifiers.
   \verbatim
   core0:
-  foo.stats:
-  buz : "BUZ 0"
+     foo.stats:
+        buz : "BUZ 0"
   \endverbatim
   "core0" just changes the current scope for anything in the nested dictionary associated with it.
   Since the scope enclosing this node is "top", the scope inside this section is "top.core0". The
@@ -478,8 +477,8 @@
   \verbatim
   content:
   top:
-  core*.stats:
-  foo* : "My Core%1 Foo%2 Stat"
+      core*.stats:
+          foo* : "My Core%1 Foo%2 Stat"
   # OR: foo* : "My Core%-2 Foo%-1 Stat"
   \endverbatim
 
