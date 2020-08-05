@@ -9,9 +9,10 @@
 
 #pragma once
 
-#include <inttypes.h>
+#include <cinttypes>
 
 #include "sparta/utils/SpartaAssert.hpp"
+#include "sparta/utils/MetaStructs.hpp"
 #include "sparta/statistics/CycleHistogram.hpp"
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/statistics/StatisticDef.hpp"
@@ -607,7 +608,12 @@ namespace sparta
             // 3. Set the current free space pointer's next to the old free position
             DataPointer* oldFree = free_position_;
             free_position_ = buffer_map_[idx];
-            free_position_->data.~DataT(); // Destruct the data object
+            if constexpr(MetaStruct::is_any_pointer<value_type>::value) {
+                free_position_->data = nullptr; // Nullify the pointer
+            }
+            else {
+                free_position_->data.~DataT(); // Destruct the data object
+            }
             free_position_->next_free = oldFree;
 
             // Mark DataPointer as invalid

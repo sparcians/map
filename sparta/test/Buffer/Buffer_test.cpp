@@ -2,30 +2,27 @@
 
 
 #include <iostream>
-#include <inttypes.h>
+#include <cinttypes>
+#include <memory>
+#include <vector>
 
 #include "sparta/resources/Buffer.hpp"
-#include "sparta/sparta.hpp"
 #include "sparta/simulation/ClockManager.hpp"
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 #include "sparta/statistics/StatisticSet.hpp"
 #include "sparta/report/Report.hpp"
+#include "sparta/utils/SpartaSharedPointer.hpp"
 
-#include <boost/timer/timer.hpp>
-#include <vector>
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/statistics/CycleCounter.hpp"
+
 TEST_INIT;
 
 #define PIPEOUT_GEN
 
 #define QUICK_PRINT(x) \
     std::cout << x << std::endl
-
-void generalTest();
-void testConstIterator();
-void testInvalidates();
 
 uint32_t dummy_allocs = 0;
 
@@ -63,17 +60,6 @@ std::ostream &operator<<(std::ostream &os, const dummy_struct &obj)
 {
     os << obj.int16_field << " " << obj.int32_field << obj.s_field << "\n";
     return os;
-}
-
-int main()
-{
-
-    generalTest();
-    testConstIterator();
-    testInvalidates();
-
-    REPORT_ERROR;
-    return ERROR_CODE;
 }
 
 void generalTest()
@@ -681,6 +667,19 @@ std::ostream & operator<<(std::ostream &os, const SimpleStruct &)
     return os;
 }
 
+template<class PtrT>
+void testPointerTypes()
+{
+    using DummyPtr = PtrT;
+    sparta::Buffer<DummyPtr> my_buff("my_dummy_buff", 10, nullptr);
+    DummyPtr ptr;
+    my_buff.push_back(ptr = PtrT(new typename PtrT::element_type(1, 2, "XYZ")));
+    EXPECT_EQUAL(ptr.use_count(), 2);
+    my_buff.erase(my_buff.begin());
+    EXPECT_EQUAL(ptr.use_count(), 1);
+    EXPECT_TRUE(ptr != nullptr);
+}
+
 void testInvalidates()
 {
     EXPECT_EQUAL(dummy_allocs, 0);
@@ -722,4 +721,17 @@ void testInvalidates()
     EXPECT_EQUAL(SimpleStruct::simple_allocs, 20);
     my_simple_struct.push_back(SimpleStruct(0));
     EXPECT_EQUAL(SimpleStruct::simple_allocs, 20);
+}
+
+
+int main()
+{
+    testPointerTypes<std::shared_ptr<dummy_struct>>();
+    testPointerTypes<sparta::SpartaSharedPointer<dummy_struct>>();
+    generalTest();
+    testConstIterator();
+    testInvalidates();
+
+    REPORT_ERROR;
+    return ERROR_CODE;
 }
