@@ -8,8 +8,7 @@
 #include <sstream>
 #include <math.h>
 #include <memory>
-
-#include <boost/static_assert.hpp>
+#include <climits>
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/functional/DataView.hpp"
@@ -1611,5 +1610,3 @@ inline std::ostream& operator<<(std::ostream& o, const sparta::Register::Field* 
 #define SPARTA_REGISTER_BODY                                              \
     constexpr sparta::RegisterBase::group_num_type sparta::RegisterBase::GROUP_NUM_NONE; \
     const sparta::RegisterBase::Definition sparta::RegisterBase::DEFINITION_END{0, nullptr, 0, nullptr, 0, nullptr, 0, { }, { }, nullptr, 0, 0, 0, 0, 0};
-
-

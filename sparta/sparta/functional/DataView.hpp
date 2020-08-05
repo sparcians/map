@@ -7,8 +7,6 @@
 #include <iomanip>
 #include <math.h>
 
-#include <boost/utility.hpp>        // noncopyable, enable_if
-
 #include "sparta/functional/ArchDataSegment.hpp"
 #include "sparta/functional/ArchData.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -20,7 +18,6 @@ namespace sparta
 
     //! Can be a subset of another DataView
     //! ArchDataSegment provides the layout inteface
-    //! Noncopyable because of ArchDataSegment. Could me made copyable if ArchDataSegment were also copyable
     class DataView : public ArchDataSegment
     {
     public:

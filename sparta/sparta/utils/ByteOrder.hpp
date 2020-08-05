@@ -10,8 +10,8 @@
 #pragma once
 
 #include <iostream>
-
 #include <typeinfo>
+
 #include <boost/mpl/assert.hpp>
 
 #include "sparta/utils/SpartaException.hpp"
