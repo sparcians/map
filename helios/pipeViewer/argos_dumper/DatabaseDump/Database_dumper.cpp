@@ -34,7 +34,7 @@ namespace pipeViewer
             std::stringstream& output_buffer;
 
             // Returns whether the given transaction is split across a heartbeat
-            bool isContinued(transaction_t *t)
+            bool isContinued(transaction_t *t) const
             {
                 return (t->flags & CONTINUE_FLAG) != 0;
             }
@@ -42,7 +42,7 @@ namespace pipeViewer
             // Prints a transaction to output_buffer
             // This is used for the default sort mode (by transaction ID) when merging transactions
             template<typename T>
-            void printToBuf(T* t, void(*print_func)(T*, std::ostream &))
+            void printToBuf(T* t, void(*print_func)(T*, std::ostream &)) const
             {
                 uint64_t trans_id = t->transaction_ID;
 
@@ -139,7 +139,7 @@ namespace pipeViewer
                 genericTransactionHandler<memoryoperation_t>(t, printMemOp);
             }
 
-            static void printPairOp(pair_t * p, std::ostream & os){
+            static void printPairOp(pair_t * p, std::ostream & os) {
                 os << "*pair* ";
                 for (uint32_t i = 0; i < p->nameVector.size(); ++i) {
                     os << p->nameVector[i] << "(" << p->stringVector[i] << ") ";
