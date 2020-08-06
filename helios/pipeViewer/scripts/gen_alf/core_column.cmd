@@ -49,3 +49,7 @@ pipeis	"LSU Pipe"	lsu.LoadStorePipeline.LoadStorePipeline		0	2
 
 pipem	"LSU IQ"	lsu.lsu_inst_queue.lsu_inst_queue			7	-1	4
 pipeis	"LSU IQ"	lsu.lsu_inst_queue.lsu_inst_queue			3	-1	0
+
+#-------------------------------------------------- Retire
+pipem	"ROB"		rob.ReorderBuffer.ReorderBuffer				29	-1	8
+pipeis	"ROB"		rob.ReorderBuffer.ReorderBuffer				7	-1	0

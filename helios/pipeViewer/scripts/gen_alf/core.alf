@@ -1,7 +1,7 @@
 ---
 - type: schedule
   color: (192,192,192)
-  dimensions: (288, 643)
+  dimensions: (288, 805)
   position: (99, 2)
   pixel_offset: 80
   time_scale: 0.125
@@ -580,83 +580,293 @@
     dimensions: (328, 13)
     position: (99, 632)
     t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer29
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 644)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer28
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 647)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer27
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 650)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer26
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 653)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer25
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 656)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer24
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 659)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer23
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 662)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer22
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 665)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer21
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 668)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer20
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 671)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer19
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 674)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer18
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 677)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer17
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 680)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer16
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 683)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer15
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 686)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer14
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 689)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer13
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 692)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer12
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 695)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer11
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 698)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer10
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 701)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer9
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 704)
+    t_offset: -10
+  - Content: auto_color_anno_notext
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer8
+    color: (192,192,192)
+    dimensions: (328, 4)
+    position: (99, 707)
+    t_offset: -10
+  - Content: auto_color_annotation
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer7
+    color: (192,192,192)
+    dimensions: (328, 13)
+    position: (99, 710)
+    t_offset: -10
+  - Content: auto_color_annotation
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer6
+    color: (192,192,192)
+    dimensions: (328, 13)
+    position: (99, 722)
+    t_offset: -10
+  - Content: auto_color_annotation
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer5
+    color: (192,192,192)
+    dimensions: (328, 13)
+    position: (99, 734)
+    t_offset: -10
+  - Content: auto_color_annotation
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer4
+    color: (192,192,192)
+    dimensions: (328, 13)
+    position: (99, 746)
+    t_offset: -10
+  - Content: auto_color_annotation
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer3
+    color: (192,192,192)
+    dimensions: (328, 13)
+    position: (99, 758)
+    t_offset: -10
+  - Content: auto_color_annotation
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer2
+    color: (192,192,192)
+    dimensions: (328, 13)
+    position: (99, 770)
+    t_offset: -10
+  - Content: auto_color_annotation
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer1
+    color: (192,192,192)
+    dimensions: (328, 13)
+    position: (99, 782)
+    t_offset: -10
+  - Content: auto_color_annotation
+    type: schedule_line
+    LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer0
+    color: (192,192,192)
+    dimensions: (328, 13)
+    position: (99, 794)
+    t_offset: -10
 - Content: caption
   caption: Next PC
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 2)
 - Content: caption
-  caption: Fetch Q
+  caption: Decode
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 14)
 - Content: caption
-  caption: Fetch Q[3]
+  caption: Decode[3]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 32)
 - Content: caption
-  caption: Fetch Q[2]
+  caption: Decode[2]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 44)
 - Content: caption
-  caption: Fetch Q[1]
+  caption: Decode[1]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 56)
 - Content: caption
-  caption: Fetch Q[0]
+  caption: Decode[0]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 68)
 - Content: caption
-  caption: Rename Q
+  caption: Rename
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 80)
 - Content: caption
-  caption: Rename Q[3]
+  caption: Rename[3]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 98)
 - Content: caption
-  caption: Rename Q[2]
+  caption: Rename[2]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 110)
 - Content: caption
-  caption: Rename Q[1]
+  caption: Rename[1]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 122)
 - Content: caption
-  caption: Rename Q[0]
+  caption: Rename[0]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 134)
 - Content: caption
-  caption: Disp Q
+  caption: Dispatch
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 146)
 - Content: caption
-  caption: Disp Q[3]
+  caption: Dispatch[3]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 164)
 - Content: caption
-  caption: Disp Q[2]
+  caption: Dispatch[2]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 176)
 - Content: caption
-  caption: Disp Q[1]
+  caption: Dispatch[1]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 188)
 - Content: caption
-  caption: Disp Q[0]
+  caption: Dispatch[0]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 200)
@@ -841,61 +1051,106 @@
   dimensions: (90, 13)
   position: (10, 632)
 - Content: caption
-  caption: C=1 Cyc
+  caption: ROB
   color: (192,192,192)
   dimensions: (90, 13)
   position: (10, 644)
+- Content: caption
+  caption: ROB[7]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (10, 710)
+- Content: caption
+  caption: ROB[6]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (10, 722)
+- Content: caption
+  caption: ROB[5]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (10, 734)
+- Content: caption
+  caption: ROB[4]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (10, 746)
+- Content: caption
+  caption: ROB[3]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (10, 758)
+- Content: caption
+  caption: ROB[2]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (10, 770)
+- Content: caption
+  caption: ROB[1]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (10, 782)
+- Content: caption
+  caption: ROB[0]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (10, 794)
+- Content: caption
+  caption: C=1 Cyc
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (10, 806)
 - Content: cycle
   LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer0
   color: (0,0,0)
   dimensions: (65, 13)
-  position: (35, 644)
+  position: (35, 806)
   t_offset: 0
 - Content: caption
   caption: C=1 -10
   color: (0,0,0)
   dimensions: (50, 13)
-  position: (99, 644)
+  position: (99, 806)
 - Content: caption
   caption: C=1 -5
   color: (0,0,0)
   dimensions: (50, 13)
-  position: (139, 644)
+  position: (139, 806)
 - Content: caption
   caption: C=1 0
   color: (0,0,0)
   dimensions: (50, 13)
-  position: (179, 644)
+  position: (179, 806)
 - Content: caption
   caption: C=1 5
   color: (0,0,0)
   dimensions: (50, 13)
-  position: (219, 644)
+  position: (219, 806)
 - Content: caption
   caption: C=1 10
   color: (0,0,0)
   dimensions: (50, 13)
-  position: (259, 644)
+  position: (259, 806)
 - Content: caption
   caption: C=1 15
   color: (0,0,0)
   dimensions: (50, 13)
-  position: (299, 644)
+  position: (299, 806)
 - Content: caption
   caption: C=1 20
   color: (0,0,0)
   dimensions: (50, 13)
-  position: (339, 644)
+  position: (339, 806)
 - Content: caption
   caption: C=1 25
   color: (0,0,0)
   dimensions: (50, 13)
-  position: (379, 644)
+  position: (379, 806)
 - Content: caption
   caption: C=1 30
   color: (0,0,0)
   dimensions: (50, 13)
-  position: (419, 644)
+  position: (419, 806)
 - Content: caption
   caption: Next PC
   color: (192,192,192)
@@ -908,7 +1163,7 @@
   position: (490, 2)
   t_offset: 0
 - Content: caption
-  caption: Fetch Q
+  caption: Decode
   color: (192,192,192)
   dimensions: (90, 13)
   position: (401, 14)
@@ -949,7 +1204,7 @@
   position: (490, 29)
   t_offset: 0
 - Content: caption
-  caption: Fetch Q[3]
+  caption: Decode[3]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (401, 32)
@@ -960,7 +1215,7 @@
   position: (490, 32)
   t_offset: 0
 - Content: caption
-  caption: Fetch Q[2]
+  caption: Decode[2]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (401, 44)
@@ -971,7 +1226,7 @@
   position: (490, 44)
   t_offset: 0
 - Content: caption
-  caption: Fetch Q[1]
+  caption: Decode[1]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (401, 56)
@@ -982,7 +1237,7 @@
   position: (490, 56)
   t_offset: 0
 - Content: caption
-  caption: Fetch Q[0]
+  caption: Decode[0]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (401, 68)
@@ -993,7 +1248,7 @@
   position: (490, 68)
   t_offset: 0
 - Content: caption
-  caption: Rename Q
+  caption: Rename
   color: (192,192,192)
   dimensions: (90, 13)
   position: (401, 80)
@@ -1034,7 +1289,7 @@
   position: (490, 95)
   t_offset: 0
 - Content: caption
-  caption: Rename Q[3]
+  caption: Rename[3]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (401, 98)
@@ -1045,7 +1300,7 @@
   position: (490, 98)
   t_offset: 0
 - Content: caption
-  caption: Rename Q[2]
+  caption: Rename[2]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (401, 110)
@@ -1056,7 +1311,7 @@
   position: (490, 110)
   t_offset: 0
 - Content: caption
-  caption: Rename Q[1]
+  caption: Rename[1]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (401, 122)
@@ -1067,7 +1322,7 @@
   position: (490, 122)
   t_offset: 0
 - Content: caption
-  caption: Rename Q[0]
+  caption: Rename[0]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (401, 134)
@@ -1078,7 +1333,7 @@
   position: (490, 134)
   t_offset: 0
 - Content: caption
-  caption: Disp Q
+  caption: Dispatch
   color: (192,192,192)
   dimensions: (90, 13)
   position: (401, 146)
@@ -1119,7 +1374,7 @@
   position: (490, 161)
   t_offset: 0
 - Content: caption
-  caption: Disp Q[3]
+  caption: Dispatch[3]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (401, 164)
@@ -1130,7 +1385,7 @@
   position: (490, 164)
   t_offset: 0
 - Content: caption
-  caption: Disp Q[2]
+  caption: Dispatch[2]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (401, 176)
@@ -1141,7 +1396,7 @@
   position: (490, 176)
   t_offset: 0
 - Content: caption
-  caption: Disp Q[1]
+  caption: Dispatch[1]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (401, 188)
@@ -1152,7 +1407,7 @@
   position: (490, 188)
   t_offset: 0
 - Content: caption
-  caption: Disp Q[0]
+  caption: Dispatch[0]
   color: (192,192,192)
   dimensions: (90, 13)
   position: (401, 200)
@@ -1649,6 +1904,231 @@
   position: (490, 632)
   t_offset: 0
 - Content: caption
+  caption: ROB
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (401, 644)
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer29
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 644)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer28
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 647)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer27
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 650)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer26
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 653)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer25
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 656)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer24
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 659)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer23
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 662)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer22
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 665)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer21
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 668)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer20
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 671)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer19
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 674)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer18
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 677)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer17
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 680)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer16
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 683)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer15
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 686)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer14
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 689)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer13
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 692)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer12
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 695)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer11
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 698)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer10
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 701)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer9
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 704)
+  t_offset: 0
+- Content: auto_color_anno_notext
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer8
+  color: (192,192,192)
+  dimensions: (160, 4)
+  position: (490, 707)
+  t_offset: 0
+- Content: caption
+  caption: ROB[7]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (401, 710)
+- Content: auto_color_annotation
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer7
+  color: (192,192,192)
+  dimensions: (160, 13)
+  position: (490, 710)
+  t_offset: 0
+- Content: caption
+  caption: ROB[6]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (401, 722)
+- Content: auto_color_annotation
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer6
+  color: (192,192,192)
+  dimensions: (160, 13)
+  position: (490, 722)
+  t_offset: 0
+- Content: caption
+  caption: ROB[5]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (401, 734)
+- Content: auto_color_annotation
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer5
+  color: (192,192,192)
+  dimensions: (160, 13)
+  position: (490, 734)
+  t_offset: 0
+- Content: caption
+  caption: ROB[4]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (401, 746)
+- Content: auto_color_annotation
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer4
+  color: (192,192,192)
+  dimensions: (160, 13)
+  position: (490, 746)
+  t_offset: 0
+- Content: caption
+  caption: ROB[3]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (401, 758)
+- Content: auto_color_annotation
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer3
+  color: (192,192,192)
+  dimensions: (160, 13)
+  position: (490, 758)
+  t_offset: 0
+- Content: caption
+  caption: ROB[2]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (401, 770)
+- Content: auto_color_annotation
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer2
+  color: (192,192,192)
+  dimensions: (160, 13)
+  position: (490, 770)
+  t_offset: 0
+- Content: caption
+  caption: ROB[1]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (401, 782)
+- Content: auto_color_annotation
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer1
+  color: (192,192,192)
+  dimensions: (160, 13)
+  position: (490, 782)
+  t_offset: 0
+- Content: caption
+  caption: ROB[0]
+  color: (192,192,192)
+  dimensions: (90, 13)
+  position: (401, 794)
+- Content: auto_color_annotation
+  LocationString: top.cpu.core0.rob.ReorderBuffer.ReorderBuffer0
+  color: (192,192,192)
+  dimensions: (160, 13)
+  position: (490, 794)
+  t_offset: 0
+- Content: caption
   caption: ROB[29]
   color: (192,192,192)
   dimensions: (90, 13)
@@ -2056,17 +2536,52 @@
 - Content: caption
   caption: 
   color: (0,0,0)
-  dimensions: (377, 1)
-  position: (10, 656)
+  dimensions: (288, 1)
+  position: (99, 650)
 - Content: caption
   caption: 
   color: (0,0,0)
-  dimensions: (1, 655)
+  dimensions: (288, 1)
+  position: (99, 662)
+- Content: caption
+  caption: 
+  color: (0,0,0)
+  dimensions: (288, 1)
+  position: (99, 674)
+- Content: caption
+  caption: 
+  color: (0,0,0)
+  dimensions: (288, 1)
+  position: (99, 686)
+- Content: caption
+  caption: 
+  color: (0,0,0)
+  dimensions: (288, 1)
+  position: (99, 698)
+- Content: caption
+  caption: 
+  color: (0,0,0)
+  dimensions: (288, 1)
+  position: (99, 758)
+- Content: caption
+  caption: 
+  color: (0,0,0)
+  dimensions: (377, 1)
+  position: (10, 806)
+- Content: caption
+  caption: 
+  color: (0,0,0)
+  dimensions: (377, 1)
+  position: (10, 818)
+- Content: caption
+  caption: 
+  color: (0,0,0)
+  dimensions: (1, 817)
   position: (179, 2)
 - Content: caption
   caption: 
   color: (0,0,0)
-  dimensions: (1, 655)
+  dimensions: (1, 817)
   position: (187, 2)
 - Content: caption
   caption: 
@@ -2143,6 +2658,41 @@
   color: (0,0,0)
   dimensions: (248, 1)
   position: (401, 644)
+- Content: caption
+  caption: 
+  color: (0,0,0)
+  dimensions: (159, 1)
+  position: (490, 650)
+- Content: caption
+  caption: 
+  color: (0,0,0)
+  dimensions: (159, 1)
+  position: (490, 662)
+- Content: caption
+  caption: 
+  color: (0,0,0)
+  dimensions: (159, 1)
+  position: (490, 674)
+- Content: caption
+  caption: 
+  color: (0,0,0)
+  dimensions: (159, 1)
+  position: (490, 686)
+- Content: caption
+  caption: 
+  color: (0,0,0)
+  dimensions: (159, 1)
+  position: (490, 698)
+- Content: caption
+  caption: 
+  color: (0,0,0)
+  dimensions: (159, 1)
+  position: (490, 758)
+- Content: caption
+  caption: 
+  color: (0,0,0)
+  dimensions: (248, 1)
+  position: (401, 806)
 - Content: caption
   caption: 
   color: (0,0,0)
