@@ -48,7 +48,7 @@ cdef extern from "wx/pen.h":
         wxPen(wxColour colour, # const &
               int width) # =1
 
-        SetColour(wxColour colour) # const &
+        void SetColour(wxColour colour) # const &
 
     ctypedef wxPen const_wxPen "wxPen const"
 
@@ -222,6 +222,8 @@ cdef class Renderer(object):
     cdef int NUM_ANNOTATION_SYMBOLS
     cdef char * ANNOTATION_SYMBOL_STRING
     cdef wxPen HIGHLIGHTED_PEN
+    cdef wxPen SEARCH_PEN
+    cdef wxPen HIGHLIGHTED_SEARCH_PEN
 
     def __cinit__(self, *args):
         self.NUM_REASON_COLORS = 16
@@ -229,6 +231,8 @@ cdef class Renderer(object):
         self.NUM_ANNOTATION_SYMBOLS = 52
         self.ANNOTATION_SYMBOL_STRING = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         self.HIGHLIGHTED_PEN = wxPen(wxColour(255, 0, 0), 2)
+        self.SEARCH_PEN = wxPen(wxColour(0, 0, 0), 2)
+        self.HIGHLIGHTED_SEARCH_PEN = wxPen(wxColour(0, 0, 255), 2)
 
     def __init__(self, *args):
         pass
@@ -408,17 +412,19 @@ cdef class Renderer(object):
             getTextExtent(getDC(dc), &self.c_char_width, &self.c_char_height)
 
     def drawInfoRectangle(self,
-                            dc,
-                            canvas,
-                            rect,
-                            annotation,
-                            missing_needed_loc,
-                            content_type,
-                            auto_color, # type, basis
-                            clip_x, # (start, width)
-                            schedule_settings = None,
-                            short_format = ''):
-                            # schedule_settings: (period_width, 0/1/2 (none/dots/boxed))
+                          tick,
+                          element,
+                          dc,
+                          canvas,
+                          rect,
+                          annotation,
+                          missing_needed_loc,
+                          content_type,
+                          auto_color, # type, basis
+                          clip_x, # (start, width)
+                          schedule_settings = None,
+                          short_format = ''):
+                          # schedule_settings: (period_width, 0/1/2 (none/dots/boxed))
         cdef wxGCDC * c_dc = getDC(dc)
 
         cdef int c_x
@@ -449,21 +455,27 @@ cdef class Renderer(object):
             string_to_display = ''
             brush = wx.TheBrushList.FindOrCreateBrush((160, 160, 160), wx.CROSSDIAG_HATCH) # no guarantees this is fast
             highlighted = False
+            search_result = False
         else:
             record = canvas.GetTransactionColor(annotation, content_type, auto_color[0], auto_color[1])
             if record:
-                string_to_display, brush, highlighted, _ = record
+                string_to_display, brush, highlighted, search_result, _, _ = record
             else:
-                string_to_display, brush, highlighted = canvas.AddColoredTransaction(annotation, content_type, auto_color[0], auto_color[1])
+                string_to_display, brush, highlighted, search_result = canvas.AddColoredTransaction(annotation, content_type, auto_color[0], auto_color[1], tick, element)
 
-        if highlighted:
+        if highlighted or search_result:
             old_pen = c_dc.GetPen()
-            c_dc.SetPen(self.HIGHLIGHTED_PEN)
             c_dc.SetFont(self.c_bold_font)
             c_w -= 1
             c_h -= 1
             c_x += 1
             c_y += 1
+        if highlighted and search_result:
+            c_dc.SetPen(self.HIGHLIGHTED_SEARCH_PEN)
+        elif search_result:
+            c_dc.SetPen(self.SEARCH_PEN)
+        elif highlighted:
+            c_dc.SetPen(self.HIGHLIGHTED_PEN)
 
         # Graph C pointer to brush
         c_dc.SetBrush(getBrush(brush)[0])
@@ -536,7 +548,7 @@ cdef class Renderer(object):
                     c_str = byte_str
                     if len(string_to_display):
                         c_dc.DrawText(wxString(c_str), < wxCoord > c_x + c_x_adj, < wxCoord > c_y + c_y_adj)
-        if highlighted:
+        if highlighted or search_result:
             c_dc.SetPen(old_pen)
             c_dc.SetFont(self.c_font)
 
@@ -611,7 +623,7 @@ cdef class Renderer(object):
                 c_dc.SetPen(c_pen)
 
             c_dc.SetClippingRegion(c_x, c_y, c_w, c_h)
-            self.drawInfoRectangle(dc, canvas,
+            self.drawInfoRectangle(tick, e, dc, canvas,
                                    (c_x, c_y, c_w, c_h),
                                    string_to_display,
                                    pair.IsMissingLocation(),

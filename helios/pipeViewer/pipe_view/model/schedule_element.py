@@ -291,7 +291,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
             # val = val.decode('utf-8') # integer when phantom elements refer to other phantom elements
             NOT_MISSING_LOC = False
             short_format = self.GetProperty('short_format')
-            canvas.GetRenderer().drawInfoRectangle(dc, canvas, rect, val, NOT_MISSING_LOC,
+            canvas.GetRenderer().drawInfoRectangle(interval[0], self, dc, canvas, rect, val, NOT_MISSING_LOC,
                                                     content_type,
                                                     auto_color,
                                                     clip,
@@ -443,7 +443,7 @@ class ScheduleLineRulerElement(ScheduleLineElement):
             rect = (c_x + start, c_y, width + 1, c_h)
             val = 'C=1 %i' % (current_time / period)
             NOT_MISSING_LOC = False
-            canvas.GetRenderer().drawInfoRectangle(dc, canvas, rect, val, NOT_MISSING_LOC,
+            canvas.GetRenderer().drawInfoRectangle(tick, self, dc, canvas, rect, val, NOT_MISSING_LOC,
                                                     'caption', ('', ''),
                                                     clip,
                                                     schedule_settings = (full_interval, self.DRAW_RULER))

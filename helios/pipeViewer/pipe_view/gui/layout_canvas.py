@@ -172,12 +172,18 @@ class Layout_Canvas(wx.ScrolledWindow):
             content_type = el.GetProperty('Content')
             record = self.GetTransactionColor(annotation, content_type, color_basis_type, auto_color_basis)
             if record:
-                string_to_display, brush, _, _ = record
+                string_to_display, brush, _, _, _, _ = record
             else:
-                string_to_display, brush, _ = self.AddColoredTransaction(annotation,
-                                                                         content_type,
-                                                                         color_basis_type,
-                                                                         auto_color_basis)
+                try:
+                    tick = el.GetVisibilityTick()
+                except AttributeError:
+                    tick = 0
+                string_to_display, brush, _, _ = self.AddColoredTransaction(annotation,
+                                                                            content_type,
+                                                                            color_basis_type,
+                                                                            auto_color_basis,
+                                                                            tick,
+                                                                            el)
         else:
             string_to_display = self.__hover_preview.annotation
             brush = wx.Brush((200, 200, 200))
@@ -385,17 +391,17 @@ class Layout_Canvas(wx.ScrolledWindow):
     # # Updates the highlighting state of all cached transactions
     def UpdateTransactionHighlighting(self):
         for key, val in self.__colored_transactions.items():
-            if self.__context.IsUopUidHighlighted(val[3]):
-                self.__colored_transactions[key] = val[:2] + (True,) + val[3:]
-            else:
-                self.__colored_transactions[key] = val[:2] + (False,) + val[3:]
+            self.__colored_transactions[key] = val[:2] + \
+                                               (self.__context.IsUopUidHighlighted(val[4]),) + \
+                                               (self.__context.IsSearchResult(val[5]),) + \
+                                               val[4:]
 
     def GetTransactionColor(self, annotation, content_type, color_basis_type, auto_color_basis):
         return self.__colored_transactions.get('%s:%s:%s:%s' % (annotation, color_basis_type, auto_color_basis, hash(content_type)))
 
     # # Track the tagging of one transaction
     #  @note OThis can be called mutiple times to override existing colors
-    def AddColoredTransaction(self, annotation, content_type, color_basis_type, auto_color_basis):
+    def AddColoredTransaction(self, annotation, content_type, color_basis_type, auto_color_basis, start_tick, element):
         if len(self.__colored_transactions) > 10000:
             self.__colored_transactions.clear()
 
@@ -405,12 +411,16 @@ class Layout_Canvas(wx.ScrolledWindow):
                                                                               auto_color_basis)
         key = '%s:%s:%s:%s' % (annotation, color_basis_type, auto_color_basis, hash(content_type))
         uop_uid = highlighting_utils.GetUopUid(annotation)
-        if self.__context.IsUopUidHighlighted(uop_uid):
-            highlighted = True
+        highlighted = self.__context.IsUopUidHighlighted(uop_uid)
+
+        if element.HasProperty('LocationString'):
+            search_result_hash = self.__context.SearchResultHash(start_tick, element.GetProperty('LocationString'))
         else:
-            highlighted = False
-        self.__colored_transactions[key] = (string_to_display, brush, highlighted, uop_uid)
-        return string_to_display, brush, highlighted
+            search_result_hash = None
+
+        search_result = self.__context.IsSearchResult(search_result_hash)
+        self.__colored_transactions[key] = (string_to_display, brush, highlighted, search_result, uop_uid, search_result_hash)
+        return string_to_display, brush, highlighted, search_result
 
     # # Gets old-style coloring (no basis configured)
     def GetAutocolorColor(self, annotation):
