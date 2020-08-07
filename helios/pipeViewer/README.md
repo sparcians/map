@@ -1,4 +1,4 @@
-# PipeViewer Transaction Viewer
+# Argos: The PipeViewer Transaction Viewer
 
 ## Prerequisites
 
@@ -56,7 +56,11 @@ To view the database, you must run Argos and specify both the database prefix an
 
 In the example core model directory, run:
 ```
-$ python ${MAP}/helios/pipeViewer/pipe_view/argos.py --database pipeout_ --layout-file cpu_layout.alf
+# Linux
+$ python3 ${MAP}/helios/pipeViewer/pipe_view/argos.py --database pipeout_ --layout-file cpu_layout.alf
+
+# MacOS
+$ pythonw ${MAP}/helios/pipeViewer/pipe_view/argos.py --database pipeout_ --layout-file cpu_layout.alf
 ```
 where `${MAP}` represents the path to your `map` repo.  We are using the database with the prefix `pipeout_` and are using the single-cycle layout file in this directory `cpu_layout.alf`.
 
@@ -80,13 +84,21 @@ Single-cycle layouts can be created using graphical editing tools built into the
 
 Viewing a multi-cycle layout is done the exact same way as a single-cycle layout.  In the example core model directory, run:
 ```
-python ${MAP}/helios/pipeViewer/pipe_view/argos.py --database pipeout_ --layout-file ${MAP}/helios/pipeViewer/scripts/gen_alf/core.alf
+# Linux
+python3 ${MAP}/helios/pipeViewer/pipe_view/argos.py --database pipeout_ --layout-file ${MAP}/helios/pipeViewer/scripts/gen_alf/core.alf
+
+# MacOS
+pythonw ${MAP}/helios/pipeViewer/pipe_view/argos.py --database pipeout_ --layout-file ${MAP}/helios/pipeViewer/scripts/gen_alf/core.alf
 ```
 
 In this example, we replace the single-cycle layout file with a multi-cycle layout.  You can also specify multiple layout files.  Each layout will be displayed in its own window, and the current cycle will be sync'ed up among all the layout specified.  For example:
 
 ```
-python ${MAP}/helios/pipeViewer/pipe_view/argos.py --database pipeout_ --layout-file cpu_layout.alf --layout-file ${MAP}/helios/pipeViewer/scripts/gen_alf/core.alf
+# Linux
+python3 ${MAP}/helios/pipeViewer/pipe_view/argos.py --database pipeout_ --layout-file cpu_layout.alf --layout-file ${MAP}/helios/pipeViewer/scripts/gen_alf/core.alf
+
+# MacOS
+pythonw ${MAP}/helios/pipeViewer/pipe_view/argos.py --database pipeout_ --layout-file cpu_layout.alf --layout-file ${MAP}/helios/pipeViewer/scripts/gen_alf/core.alf
 ```
 
 In this example layout, there are three main columns of locations.  The left column contains the multi-cycle display; the middle and right columns show only the current cycle.  The middle column is a more verbose version of the left column, and the right column contains a "directory" containing the current reorder buffer (ROB) entries.
