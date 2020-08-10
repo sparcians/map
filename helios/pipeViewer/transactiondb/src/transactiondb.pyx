@@ -66,6 +66,13 @@ cdef extern from "TransactionDatabaseInterface.hpp" namespace "sparta::pipeViewe
 cdef extern from "TransactionDatabaseInterface.hpp" namespace "sparta::pipeViewer::TransactionDatabaseInterface":
     const_interval_idx NO_TRANSACTION # static const
 
+cdef extern from "Reader.hpp" namespace "sparta::pipeViewer":
+    string formatPairAsAnnotation(const uint64_t transaction_ID, \
+                                  const uint64_t display_ID, \
+                                  const uint16_t length, \
+                                  const vector[string]& nameVector, \
+                                  const vector[string]& stringVector);
+
 cdef class Transaction(object):
 
     FLAGS_MASK_TYPE = 0b111
@@ -271,27 +278,11 @@ cdef class Transaction(object):
                 else:
                     py_str_body = value_str
         else:
-            my_display_id = self.__trans.display_ID if self.__trans.display_ID < 0x1000 else self.__trans.transaction_ID
-            py_str_preamble += format(my_display_id, '>03x').encode('utf-8') + b' '
-
-            for i in range(1, self.__trans.length):
-                my_name  = bytes_re.sub(r'\1', str(self.__trans.nameVector[i]))
-                my_value = bytes_re.sub(r'\1', str(self.__trans.stringVector[i]))
-                if my_name != "DID":
-                    py_str_body += my_name.encode('utf-8') + b'(' + my_value.encode('utf-8') + b')' + b' '
-
-                if my_name == "uid":
-                    value_string = "u" + format(int(my_value) % 10000, '>4d') + " "
-                    py_str_preamble += value_string.encode('utf-8')
-
-                elif my_name == "pc":
-                    value_string = "0x" + format(int(my_value, 16) & 0xffff, '>04x') + " "
-                    py_str_preamble += value_string.encode('utf-8')
-
-                elif my_name == "mnemonic":
-                    value_string = format(my_value[0:7], '<7') + " "
-                    py_str_preamble += value_string.encode('utf-8')
-
+            py_str_body = formatPairAsAnnotation(self.__trans.transaction_ID,
+                                                 self.__trans.display_ID,
+                                                 self.__trans.length,
+                                                 self.__trans.nameVector,
+                                                 self.__trans.stringVector)
 
         # TODO this could already be a string to avoid decoding over and over
 
