@@ -13,6 +13,9 @@
 #include <fstream>
 #include <iomanip>
 #include <cstring>
+#include <sstream>
+#include <string>
+#include <string_view>
 #include <sys/stat.h>
 
 #include "PipelineDataCallback.hpp"
@@ -673,21 +676,21 @@ namespace sparta{
          * \param filename the name of the record file
          * \param cd a pointer to for the PipelineDataCallback to use.
          */
-        Reader(std::string filepath, PipelineDataCallback* cb) :
-            filepath_(filepath),
-            record_file_path_(std::string(filepath + "record.bin")),
-            index_file_path_(std::string(filepath + "index.bin")),
-            map_file_path_(std::string(filepath + "map.dat")),
-            data_file_path_(std::string(filepath + "data.dat")),
-            string_file_path_(std::string(filepath + "string_map.dat")),
-            display_file_path_(std::string(filepath + "display_format.dat")),
+        Reader(std::string filepath, std::unique_ptr<PipelineDataCallback>&& data_callback) :
+            filepath_(std::move(filepath)),
+            record_file_path_(filepath_ + "record.bin"),
+            index_file_path_(filepath_ + "index.bin"),
+            map_file_path_(filepath_ + "map.dat"),
+            data_file_path_(filepath_ + "data.dat"),
+            string_file_path_(filepath_ + "string_map.dat"),
+            display_file_path_(filepath_ + "display_format.dat"),
             record_file_(record_file_path_, std::fstream::in | std::fstream::binary ),
             index_file_(index_file_path_, std::fstream::in | std::fstream::binary),
             map_file_(map_file_path_, std::fstream::in),
             data_file_(data_file_path_, std::fstream::in),
             string_file_(string_file_path_, std::fstream::in),
             display_file_(display_file_path_, std::fstream::in),
-            data_callback_(cb),
+            data_callback_(std::move(data_callback)),
             size_of_index_file_(0),
             size_of_record_file_(0),
             lowest_cycle_(0),
@@ -957,6 +960,9 @@ namespace sparta{
                 stringMap_[std::make_tuple(pid, fid, fval)] = strval;
             }
         }
+
+        Reader(Reader&& rhs) = default;
+
         //!Destructor.
         virtual ~Reader()
         {
@@ -968,23 +974,17 @@ namespace sparta{
             display_file_.close();
         }
 
+        template<typename CallbackType, typename ... CallbackArgs>
+        inline static Reader construct(const std::string& filepath, CallbackArgs&&... cb_args) {
+            return Reader(filepath, std::make_unique<CallbackType>(std::forward<CallbackArgs>(cb_args)...));
+        }
+
         /**
          * \brief Clears the internal lock. This should be used ONLY when an
          * exception occurs during loading
          */
         void clearLock(){
             lock = false;
-        }
-
-        /*!
-         * \brief Set the data callback, returning the previous callback
-         */
-        PipelineDataCallback* setDataCallback(PipelineDataCallback* cb)
-        {
-            auto prev = data_callback_;
-            data_callback_ = cb;
-            sparta_assert(data_callback_, "Data callback must not be nullptr");
-            return prev;
         }
 
         /**
@@ -1074,7 +1074,7 @@ namespace sparta{
          * \brief Reads transactions afer each index in the entire file
          */
         void dumpIndexTransactions() {
-            auto prev_cb = data_callback_;
+            auto prev_cb = std::move(data_callback_);
             try{
                 uint64_t tick = 0;
                 index_file_.seekg(0, std::ios::beg);
@@ -1087,8 +1087,7 @@ namespace sparta{
 
                     // Set up a record checker to ensure all transactions fall
                     // within the range being queried
-                    RecordChecker rec(tick, tick + heartbeat_);
-                    data_callback_ = &rec;
+                    data_callback_ = std::make_unique<RecordChecker>(tick, tick + heartbeat_);
 
                     pos = findRecordReadPos_(tick);
 
@@ -1132,9 +1131,12 @@ namespace sparta{
                 }
             }catch(...){
                 // Restore data callback before propogating exception
-                data_callback_ = prev_cb;
+                data_callback_ = std::move(prev_cb);
                 throw;
             }
+
+            // Restore callback
+            data_callback_ = std::move(prev_cb);
 
             uint64_t tmp;
             if(index_file_.read((char*)&tmp, sizeof(uint64_t))){
@@ -1200,6 +1202,16 @@ namespace sparta{
             file_updated_ = false;
         }
 
+        template<typename CallbackType>
+        CallbackType& getCallbackAs() {
+            return *dynamic_cast<CallbackType*>(data_callback_.get());
+        }
+
+        template<typename CallbackType>
+        const CallbackType& getCallbackAs() const {
+            return *dynamic_cast<CallbackType*>(data_callback_.get());
+        }
+
     private:
         const std::string filepath_; /*!< Path to this file */
         const std::string record_file_path_; /*!< Path to the record file */
@@ -1218,7 +1230,7 @@ namespace sparta{
         std::fstream data_file_;   /*!< The data file stream */
         std::fstream string_file_; /*!< The string map file stream */
         std::fstream display_file_;
-        PipelineDataCallback* data_callback_; /*<! A pointer to a callback to pass records too */
+        std::unique_ptr<PipelineDataCallback> data_callback_; /*<! A pointer to a callback to pass records too */
         uint64_t heartbeat_; /*!< The heartbeast-size in cycles of our indexes in the index file */
         uint64_t first_index_; /*!< Position in file of first index entry */
         uint32_t version_; /*!< Version of the file being read */
@@ -1240,11 +1252,62 @@ namespace sparta{
         // which maps a tuple of integers reflecting the pair type,
         // field number and field value to the actual String
         // we want to display in pipeViewer
-        std::unordered_map<std::tuple<
-                               uint64_t, uint64_t, uint64_t>,
-                           std::string, hashtuple::hash<
-                                            std::tuple<uint64_t, uint64_t, uint64_t>>>
+        std::unordered_map<std::tuple<uint64_t, uint64_t, uint64_t>,
+                           std::string,
+                           hashtuple::hash<std::tuple<uint64_t, uint64_t, uint64_t>>>
         stringMap_;
     };
+
+    // Formats a pair into an annotation-like string - used by transactionsearch and Python interface
+    // This version accepts the individual pair_t members as parameters so that it can be used with the
+    // transactionInterval type
+    inline static std::string formatPairAsAnnotation(const uint64_t transaction_ID,
+                                                     const uint64_t display_ID,
+                                                     const uint16_t length,
+                                                     const std::vector<std::string>& nameVector,
+                                                     const std::vector<std::string>& stringVector) {
+        std::ostringstream annt_preamble;
+        std::ostringstream annt_body;
+
+        const uint16_t display_id = static_cast<uint16_t>((display_ID < 0x1000 ? display_ID : transaction_ID) & 0xfff);
+
+        std::ios flags(nullptr);
+        flags.copyfmt(annt_preamble);
+        annt_preamble << std::setw(3) << std::setfill('0') << std::hex << display_id;
+        annt_preamble.copyfmt(flags);
+        annt_preamble << ' ';
+
+        for(size_t i = 1; i < length; ++i) {
+            const auto& name = nameVector[i];
+            const auto& value = stringVector[i];
+            if(name != "DID") {
+                annt_body << name << "(" << value << ") ";
+            }
+
+            if(name == "uid") {
+                annt_preamble << 'u' << (std::stoull(value) % 10000) << ' ';
+            }
+            else if(name == "pc") {
+                flags.copyfmt(annt_preamble);
+                annt_preamble << std::setw(4) << std::setfill('0') << std::hex << "0x" << (std::stoull(value, 0, 16) & 0xffff) << ' ';
+                annt_preamble.copyfmt(flags);
+            }
+            else if(name == "mnemonic") {
+                const std::string_view value_view(value);
+                annt_preamble << value_view.substr(0, 7) << ' ';
+            }
+        }
+
+        return annt_preamble.str() + annt_body.str();
+    }
+
+    // Formats a pair into an annotation-like string - used by transactionsearch and Python interface
+    inline static std::string formatPairAsAnnotation(const pair_t* pair) {
+        return formatPairAsAnnotation(pair->transaction_ID,
+                                      pair->display_ID,
+                                      pair->length,
+                                      pair->nameVector,
+                                      pair->stringVector);
+    }
 }//NAMESPACE:pipeViewer
 }//NAMESPACE:sparta

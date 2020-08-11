@@ -239,12 +239,13 @@ namespace core_example
         ExampleInstPairDef() : PairDefinition<ExampleInst>(){
             SPARTA_INVOKE_PAIRS(ExampleInst);
         }
-        SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("mnemonic", &ExampleInst::getMnemonic),
+        SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("DID",      &ExampleInst::getUniqueID),
+                              SPARTA_ADDPAIR("uid",      &ExampleInst::getUniqueID),
+                              SPARTA_ADDPAIR("mnemonic", &ExampleInst::getMnemonic),
                               SPARTA_ADDPAIR("complete", &ExampleInst::getCompletedStatus),
-                              SPARTA_ADDPAIR("unit", &ExampleInst::getUnit),
-                              SPARTA_ADDPAIR("latency", &ExampleInst::getExecuteTime),
-                              SPARTA_ADDPAIR("uid", &ExampleInst::getUniqueID),
-                              SPARTA_ADDPAIR("raddr", &ExampleInst::getRAdr, std::ios::hex),
-                              SPARTA_ADDPAIR("vaddr", &ExampleInst::getVAdr, std::ios::hex));
+                              SPARTA_ADDPAIR("unit",     &ExampleInst::getUnit),
+                              SPARTA_ADDPAIR("latency",  &ExampleInst::getExecuteTime),
+                              SPARTA_ADDPAIR("raddr",    &ExampleInst::getRAdr, std::ios::hex),
+                              SPARTA_ADDPAIR("vaddr",    &ExampleInst::getVAdr, std::ios::hex));
     };
 }

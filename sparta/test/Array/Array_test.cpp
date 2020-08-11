@@ -32,7 +32,7 @@ struct dummy_struct
     uint32_t int32_field;
     std::string s_field;
 
-    dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) : 
+    dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) :
         int16_field{int16_field},
         int32_field{int32_field},
         s_field{s_field} {}
@@ -125,7 +125,7 @@ int main()
     AgedArray aged_collected_array("aged_collected_array", 10, &clk);
     aged_collected_array.enableCollection(&root);
     FrontArray front_array("front_array", 8, &clk, &sset);
-    
+
     DummyArray dummy_array("dummy_array", 3, &clk, &sset);
 
     // Make perfect forwarding arrays
@@ -146,7 +146,7 @@ int main()
 #ifdef PIPEOUT_GEN
     pc.startCollection(&root_node);
 #endif
-    
+
     // Test perfect forwarding arrays move
     {
         auto dummy_1 = dummy_struct(1, 2, "ABC");
@@ -341,7 +341,7 @@ int main()
     EXPECT_TRUE(dummy_array.size() == 2);
     dummy_array.write(2, new dummy_struct{64, 109934, "dummy struct 3"});
     EXPECT_TRUE(dummy_array.size() == 3);
-    
+
     // Test pointer to member operator
     EXPECT_TRUE(dummy_array.read(0)->int16_field == 16);
     EXPECT_TRUE(dummy_array.read(1)->int16_field == 32);
@@ -352,7 +352,7 @@ int main()
     EXPECT_TRUE(dummy_array.read(0)->s_field == "dummy struct 1");
     EXPECT_TRUE(dummy_array.read(1)->s_field == "dummy struct 2");
     EXPECT_TRUE(dummy_array.read(2)->s_field == "dummy struct 3");
-    
+
     // Test dereference operator
     EXPECT_TRUE((*(dummy_array.read(0))).int16_field == 16);
     EXPECT_TRUE((*(dummy_array.read(1))).int16_field == 32);
@@ -363,7 +363,7 @@ int main()
     EXPECT_TRUE((*(dummy_array.read(0))).s_field == "dummy struct 1");
     EXPECT_TRUE((*(dummy_array.read(1))).s_field == "dummy struct 2");
     EXPECT_TRUE((*(dummy_array.read(2))).s_field == "dummy struct 3");
-    
+
     delete dummy_array.read(0);
     delete dummy_array.read(1);
     delete dummy_array.read(2);
@@ -629,7 +629,7 @@ int main()
 
     //Test non-integer data types
     sparta::Array<std::shared_ptr<sparta::SchedulerAccess>,
-                sparta::ArrayType::AGED> sched_access("access", 3, &clk);
+                  sparta::ArrayType::AGED> sched_access("access", 3, &clk);
     sched_access.write(1, std::shared_ptr<sparta::SchedulerAccess>(new sparta::SchedulerAccess(9)));
     sched_access.write(0, std::shared_ptr<sparta::SchedulerAccess>(new sparta::SchedulerAccess(5)));
     sched_access.write(2, std::shared_ptr<sparta::SchedulerAccess>(new sparta::SchedulerAccess(7)));
@@ -641,6 +641,26 @@ int main()
         ++sched_access_iter;
         ++sched_access_expected_iter;
     }
+
+    // Test unitialized iterators
+    DummyArray::iterator bad_it;
+    DummyArray::iterator bad2_it;
+    DummyMoveArray::iterator bad_itr_concrete;
+    EXPECT_THROW(bad_itr_concrete->int16_field = 0);
+    EXPECT_THROW((*bad_it)->int16_field = 0);
+    EXPECT_THROW(bad_it.reset());
+    EXPECT_THROW(bad_it.isIndexValid());
+    EXPECT_THROW(bad_it.getIndex());
+    EXPECT_FALSE(bad_it.isValid());
+
+    EXPECT_THROW(bad_it.isOlder(0));
+    EXPECT_THROW(bad_it.isOlder(bad2_it));
+    EXPECT_THROW(bad_it.isYounger(0));
+    EXPECT_THROW(bad_it.isYounger(bad2_it));
+
+    EXPECT_TRUE(bad2_it == bad_it);
+    EXPECT_THROW(++bad_it);
+    EXPECT_THROW(bad_it++);
 
     //try normal iteration
     //this below is never going to work since array iterates wrap around

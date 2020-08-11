@@ -143,13 +143,15 @@ namespace sparta
             }
 
             /// Get access on a const iterator
-            DataReferenceType getAccess_(std::true_type) {
+            DataReferenceType getAccess_(std::true_type) const {
                 return array_->read(index_);
             }
 
             // Allow the creation of a const iterator from non-const
             friend ArrayIterator<false>;
         public:
+            /// Empty, invalid iterator
+            ArrayIterator() = default;
 
             /// copy construction is fair game from non-const to const
             ArrayIterator(const ArrayIterator<false> & other) :
@@ -165,27 +167,29 @@ namespace sparta
             /// Reset the iterator to an invalid value
             void reset()
             {
-                index_ = array_->capacity();
+                index_ = sparta::notNull(array_)->capacity();
             }
 
             /// Determine whether this iterator has been initialized with a valid index
             bool isIndexValid() const
             {
-                return (index_ < array_->capacity());
+                return (index_ < sparta::notNull(array_)->capacity());
             }
 
             /// What index does our iterator currently represent.
             uint32_t getIndex() const
             {
-                sparta_assert(index_ != array_->invalid_entry_,
-                            "Cannot operate on an unitialized iterator.");
+                sparta_assert(index_ != sparta::notNull(array_)->invalid_entry_,
+                              "Cannot operate on an unitialized iterator.");
                 return index_;
             }
 
             /// Determine whether this array entry pointed to by this iterator is valid
             bool isValid() const
             {
-                return (index_ != array_->invalid_entry_) && array_->isValid(index_);
+                return (array_ != nullptr) &&
+                    (index_ != array_->invalid_entry_) &&
+                    (array_->isValid(index_));
             }
 
             /**
@@ -197,7 +201,7 @@ namespace sparta
              */
             bool isOlder(const uint32_t idx) const
             {
-                sparta_assert(index_ < array_->capacity(),
+                sparta_assert(index_ < sparta::notNull(array_)->capacity(),
                             "Cannot operate on an uninitialized iterator.");
                 return array_->isOlder(index_, idx);
             }
@@ -220,9 +224,9 @@ namespace sparta
              */
             bool isYounger(const uint32_t idx) const
             {
-                sparta_assert(index_ < array_->capacity(),
+                sparta_assert(index_ < sparta::notNull(array_)->capacity(),
                             "Cannot operate on an uninitialized iterator.");
-                return array_->isYounger(index_, idx);
+                return sparta::notNull(array_)->isYounger(index_, idx);
             }
 
             /// Overload isYounger to accept another iterator instead of index.
@@ -233,6 +237,9 @@ namespace sparta
 
             /// comparison operators
             /// NOTE: operator< and operator> were removed b/c they have no use case.
+            bool operator<(const ArrayIterator &rhs) const {
+                return isYounger(rhs);
+            }
 
             bool operator==(const ArrayIterator<true>& rhs) const
             {
@@ -254,9 +261,17 @@ namespace sparta
                 return (rhs.index_ != index_) || (rhs.array_ != array_);
             }
 
-            /// support the dereference operator.
+            /// support the dereference operator, non-const
             DataReferenceType operator*() {
-                sparta_assert(index_ < array_->capacity(),
+                sparta_assert(index_ < sparta::notNull(array_)->capacity(),
+                            "Cannot operate on an uninitialized iterator.");
+                // return the data at our location in the array.
+                return getAccess_(std::integral_constant<bool, is_const_iterator>());
+            }
+
+            /// support the dereference operator, const
+            DataReferenceType operator*() const {
+                sparta_assert(index_ < sparta::notNull(array_)->capacity(),
                             "Cannot operate on an uninitialized iterator.");
                 // return the data at our location in the array.
                 return getAccess_(std::integral_constant<bool, is_const_iterator>());
@@ -265,14 +280,14 @@ namespace sparta
             /// support -> operator.
             value_type* operator->()
             {
-                sparta_assert(index_ < array_->capacity(),
+                sparta_assert(index_ < sparta::notNull(array_)->capacity(),
                             "Cannot operate on an uninitialized iterator.");
                 return std::addressof(getAccess_(std::integral_constant<bool, is_const_iterator>()));
             }
 
             const value_type* operator->() const
             {
-                sparta_assert(index_ < array_->capacity(),
+                sparta_assert(index_ < sparta::notNull(array_)->capacity(),
                             "Cannot operate on an uninitialized iterator.");
                 return std::addressof(getAccess_(std::integral_constant<bool, is_const_iterator>()));
             }
@@ -280,16 +295,16 @@ namespace sparta
             /// pre-increment operator.
             ArrayIterator & operator++()
             {
-                sparta_assert(index_ != array_->invalid_entry_,
+                sparta_assert(index_ != sparta::notNull(array_)->invalid_entry_,
                             "Cannot operate on an uninitialized iterator.");
                 if(is_aged_walk_) {
-                    if(!array_->getNextOldestIndex(index_)) {
-                        index_ = (array_->getOldestIndex());
+                    if(!sparta::notNull(array_)->getNextOldestIndex(index_)) {
+                        index_ = (sparta::notNull(array_)->getOldestIndex());
                     }
                 }
                 else {
                     ++index_;
-                    if(index_ == array_->capacity()) {
+                    if(index_ == sparta::notNull(array_)->capacity()) {
                         index_ = 0;
                     }
                 }
@@ -300,8 +315,8 @@ namespace sparta
                 if(is_aged_)
                 {
                     // We've wrapped around -- we're done.
-                    if(*this == array_->abegin()) {
-                        *this = array_->aend();
+                    if(*this == sparta::notNull(array_)->abegin()) {
+                        *this = sparta::notNull(array_)->aend();
                     }
                     else {
                         // If the iterator is not pointing to a valid
@@ -312,10 +327,10 @@ namespace sparta
                     }
                 }
                 else {
-                    if(*this == array_->begin()) {
+                    if(*this == sparta::notNull(array_)->begin()) {
                         // We've wrapped around and have hit begin.  We're at
                         // the end now.
-                        *this = array_->end();
+                        *this = sparta::notNull(array_)->end();
                     }
                 }
                 return *this;
@@ -332,10 +347,10 @@ namespace sparta
             }
 
         private:
-            uint32_t index_; /*!< The index that this iterator points to. */
-            ArrayPointerType array_; /*!< The parent Array that created this iterator. */
-            bool is_aged_     = false; //!< Is this an aged iterator?
-            bool is_circular_ = false; //!< Is this a circular iterator?
+            uint32_t index_ = std::numeric_limits<uint32_t>::max(); /*!< The index that this iterator points to. */
+            ArrayPointerType array_ = nullptr; /*!< The parent Array that created this iterator. */
+            bool is_aged_      = false; //!< Is this an aged iterator?
+            bool is_circular_  = false; //!< Is this a circular iterator?
             bool is_aged_walk_ = false; //!< Should iterator walk in age-order?
         };
 
@@ -653,26 +668,6 @@ namespace sparta
         }
 
         /**
-         * \brief Set up a auto-collector for this Array.
-         * \param parent the parent tree node under which to create the collection
-         */
-        void enableCollection(TreeNode* parent)
-        {
-            // Create the collector instance of the appropriate type.
-            sparta_assert(parent != nullptr);
-            collector_.
-                reset(new collection::IterableCollector<FullArrayType,
-                                                        SchedulingPhase::Collection, true>
-                      (parent, name_, *this, capacity()));
-
-            if(ArrayT == ArrayType::AGED) {
-                age_collector_.reset(new collection::IterableCollector<AgedArrayCollectorProxy>
-                                     (parent, name_ + "_age_ordered",
-                                      aged_array_col_, capacity()));
-            }
-        }
-
-        /**
          * \brief Invalidate data at an iterator position.
          * \param iter An iterator used to invalidate -- must be valid
          */
@@ -781,7 +776,8 @@ namespace sparta
         bool isYounger(uint32_t lhs, uint32_t rhs)
         {
             sparta_assert(lhs != rhs);
-            sparta_assert(lhs < num_entries_ && rhs < num_entries_, "Cannot compare age on an index outside the bounds of the array");
+            sparta_assert(lhs < num_entries_ && rhs < num_entries_,
+                          "Cannot compare age on an index outside the bounds of the array");
             return array_[lhs].age_id > array_[rhs].age_id;
         }
 
@@ -795,8 +791,29 @@ namespace sparta
         bool isOlder(uint32_t lhs, uint32_t rhs)
         {
             sparta_assert(lhs != rhs);
-            sparta_assert(lhs < num_entries_ && rhs < num_entries_, "Cannot compare age on an index outside the bounds of the array");
+            sparta_assert(lhs < num_entries_ && rhs < num_entries_,
+                          "Cannot compare age on an index outside the bounds of the array");
             return  array_[lhs].age_id < array_[rhs].age_id;
+        }
+
+        /**
+         * \brief Set up a auto-collector for this Array.
+         * \param parent the parent tree node under which to create the collection
+         */
+        void enableCollection(TreeNode* parent)
+        {
+            // Create the collector instance of the appropriate type.
+            sparta_assert(parent != nullptr);
+            collector_.
+                reset(new collection::IterableCollector<FullArrayType,
+                                                        SchedulingPhase::Collection, true>
+                      (parent, name_, *this, capacity()));
+
+            if(ArrayT == ArrayType::AGED) {
+                age_collector_.reset(new collection::IterableCollector<AgedArrayCollectorProxy>
+                                     (parent, name_ + "_age_ordered",
+                                      aged_array_col_, capacity()));
+            }
         }
 
     private:
@@ -948,4 +965,3 @@ namespace sparta
     }
 
 }
-

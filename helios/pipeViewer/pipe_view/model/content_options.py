@@ -70,7 +70,7 @@ def GetCaption(trans, e, *args):
 
 
 def GetImage(*args):
-    return 'Mongoose logo'
+    return ''
 
 
 def GetClock(trans, e, dbhandle, tick, loc_vars, *args):
@@ -127,7 +127,7 @@ __CONTENT_PROC = {'type':                  (GetType, "Whether the transaction is
                 'auto_color_anno_notext':(GetAnnotation, "Color element based on seq ID, but do not display annotation"),
                 'auto_color_anno_nomunge':(GetAnnotation, "Color element based on seq ID, but do not munge text"),
                 'caption':               (GetCaption, "Caption (static text) from Element \'caption\' property"),
-                'image':                 (GetImage, "Image (currently hardcoded to the Mongoose logo)"),
+                'image':                 (GetImage, "Image (currently hardcoded to nothing)"),
                 'clock':                 (GetClock, "Name of clock associated with this location"),
                 'cycle':                 (GetCycle, "Current Cycle of clock associated with this location"),
                 'tick_duration':         (GetTickDuration, "Duration of this transaction in ticks"),
