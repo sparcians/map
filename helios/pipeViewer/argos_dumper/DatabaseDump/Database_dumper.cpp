@@ -151,8 +151,10 @@ namespace pipeViewer
                 genericTransactionHandler<pair_t>(t, printPairOp);
             }
 
-            static void printAnnotation(annotation_t* , std::ostream & )
+            static void printAnnotation(annotation_t * t, std::ostream & os)
             {
+                os << "*annotation* " << t->transaction_ID << " @ " << t->location_ID << " start: " << t->time_Start << " end: "<<t->time_End;
+                os << t->annt << std::endl;
             }
 
             virtual void foundAnnotationRecord(annotation_t*t)
