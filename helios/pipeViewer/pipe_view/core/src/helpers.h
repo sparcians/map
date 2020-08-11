@@ -13,6 +13,8 @@
 #include "wxPython/sip.h"
 #include "wxPython/wxpy_api.h"
 
+#include "wx/dcgraph.h"
+
 #ifndef ARGOS_VERSION
 #define ARGOS_VERSION unknown
 #endif
@@ -44,8 +46,8 @@ inline T* getWrappedWXType(PyObject* py_type, const wxString& class_name) {
     static const wxString CLASS_TYPE(#type); \
     return getWrappedWXType<type>(obj, CLASS_TYPE);
 
-inline wxDC* getDC_wrapped(PyObject* dc) {
-    UNWRAP_WX(wxDC, dc)
+inline wxGCDC* getDC_wrapped(PyObject* dc) {
+    UNWRAP_WX(wxGCDC, dc)
 }
 
 inline wxFont* getFont_wrapped(PyObject* font) {
@@ -56,7 +58,7 @@ inline wxBrush* getBrush_wrapped(PyObject* brush) {
     UNWRAP_WX(wxBrush, brush)
 }
 
-inline void getTextExtent(wxDC* dc, long* char_width, long* char_height) {
+inline void getTextExtent(wxGCDC* dc, long* char_width, long* char_height) {
     static const wxString M("m");
     dc->GetTextExtent(M, char_width, char_height);
 }

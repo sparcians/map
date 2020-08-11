@@ -179,10 +179,18 @@ class ElementSet:
             if element.GetType() == 'schedule_line_ruler':
                 continue
             for key in pair.GetTimedValues().keys():
-                uop_uid = pair.GetTimedValUopUid(key)
-                if uop_uid is not None:
-                    if self.__layout_context.IsUopUidHighlighted(uop_uid) or self.__layout_context.WasUopUidHighlighted(uop_uid):
+                redraw_set = False
+                if element.HasProperty('LocationString'):
+                    location = element.GetProperty('LocationString')
+                    if (self.__layout_context.IsSearchResult(key, location) or self.__layout_context.WasSearchResult(key, location)):
                         element.SetNeedsRedraw()
+                        redraw_set = True
+
+                if not redraw_set:
+                    uop_uid = pair.GetTimedValUopUid(key)
+                    if uop_uid is not None:
+                        if self.__layout_context.IsUopUidHighlighted(uop_uid) or self.__layout_context.WasUopUidHighlighted(uop_uid):
+                            element.SetNeedsRedraw()
 
     ## Force a full redraw of the elements.
     def RedrawAll(self):

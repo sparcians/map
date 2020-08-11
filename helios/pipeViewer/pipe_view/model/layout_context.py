@@ -70,8 +70,10 @@ class Layout_Context(object):
         self.__visible_clocks = ()
 
         # Uop highlighting list
-        self.__highlighted_uops = []
-        self.__previously_highlighted_uops = []
+        self.__highlighted_uops = set()
+        self.__previously_highlighted_uops = set()
+        self.__search_results = set()
+        self.__previous_search_results = set()
 
     # # Returns the SearchHandle held by this context.
     @property
@@ -550,23 +552,51 @@ class Layout_Context(object):
         self.dbhandle.query(time, time, callback, mod_tracking = False)
         return results
 
-    def HighlightUop(self, anno_string):
+    def SearchResultHash(self, start, location):
+        return hash(f'{start}:{location}')
+
+    def AddSearchResult(self, search_entry):
+        self.__search_results.add(self.SearchResultHash(search_entry['start'], search_entry['location']))
+
+    def ClearSearchResults(self):
+        self.__previous_search_results.update(self.__search_results)
+        self.__search_results.clear()
+
+    def IsSearchResult(self, start, location = None):
+        if location is None:
+            # start is actually the hash
+            return start in self.__search_results
+
+        return self.IsSearchResult(self.SearchResultHash(start, location))
+
+    def WasSearchResult(self, start, location = None):
+        if location is None:
+            # start is actually the hash
+            return start in self.__search_results
+
+        return self.WasSearchResult(self.SearchResultHash(start, location))
+
+    def HighlightUop(self, uid):
         '''
         Highlight the uop with the given annotation string
         '''
-        uop_uid = highlighting_utils.GetUopUid(anno_string)
-        if uop_uid is not None:
-            self.__highlighted_uops.append(uop_uid)
+        if isinstance(uid, str):
+            self.HighlightUop(highlighting_utils.GetUopUid(uid))
 
-    def UnhighlightUop(self, anno_string):
+        if uid is not None:
+            self.__highlighted_uops.add(uid)
+
+    def UnhighlightUop(self, uid):
         '''
         Unhighlight the uop with the given annotation string
         '''
-        uop_uid = highlighting_utils.GetUopUid(anno_string)
-        if uop_uid is not None:
-            if uop_uid in self.__highlighted_uops:
-                self.__highlighted_uops.remove(uop_uid)
-                self.__previously_highlighted_uops.append(uop_uid)
+        if isinstance(uid, str):
+            self.UnhighlightUop(highlighting_utils.GetUopUid(uid))
+
+        if uid is not None:
+            if uid in self.__highlighted_uops:
+                self.__highlighted_uops.remove(uid)
+                self.__previously_highlighted_uops.add(uid)
 
     # # Check if a uop has been highlighted (by UID)
     def IsUopUidHighlighted(self, uop_uid):
@@ -577,14 +607,19 @@ class Layout_Context(object):
         return uop_uid in self.__previously_highlighted_uops
 
     # # Check if a uop has been highlighted (by annotation string)
-    def IsUopHighlighted(self, anno_string):
-        return highlighting_utils.GetUopUid(anno_string) in self.__highlighted_uops
+    def IsUopHighlighted(self, uid):
+        if isinstance(uid, str):
+            return self.IsUopHighlighted(highlighting_utils.GetUopUid(uid))
+        return uid in self.__highlighted_uops
 
     # # Check if a uop has been unhighlighted (by annotation string), but not yet redrawn
-    def WasUopHighlighted(self, anno_string):
-        return highlighting_utils.GetUopUid(anno_string) in self.__previously_highlighted_uops
+    def WasUopHighlighted(self, uid):
+        if isinstance(uid, str):
+            return self.WasUopHighlighted(highlighting_utils.GetUopUid(uid))
+        return uid in self.__previously_highlighted_uops
 
     # # Redraw elements that have changed their highlighting state
     def RedrawHighlightedElements(self):
         self.__elements.RedrawHighlighted()
-        del self.__previously_highlighted_uops[:]
+        self.__previously_highlighted_uops.clear()
+        self.__previous_search_results.clear()

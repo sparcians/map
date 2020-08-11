@@ -251,7 +251,7 @@ class Selection_Mgr():
         '''
         bx, by, bw, bh = self.__queue[base]
         delta = self.__prev_y - pt[1]
-        current = self.__bottom * 1.0 - self.__prev_y
+        current = self.__bottom - self.__prev_y
         # Check that the mouse is moving in a direction at a location worth
         # resizing, since due to snapping, the element may already be where
         # the mouse is headed
@@ -274,7 +274,7 @@ class Selection_Mgr():
     def __LeftResizeScaling(self, pt, base):
         bx, by, bw, bh = self.__queue[base]
         delta = self.__prev_x - pt[0]
-        current = self.__right * 1.0 - self.__prev_x
+        current = self.__right - self.__prev_x
         if (((-delta < 0 and bx > pt[0]) or (-delta > 0 and bx < pt[0])) and
             current > 0):
             factor = -(delta / current + 1.0)
@@ -294,7 +294,7 @@ class Selection_Mgr():
     def __RightResizeScaling(self, pt, base):
         bx, by, bw, bh = self.__queue[base]
         delta = pt[0] - self.__prev_x
-        current = self.__prev_x - self.__left * 1.0
+        current = self.__prev_x - self.__left
         if (((delta < 0 and (bx + bw) > pt[0]) or (delta > 0 and (bx + bw) < pt[0]))
             and current > 0):
             factor = 1.0 + delta / current
@@ -314,7 +314,7 @@ class Selection_Mgr():
     def __BottomResizeScaling(self, pt, base):
         bx, by, bw, bh = self.__queue[base]
         delta = pt[1] - self.__prev_y
-        current = self.__prev_y - self.__top * 1.0
+        current = self.__prev_y - self.__top
         if (((delta < 0 and (by + bh) > pt[1]) or (delta > 0 and (by + bh) < pt[1]))
             and not (current == 0)):
             if current > 0:

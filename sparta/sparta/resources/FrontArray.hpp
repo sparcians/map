@@ -21,11 +21,11 @@ namespace sparta{
      *        array.
      *
      * \tparam DataT the data type to store in the array.
-     * \tpaam ArrayT the type of array, Aged vs Normal
+     * \tpaam ArrayT the type of array, Aged vs Normal (default Aged)
      * \tparam CollectionT the type of pipeline collection to run
      *                     on the Array.
      */
-    template <class DataT, ArrayType ArrayT>
+    template <class DataT, ArrayType ArrayT = ArrayType::AGED>
     class FrontArray : public Array<DataT, ArrayT>
     {
         //Typedef for the base type we inherit from
@@ -117,7 +117,38 @@ namespace sparta{
             return writeBackImpl_(std::move(dat));
         }
 
-        private:
+        ////////////////////////////////////////////////////////////////////////////////
+        // STL compatibility -- kinda
+
+        /**
+         * \brief Push the first available index in the Array
+         * \param dat The data to push
+         * \return The index it was inserted
+         */
+        uint32_t push_front(const DataT & dat) { return writeFront(dat); }
+
+        /**
+         * \brief Push the first available index in the Array
+         * \param dat The data to push
+         * \return The index it was inserted
+         */
+        uint32_t push_front(DataT&& dat) { return writeFront(std::forward(dat)); }
+
+        /**
+         * \brief Push the first available index in the Array starting from the back
+         * \param dat The data to push
+         * \return The index it was inserted
+         */
+        uint32_t push_back(const DataT & dat) { return writeBack(dat); }
+
+        /**
+         * \brief Push the first available index in the Array starting from the back
+         * \param dat The data to push
+         * \return The index it was inserted
+         */
+        uint32_t push_back(DataT && dat) { return writeBack(std::forward(dat)); }
+
+    private:
         template<typename U>
         uint32_t writeFrontImpl_(U&& dat)
         {
@@ -129,7 +160,8 @@ namespace sparta{
                     break; //we found an entry that is invalid. This is the front!
                 }
             }
-            sparta_assert(i < BaseArray::capacity(), "Cannot write to the front of the Array. There are no free entries.");
+            sparta_assert(i < BaseArray::capacity(),
+                          "Cannot write to the front of the Array. There are no free entries.");
             BaseArray::write(i, std::forward<U>(dat));
             return i;
         }
@@ -142,7 +174,7 @@ namespace sparta{
             {
                 if(!BaseArray::isValid(i))
                 {
-                    break; //we found an entry that is invalid. This is the front!
+                    break; //we found an entry that is invalid. This is the back!
                 }
             }
             sparta_assert(i >= 0, "Cannot write to the back of the array. There are no free entries.");
@@ -151,4 +183,3 @@ namespace sparta{
         }
     };
 }
-

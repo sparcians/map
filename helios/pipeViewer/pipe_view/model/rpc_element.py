@@ -142,7 +142,7 @@ class RPCElement(Element):
         if record:
             string_to_display, brush = record
         else:
-            string_to_display, brush = canvas.AddColoredTransaction(annotation, content_type, auto_color[0], auto_color[1])
+            string_to_display, brush = canvas.AddColoredTransaction(annotation, content_type, auto_color[0], auto_color[1], tick, self)
 
         dc.SetBrush(brush)
 
