@@ -108,9 +108,6 @@ namespace sparta {
 
             /** True if the memory range covered by this DMI can be written */
             const bool write_persmission_ = true;
-
-            /** True if this DMI pointer is valid */
-            const bool valid_ = true;
         };
 
         static bool operator==(const DMI &rhs, const DMI &lhs)
