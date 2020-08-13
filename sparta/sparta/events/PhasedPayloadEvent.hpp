@@ -16,6 +16,7 @@
 #include "sparta/events/Scheduleable.hpp"
 #include "sparta/events/SchedulingPhases.hpp"
 #include "sparta/utils/ValidValue.hpp"
+#include "sparta/utils/MetaStructs.hpp"
 #include "sparta/events/StartupEvent.hpp"
 
 namespace sparta
@@ -175,6 +176,9 @@ namespace sparta
         //! reusable.
         void reclaimProxy_(typename ProxyInflightList::iterator & pl_location) {
             sparta_assert(pl_location != inflight_pl_.end());
+            if constexpr(MetaStruct::is_any_pointer<DataT>::value) {
+                (*pl_location)->setPayload_(nullptr);
+            }
             free_pl_[free_idx_++] = *pl_location;
             inflight_pl_.erase(pl_location);
             pl_location = inflight_pl_.end();

@@ -611,9 +611,6 @@ namespace sparta
             if constexpr(MetaStruct::is_any_pointer<value_type>::value) {
                 free_position_->data = nullptr; // Nullify the pointer
             }
-            else {
-                free_position_->data.~DataT(); // Destruct the data object
-            }
             free_position_->next_free = oldFree;
 
             // Mark DataPointer as invalid
@@ -675,12 +672,14 @@ namespace sparta
         void clear()
         {
             num_valid_ = 0;
-            std::for_each(buffer_map_.begin(), buffer_map_.end(), [] (auto map_entry)
-                                                                  {
-                                                                      if(map_entry) {
-                                                                          map_entry->data.~DataT();
-                                                                      }
-                                                                  });
+            if constexpr(MetaStruct::is_any_pointer<value_type>::value) {
+                std::for_each(buffer_map_.begin(), buffer_map_.end(), [] (auto map_entry)
+                                                                      {
+                                                                          if(map_entry) {
+                                                                              map_entry->data = nullptr;
+                                                                          }
+                                                                      });
+            }
             std::fill(buffer_map_.begin(), buffer_map_.end(), nullptr);
             for(uint32_t i = 0; i < data_pool_size_ - 1; ++i) {
                 data_pool_[i].next_free = &data_pool_[i + 1];
