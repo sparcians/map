@@ -7,8 +7,7 @@ namespace sparta {
 
 /**
  * \class __RegisterDefintionSet
- *
- * Type that holds a set of register definitions.
+ * \brief Type that holds a set of register definitions.
  *
  * The invariant of this type is that the last element of definitions_ must be
  * DefinitionT::DEFINITION_END.
@@ -55,6 +54,10 @@ private:
     std::vector<Definition> definitions_;
 };
 
+/**
+ * \typedef RegisterDefintionSet
+ * \brief Type that holds a set of register definitions.
+ */
 using RegisterDefinitionSet =
     __RegisterDefintionSet<sparta::RegisterBase>;
 
