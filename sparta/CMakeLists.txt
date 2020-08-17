@@ -198,7 +198,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 # CppCheck Support
 set (CPPCHECK_XML_OUTPUT "${PROJECT_BINARY_DIR}/analysis/cppcheck/cppcheck_analysis.xml")
 set (CPPCHECK_EXCLUDES
-  ${CMAKE_BINARY_DIR}
+  ${MAP_BINARY_DIR}
   ${SPARTA_BASE}/test
 )
 find_package (Cppcheck)
