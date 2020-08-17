@@ -128,31 +128,6 @@ namespace sparta
                 }
             }
 
-            /*!
-             * \brief implement getDMI by passing the call down to the underlaying
-             * appropriate mapped blocking memory if.
-             * \param addr the address for the dmi
-             * \param size the required size of the dmi in bytes.
-             * \param dmi reference to populate.
-             * \param supplement caller-defined object identifying this memory access
-             * for notifications & debug purposes. This pointer is passed to any
-             * subsequent memory interfaces. Can be any pointer, and nullptr
-             * indicates no info.
-             */
-            virtual bool getDMI_DEPRECATED(const addr_t addr,
-                                           const addr_t size,
-                                           DMI_DEPRECATED &dmi,
-                                           const void *supplement = nullptr) override
-            {
-                const Mapping* mapping = findMapping(addr);
-                if(!mapping)
-                {
-                    return false;
-                }
-                return mapping->memif->getDMI_DEPRECATED(
-                    mapping->mapAddress(addr), size, dmi, supplement);
-            }
-
             ////////////////////////////////////////////////////////////////////////
             //! @}
 
@@ -246,4 +221,3 @@ namespace sparta
         }; // class SimpleMemoryMapNode
     }; // namespace memory
 }; // namespace sparta
-

@@ -25,8 +25,9 @@ namespace sparta
 {
 
 /*!
+ * \class RegisterBase
  * \brief Base class to represents an architected register of any size that
- * is a power of 2 and greater than 0 with a ceiling specified
+ *        is a power of 2 and greater than 0 with a ceiling specified
  *
  * \note Maximum register size is constrained by the ArchData instance where
  * the register value resides. This is a property of the sparta::RegisterSet
@@ -1185,10 +1186,11 @@ public:
     {
         sparta_assert(offset + size <= getNumBytes(), "Access out of bounds");
 
+        // This is nonsense and needs to be re-written.  It's
+        // stupid slow.
         BitArray old = peekBitArray_(size, offset);
         BitArray val(reinterpret_cast<const uint8_t *>(buf), size);
         BitArray mask = mask_ >> 8 * offset;
-
         old = (old & ~mask) | (val & mask);
         write_(old.getValue(), size, offset);
     }
@@ -1203,6 +1205,8 @@ public:
     {
         sparta_assert(offset + size <= getNumBytes(), "Access out of bounds");
 
+        // This is nonsense and needs to be re-written.  It's
+        // stupid slow.
         BitArray old = peekBitArray_(size, offset);
         BitArray val(reinterpret_cast<const uint8_t *>(buf), size);
         BitArray mask = mask_ >> 8 * offset;
@@ -1459,6 +1463,14 @@ inline bool operator!=(const RegisterBase::Definition &a,
     return !(a == b);
 }
 
+/**
+ * \class Register
+ * \brief An implementation of a RegisterBase
+ *
+ * This class is a simple implementation of a RegisterBase.  This
+ * class provides observation on reads/writes.
+ *
+ */
 class Register : public RegisterBase
 {
 public:
@@ -1611,5 +1623,3 @@ inline std::ostream& operator<<(std::ostream& o, const sparta::Register::Field* 
 #define SPARTA_REGISTER_BODY                                              \
     constexpr sparta::RegisterBase::group_num_type sparta::RegisterBase::GROUP_NUM_NONE; \
     const sparta::RegisterBase::Definition sparta::RegisterBase::DEFINITION_END{0, nullptr, 0, nullptr, 0, nullptr, 0, { }, { }, nullptr, 0, 0, 0, 0, 0};
-
-
