@@ -178,7 +178,8 @@ namespace sparta
             sparta_assert(pl_location != inflight_pl_.end());
             if constexpr(MetaStruct::is_any_pointer<DataT>::value) {
                 (*pl_location)->setPayload_(nullptr);
-            }            free_pl_[free_idx_++] = *pl_location;
+            }
+            free_pl_[free_idx_++] = *pl_location;
             inflight_pl_.erase(pl_location);
             pl_location = inflight_pl_.end();
         }
