@@ -74,16 +74,16 @@ void generalTest()
     sparta::StatisticSet buf10_stats(&rtn);
 
     sparta::Buffer<double> buf10("buf10_test", 10,
-                               root_clk.get(),
-                               &buf10_stats);
+                                 root_clk.get(),
+                                 &buf10_stats);
 
     sparta::Buffer<double> buf_inf("buf_inf_test", 1,
-                               root_clk.get(),
-                               &buf10_stats);
+                                   root_clk.get(),
+                                   &buf10_stats);
 
     sparta::Buffer<dummy_struct> buf_dummy("buf_pf_test", 4,
-                               root_clk.get(),
-                               &buf10_stats);
+                                           root_clk.get(),
+                                           &buf10_stats);
 
     rtn.setClock(root_clk.get());
 #ifdef PIPEOUT_GEN
@@ -186,6 +186,7 @@ void generalTest()
     {
         i++;
     }
+    EXPECT_EQUAL(i, 0);
 
     // Testing the Infinite Buffer in this scope.
     {
@@ -321,8 +322,6 @@ void generalTest()
         buf_inf.clear();
         EXPECT_EQUAL(buf_inf.size(), 0);
     }
-
-    EXPECT_EQUAL(i, 0);
 
     buf10.push_back(1234.5);
     EXPECT_TRUE(buf10.size() == 1);
@@ -683,18 +682,18 @@ void testPointerTypes()
 void testInvalidates()
 {
     EXPECT_EQUAL(dummy_allocs, 0);
-    uint32_t starting_allocs = 20;
+    uint32_t starting_allocs = 0;
 
     // The buffer will allocate 2x the number of elements
     sparta::Buffer<dummy_struct> my_buff("my_dummy_buff", 10, nullptr);
     EXPECT_EQUAL(starting_allocs, dummy_allocs);
 
     my_buff.push_back(dummy_struct(1, 2, "XYZ"));
-    // Nothing new should have been allocated
+    // Nothing new should have been allocated -- object moved
     EXPECT_EQUAL(starting_allocs, dummy_allocs);
 
     my_buff.push_back(dummy_struct(3, 4, "ABC"));
-    // Nothing new should have been allocated
+    // Nothing new should have been allocated -- object moved
     EXPECT_EQUAL(starting_allocs, dummy_allocs);
 
     my_buff.erase(my_buff.begin());
@@ -718,9 +717,9 @@ void testInvalidates()
 
     EXPECT_EQUAL(SimpleStruct::simple_allocs, 0);
     sparta::Buffer<SimpleStruct> my_simple_struct("my_simple_struct", 10, nullptr);
-    EXPECT_EQUAL(SimpleStruct::simple_allocs, 20);
-    my_simple_struct.push_back(SimpleStruct(0));
-    EXPECT_EQUAL(SimpleStruct::simple_allocs, 20);
+    EXPECT_EQUAL(SimpleStruct::simple_allocs, 0);
+    my_simple_struct.push_back(SimpleStruct(0)); // another move
+    EXPECT_EQUAL(SimpleStruct::simple_allocs, 0);
 }
 
 

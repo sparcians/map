@@ -10,6 +10,7 @@
 #pragma once
 
 #include <cinttypes>
+#include <type_traits>
 
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/MetaStructs.hpp"
@@ -90,21 +91,28 @@ namespace sparta
          * position in the data pool.
          */
         struct DataPointer {
-            DataPointer() :
-                data(),
-                next_free(nullptr)
-            {}
+        private:
+            typename std::aligned_storage<sizeof(value_type), alignof(value_type)>::type object_memory_;
 
-            DataPointer(DataPointer && rval) :
-                data(std::move(rval.data)),
-                next_free(rval.next_free),
-                physical_idx(rval.physical_idx) {
-                rval.next_free = nullptr;
+        public:
+            DataPointer() { }
+
+            DataPointer(DataPointer &&orig) {
+                ::memcpy(&object_memory_, &orig.object_memory_, sizeof(object_memory_));
+                data = reinterpret_cast<value_type*>(&object_memory_);
             }
 
-            value_type data;
-            DataPointer* next_free;
-            uint32_t physical_idx = 0; /*!< What index does this data currently reside */
+            // No copies, only moves
+            DataPointer(const DataPointer &) = delete;
+
+            template<typename U>
+            void allocate(U && dat) {
+                data = new (&object_memory_) value_type(std::forward<U>(dat));
+            }
+
+            value_type * data         = nullptr;
+            DataPointer* next_free    = nullptr;
+            uint32_t     physical_idx = 0; /*!< What index does this data currently reside */
         };
         //Forward Declaration
         struct DataPointerValidator;
@@ -231,20 +239,20 @@ namespace sparta
             DataReferenceType operator* () const {
                 sparta_assert(attached_buffer_, "The iterator is not attached to a buffer. Was it initialized?");
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");
-                return buffer_entry_->data;
+                return *(buffer_entry_->data);
             }
 
             //! Overload the class-member-access operator.
             value_type * operator -> () {
                 sparta_assert(attached_buffer_, "The iterator is not attached to a buffer. Was it initialized?");
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");
-                return &buffer_entry_->data;
+                return buffer_entry_->data;
             }
 
             value_type const * operator -> () const {
                 sparta_assert(attached_buffer_, "The iterator is not attached to a buffer. Was it initialized?");
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");
-                return &buffer_entry_->data;
+                return buffer_entry_->data;
             }
 
             /** brief Move the iterator forward to point to next element in queue ; PREFIX
@@ -401,7 +409,7 @@ namespace sparta
          */
         const value_type & read(uint32_t idx) const {
             sparta_assert(isValid(idx));
-            return buffer_map_[idx]->data;
+            return *(buffer_map_[idx]->data);
         }
 
         /**
@@ -430,7 +438,7 @@ namespace sparta
          */
         value_type & access(uint32_t idx) {
             sparta_assert(isValid(idx));
-            return buffer_map_[idx]->data;
+            return *(buffer_map_[idx]->data);
         }
 
         /**
@@ -456,7 +464,7 @@ namespace sparta
          */
         value_type & accessBack() {
             sparta_assert(isValid(num_valid_ - 1));
-            return buffer_map_[num_valid_ - 1]->data;
+            return *(buffer_map_[num_valid_ - 1]->data);
         }
 
         /**
@@ -608,12 +616,7 @@ namespace sparta
             // 3. Set the current free space pointer's next to the old free position
             DataPointer* oldFree = free_position_;
             free_position_ = buffer_map_[idx];
-            if constexpr(MetaStruct::is_any_pointer<value_type>::value) {
-                free_position_->data = nullptr; // Nullify the pointer
-            }
-            else {
-                free_position_->data.~DataT(); // Destruct the data object
-            }
+            free_position_->data->~value_type();
             free_position_->next_free = oldFree;
 
             // Mark DataPointer as invalid
@@ -675,12 +678,13 @@ namespace sparta
         void clear()
         {
             num_valid_ = 0;
-            std::for_each(buffer_map_.begin(), buffer_map_.end(), [] (auto map_entry)
-                                                                  {
-                                                                      if(map_entry) {
-                                                                          map_entry->data.~DataT();
-                                                                      }
-                                                                  });
+            std::for_each(buffer_map_.begin(), buffer_map_.end(),
+                          [] (auto map_entry)
+                          {
+                              if(map_entry) {
+                                  map_entry->data->~value_type();
+                              }
+                          });
             std::fill(buffer_map_.begin(), buffer_map_.end(), nullptr);
             for(uint32_t i = 0; i < data_pool_size_ - 1; ++i) {
                 data_pool_[i].next_free = &data_pool_[i + 1];
@@ -911,7 +915,7 @@ namespace sparta
             }
             sparta_assert(numFree(), "Buffer exhausted");
             sparta_assert(free_position_ != nullptr);
-            free_position_->data = std::forward<U>(dat);
+            free_position_->allocate(std::forward<U>(dat));
             free_position_->physical_idx = num_valid_;
 
             // Create the entry to be returned.
@@ -942,10 +946,11 @@ namespace sparta
             if(SPARTA_EXPECT_FALSE(is_infinite_mode_)) {
                 resizeInternalContainers_();
             }
-            sparta_assert(numFree(), "Buffer exhausted");
-            sparta_assert(idx <= num_valid_, "Cannot insert before a non valid index");
+            sparta_assert(numFree(), "Buffer '" << getName() << "' exhausted");
+            sparta_assert(idx <= num_valid_, "Buffer '" << getName()
+                          << "': Cannot insert before a non valid index");
             sparta_assert(free_position_ != nullptr);
-            free_position_->data = std::forward<U>(dat);
+            free_position_->allocate(std::forward<U>(dat));
             free_position_->physical_idx = idx;
 
             //Mark this data pointer as valid
