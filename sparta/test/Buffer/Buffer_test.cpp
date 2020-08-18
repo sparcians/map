@@ -657,6 +657,12 @@ struct SimpleStruct
         --simple_allocs;
     }
 
+    SimpleStruct(SimpleStruct&&orig) :
+        idx_(orig.idx_)
+    {
+        ++simple_allocs;
+    }
+
     uint32_t idx_ = 0;
     static uint32_t simple_allocs;
 };
@@ -719,6 +725,8 @@ void testInvalidates()
     sparta::Buffer<SimpleStruct> my_simple_struct("my_simple_struct", 10, nullptr);
     EXPECT_EQUAL(SimpleStruct::simple_allocs, 0);
     my_simple_struct.push_back(SimpleStruct(0)); // another move
+    EXPECT_EQUAL(SimpleStruct::simple_allocs, 1);
+    my_simple_struct.erase(my_simple_struct.begin());
     EXPECT_EQUAL(SimpleStruct::simple_allocs, 0);
 }
 
