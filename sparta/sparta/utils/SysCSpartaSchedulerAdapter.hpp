@@ -42,7 +42,9 @@ namespace sparta
  * This class will allow a Sparta developer to interoperate a
  * Sparta-based simulator with the SystemC kernel.  The general rule
  * of thumb is that the Sparta scheduler is either always equal to or
- * lagging the SystemC scheduler, waiting to be woken up to advance.
+ * 1 cycle ahead of the SystemC scheduler.  The Sparta Scheduler will
+ * "sleep" waiting for SysC to catch up the next scheduled Sparta
+ * event.
  *
  * There are two ways to stop simulation using this adapter:
  *
@@ -69,13 +71,12 @@ public:
     SC_HAS_PROCESS(SysCSpartaSchedulerAdapter);
 
     //! Initialized the sc_module this adapter is part of
-    SysCSpartaSchedulerAdapter() :
+    SysCSpartaSchedulerAdapter(Scheduler * scheduler) :
         sc_module(sc_core::sc_module_name(SC_SPARTA_SCHEDULER_NAME)),
+        sparta_scheduler_(scheduler),
         sc_ev_stop_simulation_(SC_SPARTA_STOP_EVENT_NAME)
     {
         SC_THREAD(runScheduler_);
-        sparta_scheduler_ = sparta::Scheduler::getScheduler();
-
         SC_METHOD(setSystemCSimulationDone);
         dont_initialize();
         sensitive << sc_ev_stop_simulation_;
@@ -169,17 +170,19 @@ private:
     void runScheduler_()
     {
         // Start simulation
-        sparta_scheduler_->run(1, true);
-        sparta_assert(sparta_scheduler_->getCurrentTick() == 0);
         sparta_assert(sparta_scheduler_->nextEventTick() > 0);
 
         do {
+            const sc_core::sc_time sysc_time = sc_core::sc_time_stamp();
 
-            // Wait for the next clock edge
-            // Wait for either the next time slice. TODO: Add an event
-            // to wake the scheduler earlier if need be
-            wait(sc_core::sc_time(double(sparta_scheduler_->nextEventTick() -
-                                         sc_core::sc_time_stamp().value()), sparta_sc_time_));
+            //
+            // Wait for SysC to get to the next event time on the
+            // Sparta Scheduler, then advance Sparta
+            //
+            // TODO: Add an event to wake the scheduler earlier if
+            // need be
+            wait(sc_core::sc_time(double(sparta_scheduler_->nextEventTick() - sysc_time.value()),
+                                  sparta_sc_time_));
 
             // Align to the posedge events in systemc
             wait(sc_core::SC_ZERO_TIME);
@@ -207,25 +210,24 @@ private:
 
     void advanceSpartaScheduler_()
     {
-        sc_core::sc_time sysc_time = sc_core::sc_time_stamp();
+        const sc_core::sc_time sysc_time = sc_core::sc_time_stamp();
 
-        // The SystemC scheduler will always lead or be exactly at
-        // the same tick as Sparta.  Following this rule allows safe
-        // assumptions in scheduling synchronization.
-        //
-        // If the Sparta Scheduler next tick is @ 1000 and we're at
-        // 500, we want to advance 500 ticks and end @ 1000.  The
-        // next event tick time should never be the same as
-        // current tick unless it's the beginning of simulation.
-        if(sysc_time.value() > sparta_scheduler_->getCurrentTick()) {
-            const bool exacting_run = true;
-            const bool measure_scheduler_time = false; // no need to do this
-            sparta_scheduler_->run(sysc_time.value() - sparta_scheduler_->getCurrentTick(),
-                                   exacting_run, measure_scheduler_time);
-        }
+        // The SystemC scheduler will always be exactly at the same
+        // tick as Sparta when this function is called.  Following
+        // this rule allows safe assumptions in scheduling
+        // synchronization.
+        sparta_assert(sysc_time.value() == sparta_scheduler_->nextEventTick());
+        sparta_assert(sparta_scheduler_->nextEventTick() > sparta_scheduler_->getCurrentTick());
 
-        // Make sure we're in sync
-        sparta_assert(sysc_time.value() == sparta_scheduler_->getCurrentTick());
+        const bool exacting_run = true;
+        const bool measure_scheduler_time = false; // no need to do this
+        // Run to the next event scheduled and then run that cycle
+        sparta_scheduler_->run(sparta_scheduler_->nextEventTick() - sparta_scheduler_->getCurrentTick() + 1,
+                               exacting_run, measure_scheduler_time);
+
+        // Sparta should now be finished with the cycle at `sysc_time`
+        // and be exactly one cycle ahead of it.
+        sparta_assert(sysc_time.value() + 1 == sparta_scheduler_->getCurrentTick());
     }
 
     // Local copy of the sparta scheduler
@@ -250,4 +252,3 @@ private:
 };
 
 }
-

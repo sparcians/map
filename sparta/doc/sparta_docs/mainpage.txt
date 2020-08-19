@@ -6,7 +6,7 @@
   python.  Modeling teams can use Sparta to build abstract performance
   models, detailed performance models, functional models, hybrid
   (performance and functional) models, etc.  Users of Sparta can
-  connect Sparta built models to SystemC models, Gem5 models, etc.
+  connect Sparta built models to \ref systemc SystemC models, Gem5 models, etc.
 
   Sparta can be a standalone simulator or embedded in a co-simulation
   environment like verification tools, Verilog, EDA, SystemC,
