@@ -8,8 +8,7 @@
 #include <sstream>
 #include <math.h>
 #include <memory>
-
-#include <boost/static_assert.hpp>
+#include <climits>
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/functional/DataView.hpp"

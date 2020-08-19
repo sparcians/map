@@ -7,8 +7,6 @@
 #include <iomanip>
 #include <math.h>
 
-#include <boost/utility.hpp>        // noncopyable, enable_if
-
 #include "sparta/functional/ArchDataSegment.hpp"
 #include "sparta/functional/ArchData.hpp"
 #include "sparta/utils/SpartaException.hpp"

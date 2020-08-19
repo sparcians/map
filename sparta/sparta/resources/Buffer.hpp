@@ -9,9 +9,11 @@
 
 #pragma once
 
-#include <inttypes.h>
+#include <cinttypes>
+#include <type_traits>
 
 #include "sparta/utils/SpartaAssert.hpp"
+#include "sparta/utils/MetaStructs.hpp"
 #include "sparta/statistics/CycleHistogram.hpp"
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/statistics/StatisticDef.hpp"
@@ -89,21 +91,28 @@ namespace sparta
          * position in the data pool.
          */
         struct DataPointer {
-            DataPointer() :
-                data(),
-                next_free(nullptr)
-            {}
+        private:
+            typename std::aligned_storage<sizeof(value_type), alignof(value_type)>::type object_memory_;
 
-            DataPointer(DataPointer && rval) :
-                data(std::move(rval.data)),
-                next_free(rval.next_free),
-                physical_idx(rval.physical_idx) {
-                rval.next_free = nullptr;
+        public:
+            DataPointer() { }
+
+            DataPointer(DataPointer &&orig) {
+                ::memcpy(&object_memory_, &orig.object_memory_, sizeof(object_memory_));
+                data = reinterpret_cast<value_type*>(&object_memory_);
             }
 
-            value_type data;
-            DataPointer* next_free;
-            uint32_t physical_idx = 0; /*!< What index does this data currently reside */
+            // No copies, only moves
+            DataPointer(const DataPointer &) = delete;
+
+            template<typename U>
+            void allocate(U && dat) {
+                data = new (&object_memory_) value_type(std::forward<U>(dat));
+            }
+
+            value_type * data         = nullptr;
+            DataPointer* next_free    = nullptr;
+            uint32_t     physical_idx = 0; /*!< What index does this data currently reside */
         };
         //Forward Declaration
         struct DataPointerValidator;
@@ -230,20 +239,20 @@ namespace sparta
             DataReferenceType operator* () const {
                 sparta_assert(attached_buffer_, "The iterator is not attached to a buffer. Was it initialized?");
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");
-                return buffer_entry_->data;
+                return *(buffer_entry_->data);
             }
 
             //! Overload the class-member-access operator.
             value_type * operator -> () {
                 sparta_assert(attached_buffer_, "The iterator is not attached to a buffer. Was it initialized?");
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");
-                return &buffer_entry_->data;
+                return buffer_entry_->data;
             }
 
             value_type const * operator -> () const {
                 sparta_assert(attached_buffer_, "The iterator is not attached to a buffer. Was it initialized?");
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");
-                return &buffer_entry_->data;
+                return buffer_entry_->data;
             }
 
             /** brief Move the iterator forward to point to next element in queue ; PREFIX
@@ -400,7 +409,7 @@ namespace sparta
          */
         const value_type & read(uint32_t idx) const {
             sparta_assert(isValid(idx));
-            return buffer_map_[idx]->data;
+            return *(buffer_map_[idx]->data);
         }
 
         /**
@@ -429,7 +438,7 @@ namespace sparta
          */
         value_type & access(uint32_t idx) {
             sparta_assert(isValid(idx));
-            return buffer_map_[idx]->data;
+            return *(buffer_map_[idx]->data);
         }
 
         /**
@@ -455,7 +464,7 @@ namespace sparta
          */
         value_type & accessBack() {
             sparta_assert(isValid(num_valid_ - 1));
-            return buffer_map_[num_valid_ - 1]->data;
+            return *(buffer_map_[num_valid_ - 1]->data);
         }
 
         /**
@@ -563,7 +572,7 @@ namespace sparta
         {
             return insert(entry.getIndex_(), dat);
         }
-        
+
         //! Do an insert before a BufferIterator see insert method above
         iterator insert(const const_iterator & entry, value_type&& dat)
         {
@@ -600,11 +609,14 @@ namespace sparta
         {
             // Make sure we are invalidating an already valid object.
             sparta_assert(idx < size(), "Cannot erase an index that is not already valid");
+
             // Do the invalidation immediately
             // 1. Move the free space pointer to the erased position.
-            // 2. Set the current free space pointer's next to the old free position
+            // 2. Call the DataT's destructor
+            // 3. Set the current free space pointer's next to the old free position
             DataPointer* oldFree = free_position_;
             free_position_ = buffer_map_[idx];
+            free_position_->data->~value_type();
             free_position_->next_free = oldFree;
 
             // Mark DataPointer as invalid
@@ -625,15 +637,16 @@ namespace sparta
                 address_map_[i] = address_map_[i + 1];
                 ++i;
             }
+
             // the entry at the old num_valid_ in the map now points to nullptr
             buffer_map_[top_idx_of_buffer] = nullptr;
 
             // Remove this entry of the address map as it becomes a free position.
             address_map_.erase(top_idx_of_buffer);
+
             // update counts.
             --num_valid_;
             updateUtilizationCounters_();
-
         }
 
         /**
@@ -665,6 +678,13 @@ namespace sparta
         void clear()
         {
             num_valid_ = 0;
+            std::for_each(buffer_map_.begin(), buffer_map_.end(),
+                          [] (auto map_entry)
+                          {
+                              if(map_entry) {
+                                  map_entry->data->~value_type();
+                              }
+                          });
             std::fill(buffer_map_.begin(), buffer_map_.end(), nullptr);
             for(uint32_t i = 0; i < data_pool_size_ - 1; ++i) {
                 data_pool_[i].next_free = &data_pool_[i + 1];
@@ -895,7 +915,7 @@ namespace sparta
             }
             sparta_assert(numFree(), "Buffer exhausted");
             sparta_assert(free_position_ != nullptr);
-            free_position_->data = std::forward<U>(dat);
+            free_position_->allocate(std::forward<U>(dat));
             free_position_->physical_idx = num_valid_;
 
             // Create the entry to be returned.
@@ -926,10 +946,11 @@ namespace sparta
             if(SPARTA_EXPECT_FALSE(is_infinite_mode_)) {
                 resizeInternalContainers_();
             }
-            sparta_assert(numFree(), "Buffer exhausted");
-            sparta_assert(idx <= num_valid_, "Cannot insert before a non valid index");
+            sparta_assert(numFree(), "Buffer '" << getName() << "' exhausted");
+            sparta_assert(idx <= num_valid_, "Buffer '" << getName()
+                          << "': Cannot insert before a non valid index");
             sparta_assert(free_position_ != nullptr);
-            free_position_->data = std::forward<U>(dat);
+            free_position_->allocate(std::forward<U>(dat));
             free_position_->physical_idx = idx;
 
             //Mark this data pointer as valid
@@ -1064,4 +1085,3 @@ namespace sparta
         }
     }
 }
-

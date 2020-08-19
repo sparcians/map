@@ -14,7 +14,6 @@
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/statistics/CycleHistogram.hpp"
 #include "sparta/collection/IterableCollector.hpp"
-// #include "sparta/resources/AgedArrayCollector.hpp"
 
 namespace sparta
 {
