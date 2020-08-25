@@ -1,18 +1,19 @@
 #include "sparta/sparta.hpp"
-
 #include <iostream>
+/*
 #include <cinttypes>
 #include <pthread.h>
 #include <semaphore.h>
 #include <random>
 #include <unistd.h>
-
+*/
 #include "systemc.h"
 #include "sparta/ports/DataPort.hpp"
 #include "sparta/ports/PortSet.hpp"
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 #include "sparta/utils/SysCSpartaSchedulerAdapter.hpp"
+#include "concurrentqueue.h"
 
 using namespace std;
 
@@ -29,41 +30,25 @@ bool first_called = false;
 uint32_t events_fired = 0;
 
 #define BUFFER_SIZE 10
+/*
+int sc_main(int, char *[]) {
+	moodycamel::ConcurrentQueue<int> q;
+	q.enqueue(25);
+	q.enqueue(35);
+	q.enqueue(45);
+	q.enqueue(55);
+	q.enqueue(65);
 
-class Gasket {
-int buffer[BUFFER_SIZE];
-int index = 0;
-sem_t full,empty;
-pthread_mutex_t mutex;
-
-
-void* produce(void* arg){
-	while(1){
-		sleep(1);
-		sem_wait(&empty);
-		pthread_mutex_lock(&mutex);
-		int item = rand()%100;
-		buffer[index++] = item;
-		cout<<"Produced "<<item<<endl;
-		pthread_mutex_unlock(&mutex);
-		sem_post(&full);
+	int item;
+	bool found=1;
+	while (found) {
+	found = q.try_dequeue(item);
+	//assert(found && item == 25);
+	cout << item << endl;
 	}
-}
+	return 0;
 
-void* consume(void* arg){
-	while(1){
-		sleep(1);
-		sem_wait(&full);
-		pthread_mutex_lock(&mutex);
-		int item = buffer[--index];
-		cout<<"Consumed "<<item<<endl;
-		pthread_mutex_unlock(&mutex);
-		sem_post(&empty);
-	}
-}
-
-};
-
+}*/
 
 class InAndDataOutPort : sparta::TreeNode
 {
@@ -182,6 +167,19 @@ public:
 
 int sc_main(int, char *[])
 {
+	moodycamel::ConcurrentQueue<int> q;
+	q.enqueue(25);
+	q.enqueue(35);
+	q.enqueue(45);
+	q.enqueue(55);
+	q.enqueue(65);
+
+	int item;
+	bool found=1;
+	while (found) {
+	if((found = q.try_dequeue(item)) == true)
+		cout << item << endl;
+	}
     sparta::Scheduler sched;
     sparta::Clock clk("clock", &sched);
 
