@@ -2,10 +2,6 @@
 
 #include <iostream>
 #include <cinttypes>
-#include <pthread.h>
-#include <semaphore.h>
-#include <random>
-#include <unistd.h>
 
 #include "systemc.h"
 #include "sparta/ports/DataPort.hpp"
@@ -13,8 +9,6 @@
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 #include "sparta/utils/SysCSpartaSchedulerAdapter.hpp"
-
-using namespace std;
 
 TEST_INIT;
 
@@ -27,43 +21,6 @@ typedef sparta::DataInPort<uint32_t> DataInPortType;
 typedef sparta::DataOutPort<uint32_t> DataOutPortType;
 bool first_called = false;
 uint32_t events_fired = 0;
-
-#define BUFFER_SIZE 10
-
-class Gasket {
-int buffer[BUFFER_SIZE];
-int index = 0;
-sem_t full,empty;
-pthread_mutex_t mutex;
-
-
-void* produce(void* arg){
-	while(1){
-		sleep(1);
-		sem_wait(&empty);
-		pthread_mutex_lock(&mutex);
-		int item = rand()%100;
-		buffer[index++] = item;
-		cout<<"Produced "<<item<<endl;
-		pthread_mutex_unlock(&mutex);
-		sem_post(&full);
-	}
-}
-
-void* consume(void* arg){
-	while(1){
-		sleep(1);
-		sem_wait(&full);
-		pthread_mutex_lock(&mutex);
-		int item = buffer[--index];
-		cout<<"Consumed "<<item<<endl;
-		pthread_mutex_unlock(&mutex);
-		sem_post(&empty);
-	}
-}
-
-};
-
 
 class InAndDataOutPort : sparta::TreeNode
 {
