@@ -1,23 +1,14 @@
 #include "sparta/sparta.hpp"
+
 #include <iostream>
-/*
 #include <cinttypes>
-#include <pthread.h>
-#include <semaphore.h>
-#include <random>
-#include <unistd.h>
-*/
+
 #include "systemc.h"
-#include "fir.h"
-#include "tb.h"
 #include "sparta/ports/DataPort.hpp"
 #include "sparta/ports/PortSet.hpp"
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 #include "sparta/utils/SysCSpartaSchedulerAdapter.hpp"
-#include "concurrentqueue.h"
-
-using namespace std;
 
 TEST_INIT;
 
@@ -30,27 +21,6 @@ typedef sparta::DataInPort<uint32_t> DataInPortType;
 typedef sparta::DataOutPort<uint32_t> DataOutPortType;
 bool first_called = false;
 uint32_t events_fired = 0;
-
-#define BUFFER_SIZE 10
-/*
-int sc_main(int, char *[]) {
-	moodycamel::ConcurrentQueue<int> q;
-	q.enqueue(25);
-	q.enqueue(35);
-	q.enqueue(45);
-	q.enqueue(55);
-	q.enqueue(65);
-
-	int item;
-	bool found=1;
-	while (found) {
-	found = q.try_dequeue(item);
-	//assert(found && item == 25);
-	cout << item << endl;
-	}
-	return 0;
-
-}*/
 
 class InAndDataOutPort : sparta::TreeNode
 {
@@ -167,81 +137,8 @@ public:
     sparta::Clock* clk_ = nullptr;
 };
 
-SC_MODULE( SYSTEM ) {
-        //Module Declarations
-        tb *tb0;
-        fir *fir0;
-
-        //Local signal declarations
-        sc_signal<bool> rst_sig;
-        sc_signal< sc_int<16> > inp_sig;
-        sc_signal< sc_int<16> > outp_sig;
-        sc_clock clk_sig;
-
-        //Handshaking
-        sc_signal<bool> inp_sig_vld;
-        sc_signal<bool> inp_sig_rdy;
-        sc_signal<bool> outp_sig_vld;
-        sc_signal<bool> outp_sig_rdy;
-
-
-        SC_CTOR( SYSTEM )
-                //Copy constructor clk_sig
-                : clk_sig ("clk_sig", 10, SC_NS)
-
-        {
-                //Module instance signal connections
-                tb0 = new tb("tb0");
-                tb0->clk( clk_sig );
-                tb0->rst( rst_sig );
-                tb0->inp( inp_sig );
-                tb0->inp_vld( inp_sig_vld );
-                tb0->inp_rdy( inp_sig_rdy );
-                tb0->outp( outp_sig );
-                tb0->outp_vld( outp_sig_vld );
-                tb0->outp_rdy( outp_sig_rdy );
-
-                fir0 = new fir("fir0");
-                fir0->clk( clk_sig );
-                fir0->rst( rst_sig );
-                fir0->inp( inp_sig );
-                fir0->inp_vld( inp_sig_vld );
-                fir0->inp_rdy( inp_sig_rdy );
-                fir0->outp( outp_sig );
-                fir0->outp_vld( outp_sig_vld );
-                fir0->outp_rdy( outp_sig_rdy );
-        }
-
-        //Destructor
-        ~SYSTEM(){
-                delete tb0;
-                delete fir0;
-        }
-
-
-};
-
-SYSTEM *top = NULL;
-
 int sc_main(int, char *[])
 {
-
-	moodycamel::ConcurrentQueue<int> q;
-	q.enqueue(25);
-	q.enqueue(35);
-	q.enqueue(45);
-	q.enqueue(55);
-	q.enqueue(65);
-
-	int item;
-	bool found=1;
-	while (found) {
-	if((found = q.try_dequeue(item)) == true)
-		cout << item << endl;
-	}
-	
-    top = new SYSTEM("top");
-    sc_start();
     sparta::Scheduler sched;
     sparta::Clock clk("clock", &sched);
 
