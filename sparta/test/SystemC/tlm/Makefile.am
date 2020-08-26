@@ -80,16 +80,6 @@ examples_DIRS  =
 ##
 
 include at_1_phase/test.am
-include at_2_phase/test.am
-include at_4_phase/test.am
-include at_extension_optional/test.am
-include at_mixed_targets/test.am
-include at_ooo/test.am
-include lt/test.am
-include lt_dmi/test.am
-include lt_extension_mandatory/test.am
-include lt_mixed_endian/test.am
-include lt_temporal_decouple/test.am
 
 examples_DIRS += common/include/models
 examples_DIRS += common/include
