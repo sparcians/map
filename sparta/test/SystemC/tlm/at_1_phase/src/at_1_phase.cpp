@@ -38,7 +38,16 @@
 #include "reporting.h"                  // reporting utilities
 #include "at_1_phase_top.h"             // top module
 #include "tlm.h"                        // TLM header
+#include "sparta/sparta.hpp"
+#include <iostream>
+#include <cinttypes>
 
+#include "systemc.h"
+#include "sparta/ports/DataPort.hpp"
+#include "sparta/ports/PortSet.hpp"
+#include "sparta/kernel/Scheduler.hpp"
+#include "sparta/utils/SpartaTester.hpp"
+#include "sparta/utils/SysCSpartaSchedulerAdapter.hpp"
 //=====================================================================
 ///  @fn sc_main
 //  

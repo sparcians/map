@@ -97,7 +97,7 @@ initiator_top::invalidate_direct_mem_ptr
   msg.str ("");
 
   msg << "Initiator: " << m_ID << " Not implemented";
-  REPORT_ERROR(filename, __FUNCTION__, msg.str());
+  TLM_REPORT_ERROR(filename, __FUNCTION__, msg.str());
 } // end invalidate_direct_mem_ptr
 
  //=====================================================================
@@ -122,7 +122,7 @@ initiator_top::nb_transport_bw
 
   msg << "Initiator: " << m_ID
       << " Not implemented, for hierachical connection of initiator socket";
-  REPORT_ERROR(filename, __FUNCTION__, msg.str());
+  TLM_REPORT_ERROR(filename, __FUNCTION__, msg.str());
 
   return tlm::TLM_COMPLETED;
 

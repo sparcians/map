@@ -140,7 +140,7 @@ RDG_EXTERN ostringstream reporting_os;                  ///< reporting output st
   } \
 }
 
-#define REPORT_ERROR(source, routine, text) \
+#define TLM_REPORT_ERROR(source, routine, text) \
 { ostringstream os; \
   string routine_string (routine); \
   int colon_location; \
