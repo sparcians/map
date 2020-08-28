@@ -193,6 +193,8 @@ sc_main                                 // SystemC entry point
   ,char  *argv[]                        // argument vector
 )
 {
+  REPORT_ENABLE_ALL_REPORTING ();
+  
   sparta::Scheduler sched;
   sparta::Clock clk("clock", &sched);
 
@@ -219,6 +221,8 @@ sc_main                                 // SystemC entry point
   sched.printNextCycleEventTree(std::cout, 0, 0);
 
   sparta::SysCSpartaSchedulerAdapter sysc_sched_runner(&sched);
+  example_system_top top("top");        // instantiate a exmaple top module
+
     // Run simulation
   sysc_sched_runner.run();
 
@@ -232,14 +236,10 @@ sc_main                                 // SystemC entry point
 
     // Compare the schedler log output with the expected to ensure it is logging
   EXPECT_FILES_EQUAL("scheduler.debug.EXPECTED", "scheduler.debug");
+
   rtn.enterTeardown();
 
     // Returns error
-    REPORT_ERROR;
-  REPORT_ENABLE_ALL_REPORTING ();
-  
-  example_system_top top("top");        // instantiate a exmaple top module
-
-  sc_core::sc_start();                  // start the simulation
+  REPORT_ERROR;
   return 0;                             // return okay status
 }
