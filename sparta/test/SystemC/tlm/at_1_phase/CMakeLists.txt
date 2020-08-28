@@ -37,7 +37,7 @@
 # Description of Modification:
 #
 ###############################################################################
-
+#set(SPARTA_BASE /home/vkapoor/map/sparta)
 
 add_executable (at_1_phase src/at_1_phase.cpp
                            include/at_1_phase_top.h
@@ -56,4 +56,8 @@ add_executable (at_1_phase src/at_1_phase.cpp
                            ../common/src/select_initiator.cpp)
 target_include_directories (at_1_phase PRIVATE include ../common/include)
 target_link_libraries (at_1_phase SystemC::systemc)
-configure_and_add_test (at_1_phase)
+#configure_and_add_test (at_1_phase)
+#include_directories (SYSTEM ${SPARTA_BASE})
+#include_directories (SYSTEM ${SPARTA_BASE}/simdb/include)
+#include (${SPARTA_BASE}/cmake/sparta-config.cmake)
+#target_link_libraries(at_1_phase ${Sparta_LIBS})

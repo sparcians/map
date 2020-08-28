@@ -11,3 +11,4 @@ include(../TestingMacros.cmake)
 
 sparta_test(SystemC_test SystemC_test_RUN)
 sparta_copy(SystemC_test scheduler.debug.EXPECTED)
+add_subdirectory(tlm)
