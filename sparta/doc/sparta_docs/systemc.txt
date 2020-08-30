@@ -7,10 +7,10 @@
   \section building_sysc Building
 
   There is no requirement to build Sparta any differently to enable
-  SystemC in Sparta.  However, to run the testing (and examples, once
-  available), make sure the Sparta CMake build environment can find
-  the SystemC package during configuration.  A message in the
-  configuration output will be written if the package was found:
+  SystemC in Sparta.  However, to run the testing (and example), make
+  sure the Sparta CMake build environment can find the SystemC package
+  during configuration.  A message in the configuration output will be
+  written if the package was found:
 
   \code
   % cd sparta/build; cmake .. -DCMAKE_BUILD_TYPE=Release
@@ -22,7 +22,7 @@
   If not, then `cmake` could not find the SystemC package.  This can
   happen if there exists an install of SystemC elsewhere on the system
   (like a user's home directory).  Sparta can still use that install,
-  but it must be built with the same C++ standard.  How to do that:
+  but it must be built with the same C++ standard.  First, build SystemC:
 
   \code
   cd /path/to/systemc-2.3.3; mkdir build; cd build
@@ -37,6 +37,11 @@
   -# Re-configure Sparta: `cmake .. -DCMAKE_BUILD_TYPE=Release`
 
   The enablement message should print at this point.
+
+  To build/run the SystemC example (example/SystemC), the TLM `example`
+  directory must be found.  Since the TLM examples are not part of an
+  install, the Sparta SystemC example CMakeLists.txt file will use the
+  environment variable SYSTEMC_HOME to locate it.
 
   \section sysc_adapter SystemC/Sparta Adapter
 
