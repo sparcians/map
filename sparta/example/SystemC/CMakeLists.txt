@@ -1,0 +1,41 @@
+project(SYSTEMC_EXAMPLE)
+
+include (../ExamplesMacros.cmake)
+
+if (NOT DEFINED ENV{SYSTEMC_HOME})
+  message (FATAL_ERROR "SYSTEMC_HOME is not defined -- cannot include this test")
+endif ()
+
+set (TLM_EXAMPLES_DIR $ENV{SYSTEMC_HOME}/examples/tlm)
+message (STATUS "TLM examples directory: ${TLM_EXAMPLES_DIR}")
+
+add_executable(sparta_sysc_model
+  SpartaSystemCSimulator.cpp
+  systemc_example_top.cpp
+
+  sparta-target/SpartaMemory.cpp
+  sparta-target/SpartaTLMTargetGasket.cpp
+
+  # From the TLM examples
+  ${TLM_EXAMPLES_DIR}/at_1_phase/src/initiator_top.cpp
+  ${TLM_EXAMPLES_DIR}/common/src/select_initiator.cpp
+  ${TLM_EXAMPLES_DIR}/common/src/report.cpp
+  ${TLM_EXAMPLES_DIR}/common/src/traffic_generator.cpp
+
+  sc_main.cpp
+  )
+
+sparta_application(sparta_sysc_model)
+target_link_libraries (sparta_sysc_model SystemC::systemc)
+
+include_directories(
+  # For reporting, traffic gen
+  ${TLM_EXAMPLES_DIR}/common/include
+
+  # For SimpleBus
+  ${TLM_EXAMPLES_DIR}/common/include/models
+
+  # For initiator top, et. al. used in this example
+  ${TLM_EXAMPLES_DIR}/at_1_phase/include/
+
+  )
