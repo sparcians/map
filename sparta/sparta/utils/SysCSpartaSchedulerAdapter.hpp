@@ -175,13 +175,17 @@ private:
         do {
             const sc_core::sc_time sysc_time = sc_core::sc_time_stamp();
 
+            const auto next_event_tick =
+                (sparta_scheduler_->nextEventTick() == Scheduler::INDEFINITE) ?
+                sysc_time.value() + 1 : sparta_scheduler_->nextEventTick();
+
             //
             // Wait for SysC to get to the next event time on the
             // Sparta Scheduler, then advance Sparta
             //
             // TODO: Add an event to wake the scheduler earlier if
             // need be
-            wait(sc_core::sc_time(double(sparta_scheduler_->nextEventTick() - sysc_time.value()),
+            wait(sc_core::sc_time(double(next_event_tick - sysc_time.value()),
                                   sparta_sc_time_));
 
             // Align to the posedge events in systemc
@@ -217,7 +221,7 @@ private:
         // this rule allows safe assumptions in scheduling
         // synchronization.
         sparta_assert(sysc_time.value() == sparta_scheduler_->nextEventTick());
-        sparta_assert(sparta_scheduler_->nextEventTick() > sparta_scheduler_->getCurrentTick());
+        sparta_assert(sparta_scheduler_->nextEventTick() >= sparta_scheduler_->getCurrentTick());
 
         const bool exacting_run = true;
         const bool measure_scheduler_time = false; // no need to do this
