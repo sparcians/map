@@ -24,7 +24,7 @@ TEST_INIT;
 #define QUICK_PRINT(x) \
     std::cout << x << std::endl
 
-uint32_t dummy_allocs = 0;
+int32_t dummy_allocs = 0;
 
 struct dummy_struct
 {
@@ -38,7 +38,17 @@ struct dummy_struct
     }
 
     // For forwarding rvalue
-    dummy_struct(dummy_struct &&) = default;
+    dummy_struct(dummy_struct && orig) = default;
+    // :
+    //     int16_field(orig.int16_field),
+    //     int32_field(orig.int32_field),
+    //     s_field(std::move(orig.s_field)),
+    //     valueless(orig.valueless)
+    // {
+    //     ++dummy_allocs;
+
+    // }
+
     dummy_struct & operator=(dummy_struct &&) = default;
 
     // For non-forwarding
@@ -142,6 +152,7 @@ void generalTest()
     // Test perfect forwarding Buffer copy
     {
         buf_dummy.clear();
+        EXPECT_EQUAL(0, dummy_allocs);
         auto dummy_1 = dummy_struct(1, 2, "ABC");
         auto dummy_2 = dummy_struct(3, 4, "DEF");
         auto dummy_3 = dummy_struct(5, 6, "GHI");
@@ -176,6 +187,10 @@ void generalTest()
         EXPECT_TRUE(buf_dummy.read(2).int16_field == 7);
         EXPECT_TRUE(buf_dummy.read(2).int32_field == 8);
         EXPECT_TRUE(buf_dummy.read(2).s_field == "JKL");
+        EXPECT_EQUAL(4, dummy_allocs);
+        dummy_allocs += 4; // The dummy_? objects will still be
+                           // destroyed decrementing this count even
+                           // though they were moved
     }
 
     // Test an empty buffer
