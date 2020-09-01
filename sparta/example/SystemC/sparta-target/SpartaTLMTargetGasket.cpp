@@ -22,6 +22,10 @@ namespace sparta_target
             gp.get_data_ptr(),
             (void*)&gp};
 
+        if(SPARTA_EXPECT_FALSE(info_logger_)) {
+            info_logger_ << " sending to memory model: " << request;
+        }
+
         // Send to memory with the given delay - NS -> clock cycles.
         // The Clock is on the same freq as the memory block
         out_memory_request_.send(request, getClock()->getCycle(delay_time.value()));
@@ -38,6 +42,14 @@ namespace sparta_target
         // non-const lvalues
         tlm::tlm_phase resp    = tlm::BEGIN_RESP;
         sc_core::sc_time delay = sc_core::SC_ZERO_TIME;
+
+        if(SPARTA_EXPECT_FALSE(info_logger_)) {
+            info_logger_ << " sending back to transactor: " << req;
+        }
+
+
+        auto & gp = *((tlm::tlm_generic_payload*)req.meta_data);
+        gp.set_response_status(tlm::TLM_OK_RESPONSE);
 
         // Send back the response to the initiator
         auto status = m_memory_socket->nb_transport_bw(*((tlm::tlm_generic_payload*)req.meta_data),

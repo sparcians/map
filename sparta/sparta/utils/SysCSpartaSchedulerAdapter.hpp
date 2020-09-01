@@ -202,8 +202,9 @@ private:
                 next_sysc_event_fire_tick_ = sparta_scheduler_->getCurrentTick() + sysc_query_event_interval_;
                 sysc_query_event_->scheduleRelativeTick(1, sparta_scheduler_);
             }
-
-            advanceSpartaScheduler_();
+            if(sparta_scheduler_->nextEventTick() != Scheduler::INDEFINITE) {
+                advanceSpartaScheduler_();
+            }
 
         } while(!sparta_scheduler_->isFinished() || !sysc_simulation_done_);
 
