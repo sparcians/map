@@ -75,7 +75,7 @@ find_package (HDF5 1.10 REQUIRED)
 
 # Populate the Sparta_LIBS variable with the required libraries for
 # basic Sparta linking
-set (Sparta_LIBS sparta simdb ${HDF5_LIBRARIES} sqlite3 yaml-cpp z pthread
+set (Sparta_LIBS sparta simdb ${HDF5_LIBRARIES} sqlite3 yaml-cpp z pthread rt
   Boost::date_time Boost::filesystem Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
 
 #
