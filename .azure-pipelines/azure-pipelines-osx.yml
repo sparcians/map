@@ -5,79 +5,26 @@
 jobs:
 - job: osx
   pool:
-    vmImage: macOS-10.14
-  timeoutInMinutes: 360
+    vmImage: macOS-10.15
   strategy:
-    maxParallel: 8
     matrix:
-      osx_python3.7.____cpython:
-        CONFIG: osx_python3.7.____cpython
-        UPLOAD_PACKAGES: False
+      osx_64_python3.7.____cpython:
+        CONFIG: osx_64_python3.7.____cpython
+        UPLOAD_PACKAGES: 'False'
+      osx_64_python3.8.____cpython:
+        CONFIG: osx_64_python3.8.____cpython
+        UPLOAD_PACKAGES: 'False'
+    maxParallel: 8
+  timeoutInMinutes: 360
 
   steps:
   # TODO: Fast finish on azure pipelines?
   - script: |
-      echo "Fast Finish"
-      
-
-  - bash: |
-      echo "##vso[task.prependpath]$CONDA/bin"
-      sudo chown -R $USER $CONDA
-    displayName: Add conda to PATH
-
-  - script: |
-      source activate base
-      conda install -n base -c conda-forge --quiet --yes conda-forge-ci-setup=2 conda-build
-    displayName: 'Add conda-forge-ci-setup=2'
-
-  - script: |
-      echo "Mangling homebrew from Azure to avoid conflicts."
-      source activate base
-      /usr/bin/sudo mangle_homebrew
-      /usr/bin/sudo -k
-    displayName: Mangle homebrew
-
-  - script: |
-      source activate base
-      echo "Configuring conda."
-
-      setup_conda_rc ./ "./conda.recipe" ./.ci_support/${CONFIG}.yaml
       export CI=azure
-      source run_conda_forge_build_setup
-      conda update --yes --quiet --override-channels -c conda-forge -c defaults --all
-    env: {
-      OSX_FORCE_SDK_DOWNLOAD: "1"
-    }
-    displayName: Configure conda and conda-build
-
-  - script: |
-      source activate base
-      mangle_compiler ./ "./conda.recipe" ./.ci_support/${CONFIG}.yaml
-    displayName: Mangle compiler
-
-  - script: |
-      source activate base
-      make_build_number ./ "./conda.recipe" ./.ci_support/${CONFIG}.yaml
-    displayName: Generate build number clobber file
-
-  - script: |
-      source activate base
-      conda build "./conda.recipe" -m ./.ci_support/${CONFIG}.yaml --clobber-file ./.ci_support/clobber_${CONFIG}.yaml
-    displayName: Build recipe
-
-  - task: PublishTestResults@2
-    inputs:
-        testResultsFormat: 'cTest'
-        testResultsFiles: '**/Test.xml'
-        mergeTestResults: false # Unclear on impact of setting this true
-        failTaskOnFailedTests: true
-        publishRunAttachments: true # uploads xml files for possible inspection
-
-  - script: |
-      source activate base
+      export OSX_FORCE_SDK_DOWNLOAD="1"
       export GIT_BRANCH=$BUILD_SOURCEBRANCHNAME
-      upload_package ./ "./conda.recipe" ./.ci_support/${CONFIG}.yaml
-    displayName: Upload package
+      export FEEDSTOCK_NAME=$(basename ${BUILD_REPOSITORY_NAME})
+      ./.scripts/run_osx_build.sh
+    displayName: Run OSX build
     env:
       BINSTAR_TOKEN: $(BINSTAR_TOKEN)
-    condition: and(succeeded(), not(eq(variables['UPLOAD_PACKAGES'], 'False')))
