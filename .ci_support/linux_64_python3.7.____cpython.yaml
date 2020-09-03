@@ -5,7 +5,7 @@ boost_cpp:
 c_compiler:
 - gcc
 c_compiler_version:
-- '7'
+- 7.5.0 h09487f9_20
 channel_sources:
 - conda-forge,defaults
 channel_targets:
@@ -13,7 +13,7 @@ channel_targets:
 cxx_compiler:
 - gxx
 cxx_compiler_version:
-- '7'
+- 7.5.0 h09487f9_20
 docker_image:
 - condaforge/linux-anvil-comp7
 hdf5:

@@ -33,3 +33,25 @@ zip_keys:                       # [osx]
   -                             # [osx]
     - macos_min_version         # [osx]
     - MACOSX_DEPLOYMENT_TARGET  # [osx]
+
+
+# pin linux compiler to old build before the sysroot change because clang 9 wasn't updated
+# to work with latest build of gcc
+c_compiler:
+  - gcc                        # [linux]
+  - clang                      # [osx]
+  - vs2017                     # [win]
+c_compiler_version:            # [unix]
+  - 11                         # [osx and arm64]
+  - 9                          # [osx and x86_64]
+  - 7.5.0 h09487f9_20          # [linux64 or aarch64]
+  - 8                          # [ppc64le or armv7l]
+cxx_compiler:
+  - gxx                        # [linux]
+  - clangxx                    # [osx]
+  - vs2017                     # [win]
+cxx_compiler_version:          # [unix]
+  - 11                         # [osx and arm64]
+  - 9                          # [osx and x86_64]
+  - 7.5.0 h09487f9_20          # [linux64 or aarch64]
+  - 8                          # [ppc64le or armv7l]

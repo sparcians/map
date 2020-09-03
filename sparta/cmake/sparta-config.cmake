@@ -78,6 +78,11 @@ find_package (HDF5 1.10 REQUIRED)
 set (Sparta_LIBS sparta simdb ${HDF5_LIBRARIES} sqlite3 yaml-cpp z pthread
   Boost::date_time Boost::filesystem Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
 
+# On Linux we need to link against rt as well
+if (NOT APPLE)
+    list(APPEND Sparta_LIBS rt)
+endif ()
+
 #
 # Python support
 #
