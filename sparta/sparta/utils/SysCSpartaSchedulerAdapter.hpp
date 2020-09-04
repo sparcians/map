@@ -65,6 +65,16 @@ namespace sparta
  */
 class SysCSpartaSchedulerAdapter : public sc_core::sc_module
 {
+
+    // Called by the Scheduler when a new event is scheduled
+    void wakeupAdapter_(const Scheduler::Tick&) {
+        sc_wake_sparta_.notify();
+        sparta_scheduler_->
+            deregisterForNotification<Scheduler::Tick,
+                                      SysCSpartaSchedulerAdapter,
+                                      &SysCSpartaSchedulerAdapter::wakeupAdapter_>(this, "item_scheduled");
+    }
+
 public:
 
     //! Register the process for SystemC
@@ -74,7 +84,8 @@ public:
     SysCSpartaSchedulerAdapter(Scheduler * scheduler) :
         sc_module(sc_core::sc_module_name(SC_SPARTA_SCHEDULER_NAME)),
         sparta_scheduler_(scheduler),
-        sc_ev_stop_simulation_(SC_SPARTA_STOP_EVENT_NAME)
+        sc_ev_stop_simulation_(SC_SPARTA_STOP_EVENT_NAME),
+        sc_wake_sparta_("sc_ev_wake_sparta")
     {
         SC_THREAD(runScheduler_);
         SC_METHOD(setSystemCSimulationDone);
@@ -169,24 +180,31 @@ private:
     //! SC_THREAD that runs the Sparta scheduler
     void runScheduler_()
     {
-        // Start simulation
+        // Start simulation -- align the schedulers
         sparta_assert(sparta_scheduler_->nextEventTick() > 0);
 
-        do {
-            const sc_core::sc_time sysc_time = sc_core::sc_time_stamp();
+        // Align the schedulers.  Sparta starts at tick 1
+        wait(sc_core::sc_time(double(1), sparta_sc_time_));
 
-            const auto next_event_tick =
-                (sparta_scheduler_->nextEventTick() == Scheduler::INDEFINITE) ?
-                sysc_time.value() + 1 : sparta_scheduler_->nextEventTick();
+        do {
+            // If the Sparta Scheduler has nothing to do, put it to sleep
+            if(sparta_scheduler_->nextEventTick() == Scheduler::INDEFINITE) {
+                sparta_scheduler_->registerForNotification<Scheduler::Tick,
+                                                           SysCSpartaSchedulerAdapter,
+                                                           &SysCSpartaSchedulerAdapter::wakeupAdapter_>(this, "item_scheduled");
+                wait(sc_wake_sparta_);
+            }
 
             //
             // Wait for SysC to get to the next event time on the
             // Sparta Scheduler, then advance Sparta
             //
-            // TODO: Add an event to wake the scheduler earlier if
-            // need be
-            wait(sc_core::sc_time(double(next_event_tick - sysc_time.value()),
-                                  sparta_sc_time_));
+            const sc_core::sc_time sysc_time = sc_core::sc_time_stamp();
+            if(sparta_scheduler_->nextEventTick() >= sysc_time.value()) {
+                // Wait until the sysc scheduled catches up with Sparta
+                wait(sc_core::sc_time(double(sparta_scheduler_->nextEventTick() - sysc_time.value()),
+                                      sparta_sc_time_));
+            }
 
             // Align to the posedge events in systemc
             wait(sc_core::SC_ZERO_TIME);
@@ -202,9 +220,8 @@ private:
                 next_sysc_event_fire_tick_ = sparta_scheduler_->getCurrentTick() + sysc_query_event_interval_;
                 sysc_query_event_->scheduleRelativeTick(1, sparta_scheduler_);
             }
-            if(sparta_scheduler_->nextEventTick() != Scheduler::INDEFINITE) {
-                advanceSpartaScheduler_();
-            }
+
+            advanceSpartaScheduler_();
 
         } while(!sparta_scheduler_->isFinished() || !sysc_simulation_done_);
 
@@ -248,6 +265,9 @@ private:
     // SystemC event that stops simulation
     sc_core::sc_event sc_ev_stop_simulation_;
     bool sc_stop_called_ = false;
+
+    // SystemC event that wakes the Sparta Scheduler
+    sc_core::sc_event sc_wake_sparta_;
 
     // Sparta Event (optional) that will be automatically scheduled if
     // the Sparta scheduler is finished and the driver needs to query systemc
