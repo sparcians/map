@@ -41,12 +41,21 @@ namespace sparta_target
             read_response_delay_ (params->read_response_delay ),
             write_response_delay_(params->write_response_delay)
         {
-            in_memory_request_.
-                registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(SpartaMemory,
+            /// Allocate and initalize an array for the target's memory
+                m_memory = new uint8_t[size_t(memory_size_)]; 
+            /// Clear memory
+                memset(m_memory, 0,  size_t(memory_size_));
+                sparta_assert(memory_width_ > 0);
+                sparta_assert(memory_size_ % memory_width_ == 0);
+                in_memory_request_.registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(SpartaMemory,
                                                                         receiveMemoryRequest_,
                                                                         MemoryRequest));
         }
 
+        ~SpartaMemory() {
+            delete m_memory;
+        }
+        void memoryOperation(MemoryRequest &);
     private:
         sparta::DataInPort<MemoryRequest>  in_memory_request_  {getPortSet(), "in_memory_request"};
         sparta::DataOutPort<MemoryRequest> out_memory_response_{getPortSet(), "out_memory_response"};
@@ -63,6 +72,7 @@ namespace sparta_target
         const uint32_t accept_delay_;
         const uint32_t read_response_delay_;
         const uint32_t write_response_delay_;
+        uint8_t *m_memory;    ///< memory
 
     };
 }

@@ -9,6 +9,7 @@
 
 #include "MemoryRequest.hpp"
 #include "tlm.h"
+#include "memory.h"
 
 namespace sparta_target
 {
@@ -16,9 +17,12 @@ namespace sparta_target
                                   public sc_core::sc_module,
                                   public tlm::tlm_fw_transport_if<>
     {
+    protected:
+       static int nextID;
+    
     public:
         static constexpr char name[] = "mem_tlm_gasket";
-
+        static constexpr char scName[2][20] = {"mem_tlm_gasket0", "mem_tlm_gasket1"};
         class SpartaTLMTargetGasketParams : public sparta::ParameterSet
         {
         public:
@@ -53,14 +57,22 @@ namespace sparta_target
          */
         SpartaTLMTargetGasket(sparta::TreeNode * node,
                               const SpartaTLMTargetGasketParams * params,
-                              sc_core::sc_module_name module_name = name) :
+                              sc_core::sc_module_name module_name = scName[nextID]) :
             Unit(node),
-            sc_module(module_name)
+            sc_module(module_name),
+            m_target_memory(    
+                nextID
+                , sc_core::sc_time(50, sc_core::SC_NS)  // read response delay
+                , sc_core::sc_time(30, sc_core::SC_NS) // write response delay)
+                , 4*1024                                // memory size (bytes)
+                , 4                                     // memory width (bytes)
+                ) 
         {
             // This confusing call binds this TLM socket's
             // tlm_fw_transport_if API to this class for
             // nb_transport_fw calls.  The nb_transport_bw call
             // remains unset.
+            nextID++;
             m_memory_socket(*this);
 
             // Register the callback for finished transactions coming
@@ -76,7 +88,7 @@ namespace sparta_target
         tlm::tlm_target_socket<>  m_memory_socket;
 
     private:
-
+        memory m_target_memory;
         // Nothing should call this function directly.  Should be done
         // through the tlm::tlm_fw_transport_if<> pointer
         tlm::tlm_sync_enum nb_transport_fw (tlm::tlm_generic_payload &gp,
@@ -96,6 +108,7 @@ namespace sparta_target
         bool get_direct_mem_ptr(tlm::tlm_generic_payload &payload, tlm::tlm_dmi &dmi_data) override { return false; }
         /// Not implemented for this example but required by interface
         unsigned int transport_dbg(tlm::tlm_generic_payload &payload) override { return 0; }
+
 
  };
 }
