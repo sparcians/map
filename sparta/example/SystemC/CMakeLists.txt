@@ -22,6 +22,7 @@ if(SYSTEMC_SUPPORT)
       ${TLM_EXAMPLES_DIR}/common/src/select_initiator.cpp
       ${TLM_EXAMPLES_DIR}/common/src/report.cpp
       ${TLM_EXAMPLES_DIR}/common/src/traffic_generator.cpp
+      ${TLM_EXAMPLES_DIR}/common/src/memory.cpp
 
       sc_main.cpp
       )
