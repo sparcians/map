@@ -59,7 +59,7 @@ namespace sparta_sim
                                                 getResourceSet()->
                                                 getResourceFactory(sparta_target::SpartaMemory::name)));
 
-        const auto total_targets = 1;
+        const auto total_targets = 2;
         for(uint32_t i = 0; i < total_targets; ++i) {
             // Put the gasket on the memory tree node (can really go anywhere)
             tns_to_delete_.emplace_back(new sparta::ResourceTreeNode(mem,
@@ -86,18 +86,18 @@ namespace sparta_sim
         sparta::bind(root_node->getChildAs<sparta::Port>("sys.memory.ports.out_memory_response"),
                      root_node->getChildAs<sparta::Port>("sys.memory.mem_tlm_gasket0.ports.in_memory_response"));
 
-        /*sparta::bind(root_node->getChildAs<sparta::Port>("sys.memory.ports.in_memory_request"),
+        sparta::bind(root_node->getChildAs<sparta::Port>("sys.memory.ports.in_memory_request"),
                      root_node->getChildAs<sparta::Port>("sys.memory.mem_tlm_gasket1.ports.out_memory_request"));
         sparta::bind(root_node->getChildAs<sparta::Port>("sys.memory.ports.out_memory_response"),
                      root_node->getChildAs<sparta::Port>("sys.memory.mem_tlm_gasket1.ports.in_memory_response"));
-*/
+
         auto sparta_tlm_gasket0 =
             root_node->getChild("sys.memory.mem_tlm_gasket0")->getResourceAs<sparta_target::SpartaTLMTargetGasket>();
-       /* auto sparta_tlm_gasket1 =
-            root_node->getChild("sys.memory.mem_tlm_gasket1")->getResourceAs<sparta_target::SpartaTLMTargetGasket>();*/
+        auto sparta_tlm_gasket1 =
+            root_node->getChild("sys.memory.mem_tlm_gasket1")->getResourceAs<sparta_target::SpartaTLMTargetGasket>();
 
         // SysC binding
         systemc_example_top_.m_bus.initiator_socket[0](sparta_tlm_gasket0->m_memory_socket);
-       // systemc_example_top_.m_bus.initiator_socket[1](sparta_tlm_gasket1->m_memory_socket);
+        systemc_example_top_.m_bus.initiator_socket[1](sparta_tlm_gasket1->m_memory_socket);
     }
 }
