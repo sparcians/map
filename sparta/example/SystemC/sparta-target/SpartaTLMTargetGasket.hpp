@@ -66,7 +66,8 @@ namespace sparta_target
                 , sc_core::sc_time(30, sc_core::SC_NS) // write response delay)
                 , 4*1024                                // memory size (bytes)
                 , 4                                     // memory width (bytes)
-                ) 
+                ),
+            m_accept_delay(sc_core::sc_time(10, sc_core::SC_NS)) 
         {
             // This confusing call binds this TLM socket's
             // tlm_fw_transport_if API to this class for
@@ -89,6 +90,7 @@ namespace sparta_target
 
     private:
         memory m_target_memory;
+        sc_core::sc_time m_accept_delay;
         // Nothing should call this function directly.  Should be done
         // through the tlm::tlm_fw_transport_if<> pointer
         tlm::tlm_sync_enum nb_transport_fw (tlm::tlm_generic_payload &gp,

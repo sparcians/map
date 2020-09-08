@@ -18,7 +18,7 @@ if(SYSTEMC_SUPPORT)
       sparta-target/SpartaTLMTargetGasket.cpp
 
       # From the TLM examples
-      ${TLM_EXAMPLES_DIR}/at_1_phase/src/initiator_top.cpp
+      ${TLM_EXAMPLES_DIR}/at_2_phase/src/initiator_top.cpp
       ${TLM_EXAMPLES_DIR}/common/src/select_initiator.cpp
       ${TLM_EXAMPLES_DIR}/common/src/report.cpp
       ${TLM_EXAMPLES_DIR}/common/src/traffic_generator.cpp
@@ -38,7 +38,7 @@ if(SYSTEMC_SUPPORT)
       ${TLM_EXAMPLES_DIR}/common/include/models
 
       # For initiator top, et. al. used in this example
-      ${TLM_EXAMPLES_DIR}/at_1_phase/include/
+      ${TLM_EXAMPLES_DIR}/at_2_phase/include/
 
       )
   endif()

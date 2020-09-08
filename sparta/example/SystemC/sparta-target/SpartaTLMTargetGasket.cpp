@@ -15,9 +15,9 @@ namespace sparta_target
         case tlm::BEGIN_REQ: 
         {
             std::cout << "Info: Gasket: BEGIN_REQ" << std::endl;
-            m_target_memory.operation(gp, delay_time); // perform memory operation now
+          //  m_target_memory.operation(gp, delay_time); // perform memory operation now
 
-    /*    // Convert the tlm GP to a sparta-based type.  If the modeler
+        // Convert the tlm GP to a sparta-based type.  If the modeler
         // chooses to use Sparta components to handle SysC data types,
         // the modeler could just pass the payload through as a
         // pointer on the DataOutPort.
@@ -52,18 +52,19 @@ namespace sparta_target
         const auto current_tick = getClock()->currentTick() - 1;
         sparta_assert(sc_core::sc_time_stamp().value() >= current_tick);
         const auto final_relative_tick =
-            sc_core::sc_time_stamp().value() - current_tick + delay_time.value();
+            sc_core::sc_time_stamp().value() - current_tick + delay_time.value() + m_accept_delay.value();
 
         // Send to memory with the given delay - NS -> clock cycles.
         // The Clock is on the same freq as the memory block
         out_memory_request_.send(request, getClock()->getCycle(final_relative_tick));
-*/
-        
-        // Assume accepted.  In a real system, the gasket could keep
+
+        phase = tlm::END_REQ;
+        delay_time = m_accept_delay;
+        // In a real system, the gasket could keep
         // track of credits in the downstream component and the
         // initiator of the request.  In that case, the gasket would
         // either queue the requests or deny the forward
-            return_val =  tlm::TLM_COMPLETED;
+            return_val =  tlm::TLM_UPDATED;
         break;
         }
         case tlm::END_RESP:

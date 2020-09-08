@@ -11,7 +11,7 @@ namespace systemc_example
     {
     public:
         systemc_example_top(sc_core::sc_module_name name);
-        SimpleBusAT<2, 2>       m_bus;
+        SimpleBusAT<2, 1>       m_bus;
         initiator_top           m_initiator_1;
         initiator_top           m_initiator_2;
     };
