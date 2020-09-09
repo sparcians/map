@@ -2,9 +2,13 @@
 #include "SpartaTLMTargetGasket.hpp"
 #include "MemoryRequest.hpp"
 #include "SpartaMemory.hpp"
+#include "reporting.h"
 
 namespace sparta_target
 {
+
+    static const char *filename = "SpartaTLMTargetGasket.cpp";	///< filename for reporting
+
     int SpartaTLMTargetGasket::nextID = 0;
     tlm::tlm_sync_enum SpartaTLMTargetGasket::nb_transport_fw (tlm::tlm_generic_payload &gp,
                                                                tlm::tlm_phase           &phase ,
@@ -68,6 +72,7 @@ namespace sparta_target
         break;
         }
         case tlm::END_RESP:
+        m_end_resp_rcvd_event.notify (sc_core::SC_ZERO_TIME);
         std::cout << "Info: Gasket: END_RESP" << std::endl;
         return_val = tlm::TLM_COMPLETED;
         break;
@@ -84,7 +89,7 @@ namespace sparta_target
     {
         
         // non-const lvalues
-        tlm::tlm_phase resp    = tlm::BEGIN_RESP;
+       // tlm::tlm_phase resp    = tlm::BEGIN_RESP;
         sc_core::sc_time delay = sc_core::SC_ZERO_TIME;
 
         if(SPARTA_EXPECT_FALSE(info_logger_)) {
@@ -94,11 +99,116 @@ namespace sparta_target
 
         auto & gp = *((tlm::tlm_generic_payload*)req.meta_data);
         gp.set_response_status(tlm::TLM_OK_RESPONSE);
+        
+        m_response_PEQ.notify(gp, delay);      // put transaction in the PEQ
+
 
         // Send back the response to the initiator
-        auto status = m_memory_socket->nb_transport_bw(*((tlm::tlm_generic_payload*)req.meta_data),
+       /* auto status = m_memory_socket->nb_transport_bw(*((tlm::tlm_generic_payload*)req.meta_data),
                                                        resp, delay);
-        (void)status;
+        (void)status;*/
     }
+
+    
+//=============================================================================
+/// begin_response method function implementation
+//
+// This method is statically sensitive to m_response_PEQ.get_event 
+//
+//=============================================================================
+void SpartaTLMTargetGasket::begin_response_method (void)
+{
+  std::ostringstream        msg;                    // log message
+  tlm::tlm_generic_payload  *transaction_ptr;       // generic payload pointer
+  msg.str("");
+  tlm::tlm_sync_enum        status = tlm::TLM_COMPLETED;
+
+//-----------------------------------------------------------------------------  
+//  Process all transactions scheduled for current time a return value of NULL 
+//  indicates that the PEQ is empty at this time
+//----------------------------------------------------------------------------- 
+
+  while ((transaction_ptr = m_response_PEQ.get_next_transaction()) != NULL)
+  {
+    msg.str("");
+    msg << "Target: " << m_ID 
+        << " starting response method";
+    REPORT_INFO(filename,  __FUNCTION__, msg.str());    
+      
+    sc_core::sc_time delay  = sc_core::SC_ZERO_TIME;
+   
+   // m_target_memory.operation(*transaction_ptr, delay); /// perform memory operation
+
+    tlm::tlm_phase  phase = tlm::BEGIN_RESP; 
+                    delay = sc_core::SC_ZERO_TIME;
+                    
+    msg.str("");
+    msg << "Target: " << m_ID 
+        << " nb_transport_bw (GP, BEGIN_RESP, SC_ZERO_TIME)";
+    REPORT_INFO(filename,  __FUNCTION__, msg.str());
+
+//-----------------------------------------------------------------------------
+// Call nb_transport_bw with phase BEGIN_RESP check the returned status 
+//-----------------------------------------------------------------------------
+    status = m_memory_socket->nb_transport_bw(*transaction_ptr, phase, delay);
+    
+    msg.str("");
+    msg << "Target: " << m_ID
+        << " " << report::print(status) << " (GP, "
+        << report::print(phase) << ", "
+        << delay << ")"; 
+    REPORT_INFO(filename,  __FUNCTION__, msg.str());
+
+    switch (status)
+    { 
+    
+//=============================================================================
+    case tlm::TLM_COMPLETED:    
+      {          
+        next_trigger (delay);               // honor the annotated delay 
+        return; 
+        break;
+      }
+      
+//=============================================================================
+    case tlm::TLM_ACCEPTED:
+      {     
+        next_trigger (m_end_resp_rcvd_event); // honor end-response rule  
+        return; 
+        break;
+      }
+
+//=============================================================================
+    case tlm::TLM_UPDATED:   
+      {
+      if(!m_begin_resp_method_prev_warning)
+        {
+          msg << "Target: " << m_ID 
+              << " TLM_UPDATED invalid response to BEGIN_RESP";
+          REPORT_WARNING(filename, __FUNCTION__, msg.str()); 
+        }
+      else m_begin_resp_method_prev_warning = true;
+      break;
+      }
+ 
+//=============================================================================
+    default:                  
+      {
+        if(!m_begin_resp_method_prev_warning)
+          {
+            msg << "Target: " << m_ID 
+                << " undefined return status ";
+           REPORT_WARNING(filename, __FUNCTION__, msg.str()); 
+          }
+        else m_begin_resp_method_prev_warning = true;
+        break;
+      }
+    }// end switch
+      
+  } // end while
+  
+  next_trigger (m_response_PEQ.get_event()); 
+
+} //end begin_response_queue_active
 
 }
