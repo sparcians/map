@@ -3,6 +3,7 @@
 #include "MemoryRequest.hpp"
 #include "SpartaMemory.hpp"
 #include "reporting.h"
+#define DIRECT_MEMORY_OPERATION 1
 
 namespace sparta_target
 {
@@ -19,7 +20,17 @@ namespace sparta_target
         case tlm::BEGIN_REQ: 
         {
             std::cout << "Info: Gasket: BEGIN_REQ" << std::endl;
-          //  m_target_memory.operation(gp, delay_time); // perform memory operation now
+    //-----------------------------------------------------------------------------
+// Force synchronization multiple timing points by returning TLM_ACCEPTED 
+// use a payload event queue to schedule BEGIN_RESP timing point  
+//-----------------------------------------------------------------------------
+        m_target_memory.get_delay(gp, delay_time);  // get memory operation delay
+        
+        delay_time += m_accept_delay;
+#ifdef DIRECT_MEMORY_OPERATION    
+        m_response_PEQ.notify(gp, delay_time);  
+#else
+     //  m_target_memory.operation(gp, delay_time); // perform memory operation now
 
         // Convert the tlm GP to a sparta-based type.  If the modeler
         // chooses to use Sparta components to handle SysC data types,
@@ -61,7 +72,7 @@ namespace sparta_target
         // Send to memory with the given delay - NS -> clock cycles.
         // The Clock is on the same freq as the memory block
         out_memory_request_.send(request, getClock()->getCycle(final_relative_tick));
-
+#endif
         phase = tlm::END_REQ;
         delay_time = m_accept_delay;
         // In a real system, the gasket could keep
@@ -136,9 +147,9 @@ void SpartaTLMTargetGasket::begin_response_method (void)
     REPORT_INFO(filename,  __FUNCTION__, msg.str());    
       
     sc_core::sc_time delay  = sc_core::SC_ZERO_TIME;
-   
-   // m_target_memory.operation(*transaction_ptr, delay); /// perform memory operation
-
+   #ifdef DIRECT_MEMORY_OPERATION
+    m_target_memory.operation(*transaction_ptr, delay); /// perform memory operation
+   #endif
     tlm::tlm_phase  phase = tlm::BEGIN_RESP; 
                     delay = sc_core::SC_ZERO_TIME;
                     
