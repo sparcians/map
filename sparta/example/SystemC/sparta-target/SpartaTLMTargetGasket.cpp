@@ -3,7 +3,7 @@
 #include "MemoryRequest.hpp"
 #include "SpartaMemory.hpp"
 #include "reporting.h"
-#define DIRECT_MEMORY_OPERATION 1
+//#define DIRECT_MEMORY_OPERATION 1
 
 namespace sparta_target
 {
@@ -26,8 +26,8 @@ namespace sparta_target
 //-----------------------------------------------------------------------------
         m_target_memory.get_delay(gp, delay_time);  // get memory operation delay
         
-        delay_time += m_accept_delay;
 #ifdef DIRECT_MEMORY_OPERATION    
+        delay_time += m_accept_delay;
         m_response_PEQ.notify(gp, delay_time);  
 #else
      //  m_target_memory.operation(gp, delay_time); // perform memory operation now
@@ -64,10 +64,11 @@ namespace sparta_target
         //
         //   sysc_clock - sparta_clock + delay = 4 cycles on sparta clock (11)
         //
+        auto current_sc_time = sc_core::sc_time_stamp().value();
         const auto current_tick = getClock()->currentTick() - 1;
         sparta_assert(sc_core::sc_time_stamp().value() >= current_tick);
         const auto final_relative_tick =
-            sc_core::sc_time_stamp().value() - current_tick + delay_time.value() + m_accept_delay.value();
+            current_sc_time - current_tick + delay_time.value() + m_accept_delay.value();
 
         // Send to memory with the given delay - NS -> clock cycles.
         // The Clock is on the same freq as the memory block

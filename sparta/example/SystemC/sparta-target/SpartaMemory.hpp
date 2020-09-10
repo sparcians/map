@@ -25,7 +25,7 @@ namespace sparta_target
             explicit SpartaMemoryParameters(sparta::TreeNode* n):
                 sparta::ParameterSet(n)
             { }
-            PARAMETER(uint32_t, memory_size         , 4, "Memory Size")
+            PARAMETER(uint32_t, memory_size         , 1024*4, "Memory Size")
             PARAMETER(uint32_t, memory_width        , 4, "Memory width")
             PARAMETER(uint32_t, accept_delay        , 4, "Acceptance delay for new transactions")
             PARAMETER(uint32_t, read_response_delay , 4, "Read response delay")
