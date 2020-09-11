@@ -74,12 +74,13 @@ namespace sparta_target
         // The Clock is on the same freq as the memory block
         out_memory_request_.send(request, getClock()->getCycle(final_relative_tick));
 #endif
+        phase = tlm::END_REQ;
         delay_time = m_accept_delay;
         // In a real system, the gasket could keep
         // track of credits in the downstream component and the
         // initiator of the request.  In that case, the gasket would
         // either queue the requests or deny the forward
-            return_val =  tlm::TLM_ACCEPTED;
+            return_val =  tlm::TLM_UPDATED;
         break;
         }
         case tlm::END_RESP:
@@ -114,8 +115,8 @@ namespace sparta_target
         m_response_PEQ.notify(gp, delay);      // put transaction in the PEQ
 
 
-        /* Send back the response to the initiator
-       // auto status = m_memory_socket->nb_transport_bw(*((tlm::tlm_generic_payload*)req.meta_data),
+        // Send back the response to the initiator
+       /* auto status = m_memory_socket->nb_transport_bw(*((tlm::tlm_generic_payload*)req.meta_data),
                                                        resp, delay);
         (void)status;*/
     }

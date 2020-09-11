@@ -10,11 +10,11 @@ if(SYSTEMC_SUPPORT)
   else()
     message (STATUS "TLM examples directory: ${TLM_EXAMPLES_DIR}")
 
-    add_executable(sparta_sysc_model_1
-      SpartaSystemCSimulator.cpp
-      systemc_example_top.cpp
+    add_executable(sparta_sysc_model_1_phase
+      ../common/SpartaSystemCSimulator.cpp
+      ../common/systemc_example_top.cpp
 
-      sparta-target/SpartaMemory.cpp
+     ../common/sparta-target/SpartaMemory.cpp
       sparta-target/SpartaTLMTargetGasket.cpp
 
       # From the TLM examples
@@ -24,11 +24,11 @@ if(SYSTEMC_SUPPORT)
       ${TLM_EXAMPLES_DIR}/common/src/traffic_generator.cpp
       ${TLM_EXAMPLES_DIR}/common/src/memory.cpp
 
-      sc_main.cpp
+      ../common/sc_main.cpp
       )
 
-    sparta_application(sparta_sysc_model_1)
-    target_link_libraries (sparta_sysc_model_1 SystemC::systemc)
+    sparta_application(sparta_sysc_model_1_phase)
+    target_link_libraries (sparta_sysc_model_1_phase SystemC::systemc)
 
     include_directories(
       # For reporting, traffic gen
@@ -39,6 +39,9 @@ if(SYSTEMC_SUPPORT)
 
       # For initiator top, et. al. used in this example
       ${TLM_EXAMPLES_DIR}/at_1_phase/include/
+
+      ../common/
+      ../common/sparta-target/
 
       )
   endif()
