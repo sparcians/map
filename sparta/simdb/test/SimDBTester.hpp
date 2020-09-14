@@ -110,7 +110,7 @@ namespace simdb
                 //List the methods that were in fact reached.
                 cerr_ << "The test only reached the following: " << std::endl;
                 cerr_ << SIMDB_CURRENT_COLOR_GREEN;
-                for (const auto s : methods_reached_) {
+                for (const auto & s : methods_reached_) {
                     cerr_ << "-> " << s << "\n";
                 }
 
