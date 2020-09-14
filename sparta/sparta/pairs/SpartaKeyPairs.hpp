@@ -416,13 +416,13 @@ namespace sparta {
         void setFormatter(const FormatFlags & formatter) {
             switch(formatter) {
                 case std::ios::hex :
-                setHex();
-                break;
+                    setHex();
+                    break;
                 case std::ios::oct :
-                setOct();
-                break;
+                    setOct();
+                    break;
                 default:
-                return;
+                    return;
             }
         }
 
@@ -2292,4 +2292,3 @@ namespace sparta {
         PositionOnlyPairDef() : PairDefinition<TypeCollected>() {}
     };
 } //namespace sparta
-

@@ -51,32 +51,32 @@ namespace sparta
     class SpartaSharedPointer
     {
 
-        class SpartaWeakPointer
-        {
-        public:
-            explicit SpartaWeakPointer() : cnt_(&dead_cnt_) { cnt_.count = 0; }
-            explicit SpartaWeakPointer(const sparta::SpartaSharedPointer & sp) :
-                SpartaWeakPointer(sp.getRefCountPtr_())
-            {}
+        // class SpartaWeakPointer
+        // {
+        // public:
+        //     explicit SpartaWeakPointer() : cnt_(&dead_cnt_) { cnt_.count = 0; }
+        //     explicit SpartaWeakPointer(const sparta::SpartaSharedPointer & sp) :
+        //         SpartaWeakPointer(sp.getRefCountPtr_())
+        //     {}
 
-            long use_count() const noexcept { return cnt.count; }
-            bool expired() const noexcept { return cnt.count == 0; }
+        //     long use_count() const noexcept { return cnt.count; }
+        //     bool expired() const noexcept { return cnt.count == 0; }
 
-            SpartaWeakPointer(const SpartaWeakPointer &)  = default;
-            SpartaWeakPointer(      SpartaWeakPointer &&) = default;
-            SpartaWeakPointer & operator=(const SpartaWeakPointer &)  = default;
-            SpartaWeakPointer & operator=(      SpartaWeakPointer &&) = default;
+        //     SpartaWeakPointer(const SpartaWeakPointer &)  = default;
+        //     SpartaWeakPointer(      SpartaWeakPointer &&) = default;
+        //     SpartaWeakPointer & operator=(const SpartaWeakPointer &)  = default;
+        //     SpartaWeakPointer & operator=(      SpartaWeakPointer &&) = default;
 
-        private:
-            friend class SpartaSharedPointer;
-            SpartaWeakPointer(Refcount * cnt) : cnt_(cnt) {
-                cnt->wp_(this);
-            }
-            void detach_() { cnt = &dummy_cnt_; }
+        // private:
+        //     friend class SpartaSharedPointer;
+        //     SpartaWeakPointer(Refcount * cnt) : cnt_(cnt) {
+        //         cnt->wp_(this);
+        //     }
+        //     void detach_() { cnt = &dummy_cnt_; }
 
-            const Refcount * cnt_ = nullptr;
-            const Refcount dead_cnt_{nullptr, false};
-        };
+        //     const Refcount * cnt_ = nullptr;
+        //     const Refcount dead_cnt_{nullptr, false};
+        // };
 
         /// Internal structure to keep track of the reference
         struct RefCount
@@ -94,7 +94,8 @@ namespace sparta
                 }
             }
 
-            int32_t count;
+            int32_t weak_cnt{0};
+            int32_t count   {0};
             PointerT * p = nullptr;
             const bool perform_delete_;
         };
@@ -557,11 +558,11 @@ namespace sparta
             {
                 using RefCountType = SpartaSharedPointer<PointerT>::RefCount;
 
-                using PointerTAlignedStorage =
-                    typename std::aligned_storage<sizeof(PointerT), alignof(PointerT)>::type;
-
                 using RefCountAlignedStorage =
                     typename std::aligned_storage<sizeof(RefCountType), alignof(RefCountType)>::type;
+
+                using PointerTAlignedStorage =
+                    typename std::aligned_storage<sizeof(PointerT), alignof(PointerT)>::type;
 
                 template<typename ...ObjArgs>
                 MemBlock(SpartaSharedPointerAllocator * alloc_in,
