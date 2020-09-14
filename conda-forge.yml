@@ -12,6 +12,7 @@ skip_render:
   - .circleci/config.yml
   - .github/workflows/main.yml
   - .github/workflows/webservices.yml
+  - .github/workflows/automerge.yml
 provider:
   linux: travis
   osx: azure

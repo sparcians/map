@@ -117,21 +117,21 @@ endif ()
 # build type.
 #
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  message ("-- Building Sparta in Debug mode")
+  message (STATUS "Building Sparta in Debug mode")
 elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
-  message ("-- Building Sparta in Release mode")
+  message (STATUS "Building Sparta in Release mode")
 else ()
   message (FATAL_ERROR "Unknown CMAKE_BUILD_TYPE.  See README.md OR type 'make' at the SPARTA root")
 endif ()
 
 string (STRIP ${GIT_REPO_VERSION} GIT_REPO_VERSION)
-message ("-- Sparta Version: ${GIT_REPO_VERSION}")
+message (STATUS "Sparta Version: ${GIT_REPO_VERSION}")
 
 # Use ccache if we've got it.
 find_program (CCACHE_PROGRAM ccache)
 if (CCACHE_PROGRAM)
   set_property (GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
-  message ("-- Using ccache")
+  message (STATUS "Using ccache")
 endif ()
 
 # -Wpedantic
@@ -142,15 +142,15 @@ add_compile_options(-Werror -fPIC
   -Woverloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers)
 
 if (GEN_DEBUG_INFO)
-  message ("-- Building with debug info -g")
+  message (STATUS "Building with debug info -g")
   add_compile_options ( -g )
   add_link_options( -g )
 else ()
-  message ("-- Building without debug info -g")
+  message (STATUS "Building without debug info -g")
 endif ()
 
 if (ENABLE_SANITIZERS)
-    message ("-- Building with address and undefined behavior sanitizers")
+    message (STATUS "Building with address and undefined behavior sanitizers")
     add_compile_options(-fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined)
     set (CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
 endif ()
@@ -194,6 +194,19 @@ endif ()
 
 # Add a custom CMake Modules directory
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
+
+# SystemC support -- only used in testers/examples
+find_package(SystemCLanguage HINTS ENV{SYSTEMC_HOME})
+if (SystemCLanguage_FOUND)
+  if (NOT ${SystemC_CXX_STANDARD} EQUAL ${CMAKE_CXX_STANDARD})
+    message (FATAL_ERROR "SystemC was not built with the C++ standard (${SystemC_CXX_STANDARD}) required by Sparta (${CMAKE_CXX_STANDARD})")
+  endif ()
+  message (STATUS "SystemC enabled: ${SystemCLanguage_VERSION}")
+  set (SYSTEMC_SUPPORT True)
+  add_definitions(-DSYSTEMC_SUPPORT)
+else ()
+  message (STATUS "SystemC not found -- disabling tests/examples")
+endif ()
 
 # CppCheck Support
 set (CPPCHECK_XML_OUTPUT "${PROJECT_BINARY_DIR}/analysis/cppcheck/cppcheck_analysis.xml")

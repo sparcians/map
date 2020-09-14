@@ -1,0 +1,84 @@
+/*!
+  \page systemc SystemC Models
+
+  The Sparta Scheduler can work in a SystemC environment using the
+  sparta::SysCSpartaSchedulerAdapter.
+
+  \section building_sysc Building
+
+  There is no requirement to build Sparta any differently to enable
+  SystemC in Sparta.  However, to run the testing (and example), make
+  sure the Sparta CMake build environment can find the SystemC package
+  during configuration.  A message in the configuration output will be
+  written if the package was found:
+
+  \code
+  % cd sparta/build; cmake .. -DCMAKE_BUILD_TYPE=Release
+  ...
+  -- SystemC enabled: 2.3.3.20181013
+  ...
+  \endcode
+
+  If not, then `cmake` could not find the SystemC package.  This can
+  happen if there exists an install of SystemC elsewhere on the system
+  (like a user's home directory).  Sparta can still use that install,
+  but it must be built with the same C++ standard.  First, build SystemC:
+
+  \code
+  cd /path/to/systemc-2.3.3; mkdir build; cd build
+  cmake .. -DCMAKE_CXX_STANDARD=17 -DCMAKE_BUILD_TYPE=Release
+  make install
+  \endcode
+
+  Then, configure/build Sparta again:
+
+  -# Set your `SYSTEMC_HOME` environment variable to the SystemC build:
+  `export SYSTEMC_HOME=/path/to/systemc-2.3.3`
+  -# Re-configure Sparta: `cmake .. -DCMAKE_BUILD_TYPE=Release`
+
+  The enablement message should print at this point.
+
+  To build/run the SystemC example (example/SystemC), the TLM `example`
+  directory must be found.  Since the TLM examples are not part of an
+  install, the Sparta SystemC example CMakeLists.txt file will use the
+  environment variable SYSTEMC_HOME to locate it.
+
+  \section sysc_adapter SystemC/Sparta Adapter
+
+  The sparta::SysCSpartaSchedulerAdapter is just that, and adapter
+  that syncs the SystemC clock with the Sparta Scheduler.  With this
+  class, the modeler is not responsible for advancing time on the
+  Sparta scheduler.  SystemC will be doing that via SC_THREADs.
+
+  However, Sparta assume "control" of the scheduling in that the
+  adapter by starting the SystemC scheduler (`sc_core::sc_start`) via
+  the sparta::SysCSpartaSchedulerAdapter::run method.
+
+  The expected development using this adapter is:
+
+  -# Implement `sc_main` as normal
+  -# Instantiate Sparta components including a sparta::Scheduler,
+    sparta::ResourceTreeNode, etc
+  -# Instantiate the sparta::SysCSpartaSchedulerAdapter passing to
+    its constructor the sparta::Scheduler created
+  -# Call `run()` on the adapter
+
+  See an example of this in `sparta/test/SystemC_test.cpp`
+
+  Caveats:
+
+  -# Only one adapter is allowed in simulation
+  -# Only one sparta::Scheduler is allowed in simulation
+  -# Time bounces between SystemC advancement and Sparta.  Zero-timed
+    communication between a SysC component and a Sparta component will
+    not work.  This is due how the adapter operates.  Time is given to
+    SystemC, which catches up to Sparta, then Sparta moves ahead (by
+    at most 1 tick).  If a SystemC (or Sparta) component requests a
+    send/immediate response to a component in the other modeling
+    environment, there will always be a lag.  This is something that
+    can be fixed, but there have been no use cases to date for this need
+  -# Communication between a Sparta component (Sparta Port) and a
+    SystemC Port (or TLM callback) requires a Sparta/SystemC gasket to
+    be written by the modeler
+
+*/

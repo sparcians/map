@@ -1,28 +1,28 @@
-MACOSX_DEPLOYMENT_TARGET:
-- '10.13'
+boost:
+- 1.70.0
 boost_cpp:
 - 1.70.0
 c_compiler:
-- clang
+- gcc
 c_compiler_version:
-- '9'
+- 7.5.0 h09487f9_20
 channel_sources:
 - conda-forge,defaults
 channel_targets:
 - conda-forge main
 cxx_compiler:
-- clangxx
+- gxx
 cxx_compiler_version:
-- '9'
+- 7.5.0 h09487f9_20
+docker_image:
+- condaforge/linux-anvil-comp7
 hdf5:
 - 1.10.5
-macos_machine:
-- x86_64-apple-darwin13.4.0
-macos_min_version:
-- '10.13'
 numpy:
-- '1.14'
+- '1.16'
 pin_run_as_build:
+  boost:
+    max_pin: x.x.x
   boost-cpp:
     max_pin: x.x.x
   python:
@@ -34,6 +34,5 @@ python:
 - 3.7.* *_cpython
 sqlite:
 - '3'
-zip_keys:
-- - macos_min_version
-  - MACOSX_DEPLOYMENT_TARGET
+target_platform:
+- linux-64

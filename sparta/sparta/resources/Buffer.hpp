@@ -385,6 +385,9 @@ namespace sparta
         //! Move Constructor to allow moves
         Buffer(Buffer<value_type> &&);
 
+        //! Clear (and destruct the Buffer's contents)
+        ~Buffer() { clear(); }
+
         /*!
          * \brief Name of this resource.
          */

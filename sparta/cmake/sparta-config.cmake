@@ -55,19 +55,19 @@ else ()
 endif ()
 
 set (BUILD_SHARED_LIBS ${existing_build_shared})
-message ("-- Using BOOST ${Boost_VERSION_STRING}")
+message (STATUS "Using BOOST ${Boost_VERSION_STRING}")
 
 # Find YAML CPP
 find_package (yaml-cpp 0.6 REQUIRED)
-message ("-- Using YAML CPP ${PACKAGE_VERSION}")
+message (STATUS "Using YAML CPP ${PACKAGE_VERSION}")
 
 # Find RapidJSON
 find_package (RapidJSON 1.1 REQUIRED)
-message ("-- Using RapidJSON CPP ${RapidJSON_VERSION}")
+message (STATUS "Using RapidJSON CPP ${RapidJSON_VERSION}")
 
 # Find SQLite3
 find_package (SQLite3 3.19 REQUIRED)
-message ("-- Using SQLite3 ${SQLite3_VERSION}")
+message (STATUS "Using SQLite3 ${SQLite3_VERSION}")
 
 # Find HDF5. Need to enable C language for HDF5 testing
 enable_language (C)
@@ -77,6 +77,11 @@ find_package (HDF5 1.10 REQUIRED)
 # basic Sparta linking
 set (Sparta_LIBS sparta simdb ${HDF5_LIBRARIES} sqlite3 yaml-cpp z pthread
   Boost::date_time Boost::filesystem Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
+
+# On Linux we need to link against rt as well
+if (NOT APPLE)
+    list(APPEND Sparta_LIBS rt)
+endif ()
 
 #
 # Python support
@@ -94,7 +99,7 @@ endif ()
 # Conda support
 #
 if (USING_CONDA)
-    message ("-- Using CONDA toolchain")
+    message (STATUS "Using CONDA toolchain")
     # if you don't do this, cmake won't pass the conda $PREFIX/include to
     # the conda compiler and things get crazy
     unset(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES)
