@@ -12,6 +12,7 @@
 #include "tlm_utils/peq_with_get.h"                   // Payload event queue FIFO
 #include "memory.h"
 
+
 namespace sparta_target
 {
 
@@ -73,7 +74,8 @@ namespace sparta_target
                 , 4                                     // memory width (bytes)
                 ),
             m_accept_delay(sc_core::sc_time(10, sc_core::SC_NS)), 
-            m_response_PEQ          ("response_PEQ")
+            m_response_PEQ          ("response_PEQ"),
+            m_end_request_PEQ          ("end_request_PEQ")
         {
             // This confusing call binds this TLM socket's
             // tlm_fw_transport_if API to this class for
@@ -88,10 +90,13 @@ namespace sparta_target
                 (CREATE_SPARTA_HANDLER_WITH_DATA(SpartaTLMTargetGasket,
                                                  forwardMemoryResponse_, MemoryRequest));
             /// Register begin_reponse as an SC_METHOD
-            /// Used to implement force synchronization multiple timing points
             SC_METHOD(begin_response_method);
             sensitive << m_response_PEQ.get_event();
-            dont_initialize();                         
+            dont_initialize();                       
+            /// Register end_request as an SC_METHOD
+            SC_METHOD(end_request_method);
+            sensitive << m_end_request_PEQ.get_event();
+            dont_initialize();                       
         }
 
         // Unfortunately, this has to be made public for the SysC
@@ -114,6 +119,14 @@ namespace sparta_target
    begin_response_method                             
    ( void
    );
+
+   void
+   end_request_method                             
+   ( void
+   );
+
+    void setTreeNode(sparta::TreeNode *treeNodePtr);
+
     private:
         const unsigned int        m_ID;                   ///< target ID
         memory m_target_memory;
@@ -124,9 +137,9 @@ namespace sparta_target
                                             tlm::tlm_phase           &phase ,
                                             sc_core::sc_time         &delay_time ) override final;
 
-        sparta::DataOutPort<MemoryRequest> out_memory_request_ {getPortSet(), "out_memory_request"};
         sparta::DataInPort<MemoryRequest>  in_memory_response_ {getPortSet(), "in_memory_response"};
-
+        sparta::DataOutPort<MemoryRequest> out_memory_request_ {getPortSet(), "out_memory_request"};
+        void send_end_request_(const tlm::tlm_generic_payload &);
         void forwardMemoryResponse_(const MemoryRequest &);
         unsigned long       m_request_count;        ///< used to calc synch transactions  
         bool                m_nb_trans_fw_prev_warning;
@@ -134,8 +147,13 @@ namespace sparta_target
         bool                m_trans_dbg_prev_warning;
         bool                m_get_dm_ptr_prev_warning;
         tlm_utils::peq_with_get<tlm::tlm_generic_payload> m_response_PEQ;  ///< response payload event queue
+        tlm_utils::peq_with_get<tlm::tlm_generic_payload> m_end_request_PEQ;  ///< end request payload event queue
         sc_core::sc_event   m_end_resp_rcvd_event;
-
+        sparta::TreeNode * m_pTn; 
+              // An event to be scheduled in the sparta::SchedulingPhase::Tick
+        // phase if data is received
+        /*sparta::PayloadEvent<tlm::tlm_generic_payload, sparta::SchedulingPhase::Tick> event_end_req_(&unit_event_set_, "end_req_event", CREATE_SPARTA_HANDLER_WITH_DATA(SpartaTLMTargetGasket, send_end_request_, tlm::tlm_generic_payload));
+ */
         // Junk not needed
         /// b_transport() - Blocking Transport
         void b_transport(tlm::tlm_generic_payload &payload, sc_core::sc_time &delay_time) override { }

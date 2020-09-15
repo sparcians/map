@@ -223,4 +223,7 @@ void SpartaTLMTargetGasket::begin_response_method (void)
 
 } //end begin_response_queue_active
 
+void SpartaTLMTargetGasket::end_request_method(void) {
+        //Not implemented for 2 phase
+}
 }
