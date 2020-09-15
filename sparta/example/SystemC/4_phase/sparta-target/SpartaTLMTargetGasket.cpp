@@ -11,21 +11,89 @@ namespace sparta_target
     static const char *filename = "SpartaTLMTargetGasket.cpp";	///< filename for reporting
 
     int SpartaTLMTargetGasket::nextID = 0;
+
+/*    void SpartaTLMTargetGasket::setTreeNode(sparta::TreeNode * treeNodePtr) {
+      m_pTn = treeNodePtr;
+    }
+*/    
     tlm::tlm_sync_enum SpartaTLMTargetGasket::nb_transport_fw (tlm::tlm_generic_payload &gp,
                                                                tlm::tlm_phase           &phase ,
                                                                sc_core::sc_time         &delay_time )
     {
+        std::ostringstream        msg;                    // log message
+
     tlm::tlm_sync_enum return_val = tlm::TLM_COMPLETED;
         switch(phase) {
         case tlm::BEGIN_REQ: 
         {
             std::cout << "Info: Gasket: BEGIN_REQ" << std::endl;
-    //-----------------------------------------------------------------------------
-// Force synchronization multiple timing points by returning TLM_ACCEPTED 
-// use a payload event queue to schedule BEGIN_RESP timing point  
-//-----------------------------------------------------------------------------
-        m_target_memory.get_delay(gp, delay_time);  // get memory operation delay
-        
+            sc_core::sc_time PEQ_delay_time = delay_time + m_accept_delay;    
+            m_end_request_PEQ.notify(gp, PEQ_delay_time); // put transaction in the PEQ
+           //event_end_req_(gp)->schedule();
+           return_val =  tlm::TLM_ACCEPTED;
+        break;
+        }
+        case tlm::END_RESP:
+        m_end_resp_rcvd_event.notify (sc_core::SC_ZERO_TIME);
+        std::cout << "Info: Gasket: END_RESP" << std::endl;
+        return_val = tlm::TLM_COMPLETED;
+        break;
+//=============================================================================
+    case tlm::END_REQ:
+    case tlm::BEGIN_RESP:
+    { 
+      msg << "Target: " << m_ID 
+          << " Illegal phase received by target -- END_REQ or BEGIN_RESP";
+      REPORT_FATAL(filename, __FUNCTION__, msg.str()); 
+      return_val = tlm::TLM_ACCEPTED;
+      break;
+    }
+   
+//=============================================================================
+    default:
+    { 
+      return_val = tlm::TLM_ACCEPTED; 
+      if(!m_nb_trans_fw_prev_warning)
+        {
+        msg << "Target: " << m_ID 
+            << " unknown phase " << phase << " encountered";
+        REPORT_WARNING(filename, __FUNCTION__, msg.str()); 
+        m_nb_trans_fw_prev_warning = true;
+        }
+      break;
+    }
+        }
+        return return_val;
+    }
+
+    //=============================================================================
+/// end_request  method function implementation
+//
+// This method is statically sensitive to m_end_request_PEQ.get_event 
+//
+//=============================================================================
+void SpartaTLMTargetGasket::end_request_method (void)
+{
+  std::ostringstream        msg;                    // log message
+  tlm::tlm_generic_payload  *transaction_ptr;       // generic payload pointer
+  msg.str("");
+  tlm::tlm_sync_enum        status = tlm::TLM_COMPLETED;
+
+//-----------------------------------------------------------------------------  
+//  Process all transactions scheduled for current time a return value of NULL 
+//  indicates that the PEQ is empty at this time
+//----------------------------------------------------------------------------- 
+
+  while ((transaction_ptr = m_end_request_PEQ.get_next_transaction()) != NULL)
+  {
+    msg.str("");
+    msg << "Target: " << m_ID 
+        << " starting end-request method";
+
+    sc_core::sc_time delay  = sc_core::SC_ZERO_TIME;
+    
+    m_target_memory.get_delay(*transaction_ptr, delay); // get memory operation delay
+
 #ifdef DIRECT_MEMORY_OPERATION    
         delay_time += m_accept_delay;
         m_response_PEQ.notify(gp, delay_time);  
@@ -37,14 +105,14 @@ namespace sparta_target
         // the modeler could just pass the payload through as a
         // pointer on the DataOutPort.
         MemoryRequest request = {
-            (gp.get_command() == tlm::TLM_READ_COMMAND ?
+            (transaction_ptr->get_command() == tlm::TLM_READ_COMMAND ?
              MemoryRequest::Command::READ : MemoryRequest::Command::WRITE),
-            gp.get_address(),
-            gp.get_data_length(),
+            transaction_ptr->get_address(),
+            transaction_ptr->get_data_length(),
 
             // Always scary pointing to memory owned by someone else...
-            gp.get_data_ptr(),
-            (void*)&gp};
+            transaction_ptr->get_data_ptr(),
+            (void*)transaction_ptr};
 
         if(SPARTA_EXPECT_FALSE(info_logger_)) {
             info_logger_ << " sending to memory model: " << request;
@@ -68,34 +136,82 @@ namespace sparta_target
         const auto current_tick = getClock()->currentTick() - 1;
         sparta_assert(sc_core::sc_time_stamp().value() >= current_tick);
         const auto final_relative_tick =
-            current_sc_time - current_tick + delay_time.value() + m_accept_delay.value();
+            current_sc_time - current_tick;
 
         // Send to memory with the given delay - NS -> clock cycles.
         // The Clock is on the same freq as the memory block
         out_memory_request_.send(request, getClock()->getCycle(final_relative_tick));
 #endif
-        phase = tlm::END_REQ;
-        delay_time = m_accept_delay;
-        // In a real system, the gasket could keep
-        // track of credits in the downstream component and the
-        // initiator of the request.  In that case, the gasket would
-        // either queue the requests or deny the forward
-            return_val =  tlm::TLM_UPDATED;
+    tlm::tlm_phase phase    = tlm::END_REQ; 
+    delay                   = sc_core::SC_ZERO_TIME;
+
+    msg << endl << "      "
+        << "Target: " << m_ID   
+        << " transaction moved to send-response PEQ "
+        << endl << "      ";
+    msg << "Target: " << m_ID 
+        << " nb_transport_bw (GP, " 
+        << report::print(phase) << ", "
+        << delay << ")" ;
+    REPORT_INFO(filename,  __FUNCTION__, msg.str());
+
+
+//-----------------------------------------------------------------------------
+// Call nb_transport_bw with phase END_REQ check the returned status 
+//-----------------------------------------------------------------------------
+    status = m_memory_socket->nb_transport_bw(*transaction_ptr, phase, delay);
+    
+    msg.str("");
+    msg << "Target: " << m_ID
+        << " " << report::print(status) << " (GP, "
+        << report::print(phase) << ", "
+        << delay << ")"; 
+    REPORT_INFO(filename,  __FUNCTION__, msg.str());
+
+    switch (status)
+    { 
+//=============================================================================
+    case tlm::TLM_ACCEPTED:
+      {   
+        // more phases will follow
+        
         break;
-        }
-        case tlm::END_RESP:
-        m_end_resp_rcvd_event.notify (sc_core::SC_ZERO_TIME);
-        std::cout << "Info: Gasket: END_RESP" << std::endl;
-        return_val = tlm::TLM_COMPLETED;
+      }
+
+//=============================================================================
+    case tlm::TLM_COMPLETED:    
+      {          
+        msg << "Target: " << m_ID 
+            << " TLM_COMPLETED invalid response to END_REQ" << endl
+            << "      Initiator must receive data before ending transaction";
+        REPORT_FATAL(filename, __FUNCTION__, msg.str()); 
         break;
-        default:
-        {
-        return_val = tlm::TLM_ACCEPTED;
+      }
+
+//=============================================================================
+    case tlm::TLM_UPDATED:   
+      {
+          msg << "Target: " << m_ID 
+            << " TLM_UPDATED invalid response to END_REQ" << endl
+            << "      Initiator must receive data before updating transaction";
+          REPORT_FATAL(filename, __FUNCTION__, msg.str()); 
+
         break;
-        }
-        }
-        return return_val;
-    }
+      }
+ 
+//=============================================================================
+    default:
+      {
+         msg << "Target: " << m_ID 
+             << " Illegal return status";
+         REPORT_FATAL(filename, __FUNCTION__, msg.str()); 
+
+        break;
+      }
+    }// end switch
+  } // end while
+} //end end_request_method
+
 
     void SpartaTLMTargetGasket::forwardMemoryResponse_(const MemoryRequest & req)
     {
@@ -130,6 +246,8 @@ namespace sparta_target
 //=============================================================================
 void SpartaTLMTargetGasket::begin_response_method (void)
 {
+ // end_request_method();
+ // return;
   std::ostringstream        msg;                    // log message
   tlm::tlm_generic_payload  *transaction_ptr;       // generic payload pointer
   msg.str("");
@@ -216,7 +334,7 @@ void SpartaTLMTargetGasket::begin_response_method (void)
         break;
       }
     }// end switch
-      
+
   } // end while
   
   next_trigger (m_response_PEQ.get_event()); 
