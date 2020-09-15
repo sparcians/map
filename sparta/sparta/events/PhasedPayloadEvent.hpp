@@ -176,9 +176,13 @@ namespace sparta
         //! reusable.
         void reclaimProxy_(typename ProxyInflightList::iterator & pl_location) {
             sparta_assert(pl_location != inflight_pl_.end());
-            if constexpr(MetaStruct::is_any_pointer<DataT>::value) {
+
+#if __cpp_if_constexpr >= 201606
+            if constexpr(MetaStruct::is_any_pointer<DataT>::value)
+            {
                 (*pl_location)->setPayload_(nullptr);
             }
+#endif
             free_pl_[free_idx_++] = *pl_location;
             inflight_pl_.erase(pl_location);
             pl_location = inflight_pl_.end();

@@ -44,16 +44,24 @@
 #include <string>
 #include <vector>
 
-namespace sparta::app {
-    class ReportDescriptor;
+namespace sparta {
+    namespace app {
+        class ReportDescriptor;
+    }
 } /* namespace sparta */
 
-namespace sparta::app {
-class Simulation;
+namespace sparta {
+    namespace app {
+        class Simulation;
+    }
 }  // namespace sparta::app
 
-namespace sparta::report::format {
-class BaseFormatter;
+namespace sparta {
+    namespace report {
+        namespace format {
+            class BaseFormatter;
+        }
+    }
 }  // namespace sparta::report::format
 
 namespace sparta {
@@ -158,4 +166,3 @@ private:
 };
 
 } // namespace sparta
-

@@ -483,7 +483,8 @@ namespace sparta
             initial_value_{other.initial_value_},
             current_state_{other.current_state_},
             marker_set_{other.marker_set_},
-            state_tracker_unit_{other.state_tracker_unit_ ? new auto {*other.state_tracker_unit_} : nullptr}
+            state_tracker_unit_{other.state_tracker_unit_ ?
+                                new typename tracker::state_tracker_ptr<EnumType>::element_type {*other.state_tracker_unit_} : nullptr}
         {}
 
 

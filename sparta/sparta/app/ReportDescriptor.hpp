@@ -39,12 +39,16 @@ namespace simdb {
     class ObjectManager;
 }  // namespace simdb
 
-namespace sparta::app {
-    class SimulationConfiguration;
+namespace sparta {
+    namespace app {
+        class SimulationConfiguration;
+    }
 }  // namespace sparta::app
 
-namespace sparta::trigger {
-    class SkippedAnnotatorBase;
+namespace sparta {
+    namespace trigger {
+        class SkippedAnnotatorBase;
+    }
 }  // namespace sparta::trigger
 
 namespace sparta {

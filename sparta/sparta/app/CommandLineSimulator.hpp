@@ -34,17 +34,23 @@
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/app/ReportDescriptor.hpp"
 
-namespace boost::program_options {
-template <class charT> class basic_parsed_options;
+namespace boost {
+    namespace program_options {
+        template <class charT> class basic_parsed_options;
+    }
 }  // namespace boost::program_options
 
-namespace sparta::app {
-class Simulation;
+namespace sparta {
+    namespace app {
+        class Simulation;
+    }
 }  // namespace sparta::app
 
-namespace sparta::trigger {
-class Trigger;
-class Triggerable;
+namespace sparta {
+    namespace trigger {
+        class Trigger;
+        class Triggerable;
+    }
 }  // namespace sparta::trigger
 
 namespace po = boost::program_options;

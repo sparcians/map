@@ -189,7 +189,12 @@ namespace sparta
         template<typename U>
         void writeImpl_(U && dat) {
             data_[NState_()] = std::forward<U>(dat);
-            if constexpr (!manual_update) {
+#if __cplusplus >= 201703L
+            if constexpr (!manual_update)
+#else
+            if (!manual_update)
+#endif
+            {
                 ev_update_.schedule(1);
             }
         }
@@ -210,4 +215,3 @@ namespace sparta
         PSNSData data_;
     };
 }
-

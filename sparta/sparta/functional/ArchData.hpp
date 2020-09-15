@@ -872,7 +872,11 @@ namespace sparta
          * zero, or is not a power of 2)
          */
         void checkDataSize(offset_type size) const {
+#if __cpp_static_assert >= 201411
             static_assert(std::is_unsigned<offset_type>::value == true);
+#else
+            sparta_assert(std::is_unsigned<offset_type>::value == true);
+#endif
             if(size == 0){
                 throw SpartaException("Segment size (")
                     << size << ") must be larger than 0 and less than line size ("

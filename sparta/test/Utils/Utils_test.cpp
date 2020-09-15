@@ -74,18 +74,20 @@ void testLifeTracker()
 
 int main()
 {
+#if __cplusplus >= 201703L
     auto u_map = std::unordered_map<std::string, int>{{"Key1", 1}, {"Key2", 2}, {"Key3", 3}};
     auto flipped_map = sparta::flipMap(u_map);
     EXPECT_TRUE(flipped_map[1] == "Key1");
     EXPECT_TRUE(flipped_map[2] == "Key2");
     EXPECT_TRUE(flipped_map[3] == "Key3");
-    
+
     auto u_map2 = std::map<int, std::string>{{10, "Key10"}, {11, "Key11"}, {12, "Key12"}};
     auto flipper_map2 = sparta::flipMap(u_map2);
     EXPECT_TRUE(flipper_map2["Key10"] == 10);
     EXPECT_TRUE(flipper_map2["Key11"] == 11);
     EXPECT_TRUE(flipper_map2["Key12"] == 12);
-    
+#endif
+
     testLifeTracker();
 
     // testing checked casting of pointers and shared pointers

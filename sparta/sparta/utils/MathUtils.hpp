@@ -153,7 +153,11 @@ namespace sparta {
         {
             (void) u;
             (void) v;
+#if __cpp_static_assert >= 201411
             static_assert("This is an unsupported type");
+#else
+            sparta_assert(false, "This is invalid");
+#endif
         }
 
         // Adapted from WIKI article on binary GCD algorithm

@@ -54,8 +54,10 @@
 #include "sparta/kernel/SpartaHandler.hpp"
 #include "sparta/statistics/StatisticDef.hpp"
 
-namespace sparta::app {
-class Simulation;
+namespace sparta {
+    namespace app {
+        class Simulation;
+    }
 }  // namespace sparta::app
 
 namespace sparta {
@@ -1796,4 +1798,3 @@ inline bool operator!=(const ExpressionTrigger::ExpressionTriggerInternals & int
 
 } // namespace trigger
 } // namespace sparta
-

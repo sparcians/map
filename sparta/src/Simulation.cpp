@@ -102,12 +102,18 @@ namespace YAML {
 class EventHandler;
 }  // namespace YAML
 
-namespace sparta::report::format {
-class BaseFormatter;
+namespace sparta {
+    namespace report {
+        namespace format {
+            class BaseFormatter;
+        }
+    }
 }  // namespace sparta::report::format
 
-namespace sparta::statistics {
-class StreamController;
+namespace sparta {
+    namespace statistics {
+        class StreamController;
+    }
 }  // namespace sparta::statistics
 
 

@@ -49,12 +49,18 @@
 #include "sparta/trigger/ExpressionTrigger.hpp"
 #include "sparta/utils/ValidValue.hpp"
 
-namespace sparta::report::format {
-class BaseFormatter;
+namespace sparta {
+    namespace report {
+        namespace format {
+            class BaseFormatter;
+        }
+    }
 }  // namespace sparta::report::format
 
-namespace sparta::statistics {
-class StreamNode;
+namespace sparta {
+    namespace statistics {
+        class StreamNode;
+    }
 }  // namespace sparta::statistics
 
 namespace sparta {

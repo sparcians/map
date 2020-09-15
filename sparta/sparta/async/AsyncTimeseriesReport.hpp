@@ -33,8 +33,10 @@ namespace simdb {
 class ObjectManager;
 }  // namespace simdb
 
-namespace sparta::db {
-class ReportHeader;
+namespace sparta {
+    namespace db {
+        class ReportHeader;
+    }
 }  // namespace sparta::db
 
 namespace sparta {
@@ -740,4 +742,3 @@ private:
 
 } // namespace async
 } // namespace sparta
-

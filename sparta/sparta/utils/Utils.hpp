@@ -83,6 +83,8 @@ constexpr inline int8_t operator "" _8(unsigned long long i) {
 namespace sparta
 {
 
+// decomposition declarations are a c++17 thang
+#if __cplusplus >= 201703L
 /*!
  * \brief Function to invert a maps or an unordered_map, or any type of
  * class that has key/value semantics.  The variadic template
@@ -97,7 +99,7 @@ MapType<V, K> flipMap(const MapType<K, V, Args...>& map){
     }
     return inverted_map;
 }
-
+#endif
 /*!
  * \brief Template type helper that removes a pointer, adds a const,
  * and then re-adds the pointer. This is useful to turn "T" [T=U*] into
@@ -732,4 +734,3 @@ public:
                                                                         \
         enum { value = sizeof(test<T>(nullptr)) == sizeof(one) };       \
     };
-

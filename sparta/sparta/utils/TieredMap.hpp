@@ -79,6 +79,8 @@ namespace sparta
                 itr_(itr)
             { }
 
+            iterator(const iterator &) = default;
+
             iterator& operator++() { ++itr_; return *this; }
             iterator operator++(int) { iterator ret(itr_); ++itr_; return ret; }
 
@@ -127,6 +129,8 @@ namespace sparta
             const_iterator(internal_iter itr) :
                 itr_(itr)
             { }
+
+            const_iterator(const const_iterator &) = default;
 
             const_iterator& operator++() { ++itr_; return *this; }
             const_iterator operator++(int) { const_iterator ret(itr_); ++itr_; return ret; }
@@ -546,4 +550,3 @@ namespace sparta
     }; // class TieredMap
 
 } // namespace sparta
-

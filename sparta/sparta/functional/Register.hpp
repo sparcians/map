@@ -742,7 +742,11 @@ public:
         }
 
         // Ensure byte-size is valid
+#if __cpp_static_assert >= 201411
         static_assert(std::is_unsigned<decltype(def.bytes)>::value == true);
+#else
+        sparta_assert(std::is_unsigned<decltype(def.bytes)>::value == true);
+#endif
         if(!isPowerOf2(def.bytes) || def.bytes == 0){
             throw SpartaException("Register \"")
                 << getName() << "\" size in bytes must be a power of 2 larger than 0, is "
