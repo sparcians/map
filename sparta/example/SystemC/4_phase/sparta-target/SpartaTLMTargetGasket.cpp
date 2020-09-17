@@ -8,7 +8,7 @@
 namespace sparta_target
 {
 
-    static const char *filename = "SpartaTLMTargetGasket.cpp";	///< filename for reporting
+    static const char *filename = "SpartaTLMTargetGasket.cpp";    ///< filename for reporting
 
     int SpartaTLMTargetGasket::nextID = 0;
 
@@ -27,9 +27,18 @@ namespace sparta_target
         case tlm::BEGIN_REQ: 
         {
             std::cout << "Info: Gasket: BEGIN_REQ" << std::endl;
-            sc_core::sc_time PEQ_delay_time = delay_time + m_accept_delay;    
-            m_end_request_PEQ.notify(gp, PEQ_delay_time); // put transaction in the PEQ
-           //event_end_req_(gp)->schedule();
+            //sc_core::sc_time delay_time = delay_time + m_accept_delay;    
+
+            MemoryRequest request = {
+            (gp.get_command() == tlm::TLM_READ_COMMAND ?
+             MemoryRequest::Command::READ : MemoryRequest::Command::WRITE),
+            gp.get_address(),
+            gp.get_data_length(),
+            // Always scary pointing to memory owned by someone else...
+            gp.get_data_ptr(),
+            (void*)&gp};
+
+           event_end_req_.preparePayload(request)->schedule();
            return_val =  tlm::TLM_ACCEPTED;
         break;
         }
@@ -66,7 +75,127 @@ namespace sparta_target
         return return_val;
     }
 
-    //=============================================================================
+void SpartaTLMTargetGasket::send_end_request_(const MemoryRequest & req)
+{
+  std::ostringstream        msg;                    // log message
+  msg.str("");
+  tlm::tlm_sync_enum        status = tlm::TLM_COMPLETED;
+
+    msg.str("");
+    msg << "Target: " << m_ID 
+        << " starting end-request method";
+
+    sc_core::sc_time delay  = sc_core::SC_ZERO_TIME;
+    
+   // m_target_memory.get_delay(gp, delay); // get memory operation delay
+
+#ifdef DIRECT_MEMORY_OPERATION    
+        delay_time += m_accept_delay;
+        m_response_PEQ.notify(gp, delay_time);  
+#else
+     //  m_target_memory.operation(gp, delay_time); // perform memory operation now
+
+
+
+        if(SPARTA_EXPECT_FALSE(info_logger_)) {
+            info_logger_ << " sending to memory model: " << req;
+        }
+  
+        //
+        // This is a transaction coming from SysC that is on SysC's
+        // clock, not Sparta's.  Need to find the same tick cycle on
+        // the Sparta clock and align the time for the transaction.
+        // Keep in mind that Sparta's scheduler starts on tick 1, not
+        // 0 like SysC.
+        //
+        // For example,
+        //   - The Sparta's clock is at 7 ticks (6 from SysC POV, hence the - 1)
+        //   - The SysC clock is at 10 ticks
+        //   - The transaction's delay is 1 tick (to be fired at tick 11)
+        //
+        //   sysc_clock - sparta_clock + delay = 4 cycles on sparta clock (11)
+        //
+        auto current_sc_time = sc_core::sc_time_stamp().value();
+        const auto current_tick = getClock()->currentTick() - 1;
+        sparta_assert(sc_core::sc_time_stamp().value() >= current_tick);
+        const auto final_relative_tick =
+            current_sc_time - current_tick;
+
+        // Send to memory with the given delay - NS -> clock cycles.
+        // The Clock is on the same freq as the memory block
+        out_memory_request_.send(req, getClock()->getCycle(final_relative_tick));
+#endif
+    tlm::tlm_phase phase    = tlm::END_REQ; 
+    delay                   = sc_core::SC_ZERO_TIME;
+
+    msg << endl << "      "
+        << "Target: " << m_ID   
+        << " transaction moved to send-response PEQ "
+        << endl << "      ";
+    msg << "Target: " << m_ID 
+        << " nb_transport_bw (GP, " 
+        << report::print(phase) << ", "
+        << delay << ")" ;
+    REPORT_INFO(filename,  __FUNCTION__, msg.str());
+
+    auto & gp = *((tlm::tlm_generic_payload*)req.meta_data);
+    gp.set_response_status(tlm::TLM_OK_RESPONSE);
+//-----------------------------------------------------------------------------
+// Call nb_transport_bw with phase END_REQ check the returned status 
+//-----------------------------------------------------------------------------
+    status = m_memory_socket->nb_transport_bw(gp, phase, delay);
+    
+    msg.str("");
+    msg << "Target: " << m_ID
+        << " " << report::print(status) << " (GP, "
+        << report::print(phase) << ", "
+        << delay << ")"; 
+    REPORT_INFO(filename,  __FUNCTION__, msg.str());
+
+    switch (status)
+    { 
+//=============================================================================
+    case tlm::TLM_ACCEPTED:
+      {   
+        // more phases will follow
+        
+        break;
+      }
+
+//=============================================================================
+    case tlm::TLM_COMPLETED:    
+      {          
+        msg << "Target: " << m_ID 
+            << " TLM_COMPLETED invalid response to END_REQ" << endl
+            << "      Initiator must receive data before ending transaction";
+        REPORT_FATAL(filename, __FUNCTION__, msg.str()); 
+        break;
+      }
+
+//=============================================================================
+    case tlm::TLM_UPDATED:   
+      {
+          msg << "Target: " << m_ID 
+            << " TLM_UPDATED invalid response to END_REQ" << endl
+            << "      Initiator must receive data before updating transaction";
+          REPORT_FATAL(filename, __FUNCTION__, msg.str()); 
+
+        break;
+      }
+ 
+//=============================================================================
+    default:
+      {
+         msg << "Target: " << m_ID 
+             << " Illegal return status";
+         REPORT_FATAL(filename, __FUNCTION__, msg.str()); 
+
+        break;
+      }
+    }// end switch
+  }
+
+//=============================================================================
 /// end_request  method function implementation
 //
 // This method is statically sensitive to m_end_request_PEQ.get_event 
