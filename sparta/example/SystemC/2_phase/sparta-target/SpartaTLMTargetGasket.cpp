@@ -96,6 +96,11 @@ namespace sparta_target
         }
         return return_val;
     }
+    
+    void SpartaTLMTargetGasket::send_end_request_(const MemoryRequest & req)
+    {
+      //Not implemented for 2 phase target
+    }
 
     void SpartaTLMTargetGasket::forwardMemoryResponse_(const MemoryRequest & req)
     {

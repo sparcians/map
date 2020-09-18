@@ -6,7 +6,6 @@
 #include "sparta/simulation/ParameterSet.hpp"
 #include "sparta/events/PayloadEvent.hpp"
 #include "sparta/ports/DataPort.hpp"
-
 #include "MemoryRequest.hpp"
 #include "tlm.h"
 #include "tlm_utils/peq_with_get.h"                   // Payload event queue FIFO
@@ -76,6 +75,7 @@ namespace sparta_target
             m_response_PEQ          ("response_PEQ"),
             m_end_request_PEQ          ("end_request_PEQ")
         {
+            setAutoPrecedence(false);
             // This confusing call binds this TLM socket's
             // tlm_fw_transport_if API to this class for
             // nb_transport_fw calls.  The nb_transport_bw call
@@ -131,7 +131,7 @@ namespace sparta_target
 
         sparta::DataInPort<MemoryRequest>  in_memory_response_ {getPortSet(), "in_memory_response"};
         sparta::DataOutPort<MemoryRequest> out_memory_request_ {getPortSet(), "out_memory_request"};
-        void send_end_request_(const tlm::tlm_generic_payload &);
+        void send_end_request_(const MemoryRequest &);
         void forwardMemoryResponse_(const MemoryRequest &);
         unsigned long       m_request_count;        ///< used to calc synch transactions
         bool                m_nb_trans_fw_prev_warning;
@@ -141,11 +141,10 @@ namespace sparta_target
         tlm_utils::peq_with_get<tlm::tlm_generic_payload> m_response_PEQ;  ///< response payload event queue
         tlm_utils::peq_with_get<tlm::tlm_generic_payload> m_end_request_PEQ;  ///< end request payload event queue
         sc_core::sc_event   m_end_resp_rcvd_event;
-        sparta::TreeNode * m_pTn;
         // An event to be scheduled in the sparta::SchedulingPhase::Tick
         // phase if data is received
-        /*sparta::PayloadEvent<tlm::tlm_generic_payload, sparta::SchedulingPhase::Tick> event_end_req_(&unit_event_set_, "end_req_event", CREATE_SPARTA_HANDLER_WITH_DATA(SpartaTLMTargetGasket, send_end_request_, tlm::tlm_generic_payload));
-         */
+        sparta::PayloadEvent<MemoryRequest, sparta::SchedulingPhase::Tick> event_end_req_{getEventSet(), "end_req_event", CREATE_SPARTA_HANDLER_WITH_DATA(SpartaTLMTargetGasket, send_end_request_, MemoryRequest), 10000};
+ 
         // Junk not needed
         /// b_transport() - Blocking Transport
         void b_transport(tlm::tlm_generic_payload &payload, sc_core::sc_time &delay_time) override { }
