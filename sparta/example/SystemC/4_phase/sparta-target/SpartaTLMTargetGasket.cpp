@@ -12,10 +12,6 @@ namespace sparta_target
 
     int SpartaTLMTargetGasket::nextID = 0;
 
-/*    void SpartaTLMTargetGasket::setTreeNode(sparta::TreeNode * treeNodePtr) {
-      m_pTn = treeNodePtr;
-    }
-*/    
     tlm::tlm_sync_enum SpartaTLMTargetGasket::nb_transport_fw (tlm::tlm_generic_payload &gp,
                                                                tlm::tlm_phase           &phase ,
                                                                sc_core::sc_time         &delay_time )
@@ -37,8 +33,7 @@ namespace sparta_target
             // Always scary pointing to memory owned by someone else...
             gp.get_data_ptr(),
             (void*)&gp};
-
-           event_end_req_.preparePayload(request)->schedule();
+           event_end_req_.preparePayload(request)->schedule(calculateSpartaOffset(m_accept_delay.value() + delay_time.value()));
            return_val =  tlm::TLM_ACCEPTED;
         break;
         }
@@ -100,30 +95,8 @@ void SpartaTLMTargetGasket::send_end_request_(const MemoryRequest & req)
         if(SPARTA_EXPECT_FALSE(info_logger_)) {
             info_logger_ << " sending to memory model: " << req;
         }
-  
-        //
-        // This is a transaction coming from SysC that is on SysC's
-        // clock, not Sparta's.  Need to find the same tick cycle on
-        // the Sparta clock and align the time for the transaction.
-        // Keep in mind that Sparta's scheduler starts on tick 1, not
-        // 0 like SysC.
-        //
-        // For example,
-        //   - The Sparta's clock is at 7 ticks (6 from SysC POV, hence the - 1)
-        //   - The SysC clock is at 10 ticks
-        //   - The transaction's delay is 1 tick (to be fired at tick 11)
-        //
-        //   sysc_clock - sparta_clock + delay = 4 cycles on sparta clock (11)
-        //
-        auto current_sc_time = sc_core::sc_time_stamp().value();
-        const auto current_tick = getClock()->currentTick() - 1;
-        sparta_assert(sc_core::sc_time_stamp().value() >= current_tick);
-        const auto final_relative_tick =
-            current_sc_time - current_tick;
 
-        // Send to memory with the given delay - NS -> clock cycles.
-        // The Clock is on the same freq as the memory block
-        out_memory_request_.send(req, getClock()->getCycle(final_relative_tick));
+        out_memory_request_.send(req, getClock()->getCycle(calculateSpartaOffset(0)));
 #endif
     tlm::tlm_phase phase    = tlm::END_REQ; 
     delay                   = sc_core::SC_ZERO_TIME;
