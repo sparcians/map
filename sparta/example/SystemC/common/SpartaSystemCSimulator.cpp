@@ -52,15 +52,15 @@ namespace sparta_sim
 
         const auto total_targets = 2;
         for(uint32_t i = 0; i < total_targets; ++i) {
-                    // Create the Memory on the dummy system node
-        sparta::TreeNode * mem = nullptr;
-        tns_to_delete_.emplace_back
-            (mem = new sparta::ResourceTreeNode(sys,
-                                                sparta_target::SpartaMemory::name + std::to_string(i), 
-                                                sparta_target::SpartaMemory::name, i,
-                                                "Dummy Memory",
-                                                getResourceSet()->
-                                                getResourceFactory(sparta_target::SpartaMemory::name)));
+            // Create the Memory on the dummy system node
+            sparta::TreeNode * mem = nullptr;
+            tns_to_delete_.emplace_back
+                (mem = new sparta::ResourceTreeNode(sys,
+                                                    sparta_target::SpartaMemory::name + std::to_string(i),
+                                                    sparta_target::SpartaMemory::name, i,
+                                                    "Dummy Memory",
+                                                    getResourceSet()->
+                                                    getResourceFactory(sparta_target::SpartaMemory::name)));
             // Put the gasket on the memory tree node (can really go anywhere)
             tns_to_delete_.emplace_back(new sparta::ResourceTreeNode(mem,
                                                                      sparta_target::SpartaTLMTargetGasket::name + std::to_string(i),
@@ -97,7 +97,7 @@ namespace sparta_sim
             root_node->getChild("sys.memory1.mem_tlm_gasket1")->getResourceAs<sparta_target::SpartaTLMTargetGasket>();
 
         // SysC binding
-        systemc_example_top_.m_bus.initiator_socket[0](sparta_tlm_gasket0->m_memory_socket);
-        systemc_example_top_.m_bus.initiator_socket[1](sparta_tlm_gasket1->m_memory_socket);
+        systemc_example_top_.m_bus.initiator_socket[0](sparta_tlm_gasket0->getMemorySocket());
+        systemc_example_top_.m_bus.initiator_socket[1](sparta_tlm_gasket1->getMemorySocket());
     }
 }

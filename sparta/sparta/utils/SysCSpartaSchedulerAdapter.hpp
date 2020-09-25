@@ -27,6 +27,47 @@
 namespace sparta
 {
 
+    namespace sparta_sysc_utils {
+        /**
+         * Utility to convert SystemC time to Sparta time for
+         * scheduling events/sending data across ports
+         *
+         * \param sparta_clk  The Clock to use for the conversion
+         * \param sysc_offset The SystemC offset to convert
+         * \return The sparta::Clock::Cycle that be used to schedule an event/send data
+         *
+         * Example usage:
+         * \code
+         *
+         */
+        inline Clock::Cycle calculateSpartaOffset(const sparta::Clock * sparta_clk,
+                                                  sc_core::sc_time::value_type sysc_offset)
+        {
+            //
+            // This is a transaction coming from SysC that is on SysC's
+            // clock, not Sparta's.  Need to find the same tick cycle on
+            // the Sparta clock and align the time for the transaction.
+            // Keep in mind that Sparta's scheduler starts on tick 1, not
+            // 0 like SysC.
+            //
+            // For example,
+            //   - The Sparta's clock is at 7 ticks (6 from SysC POV, hence the - 1)
+            //   - The SysC clock is at 10 ticks
+            //   - The transaction's delay is 1 tick (to be fired at tick 11)
+            //
+            //   sysc_clock - sparta_clock + delay = 4 cycles on sparta clock (11)
+            //
+
+            // Send to memory with the given delay - NS -> clock cycles.
+            // The Clock is on the same freq as the memory block
+            auto current_sc_time = sc_core::sc_time_stamp().value();
+            const auto current_tick = sparta_clk->currentTick() - 1;
+            sparta_assert(sc_core::sc_time_stamp().value() >= current_tick);
+            const auto final_relative_tick = current_sc_time - current_tick + sysc_offset;
+            return final_relative_tick;
+        }
+    }
+
 //! \def SC_Sparta_SCHEDULER_NAME
 //! The name of the scheduler adapter
 #define SC_SPARTA_SCHEDULER_NAME  "SysCSpartaSchedulerAdapter"
