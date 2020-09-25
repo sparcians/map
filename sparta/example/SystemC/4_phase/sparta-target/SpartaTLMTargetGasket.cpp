@@ -3,7 +3,6 @@
 #include "MemoryRequest.hpp"
 #include "SpartaMemory.hpp"
 #include "reporting.h"
-
 #include "sparta/utils/SysCSpartaSchedulerAdapter.hpp"
 
 //#define DIRECT_MEMORY_OPERATION 1

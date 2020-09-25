@@ -3,6 +3,8 @@
 #include "MemoryRequest.hpp"
 #include "SpartaMemory.hpp"
 #include "reporting.h"
+#include "sparta/utils/SysCSpartaSchedulerAdapter.hpp"
+
 //#define DIRECT_MEMORY_OPERATION 1
 
 namespace sparta_target
@@ -50,29 +52,11 @@ namespace sparta_target
                     info_logger_ << " sending to memory model: " << request;
                 }
 
-                //
-                // This is a transaction coming from SysC that is on SysC's
-                // clock, not Sparta's.  Need to find the same tick cycle on
-                // the Sparta clock and align the time for the transaction.
-                // Keep in mind that Sparta's scheduler starts on tick 1, not
-                // 0 like SysC.
-                //
-                // For example,
-                //   - The Sparta's clock is at 7 ticks (6 from SysC POV, hence the - 1)
-                //   - The SysC clock is at 10 ticks
-                //   - The transaction's delay is 1 tick (to be fired at tick 11)
-                //
-                //   sysc_clock - sparta_clock + delay = 4 cycles on sparta clock (11)
-                //
-                auto current_sc_time = sc_core::sc_time_stamp().value();
-                const auto current_tick = getClock()->currentTick() - 1;
-                sparta_assert(sc_core::sc_time_stamp().value() >= current_tick);
-                const auto final_relative_tick =
-                    current_sc_time - current_tick + delay_time.value() + accept_delay_.value();
-
                 // Send to memory with the given delay - NS -> clock cycles.
                 // The Clock is on the same freq as the memory block
-                out_memory_request_.send(request, getClock()->getCycle(final_relative_tick));
+                out_memory_request_.send(request, getClock()->
+                                         getCycle(sparta::sparta_sysc_utils::calculateSpartaOffset(getClock(),
+                                                                                                   delay_time.value())));
 #endif
                 phase = tlm::END_REQ;
                 delay_time = accept_delay_;
