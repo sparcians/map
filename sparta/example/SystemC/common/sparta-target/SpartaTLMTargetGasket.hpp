@@ -23,9 +23,34 @@ namespace sparta_target
        static int nextID;
     
     public:
-
         static constexpr char name[] = "mem_tlm_gasket";
         static constexpr char scName[2][20] = {"mem_tlm_gasket0", "mem_tlm_gasket1"};
+        int calculateSpartaOffset(int sysc_offset)
+        {
+            //
+            // This is a transaction coming from SysC that is on SysC's
+            // clock, not Sparta's.  Need to find the same tick cycle on
+            // the Sparta clock and align the time for the transaction.
+            // Keep in mind that Sparta's scheduler starts on tick 1, not
+            // 0 like SysC.
+            //
+            // For example,
+            //   - The Sparta's clock is at 7 ticks (6 from SysC POV, hence the - 1)
+            //   - The SysC clock is at 10 ticks
+            //   - The transaction's delay is 1 tick (to be fired at tick 11)
+            //
+            //   sysc_clock - sparta_clock + delay = 4 cycles on sparta clock (11)
+            //
+
+            // Send to memory with the given delay - NS -> clock cycles.
+            // The Clock is on the same freq as the memory block
+            auto current_sc_time = sc_core::sc_time_stamp().value();
+            const auto current_tick = getClock()->currentTick() - 1;
+            sparta_assert(sc_core::sc_time_stamp().value() >= current_tick);
+            const auto final_relative_tick =
+                current_sc_time - current_tick + sysc_offset;
+            return final_relative_tick;
+        }
         class SpartaTLMTargetGasketParams : public sparta::ParameterSet
         {
         public:
@@ -72,9 +97,7 @@ namespace sparta_target
                 , 4*1024                                // memory size (bytes)
                 , 4                                     // memory width (bytes)
                 ),
-            m_accept_delay(sc_core::sc_time(10, sc_core::SC_NS)), 
-            m_response_PEQ          ("response_PEQ"),
-            m_end_request_PEQ          ("end_request_PEQ")
+            m_accept_delay(sc_core::sc_time(0, sc_core::SC_NS))
         {
             setAutoPrecedence(false);
             // This confusing call binds this TLM socket's
@@ -88,42 +111,13 @@ namespace sparta_target
             // from the Sparta Memory model
             in_memory_response_.registerConsumerHandler
                 (CREATE_SPARTA_HANDLER_WITH_DATA(SpartaTLMTargetGasket,
-                                                 forwardMemoryResponse_, MemoryRequest));
-            /// Register begin_reponse as an SC_METHOD
-            SC_METHOD(begin_response_method);
-            sensitive << m_response_PEQ.get_event();
-            dont_initialize();                       
-            /// Register end_request as an SC_METHOD
-            SC_METHOD(end_request_method);
-            sensitive << m_end_request_PEQ.get_event();
-            dont_initialize();                       
+                                                 forwardMemoryResponse_, MemoryRequest));                     
         }
 
         // Unfortunately, this has to be made public for the SysC
         // binding to look "clean." Encapsulation?  Pffftthh... who
         // needs that?
         tlm::tlm_target_socket<>  m_memory_socket;
-  //=====================================================================
-  ///  @fn at_target_2_phase::begin_response_method
-  /// 
-  ///  @brief Response Processing
-  ///
-  ///  @details
-  ///    This routine takes transaction responses from the m_response_PEQ.
-  ///    It contains the state machine to manage the communication path
-  ///    back to the initiator. This method is registered as an SC_METHOD
-  ///    with the SystemC kernal and is sensitive to m_response_PEQ.get_event() 
-  //=====================================================================
-
-   void
-   begin_response_method                             
-   ( void
-   );
-
-   void
-   end_request_method                             
-   ( void
-   );
 
     void setTreeNode(sparta::TreeNode *treeNodePtr);
 
@@ -146,12 +140,12 @@ namespace sparta_target
         bool                m_begin_resp_method_prev_warning;
         bool                m_trans_dbg_prev_warning;
         bool                m_get_dm_ptr_prev_warning;
-        tlm_utils::peq_with_get<tlm::tlm_generic_payload> m_response_PEQ;  ///< response payload event queue
-        tlm_utils::peq_with_get<tlm::tlm_generic_payload> m_end_request_PEQ;  ///< end request payload event queue
-        sc_core::sc_event   m_end_resp_rcvd_event;
+        //tlm_utils::peq_with_get<tlm::tlm_generic_payload> m_response_PEQ;  ///< response payload event queue
+       // tlm_utils::peq_with_get<tlm::tlm_generic_payload> m_end_request_PEQ;  ///< end request payload event queue
+       // sc_core::sc_event   m_end_resp_rcvd_event;
               // An event to be scheduled in the sparta::SchedulingPhase::Tick
         // phase if data is received
-        sparta::PayloadEvent<MemoryRequest, sparta::SchedulingPhase::Tick> event_end_req_{getEventSet(), "end_req_event", CREATE_SPARTA_HANDLER_WITH_DATA(SpartaTLMTargetGasket, send_end_request_, MemoryRequest), 10000};
+        sparta::PayloadEvent<MemoryRequest, sparta::SchedulingPhase::Tick> event_end_req_{getEventSet(), "end_req_event", CREATE_SPARTA_HANDLER_WITH_DATA(SpartaTLMTargetGasket, send_end_request_, MemoryRequest)};
  
         // Junk not needed
         /// b_transport() - Blocking Transport
