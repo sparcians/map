@@ -28,6 +28,9 @@
   -# \ref core_example <br>
   A basic "super scalar" core example using Sparta<br>&nbsp;
 
+  -# \ref systemc <br>
+  SystemC example using the sparta::SysCSpartaSchedulerAdapter and TLM examples<br>&nbsp;
+
   -# \ref communication <br>
   Examples of using Ports, Events, Clocks, Scheduling, and Event Ordering<br>&nbsp;
 

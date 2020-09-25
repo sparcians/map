@@ -44,6 +44,10 @@ if(SYSTEMC_SUPPORT)
       ../common/sparta-target/
 
       )
+
+    include (../../../test/TestingMacros.cmake)
+    sparta_named_test(sparta_sys_phase4_tlm sparta_sysc_model_4_phase)
+
   endif()
 
 endif()
