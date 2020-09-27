@@ -34,11 +34,14 @@
 #include "sparta/statistics/ReadOnlyCounter.hpp"
 #include "sparta/statistics/Counter.hpp"
 #include "sparta/statistics/StatisticSet.hpp"
-//#include "sparta/kernel/VertexFactory.hpp"
 #include "sparta/events/SchedulingPhases.hpp"
 #include "sparta/utils/ValidValue.hpp"
 #include "sparta/statistics/CounterBase.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
+
+#ifdef SYSTEMC_SUPPORT
+#include "sparta/log/NotificationSource.hpp"
+#endif
 
 namespace sparta {
 class GlobalTreeNode;
@@ -1101,6 +1104,13 @@ private:
 
     //! Lock protecting async_event_list_ and async_event_list_empty_hint_
     std::mutex async_event_list_mutex_;
+
+    //! Broadcast a notification when something is scheuled.  This is
+    //! only useful for the SysC adapter and not compiled in for
+    //! regular Sparta users
+#ifdef SYSTEMC_SUPPORT
+    sparta::NotificationSource<Tick> item_scheduled_;
+#endif
 };
 
 
@@ -1156,4 +1166,3 @@ inline void Scheduler::printNextCycleEventTree(StreamType& os,
 
 
 }
-

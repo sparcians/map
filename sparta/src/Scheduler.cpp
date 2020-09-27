@@ -102,6 +102,9 @@ Scheduler::Scheduler(const std::string& name, GlobalTreeNode* search_scope) :
                          "Simulation system runtime in seconds as measured on the host machine",
                          Counter::COUNT_LATEST),
     es_uptr_(new EventSet(this))
+#ifdef SYSTEMC_SUPPORT
+    , item_scheduled_(this, "item_scheduled", "Broadcasted when something is scheduled", "item_scheduled")
+#endif
 {
     // Statistics and StatisticInstance objects require a clock to
     // obtain the scheduler (which is this object) to determine
@@ -341,6 +344,11 @@ void Scheduler::scheduleEvent(Scheduleable * scheduleable,
 
         // Track the farthest continuing event (not pre/post-tick) in the future
         latest_continuing_event_ = std::max(latest_continuing_event_, calcIndexTime(rel_time));
+#ifdef SYSTEMC_SUPPORT
+        if(SPARTA_EXPECT_FALSE(item_scheduled_.observed())) {
+            item_scheduled_.postNotification(rel_time);
+        }
+#endif
     }
 }
 
