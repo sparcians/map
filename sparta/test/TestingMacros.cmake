@@ -28,6 +28,12 @@ function (sparta_fully_named_test name target run_valgrind)
   endif ()
 endfunction (sparta_fully_named_test)
 
+function (sparta_expect_failure_test name target)
+  add_test (NAME ${name} COMMAND $<TARGET_FILE:${target}> ${ARGN})
+  set_tests_properties(${name} PROPERTIES WILL_FAIL TRUE)
+  sparta_regress (${target})
+endfunction (sparta_expect_failure_test)
+
 # Tell sparta to run the following target with the following name.
 macro (sparta_named_test name target)
   sparta_fully_named_test (${name} ${target} TRUE ${ARGN})
