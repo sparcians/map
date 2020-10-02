@@ -291,11 +291,18 @@ class ScheduleLineElement(LocationallyKeyedElement):
             # val = val.decode('utf-8') # integer when phantom elements refer to other phantom elements
             NOT_MISSING_LOC = False
             short_format = self.GetProperty('short_format')
-            canvas.GetRenderer().drawInfoRectangle(interval[0], self, dc, canvas, rect, val, NOT_MISSING_LOC,
-                                                    content_type,
-                                                    auto_color,
-                                                    clip,
-                                                    schedule_settings = (local_period_width, renderer_flags), short_format = short_format)
+            canvas.GetRenderer().drawInfoRectangle(interval[0],
+                                                   self,
+                                                   dc,
+                                                   canvas,
+                                                   rect,
+                                                   val,
+                                                   NOT_MISSING_LOC,
+                                                   content_type,
+                                                   auto_color,
+                                                   clip,
+                                                   schedule_settings = (local_period_width, renderer_flags),
+                                                   short_format = short_format)
 
         dc.DestroyClippingRegion()
         self.UnsetNeedsRedraw()
@@ -443,10 +450,17 @@ class ScheduleLineRulerElement(ScheduleLineElement):
             rect = (c_x + start, c_y, width + 1, c_h)
             val = 'C=1 %i' % (current_time / period)
             NOT_MISSING_LOC = False
-            canvas.GetRenderer().drawInfoRectangle(tick, self, dc, canvas, rect, val, NOT_MISSING_LOC,
-                                                    'caption', ('', ''),
-                                                    clip,
-                                                    schedule_settings = (full_interval, self.DRAW_RULER))
+            canvas.GetRenderer().drawInfoRectangle(tick,
+                                                   self,
+                                                   dc,
+                                                   canvas,
+                                                   rect,
+                                                   val,
+                                                   NOT_MISSING_LOC,
+                                                   'caption',
+                                                   ('', ''),
+                                                   clip,
+                                                   schedule_settings = (full_interval, self.DRAW_RULER))
             current_time += full_interval
 
         dc.DestroyClippingRegion()
@@ -470,6 +484,7 @@ class ScheduleElement(MultiElement):
         MultiElement.__init__(self, *args, **kwargs)
         self.__buffer = None
         self.__dc = wx.MemoryDC() # store our own DC
+        self.__temp_dc = wx.MemoryDC()
         self.__graphics_dc = None
 
         self.__old_dimensions = None
@@ -549,7 +564,13 @@ class ScheduleElement(MultiElement):
 
     def __ReinitializeBuffer(self, canvas, width, height):
         self.__buffer = wx.Bitmap(canvas.MAX_ZOOM * width, canvas.MAX_ZOOM * height)
+        self.__temp_buffer = wx.Bitmap(canvas.MAX_ZOOM * width, canvas.MAX_ZOOM * height)
+        self.__SwapBuffers(canvas)
+
+    def __SwapBuffers(self, canvas):
+        self.__buffer, self.__temp_buffer = self.__temp_buffer, self.__buffer
         self.__dc.SelectObject(self.__buffer)
+        self.__temp_dc.SelectObject(self.__temp_buffer)
         self.__graphics_dc = wx.GCDC(self.__dc)
         self.__graphics_dc.SetFont(self.__dc.GetFont())
         self.__graphics_dc.SetLogicalScale(canvas.MAX_ZOOM, canvas.MAX_ZOOM)
@@ -689,7 +710,8 @@ class ScheduleElement(MultiElement):
                 sub_width = self.__buffer.GetWidth() - dest_x
 
             self.__graphics_dc.SetLogicalScale(1, 1)
-            self.__dc.Blit(dest_x, 0, sub_width, self.__buffer.GetHeight(), self.__dc, sub_x, 0)
+            self.__temp_dc.Blit(dest_x, 0, sub_width, self.__buffer.GetHeight(), self.__dc, sub_x, 0)
+            self.__SwapBuffers(canvas)
             self.__graphics_dc.SetLogicalScale(canvas.MAX_ZOOM, canvas.MAX_ZOOM)
 
         # --Render Loop--

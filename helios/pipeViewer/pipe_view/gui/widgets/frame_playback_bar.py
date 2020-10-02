@@ -150,11 +150,11 @@ class FramePlaybackBar(wx.Panel):
 
         self.__txt_goto = wx.TextCtrl(self, wx.ID_ANY, size = (60, -1), value = '+10')
         self.__txt_goto.SetToolTip('Enter an absolute or relative cycle number (in the current clock domain) ' \
-                                         'to jump to. Decimal, octal (0NNN), hex (0xNNN), or binary (0bNNN) ' \
-                                         'literals are all acceptable inputs. Prefixing the number with a + or ' \
-                                         '- sign will result in this value being interpreted as a relative value ' \
-                                         'from the current cycle. Press Enter or click "jump" to jump to the ' \
-                                         'specified cycle')
+                                   'to jump to. Decimal, octal (0NNN), hex (0xNNN), or binary (0bNNN) ' \
+                                   'literals are all acceptable inputs. Prefixing the number with a + or ' \
+                                   '- sign will result in this value being interpreted as a relative value ' \
+                                   'from the current cycle. Press Enter or click "jump" to jump to the ' \
+                                   'specified cycle')
         self.__btn_goto = ShyButton(self, wx.ID_ANY, 'jump', style = wx.BU_EXACTFIT)
         self.__btn_goto.SetToolTip('Jump to the absolute or relative cycle specified in the jump text control')
 
@@ -216,39 +216,59 @@ class FramePlaybackBar(wx.Panel):
 
         row1 = wx.BoxSizer(wx.HORIZONTAL)
         row1.Add(self.__hl_start, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 2)
-        row1.Add(self.__time_slider, 1, wx.ALIGN_CENTER_VERTICAL)
+        row1.Add(self.__time_slider, 1, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
         row1.Add(self.__hl_end, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 2)
 
-        row2 = wx.BoxSizer(wx.HORIZONTAL)
-        row2.Add(self.__drop_clock, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add((3, 1), 0, wx.EXPAND)
-        row2.Add(curticks, 0, wx.EXPAND)
-        row2.Add((1, 1), 1, wx.EXPAND) # Space sink
-        row2.Add(self.__btn_rw_hold, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_back30, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_back10, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_back3, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_back1, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_forward1, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_forward3, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_forward10, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_forward30, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_ff_hold, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add((1, 1), 1, wx.EXPAND) # Space sink
-        row2.Add(wx.StaticLine(self, wx.ID_ANY, style = wx.VERTICAL), 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 2)
-        row2.Add((1, 1), 1, wx.EXPAND) # Space sink
-        row2.Add(self.__txt_goto, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_goto, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add((1, 1), 1, wx.EXPAND) # Space sink
-        row2.Add(wx.StaticLine(self, wx.ID_ANY, style = wx.VERTICAL), 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 2)
-        row2.Add((1, 1), 1, wx.EXPAND) # Space sink
-        row2.Add(self.__btn_playpause, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__static_playback_speed_units, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 2)
-        row2.Add(self.__spin_playback_speed, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 1)
+        row2 = wx.FlexGridSizer(cols=6)
+        for i in range(5):
+            row2.AddGrowableCol(i)
+        row2.AddGrowableRow(0)
+
+        clock_sizer = wx.FlexGridSizer(2)
+        clock_sizer.AddGrowableRow(0)
+        clock_sizer.Add(self.__drop_clock, 0, wx.ALIGN_CENTER_VERTICAL | wx.SHAPED)
+        clock_sizer.Add(curticks, 0, wx.EXPAND | wx.LEFT, 3)
+        row2.Add(clock_sizer, 0, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
+
+        nav_sizer = wx.FlexGridSizer(10)
+        nav_sizer.AddGrowableRow(0)
+        nav_sizer.Add(self.__btn_rw_hold, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_back30, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_back10, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_back3, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_back1, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_forward1, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_forward3, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_forward10, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_forward30, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_ff_hold, 0, wx.ALIGN_CENTER_VERTICAL)
+        row2.Add(nav_sizer, 0, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
+
+        line_sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        line_sizer1.Add(wx.StaticLine(self, wx.ID_ANY, style = wx.VERTICAL), 0, wx.SHAPED | wx.ALIGN_CENTER_VERTICAL)
+        row2.Add(line_sizer1, 0, wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
+
+        goto_sizer = wx.FlexGridSizer(2)
+        goto_sizer.AddGrowableRow(0)
+        goto_sizer.Add(self.__txt_goto, 0, wx.ALIGN_CENTER_VERTICAL)
+        goto_sizer.Add(self.__btn_goto, 0, wx.ALIGN_CENTER_VERTICAL)
+        row2.Add(goto_sizer, 0, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
+
+        line_sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        line_sizer2.Add(wx.StaticLine(self, wx.ID_ANY, style = wx.VERTICAL), 0, wx.SHAPED | wx.ALIGN_CENTER_VERTICAL)
+        row2.Add(line_sizer2, 0, wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
+
+        playback_sizer = wx.FlexGridSizer(2)
+        playback_sizer.AddGrowableRow(0)
+        playback_sizer.Add(self.__btn_playpause, 0, wx.ALIGN_CENTER_VERTICAL)
+        spinner_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        spinner_sizer.Add(self.__static_playback_speed_units, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 2)
+        spinner_sizer.Add(self.__spin_playback_speed, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 1)
+        playback_sizer.Add(spinner_sizer, 0, wx.ALIGN_CENTER_VERTICAL)
+        row2.Add(playback_sizer, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 
         rows = wx.BoxSizer(wx.VERTICAL)
-        rows.Add((1, 2), 0, wx.EXPAND)
-        rows.Add(row2, 0, wx.EXPAND)
+        rows.Add(row2, 0, wx.EXPAND | wx.TOP, 2)
         rows.Add(wx.StaticLine(self, wx.ID_ANY), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 4)
         rows.Add(row1, 0, wx.EXPAND)
 
