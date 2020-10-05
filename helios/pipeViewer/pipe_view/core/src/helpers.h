@@ -60,7 +60,11 @@ inline wxBrush* getBrush_wrapped(PyObject* brush) {
 
 inline void getTextExtent(wxGCDC* dc, long* char_width, long* char_height) {
     static const wxString M("m");
-    dc->GetTextExtent(M, char_width, char_height);
+    wxCoord width = 0;
+    wxCoord height = 0;
+    dc->GetTextExtent(M, &width, &height);
+    *char_width = width;
+    *char_height = height;
 }
 
 #endif // #ifndef __HELPERS_H__

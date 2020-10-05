@@ -125,26 +125,27 @@ class FramePlaybackBar(wx.Panel):
         self.__static_curtick.SetForegroundColour(self.__med_blue)
         self.__static_curtick.SetFont(self.__fnt_tiny)
 
-        self.__btn_rw_hold = ShyButton(self, wx.ID_ANY, '<<', style = wx.BU_EXACTFIT)
+        PLAYBACK_BUTTON_WIDTH = 40
+        self.__btn_rw_hold = ShyButton(self, wx.ID_ANY, '<<', size = (PLAYBACK_BUTTON_WIDTH, -1), style = wx.BU_EXACTFIT)
         self.__btn_rw_hold.SetToolTip('Rewinds while left-mouse is held. Using space or enter to activate ' \
                                             'this control also rewinds but rate is dictated by keyboard repeat rate')
-        self.__btn_back30 = ShyButton(self, wx.ID_ANY, '-30', style = wx.BU_EXACTFIT)
+        self.__btn_back30 = ShyButton(self, wx.ID_ANY, '-30', size = (PLAYBACK_BUTTON_WIDTH, -1), style = wx.BU_EXACTFIT)
         self.__btn_back30.SetToolTip('Steps back 30 cycle in the current clock domain')
-        self.__btn_back10 = ShyButton(self, wx.ID_ANY, '-10', style = wx.BU_EXACTFIT)
+        self.__btn_back10 = ShyButton(self, wx.ID_ANY, '-10', size = (PLAYBACK_BUTTON_WIDTH, -1), style = wx.BU_EXACTFIT)
         self.__btn_back10.SetToolTip('Steps back 10 cycle in the current clock domain')
-        self.__btn_back3 = ShyButton(self, wx.ID_ANY, '-3', style = wx.BU_EXACTFIT)
+        self.__btn_back3 = ShyButton(self, wx.ID_ANY, '-3', size = (PLAYBACK_BUTTON_WIDTH, -1), style = wx.BU_EXACTFIT)
         self.__btn_back3.SetToolTip('Steps back 3 cycle in the current clock domain')
-        self.__btn_back1 = ShyButton(self, wx.ID_ANY, '-1', style = wx.BU_EXACTFIT)
+        self.__btn_back1 = ShyButton(self, wx.ID_ANY, '-1', size = (PLAYBACK_BUTTON_WIDTH, -1), style = wx.BU_EXACTFIT)
         self.__btn_back1.SetToolTip('Steps back 1 cycle in the current clock domain')
-        self.__btn_forward1 = ShyButton(self, wx.ID_ANY, '+1', style = wx.BU_EXACTFIT)
+        self.__btn_forward1 = ShyButton(self, wx.ID_ANY, '+1', size = (PLAYBACK_BUTTON_WIDTH, -1), style = wx.BU_EXACTFIT)
         self.__btn_forward1.SetToolTip('Steps forward 1 cycle in the current clock domain')
-        self.__btn_forward3 = ShyButton(self, wx.ID_ANY, '+3', style = wx.BU_EXACTFIT)
+        self.__btn_forward3 = ShyButton(self, wx.ID_ANY, '+3', size = (PLAYBACK_BUTTON_WIDTH, -1), style = wx.BU_EXACTFIT)
         self.__btn_forward3.SetToolTip('Steps forward 3 cycle in the current clock domain')
-        self.__btn_forward10 = ShyButton(self, wx.ID_ANY, '+10', style = wx.BU_EXACTFIT)
+        self.__btn_forward10 = ShyButton(self, wx.ID_ANY, '+10', size = (PLAYBACK_BUTTON_WIDTH, -1), style = wx.BU_EXACTFIT)
         self.__btn_forward10.SetToolTip('Steps forward 10 cycle in the current clock domain')
-        self.__btn_forward30 = ShyButton(self, wx.ID_ANY, '+30', style = wx.BU_EXACTFIT)
+        self.__btn_forward30 = ShyButton(self, wx.ID_ANY, '+30', size = (PLAYBACK_BUTTON_WIDTH, -1), style = wx.BU_EXACTFIT)
         self.__btn_forward30.SetToolTip('Steps forward 30 cycle in the current clock domain')
-        self.__btn_ff_hold = ShyButton(self, wx.ID_ANY, '>>', style = wx.BU_EXACTFIT)
+        self.__btn_ff_hold = ShyButton(self, wx.ID_ANY, '>>', size = (PLAYBACK_BUTTON_WIDTH, -1), style = wx.BU_EXACTFIT)
         self.__btn_ff_hold.SetToolTip('Fast-Forwards while left-mouse is held. Using space or enter to activate ' \
                                             'this control also fast-forwards but rate is dictated by keyboard repeat rate')
 
@@ -155,7 +156,7 @@ class FramePlaybackBar(wx.Panel):
                                    '- sign will result in this value being interpreted as a relative value ' \
                                    'from the current cycle. Press Enter or click "jump" to jump to the ' \
                                    'specified cycle')
-        self.__btn_goto = ShyButton(self, wx.ID_ANY, 'jump', style = wx.BU_EXACTFIT)
+        self.__btn_goto = ShyButton(self, wx.ID_ANY, 'jump', size = (60, -1), style = wx.BU_EXACTFIT)
         self.__btn_goto.SetToolTip('Jump to the absolute or relative cycle specified in the jump text control')
 
         self.__static_playback_speed_units = wx.StaticText(self, wx.ID_ANY, 'cyc/\nsec')
@@ -215,9 +216,11 @@ class FramePlaybackBar(wx.Panel):
         curticks.Add(self.__static_curtick, 1, wx.EXPAND)
 
         row1 = wx.BoxSizer(wx.HORIZONTAL)
-        row1.Add(self.__hl_start, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 2)
-        row1.Add(self.__time_slider, 1, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
-        row1.Add(self.__hl_end, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 2)
+        row1.Add(self.__hl_start, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.RIGHT, 2)
+        slider_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        slider_sizer.Add(self.__time_slider, 1, wx.ALIGN_CENTER_VERTICAL)
+        row1.Add(slider_sizer, 1, wx.EXPAND)
+        row1.Add(self.__hl_end, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.RIGHT, 2)
 
         row2 = wx.FlexGridSizer(cols=6)
         for i in range(5):
@@ -265,7 +268,13 @@ class FramePlaybackBar(wx.Panel):
         spinner_sizer.Add(self.__static_playback_speed_units, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 2)
         spinner_sizer.Add(self.__spin_playback_speed, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 1)
         playback_sizer.Add(spinner_sizer, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(playback_sizer, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
+        row2.Add(playback_sizer, 0, wx.ALIGN_RIGHT | wx.EXPAND)
+
+        playback_controls = [c for c in self.GetChildren() if not isinstance(c, wx.StaticText) and row2.GetItem(c, recursive=True) is not None]
+        min_playback_height = max(c.GetBestSize().GetHeight() for c in playback_controls)
+        for c in playback_controls:
+            orig_width, _ = c.GetMinSize()
+            c.SetMinSize((orig_width, min_playback_height))
 
         rows = wx.BoxSizer(wx.VERTICAL)
         rows.Add(row2, 0, wx.EXPAND | wx.TOP, 2)

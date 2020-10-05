@@ -44,8 +44,12 @@ py_src_dir = Path(__file__).parent.resolve() / 'src'
 
 # Support for systems with GTK3 and GTK2 installed side-by-side
 
-# Try GTK3-specific utility first
-wx_config = shutil.which('wx-config-gtk3')
+# Check for user-specified wx-config
+wx_config = os.environ.get('WX_CONFIG')
+
+# Try GTK3-specific utility next
+if wx_config is None:
+    wx_config = shutil.which('wx-config-gtk3')
 
 # Try generic wx-config next
 if wx_config is None:
