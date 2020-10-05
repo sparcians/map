@@ -83,8 +83,6 @@ class HoverPreview:
 
         # Handle the corner case where the user manages to mouse over the window
         def OnMouse(self, event):
-            self.Disable()
-            self.Show(False)
             self.__handler.DestroyWindow()
 
 
@@ -482,7 +480,9 @@ class HoverPreview:
 
     def DestroyWindow(self):
         if self.__window:
-            self.__window.Destroy()
+            self.__window.Disable()
+            self.__window.Show(False)
+            self.__window.DestroyLater()
             self.__window = None
 
 
