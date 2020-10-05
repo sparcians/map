@@ -45,7 +45,7 @@ py_src_dir = Path(__file__).parent.resolve() / 'src'
 # Support for systems with GTK3 and GTK2 installed side-by-side
 
 # Check for user-specified wx-config
-wx_config = os.environ.get('WX_CONFIG')
+wx_config = os.path.realpath(os.environ.get('WX_CONFIG'))
 
 # Try GTK3-specific utility next
 if wx_config is None:
