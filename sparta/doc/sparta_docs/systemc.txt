@@ -6,14 +6,15 @@
 
   \section building_sysc Building
 
-  There is no requirement to build Sparta any differently to enable
-  SystemC in Sparta.  However, to run the testing (and example), make
-  sure the Sparta CMake build environment can find the SystemC package
-  during configuration.  A message in the configuration output will be
-  written if the package was found:
+  To enable SystemC in Sparta, the cmake option COMPILE_WITH_SYSTEMC
+  must be ON.  To run SystemC tests and the TLM examples, make sure
+  Sparta's CMake build environment can find the SystemC package during
+  configuration.  A message in the configuration output will be
+  written if the package was found and COMPILE_WITH_SYSTEMC with set
+  to ON:
 
   \code
-  % cd sparta/build; cmake .. -DCMAKE_BUILD_TYPE=Release
+  % cd sparta/build; cmake .. -DCMAKE_BUILD_TYPE=Release -DCOMPILE_WITH_SYSTEMC=ON
   ...
   -- SystemC enabled: 2.3.3.20181013
   ...
@@ -22,7 +23,8 @@
   If not, then `cmake` could not find the SystemC package.  This can
   happen if there exists an install of SystemC elsewhere on the system
   (like a user's home directory).  Sparta can still use that install,
-  but it must be built with the same C++ standard.  First, build SystemC:
+  but it must be built with the same C++ standard as Sparta (C++17 for
+  example).  First, build SystemC:
 
   \code
   cd /path/to/systemc-2.3.3; mkdir build; cd build
@@ -34,7 +36,7 @@
 
   -# Set your `SYSTEMC_HOME` environment variable to the SystemC build:
   `export SYSTEMC_HOME=/path/to/systemc-2.3.3`
-  -# Re-configure Sparta: `cmake .. -DCMAKE_BUILD_TYPE=Release`
+  -# Re-configure Sparta: `cmake .. -DCMAKE_BUILD_TYPE=Release -DCOMPILE_WITH_SYSTEMC=ON`
 
   The enablement message should print at this point.
 
