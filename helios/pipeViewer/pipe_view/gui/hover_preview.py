@@ -33,67 +33,57 @@ class HoverPreview:
     LINE_LENGTH = 50
 
     # The hover will be rendered in a separate window so we don't have to deal with manually repainting the layout canvas
-    class HoverPreviewWindow(wx.Window):
+    class HoverPreviewWindow(wx.PopupWindow):
         def __init__(self, canvas, handler):
-            super(self.__class__, self).__init__(canvas.GetParent(),
-                                                 style=wx.BORDER_NONE | wx.WS_EX_TRANSIENT | wx.STAY_ON_TOP)
+            super(self.__class__, self).__init__(canvas.GetParent())
             self.Show(False)
             self.__canvas = canvas
             self.__handler = handler
-            self.__element = None
-            self.__annotation = None
-            self.SetFont(GetMonospaceFont(11))
-            self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
-            self.SetForegroundColour(wx.BLACK)
-            self.Bind(wx.EVT_PAINT, self.OnPaint)
             self.Bind(wx.EVT_ENTER_WINDOW, self.OnMouse)
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            self.__panel = wx.Panel(self)
+            self.__panel.SetFont(GetMonospaceFont(11))
+            self.__panel.SetForegroundColour(wx.BLACK)
+            self.__text_ctrl = wx.StaticText(self.__panel)
+            panel_sizer.Add(self.__text_ctrl)
+            self.__panel.SetSizer(panel_sizer)
+            sizer.Add(self.__panel,
+                      flag=wx.TOP | wx.BOTTOM | wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER,
+                      border=1)
+            self.SetSizer(sizer)
 
         def UpdateInfo(self, element, annotation, text, position):
-            self.__element = element
-            self.__annotation = annotation
-            self.__text = text
-            self.__position = position
-            self.Refresh()
+            BORDER_LIGHTNESS = 70
+
+            _, brush = self.__canvas.UpdateTransactionColor(element, annotation)
+            color = brush.GetColour()
+            self.__panel.SetBackgroundColour(color)
+            self.SetBackgroundColour(color.ChangeLightness(BORDER_LIGHTNESS))
+            self.__text_ctrl.SetLabel(text)
+            width, height = self.GetBestSize()
+            visible_area = self.__canvas.GetVisibleArea()
+            x, y = position
+            box_right = x + width
+            box_bottom = y + height
+            if box_right > visible_area[2]: # off the right edge
+                # shift left
+                x -= (box_right - visible_area[2])
+            if box_bottom > visible_area[3]:
+                y -= (box_bottom - visible_area[3])
+
+            if x < 0 or y < 0:
+                return # screen too small
+
+            x, y = self.__canvas.ClientToScreen((x, y))
+            self.SetRect((x, y, width, height))
 
         def AcceptsFocus(self):
             return False
 
         # Handle the corner case where the user manages to mouse over the window
         def OnMouse(self, event):
-            self.Show(False)
-            mousePos = wx.GetMousePosition()
-            self.__handler.HandleMouseMove(mousePos, self.__canvas)
-            event.Skip()
-
-        def OnPaint(self, event):
-            BORDER_LIGHTNESS = 0.7
-
-            dc = wx.AutoBufferedPaintDC(self)
-            _, brush = self.__canvas.UpdateTransactionColor(self.__element, self.__annotation)
-            dc.SetBrush(brush)
-            dc.SetPen(wx.Pen((int(brush.Colour[0] * BORDER_LIGHTNESS),
-                              int(brush.Colour[1] * BORDER_LIGHTNESS),
-                              int(brush.Colour[2] * BORDER_LIGHTNESS)), 1)) # Darker border around brush
-            br = dc.GetMultiLineTextExtent(self.__text)
-            tr = self.__position
-            rect_mop = [tr[0], tr[1], br[0] + 1, br[1] + 1]
-            visible_area = self.__canvas.GetVisibleArea()
-            box_right = rect_mop[0] + rect_mop[2]
-            box_bottom = rect_mop[1] + rect_mop[3]
-            if box_right > visible_area[2]: # off the right edge
-                # shift left
-                rect_mop[0] -= (box_right - visible_area[2])
-            if box_bottom > visible_area[3]:
-                rect_mop[1] -= (box_bottom - visible_area[3])
-
-            if rect_mop[0] < 0 or rect_mop[1] < 0:
-                return # screen too small
-
-            rect_mop = wx.Rect(rect_mop)
-            self.SetRect(rect_mop)
-            rect_mop.SetPosition((0, 0))
-            dc.DrawRectangle(*rect_mop)
-            dc.DrawLabel(self.__text, rect = rect_mop)
+            self.__handler.DestroyWindow()
 
 
     def __init__(self, canvas, context):
@@ -106,7 +96,7 @@ class HoverPreview:
         self.show = False
         self.position = (0, 0)
         self.__last_move_tick = None
-        self.__window = HoverPreview.HoverPreviewWindow(self.__canvas, self)
+        self.__window = None
 
         self.__fields = ['annotation']
 
@@ -170,12 +160,10 @@ class HoverPreview:
         '''
         return self.__value
 
-    def Redraw(self):
-        '''
-        Send a hover redraw event to the canvas to visually synch the data
-        '''
-        # issue a limited redraw event
-        self.__window.Refresh()
+    def GetWindow(self):
+        if not self.__window:
+            self.__window = HoverPreview.HoverPreviewWindow(self.__canvas, self)
+        return self.__window
 
     def HandleMenuClick(self, position):
         '''
@@ -409,7 +397,6 @@ class HoverPreview:
         hover needs to be enabled and mode needs to not be edit
         '''
         # On a different tick for the same element, force an upate
-        self.__window.Show(False)
         force_update = self.__context.GetHC() != self.__last_move_tick
         self.__last_move_tick = self.__context.GetHC()
         (x, y) = canvas.CalcUnscrolledPosition(position)
@@ -428,8 +415,13 @@ class HoverPreview:
 
         is_dirty = old_show_state or self.show
         if is_dirty:
-            self.__window.UpdateInfo(self.element, self.annotation, self.__value, self.position)
-            self.__window.Show(bool(self.__value))
+            self.GetWindow().UpdateInfo(self.element, self.annotation, self.__value, self.position)
+            if self.__value:
+                self.GetWindow().Show(True)
+            else:
+                self.DestroyWindow()
+        elif not self.show:
+            self.DestroyWindow()
 
     def __SetElement(self, pair):
         '''
@@ -485,6 +477,13 @@ class HoverPreview:
                 # No idea what to print for whatever type of element this is
                 self.annotation = repr(e)
                 self.SetValue(self.annotation)
+
+    def DestroyWindow(self):
+        if self.__window:
+            self.__window.Disable()
+            self.__window.Show(False)
+            self.__window.DestroyLater()
+            self.__window = None
 
 
 class HoverPreviewOptionsDialog(wx.Dialog):

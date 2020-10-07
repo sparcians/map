@@ -6,6 +6,7 @@ import os
 import os.path
 import glob
 import distutils
+import shutil
 
 # Force use of a different Cython
 cython_dir = os.environ.get('CYTHON_DIR', None)
@@ -41,7 +42,29 @@ if "clang" in os.environ.get("CC",""):
 
 py_src_dir = Path(__file__).parent.resolve() / 'src'
 
-flags = subprocess.check_output(['wx-config', '--cppflags']).decode('utf-8')
+# Support for systems with GTK3 and GTK2 installed side-by-side
+
+# Check for user-specified wx-config
+wx_config = os.environ.get('WX_CONFIG')
+
+# Get canonical path
+if wx_config is not None:
+    wx_config = os.path.realpath(wx_config)
+
+# Try GTK3-specific utility next
+if wx_config is None:
+    wx_config = shutil.which('wx-config-gtk3')
+
+# Try generic wx-config next
+if wx_config is None:
+    wx_config = shutil.which('wx-config')
+
+# Couldn't find wx-config - cannot continue
+if wx_config is None:
+    print('wx-config must be installed and present in your PATH in order to build Argos')
+    sys.exit(1)
+
+flags = subprocess.check_output([wx_config, '--cppflags']).decode('utf-8')
 flags = flags.split()
 wx_inc_dirs = [flg[2:] for flg in flags if flg.startswith('-I')]
 wx_defines = [tuple(flg[2:].split('=')) for flg in flags if flg[:2] == '-D']
@@ -55,7 +78,7 @@ def ensure_2_tuple(t):
 
 wx_defines = list(map(ensure_2_tuple, wx_defines))
 
-flags = subprocess.check_output(['wx-config', '--libs']).decode('utf-8')
+flags = subprocess.check_output([wx_config, '--libs']).decode('utf-8')
 flags = flags.split()
 wx_link_args = flags
 
