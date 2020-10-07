@@ -96,6 +96,28 @@ if (COMPILE_WITH_PYTHON)
 endif ()
 
 #
+# SystemC support
+#
+
+# SystemC support.  This will enable/disable Sparta Scheduler support
+option (COMPILE_WITH_SYSTEMC "Compile in SystemC support" OFF)
+if (COMPILE_WITH_SYSTEMC)
+  find_package(SystemCLanguage HINTS ENV{SYSTEMC_HOME})
+  if (SystemCLanguage_FOUND)
+    if (NOT ${SystemC_CXX_STANDARD} EQUAL ${CMAKE_CXX_STANDARD})
+      message (FATAL_ERROR "SystemC was not built with the C++ standard (${SystemC_CXX_STANDARD}) required by Sparta (${CMAKE_CXX_STANDARD})")
+    endif ()
+    message (STATUS "SystemC enabled: ${SystemCLanguage_VERSION}")
+    set (SYSTEMC_SUPPORT True)
+    add_definitions(-DSYSTEMC_SUPPORT)
+  else ()
+    message (STATUS "SystemC not found -- disabling tests/examples")
+  endif ()
+else()
+  message(STATUS "SystemC support disabled")
+endif()
+
+#
 # Conda support
 #
 if (USING_CONDA)
