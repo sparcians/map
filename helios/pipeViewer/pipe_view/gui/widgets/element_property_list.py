@@ -599,6 +599,11 @@ class TreePopup(TextUpdatePopup):
     def SetTree(self, tree, item = None, path = ""):
         if not item:
             item = self.__root
+
+        # Fix missing cmp() function in Python 3
+        def cmp(a, b):
+            return (a > b) - (a < b)
+
         # Sort keys by length ascending then string-comparison alphabetically
         for k, v in sorted(tree.items(),
                            key=cmp_to_key(lambda x, y: cmp(len(x[0]), len(y[0])) if len(x[0]) != len(y[0]) else cmp(x[0], y[0]))):
