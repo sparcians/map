@@ -830,6 +830,7 @@ INPUT                  = sparta_docs           \
                          ../sparta/ports/      \
                          ../sparta/resources/  \
                          ../sparta/simulation/ \
+                         ../sparta/serialization/ \
                          ../sparta/statistics/ \
                          ../sparta/utils/      \
                          ../example/CoreModel  \

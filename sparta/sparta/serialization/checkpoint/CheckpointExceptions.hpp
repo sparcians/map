@@ -9,9 +9,7 @@
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/memory/AddressTypes.hpp"
 
-namespace sparta {
-namespace serialization {
-namespace checkpoint
+namespace sparta::serialization::checkpoint
 {
     /*!
      * \brief Indicates that there was an issue operating on checkpoints
@@ -32,7 +30,4 @@ namespace checkpoint
         { }
     };
 
-} // namespace checkpoint
-} // namespace memory
-} // namespace sparta
-
+} // namespace sparta::serialization::checkpoint

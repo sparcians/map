@@ -8,6 +8,8 @@
 #include <queue>
 #include <list>
 #include <map>
+#include <string>
+#include <memory>
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/functional/ArchData.hpp"
@@ -16,9 +18,7 @@
 #include "sparta/simulation/TreeNodePrivateAttorney.hpp"
 #include "sparta/serialization/checkpoint/Checkpoint.hpp"
 
-namespace sparta {
-namespace serialization {
-namespace checkpoint
+namespace sparta::serialization::checkpoint
 {
     /*!
      * \brief Checkpointer interface. Defines an ID-based checkpointing API
@@ -75,7 +75,7 @@ namespace checkpoint
         ////////////////////////////////////////////////////////////////////////
 
         /*!
-         * \brief FastCheckpointer Constructor
+         * \brief Checkpointer Constructor
          * \param root TreeNode at which checkpoints will be taken.
          * This cannot be changed later. This does not necessarily need to be a
          * RootTreeNode. Before the first checkpoint is taken, this node must be
@@ -84,10 +84,6 @@ namespace checkpoint
          * \param sched Relevant scheduler. If nullptr (default), the
          * checkpointer will not touch attempt to roll back the scheduler on
          * checkpoint restores
-         * \pre sched must be non-nullptr This Scheduler object will
-         * have its current tick read when a checkpoint is created and
-         * set through Scheduler::restartAt when a checkpoint is
-         * restored
          */
         Checkpointer(TreeNode& root, sparta::Scheduler* sched=nullptr) :
             sched_(sched),
@@ -95,9 +91,7 @@ namespace checkpoint
             head_(nullptr),
             current_(nullptr),
             total_chkpts_created_(0)
-        {
-            sparta_assert(sched != nullptr);
-        }
+        { }
 
         /*!
          * \brief Destructor
@@ -703,7 +697,7 @@ namespace checkpoint
          * \brief Returns ArchDatas enumerated by this Checkpointer for
          * iteration when saving or loading checkpoint data
          */
-        const std::vector<ArchData*>& getArchDatas() {
+        const std::vector<ArchData*>& getArchDatas() const {
             return adatas_;
         }
 
@@ -738,7 +732,7 @@ namespace checkpoint
          * \brief Gets the current checkpointer pointer. Returns nullptr if
          * there is no current checkpoint object
          */
-        Checkpoint* getCurrent_() noexcept {
+        Checkpoint* getCurrent_() const noexcept {
             return current_;
         }
 
@@ -762,7 +756,7 @@ namespace checkpoint
          * This map must still be explicitly torn down in reverse order by a
          * subclass of Checkpointer
          */
-        std::map<chkpt_id_t, Checkpoint*> chkpts_;
+        std::map<chkpt_id_t, std::unique_ptr<Checkpoint>> chkpts_;
 
         /*!
          * \brief Scheduler whose tick count will be set and read. Cannnot be
@@ -846,9 +840,7 @@ namespace checkpoint
         uint64_t total_chkpts_created_;
     };
 
-} // namespace checkpoint
-} // namespace serialization
-} // namespace sparta
+} // namespace sparta::serialization::checkpoint
 
 
 //! ostream insertion operator for sparta::Register
@@ -866,4 +858,3 @@ inline std::ostream& operator<<(std::ostream& o, const sparta::serialization::ch
     }
     return o;
 }
-

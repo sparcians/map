@@ -13,9 +13,7 @@
 #include "sparta/serialization/checkpoint/CheckpointExceptions.hpp"
 
 
-namespace sparta {
-namespace serialization {
-namespace checkpoint
+namespace sparta::serialization::checkpoint
 {
     class FastCheckpointer;
 
@@ -271,9 +269,7 @@ namespace checkpoint
         Checkpoint* prev_; //!< Previous checkpoint (earlier) than this. *this contains changes following prev.
     };
 
-} // namespace checkpoint
-} // namespace serialization
-} // namespace sparta
+} // namespace sparta::serialization::checkpoint
 
 
 //! ostream insertion operator for Checkpoint
@@ -298,4 +294,3 @@ inline std::ostream& operator<<(std::ostream& o, const sparta::serialization::ch
         const Checkpoint::chkpt_id_t Checkpoint::MIN_CHECKPOINT;        \
         const Checkpoint::chkpt_id_t Checkpoint::UNIDENTIFIED_CHECKPOINT; \
     }}}
-
