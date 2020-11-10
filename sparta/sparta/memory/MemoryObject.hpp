@@ -12,7 +12,6 @@
 #include "sparta/memory/BlockingMemoryIFNode.hpp"
 #include "sparta/functional/ArchData.hpp"
 #include "sparta/utils/Utils.hpp"
-#include "sparta/memory/DMI_DEPRECATED.hpp"
 #include "sparta/memory/DMI.hpp"
 
 namespace sparta

@@ -962,9 +962,6 @@
   \page pipeout_format Pipeline Collection Format (index.bin, location.dat, record.bin, simulation.info, clock.dat)
   This page describes the various file formats of pipeline collection databases
   \todo Write this page
-  \page checkpoint_format Checkpointer Format
-  This page describes the file format used by the sparta fast checkpointing mechanism
-  \todo Write this page
   \page log_out_format Logging Output formats (.log, .log.raw, .log.basic, log.verbose)
   This page describes the various file formats with which log files can be written
   \todo Write this page

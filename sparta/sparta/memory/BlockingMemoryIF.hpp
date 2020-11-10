@@ -15,7 +15,6 @@ namespace sparta
 {
     namespace memory
     {
-        class DMI_DEPRECATED;
         class TranslationIF;
 
         /*!

@@ -11,7 +11,7 @@
   -# \ref param_format
   -# Report formatters
   -# Log formatters
-  -# Checkpointing
+  -# \ref checkpoint_format
   -# Python shell
   -# Run control
   -# Remote Interfaces

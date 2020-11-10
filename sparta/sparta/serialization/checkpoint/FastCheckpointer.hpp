@@ -15,11 +15,11 @@
 #include "sparta/serialization/checkpoint/DeltaCheckpoint.hpp"
 
 //! Default threshold for creating snapshots
+#ifndef DEFAULT_SNAPSHOT_THRESH
 #define DEFAULT_SNAPSHOT_THRESH 20
+#endif
 
-namespace sparta {
-namespace serialization {
-namespace checkpoint
+namespace sparta::serialization::checkpoint
 {
     /*!
      * \brief Implements quick checkpointing through delta-checkpoint trees
@@ -60,7 +60,7 @@ namespace checkpoint
      * \todo Tune ArchData line size based on checkpointer performance
      * \todo More profiling
      * \todo Compression
-     * \todo Saving to disk - Templated checkpoint object storage class
+     * \todo Saving to disk using a templated checkpoint object storage class (allowing for non-binary)
      */
     class FastCheckpointer : public Checkpointer
     {
@@ -75,19 +75,17 @@ namespace checkpoint
 
         /*!
          * \brief FastCheckpointer Constructor
-         * \param root TreeNode at which checkpoints will be taken.
-         * This cannot be changed later. This does not necessarily need to be a
-         * RootTreeNode. Before the first checkpoint is taken, this node must be
-         * finalized (see sparta::TreeNode::isFinalized). At this point, the node
-         * does not need to be finalized
-         * \param root Root of tree to checkpoint
-         * \param sched Scheduler to read and restart on checkpoint restore (if
-         * not nullptr)
          *
-         * \pre sched must be non-nullptr This Scheduler object will
-         * have its current tick read when a checkpoint is created and
-         * set through Scheduler::restartAt when a checkpoint is
-         * restored
+         * \param root TreeNode at which checkpoints will be taken.
+         *             This cannot be changed later. This does not
+         *             necessarily need to be a RootTreeNode. Before
+         *             the first checkpoint is taken, this node must
+         *             be finalized (see
+         *             sparta::TreeNode::isFinalized). At this point,
+         *             the node does not need to be finalized
+         *
+         * \param sched Scheduler to read and restart on checkpoint restore (if
+         *              not nullptr)
          */
         FastCheckpointer(TreeNode& root, Scheduler* sched=nullptr) :
             Checkpointer(root, sched),
@@ -103,14 +101,13 @@ namespace checkpoint
          *
          * Frees all checkpoint data
          */
-        virtual ~FastCheckpointer() {
+        ~FastCheckpointer() {
             // Reverse iterate and flag all as free
             for(auto itr = chkpts_.rbegin(); itr != chkpts_.rend(); ++itr){
-                checkpoint_type* d = static_cast<checkpoint_type*>(itr->second);
+                checkpoint_type* d = static_cast<checkpoint_type*>(itr->second.get());
                 if(!d->isFlaggedDeleted()){
                     d->flagDeleted();
                 }
-                delete d; // Removes self from the chain
             }
         }
 
@@ -169,7 +166,7 @@ namespace checkpoint
          * deleted checkpoint is found. This will become the new current
          * checkpoint
          */
-        virtual void deleteCheckpoint(chkpt_id_t id) override {
+        void deleteCheckpoint(chkpt_id_t id) override {
 
             // Flag checkpoint as deleted
             checkpoint_type* d = findCheckpoint_(id);
@@ -208,7 +205,7 @@ namespace checkpoint
          * scheduler, sets that scheduler's current tick to the checkpoint's
          * tick using Scheduler::restartAt
          */
-        virtual void loadCheckpoint(chkpt_id_t id) override {
+        void loadCheckpoint(chkpt_id_t id) override {
             checkpoint_type* d = findCheckpoint_(id);
             if(!d){
                 throw CheckpointError("Could not load checkpoint ID=")
@@ -238,7 +235,7 @@ namespace checkpoint
         /*!
          * \brief Queries a specific checkpoint by ID
          */
-        virtual bool checkpointExists(chkpt_id_t id) {
+        bool checkpointExists(chkpt_id_t id) {
             bool exists = false;
             checkpoint_type* d = findCheckpoint_(id);
             if(d){
@@ -258,7 +255,7 @@ namespace checkpoint
         std::vector<chkpt_id_t> getCheckpointsAt(tick_t t) const override {
             std::vector<chkpt_id_t> results;
             for(auto& p : chkpts_){
-                const Checkpoint* cp = p.second;
+                const Checkpoint* cp = p.second.get();
                 const checkpoint_type* dcp = static_cast<const checkpoint_type*>(cp);
                 if(cp->getTick() == t && !dcp->isFlaggedDeleted()){
                     results.push_back(cp->getID());
@@ -278,7 +275,7 @@ namespace checkpoint
         std::vector<chkpt_id_t> getCheckpoints() const override {
             std::vector<chkpt_id_t> results;
             for(auto& p : chkpts_){
-                const Checkpoint* cp = p.second;
+                const Checkpoint* cp = p.second.get();
                 const checkpoint_type* dcp = static_cast<const checkpoint_type*>(cp);
                 if(!dcp->isFlaggedDeleted()){
                     results.push_back(cp->getID());
@@ -331,7 +328,7 @@ namespace checkpoint
          * \note Makes a new vector of results. This should not be called in the
          * critical path.
          */
-        virtual std::deque<chkpt_id_t> getCheckpointChain(chkpt_id_t id) const override {
+        std::deque<chkpt_id_t> getCheckpointChain(chkpt_id_t id) const override {
             std::deque<chkpt_id_t> results;
             if(!getHead()){
                 return results;
@@ -364,8 +361,8 @@ namespace checkpoint
          * \throw CheckpointError if \a from does not refer to a valid
          * checkpoint.
          */
-        virtual checkpoint_type* findLatestCheckpointAtOrBefore(tick_t tick,
-                                                                chkpt_id_t from) override {
+        checkpoint_type* findLatestCheckpointAtOrBefore(tick_t tick,
+                                                        chkpt_id_t from) override {
             checkpoint_type* d = findCheckpoint_(from);
             if(!d){
                 throw CheckpointError("There is no checkpoint with ID ") << from;
@@ -387,7 +384,7 @@ namespace checkpoint
          * \brief Gets a checkpoint through findCheckpoint interface casted to
          * the type of Checkpoint subclass used by this class.
          */
-        virtual checkpoint_type* findInternalCheckpoint(chkpt_id_t id) {
+        checkpoint_type* findInternalCheckpoint(chkpt_id_t id) {
             return static_cast<checkpoint_type*>(findCheckpoint_(id));
         }
 
@@ -401,7 +398,7 @@ namespace checkpoint
         /*!
          * \brief Returns a string describing this object
          */
-        virtual std::string stringize() const override {
+        std::string stringize() const override {
             std::stringstream ss;
             ss << "<FastCheckpointer on " << getRoot().getLocation() << '>';
             return ss.str();
@@ -410,7 +407,7 @@ namespace checkpoint
         /*!
          * \brief Forwards debug/trace info onto checkpoint by ID
          */
-        virtual void traceValue(std::ostream& o, chkpt_id_t id, const ArchData* container, uint32_t offset, uint32_t size) override {
+        void traceValue(std::ostream& o, chkpt_id_t id, const ArchData* container, uint32_t offset, uint32_t size) override {
             checkpoint_type* dcp = findCheckpoint_(id);
             o << "trace: Searching for 0x" << std::hex << offset << " (" << std::dec << size
               << " bytes) in ArchData " << (const void*)container << " when loading checkpoint "
@@ -489,14 +486,13 @@ namespace checkpoint
                 // If nothing later in the chain (tree) depends on d's data, it can be deleted.
                 // This also patches the checkpoint tree around the deleted checkpoint
                 //! \todo canDelete is recursive at worst and might benefit from optimization
-                if(d->canDelete()){
+                if(d->canDelete()) {
                     // Get checkpoint id regardless of whether alive or dead
                     chkpt_id_t id = d->getID();
                     if (d->isFlaggedDeleted()) {
                         id = d->getDeletedID();
                     }
 
-                    delete d; // Repairs links between checkpoints
                     num_dead_checkpoints_--;
 
                     // Erase element in the map
@@ -518,9 +514,11 @@ namespace checkpoint
          * (\a d) will not be checked itself since the point is to determine
          * which branches down-chain depend on it.
          */
-        bool recursForwardFindAlive_(checkpoint_type* d) {
-            std::vector<Checkpoint*> nexts = d->getNexts();
-            for(auto chkpt : nexts){
+        bool recursForwardFindAlive_(checkpoint_type* d) const
+        {
+            const std::vector<Checkpoint*> & nexts = d->getNexts();
+            for(const auto & chkpt : nexts)
+            {
                 checkpoint_type* dc = static_cast<checkpoint_type*>(chkpt);
                 // Only check descendants for snapshot-ness
                 if(dc->isSnapshot()){
@@ -558,7 +556,7 @@ namespace checkpoint
         checkpoint_type* findCheckpoint_(chkpt_id_t id) noexcept override {
             auto itr = chkpts_.find(id);
             if (itr != chkpts_.end()) {
-                return static_cast<checkpoint_type*>(itr->second);
+                return static_cast<checkpoint_type*>(itr->second.get());
             }
             return nullptr;
         }
@@ -569,7 +567,7 @@ namespace checkpoint
         const checkpoint_type* findCheckpoint_(chkpt_id_t id) const noexcept override {
             auto itr = chkpts_.find(id);
             if (itr != chkpts_.end()) {
-                return static_cast<checkpoint_type*>(itr->second);
+                return static_cast<checkpoint_type*>(itr->second.get());
             }
             return nullptr;
         }
@@ -577,7 +575,7 @@ namespace checkpoint
         /*!
          * \brief Implements Checkpointer::dumpCheckpointNode_
          */
-        virtual void dumpCheckpointNode_(const Checkpoint* chkpt, std::ostream& o) const override {
+        void dumpCheckpointNode_(const Checkpoint* chkpt, std::ostream& o) const override {
             static std::string SNAPSHOT_NOTICE = "(s)";
 
             // checkpoint_type is a known direct base class of Checkpoint
@@ -603,7 +601,7 @@ namespace checkpoint
         void createHead_() override {
             tick_t tick = 0;
             if(sched_){
-                 tick = sched_->getCurrentTick();
+                tick = sched_->getCurrentTick();
             }
 
             if(getHead()){
@@ -622,8 +620,8 @@ namespace checkpoint
             }
 
             checkpoint_type* dcp = new checkpoint_type(getRoot(), getArchDatas(), next_chkpt_id_++, tick, nullptr, true);
+            chkpts_[dcp->getID()].reset(dcp);
             setHead_(dcp);
-            chkpts_[dcp->getID()] = dcp;
             num_alive_checkpoints_++;
             num_alive_snapshots_++;
             setCurrent_(dcp);
@@ -682,7 +680,7 @@ namespace checkpoint
                                                        tick,
                                                        prev,
                                                        force_snapshot || is_snapshot);
-            chkpts_[dcp->getID()] = dcp;
+            chkpts_[dcp->getID()].reset(dcp);
             num_alive_checkpoints_++;
             num_alive_snapshots_ += (dcp->isSnapshot() == true);
             setCurrent_(dcp);
@@ -730,7 +728,4 @@ namespace checkpoint
         uint32_t num_dead_checkpoints_;
     };
 
-} // namespace checkpoint
-} // namespace serialization
-} // namespace sparta
-
+} // namespace sparta::serialization::checkpoint
