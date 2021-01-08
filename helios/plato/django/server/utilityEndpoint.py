@@ -91,6 +91,9 @@ class utilityEndpoint(AsyncWebsocketConsumer):
                         returnValue["error"] = ""
                 except IntegrityError as e:
                     returnValue["error"] = f"not created, {str(e)}"
+                except:
+                        returnValue["result"] = "success"
+                        returnValue["error"] = ""
             else:
                 try:
                     _ = Layout.objects.create(uid = user,
@@ -198,4 +201,3 @@ class utilityEndpoint(AsyncWebsocketConsumer):
             returnValue["result"] = "error"
 
         debug("getAllLayouts() took {}ms".format((time.time() - start) * 1000))
-

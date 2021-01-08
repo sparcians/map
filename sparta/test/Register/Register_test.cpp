@@ -128,8 +128,9 @@ public:
     void registerForCb1(RegisterBase *r)
     {
         r->getPostWriteNotificationSource().REGISTER_FOR_THIS(callback1);
-        //r->getPostWriteNotificationSource().registerForThis<RegPostWriteObserver, &RegPostWriteObserver::callback1>(this);
-        //r->getPostWriteNotificationSource().registerForThis<RegPostWriteObserver, &RegPostWriteObserver<RegReadSizeT>::callback1>(this);
+        // r->getPostWriteNotificationSource().REGISTER_FOR_THIS(callbackTemplate<int, int>);
+        // r->getPostWriteNotificationSource().registerForThis<RegPostWriteObserver, &RegPostWriteObserver<RegReadSizeT>::callback1>(this);
+        //r->getPostWriteNotificationSource().registerForThis<RegPostWriteObserver, &RegPostWriteObserver::callbackTemplate<int, int>>(this);
     }
 
     void deregisterForCb1(RegisterBase *r)
@@ -163,6 +164,11 @@ public:
         EXPECT_EQUAL(data.final->read<RegReadSizeT>(), post);
         writes_2++;
     }
+
+    // Used to test a template type
+    template<class T1, class T2>
+    void callbackTemplate(const sparta::TreeNode&, const sparta::TreeNode&, const Register::PostWriteAccess&) { }
+
 };
 
 template <typename RegReadSizeT>
@@ -389,7 +395,7 @@ void testBadRegs()
     std::cout << std::endl;
 }
 
-#define NUM_TIMING_WRITES 100000
+#define NUM_TIMING_WRITES 100000000
 template <typename WriteT, WriteT poke_val>
 double timeWritesPlain(sparta::RegisterBase *r64)
 {
