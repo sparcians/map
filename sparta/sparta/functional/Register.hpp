@@ -12,13 +12,14 @@
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/functional/DataView.hpp"
+#include "sparta/functional/RegisterBits.hpp"
 #include "sparta/utils/Utils.hpp"
 #include "sparta/log/NotificationSource.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
-#include "sparta/utils/BitArray.hpp"
 #include "sparta/utils/StringUtils.hpp"
 #include "sparta/utils/ValidValue.hpp"
+#include "sparta/utils/BitArray.hpp"
 
 namespace sparta
 {
@@ -62,7 +63,7 @@ namespace sparta
 class RegisterBase : public TreeNode
 {
 private:
-    using BitArray = utils::BitArray;
+    using BitArray = RegisterBits;
 
 public:
     class Field;
@@ -378,22 +379,22 @@ public:
             return utils::BitArray(value.data(), reg_size_);
         }
 
-        void write_(const utils::BitArray &value)
+        void write_(const RegisterBits &value)
         {
-            reg_.write(value.getValue(), value.getSize(), 0);
+            reg_.write(value.data(), value.getSize(), 0);
         }
 
-        void poke_(const utils::BitArray &value)
+        void poke_(const RegisterBits &value)
         {
-            reg_.poke(value.getValue(), value.getSize(), 0);
+            reg_.poke(value.data(), value.getSize(), 0);
         }
 
-        void pokeUnmasked_(const utils::BitArray &value)
+        void pokeUnmasked_(const RegisterBits &value)
         {
-            reg_.pokeUnmasked(value.getValue(), value.getSize(), 0);
+            reg_.pokeUnmasked(value.data(), value.getSize(), 0);
         }
 
-        utils::BitArray newRegisterValue_(access_type value) const
+        RegisterBits newRegisterValue_(access_type value) const
         {
             const auto old_register_value  = peekBitArray_();
             const auto field_value_to_be_written_shifted = utils::BitArray(value, reg_size_) << getLowBit();
@@ -988,6 +989,8 @@ public:
 
     /*!
      * \brief Write a value into this register
+     * \param val The value to write
+     * \param idx The index of the register to write the val
      * \note Write-mask is applied
      */
     template <typename T>
@@ -1513,7 +1516,7 @@ private:
         auto &post_read_noti = getReadNotificationSource();
 
         peek_(buf, size, offset);
-        if (__builtin_expect(post_read_noti.observed(), false)) {
+        if (SPARTA_EXPECT_FALSE(post_read_noti.observed())) {
             post_read_noti.postNotification(post_read_noti_data_);
         }
     }
@@ -1533,7 +1536,7 @@ private:
     {
         auto &post_write_noti = getPostWriteNotificationSource();
 
-        if (__builtin_expect(post_write_noti.observed(), false)) {
+        if (SPARTA_EXPECT_FALSE(post_write_noti.observed())) {
             prior_val_dview_ = dview_;
             poke_(buf, size, offset);
             post_write_noti.postNotification(post_write_noti_data_);
