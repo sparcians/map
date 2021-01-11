@@ -19,7 +19,6 @@
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/StringUtils.hpp"
 #include "sparta/utils/ValidValue.hpp"
-#include "sparta/utils/BitArray.hpp"
 
 namespace sparta
 {
@@ -62,8 +61,6 @@ namespace sparta
  */
 class RegisterBase : public TreeNode
 {
-private:
-    using BitArray = RegisterBits;
 
 public:
     class Field;
@@ -137,12 +134,12 @@ public:
      */
     class Field : public TreeNode
     {
-        utils::BitArray computeFieldMask_(uint32_t start, uint32_t end, uint32_t reg_size)
+        RegisterBits computeFieldMask_(uint32_t start, uint32_t end, uint32_t reg_size)
         {
             const auto num_ones = start - end + 1;
             // For 31-0:
             // max() & (max() >> ((8 * 8) - 31))
-            return utils::BitArray(((std::numeric_limits<uint64_t>::max()
+            return RegisterBits(((std::numeric_limits<uint64_t>::max()
                                      & (std::numeric_limits<uint64_t>::max() >> ((sizeof(uint64_t) * CHAR_BIT) - num_ones)))), reg_size) << end;
         }
 
@@ -262,7 +259,7 @@ public:
          */
         access_type read()
         {
-            return ((readBitArray_() & field_mask_) >> getLowBit()).getValue<access_type>();
+            return ((readBitArray_() & field_mask_) >> getLowBit()).dataAs<access_type>();
         }
 
         /*!
@@ -272,7 +269,7 @@ public:
          */
         access_type peek() const
         {
-            return ((peekBitArray_() & field_mask_) >> getLowBit()).getValue<access_type>();
+            return ((peekBitArray_() & field_mask_) >> getLowBit()).dataAs<access_type>();
         }
 
         /*!
@@ -365,18 +362,18 @@ public:
         }
 
     private:
-        utils::BitArray readBitArray_() const
+        RegisterBits readBitArray_() const
         {
             std::vector<uint8_t> value(reg_size_);
             reg_.read(value.data(), reg_size_, 0);
-            return utils::BitArray(value.data(), reg_size_);
+            return RegisterBits(value.data(), reg_size_);
         }
 
-        utils::BitArray peekBitArray_() const
+        RegisterBits peekBitArray_() const
         {
             std::vector<uint8_t> value(reg_size_);
             reg_.peek(value.data(), reg_size_, 0);
-            return utils::BitArray(value.data(), reg_size_);
+            return RegisterBits(value.data(), reg_size_);
         }
 
         void write_(const RegisterBits &value)
@@ -397,11 +394,11 @@ public:
         RegisterBits newRegisterValue_(access_type value) const
         {
             const auto old_register_value  = peekBitArray_();
-            const auto field_value_to_be_written_shifted = utils::BitArray(value, reg_size_) << getLowBit();
+            const auto field_value_to_be_written_shifted = RegisterBits(value, reg_size_) << getLowBit();
 
             // Check to see if the number of bits being written to the
             // field is larger than the field itself.
-            sparta_assert((field_value_to_be_written_shifted & ~field_mask_) == utils::BitArray(access_type(0), reg_size_),
+            sparta_assert((field_value_to_be_written_shifted & ~field_mask_) == RegisterBits(access_type(0), reg_size_),
                           "Value of " << value <<  " too large for bit field "
                           << getLocation() << " of size " << getNumBits());
 
@@ -427,7 +424,7 @@ public:
          * Used to mask out the bits in the register of this field --
          * the 'not' bits of the register.
          */
-        const utils::BitArray field_mask_;
+        const RegisterBits field_mask_;
 
     }; // class Field
 
@@ -1086,7 +1083,7 @@ public:
     T getWriteMask(index_type idx=0) const
     {
         sparta_assert((idx + 1) * sizeof(T) <= mask_.getSize());
-        return *(reinterpret_cast<const T*>(mask_.getValue()) + idx);
+        return *(reinterpret_cast<const T*>(mask_.data()) + idx);
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -1123,7 +1120,7 @@ public:
     std::string getWriteMaskAsByteString() const
     {
         return utils::bin_to_hexstr(
-            reinterpret_cast<const uint8_t *>(mask_.getValue()), mask_.getSize());
+            reinterpret_cast<const uint8_t *>(mask_.data()), mask_.getSize());
     }
 
     /*!
@@ -1138,7 +1135,7 @@ public:
     std::string getWriteMaskAsBitString() const
     {
         return utils::bin_to_bitstr(
-            reinterpret_cast<const uint8_t *>(mask_.getValue()), mask_.getSize());
+            reinterpret_cast<const uint8_t *>(mask_.data()), mask_.getSize());
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -1190,11 +1187,10 @@ public:
 
         // This is nonsense and needs to be re-written.  It's
         // stupid slow.
-        BitArray old = peekBitArray_(size, offset);
-        BitArray val(reinterpret_cast<const uint8_t *>(buf), size);
-        BitArray mask = mask_ >> 8 * offset;
-        old = (old & ~mask) | (val & mask);
-        write_(old.getValue(), size, offset);
+        RegisterBits val(reinterpret_cast<const uint8_t *>(buf), size);
+        RegisterBits mask = mask_ >> 8 * offset;
+        RegisterBits old = (peekRegisterBits_(size, offset) & ~mask) | (val & mask);
+        write_(old.data(), size, offset);
     }
 
     void writeUnmasked(const void *buf, size_t size, size_t offset)
@@ -1209,12 +1205,10 @@ public:
 
         // This is nonsense and needs to be re-written.  It's
         // stupid slow.
-        BitArray old = peekBitArray_(size, offset);
-        BitArray val(reinterpret_cast<const uint8_t *>(buf), size);
-        BitArray mask = mask_ >> 8 * offset;
-
-        old = (old & ~mask) | (val & mask);
-        poke_(old.getValue(), size, offset);
+        RegisterBits val(reinterpret_cast<const uint8_t *>(buf), size);
+        RegisterBits mask = mask_ >> 8 * offset;
+        RegisterBits old = (peekRegisterBits_(size, offset) & ~mask) | (val & mask);
+        poke_(old.data(), size, offset);
     }
 
     void pokeUnmasked(const void *buf, size_t size, size_t offset)
@@ -1330,12 +1324,11 @@ protected:
     }
 
 private:
-    BitArray computeWriteMask_(const Definition *def) const
+    RegisterBits computeWriteMask_(const Definition *def) const
     {
         const auto mask_size = def->bytes;
-        BitArray write_mask(0, mask_size);
-        BitArray partial_mask(0, mask_size);
-        partial_mask.fill<uint8_t>(0xff);
+        RegisterBits write_mask(mask_size);
+        RegisterBits partial_mask(mask_size);
 
         for (auto &fdp : def->fields) {
             if (fdp.read_only) {
@@ -1350,11 +1343,11 @@ private:
         return ~write_mask;
     }
 
-    BitArray peekBitArray_(size_t size, size_t offset=0) const
+    RegisterBits peekRegisterBits_(size_t size, size_t offset=0) const
     {
         std::vector<uint8_t> value(size);
         peek_(value.data(), size, offset);
-        return BitArray(value.data(), size);
+        return RegisterBits(value.data(), size);
     }
 
     /*!
@@ -1381,7 +1374,7 @@ private:
     /*!
      * \brief Bit mask with zeros in the bit positions that are read-only
      */
-    const BitArray mask_;
+    const RegisterBits mask_;
 
     /*!
      * \brief NotificationSource for post-write notifications
@@ -1492,7 +1485,7 @@ public:
         std::stringstream ss;
         ss << '<' << getLocation() << " " << getNumBits() << " bits ";
         if (dview_.isPlaced()) {
-            ss << getValueAsByteString();
+            ss << dataAsByteString();
         } else {
             ss << DataView::DATAVIEW_UNPLACED_STR;
         }
