@@ -34,7 +34,22 @@ namespace sparta
             return final_value;
         }
 
+        template<typename SizeT>
+        RegisterBits bitShiftLeft_(uint32_t amount) const {
+            RegisterBits final_value(num_bytes_);
+            *reinterpret_cast<SizeT*>(final_value.local_storage_.data()) =
+                (*reinterpret_cast<const SizeT*>(data_)) << amount;
+            return final_value;
+        }
+
     public:
+        explicit RegisterBits(const uint32_t num_bytes) :
+            local_storage_(num_bytes, 0),
+            data_(local_storage_.data()),
+            num_bytes_(num_bytes)
+        {
+        }
+
         RegisterBits(const uint8_t * data, const size_t num_bytes) :
             data_(data),
             num_bytes_(num_bytes)
@@ -176,6 +191,53 @@ namespace sparta
             return RegisterBits(nullptr, 0);
         }
 
+        RegisterBits operator<<(uint32_t shift) const
+        {
+            if(num_bytes_ == 8) {
+                return bitShiftLeft_<uint64_t>(shift);
+            }
+            else if(num_bytes_ == 4) {
+                return bitShiftLeft_<uint32_t>(shift);
+            }
+            else if(num_bytes_ > 8)
+            {
+                RegisterBits final_value(num_bytes_);
+                const uint64_t * src_data = reinterpret_cast<const uint64_t*>(data_);
+                uint64_t * final_data = reinterpret_cast<uint64_t*>(final_value.local_storage_.data());
+                const uint32_t num_dbl_words = num_bytes_ / 8;
+
+                const uint32_t prev_dbl_word_bit_pos = 64 - shift;
+                const uint64_t bits_dropped_mask = ((1ull << shift) - 1) << prev_dbl_word_bit_pos;
+
+                // Shift each double word
+                for(uint32_t idx = 0; idx < num_dbl_words; ++idx)
+                {
+                    *(final_data + idx) = (*(src_data + idx) << shift);
+
+                    // Now, put in the bits dropped between each double word
+                    if(idx > 0) {
+                        const uint64_t orig_dbl_word = *(src_data + (idx - 1));
+                        const uint64_t bits_dropped = (orig_dbl_word & bits_dropped_mask) >> prev_dbl_word_bit_pos;
+                        *(final_data + idx) |= bits_dropped;
+                    }
+                }
+                return final_value;
+            }
+            else if(num_bytes_ == 2) {
+                return bitShiftLeft_<uint16_t>(shift);
+            }
+            else if(num_bytes_ == 1) {
+                return bitShiftLeft_<uint8_t>(shift);
+            }
+
+            return RegisterBits(nullptr, 0);
+        }
+
+        bool operator==(const RegisterBits & other) const {
+            return (num_bytes_ == other.num_bytes_) &&
+                (::memcmp(data_, other.data_, num_bytes_) == 0);
+        }
+
         const uint8_t * operator[](const uint32_t idx) const {
             return data_ + idx;
         }
@@ -184,14 +246,15 @@ namespace sparta
             return data_;
         }
 
+        template <typename T,
+                  typename = typename std::enable_if<std::is_integral<T>::value>::type>
+        T dataAs() const {
+            return *reinterpret_cast<T*>(data_);
+        }
+
         uint32_t getSize() const { return num_bytes_; }
 
     private:
-        RegisterBits(const uint32_t num_bytes) :
-            local_storage_(num_bytes, 0),
-            data_(local_storage_.data()),
-            num_bytes_(num_bytes)
-        {}
 
         std::vector<uint8_t> local_storage_;
         const uint8_t * data_ = nullptr;
