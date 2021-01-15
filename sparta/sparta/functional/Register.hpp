@@ -137,10 +137,14 @@ public:
         RegisterBits computeFieldMask_(uint32_t start, uint32_t end, uint32_t reg_size)
         {
             const auto num_ones = start - end + 1;
+            RegisterBits mask(sizeof(uint64_t));
             // For 31-0:
+
             // max() & (max() >> ((8 * 8) - 31))
-            return RegisterBits(((std::numeric_limits<uint64_t>::max()
-                                     & (std::numeric_limits<uint64_t>::max() >> ((sizeof(uint64_t) * CHAR_BIT) - num_ones)))), reg_size) << end;
+            const uint64_t masked_bits = std::numeric_limits<uint64_t>::max() &
+                (std::numeric_limits<uint64_t>::max() >> ((sizeof(uint64_t) * CHAR_BIT) - num_ones)) << end;
+            mask.set(masked_bits);
+            return mask;
         }
 
     public:
@@ -213,7 +217,8 @@ public:
             reg_(reg),
             def_(def),
             reg_size_(reg_.getNumBytes()),
-            field_mask_(computeFieldMask_(def.high_bit, def.low_bit, reg_.getNumBytes()))
+            field_mask_(computeFieldMask_(def.high_bit, def.low_bit, reg_.getNumBytes())),
+            not_field_mask_(~field_mask_)
         {
             setExpectedParent_(&reg);
 
@@ -394,15 +399,17 @@ public:
         RegisterBits newRegisterValue_(access_type value) const
         {
             const auto old_register_value  = peekBitArray_();
-            const auto field_value_to_be_written_shifted = RegisterBits(value, reg_size_) << getLowBit();
+
+            RegisterBits field_value_to_be_written_shifted(reg_size_, value);
+            field_value_to_be_written_shifted <<= getLowBit();
 
             // Check to see if the number of bits being written to the
             // field is larger than the field itself.
-            sparta_assert((field_value_to_be_written_shifted & ~field_mask_) == RegisterBits(access_type(0), reg_size_),
+            sparta_assert((field_value_to_be_written_shifted & not_field_mask_) == 0,
                           "Value of " << value <<  " too large for bit field "
                           << getLocation() << " of size " << getNumBits());
 
-            return (old_register_value & ~field_mask_) | field_value_to_be_written_shifted;
+            return (old_register_value & not_field_mask_) | field_value_to_be_written_shifted;
         }
 
         /*!
@@ -421,10 +428,14 @@ public:
         const RegisterBase::size_type reg_size_ = 0;
 
         /*!
-         * Used to mask out the bits in the register of this field --
-         * the 'not' bits of the register.
+         * Used to mask out the bits in the register of this field
          */
         const RegisterBits field_mask_;
+
+        /*!
+         * Used to mask the "other" bits that are not this field
+         */
+        const RegisterBits not_field_mask_;
 
     }; // class Field
 
