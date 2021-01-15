@@ -32,20 +32,22 @@ int main()
     *(reinterpret_cast<uint64_t*>(storage2_128.data())) = 0xFFFF0000;
     *(reinterpret_cast<uint64_t*>(storage1_128.data()+8)) = 0b01010101010101010101010101010101;
     *(reinterpret_cast<uint64_t*>(storage2_128.data()+8)) = 0b10101010101010101010101010101010;
-    std::cout << " 128-bit in1: " << std::hex << std::setw(16) << *reinterpret_cast<const uint64_t*>(storage1_128.data() + 8)
+    std::cout << " 128-bit in1: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(storage1_128.data() + 8)
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(storage1_128.data()) << std::endl;
-    std::cout << " 128-bit in2: " << std::setw(16) << *reinterpret_cast<const uint64_t*>(storage2_128.data() + 8)
-              << std::hex << std::setw(16) << *reinterpret_cast<const uint64_t*>(storage2_128.data()) << std::endl;
+    std::cout << " 128-bit in2: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(storage2_128.data() + 8)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(storage2_128.data()) << std::endl;
 
     sparta::RegisterBits reg1_128(storage1_128.data(), storage1_128.size());
     sparta::RegisterBits reg2_128(storage2_128.data(), storage2_128.size());
     sparta::RegisterBits ored128 = reg1_128 | reg2_128;
-
-    std::cout << "|128-bit    : " << std::hex << std::setw(16) << *reinterpret_cast<const uint64_t*>(ored128.data() + 8)
+    std::cout << "|128-bit    : " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(ored128.data() + 8)
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(ored128.data()) << std::endl;
-
     sparta::RegisterBits not_ored128 = ~ored128;
-    std::cout << "~128-bit    : " << std::hex << *reinterpret_cast<const uint64_t*>((not_ored128).data() + 8)
+    std::cout << "~128-bit    : " << std::hex
+              << *reinterpret_cast<const uint64_t*>((not_ored128).data() + 8)
               << *reinterpret_cast<const uint64_t*>((not_ored128).data()) << std::endl;
 
     *(reinterpret_cast<uint64_t*>(storage1_128.data()))   = 0xFFFFFFFFFFFFFFFF;
@@ -53,19 +55,24 @@ int main()
     *(reinterpret_cast<uint64_t*>(storage2_128.data()))   = 0x8888888888888888;
     *(reinterpret_cast<uint64_t*>(storage2_128.data()+8)) = 0xdeadbeefdeadbeef;
     sparta::RegisterBits and128 = reg1_128 & reg2_128;
-    std::cout << " 128-bit in1: " << std::hex << std::setw(16) << *reinterpret_cast<const uint64_t*>(storage1_128.data() + 8)
+    std::cout << " 128-bit in1: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(storage1_128.data() + 8)
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(storage1_128.data()) << std::endl;
-    std::cout << " 128-bit in2: " << std::setw(16) << *reinterpret_cast<const uint64_t*>(storage2_128.data() + 8)
+    std::cout << " 128-bit in2: "
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(storage2_128.data() + 8)
               << std::hex << std::setw(16) << *reinterpret_cast<const uint64_t*>(storage2_128.data()) << std::endl;
-    std::cout << "&128-bit    : " << std::hex << std::setw(16) << *reinterpret_cast<const uint64_t*>((and128).data() + 8)
+    std::cout << "&128-bit    : " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>((and128).data() + 8)
               << std::setw(16) << *reinterpret_cast<const uint64_t*>((and128).data()) << std::endl;
 
     sparta::RegisterBits shift_4_128 = and128 >> 4;
-    std::cout << " 128-bit 4RS: " << std::hex << std::setw(16) << *reinterpret_cast<const uint64_t*>((shift_4_128).data() + 8)
+    std::cout << " 128-bit 4RS: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>((shift_4_128).data() + 8)
               << std::setw(16) << *reinterpret_cast<const uint64_t*>((shift_4_128).data()) << std::endl;
 
     sparta::RegisterBits shift_32_128 = and128 >> 32;
-    std::cout << " 128-bit 32S: " << std::hex << std::setw(16) << *reinterpret_cast<const uint64_t*>((shift_32_128).data() + 8)
+    std::cout << " 128-bit 32S: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>((shift_32_128).data() + 8)
               << std::setw(16) << *reinterpret_cast<const uint64_t*>((shift_32_128).data()) << std::endl;
 
     std::vector<uint8_t> storage1_256(32);
@@ -114,4 +121,10 @@ int main()
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256.data() + 8)
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256.data()) << std::endl;
 
+    sparta::RegisterBits shift256_9 = reg1_256 >> 129;
+    std::cout << "S256-bit 129: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_9.data() + 24)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_9.data() + 16)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_9.data() + 8)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_9.data()) << std::endl;
 }
