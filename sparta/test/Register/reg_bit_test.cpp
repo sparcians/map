@@ -79,8 +79,8 @@ int main()
     std::vector<uint8_t> storage2_256(32);
 
     for(uint32_t idx = 0; idx < storage1_256.size(); ++idx) {
-        storage1_256[idx] = 0xF0;
-        storage2_256[idx] = 0x0F;
+        storage1_256[idx] = 0x11 * (idx + 1);
+        storage2_256[idx] = 0xFF - (0x11 * (idx + 1));
     }
     sparta::RegisterBits reg1_256(storage1_256.data(), storage1_256.size());
     sparta::RegisterBits reg2_256(storage2_256.data(), storage2_256.size());
@@ -114,6 +114,14 @@ int main()
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data() + 16)
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data() + 8)
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data()) << std::endl;
+
+    sparta::RegisterBits shift256_1 = reg1_256 >> 1;
+    std::cout << "S256-bit   1: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_1.data() + 24)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_1.data() + 16)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_1.data() + 8)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_1.data()) << std::endl;
+
     sparta::RegisterBits shift256 = reg1_256 >> 128;
     std::cout << "S256-bit 128: " << std::hex
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256.data() + 24)
@@ -127,4 +135,11 @@ int main()
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_9.data() + 16)
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_9.data() + 8)
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_9.data()) << std::endl;
+
+    sparta::RegisterBits shift256_255 = reg1_256 >> 255;
+    std::cout << "S256-bit 255: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_255.data() + 24)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_255.data() + 16)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_255.data() + 8)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_255.data()) << std::endl;
 }

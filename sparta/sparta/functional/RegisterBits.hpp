@@ -180,9 +180,34 @@ namespace sparta
                 // Determine the number of double words that will be shifted
                 const uint32_t double_word_shift_count = shift / 64;
 
+                //
                 // Shift full double words first.
-                for(uint32_t shift_cnt = 0; shift_cnt < double_word_shift_count; ++shift_cnt) {
-                    *(final_data + shift_cnt) = *(src_data + shift_cnt + 1);
+                //
+                // Example:
+                //
+                // num_dbl_words = 4
+                //
+                // 1111111111111111 2222222222222222 3333333333333333 4444444444444444
+                //                                                    1111111111111111
+                // double_word_shift_count = 3
+                // dest[0] = src[3]
+                //
+                // 1111111111111111 2222222222222222 3333333333333333 4444444444444444
+                //                                   1111111111111111 2222222222222222
+                // double_word_shift_count = 2
+                // dest[0] = src[2]
+                // dest[1] = src[3]
+                //
+                // 1111111111111111 2222222222222222 3333333333333333 4444444444444444
+                //                  1111111111111111 2222222222222222 3333333333333333
+                // double_word_shift_count = 1
+                // dest[0] = src[1]
+                // dest[1] = src[2]
+                // dest[2] = src[3]
+                //
+                uint32_t src_idx = double_word_shift_count;
+                for(uint32_t dest_idx = 0; src_idx < num_dbl_words; ++dest_idx, ++src_idx) {
+                    *(final_data + dest_idx) = *(src_data + src_idx);
                 }
 
                 const auto double_words_to_micro_shift = (num_dbl_words - double_word_shift_count);
@@ -193,19 +218,17 @@ namespace sparta
                         (uint64_t)(-(remaining_bits_to_shift != 0) &
                                    (-1 >> ((sizeof(uint64_t) * 8) - remaining_bits_to_shift)));
                     const uint32_t prev_dbl_word_bit_pos = 64 - remaining_bits_to_shift;
-
-                    // Now micro-shift starting at the first double word
-                    // and stopping at the double word that's zero-ed out (nothing to shift!)
-                    for(uint32_t idx = 0; idx < double_words_to_micro_shift; ++idx)
+                    uint32_t idx =0;
+                    while(true)
                     {
                         *(final_data + idx) = (*(src_data + idx) >> remaining_bits_to_shift);
-                        // Now, put in the bits dropped between each double word
-                        if(idx > 0) {
-                            const uint64_t orig_dbl_word = *(src_data + idx);
-                            const uint64_t bits_dropped =
-                                (orig_dbl_word & prev_dbl_word_bits_dropped_mask) << prev_dbl_word_bit_pos;
-                            *(final_data + (idx - 1)) |= bits_dropped;
+                        if(++idx == double_words_to_micro_shift) {
+                            break;
                         }
+                        const uint64_t orig_dbl_word = *(src_data + idx);
+                        const uint64_t bits_dropped =
+                            (orig_dbl_word & prev_dbl_word_bits_dropped_mask) << prev_dbl_word_bit_pos;
+                        *(final_data + (idx - 1)) |= bits_dropped;
                     }
                 }
                 return final_value;
