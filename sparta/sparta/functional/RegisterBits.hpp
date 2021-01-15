@@ -255,22 +255,61 @@ namespace sparta
             {
                 RegisterBits final_value(num_bytes_);
                 const uint64_t * src_data = reinterpret_cast<const uint64_t*>(data_);
-                uint64_t * final_data = reinterpret_cast<uint64_t*>(final_value.local_storage_.data());
+                uint64_t *     final_data = reinterpret_cast<uint64_t*>(final_value.local_storage_.data());
                 const uint32_t num_dbl_words = num_bytes_ / 8;
 
-                const uint32_t prev_dbl_word_bit_pos = 64 - shift;
-                const uint64_t bits_dropped_mask = ((1ull << shift) - 1) << prev_dbl_word_bit_pos;
+                // Determine the number of double words that will be shifted
+                const uint32_t double_word_shift_count = shift / 64;
 
-                // Shift each double word
-                for(uint32_t idx = 0; idx < num_dbl_words; ++idx)
+                //
+                // Shift full double words first.
+                //
+                // Example:
+                //
+                // num_dbl_words = 4
+                //
+                // 1111111111111111 2222222222222222 3333333333333333 4444444444444444
+                // 4444444444444444
+                // double_word_shift_count = 3
+                // dest[3] = src[0]
+                //
+                // 1111111111111111 2222222222222222 3333333333333333 4444444444444444
+                // 3333333333333333 4444444444444444
+                // double_word_shift_count = 2
+                // dest[3] = src[1]
+                // dest[2] = src[0]
+                //
+                // 1111111111111111 2222222222222222 3333333333333333 4444444444444444
+                // 2222222222222222 3333333333333333 4444444444444444
+                // double_word_shift_count = 1
+                // dest[3] = src[2]
+                // dest[2] = src[1]
+                // dest[1] = src[0]
+                //
+                uint32_t dest_idx = double_word_shift_count;
+                for(uint32_t src_idx = 0; dest_idx < num_dbl_words; ++dest_idx, ++src_idx) {
+                    *(final_data + dest_idx) = *(src_data + src_idx);
+                }
+
+                const auto double_words_to_micro_shift = (num_dbl_words - double_word_shift_count);
+                if(double_words_to_micro_shift > 0)
                 {
-                    *(final_data + idx) = (*(src_data + idx) << shift);
-
-                    // Now, put in the bits dropped between each double word
-                    if(idx > 0) {
-                        const uint64_t orig_dbl_word = *(src_data + (idx - 1));
-                        const uint64_t bits_dropped = (orig_dbl_word & bits_dropped_mask) >> prev_dbl_word_bit_pos;
-                        *(final_data + idx) |= bits_dropped;
+                    const uint32_t remaining_bits_to_shift = shift % 64;
+                    const uint64_t prev_dbl_word_bits_dropped_mask =
+                        (uint64_t)(-(remaining_bits_to_shift != 0) &
+                                   (-1 >> ((sizeof(uint64_t) * 8) - remaining_bits_to_shift)));
+                    const uint32_t prev_dbl_word_bit_pos = 64 - remaining_bits_to_shift;
+                    uint32_t idx =0;
+                    while(true)
+                    {
+                        *(final_data + idx) = (*(src_data + idx) << remaining_bits_to_shift);
+                        if(++idx == double_words_to_micro_shift) {
+                            break;
+                        }
+                        const uint64_t orig_dbl_word = *(src_data + idx);
+                        const uint64_t bits_dropped =
+                            (orig_dbl_word & prev_dbl_word_bits_dropped_mask) >> prev_dbl_word_bit_pos;
+                        *(final_data + (idx - 1)) |= bits_dropped;
                     }
                 }
                 return final_value;
