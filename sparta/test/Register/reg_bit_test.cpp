@@ -115,31 +115,66 @@ int main()
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data() + 8)
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data()) << std::endl;
 
-    sparta::RegisterBits shift256_1 = reg1_256 >> 1;
-    std::cout << "S256-bit   1: " << std::hex
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_1.data() + 24)
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_1.data() + 16)
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_1.data() + 8)
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_1.data()) << std::endl;
+    sparta::RegisterBits shift256_R1 = reg1_256 >> 1;
+    std::cout << "S256-bit  R1: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_R1.data() + 24)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_R1.data() + 16)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_R1.data() + 8)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_R1.data()) << std::endl;
 
-    sparta::RegisterBits shift256 = reg1_256 >> 128;
-    std::cout << "S256-bit 128: " << std::hex
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256.data() + 24)
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256.data() + 16)
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256.data() + 8)
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256.data()) << std::endl;
+    sparta::RegisterBits shift256R = reg1_256 >> 128;
+    std::cout << "S256-bitR128: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R.data() + 24)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R.data() + 16)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R.data() + 8)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R.data()) << std::endl;
 
-    sparta::RegisterBits shift256_9 = reg1_256 >> 129;
-    std::cout << "S256-bit 129: " << std::hex
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_9.data() + 24)
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_9.data() + 16)
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_9.data() + 8)
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_9.data()) << std::endl;
+    sparta::RegisterBits shift256R_9 = reg1_256 >> 129;
+    std::cout << "S256-bitR129: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R_9.data() + 24)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R_9.data() + 16)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R_9.data() + 8)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R_9.data()) << std::endl;
 
-    sparta::RegisterBits shift256_255 = reg1_256 >> 255;
-    std::cout << "S256-bit 255: " << std::hex
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_255.data() + 24)
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_255.data() + 16)
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_255.data() + 8)
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256_255.data()) << std::endl;
+    sparta::RegisterBits shift256R_255 = reg1_256 >> 255;
+    std::cout << "S256-bitR255: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R_255.data() + 24)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R_255.data() + 16)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R_255.data() + 8)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R_255.data()) << std::endl;
+
+    std::cout << " 256-bit in1: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data() + 24)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data() + 16)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data() + 8)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data()) << std::endl;
+
+    sparta::RegisterBits shift256L_1 = reg1_256 << 1;
+    std::cout << "S256-bit  L1: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L_1.data() + 24)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L_1.data() + 16)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L_1.data() + 8)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L_1.data()) << std::endl;
+
+    sparta::RegisterBits shift256L = reg1_256 << 128;
+    std::cout << "S256-bitL128: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L.data() + 24)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L.data() + 16)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L.data() + 8)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L.data()) << std::endl;
+
+    sparta::RegisterBits shift256L_9 = reg1_256 << 129;
+    std::cout << "S256-bitL129: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L_9.data() + 24)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L_9.data() + 16)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L_9.data() + 8)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L_9.data()) << std::endl;
+
+    sparta::RegisterBits shift256L_255 = reg1_256 << 255;
+    std::cout << "S256-bitL255: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L_255.data() + 24)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L_255.data() + 16)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L_255.data() + 8)
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L_255.data()) << std::endl;
+
 }
