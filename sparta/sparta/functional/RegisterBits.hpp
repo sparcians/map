@@ -4,6 +4,7 @@
 #include <cinttypes>
 #include <vector>
 #include <functional>
+#include <limits>
 #include <string.h>
 
 #include "sparta/utils/SpartaAssert.hpp"
@@ -214,21 +215,24 @@ namespace sparta
                 if(double_words_to_micro_shift > 0)
                 {
                     const uint32_t remaining_bits_to_shift = shift % 64;
-                    const uint64_t prev_dbl_word_bits_dropped_mask =
-                        (uint64_t)(-(remaining_bits_to_shift != 0) &
-                                   (-1 >> ((sizeof(uint64_t) * 8) - remaining_bits_to_shift)));
-                    const uint32_t prev_dbl_word_bit_pos = 64 - remaining_bits_to_shift;
-                    uint32_t idx =0;
-                    while(true)
+                    if(remaining_bits_to_shift)
                     {
-                        *(final_data + idx) = (*(src_data + idx) >> remaining_bits_to_shift);
-                        if(++idx == double_words_to_micro_shift) {
-                            break;
+                        const uint64_t prev_dbl_word_bits_dropped_mask =
+                            (uint64_t)(-(remaining_bits_to_shift != 0) &
+                                       (-1 >> ((sizeof(uint64_t) * 8) - remaining_bits_to_shift)));
+                        const uint32_t prev_dbl_word_bit_pos = 64 - remaining_bits_to_shift;
+                        uint32_t idx =0;
+                        while(true)
+                        {
+                            *(final_data + idx) = (*(src_data + idx) >> remaining_bits_to_shift);
+                            if(++idx == double_words_to_micro_shift) {
+                                break;
+                            }
+                            const uint64_t orig_dbl_word = *(src_data + idx);
+                            const uint64_t bits_dropped =
+                                (orig_dbl_word & prev_dbl_word_bits_dropped_mask) << prev_dbl_word_bit_pos;
+                            *(final_data + (idx - 1)) |= bits_dropped;
                         }
-                        const uint64_t orig_dbl_word = *(src_data + idx);
-                        const uint64_t bits_dropped =
-                            (orig_dbl_word & prev_dbl_word_bits_dropped_mask) << prev_dbl_word_bit_pos;
-                        *(final_data + (idx - 1)) |= bits_dropped;
                     }
                 }
                 return final_value;
@@ -276,40 +280,41 @@ namespace sparta
                 // 1111111111111111 2222222222222222 3333333333333333 4444444444444444
                 // 3333333333333333 4444444444444444
                 // double_word_shift_count = 2
-                // dest[3] = src[1]
                 // dest[2] = src[0]
+                // dest[3] = src[1]
                 //
                 // 1111111111111111 2222222222222222 3333333333333333 4444444444444444
                 // 2222222222222222 3333333333333333 4444444444444444
                 // double_word_shift_count = 1
-                // dest[3] = src[2]
-                // dest[2] = src[1]
                 // dest[1] = src[0]
+                // dest[2] = src[1]
+                // dest[3] = src[2]
                 //
                 uint32_t dest_idx = double_word_shift_count;
                 for(uint32_t src_idx = 0; dest_idx < num_dbl_words; ++dest_idx, ++src_idx) {
                     *(final_data + dest_idx) = *(src_data + src_idx);
                 }
 
-                const auto double_words_to_micro_shift = (num_dbl_words - double_word_shift_count);
-                if(double_words_to_micro_shift > 0)
+                const uint32_t remaining_bits_to_shift = shift % 64;
+                if(remaining_bits_to_shift)
                 {
-                    const uint32_t remaining_bits_to_shift = shift % 64;
-                    const uint64_t prev_dbl_word_bits_dropped_mask =
-                        (uint64_t)(-(remaining_bits_to_shift != 0) &
-                                   (-1 >> ((sizeof(uint64_t) * 8) - remaining_bits_to_shift)));
-                    const uint32_t prev_dbl_word_bit_pos = 64 - remaining_bits_to_shift;
-                    uint32_t idx =0;
-                    while(true)
+                    const int32_t double_words_to_micro_shift = (num_dbl_words - double_word_shift_count);
+                    if(double_words_to_micro_shift > 0)
                     {
-                        *(final_data + idx) = (*(src_data + idx) << remaining_bits_to_shift);
-                        if(++idx == double_words_to_micro_shift) {
-                            break;
+                        const uint64_t prev_dbl_word_bit_pos = 64 - remaining_bits_to_shift;
+                        const uint64_t prev_dbl_word_bits_dropped_mask =
+                            (uint64_t)(-(prev_dbl_word_bit_pos != 0) &
+                                       (std::numeric_limits<uint64_t>::max() << prev_dbl_word_bit_pos));
+                        int32_t idx = num_dbl_words - 1; // start at the top
+                        while(true)
+                        {
+                            *(final_data + idx) <<= remaining_bits_to_shift;
+                            --idx;
+                            if(idx < double_words_to_micro_shift) { break; }
+                            const uint64_t bits_dropped_from_next_double_word =
+                                (*(final_data + idx) & prev_dbl_word_bits_dropped_mask) >> prev_dbl_word_bit_pos;
+                            *(final_data + (idx + 1)) |= bits_dropped_from_next_double_word;
                         }
-                        const uint64_t orig_dbl_word = *(src_data + idx);
-                        const uint64_t bits_dropped =
-                            (orig_dbl_word & prev_dbl_word_bits_dropped_mask) >> prev_dbl_word_bit_pos;
-                        *(final_data + (idx - 1)) |= bits_dropped;
                     }
                 }
                 return final_value;
