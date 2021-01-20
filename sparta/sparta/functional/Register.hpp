@@ -400,7 +400,8 @@ public:
         {
             const auto old_register_value  = peekBitArray_();
 
-            RegisterBits field_value_to_be_written_shifted(reg_size_, value);
+            //RegisterBits field_value_to_be_written_shifted(reg_size_, value);
+            RegisterBits field_value_to_be_written_shifted(sizeof(value), value);
             field_value_to_be_written_shifted <<= getLowBit();
 
             // Check to see if the number of bits being written to the
@@ -1195,9 +1196,6 @@ public:
     void write(const void *buf, size_t size, size_t offset)
     {
         sparta_assert(offset + size <= getNumBytes(), "Access out of bounds");
-
-        // This is nonsense and needs to be re-written.  It's
-        // stupid slow.
         RegisterBits val(reinterpret_cast<const uint8_t *>(buf), size);
         RegisterBits mask = mask_ >> 8 * offset;
         RegisterBits old = (peekRegisterBits_(size, offset) & ~mask) | (val & mask);
@@ -1213,9 +1211,6 @@ public:
     void poke(const void *buf, size_t size, size_t offset)
     {
         sparta_assert(offset + size <= getNumBytes(), "Access out of bounds");
-
-        // This is nonsense and needs to be re-written.  It's
-        // stupid slow.
         RegisterBits val(reinterpret_cast<const uint8_t *>(buf), size);
         RegisterBits mask = mask_ >> 8 * offset;
         RegisterBits old = (peekRegisterBits_(size, offset) & ~mask) | (val & mask);
@@ -1340,6 +1335,7 @@ private:
         const auto mask_size = def->bytes;
         RegisterBits write_mask(mask_size);
         RegisterBits partial_mask(mask_size);
+        partial_mask.fill(0xff);
 
         for (auto &fdp : def->fields) {
             if (fdp.read_only) {
@@ -1349,6 +1345,7 @@ private:
 
                 write_mask |= ((partial_mask >> shift_down) << shift_up);
             }
+
         }
 
         return ~write_mask;
@@ -1496,7 +1493,7 @@ public:
         std::stringstream ss;
         ss << '<' << getLocation() << " " << getNumBits() << " bits ";
         if (dview_.isPlaced()) {
-            ss << dataAsByteString();
+            ss << getValueAsByteString();
         } else {
             ss << DataView::DATAVIEW_UNPLACED_STR;
         }

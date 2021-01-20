@@ -50,6 +50,12 @@ int main()
               << *reinterpret_cast<const uint64_t*>((not_ored128).data() + 8) // << "_"
               << *reinterpret_cast<const uint64_t*>((not_ored128).data()) << std::endl;
 
+    reg1_128 |= reg2_128;
+    std::cout << "|128-bit |= : " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>((reg1_128).data() + 8) // << "_"
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>((reg1_128).data()) << std::endl;
+    std::cout << "ored128 == reg1_128 : " <<  (ored128 == reg1_128) << std::endl;
+
     *(reinterpret_cast<uint64_t*>(storage1_128.data()))   = 0xFFFFFFFFFFFFFFFF;
     *(reinterpret_cast<uint64_t*>(storage1_128.data()+8)) = 0x0F0F0F0F0F0F0F0F;
     *(reinterpret_cast<uint64_t*>(storage2_128.data()))   = 0x8888888888888888;
@@ -85,6 +91,19 @@ int main()
     sparta::RegisterBits reg1_256(storage1_256.data(), storage1_256.size());
     sparta::RegisterBits reg2_256(storage2_256.data(), storage2_256.size());
     sparta::RegisterBits ored256 = reg1_256 | reg2_256;
+
+    std::cout << " 256-bit in1: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data() + 24) // << "_"
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data() + 16) // << "_"
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data() + 8) // << "_"
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data()) << std::endl;
+
+    std::cout << " 256-bit in2: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg2_256.data() + 24) // << "_"
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg2_256.data() + 16) // << "_"
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg2_256.data() + 8) // << "_"
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg2_256.data()) << std::endl;
+
     std::cout << "|256-bit    : " << std::hex
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(ored256.data() + 24) // << "_"
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(ored256.data() + 16) // << "_"
@@ -97,7 +116,7 @@ int main()
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(and256.data() + 8) // << "_"
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(and256.data()) << std::endl;
     sparta::RegisterBits not256 = ~ored256;
-    std::cout << "~256-bit    : " << std::hex
+    std::cout << "~|256-bit   : " << std::hex
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(not256.data() + 24) // << "_"
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(not256.data() + 16) // << "_"
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(not256.data() + 8) // << "_"
@@ -108,12 +127,6 @@ int main()
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(notnot256.data() + 16) // << "_"
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(notnot256.data() + 8) // << "_"
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(notnot256.data()) << std::endl;
-
-    std::cout << " 256-bit in1: " << std::hex
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data() + 24) // << "_"
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data() + 16) // << "_"
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data() + 8) // << "_"
-              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data()) << std::endl;
 
     sparta::RegisterBits shift256_R1 = reg1_256 >> 1;
     std::cout << "S256-bit  R1: " << std::hex
@@ -176,5 +189,32 @@ int main()
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L_255.data() + 16) // << "_"
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L_255.data() + 8) // << "_"
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256L_255.data()) << std::endl;
+
+    reg1_256 |= reg2_256;
+    std::cout << "|256-bit |= : " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data() + 24) // << "_"
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data() + 16) // << "_"
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data() + 8) // << "_"
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg1_256.data()) << std::endl;
+    std::cout << "reg1_256 == ored256: " << (reg1_256 == ored256) << std::endl;
+
+    const uint32_t mask_size = 16;
+    sparta::RegisterBits write_mask(mask_size);
+    sparta::RegisterBits partial_mask(mask_size);
+    partial_mask.fill(0xff);
+
+    sparta::RegisterBits mask = ((partial_mask >> ((8*16) - (65-13+1))) << 13);
+    std::cout << " write_mask : " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(mask.data() + 8) // << "_"
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(mask.data()) << std::endl;
+
+    write_mask |= mask;
+    std::cout << " write_mask : " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(write_mask.data() + 8) // << "_"
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(write_mask.data()) << std::endl;
+
+    std::cout << " ~write_mask: " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>((~write_mask).data() + 8) // << "_"
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>((~write_mask).data()) << std::endl;
 
 }
