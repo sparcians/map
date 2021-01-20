@@ -16,40 +16,50 @@ namespace sparta
         template<typename SizeT, typename Op>
         static RegisterBits bitMerge_(const RegisterBits & in, const RegisterBits & rh_bits) {
             RegisterBits final_value(in.num_bytes_);
-            *reinterpret_cast<SizeT*>(final_value.local_storage_.data()) =
-                Op()(*reinterpret_cast<const SizeT*>(in.data_),
-                     *reinterpret_cast<const SizeT*>(rh_bits.data_));
+            *reinterpret_cast<SizeT*>(final_value.local_data_) =
+                Op()(*reinterpret_cast<const SizeT*>(in.remote_data_),
+                     *reinterpret_cast<const SizeT*>(rh_bits.remote_data_));
             return final_value;
         }
 
         template<typename SizeT>
         static RegisterBits bitNot_(const RegisterBits & in) {
             RegisterBits final_value(in.num_bytes_);
-            *reinterpret_cast<SizeT*>(final_value.local_storage_.data()) =
-                std::bit_not<SizeT>()(*reinterpret_cast<const SizeT*>(in.data_));
+            *reinterpret_cast<SizeT*>(final_value.local_data_) =
+                std::bit_not<SizeT>()(*reinterpret_cast<const SizeT*>(in.remote_data_));
             return final_value;
         }
 
         template<typename SizeT>
         static RegisterBits bitShiftRight_(const RegisterBits & in, uint32_t amount) {
             RegisterBits final_value(in.num_bytes_);
-            *reinterpret_cast<SizeT*>(final_value.local_storage_.data()) =
-                (*reinterpret_cast<const SizeT*>(in.data_)) >> amount;
+            *reinterpret_cast<SizeT*>(final_value.local_data_) =
+                (*reinterpret_cast<const SizeT*>(in.remote_data_)) >> amount;
             return final_value;
         }
 
         template<typename SizeT>
         static RegisterBits bitShiftLeft_(const RegisterBits & in, uint32_t amount) {
             RegisterBits final_value(in.num_bytes_);
-            *reinterpret_cast<SizeT*>(final_value.local_storage_.data()) =
-                (*reinterpret_cast<const SizeT*>(in.data_)) << amount;
+            *reinterpret_cast<SizeT*>(final_value.local_data_) =
+                (*reinterpret_cast<const SizeT*>(in.remote_data_)) << amount;
             return final_value;
+        }
+
+        void convert_() {
+            if(nullptr == local_data_) {
+                local_storage_.resize(num_bytes_, 0);
+                local_data_ = local_storage_.data();
+                ::memcpy(local_data_, remote_data_, num_bytes_);
+                remote_data_ = local_data_;
+            }
         }
 
     public:
         explicit RegisterBits(const uint32_t num_bytes) :
             local_storage_(num_bytes, 0),
-            data_(local_storage_.data()),
+            local_data_(local_storage_.data()),
+            remote_data_(local_data_),
             num_bytes_(num_bytes)
         {
         }
@@ -57,21 +67,28 @@ namespace sparta
         template<class DataT>
         RegisterBits(const uint32_t num_bytes, const DataT & data) :
             local_storage_(num_bytes, 0),
-            data_(local_storage_.data()),
+            local_data_(local_storage_.data()),
+            remote_data_(local_data_),
             num_bytes_(num_bytes)
         {
-            sparta_assert(num_bytes <= sizeof(DataT));
+            sparta_assert(sizeof(DataT) <= num_bytes);
             set(data);
         }
 
         RegisterBits(uint8_t * data, const size_t num_bytes) :
-            data_(data),
+            local_data_(data),
+            remote_data_(local_data_),
             num_bytes_(num_bytes)
         {}
 
+        RegisterBits(const uint8_t * data, const size_t num_bytes) :
+            remote_data_(data),
+            num_bytes_(num_bytes)
+        {}
+
+        RegisterBits(std::nullptr_t) {}
         RegisterBits(const RegisterBits &)  = default;
         RegisterBits(      RegisterBits &&) = default;
-        //RegisterBits & operator=(const RegisterBits&) = default;
 
         RegisterBits operator|(const RegisterBits & rh_bits) const
         {
@@ -88,8 +105,8 @@ namespace sparta
                 for(uint32_t idx = 0; idx < num_bytes_; idx += 8)
                 {
                     *reinterpret_cast<uint64_t*>(final_value.local_storage_.data() + idx) =
-                        *reinterpret_cast<const uint64_t*>(data_ + idx) |
-                        *reinterpret_cast<const uint64_t*>(rh_bits.data_ + idx);
+                        *reinterpret_cast<const uint64_t*>(remote_data_ + idx) |
+                        *reinterpret_cast<const uint64_t*>(rh_bits.remote_data_ + idx);
                 }
                 return final_value;
             }
@@ -101,7 +118,38 @@ namespace sparta
             }
 
             // undefined
-            return RegisterBits(nullptr, 0);
+            return RegisterBits(nullptr);
+        }
+
+        void operator|=(const RegisterBits & rh_bits)
+        {
+            convert_();
+            if(num_bytes_ == 8) {
+                *reinterpret_cast<uint64_t*>(local_data_) |=
+                    *reinterpret_cast<const uint64_t*>(rh_bits.remote_data_);
+            }
+            else if(num_bytes_ == 4) {
+                *reinterpret_cast<uint32_t*>(local_data_) |=
+                    *reinterpret_cast<const uint32_t*>(rh_bits.remote_data_);
+            }
+            else if(num_bytes_ > 8)
+            {
+                // 64-bit chunks
+                for(uint32_t idx = 0; idx < num_bytes_; idx += 8)
+                {
+                    *reinterpret_cast<uint64_t*>(local_data_ + idx) |=
+                        *reinterpret_cast<const uint64_t*>(rh_bits.remote_data_ + idx);
+                }
+            }
+            else if(num_bytes_ == 2) {
+                *reinterpret_cast<uint16_t*>(local_data_) |=
+                    *reinterpret_cast<const uint16_t*>(rh_bits.remote_data_);
+            }
+            else if(num_bytes_ == 1) {
+                *reinterpret_cast<uint8_t*>(local_data_) |=
+                    *reinterpret_cast<const uint8_t*>(rh_bits.remote_data_);
+            }
+
         }
 
         RegisterBits operator&(const RegisterBits & rh_bits) const
@@ -119,8 +167,8 @@ namespace sparta
                 for(uint32_t idx = 0; idx < num_bytes_; idx += 8)
                 {
                     *reinterpret_cast<uint64_t*>(final_value.local_storage_.data() + idx) =
-                        *reinterpret_cast<const uint64_t*>(data_ + idx) &
-                        *reinterpret_cast<const uint64_t*>(rh_bits.data_ + idx);
+                        *reinterpret_cast<const uint64_t*>(remote_data_ + idx) &
+                        *reinterpret_cast<const uint64_t*>(rh_bits.remote_data_ + idx);
                 }
                 return final_value;
             }
@@ -132,7 +180,7 @@ namespace sparta
             }
 
             // undefined
-            return RegisterBits(nullptr, 0);
+            return RegisterBits(nullptr);
         }
 
         RegisterBits operator~() const
@@ -150,7 +198,7 @@ namespace sparta
                 for(uint32_t idx = 0; idx < num_bytes_; idx += 8)
                 {
                     *reinterpret_cast<uint64_t*>(final_value.local_storage_.data() + idx) =
-                        ~*reinterpret_cast<const uint64_t*>(data_ + idx);
+                        ~*reinterpret_cast<const uint64_t*>(remote_data_ + idx);
                 }
                 return final_value;
             }
@@ -160,7 +208,7 @@ namespace sparta
             else if(num_bytes_ == 1) {
                 return bitNot_<uint8_t>(*this);
             }
-            return RegisterBits(nullptr, 0);
+            return RegisterBits(nullptr);
         }
 
         RegisterBits operator>>(uint32_t shift) const
@@ -174,7 +222,7 @@ namespace sparta
             else if(num_bytes_ > 8)
             {
                 RegisterBits final_value(num_bytes_);
-                const uint64_t * src_data = reinterpret_cast<const uint64_t*>(data_);
+                const uint64_t * src_data = reinterpret_cast<const uint64_t*>(remote_data_);
                 uint64_t *     final_data = reinterpret_cast<uint64_t*>(final_value.local_storage_.data());
                 const uint32_t num_dbl_words = num_bytes_ / 8;
 
@@ -244,7 +292,7 @@ namespace sparta
                 return bitShiftRight_<uint8_t>(*this, shift);
             }
 
-            return RegisterBits(nullptr, 0);
+            return RegisterBits(nullptr);
         }
 
         RegisterBits operator<<(uint32_t shift) const
@@ -258,8 +306,92 @@ namespace sparta
             else if(num_bytes_ > 8)
             {
                 RegisterBits final_value(num_bytes_);
-                const uint64_t * src_data = reinterpret_cast<const uint64_t*>(data_);
+                const uint64_t * src_data = reinterpret_cast<const uint64_t*>(remote_data_);
                 uint64_t *     final_data = reinterpret_cast<uint64_t*>(final_value.local_storage_.data());
+                const uint32_t num_dbl_words = num_bytes_ / 8;
+
+                // Determine the number of double words that will be shifted
+                const uint32_t double_word_shift_count = shift / 64;
+
+                //
+                // Shift full double words first.
+                //
+                // Example:
+                //
+                // num_dbl_words = 4
+                //
+                // 1111111111111111 2222222222222222 3333333333333333 4444444444444444
+                // 4444444444444444
+                // double_word_shift_count = 3
+                // dest[3] = src[0]
+                //
+                // 1111111111111111 2222222222222222 3333333333333333 4444444444444444
+                // 3333333333333333 4444444444444444
+                // double_word_shift_count = 2
+                // dest[2] = src[0]
+                // dest[3] = src[1]
+                //
+                // 1111111111111111 2222222222222222 3333333333333333 4444444444444444
+                // 2222222222222222 3333333333333333 4444444444444444
+                // double_word_shift_count = 1
+                // dest[1] = src[0]
+                // dest[2] = src[1]
+                // dest[3] = src[2]
+                //
+                uint32_t dest_idx = double_word_shift_count;
+                for(uint32_t src_idx = 0; dest_idx < num_dbl_words; ++dest_idx, ++src_idx) {
+                    *(final_data + dest_idx) = *(src_data + src_idx);
+                }
+
+                const uint32_t remaining_bits_to_shift = shift % 64;
+                if(remaining_bits_to_shift)
+                {
+                    const int32_t double_words_to_micro_shift = (num_dbl_words - double_word_shift_count);
+                    if(double_words_to_micro_shift > 0)
+                    {
+                        const uint64_t prev_dbl_word_bit_pos = 64 - remaining_bits_to_shift;
+                        const uint64_t prev_dbl_word_bits_dropped_mask =
+                            (uint64_t)(-(prev_dbl_word_bit_pos != 0) &
+                                       (std::numeric_limits<uint64_t>::max() << prev_dbl_word_bit_pos));
+                        int32_t idx = num_dbl_words - 1; // start at the top
+                        while(true)
+                        {
+                            *(final_data + idx) <<= remaining_bits_to_shift;
+                            --idx;
+                            if(idx < 0) { break; }
+                            const uint64_t bits_dropped_from_next_double_word =
+                                (*(final_data + idx) & prev_dbl_word_bits_dropped_mask) >> prev_dbl_word_bit_pos;
+                            *(final_data + (idx + 1)) |= bits_dropped_from_next_double_word;
+                        }
+                    }
+                }
+                return final_value;
+            }
+            else if(num_bytes_ == 2) {
+                return bitShiftLeft_<uint16_t>(*this, shift);
+            }
+            else if(num_bytes_ == 1) {
+                return bitShiftLeft_<uint8_t>(*this, shift);
+            }
+
+            return RegisterBits(nullptr);
+        }
+
+        void operator<<=(uint32_t shift)
+        {
+            convert_();
+            if(num_bytes_ == 8) {
+                *reinterpret_cast<uint64_t*>(local_data_) =
+                    (*reinterpret_cast<const uint64_t*>(remote_data_)) << shift;
+            }
+            else if(num_bytes_ == 4) {
+                *reinterpret_cast<uint32_t*>(local_data_) =
+                    (*reinterpret_cast<const uint32_t*>(remote_data_)) << shift;
+            }
+            else if(num_bytes_ > 8)
+            {
+                const uint64_t * src_data = reinterpret_cast<const uint64_t*>(remote_data_);
+                uint64_t *     final_data = reinterpret_cast<uint64_t*>(local_data_);
                 const uint32_t num_dbl_words = num_bytes_ / 8;
 
                 // Determine the number of double words that will be shifted
@@ -317,46 +449,53 @@ namespace sparta
                         }
                     }
                 }
-                return final_value;
             }
             else if(num_bytes_ == 2) {
-                return bitShiftLeft_<uint16_t>(*this, shift);
+                *reinterpret_cast<uint16_t*>(local_data_) =
+                    (*reinterpret_cast<const uint16_t*>(remote_data_)) << shift;
             }
             else if(num_bytes_ == 1) {
-                return bitShiftLeft_<uint8_t>(*this, shift);
+                *reinterpret_cast<uint8_t*>(local_data_) =
+                    (*reinterpret_cast<const uint8_t*>(remote_data_)) << shift;
             }
-
-            return RegisterBits(nullptr, 0);
         }
 
-        void operator<<=(uint32_t shift)
-        {
-            (void)shift;
+        template<class DataT>
+        std::enable_if_t<std::is_integral_v<DataT>, bool>
+        operator==(const DataT dat) const {
+            sparta_assert(sizeof(DataT) <= num_bytes_);
+            return *(reinterpret_cast<const DataT*>(remote_data_)) == dat;
         }
 
         bool operator==(const RegisterBits & other) const {
             return (num_bytes_ == other.num_bytes_) &&
-                (::memcmp(data_, other.data_, num_bytes_) == 0);
+                (::memcmp(remote_data_, other.remote_data_, num_bytes_) == 0);
         }
 
         const uint8_t * operator[](const uint32_t idx) const {
-            return data_ + idx;
+            return remote_data_ + idx;
         }
 
         template<class DataT>
         void set(const DataT & masked_bits) {
-            sparta_assert(sizeof(DataT) <= num_bytes_);
-            ::memcpy(data_, reinterpret_cast<const uint8_t*>(&masked_bits), sizeof(DataT));
+            sparta_assert(num_bytes_ <= sizeof(DataT));
+            convert_();
+            ::memcpy(local_data_, reinterpret_cast<const uint8_t*>(&masked_bits), sizeof(DataT));
+        }
+
+        void fill(const uint8_t fill_data) {
+            convert_();
+            ::memset(local_data_, fill_data, num_bytes_);
         }
 
         const uint8_t *data() const {
-            return data_;
+            return remote_data_;
         }
 
         template <typename T,
                   typename = typename std::enable_if<std::is_integral<T>::value>::type>
         T dataAs() const {
-            return *reinterpret_cast<T*>(data_);
+            return *reinterpret_cast<const T*>(remote_data_);
         }
 
         uint32_t getSize() const { return num_bytes_; }
@@ -364,7 +503,8 @@ namespace sparta
     private:
 
         std::vector<uint8_t> local_storage_;
-        uint8_t * data_ = nullptr;
-        const uint32_t  num_bytes_;
+        uint8_t       * local_data_  = nullptr;
+        const uint8_t * remote_data_ = nullptr;
+        const uint32_t  num_bytes_ = 0;
     };
 }
