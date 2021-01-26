@@ -71,7 +71,7 @@ namespace sparta
             remote_data_(local_data_),
             num_bytes_(num_bytes)
         {
-            sparta_assert(sizeof(DataT) <= num_bytes);
+            // sparta_assert(sizeof(DataT) <= num_bytes);
             set(data);
         }
 
@@ -390,8 +390,8 @@ namespace sparta
             }
             else if(num_bytes_ > 8)
             {
-                const uint64_t * src_data = reinterpret_cast<const uint64_t*>(remote_data_);
-                uint64_t *     final_data = reinterpret_cast<uint64_t*>(local_data_);
+                uint64_t * src_data   = reinterpret_cast<uint64_t*>(local_data_);
+                uint64_t * final_data = reinterpret_cast<uint64_t*>(local_data_);
                 const uint32_t num_dbl_words = num_bytes_ / 8;
 
                 // Determine the number of double words that will be shifted
@@ -425,6 +425,7 @@ namespace sparta
                 uint32_t dest_idx = double_word_shift_count;
                 for(uint32_t src_idx = 0; dest_idx < num_dbl_words; ++dest_idx, ++src_idx) {
                     *(final_data + dest_idx) = *(src_data + src_idx);
+                    *(src_data + src_idx) = 0;
                 }
 
                 const uint32_t remaining_bits_to_shift = shift % 64;
@@ -442,7 +443,7 @@ namespace sparta
                         {
                             *(final_data + idx) <<= remaining_bits_to_shift;
                             --idx;
-                            if(idx < double_words_to_micro_shift) { break; }
+                            if(idx < 0) { break; }
                             const uint64_t bits_dropped_from_next_double_word =
                                 (*(final_data + idx) & prev_dbl_word_bits_dropped_mask) >> prev_dbl_word_bit_pos;
                             *(final_data + (idx + 1)) |= bits_dropped_from_next_double_word;
@@ -463,7 +464,7 @@ namespace sparta
         template<class DataT>
         std::enable_if_t<std::is_integral_v<DataT>, bool>
         operator==(const DataT dat) const {
-            sparta_assert(sizeof(DataT) <= num_bytes_);
+            // sparta_assert(sizeof(DataT) <= num_bytes_);
             return *(reinterpret_cast<const DataT*>(remote_data_)) == dat;
         }
 
@@ -478,7 +479,7 @@ namespace sparta
 
         template<class DataT>
         void set(const DataT & masked_bits) {
-            sparta_assert(num_bytes_ <= sizeof(DataT));
+            // sparta_assert(sizeof(DataT) <= num_bytes_);
             convert_();
             ::memcpy(local_data_, reinterpret_cast<const uint8_t*>(&masked_bits), sizeof(DataT));
         }
@@ -492,10 +493,17 @@ namespace sparta
             return remote_data_;
         }
 
+        uint8_t *data() {
+            convert_();
+            return local_data_;
+        }
+
         template <typename T,
                   typename = typename std::enable_if<std::is_integral<T>::value>::type>
         T dataAs() const {
-            return *reinterpret_cast<const T*>(remote_data_);
+            T ret_data = 0;
+            ::memcpy(&ret_data, remote_data_, std::min(sizeof(T), num_bytes_));
+            return ret_data;
         }
 
         uint32_t getSize() const { return num_bytes_; }
@@ -505,6 +513,6 @@ namespace sparta
         std::vector<uint8_t> local_storage_;
         uint8_t       * local_data_  = nullptr;
         const uint8_t * remote_data_ = nullptr;
-        const uint32_t  num_bytes_ = 0;
+        const uint64_t  num_bytes_ = 0;
     };
 }

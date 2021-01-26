@@ -137,7 +137,7 @@ public:
         RegisterBits computeFieldMask_(uint32_t start, uint32_t end, uint32_t reg_size)
         {
             const auto num_ones = start - end + 1;
-            RegisterBits mask(sizeof(uint64_t));
+            RegisterBits mask(reg_size);
             // For 31-0:
 
             // max() & (max() >> ((8 * 8) - 31))
@@ -369,16 +369,16 @@ public:
     private:
         RegisterBits readBitArray_() const
         {
-            std::vector<uint8_t> value(reg_size_);
-            reg_.read(value.data(), reg_size_, 0);
-            return RegisterBits(value.data(), reg_size_);
+            RegisterBits reg_bits(reg_size_);
+            reg_.read(reg_bits.data(), reg_size_, 0);
+            return reg_bits;
         }
 
         RegisterBits peekBitArray_() const
         {
-            std::vector<uint8_t> value(reg_size_);
-            reg_.peek(value.data(), reg_size_, 0);
-            return RegisterBits(value.data(), reg_size_);
+            RegisterBits reg_bits(reg_size_);
+            reg_.peek(reg_bits.data(), reg_size_, 0);
+            return reg_bits;
         }
 
         void write_(const RegisterBits &value)
@@ -400,8 +400,7 @@ public:
         {
             const auto old_register_value  = peekBitArray_();
 
-            //RegisterBits field_value_to_be_written_shifted(reg_size_, value);
-            RegisterBits field_value_to_be_written_shifted(sizeof(value), value);
+            RegisterBits field_value_to_be_written_shifted(std::max(reg_size_, sizeof(access_type)), value);
             field_value_to_be_written_shifted <<= getLowBit();
 
             // Check to see if the number of bits being written to the
@@ -1353,9 +1352,9 @@ private:
 
     RegisterBits peekRegisterBits_(size_t size, size_t offset=0) const
     {
-        std::vector<uint8_t> value(size);
-        peek_(value.data(), size, offset);
-        return RegisterBits(value.data(), size);
+        RegisterBits bits(size);
+        peek_(bits.data(), size, offset);
+        return bits;
     }
 
     /*!
