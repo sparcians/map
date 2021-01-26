@@ -56,7 +56,7 @@ namespace sparta
         }
 
     public:
-        explicit RegisterBits(const uint32_t num_bytes) :
+        explicit RegisterBits(const uint64_t num_bytes) :
             local_storage_(num_bytes, 0),
             local_data_(local_storage_.data()),
             remote_data_(local_data_),
@@ -65,7 +65,7 @@ namespace sparta
         }
 
         template<class DataT>
-        RegisterBits(const uint32_t num_bytes, const DataT & data) :
+        RegisterBits(const uint64_t num_bytes, const DataT & data) :
             local_storage_(num_bytes, 0),
             local_data_(local_storage_.data()),
             remote_data_(local_data_),
@@ -259,6 +259,10 @@ namespace sparta
                     *(final_data + dest_idx) = *(src_data + src_idx);
                 }
 
+                // Micro-shift:
+                // 1111111111111111 2222222222222222 3333333333333333 4444444444444444
+                //                  0011111111111111 1122222222222222 2233333333333333
+                //
                 const auto double_words_to_micro_shift = (num_dbl_words - double_word_shift_count);
                 if(double_words_to_micro_shift > 0)
                 {
@@ -272,14 +276,13 @@ namespace sparta
                         uint32_t idx =0;
                         while(true)
                         {
-                            *(final_data + idx) = (*(src_data + idx) >> remaining_bits_to_shift);
+                            *(final_data + idx) >>= remaining_bits_to_shift;
                             if(++idx == double_words_to_micro_shift) {
                                 break;
                             }
-                            const uint64_t orig_dbl_word = *(src_data + idx);
-                            const uint64_t bits_dropped =
-                                (orig_dbl_word & prev_dbl_word_bits_dropped_mask) << prev_dbl_word_bit_pos;
-                            *(final_data + (idx - 1)) |= bits_dropped;
+                            const uint64_t bits_pulled_in =
+                                (*(final_data + idx) & prev_dbl_word_bits_dropped_mask) << prev_dbl_word_bit_pos;
+                            *(final_data + (idx - 1)) |= bits_pulled_in;
                         }
                     }
                 }
@@ -343,6 +346,10 @@ namespace sparta
                     *(final_data + dest_idx) = *(src_data + src_idx);
                 }
 
+                // Micro-shift:
+                // 1111111111111111 2222222222222222 3333333333333333 4444444444444444
+                // 2222222222222233 3333333333333344 4444444444444400
+                //
                 const uint32_t remaining_bits_to_shift = shift % 64;
                 if(remaining_bits_to_shift)
                 {
@@ -422,12 +429,19 @@ namespace sparta
                 // dest[2] = src[1]
                 // dest[3] = src[2]
                 //
-                uint32_t dest_idx = double_word_shift_count;
-                for(uint32_t src_idx = 0; dest_idx < num_dbl_words; ++dest_idx, ++src_idx) {
-                    *(final_data + dest_idx) = *(src_data + src_idx);
-                    *(src_data + src_idx) = 0;
+                if(double_word_shift_count > 0)
+                {
+                    uint32_t dest_idx = double_word_shift_count;
+                    for(uint32_t src_idx = 0; dest_idx < num_dbl_words; ++dest_idx, ++src_idx) {
+                        *(final_data + dest_idx) = *(src_data + src_idx);
+                        *(src_data + src_idx) = 0;
+                    }
                 }
 
+                // Micro-shift:
+                // 1111111111111111 2222222222222222 3333333333333333 4444444444444444
+                // 2222222222222233 3333333333333344 4444444444444400
+                //
                 const uint32_t remaining_bits_to_shift = shift % 64;
                 if(remaining_bits_to_shift)
                 {
@@ -507,6 +521,17 @@ namespace sparta
         }
 
         uint32_t getSize() const { return num_bytes_; }
+
+        // Returns true if all zero
+        bool none() const {
+            const auto mem_data_plus_one = remote_data_ + 1;
+            return (::memcmp(remote_data_, mem_data_plus_one, num_bytes_ - 1) == 0);
+        }
+
+        // Returns true if anything non-zero
+        bool any() const {
+            return !none();
+        }
 
     private:
 
