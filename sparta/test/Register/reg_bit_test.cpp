@@ -149,8 +149,8 @@ int main()
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R_9.data() + 8) // << "_"
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R_9.data()) << std::endl;
 
-    sparta::RegisterBits shift256R_255 = reg1_256 >> 255;
-    std::cout << "S256-bitR255: " << std::hex
+    sparta::RegisterBits shift256R_255 = reg1_256 >> 253;
+    std::cout << "S256-bitR253: " << std::hex
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R_255.data() + 24) // << "_"
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R_255.data() + 16) // << "_"
               << std::setw(16) << *reinterpret_cast<const uint64_t*>(shift256R_255.data() + 8) // << "_"
@@ -241,8 +241,8 @@ int main()
     std::cout << ((reg_large & bits_31_16) >> 16).dataAs<uint64_t>() << std::endl;
     std::cout << ((reg_large & bits_79_64) >> 64).dataAs<uint64_t>() << std::endl;
 
-    reg_large_data[1] = 0xccddeeeeccddffff;
-    reg_large_data[0] = 0x0123456789abcdef;
-    std::cout << ((reg_large & bits_75_60) >> 52).dataAs<uint64_t>() << std::endl;
+    reg_large_data[0] = 0xccddeeeeccddffff;
+    reg_large_data[1] = 0x0123456789abcdef;
+    std::cout << ((reg_large & bits_75_60) >> 60).dataAs<uint64_t>() << std::endl;
 
 }

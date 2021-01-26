@@ -142,8 +142,9 @@ public:
 
             // max() & (max() >> ((8 * 8) - 31))
             const uint64_t masked_bits = std::numeric_limits<uint64_t>::max() &
-                (std::numeric_limits<uint64_t>::max() >> ((sizeof(uint64_t) * CHAR_BIT) - num_ones)) << end;
+                (std::numeric_limits<uint64_t>::max() >> ((sizeof(uint64_t) * CHAR_BIT) - num_ones));
             mask.set(masked_bits);
+            mask <<= end;
             return mask;
         }
 
@@ -405,7 +406,7 @@ public:
 
             // Check to see if the number of bits being written to the
             // field is larger than the field itself.
-            sparta_assert((field_value_to_be_written_shifted & not_field_mask_) == 0,
+            sparta_assert((field_value_to_be_written_shifted & not_field_mask_).none(),
                           "Value of " << value <<  " too large for bit field "
                           << getLocation() << " of size " << getNumBits());
 
