@@ -217,4 +217,32 @@ int main()
               << std::setw(16) << *reinterpret_cast<const uint64_t*>((~write_mask).data() + 8) // << "_"
               << std::setw(16) << *reinterpret_cast<const uint64_t*>((~write_mask).data()) << std::endl;
 
+    sparta::RegisterBits reg_dead_128(16, 0xdead);
+    reg_dead_128 <<= 16;
+    std::cout << "dead : " << std::hex
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg_dead_128.data() + 8) // << "_"
+              << std::setw(16) << *reinterpret_cast<const uint64_t*>(reg_dead_128.data()) << std::endl;
+
+    std::array<uint64_t, 2> reg_large_data = {0xccddeeeeccddffff, 0xcccccccccccccccc};
+    const sparta::RegisterBits reg_large((uint8_t*)reg_large_data.data(), 16);
+    // std::array<uint8_t, 16> reg_large_data;
+    // *reinterpret_cast<uint64_t *>(reg_large_data.data())     = 0xcccccccccccccccc;
+    // *reinterpret_cast<uint64_t *>(reg_large_data.data() + 8) = 0xccddeeeeccddffff;
+    // sparta::RegisterBits reg_large(reg_large_data.data(), 16);
+
+    sparta::RegisterBits bits_15_00(16, 0xFFFF);
+    sparta::RegisterBits bits_31_16(16, 0xFFFF0000);
+    sparta::RegisterBits bits_75_60(16, 0xFFFF);
+    sparta::RegisterBits bits_79_64(16, 0xFFFF);
+    bits_75_60 <<= 60;
+    bits_79_64 <<= 64;
+
+    std::cout << (reg_large & bits_15_00).dataAs<uint64_t>() << std::endl;
+    std::cout << ((reg_large & bits_31_16) >> 16).dataAs<uint64_t>() << std::endl;
+    std::cout << ((reg_large & bits_79_64) >> 64).dataAs<uint64_t>() << std::endl;
+
+    reg_large_data[1] = 0xccddeeeeccddffff;
+    reg_large_data[0] = 0x0123456789abcdef;
+    std::cout << ((reg_large & bits_75_60) >> 52).dataAs<uint64_t>() << std::endl;
+
 }
