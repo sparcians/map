@@ -64,10 +64,10 @@ class LocationWindow(wx.Frame):
         self.__SetLocationTree(tree)
         # User preference is to NOT expand tree. ## self.__tree_ctrl.ExpandAll()
 
-        self.__btn_create_element = wx.Button(self, -1, "Create Element(s)", style = wx.BU_EXACTFIT)
+        self.__btn_create_element = wx.Button(self, -1, "Create Element(s)")
         self.__btn_create_element.SetToolTip('Creates a new element for each of the selected ' \
                                              'locations in the tree')
-        self.__btn_set = wx.Button(self, -1, "Set Location to Selected", style = wx.BU_EXACTFIT)
+        self.__btn_set = wx.Button(self, -1, "Set Location to Selected")
         self.__btn_set.SetToolTip('Sets the location string for all selected elements to the ' \
                                   'selected location in the tree. Generally, the selected ' \
                                   'location should be a leaf node')
