@@ -2,7 +2,7 @@
 #pragma once
 
 #include <cinttypes>
-#include <vector>
+#include <array>
 #include <functional>
 #include <limits>
 #include <string.h>
@@ -49,7 +49,6 @@ namespace sparta
 
         void convert_() {
             if(nullptr == local_data_) {
-                local_storage_.resize(num_bytes_, 0);
                 local_data_ = local_storage_.data();
                 ::memcpy(local_data_, remote_data_, num_bytes_);
                 remote_data_ = local_data_;
@@ -58,21 +57,24 @@ namespace sparta
 
     public:
         explicit RegisterBits(const uint64_t num_bytes) :
-            local_storage_(num_bytes, 0),
             local_data_(local_storage_.data()),
             remote_data_(local_data_),
             num_bytes_(num_bytes)
         {
+            sparta_assert(num_bytes <= local_storage_.size(),
+                          "RegisterBits size is locked to 64 bytes. num_bytes requested: " << num_bytes);
         }
 
         template<class DataT>
         RegisterBits(const uint64_t num_bytes, const DataT & data) :
-            local_storage_(num_bytes, 0),
+            local_storage_(),
             local_data_(local_storage_.data()),
             remote_data_(local_data_),
             num_bytes_(num_bytes)
         {
-            // sparta_assert(sizeof(DataT) <= num_bytes);
+            sparta_assert(num_bytes <= local_storage_.size(),
+                          "RegisterBits size is locked to 64 bytes. num_bytes requested: " << num_bytes);
+            sparta_assert(sizeof(DataT) <= num_bytes);
             set(data);
         }
 
@@ -80,16 +82,36 @@ namespace sparta
             local_data_(data),
             remote_data_(local_data_),
             num_bytes_(num_bytes)
-        {}
+        {
+            sparta_assert(num_bytes <= local_storage_.size(),
+                          "RegisterBits size is locked to 64 bytes. num_bytes requested: " << num_bytes);
+        }
 
         RegisterBits(const uint8_t * data, const size_t num_bytes) :
             remote_data_(data),
             num_bytes_(num_bytes)
-        {}
+        {
+            sparta_assert(num_bytes <= local_storage_.size(),
+                          "RegisterBits size is locked to 64 bytes. num_bytes requested: " << num_bytes);
+        }
 
         RegisterBits(std::nullptr_t) {}
-        RegisterBits(const RegisterBits &)  = default;
-        RegisterBits(      RegisterBits &&) = default;
+
+        RegisterBits(const RegisterBits & orig) :
+            local_storage_(orig.local_storage_),
+            local_data_(orig.local_data_ == nullptr ? nullptr : local_storage_.data()),
+            remote_data_(orig.local_data_ == orig.remote_data_ ? local_data_ : orig.remote_data_)
+        {}
+
+        RegisterBits(RegisterBits && orig) :
+            local_storage_(std::move(orig.local_storage_)),
+            num_bytes_(orig.num_bytes_)
+        {
+            local_data_  = (orig.local_data_ == nullptr ? nullptr : local_storage_.data());
+            remote_data_ = (orig.local_data_ == orig.remote_data_ ? local_data_ : orig.remote_data_);
+            orig.local_data_ = nullptr;
+            orig.remote_data_ = nullptr;
+        }
 
         RegisterBits operator|(const RegisterBits & rh_bits) const
         {
@@ -120,37 +142,6 @@ namespace sparta
 
             // undefined
             return RegisterBits(nullptr);
-        }
-
-        void operator|=(const RegisterBits & rh_bits)
-        {
-            convert_();
-            if(num_bytes_ == 8) {
-                *reinterpret_cast<uint64_t*>(local_data_) |=
-                    *reinterpret_cast<const uint64_t*>(rh_bits.remote_data_);
-            }
-            else if(num_bytes_ == 4) {
-                *reinterpret_cast<uint32_t*>(local_data_) |=
-                    *reinterpret_cast<const uint32_t*>(rh_bits.remote_data_);
-            }
-            else if(num_bytes_ > 8)
-            {
-                // 64-bit chunks
-                for(uint32_t idx = 0; idx < num_bytes_; idx += 8)
-                {
-                    *reinterpret_cast<uint64_t*>(local_data_ + idx) |=
-                        *reinterpret_cast<const uint64_t*>(rh_bits.remote_data_ + idx);
-                }
-            }
-            else if(num_bytes_ == 2) {
-                *reinterpret_cast<uint16_t*>(local_data_) |=
-                    *reinterpret_cast<const uint16_t*>(rh_bits.remote_data_);
-            }
-            else if(num_bytes_ == 1) {
-                *reinterpret_cast<uint8_t*>(local_data_) |=
-                    *reinterpret_cast<const uint8_t*>(rh_bits.remote_data_);
-            }
-
         }
 
         RegisterBits operator&(const RegisterBits & rh_bits) const
@@ -385,6 +376,37 @@ namespace sparta
             return RegisterBits(nullptr);
         }
 
+        void operator|=(const RegisterBits & rh_bits)
+        {
+            convert_();
+            if(num_bytes_ == 8) {
+                *reinterpret_cast<uint64_t*>(local_data_) |=
+                    *reinterpret_cast<const uint64_t*>(rh_bits.remote_data_);
+            }
+            else if(num_bytes_ == 4) {
+                *reinterpret_cast<uint32_t*>(local_data_) |=
+                    *reinterpret_cast<const uint32_t*>(rh_bits.remote_data_);
+            }
+            else if(num_bytes_ > 8)
+            {
+                // 64-bit chunks
+                for(uint32_t idx = 0; idx < num_bytes_; idx += 8)
+                {
+                    *reinterpret_cast<uint64_t*>(local_data_ + idx) |=
+                        *reinterpret_cast<const uint64_t*>(rh_bits.remote_data_ + idx);
+                }
+            }
+            else if(num_bytes_ == 2) {
+                *reinterpret_cast<uint16_t*>(local_data_) |=
+                    *reinterpret_cast<const uint16_t*>(rh_bits.remote_data_);
+            }
+            else if(num_bytes_ == 1) {
+                *reinterpret_cast<uint8_t*>(local_data_) |=
+                    *reinterpret_cast<const uint8_t*>(rh_bits.remote_data_);
+            }
+
+        }
+
         void operator<<=(uint32_t shift)
         {
             convert_();
@@ -501,7 +523,7 @@ namespace sparta
 
         void fill(const uint8_t fill_data) {
             convert_();
-            ::memset(local_data_, fill_data, num_bytes_);
+            local_storage_.fill(fill_data);
         }
 
         const uint8_t *data() const {
@@ -536,7 +558,7 @@ namespace sparta
 
     private:
 
-        std::vector<uint8_t> local_storage_;
+        std::array<uint8_t, 64> local_storage_ = {0};
         uint8_t       * local_data_  = nullptr;
         const uint8_t * remote_data_ = nullptr;
         const uint64_t  num_bytes_ = 0;
