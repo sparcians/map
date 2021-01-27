@@ -6,6 +6,7 @@
 #include <functional>
 #include <limits>
 #include <string.h>
+#include <algorithm>
 
 #include "sparta/utils/SpartaAssert.hpp"
 
@@ -516,7 +517,7 @@ namespace sparta
                   typename = typename std::enable_if<std::is_integral<T>::value>::type>
         T dataAs() const {
             T ret_data = 0;
-            ::memcpy(&ret_data, remote_data_, std::min(sizeof(T), num_bytes_));
+            ::memcpy(&ret_data, remote_data_, std::min(sizeof(T), (size_t)num_bytes_));
             return ret_data;
         }
 
