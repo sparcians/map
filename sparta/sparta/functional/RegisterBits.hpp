@@ -49,6 +49,7 @@ namespace sparta
         void convert_() {
             if(nullptr == local_data_) {
                 local_data_ = local_storage_.data();
+                ::memset(local_data_, 0, local_storage_.size());
                 ::memcpy(local_data_, remote_data_, num_bytes_);
                 remote_data_ = local_data_;
             }
@@ -60,6 +61,7 @@ namespace sparta
             remote_data_(local_data_),
             num_bytes_(num_bytes)
         {
+            ::memset(local_data_, 0, local_storage_.size());
             sparta_assert(num_bytes <= local_storage_.size(),
                           "RegisterBits size is locked to 64 bytes. num_bytes requested: " << num_bytes);
         }
@@ -557,7 +559,7 @@ namespace sparta
 
     private:
 
-        std::array<uint8_t, 64> local_storage_ = {0};
+        std::array<uint8_t, 64> local_storage_;
         uint8_t       * local_data_  = nullptr;
         const uint8_t * remote_data_ = nullptr;
         const uint64_t  num_bytes_ = 0;
