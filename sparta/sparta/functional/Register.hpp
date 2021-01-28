@@ -401,7 +401,7 @@ public:
         {
             const auto old_register_value  = peekBitArray_();
 
-            RegisterBits field_value_to_be_written_shifted(std::max(reg_size_, sizeof(access_type)), value);
+            RegisterBits field_value_to_be_written_shifted(std::max((size_t)reg_size_, sizeof(access_type)), value);
             field_value_to_be_written_shifted <<= getLowBit();
 
             // Check to see if the number of bits being written to the
