@@ -549,6 +549,7 @@ namespace sparta
 
         // Returns true if all zero
         bool none() const {
+            sparta_assert(num_bytes_ > 0);
             const auto mem_data_plus_one = remote_data_ + 1;
             return (::memcmp(remote_data_, mem_data_plus_one, num_bytes_ - 1) == 0);
         }
