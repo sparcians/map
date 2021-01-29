@@ -81,9 +81,9 @@ class SelectLayoutDlg(wx.Dialog):
         self.__panel_sel_file.SetSizer(open_row)
 
         sbs_src_border = wx.BoxSizer(wx.VERTICAL)
-        sbs_src_border.Add(self.__rad_blank, 0, wx.EXPAND | wx.ALIGN_BOTTOM)
+        sbs_src_border.Add(self.__rad_blank, 0, wx.EXPAND)
         sbs_src_border.Add((1,25), 0, wx.EXPAND)
-        sbs_src_border.Add(self.__rad_load, 0, wx.EXPAND | wx.ALIGN_BOTTOM)
+        sbs_src_border.Add(self.__rad_load, 0, wx.EXPAND)
         sbs_src_border.Add((1,15), 0, wx.EXPAND)
         sbs_src_border.Add(self.__panel_sel_file, 0, wx.EXPAND)
 
@@ -91,7 +91,7 @@ class SelectLayoutDlg(wx.Dialog):
         sbs_src.Add(sbs_src_border, 1, wx.EXPAND | wx.ALL, 10)
 
         sbs_opts_border = wx.BoxSizer(wx.VERTICAL)
-        sbs_opts_border.Add(self.__chk_shared, 0, wx.EXPAND | wx.ALIGN_BOTTOM)
+        sbs_opts_border.Add(self.__chk_shared, 0, wx.EXPAND)
 
         sbs_opts = wx.StaticBoxSizer(sbox_options, wx.VERTICAL)
         sbs_opts.Add(sbs_opts_border, 1, wx.EXPAND | wx.ALL, 10)
@@ -99,7 +99,7 @@ class SelectLayoutDlg(wx.Dialog):
         buttons_row = wx.BoxSizer(wx.HORIZONTAL)
         buttons_row.Add(quit_btn, 0, wx.ALIGN_LEFT | wx.ALIGN_BOTTOM)
         buttons_row.Add((1,1), 1, wx.EXPAND)
-        buttons_row.Add(self.__ok_btn, 0, wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM)
+        buttons_row.Add(self.__ok_btn, 0, wx.ALIGN_BOTTOM)
         ok_best_size = self.__ok_btn.GetBestSize()
         quit_best_size = quit_btn.GetBestSize()
         min_width = max(ok_best_size.GetWidth(), quit_best_size.GetWidth())
