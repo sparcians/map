@@ -12,6 +12,20 @@
 
 namespace sparta
 {
+    /**
+     * \class RegisterBits
+     *
+     * This class is used in conjuntion with sparta::RegisterBase to
+     * quickly write masked registers of sizes between 1 and 512
+     * bytes.  This class replaces the use of BitArray.
+     *
+     * The class works by assuming register data is handed to it via a
+     * char array.  The class will "view" into this data until it's
+     * requested to modify it.  When it's modified, the data will be
+     * copied to local storage within this class.  The user of the
+     * class is responsible for writing the data back to the original
+     * storage.
+     */
     class RegisterBits
     {
         template<typename SizeT, typename Op>
@@ -47,6 +61,7 @@ namespace sparta
             return final_value;
         }
 
+        // Copy the remote register data locally.
         void convert_() {
             if(nullptr == local_data_) {
                 local_data_ = local_storage_.data();
@@ -57,6 +72,10 @@ namespace sparta
         }
 
     public:
+        /**
+         * \brief Create an empty class with the given number of bytes
+         * \param num_bytes The number of bytes to allocate
+         */
         explicit RegisterBits(const uint64_t num_bytes) :
             local_data_(local_storage_.data()),
             remote_data_(local_data_),
@@ -67,6 +86,13 @@ namespace sparta
                           "RegisterBits size is locked to 64 bytes. num_bytes requested: " << num_bytes);
         }
 
+        /**
+         * \brief Create a class with the given number of bytes and initialize it to the given data
+         * \param num_bytes The number of bytes to allocate
+         * \param data The data to write to the lower portion of memory
+         *
+         * The data is copied
+         */
         template<class DataT>
         RegisterBits(const uint64_t num_bytes, const DataT & data) :
             local_storage_(),
@@ -80,8 +106,15 @@ namespace sparta
             set(data);
         }
 
-        RegisterBits(uint8_t * data, const size_t num_bytes) :
-            local_data_(data),
+        /**
+         * \brief Create a class pointing into the given data, of the given size
+         * \param data_ptr The data to view
+         * \param num_bytes The number of bytes available to view
+         *
+         * No data is copied
+         */
+        RegisterBits(uint8_t * data_ptr, const size_t num_bytes) :
+            local_data_(data_ptr),
             remote_data_(local_data_),
             num_bytes_(num_bytes)
         {
@@ -89,6 +122,13 @@ namespace sparta
                           "RegisterBits size is locked to 64 bytes. num_bytes requested: " << num_bytes);
         }
 
+        /**
+         * \brief Create a class pointing into the given data constantly, of the given size
+         * \param data_ptr The data to view
+         * \param num_bytes The number of bytes available to view
+         *
+         * No data is copied
+         */
         RegisterBits(const uint8_t * data, const size_t num_bytes) :
             remote_data_(data),
             num_bytes_(num_bytes)
@@ -97,14 +137,30 @@ namespace sparta
                           "RegisterBits size is locked to 64 bytes. num_bytes requested: " << num_bytes);
         }
 
+        /**
+         * \brief Create a nullptr version of the data.  This would be an invalid class
+         */
         RegisterBits(std::nullptr_t) {}
 
+        /**
+         * \brief Make a copy
+         * \param orig The original to copy
+         *
+         * If the original is pointing to its own memory, that will be copied
+         */
         RegisterBits(const RegisterBits & orig) :
             local_storage_(orig.local_storage_),
             local_data_(orig.local_data_ == nullptr ? nullptr : local_storage_.data()),
             remote_data_(orig.local_data_ == orig.remote_data_ ? local_data_ : orig.remote_data_)
         {}
 
+        /**
+         * \brief Move
+         * \param orig The original to move
+         *
+         * If the original is pointing to its own memory, that data
+         * will be moved.  The original is nullified.
+         */
         RegisterBits(RegisterBits && orig) :
             local_storage_(std::move(orig.local_storage_)),
             num_bytes_(orig.num_bytes_)
@@ -115,6 +171,11 @@ namespace sparta
             orig.remote_data_ = nullptr;
         }
 
+        /**
+         * \brief "or" together two classes
+         * \param rh_bits The other to "or" in
+         * \return A new RegisterBits (to be moved) of this instance or'ed with the other
+         */
         RegisterBits operator|(const RegisterBits & rh_bits) const
         {
             if(num_bytes_ == 8) {
@@ -146,6 +207,11 @@ namespace sparta
             return RegisterBits(nullptr);
         }
 
+        /**
+         * \brief "and" together two classes
+         * \param rh_bits The other to "and" in
+         * \return A new RegisterBits (to be moved) of this instance and'ed with the other
+         */
         RegisterBits operator&(const RegisterBits & rh_bits) const
         {
             if(num_bytes_ == 8) {
@@ -177,6 +243,10 @@ namespace sparta
             return RegisterBits(nullptr);
         }
 
+        /**
+         * \brief "not" this class
+         * \return A new RegisterBits (to be moved) of this instance not-ted
+         */
         RegisterBits operator~() const
         {
             if(num_bytes_ == 8) {
@@ -205,6 +275,11 @@ namespace sparta
             return RegisterBits(nullptr);
         }
 
+        /**
+         * \brief Shift this instance right and return a copy
+         * \param shift The shift count
+         * \return A new RegisterBits (to be moved) of this instance shifted right
+         */
         RegisterBits operator>>(uint32_t shift) const
         {
             if(num_bytes_ == 8) {
@@ -292,6 +367,11 @@ namespace sparta
             return RegisterBits(nullptr);
         }
 
+        /**
+         * \brief Shift this instance left and return a copy
+         * \param shift The shift count
+         * \return A new RegisterBits (to be moved) of this instance shifted left
+         */
         RegisterBits operator<<(uint32_t shift) const
         {
             if(num_bytes_ == 8) {
@@ -409,6 +489,10 @@ namespace sparta
 
         }
 
+        /**
+         * \brief Shift this instance left
+         * \param shift The shift count
+         */
         void operator<<=(uint32_t shift)
         {
             convert_();
@@ -500,6 +584,11 @@ namespace sparta
             }
         }
 
+        /**
+         * \brief Compare the register bits to the given data
+         * \param dat The data to compare
+         * \return True if equivalent
+         */
         template<class DataT>
         std::enable_if_t<std::is_integral_v<DataT>, bool>
         operator==(const DataT dat) const {
@@ -507,15 +596,23 @@ namespace sparta
             return *(reinterpret_cast<const DataT*>(remote_data_)) == dat;
         }
 
+        /**
+         * \brief Compare the register bits to another
+         * \param other The other RegisterBits instance to compare
+         * \return True if equivalent
+         */
         bool operator==(const RegisterBits & other) const {
             return (num_bytes_ == other.num_bytes_) &&
                 (::memcmp(remote_data_, other.remote_data_, num_bytes_) == 0);
         }
 
-        const uint8_t * operator[](const uint32_t idx) const {
-            return remote_data_ + idx;
-        }
-
+        /**
+         * \brief Set the given masked_bits in this RegisterBits instance
+         * \param masked_bits The bit value to set
+         *
+         * If this RegisterBits class was pointing to a remote data
+         * view, the data will first be copied then the masked_bits written
+         */
         template<class DataT>
         void set(const DataT & masked_bits) {
             // sparta_assert(sizeof(DataT) <= num_bytes_);
@@ -523,20 +620,48 @@ namespace sparta
             ::memcpy(local_data_, reinterpret_cast<const uint8_t*>(&masked_bits), sizeof(DataT));
         }
 
+        /**
+         * \brief Fill the RegisterBits with the given fill_data
+         * \param fill_data
+         *
+         * If this RegisterBits class was pointing to a remote data
+         * view, the data will first be copied then the fill data written
+         */
         void fill(const uint8_t fill_data) {
             convert_();
             local_storage_.fill(fill_data);
         }
 
+        /**
+         * \brief Get the data offset at the given index
+         * \param idx The index offset
+         * \return A data pointer at the given index
+         */
+        const uint8_t * operator[](const uint32_t idx) const {
+            return remote_data_ + idx;
+        }
+
+        /**
+         * \brief Get the internal data pointer
+         * \return The data pointer
+         */
         const uint8_t *data() const {
             return remote_data_;
         }
 
+        /**
+         * \brief Get the internal data pointer
+         * \return The data pointer
+         */
         uint8_t *data() {
             convert_();
             return local_data_;
         }
 
+        /**
+         * \brief Get the internal data as the given dta type
+         * \return The data
+         */
         template <typename T,
                   typename = typename std::enable_if<std::is_integral<T>::value>::type>
         T dataAs() const {
@@ -545,25 +670,35 @@ namespace sparta
             return ret_data;
         }
 
+        /**
+         * \brief Get the number of bytes
+         * \return The number of bytes
+         */
         uint32_t getSize() const { return num_bytes_; }
 
-        // Returns true if all zero
+        /**
+         * \brief Returns true if no bits are set
+         * \return true if no bits are set
+         */
         bool none() const {
             sparta_assert(num_bytes_ > 0);
             const auto mem_data_plus_one = remote_data_ + 1;
             return (::memcmp(remote_data_, mem_data_plus_one, num_bytes_ - 1) == 0);
         }
 
-        // Returns true if anything non-zero
+        /**
+         * \brief Returns true if any bit is set
+         * \return true if any bit is set
+         */
         bool any() const {
             return !none();
         }
 
     private:
 
-        std::array<uint8_t, 64> local_storage_;
-        uint8_t       * local_data_  = nullptr;
-        const uint8_t * remote_data_ = nullptr;
-        const uint64_t  num_bytes_ = 0;
+        std::array<uint8_t, 64> local_storage_; //!< Local storage
+        uint8_t               * local_data_  = nullptr; //!< Points to null if using remote data
+        const uint8_t         * remote_data_ = nullptr; //!< Remove data; points to local_data_ if no remote
+        const uint64_t          num_bytes_ = 0; //!< Number of bytse
     };
 }
