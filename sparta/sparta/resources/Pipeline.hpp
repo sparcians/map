@@ -686,6 +686,20 @@ namespace sparta
         DataT & operator[](const uint32_t & stage_id) { return pipe_.access(stage_id); }
 
         /*!
+         * \brief Access (read-only) a specific stage of the pipeline
+         *
+         * \param stage_id The stage number
+         */
+        const DataT & at(const uint32_t & stage_id) const { return pipe_.read(stage_id); }
+
+        /*!
+         * \brief Access a specific stage of the pipeline
+         *
+         * \param stage_id The stage number
+         */
+        DataT & at(const uint32_t & stage_id) { return pipe_.access(stage_id); }
+
+        /*!
          * \brief Indicate the validity of a specific pipeline stage
          *
          * \param stage_id The stage number
