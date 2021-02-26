@@ -665,8 +665,10 @@ int main ()
     EXPECT_EQUAL(examplePipeline1.numValid(), 2);
     EXPECT_TRUE(examplePipeline1.isValid(0));
     EXPECT_EQUAL(examplePipeline1[0], 20);
+    EXPECT_EQUAL(examplePipeline1[0], examplePipeline1.at(0));
     EXPECT_TRUE(examplePipeline1.isValid(1));
     EXPECT_EQUAL(examplePipeline1[1], 14);
+    EXPECT_EQUAL(examplePipeline1[1], examplePipeline1.at(1));
     EXPECT_NOTHROW(examplePipeline1.writeStage(0, 25));
 
 
