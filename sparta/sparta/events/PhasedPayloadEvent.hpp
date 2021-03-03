@@ -10,13 +10,14 @@
 
 #pragma once
 
-#include <list>
+//#include <list>
 #include <memory>
 #include "sparta/events/EventNode.hpp"
 #include "sparta/events/Scheduleable.hpp"
 #include "sparta/events/SchedulingPhases.hpp"
 #include "sparta/utils/MetaStructs.hpp"
 #include "sparta/utils/ValidValue.hpp"
+#include "sparta/utils/FastList.hpp"
 #include "sparta/events/StartupEvent.hpp"
 
 namespace sparta
@@ -42,7 +43,7 @@ namespace sparta
         class PayloadDeliveringProxy;
         using ProxyAllocation   = std::vector<std::unique_ptr<PayloadDeliveringProxy>>;
         using ProxyFreeList     = std::vector<PayloadDeliveringProxy *>;
-        using ProxyInflightList = std::list  <PayloadDeliveringProxy *>;
+        using ProxyInflightList = sparta::utils::FastList <PayloadDeliveringProxy *>;
 
         //! Internal class used by PhasedPayloadEvent to schedule the
         //! delivery of a payload to a consumer sometime in the
@@ -162,8 +163,7 @@ namespace sparta
                               "The PayloadEvent: '" << getLocation() <<
                               "' has allocated over 100000 outstanding events -- does that seem right?");
             }
-            inflight_pl_.push_front(proxy);
-            proxy->setInFlightLocation_(inflight_pl_.begin());
+            proxy->setInFlightLocation_(inflight_pl_.emplace_back(proxy));
             proxy->setPayload_(dat);
 
             return proxy;
@@ -611,7 +611,7 @@ namespace sparta
 
         ProxyAllocation   allocated_proxies_;
         ProxyFreeList     free_pl_;
-        ProxyInflightList inflight_pl_;
+        ProxyInflightList inflight_pl_{100};
 
         // Use 16, a power of 2 for allocation of more objects.  No
         // rhyme or reason, but this seems to be a sweet spot in
