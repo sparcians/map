@@ -67,6 +67,8 @@ public:
     void task2(const DataT & dat) { std::cout << "  Stage[2]: consumer(Tick, " << dat << ")\n"; }
     template<typename DataT>
     void task3(const DataT & dat) { std::cout << "  Stage[4]: consumer(Flush: " << dat << ")\n"; }
+    void task4(void) { std::cout << "  Doing things before pipeline updates(Update)\n"; }
+    void task5(void) { std::cout << "  Doing things after pipeline updates (Update)\n"; }
 };
 
 template<typename T>
@@ -258,6 +260,14 @@ int main ()
     sparta::PayloadEvent<std::string, sparta::SchedulingPhase::Flush> ev_task3_flush
         (&es, "ev_task3_flush",
             CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(DummyClass, &dummyObj1, task3, std::string));
+
+    // User Event4: Update phase, unique_event
+    sparta::UniqueEvent<sparta::SchedulingPhase::Update> ev_task4_update
+        (&es, "ev_task4_update", CREATE_SPARTA_HANDLER_WITH_OBJ(DummyClass, &dummyObj1, task4));
+
+    // User Event5: Update phase, unique_event
+    sparta::UniqueEvent<sparta::SchedulingPhase::Update> ev_task5_update
+        (&es, "ev_task5_update", CREATE_SPARTA_HANDLER_WITH_OBJ(DummyClass, &dummyObj1, task5));
 
     ////////////////////////////////////////////////////////////////////////////////
     // Pipeline construction
@@ -531,6 +541,16 @@ int main ()
     EXPECT_THROW(examplePipeline1.setConsumerForStage(1, ev_task2_tick));
     EXPECT_THROW(examplePipeline1.setConsumerForStage(3, ev_task3_flush));
 
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Pipeline update producer/consumer event setup
+    ////////////////////////////////////////////////////////////////////////////////
+
+    EXPECT_NOTHROW(examplePipeline1.setProducerForPipelineUpdate(ev_task4_update));
+    EXPECT_NOTHROW(examplePipeline1.setConsumerForPipelineUpdate(ev_task5_update));
+
+    EXPECT_THROW(examplePipeline1.setProducerForPipelineUpdate(ev_task2_tick));
+    EXPECT_THROW(examplePipeline1.setConsumerForPipelineUpdate(ev_task2_tick));
 
     ////////////////////////////////////////////////////////////////////////////////
     // Set precedence between two stages from diffferent Pipeline instances
@@ -1418,6 +1438,32 @@ int main ()
 
     std::cout << "[FINISH] Pipeline Flush Handling Test\n" << std::endl;
 
+    ////////////////////////////////////////////////////////////////////////////////
+    // Pipeline Update Event Test
+    ////////////////////////////////////////////////////////////////////////////////
+
+    std::cout << "\n[START] Pipeline Update Event Test" << std::endl;
+
+    cyc_cnt = 0;
+    examplePipeline1.performOwnUpdates();
+
+    std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
+    // Append Pipeline
+    examplePipeline1.append(19);
+
+    // Run Cycle-0
+    ev_task4_update.schedule();
+    ev_task5_update.schedule();
+    sched.run(1, true);
+    EXPECT_FALSE(examplePipeline1.isValid(0));
+
+    std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
+    // Run Cycle-1
+    ev_task4_update.schedule();
+    ev_task5_update.schedule();
+    sched.run(1, true);
+
+    std::cout << "[FINISH] Pipeline UpdateEvent Test" << std::endl;
 
 
     rtn.enterTeardown();
