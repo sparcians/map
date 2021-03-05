@@ -12,6 +12,16 @@ set (VALGRIND_OPTS "--error-exitcode=5 \
       --soname-synonyms=somalloc=NONE")
 set (VALGRIND_TEST_LABEL valgrind_test)
 
+# Since make does not pass the parallel jobs flag to ctest from the user,
+# a fixed count will be set based on core count w/ a max 8
+include(ProcessorCount)
+ProcessorCount(NUM_CORES)
+if (NOT NUM_CORES EQUAL 0)
+  set(CTEST_BUILD_FLAGS -j${NUM_CORES})
+  set(ctest_test_args ${ctest_test_args} PARALLEL_LEVEL ${NUM_CORES})
+endif()
+message(STATUS "Found " ${NUM_CORES} " cores in machine (for ctest)")
+
 # Add the custom regress/regress_valgrind targets.
 add_custom_target (regress)
 add_custom_target (regress_valgrind)
@@ -19,8 +29,8 @@ add_custom_target (regress_valgrind)
 # NOTE:
 # running ctest with --test-action test creates Testing/<datetime>/Test.xml
 # that can be loaded into the CI test result tracker
-add_custom_command (TARGET regress          POST_BUILD COMMAND ctest -LE ${VALGRIND_TEST_LABEL} -j10 --test-action test)
-add_custom_command (TARGET regress_valgrind POST_BUILD COMMAND ctest -L  ${VALGRIND_TEST_LABEL} -j10 --test-action test)
+add_custom_command (TARGET regress          POST_BUILD COMMAND ctest -LE ${VALGRIND_TEST_LABEL} -j${NUM_CORES} --test-action test)
+add_custom_command (TARGET regress_valgrind POST_BUILD COMMAND ctest -L  ${VALGRIND_TEST_LABEL} -j${NUM_CORES} --test-action test)
 
 #add_subdirectory (pipeViewer)
 add_subdirectory (Array)
@@ -31,6 +41,7 @@ add_subdirectory (cache)
 add_subdirectory (Clock)
 add_subdirectory (CircularBuffer)
 add_subdirectory (Color)
+add_subdirectory (Collection)
 add_subdirectory (CommandLineSimulator)
 add_subdirectory (Counter)
 add_subdirectory (ContextCounter)
@@ -72,6 +83,9 @@ add_subdirectory (StaticInit)
 add_subdirectory (Statistic)
 add_subdirectory (StatisticExpression)
 add_subdirectory (SyncPort)
+if(SYSTEMC_SUPPORT)
+  add_subdirectory (SystemC)
+endif()
 add_subdirectory (Tag)
 add_subdirectory (TreeFilter)
 add_subdirectory (TreeNode)

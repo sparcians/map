@@ -75,8 +75,10 @@ Open a MacOS Terminal
 1. `brew install yaml-cpp`
 1. `brew install rapidJSON`
 1. `brew install xz`
+1. `brew install zstd`
 1. `brew install cppcheck`
-1. `sudo easy_install Pygments` # Do not use HomeBrew! Needed for cppcheck-htmlreport
+1. `brew install binutils`  # This is for addr2line support for error debug log generation on crash
+1. `sudo easy_install Pygments==2.5.2` # Do not use HomeBrew! Needed for cppcheck-htmlreport
 1. Install XCode and check for clang: `clang --version`
 
 Clone sparta through https: `git clone https://github.com/sparcians/map.git`

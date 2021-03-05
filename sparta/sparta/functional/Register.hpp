@@ -8,16 +8,15 @@
 #include <sstream>
 #include <math.h>
 #include <memory>
-
-#include <boost/static_assert.hpp>
+#include <climits>
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/functional/DataView.hpp"
+#include "sparta/functional/RegisterBits.hpp"
 #include "sparta/utils/Utils.hpp"
 #include "sparta/log/NotificationSource.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
-#include "sparta/utils/BitArray.hpp"
 #include "sparta/utils/StringUtils.hpp"
 #include "sparta/utils/ValidValue.hpp"
 
@@ -25,8 +24,9 @@ namespace sparta
 {
 
 /*!
+ * \class RegisterBase
  * \brief Base class to represents an architected register of any size that
- * is a power of 2 and greater than 0 with a ceiling specified
+ *        is a power of 2 and greater than 0 with a ceiling specified
  *
  * \note Maximum register size is constrained by the ArchData instance where
  * the register value resides. This is a property of the sparta::RegisterSet
@@ -61,8 +61,6 @@ namespace sparta
  */
 class RegisterBase : public TreeNode
 {
-private:
-    using BitArray = utils::BitArray;
 
 public:
     class Field;
@@ -136,13 +134,18 @@ public:
      */
     class Field : public TreeNode
     {
-        utils::BitArray computeFieldMask_(uint32_t start, uint32_t end, uint32_t reg_size)
+        RegisterBits computeFieldMask_(uint32_t start, uint32_t end, uint32_t reg_size)
         {
             const auto num_ones = start - end + 1;
+            RegisterBits mask(reg_size);
             // For 31-0:
+
             // max() & (max() >> ((8 * 8) - 31))
-            return utils::BitArray(((std::numeric_limits<uint64_t>::max()
-                                     & (std::numeric_limits<uint64_t>::max() >> ((sizeof(uint64_t) * CHAR_BIT) - num_ones)))), reg_size) << end;
+            const uint64_t masked_bits = std::numeric_limits<uint64_t>::max() &
+                (std::numeric_limits<uint64_t>::max() >> ((sizeof(uint64_t) * CHAR_BIT) - num_ones));
+            mask.set(masked_bits);
+            mask <<= end;
+            return mask;
         }
 
     public:
@@ -215,7 +218,8 @@ public:
             reg_(reg),
             def_(def),
             reg_size_(reg_.getNumBytes()),
-            field_mask_(computeFieldMask_(def.high_bit, def.low_bit, reg_.getNumBytes()))
+            field_mask_(computeFieldMask_(def.high_bit, def.low_bit, reg_.getNumBytes())),
+            not_field_mask_(~field_mask_)
         {
             setExpectedParent_(&reg);
 
@@ -261,7 +265,7 @@ public:
          */
         access_type read()
         {
-            return ((readBitArray_() & field_mask_) >> getLowBit()).getValue<access_type>();
+            return ((readBitArray_() & field_mask_) >> getLowBit()).dataAs<access_type>();
         }
 
         /*!
@@ -271,7 +275,7 @@ public:
          */
         access_type peek() const
         {
-            return ((peekBitArray_() & field_mask_) >> getLowBit()).getValue<access_type>();
+            return ((peekBitArray_() & field_mask_) >> getLowBit()).dataAs<access_type>();
         }
 
         /*!
@@ -364,47 +368,49 @@ public:
         }
 
     private:
-        utils::BitArray readBitArray_() const
+        RegisterBits readBitArray_() const
         {
-            std::vector<uint8_t> value(reg_size_);
-            reg_.read(value.data(), reg_size_, 0);
-            return utils::BitArray(value.data(), reg_size_);
+            RegisterBits reg_bits(reg_size_);
+            reg_.read(reg_bits.data(), reg_size_, 0);
+            return reg_bits;
         }
 
-        utils::BitArray peekBitArray_() const
+        RegisterBits peekBitArray_() const
         {
-            std::vector<uint8_t> value(reg_size_);
-            reg_.peek(value.data(), reg_size_, 0);
-            return utils::BitArray(value.data(), reg_size_);
+            RegisterBits reg_bits(reg_size_);
+            reg_.peek(reg_bits.data(), reg_size_, 0);
+            return reg_bits;
         }
 
-        void write_(const utils::BitArray &value)
+        void write_(const RegisterBits &value)
         {
-            reg_.write(value.getValue(), value.getSize(), 0);
+            reg_.write(value.data(), value.getSize(), 0);
         }
 
-        void poke_(const utils::BitArray &value)
+        void poke_(const RegisterBits &value)
         {
-            reg_.poke(value.getValue(), value.getSize(), 0);
+            reg_.poke(value.data(), value.getSize(), 0);
         }
 
-        void pokeUnmasked_(const utils::BitArray &value)
+        void pokeUnmasked_(const RegisterBits &value)
         {
-            reg_.pokeUnmasked(value.getValue(), value.getSize(), 0);
+            reg_.pokeUnmasked(value.data(), value.getSize(), 0);
         }
 
-        utils::BitArray newRegisterValue_(access_type value) const
+        RegisterBits newRegisterValue_(access_type value) const
         {
             const auto old_register_value  = peekBitArray_();
-            const auto field_value_to_be_written_shifted = utils::BitArray(value, reg_size_) << getLowBit();
+
+            RegisterBits field_value_to_be_written_shifted(std::max((size_t)reg_size_, sizeof(access_type)), value);
+            field_value_to_be_written_shifted <<= getLowBit();
 
             // Check to see if the number of bits being written to the
             // field is larger than the field itself.
-            sparta_assert((field_value_to_be_written_shifted & ~field_mask_) == utils::BitArray(access_type(0), reg_size_),
+            sparta_assert((field_value_to_be_written_shifted & not_field_mask_).none(),
                           "Value of " << value <<  " too large for bit field "
                           << getLocation() << " of size " << getNumBits());
 
-            return (old_register_value & ~field_mask_) | field_value_to_be_written_shifted;
+            return (old_register_value & not_field_mask_) | field_value_to_be_written_shifted;
         }
 
         /*!
@@ -423,10 +429,14 @@ public:
         const RegisterBase::size_type reg_size_ = 0;
 
         /*!
-         * Used to mask out the bits in the register of this field --
-         * the 'not' bits of the register.
+         * Used to mask out the bits in the register of this field
          */
-        const utils::BitArray field_mask_;
+        const RegisterBits field_mask_;
+
+        /*!
+         * Used to mask the "other" bits that are not this field
+         */
+        const RegisterBits not_field_mask_;
 
     }; // class Field
 
@@ -988,6 +998,8 @@ public:
 
     /*!
      * \brief Write a value into this register
+     * \param val The value to write
+     * \param idx The index of the register to write the val
      * \note Write-mask is applied
      */
     template <typename T>
@@ -1083,7 +1095,7 @@ public:
     T getWriteMask(index_type idx=0) const
     {
         sparta_assert((idx + 1) * sizeof(T) <= mask_.getSize());
-        return *(reinterpret_cast<const T*>(mask_.getValue()) + idx);
+        return *(reinterpret_cast<const T*>(mask_.data()) + idx);
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -1120,7 +1132,7 @@ public:
     std::string getWriteMaskAsByteString() const
     {
         return utils::bin_to_hexstr(
-            reinterpret_cast<const uint8_t *>(mask_.getValue()), mask_.getSize());
+            reinterpret_cast<const uint8_t *>(mask_.data()), mask_.getSize());
     }
 
     /*!
@@ -1135,7 +1147,7 @@ public:
     std::string getWriteMaskAsBitString() const
     {
         return utils::bin_to_bitstr(
-            reinterpret_cast<const uint8_t *>(mask_.getValue()), mask_.getSize());
+            reinterpret_cast<const uint8_t *>(mask_.data()), mask_.getSize());
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -1184,13 +1196,10 @@ public:
     void write(const void *buf, size_t size, size_t offset)
     {
         sparta_assert(offset + size <= getNumBytes(), "Access out of bounds");
-
-        BitArray old = peekBitArray_(size, offset);
-        BitArray val(reinterpret_cast<const uint8_t *>(buf), size);
-        BitArray mask = mask_ >> 8 * offset;
-
-        old = (old & ~mask) | (val & mask);
-        write_(old.getValue(), size, offset);
+        RegisterBits val(reinterpret_cast<const uint8_t *>(buf), size);
+        RegisterBits mask = mask_ >> 8 * offset;
+        RegisterBits old = (peekRegisterBits_(size, offset) & ~mask) | (val & mask);
+        write_(old.data(), size, offset);
     }
 
     void writeUnmasked(const void *buf, size_t size, size_t offset)
@@ -1202,13 +1211,10 @@ public:
     void poke(const void *buf, size_t size, size_t offset)
     {
         sparta_assert(offset + size <= getNumBytes(), "Access out of bounds");
-
-        BitArray old = peekBitArray_(size, offset);
-        BitArray val(reinterpret_cast<const uint8_t *>(buf), size);
-        BitArray mask = mask_ >> 8 * offset;
-
-        old = (old & ~mask) | (val & mask);
-        poke_(old.getValue(), size, offset);
+        RegisterBits val(reinterpret_cast<const uint8_t *>(buf), size);
+        RegisterBits mask = mask_ >> 8 * offset;
+        RegisterBits old = (peekRegisterBits_(size, offset) & ~mask) | (val & mask);
+        poke_(old.data(), size, offset);
     }
 
     void pokeUnmasked(const void *buf, size_t size, size_t offset)
@@ -1324,12 +1330,12 @@ protected:
     }
 
 private:
-    BitArray computeWriteMask_(const Definition *def) const
+    RegisterBits computeWriteMask_(const Definition *def) const
     {
         const auto mask_size = def->bytes;
-        BitArray write_mask(0, mask_size);
-        BitArray partial_mask(0, mask_size);
-        partial_mask.fill<uint8_t>(0xff);
+        RegisterBits write_mask(mask_size);
+        RegisterBits partial_mask(mask_size);
+        partial_mask.fill(0xff);
 
         for (auto &fdp : def->fields) {
             if (fdp.read_only) {
@@ -1339,16 +1345,17 @@ private:
 
                 write_mask |= ((partial_mask >> shift_down) << shift_up);
             }
+
         }
 
         return ~write_mask;
     }
 
-    BitArray peekBitArray_(size_t size, size_t offset=0) const
+    RegisterBits peekRegisterBits_(size_t size, size_t offset=0) const
     {
-        std::vector<uint8_t> value(size);
-        peek_(value.data(), size, offset);
-        return BitArray(value.data(), size);
+        RegisterBits bits(size);
+        peek_(bits.data(), size, offset);
+        return bits;
     }
 
     /*!
@@ -1375,7 +1382,7 @@ private:
     /*!
      * \brief Bit mask with zeros in the bit positions that are read-only
      */
-    const BitArray mask_;
+    const RegisterBits mask_;
 
     /*!
      * \brief NotificationSource for post-write notifications
@@ -1459,6 +1466,14 @@ inline bool operator!=(const RegisterBase::Definition &a,
     return !(a == b);
 }
 
+/**
+ * \class Register
+ * \brief An implementation of a RegisterBase
+ *
+ * This class is a simple implementation of a RegisterBase.  This
+ * class provides observation on reads/writes.
+ *
+ */
 class Register : public RegisterBase
 {
 public:
@@ -1502,7 +1517,7 @@ private:
         auto &post_read_noti = getReadNotificationSource();
 
         peek_(buf, size, offset);
-        if (__builtin_expect(post_read_noti.observed(), false)) {
+        if (SPARTA_EXPECT_FALSE(post_read_noti.observed())) {
             post_read_noti.postNotification(post_read_noti_data_);
         }
     }
@@ -1522,7 +1537,7 @@ private:
     {
         auto &post_write_noti = getPostWriteNotificationSource();
 
-        if (__builtin_expect(post_write_noti.observed(), false)) {
+        if (SPARTA_EXPECT_FALSE(post_write_noti.observed())) {
             prior_val_dview_ = dview_;
             poke_(buf, size, offset);
             post_write_noti.postNotification(post_write_noti_data_);
@@ -1611,5 +1626,3 @@ inline std::ostream& operator<<(std::ostream& o, const sparta::Register::Field* 
 #define SPARTA_REGISTER_BODY                                              \
     constexpr sparta::RegisterBase::group_num_type sparta::RegisterBase::GROUP_NUM_NONE; \
     const sparta::RegisterBase::Definition sparta::RegisterBase::DEFINITION_END{0, nullptr, 0, nullptr, 0, nullptr, 0, { }, { }, nullptr, 0, 0, 0, 0, 0};
-
-

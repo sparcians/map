@@ -79,10 +79,10 @@ class SelectDatabaseDlg(wx.Dialog):
         buttons_row = wx.BoxSizer(wx.HORIZONTAL)
         buttons_row.Add(quit_btn, 0, wx.ALIGN_LEFT | wx.ALIGN_BOTTOM)
         buttons_row.Add((1, 1), 1, wx.EXPAND)
-        buttons_row.Add(self.__ok_btn, 0, wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM)
+        buttons_row.Add(self.__ok_btn, 0, wx.ALIGN_BOTTOM)
 
         sz = wx.BoxSizer(wx.VERTICAL)
-        sz.Add(info, 0, wx.EXPAND | wx.ALIGN_BOTTOM)
+        sz.Add(info, 0, wx.EXPAND)
         sz.Add((1, 15), 0, wx.EXPAND)
         sz.Add(open_row, 0, wx.EXPAND)
         sz.Add((1, 25), 0, wx.EXPAND)

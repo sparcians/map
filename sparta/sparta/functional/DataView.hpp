@@ -7,8 +7,6 @@
 #include <iomanip>
 #include <math.h>
 
-#include <boost/utility.hpp>        // noncopyable, enable_if
-
 #include "sparta/functional/ArchDataSegment.hpp"
 #include "sparta/functional/ArchData.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -17,10 +15,15 @@
 
 namespace sparta
 {
-
-    //! Can be a subset of another DataView
-    //! ArchDataSegment provides the layout inteface
-    //! Noncopyable because of ArchDataSegment. Could me made copyable if ArchDataSegment were also copyable
+    /*!
+     * \class DataView
+     * \brief View into a backend block of memory in an ArchData
+     *
+     * \note Can be a subset of another DataView. ArchDataSegment provides
+     * the layout inteface Noncopyable because of
+     * ArchDataSegment. Could be made copyable if ArchDataSegment were
+     * also copable.
+     */
     class DataView : public ArchDataSegment
     {
     public:
@@ -39,7 +42,7 @@ namespace sparta
          * \brief Construct a DataView
          * \param data Data which this view will access. Must not be nullptr
          * \param id ID of this DataView (as an ArchDataSegment
-         * \param size size of <data> accessed by this view. Must be a power of
+         * \param size size of \<data\> accessed by this view. Must be a power of
          * 2 greater than 0. This is validated by ArchDataSegment
          * \param subset_of ID of another DataView of which this is a subset
          * (occupies only a subset of the other dataview's space).
@@ -47,7 +50,7 @@ namespace sparta
          * \a subset_of
          * \param initial_buf_le Buffer from which initial value will be copied
          * byte-by-byte from a little-endian byte array source. Therefore, bytes
-         * could be swapped if SPARTA is run (if supported) on a BE architecture.
+         * could be swapped if Sparta is run (if supported) on a BE architecture.
          * The result should be that hand-coded intitial_buf byte-arrays needn't
          * be updated during such changes. This pointer must be nullptr or
          * contain a number of bytes >= \a size. The pointer must be valid at
@@ -91,10 +94,19 @@ namespace sparta
 
         // Attributes (non-virtual access)
 
+        //! \return The ArchData object this view is associated with
         ArchData* getArchData() const { return adata_; }
+
+        //! \return The size of this view
         offset_type getSize() const { return getLayoutSize(); }
+
+        //! \return The offset of the memory within the ArchData
         offset_type getOffset() const { return offset_; }
+
+        //! \return The line that is viewed into the ArchData
         ArchData::Line* getLine() const { return line_; } //!< Get already-placed line
+
+        //! \return The layout ID
         ident_type getID() const { return getLayoutID(); }
 
 
@@ -195,6 +207,7 @@ namespace sparta
 
         /*!
          * \brief Writes a value to this DataView at the specific index.
+         * \param val The value to write of type T
          * \tparam T type of value to write. Should be [u]intNN_t. See
          * sparta::ArchData::Line::read specializations for supported types.
          * \tparam BO sparta::ByteOrder describing read byte-order.
@@ -381,7 +394,7 @@ namespace sparta
         /*!
          * \brief Places this DataView within its ArchData.
          * \post Writes initial value if specified at construction
-         * \param offset Offset into <data>
+         * \param offset Offset into \<data\>
          * \todo Store pointer directly to value to save an add in offset
          */
         virtual void place_(offset_type offset) override {

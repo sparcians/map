@@ -294,9 +294,8 @@ namespace collection
          */
         void destroy()
         {
-            sparta_assert(writer_ != nullptr, "You cannot call PipelineCollector->destroy() more than once");
-
             if(collection_active_) {
+                sparta_assert(writer_ != nullptr, "Somehow collection is active, but we have a null writer");
                 for(auto & ctn : registered_collectables_) {
                     if(ctn->isCollected()) {
                         ctn->closeRecord(true); // set true for simulation termination
@@ -642,5 +641,3 @@ namespace collection
 
 }// namespace collection
 }// namespace sparta
-
-

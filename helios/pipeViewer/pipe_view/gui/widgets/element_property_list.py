@@ -1,12 +1,12 @@
 import wx
 import wx.grid
-import wx.lib.colourchooser.pycolourchooser
-
+from wx.lib.colourchooser.pycolourchooser import PyColourChooser, EVT_COLOUR_CHANGED
 import model.content_options as copts
 from model.schedule_element import ScheduleLineElement
 from model.element import LocationallyKeyedElement
 from model.rpc_element import RPCElement
 from ast import literal_eval
+from functools import cmp_to_key
 
 MULTIPLE_VALS_STR = '<multiple values>'
 MULTIPLE_VALS_COLOR = wx.Colour(200, 200, 100)
@@ -39,7 +39,7 @@ class ElementPropertyList(wx.grid.Grid):
 
     def OnResize(self, evt):
         # #self.AutoSizeColumn(0, False)
-        remaining = self.GetClientSize()[0] - self.GetRowLabelSize()
+        remaining = max(0, self.GetClientSize()[0] - self.GetRowLabelSize())
 
         # UPdate column sizes with recursion prevention
         if self.__in_resize == False and remaining != 0:
@@ -235,14 +235,14 @@ class ElementPropertyList(wx.grid.Grid):
                     hinttext = ''
                 if self.IsReadOnly(row, col):
                     hinttext = "(read-only attribute)" + hinttext
-                self.GetGridWindow().SetToolTipString(hinttext)
+                self.GetGridWindow().SetToolTip(hinttext)
             evt.Skip()
 
         #wx.EVT_MOTION(self.GetGridWindow(), OnMouseMotion)
         self.GetGridWindow().Bind(wx.EVT_MOTION, OnMouseMotion, id = wx.ID_NONE)
 
 # # Class which displays drop-down-list formatted options when the user edits a cell
-class DropdownCellEditor(wx.grid.PyGridCellEditor):
+class DropdownCellEditor(wx.grid.GridCellEditor):
 
     # # options is a list of options.
     def __init__(self, options):
@@ -259,10 +259,7 @@ class DropdownCellEditor(wx.grid.PyGridCellEditor):
             new_val = self.__chooser.GetString(new_idx)
             self.__chooser.SetSelection(new_idx)
             self.__grid.SetCellValue(self.__row, self.__column, new_val)
-            if wx.MAJOR_VERSION == 3:
-                grid_evt = wx.grid.GridEvent(id = wx.NewId(), type = wx.grid.EVT_GRID_CELL_CHANGE.typeId, obj = self.__chooser.GetParent(), row = self.__row, col = self.__column)
-            else:
-                grid_evt = wx.grid.GridEvent(id = wx.NewId(), type = wx.grid.EVT_GRID_CELL_CHANGE.typeId, obj = self.__grid, row = self.__row, col = self.__column)
+            grid_evt = wx.grid.GridEvent(id = wx.NewId(), type = wx.grid.EVT_GRID_CELL_CHANGED.typeId, obj = self.__grid, row = self.__row, col = self.__column)
             wx.PostEvent(self.__chooser.GetParent(), grid_evt)
 
     # make the selection dialog
@@ -277,13 +274,10 @@ class DropdownCellEditor(wx.grid.PyGridCellEditor):
 
     def SetSize(self, rect):
         if self.__chooser:
-            if wx.MAJOR_VERSION == 3:
-                offset = 0
-            else:
-                offset = 4
-            self.__chooser.SetDimensions(rect.x, rect.y,
-                                         rect.width + offset, rect.height + offset,
-                                         wx.SIZE_ALLOW_MINUS_ONE)
+            offset = 4
+            self.__chooser.SetSize(rect.x, rect.y,
+                                   rect.width + offset, rect.height + offset,
+                                   wx.SIZE_ALLOW_MINUS_ONE)
 
     def BeginEdit(self, row, column, grid):
         if self.__event_handler:
@@ -295,14 +289,17 @@ class DropdownCellEditor(wx.grid.PyGridCellEditor):
         self.__chooser.SetStringSelection(self.__init_val)
         self.__chooser.SetFocus()
 
+    def ApplyEdit(self, row, column, grid):
+        grid.SetCellValue(row, column, self.__new_val)
+
     def EndEdit(self, row, column, grid, old_val = None, new_val = None):
         if self.__event_handler:
             self.__chooser.PushEventHandler(self.__event_handler)
         new_val = self.__chooser.GetStringSelection()
         if new_val != self.__init_val:
-            grid.SetCellValue(row, column, new_val)
-            return True
-        return False
+            self.__new_val = new_val
+            return str(new_val)
+        return None
 
     def Reset(self):
         self.__chooser.SetStringSelection(self.__init_val)
@@ -312,7 +309,7 @@ class DropdownCellEditor(wx.grid.PyGridCellEditor):
 
 
 # # Class which allows user to edit a cell with text entry or a popup window
-class PopupCellEditor(wx.grid.PyGridCellEditor):
+class PopupCellEditor(wx.grid.GridCellEditor):
     __chooser = None
     __popup = None
     __grid = None
@@ -338,6 +335,7 @@ class PopupCellEditor(wx.grid.PyGridCellEditor):
         self.__event_handler = event_handler
         if event_handler:
             self.__chooser.PushEventHandler(event_handler)
+        self.__chooser.Bind(wx.EVT_KILL_FOCUS, self.FocusLost)
 
     def SetPopup(self, popup):
         self.__popup = popup
@@ -345,14 +343,11 @@ class PopupCellEditor(wx.grid.PyGridCellEditor):
 
     def SetSize(self, rect):
         if self.__chooser:
-            if wx.MAJOR_VERSION == 3:
-                offset = 0
-            else:
-                offset = 4
+            offset = 4
             (popup_width, popup_height) = self.__popup.GetControl().GetBestSize()
-            self.__chooser.setSize(rect.x, rect.y,
-                                         rect.width + offset, rect.height + offset,
-                                         wx.SIZE_ALLOW_MINUS_ONE)
+            self.__chooser.SetSize(rect.x, rect.y,
+                                   rect.width + offset, rect.height + offset,
+                                   wx.SIZE_ALLOW_MINUS_ONE)
             self.__chooser.SetPopupMinWidth(popup_width)
 
     def BeginEdit(self, row, column, grid):
@@ -364,8 +359,6 @@ class PopupCellEditor(wx.grid.PyGridCellEditor):
         self.__column = column
         self.__chooser.SetValue(self.__init_val)
         # wx v2.8 has issues with this
-        if wx.MAJOR_VERSION == 3:
-            self.__chooser.Bind(wx.EVT_KILL_FOCUS, self.FocusLost)
         self.__chooser.SetFocus()
 
     def GetChooser(self):
@@ -390,7 +383,7 @@ class PopupCellEditor(wx.grid.PyGridCellEditor):
                 if self.__event_handler:
                     self.__chooser.PushEventHandler(self.__event_handler)
                 self.UpdateGrid()
-                grid_evt = wx.grid.GridEvent(id = wx.NewId(), type = wx.grid.EVT_GRID_CELL_CHANGE.typeId, obj = self.GetChooser().GetParent(), row = self.GetRow(), col = self.GetColumn())
+                grid_evt = wx.grid.GridEvent(id = wx.NewId(), type = wx.grid.EVT_GRID_CELL_CHANGED.typeId, obj = self.GetChooser().GetParent(), row = self.GetRow(), col = self.GetColumn())
                 wx.PostEvent(self.GetChooser().GetParent(), grid_evt)
             else:
                 self.__in_update_handler = False
@@ -399,14 +392,17 @@ class PopupCellEditor(wx.grid.PyGridCellEditor):
         new_val = self.GetChooser().GetValue()
         self.GetGrid().SetCellValue(self.GetRow(), self.GetColumn(), new_val)
 
+    def ApplyEdit(self, row, column, grid):
+        grid.SetCellValue(row, column, self.__new_val)
+
     def EndEdit(self, row, column, grid, old_val = None, new_val = None):
         if self.__event_handler:
             self.__chooser.PushEventHandler(self.__event_handler)
         new_val = self.__chooser.GetValue()
         if new_val != self.__init_val:
-            grid.SetCellValue(row, column, new_val)
-            return True
-        return False
+            self.__new_val = new_val
+            return str(new_val)
+        return None
 
     def Reset(self):
         self.__chooser.SetValue(self.__init_val)
@@ -429,23 +425,6 @@ class TextUpdatePopup(wx.ComboPopup):
         return self.__should_update_text
 
 
-# Special event fired by an ArgosColorChooser when the color has been changed
-ColorChangedEvent, EVT_COLOR_CHANGED_EVENT = wx.lib.newevent.NewEvent()
-
-
-# Simple subclass of PyColourChooser that also fires a ColorChangedEvent when they color is changed
-class ArgosColorChooser(wx.lib.colourchooser.pycolourchooser.PyColourChooser):
-
-    def __init__(self, parent, id):
-        super(ArgosColorChooser, self).__init__(parent, id)
-
-    def UpdateColour(self, colour):
-        super(ArgosColorChooser, self).UpdateColour(colour)
-        evt = ColorChangedEvent()
-        evt.SetEventObject(self)
-        self.GetEventHandler().ProcessEvent(evt)
-
-
 # Color chooser popup class
 class ColorPopup(TextUpdatePopup):
 
@@ -455,13 +434,13 @@ class ColorPopup(TextUpdatePopup):
         self.__should_update_text = True
 
     def Create(self, parent):
-        self.__colour_chooser = ArgosColorChooser(parent, wx.NewId())
-        self.__colour_chooser.Bind(EVT_COLOR_CHANGED_EVENT, self.OnColorChanged)
+        self.__colour_chooser = PyColourChooser(parent, wx.NewId())
+        self.__colour_chooser.Bind(EVT_COLOUR_CHANGED, self.OnColorChanged)
         return True
 
     def OnColorChanged(self, evt):
         if self.ShouldUpdateText():
-            self.GetCombo().SetText(str(self.__colour_chooser.GetValue().Get()))
+            self.GetComboCtrl().SetText(str(self.__colour_chooser.GetValue().Get(includeAlpha=False)))
 
     def SetValue(self, color):
         self.__colour_chooser.SetValue(color)
@@ -488,8 +467,6 @@ class ColorCellEditor(PopupCellEditor):
     def Create(self, parent, id, event_handler):
         super(ColorCellEditor, self).Create(parent, id, event_handler)
         # This event doesn't exist in wx v2.8
-        if wx.MAJOR_VERSION == 3:
-            self.GetChooser().Bind(wx.EVT_COMBOBOX_CLOSEUP, self.OnColorPickerChanged)
         self.GetChooser().Bind(wx.EVT_TEXT_ENTER, self.OnColorPickerChanged)
         self.GetChooser().Bind(wx.EVT_TEXT, self.OnTextChanged)
 
@@ -529,7 +506,7 @@ class TreePopup(TextUpdatePopup):
         self.__loc_tree = loc_tree
         self.__tree.DeleteChildren(self.__root)
         self.__tree_dict = {}
-        for key in self.__loc_tree.iterkeys():
+        for key in self.__loc_tree.keys():
             child = self.__tree.AppendItem(self.__root, key)
             if self.__loc_tree[key] != {}:
                 self.__tree.SetItemHasChildren(child, True)
@@ -549,7 +526,7 @@ class TreePopup(TextUpdatePopup):
 
     # Update the ComboCtrl text box with the selected value in the tree
     def UpdateParentValue(self):
-        self.GetCombo().SetValue(self.GetValue())
+        self.GetComboCtrl().SetValue(self.GetValue())
 
     def OnSelChanged(self, evt):
         if self.ShouldUpdateText():
@@ -570,7 +547,7 @@ class TreePopup(TextUpdatePopup):
     def AutoSize(self):
         (width, height) = self.__tree.GetBestSize()
         self.__tree.SetSize((width, -1))
-        self.GetCombo().GetPopupWindow().SetSize((width, -1))
+        self.GetComboCtrl().GetPopupWindow().SetSize((width, -1))
 
     def OnExpandedItem(self, evt):
         self.AutoSize()
@@ -610,7 +587,7 @@ class TreePopup(TextUpdatePopup):
                 curdict = curdict[token]
             # Otherwise, expand the tree from the deepest existing node until all necessary nodes are added
             while val not in self.__tree_dict:
-                for i in xrange(len(tokens) - 1, -1, -1):
+                for i in range(len(tokens) - 1, -1, -1):
                     cur_path = '.'.join(tokens[:i])
                     if cur_path in self.__tree_dict:
                         self.__tree.Expand(self.__tree_dict[cur_path])
@@ -622,9 +599,14 @@ class TreePopup(TextUpdatePopup):
     def SetTree(self, tree, item = None, path = ""):
         if not item:
             item = self.__root
+
+        # Fix missing cmp() function in Python 3
+        def cmp(a, b):
+            return (a > b) - (a < b)
+
         # Sort keys by length ascending then string-comparison alphabetically
-        for k, v in sorted(tree.iteritems(),
-                          lambda x, y: cmp(len(x[0]), len(y[0])) if len(x[0]) != len(y[0]) else cmp(x[0], y[0])):
+        for k, v in sorted(tree.items(),
+                           key=cmp_to_key(lambda x, y: cmp(len(x[0]), len(y[0])) if len(x[0]) != len(y[0]) else cmp(x[0], y[0]))):
             if len(path) == 0:
                 child_path = k
             else:
@@ -650,8 +632,6 @@ class TreeCellEditor(PopupCellEditor):
     def Create(self, parent, id, event_handler):
         super(TreeCellEditor, self).Create(parent, id, event_handler)
         self.GetPopup().SetLocationTree(self.__loc_tree)
-        if wx.MAJOR_VERSION == 3:
-            self.GetChooser().Bind(wx.EVT_COMBOBOX_CLOSEUP, self.OnTreeChanged)
         self.GetChooser().Bind(wx.EVT_TEXT, self.OnTextChanged)
         self.GetChooser().Bind(wx.EVT_TEXT_ENTER, self.OnTreeChanged)
 

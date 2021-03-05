@@ -36,8 +36,9 @@ requirements:
     - {{ compiler('cxx') }}
     - {{ compiler('c') }}
     # add duplicate clang dep per https://gitter.im/conda-forge/conda-forge.github.io?at=5e5feaf7ec7f8746aab200c4
-    - clang 9
-    - clangxx 9
+    - clang 10
+    - clangxx 10
+    - llvm-tools 10
     - rsync
     # add runtime requirements for argos to make it easier to script
     # creation of a 'dev' environment that can also run Argos

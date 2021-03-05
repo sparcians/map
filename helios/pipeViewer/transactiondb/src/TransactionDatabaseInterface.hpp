@@ -412,6 +412,7 @@ private:
                     }
                     td.data[loc_id] = trans_pos;
                     marked_start = true;
+                    marked_ending |= single_tick_entry;
                 }else{
                     // td.tick_offset > start_cycle_offset
                      if(td.tick_offset > start_cycle_offset){
@@ -664,173 +665,180 @@ private:
      * \brief Manages pipeViewer reader callbacks and dumps transaction data into an
      * ordered list of nodes
      */
-    class SmartReader : public PipelineDataCallback
+    class SmartReader
     {
-        /*!
-         * \brief Reader used to get intervals from the event file
-         */
-        Reader event_reader_;
+        private:
+            class SmartReaderCallback : public PipelineDataCallback {
+                private:
+                    /*!
+                     * \brief Pointer to nodes to be populated from reader callbacks
+                     */
+                    std::vector<Node*> const * load_to_nodes_ = nullptr;
 
+                    /*!
+                     * \brief Add a transaction to this smart reader
+                     */
+                    template<typename... _Args>
+                    void addTransaction_(Transaction::IntervalDataT time_Start,
+                                         Transaction::IntervalDataT time_End,
+                                         uint16_t control_Process_ID,
+                                         uint64_t transaction_ID,
+                                         uint64_t display_ID,
+                                         uint32_t location_ID,
+                                         uint16_t flags,
+                                         _Args&&... __args)
+                    {
+                        //std::cout << "Interval " << std::setw(6) << location_ID << " @ ["
+                        //          << time_Start << ',' << time_End << ")" << std::endl;
 
-        /*!
-         * \brief Pointer to nodes to be populated from reader callbacks
-         */
-        std::vector<Node*> const * load_to_nodes_;
+                        // Guaranteed not nullptr
+                        std::vector<Node*>::const_iterator node_itr = load_to_nodes_->begin();
 
-        /*!
-         * \brief Mutex that must be locked loading through the reader
-         */
-        std::mutex reader_load_mutex_;
-
-    public:
-
-        /*!
-         * \brief Constructor
-         * \param file_prefix Prefix of the pipeViewer database that will be opened
-         * \post Handle to pipeViewer database identified by \a file_prefix is open
-         */
-        SmartReader(const std::string& file_prefix) :
-            event_reader_(file_prefix, this),
-            load_to_nodes_(nullptr),
-            reader(event_reader_)
-        {;}
-
-        const Reader& reader;
-
-        /*!
-         * \brief Resets the query state on the reader
-         */
-        void resetQueryState()
-        {
-            event_reader_.clearLock();
-        }
-
-        /*!
-         * \brief Locks the non-recursive mutex for the current thread
-         */
-        void lock() { reader_load_mutex_.lock(); }
-
-        /*!
-         * \brief Unlocks the non-recursive mutex for the current thread
-         */
-        void unlock() { reader_load_mutex_.unlock(); }
-
-        /*!
-         * \brief Load a range of data from the reader to a specific set of nodes
-         * \param start Start reading from the file at this tick. This should
-         * generally be chunk aligned to avoid excess reading
-         * \param enbd Stop reading from the file at this tick. This should
-         * generally be chunk aligned to avoid excess reading
-         * \param load_to vector of Node* indicating which nodes should receive the
-         * data being loaded. Because of the nature of file reading, more than 1
-         * node's worth of data must be read to see all transaction's that overlap
-         * the node (since they are sorted by end-time).
-         * \note This is a blocking call
-         * \note load_to must not be modified externally while within this call.
-         * \pre this reader must be locked via lock by the thread calling this
-         * method.
-         */
-        void loadDataToNodes(uint64_t start, uint64_t end, std::vector<Node*> const * load_to)
-        {
-            sparta_assert(load_to != nullptr, "cannot loadDataToNodes with a null load_to vector")
-            load_to_nodes_ = load_to;
-            event_reader_.getWindow(start, end);
-            load_to_nodes_ = nullptr;
-        }
-
-        bool isUpdated()
-        {
-            return event_reader_.isUpdated();
-        }
-
-        void ackUpdated()
-        {
-            lock();
-            event_reader_.ackUpdated();
-            unlock();
-        }
-
-    private:
-
-        /*!
-         * \brief Add a transaction to this smart reader
-         */
-        template<typename... _Args>
-        void addTransaction_(Transaction::IntervalDataT time_Start,
-                             Transaction::IntervalDataT time_End,
-                             uint16_t control_Process_ID,
-                             uint64_t transaction_ID,
-                             uint64_t display_ID,
-                             uint32_t location_ID,
-                             uint16_t flags,
-                             _Args&&... __args)
-        {
-            //std::cout << "Interval " << std::setw(6) << location_ID << " @ ["
-            //          << time_Start << ',' << time_End << ")" << std::endl;
-
-            // Guaranteed not nullptr
-            std::vector<Node*>::const_iterator node_itr = load_to_nodes_->begin();
-
-            while(node_itr != load_to_nodes_->end()){
-                // Note: Assuming exclusove right endpoint of transactions
-                // Stop iterating when a node is encountered that starts after this
-                // transaction ends
-                if((*node_itr)->getStartInclusive() >= time_End){
-                    break;
-                }else if((*node_itr)->getEndExclusive() > time_Start){
-                    // This case should only accept nodes that contain part of this
-                    // transaction. findNode can return a node preceeding this
-                    // transaction.
-                    // Furthermore, only incomplete nodes will be loaded
-                    if(false == (*node_itr)->isComplete()){
-                        (*node_itr)->addTransaction(time_Start,
-                                                    time_End,
-                                                    control_Process_ID,
-                                                    transaction_ID,
-                                                    display_ID,
-                                                    location_ID,
-                                                    flags,
-                                                    __args...);
+                        while(node_itr != load_to_nodes_->end()){
+                            // Note: Assuming exclusove right endpoint of transactions
+                            // Stop iterating when a node is encountered that starts after this
+                            // transaction ends
+                            if((*node_itr)->getStartInclusive() >= time_End){
+                                break;
+                            }else if((*node_itr)->getEndExclusive() > time_Start){
+                                // This case should only accept nodes that contain part of this
+                                // transaction. findNode can return a node preceeding this
+                                // transaction.
+                                // Furthermore, only incomplete nodes will be loaded
+                                if(false == (*node_itr)->isComplete()){
+                                    (*node_itr)->addTransaction(time_Start,
+                                                                time_End,
+                                                                control_Process_ID,
+                                                                transaction_ID,
+                                                                display_ID,
+                                                                location_ID,
+                                                                flags,
+                                                                __args...);
+                                }
+                            }
+                            ++node_itr;
+                        }
                     }
-                }
-                ++node_itr;
+
+                public:
+                    /*!
+                     * \brief Callback from PipelineDataCallback
+                     */
+                    void foundTransactionRecord(transaction_t* loc) override {
+                        addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
+                                        loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags);
+                    }
+                    void foundInstRecord(instruction_t* loc) override {
+                        addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
+                                        loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
+                                        (uint16_t)loc->parent_ID, loc->operation_Code, loc->virtual_ADR,
+                                        loc->real_ADR);
+                    }
+                    void foundMemRecord(memoryoperation_t* loc) override {
+                        addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
+                                        loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
+                                        (uint16_t)loc->parent_ID, loc->virtual_ADR, loc->real_ADR);
+                    }
+                    void foundAnnotationRecord(annotation_t* loc) override {
+                        addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
+                                        loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
+                                        (uint16_t)loc->parent_ID, loc->length, (const char*)loc->annt);
+                    }
+
+                    void foundPairRecord(pair_t* loc) override {
+                        addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
+                                        loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
+                                        (uint16_t)loc->parent_ID, loc->length, loc->pairId, loc->sizeOfVector,
+                                        loc->valueVector, loc->nameVector,
+                                        loc->stringVector, loc->delimVector);
+                    }
+
+                    void loadDataToNodes(std::vector<Node*> const * load_to) {
+                        load_to_nodes_ = load_to;
+                    }
+            };
+
+            /*!
+             * \brief Reader used to get intervals from the event file
+             */
+            Reader event_reader_;
+
+
+            /*!
+             * \brief Mutex that must be locked loading through the reader
+             */
+            std::mutex reader_load_mutex_;
+
+        public:
+
+            /*!
+             * \brief Constructor
+             * \param file_prefix Prefix of the pipeViewer database that will be opened
+             * \post Handle to pipeViewer database identified by \a file_prefix is open
+             */
+            SmartReader(const std::string& file_prefix) :
+                event_reader_(Reader::construct<SmartReaderCallback>(file_prefix)),
+                reader(event_reader_)
+            {;}
+
+            const Reader& reader;
+
+            /*!
+             * \brief Resets the query state on the reader
+             */
+            void resetQueryState()
+            {
+                event_reader_.clearLock();
             }
-        }
 
-        /*!
-         * \brief Callback from PipelineDataCallback
-         */
-        void foundTransactionRecord(transaction_t* loc) {
-            addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
-                            loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags);
-        }
-        void foundInstRecord(instruction_t* loc) {
-            addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
-                            loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
-                            (uint16_t)loc->parent_ID, loc->operation_Code, loc->virtual_ADR,
-                            loc->real_ADR);
-        }
-        void foundMemRecord(memoryoperation_t* loc) {
-            addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
-                            loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
-                            (uint16_t)loc->parent_ID, loc->virtual_ADR, loc->real_ADR);
-        }
-        void foundAnnotationRecord(annotation_t* loc) {
-            addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
-                            loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
-                            (uint16_t)loc->parent_ID, loc->length, (const char*)loc->annt);
-        }
+            /*!
+             * \brief Locks the non-recursive mutex for the current thread
+             */
+            void lock() { reader_load_mutex_.lock(); }
 
-        void foundPairRecord(pair_t* loc) {
-            addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
-                            loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
-                            (uint16_t)loc->parent_ID, loc->length, loc->pairId, loc->sizeOfVector,
-                            loc->valueVector, loc->nameVector,
-                            loc->stringVector, loc->delimVector);
-        }
+            /*!
+             * \brief Unlocks the non-recursive mutex for the current thread
+             */
+            void unlock() { reader_load_mutex_.unlock(); }
 
+            /*!
+             * \brief Load a range of data from the reader to a specific set of nodes
+             * \param start Start reading from the file at this tick. This should
+             * generally be chunk aligned to avoid excess reading
+             * \param enbd Stop reading from the file at this tick. This should
+             * generally be chunk aligned to avoid excess reading
+             * \param load_to vector of Node* indicating which nodes should receive the
+             * data being loaded. Because of the nature of file reading, more than 1
+             * node's worth of data must be read to see all transaction's that overlap
+             * the node (since they are sorted by end-time).
+             * \note This is a blocking call
+             * \note load_to must not be modified externally while within this call.
+             * \pre this reader must be locked via lock by the thread calling this
+             * method.
+             */
+            void loadDataToNodes(uint64_t start, uint64_t end, std::vector<Node*> const * load_to)
+            {
+                sparta_assert(load_to != nullptr, "cannot loadDataToNodes with a null load_to vector");
+                auto& cb = event_reader_.getCallbackAs<SmartReaderCallback>();
+                cb.loadDataToNodes(load_to);
+                event_reader_.getWindow(start, end);
+                cb.loadDataToNodes(nullptr);
+            }
 
-    } smart_reader_;
+            bool isUpdated()
+            {
+                return event_reader_.isUpdated();
+            }
+
+            void ackUpdated()
+            {
+                lock();
+                event_reader_.ackUpdated();
+                unlock();
+            }
+    };
+
+    SmartReader smart_reader_;
 
     /*!
      * \brief Type for Node list. This must be a list so that objects are

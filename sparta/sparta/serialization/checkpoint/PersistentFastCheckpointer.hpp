@@ -6,6 +6,7 @@
 #include <sstream>
 #include <stack>
 #include <queue>
+#include <string>
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/functional/ArchData.hpp"
@@ -13,13 +14,16 @@
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/serialization/checkpoint/FastCheckpointer.hpp"
 
-//! Default threshold for creating snapshots
-#define DEFAULT_SNAPSHOT_THRESH 20
-
-namespace sparta {
-namespace serialization {
-namespace checkpoint
+namespace sparta::serialization::checkpoint
 {
+    /*!
+     * \brief Implements a Persistent FastCheckpointer,
+     * i.e. implements an interface to save checkpoints to disk
+     *
+     * Used in conjunction with the fast checkpointer (which saves
+     * checkpoints to memory), this class enables user the save the
+     * checkpoints to disk for loading later.
+     */
     class PersistentFastCheckpointer : public FastCheckpointer
     {
     public:
@@ -61,7 +65,7 @@ namespace checkpoint
                 fs_ << "E"; // Indicates end of this checkpoint data
 
                 sparta_assert(fs_.good(),
-                            "Ostream error while writing checkpoint data");
+                              "Ostream error while writing checkpoint data");
             }
 
             bool good() const {
@@ -103,7 +107,7 @@ namespace checkpoint
                 char ctrl;
                 fs_ >> ctrl;
                 sparta_assert(fs_.good(),
-                            "Encountered checkpoint data stream error or eof");
+                              "Encountered checkpoint data stream error or eof");
                 if(ctrl == 'L'){
                     ArchData::line_idx_type ln_idx = 0;
                     fs_.read((char*)&ln_idx, sizeof(ln_idx)); // Presumed LE encoding
@@ -126,23 +130,25 @@ namespace checkpoint
         ////////////////////////////////////////////////////////////////////////
 
         /*!
-         * \brief FastCheckpointer Constructor
+         * \brief PersistentFastCheckpointer Constructor
+         *
          * \param root TreeNode at which checkpoints will be taken.
-         * This cannot be changed later. This does not necessarily need to be a
-         * RootTreeNode. Before the first checkpoint is taken, this node must be
-         * finalized (see sparta::TreeNode::isFinalized). At this point, the node
-         * does not need to be finalized
-         * \param sched Scheduler whsoe current cycle will be read when taking
-         * checkpoints and restored when restoring checkpoints. See
-         * sparta::serialization::Checkpoint::Checkpoint for details
-         * \pre sparta::Scheduler::getScheduler() must be non-nullptr
-         * This Scheduler object will have its current tick  read when
-         * a checkpoint is created and set through Scheduler::restartAt
-         * when a checkpoint is restored
+         *             This cannot be changed later. This does not
+         *             necessarily need to be a RootTreeNode. Before
+         *             the first checkpoint is taken, this node must
+         *             be finalized (see
+         *             sparta::TreeNode::isFinalized). At this point,
+         *             the node does not need to be finalized
+         *
+         * \param sched Scheduler whose current cycle will be read
+         *              when taking checkpoints and restored when
+         *              restoring checkpoints. See
+         *              sparta::serialization::Checkpoint::Checkpoint
+         *              for details
          */
         PersistentFastCheckpointer(TreeNode& root,
                                    sparta::Scheduler* sched=nullptr) :
-            FastCheckpointer(root,sched),
+            FastCheckpointer(root, sched),
             prefix_("chkpt"),
             suffix_("data")
         { }
@@ -245,7 +251,4 @@ namespace checkpoint
 
     };
 
-} // namespace checkpoint
-} // namespace serialization
-} // namespace sparta
-
+} // namespace sparta::serialization::checkpoint

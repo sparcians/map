@@ -6,6 +6,7 @@ import time
 
 from model.layout import Layout
 from model.clock_manager import ClockManager
+from gui.font_utils import ScaleFont
 
 # # @package frame_playback_bar.py
 #  @brief Contains FramePlaybackBar which holds all playback controls for a single
@@ -71,9 +72,9 @@ class FramePlaybackBar(wx.Panel):
 
         # Fonts & Colors
 
-        self.__fnt_tiny = wx.Font(12, wx.NORMAL, wx.NORMAL, wx.NORMAL)
-        self.__fnt_bold_med = wx.Font(12, wx.NORMAL, wx.NORMAL, wx.BOLD)
-        self.__fnt = wx.Font(12, wx.NORMAL, wx.NORMAL, wx.NORMAL)
+        self.__fnt_tiny = wx.Font(ScaleFont(12), wx.NORMAL, wx.NORMAL, wx.NORMAL)
+        self.__fnt_bold_med = wx.Font(ScaleFont(12), wx.NORMAL, wx.NORMAL, wx.BOLD)
+        self.__fnt = wx.Font(ScaleFont(12), wx.NORMAL, wx.NORMAL, wx.NORMAL)
         self.SetFont(self.__fnt)
         self.__med_blue = wx.Colour(0, 0, 220)
 
@@ -124,37 +125,38 @@ class FramePlaybackBar(wx.Panel):
         self.__static_curtick.SetForegroundColour(self.__med_blue)
         self.__static_curtick.SetFont(self.__fnt_tiny)
 
-        self.__btn_rw_hold = ShyButton(self, wx.ID_ANY, '<<', style = wx.BU_EXACTFIT)
+        PLAYBACK_BUTTON_WIDTH = 40
+        self.__btn_rw_hold = ShyButton(self, wx.ID_ANY, '<<', size = (PLAYBACK_BUTTON_WIDTH, -1))
         self.__btn_rw_hold.SetToolTip('Rewinds while left-mouse is held. Using space or enter to activate ' \
                                             'this control also rewinds but rate is dictated by keyboard repeat rate')
-        self.__btn_back30 = ShyButton(self, wx.ID_ANY, '-30', style = wx.BU_EXACTFIT)
+        self.__btn_back30 = ShyButton(self, wx.ID_ANY, '-30', size = (PLAYBACK_BUTTON_WIDTH, -1))
         self.__btn_back30.SetToolTip('Steps back 30 cycle in the current clock domain')
-        self.__btn_back10 = ShyButton(self, wx.ID_ANY, '-10', style = wx.BU_EXACTFIT)
+        self.__btn_back10 = ShyButton(self, wx.ID_ANY, '-10', size = (PLAYBACK_BUTTON_WIDTH, -1))
         self.__btn_back10.SetToolTip('Steps back 10 cycle in the current clock domain')
-        self.__btn_back3 = ShyButton(self, wx.ID_ANY, '-3', style = wx.BU_EXACTFIT)
+        self.__btn_back3 = ShyButton(self, wx.ID_ANY, '-3', size = (PLAYBACK_BUTTON_WIDTH, -1))
         self.__btn_back3.SetToolTip('Steps back 3 cycle in the current clock domain')
-        self.__btn_back1 = ShyButton(self, wx.ID_ANY, '-1', style = wx.BU_EXACTFIT)
+        self.__btn_back1 = ShyButton(self, wx.ID_ANY, '-1', size = (PLAYBACK_BUTTON_WIDTH, -1))
         self.__btn_back1.SetToolTip('Steps back 1 cycle in the current clock domain')
-        self.__btn_forward1 = ShyButton(self, wx.ID_ANY, '+1', style = wx.BU_EXACTFIT)
+        self.__btn_forward1 = ShyButton(self, wx.ID_ANY, '+1', size = (PLAYBACK_BUTTON_WIDTH, -1))
         self.__btn_forward1.SetToolTip('Steps forward 1 cycle in the current clock domain')
-        self.__btn_forward3 = ShyButton(self, wx.ID_ANY, '+3', style = wx.BU_EXACTFIT)
+        self.__btn_forward3 = ShyButton(self, wx.ID_ANY, '+3', size = (PLAYBACK_BUTTON_WIDTH, -1))
         self.__btn_forward3.SetToolTip('Steps forward 3 cycle in the current clock domain')
-        self.__btn_forward10 = ShyButton(self, wx.ID_ANY, '+10', style = wx.BU_EXACTFIT)
+        self.__btn_forward10 = ShyButton(self, wx.ID_ANY, '+10', size = (PLAYBACK_BUTTON_WIDTH, -1))
         self.__btn_forward10.SetToolTip('Steps forward 10 cycle in the current clock domain')
-        self.__btn_forward30 = ShyButton(self, wx.ID_ANY, '+30', style = wx.BU_EXACTFIT)
+        self.__btn_forward30 = ShyButton(self, wx.ID_ANY, '+30', size = (PLAYBACK_BUTTON_WIDTH, -1))
         self.__btn_forward30.SetToolTip('Steps forward 30 cycle in the current clock domain')
-        self.__btn_ff_hold = ShyButton(self, wx.ID_ANY, '>>', style = wx.BU_EXACTFIT)
+        self.__btn_ff_hold = ShyButton(self, wx.ID_ANY, '>>', size = (PLAYBACK_BUTTON_WIDTH, -1))
         self.__btn_ff_hold.SetToolTip('Fast-Forwards while left-mouse is held. Using space or enter to activate ' \
                                             'this control also fast-forwards but rate is dictated by keyboard repeat rate')
 
         self.__txt_goto = wx.TextCtrl(self, wx.ID_ANY, size = (60, -1), value = '+10')
         self.__txt_goto.SetToolTip('Enter an absolute or relative cycle number (in the current clock domain) ' \
-                                         'to jump to. Decimal, octal (0NNN), hex (0xNNN), or binary (0bNNN) ' \
-                                         'literals are all acceptable inputs. Prefixing the number with a + or ' \
-                                         '- sign will result in this value being interpreted as a relative value ' \
-                                         'from the current cycle. Press Enter or click "jump" to jump to the ' \
-                                         'specified cycle')
-        self.__btn_goto = ShyButton(self, wx.ID_ANY, 'jump', style = wx.BU_EXACTFIT)
+                                   'to jump to. Decimal, octal (0NNN), hex (0xNNN), or binary (0bNNN) ' \
+                                   'literals are all acceptable inputs. Prefixing the number with a + or ' \
+                                   '- sign will result in this value being interpreted as a relative value ' \
+                                   'from the current cycle. Press Enter or click "jump" to jump to the ' \
+                                   'specified cycle')
+        self.__btn_goto = ShyButton(self, wx.ID_ANY, 'jump', size = (60, -1))
         self.__btn_goto.SetToolTip('Jump to the absolute or relative cycle specified in the jump text control')
 
         self.__static_playback_speed_units = wx.StaticText(self, wx.ID_ANY, 'cyc/\nsec')
@@ -164,7 +166,7 @@ class FramePlaybackBar(wx.Panel):
                                                     'A value of 0 prevents playing')
         self.__spin_playback_speed.SetRange(-self.MAX_PLAY_RATE, self.MAX_PLAY_RATE)
         self.__spin_playback_speed.SetValue(1.5)
-        self.__btn_playpause = ShyButton(self, wx.ID_ANY, self.LABEL_PLAY, size = (45, -1), style = wx.BU_EXACTFIT)
+        self.__btn_playpause = ShyButton(self, wx.ID_ANY, self.LABEL_PLAY, size = (45, -1))
         self.__btn_playpause.SetToolTip('Automatically steps through cycles (in the current clock domain) at ' \
                                               'the rate (positive or negative) specified by the "cyc/sec" ' \
                                               'spin-control beside this button')
@@ -214,40 +216,68 @@ class FramePlaybackBar(wx.Panel):
         curticks.Add(self.__static_curtick, 1, wx.EXPAND)
 
         row1 = wx.BoxSizer(wx.HORIZONTAL)
-        row1.Add(self.__hl_start, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 2)
-        row1.Add(self.__time_slider, 1, wx.ALIGN_CENTER_VERTICAL)
-        row1.Add(self.__hl_end, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 2)
+        row1.Add(self.__hl_start, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.RIGHT, 2)
+        slider_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        slider_sizer.Add(self.__time_slider, 1, wx.ALIGN_CENTER_VERTICAL)
+        row1.Add(slider_sizer, 1, wx.EXPAND)
+        row1.Add(self.__hl_end, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.RIGHT, 2)
 
-        row2 = wx.BoxSizer(wx.HORIZONTAL)
-        row2.Add(self.__drop_clock, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add((3, 1), 0, wx.EXPAND)
-        row2.Add(curticks, 0, wx.EXPAND)
-        row2.Add((1, 1), 1, wx.EXPAND) # Space sink
-        row2.Add(self.__btn_rw_hold, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_back30, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_back10, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_back3, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_back1, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_forward1, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_forward3, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_forward10, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_forward30, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_ff_hold, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add((1, 1), 1, wx.EXPAND) # Space sink
-        row2.Add(wx.StaticLine(self, wx.ID_ANY, style = wx.VERTICAL), 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 2)
-        row2.Add((1, 1), 1, wx.EXPAND) # Space sink
-        row2.Add(self.__txt_goto, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__btn_goto, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add((1, 1), 1, wx.EXPAND) # Space sink
-        row2.Add(wx.StaticLine(self, wx.ID_ANY, style = wx.VERTICAL), 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 2)
-        row2.Add((1, 1), 1, wx.EXPAND) # Space sink
-        row2.Add(self.__btn_playpause, 0, wx.ALIGN_CENTER_VERTICAL)
-        row2.Add(self.__static_playback_speed_units, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 2)
-        row2.Add(self.__spin_playback_speed, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 1)
+        row2 = wx.FlexGridSizer(cols=6)
+        for i in range(5):
+            row2.AddGrowableCol(i)
+        row2.AddGrowableRow(0)
+
+        clock_sizer = wx.FlexGridSizer(2)
+        clock_sizer.AddGrowableRow(0)
+        clock_sizer.Add(self.__drop_clock, 0, wx.ALIGN_CENTER_VERTICAL | wx.SHAPED)
+        clock_sizer.Add(curticks, 0, wx.EXPAND | wx.LEFT, 3)
+        row2.Add(clock_sizer, 0, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
+
+        nav_sizer = wx.FlexGridSizer(10)
+        nav_sizer.AddGrowableRow(0)
+        nav_sizer.Add(self.__btn_rw_hold, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_back30, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_back10, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_back3, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_back1, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_forward1, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_forward3, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_forward10, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_forward30, 0, wx.ALIGN_CENTER_VERTICAL)
+        nav_sizer.Add(self.__btn_ff_hold, 0, wx.ALIGN_CENTER_VERTICAL)
+        row2.Add(nav_sizer, 0, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
+
+        line_sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        line_sizer1.Add(wx.StaticLine(self, wx.ID_ANY, style = wx.VERTICAL), 0, wx.SHAPED | wx.ALIGN_CENTER_VERTICAL)
+        row2.Add(line_sizer1, 0, wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
+
+        goto_sizer = wx.FlexGridSizer(2)
+        goto_sizer.AddGrowableRow(0)
+        goto_sizer.Add(self.__txt_goto, 0, wx.ALIGN_CENTER_VERTICAL)
+        goto_sizer.Add(self.__btn_goto, 0, wx.ALIGN_CENTER_VERTICAL)
+        row2.Add(goto_sizer, 0, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
+
+        line_sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        line_sizer2.Add(wx.StaticLine(self, wx.ID_ANY, style = wx.VERTICAL), 0, wx.SHAPED | wx.ALIGN_CENTER_VERTICAL)
+        row2.Add(line_sizer2, 0, wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
+
+        playback_sizer = wx.FlexGridSizer(2)
+        playback_sizer.AddGrowableRow(0)
+        playback_sizer.Add(self.__btn_playpause, 0, wx.ALIGN_CENTER_VERTICAL)
+        spinner_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        spinner_sizer.Add(self.__static_playback_speed_units, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 2)
+        spinner_sizer.Add(self.__spin_playback_speed, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 1)
+        playback_sizer.Add(spinner_sizer, 0, wx.ALIGN_CENTER_VERTICAL)
+        row2.Add(playback_sizer, 0, wx.ALIGN_RIGHT | wx.EXPAND)
+
+        playback_controls = [c for c in self.GetChildren() if not isinstance(c, wx.StaticText) and row2.GetItem(c, recursive=True) is not None]
+        min_playback_height = max(c.GetBestSize().GetHeight() for c in playback_controls)
+        for c in playback_controls:
+            orig_width, _ = c.GetMinSize()
+            c.SetMinSize((orig_width, min_playback_height))
 
         rows = wx.BoxSizer(wx.VERTICAL)
-        rows.Add((1, 2), 0, wx.EXPAND)
-        rows.Add(row2, 0, wx.EXPAND)
+        rows.Add(row2, 0, wx.EXPAND | wx.TOP, 2)
         rows.Add(wx.StaticLine(self, wx.ID_ANY), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 4)
         rows.Add(row1, 0, wx.EXPAND)
 

@@ -84,6 +84,9 @@ Register::Definition reg_defs[] = {
                                                                                                                   {"b63_00",  "B", 0,  63,  false} },  {},      nullptr,            Register::INVALID_ID, 0, (const uint8_t*) ALTERNATING_DEFAULT, 0, 0 },
     { 14, "wm_04",    Register::GROUP_NUM_NONE, "",  Register::GROUP_IDX_NONE, "mask spans u64s",           16, { {"b65_13",  "A", 13, 65,  true },
                                                                                                                   {"b67_64",  "B", 64, 67,  false} },  {},      nullptr,            Register::INVALID_ID, 0, (const uint8_t*) ALTERNATING_DEFAULT, 0, 0 },
+
+    // Test very huge register
+    { 15, "huge",     Register::GROUP_NUM_NONE, "",  Register::GROUP_IDX_NONE, "register that is 32 bytes", 32, {},      {},      nullptr,            Register::INVALID_ID, 0, nullptr, 0, 0 },
     Register::DEFINITION_END
 };
 
@@ -125,8 +128,9 @@ public:
     void registerForCb1(RegisterBase *r)
     {
         r->getPostWriteNotificationSource().REGISTER_FOR_THIS(callback1);
-        //r->getPostWriteNotificationSource().registerForThis<RegPostWriteObserver, &RegPostWriteObserver::callback1>(this);
-        //r->getPostWriteNotificationSource().registerForThis<RegPostWriteObserver, &RegPostWriteObserver<RegReadSizeT>::callback1>(this);
+        // r->getPostWriteNotificationSource().REGISTER_FOR_THIS(callbackTemplate<int, int>);
+        // r->getPostWriteNotificationSource().registerForThis<RegPostWriteObserver, &RegPostWriteObserver<RegReadSizeT>::callback1>(this);
+        //r->getPostWriteNotificationSource().registerForThis<RegPostWriteObserver, &RegPostWriteObserver::callbackTemplate<int, int>>(this);
     }
 
     void deregisterForCb1(RegisterBase *r)
@@ -160,6 +164,11 @@ public:
         EXPECT_EQUAL(data.final->read<RegReadSizeT>(), post);
         writes_2++;
     }
+
+    // Used to test a template type
+    template<class T1, class T2>
+    void callbackTemplate(const sparta::TreeNode&, const sparta::TreeNode&, const Register::PostWriteAccess&) { }
+
 };
 
 template <typename RegReadSizeT>
@@ -386,7 +395,7 @@ void testBadRegs()
     std::cout << std::endl;
 }
 
-#define NUM_TIMING_WRITES 100000
+#define NUM_TIMING_WRITES 100000000
 template <typename WriteT, WriteT poke_val>
 double timeWritesPlain(sparta::RegisterBase *r64)
 {
@@ -515,7 +524,7 @@ int main()
 
     // Child Register lookup:
     // by name
-    RegisterBase *large=0, *med=0, *notareg=0, *sprxxa=0, *sprxxb, *small=0;
+    RegisterBase *large=0, *med=0, *notareg=0, *sprxxa=0, *sprxxb, *small=0, *huge=0;
     EXPECT_NOTHROW(large = rset->getRegister("large"));
     EXPECT_NOTEQUAL(large, nullptr); // (also tests the tester by comparing w/ nullptr on right)
     EXPECT_NOTEQUAL(nullptr, large); // (also tests the tester by comparing w/ nullptr on left)
@@ -530,6 +539,8 @@ int main()
     EXPECT_NOTEQUAL(sprxxb, (Register*)nullptr);
     EXPECT_NOTHROW(small = rset->getRegister("small"));
     EXPECT_NOTEQUAL(small, (Register*)nullptr);
+    EXPECT_NOTHROW(huge = rset->getRegister("huge"));
+    EXPECT_NOTEQUAL(huge, (Register*)nullptr);
 
     EXPECT_EQUAL(rset->getRegister("reg1")->getGroupNum(), 1);
     EXPECT_EQUAL(rset->getRegister("medium")->getGroupNum(), 2);
@@ -537,11 +548,13 @@ int main()
     EXPECT_EQUAL(rset->getRegister("large")->getHintFlags(), HINT_READ_ONLY);
     EXPECT_EQUAL(rset->getRegister("sprXXa")->getGroupNum(), 4);
     EXPECT_EQUAL(rset->getRegister("small")->getGroupNum(), Register::GROUP_NUM_NONE);
+    EXPECT_EQUAL(rset->getRegister("huge")->getGroupNum(), Register::GROUP_NUM_NONE);
     EXPECT_EQUAL(rset->getRegister("reg1")->getGroup(), "A");
     EXPECT_EQUAL(rset->getRegister("medium")->getGroup(), "B");
     EXPECT_EQUAL(rset->getRegister("large")->getGroup(), "B");
     EXPECT_EQUAL(rset->getRegister("sprXXa")->getGroup(), "D");
     EXPECT_EQUAL(rset->getRegister("small")->getGroup(), Register::GROUP_NAME_NONE);
+    EXPECT_EQUAL(rset->getRegister("huge")->getGroup(), Register::GROUP_NAME_NONE);
     EXPECT_TRUE(rset->canLookupRegister(1, 0)); // reg1 is in banks {0}
     EXPECT_TRUE(rset->canLookupRegister(2, 0, 6));  // medium is in banks {6}
     EXPECT_FALSE(rset->canLookupRegister(2, 0, 0));
@@ -911,6 +924,7 @@ int main()
     EXPECT_EQUAL(rwo.writes_2, 7);
     EXPECT_EQUAL(rro.reads, 2);
 
+    // Test large register (128b)
     std::cout << "\nWriting to " << large << std::endl;
     EXPECT_EQUAL(large->getNumBits(), (Register::size_type)128);
     EXPECT_NOTHROW((large->write<uint64_t>(0xffffffffffffffff)));
@@ -928,6 +942,25 @@ int main()
     std::cout << " have: " << std::hex << large->read<uint64_t>() << " expect: " << 0xccddeeeeccddffff << std::endl;
     EXPECT_EQUAL((large->read<uint64_t>()), 0xccddeeeeccddffff);
     std::cout << "Large Register: " << std::endl << large->renderSubtree(-1, true);
+
+    // Test huge register (256b)
+    std::cout << "\nWriting to " << huge << std::endl;
+    EXPECT_EQUAL(huge->getNumBits(), (Register::size_type)256);
+    EXPECT_NOTHROW((huge->write<uint64_t>(0xffffffffffffffff)));
+    EXPECT_EQUAL(huge->read<uint64_t>(), 0xffffffffffffffff);
+    EXPECT_NOTHROW((huge->write<uint32_t>(0xeeeeeeee, 1))); // 1-0 (MSB)
+    EXPECT_EQUAL(huge->read<uint32_t>(1), 0xeeeeeeee);
+    EXPECT_NOTHROW((huge->write<uint16_t>(0xdddd, 3))); // 3-0 (MSB)
+    EXPECT_EQUAL(huge->read<uint16_t>(3), 0xdddd);
+    EXPECT_NOTHROW((huge->write<uint16_t>(0xdddd, 1))); // 3-2
+    EXPECT_EQUAL(huge->read<uint16_t>(1), 0xdddd);
+    EXPECT_NOTHROW((huge->write<uint8_t>(0xcc, 7))); // 7-0 (MSB)
+    EXPECT_EQUAL(huge->read<uint8_t>(7), 0xcc);
+    EXPECT_NOTHROW((huge->write<uint8_t>(0xcc, 3))); // 7-4
+    EXPECT_EQUAL(huge->read<uint8_t>(3), 0xcc);
+    std::cout << " have: " << std::hex << huge->read<uint64_t>() << " expect: " << 0xccddeeeeccddffff << std::endl;
+    EXPECT_EQUAL((huge->read<uint64_t>()), 0xccddeeeeccddffff);
+    std::cout << "Huge Register: " << std::endl << huge->renderSubtree(-1, true);
 
     // Test notifications on fields
     auto sprXXa = rset->getRegister("sprXXa");

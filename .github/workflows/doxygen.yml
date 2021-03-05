@@ -1,0 +1,38 @@
+# Documentation Workflow for Github Actions
+
+name: Documentation
+
+# Controls when the action will run. Triggers the workflow on push
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    # Run doxygen command using the runners shell
+    # Doxygen Action: https://github.com/marketplace/actions/doxygen-action
+    - name: Build documentation
+      uses: mattnotmitt/doxygen-action@v1
+      with:
+        working-directory: 'sparta/doc'
+        doxyfile-path: './Doxyfile'
+
+    # Deploy to a gh-pages branch as an orphan (with only latest commit)
+    # GitHub Pages Action: https://github.com/marketplace/actions/github-pages-action
+    - name: Deploy documentation
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: sparta/doc/html
+        force_orphan: true
+        commit_message: '[ci skip] ${{ github.event.head_commit.message }}'

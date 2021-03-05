@@ -15,7 +15,6 @@ namespace sparta
 {
     namespace memory
     {
-        class DMI_DEPRECATED;
         class TranslationIF;
 
         /*!
@@ -232,47 +231,15 @@ namespace sparta
             }
 
             /**
-             * \brief Return a DMI if possible. Default implementation
-             * returns false for no dmi
-             * \note implementations of getDMI should try to return the largest DMI possible.
-             * The start pointer if possible can start below addr. We only require that addr
-             * fall in the valid range of the DMI.
-             * \param addr the post-translated address which is the start
-             * of the DMI.
-             * \param size the number of bytes you expect the dmi to span,
-             * can be used for error checking that we get a dmi of the size we want.
-             * \param dmi gets populated with the correct dmi.
-             * \param supplement caller-defined object identifying this memory access
-             * for notifications & debug purposes. This pointer is passed to any
-             * subsequent memory interfaces. Can be any pointer, and nullptr
-             * indicates no info.
-             * \return is dmi created valid
-             */
-            virtual bool getDMI_DEPRECATED(const addr_t addr,
-                                           const addr_t size,
-                                           DMI_DEPRECATED &dmi,
-                                           const void *supplement = nullptr)
-            {
-                (void)addr;
-                (void)size;
-                (void)dmi;
-                (void)supplement;
-                return false;
-            }
-
-            /**
              * Returns a (possibly invalid) DMI
              *
              * \param addr A guest physical address that is to be accessed via DMI
              * \param callback Callback that is called when the DMI is invalidated
-             * \param supplement caller-defined object identifying this memory access
              */
             virtual DMI getDMI(const addr_t addr,
-                               const DMIInvalidationCallback &callback,
-                               const void *supplement = nullptr)
+                               const DMIInvalidationCallback &callback)
             {
-                (void)callback; (void) supplement;
-                return DMI::makeInvalid(addr);
+                return DMI(addr);
             }
 
             ////////////////////////////////////////////////////////////////////////
@@ -367,4 +334,3 @@ inline std::ostream& operator<<(std::ostream& out, const sparta::memory::Blockin
     }
     return out;
 }
-

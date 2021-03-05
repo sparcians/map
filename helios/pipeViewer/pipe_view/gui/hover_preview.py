@@ -10,6 +10,7 @@ import wx
 import wx.lib.newevent
 
 from gui.dialogs.watchlist_dialog import WatchListDlg
+from gui.font_utils import GetMonospaceFont
 
 # # @brief This new event triggers the canvas to just redraw the mouse-over text.
 # No update of the underlying view is executed on this event.
@@ -31,6 +32,60 @@ class HoverPreview:
 
     LINE_LENGTH = 50
 
+    # The hover will be rendered in a separate window so we don't have to deal with manually repainting the layout canvas
+    class HoverPreviewWindow(wx.PopupWindow):
+        def __init__(self, canvas, handler):
+            super(self.__class__, self).__init__(canvas.GetParent())
+            self.Show(False)
+            self.__canvas = canvas
+            self.__handler = handler
+            self.Bind(wx.EVT_ENTER_WINDOW, self.OnMouse)
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            self.__panel = wx.Panel(self)
+            self.__panel.SetFont(GetMonospaceFont(11))
+            self.__panel.SetForegroundColour(wx.BLACK)
+            self.__text_ctrl = wx.StaticText(self.__panel)
+            panel_sizer.Add(self.__text_ctrl)
+            self.__panel.SetSizer(panel_sizer)
+            sizer.Add(self.__panel,
+                      flag=wx.TOP | wx.BOTTOM | wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER,
+                      border=1)
+            self.SetSizer(sizer)
+
+        def UpdateInfo(self, element, annotation, text, position):
+            BORDER_LIGHTNESS = 70
+
+            _, brush = self.__canvas.UpdateTransactionColor(element, annotation)
+            color = brush.GetColour()
+            self.__panel.SetBackgroundColour(color)
+            self.SetBackgroundColour(color.ChangeLightness(BORDER_LIGHTNESS))
+            self.__text_ctrl.SetLabel(text)
+            width, height = self.GetBestSize()
+            visible_area = self.__canvas.GetVisibleArea()
+            x, y = position
+            box_right = x + width
+            box_bottom = y + height
+            if box_right > visible_area[2]: # off the right edge
+                # shift left
+                x -= (box_right - visible_area[2])
+            if box_bottom > visible_area[3]:
+                y -= (box_bottom - visible_area[3])
+
+            if x < 0 or y < 0:
+                return # screen too small
+
+            x, y = self.__canvas.ClientToScreen((x, y))
+            self.SetRect((x, y, width, height))
+
+        def AcceptsFocus(self):
+            return False
+
+        # Handle the corner case where the user manages to mouse over the window
+        def OnMouse(self, event):
+            self.__handler.DestroyWindow()
+
+
     def __init__(self, canvas, context):
         self.__canvas = canvas
         self.__context = context
@@ -41,6 +96,7 @@ class HoverPreview:
         self.show = False
         self.position = (0, 0)
         self.__last_move_tick = None
+        self.__window = None
 
         self.__fields = ['annotation']
 
@@ -104,13 +160,10 @@ class HoverPreview:
         '''
         return self.__value
 
-    def Redraw(self):
-        '''
-        Send a hover redraw event to the canvas to visually synch the data
-        '''
-        # issue a limited redraw event
-        hover_redraw = HoverRedrawEvent()
-        wx.PostEvent(self.__canvas, hover_redraw)
+    def GetWindow(self):
+        if not self.__window:
+            self.__window = HoverPreview.HoverPreviewWindow(self.__canvas, self)
+        return self.__window
 
     def HandleMenuClick(self, position):
         '''
@@ -338,7 +391,7 @@ class HoverPreview:
         loc = self.element.GetProperty('LocationString')
         watch.Add(loc, t_offset, relative = relative)
 
-    def HandleMouseMove(self, position, canvas):
+    def HandleMouseMove(self, position, canvas, redraw = True):
         '''
         Called when mouse move event happens in correct circumstances.
         hover needs to be enabled and mode needs to not be edit
@@ -346,7 +399,6 @@ class HoverPreview:
         # On a different tick for the same element, force an upate
         force_update = self.__context.GetHC() != self.__last_move_tick
         self.__last_move_tick = self.__context.GetHC()
-
         (x, y) = canvas.CalcUnscrolledPosition(position)
         hits = self.__context.DetectCollision((x, y), include_subelements = True)
         old_show_state = self.show
@@ -358,26 +410,18 @@ class HoverPreview:
                 # As long as we're showing the preview eventually, capture the position.
                 # offset our box slightly so pointer doesn't obscure the text
                 self.position = (position[0] + 10, position[1] + 10)
-                e = hit.GetElement()
                 if force_update or self.IsDifferent(e):
                     self.__SetElement(hit)
 
-        # check if last frame had no box
         is_dirty = old_show_state or self.show
         if is_dirty:
-            self.Redraw()
-
-    def SetElement(self, pair):
-        '''
-        Set the current element
-        @param pair Element_Value pair
-        '''
-        self.show = False
-
-        self.__SetElement(pair)
-
-        # Always redraw since element was explicitly set
-        self.Redraw()
+            self.GetWindow().UpdateInfo(self.element, self.annotation, self.__value, self.position)
+            if self.__value:
+                self.GetWindow().Show(True)
+            else:
+                self.DestroyWindow()
+        elif not self.show:
+            self.DestroyWindow()
 
     def __SetElement(self, pair):
         '''
@@ -433,6 +477,13 @@ class HoverPreview:
                 # No idea what to print for whatever type of element this is
                 self.annotation = repr(e)
                 self.SetValue(self.annotation)
+
+    def DestroyWindow(self):
+        if self.__window:
+            self.__window.Disable()
+            self.__window.Show(False)
+            self.__window.DestroyLater()
+            self.__window = None
 
 
 class HoverPreviewOptionsDialog(wx.Dialog):

@@ -23,7 +23,7 @@ add_custom_command(OUTPUT transactiondb.sh
   TARGETDIR="lib"
   BUILD_MODULES="transactiondb"
   REQUIRED_SPARTA_LIBS="sparta"
-  LIB_SPARTA_BUILT_PATH="${CMAKE_BINARY_DIR}/sparta"
+  LIB_SPARTA_BUILT_PATH="${MAP_BINARY_DIR}/sparta"
   CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
   python3 ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --inplace;' > transactiondb.sh && chmod +x transactiondb.sh
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/setup.py)
@@ -39,7 +39,6 @@ add_custom_command(OUTPUT lib/transactiondb.so
 add_custom_target (transactiondb_driver ALL DEPENDS
   lib/transactiondb.so
   ${TRANSACTIONDB_SRC_DIR}/common.pxd
-  ${TRANSACTIONDB_SRC_DIR}/intervalwindow.pyx
   ${TRANSACTIONDB_SRC_DIR}/transactiondb.pyx
   ${CMAKE_CURRENT_SOURCE_DIR}/setup.py
   ${TRANSACTIONDB_SRC_DIR}/Reader.hpp

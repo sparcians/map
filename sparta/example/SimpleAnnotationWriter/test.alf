@@ -1,0 +1,21 @@
+---
+- type: schedule
+  color: (192,192,192)
+  dimensions: (641, 1123)
+  position: (104, 2)
+  pixel_offset: 80
+  time_scale: 0.125
+  children:
+  - Content: auto_color_annotation
+    type: schedule_line
+    LocationString: top.test_location
+    color: (192,192,192)
+    dimensions: (640, 15)
+    position: (99, 2)
+    t_offset: -10
+- Content: caption
+  caption: Test Location
+  color: (192,192,192)
+  dimensions: (95, 15)
+  position: (10, 2)
+...

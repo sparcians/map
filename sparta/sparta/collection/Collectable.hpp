@@ -425,11 +425,12 @@ namespace sparta{
          * \note So, we handle that case by using remove_shared_ptr templated struct.
          */
         template<typename DataT, SchedulingPhase collection_phase>
-        class Collectable<DataT, collection_phase, MetaStruct::enable_if_t<
-            std::is_base_of<sparta::PairDefinition<MetaStruct::remove_any_pointer_t<DataT>>,
-                typename MetaStruct::remove_any_pointer_t<DataT>::SpartaPairDefinitionType>::value>> :
-                    public sparta::PairCollector<typename MetaStruct::remove_any_pointer_t<DataT>::SpartaPairDefinitionType>,
-                        public CollectableTreeNode {
+        class Collectable<DataT, collection_phase,
+                          MetaStruct::enable_if_t<
+                              std::is_base_of<sparta::PairDefinition<MetaStruct::remove_any_pointer_t<DataT>>,
+                                              typename MetaStruct::remove_any_pointer_t<DataT>::SpartaPairDefinitionType>::value>> :
+            public sparta::PairCollector<typename MetaStruct::remove_any_pointer_t<DataT>::SpartaPairDefinitionType>, public CollectableTreeNode
+        {
             // Aliasing the actual Datatype of the collectable being collected as Data_t
             typedef MetaStruct::remove_any_pointer_t<DataT> Data_t;
 
@@ -780,7 +781,7 @@ namespace sparta{
                 argos_record_.pairId = getUniquePairID_();
                 argos_record_.nameVector = getNameStrings();
                 argos_record_.sizeOfVector = getSizeOfVector();
-                argos_record_.valueVector = getDataVector();
+                argos_record_.valueVector = last_record_values_;
                 argos_record_.stringVector = getStringVector();
                 argos_record_.length = argos_record_.nameVector.size();
                 argos_record_.delimVector.emplace_back(getArgosFormatGuide());

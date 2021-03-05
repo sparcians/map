@@ -18,7 +18,7 @@ class WatchListDlg(wx.Frame):
 
         # create GUI
         wx.Frame.__init__(self, parent, -1, 'Watch List', size=(500,800),
-                       style=wx.MAXIMIZE_BOX|wx.RESIZE_BORDER|wx.CAPTION|wx.CLOSE_BOX)
+                       style=wx.MAXIMIZE_BOX|wx.RESIZE_BORDER|wx.CAPTION|wx.CLOSE_BOX|wx.SYSTEM_MENU)
         self.__list = TransactionList(self,
                              wx.NewId(),
                              parent.GetCanvas(),

@@ -400,6 +400,38 @@ namespace sparta
         }
 
         /*!
+         * \brief Specify producer event for the pipeline update event
+         * \param ev_handler The producer event handler
+         *
+         * \note Since pipeline update event happens on the Update phase,
+         * ev_handler is also expected to be on the same phase
+         */
+        template<typename EventType>
+        void setProducerForPipelineUpdate(EventType & ev_handler)
+        {
+            auto phase = ev_handler.getScheduleable().getSchedulingPhase();
+            sparta_assert(phase == SchedulingPhase::Update,
+                          "Cannot set producer event for pipeline update event, it's not on the Update phase!");
+            ev_handler.getScheduleable().precedes(ev_pipeline_update_.getScheduleable());
+        }
+
+        /*!
+         * \brief Specify consumer event for the pipeline update event
+         * \param ev_handler The consumer event handler
+         *
+         * \note Since pipeline update event happens on the Update phase,
+         * ev_handler is also expected to be on the same phase
+         */
+        template<typename EventType>
+        void setConsumerForPipelineUpdate(EventType & ev_handler)
+        {
+            auto phase = ev_handler.getScheduleable().getSchedulingPhase();
+            sparta_assert(phase == SchedulingPhase::Update,
+                          "Cannot set consumer event for pipeline update event, it's not on the Update phase!");
+            ev_pipeline_update_.getScheduleable().precedes(ev_handler.getScheduleable());
+        }
+
+        /*!
          * \brief Specify producer event for a designated pipeline stage
          *
          * \param id The stage number
@@ -684,6 +716,20 @@ namespace sparta
          * \param stage_id The stage number
          */
         DataT & operator[](const uint32_t & stage_id) { return pipe_.access(stage_id); }
+
+        /*!
+         * \brief Access (read-only) a specific stage of the pipeline
+         *
+         * \param stage_id The stage number
+         */
+        const DataT & at(const uint32_t & stage_id) const { return pipe_.read(stage_id); }
+
+        /*!
+         * \brief Access a specific stage of the pipeline
+         *
+         * \param stage_id The stage number
+         */
+        DataT & at(const uint32_t & stage_id) { return pipe_.access(stage_id); }
 
         /*!
          * \brief Indicate the validity of a specific pipeline stage

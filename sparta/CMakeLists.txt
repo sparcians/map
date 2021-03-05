@@ -5,6 +5,8 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project (sparta CXX)
 
+set (GEN_DEBUG_INFO ON CACHE BOOL "Genearate debug info in compile & link -g")
+
 set (SPARTA_BASE ${CMAKE_CURRENT_SOURCE_DIR})
 include (${SPARTA_BASE}/cmake/sparta-config.cmake)
 
@@ -101,9 +103,6 @@ if (COMPILE_WITH_PYTHON)
     python/sparta_support/Completer.cpp)
 endif ()
 
-add_library (sparta ${SourceCppFiles})
-set (SPARTA_STATIC_LIBS ${PROJECT_BINARY_DIR}/libsparta.a)
-
 execute_process (COMMAND bash "-c" "git describe --tags --always" OUTPUT_VARIABLE GIT_REPO_VERSION RESULT_VARIABLE rc)
 if (NOT rc EQUAL "0")
   message (FATAL_ERROR "could not run git command 'git describe --tags --always', rc=${rc}")
@@ -118,35 +117,68 @@ endif ()
 # build type.
 #
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  message ("-- Building Sparta in Debug mode")
+  message (STATUS "Building Sparta in Debug mode")
 elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
-  message ("-- Building Sparta in Release mode")
+  message (STATUS "Building Sparta in Release mode")
 else ()
   message (FATAL_ERROR "Unknown CMAKE_BUILD_TYPE.  See README.md OR type 'make' at the SPARTA root")
 endif ()
 
 string (STRIP ${GIT_REPO_VERSION} GIT_REPO_VERSION)
-message ("-- Sparta Version: ${GIT_REPO_VERSION}")
+message (STATUS "Sparta Version: ${GIT_REPO_VERSION}")
 
 # Use ccache if we've got it.
 find_program (CCACHE_PROGRAM ccache)
 if (CCACHE_PROGRAM)
   set_property (GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
-  message ("-- Using ccache")
+  message (STATUS "Using ccache")
 endif ()
 
 # -Wpedantic
 add_definitions(-DSPARTA_VERSION=\"${GIT_REPO_VERSION}\")
-add_compile_options(-g -Werror -fPIC
+add_compile_options(-Werror -fPIC
   -Wall -Wextra -Winline -Winit-self -Wno-unused-function
   -Wuninitialized -Wno-sequence-point -Wno-inline -Wno-unknown-pragmas
   -Woverloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers)
 
+if (GEN_DEBUG_INFO)
+  message (STATUS "Building with debug info -g")
+  add_compile_options ( -g )
+  add_link_options( -g )
+else ()
+  message (STATUS "Building without debug info -g")
+endif ()
+
 if (ENABLE_SANITIZERS)
-    message ("-- Building with address and undefined behavior sanitizers")
+    message (STATUS "Building with address and undefined behavior sanitizers")
     add_compile_options(-fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined)
     set (CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
 endif ()
+
+#
+# If we're using CONDA, we might be using the one suggested for
+# Sparta.  Need to use the llvm-ar found in the conda package to
+# prevent irritating linker issues
+#
+if (USING_CONDA)
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    unset(LLVM_AR)
+    unset(LLVM_AR CACHE)
+    find_program(LLVM_AR "llvm-ar")
+    if (NOT LLVM_AR)
+      unset(LLVM_AR)
+      unset(LLVM_AR CACHE)
+      find_program(LLVM_AR "llvm-ar-9")
+      if (NOT LLVM_AR)
+        message(FATAL_ERROR "llvm-ar is needed to link trace_tools on this system")
+      else()
+        SET(CMAKE_AR "llvm-ar-9")
+      endif()
+    else()
+      SET(CMAKE_AR "llvm-ar")
+    endif()
+  endif()
+endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # using Clang
@@ -166,10 +198,13 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 # CppCheck Support
 set (CPPCHECK_XML_OUTPUT "${PROJECT_BINARY_DIR}/analysis/cppcheck/cppcheck_analysis.xml")
 set (CPPCHECK_EXCLUDES
-  ${CMAKE_BINARY_DIR}
+  ${MAP_BINARY_DIR}
   ${SPARTA_BASE}/test
 )
 find_package (Cppcheck)
+
+add_library (sparta ${SourceCppFiles})
+set (SPARTA_STATIC_LIBS ${PROJECT_BINARY_DIR}/libsparta.a)
 
 # Build the SimDB library
 add_subdirectory (simdb)

@@ -145,6 +145,13 @@ namespace core_example
             // and we will use this pointer to query values from functions of ExampleInst class
             const ExampleInstPtr & getInstPtr() const { return ldst_inst_ptr_; }
 
+            // This is a function which will be added in the SPARTA_ADDPAIRs API.
+            uint64_t getInstUniqueID() const {
+                const ExampleInstPtr &inst_ptr = getInstPtr();
+
+                return inst_ptr == nullptr ? 0 : inst_ptr->getUniqueID();
+            }
+
             void setPhyAddrStatus(bool isReady) { phyAddrIsReady_ = isReady; }
             bool getPhyAddrStatus() const { return phyAddrIsReady_; }
 
@@ -202,10 +209,11 @@ namespace core_example
             MemoryAccessInfoPairDef() : PairDefinition<MemoryAccessInfo>(){
                 SPARTA_INVOKE_PAIRS(MemoryAccessInfo);
             }
-            SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("valid", &MemoryAccessInfo::getPhyAddrIsReady),
-                                SPARTA_ADDPAIR("mmu", &MemoryAccessInfo::getMMUState),
-                                SPARTA_ADDPAIR("cache", &MemoryAccessInfo::getCacheState),
-                                SPARTA_FLATTEN(&MemoryAccessInfo::getInstPtr));
+            SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("DID",   &MemoryAccessInfo::getInstUniqueID),
+                                  SPARTA_ADDPAIR("valid", &MemoryAccessInfo::getPhyAddrIsReady),
+                                  SPARTA_ADDPAIR("mmu",   &MemoryAccessInfo::getMMUState),
+                                  SPARTA_ADDPAIR("cache", &MemoryAccessInfo::getCacheState),
+                                  SPARTA_FLATTEN(         &MemoryAccessInfo::getInstPtr));
         };
 
         // Forward declaration of the Pair Definition class is must as we are friending it.
@@ -256,6 +264,13 @@ namespace core_example
             // and we will use this pointer to query values from functions of MemoryAccessInfo class
             const MemoryAccessInfoPtr & getMemoryAccessInfoPtr() const {
                 return mem_access_info_ptr_;
+            }
+
+            // This is a function which will be added in the SPARTA_ADDPAIRs API.
+            uint64_t getInstUniqueID() const {
+                const MemoryAccessInfoPtr &mem_access_info_ptr = getMemoryAccessInfoPtr();
+
+                return mem_access_info_ptr == nullptr ? 0 : mem_access_info_ptr->getInstUniqueID();
             }
 
             void setPriority(const IssuePriority & rank) {
@@ -310,9 +325,10 @@ namespace core_example
             LoadStoreInstInfoPairDef() : PairDefinition<LoadStoreInstInfo>(){
                 SPARTA_INVOKE_PAIRS(LoadStoreInstInfo);
             }
-            SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("rank", &LoadStoreInstInfo::getPriority),
-                                SPARTA_ADDPAIR("state", &LoadStoreInstInfo::getState),
-                                SPARTA_FLATTEN(&LoadStoreInstInfo::getMemoryAccessInfoPtr));
+            SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("DID",   &LoadStoreInstInfo::getInstUniqueID),
+                                  SPARTA_ADDPAIR("rank",  &LoadStoreInstInfo::getPriority),
+                                  SPARTA_ADDPAIR("state", &LoadStoreInstInfo::getState),
+                                  SPARTA_FLATTEN(         &LoadStoreInstInfo::getMemoryAccessInfoPtr));
         };
 
         void setTLB(SimpleTLB& tlb)

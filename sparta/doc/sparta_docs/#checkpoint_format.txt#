@@ -1,0 +1,56 @@
+/*!
+  \page checkpoint_format Checkpointing
+  \tableofcontents
+
+  Sparta supports Checkpoint of its functional components.  Objects in
+  the Sparta framework as well as user derived objects of
+  sparta::ArchData are automatically checkpointable.  Objects that are *not*
+  derivatives of sparta::ArchData can still be checkpointed --
+  see below.
+
+  Checkpoints are binary files and are not expected to be human
+  readable.
+
+  \subsection cp_classes Checkpointing Classes
+
+  Class | Brief Derivatives
+  ----- | -----------------
+  sparta::serialization::checkpoint::CheckpointError  | \copybrief sparta::serialization::checkpoint::CheckpointError &nbsp;
+  sparta::serialization::checkpoint::Checkpoint       | \copybrief sparta::serialization::checkpoint::Checkpoint &nbsp;
+  sparta::serialization::checkpoint::DeltaCheckpoint  | \copybrief sparta::serialization::checkpoint::DeltaCheckpoint &nbsp;
+  sparta::serialization::checkpoint::Checkpointer     | \copybrief sparta::serialization::checkpoint::Checkpointer &nbsp;
+  sparta::serialization::checkpoint::FastCheckpointer | \copybrief sparta::serialization::checkpoint::FastCheckpointer &nbsp;
+  sparta::serialization::checkpoint::PersistentFastCheckpointer | \copybrief sparta::serialization::checkpoint::PersistentFastCheckpointer &nbsp;
+
+  \subsection cp_support How to Checkpoint
+
+  Checkpointing is performed through the model and not from the
+  command line (unless added by the modeler).  Modelers using
+  checkpoints usually trigger the saving/restoring of a checkpoint by
+  an event or an activity in the model.  For example, saving a
+  checkpoint after the model detects that Linux has booted to its
+  login prompt.  Restoring can be performed via the model directly, a
+  command line option supplied by the modeler, a python shell command
+  (if the model is embedded into a python environment), or possibly
+  from a parameter if the modeler defines one:
+
+  ```
+  ./mymodel -p top.mysim.params.restore_from_checkpoint cp1
+  ```
+
+  There is really only one type of checkpointer -- the
+  sparta::serialization::checkpoint::FastCheckpointer.  This
+  checkpointer class implements the
+  sparta::serialization::checkpoint::Checkpointer interface providing
+  _in memory_ checkpointing.  If the modeler desires to save
+  checkpoints to disk, the modeler should use
+  sparta::serialization::checkpoint::PersistentFastCheckpointer, which
+  derives from sparta::serialization::checkpoint::FastCheckpointer.
+
+  See the detailed section of
+  sparta::serialization::checkpoint::Checkpointer for more information
+  on how to instantiate a fast or persistent checkpoint.  Keep in mind
+  that the first argument of the checkpointer's constructor is the
+  sparta::TreeNode _to start_ the search for checkpointable items.
+  
+ */

@@ -5,20 +5,19 @@ import wx
 import re
 import math
 import colorsys
+from logging import debug, error, info
 
 # Color expression namespace
 EXPR_NAMESPACE = {'re':re, 'colorsys':colorsys, 'math':math, 'extract':extract_value}
 
 from common cimport *
 from libc.stdlib cimport strtoul
-from libcpp.map cimport map
+from libcpp.unordered_map cimport unordered_map
 from cpython.ref cimport PyObject
 
 cimport cython
 
-cdef extern from "helpers.h":
-    ctypedef struct SwigPyObject:
-        void * ptr
+from libcpp cimport bool
 
 cdef extern from "wx/defs.h":
 
@@ -35,8 +34,6 @@ cdef extern from "wx/colour.h":
                  ChannelType green,
                  ChannelType blue)
         wxColour(unsigned long colRGB)
-        # wxColour(wxString colourName) # const &
-        # wxColour(wxChar *colourName) # const*
         int GetRGB()
 
 cdef extern from "wx/bitmap.h":
@@ -51,7 +48,7 @@ cdef extern from "wx/pen.h":
         wxPen(wxColour colour, # const &
               int width) # =1
 
-        SetColour(wxColour colour) # const &
+        void SetColour(wxColour colour) # const &
 
     ctypedef wxPen const_wxPen "wxPen const"
 
@@ -100,15 +97,8 @@ cdef extern from "wx/string.h":
     cdef cppclass wxString:
         wxString()
         wxString(wxString) # const &
-        # wxString(wxChar ch,
-        #         size_t nRepeat) # =1
-        # wxString(wxChar*) # const
         wxString(const char *) # const
         const char * ToAscii() # const
-
-# cdef extern from "wx/string.h" namespace "wxString":
-        # Static converter that is explicit and safe across unicode builds
-        # wxString FromAscii(const char*) # const char *
 
 cdef extern from "wx/font.h":
 
@@ -127,9 +117,9 @@ cdef extern from "wx/font.h":
         wxFONTWEIGHT_BOLD,
         wxFONTWEIGHT_MAX
 
-cdef extern from "wx/dc.h":
+cdef extern from "wx/dcgraph.h":
 
-    cdef cppclass wxDC:
+    cdef cppclass wxGCDC:
         void SetFont(wxFont font) # const &
         void SetPen(wxPen pen) # const &
         void SetBrush(wxBrush brush) # const &
@@ -177,10 +167,17 @@ cdef extern from "wx/dc.h":
                   wxCoord ydest,
                   wxCoord width,
                   wxCoord height,
-                  wxDC * source,
+                  wxGCDC * source,
                   wxCoord xsrc,
                   wxCoord ysrc) # Truncated argument list
 
+
+cdef extern from "helpers.h":
+    bool wxPyConvertWrappedPtr(PyObject* obj, void **ptr, const wxString& className)
+    wxGCDC* getDC_wrapped(PyObject* dc) except +
+    wxFont* getFont_wrapped(PyObject* font) except +
+    wxBrush* getBrush_wrapped(PyObject* brush) except +
+    void getTextExtent(wxGCDC* dc, long* char_width, long* char_height)
 
 def get_argos_version():
     return 1;
@@ -197,9 +194,18 @@ cpdef str extract_value(str s, str key, str separators = '=:', long skip_chars =
         return not_found
     return matches[0][skip_chars:]
 
+cdef wxGCDC* getDC(dc):
+    return getDC_wrapped(<PyObject*>dc)
+
+cdef wxFont* getFont(font):
+    return getFont_wrapped(<PyObject*>font)
+
+cdef wxBrush* getBrush(brush):
+    return getBrush_wrapped(<PyObject*>brush)
+
 cdef class Renderer(object):
 
-    cdef map[int, wxPen] c_pens_map
+    cdef unordered_map[int, wxPen] c_pens_map
     cdef dict __reason_brushes
     cdef dict __background_brushes
     cdef object __extensions
@@ -216,6 +222,8 @@ cdef class Renderer(object):
     cdef int NUM_ANNOTATION_SYMBOLS
     cdef char * ANNOTATION_SYMBOL_STRING
     cdef wxPen HIGHLIGHTED_PEN
+    cdef wxPen SEARCH_PEN
+    cdef wxPen HIGHLIGHTED_SEARCH_PEN
 
     def __cinit__(self, *args):
         self.NUM_REASON_COLORS = 16
@@ -223,6 +231,8 @@ cdef class Renderer(object):
         self.NUM_ANNOTATION_SYMBOLS = 52
         self.ANNOTATION_SYMBOL_STRING = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         self.HIGHLIGHTED_PEN = wxPen(wxColour(255, 0, 0), 2)
+        self.SEARCH_PEN = wxPen(wxColour(0, 0, 0), 2)
+        self.HIGHLIGHTED_SEARCH_PEN = wxPen(wxColour(0, 0, 255), 2)
 
     def __init__(self, *args):
         pass
@@ -231,7 +241,7 @@ cdef class Renderer(object):
         pass
 
     def __str__(self):
-        return '<PipeViewer Optimized Renderer>'
+        return '<pipeViewer Optimized Renderer>'
 
     def __repr__(self):
         return self.__str__()
@@ -263,14 +273,14 @@ cdef class Renderer(object):
                 next_idxs = filter(lambda x: x >= 0, (string_to_display.find(',', start_idx + 1), \
                                                      string_to_display.find(' ', start_idx + 1), \
                                                      string_to_display.find('\n', start_idx + 1)))
-                if len(next_idxs) == 0:
+                if not next_idxs:
                     field_value = string_to_display[start_idx:]
                 else:
                     next_idx = min(next_idxs)
                     field_value = string_to_display[start_idx:next_idx]
             try:
                 field_num = int(field_value, 16)
-            except:
+            except ValueError:
                 field_num = hash(field_value)
             string_to_display = chr(self.ANNOTATION_SYMBOL_STRING[field_num % self.NUM_ANNOTATION_SYMBOLS])
             background_idx = field_num % self.NUM_ANNOTATION_COLORS
@@ -294,13 +304,12 @@ cdef class Renderer(object):
         # - uop seq ID is first three hex digits
         #
         string_to_display = str(string_to_display)
-        field_value = ''
-        if (content_type == 'auto_color_annotation' or
-            content_type == 'auto_color_anno_notext' or
-            content_type == 'auto_color_anno_nomunge'):
+        if any([content_type == 'auto_color_annotation',
+                content_type == 'auto_color_anno_notext',
+                content_type == 'auto_color_anno_nomunge']):
 
             if field_string:
-                if field_type == 'string_key' or field_type == None:
+                if field_type == 'string_key' or field_type is None:
                     if content_type == 'auto_color_anno_nomunge':
                         # Preserve current annotation
                         _, brush = self.__fieldStringColorization(string_to_display, field_string)
@@ -320,8 +329,8 @@ cdef class Renderer(object):
                         else:
                             pass # Preserve current display string
                     except:
-                        print('Error: expression "{}"" raised exception on input "{}":'.format(field_string, string_to_display))
-                        print(sys.exc_info())
+                        error('Error: expression "{}"" raised exception on input "{}":'.format(field_string, string_to_display))
+                        error(sys.exc_info())
                         string_to_display = '!'
                 elif field_type == 'python_func':
                     func = self.__extensions.GetFunction(field_string)
@@ -334,25 +343,26 @@ cdef class Renderer(object):
                             else:
                                 pass # Preserve current display string
                         except:
-                            print('Error: function "{}"" raised exception on input "{}":'.format(field_string, string_to_display))
-                            print(sys.exc_info())
+                            error('Error: function "{}"" raised exception on input "{}":'.format(field_string, string_to_display))
+                            error(sys.exc_info())
                             string_to_display = '!'
                     else:
-                        print ('Error: function "{}" can not be loaded.'.format(field_string))
-                if brush == None:
+                        error('Error: function "{}" can not be loaded.'.format(field_string))
+                if brush is None:
                     brush = wx.TheBrushList.FindOrCreateBrush(wx.WHITE, wx.SOLID)
                 return string_to_display, brush
             else:
-                seq_id_str = string_to_display[:3]
-
+                seq_id_str = string_to_display[:3].strip()
                 if (len(seq_id_str) >= 3 and seq_id_str[0] == 'R'):
                     #--------------------------------------------------
                     # This is a "reason" instead of a "uop"
                     #
-                    c_seq_id_str = seq_id_str[1]
+                    seq_id_str = seq_id_str[1:] # Ignore 'R'
+                    byte_str = seq_id_str.encode('UTF-8')
+                    c_seq_id_str = byte_str
                     c_seq_id = strtoul(c_seq_id_str, & c_endptr, 16) # hex
 
-                    if c_endptr != c_seq_id_str:
+                    if c_endptr == c_seq_id_str + len(seq_id_str):
                         #--------------------------------------------------
                         # We found a valid seq id, so use the new colorization method
                         #
@@ -360,14 +370,15 @@ cdef class Renderer(object):
                         if (content_type != 'auto_color_anno_nomunge'):
                             string_to_display = string_to_display[2:]
                         return string_to_display, self.__reason_brushes[c_seq_id % self.NUM_REASON_COLORS]
-                else:
+                elif seq_id_str:
                     #--------------------------------------------------
                     # This is not a "reason" and may be a "uop"
                     #
-                    c_seq_id_str = seq_id_str
+                    byte_str = seq_id_str.encode('UTF-8')
+                    c_seq_id_str = byte_str
                     c_seq_id = strtoul(c_seq_id_str, & c_endptr, 16) # hex
 
-                    if c_endptr != c_seq_id_str:
+                    if c_endptr == c_seq_id_str + len(seq_id_str):
                         #--------------------------------------------------
                         # We found a valid seq id, so use the new colorization method
                         #
@@ -376,62 +387,45 @@ cdef class Renderer(object):
                             string_to_display = chr(c_symbol) + string_to_display[3:]
                         return string_to_display, self.__background_brushes[c_seq_id % self.NUM_ANNOTATION_COLORS]
         else:
-            if (content_type == 'caption' and
-                len(string_to_display) >= 3 and
-                string_to_display[:2] == 'C='):
-                c_seq_id_str = string_to_display[2]
+            if all([content_type == 'caption',
+                    len(string_to_display) >= 3,
+                    string_to_display[:2] == 'C=']):
+                byte_str = string_to_display[2].encode('UTF-8')
+                c_seq_id_str = byte_str
                 c_seq_id = strtoul(c_seq_id_str, & c_endptr, 16) # hex
 
                 if c_endptr != c_seq_id_str:
                     #--------------------------------------------------
                     # We found a valid seq id, so use the new colorization method
                     #
-                    reason_idx = c_seq_id % self.NUM_REASON_COLORS
 
                     string_to_display = string_to_display[4:]
                     return string_to_display, self.__reason_brushes[c_seq_id % self.NUM_REASON_COLORS]
         return string_to_display, wx.TheBrushList.FindOrCreateBrush(wx.WHITE, wx.SOLID)
 
     def setFontFromDC(self, dc):
-        print(dc.__dict__)
-        print(dc)
-        #cdef wxDCImpl *c_dc = dc.GetImpl()
-        #cdef SwigPyObject * ptr = < SwigPyObject *> dc.this
-        #cdef wxDC * c_dc = < wxDC *> ptr.ptr
-        cdef wxString * wx_str = NULL
-        cdef const char * m_str = "m"
-
-        font = dc.GetFont()
-        ptr = < SwigPyObject *> font.this
-        # ptr = < SwigPyObject *> font
-        self.c_font = (< wxFont *> ptr.ptr)[0]
+        self.c_font = getFont(dc.GetFont())[0]
         self.c_bold_font = wxFont(self.c_font)
         self.c_bold_font.MakeBold()
 
-        # TODO the return from GetTextExtent is not used, so what is the point?
-        if self.c_font.IsFixedWidth() == True:
-            pass
-            '''
-            wx_str = new wxString(m_str) # Some character... it's fixed pitch
-            #c_dc.GetTextExtent(cython.operator.dereference(wx_str), self.c_char_width, self.c_char_height)
-            del wx_str
-            '''
+        if self.c_font.IsFixedWidth():
+            getTextExtent(getDC(dc), &self.c_char_width, &self.c_char_height)
 
     def drawInfoRectangle(self,
-                            dc,
-                            canvas,
-                            rect,
-                            annotation,
-                            missing_needed_loc,
-                            content_type,
-                            auto_color, # type, basis
-                            clip_x, # (start, width)
-                            schedule_settings = None,
-                            short_format = ''):
-                            # schedule_settings: (period_width, 0/1/2 (none/dots/boxed))
-        cdef SwigPyObject * ptr = < SwigPyObject *> dc.this
-        cdef wxDC * c_dc = < wxDC * ? > ptr.ptr
-        assert c_dc != NULL
+                          tick,
+                          element,
+                          dc,
+                          canvas,
+                          rect,
+                          annotation,
+                          missing_needed_loc,
+                          content_type,
+                          auto_color, # type, basis
+                          clip_x, # (start, width)
+                          schedule_settings = None,
+                          short_format = ''):
+                          # schedule_settings: (period_width, 0/1/2 (none/dots/boxed))
+        cdef wxGCDC * c_dc = getDC(dc)
 
         cdef int c_x
         cdef int c_y
@@ -461,29 +455,35 @@ cdef class Renderer(object):
             string_to_display = ''
             brush = wx.TheBrushList.FindOrCreateBrush((160, 160, 160), wx.CROSSDIAG_HATCH) # no guarantees this is fast
             highlighted = False
+            search_result = False
         else:
             record = canvas.GetTransactionColor(annotation, content_type, auto_color[0], auto_color[1])
             if record:
-                string_to_display, brush, highlighted, _ = record
+                string_to_display, brush, highlighted, search_result, _, _ = record
             else:
-                string_to_display, brush, highlighted = canvas.AddColoredTransaction(annotation, content_type, auto_color[0], auto_color[1])
+                string_to_display, brush, highlighted, search_result = canvas.AddColoredTransaction(annotation, content_type, auto_color[0], auto_color[1], tick, element)
 
-        if highlighted:
+        if highlighted or search_result:
             old_pen = c_dc.GetPen()
-            c_dc.SetPen(self.HIGHLIGHTED_PEN)
             c_dc.SetFont(self.c_bold_font)
             c_w -= 1
             c_h -= 1
             c_x += 1
             c_y += 1
+        if highlighted and search_result:
+            c_dc.SetPen(self.HIGHLIGHTED_SEARCH_PEN)
+        elif search_result:
+            c_dc.SetPen(self.SEARCH_PEN)
+        elif highlighted:
+            c_dc.SetPen(self.HIGHLIGHTED_PEN)
 
         # Graph C pointer to brush
-        ptr = < SwigPyObject *> brush.this
-        c_dc.SetBrush((< wxBrush *> ptr.ptr)[0])
+        c_dc.SetBrush(getBrush(brush)[0])
 
         if content_type == 'image':
             # Draw an image
-            dc.DrawBitmap(canvas.GetMongooseImage(), c_x, c_y)
+            #dc.DrawBitmap(image, c_x, c_y)
+            pass
         else: # auto
             # Draw text clipped to this element
 
@@ -507,18 +507,20 @@ cdef class Renderer(object):
 
                 period_width, div_type = schedule_settings
                 if content_type != 'auto_color_anno_notext' and \
-                                            len(string_to_display) and \
-                                            period_width >= self.c_char_width:
+                   string_to_display and \
+                   period_width >= self.c_char_width:
 
                     number_of_divs = c_w / period_width
 
                     # draw text
                     if div_type == 10 or short_format == 'multi_char': # RULER
-                        c_str = string_to_display
+                        byte_str = string_to_display.encode('UTF-8')
+                        c_str = byte_str
                         if 0 <= -x_offs < self.c_char_width * len(string_to_display):
                             c_dc.DrawText(wxString(c_str), < wxCoord > c_x + c_x_adj + x_offs, < wxCoord > c_y + c_y_adj)
                     else:
-                        c_str = string_to_display[0]
+                        byte_str = string_to_display[0].encode('UTF-8')
+                        c_str = byte_str
                         if 0 <= -x_offs < self.c_char_width:
                             c_dc.DrawText(wxString(c_str), < wxCoord > c_x + c_x_adj + x_offs, < wxCoord > c_y + c_y_adj)
 
@@ -527,9 +529,7 @@ cdef class Renderer(object):
                         y_coord = c_y + c_y_adj + 5
                         curr_x = c_x + c_x_adj + x_offs - 1 + period_width * 1.5
                         while curr_x < end_coord:
-                            c_dc.DrawRectangle(< wxCoord > curr_x,
-                                                < wxCoord > y_coord,
-                                                2, 2)
+                            c_dc.DrawRectangle(< wxCoord > curr_x, < wxCoord > y_coord, 2, 2)
                             curr_x += period_width
                     elif div_type == 2:
                         y_coord = c_y + c_y_adj
@@ -537,42 +537,41 @@ cdef class Renderer(object):
                         if x_offs == 0:
                             curr_x += period_width
                         while curr_x < end_coord:
-                            c_dc.DrawText(wxString(c_str), < wxCoord > (curr_x),
-                                                < wxCoord > (y_coord))
+                            c_dc.DrawText(wxString(c_str), < wxCoord > (curr_x), < wxCoord > (y_coord))
                             curr_x += period_width
             else:
                 # regular draw
                 c_dc.DrawRectangle(c_x, c_y, c_w, c_h)
                 if content_type != 'auto_color_anno_notext':
-                    c_str = string_to_display
-                    # Truncate text if possible
-                    if self.c_char_width != 0:
-                        c_num_chars = < int > (1 + (c_w / self.c_char_width));
-                        c_content_str_len = strlen(c_str)
-                        if c_num_chars < c_content_str_len:
-                            c_tmp_char = c_str[c_num_chars]
-                            c_str[c_num_chars] = '\0'.encode('utf-8')
-                            c_dc.DrawText(wxString(c_str), < wxCoord > c_x + c_x_adj, < wxCoord > c_y + c_y_adj)
-                            c_str[c_num_chars] = c_tmp_char
-
-                        elif c_content_str_len > 0:
-                            c_dc.DrawText(wxString(c_str), < wxCoord > c_x + c_x_adj, < wxCoord > c_y + c_y_adj)
-                    else:
+                    string_to_display = self.__truncateString(string_to_display, c_w)
+                    byte_str = string_to_display.encode('UTF-8')
+                    c_str = byte_str
+                    if len(string_to_display):
                         c_dc.DrawText(wxString(c_str), < wxCoord > c_x + c_x_adj, < wxCoord > c_y + c_y_adj)
-        if highlighted:
+        if highlighted or search_result:
             c_dc.SetPen(old_pen)
             c_dc.SetFont(self.c_font)
 
+    def __truncateString(self, string_to_display, c_w):
+        # Truncate text if possible
+        if self.c_char_width:
+            num_chars = int(1 + (c_w / self.c_char_width))
+            str_len = len(string_to_display)
+            if num_chars < str_len:
+                return string_to_display[:num_chars]
+            return string_to_display
+        return string_to_display
+
     def drawElements(self, dc, canvas, tick):
-        """Draw elements in the list to the given dc
         """
+        Draw elements in the list to the given dc
+        """
+
         elements = canvas.GetDrawPairs() # Uses bounds
         xoff, yoff = canvas.GetRenderOffsets()
-        background_brushes, reason_brushes = canvas.GetBrushes()
+        _, reason_brushes = canvas.GetBrushes()
 
-        cdef SwigPyObject * ptr = < SwigPyObject *> dc.this
-        cdef wxDC * c_dc = < wxDC * ? > ptr.ptr
-        assert c_dc != NULL
+        cdef wxGCDC * c_dc = getDC(dc)
 
         cdef wxColour c_color
         cdef wxPen c_pen
@@ -624,7 +623,7 @@ cdef class Renderer(object):
                 c_dc.SetPen(c_pen)
 
             c_dc.SetClippingRegion(c_x, c_y, c_w, c_h)
-            self.drawInfoRectangle(dc, canvas,
+            self.drawInfoRectangle(tick, e, dc, canvas,
                                    (c_x, c_y, c_w, c_h),
                                    string_to_display,
                                    pair.IsMissingLocation(),

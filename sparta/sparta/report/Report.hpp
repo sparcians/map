@@ -13,7 +13,7 @@
 #include <iomanip>
 #include <sstream>
 #include <unordered_map>
-#include <math.h>
+#include <cmath>
 
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/kernel/Scheduler.hpp"
@@ -99,18 +99,23 @@ namespace sparta
          */
         static std::string formatNumber(double val,
                                         bool float_scinot_allowed=true,
-                                        int32_t decimal_places=-1) {
+                                        int32_t decimal_places=-1)
+        {
             std::stringstream o;
+            double integral;
+            double fractional = std::modf(val, &integral);
             if(std::isnan(val)){
                 return "nan";
             }else if(std::isinf(val)){
                 o << val; // Use built-in conversion (e.g. +inf, -inf)
-            }else if(((uint64_t)val) == val && val >= 0 && val <= ~(uint64_t)0){
-                // This is an integer. Do not allow scientific notation
-                o << (uint64_t)val;
-            }else if(((int64_t)val) == val && val < 0 && val >= ~(int64_t)0){
-                // This is an integer. Do not allow scientific notation
-                o << static_cast<int64_t>(val);
+            }else if(fractional == 0){
+                if(val < 0) {
+                    // Print as a straight integer, no decimals
+                    o << (int64_t)integral;
+                }
+                else {
+                    o << (uint64_t) integral;
+                }
             }else{
                 if(decimal_places >= 0){
                     o << std::setprecision(static_cast<uint32_t>(decimal_places));
@@ -1689,4 +1694,3 @@ namespace sparta
     }
 
 } // namespace sparta
-

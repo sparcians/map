@@ -15,12 +15,13 @@ class SearchDialog(wx.Frame):
 
     def __init__(self, parent):
         self.__context = parent.GetContext()
+        self.__canvas = parent.GetCanvas()
         self.__search_handle = self.__context.searchhandle
         self.__full_results = []
         self.__filters = []
         # initialize graphical part
         wx.Frame.__init__(self, parent, -1, 'Search', size=(700,600),
-            style=wx.MAXIMIZE_BOX|wx.RESIZE_BORDER|wx.CAPTION|wx.CLOSE_BOX)
+            style=wx.MAXIMIZE_BOX|wx.RESIZE_BORDER|wx.CAPTION|wx.CLOSE_BOX|wx.SYSTEM_MENU)
 
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.__filter_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -43,7 +44,7 @@ class SearchDialog(wx.Frame):
         self.__location_to_search = LocationEntry(self.__initial_search, 'top', location_tree)
         sizer.Add(self.__location_to_search, 0, wx.EXPAND)
 
-        self.__use_regex = wx.CheckBox(self.__initial_search, wx.NewId(), 'Use Boost Regex')
+        self.__use_regex = wx.CheckBox(self.__initial_search, wx.NewId(), 'Use Regex')
         self.__use_regex.SetValue(False)
         sizer.Add(self.__use_regex)
 
@@ -117,11 +118,24 @@ class SearchDialog(wx.Frame):
         else:
             evt.Skip()
 
+    def __AddResult(self, entry):
+        self.__results_box.Add(entry)
+        self.__context.AddSearchResult(entry)
+
+    def __ClearResults(self):
+        self.__results_box.Clear()
+        self.__context.ClearSearchResults()
+
+    def __UpdateSearchHighlighting(self):
+        self.__canvas.UpdateTransactionHighlighting()
+        self.__context.RedrawHighlightedElements()
+        self.__canvas.FullUpdate()
+
     def ApplyFilters(self):
         # full N time complexity for any call because not doing incrementally
         # to speed up, keep track of currently already applied filters
         self.__results_box.Colorize(self.__colorize.GetValue())
-        self.__results_box.Clear()
+        self.__ClearResults()
         self.__results_box.RefreshAll()
         for entry in self.__full_results:
             for filter in self.__filters:
@@ -129,7 +143,9 @@ class SearchDialog(wx.Frame):
                     break
             else:
                 # we have a result
-                self.__results_box.Add(entry)
+                self.__AddResult(entry)
+
+        self.__UpdateSearchHighlighting()
 
     def OnSearch(self, evt):
         wx.BeginBusyCursor()
@@ -171,13 +187,13 @@ class SearchDialog(wx.Frame):
         SEARCH_LIMIT = 10000 ## @todo Move this into Search function
 
         self.__results_box.Colorize(self.__colorize.GetValue())
-        self.__results_box.Clear()
+        self.__ClearResults()
         del self.__full_results
         self.__full_results = []
         self.__results_box.RefreshAll()
         visible_locations = self.__context.GetVisibleLocations()
 
-        #location_root_search = str(self.__location_to_search.GetValue()).translate(None, '[]')
+        #location_root_search = str(self.__location_to_search.GetValue()).translate({ord(c): None for c in '[]'})
         location_root_search = self.__location_to_search.GetValue()
         if location_root_search is None:
             location_root_search = "[]"
@@ -186,22 +202,22 @@ class SearchDialog(wx.Frame):
         if self.__exclude_locations_not_shown.GetValue():
             for start, end, loc_id, annotation in results:
                 loc = convert_id_to_str(loc_id)
-                loc = str(loc).translate(None, '[]')
+                loc = str(loc).translate({ord(c): None for c in '[]'})
                 if loc.startswith(location_root_search) and loc_id in visible_locations:
                     entry = {'start':start, 'location':loc, 'annotation':annotation}
                     self.__full_results.append(entry)
-                    self.__results_box.Add(entry)
+                    self.__AddResult(entry)
                     if len(self.__full_results) == SEARCH_LIMIT:
                         truncated = True
                         break
         else:
              for start, end, loc, annotation in results:
                 loc = convert_id_to_str(loc)
-                loc = str(loc).translate(None, '[]')
+                loc = str(loc).translate({ord(c): None for c in '[]'})
                 if loc.startswith(location_root_search):
                     entry = {'start':start, 'location':loc, 'annotation':annotation}
                     self.__full_results.append(entry)
-                    self.__results_box.Add(entry)
+                    self.__AddResult(entry)
                     if len(self.__full_results) == SEARCH_LIMIT:
                         truncated = True
                         break
@@ -211,12 +227,15 @@ class SearchDialog(wx.Frame):
         self.__filter_sizer.Show(1) # current index of filter editor
         self.__AddFilter(SearchFilter(query, True, location=location_root_search, num_results=len(self.__full_results)))
         self.Layout()
+
+        self.__UpdateSearchHighlighting()
+
         wx.EndBusyCursor()
 
         if truncated is True:
             msg = 'Truncated search results to first {} results of {} total'.format(SEARCH_LIMIT, len(results))
             # Do not truncate here. This contains other locations.
-            print >> sys.stderr, msg
+            print(msg, file=sys.stderr)
             wx.MessageBox(msg)
 
     ## deletes filter and updates results.

@@ -27,6 +27,47 @@
 namespace sparta
 {
 
+    namespace sparta_sysc_utils {
+        /**
+         * Utility to convert SystemC time to Sparta time for
+         * scheduling events/sending data across ports
+         *
+         * \param sparta_clk  The Clock to use for the conversion
+         * \param sysc_offset The SystemC offset to convert
+         * \return The sparta::Clock::Cycle that be used to schedule an event/send data
+         *
+         * Example usage:
+         * \code
+         *
+         */
+        inline Clock::Cycle calculateSpartaOffset(const sparta::Clock * sparta_clk,
+                                                  sc_core::sc_time::value_type sysc_offset)
+        {
+            //
+            // This is a transaction coming from SysC that is on SysC's
+            // clock, not Sparta's.  Need to find the same tick cycle on
+            // the Sparta clock and align the time for the transaction.
+            // Keep in mind that Sparta's scheduler starts on tick 1, not
+            // 0 like SysC.
+            //
+            // For example,
+            //   - The Sparta's clock is at 7 ticks (6 from SysC POV, hence the - 1)
+            //   - The SysC clock is at 10 ticks
+            //   - The transaction's delay is 1 tick (to be fired at tick 11)
+            //
+            //   sysc_clock - sparta_clock + delay = 4 cycles on sparta clock (11)
+            //
+
+            // Send to memory with the given delay - NS -> clock cycles.
+            // The Clock is on the same freq as the memory block
+            auto current_sc_time = sc_core::sc_time_stamp().value();
+            const auto current_tick = sparta_clk->currentTick() - 1;
+            sparta_assert(sc_core::sc_time_stamp().value() >= current_tick);
+            const auto final_relative_tick = current_sc_time - current_tick + sysc_offset;
+            return final_relative_tick;
+        }
+    }
+
 //! \def SC_Sparta_SCHEDULER_NAME
 //! The name of the scheduler adapter
 #define SC_SPARTA_SCHEDULER_NAME  "SysCSpartaSchedulerAdapter"
@@ -42,7 +83,9 @@ namespace sparta
  * This class will allow a Sparta developer to interoperate a
  * Sparta-based simulator with the SystemC kernel.  The general rule
  * of thumb is that the Sparta scheduler is either always equal to or
- * lagging the SystemC scheduler, waiting to be woken up to advance.
+ * 1 cycle ahead of the SystemC scheduler.  The Sparta Scheduler will
+ * "sleep" waiting for SysC to catch up the next scheduled Sparta
+ * event.
  *
  * There are two ways to stop simulation using this adapter:
  *
@@ -63,19 +106,29 @@ namespace sparta
  */
 class SysCSpartaSchedulerAdapter : public sc_core::sc_module
 {
+
+    // Called by the Scheduler when a new event is scheduled
+    void wakeupAdapter_(const Scheduler::Tick&) {
+        sc_wake_sparta_.notify();
+        sparta_scheduler_->
+            deregisterForNotification<Scheduler::Tick,
+                                      SysCSpartaSchedulerAdapter,
+                                      &SysCSpartaSchedulerAdapter::wakeupAdapter_>(this, "item_scheduled");
+    }
+
 public:
 
     //! Register the process for SystemC
     SC_HAS_PROCESS(SysCSpartaSchedulerAdapter);
 
     //! Initialized the sc_module this adapter is part of
-    SysCSpartaSchedulerAdapter() :
+    SysCSpartaSchedulerAdapter(Scheduler * scheduler) :
         sc_module(sc_core::sc_module_name(SC_SPARTA_SCHEDULER_NAME)),
-        sc_ev_stop_simulation_(SC_SPARTA_STOP_EVENT_NAME)
+        sparta_scheduler_(scheduler),
+        sc_ev_stop_simulation_(SC_SPARTA_STOP_EVENT_NAME),
+        sc_wake_sparta_("sc_ev_wake_sparta")
     {
         SC_THREAD(runScheduler_);
-        sparta_scheduler_ = sparta::Scheduler::getScheduler();
-
         SC_METHOD(setSystemCSimulationDone);
         dont_initialize();
         sensitive << sc_ev_stop_simulation_;
@@ -168,18 +221,31 @@ private:
     //! SC_THREAD that runs the Sparta scheduler
     void runScheduler_()
     {
-        // Start simulation
-        sparta_scheduler_->run(1, true);
-        sparta_assert(sparta_scheduler_->getCurrentTick() == 0);
+        // Start simulation -- align the schedulers
         sparta_assert(sparta_scheduler_->nextEventTick() > 0);
 
-        do {
+        // Align the schedulers.  Sparta starts at tick 1
+        wait(sc_core::sc_time(double(1), sparta_sc_time_));
 
-            // Wait for the next clock edge
-            // Wait for either the next time slice. TODO: Add an event
-            // to wake the scheduler earlier if need be
-            wait(sc_core::sc_time(double(sparta_scheduler_->nextEventTick() -
-                                         sc_core::sc_time_stamp().value()), sparta_sc_time_));
+        do {
+            // If the Sparta Scheduler has nothing to do, put it to sleep
+            if(sparta_scheduler_->nextEventTick() == Scheduler::INDEFINITE) {
+                sparta_scheduler_->registerForNotification<Scheduler::Tick,
+                                                           SysCSpartaSchedulerAdapter,
+                                                           &SysCSpartaSchedulerAdapter::wakeupAdapter_>(this, "item_scheduled");
+                wait(sc_wake_sparta_);
+            }
+
+            //
+            // Wait for SysC to get to the next event time on the
+            // Sparta Scheduler, then advance Sparta
+            //
+            const sc_core::sc_time sysc_time = sc_core::sc_time_stamp();
+            if(sparta_scheduler_->nextEventTick() >= sysc_time.value()) {
+                // Wait until the sysc scheduled catches up with Sparta
+                wait(sc_core::sc_time(double(sparta_scheduler_->nextEventTick() - sysc_time.value()),
+                                      sparta_sc_time_));
+            }
 
             // Align to the posedge events in systemc
             wait(sc_core::SC_ZERO_TIME);
@@ -207,25 +273,24 @@ private:
 
     void advanceSpartaScheduler_()
     {
-        sc_core::sc_time sysc_time = sc_core::sc_time_stamp();
+        const sc_core::sc_time sysc_time = sc_core::sc_time_stamp();
 
-        // The SystemC scheduler will always lead or be exactly at
-        // the same tick as Sparta.  Following this rule allows safe
-        // assumptions in scheduling synchronization.
-        //
-        // If the Sparta Scheduler next tick is @ 1000 and we're at
-        // 500, we want to advance 500 ticks and end @ 1000.  The
-        // next event tick time should never be the same as
-        // current tick unless it's the beginning of simulation.
-        if(sysc_time.value() > sparta_scheduler_->getCurrentTick()) {
-            const bool exacting_run = true;
-            const bool measure_scheduler_time = false; // no need to do this
-            sparta_scheduler_->run(sysc_time.value() - sparta_scheduler_->getCurrentTick(),
-                                   exacting_run, measure_scheduler_time);
-        }
+        // The SystemC scheduler will always be exactly at the same
+        // tick as Sparta when this function is called.  Following
+        // this rule allows safe assumptions in scheduling
+        // synchronization.
+        sparta_assert(sysc_time.value() == sparta_scheduler_->nextEventTick());
+        sparta_assert(sparta_scheduler_->nextEventTick() >= sparta_scheduler_->getCurrentTick());
 
-        // Make sure we're in sync
-        sparta_assert(sysc_time.value() == sparta_scheduler_->getCurrentTick());
+        const bool exacting_run = true;
+        const bool measure_scheduler_time = false; // no need to do this
+        // Run to the next event scheduled and then run that cycle
+        sparta_scheduler_->run(sparta_scheduler_->nextEventTick() - sparta_scheduler_->getCurrentTick() + 1,
+                               exacting_run, measure_scheduler_time);
+
+        // Sparta should now be finished with the cycle at `sysc_time`
+        // and be exactly one cycle ahead of it.
+        sparta_assert(sysc_time.value() + 1 == sparta_scheduler_->getCurrentTick());
     }
 
     // Local copy of the sparta scheduler
@@ -242,6 +307,9 @@ private:
     sc_core::sc_event sc_ev_stop_simulation_;
     bool sc_stop_called_ = false;
 
+    // SystemC event that wakes the Sparta Scheduler
+    sc_core::sc_event sc_wake_sparta_;
+
     // Sparta Event (optional) that will be automatically scheduled if
     // the Sparta scheduler is finished and the driver needs to query systemc
     sparta::Scheduleable * sysc_query_event_ = nullptr;
@@ -250,4 +318,3 @@ private:
 };
 
 }
-

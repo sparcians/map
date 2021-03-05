@@ -1,10 +1,11 @@
 import wx
+from gui.font_utils import GetMonospaceFont
 
 ## This class is a GUI list control element that shows elements and allows selection of them.
 class ElementList(wx.ListCtrl):
     def __init__(self, parent, id, canvas, name='', style=wx.LC_REPORT|wx.SUNKEN_BORDER, properties=['element']):
         wx.ListCtrl.__init__(self, parent=parent, id=wx.NewId(), name=name, style=style)
-        self.SetFont(wx.Font(12, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, face='Monospace'))
+        self.SetFont(GetMonospaceFont(12))
 
         # used for coloring
         self.__canvas = canvas
@@ -46,7 +47,7 @@ class ElementList(wx.ListCtrl):
     def RefreshElement(self, index):
         element = self.__elements[index]
         for col_idx, prop in enumerate(self.__properties):
-            self.SetStringItem(index, col_idx, str(element.get(prop)))
+            self.SetItem(index, col_idx, str(element.get(prop)))
         color = (255, 255, 255)
         self.SetItemBackgroundColour(index, color)
 
@@ -54,7 +55,7 @@ class ElementList(wx.ListCtrl):
         return self.__element_ptrs[index]
 
     def __AddGraphicalElement(self, element):
-        self.InsertStringItem(self.__current_new_idx, str(element.get(self.__properties[0])))
+        self.InsertItem(self.__current_new_idx, str(element.get(self.__properties[0])))
         self.RefreshElement(self.__current_new_idx)
         self.__current_new_idx+=1
 

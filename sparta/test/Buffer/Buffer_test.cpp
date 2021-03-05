@@ -2,20 +2,21 @@
 
 
 #include <iostream>
-#include <inttypes.h>
+#include <cinttypes>
+#include <memory>
+#include <vector>
 
 #include "sparta/resources/Buffer.hpp"
-#include "sparta/sparta.hpp"
 #include "sparta/simulation/ClockManager.hpp"
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 #include "sparta/statistics/StatisticSet.hpp"
 #include "sparta/report/Report.hpp"
+#include "sparta/utils/SpartaSharedPointer.hpp"
 
-#include <boost/timer/timer.hpp>
-#include <vector>
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/statistics/CycleCounter.hpp"
+
 TEST_INIT;
 
 #define PIPEOUT_GEN
@@ -23,19 +24,47 @@ TEST_INIT;
 #define QUICK_PRINT(x) \
     std::cout << x << std::endl
 
-void testConstIterator();
+int32_t dummy_allocs = 0;
 
 struct dummy_struct
 {
     uint16_t int16_field;
     uint32_t int32_field;
     std::string s_field;
+    bool valueless = true;
 
-    dummy_struct() = default;
-    dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) : 
+    dummy_struct() {
+        ++dummy_allocs;
+    }
+
+    // For forwarding rvalue
+    dummy_struct(dummy_struct && orig) = default;
+    // :
+    //     int16_field(orig.int16_field),
+    //     int32_field(orig.int32_field),
+    //     s_field(std::move(orig.s_field)),
+    //     valueless(orig.valueless)
+    // {
+    //     ++dummy_allocs;
+
+    // }
+
+    dummy_struct & operator=(dummy_struct &&) = default;
+
+    // For non-forwarding
+    dummy_struct(const dummy_struct &) = default;
+    dummy_struct & operator=(const dummy_struct &) = default;
+
+    ~dummy_struct() { --dummy_allocs; }
+
+    dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) :
         int16_field{int16_field},
         int32_field{int32_field},
-        s_field{s_field} {}
+        s_field{s_field},
+        valueless(false)
+    {
+        ++dummy_allocs;
+    }
 };
 std::ostream &operator<<(std::ostream &os, const dummy_struct &obj)
 {
@@ -43,7 +72,7 @@ std::ostream &operator<<(std::ostream &os, const dummy_struct &obj)
     return os;
 }
 
-int main()
+void generalTest()
 {
     sparta::RootTreeNode rtn;
     sparta::Scheduler sched;
@@ -55,16 +84,16 @@ int main()
     sparta::StatisticSet buf10_stats(&rtn);
 
     sparta::Buffer<double> buf10("buf10_test", 10,
-                               root_clk.get(),
-                               &buf10_stats);
+                                 root_clk.get(),
+                                 &buf10_stats);
 
     sparta::Buffer<double> buf_inf("buf_inf_test", 1,
-                               root_clk.get(),
-                               &buf10_stats);
+                                   root_clk.get(),
+                                   &buf10_stats);
 
     sparta::Buffer<dummy_struct> buf_dummy("buf_pf_test", 4,
-                               root_clk.get(),
-                               &buf10_stats);
+                                           root_clk.get(),
+                                           &buf10_stats);
 
     rtn.setClock(root_clk.get());
 #ifdef PIPEOUT_GEN
@@ -97,6 +126,7 @@ int main()
         auto dummy_2 = dummy_struct(3, 4, "DEF");
         auto dummy_3 = dummy_struct(5, 6, "GHI");
         auto dummy_4 = dummy_struct(7, 8, "JKL");
+        const auto dummy_allocs_before = dummy_allocs;
         buf_dummy.push_back(std::move(dummy_1));
         EXPECT_TRUE(dummy_1.s_field.size() == 0);
         EXPECT_TRUE(buf_dummy.read(0).s_field == "ABC");
@@ -111,11 +141,18 @@ int main()
         buf_dummy.insert(++ritr, std::move(dummy_4));
         EXPECT_TRUE(dummy_4.s_field.size() == 0);
         EXPECT_TRUE(buf_dummy.read(2).s_field == "JKL");
+        EXPECT_EQUAL(dummy_allocs_before, dummy_allocs);
+        // The move constructor/assignment do not update dummy_allocs
+        // (reason for the test -- make sure the normal
+        // constructors/assignment operators are not called).  For the
+        // rest of this tester, adjust dummy_allocs
+        dummy_allocs += 4; // 4 move operations here
     }
 
     // Test perfect forwarding Buffer copy
     {
         buf_dummy.clear();
+        EXPECT_EQUAL(0, dummy_allocs);
         auto dummy_1 = dummy_struct(1, 2, "ABC");
         auto dummy_2 = dummy_struct(3, 4, "DEF");
         auto dummy_3 = dummy_struct(5, 6, "GHI");
@@ -150,6 +187,10 @@ int main()
         EXPECT_TRUE(buf_dummy.read(2).int16_field == 7);
         EXPECT_TRUE(buf_dummy.read(2).int32_field == 8);
         EXPECT_TRUE(buf_dummy.read(2).s_field == "JKL");
+        EXPECT_EQUAL(4, dummy_allocs);
+        dummy_allocs += 4; // The dummy_? objects will still be
+                           // destroyed decrementing this count even
+                           // though they were moved
     }
 
     // Test an empty buffer
@@ -160,6 +201,7 @@ int main()
     {
         i++;
     }
+    EXPECT_EQUAL(i, 0);
 
     // Testing the Infinite Buffer in this scope.
     {
@@ -295,8 +337,6 @@ int main()
         buf_inf.clear();
         EXPECT_EQUAL(buf_inf.size(), 0);
     }
-
-    EXPECT_EQUAL(i, 0);
 
     buf10.push_back(1234.5);
     EXPECT_TRUE(buf10.size() == 1);
@@ -526,17 +566,11 @@ int main()
 
     sched.run(5);
 
-    testConstIterator();
-
     rtn.enterTeardown();
 #ifdef PIPEOUT_GEN
     pc.destroy();
 #endif
-
-    REPORT_ERROR;
-    return ERROR_CODE;
 }
-
 
 struct B {
     uint32_t val = 5;
@@ -624,4 +658,102 @@ content:
     std::cout << r1 << std::endl;
 
     rtn.enterTeardown();
+}
+
+struct SimpleStruct
+{
+    SimpleStruct(int i = 0) : idx_(i)
+    {
+        ++simple_allocs;
+    }
+
+    ~SimpleStruct()
+    {
+        --simple_allocs;
+    }
+
+    SimpleStruct(SimpleStruct&&orig) :
+        idx_(orig.idx_)
+    {
+        ++simple_allocs;
+    }
+
+    uint32_t idx_ = 0;
+    static uint32_t simple_allocs;
+};
+uint32_t SimpleStruct::simple_allocs = 0;
+std::ostream & operator<<(std::ostream &os, const SimpleStruct &)
+{
+    return os;
+}
+
+template<class PtrT>
+void testPointerTypes()
+{
+    using DummyPtr = PtrT;
+    sparta::Buffer<DummyPtr> my_buff("my_dummy_buff", 10, nullptr);
+    DummyPtr ptr;
+    my_buff.push_back(ptr = PtrT(new typename PtrT::element_type(1, 2, "XYZ")));
+    EXPECT_EQUAL(ptr.use_count(), 2);
+    my_buff.erase(my_buff.begin());
+    EXPECT_EQUAL(ptr.use_count(), 1);
+    EXPECT_TRUE(ptr != nullptr);
+}
+
+void testInvalidates()
+{
+    EXPECT_EQUAL(dummy_allocs, 0);
+    uint32_t starting_allocs = 0;
+
+    // The buffer will allocate 2x the number of elements
+    sparta::Buffer<dummy_struct> my_buff("my_dummy_buff", 10, nullptr);
+    EXPECT_EQUAL(starting_allocs, dummy_allocs);
+
+    my_buff.push_back(dummy_struct(1, 2, "XYZ"));
+    // Nothing new should have been allocated -- object moved
+    EXPECT_EQUAL(starting_allocs, dummy_allocs);
+
+    my_buff.push_back(dummy_struct(3, 4, "ABC"));
+    // Nothing new should have been allocated -- object moved
+    EXPECT_EQUAL(starting_allocs, dummy_allocs);
+
+    my_buff.erase(my_buff.begin());
+    // Should have one deallocation
+    EXPECT_EQUAL(starting_allocs - 1, dummy_allocs);
+
+    my_buff.erase(my_buff.begin());
+
+    EXPECT_EQUAL(starting_allocs - 2, dummy_allocs);
+    for(uint32_t i = 0; i < my_buff.capacity(); ++i) {
+        my_buff.push_back(dummy_struct(i, i+1, "XYZ"));
+    }
+    EXPECT_EQUAL(starting_allocs - 2, dummy_allocs);
+
+    my_buff.clear();
+    EXPECT_EQUAL(starting_allocs - 12, dummy_allocs);
+
+    sparta::Buffer<uint32_t> my_simple_buff("my_simple_buff", 10, nullptr);
+    my_simple_buff.push_back(1);
+    my_simple_buff.erase(my_simple_buff.begin());
+
+    EXPECT_EQUAL(SimpleStruct::simple_allocs, 0);
+    sparta::Buffer<SimpleStruct> my_simple_struct("my_simple_struct", 10, nullptr);
+    EXPECT_EQUAL(SimpleStruct::simple_allocs, 0);
+    my_simple_struct.push_back(SimpleStruct(0)); // another move
+    EXPECT_EQUAL(SimpleStruct::simple_allocs, 1);
+    my_simple_struct.erase(my_simple_struct.begin());
+    EXPECT_EQUAL(SimpleStruct::simple_allocs, 0);
+}
+
+
+int main()
+{
+    testPointerTypes<std::shared_ptr<dummy_struct>>();
+    testPointerTypes<sparta::SpartaSharedPointer<dummy_struct>>();
+    generalTest();
+    testConstIterator();
+    testInvalidates();
+
+    REPORT_ERROR;
+    return ERROR_CODE;
 }

@@ -823,12 +823,14 @@ INPUT                  = sparta_docs           \
                          ../sparta/app/        \
                          ../sparta/collection/ \
                          ../sparta/events/     \
+                         ../sparta/functional/     \
                          ../sparta/kernel/     \
                          ../sparta/log/        \
                          ../sparta/memory/     \
                          ../sparta/ports/      \
                          ../sparta/resources/  \
                          ../sparta/simulation/ \
+                         ../sparta/serialization/ \
                          ../sparta/statistics/ \
                          ../sparta/utils/      \
                          ../example/CoreModel  \

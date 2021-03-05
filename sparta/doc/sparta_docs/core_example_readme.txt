@@ -122,50 +122,191 @@
   ======================================================================
   \section Building
 
-  To build the CoreExample, simply type 'make' in the
-  example/CoreModel directory.
+  To build the CoreExample, simply type `make` in the
+  `example/CoreModel` directory.
 
   Refer to builtin help for up-to-date help and commands, but try running
   the model with the '-h' option.
 
   \code
-  ./bld-Linux_x86_64-gcc4.7/sparta_core_example -h
-  ./bld-Linux_x86_64-gcc4.7/sparta_core_example --verbose-help
+  % ./sparta_core_example -h
+  % ./sparta_core_example --verbose-help
+  % ./sparta_core_example --help-topic reporting
   \endcode
+
+  Most of the commands listed in the help are directly from the Sparta
+  framework and not `sparta_core_example`.  These are "free" commands
+  the framework provides (via sparta::app::CommandLineSimulator).  The
+  modeler is _not_ required to use this class for simulation.
 
   ======================================================================
   \section Invocations
+
+  \subsection run_config_core_example Running/Configuring
+
+  Dump out the parameters:
+
+  \code
+  % ./sparta_core_example --no-run \
+                          --write-final-config-verbose params.yaml
+  \endcode
+
+  Read in parameters from a file and/or change via the command line.
+  Parameters are set _in the order_ in which they are read from the
+  command line.
+
+  \code
+  % ./sparta_core_example -c params.yaml -p top.cpu.core?.fetch.params.num_to_fetch 2
+
+    [in] Configuration: Node "" <- file: "params.yaml"
+    [in] Configuration: Parameter "top.cpu.core?.fetch.params.num_to_fetch" <- value: "2"
+  \endcode
 
   Run for 1 million cycles, incrementing a ctr every 1000 cycles.
   Consume the config file test.yaml and produce a final yaml file called
   final.yaml.  Also, dump the tree:
 
   \code
-  ./bld-Linux_x86_64-gcc4.7/sparta_core_example -r 1M \
+  % ./sparta_core_example -r 1M \
                        --show-tree -p top.core0.params.ctr_incr_period 1000 \
                        -c test.yaml --write-final-config final.yaml
   \endcode
 
-  Dump out the parameters:
+  \subsection debugging_logging_core_example Debugging/Logging
+
+  Enable a Decode "info" log for 1,000 cycles.
 
   \code
-  ./bld-Linux_x86_64-gcc4.7/sparta_core_example --no-run \
-                        --write-final-config-verbose params.yaml
+  % ./sparta_core_example -r 1K -l top.cpu.core?.decode info decode.out
   \endcode
 
-  Dump out a report in html:
+  Enable a Decode and Fetch "info" log for 1,000 cycles to the same file:
 
   \code
-  ./bld-Linux_x86_64-gcc4.7/sparta_core_example -r 1000000 --report-all output.html html
+  % ./sparta_core_example -r 1K -l top.cpu.core?.decode info fetch_decode.out \
+                                -l top.cpu.core?.fetch  info fetch_decode.out
   \endcode
 
-  Example parameter reference
+  Enable a Decode and Fetch "info" log for 1K cycles _after_ the
+  first 100K cycles:
+
   \code
-  -r1000000 (or -r 1M)        Runs for 1000000 'cycles'
-  --show-tree                 shows the Sparta device tree at every step
-  -p ...                      Sets the value of the parameter identified to 1000
-  -c test.yaml                Loads test.yaml at the global space and applies its parameters
-  --write-final-config ...    Writes to the selected file after tree finalization
+  % ./sparta_core_example --debug-on 100K -r 101K \
+                       -l top.cpu.core?.decode info fetch_decode.out \
+                       -l top.cpu.core?.fetch  info fetch_decode.out
   \endcode
+
+  Enable a Decode and Fetch "info" log for 1K instructiona _after_ the
+  first 100K instructions:
+
+  \code
+  % ./sparta_core_example --debug-on-icount 100K -i 101K \
+                       -l top.cpu.core?.decode info fetch_decode.out \
+                       -l top.cpu.core?.fetch  info fetch_decode.out
+  \endcode
+
+  \subsection reporting_core_example Generating Reports
+
+  Refer to \ref report_def_format for more details on Reports.
+
+  Dump out a full, simple report report in html:
+
+  \code
+  % ./sparta_core_example -r 1000000 --report-all output.html html
+  % ./sparta_core_example -r 1M --report-all output.html html  # Same command
+  \endcode
+
+  Dump out a full, simple report with rules.  The content is all
+  inclusive of the entire simulation tree (the "" on the command line)
+
+  \code
+  % cat simple_stats.yaml
+  content:
+  subreport:
+    name: AUTO
+    content:
+      autopopulate: true
+  % ./sparta_core_example -r 1M --report "" simple_stats.yaml my_report.txt text
+  \endcode
+
+  Dump out subset, but simple report with rules.  The content is
+  inclusive of the decode tree only for all cores:
+
+  \code
+  % cat simple_stats.yaml
+  content:
+  subreport:
+    name: AUTO
+    content:
+      autopopulate: true
+  % ./sparta_core_example -r 1M --report "top.cpu.core?.decode" simple_stats.yaml my_report.txt text
+  \endcode
+
+  Create a `ts_report.yaml` file to dump out a time-series CSV report
+  (must be run in `example/CoreModel` directory for the
+  `core_stats.yaml` file).  This is triggered on the stat
+  `total_number_retired` reaching 3500 insts or greater.  It's trigged
+  "on" only once.
+
+  \code
+  % cat > ts_report.yaml
+  content:
+
+  report:
+    pattern:   top.cpu.core0
+    def_file:  core_stats.yaml
+    dest_file: core0.csv
+    format:    csv
+    trigger:
+      start:   rob.stats.total_number_retired >= 3500
+      update-time: 5 ns
+   <ctrl-D>
+   % ./sparta_core_example -r 1M --report ts_report.yaml
+   \endcode
+
+  \subsection pipeouts_core_example Generating Pipeouts
+
+  Refer to
+  https://github.com/sparcians/map/tree/master/helios/pipeViewer for
+  directions on building/installing the MAP::Helios::Argos tools
+  preferably using the Conda tools.
+
+  Create a 10K instructions Pipeout:
+
+  \code
+  % pwd
+  $HOME/map/sparta/build/example/CoreModel
+  % ./sparta_core_example -i10K -z my_pipeout
+  \endcode
+
+  This will create a set of files for the Argos viewer:
+
+  \code
+  % ls -1 my_pipeout*
+  my_pipeoutclock.dat
+  my_pipeoutdata.dat
+  my_pipeoutdisplay_format.dat
+  my_pipeoutindex.bin
+  my_pipeoutlocation.dat
+  my_pipeoutmap.dat
+  my_pipeoutrecord.bin
+  my_pipeoutsimulation.info
+  my_pipeoutstring_map.dat
+  \endcode
+
+  Launch the MAP::Helio::Argos viewer (this assumes the correct
+  tools/libaries have been installed).  Note that the `cpu_layout.alf`
+  file is NOT in the build directory of the CoreModel.
+
+  \code
+  % pwd
+  $HOME/map/sparta/build/example/CoreModel
+  % python3 $HOME/map/helios/pipeViewer/pipe_view/argos.py \
+         -l $HOME/map/sparta/example/CoreModel/cpu_layout.alf \
+         -d my_pipeout
+
+  \endcode
+
+  The view that pops up is a _single-cycle_ view of the CPU.
 
 */

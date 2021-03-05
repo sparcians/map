@@ -1,7 +1,7 @@
 #include "sparta/sparta.hpp"
 
 #include <iostream>
-#include <inttypes.h>
+#include <cinttypes>
 
 #include "systemc.h"
 #include "sparta/ports/DataPort.hpp"
@@ -22,32 +22,16 @@ typedef sparta::DataOutPort<uint32_t> DataOutPortType;
 bool first_called = false;
 uint32_t events_fired = 0;
 
-uint32_t group_cursor = 0;
-const uint32_t offset = 1;
-uint32_t expected_groups[] = {
-    1 + offset,
-    2 + offset,
-    2 + offset,
-    3 + offset,
-    3 + offset,
-    3 + offset,
-    3 + offset,
-    4 + offset
-};
-uint32_t expected_fired = sizeof(expected_groups)/sizeof(expected_groups[0]);
-
 class InAndDataOutPort : sparta::TreeNode
 {
     sparta::PortSet ps_;
 public:
-    InAndDataOutPort(sparta::TreeNode *parent, const std::string& name, sparta::Clock* clk, uint32_t group) :
+    InAndDataOutPort(sparta::TreeNode *parent, const std::string& name, sparta::Clock* clk) :
         TreeNode(parent, name, "description"),
         ps_(this, "inanddataoutport_ps"),
         name_(name),
         in_port_(&ps_, "in_"+name),
-        out_port_(&ps_, "out_"+name),
-        clk_(clk),
-        expected_group_(group)
+        out_port_(&ps_, "out_"+name)
     {
         //Bind a callback to the inport.
         in_port_.registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(InAndDataOutPort, callback, uint32_t));
@@ -55,19 +39,13 @@ public:
 
     void callback(const uint32_t &)
     {
-        EXPECT_EQUAL(in_port_.getTickEvent().getGroupID(), expected_groups[group_cursor]);
-        ++group_cursor;
-
-        std::cout << "expected group: " << expected_group_ << " " << name_ << std::endl;
         ++events_fired;
     }
-
 
     //!Set this object's in port as dependent upon another port.
     void addDependency(InAndDataOutPort& helper)
     {
-        //helper.getDataInPort().precedes(in_port_);
-        helper.getDataInPort() >> in_port_;
+        helper.getDataInPort().precedes(in_port_);
         sparta::bind(out_port_, in_port_);
     }
     void bind()
@@ -79,19 +57,18 @@ public:
 
     void fire()
     {
-        out_port_.send(5, clk_, 50);
+        out_port_.send(5, 50);
     }
 
     uint32_t getPrecedenceGroup()
     {
-        return in_port_.getScheduleable().getGroupID();
+        return 0;
+        //return in_port_.getScheduleable().getGroupID();
     }
 private:
     std::string name_;
     DataInPortType in_port_;
     DataOutPortType out_port_;
-    sparta::Clock* clk_;
-    uint32_t expected_group_;
 
 };
 
@@ -107,14 +84,14 @@ public:
     //
     //
     DependencyTest(sparta::TreeNode * parent, sparta::Clock* clk) :
-        a(parent, "A", clk, expected_groups[0]),
-        b(parent, "B", clk, expected_groups[1]),
-        w(parent, "W", clk, expected_groups[2]),
-        z(parent, "Z", clk, expected_groups[3]),
-        x(parent, "X", clk, expected_groups[4]),
-        y(parent, "Y", clk, expected_groups[5]),
-        c(parent, "C", clk, expected_groups[6]),
-        f(parent, "F", clk, expected_groups[7]),
+        a(parent, "A", clk),
+        b(parent, "B", clk),
+        w(parent, "W", clk),
+        z(parent, "Z", clk),
+        x(parent, "X", clk),
+        y(parent, "Y", clk),
+        c(parent, "C", clk),
+        f(parent, "F", clk),
         clk_(clk)
     {
 
@@ -128,39 +105,16 @@ public:
         y.addDependency(b);
         c.addDependency(b);
     }
-    void scheduleEvents()
-    {
-        clk_->scheduleEvent(CREATE_SPARTA_HANDLER(DependencyTest, fire), 1);
-    }
+
     void checkDagFinalization()
     {
-        std::cout << "checking the precedence groupings were assigned correctly"
-            " to the ports" << std::endl;
-        EXPECT_EQUAL(a.getPrecedenceGroup(), expected_groups[0]);
-        EXPECT_EQUAL(b.getPrecedenceGroup(), expected_groups[1]);
-        EXPECT_EQUAL(w.getPrecedenceGroup(), expected_groups[2]);
-        EXPECT_EQUAL(z.getPrecedenceGroup(), expected_groups[3]);
-        EXPECT_EQUAL(x.getPrecedenceGroup(), expected_groups[4]);
-        EXPECT_EQUAL(y.getPrecedenceGroup(), expected_groups[5]);
-        EXPECT_EQUAL(c.getPrecedenceGroup(), expected_groups[6]);
-        EXPECT_EQUAL(f.getPrecedenceGroup(), expected_groups[7]);
-
-        EXPECT_EQUAL(sparta::Scheduler::getScheduler()->getDAG()->numGroups(), 7);
+        EXPECT_EQUAL(clk_->getScheduler()->getDAG()->numGroups(), 17);
     }
 
     void fire()
     {
         //Call a fire on a bunch of ports all at the same cycle,
         //see if our output is what was expected.
-        EXPECT_EQUAL(a.getPrecedenceGroup(), expected_groups[0]);
-        EXPECT_EQUAL(b.getPrecedenceGroup(), expected_groups[1]);
-        EXPECT_EQUAL(w.getPrecedenceGroup(), expected_groups[2]);
-        EXPECT_EQUAL(z.getPrecedenceGroup(), expected_groups[3]);
-        EXPECT_EQUAL(x.getPrecedenceGroup(), expected_groups[4]);
-        EXPECT_EQUAL(y.getPrecedenceGroup(), expected_groups[5]);
-        EXPECT_EQUAL(c.getPrecedenceGroup(), expected_groups[6]);
-        EXPECT_EQUAL(f.getPrecedenceGroup(), expected_groups[7]);
-
         c.fire();
         a.fire();
         x.fire();
@@ -180,45 +134,53 @@ public:
     InAndDataOutPort y;
     InAndDataOutPort c;
     InAndDataOutPort f;
-    sparta::Clock* clk_;
+    sparta::Clock* clk_ = nullptr;
 };
 
 int sc_main(int, char *[])
 {
-    sparta::Clock clk("clock");
-    EXPECT_TRUE(sparta::Scheduler::getScheduler()->getCurrentTick() == 0);
-    EXPECT_TRUE(sparta::Scheduler::getScheduler()->isRunning() == 0);
+    sparta::Scheduler sched;
+    sparta::Clock clk("clock", &sched);
 
-    // Test scheduler logging (general test of logging on global TreeNodes)
-    // First, find the scheduler node
+    EXPECT_TRUE(sched.getCurrentTick() == 1);
+    EXPECT_TRUE(sched.isRunning() == 0);
+
+    // Enable scheduler logging. Find the scheduler node and setup basic DEBUG message
     std::vector<sparta::TreeNode*> roots;
     sparta::TreeNode::getVirtualGlobalNode()->findChildren(sparta::Scheduler::NODE_NAME, roots);
     EXPECT_EQUAL(roots.size(), 1);
-    EXPECT_NOTHROW(EXPECT_EQUAL(sparta::TreeNode::getVirtualGlobalNode()->getChild(sparta::Scheduler::NODE_NAME), roots.at(0)));
-    // Get info messages from the scheduler node and send them to this file
     sparta::log::Tap scheduler_debug(sparta::TreeNode::getVirtualGlobalNode(),
-                                   sparta::log::categories::DEBUG, "scheduler.debug");
-    sparta::log::Tap t(roots.at(0), "info", "scheduler.log.basic");
+                                     sparta::log::categories::DEBUG, "scheduler.debug");
 
+    // Set up a dummy simulation
     sparta::RootTreeNode rtn("dummyrtn");
     rtn.setClock(&clk);
 
     //Test port dependency
-    DependencyTest test(&rtn, &clk);
-    sparta::Scheduler::getScheduler()->finalize();
-    //sparta::DAG::getDAG()->print(std::cout);
+    DependencyTest   test(&rtn, &clk);
+    sparta::EventSet event_set(&rtn);
+    sparta::Event    fire_event(&event_set, "fire_event",
+                                CREATE_SPARTA_HANDLER_WITH_OBJ(DependencyTest, &test, fire));
+    sched.finalize();
     test.checkDagFinalization();
-    test.scheduleEvents();
-    sparta::Scheduler::getScheduler()->printNextCycleEventTree(std::cout, 0, 0);
+    fire_event.schedule(1);
+    sched.printNextCycleEventTree(std::cout, 0, 0);
 
-    sparta::SysCSpartaSchedulerAdapter sysc_sched_runner;
-    sysc_sched_runner.run(53);
-    sparta_assert(sc_core::sc_time_stamp().value() == 53);
+    sparta::SysCSpartaSchedulerAdapter sysc_sched_runner(&sched);
 
-    EXPECT_EQUAL(events_fired, expected_fired);
+    // Run simulation
+    sysc_sched_runner.run();
+
+    // This is where Sparta left off...
+    EXPECT_EQUAL(sched.getCurrentTick(), 53);
+
+    // SysC saturation -- end of time
+    EXPECT_EQUAL(sc_core::sc_time_stamp().value(), 0x8000000000000000);
+
+    EXPECT_EQUAL(events_fired, 8);
 
     // Compare the schedler log output with the expected to ensure it is logging
-    EXPECT_FILES_EQUAL("scheduler.log.basic.EXPECTED", "scheduler.log.basic");
+    EXPECT_FILES_EQUAL("scheduler.debug.EXPECTED", "scheduler.debug");
 
     rtn.enterTeardown();
 

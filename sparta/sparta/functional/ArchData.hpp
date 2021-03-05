@@ -9,10 +9,7 @@
 #include <math.h>
 #include <list>
 #include <cstring>
-
-#include <boost/utility.hpp>        // noncopyable, enable_if
-#include <boost/mpl/assert.hpp>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 
 #include "sparta/utils/StaticInit.hpp"
 #include "sparta/simulation/TreeNode.hpp"
@@ -37,10 +34,14 @@ namespace sparta
      * layout is completed because the layout must remain constant between
      * each save/restore.
      *
-     * ArchData is noncopyable
      */
-    class ArchData : boost::noncopyable
+    class ArchData
     {
+        ArchData(const ArchData &) = delete;
+        ArchData(ArchData &&) = delete;
+        ArchData& operator=(const ArchData &) = delete;
+        ArchData& operator=(ArchData &&) = delete;
+
     public:
 
         /*!
@@ -59,14 +60,13 @@ namespace sparta
         typedef std::vector<ArchDataSegment*> SegmentList; //! List of ArchDataSegment
 
         typedef std::list<Line*> LineList; //! List of Line pointers.
-        //typedef boost::unordered_map<line_idx_type, Line*> LineMap; //! Map of Line idx to line
         typedef TieredMap<line_idx_type, Line*> LineMap;
 
         /*!
          * \brief Helper map for quick lookup from ArchDataSegment::ident_type
          * to an ArchDataSegment*.
          */
-        typedef boost::unordered_map<ArchDataSegment::ident_type, ArchDataSegment*> LayoutHelperMap;
+        typedef std::unordered_map<ArchDataSegment::ident_type, ArchDataSegment*> LayoutHelperMap;
 
         /*!
          * \brief Vector of ArchDataSegment pointers.

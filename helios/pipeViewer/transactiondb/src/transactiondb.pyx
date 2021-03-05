@@ -66,6 +66,13 @@ cdef extern from "TransactionDatabaseInterface.hpp" namespace "sparta::pipeViewe
 cdef extern from "TransactionDatabaseInterface.hpp" namespace "sparta::pipeViewer::TransactionDatabaseInterface":
     const_interval_idx NO_TRANSACTION # static const
 
+cdef extern from "Reader.hpp" namespace "sparta::pipeViewer":
+    string formatPairAsAnnotation(const uint64_t transaction_ID, \
+                                  const uint64_t display_ID, \
+                                  const uint16_t length, \
+                                  const vector[string]& nameVector, \
+                                  const vector[string]& stringVector);
+
 cdef class Transaction(object):
 
     FLAGS_MASK_TYPE = 0b111
@@ -138,8 +145,8 @@ cdef class Transaction(object):
                         self.getVirtualAddress(), self.getRealAddress(), \
                         self.getParentTransactionID())
         elif type_flags == PAIR:
-            return '<Pair ID:{0} LOC:{1} [{2},{3}] parent:{4} "{5}">'\
-                .format(self.getTransactionID(), self.getLocationID(), self.getLeft(), self.getRight(),\
+            return '<Pair ID:{0} pairID:{1} LOC:{2} [{3},{4}] parent:{5} "{6}">'\
+                .format(self.getTransactionID(), self.getPairID(), self.getLocationID(), self.getLeft(), self.getRight(),\
                     self.getParentTransactionID(), self.getAnnotation())
         else:
             return '<UnkonwnTransactionType ID:{0} LOC:{1} [{2},{3}] op:{4:#x} v:{5:#x} p:{6:#x} parent:{7}>' \
@@ -204,6 +211,11 @@ cdef class Transaction(object):
             return None
         return self.__trans.transaction_ID
 
+    def getPairID(self):
+        if self.__trans == NULL:
+            return None
+        return self.__trans.pairId
+
     def getDisplayID(self):
         if self.__trans == NULL:
             return None
@@ -259,32 +271,18 @@ cdef class Transaction(object):
         if self.getType() == ANNOTATION:
             value_str = <char*>self.__trans.annt
             if value_str != NULL:
-                value_string = bytes_re.sub('r\1', str(value_str))  # Replace b'xxx' with xxx
-                hex_string = format(int(value_str) & 0xf, 'x')
-                my_display_id = "R" + hex_string + hex_string
-                py_str_body = my_display_id.encode('utf-8') + b' ' + value_str
+                if str(value_str).isnumeric():
+                    hex_string = format(int(value_str) & 0xf, 'x')
+                    my_display_id = "R" + hex_string + hex_string
+                    py_str_body = my_display_id.encode('utf-8') + b' ' + value_str
+                else:
+                    py_str_body = value_str
         else:
-            my_display_id = self.__trans.display_ID if self.__trans.display_ID < 0x1000 else self.__trans.transaction_ID
-            py_str_preamble += format(my_display_id, '>03x').encode('utf-8') + b' '
-
-            for i in range(1, self.__trans.length):
-                my_name  = bytes_re.sub(r'\1', str(self.__trans.nameVector[i]))
-                my_value = bytes_re.sub(r'\1', str(self.__trans.stringVector[i]))
-                if my_name != "DID":
-                    py_str_body += my_name.encode('utf-8') + b'(' + my_value.encode('utf-8') + b')' + b' '
-
-                if my_name == "uid":
-                    value_string = "u" + format(int(my_value) % 10000, '>4d') + " "
-                    py_str_preamble += value_string.encode('utf-8')
-
-                elif my_name == "pc":
-                    value_string = "0x" + format(int(my_value, 16) & 0xffff, '>04x') + " "
-                    py_str_preamble += value_string.encode('utf-8')
-
-                elif my_name == "mnemonic":
-                    value_string = format(my_value[0:7], '<7') + " "
-                    py_str_preamble += value_string.encode('utf-8')
-
+            py_str_body = formatPairAsAnnotation(self.__trans.transaction_ID,
+                                                 self.__trans.display_ID,
+                                                 self.__trans.length,
+                                                 self.__trans.nameVector,
+                                                 self.__trans.stringVector)
 
         # TODO this could already be a string to avoid decoding over and over
 
@@ -646,6 +644,13 @@ cdef class TransactionDatabase:
         decoded_str = bytes_re.sub(r'\1', (py_str_preamble + py_str_body).decode('utf-8'))    # Replace b'xxx' with xxx
         self.__cached_annotations[c_trans.transaction_ID] = decoded_str
         return decoded_str
+
+    def getPairID(self, uint32_t loc):
+        cdef c_TransactionInterval_uint64_const_t* c_trans
+        c_trans = self._getTransaction(loc)
+        if c_trans == NULL:
+            return None
+        return <int>c_trans.pairId
 
     def getTransactionID(self, uint32_t loc):
         cdef c_TransactionInterval_uint64_const_t* c_trans

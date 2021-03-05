@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # Generate multi-cycle ALF, based on Brian Grayson's alf_generator script
 #
@@ -17,7 +17,7 @@ use strict;
 # Global variables
 #
 my ($DEFAULT_NUM_T)	= 41;	# Default number of cycles to generate
-my ($DEFAULT_PREFIX)	= 'top.core0';
+my ($DEFAULT_PREFIX)	= 'top.cpu.core0';
 
 
 #--------------------------------------------------
@@ -465,7 +465,7 @@ sub output_schedule {
   my $height = $highest_y-$properties->{'y'};
 
   #make container
-  my $DEFAULT_CLOCK_FOR_SCALE = 333;
+  my $DEFAULT_CLOCK_FOR_SCALE = 1;
   printf $fh ("- type: schedule^  color: %s^  dimensions: (%s, %s)^  position: (%s, %s)^  pixel_offset: %s^  time_scale: %s^  children:\n",
 	      $properties->{'grid_color'}, $width,
               $height, $properties->{'content_base_x'}, $properties->{'y'}, $properties->{'pixel_offset'}, $DEFAULT_CLOCK_FOR_SCALE/$properties->{'wt_spc'});
@@ -688,7 +688,7 @@ sub show_cycles {
     # Display current cycle
     #
     my ($grid_color) = defined($vr->{'caption_color'}) ? $vr->{'caption_color'} : $vr->{'sep_color'};
-    printf $fh ("- Content: cycle^  LOC.retire.rob_age_ordered.rob_age_ordered0^  color: %s^  dimensions: (%s, %s)^  position: (%s, %s)^  t_offset: %s\n",
+    printf $fh ("- Content: cycle^  LOC.rob.ReorderBuffer.ReorderBuffer0^  color: %s^  dimensions: (%s, %s)^  position: (%s, %s)^  t_offset: %s\n",
 		$grid_color,
 		$vr->{'cycle_legend_current_wt'}, $vr->{'ht'},
 		$vr->{'caption_x'} + $vr->{'cap_wt'} - $vr->{'cycle_legend_current_wt'}, $vr->{'y'},

@@ -3,6 +3,7 @@ from gui.dialogs.element_propsdlg import ElementTypeSelectionDialog
 import logging
 import wx
 import wx.lib.gizmos
+from gui.font_utils import ScaleFont
 
 
 class LocationWindow(wx.Frame):
@@ -34,9 +35,9 @@ class LocationWindow(wx.Frame):
 
         title = "Locations for {0}".format(self.__db.filename)
         wx.Frame.__init__(self, parent, -1, title, size = (1025, 600),
-                          style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX)
+                          style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
 
-        self.__fnt_small = wx.Font(12, wx.NORMAL, wx.NORMAL, wx.NORMAL)
+        self.__fnt_small = wx.Font(ScaleFont(12), wx.NORMAL, wx.NORMAL, wx.NORMAL)
 
         static_heading = wx.StaticText(self, -1, "Showing all locations for:")
         static_filename = wx.StaticText(self, -1, self.__db.filename)
@@ -63,10 +64,10 @@ class LocationWindow(wx.Frame):
         self.__SetLocationTree(tree)
         # User preference is to NOT expand tree. ## self.__tree_ctrl.ExpandAll()
 
-        self.__btn_create_element = wx.Button(self, -1, "Create Element(s)", style = wx.BU_EXACTFIT)
+        self.__btn_create_element = wx.Button(self, -1, "Create Element(s)")
         self.__btn_create_element.SetToolTip('Creates a new element for each of the selected ' \
                                              'locations in the tree')
-        self.__btn_set = wx.Button(self, -1, "Set Location to Selected", style = wx.BU_EXACTFIT)
+        self.__btn_set = wx.Button(self, -1, "Set Location to Selected")
         self.__btn_set.SetToolTip('Sets the location string for all selected elements to the ' \
                                   'selected location in the tree. Generally, the selected ' \
                                   'location should be a leaf node')
