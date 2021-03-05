@@ -13,6 +13,8 @@
 #include <iostream>
 #include <exception>
 #include <iterator>
+#include <cinttypes>
+#include <cassert>
 
 #include "sparta/utils/SpartaAssert.hpp"
 
@@ -22,6 +24,19 @@ namespace sparta::utils
      * \class FastList
      * \brief An alternative to std::list, about 3x faster
      * \tparam T The object to maintain
+     *
+     * This class is a container type that allows back emplacement and
+     * random deletion.  'std::list' provides the same type of
+     * functionality, but performs new/deletes of the nodes.  Under
+     * the covers, this class does not perform new/delete of the
+     * Nodes, but reuses existing ones, performing an inplace-new of
+     * the user's object.
+     *
+     * Testing shows this class is 2.5x faster than using std::list.
+     * Caveats:
+     *
+     *  - The size of FastList is fixed to allow for optimization
+     *  - The API isn't as complete as typicaly STL container types
      *
      */
     template <class T>
@@ -34,8 +49,12 @@ namespace sparta::utils
             // manually invoke its dtor as necessary.
             typename std::aligned_storage<sizeof(T), alignof(T)>::type type_storage;
 
+            Node(uint32_t _index) :
+                index(_index)
+            {}
+
             // Where this node is in the vector
-            int index = -1;
+            const uint32_t index;
 
             // Points to the next element or the next free
             // element if this node has been removed.
@@ -43,17 +62,18 @@ namespace sparta::utils
 
             // Points to the previous element.
             int prev = -1;
+
+            // Is this node in use?
+            bool in_use = false;
         };
 
         Node * advanceNode_(const Node * node) {
-            sparta_assert(node->index != -1);
             Node * ret_node = (node->next == -1 ? nullptr : &nodes_[node->next]);
             return ret_node;
         }
 
     public:
-
-        using value_type = T;
+        using value_type = T; //!< Handy using
 
         template<bool is_const = true>
         class NodeIterator // : public std::iterator<std::intput_iterator_tag, Node>
@@ -62,25 +82,27 @@ namespace sparta::utils
             typedef std::conditional_t<is_const, const value_type *, value_type *> PtrIteratorType;
         public:
 
+            NodeIterator() = default;
+
             NodeIterator(const NodeIterator<false> & iter) :
                 node_(iter.node_)
             {}
 
             bool isValid() const { return (node_ != nullptr); }
             PtrIteratorType operator->()       {
-                sparta_assert(isValid());
+                assert(isValid());
                 return reinterpret_cast<value_type*>(&node_->type_storage);
             }
             PtrIteratorType operator->() const {
-                sparta_assert(isValid());
+                assert(isValid());
                 return reinterpret_cast<value_type*>(&node_->type_storage);
             }
             RefIteratorType operator* ()       {
-                sparta_assert(isValid());
+                assert(isValid());
                 return *reinterpret_cast<value_type*>(&node_->type_storage);
             }
             RefIteratorType operator* () const {
-                sparta_assert(isValid());
+                assert(isValid());
                 return *reinterpret_cast<value_type*>(&node_->type_storage);
             }
 
@@ -88,7 +110,7 @@ namespace sparta::utils
 
             NodeIterator & operator++()
             {
-                sparta_assert(isValid());
+                assert(isValid());
                 node_ = flist_->advanceNode_(node_);
                 return *this;
             }
@@ -96,7 +118,7 @@ namespace sparta::utils
             NodeIterator operator++(int)
             {
                 NodeIterator orig = *this;
-                sparta_assert(isValid());
+                assert(isValid());
                 node_ = flist_->advanceNode_(node_);
                 return orig;
             }
@@ -113,43 +135,51 @@ namespace sparta::utils
         private:
             friend class FastList<T>;
 
-            NodeIterator() = default;
             NodeIterator(FastList * flist, Node * node) :
                 flist_(flist),
                 node_(node)
             { }
 
             FastList * flist_ = nullptr;
-            Node * node_ = nullptr;
+            Node     * node_  = nullptr;
         };
 
-        FastList(size_t size) {
+        /**
+         * \brief Construct FastList of a given size
+         * \param size Fixed size of the list
+         */
+        FastList(size_t size)
+        {
             nodes_.reserve(size);
             int node_idx = 0;
             for(size_t i = 0; i < size; ++i) {
-                Node n;
+                Node n(node_idx);
                 n.prev = node_idx - 1;
                 n.next = node_idx + 1;
-                n.index = node_idx;
                 ++node_idx;
                 nodes_.emplace_back(n);
             }
             nodes_.back().next = -1;
-            free_head_ = 0;
         }
 
-        using iterator       = NodeIterator<false>;
-        using const_iterator = NodeIterator<true>;
+        using iterator       = NodeIterator<false>;  //!< Iterator type
+        using const_iterator = NodeIterator<true>;   //!< Iterator type, const
 
+        /**
+         * \brief Add an element to the back of the list
+         * \tparam args Arguments to be passed to the user type for construction
+         * \return iterator to the newly emplaced object
+         */
         template<class ...ArgsT>
         iterator emplace_back(ArgsT&&...args)
         {
-            if(free_head_ == -1) { throw std::bad_alloc(); }
+            assert(free_head_ != -1);
 
             auto & n = nodes_[free_head_];
             new (&n.type_storage) T(args...);
+            n.in_use = true;
 
-            if(first_node_ != -1)
+            if(SPARTA_EXPECT_TRUE(first_node_ != -1))
             {
                 auto & old_first = nodes_[first_node_];
                 const int old_first_idx = first_node_;
@@ -169,29 +199,35 @@ namespace sparta::utils
             return iterator(this, &n);
         }
 
+        /**
+         * \brief Erase an element with the given iterator
+         * \param entry Iterator to the entry being erased
+         */
         void erase(const const_iterator & entry)
         {
             const auto node_idx = entry.getIndex();
             auto & curr_node = nodes_[node_idx];
+            assert(curr_node.in_use == true);
             reinterpret_cast<T*>(&curr_node.type_storage)->~T();
+            curr_node.in_use = false;
 
             if(first_node_ == node_idx) {
                 first_node_ = curr_node.next;
             }
 
-            if(curr_node.next != -1)
+            if(SPARTA_EXPECT_FALSE(curr_node.next != -1))
             {
                 auto & next_node = nodes_[curr_node.next];
                 next_node.prev = curr_node.prev;
             }
 
-            if(curr_node.prev != -1)
+            if(SPARTA_EXPECT_FALSE(curr_node.prev != -1))
             {
                 auto & prev_node = nodes_[curr_node.prev];
                 prev_node.next = curr_node.next;
             }
 
-            if(free_head_ != -1) {
+            if(SPARTA_EXPECT_TRUE(free_head_ != -1)) {
                 nodes_[free_head_].prev = node_idx;
                 curr_node.next = free_head_;
             }
@@ -199,18 +235,29 @@ namespace sparta::utils
             --size_;
         }
 
+        //! Obtain a beginning iterator
         iterator       begin()       { return iterator(this, (first_node_ == -1 ? nullptr : &nodes_[first_node_])); }
+
+        //! Obtain a beginning const_iterator
         const_iterator begin() const { return const_iterator(this, (first_node_ == -1 ? nullptr : &nodes_[first_node_])); }
 
+        //! Obtain an end iterator
         iterator       end()       { return iterator(this, nullptr); }
+        //! Obtain an end const_iterator
         const_iterator end() const { return const_iterator(this, nullptr); }
 
+        //! \return The current size of the container
         size_t size()     const { return size_; };
+
+        //! \return The capacity of the container
         size_t capacity() const { return nodes_.capacity(); };
+
+        //! \return Is this container empty?
         bool   empty()    const { return size_ == 0; }
 
     private:
 
+        // Friendly printer
         friend std::ostream & operator<<(std::ostream & os, const FastList<T> & fl)
         {
             int next_node = fl.first_node_;
@@ -235,12 +282,8 @@ namespace sparta::utils
         // Stores all the nodes.
         std::vector<Node> nodes_;
 
-        // Points to the first free node or -1 if the free list
-        // is empty. Initially this starts out as -1.
-        int free_head_ = 0;
-
-        int first_node_ = -1;
-
-        size_t size_ = 0;
+        int free_head_  = 0;  //!< The free head
+        int first_node_ = -1; //!< The first node in the list (-1 for empty)
+        size_t size_    = 0;  //!< The number of elements in the list
     };
 }
