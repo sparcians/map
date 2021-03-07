@@ -47,10 +47,10 @@ fi
 
 case "$(uname)" in
     Darwin)
-	conda_platform='osx'
+	conda_platform='osx_64'
 	;;
     Linux)
-        conda_platform='linux'
+        conda_platform='linux_64'
 	;;
     *)
 	echo "::ERROR:: Unknown uname '$(uname)'"
