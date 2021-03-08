@@ -1,0 +1,4 @@
+<map id="sparta::SimulationInfo::SimulationInfo" name="sparta::SimulationInfo::SimulationInfo">
+<area shape="rect" id="node1" title="SimulationInfo constructor with automatic command&#45;line reconstruction." alt="" coords="5,5,152,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1SimulationInfo.html#a35c12f12e0942d02767f0a7decf60fab" title="Assign command_line_ and executable_ from args." alt="" coords="200,5,347,47"/>
+</map>

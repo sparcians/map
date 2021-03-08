@@ -1,0 +1,6 @@
+<map id="sparta::StatisticInstance::getValueSemantic" name="sparta::StatisticInstance::getValueSemantic">
+<area shape="rect" id="node1" title="Gets the statistic value semantic associated with this statistic instance." alt="" coords="5,71,168,112"/>
+<area shape="rect" id="node2" href="$classsparta_1_1utils_1_1ValidValue.html#afa2f546d8bbe78b24c4f372474b214eb" title="Get the value &#45; const version." alt="" coords="216,5,372,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1StatisticDef.html#a784776bd3fc4745c6d52dee8d477e00d" title="Retuns the value&#45;semantic associated with this node at construction." alt="" coords="227,71,361,112"/>
+<area shape="rect" id="node4" href="$classsparta_1_1utils_1_1ValidValue.html#ae3676d510018298bdc57028aca4efaff" title="Is this value valid." alt="" coords="216,136,372,177"/>
+</map>

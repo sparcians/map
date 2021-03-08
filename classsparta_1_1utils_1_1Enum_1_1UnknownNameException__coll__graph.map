@@ -1,0 +1,5 @@
+<map id="sparta::utils::Enum&lt; EnumType &gt;::UnknownNameException" name="sparta::utils::Enum&lt; EnumType &gt;::UnknownNameException">
+<area shape="rect" id="node1" title=" " alt="" coords="5,155,263,196"/>
+<area shape="rect" id="node2" href="$classsparta_1_1SpartaException.html" title="Used to construct and throw a standard C++ exception. Inherits from std::exception." alt="" coords="55,80,213,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="83,5,185,32"/>
+</map>

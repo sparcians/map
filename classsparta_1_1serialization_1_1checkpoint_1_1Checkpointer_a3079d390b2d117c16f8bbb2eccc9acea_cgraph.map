@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::Checkpointer::dumpTree" name="sparta::serialization::checkpoint::Checkpointer::dumpTree">
+<area shape="rect" id="node1" title="Dumps this checkpointer&#39;s tree to an ostream with a line for each branch. Printout timescale is not r..." alt="" coords="5,5,179,61"/>
+<area shape="rect" id="node2" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a8cad3235e58b52835ca5fd78be96460b" title="Recursively dumps one branch (and sub&#45;branches) to an ostream with a line for each branch." alt="" coords="227,5,400,61"/>
+<area shape="rect" id="node3" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a33a947d166bed6373b5a9faa42e270c1" title="Returns next checkpoint following *this. May be an empty vector if there are no later checkpoints fol..." alt="" coords="448,5,611,61"/>
+</map>

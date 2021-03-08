@@ -1,0 +1,4 @@
+<map id="sparta::VirtualGlobalTreeNode::findImmediateChildren_" name="sparta::VirtualGlobalTreeNode::findImmediateChildren_">
+<area shape="rect" id="node1" title="Finds immediate children with some identity (name or alias) matching a regex." alt="" coords="5,5,200,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#ab50c28d990477787fe2a043555302120" title="Performs pattern matching on a identity string." alt="" coords="248,5,416,47"/>
+</map>

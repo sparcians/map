@@ -1,0 +1,4 @@
+<map id="sparta::memory::TranslationIF::translate" name="sparta::memory::TranslationIF::translate">
+<area shape="rect" id="node1" title="Perform a translation from input&#45;type to output&#45;type." alt="" coords="5,5,185,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1memory_1_1Translation.html#ae0807082424161a0f49e9f2a4ee14307" title="Returns output address of this translation." alt="" coords="233,5,413,47"/>
+</map>

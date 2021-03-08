@@ -1,0 +1,5 @@
+<map id="sparta::ArchData::checkCanAccess" name="sparta::ArchData::checkCanAccess">
+<area shape="rect" id="node1" title="Determines if an access of size &#39;bytes&#39; can be performed at the given offset based only on the size o..." alt="" coords="5,5,188,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1ArchData.html#aaed65a11540e5f04a01fc3256b61ae49" title="Determines whether the access defined by offset and size spans multiple ArchData Lines." alt="" coords="236,5,407,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="455,5,621,47"/>
+</map>

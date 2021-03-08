@@ -1,0 +1,7 @@
+<map id="sparta::collection::PipelineCollector::stopCollection" name="sparta::collection::PipelineCollector::stopCollection">
+<area shape="rect" id="node1" title="Stop pipeline collection on only those CollectableTreeNodes given." alt="" coords="5,34,131,90"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNodePrivateAttorney.html#a4e0e4afe9df4b94b3848354d1607b279" title=" " alt="" coords="179,5,389,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ad91ec47ac9880d5833853cf629200012" title="Method that tells this treenode that is now not running collection." alt="" coords="209,70,359,126"/>
+<area shape="rect" id="node4" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#a69968b7df373c22228ff2e24990e0d1f" title="Indicate to sub&#45;classes that collection has flipped." alt="" coords="437,70,587,126"/>
+<area shape="rect" id="node5" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#a76d81cfbcf80a8584f887564054fc7dd" title=" " alt="" coords="635,70,784,126"/>
+</map>

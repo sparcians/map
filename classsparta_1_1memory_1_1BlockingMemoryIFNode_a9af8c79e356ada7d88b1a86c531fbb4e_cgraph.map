@@ -1,0 +1,9 @@
+<map id="sparta::memory::BlockingMemoryIFNode::tryWrite" name="sparta::memory::BlockingMemoryIFNode::tryWrite">
+<area shape="rect" id="node1" title="Attempt to write memory of size size at address addr." alt="" coords="5,156,172,197"/>
+<area shape="rect" id="node2" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a4efd1a8b860fd5224a78b4f17f06853d" title="Determines if the given address spans block boundaries defined for this interface...." alt="" coords="220,5,419,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a56bff166f0c2e250be9450a8a152becc" title="Determines if the range [addr, addr+size) is within the access windows for this interface." alt="" coords="467,159,665,200"/>
+<area shape="rect" id="node4" href="$classsparta_1_1NotificationSourceBase.html#a8bd1a11753aa860f953f65f25cf22198" title="Is this NotificationSourceBase being observed at this node or an ancestor of any distance." alt="" coords="234,123,405,164"/>
+<area shape="rect" id="node5" href="$classsparta_1_1NotificationSource.html#a7853e8c00ab8e89b96fba9285cf7128e" title="Post with reference to data with parent as message origin." alt="" coords="234,188,405,229"/>
+<area shape="rect" id="node6" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a1d460c6428bfcb6d1e37b3b908f17eef" title="Attempts to &#39;peek&#39; memory without having any side effects, size&#45;limitations, alignment constraints ex..." alt="" coords="220,253,419,295"/>
+<area shape="rect" id="node7" href="$classsparta_1_1memory_1_1BlockingMemoryIF.html#a73f4639204dbf2a145e07ab7d575d108" title="Implements tryWrite." alt="" coords="236,319,403,360"/>
+</map>

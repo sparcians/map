@@ -1,0 +1,5 @@
+<map id="sparta::collection::Collectable&lt; DataT, collection_phase, MetaStruct::enable_if_t&lt; std::is_base_of&lt; sparta::PairDefinition&lt; MetaStruct::remove_any_pointer_t&lt; DataT &gt; &gt;, typename MetaStruct::remove_any_pointer_t&lt; DataT &gt;::SpartaPairDefinitionType &gt;::value &gt; &gt;::initialize" name="sparta::collection::Collectable&lt; DataT, collection_phase, MetaStruct::enable_if_t&lt; std::is_base_of&lt; sparta::PairDefinition&lt; MetaStruct::remove_any_pointer_t&lt; DataT &gt; &gt;, typename MetaStruct::remove_any_pointer_t&lt; DataT &gt;::SpartaPairDefinitionType &gt;::value &gt; &gt;::initialize">
+<area shape="rect" id="node1" title="For manual collection, provide an initial value." alt="" coords="5,5,337,149"/>
+<area shape="rect" id="node2" href="$classsparta_1_1collection_1_1Collectable.html#a56d9cf5ee0cc7e0897413afc6b73c541" title=" " alt="" coords="392,21,528,62"/>
+<area shape="rect" id="node3" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ab1534ea1db6db3c3587f8da0cfef1aa1" title="Determine whether or not this node has collection turned on or off." alt="" coords="385,85,535,141"/>
+</map>

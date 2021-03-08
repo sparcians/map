@@ -1,0 +1,4 @@
+<map id="sparta::statistics::ArchiveSink" name="sparta::statistics::ArchiveSink">
+<area shape="rect" id="node1" title="Generic statistic sink base class for report archives." alt="" coords="5,95,123,136"/>
+<area shape="rect" id="node2" href="$classsparta_1_1statistics_1_1ArchiveStream.html" title="Generic statistic stream base class for sources and sinks in the report archive system." alt="" coords="5,5,123,47"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="sparta::Pipeline::setContinuing" name="sparta::Pipeline::setContinuing">
+<area shape="rect" id="node1" title="set whether the update event is continuing or not" alt="" coords="5,13,200,39"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Scheduleable.html#a017c86b15dc4298f385820e2169779e1" title="This event, if continuing == true, will keep the simulation running." alt="" coords="248,5,391,47"/>
+</map>

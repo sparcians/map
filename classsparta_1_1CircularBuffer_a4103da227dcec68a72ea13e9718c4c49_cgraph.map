@@ -1,0 +1,4 @@
+<map id="sparta::CircularBuffer::rbegin" name="sparta::CircularBuffer::rbegin">
+<area shape="rect" id="node1" title="Get the iterator pointing to the oldest entry of CircularBuffer." alt="" coords="5,5,148,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1CircularBuffer.html#a3deb0d81bff935b9dcc23841d3b60276" title="Returns an iterator referring to past&#45;the&#45;end of the newest element in the CircularBuffer." alt="" coords="196,13,365,39"/>
+</map>

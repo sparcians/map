@@ -1,0 +1,8 @@
+<map id="sparta::ReadOnlyCounter::stringize" name="sparta::ReadOnlyCounter::stringize">
+<area shape="rect" id="node1" title="Create a string representation of this node." alt="" coords="5,107,171,149"/>
+<area shape="rect" id="node2" href="$classsparta_1_1ReadOnlyCounter.html#a896a11e20c3fe95e1cd727d9f123e821" title="Gets the value of this counter." alt="" coords="219,5,408,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="456,31,651,57"/>
+<area shape="rect" id="node4" href="$classsparta_1_1CounterBase.html#afd1b340fd4b02a83486d5d7c171d4b1d" title="Gets the behavior for this counter specified at construction." alt="" coords="244,107,383,149"/>
+<area shape="rect" id="node5" href="$classsparta_1_1CounterBase.html#a6dd1db7c8ceac902182b4a2c8e0343ce" title="Returns a string containing the name of the given behavior." alt="" coords="244,173,383,214"/>
+<area shape="rect" id="node6" href="$classsparta_1_1InstrumentationNode.html#a4be3cb0085f64ae39e87921ee842a98c" title="Gets the visibility hint of this node. This is invariant after construction." alt="" coords="221,238,406,279"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="sparta::collection::IterableCollector::collectWithDuration" name="sparta::collection::IterableCollector::collectWithDuration">
+<area shape="rect" id="node1" title="Perform a collection, then close the records in the future." alt="" coords="5,151,145,207"/>
+<area shape="rect" id="node2" href="$classsparta_1_1collection_1_1IterableCollector.html#a83ddd1c011d14bcf976467395d541e74" title=" " alt="" coords="225,57,348,113"/>
+<area shape="rect" id="node5" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ab1534ea1db6db3c3587f8da0cfef1aa1" title="Determine whether or not this node has collection turned on or off." alt="" coords="451,122,600,178"/>
+<area shape="rect" id="node6" href="$classsparta_1_1PhasedPayloadEvent.html#a3f7835dce02b716a08b1c88e23733955" title="Prepare a Scheduleable Payload for scheduling either now or later." alt="" coords="193,188,380,229"/>
+<area shape="rect" id="node7" href="$classsparta_1_1Scheduleable.html#a3bb381d1ef9ccb3c335613c5600d162b" title="Schedule this event with its pre&#45;set delay using the pre&#45;set Clock." alt="" coords="215,253,358,295"/>
+<area shape="rect" id="node3" href="$classsparta_1_1log_1_1MessageSource.html#a2895f5cbb53a002a512b85e5de99852a" title="Gets the global warning logger. These messages can be picked up by placing a Tap on the sparta::TreeN..." alt="" coords="435,5,616,47"/>
+<area shape="rect" id="node4" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="428,71,623,98"/>
+</map>

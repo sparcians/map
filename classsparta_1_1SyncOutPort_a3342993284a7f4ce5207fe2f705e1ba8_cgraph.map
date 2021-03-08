@@ -1,0 +1,7 @@
+<map id="sparta::SyncOutPort::bind" name="sparta::SyncOutPort::bind">
+<area shape="rect" id="node1" title="Bind to an SyncInPort." alt="" coords="5,49,144,90"/>
+<area shape="rect" id="node2" href="$classsparta_1_1OutPort.html#a25b7c703a072502b11376aac416eaa2e" title="Bind to an InPort." alt="" coords="220,31,359,57"/>
+<area shape="rect" id="node5" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="192,81,387,108"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Port.html#a2f01e60009c1fbe71c6b2dfe6cf042fa" title="The direction of the port." alt="" coords="443,5,606,32"/>
+<area shape="rect" id="node4" href="$classsparta_1_1TreeNode.html#a2051b2b77d112e1898b220b8a3ac1236" title="Gets the name of this node." alt="" coords="435,56,615,83"/>
+</map>

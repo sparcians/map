@@ -1,0 +1,6 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classsparta_1_1log_1_1Destination.html" title="Generic Logging destination stream interface which writes sparta::log::Message structures to some out..." alt="" coords="5,78,157,105"/>
+<area shape="rect" id="node2" href="$classsparta_1_1log_1_1DestinationInstance.html" title="A destination where log messages go to be written to a file or other ostream. Attempts to prevent dup..." alt="" coords="212,5,364,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1log_1_1DestinationInstance_3_01std_1_1ostream_01_4.html" title="Logging Destination for an already&#45;open ostream." alt="" coords="205,71,371,112"/>
+<area shape="rect" id="node4" href="$classsparta_1_1log_1_1DestinationInstance_3_01std_1_1string_01_4.html" title="Destination that opens and writes to a file with a format based on the file extension of the filename..." alt="" coords="212,136,364,177"/>
+</map>

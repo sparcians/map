@@ -1,0 +1,4 @@
+<map id="sparta::app::PipelineTrigger" name="sparta::app::PipelineTrigger">
+<area shape="rect" id="node1" title="Trigger used to enable/disable Pipeline colletion." alt="" coords="5,80,183,107"/>
+<area shape="rect" id="node2" title=" " alt="" coords="30,5,158,32"/>
+</map>

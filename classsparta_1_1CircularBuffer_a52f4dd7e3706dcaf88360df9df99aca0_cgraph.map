@@ -1,0 +1,5 @@
+<map id="sparta::CircularBuffer::enableCollection" name="sparta::CircularBuffer::enableCollection">
+<area shape="rect" id="node1" title="Request that this queue begin collecting its contents for pipeline collection." alt="" coords="5,39,148,80"/>
+<area shape="rect" id="node2" href="$classsparta_1_1CircularBuffer.html#ad492a0c8d0e5715753205fe0ccba86be" title="Return the fixed size of this CircularBuffer." alt="" coords="196,5,339,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1CircularBuffer.html#a04b7508c22ae1fb46b7e8bc231035dd7" title="Get this CircularBuffer&#39;s name." alt="" coords="196,71,339,112"/>
+</map>

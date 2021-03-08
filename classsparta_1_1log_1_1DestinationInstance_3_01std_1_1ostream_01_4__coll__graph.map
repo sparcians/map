@@ -1,0 +1,4 @@
+<map id="sparta::log::DestinationInstance&lt; std::ostream &gt;" name="sparta::log::DestinationInstance&lt; std::ostream &gt;">
+<area shape="rect" id="node1" title="Logging Destination for an already&#45;open ostream." alt="" coords="5,80,171,121"/>
+<area shape="rect" id="node2" href="$classsparta_1_1log_1_1Destination.html" title="Generic Logging destination stream interface which writes sparta::log::Message structures to some out..." alt="" coords="12,5,164,32"/>
+</map>

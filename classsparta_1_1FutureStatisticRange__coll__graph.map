@@ -1,0 +1,5 @@
+<map id="sparta::FutureStatisticRange" name="sparta::FutureStatisticRange">
+<area shape="rect" id="node1" title="Exception indicating that the range of a StatisticInstance starts or ends in the future (probably cau..." alt="" coords="5,155,192,181"/>
+<area shape="rect" id="node2" href="$classsparta_1_1SpartaException.html" title="Used to construct and throw a standard C++ exception. Inherits from std::exception." alt="" coords="19,80,178,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="48,5,149,32"/>
+</map>

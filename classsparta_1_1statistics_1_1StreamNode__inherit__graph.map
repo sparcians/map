@@ -1,0 +1,5 @@
+<map id="sparta::statistics::StreamNode" name="sparta::statistics::StreamNode">
+<area shape="rect" id="node1" title="When a simulation is configured to stream its statistics values for asynchronous processing,..." alt="" coords="105,5,223,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1statistics_1_1ReportStreamNode.html" title="In the stream node hierarchy, this class is used wherever we encounter a sparta::Report node,..." alt="" coords="5,95,144,136"/>
+<area shape="rect" id="node3" href="$classsparta_1_1statistics_1_1StatisticInstStreamNode.html" title="In the stream node hierarchy, this class is used wherever we encounter a sparta::StatisticInstance le..." alt="" coords="168,95,339,136"/>
+</map>

@@ -1,0 +1,6 @@
+<map id="sparta::ArchData::reset" name="sparta::ArchData::reset">
+<area shape="rect" id="node1" title="Cleans the ArchData (see clean) then applies all initial values through ArchDataSegment::writeInitial..." alt="" coords="5,46,159,73"/>
+<area shape="rect" id="node2" href="$classsparta_1_1ArchData.html#a5712a66066badbc5ae4d9fb98b5a79d4" title="Deletes (if possible) data held within the ArchData, restoring it to a &#39;clean&#45;state&#39;...." alt="" coords="207,46,361,73"/>
+<area shape="rect" id="node3" href="$classsparta_1_1ArchData.html#a9eaa9d9ef72fc6322e444a4cfebd6ddd" title="Indicates whether this ArchData can free its lines after allocating them. Otherwise,..." alt="" coords="409,5,580,47"/>
+<area shape="rect" id="node4" href="$classsparta_1_1TieredMap.html#acede0ffe2b71c113400eb8d37ac83d1c" title="Clears the map. Frees all mappings and data structures." alt="" coords="429,71,560,112"/>
+</map>

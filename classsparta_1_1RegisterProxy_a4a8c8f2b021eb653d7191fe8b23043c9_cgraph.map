@@ -1,0 +1,5 @@
+<map id="sparta::RegisterProxy::getCurrentRegister" name="sparta::RegisterProxy::getCurrentRegister">
+<area shape="rect" id="node1" title="Gets the current register being pointed to by this proxy based on simulation state." alt="" coords="5,39,149,80"/>
+<area shape="rect" id="node2" href="$classsparta_1_1RegisterSet.html#a4039f6c216473cdca511b9eba2cf3a5b" title="Determine the current bank for this register set based on the context of time simulator." alt="" coords="197,5,329,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1RegisterSet.html#ad10f064c77b158c2a3d60eae6d2eea5d" title="Retrieves a concrete register child that is a Register with the given dotted path." alt="" coords="197,71,329,112"/>
+</map>

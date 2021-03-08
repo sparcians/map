@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::PersistentFastCheckpointer::restore" name="sparta::serialization::checkpoint::PersistentFastCheckpointer::restore">
+<area shape="rect" id="node1" title=" " alt="" coords="5,5,188,61"/>
+<area shape="rect" id="node2" href="$classsparta_1_1serialization_1_1checkpoint_1_1PersistentFastCheckpointer.html#aa070419a3614cf0c15df2c69d909392a" title=" " alt="" coords="236,5,419,61"/>
+<area shape="rect" id="node3" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a9c214e1183ba7d818761d50b6f410bcb" title="Returns ArchDatas enumerated by this Checkpointer for iteration when saving or loading checkpoint dat..." alt="" coords="467,5,640,61"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::DeltaCheckpoint::~DeltaCheckpoint" name="sparta::serialization::checkpoint::DeltaCheckpoint::~DeltaCheckpoint">
+<area shape="rect" id="node1" title="Destructor." alt="" coords="5,45,197,101"/>
+<area shape="rect" id="node2" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a6fe13ab23b23f4f787328f038e33833c" title="Can this checkpoint be deleted Cannot be deleted if:" alt="" coords="245,5,437,61"/>
+<area shape="rect" id="node3" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a1ab50505bd631547981015601a4f40e8" title="Returns the ID of this checkpoint." alt="" coords="260,85,423,141"/>
+</map>

@@ -1,0 +1,12 @@
+<map id="sparta::Unit::onBindTreeEarly_" name="sparta::Unit::onBindTreeEarly_">
+<area shape="rect" id="node1" title=" " alt="" coords="5,115,165,156"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Port.html#aa5c1a0884c4d728eca0de1e497f257a9" title="Does this Port participate in auto&#45;precedence establishment by sparta::Unit?" alt="" coords="213,5,397,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1EventSet.html#a0410878de0b4c8906610f61e96b2f252" title=" " alt="" coords="215,71,396,98"/>
+<area shape="rect" id="node4" href="$classsparta_1_1PortSet.html#a3100e384189518746bc7b1226e0ad47c" title="Get the ports in this PortSet for the given direction." alt="" coords="224,122,387,149"/>
+<area shape="rect" id="node5" href="$classsparta_1_1InPort.html#a1a7e27e872e1e73ce02aa320a0973346" title="Add an event &quot;listener&quot; to this port." alt="" coords="231,173,379,215"/>
+<area shape="rect" id="node9" href="$classsparta_1_1OutPort.html#a6a9af2af9223255b8b1fc4877e5893d5" title="Add an event &quot;producer&quot; to this port." alt="" coords="226,239,385,280"/>
+<area shape="rect" id="node6" href="$classsparta_1_1Port.html#a2f01e60009c1fbe71c6b2dfe6cf042fa" title="The direction of the port." alt="" coords="454,137,617,163"/>
+<area shape="rect" id="node7" href="$classsparta_1_1TreeNode.html#a2051b2b77d112e1898b220b8a3ac1236" title="Gets the name of this node." alt="" coords="445,187,625,214"/>
+<area shape="rect" id="node8" href="$classsparta_1_1Port.html#a8d71612c1256b048b9ec52d06fe2ba2f" title="Is this port bound to another port?" alt="" coords="465,238,606,265"/>
+<area shape="rect" id="node10" href="$classsparta_1_1OutPort.html#a08bfa7d5cc8c5bc6961cd8fda5f72b7f" title=" " alt="" coords="456,289,615,331"/>
+</map>

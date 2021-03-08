@@ -1,0 +1,4 @@
+<map id="sparta::ResourceContainer" name="sparta::ResourceContainer">
+<area shape="rect" id="node1" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="5,80,180,107"/>
+<area shape="rect" id="node2" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="19,5,166,32"/>
+</map>

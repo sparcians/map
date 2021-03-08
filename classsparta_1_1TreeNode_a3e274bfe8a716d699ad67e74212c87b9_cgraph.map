@@ -1,0 +1,6 @@
+<map id="sparta::TreeNode::getParentAs" name="sparta::TreeNode::getParentAs">
+<area shape="rect" id="node1" title="Retrieves a parent casted to type T* if this node has a parent." alt="" coords="5,56,204,83"/>
+<area shape="rect" id="node2" href="$namespacesparta.html#ac0a2df7a7ca53b2fc0384476286b95ec" title="Demangles a C++ symbol." alt="" coords="289,5,409,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="252,56,447,83"/>
+<area shape="rect" id="node4" href="$classsparta_1_1TreeNode.html#a84997eff2ff8ca93baab07f458d04eb9" title="Gets immediate parent of this node if one exists." alt="" coords="258,107,441,133"/>
+</map>

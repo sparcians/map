@@ -1,0 +1,8 @@
+<map id="sparta::collection::DelayedCollectable::collectWithDuration" name="sparta::collection::DelayedCollectable::collectWithDuration">
+<area shape="rect" id="node1" title="Explicitly collect a value in the future." alt="" coords="5,175,145,231"/>
+<area shape="rect" id="node2" href="$classsparta_1_1collection_1_1Collectable.html#a63da44af767f3e0c3479989822041cbd" title="Explicitly collect a value for the given duration." alt="" coords="193,142,356,198"/>
+<area shape="rect" id="node5" href="$classsparta_1_1PhasedPayloadEvent.html#a3f7835dce02b716a08b1c88e23733955" title="Prepare a Scheduleable Payload for scheduling either now or later." alt="" coords="404,215,591,256"/>
+<area shape="rect" id="node3" href="$classsparta_1_1collection_1_1Collectable.html#a56d9cf5ee0cc7e0897413afc6b73c541" title=" " alt="" coords="429,5,565,47"/>
+<area shape="rect" id="node4" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ab1534ea1db6db3c3587f8da0cfef1aa1" title="Determine whether or not this node has collection turned on or off." alt="" coords="423,70,572,126"/>
+<area shape="rect" id="node6" href="$classsparta_1_1Scheduleable.html#a3bb381d1ef9ccb3c335613c5600d162b" title="Schedule this event with its pre&#45;set delay using the pre&#45;set Clock." alt="" coords="426,149,569,191"/>
+</map>

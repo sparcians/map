@@ -1,0 +1,4 @@
+<map id="sparta::NotificationSourceBase::getNotificationTypeName" name="sparta::NotificationSourceBase::getNotificationTypeName">
+<area shape="rect" id="node1" title="Gets the demangled name of the C++ notification type which this NotificationSource can emit." alt="" coords="5,5,209,47"/>
+<area shape="rect" id="node2" href="$namespacesparta.html#ac0a2df7a7ca53b2fc0384476286b95ec" title="Demangles a C++ symbol." alt="" coords="257,13,377,39"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="sparta::CircularBuffer::isValid" name="sparta::CircularBuffer::isValid">
+<area shape="rect" id="node1" title="Determine if data at the index is valid." alt="" coords="5,5,148,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1CircularBuffer.html#a5a4d02babc4261d1066c8f4c7d49c6c9" title="Return the number of valid entries." alt="" coords="196,5,339,47"/>
+</map>

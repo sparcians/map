@@ -1,0 +1,4 @@
+<map id="sparta::serialization::checkpoint::Checkpointer::hasCheckpoint" name="sparta::serialization::checkpoint::Checkpointer::hasCheckpoint">
+<area shape="rect" id="node1" title="Tests whether this checkpoint manager has a checkpoint with the given id." alt="" coords="5,5,179,61"/>
+<area shape="rect" id="node2" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#ab279ecfdee7c01be211f6eba664cbdc2" title="Attempts to find a checkpoint within this checkpointer by ID." alt="" coords="227,5,400,61"/>
+</map>

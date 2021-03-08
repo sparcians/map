@@ -1,0 +1,5 @@
+<map id="sparta::memory::BlockingMemoryIFNode::PostWriteAccess" name="sparta::memory::BlockingMemoryIFNode::PostWriteAccess">
+<area shape="rect" id="node1" title="Structure containing data for a Memory post&#45;write notification." alt="" coords="5,184,224,225"/>
+<area shape="rect" id="node2" href="$classsparta_1_1memory_1_1DebugMemoryIF.html" title="Memory interface which represents a simple, immediately accessible (blocking) address&#45;space with supp..." alt="" coords="9,95,220,121"/>
+<area shape="rect" id="node3" href="$classsparta_1_1memory_1_1TranslationIF.html" title="Blocking translation interface with 1:1 translation unless subclassed." alt="" coords="19,5,211,32"/>
+</map>

@@ -1,0 +1,6 @@
+<map id="sparta::memory::MemoryPokeError" name="sparta::memory::MemoryPokeError">
+<area shape="rect" id="node1" title="Error while attempting to poke some memory object or interface." alt="" coords="13,244,205,285"/>
+<area shape="rect" id="node2" href="$classsparta_1_1memory_1_1MemoryAccessError.html" title="Indicates that there was an issue accessing a SPARTA memory object or interface." alt="" coords="5,155,212,196"/>
+<area shape="rect" id="node3" href="$classsparta_1_1SpartaException.html" title="Used to construct and throw a standard C++ exception. Inherits from std::exception." alt="" coords="29,80,188,107"/>
+<area shape="rect" id="node4" title=" " alt="" coords="58,5,159,32"/>
+</map>

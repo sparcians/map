@@ -1,0 +1,7 @@
+<map id="sparta::StatisticInstance::start" name="sparta::StatisticInstance::start">
+<area shape="rect" id="node1" title="Start the computation window for this instance." alt="" coords="5,90,168,131"/>
+<area shape="rect" id="node2" href="$classsparta_1_1CounterBase.html#a31d36b265b2bc10db58b1461cd63c516" title="Gets the value of this counter." alt="" coords="216,5,379,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1ParameterBase.html#a593f164c8173d78b7d1cfaf1866bf070" title="Gets the value of this parameter as a double. \thwo Exception if underlying parameter type is not num..." alt="" coords="220,57,375,98"/>
+<area shape="rect" id="node4" href="$classsparta_1_1Scheduler.html#ad17de4b99f28e0fe1b92728df64f00a3" title="The total elapsed ticks." alt="" coords="233,122,361,163"/>
+<area shape="rect" id="node5" href="$classsparta_1_1statistics_1_1expression_1_1Expression.html#a1235cf64c35decd1fb7b5f0a02ee2c9a" title="Notify every item in this expression to start a new computation window." alt="" coords="218,187,377,243"/>
+</map>

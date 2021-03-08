@@ -1,0 +1,5 @@
+<map id="sparta::ParameterBase::setIsVolatile" name="sparta::ParameterBase::setIsVolatile">
+<area shape="rect" id="node1" title="Set volatile flag (allows write after read)" alt="" coords="5,39,160,80"/>
+<area shape="rect" id="node2" href="$classsparta_1_1PhasedObject.html#ade690bdb9df72fd6bad8847fbdf226f1" title="Gets the trees current phase." alt="" coords="212,5,359,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1ParameterBase.html#ad3c7817fce432b087dc34b3aeecec766" title="Number of times this Parameter has been read after initialization or after the last write (or explici..." alt="" coords="208,71,363,112"/>
+</map>

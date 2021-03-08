@@ -1,0 +1,4 @@
+<map id="sparta::SharedData::access" name="sparta::SharedData::access">
+<area shape="rect" id="node1" title="Get a non&#45;constant reference to the data visible this cycle." alt="" coords="5,5,137,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1SharedData.html#a82a2d6b2c0d1c8de2156d8da304f068d" title="Is there data in the current view." alt="" coords="185,5,317,47"/>
+</map>

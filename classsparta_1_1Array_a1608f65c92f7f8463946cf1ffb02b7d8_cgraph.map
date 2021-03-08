@@ -1,0 +1,4 @@
+<map id="sparta::Array::read" name="sparta::Array::read">
+<area shape="rect" id="node1" title="Read (only) the data at an index." alt="" coords="5,5,131,32"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Array.html#a6b47047a46bca0f7375c680465fd2192" title="Determine whether an index is currently valid." alt="" coords="179,5,317,32"/>
+</map>

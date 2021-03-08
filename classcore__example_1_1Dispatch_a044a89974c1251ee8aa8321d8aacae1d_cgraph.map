@@ -1,0 +1,6 @@
+<map id="core_example::Dispatch::Dispatch" name="core_example::Dispatch::Dispatch">
+<area shape="rect" id="node1" title="Constructor for Dispatch." alt="" coords="5,35,164,76"/>
+<area shape="rect" id="node2" href="$classsparta_1_1DataInPort.html#a64b009255962b1836b2f3b8dffa8d661" title="Enable pipeline collection." alt="" coords="250,5,377,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Queue.html#ae0d1e3c7245e95d489e7feb2aab1a4ec" title="Request that this queue begin collecting its contents for pipeline collection." alt="" coords="212,71,415,98"/>
+<area shape="rect" id="node4" href="$classsparta_1_1Queue.html#a7031c894df6656d9643043bc0081f7e3" title="Return the fixed size of this queue." alt="" coords="463,71,619,98"/>
+</map>

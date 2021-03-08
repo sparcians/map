@@ -1,0 +1,9 @@
+<map id="sparta::NotificationSourceBase::stringize" name="sparta::NotificationSourceBase::stringize">
+<area shape="rect" id="node1" title="Create a string representation of this node." alt="" coords="5,122,176,163"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="229,5,423,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1NotificationSourceBase.html#a5e211c4d0f43119f1802f801d3f645f3" title="Returns the notification name string for slow string comparison or printing." alt="" coords="238,57,414,98"/>
+<area shape="rect" id="node4" href="$classsparta_1_1NotificationSourceBase.html#acd75dadf0a1a94940eb7fb6cdff828a9" title="Gets the demangled name of the C++ notification type which this NotificationSource can emit." alt="" coords="224,122,428,163"/>
+<area shape="rect" id="node6" href="$classsparta_1_1NotificationSourceBase.html#a7bd4ea774dda06b18a6290ab6278c347" title="Returns the number of delegates affected by postings of this notification." alt="" coords="241,187,411,229"/>
+<area shape="rect" id="node7" href="$classsparta_1_1NotificationSourceBase.html#ab98c3ccb45abb754b402b6ac88912f6d" title="Returns the number of notifications posted by this node." alt="" coords="241,253,411,294"/>
+<area shape="rect" id="node5" href="$namespacesparta.html#ac0a2df7a7ca53b2fc0384476286b95ec" title="Demangles a C++ symbol." alt="" coords="476,129,596,156"/>
+</map>

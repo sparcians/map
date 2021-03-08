@@ -1,0 +1,4 @@
+<map id="sparta::StringManager::internString" name="sparta::StringManager::internString">
+<area shape="rect" id="node1" title="Stores a string in shared space within this manager unless it is already stored." alt="" coords="5,5,153,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1StringManager.html#ae3d9b98e1778ea4856ee9f0b776f0eff" title="Find a string in this manager." alt="" coords="201,5,349,47"/>
+</map>

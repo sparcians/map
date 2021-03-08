@@ -1,0 +1,4 @@
+<map id="sparta::ResourceTreeNode::getResourceTypeRaw" name="sparta::ResourceTreeNode::getResourceTypeRaw">
+<area shape="rect" id="node1" title="Gets the typename of the resource that this node will contain once finalized." alt="" coords="5,5,181,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1ResourceFactoryBase.html#ac648b2e9a4db894ac8a81af7c813cd4e" title="Returns the resource type&#45;name for this resource as in the typeid." alt="" coords="229,5,421,47"/>
+</map>

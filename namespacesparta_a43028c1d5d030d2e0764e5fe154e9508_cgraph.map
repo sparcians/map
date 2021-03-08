@@ -1,0 +1,10 @@
+<map id="sparta::operator&gt;&gt;" name="sparta::operator&gt;&gt;">
+<area shape="rect" id="node1" title="Place a precedence between a Scheduleable and a Bus." alt="" coords="5,56,132,83"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Bus.html#aaa21e7e76aa07cf62654c38578c3c8e8" title="Make all outports succeed the given event." alt="" coords="180,56,371,83"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Bus.html#a836221e1d400676b6e2f39b0eb4f47dc" title="Get the ports in this PortSet for the given direction." alt="" coords="427,16,569,43"/>
+<area shape="rect" id="node5" href="$classsparta_1_1OutPort.html#a6a9af2af9223255b8b1fc4877e5893d5" title="Add an event &quot;producer&quot; to this port." alt="" coords="419,78,577,119"/>
+<area shape="rect" id="node4" href="$classsparta_1_1PortSet.html#a3100e384189518746bc7b1226e0ad47c" title="Get the ports in this PortSet for the given direction." alt="" coords="634,5,797,32"/>
+<area shape="rect" id="node6" href="$classsparta_1_1TreeNode.html#a2051b2b77d112e1898b220b8a3ac1236" title="Gets the name of this node." alt="" coords="625,56,805,83"/>
+<area shape="rect" id="node7" href="$classsparta_1_1Port.html#a8d71612c1256b048b9ec52d06fe2ba2f" title="Is this port bound to another port?" alt="" coords="645,107,786,133"/>
+<area shape="rect" id="node8" href="$classsparta_1_1OutPort.html#a08bfa7d5cc8c5bc6961cd8fda5f72b7f" title=" " alt="" coords="636,158,795,199"/>
+</map>

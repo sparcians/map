@@ -1,0 +1,4 @@
+<map id="sparta::RegisterSet::getRegister" name="sparta::RegisterSet::getRegister">
+<area shape="rect" id="node1" title="Gets a Register by group number and group index and throws an exception if it cannot be found." alt="" coords="5,5,137,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1RegisterBankTable.html#a5d106e1f2477920a63fbf16f570a22ec" title="Gets a Register by group number and group index and throws an exception if it cannot be found." alt="" coords="185,5,360,47"/>
+</map>

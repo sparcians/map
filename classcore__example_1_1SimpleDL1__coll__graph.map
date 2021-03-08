@@ -1,0 +1,10 @@
+<map id="core_example::SimpleDL1" name="core_example::SimpleDL1">
+<area shape="rect" id="node1" title=" " alt="" coords="689,97,861,123"/>
+<area shape="rect" id="node2" title=" " alt="" coords="437,5,627,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="471,71,593,98"/>
+<area shape="rect" id="node4" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="200,46,375,73"/>
+<area shape="rect" id="node5" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,46,152,73"/>
+<area shape="rect" id="node6" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="201,97,374,123"/>
+<area shape="rect" id="node7" title=" " alt="" coords="439,122,625,149"/>
+<area shape="rect" id="node8" title=" " alt="" coords="423,173,641,199"/>
+</map>

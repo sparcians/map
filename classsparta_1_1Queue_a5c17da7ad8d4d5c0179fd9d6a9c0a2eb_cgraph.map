@@ -1,0 +1,5 @@
+<map id="sparta::Queue::access" name="sparta::Queue::access">
+<area shape="rect" id="node1" title="Read and return the data at the given index, reference, non&#45;const method." alt="" coords="5,5,156,32"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Queue.html#a2ddf318a5fc96552d7587210d7ba28b1" title="Determine if data at the index is valid." alt="" coords="204,5,351,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Queue.html#a61d770819cbda5b70db6eff8f35b289b" title="Return the number of valid entries." alt="" coords="399,5,529,32"/>
+</map>

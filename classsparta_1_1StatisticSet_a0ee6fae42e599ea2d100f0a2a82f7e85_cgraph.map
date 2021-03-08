@@ -1,0 +1,5 @@
+<map id="sparta::StatisticSet::createStatisticDef" name="sparta::StatisticSet::createStatisticDef">
+<area shape="rect" id="node1" title="Allocates a StatisticDef which is owned by this StatisticSet and deleted at its destruction." alt="" coords="5,27,137,69"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="185,5,380,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="209,57,356,98"/>
+</map>

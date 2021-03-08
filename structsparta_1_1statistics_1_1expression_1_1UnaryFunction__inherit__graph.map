@@ -1,0 +1,4 @@
+<map id="sparta::statistics::expression::UnaryFunction&lt; RetT, ArgT, fxn_t &gt;" name="sparta::statistics::expression::UnaryFunction&lt; RetT, ArgT, fxn_t &gt;">
+<area shape="rect" id="node1" title="Represents a Unary function node." alt="" coords="11,95,191,151"/>
+<area shape="rect" id="node2" href="$classsparta_1_1statistics_1_1expression_1_1ExpressionNode.html" title="Abstract interface class for an item in an expression. Subclasses can contain other ExpressionNodes." alt="" coords="5,5,196,47"/>
+</map>

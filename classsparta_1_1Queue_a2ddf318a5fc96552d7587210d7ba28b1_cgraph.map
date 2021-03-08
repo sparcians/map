@@ -1,0 +1,4 @@
+<map id="sparta::Queue::isValid" name="sparta::Queue::isValid">
+<area shape="rect" id="node1" title="Determine if data at the index is valid." alt="" coords="5,5,152,32"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Queue.html#a61d770819cbda5b70db6eff8f35b289b" title="Return the number of valid entries." alt="" coords="200,5,331,32"/>
+</map>

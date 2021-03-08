@@ -1,0 +1,5 @@
+<map id="sparta::operator&gt;&gt;" name="sparta::operator&gt;&gt;">
+<area shape="rect" id="node1" title="Place a precedence between a UniqueEvent and an UniqueEvent." alt="" coords="5,46,132,73"/>
+<area shape="rect" id="node2" href="$classsparta_1_1EventNode.html#aea2531d2c3c0ea0816d9040512b50a49" title="Get the scheduleable associated with this event node." alt="" coords="184,5,319,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Scheduleable.html#a697e61ff71726cc21d7e8eebe1ce83d2" title="Have this Scheduleable precede another." alt="" coords="180,71,323,112"/>
+</map>

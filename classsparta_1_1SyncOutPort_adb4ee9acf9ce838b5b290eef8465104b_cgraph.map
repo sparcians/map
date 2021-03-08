@@ -1,0 +1,9 @@
+<map id="sparta::SyncOutPort::computeNextAvailableCycleForSend" name="sparta::SyncOutPort::computeNextAvailableCycleForSend">
+<area shape="rect" id="node1" title="Compute the next available relative cycle for sending data, assuming all of the specified number of b..." alt="" coords="5,92,196,148"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Clock.html#a00acfc088c2e51817af21129b1bbc970" title="Get the current cycle (uses current tick from the Scheduler)" alt="" coords="254,107,429,133"/>
+<area shape="rect" id="node4" href="$classsparta_1_1Clock.html#ae80357c4ccec5470a15ed098af03c63d" title="Given the tick, convert to a Clock::Cycle." alt="" coords="487,161,640,188"/>
+<area shape="rect" id="node5" href="$classsparta_1_1Clock.html#a146666fd108e483100035e63e7e9aa9d" title="Get the current scheduler tick." alt="" coords="257,56,425,83"/>
+<area shape="rect" id="node6" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="244,157,439,184"/>
+<area shape="rect" id="node7" href="$classsparta_1_1Clock.html#ae49a6ed7cd60d0fa2c7b8d456370877c" title="Return true if the current tick aligns with a positive edge of this Clock." alt="" coords="259,5,423,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Scheduler.html#a34dcaf99252d9e9e0511d69d2aa84ff8" title="The current tick the Scheduler is working on or just finished." alt="" coords="499,49,627,90"/>
+</map>

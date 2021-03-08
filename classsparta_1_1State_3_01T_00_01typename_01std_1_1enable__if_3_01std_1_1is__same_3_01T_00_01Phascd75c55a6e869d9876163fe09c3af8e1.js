@@ -1,0 +1,6 @@
+var classsparta_1_1State_3_01T_00_01typename_01std_1_1enable__if_3_01std_1_1is__same_3_01T_00_01Phascd75c55a6e869d9876163fe09c3af8e1 =
+[
+    [ "State", "classsparta_1_1State_3_01T_00_01typename_01std_1_1enable__if_3_01std_1_1is__same_3_01T_00_01Phascd75c55a6e869d9876163fe09c3af8e1.html#a87092985fea81ff78a8c009fcdc73c26", null ],
+    [ "~State", "classsparta_1_1State_3_01T_00_01typename_01std_1_1enable__if_3_01std_1_1is__same_3_01T_00_01Phascd75c55a6e869d9876163fe09c3af8e1.html#aca88abb48d21e1e054ac4328258c1cac", null ],
+    [ "configure", "classsparta_1_1State_3_01T_00_01typename_01std_1_1enable__if_3_01std_1_1is__same_3_01T_00_01Phascd75c55a6e869d9876163fe09c3af8e1.html#a12c29a3aec4d05caeefcef4b09c668bb", null ]
+];

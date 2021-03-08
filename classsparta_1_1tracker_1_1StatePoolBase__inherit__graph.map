@@ -1,0 +1,4 @@
+<map id="sparta::tracker::StatePoolBase" name="sparta::tracker::StatePoolBase">
+<area shape="rect" id="node1" title="This is the polymorphic base class for the StatePool template class." alt="" coords="5,5,203,32"/>
+<area shape="rect" id="node2" href="$classsparta_1_1tracker_1_1StatePool.html" title="StatePool class template is templatized on the enum type we are tracking." alt="" coords="5,80,203,107"/>
+</map>

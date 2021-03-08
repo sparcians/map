@@ -1,0 +1,6 @@
+<map id="sparta::Buffer::access" name="sparta::Buffer::access">
+<area shape="rect" id="node1" title="Read and return the data at the given BufferIterator&#39;s location, reference." alt="" coords="5,5,152,32"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Buffer.html#aa1230177b02229b85e1e1404f4a69d3a" title="Read and return the data at the given index, reference." alt="" coords="200,5,347,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Buffer.html#ab4acbe31cd8041c3cf7818886a67d825" title="Determine if data at the index is valid." alt="" coords="395,5,537,32"/>
+<area shape="rect" id="node4" href="$classsparta_1_1Buffer.html#a58e8b8181aae8c9427385d0d1015a579" title="Return the number of valid entries." alt="" coords="585,5,712,32"/>
+</map>

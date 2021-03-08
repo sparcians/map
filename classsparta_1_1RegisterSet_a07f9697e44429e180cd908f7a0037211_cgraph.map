@@ -1,0 +1,4 @@
+<map id="sparta::RegisterSet::getRegisterProxy" name="sparta::RegisterSet::getRegisterProxy">
+<area shape="rect" id="node1" title="Retrieves a register proxy based on the given name. RegisterProxies are an indirection layer that dir..." alt="" coords="5,5,137,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="185,13,380,39"/>
+</map>

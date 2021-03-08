@@ -1,0 +1,7 @@
+<map id="sparta::InPort::precedes" name="sparta::InPort::precedes">
+<area shape="rect" id="node1" title="Ensure data entering this Port is handled before data on another." alt="" coords="5,85,164,112"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="219,5,413,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1InPort.html#a2af10c4f030280e46edcc65606ecffb4" title="Return the internally used Scheduleable for precedence." alt="" coords="212,56,420,83"/>
+<area shape="rect" id="node4" href="$classsparta_1_1Scheduleable.html#ac375a291bc8e1c782e20108e75598faa" title="Get the internal phase number." alt="" coords="243,107,389,149"/>
+<area shape="rect" id="node5" href="$classsparta_1_1Scheduleable.html#a697e61ff71726cc21d7e8eebe1ce83d2" title="Have this Scheduleable precede another." alt="" coords="245,173,387,214"/>
+</map>

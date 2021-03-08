@@ -1,0 +1,5 @@
+<map id="sparta::GlobalOrderingPoint::GlobalOrderingPoint" name="sparta::GlobalOrderingPoint::GlobalOrderingPoint">
+<area shape="rect" id="node1" title="Construction a GlobalOrderingPoint." alt="" coords="5,5,185,47"/>
+<area shape="rect" id="node2" href="$namespacesparta.html#a60b370d42ec780fa0b034d06f1d5cc0d" title="Ensures that a pointer is not null." alt="" coords="233,13,339,39"/>
+<area shape="rect" id="node3" href="$namespacesparta.html#ac0a2df7a7ca53b2fc0384476286b95ec" title="Demangles a C++ symbol." alt="" coords="387,13,507,39"/>
+</map>

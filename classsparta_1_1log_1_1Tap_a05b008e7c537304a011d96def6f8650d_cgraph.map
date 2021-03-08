@@ -1,0 +1,5 @@
+<map id="sparta::log::Tap::reset" name="sparta::log::Tap::reset">
+<area shape="rect" id="node1" title="Detach the tap from the current node (if any) and re&#45;attach to a new node. Destination and category o..." alt="" coords="5,31,149,57"/>
+<area shape="rect" id="node2" href="$classsparta_1_1log_1_1Tap.html#a5d187cc5647b6d4707b0281c0189a66f" title="Detach the tap from a node without destructing. Node can later be reattached to the same or another n..." alt="" coords="217,5,372,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1TreeNode.html#a9cb544ebd5bc75612acc891758d49ecc" title="Gets a weak pointer to this TreeNode. This weak pointer is guaranteed to expire when this TreeNode is..." alt="" coords="197,56,392,83"/>
+</map>

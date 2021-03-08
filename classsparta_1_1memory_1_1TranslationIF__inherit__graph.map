@@ -1,0 +1,4 @@
+<map id="sparta::memory::TranslationIF" name="sparta::memory::TranslationIF">
+<area shape="rect" id="node1" title="Blocking translation interface with 1:1 translation unless subclassed." alt="" coords="5,5,197,32"/>
+<area shape="rect" id="node2" href="$classsparta_1_1memory_1_1TranslationIFNode.html" title="TranslationIF extension that builds on TranslastionIF, acting as a TreeNode in the SPARTA device tree..." alt="" coords="11,80,191,121"/>
+</map>

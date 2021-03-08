@@ -1,0 +1,22 @@
+<map id="sparta::InPort" name="sparta::InPort">
+<area shape="rect" id="node1" title="Base class for all InPort types." alt="" coords="728,438,827,465"/>
+<area shape="rect" id="node7" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="923,5,1049,47"/>
+<area shape="rect" id="node8" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="919,71,1053,112"/>
+<area shape="rect" id="node9" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="900,136,1072,177"/>
+<area shape="rect" id="node10" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="875,201,1097,243"/>
+<area shape="rect" id="node11" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="883,267,1089,308"/>
+<area shape="rect" id="node12" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="923,332,1049,373"/>
+<area shape="rect" id="node13" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="923,397,1049,439"/>
+<area shape="rect" id="node14" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="923,463,1049,504"/>
+<area shape="rect" id="node15" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="923,528,1049,569"/>
+<area shape="rect" id="node16" href="$classsparta_1_1SyncInPort.html" title=" " alt="" coords="883,593,1089,635"/>
+<area shape="rect" id="node17" href="$classsparta_1_1SyncInPort.html" title=" " alt="" coords="922,659,1050,700"/>
+<area shape="rect" id="node18" href="$classsparta_1_1DataInPort.html" title="DataInPort receives data from sender using a DataOutPort." alt="" coords="923,724,1049,765"/>
+<area shape="rect" id="node19" href="$classsparta_1_1SignalInPort.html" title="SignalInPort receives data from sender using a SignalOutPort." alt="" coords="919,790,1053,817"/>
+<area shape="rect" id="node20" href="$classsparta_1_1SyncInPort.html" title="Class that defines an synchronized input port on modules on two different clocks." alt="" coords="922,841,1050,883"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Port.html" title="The port interface used to bind port types together and defines a port behavior." alt="" coords="592,438,680,465"/>
+<area shape="rect" id="node3" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="423,438,544,465"/>
+<area shape="rect" id="node4" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="200,413,375,439"/>
+<area shape="rect" id="node5" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,413,152,439"/>
+<area shape="rect" id="node6" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="201,463,374,490"/>
+</map>

@@ -1,0 +1,6 @@
+<map id="sparta::RegisterSet::setMinimumBankIndex" name="sparta::RegisterSet::setMinimumBankIndex">
+<area shape="rect" id="node1" title="Sets the minimum bank index for this register set, overriding the default of Register::BANK_IDX_DEFAU..." alt="" coords="5,5,165,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1RegisterBankTable.html#a6e9bc406fe5b7b99ae500cb0af8cec86" title="Sets the minimum bank index for this register set, overriding the default of BANK_IDX_DEFAULT." alt="" coords="213,5,388,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1RegisterBankTable.html#acd0ae32acc56188c015ee45d92cb414f" title="Extends the banks_ vector to contain num_banks entries." alt="" coords="436,5,611,47"/>
+<area shape="rect" id="node4" href="$classsparta_1_1RegisterBankTable.html#a42924bbd4c496cfdfeaadef7ed0e4ece" title="Insert a register in a specific bank." alt="" coords="659,5,833,47"/>
+</map>

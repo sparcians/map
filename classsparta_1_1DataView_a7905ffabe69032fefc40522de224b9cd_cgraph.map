@@ -1,0 +1,14 @@
+<map id="sparta::DataView::place_" name="sparta::DataView::place_">
+<area shape="rect" id="node1" title="Places this DataView within its ArchData." alt="" coords="5,265,169,292"/>
+<area shape="rect" id="node2" href="$classsparta_1_1ArchData.html#adf83047417984a2a745e88f105f4bad1" title="Checks that a segment is valid within this archdata by its given offset and size." alt="" coords="217,64,428,91"/>
+<area shape="rect" id="node6" href="$classsparta_1_1ArchData.html#a3e81bc09ca151be0f5396fb1d199ba6e" title="Gets the line associated with this offset, allocating a new line if necessary." alt="" coords="239,240,406,267"/>
+<area shape="rect" id="node10" href="$classsparta_1_1ArchData_1_1Line.html#aa4be1659c3bd363e291962cfb812ffff" title="Offset into the owning ArchData." alt="" coords="507,291,656,333"/>
+<area shape="rect" id="node11" href="$classsparta_1_1DataView.html#a8eb86e6d8d39eef642e6bf53d1f69a78" title=" " alt="" coords="238,352,407,379"/>
+<area shape="rect" id="node3" href="$classsparta_1_1ArchData.html#afde21b4a684f915cb56e8daba53e9d99" title="Checks to see that the size of the data is a valid access size." alt="" coords="476,5,687,32"/>
+<area shape="rect" id="node4" href="$classsparta_1_1ArchData.html#aaed65a11540e5f04a01fc3256b61ae49" title="Determines whether the access defined by offset and size spans multiple ArchData Lines." alt="" coords="496,57,667,98"/>
+<area shape="rect" id="node5" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="735,86,901,127"/>
+<area shape="rect" id="node7" href="$classsparta_1_1ArchData.html#a07e41ac141e36036cffedb4afad07197" title="Determines if this ArchData contains a byte for the specified address." alt="" coords="495,174,668,215"/>
+<area shape="rect" id="node8" href="$classsparta_1_1TieredMap.html#a62e9d1f0a741b568cf2b5219ab67cd1d" title="Finds a mapping for key k if one exists in this map." alt="" coords="506,240,657,267"/>
+<area shape="rect" id="node9" href="$classsparta_1_1TieredMap.html#a2c3aaf2f9985b0c7f02a3cddbec164d6" title="Attempts to get a pair_t associated with the key k without modifying the data structure." alt="" coords="753,233,883,274"/>
+<area shape="rect" id="node12" href="$classsparta_1_1ArchDataSegment.html#ae30270498f1a2a6ab9375fcaf7d2df5c" title="Gets the layout size of this segment (number of bytes)" alt="" coords="496,357,667,398"/>
+</map>

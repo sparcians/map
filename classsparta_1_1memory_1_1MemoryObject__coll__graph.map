@@ -1,0 +1,4 @@
+<map id="sparta::memory::MemoryObject" name="sparta::memory::MemoryObject">
+<area shape="rect" id="node1" title="Memory object with sparse storage for large memory representations. Has direct read/write interface w..." alt="" coords="5,80,205,107"/>
+<area shape="rect" id="node2" href="$classsparta_1_1ArchData.html" title="Contains a set of contiguous line of architectural data which can be referred to by any architected o..." alt="" coords="46,5,165,32"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="sparta::SpartaException" name="sparta::SpartaException">
+<area shape="rect" id="node1" title="Used to construct and throw a standard C++ exception. Inherits from std::exception." alt="" coords="5,80,164,107"/>
+<area shape="rect" id="node2" title=" " alt="" coords="34,5,135,32"/>
+</map>

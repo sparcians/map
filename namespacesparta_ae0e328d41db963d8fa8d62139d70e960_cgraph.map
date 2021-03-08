@@ -1,0 +1,7 @@
+<map id="sparta::bind" name="sparta::bind">
+<area shape="rect" id="node1" title="Bind two buses together." alt="" coords="5,31,93,57"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Bus.html#a87e2bcf029a5ec143359b569bab943e7" title="Bind bus1 to bus2." alt="" coords="141,31,259,57"/>
+<area shape="rect" id="node3" href="$classsparta_1_1TreeNode.html#a2051b2b77d112e1898b220b8a3ac1236" title="Gets the name of this node." alt="" coords="307,5,487,32"/>
+<area shape="rect" id="node4" href="$classsparta_1_1Bus.html#a836221e1d400676b6e2f39b0eb4f47dc" title="Get the ports in this PortSet for the given direction." alt="" coords="325,56,468,83"/>
+<area shape="rect" id="node5" href="$classsparta_1_1PortSet.html#a3100e384189518746bc7b1226e0ad47c" title="Get the ports in this PortSet for the given direction." alt="" coords="535,56,697,83"/>
+</map>

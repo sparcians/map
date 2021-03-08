@@ -1,0 +1,4 @@
+<map id="sparta::State::isClear" name="sparta::State::isClear">
+<area shape="rect" id="node1" title="Determine if the State value is clear (never set)" alt="" coords="5,5,147,32"/>
+<area shape="rect" id="node2" href="$classsparta_1_1State.html#a66b3bafcc6b938ab59ecee05be5d5dde" title="Determine if the State was ever set to value val." alt="" coords="195,5,325,32"/>
+</map>

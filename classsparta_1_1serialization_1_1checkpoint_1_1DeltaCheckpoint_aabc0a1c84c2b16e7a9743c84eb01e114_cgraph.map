@@ -1,0 +1,4 @@
+<map id="sparta::serialization::checkpoint::DeltaCheckpoint::loadState" name="sparta::serialization::checkpoint::DeltaCheckpoint::loadState">
+<area shape="rect" id="node1" title="Loads delta state of this checkpoint to root. Does not look at any other checkpoints checkpoints." alt="" coords="5,5,197,61"/>
+<area shape="rect" id="node2" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a298af42f2d8f655088a1a61ff91d776b" title="Is this checkpoint a snapshot (contains ALL simulator state)" alt="" coords="245,5,437,61"/>
+</map>

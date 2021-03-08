@@ -1,0 +1,5 @@
+<map id="sparta::SyncInPort::precedes" name="sparta::SyncInPort::precedes">
+<area shape="rect" id="node1" title="Ensure data entering this Port is handled before a payload is delivered." alt="" coords="5,39,133,80"/>
+<area shape="rect" id="node2" href="$classsparta_1_1PhasedPayloadEvent.html#ac41a64424aabf3eb940a176f15834ff6" title="Get the scheduleable associated with this event node." alt="" coords="181,5,368,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1SyncInPort.html#a339d07d28610383743b58abf3fe12a3a" title="Promote base class&#39; precedes." alt="" coords="211,71,339,112"/>
+</map>

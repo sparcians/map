@@ -1,0 +1,4 @@
+<map id="SkeletonSimulator" name="SkeletonSimulator">
+<area shape="rect" id="node1" title="SkeletonSimulator which builds the model and configures it." alt="" coords="17,80,145,107"/>
+<area shape="rect" id="node2" href="$classsparta_1_1app_1_1Simulation.html" title="Simulator which builds a sparta DeviceTree." alt="" coords="5,5,157,32"/>
+</map>

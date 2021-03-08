@@ -1,0 +1,4 @@
+<map id="sparta::app::NodeConfigFileApplicator" name="sparta::app::NodeConfigFileApplicator">
+<area shape="rect" id="node1" title="Applies a configuration file to a node pattern." alt="" coords="9,80,187,121"/>
+<area shape="rect" id="node2" href="$classsparta_1_1app_1_1ConfigApplicator.html" title="Base class for applying parameters or configuration files to the simulator device tree...." alt="" coords="5,5,191,32"/>
+</map>

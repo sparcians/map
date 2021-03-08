@@ -1,0 +1,5 @@
+<map id="sparta::ArchData::clean" name="sparta::ArchData::clean">
+<area shape="rect" id="node1" title="Deletes (if possible) data held within the ArchData, restoring it to a &#39;clean&#45;state&#39;...." alt="" coords="5,46,160,73"/>
+<area shape="rect" id="node2" href="$classsparta_1_1ArchData.html#a9eaa9d9ef72fc6322e444a4cfebd6ddd" title="Indicates whether this ArchData can free its lines after allocating them. Otherwise,..." alt="" coords="208,5,379,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1TieredMap.html#acede0ffe2b71c113400eb8d37ac83d1c" title="Clears the map. Frees all mappings and data structures." alt="" coords="228,71,359,112"/>
+</map>

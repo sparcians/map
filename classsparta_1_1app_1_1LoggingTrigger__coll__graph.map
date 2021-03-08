@@ -1,0 +1,4 @@
+<map id="sparta::app::LoggingTrigger" name="sparta::app::LoggingTrigger">
+<area shape="rect" id="node1" title="Trigger for strating logging given a number of tap descriptors." alt="" coords="5,80,183,107"/>
+<area shape="rect" id="node2" title=" " alt="" coords="30,5,158,32"/>
+</map>

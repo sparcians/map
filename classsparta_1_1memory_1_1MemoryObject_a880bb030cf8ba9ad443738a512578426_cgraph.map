@@ -1,0 +1,4 @@
+<map id="sparta::memory::MemoryObject::MemoryObject" name="sparta::memory::MemoryObject::MemoryObject">
+<area shape="rect" id="node1" title="Construct a Memory object with sparse storage." alt="" coords="5,5,205,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1ArchData.html#a941c7c3b87125814f48316ac1856303b" title="Lays out the archdata to contain a range of addresses without specifying any segments." alt="" coords="253,5,412,47"/>
+</map>

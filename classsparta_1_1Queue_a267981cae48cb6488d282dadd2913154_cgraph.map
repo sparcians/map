@@ -1,0 +1,4 @@
+<map id="sparta::Queue::front" name="sparta::Queue::front">
+<area shape="rect" id="node1" title="Read and return the data at the front(oldest element), reference." alt="" coords="5,5,140,32"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Queue.html#a61d770819cbda5b70db6eff8f35b289b" title="Return the number of valid entries." alt="" coords="188,5,319,32"/>
+</map>

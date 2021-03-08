@@ -1,0 +1,4 @@
+<map id="sparta::log::DestinationInstance&lt; std::string &gt;" name="sparta::log::DestinationInstance&lt; std::string &gt;">
+<area shape="rect" id="node1" title="Destination that opens and writes to a file with a format based on the file extension of the filename..." alt="" coords="5,80,157,121"/>
+<area shape="rect" id="node2" href="$classsparta_1_1log_1_1Destination.html" title="Generic Logging destination stream interface which writes sparta::log::Message structures to some out..." alt="" coords="5,5,157,32"/>
+</map>

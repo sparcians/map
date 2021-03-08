@@ -1,0 +1,7 @@
+<map id="sparta::StateTimerUnit::StateTimer::operator=" name="sparta::StateTimerUnit::StateTimer::operator=">
+<area shape="rect" id="node1" title="Assignment for starting a state in the timer." alt="" coords="5,35,159,76"/>
+<area shape="rect" id="node2" href="$classsparta_1_1StateTimerUnit_1_1StateTimer.html#a9b83bae11cde6ff1cb593653dee15b6c" title="Start timing state." alt="" coords="207,35,361,76"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Clock.html#a00acfc088c2e51817af21129b1bbc970" title="Get the current cycle (uses current tick from the Scheduler)" alt="" coords="409,42,584,69"/>
+<area shape="rect" id="node4" href="$classsparta_1_1Scheduler.html#a34dcaf99252d9e9e0511d69d2aa84ff8" title="The current tick the Scheduler is working on or just finished." alt="" coords="645,5,773,47"/>
+<area shape="rect" id="node5" href="$classsparta_1_1Clock.html#ae80357c4ccec5470a15ed098af03c63d" title="Given the tick, convert to a Clock::Cycle." alt="" coords="632,71,785,98"/>
+</map>

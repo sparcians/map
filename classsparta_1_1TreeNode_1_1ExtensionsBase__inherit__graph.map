@@ -1,0 +1,5 @@
+<map id="sparta::TreeNode::ExtensionsBase" name="sparta::TreeNode::ExtensionsBase">
+<area shape="rect" id="node1" title="Base class used to extend TreeNode parameter sets." alt="" coords="5,5,225,32"/>
+<area shape="rect" id="node2" href="$classsparta_1_1ExtensionsParamsOnly.html" title="Helper class used to trivially extend TreeNode parameter sets (but not any additional functionality b..." alt="" coords="16,80,215,107"/>
+<area shape="rect" id="node3" href="$classCircleExtensions.html" title=" " alt="" coords="56,155,175,181"/>
+</map>

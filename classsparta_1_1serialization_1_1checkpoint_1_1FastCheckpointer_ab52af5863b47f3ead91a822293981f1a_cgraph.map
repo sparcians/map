@@ -1,0 +1,7 @@
+<map id="sparta::serialization::checkpoint::FastCheckpointer::getCheckpointChain" name="sparta::serialization::checkpoint::FastCheckpointer::getCheckpointChain">
+<area shape="rect" id="node1" title="Debugging utility which gets a deque of checkpoints representing a chain starting at the checkpoint h..." alt="" coords="5,125,204,181"/>
+<area shape="rect" id="node2" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a251169ddfc59ee51dd987ce1d8aaa187" title="Attempts to find a checkpoint within this checkpointer by ID." alt="" coords="252,5,451,61"/>
+<area shape="rect" id="node3" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#aba03737a6b45112e910116f00e91cd28" title="Returns the head checkpoint which is equivalent to the earliest checkpoint taken." alt="" coords="265,85,438,141"/>
+<area shape="rect" id="node4" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a1ab50505bd631547981015601a4f40e8" title="Returns the ID of this checkpoint." alt="" coords="270,165,433,221"/>
+<area shape="rect" id="node5" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a49131409a758b5ad610d85470b695735" title="Returns the previous checkpoint. If this checkpoint is a snapshot, it has no previous checkpoint." alt="" coords="270,245,433,301"/>
+</map>

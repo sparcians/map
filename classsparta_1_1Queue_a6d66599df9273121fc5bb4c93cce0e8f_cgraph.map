@@ -1,0 +1,5 @@
+<map id="sparta::Queue::begin" name="sparta::Queue::begin">
+<area shape="rect" id="node1" title="STL&#45;like begin operation, starts at front (oldest element)" alt="" coords="5,31,144,57"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Queue.html#a6a6aa1902a440f69afe47d99bd988656" title="Return if the queue is empty or not." alt="" coords="192,5,335,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Queue.html#a915dd6ca633073a011f76529959a269c" title="STL &#45; like end operation, starts at element one past head." alt="" coords="199,56,328,83"/>
+</map>

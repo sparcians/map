@@ -1,0 +1,4 @@
+<map id="sparta::Clock::updateElapsedCycles" name="sparta::Clock::updateElapsedCycles">
+<area shape="rect" id="node1" title="Update the elapsed_cycles internal value given the number of ticks." alt="" coords="5,5,193,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Clock.html#ae80357c4ccec5470a15ed098af03c63d" title="Given the tick, convert to a Clock::Cycle." alt="" coords="241,13,395,39"/>
+</map>

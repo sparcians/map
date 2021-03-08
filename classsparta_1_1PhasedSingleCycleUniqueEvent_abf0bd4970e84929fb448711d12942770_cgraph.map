@@ -1,0 +1,6 @@
+<map id="sparta::PhasedSingleCycleUniqueEvent::schedule" name="sparta::PhasedSingleCycleUniqueEvent::schedule">
+<area shape="rect" id="node1" title="Schedule this PhasedSingleCycleUniqueEvent exactly zero or one cycle into the future...." alt="" coords="5,64,181,105"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Scheduler.html#a2085d211654efa68edf71f380229df79" title="Const expression to calculate tick value for indexing." alt="" coords="255,5,383,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1TreeNode.html#a2051b2b77d112e1898b220b8a3ac1236" title="Gets the name of this node." alt="" coords="229,71,409,98"/>
+<area shape="rect" id="node4" href="$classsparta_1_1Clock.html#ab621af2dc3047de88e78eb0a0a0010d5" title="Return the tick corresponding to the given cycle." alt="" coords="246,122,393,149"/>
+</map>

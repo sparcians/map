@@ -1,0 +1,4 @@
+<map id="sparta::Clock::Clock" name="sparta::Clock::Clock">
+<area shape="rect" id="node1" title="Construct a named clock with a RootTreeNode as its parent. This will effeclivelly allow this tree (an..." alt="" coords="5,5,141,32"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#a7b6ca285ffd1077f9622662c167315e9" title="Adds a TreeNode to this node as a child." alt="" coords="189,5,367,32"/>
+</map>

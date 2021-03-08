@@ -1,0 +1,5 @@
+<map id="sparta::statistics::expression::Expression::ufunc" name="sparta::statistics::expression::Expression::ufunc">
+<area shape="rect" id="node1" title="Construct a unary function having the given name and function." alt="" coords="5,45,164,101"/>
+<area shape="rect" id="node2" href="$classsparta_1_1statistics_1_1expression_1_1Expression.html#a558cf5d7892f85a904f3a4365cd35db8" title="Makes a clone of the content of this expression." alt="" coords="212,5,371,61"/>
+<area shape="rect" id="node3" href="$classsparta_1_1statistics_1_1expression_1_1Expression.html#a7d8417c61e2597561d2400081a45fda7" title="Constructs an expression containing no content." alt="" coords="212,85,371,141"/>
+</map>

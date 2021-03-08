@@ -1,0 +1,6 @@
+<map id="sparta::memory::BlockingMemoryIF::tryRead" name="sparta::memory::BlockingMemoryIF::tryRead">
+<area shape="rect" id="node1" title="Attempt to read memory of size size at address addr." alt="" coords="5,71,172,112"/>
+<area shape="rect" id="node2" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a4efd1a8b860fd5224a78b4f17f06853d" title="Determines if the given address spans block boundaries defined for this interface...." alt="" coords="220,5,419,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a56bff166f0c2e250be9450a8a152becc" title="Determines if the range [addr, addr+size) is within the access windows for this interface." alt="" coords="220,71,419,112"/>
+<area shape="rect" id="node4" href="$classsparta_1_1memory_1_1BlockingMemoryIF.html#a2c04f71050bbda78ff6bbf87a57fbc01" title="Implements tryRead." alt="" coords="236,136,403,177"/>
+</map>

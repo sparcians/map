@@ -1,0 +1,5 @@
+<map id="sparta::Clock::currentCycle" name="sparta::Clock::currentCycle">
+<area shape="rect" id="node1" title="Get the current cycle (uses current tick from the Scheduler)" alt="" coords="5,42,180,69"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Scheduler.html#a34dcaf99252d9e9e0511d69d2aa84ff8" title="The current tick the Scheduler is working on or just finished." alt="" coords="241,5,369,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Clock.html#ae80357c4ccec5470a15ed098af03c63d" title="Given the tick, convert to a Clock::Cycle." alt="" coords="228,71,381,98"/>
+</map>

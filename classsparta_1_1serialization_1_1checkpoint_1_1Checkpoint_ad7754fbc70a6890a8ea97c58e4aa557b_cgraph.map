@@ -1,0 +1,7 @@
+<map id="sparta::serialization::checkpoint::Checkpoint::~Checkpoint" name="sparta::serialization::checkpoint::Checkpoint::~Checkpoint">
+<area shape="rect" id="node1" title="Destructor." alt="" coords="5,125,168,181"/>
+<area shape="rect" id="node2" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a788f67bca036d27e0632cd7d9c4034f5" title="Adds another next checkpoint following *this." alt="" coords="216,5,379,61"/>
+<area shape="rect" id="node3" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a33a947d166bed6373b5a9faa42e270c1" title="Returns next checkpoint following *this. May be an empty vector if there are no later checkpoints fol..." alt="" coords="216,85,379,141"/>
+<area shape="rect" id="node4" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a49131409a758b5ad610d85470b695735" title="Returns the previous checkpoint. If this checkpoint is a snapshot, it has no previous checkpoint." alt="" coords="216,165,379,221"/>
+<area shape="rect" id="node5" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#ac11b8e37f9904ac68ade03a51e679064" title="Removes a checkpoint following *this because it was deleted." alt="" coords="216,245,379,301"/>
+</map>

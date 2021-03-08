@@ -1,0 +1,4 @@
+<map id="sparta::ArchData::checkInSingleLine" name="sparta::ArchData::checkInSingleLine">
+<area shape="rect" id="node1" title="Determines whether the access defined by offset and size spans multiple ArchData Lines." alt="" coords="5,5,176,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="224,5,391,47"/>
+</map>

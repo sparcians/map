@@ -1,0 +1,4 @@
+<map id="sparta::statistics::expression::Operation" name="sparta::statistics::expression::Operation">
+<area shape="rect" id="node1" title="Operation Node (e.g. +,&#45;,*,/)" alt="" coords="25,95,177,136"/>
+<area shape="rect" id="node2" href="$classsparta_1_1statistics_1_1expression_1_1ExpressionNode.html" title="Abstract interface class for an item in an expression. Subclasses can contain other ExpressionNodes." alt="" coords="5,5,196,47"/>
+</map>

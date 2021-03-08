@@ -1,0 +1,4 @@
+<map id="sparta::ArchDataSegment::place" name="sparta::ArchDataSegment::place">
+<area shape="rect" id="node1" title="Sets the offset of this DataView within its ArchData then invokes the place_ method for subclasses to..." alt="" coords="5,5,176,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1ArchDataSegment.html#ae2f0a4741578baa283f70f85bf67c4ed" title="Allows subclasses to observe placement in an ArchData. Do not write an initial value from within this..." alt="" coords="224,5,395,47"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="sparta::collection::Collectable&lt; DataT, collection_phase, MetaStruct::enable_if_t&lt; std::is_base_of&lt; sparta::PairDefinition&lt; MetaStruct::remove_any_pointer_t&lt; DataT &gt; &gt;, typename MetaStruct::remove_any_pointer_t&lt; DataT &gt;::SpartaPairDefinitionType &gt;::value &gt; &gt;" name="sparta::collection::Collectable&lt; DataT, collection_phase, MetaStruct::enable_if_t&lt; std::is_base_of&lt; sparta::PairDefinition&lt; MetaStruct::remove_any_pointer_t&lt; DataT &gt; &gt;, typename MetaStruct::remove_any_pointer_t&lt; DataT &gt;::SpartaPairDefinitionType &gt;::value &gt; &gt;">
+<area shape="rect" id="node1" title=" " alt="" coords="832,9,1164,153"/>
+<area shape="rect" id="node2" title=" " alt="" coords="592,5,784,76"/>
+<area shape="rect" id="node3" href="$classsparta_1_1collection_1_1CollectableTreeNode.html" title="An abstract type of TreeNode that has virtual calls to start collection on this node,..." alt="" coords="613,100,763,141"/>
+<area shape="rect" id="node4" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="423,107,544,134"/>
+<area shape="rect" id="node5" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="200,82,375,109"/>
+<area shape="rect" id="node6" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,82,152,109"/>
+<area shape="rect" id="node7" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="201,133,374,159"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classsparta_1_1tracker_1_1StatePoolBase.html" title="This is the polymorphic base class for the StatePool template class." alt="" coords="5,5,203,32"/>
+<area shape="rect" id="node2" href="$classsparta_1_1tracker_1_1StatePool.html" title="StatePool class template is templatized on the enum type we are tracking." alt="" coords="251,5,448,32"/>
+</map>

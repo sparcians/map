@@ -1,0 +1,16 @@
+<map id="core_example::LSU::LSU" name="core_example::LSU::LSU">
+<area shape="rect" id="node1" title="Constructor for LSU." alt="" coords="5,203,173,229"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Buffer.html#ace76a7b21e07822cfca79fd53b39dbde" title="Request that this queue begin collecting its contents for pipeline collection." alt="" coords="221,5,420,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Pipeline.html#a118ca9df00a1e55f4a89c0d932e8b0e0" title="Enable pipeline collection." alt="" coords="243,57,398,98"/>
+<area shape="rect" id="node4" href="$classsparta_1_1Resource.html#ad63883ee1323f0a4c5a14798e5fd083a" title="Gets the TreeNode (container) for this resource (if any)" alt="" coords="221,123,420,149"/>
+<area shape="rect" id="node5" href="$classsparta_1_1TreeNode.html#aadc69fe186075177c6559e84188982e9" title="Gets the group index of this node." alt="" coords="222,173,419,200"/>
+<area shape="rect" id="node6" href="$classsparta_1_1NotificationSourceBase.html#a8bd1a11753aa860f953f65f25cf22198" title="Is this NotificationSourceBase being observed at this node or an ancestor of any distance." alt="" coords="235,225,406,266"/>
+<area shape="rect" id="node7" href="$classsparta_1_1Pipeline.html#a18926daad1737a3d6887fca89912f338" title="Ask pipeline to perform its own update." alt="" coords="241,290,401,331"/>
+<area shape="rect" id="node9" href="$classsparta_1_1InPort.html#a0c3a7eb0dc8bad5657bb5f7905fb8d78" title="Register a handler to this Port (must be Direction::IN) to handle data arrival." alt="" coords="247,355,395,397"/>
+<area shape="rect" id="node12" href="$classsparta_1_1Pipeline.html#a9a4d154c91800cd5985d531cfdc9d220" title="Register event handler for a designated pipeline stage." alt="" coords="241,443,400,485"/>
+<area shape="rect" id="node8" href="$classsparta_1_1UniqueEvent.html#a3bb381d1ef9ccb3c335613c5600d162b" title="Schedule this event with its pre&#45;set delay using the pre&#45;set Clock." alt="" coords="489,267,627,309"/>
+<area shape="rect" id="node10" href="$classsparta_1_1TreeNode.html#a2051b2b77d112e1898b220b8a3ac1236" title="Gets the name of this node." alt="" coords="468,333,648,360"/>
+<area shape="rect" id="node11" href="$classsparta_1_1InPort.html#a699777326e92148af9c82758bd70f462" title="Let derived classes look over the registered consumer handler." alt="" coords="484,385,632,426"/>
+<area shape="rect" id="node13" href="$classsparta_1_1Clock.html#a65428cbbdc9d7535adbf434e75c0c5a4" title=" " alt="" coords="469,451,647,477"/>
+<area shape="rect" id="node14" href="$classsparta_1_1Pipeline.html#ae41de7ce8eb0ca6550c2525851fcc6c0" title="Indicate the pipeline size." alt="" coords="489,501,627,528"/>
+</map>

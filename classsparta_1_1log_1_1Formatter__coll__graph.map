@@ -1,0 +1,4 @@
+<map id="sparta::log::Formatter" name="sparta::log::Formatter">
+<area shape="rect" id="node1" title="File writer formatting interface. Subclsases can format for different file types (e...." alt="" coords="5,109,148,136"/>
+<area shape="rect" id="node2" href="$structsparta_1_1log_1_1Formatter_1_1Info.html" title="Formatter type description. Used in a table to describe various formatter sublasses." alt="" coords="5,5,148,47"/>
+</map>

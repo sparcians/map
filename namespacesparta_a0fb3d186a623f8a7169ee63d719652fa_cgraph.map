@@ -1,0 +1,4 @@
+<map id="sparta::bind" name="sparta::bind">
+<area shape="rect" id="node1" title="Bind two ports together." alt="" coords="5,5,93,32"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Port.html#a92472c136101d56f2773a3c03689e25f" title="Method to bind this Port to another, pointer style." alt="" coords="141,5,260,32"/>
+</map>

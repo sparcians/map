@@ -1,0 +1,4 @@
+<map id="sparta::TreeNode::delegate::observes" name="sparta::TreeNode::delegate::observes">
+<area shape="rect" id="node1" title="Compares against another delegate based on the observation point and name ignoring delegate callback ..." alt="" coords="5,5,181,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#a3ba01f766f0b8212967d2a25ceae475a" title="Checks if two notification categories match where one is an actual category." alt="" coords="229,5,419,47"/>
+</map>

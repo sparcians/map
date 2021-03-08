@@ -1,0 +1,5 @@
+<map id="sparta::StatisticInstance::getLocation" name="sparta::StatisticInstance::getLocation">
+<area shape="rect" id="node1" title="Get the location associated with this statistic instance." alt="" coords="5,39,168,80"/>
+<area shape="rect" id="node2" href="$classsparta_1_1utils_1_1ValidValue.html#afa2f546d8bbe78b24c4f372474b214eb" title="Get the value &#45; const version." alt="" coords="216,5,372,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1utils_1_1ValidValue.html#ae3676d510018298bdc57028aca4efaff" title="Is this value valid." alt="" coords="216,71,372,112"/>
+</map>

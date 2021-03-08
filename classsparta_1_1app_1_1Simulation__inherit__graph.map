@@ -1,0 +1,5 @@
+<map id="sparta::app::Simulation" name="sparta::app::Simulation">
+<area shape="rect" id="node1" title="Simulator which builds a sparta DeviceTree." alt="" coords="69,5,221,32"/>
+<area shape="rect" id="node2" href="$classExampleSimulator.html" title="ExampleSimulator which builds the model and configures it." alt="" coords="5,80,132,107"/>
+<area shape="rect" id="node3" href="$classSkeletonSimulator.html" title="SkeletonSimulator which builds the model and configures it." alt="" coords="157,80,285,107"/>
+</map>

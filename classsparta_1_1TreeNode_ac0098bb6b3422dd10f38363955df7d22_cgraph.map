@@ -1,0 +1,6 @@
+<map id="sparta::TreeNode::findAncestorByTag" name="sparta::TreeNode::findAncestorByTag">
+<area shape="rect" id="node1" title="Find the first ancestor with a particular tag." alt="" coords="5,49,204,90"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#a84997eff2ff8ca93baab07f458d04eb9" title="Gets immediate parent of this node if one exists." alt="" coords="252,5,435,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1TreeNode.html#a21c5b313d8d881b858122c48be9135cd" title="Gets farthest ancestor of this node." alt="" coords="257,56,429,83"/>
+<area shape="rect" id="node4" href="$classsparta_1_1TreeNode.html#a790acc1b3b08263b8f1941dc33fbb012" title="Does this node have a specific tag (by name)" alt="" coords="258,107,429,133"/>
+</map>

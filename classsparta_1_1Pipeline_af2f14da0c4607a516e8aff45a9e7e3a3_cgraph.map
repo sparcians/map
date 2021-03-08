@@ -1,0 +1,4 @@
+<map id="sparta::Pipeline::deactivateEventAtStage" name="sparta::Pipeline::deactivateEventAtStage">
+<area shape="rect" id="node1" title="Deactivate event for a designated pipeline stage." alt="" coords="5,5,181,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Pipeline.html#ae41de7ce8eb0ca6550c2525851fcc6c0" title="Indicate the pipeline size." alt="" coords="229,13,368,39"/>
+</map>

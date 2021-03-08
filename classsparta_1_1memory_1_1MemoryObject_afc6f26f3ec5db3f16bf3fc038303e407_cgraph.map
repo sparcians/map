@@ -1,0 +1,17 @@
+<map id="sparta::memory::MemoryObject::read" name="sparta::memory::MemoryObject::read">
+<area shape="rect" id="node1" title="Reads memory." alt="" coords="5,188,205,229"/>
+<area shape="rect" id="node2" href="$classsparta_1_1ArchData.html#ab97efbcf3061d9cb8649f5875397f061" title="Determines if an access of size &#39;bytes&#39; can be performed at the given offset based only on the size o..." alt="" coords="262,5,445,47"/>
+<area shape="rect" id="node5" href="$classsparta_1_1ArchData.html#aa0a283171cbcf7d38df0e940bced107b" title="Fill a buffer with a fill pattern." alt="" coords="269,71,438,98"/>
+<area shape="rect" id="node6" href="$classsparta_1_1memory_1_1MemoryObject.html#aef9982cc3c775886419ff0aa043f24c3" title="Get the fill pattern. Fewer than 8 bytes may be used. See getFillPatternSize." alt="" coords="253,123,453,164"/>
+<area shape="rect" id="node8" href="$classsparta_1_1memory_1_1MemoryObject.html#ae9ec4447696bc3d179149c70fe5f9a05" title="Get the number of bytes in the fill pattern." alt="" coords="253,188,453,229"/>
+<area shape="rect" id="node10" href="$classsparta_1_1ArchData_1_1Line.html#aa4be1659c3bd363e291962cfb812ffff" title="Offset into the owning ArchData." alt="" coords="279,253,428,295"/>
+<area shape="rect" id="node11" href="$classsparta_1_1ArchData_1_1Line.html#a36d8116926a69451707506f97d0beb02" title="Read from this line, reordering bytes based on byte order if required." alt="" coords="279,319,428,360"/>
+<area shape="rect" id="node12" href="$classsparta_1_1ArchData.html#a6aa4d4914c47e426f05b29e0ac762d50" title="Gets the line associated with this offset only if it already exists." alt="" coords="261,385,445,411"/>
+<area shape="rect" id="node3" href="$classsparta_1_1ArchData.html#aaed65a11540e5f04a01fc3256b61ae49" title="Determines whether the access defined by offset and size spans multiple ArchData Lines." alt="" coords="503,35,673,76"/>
+<area shape="rect" id="node4" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="723,152,889,193"/>
+<area shape="rect" id="node7" href="$classsparta_1_1ArchData.html#a212c297cb552081412bd8d2ae2664f37" title="Gets the value used to initialize unwritten memory." alt="" coords="501,130,675,157"/>
+<area shape="rect" id="node9" href="$classsparta_1_1ArchData.html#a4abae2618afe5c0f02a32dc54d6850f8" title="Gets the size of the initial value." alt="" coords="501,188,675,229"/>
+<area shape="rect" id="node13" href="$classsparta_1_1ArchData.html#a07e41ac141e36036cffedb4afad07197" title="Determines if this ArchData contains a byte for the specified address." alt="" coords="501,348,675,389"/>
+<area shape="rect" id="node14" href="$classsparta_1_1TieredMap.html#a62e9d1f0a741b568cf2b5219ab67cd1d" title="Finds a mapping for key k if one exists in this map." alt="" coords="513,414,663,441"/>
+<area shape="rect" id="node15" href="$classsparta_1_1TieredMap.html#a2c3aaf2f9985b0c7f02a3cddbec164d6" title="Attempts to get a pair_t associated with the key k without modifying the data structure." alt="" coords="741,407,871,448"/>
+</map>

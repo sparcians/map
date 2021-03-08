@@ -1,0 +1,5 @@
+<map id="sparta::InPort::registerConsumerHandler" name="sparta::InPort::registerConsumerHandler">
+<area shape="rect" id="node1" title="Register a handler to this Port (must be Direction::IN) to handle data arrival." alt="" coords="5,27,153,69"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#a2051b2b77d112e1898b220b8a3ac1236" title="Gets the name of this node." alt="" coords="201,5,381,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1InPort.html#a699777326e92148af9c82758bd70f462" title="Let derived classes look over the registered consumer handler." alt="" coords="217,57,365,98"/>
+</map>

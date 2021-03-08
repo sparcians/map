@@ -1,0 +1,5 @@
+<map id="core_example::Rename::Rename" name="core_example::Rename::Rename">
+<area shape="rect" id="node1" title="Constructor for Rename." alt="" coords="5,5,161,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Queue.html#ae0d1e3c7245e95d489e7feb2aab1a4ec" title="Request that this queue begin collecting its contents for pipeline collection." alt="" coords="209,13,412,39"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Queue.html#a7031c894df6656d9643043bc0081f7e3" title="Return the fixed size of this queue." alt="" coords="460,13,616,39"/>
+</map>

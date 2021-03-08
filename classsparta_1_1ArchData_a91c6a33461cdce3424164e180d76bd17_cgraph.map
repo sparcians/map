@@ -1,0 +1,6 @@
+<map id="sparta::ArchData::saveAll" name="sparta::ArchData::saveAll">
+<area shape="rect" id="node1" title="Writes snapshot checkpointing data (all lines) from this ArchData to a stream regardless of dirtiness..." alt="" coords="5,71,172,98"/>
+<area shape="rect" id="node2" href="$classsparta_1_1ArchData_1_1Line.html#aec7dc20d6989a7aebd6fe0d0fdd3bfbd" title="Index of this line (typically offset/line_size)" alt="" coords="251,5,400,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1ArchData.html#a6b5759c5080504f4ee11b934b55dfa4d" title="Returns the owner TreeNode." alt="" coords="220,71,431,98"/>
+<area shape="rect" id="node4" href="$classsparta_1_1ArchData_1_1Line.html#a74607607f471a0cae0ec490d27e41dbd" title="Store data to output buffer." alt="" coords="251,123,400,164"/>
+</map>

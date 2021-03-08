@@ -1,0 +1,4 @@
+<map id="sparta::log::Tap::~Tap" name="sparta::log::Tap::~Tap">
+<area shape="rect" id="node1" title="Destructor." alt="" coords="5,5,149,32"/>
+<area shape="rect" id="node2" href="$classsparta_1_1log_1_1Tap.html#a5d187cc5647b6d4707b0281c0189a66f" title="Detach the tap from a node without destructing. Node can later be reattached to the same or another n..." alt="" coords="197,5,352,32"/>
+</map>

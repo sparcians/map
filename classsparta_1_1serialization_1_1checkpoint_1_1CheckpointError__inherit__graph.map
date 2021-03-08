@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::CheckpointError" name="sparta::serialization::checkpoint::CheckpointError">
+<area shape="rect" id="node1" title="Indicates that there was an issue operating on checkpoints within the SPARTA framework." alt="" coords="5,155,195,196"/>
+<area shape="rect" id="node2" href="$classsparta_1_1SpartaException.html" title="Used to construct and throw a standard C++ exception. Inherits from std::exception." alt="" coords="21,80,179,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="49,5,151,32"/>
+</map>

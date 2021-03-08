@@ -1,0 +1,5 @@
+<map id="sparta::DynamicResourceTreeNode::finalize" name="sparta::DynamicResourceTreeNode::finalize">
+<area shape="rect" id="node1" title="Finalize this node and construct its resource." alt="" coords="5,27,200,69"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="248,5,443,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1ResourceContainer.html#ab65ab733b6e16ce567c4026c431a9dc3" title="Returns the currently held resource of this node (if any). This method can be called at any time." alt="" coords="258,57,433,98"/>
+</map>

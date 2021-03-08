@@ -1,0 +1,4 @@
+<map id="sparta::serialization::checkpoint::Checkpointer::getHeadID" name="sparta::serialization::checkpoint::Checkpointer::getHeadID">
+<area shape="rect" id="node1" title="Returns the checkpoint ID of the head checkpoint (if it exists) which is equivalent to the earliest c..." alt="" coords="5,5,179,61"/>
+<area shape="rect" id="node2" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a1ab50505bd631547981015601a4f40e8" title="Returns the ID of this checkpoint." alt="" coords="227,5,389,61"/>
+</map>

@@ -1,0 +1,19 @@
+<map id="sparta::Unit" name="sparta::Unit">
+<area shape="rect" id="node1" title="The is the base class for user defined blocks in simulation." alt="" coords="172,360,260,387"/>
+<area shape="rect" id="node3" href="$classConsumer.html" title=" " alt="" coords="363,5,444,32"/>
+<area shape="rect" id="node4" href="$classProducer.html" title=" " alt="" coords="366,56,441,83"/>
+<area shape="rect" id="node5" href="$classcore__example_1_1BIU.html" title=" " alt="" coords="338,107,469,133"/>
+<area shape="rect" id="node6" href="$classcore__example_1_1CPU.html" title=" " alt="" coords="335,157,471,184"/>
+<area shape="rect" id="node7" href="$classcore__example_1_1Core.html" title=" " alt="" coords="336,208,471,235"/>
+<area shape="rect" id="node8" href="$classcore__example_1_1Decode.html" title=" " alt="" coords="327,259,479,285"/>
+<area shape="rect" id="node9" href="$classcore__example_1_1Dispatch.html" title=" " alt="" coords="324,309,483,336"/>
+<area shape="rect" id="node10" href="$classcore__example_1_1Execute.html" title=" " alt="" coords="326,360,481,387"/>
+<area shape="rect" id="node11" href="$classcore__example_1_1Fetch.html" title=" " alt="" coords="333,411,474,437"/>
+<area shape="rect" id="node12" href="$classcore__example_1_1FlushManager.html" title="Class used by performance models for signaling a flushing event across blocks." alt="" coords="308,461,499,488"/>
+<area shape="rect" id="node13" href="$classcore__example_1_1LSU.html" title=" " alt="" coords="336,512,471,539"/>
+<area shape="rect" id="node14" href="$classcore__example_1_1MSS.html" title=" " alt="" coords="335,563,472,589"/>
+<area shape="rect" id="node15" href="$classcore__example_1_1ROB.html" title=" " alt="" coords="335,613,471,640"/>
+<area shape="rect" id="node16" href="$classcore__example_1_1Rename.html" title=" " alt="" coords="325,664,481,691"/>
+<area shape="rect" id="node17" href="$classcore__example_1_1SimpleTLB.html" title=" " alt="" coords="317,715,490,741"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Resource.html" title="The is the base class for all types of resources used by the SPARTA framework." alt="" coords="5,360,124,387"/>
+</map>

@@ -1,0 +1,6 @@
+<map id="sparta::TreeNode::findAncestorByType" name="sparta::TreeNode::findAncestorByType">
+<area shape="rect" id="node1" title="Find ancestor by type." alt="" coords="5,57,204,98"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#a84997eff2ff8ca93baab07f458d04eb9" title="Gets immediate parent of this node if one exists." alt="" coords="252,5,435,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1ResourceContainer.html#ae244126daf829d0ef231a1f7707a6c3b" title="Gets the typename of the resource that this node will eventually contain." alt="" coords="256,57,431,98"/>
+<area shape="rect" id="node4" href="$classsparta_1_1TreeNode.html#a21c5b313d8d881b858122c48be9135cd" title="Gets farthest ancestor of this node." alt="" coords="257,123,429,149"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="sparta::serialization::checkpoint::Checkpoint" name="sparta::serialization::checkpoint::Checkpoint">
+<area shape="rect" id="node1" title="Single checkpoint object interface with a tick number and an ID unique to the owning Checkpointer ins..." alt="" coords="20,5,183,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html" title="Single delta checkpoint object containing all simulator state which changed since some previous Delta..." alt="" coords="5,95,197,151"/>
+</map>

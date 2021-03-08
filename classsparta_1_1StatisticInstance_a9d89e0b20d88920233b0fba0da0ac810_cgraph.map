@@ -1,0 +1,5 @@
+<map id="sparta::StatisticInstance::end" name="sparta::StatisticInstance::end">
+<area shape="rect" id="node1" title="Ends the window for this instance. Computes and caches the result of the statistic." alt="" coords="5,46,195,73"/>
+<area shape="rect" id="node2" href="$classsparta_1_1statistics_1_1expression_1_1Expression.html#ac56550284de2770211515eecb4c09243" title="Notify every item in this expression to end the current computation window." alt="" coords="243,5,429,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Scheduler.html#ad17de4b99f28e0fe1b92728df64f00a3" title="The total elapsed ticks." alt="" coords="272,71,400,112"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="sparta::log::DestinationInstance&lt; DestType &gt;" name="sparta::log::DestinationInstance&lt; DestType &gt;">
+<area shape="rect" id="node1" title="A destination where log messages go to be written to a file or other ostream. Attempts to prevent dup..." alt="" coords="5,80,157,121"/>
+<area shape="rect" id="node2" href="$classsparta_1_1log_1_1Destination.html" title="Generic Logging destination stream interface which writes sparta::log::Message structures to some out..." alt="" coords="5,5,157,32"/>
+</map>

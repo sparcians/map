@@ -1,0 +1,4 @@
+<map id="sparta::StatisticInstance::getClocks" name="sparta::StatisticInstance::getClocks">
+<area shape="rect" id="node1" title="Gets all clocks associated with this Statistic instance (if any) whether it points to a StatisticDef,..." alt="" coords="5,13,168,54"/>
+<area shape="rect" id="node2" href="$classsparta_1_1statistics_1_1expression_1_1Expression.html#a47421241869fb96b4ac95ba7ce40bd39" title="Gets all clocks associated with this Expression." alt="" coords="216,5,375,61"/>
+</map>

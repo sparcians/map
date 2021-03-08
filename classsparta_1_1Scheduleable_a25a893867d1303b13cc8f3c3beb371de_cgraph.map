@@ -1,0 +1,4 @@
+<map id="sparta::Scheduleable::scheduleRelativeTick" name="sparta::Scheduleable::scheduleRelativeTick">
+<area shape="rect" id="node1" title="Schedule this event on a relative scheduler tick." alt="" coords="5,5,157,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Scheduler.html#a0b13a88c25c0e8d8877bab21d66fb34f" title="Schedule a single event. This method should also be thread safe." alt="" coords="205,5,333,47"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="sparta::RootTreeNode::setClock" name="sparta::RootTreeNode::setClock">
+<area shape="rect" id="node1" title="Assigns a clock to this node. This clock will then be accessed by any descendant which has no assigne..." alt="" coords="5,5,153,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#aa3077d3b25e965fd6924258b5eb77f61" title="Assigns a clock to this node. This clock will then be accessed by any descendant which has no assigne..." alt="" coords="201,13,380,39"/>
+</map>

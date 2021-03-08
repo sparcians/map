@@ -1,0 +1,5 @@
+<map id="sparta::Pipeline::setConsumerForPipelineUpdate" name="sparta::Pipeline::setConsumerForPipelineUpdate">
+<area shape="rect" id="node1" title="Specify consumer event for the pipeline update event." alt="" coords="5,39,199,80"/>
+<area shape="rect" id="node2" href="$classsparta_1_1EventNode.html#aea2531d2c3c0ea0816d9040512b50a49" title="Get the scheduleable associated with this event node." alt="" coords="251,5,385,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Scheduleable.html#a697e61ff71726cc21d7e8eebe1ce83d2" title="Have this Scheduleable precede another." alt="" coords="247,71,389,112"/>
+</map>

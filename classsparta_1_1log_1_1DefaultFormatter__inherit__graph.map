@@ -1,0 +1,4 @@
+<map id="sparta::log::DefaultFormatter" name="sparta::log::DefaultFormatter">
+<area shape="rect" id="node1" title="Formatter that writes most message information, but excludes thread/sequence." alt="" coords="5,80,189,107"/>
+<area shape="rect" id="node2" href="$classsparta_1_1log_1_1Formatter.html" title="File writer formatting interface. Subclsases can format for different file types (e...." alt="" coords="26,5,169,32"/>
+</map>

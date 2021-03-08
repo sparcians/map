@@ -1,0 +1,4 @@
+<map id="sparta::statistics::ArchiveNode" name="sparta::statistics::ArchiveNode">
+<area shape="rect" id="node1" title="When a simulation is configured to archive its statistics values, it will build a subset of its devic..." alt="" coords="12,5,129,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1statistics_1_1RootArchiveNode.html" title="There is one of these root node objects at the top of each report&#39;s archive. The hierarchy looks like..." alt="" coords="5,95,136,136"/>
+</map>

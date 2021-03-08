@@ -1,0 +1,4 @@
+<map id="sparta::RegisterBase::Field::read" name="sparta::RegisterBase::Field::read">
+<area shape="rect" id="node1" title="Read the field." alt="" coords="5,5,148,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1RegisterBase_1_1Field.html#aed27ce711418a89877751a40d9a0d492" title="Returns the index of the low bit (inclusive) in this field." alt="" coords="196,5,339,47"/>
+</map>

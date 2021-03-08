@@ -1,0 +1,4 @@
+<map id="sparta::Clock::isPosedge" name="sparta::Clock::isPosedge">
+<area shape="rect" id="node1" title="Return true if the current tick aligns with a positive edge of this Clock." alt="" coords="5,13,169,39"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Scheduler.html#a34dcaf99252d9e9e0511d69d2aa84ff8" title="The current tick the Scheduler is working on or just finished." alt="" coords="217,5,345,47"/>
+</map>

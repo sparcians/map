@@ -1,0 +1,4 @@
+<map id="sparta::statistics::expression::ReferenceVariable" name="sparta::statistics::expression::ReferenceVariable">
+<area shape="rect" id="node1" title="Expression node for a reference to a double. Anything that cannot actually vary can be handled as a c..." alt="" coords="5,95,208,136"/>
+<area shape="rect" id="node2" href="$classsparta_1_1statistics_1_1expression_1_1ExpressionNode.html" title="Abstract interface class for an item in an expression. Subclasses can contain other ExpressionNodes." alt="" coords="11,5,202,47"/>
+</map>

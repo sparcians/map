@@ -1,0 +1,5 @@
+<map id="sparta::memory::SimpleMemoryMap::addMapping" name="sparta::memory::SimpleMemoryMap::addMapping">
+<area shape="rect" id="node1" title="Create a mapping from addresses entering this object to a destination memory interface." alt="" coords="5,39,208,80"/>
+<area shape="rect" id="node2" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#afec5c7bd3d39673eacfea9c54341d768" title="Returns the block size of memory represented by this interface. Read and write accesses must not span..." alt="" coords="256,5,455,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a88eaaf49740910933179b3b489e10c41" title="Gets the total span of this interface&#39;s valid address range." alt="" coords="256,71,455,112"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="sparta::NotificationSourceBase::canGenerateNotification_" name="sparta::NotificationSourceBase::canGenerateNotification_">
+<area shape="rect" id="node1" title="Implements TreeNode::canGenerateNotification. Node subclasses which will post notifications must impl..." alt="" coords="5,5,209,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#a3ba01f766f0b8212967d2a25ceae475a" title="Checks if two notification categories match where one is an actual category." alt="" coords="257,5,447,47"/>
+</map>

@@ -1,0 +1,6 @@
+<map id="sparta::Pipe::performOwnUpdates" name="sparta::Pipe::performOwnUpdates">
+<area shape="rect" id="node1" title=" " alt="" coords="5,27,172,69"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Pipe.html#a1574d635f82816eb54fef68869b424f5" title="Are any entries valid, including ones appended THIS cycle." alt="" coords="220,5,377,32"/>
+<area shape="rect" id="node4" href="$classsparta_1_1UniqueEvent.html#a3bb381d1ef9ccb3c335613c5600d162b" title="Schedule this event with its pre&#45;set delay using the pre&#45;set Clock." alt="" coords="229,57,368,98"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Pipe.html#adcbb9aba032c20162821448cabeddc4a" title="See if there is something at the given stage." alt="" coords="425,5,560,32"/>
+</map>

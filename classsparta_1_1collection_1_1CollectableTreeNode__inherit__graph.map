@@ -1,0 +1,15 @@
+<map id="sparta::collection::CollectableTreeNode" name="sparta::collection::CollectableTreeNode">
+<area shape="rect" id="node1" title="An abstract type of TreeNode that has virtual calls to start collection on this node,..." alt="" coords="592,230,741,271"/>
+<area shape="rect" id="node6" href="$classsparta_1_1collection_1_1Collectable.html" title=" " alt="" coords="876,5,1035,61"/>
+<area shape="rect" id="node7" href="$classsparta_1_1collection_1_1Collectable.html" title=" " alt="" coords="886,85,1025,126"/>
+<area shape="rect" id="node8" href="$classsparta_1_1collection_1_1Collectable.html" title=" " alt="" coords="875,150,1035,191"/>
+<area shape="rect" id="node9" href="$classsparta_1_1collection_1_1IterableCollector.html" title=" " alt="" coords="873,215,1037,286"/>
+<area shape="rect" id="node10" href="$classsparta_1_1collection_1_1Collectable.html" title="Class used to either manually or auto&#45;collect an Annotation String object in a pipeline database." alt="" coords="857,311,1053,367"/>
+<area shape="rect" id="node12" href="$classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html" title=" " alt="" coords="789,391,1121,535"/>
+<area shape="rect" id="node13" href="$classsparta_1_1collection_1_1IterableCollector.html" title="A collector of any iterable type (std::vector, std::list, sparta::Buffer, etc)" alt="" coords="862,558,1049,629"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="423,237,544,264"/>
+<area shape="rect" id="node3" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="200,212,375,239"/>
+<area shape="rect" id="node4" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,212,152,239"/>
+<area shape="rect" id="node5" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="201,263,374,289"/>
+<area shape="rect" id="node11" href="$classsparta_1_1collection_1_1DelayedCollectable.html" title="Class used to record data in pipeline collection, but recorded in a delayed fashion." alt="" coords="1169,311,1308,367"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="sparta::serialization::checkpoint::Checkpointer::createHead" name="sparta::serialization::checkpoint::Checkpointer::createHead">
+<area shape="rect" id="node1" title="Creates a head without taking an identified checkpoint. Cannot already have a head." alt="" coords="5,107,179,163"/>
+<area shape="rect" id="node2" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a8b1a87ef3baa56e2170129b0c5ed1c7c" title="Create a head node." alt="" coords="237,5,411,61"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Scheduler.html#a34dcaf99252d9e9e0511d69d2aa84ff8" title="The current tick the Scheduler is working on or just finished." alt="" coords="260,85,388,126"/>
+<area shape="rect" id="node4" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="227,151,421,177"/>
+<area shape="rect" id="node5" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="251,202,397,243"/>
+</map>

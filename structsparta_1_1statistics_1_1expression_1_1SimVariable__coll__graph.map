@@ -1,0 +1,4 @@
+<map id="sparta::statistics::expression::SimVariable" name="sparta::statistics::expression::SimVariable">
+<area shape="rect" id="node1" title="Expression node for a simulation variable. Anything that cannot actually vary within a simulation can..." alt="" coords="17,95,184,136"/>
+<area shape="rect" id="node2" href="$classsparta_1_1statistics_1_1expression_1_1ExpressionNode.html" title="Abstract interface class for an item in an expression. Subclasses can contain other ExpressionNodes." alt="" coords="5,5,196,47"/>
+</map>

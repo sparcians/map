@@ -1,0 +1,10 @@
+<map id="sparta::SimulationInfo::stringizeToLines" name="sparta::SimulationInfo::stringizeToLines">
+<area shape="rect" id="node1" title="Generate a vector of lines." alt="" coords="5,72,152,113"/>
+<area shape="rect" id="node2" href="$classsparta_1_1LineStringStream.html#ad9fe65f758585b2cdf1664f459e3d2af" title="Gets the lines including whathever line is currently being built." alt="" coords="200,39,365,80"/>
+<area shape="rect" id="node3" href="$classsparta_1_1SimulationInfo.html#ab6df1c6f149c18a0ddba301086ca1288" title="Write this information to an ostream." alt="" coords="209,104,356,145"/>
+<area shape="rect" id="node4" href="$classsparta_1_1SimulationInfo.html#a7d7727e3e99e88a6b15feca403b84c63" title="Gets (name, value) pairs for each header entry." alt="" coords="413,104,560,145"/>
+<area shape="rect" id="node5" href="$classsparta_1_1TimeManager.html#a6728b6d1e95b60a1c6f21321491b37e6" title="Gets the number of seconds elapsed since the instantiation of SPARTA static and global vars." alt="" coords="615,5,757,47"/>
+<area shape="rect" id="node6" href="$classsparta_1_1TimeManager.html#ac8be96ee6f564a5fda1a9bf320a3979f" title="Returns the TimeManager singleton." alt="" coords="615,71,757,112"/>
+<area shape="rect" id="node7" href="$classsparta_1_1utils_1_1ValidValue.html#afa2f546d8bbe78b24c4f372474b214eb" title="Get the value &#45; const version." alt="" coords="608,136,764,177"/>
+<area shape="rect" id="node8" href="$classsparta_1_1utils_1_1ValidValue.html#ae3676d510018298bdc57028aca4efaff" title="Is this value valid." alt="" coords="608,201,764,243"/>
+</map>

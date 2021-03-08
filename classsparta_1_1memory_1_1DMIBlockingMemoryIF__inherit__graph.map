@@ -1,0 +1,5 @@
+<map id="sparta::memory::DMIBlockingMemoryIF" name="sparta::memory::DMIBlockingMemoryIF">
+<area shape="rect" id="node1" title="Wrapps a DMI in a BlockingMemoryIF." alt="" coords="15,169,206,211"/>
+<area shape="rect" id="node2" href="$classsparta_1_1memory_1_1BlockingMemoryIF.html" title="Pure&#45;virtual memory interface which represents a simple, immediately accessible (blocking) address&#45;sp..." alt="" coords="27,80,194,121"/>
+<area shape="rect" id="node3" href="$classsparta_1_1memory_1_1DebugMemoryIF.html" title="Memory interface which represents a simple, immediately accessible (blocking) address&#45;space with supp..." alt="" coords="5,5,216,32"/>
+</map>

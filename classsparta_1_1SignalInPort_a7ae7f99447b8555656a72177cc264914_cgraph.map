@@ -1,0 +1,8 @@
+<map id="sparta::SignalInPort::SignalInPort" name="sparta::SignalInPort::SignalInPort">
+<area shape="rect" id="node1" title="Create an SignalInPort with the given name." alt="" coords="5,89,140,131"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#a912f3da8fc94847159ebe53c39b58344" title="Walks up parents (starting with self) until a parent with an associated local clock is found,..." alt="" coords="188,71,367,98"/>
+<area shape="rect" id="node6" href="$classsparta_1_1Clock.html#a65428cbbdc9d7535adbf434e75c0c5a4" title=" " alt="" coords="188,122,367,149"/>
+<area shape="rect" id="node3" href="$classsparta_1_1TreeNode.html#a1d3f11ca5cb5b2ec275b1a7e405d693c" title="Gets the clock associated directly with this Node. This is useful for configuration and simulator deb..." alt="" coords="417,5,595,47"/>
+<area shape="rect" id="node4" href="$classsparta_1_1TreeNode.html#a84997eff2ff8ca93baab07f458d04eb9" title="Gets immediate parent of this node if one exists." alt="" coords="415,71,597,98"/>
+<area shape="rect" id="node5" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="433,123,579,164"/>
+</map>

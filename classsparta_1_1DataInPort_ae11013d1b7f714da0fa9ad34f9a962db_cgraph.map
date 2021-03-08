@@ -1,0 +1,4 @@
+<map id="sparta::DataInPort::setContinuing" name="sparta::DataInPort::setContinuing">
+<area shape="rect" id="node1" title="Do events from this port keep simulation going?" alt="" coords="5,5,132,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1Port.html#afe9b3f3282b3c545c7137cde62cc40dc" title=" " alt="" coords="180,13,353,39"/>
+</map>

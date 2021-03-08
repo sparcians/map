@@ -1,0 +1,27 @@
+var classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer =
+[
+    [ "checkpoint_type", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a0559a4c1556736af08afdce5e0e3f7e5", null ],
+    [ "FastCheckpointer", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a190831ab78cfd3c228d87f171775f494", null ],
+    [ "~FastCheckpointer", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#aee33d4824dbbe9fdd39f35ac48c1b286", null ],
+    [ "checkpointExists", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#af891c6487dbcea2b0c1b6119ae242d29", null ],
+    [ "cleanupChain_", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a46f4bf524ed6c274be858397a61c3dcb", null ],
+    [ "deleteCheckpoint", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a197220febff734a4be1bf5c6c32f4644", null ],
+    [ "dumpCheckpointNode_", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a6e5578e4b162c14126687b0a8adfeb61", null ],
+    [ "findCheckpoint_", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a646b8a0d1b5262478b657ed0d405314d", null ],
+    [ "findCheckpoint_", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a251169ddfc59ee51dd987ce1d8aaa187", null ],
+    [ "findInternalCheckpoint", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a513ff821f89509e818698a36cde7f807", null ],
+    [ "findLatestCheckpointAtOrBefore", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a7e9bf8a6cb3b94dc0a1be93196c756a2", null ],
+    [ "getCheckpointChain", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#ab52af5863b47f3ead91a822293981f1a", null ],
+    [ "getCheckpoints", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#ab2162bafe207e07266b49212d2163f52", null ],
+    [ "getCheckpointsAt", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a292368b48ac713cc9b64f7de61752129", null ],
+    [ "getNumCheckpoints", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a21cfc65068b2c2cc31cde46324f2fa0b", null ],
+    [ "getNumDeadCheckpoints", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#ac8cb37968feb736cb981d9ba2fcefdb3", null ],
+    [ "getNumDeltas", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#ab3931841740e229d8c7989ddb2b97f9d", null ],
+    [ "getNumSnapshots", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#ac8705084ec70ac9e71c79e7bdd50b5a3", null ],
+    [ "getSnapshotThreshold", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a67f7c7169f972019cd52afc43d2fc2e7", null ],
+    [ "loadCheckpoint", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#ab69980137705b825ee59064538933dd1", null ],
+    [ "recursForwardFindAlive_", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#ad674f72c145ce3dc5fa9da21e982f02e", null ],
+    [ "setSnapshotThreshold", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a1d8f6d9762f6cc5288f50f002ad7c46f", null ],
+    [ "stringize", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a3c21f9ff02d04b68aeee14784a3fea2a", null ],
+    [ "traceValue", "classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#afe980144a96804da8b32125715e62b78", null ]
+];

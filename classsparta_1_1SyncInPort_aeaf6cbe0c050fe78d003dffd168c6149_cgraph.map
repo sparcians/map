@@ -1,0 +1,8 @@
+<map id="sparta::SyncInPort::SyncInPort" name="sparta::SyncInPort::SyncInPort">
+<area shape="rect" id="node1" title="Create an SyncInPort with the given name." alt="" coords="5,89,133,131"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#a912f3da8fc94847159ebe53c39b58344" title="Walks up parents (starting with self) until a parent with an associated local clock is found,..." alt="" coords="181,71,360,98"/>
+<area shape="rect" id="node6" href="$classsparta_1_1Clock.html#a65428cbbdc9d7535adbf434e75c0c5a4" title=" " alt="" coords="181,122,360,149"/>
+<area shape="rect" id="node3" href="$classsparta_1_1TreeNode.html#a1d3f11ca5cb5b2ec275b1a7e405d693c" title="Gets the clock associated directly with this Node. This is useful for configuration and simulator deb..." alt="" coords="411,5,588,47"/>
+<area shape="rect" id="node4" href="$classsparta_1_1TreeNode.html#a84997eff2ff8ca93baab07f458d04eb9" title="Gets immediate parent of this node if one exists." alt="" coords="408,71,591,98"/>
+<area shape="rect" id="node5" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="426,123,573,164"/>
+</map>

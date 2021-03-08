@@ -1,0 +1,5 @@
+<map id="sparta::ParameterException" name="sparta::ParameterException">
+<area shape="rect" id="node1" title="Exception indicating a misconfigured Parameter or invalid Parameter access." alt="" coords="5,155,185,181"/>
+<area shape="rect" id="node2" href="$classsparta_1_1SpartaException.html" title="Used to construct and throw a standard C++ exception. Inherits from std::exception." alt="" coords="16,80,175,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="45,5,146,32"/>
+</map>

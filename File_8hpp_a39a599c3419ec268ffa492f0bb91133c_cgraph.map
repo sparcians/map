@@ -1,0 +1,3 @@
+<map id="sparta::utils::computeOutputFilename" name="sparta::utils::computeOutputFilename">
+<area shape="rect" id="node1" title="Computes a filename based on the input name replacing it with one of several variables." alt="" coords="5,29,188,71"/>
+</map>

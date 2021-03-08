@@ -1,0 +1,5 @@
+<map id="sparta::RegisterProxy" name="sparta::RegisterProxy">
+<area shape="rect" id="node1" title="Represents an interface to a pseudo&#45;&quot;Register&quot; of a fixed size which indirectly references other regi..." alt="" coords="21,185,165,212"/>
+<area shape="rect" id="node2" href="$classsparta_1_1RegisterProxyBase.html" title=" " alt="" coords="5,109,180,136"/>
+<area shape="rect" id="node3" href="$structsparta_1_1RegisterProxyBase_1_1Definition.html" title="Describes a register Proxy." alt="" coords="5,5,180,47"/>
+</map>

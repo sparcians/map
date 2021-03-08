@@ -1,0 +1,6 @@
+<map id="sparta::RootTreeNode::enterConfiguring" name="sparta::RootTreeNode::enterConfiguring">
+<area shape="rect" id="node1" title="Public method to crystalize the tree structure and begin configuring." alt="" coords="5,49,153,90"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#ac2cab43bc4edc2befcfab06e08c4797e" title="Recursively enter TREE_CONFIGURING phase." alt="" coords="201,5,400,32"/>
+<area shape="rect" id="node3" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="203,56,398,83"/>
+<area shape="rect" id="node4" href="$classsparta_1_1PhasedObject.html#ade690bdb9df72fd6bad8847fbdf226f1" title="Gets the trees current phase." alt="" coords="227,107,374,149"/>
+</map>

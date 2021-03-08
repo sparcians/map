@@ -1,0 +1,15 @@
+<map id="sparta::ArchData::restoreAll" name="sparta::ArchData::restoreAll">
+<area shape="rect" id="node1" title="Restores a full checkpoint snapshot (not a delta). This removes all lines NOT found in the snapshot d..." alt="" coords="5,133,184,159"/>
+<area shape="rect" id="node2" href="$classsparta_1_1ArchData.html#a5712a66066badbc5ae4d9fb98b5a79d4" title="Deletes (if possible) data held within the ArchData, restoring it to a &#39;clean&#45;state&#39;...." alt="" coords="237,78,391,105"/>
+<area shape="rect" id="node5" href="$classsparta_1_1ArchData.html#a78a6e8fc2a8c69de5528bec55773b4e4" title="Restores a delta checkpoint (not a full snapshot). This contains only additive changes." alt="" coords="232,162,396,189"/>
+<area shape="rect" id="node3" href="$classsparta_1_1ArchData.html#a9eaa9d9ef72fc6322e444a4cfebd6ddd" title="Indicates whether this ArchData can free its lines after allocating them. Otherwise,..." alt="" coords="464,5,635,47"/>
+<area shape="rect" id="node4" href="$classsparta_1_1TieredMap.html#acede0ffe2b71c113400eb8d37ac83d1c" title="Clears the map. Frees all mappings and data structures." alt="" coords="484,71,615,112"/>
+<area shape="rect" id="node6" href="$classsparta_1_1ArchData.html#a3e81bc09ca151be0f5396fb1d199ba6e" title="Gets the line associated with this offset, allocating a new line if necessary." alt="" coords="466,137,633,163"/>
+<area shape="rect" id="node12" href="$classsparta_1_1ArchData.html#a6b5759c5080504f4ee11b934b55dfa4d" title="Returns the owner TreeNode." alt="" coords="444,187,655,214"/>
+<area shape="rect" id="node13" href="$classsparta_1_1ArchData_1_1Line.html#a33abd3449c3bf810a453c52f0c43f590" title="Restore data from input buffer." alt="" coords="475,239,624,280"/>
+<area shape="rect" id="node7" href="$classsparta_1_1ArchData.html#a07e41ac141e36036cffedb4afad07197" title="Determines if this ArchData contains a byte for the specified address." alt="" coords="703,41,876,83"/>
+<area shape="rect" id="node8" href="$classsparta_1_1TieredMap.html#a62e9d1f0a741b568cf2b5219ab67cd1d" title="Finds a mapping for key k if one exists in this map." alt="" coords="714,107,865,134"/>
+<area shape="rect" id="node10" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="706,159,873,200"/>
+<area shape="rect" id="node11" href="$classsparta_1_1ArchData_1_1Line.html#aa4be1659c3bd363e291962cfb812ffff" title="Offset into the owning ArchData." alt="" coords="715,224,864,265"/>
+<area shape="rect" id="node9" href="$classsparta_1_1TieredMap.html#a2c3aaf2f9985b0c7f02a3cddbec164d6" title="Attempts to get a pair_t associated with the key k without modifying the data structure." alt="" coords="924,100,1055,141"/>
+</map>

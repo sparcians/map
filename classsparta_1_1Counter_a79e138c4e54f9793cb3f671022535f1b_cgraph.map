@@ -1,0 +1,5 @@
+<map id="sparta::Counter::set" name="sparta::Counter::set">
+<area shape="rect" id="node1" title="Sets a new value." alt="" coords="5,42,139,69"/>
+<area shape="rect" id="node2" href="$classsparta_1_1CounterBase.html#afd1b340fd4b02a83486d5d7c171d4b1d" title="Gets the behavior for this counter specified at construction." alt="" coords="215,5,353,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="187,71,381,98"/>
+</map>

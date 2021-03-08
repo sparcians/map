@@ -1,0 +1,4 @@
+<map id="sparta::RootTreeNode::simulationTerminating" name="sparta::RootTreeNode::simulationTerminating">
+<area shape="rect" id="node1" title="Called after simulation has stopped, but before statistic/report generation." alt="" coords="5,5,160,47"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNode.html#a36c82ded98e4ee01463a9fbd05a56d5f" title="Hook to allow simulation resources to clean&#45;up before simulation is ended." alt="" coords="208,5,395,47"/>
+</map>

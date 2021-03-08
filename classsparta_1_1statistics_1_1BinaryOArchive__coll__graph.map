@@ -1,0 +1,5 @@
+<map id="sparta::statistics::BinaryOArchive" name="sparta::statistics::BinaryOArchive">
+<area shape="rect" id="node1" title="Use a binary archive file as a destination for statistics values." alt="" coords="5,184,124,225"/>
+<area shape="rect" id="node2" href="$classsparta_1_1statistics_1_1ArchiveSink.html" title="Generic statistic sink base class for report archives." alt="" coords="6,95,123,136"/>
+<area shape="rect" id="node3" href="$classsparta_1_1statistics_1_1ArchiveStream.html" title="Generic statistic stream base class for sources and sinks in the report archive system." alt="" coords="6,5,123,47"/>
+</map>

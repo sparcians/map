@@ -1,0 +1,4 @@
+<map id="sparta::DataView::readUnsafe" name="sparta::DataView::readUnsafe">
+<area shape="rect" id="node1" title="Same behavior as read but without checking access bounds." alt="" coords="5,13,199,39"/>
+<area shape="rect" id="node2" href="$classsparta_1_1ArchData_1_1Line.html#a36d8116926a69451707506f97d0beb02" title="Read from this line, reordering bytes based on byte order if required." alt="" coords="247,5,396,47"/>
+</map>

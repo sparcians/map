@@ -1,0 +1,25 @@
+<map id="/github/workspace/sparta/sparta/kernel" name="/github/workspace/sparta/sparta/kernel">
+<area shape="rect" id="node1" href="dir_38df6f7c106d7c195f162803cd54b3e8.html" title="events" alt="" coords="80,52,152,100"/>
+<area shape="rect" id="node3" href="dir_538f46becf9f81566841c79369e25095.html" title="utils" alt="" coords="80,148,152,196"/>
+<area shape="rect" id="edge7-headlabel" href="dir_000009_000025.html" title="7" alt="" coords="111,122,119,137"/>
+<area shape="rect" id="node4" href="dir_bae73467595dcad1358f78a6740bd606.html" title="simulation" alt="" coords="97,340,178,388"/>
+<area shape="rect" id="edge8-headlabel" href="dir_000009_000019.html" title="8" alt="" coords="148,317,156,331"/>
+<area shape="rect" id="node5" href="dir_e68ac958302b52af687f2cf1071c917c.html" title="kernel" alt="" coords="27,244,99,292"/>
+<area shape="rect" id="edge9-headlabel" href="dir_000009_000011.html" title="7" alt="" coords="53,217,61,232"/>
+<area shape="rect" id="node2" href="dir_45da86fda3aafc4afd8ad9131b097bb6.html" title="statistics" alt="" coords="33,436,108,484"/>
+<area shape="rect" id="edge4-headlabel" href="dir_000020_000025.html" title="39" alt="" coords="103,207,118,222"/>
+<area shape="rect" id="edge5-headlabel" href="dir_000020_000019.html" title="19" alt="" coords="105,392,119,406"/>
+<area shape="rect" id="edge6-headlabel" href="dir_000020_000011.html" title="3" alt="" coords="61,304,69,318"/>
+<area shape="rect" id="edge1-headlabel" href="dir_000025_000009.html" title="1" alt="" coords="113,112,121,126"/>
+<area shape="rect" id="edge2-headlabel" href="dir_000025_000019.html" title="1" alt="" coords="130,313,138,328"/>
+<area shape="rect" id="edge3-headlabel" href="dir_000025_000011.html" title="1" alt="" coords="79,224,87,239"/>
+<area shape="rect" id="edge14-headlabel" href="dir_000019_000009.html" title="3" alt="" coords="148,112,156,127"/>
+<area shape="rect" id="edge15-headlabel" href="dir_000019_000020.html" title="5" alt="" coords="92,418,100,432"/>
+<area shape="rect" id="edge16-headlabel" href="dir_000019_000025.html" title="30" alt="" coords="122,209,136,223"/>
+<area shape="rect" id="edge17-headlabel" href="dir_000019_000011.html" title="10" alt="" coords="87,304,102,319"/>
+<area shape="rect" id="edge10-headlabel" href="dir_000011_000009.html" title="3" alt="" coords="85,103,93,118"/>
+<area shape="rect" id="edge11-headlabel" href="dir_000011_000020.html" title="2" alt="" coords="59,409,67,424"/>
+<area shape="rect" id="edge12-headlabel" href="dir_000011_000025.html" title="9" alt="" coords="91,202,99,216"/>
+<area shape="rect" id="edge13-headlabel" href="dir_000011_000019.html" title="1" alt="" coords="102,313,110,328"/>
+<area shape="rect" id="clust1" href="dir_8b51add0bc6ff831487a715a42aa15b5.html" title="sparta" alt="" coords="16,16,189,495"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="sparta::collection::PipelineCollector::PipelineCollector" name="sparta::collection::PipelineCollector::PipelineCollector">
+<area shape="rect" id="node1" title="Instantiate the collector with required parameters before pipeline collection can occur." alt="" coords="5,181,131,237"/>
+<area shape="rect" id="node2" href="$classsparta_1_1TreeNodePrivateAttorney.html#a4e0e4afe9df4b94b3848354d1607b279" title=" " alt="" coords="179,5,389,47"/>
+<area shape="rect" id="node3" href="$classsparta_1_1Clock.html#a82e1ca55c8ca69966a11a2b81ffcbce0" title="Returns the period of this clock in scheduler ticks." alt="" coords="205,71,363,98"/>
+<area shape="rect" id="node4" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="211,123,357,164"/>
+<area shape="rect" id="node5" href="$classsparta_1_1Scheduler.html#ad57d35535f5ce3d1ce808af3df549552" title="Is the scheduler finalized." alt="" coords="220,188,348,229"/>
+<area shape="rect" id="node6" href="$classsparta_1_1Scheduleable.html#a017c86b15dc4298f385820e2169779e1" title="This event, if continuing == true, will keep the simulation running." alt="" coords="213,253,355,295"/>
+<area shape="rect" id="node7" href="$classsparta_1_1Scheduleable.html#abb13cd12df45ef6b55d3e0146e9399dd" title="Set the clock and scheduler of this Scheduleable." alt="" coords="205,319,363,360"/>
+<area shape="rect" id="node9" href="$classsparta_1_1Scheduleable.html#a04355f3cb8a5f030350d26ac8cd7d898" title="Set the Scheduler of this Scheduleable, and set the local vertex_ to a new vertex from the Vertex Fac..." alt="" coords="213,384,355,425"/>
+<area shape="rect" id="node8" href="$classsparta_1_1Clock.html#a65428cbbdc9d7535adbf434e75c0c5a4" title=" " alt="" coords="437,326,616,353"/>
+</map>
