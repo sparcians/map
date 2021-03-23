@@ -202,25 +202,48 @@ void testMoveSupport()
 
 void testWeakPointer()
 {
-    // sparta::SpartaSharedPointer<MyType> ptr(new MyType);
-    // sparta::SpartaSharedPointer<MyType> ptr2;
+    my_type_deleted = 0;
+    sparta::SpartaSharedPointer<MyType> ptr(new MyType);
+    sparta::SpartaSharedPointer<MyType> ptr2;
+    sparta::SpartaSharedPointer<MyType>::SpartaWeakPointer wp = ptr;
 
-    // sparta::SpartaWeakPointer wp = ptr;
+    std::shared_ptr<MyType> sp_ptr(new MyType);
+    std::shared_ptr<MyType> sp_ptr2;
+    std::weak_ptr<MyType>   sp_wp = sp_ptr;
 
-    // EXEPCT_FALSE(wp.expired());
-    // EXEPCT_EQUAL(wp.use_count() == 1);
+    EXPECT_EQUAL(wp.expired(), sp_wp.expired());
+    EXPECT_EQUAL(wp.use_count(), sp_wp.use_count());
 
-    // ptr2 = ptr;
-    // EXEPCT_FALSE(wp.expired());
-    // EXEPCT_EQUAL(wp.use_count() == 2);
+    ptr2 = ptr;
+    sp_ptr2 = sp_ptr;
+    EXPECT_EQUAL(my_type_deleted, 0);
+    EXPECT_EQUAL(wp.expired(), sp_wp.expired());
+    EXPECT_EQUAL(wp.use_count(), sp_wp.use_count());
 
-    // ptr2 = nullptr;
-    // EXEPCT_FALSE(wp.expired());
-    // EXEPCT_EQUAL(wp.use_count() == 1);
+    ptr2 = nullptr;
+    sp_ptr2 = nullptr;
+    EXPECT_EQUAL(my_type_deleted, 0);
+    EXPECT_EQUAL(wp.expired(), sp_wp.expired());
+    EXPECT_EQUAL(wp.use_count(), sp_wp.use_count());
 
-    // ptr = nullptr;
-    // EXEPCT_TRUE(wp.expired());
-    // EXEPCT_EQUAL(wp.use_count() == 0);
+    ptr = nullptr;
+    sp_ptr = nullptr;
+    EXPECT_EQUAL(my_type_deleted, 2);
+    EXPECT_EQUAL(wp.expired(), sp_wp.expired());
+    EXPECT_EQUAL(wp.use_count(), sp_ptr.use_count());
+
+    my_type_deleted = 0;
+    {
+        sparta::SpartaSharedPointer<MyType> inside_ptr(new MyType);
+        wp = inside_ptr;
+        EXPECT_FALSE(wp.expired());
+        sparta::SpartaSharedPointer<MyType>::SpartaWeakPointer wp2 = wp;
+        EXPECT_FALSE(wp2.expired());
+        EXPECT_EQUAL(wp2.use_count(), 1);
+        EXPECT_EQUAL(my_type_deleted, 0);
+    }
+    EXPECT_EQUAL(my_type_deleted, 1);
+    EXPECT_TRUE(wp.expired());
 }
 
 #define COUNT 10
