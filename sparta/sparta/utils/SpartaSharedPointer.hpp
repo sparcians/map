@@ -9,6 +9,7 @@
 #pragma once
 
 #include <cinttypes>
+#include <cassert>
 #include <type_traits>
 
 #include "sparta/utils/Utils.hpp"
@@ -71,7 +72,6 @@ namespace sparta
                 }
             }
 
-            int32_t weak_cnt{0};
             int32_t count   {0};
             PointerT          * p = nullptr;
             SpartaWeakPointer * wp = nullptr;
@@ -107,7 +107,6 @@ namespace sparta
          * The two reference pointers now share the common memory
          */
         SpartaSharedPointer(const SpartaSharedPointer & orig) :
-            memory_block_(orig.memory_block_),
             ref_count_(orig.ref_count_)
         {
             if(SPARTA_EXPECT_TRUE(ref_count_ != nullptr)) {
@@ -123,11 +122,9 @@ namespace sparta
          * nullptr with no references
          */
         SpartaSharedPointer(SpartaSharedPointer && orig) :
-            memory_block_(orig.memory_block_),
             ref_count_(orig.ref_count_)
         {
             // DO NOT unlink.
-            orig.memory_block_ = nullptr;
             orig.ref_count_    = nullptr;
         }
 
@@ -147,7 +144,6 @@ namespace sparta
         {
             sparta_assert(&orig != this);
             unlink_();
-            memory_block_ = orig.memory_block_;
             ref_count_    = orig.ref_count_;
             if(SPARTA_EXPECT_TRUE(ref_count_ != nullptr)) {
                 ++ref_count_->count;
@@ -167,10 +163,8 @@ namespace sparta
         {
             sparta_assert(&orig != this);
             unlink_();
-            memory_block_ = orig.memory_block_;
-            ref_count_    = orig.ref_count_;
-            orig.memory_block_ = nullptr;
-            orig.ref_count_    = nullptr;
+            ref_count_ = orig.ref_count_;
+            orig.ref_count_ = nullptr;
             return *this;
         }
 
@@ -233,7 +227,6 @@ namespace sparta
         void reset(PointerT * p = nullptr) {
             unlink_();
             ref_count_     = p == nullptr ? nullptr : new RefCount(p);
-            memory_block_  = nullptr;
         }
 
         /**
@@ -254,28 +247,56 @@ namespace sparta
             constexpr SpartaWeakPointer() noexcept = default;
 
             SpartaWeakPointer(const sparta::SpartaSharedPointer<PointerT> & sp) noexcept :
-                sp_(sp.weakClone_()),
-                cnt_(sp_.ref_count_)
-            {}
+                cnt_(sp.ref_count_)
+            {
+                if(SPARTA_EXPECT_TRUE(nullptr == cnt_->wp)) { cnt_->wp = this; }
+                else { cnt_->wp->add_(this); }
+                //++cnt_->wp_cnt;
+            }
 
-            ~SpartaWeakPointer() { cnt_->wp = nullptr; }
+            ~SpartaWeakPointer() { } //--cnt_->wp_cnt; }
+
+            SpartaWeakPointer(const SpartaWeakPointer & orig) :
+                cnt_(orig.cnt_),
+                next_wp_(&orig)
+            { }
+
+            SpartaWeakPointer & operator=(const SpartaWeakPointer & orig) {
+                cnt_ = orig.cnt_;
+                next_wp_ = &orig;
+            }
+
+            SpartaWeakPointer            (SpartaWeakPointer &&) = default;
+            SpartaWeakPointer & operator=(SpartaWeakPointer &&) = default;
 
             long use_count() const noexcept { return cnt_->count; }
             bool expired()   const noexcept { return cnt_->count == 0; }
-            SpartaSharedPointer<PointerT> lock() const noexcept { return sp_; }
+            SpartaSharedPointer<PointerT> lock() const noexcept { return SpartaSharedPointer<PointerT>(cnt_); }
 
-            SpartaWeakPointer(const SpartaWeakPointer &)  = default;
-            SpartaWeakPointer(      SpartaWeakPointer &&) = default;
-            SpartaWeakPointer & operator=(const SpartaWeakPointer &)  = default;
-            SpartaWeakPointer & operator=(      SpartaWeakPointer &&) = default;
-
-            void detach() { cnt_ = &dead_cnt_; }
+            void detach() {
+                cnt_ = &dead_cnt_;
+            }
 
         private:
-            explicit SpartaWeakPointer(RefCount * cnt) : cnt_(cnt) { cnt_->wp = this; }
-            SpartaSharedPointer<PointerT> sp_;
+            void add_(const SpartaWeakPointer * other_wp) {
+                if(next_wp_) { next_wp_->add_(other_wp); }
+                else { next_wp_ = other_wp; }
+            }
+
+            void remove_() {
+                SpartaWeakPointer ** curr = &cnt_->wp;
+                SpartaWeakPointer *  prev =  cnt_->wp;
+                while(*curr != this) {
+                    prev = *curr;
+                    curr = &prev->next_wp_;
+                }
+                prev->next_wp_ = (*curr)->next_wp_;
+                *curr = nullptr;
+            }
+
             RefCount dead_cnt_{nullptr, false, 0};
             RefCount * cnt_ = &dead_cnt_;
+            const SpartaWeakPointer * next_wp_ = nullptr;
         };
 
         // Allocation helpers
@@ -566,6 +587,9 @@ namespace sparta
                     // Build the reference count using that object
                     const bool perform_delete = false;
                     ref_count = new (&ref_count_storage) RefCountType(object, perform_delete);
+
+                    // Have this reference count remember the block its in
+                    ref_count->mem_block = (void*)this;
                 }
 
                 RefCountAlignedStorage         ref_count_storage;
@@ -654,6 +678,7 @@ namespace sparta
                     --free_idx_;
                     block = free_blocks_[free_idx_];
                     sparta_assert(block->ref_count->p != nullptr);
+                    block->ref_count->mem_block = (void*)block;
                     block->ref_count->count = 1;
                     // perform an in place new on the reused pointer
                     new (block->ref_count->p) PointerT(std::forward<PointerTArgs>(args)...);
@@ -718,15 +743,6 @@ namespace sparta
 
     private:
 
-        /// Used for weak pointers.  Make a "weak clone" of the sparta
-        /// shared pointer that does not include an additional use count
-        SpartaSharedPointer<PointerT> weakClone_() const
-        {
-            SpartaSharedPointer<PointerT> clone(*this);
-            --(clone.ref_count_->count);
-            return clone;
-        }
-
         /// Unlink the reference and delete the memory if last to point to it
         void unlink_()
         {
@@ -738,8 +754,12 @@ namespace sparta
                     if(SPARTA_EXPECT_FALSE(nullptr != ref_count_->wp)) {
                         ref_count_->wp->detach();
                     }
-                    if(SPARTA_EXPECT_TRUE(nullptr != memory_block_)) {
-                        memory_block_->alloc->release_(memory_block_);
+
+                    typename SpartaSharedPointerAllocator::MemBlock * memory_block =
+                        static_cast<typename SpartaSharedPointerAllocator::MemBlock *>(ref_count_->mem_block);
+
+                    if(SPARTA_EXPECT_TRUE(nullptr != memory_block)) {
+                        memory_block->alloc->release_(memory_block);
                     }
                     else {
                         delete ref_count_;
@@ -751,12 +771,11 @@ namespace sparta
 
         // Used explicitly by the allocator only
         explicit SpartaSharedPointer(typename SpartaSharedPointerAllocator::MemBlock * block) :
-            memory_block_(block),
             ref_count_(block->ref_count)
         {
+            assert((void*)block == ref_count_->mem_block);
         }
 
-        typename SpartaSharedPointerAllocator::MemBlock * memory_block_ = nullptr;
         RefCount * ref_count_ = nullptr;
 
         template<typename PtrT, typename... Args>
