@@ -63,7 +63,8 @@ namespace sparta
                               uint32_t initial_count = 1) :
                 count(initial_count),
                 p(_p),
-                perform_delete(perform_delete){}
+                perform_delete(perform_delete)
+            {}
 
             ~RefCount() {
                 if (perform_delete) {
@@ -73,8 +74,8 @@ namespace sparta
             }
 
             int32_t count   {0};
+            int32_t wp_count{0}; // For weakpointers
             PointerT          * p = nullptr;
-            SpartaWeakPointer * wp = nullptr;
             void              * mem_block = nullptr;
             bool perform_delete = true;
         };
@@ -249,54 +250,51 @@ namespace sparta
             SpartaWeakPointer(const sparta::SpartaSharedPointer<PointerT> & sp) noexcept :
                 cnt_(sp.ref_count_)
             {
-                if(SPARTA_EXPECT_TRUE(nullptr == cnt_->wp)) { cnt_->wp = this; }
-                else { cnt_->wp->add_(this); }
-                //++cnt_->wp_cnt;
+                ++(cnt_->wp_count);
             }
 
-            ~SpartaWeakPointer() { } //--cnt_->wp_cnt; }
+            ~SpartaWeakPointer() { unlink_(); }
 
             SpartaWeakPointer(const SpartaWeakPointer & orig) :
-                cnt_(orig.cnt_),
-                next_wp_(&orig)
-            { }
+                cnt_(orig.cnt_)
+            {
+                ++(cnt_->wp_count);
+            }
 
             SpartaWeakPointer & operator=(const SpartaWeakPointer & orig) {
                 cnt_ = orig.cnt_;
-                next_wp_ = &orig;
+                ++(cnt_->wp_count);
+                return *this;
             }
 
-            SpartaWeakPointer            (SpartaWeakPointer &&) = default;
-            SpartaWeakPointer & operator=(SpartaWeakPointer &&) = default;
+            SpartaWeakPointer(SpartaWeakPointer &&orig) :
+                cnt_(orig.cnt_)
+            {
+                ++(cnt_->wp_count);
+                orig.cnt_ = &orig.dead_cnt_;
+            }
+
+            SpartaWeakPointer & operator=(SpartaWeakPointer && orig) {
+                cnt_ = orig.cnt_;
+                ++(cnt_->wp_count);
+                orig.cnt_ = &orig.dead_cnt_;
+                return *this;
+            }
 
             long use_count() const noexcept { return cnt_->count; }
             bool expired()   const noexcept { return cnt_->count == 0; }
             SpartaSharedPointer<PointerT> lock() const noexcept { return SpartaSharedPointer<PointerT>(cnt_); }
 
-            void detach() {
-                cnt_ = &dead_cnt_;
-            }
-
         private:
-            void add_(const SpartaWeakPointer * other_wp) {
-                if(next_wp_) { next_wp_->add_(other_wp); }
-                else { next_wp_ = other_wp; }
-            }
-
-            void remove_() {
-                SpartaWeakPointer ** curr = &cnt_->wp;
-                SpartaWeakPointer *  prev =  cnt_->wp;
-                while(*curr != this) {
-                    prev = *curr;
-                    curr = &prev->next_wp_;
+            void unlink_() {
+                if(--cnt_->wp_count == 0 && cnt_->count == 0) {
+                    releaseRefCount_(cnt_);
                 }
-                prev->next_wp_ = (*curr)->next_wp_;
-                *curr = nullptr;
+                cnt_ = &dead_cnt_;
             }
 
             RefCount dead_cnt_{nullptr, false, 0};
             RefCount * cnt_ = &dead_cnt_;
-            const SpartaWeakPointer * next_wp_ = nullptr;
         };
 
         // Allocation helpers
@@ -749,23 +747,24 @@ namespace sparta
             if(SPARTA_EXPECT_TRUE(ref_count_ != nullptr))
             {
                 --ref_count_->count;
-                if(SPARTA_EXPECT_FALSE(ref_count_->count == 0))
-                {
-                    if(SPARTA_EXPECT_FALSE(nullptr != ref_count_->wp)) {
-                        ref_count_->wp->detach();
-                    }
+                releaseRefCount_(ref_count_);
+            }
+        }
 
-                    typename SpartaSharedPointerAllocator::MemBlock * memory_block =
-                        static_cast<typename SpartaSharedPointerAllocator::MemBlock *>(ref_count_->mem_block);
+        static void releaseRefCount_(RefCount *& ref_count)
+        {
+            if(SPARTA_EXPECT_FALSE((ref_count->count + ref_count->wp_count) == 0))
+            {
+                typename SpartaSharedPointerAllocator::MemBlock * memory_block =
+                    static_cast<typename SpartaSharedPointerAllocator::MemBlock *>(ref_count->mem_block);
 
-                    if(SPARTA_EXPECT_TRUE(nullptr != memory_block)) {
-                        memory_block->alloc->release_(memory_block);
-                    }
-                    else {
-                        delete ref_count_;
-                    }
-                    ref_count_ = nullptr;
+                if(SPARTA_EXPECT_TRUE(nullptr != memory_block)) {
+                    memory_block->alloc->release_(memory_block);
                 }
+                else {
+                    delete ref_count;
+                }
+                ref_count = nullptr;
             }
         }
 
