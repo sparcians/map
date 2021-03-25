@@ -31,7 +31,7 @@ design.
 #    Doxygen   1.8
 
 # Clone Sparta via the MAP GitHub repo and 'cd' into it
-git clone https://github.com/sparcians/map
+git clone ssh://github.com/sparcians/map
 cd map/sparta
 
 # Build a release version
@@ -81,7 +81,7 @@ Open a MacOS Terminal
 1. `sudo easy_install Pygments==2.5.2` # Do not use HomeBrew! Needed for cppcheck-htmlreport
 1. Install XCode and check for clang: `clang --version`
 
-Clone sparta through https: `git clone https://github.com/sparcians/map.git`
+Clone sparta through ssh: `git clone ssh://github.com/sparcians/map.git`
 
 Attempt a build:
 
