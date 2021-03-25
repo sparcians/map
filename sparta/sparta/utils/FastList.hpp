@@ -4,7 +4,8 @@
 /**
  * \file   FastList.hpp
  *
- * \brief File that defines the FastList class -- an alternative to std::list
+ * \brief File that defines the FastList class -- an alternative to
+ * std::list when the user knows the size of the list ahead of time.
  */
 
 #pragma once
@@ -27,10 +28,10 @@ namespace sparta::utils
      *
      * This class is a container type that allows back emplacement and
      * random deletion.  'std::list' provides the same type of
-     * functionality, but performs new/deletes of the nodes.  Under
-     * the covers, this class does not perform new/delete of the
-     * Nodes, but reuses existing ones, performing an inplace-new of
-     * the user's object.
+     * functionality, but performs heap allocation of the internal
+     * nodes.  Under the covers, this class does not perform
+     * new/delete of the Nodes, but reuses existing ones, performing
+     * an inplace-new of the user's object.
      *
      * Testing shows this class is 2.5x faster than using std::list.
      * Caveats:
@@ -165,6 +166,72 @@ namespace sparta::utils
         using iterator       = NodeIterator<false>;  //!< Iterator type
         using const_iterator = NodeIterator<true>;   //!< Iterator type, const
 
+        //! Obtain a beginning iterator
+        iterator       begin()       { return iterator(this, (first_node_ == -1 ? nullptr : &nodes_[first_node_])); }
+
+        //! Obtain a beginning const_iterator
+        const_iterator begin() const { return const_iterator(this, (first_node_ == -1 ? nullptr : &nodes_[first_node_])); }
+
+        //! Obtain an end iterator
+        iterator       end()       { return iterator(this, nullptr); }
+        //! Obtain an end const_iterator
+        const_iterator end() const { return const_iterator(this, nullptr); }
+
+        //! \return Is this container empty?
+        bool   empty()    const { return size_ == 0; }
+
+        //! \return The current size of the container
+        size_t size()     const { return size_; };
+
+        //! \return The maximum size of this list
+        size_t max_size() const { return nodes_.capacity(); };
+
+        ////////////////////////////////////////////////////////////////////////////////
+        // Modifiers
+        void     clear()  noexcept { sparta_assert(!"Not implemented yet"); }
+        iterator insert(iterator pos, const T& value) noexcept
+        { sparta_assert(!"Not implemented yet"); return iterator(nullptr, nullptr); }
+
+        template<class ...ArgsT>
+        iterator emplace(const_iterator pos, ArgsT&&...args);
+
+        /**
+         * \brief Erase an element with the given iterator
+         * \param entry Iterator to the entry being erased
+         */
+        iterator erase(const const_iterator & entry)
+        {
+            const auto node_idx = entry.getIndex();
+            auto & curr_node = nodes_[node_idx];
+            assert(curr_node.in_use == true);
+            reinterpret_cast<T*>(&curr_node.type_storage)->~T();
+            curr_node.in_use = false;
+
+            if(first_node_ == node_idx) {
+                first_node_ = curr_node.next;
+            }
+
+            if(SPARTA_EXPECT_FALSE(curr_node.next != -1))
+            {
+                auto & next_node = nodes_[curr_node.next];
+                next_node.prev = curr_node.prev;
+            }
+
+            if(SPARTA_EXPECT_FALSE(curr_node.prev != -1))
+            {
+                auto & prev_node = nodes_[curr_node.prev];
+                prev_node.next = curr_node.next;
+            }
+
+            if(SPARTA_EXPECT_TRUE(free_head_ != -1)) {
+                nodes_[free_head_].prev = node_idx;
+                curr_node.next = free_head_;
+            }
+            free_head_ = node_idx;
+            --size_;
+            return iterator(nullptr, nullptr);
+        }
+
         /**
          * \brief Add an element to the back of the list
          * \tparam args Arguments to be passed to the user type for construction
@@ -199,61 +266,8 @@ namespace sparta::utils
             return iterator(this, &n);
         }
 
-        /**
-         * \brief Erase an element with the given iterator
-         * \param entry Iterator to the entry being erased
-         */
-        void erase(const const_iterator & entry)
-        {
-            const auto node_idx = entry.getIndex();
-            auto & curr_node = nodes_[node_idx];
-            assert(curr_node.in_use == true);
-            reinterpret_cast<T*>(&curr_node.type_storage)->~T();
-            curr_node.in_use = false;
-
-            if(first_node_ == node_idx) {
-                first_node_ = curr_node.next;
-            }
-
-            if(SPARTA_EXPECT_FALSE(curr_node.next != -1))
-            {
-                auto & next_node = nodes_[curr_node.next];
-                next_node.prev = curr_node.prev;
-            }
-
-            if(SPARTA_EXPECT_FALSE(curr_node.prev != -1))
-            {
-                auto & prev_node = nodes_[curr_node.prev];
-                prev_node.next = curr_node.next;
-            }
-
-            if(SPARTA_EXPECT_TRUE(free_head_ != -1)) {
-                nodes_[free_head_].prev = node_idx;
-                curr_node.next = free_head_;
-            }
-            free_head_ = node_idx;
-            --size_;
-        }
-
-        //! Obtain a beginning iterator
-        iterator       begin()       { return iterator(this, (first_node_ == -1 ? nullptr : &nodes_[first_node_])); }
-
-        //! Obtain a beginning const_iterator
-        const_iterator begin() const { return const_iterator(this, (first_node_ == -1 ? nullptr : &nodes_[first_node_])); }
-
-        //! Obtain an end iterator
-        iterator       end()       { return iterator(this, nullptr); }
-        //! Obtain an end const_iterator
-        const_iterator end() const { return const_iterator(this, nullptr); }
-
-        //! \return The current size of the container
-        size_t size()     const { return size_; };
-
-        //! \return The capacity of the container
-        size_t capacity() const { return nodes_.capacity(); };
-
-        //! \return Is this container empty?
-        bool   empty()    const { return size_ == 0; }
+        void pop_back() { sparta_assert(!"Not implemented yet"); }
+        void push_front() { sparta_assert(!"Not implemented yet"); }
 
     private:
 
