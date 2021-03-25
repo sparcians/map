@@ -5,7 +5,17 @@
 #include <list>
 #include <chrono>
 
-#define PERF_TEST 100000000
+
+void testConst(const sparta::utils::FastList<int> & fl)
+{
+    size_t i = 9;
+    for(auto val : fl) {
+        EXPECT_EQUAL(val, i);
+        --i;
+    }
+}
+
+
 void testFastList()
 {
     sparta::utils::FastList<int> fl(10);
@@ -39,23 +49,26 @@ void testFastList()
 
     //EXPECT_THROW(fl.erase(itr));
 
-    const uint32_t cap = fl.max_size();
-    for(int i = 0; i < PERF_TEST; ++i) {
-        for(size_t i = 0; i < cap; ++i) {
-            fl.emplace_back(i);
-        }
-
-        const auto end = fl.end();
-        for(auto it = fl.begin(); it != end;) {
-            fl.erase(it++);
-        }
+    const size_t num_elems = fl.max_size();
+    for(size_t i = 0; i < num_elems; ++i) {
+        fl.emplace_back(i);
     }
+    EXPECT_THROW(fl.emplace_back(100));
+
+    size_t i = 9;
+    for(const auto val : fl) {
+        EXPECT_EQUAL(val, i);
+        --i;
+    }
+    testConst(fl);
 }
 
-void testNormalList()
+#define PERF_TEST 100000000
+template<class ListType>
+void testListPerf()
 {
+    ListType fl(10);
     const int num_elems = 10;
-    std::list<int> fl;
     for(int i = 0; i < PERF_TEST; ++i) {
         for(size_t i = 0; i < num_elems; ++i) {
             fl.emplace_back(i);
@@ -74,14 +87,16 @@ int main()
     std::cout.imbue(std::locale());
     std::cout.precision(12);
 
-    auto start = std::chrono::system_clock::system_clock::now();
     testFastList();
+
+    auto start = std::chrono::system_clock::system_clock::now();
+    testListPerf<sparta::utils::FastList<int>>();
     auto end = std::chrono::system_clock::system_clock::now();
     auto dur = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     std::cout << "Raw time (seconds) fast list : " << dur / 1000000.0 << std::endl;
 
     start = std::chrono::system_clock::system_clock::now();
-    testNormalList();
+    testListPerf<std::list<int>>();
     end = std::chrono::system_clock::system_clock::now();
     dur = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     std::cout << "Raw time (seconds) old list : " << dur / 1000000.0 << std::endl;

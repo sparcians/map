@@ -45,6 +45,8 @@ namespace sparta::utils
     {
         struct Node
         {
+            using NodeIdx = int;
+
             // Stores the memory for an instance of 'T'.
             // Use placement new to construct the object and
             // manually invoke its dtor as necessary.
@@ -59,15 +61,23 @@ namespace sparta::utils
 
             // Points to the next element or the next free
             // element if this node has been removed.
-            int next = -1;
+            NodeIdx next = -1;
 
             // Points to the previous element.
-            int prev = -1;
+            NodeIdx prev = -1;
         };
 
-        Node * advanceNode_(const Node * node) {
-            Node * ret_node = (node->next == -1 ? nullptr : &nodes_[node->next]);
-            return ret_node;
+        typename Node::NodeIdx advanceNode_(typename Node::NodeIdx node_idx) const {
+            typename Node::NodeIdx ret_idx = (node_idx == -1 ? -1 : nodes_[node_idx].next);
+            return ret_idx;
+        }
+
+        auto getStorage(typename Node::NodeIdx node_idx) {
+            return &nodes_[node_idx].type_storage;
+        }
+
+        auto getStorage(typename Node::NodeIdx node_idx) const {
+            return &nodes_[node_idx].type_storage;
         }
 
     public:
@@ -78,38 +88,41 @@ namespace sparta::utils
         {
             typedef std::conditional_t<is_const, const value_type &, value_type &> RefIteratorType;
             typedef std::conditional_t<is_const, const value_type *, value_type *> PtrIteratorType;
+            typedef std::conditional_t<is_const, const FastList *, FastList *>     FastListPtrType;
         public:
 
             NodeIterator() = default;
 
             NodeIterator(const NodeIterator<false> & iter) :
-                node_(iter.node_)
+                flist_(iter.flist_),
+                node_idx_(iter.node_idx_)
             {}
 
-            bool isValid() const { return (node_ != nullptr); }
+            bool isValid() const { return (node_idx_ != -1); }
+
             PtrIteratorType operator->()       {
                 assert(isValid());
-                return reinterpret_cast<value_type*>(&node_->type_storage);
+                return reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
             }
             PtrIteratorType operator->() const {
                 assert(isValid());
-                return reinterpret_cast<value_type*>(&node_->type_storage);
+                return reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
             }
             RefIteratorType operator* ()       {
                 assert(isValid());
-                return *reinterpret_cast<value_type*>(&node_->type_storage);
+                return *reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
             }
             RefIteratorType operator* () const {
                 assert(isValid());
-                return *reinterpret_cast<value_type*>(&node_->type_storage);
+                return *reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
             }
 
-            int getIndex() const { return node_->index; }
+            int getIndex() const { return node_idx_; }
 
             NodeIterator & operator++()
             {
                 assert(isValid());
-                node_ = flist_->advanceNode_(node_);
+                node_idx_ = flist_->advanceNode_(node_idx_);
                 return *this;
             }
 
@@ -117,29 +130,29 @@ namespace sparta::utils
             {
                 NodeIterator orig = *this;
                 assert(isValid());
-                node_ = flist_->advanceNode_(node_);
+                node_idx_ = flist_->advanceNode_(node_idx_);
                 return orig;
             }
 
             bool operator!=(const NodeIterator &rhs)
             {
                 return (rhs.flist_ != flist_) ||
-                    (rhs.node_ != node_);
+                    (rhs.node_idx_ != node_idx_);
             }
 
             NodeIterator& operator=(const NodeIterator &rhs) = default;
-            NodeIterator& operator=(NodeIterator &&rhs) = default;
+            NodeIterator& operator=(      NodeIterator &&rhs) = default;
 
         private:
             friend class FastList<T>;
 
-            NodeIterator(FastList * flist, Node * node) :
+            NodeIterator(FastListPtrType flist, typename Node::NodeIdx node_idx) :
                 flist_(flist),
-                node_(node)
+                node_idx_(node_idx)
             { }
 
-            FastList * flist_ = nullptr;
-            Node     * node_  = nullptr;
+            FastListPtrType flist_ = nullptr;
+            typename Node::NodeIdx node_idx_ = -1;
         };
 
         /**
@@ -164,15 +177,19 @@ namespace sparta::utils
         using const_iterator = NodeIterator<true>;   //!< Iterator type, const
 
         //! Obtain a beginning iterator
-        iterator       begin()       { return iterator(this, (first_node_ == -1 ? nullptr : &nodes_[first_node_])); }
+        iterator begin() {
+            return iterator(this, first_node_);
+        }
 
         //! Obtain a beginning const_iterator
-        const_iterator begin() const { return const_iterator(this, (first_node_ == -1 ? nullptr : &nodes_[first_node_])); }
+        const_iterator begin() const {
+            return const_iterator(this, first_node_);
+        }
 
         //! Obtain an end iterator
-        iterator       end()       { return iterator(this, nullptr); }
+        iterator       end()       { return iterator(this, -1); }
         //! Obtain an end const_iterator
-        const_iterator end() const { return const_iterator(this, nullptr); }
+        const_iterator end() const { return const_iterator(this, -1); }
 
         //! \return Is this container empty?
         bool   empty()    const { return size_ == 0; }
@@ -187,7 +204,7 @@ namespace sparta::utils
         // Modifiers
         void     clear()  noexcept { sparta_assert(!"Not implemented yet"); }
         iterator insert(iterator pos, const T& value) noexcept
-        { sparta_assert(!"Not implemented yet"); return iterator(nullptr, nullptr); }
+        { sparta_assert(!"Not implemented yet"); return iterator(nullptr, -1); }
 
         template<class ...ArgsT>
         iterator emplace(const_iterator pos, ArgsT&&...args);
@@ -224,7 +241,7 @@ namespace sparta::utils
             }
             free_head_ = node_idx;
             --size_;
-            return iterator(nullptr, nullptr);
+            return iterator(nullptr, -1);
         }
 
         /**
@@ -235,7 +252,8 @@ namespace sparta::utils
         template<class ...ArgsT>
         iterator emplace_back(ArgsT&&...args)
         {
-            assert(free_head_ != -1);
+            sparta_assert(free_head_ != -1,
+                          "FastList is out of element room");
 
             auto & n = nodes_[free_head_];
             new (&n.type_storage) T(args...);
@@ -257,7 +275,7 @@ namespace sparta::utils
                 n.next = -1;
             }
             ++size_;
-            return iterator(this, &n);
+            return iterator(this, n.index);
         }
 
         void pop_back() { sparta_assert(!"Not implemented yet"); }
