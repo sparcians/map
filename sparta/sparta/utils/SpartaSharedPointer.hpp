@@ -66,12 +66,7 @@ namespace sparta
                 perform_delete(perform_delete)
             {}
 
-            ~RefCount() {
-                if (perform_delete) {
-                    delete p;
-                    p = nullptr;
-                }
-            }
+            ~RefCount() { p = nullptr; }
 
             int32_t count   {0};
             int32_t wp_count{0}; // For weakpointers
@@ -282,14 +277,13 @@ namespace sparta
             }
 
             long use_count() const noexcept { return cnt_->count; }
-            bool expired()   const noexcept { return cnt_->count == 0; }
+            bool expired()   const noexcept { return cnt_->count <= 0; }
             SpartaSharedPointer<PointerT> lock() const noexcept { return SpartaSharedPointer<PointerT>(cnt_); }
 
         private:
             void unlink_() {
-                if(--cnt_->wp_count == 0 && cnt_->count == 0) {
-                    releaseRefCount_(cnt_);
-                }
+                --(cnt_->wp_count);
+                releaseRefCount_(cnt_);
                 cnt_ = &dead_cnt_;
             }
 
@@ -533,7 +527,7 @@ namespace sparta
 
                 const size_t size = memory_blocks_.size();
                 for(uint32_t i = 0; i < size; ++i) {
-                    if(memory_blocks_[i]->ref_count->count != 0) {
+                    if(memory_blocks_[i]->ref_count->count > 0) {
                         allocated_objs.emplace_back(memory_blocks_[i]->object);
                     }
                 }
@@ -715,17 +709,24 @@ namespace sparta
             }
 
             /**
+             * \brief Release (calls the destructor) of the held object
+             * \param block The block containing the ref count that contains the object
+             */
+            void releaseObject_(MemBlock * block) {
+                block->ref_count->p->~PointerT();
+            }
+
+            /**
              * \brief Return the block of memory back to the "pool"
              * \param block The block to return
              *
-             * Note that this *does not* delete the memory but does
-             * destruct the object.  The object should be considered
-             * "dead" and will be used in the placement new in the
-             * future.
+             * Note that this *does not* delete the memory but
+             * reclaims the memory block.  The object should be
+             * considered "dead" and will be used in the placement new
+             * in the future.
              */
-            void release_(MemBlock * block) {
+            void releaseBlock_(MemBlock * block) {
                 sparta_assert(free_idx_ < free_blocks_.capacity());
-                block->ref_count->p->~PointerT();
                 free_blocks_[free_idx_] = block;
                 ++free_idx_;
             }
@@ -741,6 +742,50 @@ namespace sparta
 
     private:
 
+        /**
+         * \brief Called by the SharedPointer and the WeakPointer to
+         * release a reference count
+         * \param ref_count The reference count to release
+         *
+         * If called by the SpartaSharedPointer and there are no weak
+         * pointers pointing to this object, delete the user object
+         * AND reclaim the reference count.
+         *
+         * If called by the SpartaWeakPointer and there are no other
+         * pointers (of any smart type) pointing to this block, delete
+         * the reference count.  The user object was already deleted
+         * when the SpartaSharedPointer was destroyed.
+         */
+        static void releaseRefCount_(RefCount *& ref_count)
+        {
+            if(0 == ref_count->count) {
+                typename SpartaSharedPointerAllocator::MemBlock * memory_block =
+                    static_cast<typename SpartaSharedPointerAllocator::MemBlock *>(ref_count->mem_block);
+
+                if(SPARTA_EXPECT_TRUE(nullptr != memory_block)) {
+                    memory_block->alloc->releaseObject_(memory_block);
+                }
+                else {
+                    ref_count->p->~PointerT();
+                }
+                --(ref_count->count);
+            }
+
+            if((0 >= ref_count->count) && (0 == ref_count->wp_count))
+            {
+                typename SpartaSharedPointerAllocator::MemBlock * memory_block =
+                    static_cast<typename SpartaSharedPointerAllocator::MemBlock *>(ref_count->mem_block);
+
+                if(SPARTA_EXPECT_TRUE(nullptr != memory_block)) {
+                    memory_block->alloc->releaseBlock_(memory_block);
+                }
+                else {
+                    delete ref_count;
+                }
+                ref_count = nullptr;
+            }
+        }
+
         /// Unlink the reference and delete the memory if last to point to it
         void unlink_()
         {
@@ -748,23 +793,6 @@ namespace sparta
             {
                 --ref_count_->count;
                 releaseRefCount_(ref_count_);
-            }
-        }
-
-        static void releaseRefCount_(RefCount *& ref_count)
-        {
-            if(SPARTA_EXPECT_FALSE((ref_count->count + ref_count->wp_count) == 0))
-            {
-                typename SpartaSharedPointerAllocator::MemBlock * memory_block =
-                    static_cast<typename SpartaSharedPointerAllocator::MemBlock *>(ref_count->mem_block);
-
-                if(SPARTA_EXPECT_TRUE(nullptr != memory_block)) {
-                    memory_block->alloc->release_(memory_block);
-                }
-                else {
-                    delete ref_count;
-                }
-                ref_count = nullptr;
             }
         }
 

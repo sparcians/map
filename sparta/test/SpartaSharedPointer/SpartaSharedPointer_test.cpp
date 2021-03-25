@@ -240,6 +240,7 @@ void testWeakPointer()
         sparta::SpartaSharedPointer<MyType>::SpartaWeakPointer wp2 = wp;
         EXPECT_FALSE(wp2.expired());
         EXPECT_EQUAL(wp2.use_count(), 1);
+        EXPECT_EQUAL(wp.use_count(), 1);
         EXPECT_EQUAL(my_type_deleted, 0);
     }
     EXPECT_EQUAL(my_type_deleted, 1);
