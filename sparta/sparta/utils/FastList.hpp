@@ -63,9 +63,6 @@ namespace sparta::utils
 
             // Points to the previous element.
             int prev = -1;
-
-            // Is this node in use?
-            bool in_use = false;
         };
 
         Node * advanceNode_(const Node * node) {
@@ -203,9 +200,7 @@ namespace sparta::utils
         {
             const auto node_idx = entry.getIndex();
             auto & curr_node = nodes_[node_idx];
-            assert(curr_node.in_use == true);
             reinterpret_cast<T*>(&curr_node.type_storage)->~T();
-            curr_node.in_use = false;
 
             if(first_node_ == node_idx) {
                 first_node_ = curr_node.next;
@@ -244,7 +239,6 @@ namespace sparta::utils
 
             auto & n = nodes_[free_head_];
             new (&n.type_storage) T(args...);
-            n.in_use = true;
 
             if(SPARTA_EXPECT_TRUE(first_node_ != -1))
             {
