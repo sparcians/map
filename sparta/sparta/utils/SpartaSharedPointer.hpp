@@ -79,16 +79,14 @@ namespace sparta
         struct RefCount
         {
             explicit RefCount(PointerT * _p,
-                              bool perform_delete = true,
-                              uint32_t initial_count = 1) :
-                count(initial_count),
+                              bool perform_delete = true) :
                 p(_p),
                 perform_delete(perform_delete)
             {}
 
             ~RefCount() { p = nullptr; }
 
-            int32_t count   {0};
+            int32_t count   {1};
             int32_t wp_count{0}; // For weakpointers
             PointerT          * p = nullptr;
             void              * mem_block = nullptr;
@@ -308,9 +306,7 @@ namespace sparta
             SpartaWeakPointer(SpartaWeakPointer &&orig) :
                 cnt_(orig.cnt_)
             {
-                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
-                    orig.cnt_ = nullptr;
-                }
+                orig.cnt_ = nullptr;
             }
 
             /**
@@ -320,7 +316,6 @@ namespace sparta
             SpartaWeakPointer & operator=(const SpartaWeakPointer & orig) {
                 cnt_ = orig.cnt_;
                 if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
-                    cnt_ = orig.cnt_;
                     ++(cnt_->wp_count);
                 }
                 return *this;
@@ -334,7 +329,6 @@ namespace sparta
             {
                 cnt_ = orig.cnt_;
                 if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
-                    cnt_ = orig.cnt_;
                     orig.cnt_ = nullptr;
                 }
                 return *this;
