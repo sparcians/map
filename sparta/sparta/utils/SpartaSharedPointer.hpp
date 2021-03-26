@@ -25,6 +25,19 @@ namespace sparta
      * Simple, thread-\a unsafe class that will delete memory it
      * points to when the last memory reference is deconstructed.
      *
+     * This class was created from the use case of typical model
+     * development: lots and lots of small, shared objects flowing
+     * through the simulation.  Allocation/deallocation of
+     * `std::shared_ptr` is a solution as well as Boost's
+     * `shared_ptr`, but they serve a more general purpose and follow
+     * the principles of allocation traits and thread safety.  This
+     * class does not.  Because of the differentiated use case, this
+     * class is *much* faster (up to 6x faster) than using
+     * `std::shared_ptr`.
+     *
+     * In addition, the concept of a weak pointer is also supported
+     * via the SpartaWeakPointer found nested in this class.
+     *
      * Example usage:
      * \code
      * void foo()
@@ -39,6 +52,13 @@ namespace sparta
      *
      *    sparta::SpartaSharedPointer<int> ptr3(new int(10));
      *    sparta_assert(*ptr3 == 10);
+     *
+     *    sparta::SpartaSharedPointer<int>::SpartaWeakPointer wp = ptr3;
+     *    sparta_assert(false == wp.expired());
+     *    sparta_assert(1 == wp.use_count());
+     *    ptr3.reset();
+     *    sparta_assert(true == wp.expired());
+     *    sparta_assert(0 == wp.use_count());
      *
      *    // Don't delete!
      *}
@@ -378,7 +398,7 @@ namespace sparta
          * Suggested use is to make this allocator global, with
          * user-defined atomic operations if desired.
          *
-         * A suggestion for Sparta developers using these allocators
+         * Another suggestion for Sparta developers using these allocators
          * is to create an `Allocator` class type that derives from
          * sparta::TreeNode and place that class somewhere in the
          * simulation under root:
