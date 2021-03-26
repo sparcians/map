@@ -159,9 +159,9 @@ namespace sparta
                 proxy = allocated_proxies_[allocation_idx_].get();
                 ++allocation_idx_;
 
-                sparta_assert(allocation_idx_ < 100000,
+                sparta_assert(allocation_idx_ < inflight_pl_.max_size(),
                               "The PayloadEvent: '" << getLocation() <<
-                              "' has allocated over 100000 outstanding events -- does that seem right?");
+                              "' has allocated over " << inflight_pl_.max_size() << " outstanding events -- does that seem right?");
             }
             proxy->setInFlightLocation_(inflight_pl_.emplace_back(proxy));
             proxy->setPayload_(dat);
@@ -611,7 +611,7 @@ namespace sparta
 
         ProxyAllocation   allocated_proxies_;
         ProxyFreeList     free_pl_;
-        ProxyInflightList inflight_pl_{100};
+        ProxyInflightList inflight_pl_{10000};
 
         // Use 16, a power of 2 for allocation of more objects.  No
         // rhyme or reason, but this seems to be a sweet spot in
