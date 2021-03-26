@@ -236,59 +236,123 @@ namespace sparta
             return 0;
         }
 
-        // Weak Pointer support
+        /**
+         * \class SpartaWeakPointer
+         * \brief Like in STL, create a weak pointer to a SpartaSharedPointer
+         *
+         *  Works like the original, just a little faster
+         */
         class SpartaWeakPointer
         {
         public:
+            //! Create an empty, expired weakpointer
             constexpr SpartaWeakPointer() noexcept = default;
 
+            /**
+             * \brief Construct a SpartaWeakPointer with the given SpartaSharedPointer
+             * \param sp Pointer to the SpartaSharedPointer to "watch"
+             */
             SpartaWeakPointer(const sparta::SpartaSharedPointer<PointerT> & sp) noexcept :
                 cnt_(sp.ref_count_)
             {
-                ++(cnt_->wp_count);
+                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
+                    ++(cnt_->wp_count);
+                }
             }
 
-            ~SpartaWeakPointer() { unlink_(); }
+            //! Destroy (and detach) from a SpartaSharedPointer
+            ~SpartaWeakPointer() {
+                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
+                    --(cnt_->wp_count);
+                    releaseRefCount_(cnt_);
+                    cnt_ = nullptr;
+                }
+            }
 
+            /**
+             * \brief Create a copy of the SpartaWeakPointer
+             * \param orig The original to copy.  Both are valid
+             */
             SpartaWeakPointer(const SpartaWeakPointer & orig) :
                 cnt_(orig.cnt_)
             {
-                ++(cnt_->wp_count);
+                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
+                    ++(cnt_->wp_count);
+                }
             }
 
-            SpartaWeakPointer & operator=(const SpartaWeakPointer & orig) {
-                cnt_ = orig.cnt_;
-                ++(cnt_->wp_count);
-                return *this;
-            }
-
+            /**
+             * \brief Move a SpartaWeakPointer
+             * \param orig The original to move.  The original is invalidated
+             */
             SpartaWeakPointer(SpartaWeakPointer &&orig) :
                 cnt_(orig.cnt_)
             {
-                ++(cnt_->wp_count);
-                orig.cnt_ = &orig.dead_cnt_;
+                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
+                    orig.cnt_ = nullptr;
+                }
             }
 
-            SpartaWeakPointer & operator=(SpartaWeakPointer && orig) {
+            /**
+             * \brief Assign a SpartaWeakPointer from another
+             * \param orig The original to copy.  The original is valid
+             */
+            SpartaWeakPointer & operator=(const SpartaWeakPointer & orig) {
                 cnt_ = orig.cnt_;
-                ++(cnt_->wp_count);
-                orig.cnt_ = &orig.dead_cnt_;
+                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
+                    cnt_ = orig.cnt_;
+                    ++(cnt_->wp_count);
+                }
                 return *this;
             }
 
-            long use_count() const noexcept { return cnt_->count; }
-            bool expired()   const noexcept { return cnt_->count <= 0; }
-            SpartaSharedPointer<PointerT> lock() const noexcept { return SpartaSharedPointer<PointerT>(cnt_); }
-
-        private:
-            void unlink_() {
-                --(cnt_->wp_count);
-                releaseRefCount_(cnt_);
-                cnt_ = &dead_cnt_;
+            /**
+             * \brief Move assign a SpartaWeakPointer from another
+             * \param orig The original to move.  The original is invalidated
+             */
+            SpartaWeakPointer & operator=(SpartaWeakPointer && orig)
+            {
+                cnt_ = orig.cnt_;
+                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
+                    cnt_ = orig.cnt_;
+                    orig.cnt_ = nullptr;
+                }
+                return *this;
             }
 
-            RefCount dead_cnt_{nullptr, false, 0};
-            RefCount * cnt_ = &dead_cnt_;
+            /**
+             * \brief The use count of the SpartaSharedPointer.  Will be 0 if none left
+             * \return The use count (the number of remaining SpartaSharedPointer)
+             */
+            long use_count() const noexcept {
+                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
+                    return (cnt_->count <= 0 ? 0 : cnt_->count);
+                }
+                return 0;
+            }
+
+            /**
+             * \brief Has the SpartaSharedPointer that this weak pointer points to expired?
+             * \return true if no SpartaSharedPointers are still alive
+             */
+            bool expired() const noexcept {
+                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
+                    return cnt_->count <= 0;
+                }
+                return true;
+            }
+
+            /**
+             * \brief Lock and return a SpartaSharedPointer this SpartaWeakPointer points to
+             * \return nullptr if the SpartaSharedPointer has expired; otherwise a locked version
+             */
+            SpartaSharedPointer<PointerT> lock() const noexcept {
+                return SpartaSharedPointer<PointerT>(cnt_);
+            }
+
+        private:
+            //! Shared reference count between SpartaSharedPointer and SpartaWeakPointer
+            RefCount * cnt_ = nullptr;
         };
 
         // Allocation helpers
@@ -793,6 +857,15 @@ namespace sparta
             {
                 --ref_count_->count;
                 releaseRefCount_(ref_count_);
+            }
+        }
+
+        // Used my SpartaWeakPointer only
+        explicit SpartaSharedPointer(RefCount * cnt) :
+            ref_count_(cnt)
+        {
+            if(SPARTA_EXPECT_TRUE(ref_count_ != nullptr)) {
+                ++ref_count_->count;
             }
         }
 

@@ -39,7 +39,12 @@ std::ostream& operator<<(std::ostream&os, const MyType & t) {
 }
 
 std::ostream& operator<<(std::ostream&os, const sparta::SpartaSharedPointer<MyType> & t) {
-    os << *t;
+    if(t != nullptr) {
+        os << *t;
+    }
+    else {
+        os << "<nullptr>";
+    }
     return os;
 }
 
@@ -245,6 +250,59 @@ void testWeakPointer()
     }
     EXPECT_EQUAL(my_type_deleted, 1);
     EXPECT_TRUE(wp.expired());
+
+    my_type_deleted = 0;
+    ptr.reset(new MyType);
+    wp = ptr;
+    EXPECT_EQUAL(my_type_deleted, 0);
+    EXPECT_FALSE(wp.expired());
+    ptr2 = wp.lock();
+    EXPECT_TRUE(ptr2 != nullptr);
+    EXPECT_EQUAL(wp.use_count(), 2);
+    EXPECT_EQUAL(ptr.use_count(), 2);
+    EXPECT_EQUAL(ptr2.use_count(), 2);
+
+    ptr.reset();
+    ptr2.reset();
+    EXPECT_EQUAL(my_type_deleted, 1);
+    EXPECT_EQUAL(wp.use_count(), 0);
+    EXPECT_EQUAL(ptr.use_count(), 0);
+    EXPECT_EQUAL(ptr2.use_count(), 0);
+    EXPECT_TRUE(wp.expired());
+
+    wp = ptr2;
+    EXPECT_EQUAL(wp.use_count(), 0);
+    EXPECT_EQUAL(ptr.use_count(), 0);
+    EXPECT_EQUAL(ptr2.use_count(), 0);
+    EXPECT_TRUE(wp.expired());
+
+    my_type_deleted = 0;
+    ptr.reset(new MyType);
+    wp = ptr;
+    sparta::SpartaSharedPointer<MyType>::SpartaWeakPointer wp2 = wp;
+    EXPECT_EQUAL(my_type_deleted, 0);
+    EXPECT_EQUAL(wp.use_count(), 1);
+    EXPECT_EQUAL(ptr.use_count(), 1);
+    EXPECT_FALSE(wp.expired());
+    EXPECT_FALSE(wp2.expired());
+
+    wp2 = std::move(wp);
+    EXPECT_EQUAL(my_type_deleted, 0);
+    EXPECT_EQUAL(wp.use_count(), 0);
+    EXPECT_EQUAL(ptr.use_count(), 1);
+    EXPECT_TRUE(wp.expired());
+    EXPECT_FALSE(wp2.expired());
+
+    EXPECT_EQUAL(ptr.use_count(), 1);
+    auto wp_shared = wp.lock();
+    EXPECT_EQUAL(wp_shared.use_count(), 0);
+    auto wp2_shared = wp2.lock();
+    EXPECT_EQUAL(ptr.use_count(), 2);
+    EXPECT_EQUAL(wp2_shared.use_count(), 2);
+
+    EXPECT_TRUE(wp_shared == nullptr);
+    EXPECT_FALSE(wp2_shared == nullptr);
+    EXPECT_EQUAL(wp2_shared, ptr);
 }
 
 #define COUNT 10
