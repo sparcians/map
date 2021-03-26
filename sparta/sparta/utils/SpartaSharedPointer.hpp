@@ -95,8 +95,8 @@ namespace sparta
 
             int32_t count   {1};
             int32_t wp_count{0}; // For weakpointers
-            PointerT          * p = nullptr;
-            void              * mem_block = nullptr;
+            PointerT * p = nullptr;
+            void     * mem_block = nullptr;
         };
 
     public:
@@ -860,6 +860,11 @@ namespace sparta
                     delete ref_count->p;
                     ref_count->p = nullptr;
                 }
+                // Make it go negative to show there are no
+                // SpartaSharedPointer objects using this ref_count.
+                // We can't set it to nullptr because it might be
+                // allocated on the heap and we need to ensure all
+                // SpartaWeakPointer objects are done with it too.
                 --(ref_count->count);
             }
 

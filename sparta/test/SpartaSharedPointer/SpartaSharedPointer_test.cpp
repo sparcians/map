@@ -303,6 +303,30 @@ void testWeakPointer()
     EXPECT_TRUE(wp_shared == nullptr);
     EXPECT_FALSE(wp2_shared == nullptr);
     EXPECT_EQUAL(wp2_shared, ptr);
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Test WP on allocated objects from the allocator.  Different
+    // code path here -- some things should *not* be deleted by the
+    // smart pointers
+    my_type_deleted = 0;
+    sparta::SpartaSharedPointer<MyType> ptr3 =
+            sparta::allocate_sparta_shared_pointer<MyType>(trivial_type_allocator, 30);
+    wp = ptr3;
+    EXPECT_EQUAL(wp.use_count(), 1);
+    EXPECT_FALSE(wp.expired());
+    EXPECT_EQUAL(ptr3.use_count(), 1);
+
+    ptr3.reset();
+    EXPECT_EQUAL(wp.use_count(), 0);
+    EXPECT_TRUE(wp.expired());
+    EXPECT_EQUAL(ptr3.use_count(), 0);
+    EXPECT_EQUAL(my_type_deleted, 1);
+
+    ptr3 = sparta::allocate_sparta_shared_pointer<MyType>(trivial_type_allocator, 30);
+    EXPECT_EQUAL(wp.use_count(), 0);
+    EXPECT_TRUE(wp.expired());
+    EXPECT_EQUAL(ptr3.use_count(), 1);
+    EXPECT_EQUAL(my_type_deleted, 1);
 }
 
 #define COUNT 10
