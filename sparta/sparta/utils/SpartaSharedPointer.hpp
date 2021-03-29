@@ -76,21 +76,27 @@ namespace sparta
 
     private:
         /// Internal structure to keep track of the reference
+        ///
+        /// If the RefCount contains a pointer to a mem_block, it does
+        /// not own memory to PointerT nor is it responsible for
+        /// deallocating it.
         struct RefCount
         {
-            explicit RefCount(PointerT * _p,
-                              bool perform_delete = true) :
-                p(_p),
-                perform_delete(perform_delete)
+            RefCount(PointerT * _p, void * mem_block) :
+                p(_p), mem_block(mem_block)
             {}
 
+            explicit RefCount(PointerT * _p) :
+                RefCount(_p, nullptr)
+            {}
+
+            // Small cleanup -- set to nullptr
             ~RefCount() { p = nullptr; }
 
             int32_t count   {1};
             int32_t wp_count{0}; // For weakpointers
-            PointerT          * p = nullptr;
-            void              * mem_block = nullptr;
-            bool perform_delete = true;
+            PointerT * p = nullptr;
+            void     * mem_block = nullptr;
         };
 
     public:
@@ -105,14 +111,16 @@ namespace sparta
          * ownership of the given object pointer.
          */
         explicit SpartaSharedPointer(PointerT * p = nullptr) noexcept :
-            ref_count_(p == nullptr ? nullptr : new RefCount(p)) {}
+            ref_count_(p == nullptr ? nullptr : new RefCount(p))
+        {}
 
         /**
          * \brief Constructor for SpartaSharedPointer<T> ptr = nullptr;
          * \param nullptr_t
          */
         constexpr SpartaSharedPointer(std::nullptr_t) noexcept :
-            ref_count_(nullptr) {}
+            ref_count_(nullptr)
+        {}
 
         /**
          * \brief Construct a reference pointer given another implicitly convertable reference pointer
@@ -156,7 +164,7 @@ namespace sparta
             ref_count_(orig.ref_count_)
         {
             // DO NOT unlink.
-            orig.ref_count_    = nullptr;
+            orig.ref_count_ = nullptr;
         }
 
         //! \brief Detach this shared pointer; if last, delete underlying object
@@ -175,7 +183,7 @@ namespace sparta
         {
             sparta_assert(&orig != this);
             unlink_();
-            ref_count_    = orig.ref_count_;
+            ref_count_ = orig.ref_count_;
             if(SPARTA_EXPECT_TRUE(ref_count_ != nullptr)) {
                 ++ref_count_->count;
             }
@@ -257,7 +265,7 @@ namespace sparta
          */
         void reset(PointerT * p = nullptr) {
             unlink_();
-            ref_count_     = p == nullptr ? nullptr : new RefCount(p);
+            ref_count_ = p == nullptr ? nullptr : new RefCount(p);
         }
 
         /**
@@ -330,8 +338,14 @@ namespace sparta
              * \brief Assign a SpartaWeakPointer from another
              * \param orig The original to copy.  The original is valid
              */
-            SpartaWeakPointer & operator=(const SpartaWeakPointer & orig) {
+            SpartaWeakPointer & operator=(const SpartaWeakPointer & orig)
+            {
+                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
+                    --(cnt_->wp_count);
+                    releaseRefCount_(cnt_);
+                }
                 cnt_ = orig.cnt_;
+
                 if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
                     ++(cnt_->wp_count);
                 }
@@ -344,10 +358,13 @@ namespace sparta
              */
             SpartaWeakPointer & operator=(SpartaWeakPointer && orig)
             {
-                cnt_ = orig.cnt_;
                 if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
-                    orig.cnt_ = nullptr;
+                    --(cnt_->wp_count);
+                    releaseRefCount_(cnt_);
                 }
+
+                cnt_ = orig.cnt_;
+                orig.cnt_ = nullptr;
                 return *this;
             }
 
@@ -672,11 +689,7 @@ namespace sparta
                     object = new (&object_storage) PointerT(std::forward<ObjArgs>(obj_args)...);
 
                     // Build the reference count using that object
-                    const bool perform_delete = false;
-                    ref_count = new (&ref_count_storage) RefCountType(object, perform_delete);
-
-                    // Have this reference count remember the block its in
-                    ref_count->mem_block = (void*)this;
+                    ref_count = new (&ref_count_storage) RefCountType(object, (void*)this);
                 }
 
                 RefCountAlignedStorage         ref_count_storage;
@@ -861,8 +874,14 @@ namespace sparta
                     memory_block->alloc->releaseObject_(memory_block);
                 }
                 else {
-                    ref_count->p->~PointerT();
+                    delete ref_count->p;
+                    ref_count->p = nullptr;
                 }
+                // Make it go negative to show there are no
+                // SpartaSharedPointer objects using this ref_count.
+                // We can't set it to nullptr because it might be
+                // allocated on the heap and we need to ensure all
+                // SpartaWeakPointer objects are done with it too.
                 --(ref_count->count);
             }
 
@@ -891,7 +910,7 @@ namespace sparta
             }
         }
 
-        // Used my SpartaWeakPointer only
+        // Used by SpartaWeakPointer only
         explicit SpartaSharedPointer(RefCount * cnt) :
             ref_count_(cnt)
         {
