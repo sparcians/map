@@ -115,6 +115,23 @@ namespace sparta
             ref_count_(nullptr) {}
 
         /**
+         * \brief Construct a reference pointer given another implicitly convertable reference pointer
+         * \param r The other reference pointer
+         *
+         * The two reference pointers now share the common memory but the newly
+         * constructed reference pointer will interpret it as a different class
+         *
+         */
+        template<class PointerT2>
+        SpartaSharedPointer(const SpartaSharedPointer<PointerT2>& r) noexcept :
+            ref_count_(new RefCount(r.get()))
+        {
+            if(SPARTA_EXPECT_TRUE(ref_count_ != nullptr)) {
+                ++ref_count_->count;
+            }
+        }
+
+        /**
          * \brief Construct a reference pointer given another reference pointer
          * \param orig The original pointer
          *
