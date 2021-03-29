@@ -74,6 +74,9 @@ namespace sparta
     public:
         class SpartaWeakPointer;
 
+        template<class PointerT2>
+        friend class SpartaSharedPointer;
+
     private:
         /// Internal structure to keep track of the reference
         ///
@@ -131,9 +134,11 @@ namespace sparta
          *
          */
         template<class PointerT2>
-        SpartaSharedPointer(const SpartaSharedPointer<PointerT2>& r) noexcept :
-            ref_count_(new RefCount(r.get()))
+        SpartaSharedPointer(const SpartaSharedPointer<PointerT2>& orig) noexcept :
+            ref_count_((SpartaSharedPointer<PointerT>::RefCount*)orig.ref_count_)
         {
+            static_assert(std::is_base_of<PointerT, PointerT2>::value == true,
+                "Only upcasting (derived class -> base class) of SpartaSharedPointer is supported!");
             if(SPARTA_EXPECT_TRUE(ref_count_ != nullptr)) {
                 ++ref_count_->count;
             }

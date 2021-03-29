@@ -25,6 +25,20 @@ public:
 
 };
 
+class DerivedType : public MyType
+{
+public:
+    DerivedType() :
+        b(20)
+    {}
+
+    DerivedType(uint32_t _b) :
+        b(_b)
+    {}
+
+    uint32_t b;
+};
+
 class MyNonTrivialType
 {
 public:
@@ -203,6 +217,56 @@ void testMoveSupport()
 
     ptr_start = ptr10;
     EXPECT_EQUAL(ptr10.use_count(), 2);
+}
+
+void testUpcastingConversionSupport()
+{
+    sparta::SpartaSharedPointer<DerivedType> d_ptr(new DerivedType);
+    sparta::SpartaSharedPointer<MyType> b_ptr;
+
+    EXPECT_EQUAL(d_ptr.use_count(), 1);
+    EXPECT_EQUAL(b_ptr.use_count(), 0);
+
+    // Upcasting is allowed (derived -> base)
+    EXPECT_NOTHROW(b_ptr = d_ptr);
+
+    EXPECT_EQUAL(d_ptr.use_count(), 2);
+    EXPECT_EQUAL(b_ptr.use_count(), 2);
+
+    // Downcasting and other types of casting are not (will throw static assert)
+    //EXPECT_THROW(d_ptr = b_ptr);
+
+    d_ptr->a = 5;
+    EXPECT_TRUE(d_ptr->a == 5);
+    EXPECT_TRUE(b_ptr->a == 5);
+
+    d_ptr->b = 7;
+    EXPECT_TRUE(d_ptr->b == 7);
+    // error: no member named 'b' in 'MyType'
+    //EXPECT_THROW(b_ptr2->b);
+
+    // Original pointer can be destructed and copy is undisturbed
+    d_ptr = nullptr;
+    EXPECT_TRUE(b_ptr->a == 5);
+    EXPECT_EQUAL(b_ptr.use_count(), 1);
+
+    // Original pointer can be reassigned and copy is undisturbed
+    d_ptr.reset(new DerivedType);
+    d_ptr->a = 50;
+    EXPECT_TRUE(d_ptr->a == 50);
+    EXPECT_EQUAL(d_ptr.use_count(), 1);
+    EXPECT_TRUE(b_ptr->a == 5);
+    EXPECT_EQUAL(b_ptr.use_count(), 1);
+
+    // Copy can be destructed and original is undisturbed
+    b_ptr = d_ptr;
+    EXPECT_TRUE(d_ptr->a == 50);
+    EXPECT_EQUAL(d_ptr.use_count(), 2);
+    EXPECT_TRUE(b_ptr->a == 50);
+    EXPECT_EQUAL(b_ptr.use_count(), 2);
+    b_ptr = nullptr;
+    EXPECT_TRUE(d_ptr->a == 50);
+    EXPECT_EQUAL(d_ptr.use_count(), 1);
 }
 
 void testWeakPointer()
@@ -513,6 +577,7 @@ int main()
     testBasicSpartaSharedPointer();
     testBasicAllocationSupport();
     testMoveSupport();
+    testUpcastingConversionSupport();
     testWeakPointer();
 
     for(uint32_t i = 0; i < 100; ++i) {
