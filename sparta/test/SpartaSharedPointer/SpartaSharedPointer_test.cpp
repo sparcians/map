@@ -25,6 +25,7 @@ public:
 
 };
 
+uint32_t my_derived_type_deleted = 0;
 class DerivedType : public MyType
 {
 public:
@@ -35,6 +36,10 @@ public:
     DerivedType(uint32_t _b) :
         b(_b)
     {}
+
+    ~DerivedType() {
+        ++my_derived_type_deleted;
+    }
 
     uint32_t b;
 };
@@ -247,6 +252,7 @@ void testUpcastingConversionSupport()
 
     // Original pointer can be destructed and copy is undisturbed
     d_ptr = nullptr;
+    EXPECT_EQUAL(my_derived_type_deleted, 0); // b_ptr is still pointing to it
     EXPECT_TRUE(b_ptr->a == 5);
     EXPECT_EQUAL(b_ptr.use_count(), 1);
 
@@ -260,13 +266,27 @@ void testUpcastingConversionSupport()
 
     // Copy can be destructed and original is undisturbed
     b_ptr = d_ptr;
+    EXPECT_EQUAL(my_derived_type_deleted, 1); // b_ptr released older DerivedType
     EXPECT_TRUE(d_ptr->a == 50);
     EXPECT_EQUAL(d_ptr.use_count(), 2);
     EXPECT_TRUE(b_ptr->a == 50);
     EXPECT_EQUAL(b_ptr.use_count(), 2);
     b_ptr = nullptr;
+    EXPECT_EQUAL(my_derived_type_deleted, 1);
     EXPECT_TRUE(d_ptr->a == 50);
     EXPECT_EQUAL(d_ptr.use_count(), 1);
+    d_ptr.reset();
+    EXPECT_EQUAL(my_derived_type_deleted, 2);
+
+    d_ptr.reset(new DerivedType);
+    b_ptr = d_ptr;
+    d_ptr.reset();
+    b_ptr->a = 50;
+    EXPECT_EQUAL(my_derived_type_deleted, 2);
+    EXPECT_TRUE(b_ptr->a == 50);
+    EXPECT_EQUAL(b_ptr.use_count(), 1);
+    b_ptr.reset();
+    EXPECT_EQUAL(my_derived_type_deleted, 3);
 }
 
 void testWeakPointer()
