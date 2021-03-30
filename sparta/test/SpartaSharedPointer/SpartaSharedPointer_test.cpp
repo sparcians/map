@@ -17,7 +17,7 @@ public:
     MyType() : a(10) {}
     MyType(uint32_t _a) : a(_a) {}
 
-    ~MyType() {
+    virtual ~MyType() {
         ++my_type_deleted;
     }
 
