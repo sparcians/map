@@ -139,6 +139,8 @@ namespace sparta
         {
             static_assert(std::is_base_of<PointerT, PointerT2>::value == true,
                 "Only upcasting (derived class -> base class) of SpartaSharedPointer is supported!");
+            static_assert(std::has_virtual_destructor<PointerT>::value == true,
+                "Base class must have a virtual destructor defined to support upcasting!");
             if(SPARTA_EXPECT_TRUE(ref_count_ != nullptr)) {
                 ++ref_count_->count;
             }
