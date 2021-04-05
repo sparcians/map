@@ -17,12 +17,31 @@ public:
     MyType() : a(10) {}
     MyType(uint32_t _a) : a(_a) {}
 
-    ~MyType() {
+    virtual ~MyType() {
         ++my_type_deleted;
     }
 
     uint32_t a;
 
+};
+
+uint32_t my_derived_type_deleted = 0;
+class DerivedType : public MyType
+{
+public:
+    DerivedType() :
+        b(20)
+    {}
+
+    DerivedType(uint32_t _b) :
+        b(_b)
+    {}
+
+    ~DerivedType() {
+        ++my_derived_type_deleted;
+    }
+
+    uint32_t b;
 };
 
 class MyNonTrivialType
@@ -39,7 +58,12 @@ std::ostream& operator<<(std::ostream&os, const MyType & t) {
 }
 
 std::ostream& operator<<(std::ostream&os, const sparta::SpartaSharedPointer<MyType> & t) {
-    os << *t;
+    if(t != nullptr) {
+        os << *t;
+    }
+    else {
+        os << "<nullptr>";
+    }
     return os;
 }
 
@@ -198,6 +222,195 @@ void testMoveSupport()
 
     ptr_start = ptr10;
     EXPECT_EQUAL(ptr10.use_count(), 2);
+}
+
+void testUpcastingConversionSupport()
+{
+    sparta::SpartaSharedPointer<DerivedType> d_ptr(new DerivedType);
+    sparta::SpartaSharedPointer<MyType> b_ptr;
+
+    EXPECT_EQUAL(d_ptr.use_count(), 1);
+    EXPECT_EQUAL(b_ptr.use_count(), 0);
+
+    // Upcasting is allowed (derived -> base)
+    EXPECT_NOTHROW(b_ptr = d_ptr);
+
+    EXPECT_EQUAL(d_ptr.use_count(), 2);
+    EXPECT_EQUAL(b_ptr.use_count(), 2);
+
+    // Downcasting and other types of casting are not (will throw static assert)
+    //EXPECT_THROW(d_ptr = b_ptr);
+
+    d_ptr->a = 5;
+    EXPECT_TRUE(d_ptr->a == 5);
+    EXPECT_TRUE(b_ptr->a == 5);
+
+    d_ptr->b = 7;
+    EXPECT_TRUE(d_ptr->b == 7);
+    // error: no member named 'b' in 'MyType'
+    //EXPECT_THROW(b_ptr2->b);
+
+    // Original pointer can be destructed and copy is undisturbed
+    d_ptr = nullptr;
+    EXPECT_EQUAL(my_derived_type_deleted, 0); // b_ptr is still pointing to it
+    EXPECT_TRUE(b_ptr->a == 5);
+    EXPECT_EQUAL(b_ptr.use_count(), 1);
+
+    // Original pointer can be reassigned and copy is undisturbed
+    d_ptr.reset(new DerivedType);
+    d_ptr->a = 50;
+    EXPECT_TRUE(d_ptr->a == 50);
+    EXPECT_EQUAL(d_ptr.use_count(), 1);
+    EXPECT_TRUE(b_ptr->a == 5);
+    EXPECT_EQUAL(b_ptr.use_count(), 1);
+
+    // Copy can be destructed and original is undisturbed
+    b_ptr = d_ptr;
+    EXPECT_EQUAL(my_derived_type_deleted, 1); // b_ptr released older DerivedType
+    EXPECT_TRUE(d_ptr->a == 50);
+    EXPECT_EQUAL(d_ptr.use_count(), 2);
+    EXPECT_TRUE(b_ptr->a == 50);
+    EXPECT_EQUAL(b_ptr.use_count(), 2);
+    b_ptr = nullptr;
+    EXPECT_EQUAL(my_derived_type_deleted, 1);
+    EXPECT_TRUE(d_ptr->a == 50);
+    EXPECT_EQUAL(d_ptr.use_count(), 1);
+    d_ptr.reset();
+    EXPECT_EQUAL(my_derived_type_deleted, 2);
+
+    d_ptr.reset(new DerivedType);
+    b_ptr = d_ptr;
+    d_ptr.reset();
+    b_ptr->a = 50;
+    EXPECT_EQUAL(my_derived_type_deleted, 2);
+    EXPECT_TRUE(b_ptr->a == 50);
+    EXPECT_EQUAL(b_ptr.use_count(), 1);
+    b_ptr.reset();
+    EXPECT_EQUAL(my_derived_type_deleted, 3);
+}
+
+void testWeakPointer()
+{
+    my_type_deleted = 0;
+    sparta::SpartaSharedPointer<MyType> ptr(new MyType);
+    sparta::SpartaSharedPointer<MyType> ptr2;
+    sparta::SpartaSharedPointer<MyType>::SpartaWeakPointer wp = ptr;
+
+    std::shared_ptr<MyType> sp_ptr(new MyType);
+    std::shared_ptr<MyType> sp_ptr2;
+    std::weak_ptr<MyType>   sp_wp = sp_ptr;
+
+    EXPECT_EQUAL(wp.expired(), sp_wp.expired());
+    EXPECT_EQUAL(wp.use_count(), sp_wp.use_count());
+
+    ptr2 = ptr;
+    sp_ptr2 = sp_ptr;
+    EXPECT_EQUAL(my_type_deleted, 0);
+    EXPECT_EQUAL(wp.expired(), sp_wp.expired());
+    EXPECT_EQUAL(wp.use_count(), sp_wp.use_count());
+
+    ptr2 = nullptr;
+    sp_ptr2 = nullptr;
+    EXPECT_EQUAL(my_type_deleted, 0);
+    EXPECT_EQUAL(wp.expired(), sp_wp.expired());
+    EXPECT_EQUAL(wp.use_count(), sp_wp.use_count());
+
+    ptr = nullptr;
+    sp_ptr = nullptr;
+    EXPECT_EQUAL(my_type_deleted, 2);
+    EXPECT_EQUAL(wp.expired(), sp_wp.expired());
+    EXPECT_EQUAL(wp.use_count(), sp_ptr.use_count());
+
+    my_type_deleted = 0;
+    {
+        sparta::SpartaSharedPointer<MyType> inside_ptr(new MyType);
+        wp = inside_ptr;
+        EXPECT_FALSE(wp.expired());
+        sparta::SpartaSharedPointer<MyType>::SpartaWeakPointer wp2 = wp;
+        EXPECT_FALSE(wp2.expired());
+        EXPECT_EQUAL(wp2.use_count(), 1);
+        EXPECT_EQUAL(wp.use_count(), 1);
+        EXPECT_EQUAL(my_type_deleted, 0);
+    }
+    EXPECT_EQUAL(my_type_deleted, 1);
+    EXPECT_TRUE(wp.expired());
+
+    my_type_deleted = 0;
+    ptr.reset(new MyType);
+    wp = ptr;
+    EXPECT_EQUAL(my_type_deleted, 0);
+    EXPECT_FALSE(wp.expired());
+    ptr2 = wp.lock();
+    EXPECT_TRUE(ptr2 != nullptr);
+    EXPECT_EQUAL(wp.use_count(), 2);
+    EXPECT_EQUAL(ptr.use_count(), 2);
+    EXPECT_EQUAL(ptr2.use_count(), 2);
+
+    ptr.reset();
+    ptr2.reset();
+    EXPECT_EQUAL(my_type_deleted, 1);
+    EXPECT_EQUAL(wp.use_count(), 0);
+    EXPECT_EQUAL(ptr.use_count(), 0);
+    EXPECT_EQUAL(ptr2.use_count(), 0);
+    EXPECT_TRUE(wp.expired());
+
+    wp = ptr2;
+    EXPECT_EQUAL(wp.use_count(), 0);
+    EXPECT_EQUAL(ptr.use_count(), 0);
+    EXPECT_EQUAL(ptr2.use_count(), 0);
+    EXPECT_TRUE(wp.expired());
+
+    my_type_deleted = 0;
+    ptr.reset(new MyType);
+    wp = ptr;
+    sparta::SpartaSharedPointer<MyType>::SpartaWeakPointer wp2 = wp;
+    EXPECT_EQUAL(my_type_deleted, 0);
+    EXPECT_EQUAL(wp.use_count(), 1);
+    EXPECT_EQUAL(ptr.use_count(), 1);
+    EXPECT_FALSE(wp.expired());
+    EXPECT_FALSE(wp2.expired());
+
+    wp2 = std::move(wp);
+    EXPECT_EQUAL(my_type_deleted, 0);
+    EXPECT_EQUAL(wp.use_count(), 0);
+    EXPECT_EQUAL(ptr.use_count(), 1);
+    EXPECT_TRUE(wp.expired());
+    EXPECT_FALSE(wp2.expired());
+
+    EXPECT_EQUAL(ptr.use_count(), 1);
+    auto wp_shared = wp.lock();
+    EXPECT_EQUAL(wp_shared.use_count(), 0);
+    auto wp2_shared = wp2.lock();
+    EXPECT_EQUAL(ptr.use_count(), 2);
+    EXPECT_EQUAL(wp2_shared.use_count(), 2);
+
+    EXPECT_TRUE(wp_shared == nullptr);
+    EXPECT_FALSE(wp2_shared == nullptr);
+    EXPECT_EQUAL(wp2_shared, ptr);
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Test WP on allocated objects from the allocator.  Different
+    // code path here -- some things should *not* be deleted by the
+    // smart pointers
+    my_type_deleted = 0;
+    sparta::SpartaSharedPointer<MyType> ptr3 =
+            sparta::allocate_sparta_shared_pointer<MyType>(trivial_type_allocator, 30);
+    wp = ptr3;
+    EXPECT_EQUAL(wp.use_count(), 1);
+    EXPECT_FALSE(wp.expired());
+    EXPECT_EQUAL(ptr3.use_count(), 1);
+
+    ptr3.reset();
+    EXPECT_EQUAL(wp.use_count(), 0);
+    EXPECT_TRUE(wp.expired());
+    EXPECT_EQUAL(ptr3.use_count(), 0);
+    EXPECT_EQUAL(my_type_deleted, 1);
+
+    ptr3 = sparta::allocate_sparta_shared_pointer<MyType>(trivial_type_allocator, 30);
+    EXPECT_EQUAL(wp.use_count(), 0);
+    EXPECT_TRUE(wp.expired());
+    EXPECT_EQUAL(ptr3.use_count(), 1);
+    EXPECT_EQUAL(my_type_deleted, 1);
 }
 
 #define COUNT 10
@@ -384,6 +597,9 @@ int main()
     testBasicSpartaSharedPointer();
     testBasicAllocationSupport();
     testMoveSupport();
+    testUpcastingConversionSupport();
+    testWeakPointer();
+
     for(uint32_t i = 0; i < 100; ++i) {
         testMemoryAllocation(i == 0, i == 0);
     }

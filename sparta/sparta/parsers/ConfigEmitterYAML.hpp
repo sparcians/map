@@ -304,6 +304,7 @@ private:
             // Do not change this string. It will break scripts
             comment << "\tNON-DEFAULT: " << p->getDefaultAsString() << " (" << p->getTypeName() << ")";
         }
+        p->stringizeTags(comment);
         *emitter_ << YP::Comment(comment.str());
     }
 
