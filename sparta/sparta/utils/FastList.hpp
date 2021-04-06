@@ -52,12 +52,12 @@ namespace sparta::utils
             // manually invoke its dtor as necessary.
             typename std::aligned_storage<sizeof(T), alignof(T)>::type type_storage;
 
-            Node(uint32_t _index) :
+            Node(NodeIdx _index) :
                 index(_index)
             {}
 
             // Where this node is in the vector
-            const uint32_t index;
+            const NodeIdx index;
 
             // Points to the next element or the next free
             // element if this node has been removed.
@@ -213,12 +213,6 @@ namespace sparta::utils
             }
         }
 
-        iterator insert(iterator pos, const T& value) noexcept
-        { sparta_assert(!"Not implemented yet"); return iterator(nullptr, -1); }
-
-        template<class ...ArgsT>
-        iterator emplace(const_iterator pos, ArgsT&&...args);
-
         /**
          * \brief Erase an element with the given iterator
          * \param entry Iterator to the entry being erased
@@ -226,32 +220,78 @@ namespace sparta::utils
         iterator erase(const const_iterator & entry)
         {
             const auto node_idx = entry.getIndex();
-            auto & curr_node = nodes_[node_idx];
-            reinterpret_cast<T*>(&curr_node.type_storage)->~T();
+            auto & node_to_erase = nodes_[node_idx];
+            reinterpret_cast<T*>(&node_to_erase.type_storage)->~T();
+            int next_elem = -1;
 
             if(first_node_ == node_idx) {
-                first_node_ = curr_node.next;
+                first_node_ = node_to_erase.next;
+            }
+            if(last_node_ == node_idx) {
+                last_node_ = node_to_erase.prev;
             }
 
-            if(SPARTA_EXPECT_FALSE(curr_node.next != -1))
+            if(SPARTA_EXPECT_FALSE(node_to_erase.next != -1))
             {
-                auto & next_node = nodes_[curr_node.next];
-                next_node.prev = curr_node.prev;
+                auto & next_node = nodes_[node_to_erase.next];
+                next_node.prev = node_to_erase.prev;
+                next_elem = node_to_erase.next;
             }
 
-            if(SPARTA_EXPECT_FALSE(curr_node.prev != -1))
+            if(SPARTA_EXPECT_FALSE(node_to_erase.prev != -1))
             {
-                auto & prev_node = nodes_[curr_node.prev];
-                prev_node.next = curr_node.next;
+                auto & prev_node = nodes_[node_to_erase.prev];
+                prev_node.next = node_to_erase.next;
             }
 
+            node_to_erase.prev = -1;
+            node_to_erase.next = -1;
             if(SPARTA_EXPECT_TRUE(free_head_ != -1)) {
                 nodes_[free_head_].prev = node_idx;
-                curr_node.next = free_head_;
+                node_to_erase.next = free_head_;
             }
             free_head_ = node_idx;
             --size_;
-            return iterator(nullptr, -1);
+            return iterator(this, next_elem);
+        }
+
+        template<class ...ArgsT>
+        iterator emplace(const const_iterator & pos, ArgsT&&...args)
+        {
+            sparta_assert(free_head_ != -1,
+                          "FastList is out of element room");
+            const auto index_pos = pos.getIndex();
+
+            // If the index pos is -1, it's either end() or begin() on
+            // an empty list.  Just emplace_back (or front, don't matter)
+            if(index_pos == -1) {
+                return emplace_back(std::forward<ArgsT>(args)...);
+            }
+
+            auto & new_node = nodes_[free_head_];
+            free_head_ = new_node.next;
+            new (&new_node.type_storage) T(args...);
+            // Update pointers.  Start with a clean slate
+            new_node.next = -1;
+            new_node.prev = -1;
+
+            // Insert before the given pt
+            auto & insert_pt = nodes_[index_pos];
+            new_node.next = insert_pt.index;
+            new_node.prev = insert_pt.prev;
+            insert_pt.prev = new_node.index;
+            if(new_node.prev != -1) {
+                // update the previous node's next
+                nodes_[new_node.prev].next = new_node.index;
+            }
+
+            if((first_node_ == index_pos) || (first_node_ == -1))
+            {
+                first_node_ = new_node.index;
+            }
+            ++size_;
+
+            return iterator(this, new_node.index);
         }
 
         /**
@@ -265,33 +305,65 @@ namespace sparta::utils
             sparta_assert(free_head_ != -1,
                           "FastList is out of element room");
 
-            auto & n = nodes_[free_head_];
-            new (&n.type_storage) T(args...);
+            auto & new_node = nodes_[free_head_];
+            free_head_ = new_node.next;
+            new (&new_node.type_storage) T(args...);
 
+            // Update pointers.  Start with a clean slate
+            new_node.next = -1;
+            new_node.prev = -1;
             if(SPARTA_EXPECT_TRUE(first_node_ != -1))
             {
                 auto & old_first = nodes_[first_node_];
-                const int old_first_idx = first_node_;
-                first_node_ = free_head_;
-                free_head_ = n.next;
+                old_first.prev = new_node.index;
+                new_node.next = old_first.index;
+            }
+            first_node_ = new_node.index;
+            if(SPARTA_EXPECT_FALSE(last_node_ == -1)) {
+                last_node_ = first_node_;
+            }
 
-                old_first.prev = first_node_;
-                n.next = old_first_idx;
-                n.prev = -1;
-            }
-            else {
-                first_node_ = free_head_;
-                free_head_ = n.next;
-                n.next = -1;
-            }
             ++size_;
-            return iterator(this, n.index);
+            return iterator(this, new_node.index);
         }
 
-        void pop_back() noexcept {
-            ;
+        template<class ...ArgsT>
+        iterator emplace_back(ArgsT&&...args) {
+            sparta_assert(free_head_ != -1,
+                          "FastList is out of element room");
+
+            auto & new_node = nodes_[free_head_];
+            free_head_ = new_node.next;
+            new (&new_node.type_storage) T(args...);
+
+            // Update pointers.  Start with a clean slate
+            new_node.next = -1;
+            new_node.prev = -1;
+            if(SPARTA_EXPECT_TRUE(last_node_ != -1))
+            {
+                auto & old_last = nodes_[last_node_];
+                old_last.next = new_node.index;
+                new_node.prev = old_last.index;
+            }
+            last_node_ = new_node.index;
+            if(SPARTA_EXPECT_FALSE(first_node_ == -1)) {
+                first_node_ = last_node_;
+            }
+
+            ++size_;
+            return iterator(this, new_node.index);
         }
-        void push_front() { sparta_assert(!"Not implemented yet"); }
+
+        void pop_back() {
+            sparta_assert(last_node_ != -1,
+                          "Can't pop_back on an empty list");
+            erase(iterator(this, last_node_));
+        }
+        void pop_front() {
+            sparta_assert(first_node_ != -1,
+                          "Can't pop_front on an empty list");
+            erase(iterator(this, first_node_));
+        }
 
     private:
 
@@ -322,6 +394,7 @@ namespace sparta::utils
 
         int free_head_  = 0;  //!< The free head
         int first_node_ = -1; //!< The first node in the list (-1 for empty)
+        int last_node_  = -1; //!< The last node in the list (-1 for empty)
         size_t size_    = 0;  //!< The number of elements in the list
     };
 }
