@@ -2029,7 +2029,6 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             sparta::ConfigEmitter::YAML param_out(final_config_file_,
                                                   false); // Hide descriptions
             param_out.addParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg);
-
         }
 
         if(final_config_file_verbose_ != ""){
