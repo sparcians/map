@@ -2666,6 +2666,9 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
     if (prm_iter != extension_parameters_.end()) {
         extension_parameters = std::move(prm_iter->second);
     }
+    else {
+        extension_parameters.reset(new sparta::ParameterSet(nullptr));
+    }
 
     std::unique_ptr<ExtensionsBase> extension;
     auto factory_iter = extension_factories_.find(extension_name);
@@ -2739,49 +2742,37 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
 
     if (extension != nullptr)
     {
-        if(nullptr == extension_parameters)
-        {
-            // Need to create the extension parameters
-            app::Simulation * sim = getSimulation();
-            if(sim != nullptr)
-            {
-                // Apply extensions from the virtual extensions tree
-                app::SimulationConfiguration * cfg = sim->getSimulationConfiguration();
-                auto extensions_pt  = cfg->getExtensionsUnboundParameterTree();
-                auto extension_node = resolve_extension_node(extensions_pt);
-                if (extension_node != nullptr) {
-                    extension_node = resolve_named_extension_node(extension_node);
-                }
-                const std::string ext_name = extension_node->getName();
+        extension->setParameters(std::move(extension_parameters));
+        extension->postCreate();
+        obj = extension.get();
+        extensions_[extension_name] = std::move(extension);
 
-                // If the extension_node is null, then there are no
-                // extension files provided populating the virtual parameter tree
-                if(extension_node != nullptr)
-                {
-                    auto extensions_ps = obj->getParameters();
-                    std::unique_ptr<ExtensionDescriptor> desc(new ExtensionDescriptor);
-                    desc->setName(ext_name);
-                    desc->setNodeLocation(getLocation());
-                    for(auto param : *(extensions_ps))
-                    {
-                        auto extens_tn = extension_node->getChild(param->getName());
-                        if(extens_tn) {
-                            app::ParameterApplicator pa("", extens_tn->getValue());
-                            pa.apply(param);
-                        }
-                        desc->addParameterAsString(param->getName(), extens_tn->getValue());
-                    }
-                    addExtensionParameters(ext_name, desc->cloneParameters());
-                    extension_descs_.emplace_back(desc.release());
-                }
-                getExtension(ext_name);
+        app::Simulation * sim = getSimulation();
+        if(sim != nullptr)
+        {
+            // Apply extensions from the virtual extensions tree
+            app::SimulationConfiguration * cfg = sim->getSimulationConfiguration();
+            auto extensions_pt  = cfg->getExtensionsUnboundParameterTree();
+            auto extension_node = resolve_extension_node(extensions_pt);
+            if (extension_node != nullptr) {
+                extension_node = resolve_named_extension_node(extension_node);
             }
-        }
-        else {
-            extension->setParameters(std::move(extension_parameters));
-            extension->postCreate();
-            obj = extension.get();
-            extensions_[extension_name] = std::move(extension);
+
+            // If the extension_node is null, then there are no
+            // extension files provided populating the virtual parameter tree
+            if(extension_node != nullptr)
+            {
+                auto extensions_ps = obj->getParameters();
+
+                for(auto param : *(extensions_ps))
+                {
+                    auto extens_tn = extension_node->getChild(param->getName());
+                    if(extens_tn) {
+                        app::ParameterApplicator pa("", extens_tn->getValue());
+                        pa.apply(param);
+                    }
+                }
+            }
         }
     }
 
