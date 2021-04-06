@@ -67,17 +67,20 @@ void testFastList()
 
     ////////////////////////////////////////
     // erase
-    fl.erase(itr1);
+    auto next_it = fl.erase(itr1);
     std::cout << "Erased: \n" << fl;
     EXPECT_TRUE(fl.size() == 2);
+    // push front 2, 1, 0.  Remove 1, next is 0
+    EXPECT_EQUAL(next_it->getV(), 0);
 
     fl.erase(itr2);
     std::cout << "Erased: \n" << fl;
     EXPECT_TRUE(fl.size() == 1);
 
-    fl.erase(itr);
+    next_it = fl.erase(itr);
     std::cout << "Erased: \n" << fl;
     EXPECT_TRUE(fl.size() == 0);
+    EXPECT_FALSE(next_it.isValid());
 
     // Should have 3 objects deleted
     EXPECT_EQUAL(my_obj_deletions, 3);
@@ -116,7 +119,75 @@ void testFastList()
     }
     EXPECT_EQUAL(my_obj_deletions, 0);
     EXPECT_EQUAL(fl.size(), 10);
-    fl.pop_back();
+    fl.pop_back();  // Remove element 0
+    EXPECT_EQUAL(fl.size(), 9);
+    i = 9;
+    for(const auto & val : fl) {
+        EXPECT_EQUAL(val, i);
+        --i;
+    }
+    auto sz = fl.size();
+    for(size_t i = 0; i < sz; ++i) {
+        fl.pop_back();
+    }
+    EXPECT_EQUAL(fl.size(), 0);
+    EXPECT_THROW(fl.pop_back());
+    EXPECT_EQUAL(my_obj_deletions, 10);
+
+    ////////////////////////////////////////////////////////////
+    // pop_back
+    my_obj_deletions = 0;
+    for(size_t i = 0; i < num_elems; ++i) {
+        fl.emplace_front(i);
+    }
+    EXPECT_EQUAL(my_obj_deletions, 0);
+    EXPECT_EQUAL(fl.size(), 10);
+    fl.pop_front();  // Remove element 9
+    EXPECT_EQUAL(fl.size(), 9);
+    i = 8;
+    for(const auto & val : fl) {
+        EXPECT_EQUAL(val, i);
+        --i;
+    }
+    for(size_t i = 0; i < sz; ++i) {
+        fl.pop_front();
+    }
+    EXPECT_EQUAL(fl.size(), 0);
+    EXPECT_THROW(fl.pop_front());
+    EXPECT_EQUAL(my_obj_deletions, 10);
+
+    ////////////////////////////////////////////////////////////
+    // emplace
+    my_obj_deletions = 0;
+    fl.clear();
+    EXPECT_EQUAL(fl.size(), 0);
+    auto empl_it = fl.emplace(fl.begin(), 10);
+    EXPECT_EQUAL(empl_it->getV(), 10);
+    EXPECT_EQUAL(fl.size(), 1);
+    empl_it = fl.begin();
+    EXPECT_EQUAL(empl_it->getV(), 10);
+    empl_it = fl.emplace(empl_it, 20);
+    EXPECT_EQUAL(empl_it->getV(), 20);
+    ++empl_it;
+    EXPECT_EQUAL(empl_it->getV(), 10);
+
+    fl.clear();
+    EXPECT_EQUAL(my_obj_deletions, 2);
+    my_obj_deletions = 0;
+    auto empl_it_30 = fl.emplace(fl.end(), 30);
+    EXPECT_EQUAL(empl_it->getV(), 30);
+    empl_it = fl.emplace(fl.begin(), 40);
+    EXPECT_EQUAL(empl_it->getV(), 40);
+    empl_it = fl.emplace(empl_it_30, 50);
+    EXPECT_EQUAL(fl.size(), 3);
+
+    // Should have 40, 50, 30
+    empl_it = fl.begin();
+    EXPECT_EQUAL(empl_it->getV(), 40);
+    ++empl_it;
+    EXPECT_EQUAL(empl_it->getV(), 50);
+    ++empl_it;
+    EXPECT_EQUAL(empl_it->getV(), 30);
 
 }
 
