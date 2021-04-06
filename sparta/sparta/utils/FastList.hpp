@@ -143,6 +143,10 @@ namespace sparta::utils
             NodeIterator& operator=(const NodeIterator &rhs) = default;
             NodeIterator& operator=(      NodeIterator &&rhs) = default;
 
+            bool operator==(const NodeIterator & node) const noexcept {
+                return (node.flist_ == flist_) && (node.node_idx_ == node_idx_);
+            }
+
         private:
             friend class FastList<T>;
 
@@ -161,8 +165,8 @@ namespace sparta::utils
          */
         FastList(size_t size)
         {
-            nodes_.reserve(size);
             int node_idx = 0;
+            nodes_.reserve(size);
             for(size_t i = 0; i < size; ++i) {
                 Node n(node_idx);
                 n.prev = node_idx - 1;
@@ -202,7 +206,13 @@ namespace sparta::utils
 
         ////////////////////////////////////////////////////////////////////////////////
         // Modifiers
-        void     clear()  noexcept { sparta_assert(!"Not implemented yet"); }
+        void clear() noexcept {
+            const auto my_end = end();
+            for(auto it = begin(); it != my_end;) {
+                erase(it++);
+            }
+        }
+
         iterator insert(iterator pos, const T& value) noexcept
         { sparta_assert(!"Not implemented yet"); return iterator(nullptr, -1); }
 
@@ -245,12 +255,12 @@ namespace sparta::utils
         }
 
         /**
-         * \brief Add an element to the back of the list
+         * \brief Add an element to the front of the list
          * \tparam args Arguments to be passed to the user type for construction
          * \return iterator to the newly emplaced object
          */
         template<class ...ArgsT>
-        iterator emplace_back(ArgsT&&...args)
+        iterator emplace_front(ArgsT&&...args)
         {
             sparta_assert(free_head_ != -1,
                           "FastList is out of element room");
@@ -278,7 +288,9 @@ namespace sparta::utils
             return iterator(this, n.index);
         }
 
-        void pop_back() { sparta_assert(!"Not implemented yet"); }
+        void pop_back() noexcept {
+            ;
+        }
         void push_front() { sparta_assert(!"Not implemented yet"); }
 
     private:
