@@ -17,6 +17,38 @@
 
 namespace sparta
 {
+#ifndef DO_NOT_DOCUMENT
+    ////////////////////////////////////////////////////////////////////////////////
+    // Internals to support cross object allocation (derivative types)
+    // using Allocators.  In a nutshell, if one SSP
+    // (SpartaSharedPointer) of the base type is being reclaimed via
+    // an allocator, we want to steer that deallocation to the correct
+    // deallocator.
+    template <class PointerT>
+    class SpartaSharedPointer;
+
+    //! Base class for the Allocator -- typeless and allows releasing
+    //! of an object of derived types.
+    class BaseAllocator {
+    public:
+        virtual ~BaseAllocator() {}
+
+        struct MemBlockBase {
+            MemBlockBase(BaseAllocator * alloc_in) : alloc(alloc_in) {}
+            virtual ~MemBlockBase() {}
+            BaseAllocator * const alloc = nullptr;
+        };
+
+        template<class PointerT>
+        friend class SpartaSharedPointer;
+
+    protected:
+        // Release an object; release the block
+        virtual void releaseObject_(void * block) const noexcept = 0;
+        virtual void releaseBlock_(void * block) = 0;
+    };
+#endif
+
     /**
      * \class SpartaSharedPointer
      * \brief Used for garbage collection, will delete the object it
@@ -411,7 +443,6 @@ namespace sparta
         };
 
         // Allocation helpers
-
         /*!
          * \class SpartaSharedPointerAllocator
          *
@@ -557,7 +588,7 @@ namespace sparta
          * situation.
          *
          */
-        class SpartaSharedPointerAllocator
+        class SpartaSharedPointerAllocator : public BaseAllocator
         {
         public:
 
@@ -677,7 +708,7 @@ namespace sparta
                                            Args&&...args);
 
             // Internal MemoryBlock
-            struct MemBlock
+            struct MemBlock : public BaseAllocator::MemBlockBase
             {
                 using RefCountType = SpartaSharedPointer<PointerT>::RefCount;
 
@@ -688,9 +719,8 @@ namespace sparta
                     typename std::aligned_storage<sizeof(PointerT), alignof(PointerT)>::type;
 
                 template<typename ...ObjArgs>
-                MemBlock(SpartaSharedPointerAllocator * alloc_in,
-                         ObjArgs&&...obj_args) :
-                    alloc(alloc_in)
+                MemBlock(SpartaSharedPointerAllocator * alloc_in, ObjArgs&&...obj_args) :
+                    MemBlockBase(alloc_in)
                 {
                     // Build the new object using the inplacement new.
                     object = new (&object_storage) PointerT(std::forward<ObjArgs>(obj_args)...);
@@ -699,11 +729,11 @@ namespace sparta
                     ref_count = new (&ref_count_storage) RefCountType(object, (void*)this);
                 }
 
-                RefCountAlignedStorage         ref_count_storage;
-                PointerTAlignedStorage         object_storage;
-                SpartaSharedPointerAllocator * alloc = nullptr;
-                PointerT                     * object = nullptr;
-                RefCountType                 * ref_count = nullptr;
+                PointerT              * object = nullptr;
+                RefCountType          * ref_count = nullptr;
+
+                RefCountAlignedStorage  ref_count_storage;
+                PointerTAlignedStorage  object_storage;
 
                 MemBlock(const MemBlock &) = delete;
                 MemBlock(MemBlock &&)      = delete;
@@ -827,8 +857,8 @@ namespace sparta
              * \brief Release (calls the destructor) of the held object
              * \param block The block containing the ref count that contains the object
              */
-            void releaseObject_(MemBlock * block) {
-                block->ref_count->p->~PointerT();
+            void releaseObject_(void * block) const noexcept override {
+                static_cast<MemBlock *>(block)->ref_count->p->~PointerT();
             }
 
             /**
@@ -840,9 +870,9 @@ namespace sparta
              * considered "dead" and will be used in the placement new
              * in the future.
              */
-            void releaseBlock_(MemBlock * block) {
+            void releaseBlock_(void * block) override {
                 sparta_assert(free_idx_ < free_blocks_.capacity());
-                free_blocks_[free_idx_] = block;
+                free_blocks_[free_idx_] = static_cast<MemBlock *>(block);
                 ++free_idx_;
             }
 
@@ -874,8 +904,8 @@ namespace sparta
         static void releaseRefCount_(RefCount *& ref_count)
         {
             if(0 == ref_count->count) {
-                typename SpartaSharedPointerAllocator::MemBlock * memory_block =
-                    static_cast<typename SpartaSharedPointerAllocator::MemBlock *>(ref_count->mem_block);
+                BaseAllocator::MemBlockBase * memory_block =
+                    static_cast<BaseAllocator::MemBlockBase *>(ref_count->mem_block);
 
                 if(SPARTA_EXPECT_TRUE(nullptr != memory_block)) {
                     memory_block->alloc->releaseObject_(memory_block);
@@ -894,8 +924,8 @@ namespace sparta
 
             if((0 >= ref_count->count) && (0 == ref_count->wp_count))
             {
-                typename SpartaSharedPointerAllocator::MemBlock * memory_block =
-                    static_cast<typename SpartaSharedPointerAllocator::MemBlock *>(ref_count->mem_block);
+                BaseAllocator::MemBlockBase * memory_block =
+                    static_cast<BaseAllocator::MemBlockBase *>(ref_count->mem_block);
 
                 if(SPARTA_EXPECT_TRUE(nullptr != memory_block)) {
                     memory_block->alloc->releaseBlock_(memory_block);
