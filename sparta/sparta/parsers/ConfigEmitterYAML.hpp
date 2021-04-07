@@ -127,6 +127,20 @@ public:
                         *emitter_ << YP::Key << param_name;
                         *emitter_ << YP::Value //  << YP::PadToColumn(50)
                                   << params->getParameter(param_name)->getValueAsString();
+                        std::stringstream tags;
+                        params->getParameter(param_name)->stringizeTags(tags);
+                        *emitter_ << YP::Comment(tags.str());
+                    }
+
+                    params = ext_base->getParameters();
+                    param_names = params->getNames();
+                    for (const auto & param_name : param_names) {
+                        *emitter_ << YP::Key << param_name;
+                        *emitter_ << YP::Value //  << YP::PadToColumn(50)
+                                  << params->getParameter(param_name)->getValueAsString();
+                        std::stringstream tags;
+                        params->getParameter(param_name)->stringizeTags(tags);
+                        *emitter_ << YP::Comment(tags.str());
                     }
 
                     *emitter_ << YP::EndMap;

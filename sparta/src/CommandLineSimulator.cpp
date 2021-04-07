@@ -2026,16 +2026,15 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
         // Store final config file(s) after finalization so that all dynamic parameters are built
         //! \todo Print configuration if finalizeTree fails with exception then rethrow
         if(final_config_file_ != ""){
-            sparta::ConfigEmitter::YAML param_out_(final_config_file_,
-                                                 false); // Hide descriptions
-            param_out_.addParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg);
-
+            sparta::ConfigEmitter::YAML param_out(final_config_file_,
+                                                  false); // Hide descriptions
+            param_out.addParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg);
         }
 
         if(final_config_file_verbose_ != ""){
-            sparta::ConfigEmitter::YAML param_out_(final_config_file_verbose_,
-                                                 true); // Show descriptions
-            param_out_.addParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg);
+            sparta::ConfigEmitter::YAML param_out(final_config_file_verbose_,
+                                                  true); // Show descriptions
+            param_out.addParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg);
         }
 
         if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)
