@@ -177,6 +177,9 @@ namespace sparta::utils
             nodes_.back().next = -1;
         }
 
+        //! Destroy (clear) the list
+        ~FastList() { clear(); }
+
         using iterator       = NodeIterator<false>;  //!< Iterator type
         using const_iterator = NodeIterator<true>;   //!< Iterator type, const
 

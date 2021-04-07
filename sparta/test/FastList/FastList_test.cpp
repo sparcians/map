@@ -188,6 +188,17 @@ void testFastList()
     EXPECT_EQUAL(empl_it->getV(), 50);
     ++empl_it;
     EXPECT_EQUAL(empl_it->getV(), 30);
+    fl.clear();
+    EXPECT_EQUAL(my_obj_deletions, 3);
+
+    my_obj_deletions = 0;
+    {
+        sparta::utils::FastList<MyObj> fl2(10);
+        for(size_t i = 0; i < num_elems; ++i) {
+            fl2.emplace_front(i);
+        }
+    }
+    EXPECT_EQUAL(my_obj_deletions, 10);
 
 }
 
