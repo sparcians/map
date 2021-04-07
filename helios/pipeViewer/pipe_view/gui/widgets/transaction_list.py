@@ -7,7 +7,7 @@ class TransactionList(wx.ListCtrl):
 
     def __init__(self, parent, id, canvas, name = '', style = wx.LC_REPORT | wx.SUNKEN_BORDER):
         wx.ListCtrl.__init__(self, parent = parent, id = wx.NewId(), name = name, style = style)
-        self.SetFont(GetMonospaceFont(12))
+        self.SetFont(GetMonospaceFont(canvas.GetSettings().layout_font_size))
 
         # used for coloring
         self.__canvas = canvas

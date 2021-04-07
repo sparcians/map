@@ -10,9 +10,9 @@ import warnings
 
 
 class BrushRepository(object):
-    _COLORBLIND_MODES = ['d', 'p', 't']
-    _PALETTES = ['default'] + _COLORBLIND_MODES
-    _SHUFFLE_MODES = ['default', 'shuffled']
+    _COLORBLIND_MODES = set(('d', 'p', 't'))
+    _PALETTES = set(('default',)) | _COLORBLIND_MODES
+    _SHUFFLE_MODES = set(('default', 'shuffled'))
 
     def __init__(self):
         self.palette = 'default'
@@ -20,6 +20,14 @@ class BrushRepository(object):
         self.brushes = {}
         for shuffle_mode in self._SHUFFLE_MODES:
             self.brushes[shuffle_mode] = {}
+
+    @classmethod
+    def get_supported_palettes(cls):
+        return cls._PALETTES
+
+    @classmethod
+    def get_supported_shuffle_modes(cls):
+        return cls._SHUFFLE_MODES
 
     def __getitem__(self, idx):
         return self.as_dict()[idx]

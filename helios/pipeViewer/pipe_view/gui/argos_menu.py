@@ -15,6 +15,7 @@ from .dialogs.watchlist_dialog import WatchListDlg
 from .dialogs.console_dialog import ConsoleDlg
 from .dialogs.select_layout_dlg import SelectLayoutDlg
 from .dialogs.translate_elements_dlg import TranslateElementsDlg
+from .dialogs.view_settings_dlg import ViewSettingsDialog
 
 # Name each ID by ID_MENU_SUBMENU_etc...
 ID_FILE_NEW = wx.NewId()
@@ -257,6 +258,9 @@ class Argos_Menu(wx.MenuBar):
         # # \todo Show clocks info list
         # # \todo Show db .info file
 
+        self.menuViewSettings = viewmenu.Append(wx.NewId(),
+                                                "Settings...",
+                                                "View and change display settings.")
         # View
         self.menuShuffleColors = accessibilitymenu.Append(wx.NewId(),
                                  "Shuffle Color Map",
@@ -574,6 +578,7 @@ class Argos_Menu(wx.MenuBar):
         self.__parent.Bind(wx.EVT_MENU, self.OnColorMapChange, self.menuDeuteranopiaColors)
         self.__parent.Bind(wx.EVT_MENU, self.OnColorMapChange, self.menuProtanopiaColors)
         self.__parent.Bind(wx.EVT_MENU, self.OnColorMapChange, self.menuTritanopiaColors)
+        self.__parent.Bind(wx.EVT_MENU, self.OnViewSettings, self.menuViewSettings)
 
         self.__accel_tbl = wx.AcceleratorTable(accelentries)
 
@@ -774,6 +779,18 @@ class Argos_Menu(wx.MenuBar):
     def OnHoverOptions(self, evt):
         self.hover_options_dialog = HoverPreviewOptionsDialog(self, self.__parent.GetCanvas().GetHoverPreview())
         self.hover_options_dialog.ShowWindowModal()
+
+    def OnViewSettings(self, evt):
+        settings = self.__parent.GetSettings()
+        view_settings_dialog = ViewSettingsDialog(self, settings)
+        ret = view_settings_dialog.ShowModal()
+        if ret == wx.ID_OK:
+            new_settings = view_settings_dialog.GetSettings()
+            if new_settings:
+                self.__parent.UpdateSettings(new_settings)
+                settings.save()
+
+        view_settings_dialog.Destroy()
 
     def OnElementSettings(self, evt):
         dialog = self.__parent.GetCanvas().GetDialog()

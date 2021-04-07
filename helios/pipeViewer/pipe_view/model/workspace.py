@@ -23,14 +23,13 @@ class Workspace:
     WINDOW_CASCADE_STEP_Y = 20
 
     ## Constructor
-    def __init__(self):
+    def __init__(self, settings):
         ##self.__layouts = [] # Managed layouts
         ##self.__laycons = [] # Managed layout contexts
         ##self.__dbs = [] # Managed databases
         self.__groups = [group.Group()] # Synchronization groups
         self.__frames = [] # Weak references to frames
-        self.__color_palette = 'default'
-        self.__color_shuffle_state = 'default'
+        self.__settings = settings
 
         # Figure out a starting window pos
         pos = [0,0]
@@ -51,6 +50,9 @@ class Workspace:
         # Builtin resource dir
         this_script_dir = os.path.dirname(os.path.join(os.getcwd(), __file__))
         self.__builtin_resource_dir = os.path.join(os.path.dirname(this_script_dir), 'resources')
+
+        self.SetPalette(self.__settings.palette)
+        self.SetColorShuffleState(self.__settings.palette_shuffle)
 
     def __str__(self):
         return '<Argos Workspace>'
@@ -94,7 +96,7 @@ class Workspace:
 
     # Set the palette for this workspace
     def SetPalette(self, palette):
-        self.__color_palette = palette
+        self.__settings.palette = palette
         # The autocoloring module is global, so we can set the mode once and then update all of the canvas brushes
         gui.autocoloring.SetPalettes(palette)
         for frame in self.__frames:
@@ -102,7 +104,7 @@ class Workspace:
 
     # Set the color shuffle state for this workspace
     def SetColorShuffleState(self, state):
-        self.__color_shuffle_state = state
+        self.__settings.palette_shuffle = state
         # The autocoloring module is global, so we can set the mode once and then update all of the canvas brushes
         gui.autocoloring.SetShuffleModes(state)
         for frame in self.__frames:
@@ -110,11 +112,11 @@ class Workspace:
 
     # Get the palette for this workspace
     def GetPalette(self):
-        return self.__color_palette
+        return self.__settings.palette
 
     # Get the color shuffle state for this workspace
     def GetColorShuffleState(self):
-        return self.__color_shuffle_state
+        return self.__settings.palette_shuffle
 
     def AddGroup(self):
         # not in first cut
@@ -270,3 +272,18 @@ class Workspace:
                 return True
 
         return False
+
+    ## Get settings object
+    def GetSettings(self):
+        return self.__settings
+
+    ## Updates settings and propagates them to the rest of the model if necessary
+    def UpdateSettings(self, new_settings):
+        self.__settings.update(new_settings)
+        if 'layout_font_size' in new_settings:
+            for f in self.__frames:
+                f().GetCanvas().UpdateFontSize()
+
+    ## Cleanup resources at shutdown
+    def Cleanup(self):
+        self.__settings.save()
