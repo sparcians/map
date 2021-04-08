@@ -782,8 +782,7 @@ class Argos_Menu(wx.MenuBar):
 
     def OnViewSettings(self, evt):
         settings = self.__parent.GetSettings()
-        with ViewSettingsDialog(self, settings) as view_settings_dialog:
-            view_settings_dialog.Show()
+        with ViewSettingsDialog(self.__parent, settings) as view_settings_dialog:
             if view_settings_dialog.ShowModal() == wx.ID_OK:
                 new_settings = view_settings_dialog.GetSettings()
                 if new_settings:
