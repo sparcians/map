@@ -40,7 +40,7 @@ class ViewSettingsDialog(wx.Dialog):
             self.Bind(wx.EVT_SPINCTRL, self.OnSpinCtrl, new_ctrl)
             v['ctrl'] = new_ctrl
 
-        sizer.Add(setting_sizer, 0, wx.EXPAND | wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
+        sizer.Add(setting_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
         sizer.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
         sizer.SetSizeHints(self)
         self.SetSizer(sizer)
