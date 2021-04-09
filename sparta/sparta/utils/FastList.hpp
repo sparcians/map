@@ -83,42 +83,61 @@ namespace sparta::utils
     public:
         using value_type = T; //!< Handy using
 
+        /**
+         * \class NodeIterator
+         * \brief Class defines two types of iterator: const and non_const
+         *
+         * Use the typedefs `iterator` and `const_iterator` instead of
+         * this class directly.
+         */
         template<bool is_const = true>
-        class NodeIterator // : public std::iterator<std::intput_iterator_tag, Node>
+        class NodeIterator : public std::iterator<std::input_iterator_tag, Node>
         {
             typedef std::conditional_t<is_const, const value_type &, value_type &> RefIteratorType;
             typedef std::conditional_t<is_const, const value_type *, value_type *> PtrIteratorType;
             typedef std::conditional_t<is_const, const FastList *, FastList *>     FastListPtrType;
         public:
 
+            //! Default construction; invalid Node
             NodeIterator() = default;
 
+            //! Construct a NodeIterator from the opposite NodeIterator const-type
             NodeIterator(const NodeIterator<false> & iter) :
                 flist_(iter.flist_),
                 node_idx_(iter.node_idx_)
             {}
 
+            //! Returns true if this iterator is valid (points to a valid node)
             bool isValid() const { return (node_idx_ != -1); }
 
+            //! Returns the object this iterator points to
             PtrIteratorType operator->()       {
                 assert(isValid());
                 return reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
             }
+
+            //! Returns the object this iterator points to (const)
             PtrIteratorType operator->() const {
                 assert(isValid());
                 return reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
             }
+
+            //! Returns the object this iterator points to
             RefIteratorType operator* ()       {
                 assert(isValid());
                 return *reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
             }
+
+            //! Returns the object this iterator points to (const)
             RefIteratorType operator* () const {
                 assert(isValid());
                 return *reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
             }
 
+            //! Get the index of this iterator
             int getIndex() const { return node_idx_; }
 
+            //! Increment to the next iterator.  Will assert if not valid
             NodeIterator & operator++()
             {
                 assert(isValid());
@@ -126,6 +145,7 @@ namespace sparta::utils
                 return *this;
             }
 
+            //! Increment to the next iterator.  Will assert if not valid
             NodeIterator operator++(int)
             {
                 NodeIterator orig = *this;
@@ -134,18 +154,23 @@ namespace sparta::utils
                 return orig;
             }
 
+            //! Compare iterators
             bool operator!=(const NodeIterator &rhs)
             {
                 return (rhs.flist_ != flist_) ||
                     (rhs.node_idx_ != node_idx_);
             }
 
-            NodeIterator& operator=(const NodeIterator &rhs) = default;
-            NodeIterator& operator=(      NodeIterator &&rhs) = default;
-
+            //! Compare iterators
             bool operator==(const NodeIterator & node) const noexcept {
                 return (node.flist_ == flist_) && (node.node_idx_ == node_idx_);
             }
+
+            //! Iterator assignment
+            NodeIterator& operator=(const NodeIterator &rhs) = default;
+
+            //! Iterator assignment
+            NodeIterator& operator=(      NodeIterator &&rhs) = default;
 
         private:
             friend class FastList<T>;
@@ -219,9 +244,12 @@ namespace sparta::utils
         /**
          * \brief Erase an element with the given iterator
          * \param entry Iterator to the entry being erased
+         * \return Iterator to the next object after the one erased
          */
         iterator erase(const const_iterator & entry)
         {
+            sparta_assert(entry.isValid(),
+                          "Given an invalid iterator to erase");
             const auto node_idx = entry.getIndex();
             auto & node_to_erase = nodes_[node_idx];
             reinterpret_cast<T*>(&node_to_erase.type_storage)->~T();
@@ -258,6 +286,12 @@ namespace sparta::utils
             return iterator(this, next_elem);
         }
 
+        /**
+         * \brief Emplace an element before the given iterator
+         * \param pos Iterator to emplace the object.  Can be end() or begin() as well.
+         * \tparam args The variatic template args passed to construct the given object
+         * \return Iterator of the emplaced object
+         */
         template<class ...ArgsT>
         iterator emplace(const const_iterator & pos, ArgsT&&...args)
         {
@@ -330,6 +364,11 @@ namespace sparta::utils
             return iterator(this, new_node.index);
         }
 
+        /**
+         * \brief Add an element to the back of the list
+         * \tparam args Arguments to be passed to the user type for construction
+         * \return iterator to the newly emplaced object
+         */
         template<class ...ArgsT>
         iterator emplace_back(ArgsT&&...args) {
             sparta_assert(free_head_ != -1,
@@ -357,11 +396,14 @@ namespace sparta::utils
             return iterator(this, new_node.index);
         }
 
+        //! Pop the last element.  Will throw if list is empty
         void pop_back() {
             sparta_assert(last_node_ != -1,
                           "Can't pop_back on an empty list");
             erase(iterator(this, last_node_));
         }
+
+        //! Pop the front element.  Will throw if list is empty
         void pop_front() {
             sparta_assert(first_node_ != -1,
                           "Can't pop_front on an empty list");
@@ -395,9 +437,9 @@ namespace sparta::utils
         // Stores all the nodes.
         std::vector<Node> nodes_;
 
-        int free_head_  = 0;  //!< The free head
+        int free_head_  =  0; //!< The free head
         int first_node_ = -1; //!< The first node in the list (-1 for empty)
         int last_node_  = -1; //!< The last node in the list (-1 for empty)
-        size_t size_    = 0;  //!< The number of elements in the list
+        size_t size_    =  0; //!< The number of elements in the list
     };
 }
