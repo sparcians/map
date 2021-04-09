@@ -446,3 +446,8 @@ class Layout_Frame(wx.Frame):
     def UpdateMouseLocation(self, x, y):
         self.__menu.UpdateMouseLocation(x, y)
 
+    def GetSettings(self):
+        return self.__workspace.GetSettings()
+
+    def UpdateSettings(self, new_settings):
+        self.__workspace.UpdateSettings(new_settings)

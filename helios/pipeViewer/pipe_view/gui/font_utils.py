@@ -12,3 +12,13 @@ def GetMonospaceFont(size):
         # Pick a fallback generic modern font (not by name)
         face_name = ''
     return wx.Font(ScaleFont(size), wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL, faceName=face_name)
+
+def GetDefaultFontSize():
+    return 11
+
+_DEFAULT_FONT = None
+def GetDefaultFont():
+    global _DEFAULT_FONT
+    if _DEFAULT_FONT is None:
+        _DEFAULT_FONT = GetMonospaceFont(GetDefaultFontSize())
+    return _DEFAULT_FONT

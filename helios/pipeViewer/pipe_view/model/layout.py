@@ -315,7 +315,7 @@ class Layout(object):
             with open(filename, 'w') as f:
                 self._StoreYAMLToStream(f)
         except Exception as ex:
-            # Faile to save. Allow this to propogate up
+            # Failed to save. Allow this to propagate up
             raise
 
         # Store new file info
@@ -566,7 +566,7 @@ class Layout(object):
 
     def __MakeSerializable(self, el):
         output = {}
-        output = el.GetProperties() # get all fields
+        output = el.GetSerializableProperties() # get all fields
         if el.HasChildren():
             children = el.GetChildren()
             output['children'] = []

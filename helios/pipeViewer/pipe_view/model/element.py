@@ -37,8 +37,15 @@ class Element(object):
         'caption'               : (''              , valid.validateString),
         'on_update'             : (''              , valid.validateString),
         'on_init'               : (''              , valid.validateString),
-        'on_cycle_changed'      : (''              , valid.validateString)
+        'on_cycle_changed'      : (''              , valid.validateString),
+        'scale_factor'          : ((1,1)           , valid.validateScale), # This is a virtual property that enables auto-scaling layouts to fit arbitrary font sizes
     }
+
+    # Properties that get auto-scaled with scale_factor
+    _SCALED_PROPERTIES = set(('position', 'dimensions'))
+
+    # Properties that should never be written to a layout file
+    _VIRTUAL_PROPERTIES = set(('scale_factor',))
 
     # Name of the property to use as a metadata key
     _METADATA_KEY_PROPERTY = ''
@@ -104,7 +111,7 @@ class Element(object):
     # element property dialog
     @staticmethod
     def GetHiddenProperties():
-        return []
+        return ['scale_factor']
 
     # # returns a list of property names (keys) to mark read-only in
     # element property dialog
@@ -142,6 +149,9 @@ class Element(object):
             if initial_properties:
                 # Overwrite defaults with any initial settings we have.
                 for key in initial_properties:
+                    if key in self._VIRTUAL_PROPERTIES:
+                        raise Exception(f'Property {key} is a virtual property and cannot be initialized')
+
                     prop = self._ALL_PROPERTIES.get(key)
                     if prop:
                         self._properties[key] = prop[1](key, initial_properties[key])
@@ -153,7 +163,7 @@ class Element(object):
                         # -N.S. 06/21/13
                         pass
                     else:
-                        raise Exception('Trying to add unknown property type: %s' % key)
+                        raise Exception(f'Trying to add unknown property type: {key}')
         else:
             self._properties = duplicate._properties.copy()
 
@@ -229,7 +239,7 @@ class Element(object):
             self._properties[key] = val
 
         # Setting a property is a change if the new value is actually different
-        if val != orig_val:
+        if val != orig_val and key != 'scale_factor':
             self.__changed = True
             self._layout.SetChanged()
 
@@ -259,7 +269,16 @@ class Element(object):
 
     # # Fetch the value for the given key
     def GetProperty(self, key, period = None):
-        return self._properties[key]
+        val = self._properties[key]
+
+        if key not in self._SCALED_PROPERTIES:
+            return val
+
+        x_scale, y_scale = self._properties['scale_factor']
+        if key == 'position' or key == 'dimensions':
+            return (round(val[0] * x_scale), round(val[1] * y_scale))
+        else:
+            raise NotImplementedError(f"Scaling not implemented for property '{key}'.")
 
     # # These shortcut functions were added in order to improve performance for some derived types
     # # Shortcut to get X dimension
@@ -281,6 +300,10 @@ class Element(object):
     # # Return the entire dict of properties
     def GetProperties(self):
         return self._properties
+
+    # # Return the entire dict of properties
+    def GetSerializableProperties(self):
+        return {k: v for k, v in self._properties.items() if k not in self._VIRTUAL_PROPERTIES}
 
     # # Does this element have a particular property
     def HasProperty(self, key):
@@ -328,7 +351,7 @@ class Element(object):
         events.append(yaml.MappingStartEvent(anchor = None, tag = None, implicit = True, flow_style = False))
 
         # Serialize all properties to yaml pairs
-        sorted_keys = sorted(self._ALL_PROPERTIES.keys())
+        sorted_keys = sorted(k for k in self._ALL_PROPERTIES.keys() if k not in self._VIRTUAL_PROPERTIES)
         for k in sorted_keys:
             if k == 'children' and self.HasChildren():
                 events.append(yaml.ScalarEvent(anchor = None, tag = None, implicit = (True, True), value = 'children'))
@@ -392,7 +415,7 @@ class MultiElement(Element):
     @staticmethod
     def GetHiddenProperties():
         # we use pixel_offset instead
-        return ['children']
+        return ['scale_factor', 'children']
 
     def GetChildren(self):
         return self.__children
@@ -407,6 +430,10 @@ class MultiElement(Element):
     def AddChild(self, e):
         self.__children.append(e)
         self.__children_by_pin[e.GetPIN()] = e
+
+    def SetNeedsRedraw(self):
+        for child in self.GetChildren():
+            child.SetNeedsRedraw()
 
 
 # # Element that gets queries from database.
