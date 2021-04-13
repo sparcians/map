@@ -63,6 +63,7 @@ class Layout_Canvas(wx.ScrolledWindow):
 
         # full canvas scale
         self.__canvas_scale = 1.0
+        self.__font_scale = (1.0, 1.0)
 
         self.__SCROLL_RATE = 20
         self.__scroll_ratios = (0, 0)
@@ -469,8 +470,8 @@ class Layout_Canvas(wx.ScrolledWindow):
     def __CalcCanvasSize(self):
 
         l, t, r, b = self.__context.GetElementExtents()
-        r *= self.__canvas_scale
-        b *= self.__canvas_scale
+        r *= self.__canvas_scale * self.__font_scale[0]
+        b *= self.__canvas_scale * self.__font_scale[1]
 
         width = max(self.MIN_WIDTH, r + self.__AUTO_CANVAS_SIZE_MARGIN)
         height = max(self.MIN_HEIGHT, b + self.__AUTO_CANVAS_SIZE_MARGIN)
@@ -528,9 +529,9 @@ class Layout_Canvas(wx.ScrolledWindow):
     def __UpdateFontScaling(self):
         default_font_w, default_font_h = GetDefaultFont().GetPixelSize()
         cur_font_w, cur_font_h = self.__fnt_layout.GetPixelSize()
-        scale = (cur_font_w / default_font_w, cur_font_h / default_font_h)
+        self.__font_scale = (cur_font_w / default_font_w, cur_font_h / default_font_h)
         for e in self.__context.GetElementPairs():
-            e.GetElement().SetProperty('scale_factor', scale)
+            e.GetElement().SetProperty('scale_factor', self.__font_scale)
 
     def UpdateFontSize(self):
         old_font = self.__fnt_layout
@@ -538,5 +539,6 @@ class Layout_Canvas(wx.ScrolledWindow):
         if old_font.GetPointSize() != self.__fnt_layout.GetPointSize():
             self.__set_renderer_font = False
             self.__UpdateFontScaling()
+            self.__CalcCanvasSize()
             self.__context.FullRedraw()
             self.FullUpdate()
