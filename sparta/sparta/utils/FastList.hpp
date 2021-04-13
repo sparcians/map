@@ -27,13 +27,13 @@ namespace sparta::utils
      * \tparam T The object to maintain
      *
      * This class is a container type that allows back emplacement and
-     * random deletion.  'std::list' provides the same type of
+     * random deletion.  `std::list` provides the same type of
      * functionality, but performs heap allocation of the internal
      * nodes.  Under the covers, this class does not perform
      * new/delete of the Nodes, but reuses existing ones, performing
      * an inplace-new of the user's object.
      *
-     * Testing shows this class is 2.5x faster than using std::list.
+     * Testing shows this class is 2.5x faster than using `std::list`.
      * Caveats:
      *
      *  - The size of FastList is fixed to allow for optimization
@@ -223,17 +223,19 @@ namespace sparta::utils
         //! Obtain an end const_iterator
         const_iterator end() const { return const_iterator(this, -1); }
 
-        //! \return Is this container empty?
+        //! Is this container empty?
         bool   empty()    const { return size_ == 0; }
 
-        //! \return The current size of the container
+        //! The current size of the container
         size_t size()     const { return size_; };
 
-        //! \return The maximum size of this list
+        //! The maximum size of this list
         size_t max_size() const { return nodes_.capacity(); };
 
         ////////////////////////////////////////////////////////////////////////////////
         // Modifiers
+
+        //! Clear the list
         void clear() noexcept {
             const auto my_end = end();
             for(auto it = begin(); it != my_end;) {
