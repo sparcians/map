@@ -8,6 +8,8 @@
 
 #include "sparta/statistics/Counter.hpp"
 
+namespace sparta
+{
 /// Histogram with programmable buckets
 class BasicHistogram
 {
@@ -60,4 +62,5 @@ private: // data
     std::vector<int64_t> bucket_vals_; ///< user-specified buckets
     std::vector<sparta::Counter> ctrs_; ///< one counter per bucket
 };
+} // namespace sparta
 
