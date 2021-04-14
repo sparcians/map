@@ -13,6 +13,20 @@
 
 TEST_INIT;
 
+class TestBasicHistogram : public sparta::BasicHistogram<int64_t, false>
+{
+public:
+    TestBasicHistogram(sparta::StatisticSet &sset,
+                       const std::string &name,
+                       const std::string &desc,
+                       const std::vector<int64_t> &buckets)
+    : BasicHistogram<int64_t, false>(sset, name, desc, buckets)
+    {
+    }
+
+    uint64_t get(size_t i) { return ctrs_[i].get(); }
+};
+
 int main()
 {
     sparta::Scheduler scheduler("BasicHistogram_test");
@@ -20,12 +34,18 @@ int main()
     sparta::RootTreeNode rtn("root");
     rtn.setClock(&clk);
 
+    // requirements for building
     sparta::StatisticSet ss(&rtn);
-    sparta::BasicHistogram<int64_t, false> histogram(ss, "test", "Test", {0, 4, 8});
+    std::vector<int64_t> buckets{0, 4, 8};
 
-    for(std::size_t i = -1; i < 12; ++i){
+    TestBasicHistogram histogram(ss, "test", "Test", buckets);
+    for(int64_t i = -1; i < 12; ++i) {
         histogram.addValue(i);
     }
+
+    EXPECT_EQUAL(histogram.get(0), 5);
+    EXPECT_EQUAL(histogram.get(1), 4);
+    EXPECT_EQUAL(histogram.get(2), 4);
 
     sparta::BasicHistogram<int64_t, true> faulting_histogram(ss, "test2", "Faulting test", {0, 4, 8});
     EXPECT_THROW(faulting_histogram.addValue(-1));
