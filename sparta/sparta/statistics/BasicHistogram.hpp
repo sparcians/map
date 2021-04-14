@@ -32,11 +32,11 @@ public:
             std::ostringstream os_desc;
             if (i == 0)
             {
-                os_desc << desc << " with values less than " << v;
+                os_desc << desc << " with values less than or equal to " << v;
             }
             else
             {
-                os_desc << desc << " with values greater than or equal to " << bucket_vals_[i-1] << " and less than " << v;
+                os_desc << desc << " with values greater than " << bucket_vals_[i-1] << " and less than or equal to " << v;
             }
 
             ctrs_.push_back(sparta::Counter(&sset, os_name.str(), os_desc.str(), sparta::Counter::COUNT_NORMAL));
@@ -53,7 +53,7 @@ public:
     /// increment the bucket corresponding to 'val'
     void addValue(int64_t val)
     {
-        auto bucket = std::lower_bound(bucket_vals_.begin(), bucket_vals_.end(), val);
+        auto bucket = std::upper_bound(bucket_vals_.begin(), bucket_vals_.end(), val);
         auto off = bucket - bucket_vals_.begin();
         ++ctrs_[off];
     }
