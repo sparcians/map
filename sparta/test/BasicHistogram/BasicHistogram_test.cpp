@@ -21,11 +21,18 @@ int main()
     rtn.setClock(&clk);
 
     sparta::StatisticSet ss(&rtn);
-    sparta::BasicHistogram histogram(ss, "test", "Test", {0, 4, 8});
+    sparta::BasicHistogram<int64_t, false> histogram(ss, "test", "Test", {0, 4, 8});
 
-    for(std::size_t i = 0; i < 12; ++i){
+    for(std::size_t i = -1; i < 12; ++i){
         histogram.addValue(i);
     }
+
+    sparta::BasicHistogram<int64_t, true> faulting_histogram(ss, "test2", "Faulting test", {0, 4, 8});
+    EXPECT_THROW(faulting_histogram.addValue(-1));
+    EXPECT_NOTHROW(faulting_histogram.addValue(0));
+
+    using ThrowHistogram = sparta::BasicHistogram<int64_t, true>;
+    EXPECT_THROW(ThrowHistogram nonsorted_histogram(ss, "test3", "Not sorted test", {12, 0, 4, 8}));
 
     rtn.enterConfiguring();
     rtn.enterFinalized();
