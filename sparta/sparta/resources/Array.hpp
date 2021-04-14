@@ -645,6 +645,13 @@ namespace sparta
         }
 
         /**
+         * \brief Return true if empty
+         */
+        bool empty() const {
+            return num_valid_ == 0;
+        }
+
+        /**
          * \brief The number of valid entries contained.
          * \return The number of valid elements in the array
          */

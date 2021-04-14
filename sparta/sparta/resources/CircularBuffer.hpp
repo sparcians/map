@@ -155,20 +155,15 @@ namespace sparta
                                               InternalCircularBufferIterator>::type SpecificCircularBufferIterator;
             SpecificCircularBufferIterator circularbuffer_entry_;
 
-            //! The validity ID
-            uint64_t window_idx_ = std::numeric_limits<uint64_t>::max();
-
             /**
              * \brief Internally construct an iterator
              * \param CircularBuffer a pointer to the underlaying CircularBuffer.
              * \param index The index this iterator points to in the CircularBuffer
              */
             CircularBufferIterator(CircularBufferPointerType circularbuffer,
-                                   SpecificCircularBufferIterator entry,
-                                   const uint64_t window_idx) :
+                                   SpecificCircularBufferIterator entry) :
                 attached_circularbuffer_(circularbuffer),
-                circularbuffer_entry_(entry),
-                window_idx_(window_idx)
+                circularbuffer_entry_(entry)
             {}
 
             // Used by the CircularBuffer to get the position in the
@@ -190,8 +185,7 @@ namespace sparta
              */
             CircularBufferIterator(const CircularBufferIterator<false> & iter) :
                 attached_circularbuffer_(iter.attached_circularbuffer_),
-                circularbuffer_entry_(iter.circularbuffer_entry_),
-                window_idx_(iter.window_idx_)
+                circularbuffer_entry_(iter.circularbuffer_entry_)
             {}
 
             /**
@@ -201,44 +195,67 @@ namespace sparta
              */
             CircularBufferIterator& operator=(const CircularBufferIterator& rhs) = default;
 
-            /// override the comparison operator.
+            /**
+             * \brief Determine if this iterator is pointing to an older object than then one given
+             * \param rhs The right hand of the < operator
+             * \return true if left hand object is "older" than the RHS
+             * \note `end()` is considered "newer" than `begin()`
+             *
+             */
             bool operator<(const CircularBufferIterator& rhs) const
             {
                 sparta_assert(attached_circularbuffer_ == rhs.attached_circularbuffer_,
-                            "Cannot compare CircularBufferIterators created by different CircularBuffers.");
-                return window_idx_ > rhs.window_idx_;
+                              "Cannot compare CircularBufferIterators created by different CircularBuffers.");
+
+                const bool is_rhs_end = (attached_circularbuffer_->end().circularbuffer_entry_ == rhs.circularbuffer_entry_);
+                const bool is_lhs_end = (attached_circularbuffer_->end().circularbuffer_entry_ == circularbuffer_entry_);
+                if(is_lhs_end || is_rhs_end) { return is_lhs_end ? false : true; }
+
+                // The smaller the index, the older it is
+                return circularbuffer_entry_->window_idx > rhs.circularbuffer_entry_->window_idx;
             }
 
-            /// override the comparison operator.
+            /**
+             * \brief Determine if this iterator is pointing to an older object than then one given
+             * \param rhs The right hand of the < operator
+             * \return true if left hand object is "newer" than the RHS
+             * \note `end()` is considered "newer" than `begin()`
+             *
+             */
             bool operator>(const CircularBufferIterator& rhs) const
             {
                 sparta_assert(attached_circularbuffer_ == rhs.attached_circularbuffer_,
-                            "Cannot compare CircularBufferIterators created by different CircularBuffers.");
-                return window_idx_ < rhs.window_idx_;
+                              "Cannot compare CircularBufferIterators created by different CircularBuffers.");
+
+                const bool is_rhs_end = (attached_circularbuffer_->end().circularbuffer_entry_ == rhs.circularbuffer_entry_);
+                const bool is_lhs_end = (attached_circularbuffer_->end().circularbuffer_entry_ == circularbuffer_entry_);
+                if(is_lhs_end || is_rhs_end) { return is_lhs_end ? false : true; }
+
+                // The smaller the index, the older it is
+                return circularbuffer_entry_->window_idx < rhs.circularbuffer_entry_->window_idx;
             }
 
-            /// override the comparison operator.
+            //! \return true if the iterators are equal
             bool operator==(const CircularBufferIterator& rhs) const
             {
                 sparta_assert(attached_circularbuffer_ == rhs.attached_circularbuffer_,
-                            "Cannot compare CircularBufferIterators created by different CircularBuffers.");
-                return (window_idx_ == rhs.window_idx_);
+                              "Cannot compare CircularBufferIterators created by different CircularBuffers.");
+                return circularbuffer_entry_ == rhs.circularbuffer_entry_;
             }
 
-            /// override the not equal operator.
+            //! \return true if the iterators are not equal
             bool operator!=(const CircularBufferIterator& rhs) const
             {
                 sparta_assert(attached_circularbuffer_ == rhs.attached_circularbuffer_,
-                            "Cannot compare CircularBufferIterators created by different CircularBuffers.");
-                return !operator==(rhs);
+                              "Cannot compare CircularBufferIterators created by different CircularBuffers.");
+                return circularbuffer_entry_ != rhs.circularbuffer_entry_;
             }
 
-            /// Checks validity of the iterator
-            /// \return Returns false if the iterator is not valid
+            /// \return false if the iterator is not valid
             bool isValid() const
             {
                 if(attached_circularbuffer_) {
-                    return attached_circularbuffer_->isValidIterator_(window_idx_);
+                    return attached_circularbuffer_->isValidIterator_(circularbuffer_entry_);
                 }
                 return false;
             }
@@ -246,21 +263,25 @@ namespace sparta
             /// override the dereferencing operator
             DataReferenceType operator* () {
                 sparta_assert(attached_circularbuffer_,
-                            "This iterator is not attached to a CircularBuffer. Was it initialized?");
+                              "This iterator is not attached to a CircularBuffer. Was it initialized?");
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");
                 return circularbuffer_entry_->data;
             }
+
+            /// override the dereferencing operator
             value_type* operator->()
             {
                 sparta_assert(attached_circularbuffer_,
-                            "This iterator is not attached to a CircularBuffer. Was it initialized?");
+                              "This iterator is not attached to a CircularBuffer. Was it initialized?");
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");
                 return &circularbuffer_entry_->data;
             }
+
+            /// override the dereferencing operator
             const value_type* operator->() const
             {
                 sparta_assert(attached_circularbuffer_,
-                            "This iterator is not attached to a CircularBuffer. Was it initialized?");
+                              "This iterator is not attached to a CircularBuffer. Was it initialized?");
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");
                 return &circularbuffer_entry_->data;
             }
@@ -269,14 +290,10 @@ namespace sparta
              */
             CircularBufferIterator & operator++() {
                 sparta_assert(attached_circularbuffer_,
-                            "This iterator is not attached to a CircularBuffer. Was it initialized?");
-                if(isValid()) {
-                    ++window_idx_;
-                    ++circularbuffer_entry_;
-                }
-                else {
-                    sparta_assert(!"Attempt to increment an invalid iterator");
-                }
+                              "This iterator is not attached to a CircularBuffer. Was it initialized?");
+                sparta_assert(attached_circularbuffer_->end().circularbuffer_entry_ != circularbuffer_entry_,
+                              "Trying to go beyond the end of the buffer");
+                ++circularbuffer_entry_;
                 return *this;
             }
 
@@ -290,14 +307,11 @@ namespace sparta
             /// Move the iterator to point to prev element in queue ; POSTFIX
             CircularBufferIterator & operator-- ()
             {
-                sparta_assert(attached_circularbuffer_, "The iterator is not attached to a CircularBuffer. Was it initialized?");
-                if(attached_circularbuffer_->isValidIterator_(window_idx_ - 1)) {
-                    --window_idx_;
-                    --circularbuffer_entry_;
-                }
-                else {
-                    sparta_assert(!"Attempt to decrement an iterator beyond bounds or that is invalid");
-                }
+                sparta_assert(attached_circularbuffer_,
+                              "The iterator is not attached to a CircularBuffer. Was it initialized?");
+                sparta_assert(attached_circularbuffer_->begin().circularbuffer_entry_ != circularbuffer_entry_,
+                              "Trying to go beyond the beginning of the buffer");
+                --circularbuffer_entry_;
                 return *this;
             }
 
@@ -547,25 +561,27 @@ namespace sparta
          * \brief erase the index at which the entry exists in the CircularBuffer.
          * \param entry a reference to the entry to be erased.
          */
-        void erase(const_iterator entry)
+        template<class IteratorT>
+        IteratorT erase(const IteratorT & entry)
         {
-            sparta_assert(entry.attached_circularbuffer_ == this,
-                        "Cannot erase an entry created by another CircularBuffer");
-            eraseEntry_(entry);
-        }
+            if constexpr(std::is_same_v<IteratorT, reverse_iterator> ||
+                         std::is_same_v<IteratorT, const_reverse_iterator>)
+            {
+                sparta_assert(entry.base().attached_circularbuffer_ == this,
+                              "Cannot erase an entry created by another CircularBuffer");
+            }
+            else {
+                sparta_assert(entry.attached_circularbuffer_ == this,
+                              "Cannot erase an entry created by another CircularBuffer");
+            }
 
-        /**
-         * \brief erase the index at which the entry exists in the CircularBuffer.
-         * \param entry a reference to the entry to be erased.
-         */
-        void erase(const_reverse_iterator entry)
-        {
-            sparta_assert(entry.base().attached_circularbuffer_ == this,
-                        "Cannot erase an entry created by another CircularBuffer");
-            eraseEntry_(entry);
-        }
-        void erase(reverse_iterator entry) {
-            erase(const_reverse_iterator(entry));
+            IteratorT next_iterator(entry);
+            ++next_iterator;
+
+            circularbuffer_data_.erase(entry.getInternalBufferEntry_());
+            --num_valid_;
+            resetIndexes_();
+            return next_iterator;
         }
 
         /**
@@ -588,9 +604,7 @@ namespace sparta
          */
         iterator begin() {
             if(size()) {
-                return iterator(this,
-                                circularbuffer_data_.begin(),
-                                circularbuffer_data_.begin()->window_idx);
+                return iterator(this, circularbuffer_data_.begin());
             }
             return end();
         }
@@ -600,7 +614,7 @@ namespace sparta
          *        newest element in the CircularBuffer
          */
         iterator end() {
-            return iterator(this, circularbuffer_data_.end(), end_idx_);
+            return iterator(this, circularbuffer_data_.end());
         }
 
         /**
@@ -611,9 +625,7 @@ namespace sparta
          */
         const_iterator begin() const {
             if(size()) {
-                return const_iterator(this,
-                                      circularbuffer_data_.begin(),
-                                      circularbuffer_data_.begin()->window_idx);
+                return const_iterator(this, circularbuffer_data_.begin());
             }
             return end();
         }
@@ -623,7 +635,7 @@ namespace sparta
          *        newest element in the CircularBuffer
          */
         const_iterator end() const {
-            return const_iterator(this, circularbuffer_data_.end(), end_idx_);
+            return const_iterator(this, circularbuffer_data_.end());
         }
 
         /**
@@ -676,17 +688,8 @@ namespace sparta
 
         // Used by the internal iterator type to see if it's still
         // valid
-        bool isValidIterator_(uint32_t window_idx) const {
-            return (window_idx >= start_idx_ && window_idx < end_idx_);
-        }
-
-        template<typename EntryIteratorT>
-        void eraseEntry_(const EntryIteratorT & entry)
-        {
-            sparta_assert(entry.isValid());
-            circularbuffer_data_.erase(entry.getInternalBufferEntry_());
-            --num_valid_;
-            invalidateIndexes_();
+        bool isValidIterator_(const InternalCircularBufferConstIterator & it) const {
+            return (it->window_idx >= start_idx_ && it->window_idx < end_idx_);
         }
 
         template<typename U>
@@ -718,15 +721,15 @@ namespace sparta
                 return begin();
             }
             sparta_assert(entry.isValid(),
-                        "Cannot insert into Circularbuffer at given iterator");
+                          "Cannot insert into Circularbuffer at given iterator");
             auto it = circularbuffer_data_.insert(entry.getInternalBufferEntry_(),
                                                   CircularBufferData(std::forward<U>(dat), end_idx_));
             ++num_valid_;
-            invalidateIndexes_();
-            return iterator(this, it, it->window_idx);
+            resetIndexes_();
+            return iterator(this, it);
         }
 
-        void invalidateIndexes_() {
+        void resetIndexes_() {
             // To invalidate any and all outstanding iterators, move
             // the start/end indexes outside the current window.  Do
             // not set the start_idx_ to the old end_idx_ as any older
@@ -869,8 +872,4 @@ namespace sparta
                                                stat_vis_max));
         }
     }
-
-
-
 }
-

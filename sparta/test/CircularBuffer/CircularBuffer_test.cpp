@@ -44,12 +44,12 @@ void testPushBack()
     root_clk = cm.makeRoot(&rtn, "root_clk");
     cm.normalize();
     sparta::CircularBuffer<uint32_t> cir_buffer("test_circ_buffer", 10,
-                                              root_clk.get(), &buf10_stats);
+                                                root_clk.get(), &buf10_stats);
 
     sparta::CircularBuffer<dummy_struct> buf_dummy("test_circ_buffer_pf", 4,
-                                              root_clk.get(), &buf10_stats);
+                                                   root_clk.get(), &buf10_stats);
     sparta::CircularBuffer<dummy_struct> buf_dummy_cp("test_circ_buffer_pfc", 4,
-                                              root_clk.get(), &buf10_stats);
+                                                      root_clk.get(), &buf10_stats);
 
     // Test perfect forwarding Circular Buffer move
     {
@@ -144,7 +144,7 @@ void testForwardIterators()
     // Buffer setup
     const uint32_t BUF_SIZE = 10;
     sparta::CircularBuffer<uint32_t> cir_buffer("test_circ_buffer", BUF_SIZE,
-                                              root_clk.get(), &buf10_stats);
+                                                root_clk.get(), &buf10_stats);
 
     EXPECT_EQUAL(cir_buffer.capacity(), BUF_SIZE);
 
@@ -300,12 +300,16 @@ void testForwardIterators()
     sparta::CircularBuffer<uint32_t>::const_iterator young = cir_buffer.end();
 
     EXPECT_TRUE(old > young);
+    EXPECT_FALSE(young > old);
     --young;
     EXPECT_TRUE(old > young);
+    EXPECT_TRUE(young < old);
     --young;
     EXPECT_TRUE(old > young);
+    EXPECT_TRUE(young < old);
     --young;
     EXPECT_TRUE(old > young);
+    EXPECT_TRUE(young < old);
 
     // Test index
     cir_buffer.clear();
@@ -355,7 +359,7 @@ void testReverseIterators()
     // Buffer setup
     const uint32_t BUF_SIZE = 10;
     sparta::CircularBuffer<uint32_t> cir_buffer("test_circ_buffer", BUF_SIZE,
-                                              root_clk.get(), &buf10_stats);
+                                                root_clk.get(), &buf10_stats);
 
     for(uint32_t i = 0; i < BUF_SIZE; ++i) {
         cir_buffer.push_back(i);
@@ -398,7 +402,7 @@ void testEraseInsert()
     // Buffer setup
     const uint32_t BUF_SIZE = 10;
     sparta::CircularBuffer<uint32_t> cir_buffer("test_circ_buffer", BUF_SIZE,
-                                              root_clk.get(), &buf10_stats);
+                                                root_clk.get(), &buf10_stats);
 
     for(uint32_t i = 0; i < BUF_SIZE; ++i) {
         cir_buffer.push_back(i);
@@ -407,8 +411,13 @@ void testEraseInsert()
 
     // Test erase
     sparta::CircularBuffer<uint32_t>::iterator bit = cir_buffer.begin();
-    cir_buffer.erase(bit);
+    EXPECT_EQUAL(*bit, 0);
+    auto next_it2 = bit;
+    ++next_it2;
+    auto next_it = cir_buffer.erase(bit);
     EXPECT_FALSE(bit.isValid());
+    EXPECT_TRUE(next_it.isValid());
+    EXPECT_EQUAL(*next_it, 1);
 
     sparta::CircularBuffer<uint32_t>::reverse_iterator rbit = cir_buffer.rbegin();
     cir_buffer.erase(rbit);
@@ -503,7 +512,7 @@ void testStatsOutput()
 
     sparta::StatisticSet stats(&rtn);
     sparta::CircularBuffer<uint32_t> b("buf_const_test", 10,
-                                     root_clk.get(), &stats);
+                                       root_clk.get(), &stats);
     const std::string report_def =
         R"(name: "String-based report Autopopulation Test"
 style:
@@ -567,7 +576,7 @@ void testStruct()
     sparta::StatisticSet stats(&rtn);
 
     sparta::CircularBuffer<Entry> b("buf_struct_test", 10,
-                                     root_clk.get(), &stats);
+                                    root_clk.get(), &stats);
 
     b.push_back(Entry(4, true));
     b.push_back(Entry(15, false));
