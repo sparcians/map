@@ -67,7 +67,7 @@ public:
         ++ctrs_[off];
     }
 
-private: // data
+protected: // data
     std::vector<T> bucket_vals_; ///< user-specified buckets
     std::vector<sparta::Counter> ctrs_; ///< one counter per bucket
 };
