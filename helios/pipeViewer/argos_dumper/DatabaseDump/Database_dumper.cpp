@@ -144,6 +144,7 @@ namespace pipeViewer
                 for (uint32_t i = 0; i < p->nameVector.size(); ++i) {
                     os << p->nameVector[i] << "(" << p->stringVector[i] << ") ";
                 }
+                os << "start: " << p->time_Start << " end: " << p->time_End;
                 os << std::endl;
             }
 
