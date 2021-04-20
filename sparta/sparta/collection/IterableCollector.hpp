@@ -197,6 +197,13 @@ public:
         }
     }
 
+    //! Schedule event to close all records for this iterable type.
+    void scheduleCloseRecord(sparta::Clock::Cycle cycle) {
+        if(SPARTA_EXPECT_FALSE(isCollected())) {
+            ev_close_record_.preparePayload(false)->schedule(cycle);
+        }
+    }
+
     //! \brief Do not perform any automatic collection
     //! The SchedulingPhase is ignored
     void setManualCollection() {
