@@ -133,7 +133,10 @@ namespace sparta{
                         uint64_t parentid = 0,
                         const std::string & desc = "Collectable <manual, no desc>") :
                 Collectable(parent, name, nullptr, parentid, desc)
-            {}
+            {
+                // Can't auto collect without setting collected_object_
+                setManualCollection();
+            }
 
             //! Virtual destructor -- does nothing
             virtual ~Collectable() {}
@@ -532,7 +535,10 @@ namespace sparta{
                         uint64_t parentid = 0,
                         const std::string & desc = "Collectable <manual, no desc>") :
                 Collectable(parent, name, nullptr, parentid, desc)
-            {}
+            {
+                // Can't auto collect without setting collected_object_
+                setManualCollection();
+            }
 
             //! Virtual destructor -- does nothing
             virtual ~Collectable() {}
