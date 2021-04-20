@@ -721,7 +721,7 @@ namespace sparta
         void enableCollection(TreeNode * parent) {
             collector_.
                 reset(new collection::IterableCollector<Buffer<DataT> >(parent, getName(),
-                                                                        *this, capacity()));
+                                                                        this, capacity()));
         }
 
         /**

@@ -84,7 +84,7 @@ namespace core_example
         const bool in_order_issue_;
         sparta::collection::IterableCollector<std::list<ExampleInstPtr>>
         ready_queue_collector_ {getContainer(), "scheduler_queue",
-                ready_queue_, scheduler_size_};
+                &ready_queue_, scheduler_size_};
 
         // Events used to issue and complete the instruction
         sparta::UniqueEvent<> issue_inst_{&unit_event_set_, getName() + "_issue_inst",

@@ -86,10 +86,10 @@ public:
                        const std::string & group,
                        const uint32_t index,
                        const std::string & desc,
-                       const IterableType & iterable,
+                       const IterableType * iterable,
                        const size_type expected_capacity) :
         CollectableTreeNode(parent, name, group, index, desc),
-        iterable_object_ (iterable),
+        iterable_object_(iterable),
         expected_capacity_(expected_capacity),
         event_set_(this),
         ev_close_record_(&event_set_, name + "_pipeline_collectable_close_event",
@@ -115,7 +115,7 @@ public:
     IterableCollector (TreeNode * parent,
                        const std::string & name,
                        const std::string & desc,
-                       const IterableType & iterable,
+                       const IterableType * iterable,
                        const size_type expected_capacity) :
         IterableCollector(parent, name, name, 0, desc, iterable, expected_capacity)
     {}
@@ -129,7 +129,7 @@ public:
      */
     IterableCollector (TreeNode * parent,
                        const std::string & name,
-                       const IterableType & iterable,
+                       const IterableType * iterable,
                        const size_type expected_capacity) :
         IterableCollector (parent, name, name + " Iterable Collector",
                            iterable, expected_capacity)
@@ -137,15 +137,35 @@ public:
         // Delegated constructor
     }
 
+    /**
+     * \brief constructor with no iterable object associated
+     * \param parent the parent treenode for the collector
+     * \param name the name of the collector
+     * \param expected_capacity The maximum size this item should grow to
+     */
+    IterableCollector (TreeNode * parent,
+                       const std::string & name,
+                       const size_type expected_capacity) :
+        IterableCollector (parent, name, name + " Iterable Collector",
+                           nullptr, expected_capacity)
+    {
+        // Can't auto collect without setting iterable_object_
+        setManualCollection();
+    }
+
     //! Collect the contents of the iterable object.  This function
     //! will walk starting from index 0 -> expected_capacity, clearing
     //! out any records where the iterable object does not contain
     //! data.
-    void collect () override
+    void collect(const IterableType * iterable_object)
     {
-        if (SPARTA_EXPECT_FALSE(isCollected()))
+        // If pointer has become nullified, close the records
+        if(nullptr == iterable_object) {
+            closeRecord();
+        }
+        else if (SPARTA_EXPECT_FALSE(isCollected()))
         {
-            if(SPARTA_EXPECT_FALSE(iterable_object_.size() > expected_capacity_))
+            if(SPARTA_EXPECT_FALSE(iterable_object->size() > expected_capacity_))
             {
                 if(SPARTA_EXPECT_FALSE(warn_on_size_))
                 {
@@ -154,13 +174,18 @@ public:
                         << getLocation() << "' has grown beyond the "
                         << "expected capacity (given at construction) for collection. "
                         << "Expected " << expected_capacity_ << " but grew to "
-                        << iterable_object_.size()
+                        << iterable_object->size()
                         << " This is your first and last warning.";
                     warn_on_size_ = false;
                 }
             }
-            collectImpl_(std::integral_constant<bool, sparse_array_type>());
+            collectImpl_(iterable_object, std::integral_constant<bool, sparse_array_type>());
         }
+    }
+
+    //! Collect the contents of the associated iterable object
+    void collect() override {
+        collect(iterable_object_);
     }
 
     //! Force close all records for this iterable type.  This will
@@ -192,10 +217,12 @@ public:
 private:
     typedef Collectable<typename std::iterator_traits<typename IterableType::iterator>::value_type> CollectableT;
     // Standard walk of iterable types
-    void collectImpl_(std::false_type)
+    void collectImpl_(const IterableType * iterable_object, std::false_type)
     {
-        auto itr = iterable_object_.begin();
-        auto eitr = iterable_object_.end();
+        sparta_assert(nullptr != iterable_object,
+            "Can't collect iterable_object because it's a nullptr! How did we get here?");
+        auto itr = iterable_object->begin();
+        auto eitr = iterable_object->end();
         for (uint32_t i = 0; i < expected_capacity_; ++i)
         {
             if (itr != eitr) {
@@ -210,11 +237,12 @@ private:
     // Full iteration walk, checking validity of the iterator.  This
     // is used for Pipe and Array where the iterator points to valid
     // and not valid entries in the component
-    void collectImpl_(std::true_type)
+    void collectImpl_(const IterableType * iterable_object, std::true_type)
     {
-
+        sparta_assert(nullptr != iterable_object,
+            "Can't collect iterable_object because it's a nullptr! How did we get here?");
         uint32_t s = 0;
-        auto itr = iterable_object_.begin();
+        auto itr = iterable_object->begin();
         for (uint32_t i = 0; i < expected_capacity_; ++i, ++s)
         {
             if (itr.isValid()) {
@@ -243,7 +271,7 @@ private:
         }
     }
 
-    const IterableType & iterable_object_;
+    const IterableType * iterable_object_;
     std::vector<std::unique_ptr<CollectableT>> positions_;
     const size_type expected_capacity_ = 0;
     bool auto_collect_ = true;

@@ -580,7 +580,6 @@ namespace sparta{
                 // previous value pairs and the previous record is still open
                 if(!isSameRecord() && !record_closed_)
                 {
-
                     //Close the old record (if there is one)
                     closeRecord();
                 }

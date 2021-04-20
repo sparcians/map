@@ -431,7 +431,7 @@ namespace sparta
         void enableCollection(TreeNode * parent) {
             collector_.
                 reset(new collection::IterableCollector<CircularBuffer<DataT> >(parent, getName(),
-                                                                                *this, capacity()));
+                                                                                this, capacity()));
         }
 
         //! Get this CircularBuffer's name
