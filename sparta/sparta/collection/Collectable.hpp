@@ -758,26 +758,10 @@ namespace sparta{
             //! \brief Fill it with the new Name Value pairs from
             //  this cycle of Collection.
             void updateLastRecord_(){
-                // These fields only need to be set once - they define the format of the collectable
-                // and remain constant for the duration of the simulation
-                if(SPARTA_EXPECT_FALSE(argos_record_.nameVector.empty())) {
-                    argos_record_.nameVector = getNameStrings();
-                    argos_record_.length = argos_record_.nameVector.size();
-                    has_display_id_field_ = (argos_record_.nameVector[0] == "DID");
-                }
-
-                if(SPARTA_EXPECT_FALSE(argos_record_.sizeOfVector.empty())) {
-                    argos_record_.sizeOfVector = getSizeOfVector();
-                }
-
-                if(SPARTA_EXPECT_FALSE(argos_record_.delimVector.empty())) {
-                    argos_record_.delimVector.emplace_back(getArgosFormatGuide());
-                }
-                // End of collectable format fields
-
                 // These values will change every time the transaction changes
                 argos_record_.valueVector = getDataVector();
                 argos_record_.stringVector = getStringVector();
+                argos_record_.sizeOfVector = getSizeOfVector();
 
                 if (has_display_id_field_) {
                     argos_record_.display_ID = argos_record_.valueVector[0].first & 0x0fff;
@@ -834,6 +818,13 @@ namespace sparta{
                 pipeline_col_ = dynamic_cast<PipelineCollector *>(collector);
                 sparta_assert(pipeline_col_ != nullptr,
                             "Collectables can only added to PipelineCollectors... for now");
+
+                // These fields only need to be set once - they define the format of the collectable
+                // and remain constant for the duration of the simulation
+                argos_record_.nameVector = getNameStrings();
+                argos_record_.length = argos_record_.nameVector.size();
+                has_display_id_field_ = (argos_record_.nameVector[0] == "DID");
+                argos_record_.delimVector.emplace_back(getArgosFormatGuide());
 
                 if(collect && hasData_()){
 
