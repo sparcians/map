@@ -574,7 +574,7 @@ namespace sparta{
                 updateLastRecord_();
 
                 // If the new Value pairs are not empty and current record is closed, we start a new record.
-                if(!last_record_values_.empty() && record_closed_){
+                if(!(last_record_values_.empty() && last_string_values_.empty()) && record_closed_){
                     startNewRecord_();
                     record_closed_ = false;
                 }
@@ -602,7 +602,7 @@ namespace sparta{
                 updateLastRecord_();
 
                 // If the new Value pairs are not empty and current record is closed, we start a new record.
-                if(!last_record_values_.empty() && record_closed_){
+                if(!(last_record_values_.empty() && last_string_values_.empty()) && record_closed_){
                     startNewRecord_();
                     record_closed_ = false;
                 }
@@ -691,6 +691,7 @@ namespace sparta{
 
                         // Clear the previous vector containing the Name Value pairs.
                         last_record_values_.clear();
+                        last_string_values_.clear();
                     }
                     record_closed_ = true;
                 }
@@ -705,7 +706,7 @@ namespace sparta{
             //! \brief Before writing a record to file, we need to check
             //  if any of the old Values have changed or not.
             bool isSameRecord() const {
-                return last_record_values_ == getDataVector();
+                return (last_record_values_ == getDataVector()) && (last_string_values_ == getStringVector());
             }
 
             //! \brief Strictly a Debug/Testing API.
@@ -759,6 +760,7 @@ namespace sparta{
             //  this cycle of Collection.
             void updateLastRecord_(){
                 last_record_values_ = getDataVector();
+                last_string_values_ = getStringVector();
             }
 
             //! \brief Send the Pair Structure Record to Outputter
@@ -782,7 +784,7 @@ namespace sparta{
                 argos_record_.nameVector = getNameStrings();
                 argos_record_.sizeOfVector = getSizeOfVector();
                 argos_record_.valueVector = last_record_values_;
-                argos_record_.stringVector = getStringVector();
+                argos_record_.stringVector = last_string_values_;
                 argos_record_.length = argos_record_.nameVector.size();
                 argos_record_.delimVector.emplace_back(getArgosFormatGuide());
 
@@ -818,7 +820,7 @@ namespace sparta{
                 sparta_assert(pipeline_col_ != nullptr,
                             "Collectables can only added to PipelineCollectors... for now");
 
-                if(collect && !last_record_values_.empty()){
+                if(collect && !(last_record_values_.empty() && last_string_values_.empty())){
 
                     // Set the start time for this transaction to be
                     // moment collection is enabled.
@@ -853,6 +855,7 @@ namespace sparta{
             // a Name String and its corresponding Value.
             typedef std::pair<uint64_t, bool> ValidPair;
             std::vector<ValidPair> last_record_values_;
+            std::vector<std::string> last_string_values_;
 
             // Ze Collec-tor
             PipelineCollector * pipeline_col_ = nullptr;
