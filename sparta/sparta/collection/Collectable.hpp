@@ -763,7 +763,7 @@ namespace sparta{
                 if(SPARTA_EXPECT_FALSE(argos_record_.nameVector.empty())) {
                     argos_record_.nameVector = getNameStrings();
                     argos_record_.length = argos_record_.nameVector.size();
-                    has_display_id_field_ = argos_record_.nameVector[0] == "DID";
+                    has_display_id_field_ = (argos_record_.nameVector[0] == "DID");
                 }
 
                 if(SPARTA_EXPECT_FALSE(argos_record_.sizeOfVector.empty())) {
