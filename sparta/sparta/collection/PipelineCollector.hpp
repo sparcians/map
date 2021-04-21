@@ -18,6 +18,7 @@
 #include "sparta/collection/Collector.hpp"
 #include "sparta/events/EventSet.hpp"
 #include "sparta/events/UniqueEvent.hpp"
+#include "sparta/events/GlobalOrderingPoint.hpp"
 #include "sparta/kernel/Scheduler.hpp"
 
 #include "sparta/pipeViewer/Outputter.hpp"
@@ -211,6 +212,17 @@ namespace collection
 
             ev_heartbeat_.setScheduleableClock(root_clk);
             ev_heartbeat_.setScheduler(scheduler_);
+
+            // By default, every event in PostTick is automatically set to precede the CollectionHeartbeat GOP.
+            // We need to reverse that for ev_heartbeat_ so that every other event happens *before* ev_heartbeat_.
+            // Doing this ensures that we don't accidentally mark a 1-cycle transaction as continued.
+            DAG* dag = scheduler_->getDAG(); // Get a handle to the DAG
+            sparta_assert(dag);
+            Vertex* heartbeat_gop = dag->getGOPoint("CollectionHeartbeat"); // Get a handle to the CollectionHeartbeat GOP
+            sparta_assert(heartbeat_gop);
+
+            dag->unlink(ev_heartbeat_.getVertex(), heartbeat_gop); // Undo the ev_heartbeat_ >> heartbeat_gop link
+            heartbeat_gop->precedes(ev_heartbeat_); // Set heartbeat_gop >> ev_heartbeat_
 
             sparta_assert(root != nullptr, "Pipeline Collection will not be able to create location file because it was passed a nullptr root treenode.");
             sparta_assert(root->isFinalized(), "Pipeline collection cannot be constructed until the sparta tree has been finalized.");
@@ -629,7 +641,7 @@ namespace collection
 
         //! Event and EventSet for performing heartbeats
         EventSet collector_events_;
-        UniqueEvent<SchedulingPhase::Collection> ev_heartbeat_;
+        UniqueEvent<SchedulingPhase::PostTick> ev_heartbeat_;
 
         //! The time that the next heartbeat will occur
         uint64_t closing_time_ = 0;
