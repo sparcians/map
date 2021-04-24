@@ -145,9 +145,6 @@ namespace sparta
         case SchedulingPhase::PostTick:
             dag->link(dag->getGOPoint("Tick"), this->vertex_);
             this->precedes(dag->getGOPoint("PostTick"));
-            // This is a special GOP used to ensure that the pipeline collector heartbeat
-            // happens *after* every other event
-            this->precedes(dag->getGOPoint("CollectionHeartbeat"));
             break;
         case SchedulingPhase::Invalid:
             sparta_assert(!"Should not have gotten here");

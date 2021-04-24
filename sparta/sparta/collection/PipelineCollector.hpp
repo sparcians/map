@@ -213,16 +213,16 @@ namespace collection
             ev_heartbeat_.setScheduleableClock(root_clk);
             ev_heartbeat_.setScheduler(scheduler_);
 
-            // By default, every event in PostTick is automatically set to precede the CollectionHeartbeat GOP.
-            // We need to reverse that for ev_heartbeat_ so that every other event happens *before* ev_heartbeat_.
+            // We need to reverse the dependency order for the PostTick GOP and ev_heartbeat_ so that every other
+            // event happens *before* ev_heartbeat_.
             // Doing this ensures that we don't accidentally mark a 1-cycle transaction as continued.
             DAG* dag = scheduler_->getDAG(); // Get a handle to the DAG
             sparta_assert(dag);
-            Vertex* heartbeat_gop = dag->getGOPoint("CollectionHeartbeat"); // Get a handle to the CollectionHeartbeat GOP
-            sparta_assert(heartbeat_gop);
+            Vertex* post_tick_gop = dag->getGOPoint("PostTick"); // Get a handle to the PostTick GOP
+            sparta_assert(post_tick_gop);
 
-            dag->unlink(ev_heartbeat_.getVertex(), heartbeat_gop); // Undo the ev_heartbeat_ >> heartbeat_gop link
-            heartbeat_gop->precedes(ev_heartbeat_); // Set heartbeat_gop >> ev_heartbeat_
+            dag->unlink(ev_heartbeat_.getVertex(), post_tick_gop); // Undo the ev_heartbeat_ >> heartbeat_gop link
+            post_tick_gop->precedes(ev_heartbeat_); // Set post_tick_gop >> heartbeat_gop
 
             sparta_assert(root != nullptr, "Pipeline Collection will not be able to create location file because it was passed a nullptr root treenode.");
             sparta_assert(root->isFinalized(), "Pipeline collection cannot be constructed until the sparta tree has been finalized.");
