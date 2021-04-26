@@ -602,7 +602,7 @@ namespace sparta{
             MetaStruct::enable_if_t<MetaStruct::is_any_pointer<T>::value, void>
             collect(const T & val){
                 // If pointer has become nullified, close the record
-                if(nullptr == collected_object_) {
+                if(nullptr == val) {
                     closeRecord();
                     return;
                 }
@@ -645,7 +645,7 @@ namespace sparta{
             MetaStruct::enable_if_t<MetaStruct::is_any_pointer<T>::value, void>
             collectWithDuration(const T & val, sparta::Clock::Cycle duration){
                 // If pointer has become nullified, close the record
-                if(nullptr == collected_object_) {
+                if(nullptr == val) {
                     closeRecord();
                     return;
                 }
