@@ -133,7 +133,10 @@ namespace sparta{
                         uint64_t parentid = 0,
                         const std::string & desc = "Collectable <manual, no desc>") :
                 Collectable(parent, name, nullptr, parentid, desc)
-            {}
+            {
+                // Can't auto collect without setting collected_object_
+                setManualCollection();
+            }
 
             //! Virtual destructor -- does nothing
             virtual ~Collectable() {}
@@ -197,6 +200,11 @@ namespace sparta{
             //! CollectableTreeNode/PipelineCollector when a user of the
             //! TreeNode requests this object to be collected.
             void collect() override final {
+                // If pointer has become nullified, close the record
+                if(nullptr == collected_object_) {
+                    closeRecord();
+                    return;
+                }
                 collect(*collected_object_);
             }
 
@@ -206,6 +214,11 @@ namespace sparta{
              * \pre Must have constructed wit ha non-null collected object
              */
             void collectWithDuration(sparta::Clock::Cycle duration) {
+                // If pointer has become nullified, close the record
+                if(nullptr == collected_object_) {
+                    closeRecord();
+                    return;
+                }
                 collectWithDuration(*collected_object_, duration);
             }
 
@@ -521,7 +534,10 @@ namespace sparta{
                         uint64_t parentid = 0,
                         const std::string & desc = "Collectable <manual, no desc>") :
                 Collectable(parent, name, nullptr, parentid, desc)
-            {}
+            {
+                // Can't auto collect without setting collected_object_
+                setManualCollection();
+            }
 
             //! Virtual destructor -- does nothing
             virtual ~Collectable() {}
@@ -563,7 +579,6 @@ namespace sparta{
                 // previous value pairs and the previous record is still open
                 if(!isSameRecord() && !record_closed_)
                 {
-
                     //Close the old record (if there is one)
                     closeRecord();
                 }
@@ -585,26 +600,12 @@ namespace sparta{
             template <typename T>
             MetaStruct::enable_if_t<MetaStruct::is_any_pointer<T>::value, void>
             collect(const T & val){
-                collect_(*val);
-
-                // if the value pairs are not the same as the
-                // previous value pairs and the previous record is still open
-                if(!isSameRecord() && !record_closed_)
-                {
-
-                    //Close the old record (if there is one)
+                // If pointer has become nullified, close the record
+                if(nullptr == val) {
                     closeRecord();
+                    return;
                 }
-
-                // Remember the new value pairs for a new record and start
-                // a new record if not empty.
-                updateLastRecord_();
-
-                // If the new Value pairs are not empty and current record is closed, we start a new record.
-                if(record_closed_ && hasData_()){
-                    startNewRecord_();
-                    record_closed_ = false;
-                }
+                collect(*val);
             }
 
             /*!
@@ -642,19 +643,23 @@ namespace sparta{
             template<typename T>
             MetaStruct::enable_if_t<MetaStruct::is_any_pointer<T>::value, void>
             collectWithDuration(const T & val, sparta::Clock::Cycle duration){
-                if(SPARTA_EXPECT_FALSE(isCollected()))
-                {
-                    if(duration != 0) {
-                        ev_close_record_.preparePayload(false)->schedule(duration);
-                    }
-                    collect(*val);
+                // If pointer has become nullified, close the record
+                if(nullptr == val) {
+                    closeRecord();
+                    return;
                 }
+                collectWithDuration(*val, duration);
             }
 
             //! Virtual method called by
             //! CollectableTreeNode/PipelineCollector when a user of the
             //! TreeNode requests this object to be collected.
             void collect() override final {
+                // If pointer has become nullified, close the record
+                if(nullptr == collected_object_) {
+                    closeRecord();
+                    return;
+                }
                 collect(*collected_object_);
             }
 
@@ -664,6 +669,11 @@ namespace sparta{
              * \pre Must have constructed wit ha non-null collected object
              */
             void collectWithDuration(sparta::Clock::Cycle duration) {
+                // If pointer has become nullified, close the record
+                if(nullptr == collected_object_) {
+                    closeRecord();
+                    return;
+                }
                 collectWithDuration(*collected_object_, duration);
             }
 

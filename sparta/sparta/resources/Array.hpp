@@ -806,12 +806,12 @@ namespace sparta
             collector_.
                 reset(new collection::IterableCollector<FullArrayType,
                                                         SchedulingPhase::Collection, true>
-                      (parent, name_, *this, capacity()));
+                      (parent, name_, this, capacity()));
 
             if(ArrayT == ArrayType::AGED) {
                 age_collector_.reset(new collection::IterableCollector<AgedArrayCollectorProxy>
                                      (parent, name_ + "_age_ordered",
-                                      aged_array_col_, capacity()));
+                                      &aged_array_col_, capacity()));
             }
         }
 

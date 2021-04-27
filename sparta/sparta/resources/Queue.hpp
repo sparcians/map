@@ -594,7 +594,7 @@ namespace sparta
          */
         void enableCollection(TreeNode * parent) {
             collector_.reset(new collection::IterableCollector<Queue<value_type> >
-                             (parent, name_, *this, capacity()));
+                             (parent, name_, this, capacity()));
         }
 
         /**

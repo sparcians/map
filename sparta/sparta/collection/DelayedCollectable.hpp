@@ -102,7 +102,10 @@ namespace collection
                            uint64_t parentid = 0,
                            const std::string & desc = "DelayedCollectable <manual, no desc>") :
             DelayedCollectable(parent, name, nullptr, parentid, desc)
-        {}
+        {
+            // Can't auto collect without setting iterable_object_
+            Collectable<DataT>::setManualCollection();
+        }
 
         /*!
          * \brief Explicitly collect a value in the future

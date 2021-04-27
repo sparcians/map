@@ -488,7 +488,7 @@ public:
     template<sparta::SchedulingPhase phase = SchedulingPhase::Collection>
     void enableCollection(TreeNode * parent) {
         collector_.reset (new collection::IterableCollector<Pipe<DataT>, phase, true>
-                          (parent, name_, *this, capacity()));
+                          (parent, name_, this, capacity()));
     }
 
 private:
