@@ -78,7 +78,7 @@ public:
      * \param group Group this collector is part of
      * \param index the index within the group
      * \param desc Description of this node
-     * \param iterable the iterable object to collect
+     * \param iterable Pointer to the iterable object to collect
      * \param expected_capacity The maximum size this item should grow to
      */
     IterableCollector (TreeNode * parent,
@@ -108,8 +108,28 @@ public:
      * \brief constructor
      * \param parent the parent treenode for the collector
      * \param name the name of the collector
+     * \param group Group this collector is part of
+     * \param index the index within the group
      * \param desc Description of this node
      * \param iterable the iterable object to collect
+     * \param expected_capacity The maximum size this item should grow to
+     */
+    IterableCollector (TreeNode * parent,
+                       const std::string & name,
+                       const std::string & group,
+                       const uint32_t index,
+                       const std::string & desc,
+                       const IterableType & iterable,
+                       const size_type expected_capacity) :
+        IterableCollector(parent, name, group, index, desc, &iterable, expected_capacity)
+    {}
+
+    /**
+     * \brief constructor
+     * \param parent the parent treenode for the collector
+     * \param name the name of the collector
+     * \param desc Description of this node
+     * \param iterable Pointer to the iterable object to collect
      * \param expected_capacity The maximum size this item should grow to
      */
     IterableCollector (TreeNode * parent,
@@ -121,10 +141,26 @@ public:
     {}
 
     /**
+     * \brief constructor
+     * \param parent the parent treenode for the collector
+     * \param name the name of the collector
+     * \param desc Description of this node
+     * \param iterable the iterable object to collect
+     * \param expected_capacity The maximum size this item should grow to
+     */
+    IterableCollector (TreeNode * parent,
+                       const std::string & name,
+                       const std::string & desc,
+                       const IterableType & iterable,
+                       const size_type expected_capacity) :
+        IterableCollector(parent, name, name, 0, desc, &iterable, expected_capacity)
+    {}
+
+    /**
      * \brief constructor with no description
      * \param parent the parent treenode for the collector
      * \param name the name of the collector
-     * \param iterable the iterable object to collect
+     * \param iterable Pointer to the iterable object to collect
      * \param expected_capacity The maximum size this item should grow to
      */
     IterableCollector (TreeNode * parent,
@@ -133,6 +169,23 @@ public:
                        const size_type expected_capacity) :
         IterableCollector (parent, name, name + " Iterable Collector",
                            iterable, expected_capacity)
+    {
+        // Delegated constructor
+    }
+
+    /**
+     * \brief constructor with no description
+     * \param parent the parent treenode for the collector
+     * \param name the name of the collector
+     * \param iterable the iterable object to collect
+     * \param expected_capacity The maximum size this item should grow to
+     */
+    IterableCollector (TreeNode * parent,
+                       const std::string & name,
+                       const IterableType & iterable,
+                       const size_type expected_capacity) :
+        IterableCollector (parent, name, name + " Iterable Collector",
+                           &iterable, expected_capacity)
     {
         // Delegated constructor
     }
