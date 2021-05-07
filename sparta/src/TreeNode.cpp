@@ -2365,8 +2365,8 @@ void TreeNode::removeChildForTeardown_(TreeNode* child) {
 
 void TreeNode::removeFromParentForTeardown_(TreeNode* parent) {
     sparta_assert(parent != nullptr,
-                  "Cannot removeFromParentForTeardown_ with a null parent argument")
-        parent->removeChildForTeardown_(this);
+                  "Cannot removeFromParentForTeardown_ with a null parent argument");
+    parent->removeChildForTeardown_(this);
 }
 
 

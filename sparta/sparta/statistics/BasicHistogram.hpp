@@ -6,29 +6,64 @@
  */
 #pragma once
 
+#include <string>
+#include <vector>
+#include <sstream>
 #include "sparta/statistics/Counter.hpp"
 
 namespace sparta
 {
-/// Histogram with programmable buckets
-template<typename T, bool ASSERT_ON_UNDERFLOW>
+/**
+ * \class BasicHistogram
+ * \tparam BucketT Type contained in the buckets
+ * \tparam ASSERT_ON_UNDERFLOW (default false) true will assert if an underflow is detected
+ *
+ * This class will create sparta::Counters for each "bucket" of BucketT
+ * given in the contructor
+ *
+ * The objects contained in the buckets must follow these rules:
+ *  # The object type must be copyable (for initialization)
+ *  # The object must respond to the comparison operator== and operator< operator>
+ *
+ * A "bucket" is charged a count if an object being added is less than
+ * the given bucket.  Examples:
+ *
+ * \code
+ *    sparta::BasicHistogram<int> example_bh(sset_, "example_bh", "Example BasicHistogram", {0,10,20});
+ *    example_bh.addValue(-1);  // Will add a charge to the  0 -> 10 bucket
+ *    example_bh.addValue( 1);  // Will add a charge to the  0 -> 10 bucket
+ *    example_bh.addValue(10);  // Will add a charge to the  0 -> 10 bucket
+ *    example_bh.addValue(11);  // Will add a charge to the 10 -> 20 bucket
+ *    example_bh.addValue(20);  // Will add a charge to the 10 -> 20 bucket
+ *    example_bh.addValue(21);  // Will add a charge to the 10 -> 20 bucket
+ * \endcode
+ */
+template<typename BucketT, bool ASSERT_ON_UNDERFLOW=false>
 class BasicHistogram
 {
 public:
-    /// constructor
-    ///\param buckets one bucket will be created per value (plus one for overflow) - values must be sorted
+    /**
+     * \brief Construct a BasicHistogram
+     * \param sset The sparta::StatisticSet this histogram belongs to
+     * \param name The name of thie BasicHistogram
+     * \param desc A useful description
+     * \param buckets one bucket will be created per value (plus one for overflow) - values must be sorted
+     */
     BasicHistogram(sparta::StatisticSet &sset,
                    const std::string &name,
                    const std::string &desc,
-                   const std::vector<T> &buckets)
-    : bucket_vals_(buckets)
+                   const std::vector<BucketT> &buckets) :
+        bucket_vals_(buckets)
     {
         sparta_assert(std::is_sorted(buckets.begin(), buckets.end()), "Buckets must be sorted");
 
+        const auto bucket_size = bucket_vals_.size();
+        ctrs_.reserve(bucket_size);
+
         // create one counter per bucket
-        for (unsigned i = 0; i < bucket_vals_.size(); ++i)
+        for (unsigned i = 0; i < bucket_size; ++i)
         {
-            const T &v = bucket_vals_[i];
+            auto &v = bucket_vals_[i];
             std::ostringstream os_name;
             if (v < 0)
                 os_name << name << "_n" << -v; // negative
@@ -45,12 +80,23 @@ public:
                 os_desc << desc << " with values greater than " << bucket_vals_[i-1] << " and less than or equal to " << v;
             }
 
-            ctrs_.push_back(sparta::Counter(&sset, os_name.str(), os_desc.str(), sparta::Counter::COUNT_NORMAL));
+            ctrs_.emplace_back(&sset, os_name.str(), os_desc.str(), sparta::Counter::COUNT_NORMAL);
         }
     }
 
-    /// increment the bucket corresponding to 'val'
-    void addValue(const T &val)
+    /// Destroy, non-virtual
+    ~BasicHistogram() {}
+
+    /**
+     * \brief Charge a bucket where the given val falls
+     * \param val The value to charge
+     *
+     * A "bucket" is charged a count if an object being added is less
+     * than the given bucket.  Overflows will go into the last bucket.
+     * Undeflows will either assert or charge to the smallest bucket
+     * (depending on class template parameter ASSERT_ON_UNDERFLOW)
+     */
+    void addValue(const BucketT &val)
     {
         // upper_bound will yield the bucket beyond the one we want
         auto bucket = std::upper_bound(bucket_vals_.begin(), bucket_vals_.end(), val);
@@ -67,9 +113,14 @@ public:
         ++ctrs_[off];
     }
 
-protected: // data
-    std::vector<T> bucket_vals_; ///< user-specified buckets
+    /// Disallow copies/assignment/move
+    BasicHistogram(const BasicHistogram &) = delete;
+    BasicHistogram(      BasicHistogram &&) = delete;
+    const BasicHistogram & operator=(const BasicHistogram &) = delete;
+    BasicHistogram       & operator=(      BasicHistogram &&) = delete;
+
+private: // data
+    std::vector<BucketT> bucket_vals_; ///< user-specified buckets
     std::vector<sparta::Counter> ctrs_; ///< one counter per bucket
 };
 } // namespace sparta
-

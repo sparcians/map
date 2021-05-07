@@ -19,12 +19,15 @@ public:
     TestBasicHistogram(sparta::StatisticSet &sset,
                        const std::string &name,
                        const std::string &desc,
-                       const std::vector<int64_t> &buckets)
-    : BasicHistogram<int64_t, false>(sset, name, desc, buckets)
+                       const std::vector<int64_t> &buckets) :
+        BasicHistogram<int64_t, false>(sset, name, desc, buckets),
+        sset_(sset)
     {
     }
 
-    uint64_t get(size_t i) { return ctrs_[i].get(); }
+    uint64_t get(size_t i) { return sset_.getCounters()[i]->get(); }
+private:
+    const sparta::StatisticSet &sset_;
 };
 
 int main()
@@ -39,12 +42,19 @@ int main()
     std::vector<int64_t> buckets{0, 4, 8};
 
     TestBasicHistogram histogram(ss, "test", "Test", buckets);
-    for(int64_t i = -1; i < 12; ++i) {
+    for(int64_t i = -1; i < 4; ++i) {
         histogram.addValue(i);
     }
-
     EXPECT_EQUAL(histogram.get(0), 5);
+
+    for(int64_t i = 4; i < 8; ++i) {
+        histogram.addValue(i);
+    }
     EXPECT_EQUAL(histogram.get(1), 4);
+
+    for(int64_t i = 8; i < 12; ++i) {
+        histogram.addValue(i);
+    }
     EXPECT_EQUAL(histogram.get(2), 4);
 
     sparta::BasicHistogram<int64_t, true> faulting_histogram(ss, "test2", "Faulting test", {0, 4, 8});
@@ -61,6 +71,6 @@ int main()
 
     rtn.enterTeardown();
 
-    std::cout << "Test passed" << std::endl;
-    return 0;
+    REPORT_ERROR;
+    return ERROR_CODE;
 }
