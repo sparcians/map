@@ -106,11 +106,19 @@ namespace sparta
             CircularBufferData(const uint64_t window_idx) :
                 window_idx(window_idx)
             {}
+
+            ~CircularBufferData() {
+                for(auto b : buf_iter_bools) {
+                    *b = false;
+                }
+            }
+
             value_type data{};   // The data supplied by the user
             uint64_t window_idx; // The location in the validity
                                  // window of the CB.  Serves as a
                                  // fast check for validity of
                                  // outstanding iterator
+            mutable std::list<bool*> buf_iter_bools;
         };
         using CircularBufferDataStorage = std::list<CircularBufferData>;
         typedef typename CircularBufferDataStorage::iterator       InternalCircularBufferIterator;
@@ -164,13 +172,20 @@ namespace sparta
                                    SpecificCircularBufferIterator entry) :
                 attached_circularbuffer_(circularbuffer),
                 circularbuffer_entry_(entry)
-            {}
+            {
+                if(entry != attached_circularbuffer_->circularbuffer_data_.end()) {
+                    valid_ = true;
+                    circularbuffer_entry_->buf_iter_bools.emplace_back(&valid_);
+                }
+           }
 
             // Used by the CircularBuffer to get the position in the
             // internal CircularBuffer
             SpecificCircularBufferIterator getInternalBufferEntry_() const {
                 return circularbuffer_entry_;
             }
+
+            bool valid_ = false;
 
         public:
 
@@ -186,7 +201,12 @@ namespace sparta
             CircularBufferIterator(const CircularBufferIterator<false> & iter) :
                 attached_circularbuffer_(iter.attached_circularbuffer_),
                 circularbuffer_entry_(iter.circularbuffer_entry_)
-            {}
+            {
+                if(iter.valid_) {
+                    valid_ = true;
+                    circularbuffer_entry_->buf_iter_bools.emplace_back(&valid_);
+                }
+            }
 
             /**
              * \brief Assignment operator
@@ -207,8 +227,8 @@ namespace sparta
                 sparta_assert(attached_circularbuffer_ == rhs.attached_circularbuffer_,
                               "Cannot compare CircularBufferIterators created by different CircularBuffers.");
 
-                const bool is_rhs_end = (attached_circularbuffer_->end().circularbuffer_entry_ == rhs.circularbuffer_entry_);
-                const bool is_lhs_end = (attached_circularbuffer_->end().circularbuffer_entry_ == circularbuffer_entry_);
+                const bool is_rhs_end = (attached_circularbuffer_->circularbuffer_data_.end() == rhs.circularbuffer_entry_);
+                const bool is_lhs_end = (attached_circularbuffer_->circularbuffer_data_.end() == circularbuffer_entry_);
                 if(is_lhs_end || is_rhs_end) { return is_lhs_end ? false : true; }
 
                 // The smaller the index, the older it is
@@ -227,8 +247,8 @@ namespace sparta
                 sparta_assert(attached_circularbuffer_ == rhs.attached_circularbuffer_,
                               "Cannot compare CircularBufferIterators created by different CircularBuffers.");
 
-                const bool is_rhs_end = (attached_circularbuffer_->end().circularbuffer_entry_ == rhs.circularbuffer_entry_);
-                const bool is_lhs_end = (attached_circularbuffer_->end().circularbuffer_entry_ == circularbuffer_entry_);
+                const bool is_rhs_end = (attached_circularbuffer_->circularbuffer_data_.end() == rhs.circularbuffer_entry_);
+                const bool is_lhs_end = (attached_circularbuffer_->circularbuffer_data_.end() == circularbuffer_entry_);
                 if(is_lhs_end || is_rhs_end) { return is_lhs_end ? false : true; }
 
                 // The smaller the index, the older it is
@@ -254,7 +274,7 @@ namespace sparta
             /// \return false if the iterator is not valid
             bool isValid() const
             {
-                if(attached_circularbuffer_) {
+                if(valid_ && attached_circularbuffer_) {
                     return attached_circularbuffer_->isValidIterator_(circularbuffer_entry_);
                 }
                 return false;
@@ -291,7 +311,7 @@ namespace sparta
             CircularBufferIterator & operator++() {
                 sparta_assert(attached_circularbuffer_,
                               "This iterator is not attached to a CircularBuffer. Was it initialized?");
-                sparta_assert(attached_circularbuffer_->end().circularbuffer_entry_ != circularbuffer_entry_,
+                sparta_assert(attached_circularbuffer_->circularbuffer_data_.end() != circularbuffer_entry_,
                               "Trying to go beyond the end of the buffer");
                 ++circularbuffer_entry_;
                 return *this;
