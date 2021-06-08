@@ -1084,7 +1084,7 @@ namespace sparta
         rval.collector_ = nullptr;
         validator_->validator_ = std::move(rval.validator_->validator_);
         if(collector_) {
-            collector_->reattach(*this);
+            collector_->reattach(this);
         }
     }
 }
