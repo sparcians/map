@@ -274,6 +274,11 @@ public:
         }
     }
 
+    //! Reattach to a new iterable object (used for moves)
+    void reattach(const IterableType * obj) {
+        iterable_object_ = obj;
+    }
+
 private:
     typedef Collectable<typename std::iterator_traits<typename IterableType::iterator>::value_type> CollectableT;
     // Standard walk of iterable types
@@ -345,4 +350,3 @@ private:
 };
 } // namespace collection
 } // namespace sparta
-
