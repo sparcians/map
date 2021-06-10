@@ -477,6 +477,13 @@ namespace sparta
         /// Deleting default assignment operator to prevent copies
         Queue &operator=(const Queue<value_type> &) = delete;
 
+        /*!
+         * \brief Name of this resource.
+         */
+        const std::string & getName() const {
+            return name_;
+        }
+
         /**
          * \brief Determine if data at the index is valid
          * \param idx The index to determine validity

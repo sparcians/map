@@ -408,6 +408,13 @@ public:
         }
     }
 
+    /**
+    * \brief Name of this resource.
+    */
+    const std::string & getName() const {
+        return name_;
+    }
+
     //! See if there is something at the given stage
     bool isValid (uint32_t stage) const
     {

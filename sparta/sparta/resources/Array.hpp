@@ -508,6 +508,13 @@ namespace sparta
             clear();
         }
 
+        /*!
+         * \brief Name of this resource.
+         */
+        const std::string & getName() const {
+            return name_;
+        }
+
         /**
          * \brief Determine whether an index is currently valid.
          * \return true if valid.
