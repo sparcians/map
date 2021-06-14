@@ -255,17 +255,45 @@ scheduler.stats.picoseconds' style='' >60</td>
 <tr>
 
 <td class='name' title='Simulation user runtime in seconds as measured on the host machine
-scheduler.stats.user_runtime_seconds'>user_runtime_seconds</td>
+(scheduler.stats.host_user_time_count_ms/1000)'>host_machine_user_runtime_seconds</td>
 <td class='value' title='Simulation user runtime in seconds as measured on the host machine
-scheduler.stats.user_runtime_seconds' style='' >&nbsp;0</td>
+(scheduler.stats.host_user_time_count_ms/1000)' style='' >&nbsp;0</td>
 <td class='expression'>Simulation user runtime in seconds as measured on the host machine</td>
 <tr>
 
 <td class='name' title='Simulation system runtime in seconds as measured on the host machine
-scheduler.stats.system_runtime_seconds'>system_runtime_seconds</td>
+(scheduler.stats.host_system_time_count_ms/1000)'>host_machine_system_runtime_seconds</td>
 <td class='value' title='Simulation system runtime in seconds as measured on the host machine
-scheduler.stats.system_runtime_seconds' style='' >&nbsp;0</td>
+(scheduler.stats.host_system_time_count_ms/1000)' style='' >&nbsp;0</td>
 <td class='expression'>Simulation system runtime in seconds as measured on the host machine</td>
+<tr>
+
+<td class='name' title='Simulation wall clock runtime in seconds as measured on the host machine
+(scheduler.stats.host_wall_time_count_ms/1000)'>host_machine_wall_runtime_seconds</td>
+<td class='value' title='Simulation wall clock runtime in seconds as measured on the host machine
+(scheduler.stats.host_wall_time_count_ms/1000)' style='' >&nbsp;0</td>
+<td class='expression'>Simulation wall clock runtime in seconds as measured on the host machine</td>
+<tr>
+
+<td class='name' title='User scheduler performance (not simulated time)
+scheduler.stats.host_user_time_count_ms'>host_user_time_count_ms</td>
+<td class='value' title='User scheduler performance (not simulated time)
+scheduler.stats.host_user_time_count_ms' style='' >&nbsp;0</td>
+<td class='expression'>User scheduler performance (not simulated time)</td>
+<tr>
+
+<td class='name' title='System scheduler performance (not simulated time)
+scheduler.stats.host_system_time_count_ms'>host_system_time_count_ms</td>
+<td class='value' title='System scheduler performance (not simulated time)
+scheduler.stats.host_system_time_count_ms' style='' >&nbsp;0</td>
+<td class='expression'>System scheduler performance (not simulated time)</td>
+<tr>
+
+<td class='name' title='Wall scheduler performance (not simulated time)
+scheduler.stats.host_wall_time_count_ms'>host_wall_time_count_ms</td>
+<td class='value' title='Wall scheduler performance (not simulated time)
+scheduler.stats.host_wall_time_count_ms' style='' >&nbsp;0</td>
+<td class='expression'>Wall scheduler performance (not simulated time)</td>
 </tr>
 </tbody>
 </table><br/></td></tr>
