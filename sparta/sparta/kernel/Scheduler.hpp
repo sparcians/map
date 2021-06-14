@@ -1045,14 +1045,26 @@ private:
     StatisticDef nanoseconds_stat_;
 
     //! user runtime of the process, in seconds
-    Counter user_runtime_stat_;
+    StatisticDef user_runtime_stat_;
 
     //! system runtime f the process, in seconds
-    Counter system_runtime_stat_;
+    StatisticDef system_runtime_stat_;
+
+    //! wall clock runtime f the process, in seconds
+    StatisticDef wall_runtime_stat_;
 
     //! Timer used to calculate runtime
     boost::timer::cpu_timer timer_;
 
+    //! User, System, and Wall clock counts
+    uint64_t        user_time_ = 0;
+    ReadOnlyCounter user_time_cnt_;
+
+    uint64_t        system_time_ = 0;
+    ReadOnlyCounter system_time_cnt_;
+
+    uint64_t        wall_time_ = 0;
+    ReadOnlyCounter wall_time_cnt_;
 
 public:
     /**
