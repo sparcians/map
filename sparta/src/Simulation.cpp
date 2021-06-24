@@ -761,6 +761,9 @@ void Simulation::finalizeTree()
 
         // Ensure that all unbound parameters have been consumed by ParameterSets or explicitly
         checkAllVirtualParamsRead_(sim_config_->getUnboundParameterTree());
+
+        // Ensure that all unbound extension parameters were consumed
+        checkAllVirtualParamsRead_(sim_config_->getExtensionsUnboundParameterTree());
     }
 
     // Check ports and such

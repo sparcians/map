@@ -215,25 +215,21 @@ namespace app {
     //! collecting all the nodes that have a given name.
     void recursFindPTreeNodesNamed(
         const std::string & name,
-        const ParameterTree::Node * this_node,
-        std::vector<const ParameterTree::Node*> & matching_nodes,
-        const bool early_return_when_found)
+        ParameterTree::Node * this_node,
+        ParameterTree::Node::ChildVector & matching_nodes)
     {
         if (this_node == nullptr) {
             return;
         }
 
         if (this_node->getName() == name) {
-            matching_nodes.emplace_back(this_node);
-            if (early_return_when_found) {
-                return;
-            }
+            matching_nodes.emplace_back(this_node->release());
+            return;
         }
 
         const auto children = this_node->getChildren();
-        for (const ParameterTree::Node * child : children) {
-            recursFindPTreeNodesNamed(
-                name, child, matching_nodes, early_return_when_found);
+        for (ParameterTree::Node * child : children) {
+            recursFindPTreeNodesNamed(name, child, matching_nodes);
         }
     }
 
@@ -264,9 +260,9 @@ namespace app {
         //First, let's find a list of all parameter tree nodes with the name
         //"extension". This is a reserved keyword - a ParameterTree::Node with
         //this name is definitely for tree node extensions.
-        std::vector<const ParameterTree::Node*> extension_nodes;
-        recursFindPTreeNodesNamed("extension", arch_ptree_.getRoot(), extension_nodes, true);
-        recursFindPTreeNodesNamed("extension", ptree_.getRoot(), extension_nodes, true);
+        ParameterTree::Node::ChildVector extension_nodes;
+        recursFindPTreeNodesNamed("extension", arch_ptree_.getRoot(), extension_nodes);
+        recursFindPTreeNodesNamed("extension", ptree_.getRoot(),      extension_nodes);
 
         if (extension_nodes.empty()) {
             return;
@@ -289,14 +285,14 @@ namespace app {
         //  ["top.core0.fpu.extension.bar.color_", "top.core0.fpu.extension.bar.shape_"]
         //
         std::vector<const ParameterTree::Node*> has_value_nodes;
-        for (const ParameterTree::Node * node : extension_nodes) {
-            recursFindPTreeNodesWithValue(node, has_value_nodes);
+        for (const auto & node : extension_nodes) {
+            recursFindPTreeNodesWithValue(node.get(), has_value_nodes);
         }
 
         //Now add these tree node extension leaf nodes to the final
         //"extensions_ptree_".
         for (const ParameterTree::Node * node : has_value_nodes) {
-            extensions_ptree_.set(node->getPath(), node->getValue(), false);
+            extensions_ptree_.set(node->getPath(), node->peekValue(), false);
         }
     }
 

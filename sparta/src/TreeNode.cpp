@@ -2752,7 +2752,7 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
         {
             // Apply extensions from the virtual extensions tree
             app::SimulationConfiguration * cfg = sim->getSimulationConfiguration();
-            auto extensions_pt  = cfg->getExtensionsUnboundParameterTree();
+            auto & extensions_pt  = cfg->getExtensionsUnboundParameterTree();
             auto extension_node = resolve_extension_node(extensions_pt);
             if (extension_node != nullptr) {
                 extension_node = resolve_named_extension_node(extension_node);

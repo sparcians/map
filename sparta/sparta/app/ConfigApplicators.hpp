@@ -329,10 +329,10 @@ public:
                     // Parse the string as YAML and assign it to this node
                     ParameterTree ptree;
                     sparta::ConfigParser::YAML::EventHandler handler("<command line>",
-                                                                   {p},
-                                                                   ptree,
-                                                                   {},
-                                                                   verbose);
+                                                                     {p},
+                                                                     ptree,
+                                                                     {},
+                                                                     verbose);
 
                     // These parameters will be in the unbound list first
                     // and then applied later where it MUST match existing nodes
@@ -680,5 +680,3 @@ typedef std::vector<std::unique_ptr<ConfigApplicator>>   ConfigVec;
 
 } // namespace app
 } // namespace sparta
-
-
