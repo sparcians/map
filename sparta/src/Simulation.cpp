@@ -2227,7 +2227,7 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
                     err_list << "    ERROR: unread unbound parameter: \"" << path << "\" from: \""
                               << node->getOrigin() << "\". value: \"" << node->getValue() << "\". Path exists in tree up to: \""
                               << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"" << std::endl;
-                }else{
+                }else if(!sim_config_->suppress_unread_parameter_warnings) {
                     std::cerr << "    NOTE: unread optional unbound parameter: \"" << path << "\" from: \""
                               << node->getOrigin() << "\". value: \"" << node->getValue() << "\". Path exists in tree up to: \""
                               << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"" << std::endl;
