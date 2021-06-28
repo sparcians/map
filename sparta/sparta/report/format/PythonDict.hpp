@@ -86,8 +86,8 @@ protected:
      */
     virtual void writeContentToStream_(std::ostream& out) const override
     {
-        out << "{" ;
-        writeDictContents_(out, report_, 1);
+        out << "report = {" ;
+        writeDictContents_(out, report_);
         out << "}" ;
         out << std::endl;
     }
@@ -98,9 +98,14 @@ protected:
     /*!
      * \brief Write Python Dictionary
      */
-    int writeDictContents_(std::ostream& out, const Report* r, int idx) const
+    void writeDictContents_(std::ostream& out, const Report* r) const
     {
-        out << "\"" << r->getName() << "\"" << ": {" ;
+        std::string leaf_name = r->getName();
+        const auto pos = leaf_name.find_last_of(".");
+        if(pos != std::string::npos) {
+            leaf_name = r->getName().substr(pos+1);
+        }
+        out << "\"" << leaf_name << "\"" << ": {" ;
 
         int elements_=0;
         for (const Report::stat_pair_t& si : r->getStatistics()) {
@@ -109,15 +114,15 @@ protected:
                     out << ", ";
                 }
                 out << "\"" << si.first << "\": " ;
-                    double val = si.second->getValue();
-                    if(isnan(val)){
-                        out << "float('nan')";
-                    }else if(isinf(val)){
-                        out << "float('inf')";
-                    }else{
-                        out << Report::formatNumber(val);
-                    }
-                elements_++;
+                double val = si.second->getValue();
+                if(isnan(val)){
+                    out << "float('nan')";
+                }else if(isinf(val)){
+                    out << "float('inf')";
+                }else{
+                    out << Report::formatNumber(val);
+                }
+                ++elements_;
             }
         }
 
@@ -125,12 +130,11 @@ protected:
             if(elements_ > 0){
                 out << ", ";
             }
-            writeDictContents_(out, &sr, idx);
-            elements_++;
+            writeDictContents_(out, &sr);
+            ++elements_;
         }
 
         out << "}" ;
-        return idx;
     }
 
 };
@@ -144,4 +148,3 @@ inline std::ostream& operator<< (std::ostream& out, PythonDict & f) {
         } // namespace format
     } // namespace report
 } // namespace sparta
-
