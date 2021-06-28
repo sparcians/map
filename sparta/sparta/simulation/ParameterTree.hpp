@@ -633,18 +633,8 @@ namespace sparta
             bool isRequired() const {
                 // Start at beginning. Another, later-written node may override
                 // this node if it has the same patch or a matching pattern.
-                if (getOwner()->isRequired(getPath())) {
-                    // The "extension" keyword is reserved. Tree nodes will never
-                    // have that as their name. If our "grandparent" node has the
-                    // name "extension", then this is a tree node extension parameter,
-                    // which are never required to be consumed / queried.
-                    const ParameterTree::Node * n = getParent();
-                    if (n) {
-                        n = n->getParent();
-                        if (n && n->getName() == "extension") {
-                            return false;
-                        }
-                    }
+                if (getOwner()->isRequired(getPath()))
+                {
                     return true;
                 }
                 return false;
@@ -683,17 +673,18 @@ namespace sparta
             /*!
              * \brief Recursively print
              */
-            void recursPrint(std::ostream& o, uint32_t indent=0) const {
+            void recursePrint(std::ostream& o, uint32_t indent=0) const {
                 for(uint32_t i=0; i<indent; ++i){
                     o << " ";
                 }
                 o << name_;
                 if(has_value_){
-                    o << " = \"" << value_ << "\" (read " << read_count_ << ", written " << write_count_ << " origin " << getOrigin() << ")";
+                    o << " = \"" << value_ << "\" (read " << read_count_ << ", written " << write_count_
+                      << ", required " << required_ << ", origin '" << getOrigin() << "')";
                 }
                 o << "\n";
                 for(auto & n : children_){
-                    n->recursPrint(o, indent+2);
+                    n->recursePrint(o, indent+2);
                 }
             }
 
@@ -1076,7 +1067,7 @@ namespace sparta
          * \brief Recursively print
          */
         void recursePrint(std::ostream& o) const {
-            root_->recursPrint(o, 0); // Begin with 0 indent
+            root_->recursePrint(o, 0); // Begin with 0 indent
         }
 
     private:

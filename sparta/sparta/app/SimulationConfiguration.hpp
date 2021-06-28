@@ -621,6 +621,11 @@ public:
     bool show_dag = false;
 
     /*!
+     * Suppress parameter unread _warnings_ not the errors
+     */
+    bool suppress_unread_parameter_warnings = false;
+
+    /*!
      * The default pipeline collection prefix for pipeline collection
      * (-z option).  Empty string means no prefix
      */

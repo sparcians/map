@@ -120,7 +120,9 @@ sparta_named_test(sparta_core_example_context_counter_update_triggers5 sparta_co
 sparta_named_test(sparta_core_example_context_counter_update_triggers6 sparta_core_example -i 710 --report context_counter_update_triggers6.yaml --config-file context_weights.yaml -p top.cpu.core0.params.foo 680)
 sparta_named_test(sparta_core_example_node_config_using_inner_include_yaml sparta_core_example -i 10k --config-file config_with_inner_include.yaml)
 sparta_named_test(sparta_core_example_arch_with_extensions sparta_core_example -i 10k --arch arch_with_extensions.yaml --arch-search-dir . --write-final-config final.yaml)
-sparta_named_test(sparta_core_example_indiv_tree_node_extensions sparta_core_example -i 10k -p top.cpu.core0.lsu.extension.dog.language_ woof --extension-file tree_node_extensions.yaml -p top.cpu.core0.lsu.extension.cat.language_ meow --write-final-config final.yaml)
+# The old behavior of Sparta allowed extensions to be optional by default.  Now they are an error
+#sparta_named_test(sparta_core_example_indiv_tree_node_extensions sparta_core_example -i 10k -p top.cpu.core0.lsu.extension.dog.language_ woof --extension-file tree_node_extensions.yaml -p top.cpu.core0.lsu.extension.cat.language_ meow --write-final-config final.yaml)
+sparta_named_test(sparta_core_example_indiv_tree_node_extensions sparta_core_example -i 10k --extension-file tree_node_extensions.yaml -p top.cpu.core0.lsu.extension.cat.language_ meow --write-final-config final.yaml)
 sparta_named_test(sparta_core_example_sqldb_timeseries sparta_core_example -i 100k --report all_update_triggers.yaml --feature simdb 1 simdb_si_min_blob_size.yaml)
 sparta_named_test(sparta_core_example_sqldb_timeseries_opts1 sparta_core_example -i 100k --report all_update_triggers.yaml --feature simdb 1 simdb_si_opts1.yaml)
 sparta_named_test(sparta_core_example_sqldb_timeseries_opts2 sparta_core_example -i 100k --report all_update_triggers.yaml --feature simdb 1 simdb_si_opts2.yaml)

@@ -1988,7 +1988,7 @@ BOOST_PYTHON_MODULE(sparta)
         // Show information from node.
         .def("showInfo",
              +[](sparta::ParameterTree::Node& node){
-                 return node.recursPrint(std::cout, 0);})
+                 return node.recursePrint(std::cout, 0);})
         // Set this node with a string value.
         .def("setValue",
              +[](sparta::ParameterTree::Node& node, const std::string& val,
@@ -2220,7 +2220,7 @@ BOOST_PYTHON_MODULE(sparta)
         // Pretty print this tree.
         .def("showTree",
              +[](sparta::ParameterTree& ptree){
-                 return ptree.recursPrint(std::cout);})
+                 return ptree.recursePrint(std::cout);})
         // Check if node from path has value.
         .def("hasValue",
              +[](sparta::ParameterTree& p_tree, const std::string& path,

@@ -292,7 +292,8 @@ namespace app {
         //Now add these tree node extension leaf nodes to the final
         //"extensions_ptree_".
         for (const ParameterTree::Node * node : has_value_nodes) {
-            extensions_ptree_.set(node->getPath(), node->peekValue(), false);
+            extensions_ptree_.set(node->getPath(), node->peekValue(),
+                                  node->getRequiredCount() != 0, node->getOrigin());
         }
     }
 

@@ -606,7 +606,7 @@ public:
         sparta::ConfigParser::YAML param_file(filename_, include_paths_);
         param_file.allowMissingNodes(true);
         param_file.consumeParameters(&dummy, verbose);
-        //param_file.getParameterTree().recursPrint(std::cout);
+        //param_file.getParameterTree().recursePrint(std::cout);
         ptree.create(loc_pattern_, false)->appendTree(param_file.getParameterTree().getRoot()); // Apply to existing ptree
     }
 };
@@ -668,7 +668,7 @@ public:
         sparta::ConfigParser::YAML param_file(filename_, include_paths_);
         param_file.allowMissingNodes(true);
         param_file.consumeParameters(&dummy, verbose);
-        //param_file.getParameterTree().recursPrint(std::cout);
+        //param_file.getParameterTree().recursePrint(std::cout);
         ptree.create(loc_pattern_, false)->appendTree(param_file.getParameterTree().getRoot()); // Apply to existing ptree
     }
 };

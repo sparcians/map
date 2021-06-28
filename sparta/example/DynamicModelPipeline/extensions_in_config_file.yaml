@@ -3,3 +3,8 @@ top: {
         edges_: 6
     }
 }
+top: {
+    core0.lsu.extension.hexagon: {
+        edges_: <OPTIONAL>
+    }
+}

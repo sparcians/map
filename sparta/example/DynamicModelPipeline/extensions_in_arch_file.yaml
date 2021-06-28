@@ -3,3 +3,8 @@ top: {
         edges_: 3
     }
 }
+top: {
+    core0.lsu.extension.triangle: {
+        edges_: <OPTIONAL>
+    }
+}

@@ -108,7 +108,9 @@ sparta_named_test(dynamic_model_pipeline_context_counter_update_triggers5 dynami
 sparta_named_test(dynamic_model_pipeline_context_counter_update_triggers6 dynamic_model_pipeline -i 710 --report context_counter_update_triggers6.yaml --config-file context_weights.yaml -p top.core0.params.foo 680)
 sparta_named_test(dynamic_model_pipeline_node_config_using_inner_include_yaml dynamic_model_pipeline -i 10k --config-file config_with_inner_include.yaml)
 sparta_named_test(dynamic_model_pipeline_arch_with_extensions dynamic_model_pipeline -i 10k --arch arch_with_extensions.yaml --arch-search-dir . --write-final-config final.yaml)
-sparta_named_test(dynamic_model_pipeline_indiv_tree_node_extensions dynamic_model_pipeline -i 10k -p top.core0.lsu.extension.dog.language_ woof --extension-file tree_node_extensions.yaml -p top.core0.lsu.extension.cat.language_ meow --write-final-config final.yaml)
+# Extensions supplied that are not bound are now errors
+#sparta_named_test(dynamic_model_pipeline_indiv_tree_node_extensions dynamic_model_pipeline -i 10k -p top.core0.lsu.extension.dog.language_ woof --extension-file tree_node_extensions.yaml -p top.core0.lsu.extension.cat.language_ meow --write-final-config final.yaml)
+sparta_named_test(dynamic_model_pipeline_indiv_tree_node_extensions dynamic_model_pipeline -i 10k --extension-file tree_node_extensions.yaml -p top.core0.lsu.extension.cat.language_ meow --write-final-config final.yaml)
 sparta_named_test(dynamic_model_pipeline_sqldb_timeseries dynamic_model_pipeline -i 100k --report all_update_triggers.yaml --feature simdb 1 simdb_si_min_blob_size.yaml)
 sparta_named_test(dynamic_model_pipeline_sqldb_timeseries_opts1 dynamic_model_pipeline -i 100k --report all_update_triggers.yaml --feature simdb 1 simdb_si_opts1.yaml)
 sparta_named_test(dynamic_model_pipeline_sqldb_timeseries_opts2 dynamic_model_pipeline -i 100k --report all_update_triggers.yaml --feature simdb 1 simdb_si_opts2.yaml)

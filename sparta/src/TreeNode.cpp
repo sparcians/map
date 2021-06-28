@@ -2706,7 +2706,7 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
             if (extension_node == nullptr) {
                 if (extension_name != "*") {
                     std::ostringstream oss;
-                    ptree.getRoot()->recursPrint(oss);
+                    ptree.getRoot()->recursePrint(oss);
                     const std::string tree_str = oss.str();
                     if (!tree_str.empty() && tree_str != "\n") {
                         std::cerr << "Invalid node path found in arch/config/extensions file YAML. The tree node\n"
@@ -2842,7 +2842,7 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
                     std::cerr << "WARNING: Found a malformed extension: '"
                               << extension_name << "' location: '"
                               << extension_node->getOrigin() << "'\n\t"
-                              << "Expected 'name: value' pairs for the named extension, but found none"
+                              << "Expected 'extension.name: value' pairs for the named extension, but found only name"
                               << std::endl;
                     return nullptr;
                 }
