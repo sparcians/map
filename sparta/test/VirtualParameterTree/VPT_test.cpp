@@ -47,7 +47,7 @@ int main ()
     //pt"top.foo.biz"] = "0x2";
     //pt["top"]["foo"]["baz"] = "03";
 
-    pt.recursPrint(std::cout);
+    pt.recursePrint(std::cout);
 
     // Read some values
     EXPECT_EQUAL(pt.get("top.foo.bar"), "1");
@@ -67,14 +67,14 @@ int main ()
     // Test wildcard access
     pt.set("top.foo.*", "2", true, "origin #2");
     std::cout << "A:" << std::endl;
-    pt.recursPrint(std::cout);
+    pt.recursePrint(std::cout);
     EXPECT_EQUAL(pt.get("top.foo.bar"), "2");
     EXPECT_EQUAL(pt.get("top.foo.bar").getOrigin(), "origin #2");
     EXPECT_EQUAL(pt.get("top.foo.something_else"), "2");
 
     pt.set("top.foo.biz", "3", true);
     std::cout << "B:" << std::endl;
-    pt.recursPrint(std::cout);
+    pt.recursePrint(std::cout);
     EXPECT_EQUAL(pt.get("top.foo.bar"), "2");
     EXPECT_EQUAL(pt.get("top.foo.biz"), "3");
     EXPECT_EQUAL(pt.get("top.foo.something_else"), "2");
@@ -82,7 +82,7 @@ int main ()
 
     pt.set("top.*.biz", "4", true);
     std::cout << "C:" << std::endl;
-    pt.recursPrint(std::cout);
+    pt.recursePrint(std::cout);
     EXPECT_EQUAL(pt.get("top.foo.bar"), "2");
     EXPECT_EQUAL(pt.get("top.foo.biz"), "4");
     EXPECT_EQUAL(pt.get("top.foo.something_else"), "2");
@@ -90,7 +90,7 @@ int main ()
 
     pt.set("top.foo+.biz", "5", true);
     std::cout << "D:" << std::endl;
-    pt.recursPrint(std::cout);
+    pt.recursePrint(std::cout);
     EXPECT_EQUAL(pt.get("top.foo.bar"), "2");
     EXPECT_EQUAL(pt.get("top.foo.biz"), "4");
     EXPECT_EQUAL(pt.get("top.foo.something_else"), "2");
@@ -101,7 +101,7 @@ int main ()
     // For now parent (..) access when setting a parameter, changes NOTHING
     EXPECT_EQUAL(pt.set("top.foo+..", "6", true), false);
     std::cout << "E:" << std::endl;
-    pt.recursPrint(std::cout);
+    pt.recursePrint(std::cout);
     EXPECT_EQUAL(pt.get("top.foo.bar"), "2");
     EXPECT_EQUAL(pt.get("top.foo.biz"), "4");
     EXPECT_EQUAL(pt.get("top.foo.something_else"), "2");
@@ -128,7 +128,7 @@ int main ()
     std::cout << "Unreads: " << unreads << std::endl;
 
     std::cout << "After all nodes" << std::endl;
-    pt.recursPrint(std::cout);
+    pt.recursePrint(std::cout);
 
     // Test unrequire at the path level
     pt.set("top.foo.bar.fiz.bin1", "blah", true);
@@ -147,7 +147,7 @@ int main ()
     param_file.consumeParameters(&tmp, false); // verbose?
     //ParameterTree ypt = param_file.getParameterTree(); // Copy
     std::cout << "ParameterTree from config file" << std::endl;
-    param_file.getParameterTree().recursPrint(std::cout);
+    param_file.getParameterTree().recursePrint(std::cout);
     EXPECT_EQUAL(param_file.getParameterTree().get("top.foo.bar"), "0x001");
     EXPECT_EQUAL(param_file.getParameterTree().get("top.foo.biz"), "0x2");
     EXPECT_EQUAL(param_file.getParameterTree().get("top.foo.baz"), "03");
@@ -181,7 +181,7 @@ int main ()
     pt4.set("top.biz.buz", "pt4", true);
     pt4 = param_file.getParameterTree();
     std::cout << "After cloning yaml file output tree to pt4" << std::endl;
-    pt4.recursPrint(std::cout);
+    pt4.recursePrint(std::cout);
     EXPECT_THROW(pt4.get("top.biz.buz")); // Cleared as part of pt3 = ...
     EXPECT_EQUAL(pt4.get("top.foo.a.b.c"), "abc_value");
     EXPECT_EQUAL(pt4.get("top.fiz.bin"), "top.fiz.bin");
@@ -195,7 +195,7 @@ int main ()
 
     pt2.clear();
     std::cout << "After clearing pt2" << std::endl;
-    pt2.recursPrint(std::cout);
+    pt2.recursePrint(std::cout);
 
     // Walk to apply to a device tree
 

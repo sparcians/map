@@ -761,6 +761,9 @@ void Simulation::finalizeTree()
 
         // Ensure that all unbound parameters have been consumed by ParameterSets or explicitly
         checkAllVirtualParamsRead_(sim_config_->getUnboundParameterTree());
+
+        // Ensure that all unbound extension parameters were consumed
+        checkAllVirtualParamsRead_(sim_config_->getExtensionsUnboundParameterTree());
     }
 
     // Check ports and such
@@ -2224,7 +2227,7 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
                     err_list << "    ERROR: unread unbound parameter: \"" << path << "\" from: \""
                               << node->getOrigin() << "\". value: \"" << node->getValue() << "\". Path exists in tree up to: \""
                               << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"" << std::endl;
-                }else{
+                }else if(!sim_config_->suppress_unread_parameter_warnings) {
                     std::cerr << "    NOTE: unread optional unbound parameter: \"" << path << "\" from: \""
                               << node->getOrigin() << "\". value: \"" << node->getValue() << "\". Path exists in tree up to: \""
                               << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"" << std::endl;

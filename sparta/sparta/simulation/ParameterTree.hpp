@@ -64,7 +64,7 @@ namespace sparta
 
         private:
 
-            Node* parent_;         //!< Parent node
+            Node* parent_ = nullptr; //!< Parent node
             ParameterTree * tree_ = nullptr;  //!< Tree owning this node. Applies to root only
             std::string name_;     //!< Name of this node relative to it's parent
             std::string value_;    //!< Value of this node (if set. See has_value_)
@@ -257,7 +257,7 @@ namespace sparta
              * \brief Increment the read count of this node
              */
             void incrementReadCount() const {
-                read_count_++;
+                ++read_count_;
             }
 
             /*!
@@ -276,6 +276,16 @@ namespace sparta
             const std::string& getValue() const {
                 sparta_assert(hasValue(), "Node \"" << name_ << "\" does not have a value associated with it");
                 incrementReadCount();
+                return value_;
+            }
+
+            /*!
+             * \brief Gets the value of this object as a string
+             * \pre Value must be set for this node. See hasValue
+             * \post Does not increments read count
+             */
+            const std::string& peekValue() const {
+                sparta_assert(hasValue(), "Node \"" << name_ << "\" does not have a value associated with it");
                 return value_;
             }
 
@@ -568,6 +578,15 @@ namespace sparta
                 }
             }
 
+            /**
+             * \brief Release this node and its children from the tree
+             * \return The ChildVector including this node
+             *
+             */
+            std::unique_ptr<Node> release() {
+                return parent_->release_(this);
+            }
+
             /*!
              * \brief Set the string value of a child of this node. Note that this may not affect
              * this node directly because of the way pattern nodes work
@@ -614,18 +633,8 @@ namespace sparta
             bool isRequired() const {
                 // Start at beginning. Another, later-written node may override
                 // this node if it has the same patch or a matching pattern.
-                if (getOwner()->isRequired(getPath())) {
-                    // The "extension" keyword is reserved. Tree nodes will never
-                    // have that as their name. If our "grandparent" node has the
-                    // name "extension", then this is a tree node extension parameter,
-                    // which are never required to be consumed / queried.
-                    const ParameterTree::Node * n = getParent();
-                    if (n) {
-                        n = n->getParent();
-                        if (n && n->getName() == "extension") {
-                            return false;
-                        }
-                    }
+                if (getOwner()->isRequired(getPath()))
+                {
                     return true;
                 }
                 return false;
@@ -664,17 +673,18 @@ namespace sparta
             /*!
              * \brief Recursively print
              */
-            void recursPrint(std::ostream& o, uint32_t indent=0) const {
+            void recursePrint(std::ostream& o, uint32_t indent=0) const {
                 for(uint32_t i=0; i<indent; ++i){
                     o << " ";
                 }
                 o << name_;
                 if(has_value_){
-                    o << " = \"" << value_ << "\" (read " << read_count_ << ", written " << write_count_ << " origin " << getOrigin() << ")";
+                    o << " = \"" << value_ << "\" (read " << read_count_ << ", written " << write_count_
+                      << ", required " << required_ << ", origin '" << getOrigin() << "')";
                 }
                 o << "\n";
                 for(auto & n : children_){
-                    n->recursPrint(o, indent+2);
+                    n->recursePrint(o, indent+2);
                 }
             }
 
@@ -769,7 +779,7 @@ namespace sparta
             void recursAppendTree_(const Node* ot) {
                 // Inherit value. Never invalidate
                 if(ot->hasValue()){
-                    setValue(ot->getValue(), ot->getRequiredCount() > 0, ot->getOrigin());
+                    setValue(ot->peekValue(), ot->getRequiredCount() > 0, ot->getOrigin());
                 }
 
                 for(auto & child : ot->getChildren()){
@@ -777,6 +787,19 @@ namespace sparta
                     Node* c = create(child->getName(), child->getRequiredCount() > 0); // Create if needed
                     c->recursAppendTree_(child);
                 }
+            }
+
+            std::unique_ptr<Node> release_(Node *node) {
+                std::unique_ptr<Node> rtn;
+                auto it = std::find_if(children_.begin(), children_.end(),
+                                       [node] (const auto & child) -> bool {
+                                           return (child.get() == node);
+                                       });
+                if (it != children_.end()) {
+                    rtn = std::move(*it);
+                    children_.erase(it);
+                }
+                return rtn;
             }
         };
 
@@ -1043,8 +1066,8 @@ namespace sparta
         /*!
          * \brief Recursively print
          */
-        void recursPrint(std::ostream& o) const {
-            root_->recursPrint(o, 0); // Begin with 0 indent
+        void recursePrint(std::ostream& o) const {
+            root_->recursePrint(o, 0); // Begin with 0 indent
         }
 
     private:

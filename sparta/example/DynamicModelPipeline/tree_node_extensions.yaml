@@ -12,3 +12,9 @@ top: {
         ticket_:   "663"
     }
 }
+
+top: {
+    core0.dispatch.baz_node.extension.baz_ext: {
+        ticket_:   <OPTIONAL>
+    }
+}

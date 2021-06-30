@@ -354,6 +354,11 @@ namespace sparta {
           std::cout << "  Node '" << getLocation()
                     << "' has parameter 'baz' with a value set to "
                     << baz_->read() << std::endl;
+          auto ext = getExtension("baz_ext");
+          if(ext) {
+              std::cout << "That's the ticket: "
+                        << ext->getParameters()->getParameterValueAs<std::string>("ticket_") << std::endl;
+          }
       }
 
   private:

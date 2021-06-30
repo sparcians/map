@@ -1630,14 +1630,7 @@ bool CommandLineSimulator::parse(int argc,
         const std::string & pattern = std::get<0>(pvalue);
         const std::string & value = std::get<1>(pvalue);
         const bool is_optional = std::get<2>(pvalue);
-        //Individual extensions name/value pairs must be forwarded
-        //to the dedicated ParameterTree for extensions.
-        if (pattern.find(".extension") != std::string::npos) {
-            auto & extensions_ptree = sim_config_.getExtensionsUnboundParameterTree();
-            extensions_ptree.set(pattern, value, !is_optional);
-        } else {
-            sim_config_.processParameter(pattern, value, is_optional);
-        }
+        sim_config_.processParameter(pattern, value, is_optional);
     }
 
     // Interpret debug-dump post-run value
@@ -1966,7 +1959,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
     try{
         if(show_tree_){
             std::cout << "\nPre-processed UnboundParameterTree:" << std::endl;
-            sim_config_.getUnboundParameterTree().recursPrint(std::cout);
+            sim_config_.getUnboundParameterTree().recursePrint(std::cout);
         }
 
         // Construction phases. Typically, these are invoked by a startup script

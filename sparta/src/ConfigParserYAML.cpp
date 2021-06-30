@@ -78,7 +78,7 @@ namespace sparta
 
                 seq_params_.addValue(value);
                 //std::cerr << "seq scalar assigned @\"" << pt_node_->getPath() << "\" \"" << sequence_pos_ << "\" <- " << value << std::endl;
-                //ptree_.recursPrint(std::cerr);
+                //ptree_.recursePrint(std::cerr);
 
                 sequence_pos_.back() += 1;
 
@@ -139,7 +139,7 @@ namespace sparta
                             }
                         }
                         //std::cerr << "set " << pt_node_->getPath() << " \"" << last_val_ << "\" <- " << value << std::endl;
-                        //ptree_.recursPrint(std::cerr);
+                        //ptree_.recursePrint(std::cerr);
                     }
                 }
 
@@ -189,7 +189,7 @@ namespace sparta
                         const bool required = true; // Temporary value. Parameters created this way are always required
                         pt_node_->setValue(value, required, markToString_(mark, false));
                         //std::cerr << "setValue " << pt_node_->getPath() << " \"" << last_val_ << "\" <- " << value << std::endl;
-                        //ptree_.recursPrint(std::cerr);
+                        //ptree_.recursePrint(std::cerr);
                     }
                 }
 
@@ -280,7 +280,7 @@ namespace sparta
                     const bool required = true; // Temporary value. Parameters created this way are always required
                     auto npt_node = pt_node_->create(last_val_, required); // Fails if it contains a parent reference
                     //std::cerr << "OnSequenceStart Create \"" << pt_node_->getPath() << "\" \"" << last_val_ << "\"" << std::endl;
-                    //ptree_.recursPrint(std::cerr);
+                    //ptree_.recursePrint(std::cerr);
                     if(!npt_node){
                         std::cerr << "WARNING: Encountered parameter path with parent reference: \"" << pt_node_->getPath()
                                   << "\" + \"" << last_val_ << "\". This node will not be available in the unbound parameter tree."
@@ -348,7 +348,7 @@ namespace sparta
                     const bool required = true; // Temporary value. Parameters created this way are always required
                     pt_node_->setValue(seq_params_.getValue(), required);
                     //std::cerr << "OnSequenceEnd setValue @\"" << pt_node_->getPath() << " \"" << seq_params_.getValue() << "\"" << std::endl;
-                    //ptree_.recursPrint(std::cerr);
+                    //ptree_.recursePrint(std::cerr);
                 }
 
                 // Reached end of nested sequence, pop pt_stack_ tos to get node before sequences started
@@ -542,7 +542,7 @@ namespace sparta
                 ss << values;
                 ptn->setValue(ss.str(), required, markToString_(node.Mark()));
                 //std::cerr << "setValue " << pt_node_->getPath() << " \"" << ss.str() << "\"" << std::endl;
-                //ptree_.recursPrint(std::cerr);
+                //ptree_.recursePrint(std::cerr);
             }else if(pt_node_){
                 std::cerr << "WARNING: Encountered parameter path with parent reference: \"" << pt_node_->getPath()
                           << "\" + \"" << param_path << "\". This node will not be available in the unbound parameter tree."
