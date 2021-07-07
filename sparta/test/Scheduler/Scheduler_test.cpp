@@ -117,7 +117,7 @@ int main()
 
     sparta::Scheduler * sched = rtn.getClock()->getScheduler();
 
-    EXPECT_TRUE(sched->getCurrentTick()  == 1);
+    EXPECT_TRUE(sched->getCurrentTick()  == 0); //sched not finalized, tick init to 0
     EXPECT_TRUE(sched->getElapsedTicks() == 0);
     EXPECT_TRUE(sched->isRunning() == false);
 
@@ -140,6 +140,10 @@ int main()
     EXPECT_THROW(sched->scheduleEvent(&ev_trigger, 0, ev_trigger.getGroupID()));
 
     sched->finalize();
+
+    // proceed to tick 1, nothing should happen, but time advancement
+    sched->run(1, true, false);
+
     EXPECT_NOTHROW(sched->scheduleEvent(&ev_trigger, 0, ev_trigger.getGroupID()));
 
     // Tick is now 1-based

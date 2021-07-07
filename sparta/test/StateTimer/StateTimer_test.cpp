@@ -62,6 +62,9 @@ int main()
     // 2.Test timer stand along
     ///////////////////////////
     {
+        // proceed to tick 1, nothing should happen, but time advancement
+        clk.getScheduler()->run(1, true, false);
+
         std::shared_ptr<sparta::StateTimerUnit::StateTimer> state_timer_1;
         std::shared_ptr<sparta::StateTimerUnit::StateTimer> state_timer_2;
         // cycle 1

@@ -190,6 +190,9 @@ void tryReport0()
     root.enterFinalized();
     sched.finalize();
 
+    // proceed to tick 1, nothing should happen, but time advancement
+    sched.run(1, true, false);
+
     c1 += 2;
     c2 += 4;
 
@@ -272,6 +275,9 @@ int main()
     Report r("Report 0", nullptr, &sched); // Report which outlives the tree
     sched.finalize();
 
+    // proceed to tick 1, nothing should happen, but time advancement
+    sched.run(1, true, false);
+
     // Ok StatisticDefs to declare, but not to instantiate or evaluate
     tryStatisticDef1();
     tryStatisticDef2();
@@ -348,6 +354,9 @@ int main()
         root.enterConfiguring();
         root.enterFinalized();
         sched.finalize();
+
+        // proceed to tick 1, nothing should happen, but time advancement
+        sched.run(1, true, false);
 
         EXPECT_NOTHROW( StatisticInstance sg_ok(&sd_nocycle); );
 

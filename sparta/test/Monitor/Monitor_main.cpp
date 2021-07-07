@@ -332,7 +332,7 @@ int main()
 {
     sparta::Scheduler sched;
     Clock clk("clock", &sched);
-    EXPECT_TRUE(sched.getCurrentTick() == 1);
+    EXPECT_TRUE(sched.getCurrentTick() == 0); //unfinalized sched at tick 0
     EXPECT_TRUE(sched.isRunning() == 0);
 
     sparta::RootTreeNode rtn;

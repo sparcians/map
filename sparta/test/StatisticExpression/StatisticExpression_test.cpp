@@ -144,6 +144,9 @@ int main(int argc, char** argv)
 
         sched.finalize();
 
+        // proceed to tick 1, nothing should happen, but time advancement
+        sched.run(1, true, false);
+
         outer_scope_expr_1.reset(new Expression("foo.stats.a", &top));
 
         // Block of things destroyed before the tree

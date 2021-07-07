@@ -173,6 +173,9 @@ void testOpStateHistogram(){
 
     scheduler.finalize();
 
+    // proceed to tick 1, nothing should happen, but time advancement
+    scheduler.run(1, true, false);
+
     EXPECT_EQUAL(op_state_histogram_tn.getHistogramUpperValue(), 3);
     EXPECT_EQUAL(op_state_histogram_tn.getHistogramLowerValue(), 0);
     EXPECT_EQUAL(op_state_histogram_tn.getNumBins(), 4);
@@ -360,6 +363,10 @@ void testUopStateHistogram(){
     sparta::StatisticInstance si_fullness_probability(tn_fullness_probability);
 
     scheduler.finalize();
+
+    // proceed to tick 1, nothing should happen, but time advancement
+    scheduler.run(1, true, false);
+
     EXPECT_EQUAL(uop_state_histogram_tn.getHistogramUpperValue(), 4);
     EXPECT_EQUAL(uop_state_histogram_tn.getHistogramLowerValue(), 0);
     EXPECT_EQUAL(uop_state_histogram_tn.getNumBins(), 5);
@@ -589,6 +596,9 @@ void testMMUStateHistogram(){
     sparta::StatisticInstance si_fullness_probability(tn_fullness_probability);
 
     scheduler.finalize();
+
+    // proceed to tick 1, nothing should happen, but time advancement
+    scheduler.run(1, true, false);
 
     EXPECT_EQUAL(mmu_state_histogram_tn.getHistogramUpperValue(), 3);
     EXPECT_EQUAL(mmu_state_histogram_tn.getHistogramLowerValue(), 0);

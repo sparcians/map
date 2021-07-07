@@ -345,7 +345,7 @@ int main()
 {
     sparta::Scheduler sched;
     sparta::Clock clk("clock", &sched);
-    EXPECT_TRUE(sched.getCurrentTick() == 1);
+    EXPECT_TRUE(sched.getCurrentTick() == 0); //sched not finalized, tick is 0 on init
     EXPECT_TRUE(sched.isRunning() == 0);
 
     Observer                        obs("Foo");

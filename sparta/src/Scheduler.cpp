@@ -48,7 +48,7 @@ Scheduler::Scheduler(const std::string& name, GlobalTreeNode* search_scope) :
     dag_group_count_(1),
     firing_group_count_(dag_group_count_ + 2),
     dag_finalized_(false),
-    current_tick_(1),
+    current_tick_(0), //init 0
     elapsed_ticks_(0),
     prev_wdt_tick_(0),
     wdt_period_ticks_(0),
@@ -94,23 +94,13 @@ Scheduler::Scheduler(const std::string& name, GlobalTreeNode* search_scope) :
                       &sset_,
                       "picoseconds/1000.0"),
     user_runtime_stat_(&sset_,
-                       "host_machine_user_runtime_seconds",
+                       "user_runtime_seconds",
                        "Simulation user runtime in seconds as measured on the host machine",
-                       &sset_,
-                       "host_user_time_count_ms/1000.0"),
+                       Counter::COUNT_LATEST),
     system_runtime_stat_(&sset_,
-                         "host_machine_system_runtime_seconds",
+                         "system_runtime_seconds",
                          "Simulation system runtime in seconds as measured on the host machine",
-                         &sset_,
-                         "host_system_time_count_ms/1000.0"),
-    wall_runtime_stat_(&sset_,
-                       "host_machine_wall_runtime_seconds",
-                       "Simulation wall clock runtime in seconds as measured on the host machine",
-                       &sset_,
-                       "host_wall_time_count_ms/1000.0"),
-    user_time_cnt_  (&sset_, "host_user_time_count_ms",   "User scheduler performance (not simulated time)",   Counter::COUNT_NORMAL, &user_time_),
-    system_time_cnt_(&sset_, "host_system_time_count_ms", "System scheduler performance (not simulated time)", Counter::COUNT_NORMAL, &system_time_),
-    wall_time_cnt_  (&sset_, "host_wall_time_count_ms",   "Wall scheduler performance (not simulated time)",   Counter::COUNT_NORMAL, &wall_time_),
+                         Counter::COUNT_LATEST),
     es_uptr_(new EventSet(this))
 #ifdef SYSTEMC_SUPPORT
     , item_scheduled_(this, "item_scheduled", "Broadcasted when something is scheduled", "item_scheduled")
@@ -234,7 +224,7 @@ void Scheduler::finalize()
         restartAt(0);
 
         // The scheduler always starts on tick 1.
-        current_tick_ = 1;
+        current_tick_ = 0; //init 0
         prev_wdt_tick_ = 0;
     }
 }
@@ -605,11 +595,8 @@ void Scheduler::run(Tick num_ticks,
     running_ = false;
     if(SPARTA_EXPECT_TRUE(measure_run_time)) {
         timer_.stop();
-        const auto elapsed = timer_.elapsed();
-        const double MILLISECOND_CONVERT = 1000000.0;
-        user_time_   = (elapsed.user)   / MILLISECOND_CONVERT;
-        system_time_ = (elapsed.system) / MILLISECOND_CONVERT;
-        wall_time_   = (elapsed.wall)   / MILLISECOND_CONVERT;
+        user_runtime_stat_ = (timer_.elapsed().user / 1E9);  // Convert from ns to seconds
+        system_runtime_stat_ = (timer_.elapsed().system / 1E9);  // Convert from ns to seconds
     }
 }
 
