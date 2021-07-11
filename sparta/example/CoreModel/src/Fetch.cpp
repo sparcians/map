@@ -138,7 +138,11 @@ namespace core_example
         }
 
         // Schedule a fetch event this cycle
-        fetch_inst_event_->schedule(sparta::Clock::Cycle(0));
+        if(getClock()->getScheduler()->getCurrentTick() == 0) {
+            fetch_inst_event_->schedule(sparta::Clock::Cycle(1)); //scheduler doesn't like to schedule more in tick 0
+        } else {
+           fetch_inst_event_->schedule(sparta::Clock::Cycle(0));
+        }
     }
 
     // Called from Retire via in_fetch_flush_redirect_ port
