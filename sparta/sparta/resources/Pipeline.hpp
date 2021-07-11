@@ -608,8 +608,12 @@ namespace sparta
          * \param stall_stage_id The stage that causes the pipeline stall
          * \param stall_cycles The total number of stall cycles
          * \param crush_bubbles Allow stages before the stall point to move forward into empty slots
+         * \param suppress_event Suppress events of stages before the stall point
          */
-        void stall(const uint32_t & stall_stage_id, const uint32_t & stall_cycles, const bool crush_bubbles=false)
+        void stall(const uint32_t & stall_stage_id,
+                   const uint32_t & stall_cycles,
+                   const bool crush_bubbles=false,
+                   const bool suppress_events=true)
         {
             sparta_assert(pipe_.isValid(stall_stage_id), "Try to stall an empty pipeline stage!");
             sparta_assert(!isStalledOrStalling(), "Try to stall a pipeline that is stalling or already stalled!");
@@ -620,7 +624,7 @@ namespace sparta
 
             stall_cycles_ = stall_cycles;
             stall_stage_id_ = stall_stage_id;
-            deactivate_(stall_stage_id_, crush_bubbles);
+            deactivate_(stall_stage_id_, crush_bubbles, suppress_events);
         }
 
         /*!
@@ -920,7 +924,9 @@ namespace sparta
         }
 
         //! Deactivate the pipeline stage handling events up to the stall causing stage
-        void deactivate_(const uint32_t & stall_stage_id, bool crush_bubbles)
+        void deactivate_(const uint32_t & stall_stage_id,
+                         const bool crush_bubbles,
+                         const bool suppress_events)
         {
             sparta_assert(stall_stage_id < num_stages_,
                         "Try to deactivate events for invalid pipeline stage[" << stall_stage_id << "]");
@@ -931,7 +937,7 @@ namespace sparta
                     return; // bubble, crush it by allowing earlier stages to advance
                 }
 
-                if (event_list_at_stage_[stage_id].size() > 0) {
+                if (suppress_events && event_list_at_stage_[stage_id].size() > 0) {
                     events_valid_at_stage_[stage_id] = false;
                 }
                 advance_into_stage_[stage_id] = false;
