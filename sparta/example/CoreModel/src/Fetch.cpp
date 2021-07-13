@@ -137,6 +137,7 @@ namespace core_example
                          << ", total decode_credits=" << credits_inst_queue_;
         }
 
+        // Schedule a fetch event this cycle
         fetch_inst_event_->schedule(sparta::Clock::Cycle(0));
     }
 

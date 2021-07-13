@@ -129,7 +129,7 @@ namespace sparta
             const auto to_be_scheduled_abs_tick =
                 local_scheduler_->calcIndexTime(to_be_scheduled_relative_tick);
 
-            //Special case init tick since Tick cannot take an negative initialization value:
+            //Special case init tick since Tick cannot take a negative initialization value:
             bool isInitTick = (next_scheduled_tick_ == 0 && prev_scheduled_tick_ == 0);
             
             if(SPARTA_EXPECT_TRUE(next_scheduled_tick_ < to_be_scheduled_abs_tick || isInitTick))
