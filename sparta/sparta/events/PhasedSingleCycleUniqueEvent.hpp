@@ -129,7 +129,10 @@ namespace sparta
             const auto to_be_scheduled_abs_tick =
                 local_scheduler_->calcIndexTime(to_be_scheduled_relative_tick);
 
-            if(SPARTA_EXPECT_TRUE(next_scheduled_tick_ < to_be_scheduled_abs_tick))
+            //Special case init tick since Tick cannot take an negative initialization value:
+            bool isInitTick = (next_scheduled_tick_ == 0 && prev_scheduled_tick_ == 0);
+            
+            if(SPARTA_EXPECT_TRUE(next_scheduled_tick_ < to_be_scheduled_abs_tick || isInitTick))
             {
                 // This is a handy debug assertion to see if
                 // SingleCycleUniqueEvent is actually only scheduled once.
