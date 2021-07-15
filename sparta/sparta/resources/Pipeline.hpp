@@ -23,6 +23,7 @@
 #include "sparta/resources/Pipe.hpp"
 #include "sparta/events/Scheduleable.hpp"
 #include "sparta/events/PhasedUniqueEvent.hpp"
+#include "sparta/events/PhasedPayloadEvent.hpp"
 #include "sparta/kernel/SpartaHandler.hpp"
 
 namespace sparta
@@ -38,6 +39,13 @@ namespace sparta
      * It contains a sparta::Pipe, and couples event-scheduling (i.e. control-flow path), with the
      * data-movement (i.e. data-flow path) provided by sparta::Pipe.
      *
+     * Template parameter DataT specifies the type of data flowing through pipeline stages, and
+     * EventT can be specified by 2 Event types: PhasedUniqueEvent (default) and PhasedPayloadEvent<DataT>.
+     * The difference between both types is related to what kind of SpartaHandler modelers are going
+     * to register at stages. With default PhasedUniqueEvent, you can regsiter a SpartaHandler
+     * with no data; or, with PhasedPayloadEvent<DataT>, you can register a SpartaHandler with
+     * data of type DataT. Pipeline will prepare payload and pass data of the stage to every handler.
+     *
      * The sparta::Pipeline is able to provide modelers with the following design capability:
      * -# Register event handler(s) for designated pipeline stage(s), sparse stage handler
      *    registration is supported.
@@ -49,15 +57,15 @@ namespace sparta
      * -# Perform manual or automatic pipeline update (i.e. forward progression). The registered
      *    pipeline stage handlers are called under-the-hood whenever valid pipeline data arrives.
      */
-    template <typename DataT>
+    template <typename DataT, typename EventT=PhasedUniqueEvent>
     class Pipeline
     {
     public:
         using size_type = uint32_t;
         using value_type = DataT;
-        using EventHandle = std::unique_ptr<PhasedUniqueEvent>;
+        using EventHandle = std::unique_ptr<EventT>;
         using EventHandleList = std::list<EventHandle>;
-        using EventList = std::list<PhasedUniqueEvent*>;
+        using EventList = std::list<EventT*>;
         using EventMatrix = std::array<EventList, NUM_SCHEDULING_PHASES>;
 
         /*!
@@ -71,7 +79,7 @@ namespace sparta
             NUM_OF_PRECEDENCE
         };
 
-        template<typename DataT2>
+        template<typename DataT2, typename EventT2>
         friend class Pipeline;
 
         /*!
@@ -218,6 +226,42 @@ namespace sparta
         const_iterator cend() const { return const_iterator(this, capacity()); }
 
         /*!
+         * \brief Construct a Pipeline object by existed event set
+         *
+         * \param es The pointer to existed event set
+         * \param name The name of Pipeline object
+         * \param num_stages The number of pipeline stages
+         * \param clk The clock this pipeline synchronized to
+         */
+        Pipeline(EventSet * es,
+                 const std::string & name,
+                 const uint32_t num_stages,
+                 const Clock * clk) :
+            name_(name),
+            clock_(clk),
+            pipe_(name, num_stages, clk),
+            event_list_at_stage_(num_stages),
+            event_matrix_at_stage_(num_stages),
+            es_((es == nullptr) ? &dummy_es_ : es),
+            ev_pipeline_update_
+                (es_, name + "_update_event", CREATE_SPARTA_HANDLER(Pipeline, internalUpdate_), 1),
+            num_stages_(num_stages)
+        {
+            // Only support the following Event types:
+            // 1. PhasedUniqueEvent
+            // 2. PhasedPayloadEvent<DataT>
+            if constexpr (!std::is_same_v<EventT, PhasedUniqueEvent> && !std::is_same_v<EventT, PhasedPayloadEvent<DataT>>) {
+                sparta_assert(false, "Pipeline is templated a unsupported Event type");
+            }
+            events_valid_at_stage_.resize(num_stages, false);
+            advance_into_stage_.resize(num_stages, true);
+
+            ev_pipeline_update_.setScheduleableClock(clk);
+            ev_pipeline_update_.setScheduler(clk->getScheduler());
+            ev_pipeline_update_.setContinuing(false);
+        }
+
+        /*!
          * \brief Construct a Pipeline object
          *
          * \param name The name of Pipeline object
@@ -227,22 +271,8 @@ namespace sparta
         Pipeline(const std::string & name,
                  const uint32_t num_stages,
                  const Clock * clk) :
-            name_(name),
-            clock_(clk),
-            pipe_(name, num_stages, clk),
-            event_list_at_stage_(num_stages),
-            event_matrix_at_stage_(num_stages),
-            ev_pipeline_update_
-                (&es_, name + "_update_event", CREATE_SPARTA_HANDLER(Pipeline, internalUpdate_), 1),
-            num_stages_(num_stages)
-        {
-            events_valid_at_stage_.resize(num_stages, false);
-            advance_into_stage_.resize(num_stages, true);
-
-            ev_pipeline_update_.setScheduleableClock(clk);
-            ev_pipeline_update_.setScheduler(clk->getScheduler());
-            ev_pipeline_update_.setContinuing(false);
-        }
+            Pipeline(nullptr, name, num_stages, clk)
+        {}
 
         /*!
          * \brief Register event handler for a designated pipeline stage
@@ -266,14 +296,27 @@ namespace sparta
 
             // Create a new stage event handler, and add it to its event list
             auto & event_list = event_list_at_stage_[id];
-            event_list.emplace_back(new sparta::UniqueEvent<sched_phase>(&es_,
-                                        "uev_stage_" + std::to_string(id) + "_" + std::to_string(event_list_at_stage_[id].size()),
-                                        handler));
+            if constexpr (std::is_same_v<EventT, PhasedPayloadEvent<DataT>>) {
+                event_list.emplace_back(new EventT(es_,
+                                            "pev_stage_" + std::to_string(id) + "_" + std::to_string(event_list_at_stage_[id].size()),
+                                            sched_phase,
+                                            handler));
+            } else {
+                event_list.emplace_back(new EventT(es_,
+                                            "uev_stage_" + std::to_string(id) + "_" + std::to_string(event_list_at_stage_[id].size()),
+                                            sched_phase,
+                                            handler));
+            }
             auto new_event = event_list.back().get();
 
             // Set clock for this new event handler
-            new_event->setScheduleableClock(clock_);
-            new_event->setScheduler(clock_->getScheduler());
+            if constexpr (std::is_same_v<EventT, PhasedPayloadEvent<DataT>>) {
+                new_event->getScheduleable().setScheduleableClock(clock_);
+                new_event->getScheduleable().setScheduler(clock_->getScheduler());
+            } else {
+                new_event->setScheduleableClock(clock_);
+                new_event->setScheduler(clock_->getScheduler());
+            }
 
             // Update event matrix
             auto & event_list_per_phase = event_matrix_at_stage_[id][static_cast<uint32_t>(sched_phase)];
@@ -281,7 +324,11 @@ namespace sparta
                 auto & producer_event = event_list_per_phase.back();
 
                 // Set the latest registered event (in this 'sched_phase') to precedes this new event
-                producer_event->precedes(*new_event);
+                if constexpr (std::is_same_v<EventT, PhasedPayloadEvent<DataT>>) {
+                    producer_event->getScheduleable().precedes(new_event->getScheduleable());
+                } else {
+                    producer_event->precedes(*new_event);
+                }
             } else {
                 events_valid_at_stage_[id] = true;
             }
@@ -320,7 +367,11 @@ namespace sparta
                 // The last event in producer pipeline stage(#pid) is
                 // scheduled earlier than the first event in consumer
                 // pipeline stage(#cid)
-                (pstage_event_list.back())->precedes(*(cstage_event_list.front()));
+                if constexpr (std::is_same_v<EventT, PhasedPayloadEvent<DataT>>) {
+                    (pstage_event_list.back())->getScheduleable().precedes((cstage_event_list.front())->getScheduleable());
+                } else {
+                    (pstage_event_list.back())->precedes(*(cstage_event_list.front()));
+                }
             }
         }
 
@@ -352,7 +403,11 @@ namespace sparta
                 // The last event in producer pipeline stage(#pid) is
                 // scheduled earlier than the first event in consumer
                 // pipeline stage(#cid)
-                (pstage_event_list.back())->precedes(*(cstage_event_list.front()));
+                if constexpr (std::is_same_v<EventT, PhasedPayloadEvent<DataT>>) {
+                    (pstage_event_list.back())->getScheduleable().precedes((cstage_event_list.front())->getScheduleable());
+                } else {
+                    (pstage_event_list.back())->precedes(*(cstage_event_list.front()));
+                }
             }
         }
 
@@ -448,7 +503,11 @@ namespace sparta
 
             sparta_assert(!event_list.empty(),
                         "Cannot set producer event for pipeline stage[" << id << "]. No registered stage event on the SAME phase!");
-            ev_handler.getScheduleable().precedes(*(event_list.front()));
+            if constexpr (std::is_same_v<EventT, PhasedPayloadEvent<DataT>>) {
+                ev_handler.getScheduleable().precedes((event_list.front())->getScheduleable());
+            } else {
+                ev_handler.getScheduleable().precedes(*(event_list.front()));
+            }
         }
 
         /*!
@@ -469,7 +528,11 @@ namespace sparta
             sparta_assert(!event_list.empty(),
                         "Cannot set consumer event for pipeline stage[" << id
                         << "]. No registered stage event on the SAME phase!");
-            (event_list.back())->precedes(ev_handler.getScheduleable());
+            if constexpr (std::is_same_v<EventT, PhasedPayloadEvent<DataT>>) {
+                (event_list.back())->getScheduleable().precedes(ev_handler.getScheduleable());
+            } else {
+                (event_list.back())->precedes(ev_handler.getScheduleable());
+            }
         }
 
         /*!
@@ -917,7 +980,11 @@ namespace sparta
                 if (pipe_.isValid(i) && events_valid_at_stage_[i]) {
                     sparta_assert(event_list_at_stage_[i].size());
                     for (const auto & ev_ptr :  event_list_at_stage_[i]) {
-                        ev_ptr->schedule(sparta::Clock::Cycle(0));
+                        if constexpr (std::is_same_v<EventT, PhasedPayloadEvent<DataT>>) {
+                            ev_ptr->preparePayload(at(i))->schedule(sparta::Clock::Cycle(0));
+                        } else {
+                            ev_ptr->schedule(sparta::Clock::Cycle(0));
+                        }
                     }
                 }
             }
@@ -983,7 +1050,8 @@ namespace sparta
         std::vector<EventMatrix> event_matrix_at_stage_;
 
         //! Pipeline event set
-        sparta::EventSet es_{nullptr};
+        sparta::EventSet dummy_es_{nullptr};
+        sparta::EventSet * es_;
 
         //! Pipeline update event handler
         UniqueEvent<SchedulingPhase::Update> ev_pipeline_update_;
