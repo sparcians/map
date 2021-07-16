@@ -1609,6 +1609,8 @@ int main ()
     EXPECT_TRUE(examplePipeline8.isValid(1));
     EXPECT_TRUE(examplePipeline8.isValid(2));
 
+    std::cout << "[FINISH] Pipeline Data Event Handling Test\n";
+
     rtn.enterTeardown();
 
 #ifdef PIPEOUT_GEN

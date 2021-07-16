@@ -42,7 +42,7 @@ namespace sparta
      * Template parameter DataT specifies the type of data flowing through pipeline stages, and
      * EventT can be specified by 2 Event types: PhasedUniqueEvent (default) and PhasedPayloadEvent<DataT>.
      * The difference between both types is related to what kind of SpartaHandler modelers are going
-     * to register at stages. With default PhasedUniqueEvent, you can regsiter a SpartaHandler
+     * to register at stages. With default PhasedUniqueEvent, you can register a SpartaHandler
      * with no data; or, with PhasedPayloadEvent<DataT>, you can register a SpartaHandler with
      * data of type DataT. Pipeline will prepare payload and pass data of the stage to every handler.
      *
@@ -250,9 +250,9 @@ namespace sparta
             // Only support the following Event types:
             // 1. PhasedUniqueEvent
             // 2. PhasedPayloadEvent<DataT>
-            if constexpr (!std::is_same_v<EventT, PhasedUniqueEvent> && !std::is_same_v<EventT, PhasedPayloadEvent<DataT>>) {
-                sparta_assert(false, "Pipeline is templated a unsupported Event type");
-            }
+            static_assert(std::is_same_v<EventT, PhasedUniqueEvent> || std::is_same_v<EventT, PhasedPayloadEvent<DataT>>,
+                          "Pipeline is templated a unsupported Event type. "
+                          "Supported Event types: {PhasedUniqueEvent, PhasedPayloaodEvent<DataT>}");
             events_valid_at_stage_.resize(num_stages, false);
             advance_into_stage_.resize(num_stages, true);
 
@@ -297,11 +297,13 @@ namespace sparta
             // Create a new stage event handler, and add it to its event list
             auto & event_list = event_list_at_stage_[id];
             if constexpr (std::is_same_v<EventT, PhasedPayloadEvent<DataT>>) {
+                sparta_assert(handler.argCount() == 1, "Expecting Sparta Handler with 1 data parameter!");
                 event_list.emplace_back(new EventT(es_,
                                             "pev_stage_" + std::to_string(id) + "_" + std::to_string(event_list_at_stage_[id].size()),
                                             sched_phase,
                                             handler));
             } else {
+                sparta_assert(handler.argCount() == 0, "Expecting Sparta Handler with no data parameter!");
                 event_list.emplace_back(new EventT(es_,
                                             "uev_stage_" + std::to_string(id) + "_" + std::to_string(event_list_at_stage_[id].size()),
                                             sched_phase,
