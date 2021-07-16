@@ -289,10 +289,10 @@ namespace sparta
         void registerHandlerAtStage(const uint32_t & id, const SpartaHandler & handler)
         {
             sparta_assert(static_cast<uint32_t>(default_precedence_) == static_cast<uint32_t>(Precedence::NONE),
-                        "You have specified a default precedence (" << static_cast<uint32_t>(default_precedence_)
+                          "You have specified a default precedence (" << static_cast<uint32_t>(default_precedence_)
                           << ") between stages. No new handlers can be registered any more!");
             sparta_assert(id < event_list_at_stage_.size(),
-                        "Attempt to register handler for invalid pipeline stage[" << id << "]!");
+                          "Attempt to register handler for invalid pipeline stage[" << id << "]!");
 
             // Create a new stage event handler, and add it to its event list
             auto & event_list = event_list_at_stage_[id];
@@ -350,13 +350,13 @@ namespace sparta
         void setPrecedenceBetweenStage(const uint32_t & pid, const uint32_t & cid)
         {
             sparta_assert(static_cast<uint32_t>(default_precedence_) == static_cast<uint32_t>(Precedence::NONE),
-                        "You have specified a default precedence (" << static_cast<uint32_t>(default_precedence_)
-                        << "). No more precedence between stages can be set!");
+                          "You have specified a default precedence (" << static_cast<uint32_t>(default_precedence_)
+                          << "). No more precedence between stages can be set!");
             sparta_assert(pid != cid, "Cannot specify precedence with yourself!");
             sparta_assert((pid < event_list_at_stage_.size()) && (event_list_at_stage_[pid].size() > 0),
-                        "Precedence setup fails: No handler for pipeline stage[" << pid << "]!");
+                          "Precedence setup fails: No handler for pipeline stage[" << pid << "]!");
             sparta_assert((cid < event_list_at_stage_.size()) && (event_list_at_stage_[cid].size() > 0),
-                        "Precedence setup fails: No handler for pipeline stage[" << cid << "]!");
+                          "Precedence setup fails: No handler for pipeline stage[" << cid << "]!");
 
             for (uint32_t phase_id = 0; phase_id < NUM_SCHEDULING_PHASES; phase_id++) {
                 auto & pstage_event_list = event_matrix_at_stage_[pid][phase_id];
@@ -388,11 +388,11 @@ namespace sparta
         void setPrecedenceBetweenPipeline(const uint32_t & pid, Pipeline<DataT2> & c_pipeline, const uint32_t & cid)
         {
             sparta_assert(static_cast<void*>(&c_pipeline) != static_cast<void*>(this),
-                        "Cannot use this function to set precedence between stages within the same pipeline instance!");
+                          "Cannot use this function to set precedence between stages within the same pipeline instance!");
             sparta_assert((pid < event_list_at_stage_.size()) && (event_list_at_stage_[pid].size() > 0),
-                        "Precedence setup fails: No handler for pipeline stage[" << pid << "]!");
+                          "Precedence setup fails: No handler for pipeline stage[" << pid << "]!");
             sparta_assert((cid < c_pipeline.event_list_at_stage_.size()) && (c_pipeline.event_list_at_stage_[cid].size() > 0),
-                        "Precedence setup fails: No handler for pipeline stage[" << cid << "]!");
+                          "Precedence setup fails: No handler for pipeline stage[" << cid << "]!");
 
             for (uint32_t phase_id = 0; phase_id < NUM_SCHEDULING_PHASES; phase_id++) {
                 auto & pstage_event_list = event_matrix_at_stage_[pid][phase_id];
@@ -421,7 +421,7 @@ namespace sparta
         void setDefaultStagePrecedence(const Precedence & default_precedence)
         {
             sparta_assert(static_cast<uint32_t>(default_precedence) < static_cast<uint32_t>(Precedence::NUM_OF_PRECEDENCE),
-                        "Unknown default precedence is specified for sparta::Pipeline!");
+                          "Unknown default precedence is specified for sparta::Pipeline!");
 
             if (static_cast<uint32_t>(default_precedence) == static_cast<uint32_t>(Precedence::NONE)) {
                 return;
@@ -498,13 +498,13 @@ namespace sparta
         void setProducerForStage(const uint32_t & id, EventType & ev_handler)
         {
             sparta_assert((id < event_list_at_stage_.size()) && (event_list_at_stage_[id].size() > 0),
-                        "Precedence setup fails: No handler for pipeline stage[" << id << "]!");
+                          "Precedence setup fails: No handler for pipeline stage[" << id << "]!");
 
             auto phase_id = static_cast<uint32_t>(ev_handler.getScheduleable().getSchedulingPhase());
             auto & event_list = event_matrix_at_stage_[id][phase_id];
 
             sparta_assert(!event_list.empty(),
-                        "Cannot set producer event for pipeline stage[" << id << "]. No registered stage event on the SAME phase!");
+                          "Cannot set producer event for pipeline stage[" << id << "]. No registered stage event on the SAME phase!");
             if constexpr (std::is_same_v<EventT, PhasedPayloadEvent<DataT>>) {
                 ev_handler.getScheduleable().precedes((event_list.front())->getScheduleable());
             } else {
@@ -522,14 +522,14 @@ namespace sparta
         void setConsumerForStage(const uint32_t & id, EventType & ev_handler)
         {
             sparta_assert((id < event_list_at_stage_.size()) && (event_list_at_stage_[id].size() > 0),
-                        "Precedence setup fails: No handler for pipeline stage[" << id << "]!");
+                          "Precedence setup fails: No handler for pipeline stage[" << id << "]!");
 
             auto phase_id = static_cast<uint32_t>(ev_handler.getScheduleable().getSchedulingPhase());
             auto & event_list = event_matrix_at_stage_[id][phase_id];
 
             sparta_assert(!event_list.empty(),
-                        "Cannot set consumer event for pipeline stage[" << id
-                        << "]. No registered stage event on the SAME phase!");
+                          "Cannot set consumer event for pipeline stage[" << id
+                          << "]. No registered stage event on the SAME phase!");
             if constexpr (std::is_same_v<EventT, PhasedPayloadEvent<DataT>>) {
                 (event_list.back())->getScheduleable().precedes(ev_handler.getScheduleable());
             } else {
@@ -547,12 +547,12 @@ namespace sparta
                                      const SchedulingPhase phase = SchedulingPhase::Tick)
         {
             sparta_assert(id < event_matrix_at_stage_.size(),
-                        "Attempt to get events at an invalid pipeline stage["
-                        << id << "]!");
+                          "Attempt to get events at an invalid pipeline stage["
+                          << id << "]!");
             using SchedUType = std::underlying_type<SchedulingPhase>::type;
             auto & event_list = event_matrix_at_stage_[id][static_cast<SchedUType>(phase)];
             sparta_assert(!event_list.empty(),
-                        "No registered events at stage[" << id << "]!");
+                          "No registered events at stage[" << id << "]!");
             return event_list;
         }
 
@@ -568,7 +568,7 @@ namespace sparta
          */
         bool isEventRegisteredAtStage(const uint32_t & id) const {
             sparta_assert(id < event_list_at_stage_.size(),
-                        "Attempt to check event handler for invalid pipeline stage[" << id << "]!");
+                          "Attempt to check event handler for invalid pipeline stage[" << id << "]!");
 
             return (event_list_at_stage_[id].size() > 0);
         }
@@ -585,9 +585,9 @@ namespace sparta
         void activateEventAtStage(const uint32_t & id)
         {
             sparta_assert(id < event_list_at_stage_.size(),
-                        "Attempt to activate event handler for invalid pipeline stage[" << id << "]!");
+                          "Attempt to activate event handler for invalid pipeline stage[" << id << "]!");
             sparta_assert((event_list_at_stage_[id].size() > 0),
-                        "Activation fails: No registered event handler for stage[" << id << "]!");
+                          "Activation fails: No registered event handler for stage[" << id << "]!");
 
             events_valid_at_stage_[id] = true;
         }
@@ -603,9 +603,9 @@ namespace sparta
         void deactivateEventAtStage(const uint32_t & id)
         {
             sparta_assert(id < event_list_at_stage_.size(),
-                        "Attempt to deactivate event handler for invalid pipeline stage[" << id << "]!");
+                          "Attempt to deactivate event handler for invalid pipeline stage[" << id << "]!");
             sparta_assert((event_list_at_stage_[id].size() > 0),
-                        "Deactivation fails: No registered event handler for stage[" << id << "]!");
+                          "Deactivation fails: No registered event handler for stage[" << id << "]!");
 
             events_valid_at_stage_[id] = false;
         }
@@ -964,7 +964,7 @@ namespace sparta
         void cancelEventsAtStage_(const uint32_t & stage_id)
         {
             sparta_assert(stage_id < num_stages_,
-                        "Try to cancel events for invalid pipeline stage[" << stage_id << "]");
+                          "Try to cancel events for invalid pipeline stage[" << stage_id << "]");
             if (pipe_.isValid(stage_id) && events_valid_at_stage_[stage_id]) {
                 sparta_assert(event_list_at_stage_[stage_id].size());
                 for (const auto & ev_ptr :  event_list_at_stage_[stage_id]) {
@@ -998,7 +998,7 @@ namespace sparta
                          const bool suppress_events)
         {
             sparta_assert(stall_stage_id < num_stages_,
-                        "Try to deactivate events for invalid pipeline stage[" << stall_stage_id << "]");
+                          "Try to deactivate events for invalid pipeline stage[" << stall_stage_id << "]");
 
             for (int32_t stage_id = stall_stage_id; stage_id >= 0; stage_id--) {
 
@@ -1018,7 +1018,7 @@ namespace sparta
         {
             for (uint32_t stage_id = 0; stage_id <= stall_stage_id; stage_id++) {
                 sparta_assert(stage_id < num_stages_,
-                            "Try to restart invalid pipeline stage[" << stage_id << "]");
+                              "Try to restart invalid pipeline stage[" << stage_id << "]");
                 if (event_list_at_stage_[stage_id].size() > 0) {
                     events_valid_at_stage_[stage_id] = true;
                 }
