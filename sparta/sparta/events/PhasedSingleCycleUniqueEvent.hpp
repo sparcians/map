@@ -130,9 +130,9 @@ namespace sparta
                 local_scheduler_->calcIndexTime(to_be_scheduled_relative_tick);
 
             //Special case init tick since Tick cannot take a negative initialization value:
-            bool isInitTick = (next_scheduled_tick_ == 0 && prev_scheduled_tick_ == 0);
-            
-            if(SPARTA_EXPECT_TRUE(next_scheduled_tick_ < to_be_scheduled_abs_tick || isInitTick))
+            is_init_tick_ = (next_scheduled_tick_ == 0); // still init tick 0
+
+            if(SPARTA_EXPECT_TRUE(next_scheduled_tick_ < to_be_scheduled_abs_tick || is_init_tick_))
             {
                 // This is a handy debug assertion to see if
                 // SingleCycleUniqueEvent is actually only scheduled once.
@@ -201,6 +201,9 @@ namespace sparta
 
         //! The actual scheduled item on the scheduler
         Scheduleable single_cycle_event_scheduleable_;
+
+        //! Track if is in the initial tick = tick 0
+        bool is_init_tick_ = true;
     };
 
 }
