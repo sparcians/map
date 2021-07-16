@@ -251,8 +251,8 @@ namespace sparta
             // 1. PhasedUniqueEvent
             // 2. PhasedPayloadEvent<DataT>
             static_assert(std::is_same_v<EventT, PhasedUniqueEvent> || std::is_same_v<EventT, PhasedPayloadEvent<DataT>>,
-                          "Pipeline is templated a unsupported Event type. "
-                          "Supported Event types: {PhasedUniqueEvent, PhasedPayloaodEvent<DataT>}");
+                          "Error: Pipeline is templated on a unsupported Event type. Supported Event types: "
+                          "UniqueEvent, PayloaodEvent (where DataT == DataT of the Pipeline).");
             events_valid_at_stage_.resize(num_stages, false);
             advance_into_stage_.resize(num_stages, true);
 
