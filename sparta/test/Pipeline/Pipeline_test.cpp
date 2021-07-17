@@ -61,6 +61,10 @@ public:
     void stage4_F_Handle0(void) { std::cout << "  Stage[4]: handler(Flush)\n"; }
     void stage4_T_Handle0(void) { std::cout << "  Stage[4]: handler0(Tick)\n"; }
 
+    void stage0_T_DataHandle(const uint64_t & dat) { std::cout << "  Stage[0]: handle data: " << dat << std::endl; }
+    void stage1_T_DataHandle(const uint64_t & dat) { std::cout << "  Stage[1]: handle data: " << dat << std::endl; }
+    void stage2_T_DataHandle(const uint64_t & dat) { std::cout << "  Stage[2]: handle data: " << dat << std::endl; }
+
     void task0(void) { std::cout << "  Stage[3]: producer(Tick)\n"; }
     void task1(void) { std::cout << "  Stage[0]: producer(PortUpdate)\n"; }
     template<typename DataT>
@@ -288,6 +292,8 @@ int main ()
 
     sparta::Pipeline<uint64_t> examplePipeline7("mySeventhSpartaPipeline", 2, root_clk.get());
 
+    sparta::Pipeline<uint64_t, sparta::PhasedPayloadEvent<uint64_t>> examplePipeline8(&es, "myEighthSpartaPipeline", 3, root_clk.get());
+
     sparta::Pipeline<bool> stwr_pipe("STWR_Pipe", 5, root_clk.get());
 
     DummyClass2<uint64_t> dummyObj2(&examplePipeline6);
@@ -311,6 +317,7 @@ int main ()
     examplePipeline5.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
     examplePipeline6.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
     examplePipeline7.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
+    examplePipeline8.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
     stwr_pipe.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
 #endif
 
@@ -499,6 +506,28 @@ int main ()
         examplePipeline6.registerHandlerAtStage<sparta::SchedulingPhase::Tick>
             (4, CREATE_SPARTA_HANDLER_WITH_OBJ(DummyClass, &dummyObj1, stage4_T_Handle0)));
 
+    /*
+     * examplePipeline8: Precedence Chain Setup per Stage
+     * stage[0]: handler (Tick)
+     * stage[1]: handler (Tick)
+     * stage[2]: handler (Tick)
+     */
+
+
+    // examplePipeline8 Stage[0] handler: Tick phase
+    EXPECT_NOTHROW(
+        examplePipeline8.registerHandlerAtStage<sparta::SchedulingPhase::Tick>
+            (0, CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(DummyClass, &dummyObj1, stage0_T_DataHandle, uint64_t)));
+
+    // examplePipeline8 Stage[1] handler: Tick phase
+    EXPECT_NOTHROW(
+        examplePipeline8.registerHandlerAtStage<sparta::SchedulingPhase::Tick>
+            (1, CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(DummyClass, &dummyObj1, stage1_T_DataHandle, uint64_t)));
+
+    // examplePipeline8 Stage[2] handler: Tick phase
+    EXPECT_NOTHROW(
+        examplePipeline8.registerHandlerAtStage<sparta::SchedulingPhase::Tick>
+            (2, CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(DummyClass, &dummyObj1, stage2_T_DataHandle, uint64_t)));
 
     rtn.enterConfiguring();
     rtn.enterFinalized();
@@ -1528,8 +1557,59 @@ int main ()
     ev_task5_update.schedule();
     sched.run(1, true);
 
+    // allow pipeline to drain
+    offset = cyc_cnt + 1;
+    while (cyc_cnt < examplePipeline1.capacity() + offset) {
+        std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
+        sched.run(1, true);
+    }
+    EXPECT_EQUAL(examplePipeline1.numValid(), 0);
+
     std::cout << "[FINISH] Pipeline UpdateEvent Test" << std::endl;
 
+    ////////////////////////////////////////////////////////////////////////////////
+    // Pipeline Data Event Handling Test
+    ////////////////////////////////////////////////////////////////////////////////
+
+    std::cout << "\n[START] Pipeline Data Event Handling Test\n";
+
+#ifndef TEST_MANUAL_UPDATE
+    examplePipeline8.performOwnUpdates();
+#endif
+
+    cyc_cnt = 0;
+
+
+    std::cout << "Append pipeline with data[=1000]\n";
+    EXPECT_NOTHROW(examplePipeline8.append(1000));
+
+    std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
+    runCycle(examplePipeline8, &sched);
+    EXPECT_EQUAL(examplePipeline8.numValid(), 1);
+    EXPECT_TRUE(examplePipeline8.isValid(0));
+
+
+    std::cout << "Append pipeline with data[=2000]\n";
+    EXPECT_NOTHROW(examplePipeline8.append(2000));
+
+    std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
+    runCycle(examplePipeline8, &sched);
+    EXPECT_EQUAL(examplePipeline8.numValid(), 2);
+    EXPECT_TRUE(examplePipeline8.isValid(0));
+    EXPECT_TRUE(examplePipeline8.isValid(1));
+
+
+    std::cout << "Append pipeline with data[=3000]\n";
+    EXPECT_NOTHROW(examplePipeline8.append(3000));
+
+    std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
+    runCycle(examplePipeline8, &sched);
+    EXPECT_EQUAL(examplePipeline8.numValid(), 3);
+    EXPECT_TRUE(examplePipeline8.isValid(0));
+    EXPECT_TRUE(examplePipeline8.isValid(1));
+    EXPECT_TRUE(examplePipeline8.isValid(2));
+
+    std::cout << "[FINISH] Pipeline Data Event Handling Test\n";
 
     rtn.enterTeardown();
 
