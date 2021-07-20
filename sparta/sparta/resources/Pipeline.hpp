@@ -299,13 +299,13 @@ namespace sparta
             if constexpr (std::is_same_v<EventT, PhasedPayloadEvent<DataT>>) {
                 sparta_assert(handler.argCount() == 1, "Expecting Sparta Handler with 1 data parameter!");
                 event_list.emplace_back(new EventT(es_,
-                                            "pev_stage_" + std::to_string(id) + "_" + std::to_string(event_list_at_stage_[id].size()),
+                                            "pev_" + name_ + "_stage_" + std::to_string(id) + "_" + std::to_string(event_list_at_stage_[id].size()),
                                             sched_phase,
                                             handler));
             } else {
                 sparta_assert(handler.argCount() == 0, "Expecting Sparta Handler with no data parameter!");
                 event_list.emplace_back(new EventT(es_,
-                                            "uev_stage_" + std::to_string(id) + "_" + std::to_string(event_list_at_stage_[id].size()),
+                                            "uev_" + name_ + "_stage_" + std::to_string(id) + "_" + std::to_string(event_list_at_stage_[id].size()),
                                             sched_phase,
                                             handler));
             }
