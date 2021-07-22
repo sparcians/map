@@ -631,6 +631,14 @@ namespace sparta
         }
 
         /*!
+         * \brief Is the pipe already appended data?
+         */
+        bool isAppended() const
+        {
+            return pipe_.isAppended();
+        }
+
+        /*!
          * \brief Modify a specific stage of the pipeline
          *
          * \param stage_id The stage number
@@ -757,6 +765,13 @@ namespace sparta
             for (uint32_t stage_id = 0; stage_id < num_stages_; stage_id++) {
                 flushStage(stage_id);
             }
+        }
+
+        /*!
+         * \brief Flush the data just appended
+         */
+        void flushAppend() {
+            pipe_.flushAppend();
         }
 
         /*!
