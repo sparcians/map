@@ -826,6 +826,10 @@ int main ()
 
     std::cout << "Cycle[" << cyc_cnt++ << "]:\n";
     EXPECT_NOTHROW(examplePipeline1.append(300));
+    EXPECT_EQUAL(examplePipeline1.isAppended(), true);
+    EXPECT_NOTHROW(examplePipeline1.flushAppend());
+    EXPECT_EQUAL(examplePipeline1.isAppended(), false);
+    EXPECT_NOTHROW(examplePipeline1.append(300));
     EXPECT_NOTHROW(examplePipeline1.invalidateStage(3));
     EXPECT_THROW(examplePipeline1.invalidateStage(1));
     runCycle(examplePipeline1, &sched);

@@ -266,6 +266,13 @@ public:
         return appendImpl_(std::move(data));
     }
 
+    //! Is the pipe already appended data?
+    bool isAppended() const
+    {
+        const PipeEntry & pe = pipe_[getPhysicalStage_(-1)];
+        return pe.data.isValid();
+    }
+
     //! Append data to the beginning of the Pipe
     void push_front (const DataT & data)
     {
