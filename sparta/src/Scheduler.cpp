@@ -48,7 +48,7 @@ Scheduler::Scheduler(const std::string& name, GlobalTreeNode* search_scope) :
     dag_group_count_(1),
     firing_group_count_(dag_group_count_ + 2),
     dag_finalized_(false),
-    current_tick_(1),
+    current_tick_(0), //init tick 0
     elapsed_ticks_(0),
     prev_wdt_tick_(0),
     wdt_period_ticks_(0),
@@ -234,7 +234,7 @@ void Scheduler::finalize()
         restartAt(0);
 
         // The scheduler always starts on tick 1.
-        current_tick_ = 1;
+        current_tick_ = 0; //init tick 0
         prev_wdt_tick_ = 0;
     }
 }

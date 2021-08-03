@@ -108,7 +108,7 @@ void generalTest()
     // Set up checkpointing (after tree finalization)
 
 
-    EXPECT_EQUAL(sched.getCurrentTick(), 1);
+    EXPECT_EQUAL(sched.getCurrentTick(), 0); //unfinalized sched at tick 0
 
 
     // CHECKPOINT: HEAD
@@ -146,6 +146,10 @@ void generalTest()
     std::cout << *rset << std::endl << std::endl;
 
     sched.finalize(); // Note that checkpoints could be created before this!
+
+    // proceed to tick 1, nothing should happen, but time advancement
+    sched.run(1, true, false);
+
     sched.run(10, true);
 
     // Scheduler's tick is zero-based
@@ -189,6 +193,8 @@ void generalTest()
     EXPECT_EQUAL(r2->read<uint32_t>(), 0x1); // r2 was not written between head and cp1
 
 
+    // proceed to tick 1, nothing should happen, but time advancement
+    sched.run(1, true, false);
 
     EXPECT_EQUAL(sched.getCurrentTick(), 1);
     sched.run(2, true);
@@ -267,6 +273,9 @@ void generalTest()
     memset(compare, 0x12, sizeof(buf));
     mem_if.read(0x100, 32, buf);
     EXPECT_TRUE(memcmp(buf, compare, 32) == 0); // Checkpoint did not work if value is 0xfff
+
+    // proceed to tick 1, nothing should happen, but time advancement
+    sched.run(1, true, false);
 
     EXPECT_EQUAL(sched.getCurrentTick(), 1);
 

@@ -114,6 +114,10 @@ void testBasicFunctionality()
     basic_scheduler.finalize();
     rtn.enterConfiguring();
     rtn.enterFinalized();
+
+    // proceed to tick 1, nothing should happen, but time advancement
+    basic_scheduler.run(1, true, false);
+
     basic_scheduler.run(1, true); // 1 -> 2
 
     EXPECT_EQUAL(handler.getCalledCount(), 0);
@@ -256,6 +260,8 @@ void testPrecedence()
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
+    // proceed to tick 1, nothing should happen, but time advancement
+    basic_scheduler.run(1, true, false);
 
     sc_uniq_event_second.schedule();
     sc_uniq_event_first.schedule();
@@ -308,6 +314,9 @@ void testPerformance()
     basic_scheduler.finalize();
     rtn.enterConfiguring();
     rtn.enterFinalized();
+
+    // proceed to tick 1, nothing should happen, but time advancement
+    basic_scheduler.run(1, true, false);
 
     for(uint32_t i = 0; i < 100000000; ++i) {
         uniq_event.schedule();

@@ -103,10 +103,13 @@ public:
 int main()
 {
     sparta::Scheduler sched;
-    EXPECT_TRUE(sched.getCurrentTick() == 1);
+    EXPECT_TRUE(sched.getCurrentTick() == 0); //sched not finalized, tick is 0 on init
     EXPECT_TRUE(sched.isRunning() == false);
     EXPECT_TRUE(sched.getElapsedTicks() == 0);
     sched.finalize();
+
+    // proceed to tick 1, nothing should happen, but time advancement
+    sched.run(1, true, false);
 
     sparta::tracker::StatePoolManager::getInstance().enableTracking();
     sparta::tracker::StatePoolManager::getInstance().setScheduler(&sched);

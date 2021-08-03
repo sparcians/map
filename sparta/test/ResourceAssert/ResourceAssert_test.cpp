@@ -147,9 +147,12 @@ int main()
         SimpleDevice::ParameterSet ps(&dummy);
         ps.foo = true;
 
-        EXPECT_TRUE(sched.getCurrentTick() == 1);
+        EXPECT_TRUE(sched.getCurrentTick() == 0); //unfinalized sched at tick 0
         EXPECT_TRUE(sched.isRunning() == 0);
         sched.finalize();
+
+        // proceed to tick 1, nothing should happen, but time advancement
+        sched.run(1, true, false);
 
         sched.run(100, true);
 
@@ -170,7 +173,7 @@ int main()
                                   "ResourceAssert_test.cpp', on line: 99 within TreeNode: top.bin (no clock associated) (no scheduler associated)");
 
         EXPECT_THROW_MSG_CONTAINS(BuzClass buz; buz.causeAssertion(),
-                                  "ResourceAssert_test.cpp', on line: 119 at cycle: 1 tick: 1");
+                                  "ResourceAssert_test.cpp', on line: 119 at cycle: 0 tick: 0");
 
         EXPECT_THROW_MSG_CONTAINS(BizClass biz,
                                   "0: Biz Assertion: in file:");

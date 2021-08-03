@@ -1,4 +1,4 @@
-Report "Report1" [0,1]
+Report "Report1" [0,0]
     top.core0.stats.s1 = 0.5
     stat1 = 2
     stat5 = 4

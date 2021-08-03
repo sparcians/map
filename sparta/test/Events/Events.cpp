@@ -76,7 +76,7 @@ void runEventsNegativeTests()
 {
     sparta::Scheduler scheduler;
     sparta::Clock clk("clock", &scheduler);
-    EXPECT_TRUE(scheduler.getCurrentTick() == 1);
+    EXPECT_TRUE(scheduler.getCurrentTick() == 0); //unfinalized sched at tick 0
     EXPECT_TRUE(scheduler.isRunning() == 0);
 
     sparta::RootTreeNode rtn;
@@ -124,7 +124,7 @@ int main()
     //Positive tests:
     sparta::Scheduler scheduler;
     sparta::Clock clk("clock", &scheduler);
-    EXPECT_TRUE(scheduler.getCurrentTick() == 1);
+    EXPECT_TRUE(scheduler.getCurrentTick() == 0); //unfinalized sched at tick 0
     EXPECT_TRUE(scheduler.isRunning() == 0);
 
     sparta::RootTreeNode rtn;
