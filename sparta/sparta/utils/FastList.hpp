@@ -23,7 +23,7 @@ namespace sparta::utils
 {
     /**
      * \class FastList
-     * \brief An alternative to std::list, about 3x faster
+     * \brief An alternative to std::list, about 70% faster
      * \tparam T The object to maintain
      *
      * This class is a container type that allows back emplacement and
@@ -33,11 +33,11 @@ namespace sparta::utils
      * new/delete of the Nodes, but reuses existing ones, performing
      * an inplace-new of the user's object.
      *
-     * Testing shows this class is 2.5x faster than using std::list.
+     * Testing shows this class is 70% faster than using std::list.
      * Caveats:
      *
      *  - The size of FastList is fixed to allow for optimization
-     *  - The API isn't as complete as typicaly STL container types
+     *  - The API isn't as complete as typical STL container types
      *
      */
     template <class T>
@@ -46,15 +46,6 @@ namespace sparta::utils
         struct Node
         {
             using NodeIdx = int;
-
-            // Stores the memory for an instance of 'T'.
-            // Use placement new to construct the object and
-            // manually invoke its dtor as necessary.
-            typename std::aligned_storage<sizeof(T), alignof(T)>::type type_storage;
-
-            Node(NodeIdx _index) :
-                index(_index)
-            {}
 
             // Where this node is in the vector
             const NodeIdx index;
@@ -65,6 +56,15 @@ namespace sparta::utils
 
             // Points to the previous element.
             NodeIdx prev = -1;
+
+            // Stores the memory for an instance of 'T'.
+            // Use placement new to construct the object and
+            // manually invoke its dtor as necessary.
+            typename std::aligned_storage<sizeof(T), alignof(T)>::type type_storage;
+
+            Node(NodeIdx _index) :
+                index(_index)
+            {}
         };
 
         typename Node::NodeIdx advanceNode_(typename Node::NodeIdx node_idx) const {
@@ -83,6 +83,11 @@ namespace sparta::utils
     public:
         using value_type = T; //!< Handy using
 
+        /**
+         * \class NodeIterator
+         * \brief The internal iterator type of FastList.  Use FastList<T>::[const_]iterator instead
+         *
+         */
         template<bool is_const = true>
         class NodeIterator // : public std::iterator<std::intput_iterator_tag, Node>
         {
@@ -98,27 +103,40 @@ namespace sparta::utils
                 node_idx_(iter.node_idx_)
             {}
 
+            /**
+             * \brief Determine if the iteartor is valid
+             * \return true if the iterator is valie
+             */
             bool isValid() const { return (node_idx_ != -1); }
 
+            //! Iterator dereference
             PtrIteratorType operator->()       {
                 assert(isValid());
                 return reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
             }
+
+            //! Iterator dereference (const)
             PtrIteratorType operator->() const {
                 assert(isValid());
                 return reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
             }
+
+            //! Iterator dereference
             RefIteratorType operator* ()       {
                 assert(isValid());
                 return *reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
             }
+
+            //! Iterator dereference (const)
             RefIteratorType operator* () const {
                 assert(isValid());
                 return *reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
             }
 
+            //! Get the index in the list where this iterator points
             int getIndex() const { return node_idx_; }
 
+            //! Move to the next iterator (pre)
             NodeIterator & operator++()
             {
                 assert(isValid());
@@ -126,6 +144,7 @@ namespace sparta::utils
                 return *this;
             }
 
+            //! Move to the next iterator (post)
             NodeIterator operator++(int)
             {
                 NodeIterator orig = *this;
@@ -134,18 +153,21 @@ namespace sparta::utils
                 return orig;
             }
 
+            //! Equality of iterator (not the underlying object)
             bool operator!=(const NodeIterator &rhs)
             {
                 return (rhs.flist_ != flist_) ||
                     (rhs.node_idx_ != node_idx_);
             }
 
-            NodeIterator& operator=(const NodeIterator &rhs) = default;
-            NodeIterator& operator=(      NodeIterator &&rhs) = default;
-
+            //! Equality of iterator (not the underlying object)
             bool operator==(const NodeIterator & node) const noexcept {
                 return (node.flist_ == flist_) && (node.node_idx_ == node_idx_);
             }
+
+            //! Assignments
+            NodeIterator& operator=(const NodeIterator &rhs) = default;
+            NodeIterator& operator=(      NodeIterator &&rhs) = default;
 
         private:
             friend class FastList<T>;
@@ -330,6 +352,11 @@ namespace sparta::utils
             return iterator(this, new_node.index);
         }
 
+        /**
+         * \brief emplace and object at the back
+         * \param args The arguments to the T constructor
+         * \return iterator of the emplaced item
+         */
         template<class ...ArgsT>
         iterator emplace_back(ArgsT&&...args) {
             sparta_assert(free_head_ != -1,
@@ -357,11 +384,14 @@ namespace sparta::utils
             return iterator(this, new_node.index);
         }
 
+        //! Pop the last element off of the list
         void pop_back() {
             sparta_assert(last_node_ != -1,
                           "Can't pop_back on an empty list");
             erase(iterator(this, last_node_));
         }
+
+        //! Pop the first element off of the list
         void pop_front() {
             sparta_assert(first_node_ != -1,
                           "Can't pop_front on an empty list");
