@@ -60,7 +60,7 @@ namespace sparta::utils
             // Stores the memory for an instance of 'T'.
             // Use placement new to construct the object and
             // manually invoke its dtor as necessary.
-            typename std::aligned_storage<sizeof(T), alignof(T)>::type type_storage;
+            std::aligned_storage_t<sizeof(T), alignof(T)> type_storage;
 
             Node(NodeIdx _index) :
                 index(_index)
