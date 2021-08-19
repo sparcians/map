@@ -466,6 +466,16 @@ public:
         return read(num_entries_ - 1);
     }
 
+    //! Read the data just appended; it will assert if
+    //! no data appended
+    const DataT & readAppendedData() const
+    {
+        const PipeEntry & pe = pipe_[getPhysicalStage_(-1)];
+        sparta_assert(pe.data.isValid(), "ERROR: In sparta::Pipe '" << name_
+                      << "' reading appended data is not valid");
+        return pe.data.getValue();
+    }
+
     //! Update the pipe -- shift data appended/invalidated
     void update () {
         sparta_assert(perform_own_updates_ == false,

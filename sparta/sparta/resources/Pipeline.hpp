@@ -639,6 +639,15 @@ namespace sparta
         }
 
         /*!
+         * \brief Get the data just appended; it will assert if
+         *        no data appended
+         */
+        const DataT& readAppendedData() const
+        {
+            return pipe_.readAppendedData();
+        }
+
+        /*!
          * \brief Modify a specific stage of the pipeline
          *
          * \param stage_id The stage number
