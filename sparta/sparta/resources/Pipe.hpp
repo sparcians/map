@@ -447,7 +447,7 @@ public:
     {
         const PipeEntry & pe = pipe_[getPhysicalStage_(stage)];
         sparta_assert(pe.data.isValid(), "ERROR: In sparta::Pipe '" << name_
-                    << "' read at stage " << stage << " is not valid");
+                      << "' read at stage " << stage << " is not valid");
         return pe.data.getValue();
     }
 
@@ -456,7 +456,7 @@ public:
     {
         PipeEntry & pe = pipe_[getPhysicalStage_(stage)];
         sparta_assert(pe.data.isValid(), "ERROR: In sparta::Pipe '" << name_
-                    << "' read at stage " << stage << " is not valid");
+                      << "' read at stage " << stage << " is not valid");
         return pe.data.getValue();
     }
 
@@ -466,10 +466,20 @@ public:
         return read(num_entries_ - 1);
     }
 
+    //! Read the data just appended; it will assert if
+    //! no data appended
+    const DataT & readAppendedData() const
+    {
+        const PipeEntry & pe = pipe_[getPhysicalStage_(-1)];
+        sparta_assert(pe.data.isValid(), "ERROR: In sparta::Pipe '" << name_
+                      << "' reading appended data is not valid");
+        return pe.data.getValue();
+    }
+
     //! Update the pipe -- shift data appended/invalidated
     void update () {
         sparta_assert(perform_own_updates_ == false,
-                    "HEY! You said you wanted the pipe to do it's own updates.  Liar.");
+                      "HEY! You said you wanted the pipe to do it's own updates.  Liar.");
         internalUpdate_();
     }
 
