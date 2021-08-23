@@ -1189,6 +1189,9 @@ namespace sparta
         {
             sparta_assert(ps, "Must construct parameter " << name << " with valid ParameterSet");
             param_attr_ = attr;
+            if(param_attr_ == ParameterAttribute::HIDDEN) {
+                markHidden(true);
+            }
             addToSet_(ps);
         }
 
@@ -2544,4 +2547,3 @@ namespace sparta
     }
 
 } // namespace sparta
-
