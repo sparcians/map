@@ -19,6 +19,7 @@
    * `conda activate sparta`
    * `cd $(git rev-parse --show-toplevel); mkdir release; cd release`
    * `cmake -DCMAKE_BUILD_TYPE=Release ..`
+     * If you're running newer versions of OS X and get compile errors, try using `CC=/usr/bin/clang CXX=/usr/bin/clang++ LD=/usr/bin/ld cmake -DCMAKE_BUILD_TYPE=Release ..` instead
    * `make`
 
 ## Example of Usage
