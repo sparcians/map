@@ -136,7 +136,7 @@ void generalTest()
     memset(buf, 0x34, sizeof(buf));
     mem_if.write(0x100, 32, buf);
     // NO CHANGE in r2 here // r2->write<uint32_t>(0x2);
-    FastCheckpointer::chkpt_id_t first_id;
+    FastCheckpointer::chkpt_id_t first_id = 0;
 
     EXPECT_NOTHROW(first_id = fcp.createCheckpoint());
 
@@ -206,7 +206,7 @@ void generalTest()
 
     r1->write<uint32_t>(0x39);
     r2->write<uint32_t>(0x3a);
-    FastCheckpointer::chkpt_id_t third_id;
+    FastCheckpointer::chkpt_id_t third_id = 0;
 
     EXPECT_NOTHROW(third_id = fcp.createCheckpoint());
 
