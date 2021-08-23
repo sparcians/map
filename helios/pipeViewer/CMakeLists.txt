@@ -16,7 +16,7 @@ set(SETUP_PY "${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core/setup.py")
 set(PY_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/build/core.so.built")
 
 add_custom_command(OUTPUT "${PY_OUTPUT}"
-		   COMMAND TARGETDIR=${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core ${PYTHON} ${SETUP_PY} build_ext --inplace
+		   COMMAND ${CMAKE_COMMAND} -E env CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} LD=${CMAKE_LINKER} TARGETDIR=${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core ${PYTHON} ${SETUP_PY} build_ext --inplace
                    COMMAND ${CMAKE_COMMAND} -E touch ${PY_OUTPUT}
                    DEPENDS ${SETUP_PY} "${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core/src/core.pyx"
                    )

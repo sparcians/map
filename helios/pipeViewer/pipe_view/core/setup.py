@@ -36,9 +36,6 @@ destination_dir = os.environ["TARGETDIR"]
 extension = os.environ.get("BUILD", '') # Required from caller for choosing an extension to build
 
 system_include_dirs = []
-# cython likes to do things like #include "string", so this fixes that
-if "clang" in os.environ.get("CC",""):
-    system_include_dirs.append(os.path.join(os.path.dirname(os.path.dirname(distutils.spawn.find_executable(os.environ["CC"]))), "include", "c++", "v1"))
 
 py_src_dir = Path(__file__).parent.resolve() / 'src'
 

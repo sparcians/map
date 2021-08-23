@@ -25,6 +25,9 @@ add_custom_command(OUTPUT transactiondb.sh
   REQUIRED_SPARTA_LIBS="sparta"
   LIB_SPARTA_BUILT_PATH="${MAP_BINARY_DIR}/sparta"
   CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
+  CC="${CMAKE_C_COMPILER}"
+  CXX="${CMAKE_CXX_COMPILER}"
+  LD="${CMAKE_LINKER}"
   python3 ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --inplace;' > transactiondb.sh && chmod +x transactiondb.sh
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/setup.py)
 
