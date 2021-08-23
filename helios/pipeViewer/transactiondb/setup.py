@@ -35,10 +35,6 @@ if 'TARGETDIR' not in os.environ:
 destination_dir = os.environ["TARGETDIR"]
 system_include_dirs = [a.strip('\\') for a in os.environ.get("SYSINCDIRS", None).split()]
 
-# cython likes to do things like #include "string", so this fixes that
-if "clang" in os.environ.get("CC",""):
-    system_include_dirs.append(join(dirname(dirname(spawn.find_executable(os.environ["CC"]))), "include", "c++", "v1"))
-
 sparta_base_dir = os.environ["SPARTA_BASE"]
 required_sparta_libs = os.environ['REQUIRED_SPARTA_LIBS'].split()
 required_sparta_libs = [x.lstrip('-l') for x in required_sparta_libs]
