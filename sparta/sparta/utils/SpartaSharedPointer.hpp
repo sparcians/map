@@ -308,19 +308,19 @@ namespace sparta
              * \param sp Pointer to the SpartaSharedPointer to "watch"
              */
             SpartaWeakPointer(const sparta::SpartaSharedPointer<PointerT> & sp) noexcept :
-                cnt_(sp.ref_count_)
+                wp_ref_cnt_(sp.ref_count_)
             {
-                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
-                    ++(cnt_->wp_count);
+                if(SPARTA_EXPECT_TRUE(nullptr != wp_ref_cnt_)) {
+                    ++(wp_ref_cnt_->wp_count);
                 }
             }
 
             //! Destroy (and detach) from a SpartaSharedPointer
             ~SpartaWeakPointer() {
-                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
-                    --(cnt_->wp_count);
-                    releaseRefCount_(cnt_);
-                    cnt_ = nullptr;
+                if(SPARTA_EXPECT_TRUE(nullptr != wp_ref_cnt_)) {
+                    --(wp_ref_cnt_->wp_count);
+                    releaseRefCount_(wp_ref_cnt_);
+                    wp_ref_cnt_ = nullptr;
                 }
             }
 
@@ -329,10 +329,10 @@ namespace sparta
              * \param orig The original to copy.  Both are valid
              */
             SpartaWeakPointer(const SpartaWeakPointer & orig) :
-                cnt_(orig.cnt_)
+                wp_ref_cnt_(orig.wp_ref_cnt_)
             {
-                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
-                    ++(cnt_->wp_count);
+                if(SPARTA_EXPECT_TRUE(nullptr != wp_ref_cnt_)) {
+                    ++(wp_ref_cnt_->wp_count);
                 }
             }
 
@@ -341,9 +341,9 @@ namespace sparta
              * \param orig The original to move.  The original is invalidated
              */
             SpartaWeakPointer(SpartaWeakPointer &&orig) :
-                cnt_(orig.cnt_)
+                wp_ref_cnt_(orig.wp_ref_cnt_)
             {
-                orig.cnt_ = nullptr;
+                orig.wp_ref_cnt_ = nullptr;
             }
 
             /**
@@ -352,14 +352,14 @@ namespace sparta
              */
             SpartaWeakPointer & operator=(const SpartaWeakPointer & orig)
             {
-                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
-                    --(cnt_->wp_count);
-                    releaseRefCount_(cnt_);
+                if(SPARTA_EXPECT_TRUE(nullptr != wp_ref_cnt_)) {
+                    --(wp_ref_cnt_->wp_count);
+                    releaseRefCount_(wp_ref_cnt_);
                 }
-                cnt_ = orig.cnt_;
+                wp_ref_cnt_ = orig.wp_ref_cnt_;
 
-                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
-                    ++(cnt_->wp_count);
+                if(SPARTA_EXPECT_TRUE(nullptr != wp_ref_cnt_)) {
+                    ++(wp_ref_cnt_->wp_count);
                 }
                 return *this;
             }
@@ -370,13 +370,13 @@ namespace sparta
              */
             SpartaWeakPointer & operator=(SpartaWeakPointer && orig)
             {
-                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
-                    --(cnt_->wp_count);
-                    releaseRefCount_(cnt_);
+                if(SPARTA_EXPECT_TRUE(nullptr != wp_ref_cnt_)) {
+                    --(wp_ref_cnt_->wp_count);
+                    releaseRefCount_(wp_ref_cnt_);
                 }
 
-                cnt_ = orig.cnt_;
-                orig.cnt_ = nullptr;
+                wp_ref_cnt_ = orig.wp_ref_cnt_;
+                orig.wp_ref_cnt_ = nullptr;
                 return *this;
             }
 
@@ -385,8 +385,8 @@ namespace sparta
              * \return The use count (the number of remaining SpartaSharedPointer)
              */
             long use_count() const noexcept {
-                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
-                    return (cnt_->count <= 0 ? 0 : cnt_->count);
+                if(SPARTA_EXPECT_TRUE(nullptr != wp_ref_cnt_)) {
+                    return (wp_ref_cnt_->count <= 0 ? 0 : wp_ref_cnt_->count);
                 }
                 return 0;
             }
@@ -396,8 +396,8 @@ namespace sparta
              * \return true if no SpartaSharedPointers are still alive
              */
             bool expired() const noexcept {
-                if(SPARTA_EXPECT_TRUE(nullptr != cnt_)) {
-                    return cnt_->count <= 0;
+                if(SPARTA_EXPECT_TRUE(nullptr != wp_ref_cnt_)) {
+                    return wp_ref_cnt_->count <= 0;
                 }
                 return true;
             }
@@ -407,12 +407,12 @@ namespace sparta
              * \return nullptr if the SpartaSharedPointer has expired; otherwise a locked version
              */
             SpartaSharedPointer<PointerT> lock() const noexcept {
-                return SpartaSharedPointer<PointerT>(cnt_);
+                return SpartaSharedPointer(wp_ref_cnt_, true);
             }
 
         private:
             //! Shared reference count between SpartaSharedPointer and SpartaWeakPointer
-            RefCount * cnt_ = nullptr;
+            RefCount * wp_ref_cnt_ = nullptr;
         };
 
 
@@ -478,19 +478,13 @@ namespace sparta
             }
         }
 
-        // Used by SpartaWeakPointer only
-        explicit SpartaSharedPointer(RefCount * cnt) :
+        // Used by SpartaWeakPointer and Allocator.  weak_alloc is
+        // true if from WP
+        explicit SpartaSharedPointer(RefCount * cnt, const bool weak_ptr = false) :
             ref_count_(cnt)
         {
-            if(SPARTA_EXPECT_TRUE(ref_count_ != nullptr)) {
-                ++ref_count_->count;
-            }
+            if(weak_ptr && ref_count_) { ++ref_count_->count; }
         }
-
-        // Used explicitly by the allocator only
-        // explicit SpartaSharedPointer(RefCount * block_ref_count) :
-        //     ref_count_(block_ref_count)
-        // { }
 
         RefCount * ref_count_ = nullptr;
 

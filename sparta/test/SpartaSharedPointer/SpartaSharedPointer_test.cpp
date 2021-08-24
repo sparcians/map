@@ -597,13 +597,10 @@ void testClassInteralUsage()
     class Foo {
     public:
         using FooPtrType = sparta::SpartaSharedPointer<Foo>;
-        using FooVecType = std::vector<Foo>;
 
         void setFoo (const FooPtrType & foo) { foo_ = foo; }
-        void setFoos(const FooVecType & foo) { foos_ = foo; }
 
     private:
-        FooVecType foos_;
         FooPtrType foo_;
     };
 
