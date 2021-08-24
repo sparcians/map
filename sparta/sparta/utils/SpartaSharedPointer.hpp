@@ -71,7 +71,7 @@ namespace sparta
      *
      * This class can be used independently, or more efficiently with
      * sparta::allocate_sparta_shared_pointer<T>.  See
-     * sparta::SpartaSharedPointer::SpartaSharedPointerAllocator for more information.
+     * sparta::SpartaSharedPointerAllocator for more information.
      */
     template <class PointerT>
     class SpartaSharedPointer

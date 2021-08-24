@@ -596,12 +596,20 @@ void testClassInteralUsage()
 {
     class Foo {
     public:
-        using FooPtrType = sparta::SpartaSharedPointer<Foo>;
+        using FooPtrType   = sparta::SpartaSharedPointer<Foo>;
+        using FooPtrWPType = sparta::SpartaSharedPointer<Foo>::SpartaWeakPointer;
 
-        void setFoo (const FooPtrType & foo) { foo_ = foo; }
+        void setFoo (const FooPtrType & foo) {
+            foo_ = foo;
+            foo_wp_ = foo;
+        }
 
+        FooPtrType getFoo() const {
+            return foo_wp_.lock();
+        }
     private:
         FooPtrType foo_;
+        FooPtrWPType foo_wp_;
     };
 
     Foo::FooPtrType fptr(new Foo);
@@ -609,6 +617,7 @@ void testClassInteralUsage()
         Foo f;
         f.setFoo(fptr);
         EXPECT_EQUAL(fptr.use_count(), 2);
+        EXPECT_EQUAL(f.getFoo().use_count(), 3);
     }
     EXPECT_EQUAL(fptr.use_count(), 1);
 }

@@ -18,7 +18,7 @@ namespace sparta
      * not* thread safe.  Do not expect it to work in a threaded
      * application where multiple threads are
      * allocating/deallocating with the same
-     * sparta::SpartaSharedPointerAllocator instance.
+     * sparta::SpartaSharedPointerAllocator<PointerT> instance.
      *
      * Also, the allocator *must outlive* any simulator
      * componentry that uses objects allocated by this allocator.
@@ -40,7 +40,7 @@ namespace sparta
      *      // Constructors and what-not...
      *
      *      // Allocators
-     *      using MyAllocator = sparta::SpartaSharedPointer<MyClassIUseALot>::SpartaSharedPointerAllocator;
+     *      using MyAllocator = sparta::SpartaSharedPointerAllocator<MyClassIUseALot>;
      *      MyAllocator my_allocator(100, 200);  // whatever params you chose
      * };
      *
@@ -94,8 +94,8 @@ namespace sparta
      * namespace mysimulator {
      *     const size_t max_blocks_allowed = 100;
      *     const size_t water_mark_complaining_point = 80;
-     *     sparta::SpartaSharedPointer<MyClassIUseALot>::
-     *         SpartaSharedPointerAllocator my_class_i_use_a_lot_allocator(max_blocks_allowed,
+     *     sparta::SpartaSharedPointerAllocator<MyClassIUseALot>
+                                            my_class_i_use_a_lot_allocator(max_blocks_allowed,
      *                                                                     water_mark_complaining_point);
      * }
      * \endcode
@@ -111,8 +111,8 @@ namespace sparta
      *     };
      *
      *     // The Allocator to use with the class
-     *     extern sparta::SpartaSharedPointer<MyClassIUseALot>::
-     *         SpartaSharedPointerAllocator my_class_i_use_a_lot_allocator;
+     *     extern sparta::SpartaSharedPointerAllocator<MyClassIUseALot>
+     *                                       my_class_i_use_a_lot_allocator;
      * }
      *
      * \endcode
@@ -139,12 +139,12 @@ namespace sparta
      * Go beyond that and the allocator will throw an exception
      * that it's "out of memory."  If the allocator hits the
      * watermark, it will warn that memory is dangerously close to
-     * being "used up."  Watermark much be less than or equal to
+     * being "used up."  Watermark must be less than or equal to
      * max_num_blocks.
      *
-     * The Alocator also keeps track of those objects in flight
+     * The Allocator also keeps track of those objects in flight
      * that have not returned to the allocator.  Using the call to
-     * SpartaSharedPointerAllocator::getOutstandingAllocatedObjects,
+     * SpartaSharedPointerAllocator<PointerT>::getOutstandingAllocatedObjects,
      * a modeler can determine which objects are still
      * outstanding, where they might be, and help debug the
      * situation.
