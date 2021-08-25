@@ -25,6 +25,7 @@
 #include "simdb/impl/sqlite/SQLiteConnProxy.hpp"
 #include "simdb/impl/hdf5/HDF5ConnProxy.hpp"
 #include "simdb/utils/uuids.hpp"
+#include "simdb/utils/ObjectQuery.hpp"
 
 #include "Fetch.hpp"
 #include "Decode.hpp"

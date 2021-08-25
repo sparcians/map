@@ -12,11 +12,9 @@
 #include <string>
 #include <vector>
 
-#include "sparta/functional/ArchData.hpp"
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/simulation/GlobalTreeNode.hpp"
 #include "sparta/log/NotificationSource.hpp"
-#include "sparta/app/SimulationInfo.hpp"
 #include "sparta/simulation/TreeNodePrivateAttorney.hpp"
 #include "sparta/kernel/PhasedObject.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
@@ -554,4 +552,3 @@ namespace sparta
     };
 
 } // namespace sparta
-
