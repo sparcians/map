@@ -295,7 +295,7 @@ void testWeakPointer()
     my_type_deleted = 0;
     sparta::SpartaSharedPointer<MyType> ptr(new MyType);
     sparta::SpartaSharedPointer<MyType> ptr2;
-    sparta::SpartaSharedPointer<MyType>::SpartaWeakPointer wp = ptr;
+    sparta::SpartaWeakPointer<MyType> wp = ptr;
 
     std::shared_ptr<MyType> sp_ptr(new MyType);
     std::shared_ptr<MyType> sp_ptr2;
@@ -327,7 +327,7 @@ void testWeakPointer()
         sparta::SpartaSharedPointer<MyType> inside_ptr(new MyType);
         wp = inside_ptr;
         EXPECT_FALSE(wp.expired());
-        sparta::SpartaSharedPointer<MyType>::SpartaWeakPointer wp2 = wp;
+        sparta::SpartaWeakPointer<MyType> wp2 = wp;
         EXPECT_FALSE(wp2.expired());
         EXPECT_EQUAL(wp2.use_count(), 1);
         EXPECT_EQUAL(wp.use_count(), 1);
@@ -364,7 +364,7 @@ void testWeakPointer()
     my_type_deleted = 0;
     ptr.reset(new MyType);
     wp = ptr;
-    sparta::SpartaSharedPointer<MyType>::SpartaWeakPointer wp2 = wp;
+    sparta::SpartaWeakPointer<MyType> wp2 = wp;
     EXPECT_EQUAL(my_type_deleted, 0);
     EXPECT_EQUAL(wp.use_count(), 1);
     EXPECT_EQUAL(ptr.use_count(), 1);
@@ -597,7 +597,7 @@ void testClassInteralUsage()
     class Foo {
     public:
         using FooPtrType   = sparta::SpartaSharedPointer<Foo>;
-        using FooPtrWPType = sparta::SpartaSharedPointer<Foo>::SpartaWeakPointer;
+        using FooPtrWPType = sparta::SpartaWeakPointer<Foo>;
 
         void setFoo (const FooPtrType & foo) {
             foo_ = foo;
