@@ -61,7 +61,7 @@ namespace sparta
      *    sparta::SpartaSharedPointer<int> ptr3(new int(10));
      *    sparta_assert(*ptr3 == 10);
      *
-     *    sparta::SpartaSharedPointer<int>::SpartaWeakPointer wp = ptr3;
+     *    sparta::SpartaWeakPointer<int> wp = ptr3;
      *    sparta_assert(false == wp.expired());
      *    sparta_assert(1 == wp.use_count());
      *    ptr3.reset();

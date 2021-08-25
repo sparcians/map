@@ -155,6 +155,7 @@
   sparta::SpartaException | \copybrief sparta::SpartaException &nbsp;
   SpartaExpBackoff.hpp | Macros for handling exponential backoff
   sparta::SpartaSharedPointer | \copybrief sparta::SpartaSharedPointer &nbsp;
+  sparta::SpartaWeakPointer | \copybrief sparta::SpartaWeakPointer &nbsp;
   sparta::SpartaSharedPointerAllocator | \copybrief sparta::SpartaSharedPointerAllocator &nbsp;
   sparta::SpartaTester | \copybrief sparta::SpartaTester &nbsp;
   sparta::StringManager | \copybrief sparta::StringManager &nbsp;
