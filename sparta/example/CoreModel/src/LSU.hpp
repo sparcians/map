@@ -16,6 +16,7 @@
 #include "sparta/pairs/SpartaKeyPairs.hpp"
 #include "sparta/simulation/State.hpp"
 #include "sparta/utils/SpartaSharedPointer.hpp"
+#include "sparta/utils/SpartaSharedPointerAllocator.hpp"
 
 #include "cache/TreePLRUReplacement.hpp"
 
@@ -192,7 +193,7 @@ namespace core_example
         };  // class MemoryAccessInfo
 
         // allocator for this object type
-        sparta::SpartaSharedPointer<MemoryAccessInfo>::SpartaSharedPointerAllocator memory_access_allocator;
+        sparta::SpartaSharedPointerAllocator<MemoryAccessInfo> memory_access_allocator;
 
         /*!
         * \class MemoryAccessInfoPairDef
@@ -309,7 +310,7 @@ namespace core_example
 
         };  // class LoadStoreInstInfo
 
-        sparta::SpartaSharedPointer<LoadStoreInstInfo>::SpartaSharedPointerAllocator load_store_info_allocator;
+        sparta::SpartaSharedPointerAllocator<LoadStoreInstInfo> load_store_info_allocator;
 
         /*!
         * \class LoadStoreInstInfoPairDef
