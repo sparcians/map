@@ -1,9 +1,14 @@
 // <SimulationInfo> -*- C++ -*-
 
+#include <rapidjson/rapidjson.h>
 
 #include "sparta/app/SimulationInfo.hpp"
 #include "simdb/ObjectManager.hpp"
 #include "simdb/utils/ObjectQuery.hpp"
+
+#include "rapidjson/document.h"
+#include "rapidjson/istreamwrapper.h"
+#include "rapidjson/stringbuffer.h"
 
 #ifndef SPARTA_VERSION
 #define SPARTA_VERSION "unknown"

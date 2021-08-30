@@ -10,7 +10,6 @@
 #pragma once
 
 #include <errno.h>
-#include <rapidjson/rapidjson.h>
 #include <cstdint>
 #include <unistd.h>
 #include <iostream>
@@ -28,9 +27,6 @@
 #include "sparta/utils/TimeManager.hpp"
 #include "sparta/utils/ValidValue.hpp"
 #include "sparta/utils/StringUtils.hpp"
-#include "rapidjson/document.h"
-#include "rapidjson/istreamwrapper.h"
-#include "rapidjson/stringbuffer.h"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/SpartaException.hpp"
 
