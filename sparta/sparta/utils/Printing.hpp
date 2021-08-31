@@ -101,7 +101,7 @@ namespace utils
      * \brief Converting a stl pair of intrinsic types (and std::string) to a
      * string
      * \tparam T first type in pair to stringize
-     * \tparam U second type in pair sto stringize
+     * \tparam U second type in pair to stringize
      * \param p pair to print (of type <T,U>)
      * \param base Base of displayed integers
      * \param string_quote Quote sequence for printing strings; defaults to no quoting
@@ -114,6 +114,29 @@ namespace utils
         std::ios_base::fmtflags old = setIOSFlags(out, base);
         out << stringize_value(p.first, base, string_quote) << ":"
             << stringize_value(p.second, base, string_quote);
+        out.setf(old);
+        return out.str();
+    }
+
+    /*!
+     * \brief Converting a stl 3-element tuple of intrinsic types (and std::string) to a
+     * string
+     * \tparam T first type in pair to stringize
+     * \tparam U second type in pair to stringize
+     * \tparam V third type in pair to stringize
+     * \param p tuple to print (of type <T,U,V>)
+     * \param base Base of displayed integers
+     * \param string_quote Quote sequence for printing strings; defaults to no quoting
+     * \return std::string of form "first:second"
+     */
+    template <class T, class U, class V>
+    inline std::string stringize_value(const std::tuple<T,U,V>& p, DisplayBase base=BASE_DEC,
+                                       const std::string& string_quote="") {
+        std::stringstream out;
+        std::ios_base::fmtflags old = setIOSFlags(out, base);
+        out << stringize_value(std::get<0>(p), base, string_quote) << ":"
+            << stringize_value(std::get<1>(p), base, string_quote) << ":"
+            << stringize_value(std::get<2>(p), base, string_quote);
         out.setf(old);
         return out.str();
     }
@@ -186,6 +209,14 @@ namespace std {
     template<class Ch, class T, class U, class Tr>
     inline std::basic_ostream<Ch,Tr>&
     operator<< (std::basic_ostream<Ch,Tr>& out, std::pair<T,U> const & p){
+        out << sparta::utils::stringize_value(p);
+        return out;
+    }
+
+    //! 3-element Tuple Printer
+    template<class Ch, class T, class U, class V, class Tr>
+    inline std::basic_ostream<Ch,Tr>&
+    operator<< (std::basic_ostream<Ch,Tr>& out, std::tuple<T,U,V> const & p){
         out << sparta::utils::stringize_value(p);
         return out;
     }
