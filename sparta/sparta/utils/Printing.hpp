@@ -119,24 +119,26 @@ namespace utils
     }
 
     /*!
-     * \brief Converting a stl 3-element tuple of intrinsic types (and std::string) to a
+     * \brief Converting a stl tuple of intrinsic types (and std::string) to a
      * string
-     * \tparam T first type in pair to stringize
-     * \tparam U second type in pair to stringize
-     * \tparam V third type in pair to stringize
-     * \param p tuple to print (of type <T,U,V>)
+     * \tparam I internal counter to iterate stl tuple, not supposed to be used by users
+     * \tparam Ts types of tuple
+     * \param t tuple to print
      * \param base Base of displayed integers
      * \param string_quote Quote sequence for printing strings; defaults to no quoting
-     * \return std::string of form "first:second"
+     * \return std::string of form "t[0]:t[1]:...:t[N-1]"
      */
-    template <class T, class U, class V>
-    inline std::string stringize_value(const std::tuple<T,U,V>& p, DisplayBase base=BASE_DEC,
+    template <size_t I = 0, class... Ts>
+    inline std::string stringize_value(const std::tuple<Ts...>& t, DisplayBase base=BASE_DEC,
                                        const std::string& string_quote="") {
         std::stringstream out;
         std::ios_base::fmtflags old = setIOSFlags(out, base);
-        out << stringize_value(std::get<0>(p), base, string_quote) << ":"
-            << stringize_value(std::get<1>(p), base, string_quote) << ":"
-            << stringize_value(std::get<2>(p), base, string_quote);
+        if constexpr (I == (sizeof...(Ts) - 1)) {
+            out << stringize_value(std::get<I>(t), base, string_quote);
+        } else {
+            out << stringize_value(std::get<I>(t), base, string_quote) << ":"
+                << stringize_value<I + 1>(t, base, string_quote);
+        }
         out.setf(old);
         return out.str();
     }
@@ -213,11 +215,11 @@ namespace std {
         return out;
     }
 
-    //! 3-element Tuple Printer
-    template<class Ch, class T, class U, class V, class Tr>
+    //! Tuple Printer
+    template<class Ch, class... Ts, class Tr>
     inline std::basic_ostream<Ch,Tr>&
-    operator<< (std::basic_ostream<Ch,Tr>& out, std::tuple<T,U,V> const & p){
-        out << sparta::utils::stringize_value(p);
+    operator<< (std::basic_ostream<Ch,Tr>& out, std::tuple<Ts...> const & t){
+        out << sparta::utils::stringize_value(t);
         return out;
     }
 }
