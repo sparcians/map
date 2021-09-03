@@ -121,24 +121,18 @@ namespace utils
     /*!
      * \brief Converting a stl tuple of intrinsic types (and std::string) to a
      * string
-     * \tparam I internal counter to iterate stl tuple, not supposed to be used by users
      * \tparam Ts types of tuple
      * \param t tuple to print
      * \param base Base of displayed integers
      * \param string_quote Quote sequence for printing strings; defaults to no quoting
      * \return std::string of form "t[0]:t[1]:...:t[N-1]"
      */
-    template <size_t I = 0, class... Ts>
+    template <class... Ts>
     inline std::string stringize_value(const std::tuple<Ts...>& t, DisplayBase base=BASE_DEC,
                                        const std::string& string_quote="") {
         std::stringstream out;
         std::ios_base::fmtflags old = setIOSFlags(out, base);
-        if constexpr (I == (sizeof...(Ts) - 1)) {
-            out << stringize_value(std::get<I>(t), base, string_quote);
-        } else {
-            out << stringize_value(std::get<I>(t), base, string_quote) << ":"
-                << stringize_value<I + 1>(t, base, string_quote);
-        }
+        stringize_tuple(out, t, base, string_quote, std::index_sequence_for<Ts...>{});
         out.setf(old);
         return out.str();
     }
@@ -192,6 +186,15 @@ namespace utils
         const T& val = (const T&)e;
         v.push_back(val);
         return v;
+    }
+
+    //! Helper for printing STL tuple
+    template <class T, std::size_t... Is>
+    inline void stringize_tuple(std::stringstream& ss,
+                                const T& t, DisplayBase base,
+                                const std::string& string_quote,
+                                std::index_sequence<Is...>) {
+        ((ss << (Is == 0 ? "" : ":") << stringize_value(std::get<Is>(t), base, string_quote)), ...);
     }
 
 } // namespace utils
