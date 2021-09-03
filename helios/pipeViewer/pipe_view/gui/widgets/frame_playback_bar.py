@@ -70,12 +70,8 @@ class FramePlaybackBar(wx.Panel):
         self.__accum_play_cycle_fraction = None # Cumulative advance time across multiple cycles
         self.__slider_hooked = False # Is user controlling the slider (True prevents auto-updates to the slider)
 
-        # Fonts & Colors
+        # Colors
 
-        self.__fnt_tiny = wx.Font(ScaleFont(12), wx.NORMAL, wx.NORMAL, wx.NORMAL)
-        self.__fnt_bold_med = wx.Font(ScaleFont(12), wx.NORMAL, wx.NORMAL, wx.BOLD)
-        self.__fnt = wx.Font(ScaleFont(12), wx.NORMAL, wx.NORMAL, wx.NORMAL)
-        self.SetFont(self.__fnt)
         self.__med_blue = wx.Colour(0, 0, 220)
 
         # Controls
@@ -108,7 +104,6 @@ class FramePlaybackBar(wx.Panel):
         self.__drop_clock.SetToolTip('Current clock domain. This dictates the units in which this ' \
                                            'frame prints time. Playback and step controls will operate ' \
                                            'on this clock domain. Select any clock domain from the list.')
-        self.__drop_clock.SetFont(self.__fnt)
         # self.__drop_clock.SetValue(ClockManager.HYPERCYCLE_CLOCK_NAME)
         self.__drop_clock.SetSelection(0)
 
@@ -118,12 +113,10 @@ class FramePlaybackBar(wx.Panel):
         self.__static_curcycle = wx.StaticText(self, wx.ID_ANY, size = (90, -1))
         self.__static_curcycle.SetToolTip(curtime_msg)
         self.__static_curcycle.SetForegroundColour(self.__med_blue)
-        self.__static_curcycle.SetFont(self.__fnt_bold_med)
 
         self.__static_curtick = wx.StaticText(self, wx.ID_ANY, size = (90, -1))
         self.__static_curtick.SetToolTip(curtime_msg)
         self.__static_curtick.SetForegroundColour(self.__med_blue)
-        self.__static_curtick.SetFont(self.__fnt_tiny)
 
         PLAYBACK_BUTTON_WIDTH = 40
         self.__btn_rw_hold = ShyButton(self, wx.ID_ANY, '<<', size = (PLAYBACK_BUTTON_WIDTH, -1))
@@ -170,6 +163,9 @@ class FramePlaybackBar(wx.Panel):
         self.__btn_playpause.SetToolTip('Automatically steps through cycles (in the current clock domain) at ' \
                                               'the rate (positive or negative) specified by the "cyc/sec" ' \
                                               'spin-control beside this button')
+
+        # Setup Fonts
+        self.UpdateFontSize()
 
         # Event Bindings
 
@@ -854,6 +850,41 @@ class FramePlaybackBar(wx.Panel):
     # # Sets focus to the jump-to-time text entry box
     def FocusJumpBox(self):
         self.__txt_goto.SetFocus()
+
+    # # Gets the global settings object
+    def GetSettings(self):
+        return self.__parent.GetSettings()
+
+    # # Updates font sizes for all of the controls
+    def UpdateFontSize(self):
+        self.__fnt_tiny = wx.Font(ScaleFont(self.GetSettings().playback_font_size), wx.NORMAL, wx.NORMAL, wx.NORMAL)
+        self.__fnt_bold_med = wx.Font(ScaleFont(self.GetSettings().playback_font_size), wx.NORMAL, wx.NORMAL, wx.BOLD)
+        self.__fnt = wx.Font(ScaleFont(self.GetSettings().playback_font_size), wx.NORMAL, wx.NORMAL, wx.NORMAL)
+        self.__fnt_hl = self.__fnt.Underlined()
+
+        self.SetFont(self.__fnt)
+        self.__drop_clock.SetFont(self.__fnt)
+        self.__static_curcycle.SetFont(self.__fnt_bold_med)
+        self.__static_curtick.SetFont(self.__fnt_tiny)
+        self.__hl_start.SetFont(self.__fnt_hl)
+        self.__hl_end.SetFont(self.__fnt_hl)
+        self.__btn_rw_hold.SetFont(self.__fnt)
+        self.__btn_back30.SetFont(self.__fnt)
+        self.__btn_back10.SetFont(self.__fnt)
+        self.__btn_back3.SetFont(self.__fnt)
+        self.__btn_back1.SetFont(self.__fnt)
+        self.__btn_forward1.SetFont(self.__fnt)
+        self.__btn_forward3.SetFont(self.__fnt)
+        self.__btn_forward10.SetFont(self.__fnt)
+        self.__btn_forward30.SetFont(self.__fnt)
+        self.__btn_ff_hold.SetFont(self.__fnt)
+        self.__txt_goto.SetFont(self.__fnt)
+        self.__btn_goto.SetFont(self.__fnt)
+        self.__static_playback_speed_units.SetFont(self.__fnt)
+        self.__spin_playback_speed.SetFont(self.__fnt)
+        self.__btn_playpause.SetFont(self.__fnt)
+
+        self.Layout()
 
 
 # # A button which does not accept focus

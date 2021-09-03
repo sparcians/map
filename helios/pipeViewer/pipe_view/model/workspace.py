@@ -280,9 +280,17 @@ class Workspace:
     ## Updates settings and propagates them to the rest of the model if necessary
     def UpdateSettings(self, new_settings):
         self.__settings.update(new_settings)
+        update_funcs = []
         if 'layout_font_size' in new_settings:
+            update_funcs.append(lambda f: f().GetCanvas().UpdateFontSize())
+
+        if 'playback_font_size' in new_settings:
+            update_funcs.append(lambda f: f().GetPlaybackPanel().UpdateFontSize())
+
+        if update_funcs:
             for f in self.__frames:
-                f().GetCanvas().UpdateFontSize()
+                for fn in update_funcs:
+                    fn(f)
 
     ## Cleanup resources at shutdown
     def Cleanup(self):

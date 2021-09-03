@@ -2,13 +2,14 @@ import json
 import os
 import sys
 from gui.autocoloring import BrushRepository
-from gui.font_utils import GetDefaultFontSize
+from gui.font_utils import GetDefaultFontSize, GetDefaultControlFontSize
 
 ## Stores settings in a JSON file in the user's config directory so that they can be persisted across runs
 class ArgosSettings(object):
     __DEFAULT_CONFIG = {
         'layout_font_size': GetDefaultFontSize(),
         'hover_font_size': GetDefaultFontSize(),
+        'playback_font_size': GetDefaultControlFontSize(),
         'palette': 'default',
         'palette_shuffle': 'default'
     }

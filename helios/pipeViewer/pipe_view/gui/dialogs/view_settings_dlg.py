@@ -16,6 +16,13 @@ class ViewSettingsDialog(wx.Dialog):
                 'type': 'spin',
                 'ctrl': None
             }
+        ),
+        ('playback_font_size',
+            {
+                'label': 'Playback Bar Font Size',
+                'type': 'spin',
+                'ctrl': None
+            }
         )
     ))
 
