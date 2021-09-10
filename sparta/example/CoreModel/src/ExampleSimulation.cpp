@@ -1199,6 +1199,7 @@ void ExampleSimulator::ExampleController::terminate_(const sparta::app::Simulati
 {
     std::cout << "  [control] Controller TERMINATE method has been called for simulation '"
               << sim->getSimName() << "'" << std::endl;
+    const_cast<sparta::Scheduler*>(sim->getScheduler())->stopRunning();
 }
 
 void ExampleSimulator::ExampleController::customEatCallback_()

@@ -108,6 +108,7 @@ namespace core_example
             info_logger_ << "Completing inst: " << ex_inst;
         }
 
+        ++total_insts_executed_;
         ex_inst->setStatus(ExampleInst::Status::COMPLETED);
         // We're not busy anymore
         unit_busy_ = false;

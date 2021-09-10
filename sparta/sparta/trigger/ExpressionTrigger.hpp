@@ -741,7 +741,16 @@ private:
             this->tryAddCounterTrigger_(expression);
 
         if (!valid) {
-            throw SpartaException("The following trigger expression could not be parsed: '") << expression << "'";
+            SpartaException e("The following trigger expression could not be parsed: '");
+            e << expression << "'\nPossible Reasons:\n";
+            e << "\tLeft hand side is not a NotificationSource\n";
+            e << "\tLeft hand side is not a Reference back to an defined expression\n";
+            e << "\tLeft hand side is not a StatisticDef\n";
+            e << "\tLeft hand side is not a ContextCounter\n";
+            e << "\tLeft hand side is not a Counter\n";
+            e << "\tLeft hand side is not found in the simulation tree\n";
+            e << "\tOther:  Is the trigger expression private?\n";
+            throw e;
         }
 
         ++waiting_on_;
@@ -1796,4 +1805,3 @@ inline bool operator!=(const ExpressionTrigger::ExpressionTriggerInternals & int
 
 } // namespace trigger
 } // namespace sparta
-
