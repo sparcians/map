@@ -965,8 +965,8 @@ uint32_t TreeNode::findImmediateChildren_(std::regex& expr,
                                           std::vector<std::vector<std::string>>& replacements,
                                           bool allow_private) {
     uint32_t num_found = 0;
-    for(ChildNameMapping::reference chp : names_){
-
+    for(ChildNameMapping::reference chp : names_)
+    {
         std::vector<std::string> replaced; // Replacements per name
         if(identityMatchesPattern_(chp.first, expr, replaced)){
             TreeNode* child = chp.second;
@@ -976,8 +976,11 @@ uint32_t TreeNode::findImmediateChildren_(std::regex& expr,
                 if (consider_child)
                 {
                     ++num_found;
-                    found.push_back(child);
-                    replacements.push_back(replaced);
+                    // Can already be added/found if an alias matched
+                    if(std::find(found.begin(), found.end(), child) == found.end()) {
+                        found.push_back(child);
+                        replacements.push_back(replaced);
+                    }
                 }
 
             }
@@ -1008,8 +1011,10 @@ uint32_t TreeNode::findImmediateChildren_(std::regex& expr,
             {
                 if(child){ // Ensure child is not null (e.g. grouping)
                     ++num_found;
-                    found.push_back(child);
-                    replacements.push_back(replaced);
+                    if(std::find(found.begin(), found.end(), child) == found.end()) {
+                        found.push_back(child);
+                        replacements.push_back(replaced);
+                    }
                 }
             }
         }
@@ -1098,7 +1103,8 @@ bool TreeNode::locationMatchesPattern(const std::string& pattern,
 
 TreeNode* TreeNode::getChild_(const std::string& name,
                               bool must_exist,
-                              bool private_also) {
+                              bool private_also)
+{
     incrementGetChildCount_(name);
 
     size_t name_pos = 0;
@@ -1106,8 +1112,8 @@ TreeNode* TreeNode::getChild_(const std::string& name,
     if(name.size() == 0){
         return this;
     }
-    while(node != nullptr && name_pos != std::string::npos){
-
+    while(node != nullptr && name_pos != std::string::npos)
+    {
         std::string immediate_child_name;
         immediate_child_name = getNextName(name, name_pos);
 
@@ -1794,8 +1800,7 @@ void TreeNode::addChild_(TreeNode* child, bool inherit_phase) {
         }
 
         if(child->getGroup().size() > 0){ // Group may be empty string
-            // Ignore group mappings for now
-            //addChildNameMapping_(child->getGroup(), 0);
+            addChildNameMapping_(child->getGroup() + std::to_string(child->getGroupIdx()), child);
         }
 
         // Connect child to parent.
@@ -1979,7 +1984,8 @@ TreeNode::getImmediateChildByIdentity_(const std::string& name,
                                        bool must_exist)
 {
     ChildNameMapping::iterator it = names_.find(name);
-    if(it == names_.end()){
+    if(it == names_.end())
+    {
         if(false == must_exist){
             return nullptr;
         }
