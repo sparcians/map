@@ -1983,8 +1983,13 @@ TreeNode*
 TreeNode::getImmediateChildByIdentity_(const std::string& name,
                                        bool must_exist)
 {
-    ChildNameMapping::iterator it = names_.find(name);
-    if(it == names_.end())
+    // What's in a name?  The name could be an alias or the actual
+    // TreeNode.  Look for the actual TreeNode name first, then return
+    // the next alias.
+    const auto it = names_.equal_range(name);
+
+    // No match
+    if(it.first == it.second)
     {
         if(false == must_exist){
             return nullptr;
@@ -2000,23 +2005,41 @@ TreeNode::getImmediateChildByIdentity_(const std::string& name,
             << name << "\" in node \"" << getLocation() << "\". Valid names are:\n"
             << ss.str();
     }
-    if(nullptr == it->second){
-        if(false == must_exist){
-            return nullptr;
+    else
+    {
+        for(auto item = it.first; item != it.second; ++item)
+        {
+            if(item->first == name) {
+                if(nullptr != item->second) {
+                    return item->second;
+                }
+            }
         }
-        throw SpartaException("name \"")
-            << name << "\" resolved to a group (not a child) in node \""
-            << getLocation() << "\"";
     }
-    return it->second;
+
+    if(false == must_exist){
+        return nullptr;
+    }
+
+    throw SpartaException("name \"")
+        << name << "\" resolved to a group (not a child) in node \""
+        << getLocation() << "\"";
+
+    return nullptr;
 }
 
 const TreeNode*
 TreeNode::getImmediateChildByIdentity_(const std::string& name,
                                        bool must_exist) const
 {
-    ChildNameMapping::const_iterator it = names_.find(name);
-    if(it == names_.end()){
+    // What's in a name?  The name could be an alias or the actual
+    // TreeNode.  Look for the actual TreeNode name first, then return
+    // the next alias.
+    const auto it = names_.equal_range(name);
+
+    // No match
+    if(it.first == it.second)
+    {
         if(false == must_exist){
             return nullptr;
         }
@@ -2031,15 +2054,27 @@ TreeNode::getImmediateChildByIdentity_(const std::string& name,
             << name << "\" in node \"" << getLocation() << "\". Valid names are:\n"
             << ss.str();
     }
-    if(nullptr == it->second){
-        if(false == must_exist){
-            return nullptr;
+    else
+    {
+        for(auto item = it.first; item != it.second; ++item)
+        {
+            if(item->first == name) {
+                if(nullptr != item->second) {
+                    return item->second;
+                }
+            }
         }
-        throw SpartaException("name \"")
-            << name << "\" resolved to a group (not a child) in node \""
-            << getLocation() << "\"";
     }
-    return it->second;
+
+    if(false == must_exist){
+        return nullptr;
+    }
+
+    throw SpartaException("name \"")
+        << name << "\" resolved to a group (not a child) in node \""
+        << getLocation() << "\"";
+
+    return nullptr;
 }
 
 void TreeNode::ensureNoParent_(const char* action) {
@@ -2930,7 +2965,7 @@ void TreeNode::addChildNameMapping_(const std::string& name,
                   "Name of child identifier cannot be empty string. Parent is "
                   << getLocation());
 
-    names_[name] = child;
+    names_.emplace(name, child);
 }
 
 } // namespace sparta
