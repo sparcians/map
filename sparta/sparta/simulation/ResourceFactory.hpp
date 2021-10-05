@@ -108,20 +108,6 @@ namespace sparta
         virtual void deleteSubtree(sparta::ResourceTreeNode* n) = 0;
 
         /*!
-         * \brief Hook for additional building on ResourceTreeNode constructing
-         *
-         * Tap into hook for creating more resource nodes, subtrees, etc.
-         */
-        virtual void onBuilding(sparta::ResourceTreeNode* n) = 0;
-
-        /*!
-         * \brief Hook for additional configuring on resource node configure.
-         *
-         * Tap into hook to configure any resources.
-         */
-        virtual void onConfiguring(sparta::ResourceTreeNode* n) = 0;
-
-        /*!
          * \brief Instanitates a new Resource of the type described by this
          * factory.
          * \param node TreeNode with which this resource will be associated. At
@@ -253,15 +239,6 @@ namespace sparta
         }
 
         virtual void deleteSubtree(sparta::ResourceTreeNode* n) override {
-            (void) n;
-        }
-
-        // This can easily be overridden for additional building or configuring
-        virtual void onBuilding(sparta::ResourceTreeNode* n) override {
-            (void) n;
-        }
-
-        virtual void onConfiguring(sparta::ResourceTreeNode* n) override {
             (void) n;
         }
 
