@@ -12,8 +12,8 @@ platforms like Gem5 and SystemC while providing more abstract and
 flexible methodologies for quick analysis and study.
 
 MAP is broken into two parts:
-1. **Sparta** -- A set of C++ classes (C++17) used to construct, bind, and run full simulation designs and produce performance analysis data in text form, database form, or HDF5
-1. **Helios** -- A set of python tools used to visualize, analyze, and deep dive data generated for a Sparta-built simulator
+1. **Sparta** -- A set of C++ classes (C++17) used to construct, bind, and run full simulation designs and produce performance analysis data in text form, database form, or HDF5. It's a modeling framework.
+1. **Helios** -- A set of python tools used to visualize, analyze, and deep dive data generated for a Sparta-built simulator.  It's a visualization toolset.
 
 ## Current build status
 
