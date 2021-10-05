@@ -376,7 +376,7 @@ namespace sparta
 
             //Hook for additional building is needed
             res_fact_->onBuilding(this);
-
+            
             std::string res_type = res_fact_->getResourceType();
             if(res_type == ""){
                 throw SpartaException("resource type for ResourceFactory associated with ")
