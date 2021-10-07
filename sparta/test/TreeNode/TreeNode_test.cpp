@@ -717,7 +717,7 @@ int main()
         EXPECT_THROW(b.getChildren().at(1)); // No dynamically created child YET
         std::vector<std::string> idents;
         a.getChildrenIdentifiers(idents);
-        EXPECT_EQUAL(idents.size(), (size_t)4);
+        EXPECT_EQUAL(idents.size(), (size_t)7);
         std::cout << "A idents: " << idents << std::endl;
         EXPECT_NOTHROW(a.getAs<sparta::TreeNode*>());
         EXPECT_NOTHROW(a.getAs<sparta::TreeNode>());
@@ -844,8 +844,8 @@ int main()
 
         // Find all children
         found.clear();
-        EXPECT_EQUAL((a.findChildren("*", found)), (uint32_t)4);
-        EXPECT_EQUAL(found.size(), (size_t)4);
+        EXPECT_EQUAL((a.findChildren("*", found)), (uint32_t)3);
+        EXPECT_EQUAL(found.size(), (size_t)3);
         EXPECT_TRUE(std::find(found.begin(), found.end(), &b) != found.end());
         EXPECT_TRUE(std::find(found.begin(), found.end(), &b1) != found.end()); // Should be found twice
         EXPECT_TRUE(std::find(found.begin(), found.end(), (sparta::TreeNode*)a.getParameterSet()) != found.end());
