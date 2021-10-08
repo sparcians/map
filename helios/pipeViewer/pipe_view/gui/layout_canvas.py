@@ -470,8 +470,8 @@ class Layout_Canvas(wx.ScrolledWindow):
     def __CalcCanvasSize(self):
 
         l, t, r, b = self.__context.GetElementExtents()
-        r *= self.__canvas_scale * self.__font_scale[0]
-        b *= self.__canvas_scale * self.__font_scale[1]
+        r *= self.__canvas_scale
+        b *= self.__canvas_scale
 
         width = max(self.MIN_WIDTH, r + self.__AUTO_CANVAS_SIZE_MARGIN)
         height = max(self.MIN_HEIGHT, b + self.__AUTO_CANVAS_SIZE_MARGIN)
@@ -490,7 +490,7 @@ class Layout_Canvas(wx.ScrolledWindow):
     # # Update the scrollbars based on a new canvas size
     #  Restores prior scroll offsets
     #  Uses instance attributes __SCROLL_RATE, __WIDTH, __HEIGHT
-    def __UpdateScrollbars(self):
+    def __UpdateScrollbars(self, force_x = None, force_y = None):
         sr = self.scrollrate
 
         w_pix, h_pix = self.GetClientSize()
@@ -503,12 +503,22 @@ class Layout_Canvas(wx.ScrolledWindow):
         if percent_bar_y > 1:
             percent_bar_y = 1
 
+        if force_x is not None:
+            x_scroll = force_x
+        else:
+            x_scroll = x * x_bound * (1 - percent_bar_x)
+
+        if force_y is not None:
+            y_scroll = force_y
+        else:
+            y_scroll = y * y_bound * (1 - percent_bar_y)
+
         self.SetScrollbars(sr,
                            sr,
                            x_bound,
                            y_bound,
-                           x * x_bound * (1 - percent_bar_x),
-                           y * y_bound * (1 - percent_bar_y),
+                           x_scroll,
+                           y_scroll,
                            True)
 
     # # Regenerates the gridlines based on __WIDTH and __HEIGHT
@@ -532,6 +542,7 @@ class Layout_Canvas(wx.ScrolledWindow):
         self.__font_scale = (cur_font_w / default_font_w, cur_font_h / default_font_h)
         for e in self.__context.GetElementPairs():
             e.GetElement().SetProperty('scale_factor', self.__font_scale)
+        self.__context.UpdateElementExtents()
 
     def UpdateFontSize(self):
         old_font = self.__fnt_layout
@@ -540,5 +551,6 @@ class Layout_Canvas(wx.ScrolledWindow):
             self.__set_renderer_font = False
             self.__UpdateFontScaling()
             self.__CalcCanvasSize()
+            self.__UpdateScrollbars(force_x = 0, force_y = 0)
             self.__context.FullRedraw()
             self.FullUpdate()

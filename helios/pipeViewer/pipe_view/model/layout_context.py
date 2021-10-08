@@ -310,6 +310,11 @@ class Layout_Context(object):
     def GetElementPair(self, e):
         return self.__elements.GetPair(e)
 
+    def UpdateElementExtents(self):
+        self.__elements.UpdateElementBounds()
+        self.__extents = self.InvalidExtents()
+        self.GetElementExtents()
+
     def GetElementExtents(self):
         '''
         Returns the left,right,top,bottom extents of the layout based on what

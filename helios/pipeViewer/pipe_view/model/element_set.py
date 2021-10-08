@@ -265,3 +265,6 @@ class ElementSet:
             else:
                 self.__draw_set.append(pair)
                 ##print '  Appending to draw (2)'
+
+    def UpdateElementBounds(self):
+        self.__tree.UpdateBounds()

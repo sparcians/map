@@ -739,7 +739,6 @@ class ScheduleElement(MultiElement):
         update_bottom_right = update_box.GetBottomRight()
         sched_x = c_x
         sched_y = highest_y - yoff
-        scale = canvas.GetScale()
         sched_x_end = sched_x + c_w
         sched_y_end = sched_y + sched_height
         blit_x = max(sched_x, update_top_left[0])
