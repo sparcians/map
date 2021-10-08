@@ -253,7 +253,7 @@ namespace sparta
          * an ordered container (e.g. std::map) is required. A sorted contained
          * is probably desirable, but not required
          */
-        typedef std::map<std::string, TreeNode*> ChildNameMapping;
+        typedef std::multimap<std::string, TreeNode*> ChildNameMapping;
 
         /*!
          * \brief Index within a group
@@ -1505,7 +1505,7 @@ namespace sparta
         /*!
          * \brief Retrieves a child with this dotted path name
          * \note this is not a full recursive search. The child, if found, will
-         * be N levels below this node whrere N Is dependent on the number of
+         * be N levels below this node where N Is dependent on the number of
          * '.' tokens in the search string.
          * \param name path to child. This may be a single name or a dotted path
          * refering to a node several levels below this node.
@@ -1516,6 +1516,8 @@ namespace sparta
          * be found and must_exist==true, throws SpartaException. Otherwise
          * returns nullptr.
          * \note no pattern matching supported in this method
+         * \note if a name matches on both an alias and a TreeNode name,
+         * the TreeNode name will take precedence
          * \throw SpartaException if child is not found and must_exist==true
          *
          * Example:

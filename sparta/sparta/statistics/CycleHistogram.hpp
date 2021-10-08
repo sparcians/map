@@ -365,7 +365,8 @@ namespace sparta
             std::string weighted_total_str = "( " + std::to_string(lower_val_) + " * " + underflow_bin_->getName() + " )";
             std::string weighted_total_nonzero_str;
             std::string count0_statistic_str;
-            for (uint64_t i = 0; i < num_bins_; ++i) {
+            for (uint64_t i = 0; i < num_bins_; ++i)
+            {
                 if (end_val > upper_val_) {
                     end_val = upper_val_;
                 }
@@ -423,11 +424,11 @@ namespace sparta
                 }
 
                 bin_.emplace_back(sparta::CycleCounter(sset,
-                                                     str.str(),
-                                                     name.empty() ? std::string("cycle_count") : name, i,
-                                                     description + " histogram bin",
-                                                     sparta::Counter::COUNT_NORMAL,
-                                                     clk, visibility));
+                                                       str.str(),
+                                                       name.empty() ? std::string("cycle_count") : name, i,
+                                                       description + " histogram bin",
+                                                       sparta::Counter::COUNT_NORMAL,
+                                                       clk, visibility));
                 probabilities_.emplace_back(new StatisticDef(sset,
                                                              str.str() + "_probability",
                                                              str.str() + " bin probability",
