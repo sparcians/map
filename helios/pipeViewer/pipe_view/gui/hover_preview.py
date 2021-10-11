@@ -492,7 +492,7 @@ class HoverPreviewOptionsDialog(wx.Dialog):
     '''
 
     def __init__(self, parent, hover_preview):
-        wx.Dialog.__init__(self, parent, wx.NewId(), 'Hover Preview Options', size = (200, 300))
+        wx.Dialog.__init__(self, parent, wx.NewId(), 'Hover Preview Options')
 
         self.hover_preview = hover_preview
         self.checkOptions = {'start'      : wx.CheckBox(self, wx.NewId(), 'Start'),
@@ -511,14 +511,14 @@ class HoverPreviewOptionsDialog(wx.Dialog):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         for value in list(self.checkOptions.values()):
-            sizer.Add(value, 1, 0, 0)
+            sizer.Add(value, proportion=1, flag=wx.LEFT, border=5)
 
         done = wx.Button(self, wx.NewId(), 'Done')
 
         sizerbuttons = wx.BoxSizer(wx.HORIZONTAL)
-        sizerbuttons.Add(done, 2, 0, 0)
+        sizerbuttons.Add(done, proportion=2, flag=wx.ALL, border=5)
         self.__select = wx.Button(self, wx.NewId(), 'Select All')
-        sizerbuttons.Add(self.__select, 2, 0, 0)
+        sizerbuttons.Add(self.__select, proportion=2, flag=wx.ALL, border=5)
         sizer.Add(sizerbuttons)
         self.SetSizer(sizer)
         self.Bind(wx.EVT_BUTTON, self.OnSelect, self.__select)
@@ -527,6 +527,7 @@ class HoverPreviewOptionsDialog(wx.Dialog):
 
         # set current settings
         self.SetOptions()
+        self.Fit()
 
     # # Goes through check box elements and appends the checked keys to a list.
     def GetOptions(self):

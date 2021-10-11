@@ -16,6 +16,7 @@ from .dialogs.console_dialog import ConsoleDlg
 from .dialogs.select_layout_dlg import SelectLayoutDlg
 from .dialogs.translate_elements_dlg import TranslateElementsDlg
 from .dialogs.view_settings_dlg import ViewSettingsDialog
+from .dialogs.shortcut_help import ShortcutHelp
 
 # Name each ID by ID_MENU_SUBMENU_etc...
 ID_FILE_NEW = wx.NewId()
@@ -28,6 +29,8 @@ ID_FILE_SAVEAS = wx.NewId()
 ID_FILE_OPTIONS = wx.NewId()
 
 ID_HELP_ABOUT = wx.NewId()
+
+ID_SHORTCUT_HELP = wx.NewId()
 
 # Undo/Redo menu string templates.
 # Render as 'Undo [num available] (next action)\thotkey'
@@ -54,6 +57,7 @@ class Argos_Menu(wx.MenuBar):
 
         # keeps track of the last location a graph was imported from
         self.__last_loaded_graph_dir = None
+        self.__shortcut_help_dlg = None
 
         # Setting up the menu(s).
         filemenu = wx.Menu()
@@ -341,7 +345,8 @@ class Argos_Menu(wx.MenuBar):
 
         # Help
 
-        menuInfo = helpmenu.Append(wx.NewId(), "&Information", "Show information about the current frame and database.")
+        menuInfo = helpmenu.Append(wx.NewId(), "&Information", "Show information about the current frame and database")
+        menuShortcutsHelp = helpmenu.Append(wx.NewId(), "Shortcuts", "Show shortcut information")
         menuAbout = helpmenu.Append(ID_HELP_ABOUT, "&About", "Information about this program")
 
         # Creating the menubar.
@@ -495,6 +500,7 @@ class Argos_Menu(wx.MenuBar):
         self.__parent.Bind(wx.EVT_MENU, self.OnSelectAll, menuSelectAll)
         self.__parent.Bind(wx.EVT_MENU, self.OnInvertSelection, menuInvertSelection)
         self.__parent.Bind(wx.EVT_MENU, self.OnFrameInfo, menuInfo)
+        self.__parent.Bind(wx.EVT_MENU, self.OnShortcutsHelp, menuShortcutsHelp)
         self.__parent.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
         self.__parent.Bind(wx.EVT_MENU, self.OnRowLeft, menuRowLeft)
         self.__parent.Bind(wx.EVT_TOOL, self.OnRowLeft, self.toolbarRowLeft)
@@ -956,6 +962,10 @@ class Argos_Menu(wx.MenuBar):
         dlg = wx.MessageDialog(self, message, "Argos Frame-Specific Information", wx.OK)
         dlg.ShowModal()
         dlg.Destroy()
+
+    def OnShortcutsHelp(self, evt):
+        if not self.__shortcut_help_dlg:
+            self.__shortcut_help_dlg = ShortcutHelp(self.__parent, ID_SHORTCUT_HELP)
 
     def OnNewElement(self, evt):
         if self.__parent.GetCanvas().GetInputDecoder().GetEditMode():
