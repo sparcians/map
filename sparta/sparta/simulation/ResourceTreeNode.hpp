@@ -328,8 +328,8 @@ namespace sparta
          * \brief When the framework is entering the configuration phase
          */
         void onConfiguring_() override {
-            // Create subtree, which may want to look at parameters
-            res_fact_->createSubtree(this);
+            // Hook to configure mode, even call create subtree
+            res_fact_->onConfiguring(this);
         }
 
         /*!
@@ -373,6 +373,9 @@ namespace sparta
             params_ = res_fact_->createParameters(this);
             sparta_assert(params_ != 0); // Params must not be NULL
             params_->resetReadCounts(); // Reset read-counts to 0
+
+            //Hook for additional building is needed
+            res_fact_->onBuilding(this);
 
             std::string res_type = res_fact_->getResourceType();
             if(res_type == ""){

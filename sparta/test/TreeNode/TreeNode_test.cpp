@@ -423,6 +423,10 @@ public:
         new sparta::ResourceTreeNode(n, "leaf", "A leaf child ResourceTreeNode", &leaf_child_);
     }
 
+    virtual void onBuilding(sparta::ResourceTreeNode* n) override {
+        createSubtree(n);
+    }
+
     // Invoked at teardown of device tree at node n
     // Called for each instance of a ResourceTreeNode referring to this factory instance
     virtual void deleteSubtree(sparta::ResourceTreeNode* n) override {
