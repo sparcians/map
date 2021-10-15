@@ -34,22 +34,22 @@ namespace sparta
 
             // Touch way as LRU
             virtual void           touchLRU(uint32_t way) = 0;
-            virtual void           touchLRU(uint32_t way, std::vector<uint32_t> way_order) = 0; // user-defined way order
+            virtual void           touchLRU(uint32_t way, const std::vector<uint32_t>& way_order) = 0; // user-defined way order
     
             // Touch way as MRU
             virtual void           touchMRU(uint32_t way) = 0;
-            virtual void           touchMRU(uint32_t way, std::vector<uint32_t> way_order) = 0; // user-defined way order
+            virtual void           touchMRU(uint32_t way, const std::vector<uint32_t>& way_order) = 0; // user-defined way order
     
             // Lock way
             virtual void           lockWay(uint32_t way) = 0;
 
             // get the LRU way
             virtual uint32_t       getLRUWay() const = 0;
-            virtual uint32_t       getLRUWay(std::vector<uint32_t> way_order) = 0; // user-defined way order
+            virtual uint32_t       getLRUWay(const std::vector<uint32_t>& way_order) = 0; // user-defined way order
     
             // get the MRU way
             virtual uint32_t       getMRUWay() const = 0;
-            virtual uint32_t       getMRUWay(std::vector<uint32_t> way_order) = 0; // user-defined way order
+            virtual uint32_t       getMRUWay(const std::vector<uint32_t>& way_order) = 0; // user-defined way order
         protected:
             uint32_t num_ways_;
             uint32_t way_mask_;

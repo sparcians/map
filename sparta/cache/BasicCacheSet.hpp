@@ -205,7 +205,7 @@ namespace sparta
             */
             uint32_t findInvalidWay(const std::vector<uint32_t> &way_order) const
             {
-                sparta_assert(!way_order.empty(), "way_limit passed is empty");
+                sparta_assert(!way_order.empty(), "way_order passed is empty");
 
                 for ( auto i:way_order ) {
                     if ( !ways_[i].isValid() ) {

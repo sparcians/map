@@ -72,7 +72,7 @@ namespace sparta
                 return way;
             }
 
-            uint32_t getMRUWay(std::vector<uint32_t> way_order)
+            uint32_t getMRUWay(const std::vector<uint32_t>& way_order)
             {
                 sparta_assert(false, "Not implemented");
             }
@@ -90,7 +90,7 @@ namespace sparta
 
             }
 
-            uint32_t getLRUWay(std::vector<uint32_t> way_order)
+            uint32_t getLRUWay(const std::vector<uint32_t>& way_order)
             {
                 sparta_assert(false, "Not implemented");
             }
@@ -109,7 +109,7 @@ namespace sparta
                 }
             }
 
-            void touchMRU(uint32_t way, std::vector<uint32_t> way_order)
+            void touchMRU(uint32_t way, const std::vector<uint32_t>& way_order)
             {
                 sparta_assert(false, "Not implemented");
             }
@@ -126,7 +126,7 @@ namespace sparta
                 }
             }
 
-            void touchLRU(uint32_t way, std::vector<uint32_t> way_order)
+            void touchLRU(uint32_t way, const std::vector<uint32_t>& way_order)
             {
                 sparta_assert(false, "Not implemented");
             }
