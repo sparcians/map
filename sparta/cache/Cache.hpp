@@ -174,6 +174,12 @@ namespace sparta
                 return peekCacheSet(addr).findInvalidWay();
             }
 
+            // Search for invalid in user-defined order of ways.
+            uint32_t findInvalidWay(uint64_t addr, const std::vector<uint32_t>& way_order) const
+            {
+                return peekCacheSet(addr).findInvalidWay(way_order);
+            }
+
             uint32_t getNumWays() const {
                 return num_ways_;
             }
