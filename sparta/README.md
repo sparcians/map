@@ -58,7 +58,9 @@ open html/index.html
 
 All great projects have great documentation.  The Sparta team is striving to have the same, but there's always room for improvement.  There are presentations and online documentation being built, with a few ready for use.
 
-Specifically, start with the Doxygen.  After cloning the repo, ensure Doxygen and dot (part of the Graphviz tool suite) are installed.  Then `cd doc; make`.  On the Mac, type `open html/index.html` and peruse the documentation about the `SkeletalPipeline` and the `Core Example`.
+Specifically, start by generating your own Doxygen build or flip through the [online generated documentation](https://sparcians.github.io/map/).  
+
+To build your own copy, after cloning the repo, ensure Doxygen and dot (part of the Graphviz tool suite) are installed.  Then `cd doc; make`.  On the Mac, type `open html/index.html` and peruse the documentation about the `SkeletalPipeline` and the `Core Example`.
 
 ## Getting Sparta to build on MacOS X
 

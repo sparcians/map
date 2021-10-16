@@ -16,6 +16,9 @@ def GetMonospaceFont(size):
 def GetDefaultFontSize():
     return 11
 
+def GetDefaultControlFontSize():
+    return 12
+
 _DEFAULT_FONT = None
 def GetDefaultFont():
     global _DEFAULT_FONT
