@@ -36,13 +36,22 @@ namespace utils
 
         /**
          * \brief Construct with a valid starting value
-         * \param start The value to start with
+         * \param args The value to start with
+         *
+         * This constructor will _not_ be used when constructing with
+         * another sparta::ValidValue.  The const/non-const copy
+         * constructors below should/will be used instead
          */
         template<typename ...ArgsT>
         ValidValue(ArgsT&& ...args) :
             valid_(true),
             value_(std::forward<ArgsT>(args)...)
         {}
+
+        //! Allow copies of direct ValidValue -- non-const.  This is
+        //! to prevent the variatic template constructor from being
+        //! used when the rvalue is another ValidValue
+        ValidValue(ValidValue &) = default;
 
         //! Allow moves
         ValidValue(ValidValue && v) :
@@ -171,4 +180,3 @@ std::ostream & operator<<(std::ostream & os, const sparta::utils::ValidValue<Val
 }
 }
 }
-

@@ -71,6 +71,17 @@ int main()
     sparta::utils::ValidValue<Foo> foo_type2(10, "hello");
     EXPECT_TRUE(foo_type2.isValid());
 
+    sparta::utils::ValidValue<Foo> foo2(15);
+    EXPECT_TRUE(foo2.isValid());
+    foo2.clearValid();
+    EXPECT_FALSE(foo2.isValid());
+    sparta::utils::ValidValue<Foo> foo3 = foo2;
+    EXPECT_FALSE(foo3.isValid());
+
+    std::vector<sparta::utils::ValidValue<Foo>> item;
+    for(uint32_t i = 0; i < 100; ++i) {
+        item.emplace_back(i, "test");
+    }
 
     REPORT_ERROR;
     return ERROR_CODE;
