@@ -83,6 +83,14 @@ int main()
         item.emplace_back(i, "test");
     }
 
+    std::vector<sparta::utils::ValidValue<Foo>> item2;
+    for(uint32_t i = 0; i < 100; ++i) {
+
+        item2.emplace_back(foo2);
+
+        EXPECT_FALSE(item2.at(i).isValid());
+    }
+
     REPORT_ERROR;
     return ERROR_CODE;
 }
