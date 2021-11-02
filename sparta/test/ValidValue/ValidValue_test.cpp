@@ -81,13 +81,12 @@ int main()
     std::vector<sparta::utils::ValidValue<Foo>> item;
     for(uint32_t i = 0; i < 100; ++i) {
         item.emplace_back(i, "test");
+        EXPECT_TRUE(item.at(i).isValid());
     }
 
     std::vector<sparta::utils::ValidValue<Foo>> item2;
     for(uint32_t i = 0; i < 100; ++i) {
-
         item2.emplace_back(foo2);
-
         EXPECT_FALSE(item2.at(i).isValid());
     }
 
