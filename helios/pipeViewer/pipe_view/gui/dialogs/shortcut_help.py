@@ -95,7 +95,7 @@ class ShortcutHelp(wx.Frame):
         wx.Frame.__init__(self, parent, id, "Argos Shortcut Information", \
                           style = wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX | wx.CLIP_CHILDREN)
         
-        self.__message_ctrl = wx.html.HtmlWindow(self, style=wx.html.HW_SCROLLBAR_AUTO)
+        self.__message_ctrl = wx.html.HtmlWindow(self, style=wx.html.HW_SCROLLBAR_AUTO, size=(400, 525))
         self.__message_ctrl.SetPage(ShortcutHelp.__MESSAGE)
         self.__close_btn = wx.Button(self, label="Close")
         self.__sizer = wx.BoxSizer(wx.VERTICAL)
