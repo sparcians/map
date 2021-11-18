@@ -330,9 +330,9 @@ const DatabaseAccessor * Simulation::getSimulationDatabaseAccessor() const
 
 Simulation::Simulation(const std::string& sim_name,
                        Scheduler * scheduler) :
+    clk_manager_(scheduler),
     sim_name_(sim_name),
     scheduler_(scheduler),
-    clk_manager_(scheduler),
     root_clk_(nullptr),
     root_(this, scheduler->getSearchScope()),
     warn_to_cerr_(sparta::TreeNode::getVirtualGlobalNode(),
