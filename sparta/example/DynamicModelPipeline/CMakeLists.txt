@@ -22,6 +22,7 @@ add_executable(dynamic_model_pipeline
 
 include_directories(../CoreModel/src)
 sparta_application(dynamic_model_pipeline)
+set (VALGRIND_TEST_LABEL valgrind_test)
 
 #
 # Testing

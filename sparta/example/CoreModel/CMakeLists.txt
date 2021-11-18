@@ -27,6 +27,7 @@ sparta_application(sparta_core_example)
 # Add the custom regress/regress_valgrind targets.
 add_custom_target (core_example_regress)
 add_custom_target (core_example_regress_valgrind)
+set (VALGRIND_TEST_LABEL valgrind_test)
 
 # NOTE:
 # running ctest with --test-action test creates Testing/<datetime>/Test.xml
