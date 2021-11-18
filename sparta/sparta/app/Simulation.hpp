@@ -733,6 +733,13 @@ protected:
      */
     void setupStreamControllers_();
 
+    /*! \brief Clock manager for all clocks in simulation.
+     *
+     * This can be created first and destroyed last in case there are
+     * resources/reports that still need use of the clocks
+     */
+    sparta::ClockManager clk_manager_;
+
     /*!
      * \brief Heap profiler(s), if any
      */
@@ -771,9 +778,6 @@ protected:
      */
     Scheduler *const scheduler_;
 
-    /*! \brief Clock manager for all clocks in simulation.
-     */
-    sparta::ClockManager clk_manager_;
     /*!
      * \brief Default automaticly generated report containing the entire
      * simulation
