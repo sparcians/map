@@ -1,15 +1,18 @@
 PROJECT (SPARTA_TESTS)
 
-# Enable testing
-enable_testing ()
+# Enable testing and configures the test/DartConfiguration.tcl
+include (CTest)
 
 # Setup options for valgrind testing.
-set (VALGRIND_OPTS "--error-exitcode=5 \
-      --leak-check=full \
-      --show-reachable=yes \
-      --undef-value-errors=yes \
-      --suppressions=${SPARTA_BASE}/test/valgrind_leakcheck.supp \
-      --soname-synonyms=somalloc=NONE")
+set(VALGRIND_REGRESS_ENABLED TRUE)
+set (VALGRIND_OPTS
+    "--error-exitcode=5"
+    "--leak-check=full"
+    "--show-reachable=yes"
+    "--undef-value-errors=yes"
+    "--suppressions=${SPARTA_BASE}/test/valgrind_leakcheck.supp"
+    "--soname-synonyms=somalloc=NONE"
+    )
 set (VALGRIND_TEST_LABEL valgrind_test)
 
 # Since make does not pass the parallel jobs flag to ctest from the user,
