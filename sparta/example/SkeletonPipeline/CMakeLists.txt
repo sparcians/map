@@ -9,7 +9,6 @@ add_executable(sparta_skeleton
   src/Consumer.cpp)
 
 sparta_application(sparta_skeleton)
-set (VALGRIND_TEST_LABEL valgrind_test)
 
 #
 # Testing

@@ -3,7 +3,11 @@ project(EXAMPLES)
 include (CTest)
 
 # Setup options for valgrind testing.
-set(VALGRIND_REGRESS_ENABLED TRUE)
+if (NOT APPLE)
+  message(STATUS "Valgrind regression enabled")
+  set(VALGRIND_REGRESS_ENABLED TRUE)
+endif()
+
 set (VALGRIND_OPTS
     "--error-exitcode=5"
     "--leak-check=full"
@@ -33,9 +37,6 @@ add_custom_target (example_regress_valgrind)
 # that can be loaded into the CI test result tracker
 add_custom_command (TARGET example_regress          POST_BUILD COMMAND ctest -LE ${VALGRIND_TEST_LABEL} -j${NUM_CORES} --test-action test)
 add_custom_command (TARGET example_regress_valgrind POST_BUILD COMMAND ctest -L  ${VALGRIND_TEST_LABEL} -j${NUM_CORES} --test-action test)
-
-set (VALGRIND_REGRESS_ENABLED TRUE)
-set (VALGRIND_TEST_LABEL valgrind_test)
 
 add_subdirectory(CoreModel)
 add_subdirectory(DynamicModelPipeline)
