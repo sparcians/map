@@ -1,4 +1,4 @@
-// <Port.h> -*- C++ -*-
+// <Port.hpp> -*- C++ -*-
 
 
 /**
@@ -68,6 +68,7 @@ namespace sparta
         enum Direction {
             IN,                 /**< Port direction is in */
             OUT,                /**< Port direction is out */
+            UNKNOWN,            /**< For ExportedPort types, the direction is unknown */
             N_DIRECTIONS
         };
         /**
@@ -250,7 +251,7 @@ namespace sparta
 
     private:
         //! The direction of the port
-        Direction dir_;
+        const Direction dir_;
 
         //! Validate the tree after finalization
         void validateNode_() const override {
@@ -296,7 +297,7 @@ namespace sparta
          */
         InPort(TreeNode* portset, const std::string & name,
                sparta::SchedulingPhase delivery_phase) :
-            Port(portset, Port::IN, name),
+            Port(portset, Port::Direction::IN, name),
             delivery_phase_(delivery_phase)
         { }
 
@@ -356,7 +357,7 @@ namespace sparta
          */
         void registerConsumerEvent(Scheduleable & consumer)
         {
-            sparta_assert(getDirection() == IN,
+            sparta_assert(getDirection() == Direction::IN,
                         "You cannot register a consumer on an OUT port -- that doesn't make sense: "
                         << getName() << " consumer being registered: " << consumer.Scheduleable::getLabel());
             // sparta_assert(getPhase() < TREE_FINALIZED);
@@ -376,7 +377,7 @@ namespace sparta
          */
         void bind(Port * out) override
         {
-            if(out->getDirection() != Port::OUT) {
+            if(out->getDirection() != Port::Direction::OUT) {
                 throw SpartaException("ERROR: Attempt to bind an inny: '" + out->getName() +
                                     "' to an inny: '" + getName() + "'");
             }
@@ -497,7 +498,7 @@ namespace sparta
          */
         OutPort(TreeNode* portset, const std::string & name,
                 bool presume_zero_delay) :
-            Port(portset, Port::OUT, name),
+            Port(portset, Port::Direction::OUT, name),
             presume_zero_delay_(presume_zero_delay)
         { }
 
@@ -565,7 +566,7 @@ namespace sparta
          */
         void bind(Port * in) override
         {
-            if(in->getDirection() != Port::IN) {
+            if(in->getDirection() != Port::Direction::IN) {
                 throw SpartaException("ERROR: Attempt to bind an outty: '" + in->getName() +
                                     "' to an outty: '" + getName() + "'");
             }

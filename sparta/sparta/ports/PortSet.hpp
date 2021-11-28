@@ -47,7 +47,7 @@ namespace sparta
          * \return Pointer to the port or nullptr if not found
          */
         Port * getPort(const std::string & named_port) const {
-            for(uint32_t i = 0; i < Port::N_DIRECTIONS; ++i) {
+            for(uint32_t i = 0; i <Port::N_DIRECTIONS; ++i) {
                 auto found_port = registered_ports_[i].find(named_port);
                 if(found_port != registered_ports_[i].end()) {
                     return found_port->second;
@@ -108,7 +108,7 @@ namespace sparta
 
     private:
         //! The registered ports within this PortSet
-        RegisteredPortMap registered_ports_[Port::N_DIRECTIONS];
+        RegisteredPortMap registered_ports_[static_cast<uint32_t>(Port::N_DIRECTIONS)];
 
         /*!
          * \brief React to a child registration
@@ -143,6 +143,3 @@ namespace sparta
 
     };
 }
-
-
-

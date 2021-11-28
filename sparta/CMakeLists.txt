@@ -48,6 +48,7 @@ list (APPEND SourceCppFiles
             src/Destination.cpp
             src/EdgeFactory.cpp
             src/EventNode.cpp
+            src/ExportedPort.cpp
             src/Expression.cpp
             src/ExpressionGrammar.cpp
             src/ExpressionTrigger.cpp
