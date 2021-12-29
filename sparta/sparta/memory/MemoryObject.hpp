@@ -10,9 +10,9 @@
 #include "sparta/memory/MemoryExceptions.hpp"
 #include "sparta/memory/AddressTypes.hpp"
 #include "sparta/memory/BlockingMemoryIFNode.hpp"
+#include "sparta/memory/DMIBlockingMemoryIF.hpp"
 #include "sparta/functional/ArchData.hpp"
 #include "sparta/utils/Utils.hpp"
-#include "sparta/memory/DMI.hpp"
 
 namespace sparta
 {
@@ -114,28 +114,6 @@ namespace sparta
             //! @{
             ////////////////////////////////////////////////////////////////////////
 
-            /**
-             * Returns a (possibly invalid) DMI
-             *
-             * \param addr A guest physical address that is to be accessed via DMI
-             * \param callback Callback that is called when the DMI is invalidated
-             */
-            DMI getDMI(const addr_t addr,
-                       const DMIInvalidationCallback &callback)
-            {
-                auto &line = ArchData::getLine(addr);
-
-                /* Pointer to backing storage of memory region covered by this DMI */
-                const auto dmi_ptr = line.getRawDataPtr(0);
-                /* Guest physical address of the memory region covered by this DMI */
-                const auto guest_addr = line.getOffset();
-                /* Size of the memory region covered by this DMI */
-                const auto size = line.getLayoutSize();
-
-                (void)callback;
-                return DMI(dmi_ptr, guest_addr, size);
-            }
-
             /*!
              * \brief Reads memory
              * \param addr Address to read from where 0 is start of this memory
@@ -181,7 +159,7 @@ namespace sparta
             ////////////////////////////////////////////////////////////////////////
             //! @}
 
-            //! \name Analysis Methods
+            //! \name Analysis/Testing Methods
             //! @{
             ////////////////////////////////////////////////////////////////////////
 
@@ -312,21 +290,28 @@ namespace sparta
             virtual ~BlockingMemoryObjectIFNode() {}
 
             //! \return The internal MemoryObject used by this I/F node
-            MemoryObject* getMemObj() {
-                return &binding_;
-            }
+            MemoryObject* getMemObj() { return &binding_; }
 
             /*!
-             * \brief Return a DMI if possible.
+             * \brief Return a DMIBlockingMemoryIF for the given address and size
              * \param addr The post-translated address which is the start
              *             of the DMI.
-             * \param callback Registered callback to invalidate the DMI pointer
              * \return DMI object
              */
-            DMI getDMI(const addr_t addr,
-                       const DMIInvalidationCallback &callback) override
+            DMIBlockingMemoryIF * getDMI(addr_t addr,
+                                         addr_t size) override
             {
-                return binding_.getDMI(addr, callback);
+                if(auto it = dmi_ifs_.find(addr); it != dmi_ifs_.end()) {
+                    return it->second.get();
+                }
+
+                auto & line = binding_.getLine(addr);
+                dmi_ifs_.insert({addr,
+                                 std::unique_ptr<DMIBlockingMemoryIF>
+                                 (new DMIBlockingMemoryIF(line.getRawDataPtr(0),
+                                                          line.getOffset(),
+                                                          line.getLayoutSize()))});
+                return dmi_ifs_[addr].get();
             }
 
         protected:
@@ -375,6 +360,8 @@ namespace sparta
                 binding_.write(addr, size, buf);
                 return true;
             }
+
+            std::map<addr_t, std::unique_ptr<DMIBlockingMemoryIF>> dmi_ifs_;
 
         }; // class BlockingMemoryIF
 

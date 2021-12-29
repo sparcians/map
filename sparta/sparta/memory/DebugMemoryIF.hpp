@@ -635,4 +635,3 @@ namespace sparta
         }; // class DebugMemoryIF
     }; // namespace memory
 }; // namespace sparta
-

@@ -38,6 +38,7 @@ void testDebugMemoryIF();
 void testMemoryObjectPerformance();
 void testMemoryObjectSizes();
 void testMemoryObjectFill();
+void testDMIAccess();
 
 int main()
 {
@@ -45,9 +46,10 @@ int main()
     testMemoryObjectSparseness();
     testBlockingMemoryIFNode();
     testDebugMemoryIF();
-    testMemoryObjectPerformance();
+    //testMemoryObjectPerformance();
     testMemoryObjectSizes();
     testMemoryObjectFill();
+    testDMIAccess();
 
     // Done
 
@@ -792,4 +794,47 @@ void testMemoryObjectSizes() {
             }
         }
     }
+}
+
+void testDMIAccess()
+{
+    std::cout << "\nTesting DMI Access\nMem size: " << MEM_SIZE
+              << ", Block size: " << BLOCK_SIZE << std::endl << std::endl;
+    sparta_assert(BLOCK_SIZE >= 4); // Test requires block size >= 4
+
+    sparta::RootTreeNode root;
+
+    // Memory Setup
+    sparta::memory::MemoryObject mem(nullptr, BLOCK_SIZE, MEM_SIZE);
+    sparta::memory::TranslationIF trans("virtual", "physical");
+    sparta::memory::BlockingMemoryObjectIFNode membif(&root, "mem1", "Blocking memory object", &trans, mem);
+    root.enterConfiguring();
+    root.enterFinalized();
+
+    uint8_t dat[BLOCK_SIZE];
+    uint8_t buf[BLOCK_SIZE];
+    for (uint32_t i = 0; i < BLOCK_SIZE; ++i) {
+        dat[i] = i;
+    }
+    EXPECT_NOTHROW(membif.write(0, BLOCK_SIZE, dat));
+    EXPECT_NOTHROW(membif.read(0, BLOCK_SIZE, buf));
+    for (uint32_t i = 0; i < BLOCK_SIZE; ++i) {
+        EXPECT_EQUAL(buf[i], i);
+    }
+
+    sparta::memory::DMIBlockingMemoryIF * dmi = membif.getDMI(0, BLOCK_SIZE);
+    EXPECT_NOTEQUAL(dmi, nullptr);
+    ::memset(buf, 0, BLOCK_SIZE);
+    EXPECT_NOTHROW(dmi->read(0, BLOCK_SIZE, buf));
+    for (uint32_t i = 0; i < BLOCK_SIZE; ++i) {
+        EXPECT_EQUAL(buf[i], i);
+    }
+
+    ::memset(buf, 0, BLOCK_SIZE);
+    ::memcpy(buf, dmi->getRawDataPtr(), BLOCK_SIZE);
+    for (uint32_t i = 0; i < BLOCK_SIZE; ++i) {
+        EXPECT_EQUAL(buf[i], i);
+    }
+
+    root.enterTeardown();
 }
