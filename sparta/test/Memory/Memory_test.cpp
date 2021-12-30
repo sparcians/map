@@ -805,7 +805,7 @@ void testDMIAccess()
     sparta::RootTreeNode root;
 
     // Memory Setup
-    sparta::memory::MemoryObject mem(nullptr, BLOCK_SIZE, MEM_SIZE);
+    sparta::memory::MemoryObject mem(nullptr, BLOCK_SIZE, MEM_SIZE, 0xFF /*fill*/);
     sparta::memory::TranslationIF trans("virtual", "physical");
     sparta::memory::BlockingMemoryObjectIFNode membif(&root, "mem1", "Blocking memory object", &trans, mem);
     root.enterConfiguring();
@@ -824,6 +824,7 @@ void testDMIAccess()
 
     sparta::memory::DMIBlockingMemoryIF * dmi = membif.getDMI(0, BLOCK_SIZE);
     EXPECT_NOTEQUAL(dmi, nullptr);
+
     ::memset(buf, 0, BLOCK_SIZE);
     EXPECT_NOTHROW(dmi->read(0, BLOCK_SIZE, buf));
     for (uint32_t i = 0; i < BLOCK_SIZE; ++i) {
@@ -834,6 +835,43 @@ void testDMIAccess()
     ::memcpy(buf, dmi->getRawDataPtr(), BLOCK_SIZE);
     for (uint32_t i = 0; i < BLOCK_SIZE; ++i) {
         EXPECT_EQUAL(buf[i], i);
+    }
+
+    // Go outside the window -- start at address +10 and read beyond the line
+    ::memset(buf, 0, BLOCK_SIZE);
+    EXPECT_THROW(dmi->read(10, BLOCK_SIZE, buf));
+    for (uint32_t i = 0; i < BLOCK_SIZE; ++i) {
+        EXPECT_EQUAL(buf[i], 0); // The data should NOT have been read
+    }
+
+    EXPECT_NOTHROW(dmi->read(10, BLOCK_SIZE-10, buf));
+    for (uint32_t i = 9; i < BLOCK_SIZE-10; ++i) {
+        EXPECT_EQUAL(uint32_t(buf[i-9]), i+1); // Data shifted down by 10 elements
+    }
+
+    // Get a DMI deeper into a memory region
+    dmi = membif.getDMI(1024, BLOCK_SIZE);
+    EXPECT_NOTEQUAL(dmi, nullptr);
+    ::memset(buf, 0, BLOCK_SIZE);
+    EXPECT_NOTHROW(dmi->read(1024, BLOCK_SIZE, buf));
+    for (uint32_t i = 0; i < BLOCK_SIZE; ++i) {
+        EXPECT_EQUAL(buf[i], 0xFF);
+    }
+
+    // Get an unaligned DMI.  This will span a block (64 bytes)
+    dmi = membif.getDMI(122, BLOCK_SIZE);
+    EXPECT_EQUAL(dmi, nullptr);
+
+    // Get a just-barely unaligned DMI.  This will span a block (64 bytes)
+    dmi = membif.getDMI(124, 8);
+    EXPECT_EQUAL(dmi, nullptr);
+
+    dmi = membif.getDMI(112, 10);
+    EXPECT_NOTEQUAL(dmi, nullptr);
+    ::memset(buf, 0, BLOCK_SIZE);
+    EXPECT_NOTHROW(dmi->read(112, 10, buf));
+    for (uint32_t i = 0; i < 10; ++i) {
+        EXPECT_EQUAL(buf[i], 0xFF);
     }
 
     root.enterTeardown();

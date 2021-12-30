@@ -296,22 +296,40 @@ namespace sparta
              * \brief Return a DMIBlockingMemoryIF for the given address and size
              * \param addr The post-translated address which is the start
              *             of the DMI.
-             * \return DMI object
+             * \param size The size of the DMI access
+             * \return DMI object or nullptr if the access is not permitted
+             *
+             * The addr+size must be contained within a block of the
+             * internal MemoryObject.  The following criteria must be satisfied:
+             *
+             * \code
+             *   addr + size - (addr & BLOCK_MASK) <= BLOCK_SIZE
+             * \endcode
+             *
+             * If the access size required crosses a block boundary,
+             * the caller must break up the access between two blocks.
+             *
+             * nullptr may be returned if the access is outside of the
+             * access window for this blocking memory interface.
              */
             DMIBlockingMemoryIF * getDMI(addr_t addr,
                                          addr_t size) override
             {
-                if(auto it = dmi_ifs_.find(addr); it != dmi_ifs_.end()) {
+                if(doesAccessSpan(addr, size)) {
+                    return nullptr;
+                }
+                const auto aligned_addr = addr & block_mask_;
+                if(auto it = dmi_ifs_.find(aligned_addr); it != dmi_ifs_.end()) {
                     return it->second.get();
                 }
 
-                auto & line = binding_.getLine(addr);
-                dmi_ifs_.insert({addr,
+                auto & line = binding_.getLine(aligned_addr);
+                dmi_ifs_.insert({aligned_addr,
                                  std::unique_ptr<DMIBlockingMemoryIF>
                                  (new DMIBlockingMemoryIF(line.getRawDataPtr(0),
                                                           line.getOffset(),
                                                           line.getLayoutSize()))});
-                return dmi_ifs_[addr].get();
+                return dmi_ifs_[aligned_addr].get();
             }
 
         protected:
