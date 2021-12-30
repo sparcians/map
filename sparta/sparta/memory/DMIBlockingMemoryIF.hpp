@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <string.h>
 #include "sparta/memory/BlockingMemoryIF.hpp"
 
 namespace sparta {
@@ -24,11 +25,14 @@ namespace sparta {
              * pointer and provide the functionality of the
              * BlockingMemoryIF.  This includes window access checking
              * and bounds checking for the raw pointer.
+             *
+             * Note that memory observeration is _completely bypassed_
+             * when using a DMI interface.
              */
             DMIBlockingMemoryIF(void * raw_pointer,
                                 addr_t start_addr,
                                 addr_t size) :
-                BlockingMemoryIF("DMI", size, {start_addr, size}),
+                BlockingMemoryIF("DMI", size, {start_addr, start_addr + size}),
                 start_addr_(start_addr),
                 raw_pointer_(raw_pointer)
             { }
@@ -38,6 +42,12 @@ namespace sparta {
             //! This is dangerous to use directly as memory bounds
             //! checking can easily be bypassed
             void * getRawDataPtr() { return raw_pointer_; }
+
+            //! \return true if the DMI is still valid to use
+            bool isValid() const { return valid_; }
+
+            //! \brief Typically called by the creator of the DMI Mem IF
+            void clearValid() { valid_ = false; }
 
         private:
 
@@ -60,7 +70,7 @@ namespace sparta {
                           const void *,
                           void *) noexcept override
             {
-                memcpy(buf, computeHostAddress_(addr), size);
+                ::memcpy(buf, computeHostAddress_(addr), size);
                 return true;
             }
 
@@ -72,7 +82,7 @@ namespace sparta {
                            const void *,
                            void *) noexcept override
             {
-                memcpy(computeHostAddress_(addr), buf, size);
+                ::memcpy(computeHostAddress_(addr), buf, size);
                 return true;
             }
 
@@ -80,7 +90,7 @@ namespace sparta {
             // checked as well as address spanning
             bool tryPeek_(addr_t addr, addr_t size, uint8_t *buf) const noexcept override
             {
-                memcpy(buf, computeHostAddress_(addr), size);
+                ::memcpy(buf, computeHostAddress_(addr), size);
                 return true;
             }
 
@@ -88,12 +98,13 @@ namespace sparta {
             // checked as well as address spanning
             bool tryPoke_(addr_t addr, addr_t size, const uint8_t *buf) noexcept override
             {
-                memcpy(computeHostAddress_(addr), buf, size);
+                ::memcpy(computeHostAddress_(addr), buf, size);
                 return true;
             }
 
             addr_t start_addr_;
             void * raw_pointer_ = nullptr;
+            bool valid_ = true;
         };
 
     } // namespace memory
