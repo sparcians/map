@@ -47,7 +47,7 @@
 
   \section sysc_adapter SystemC/Sparta Adapter
 
-  The sparta::SysCSpartaSchedulerAdapter is just that, and adapter
+  The sparta::SysCSpartaSchedulerAdapter is just that, an adapter
   that syncs the SystemC clock with the Sparta Scheduler.  With this
   class, the modeler is not responsible for advancing time on the
   Sparta scheduler.  SystemC will be doing that via SC_THREADs.

@@ -15,24 +15,23 @@ namespace sparta {
          * BlockingMemoryIFNode::getDMI which allows a user to gain
          * "backdoor" access to memory in the sparta::ArchData memory
          * pool.  Think of a DMIBlockingMemoryIF instance as a "view"
-         * into a segment of memory between start_addr and (start_addr
-         * + size)
+         * into a segment of memory between `start_addr` and (`start_addr` + `size`)
          *
          * The user of this class should be aware of the following
          * caveats:
          *
-         * #. The DMIBlockingMemoryIF can be invalidated at any time.
+         * -# The DMIBlockingMemoryIF can be invalidated at any time.
          *    Invalidations could result from changes in mappings,
          *    permissions, etc.  Users that derive from
          *    BlockingMemoryIFNode and provide their own DMI memory
          *    access can invalidate at any time.
          *
-         * #. Using the method `getRawDataPtr` is a means to improve
+         * -# Using the method `getRawDataPtr` is a means to improve
          *    simulation speed, but overruns are possible and not
          *    checked.  The suggestion to use read/write methods is
          *    strongly encouraged.
          *
-         * #. The DMI's access window, if returned from
+         * -# The DMI's access window, if returned from
          *    BlockingMemoryIFNode, is soley based on the size of the
          *    sparta::memory::MemoryObject originally programmed in
          *    BlockingMemoryIFNode and not total memory.  For example,
@@ -41,11 +40,11 @@ namespace sparta {
          *    memory, a DMI object can _only_ access 64 bytes of
          *    memory at a time.
          *
-         * #. Using a DMI will bypass read/write counts in
+         * -# Using a DMI will bypass read/write counts in
          *    BlockingMemoryIFNode showing fewer reads/writes than
          *    actually occurred
          *
-         * #. Using a DMI will bypass pre/post read/write
+         * -# Using a DMI will bypass pre/post read/write
          *    notifications.
          */
         class DMIBlockingMemoryIF final : public BlockingMemoryIF
@@ -74,11 +73,14 @@ namespace sparta {
                 raw_pointer_(raw_pointer)
             { }
 
-            //! \return The internal raw pointer.
-            //! \throw SpartaException if the pointer is not valid
-            //!
-            //! This is dangerous to use directly as memory bounds
-            //! checking can easily be bypassed
+            /**
+             * \brief Get a raw pointer to the memory held (dangerous)
+             * \return The internal raw pointer.
+             * \throw SpartaException if the pointer is not valid
+             *
+             * This is dangerous to use directly as memory bounds
+             * checking can easily be bypassed
+             */
             void * getRawDataPtr() {
                 sparta_assert(isValid(), "This DMI pointer is invalid " << this);
                 return raw_pointer_;

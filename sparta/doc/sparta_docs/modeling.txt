@@ -115,10 +115,9 @@
   --------------------------- | ------------------
   sparta::memory::BlockingMemoryIF     | \copybrief sparta::memory::BlockingMemoryIF &nbsp;
   sparta::memory::BlockingMemoryIFNode | \copybrief sparta::memory::BlockingMemoryIFNode &nbsp;
-  sparta::memory::DMI                  | \copybrief sparta::memory::DMI &nbsp;
   sparta::memory::DMIBlockingMemoryIF  | \copybrief sparta::memory::DMIBlockingMemoryIF &nbsp;
   sparta::memory::DebugMemoryIF        | \copybrief sparta::memory::DebugMemoryIF &nbsp;
-  MemoryExceptions                     | Group of classes defining various Memory-related simulation errors
+  MemoryExceptions                     | sparta::memory::MemoryTranslationError, sparta::memory::MemoryAccessError, sparta::memory::MemoryReadError, sparta::memory::MemoryWriteError, sparta::memory::MemoryPeekError, sparta::memory::MemoryPokeError
   sparta::memory::MemoryObject         | \copybrief sparta::memory::MemoryObject &nbsp;
   sparta::memory::SimpleMemoryMap      | \copybrief sparta::memory::SimpleMemoryMap &nbsp;
   sparta::memory::SimpleMemoryMapNode  | \copybrief sparta::memory::SimpleMemoryMapNode &nbsp;
