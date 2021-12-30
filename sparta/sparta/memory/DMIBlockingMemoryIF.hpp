@@ -79,6 +79,12 @@ namespace sparta {
                 return BlockingMemoryIF::tryWrite(addr, size, buf, in_supplement, out_supplement);
             }
 
+            //! \return true if the DMI is still valid to use
+            bool isValid() const { return valid_; }
+
+            //! \brief Typically called by the creator of the DMI Mem IF
+            void clearValid() { valid_ = false; }
+
         private:
 
             //! Try to disallow this from being called
