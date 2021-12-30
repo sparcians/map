@@ -866,6 +866,8 @@ void testDMIAccess()
     dmi = membif.getDMI(124, 8);
     EXPECT_EQUAL(dmi, nullptr);
 
+    // This will return a DMI starting at the lowest BLOCK address
+    // away -- [64,128)
     dmi = membif.getDMI(112, 10);
     EXPECT_NOTEQUAL(dmi, nullptr);
     ::memset(buf, 0, BLOCK_SIZE);
@@ -874,16 +876,17 @@ void testDMIAccess()
         EXPECT_EQUAL(buf[i], 0xFF);
     }
 
-    // Go outside the window -- start at address +10 and read beyond the line
     ::memset(buf, 0, BLOCK_SIZE);
-    EXPECT_THROW(dmi->read(10, BLOCK_SIZE, buf));
+    // Go outside the window -- start at base address and read beyond the line
+    EXPECT_THROW(dmi->read(64, BLOCK_SIZE + 1, buf));
     for (uint32_t i = 0; i < BLOCK_SIZE; ++i) {
         EXPECT_EQUAL(buf[i], 0); // The data should NOT have been read
     }
 
-    EXPECT_NOTHROW(dmi->read(10, BLOCK_SIZE-10, buf));
-    for (uint32_t i = 9; i < BLOCK_SIZE-10; ++i) {
-        EXPECT_EQUAL(uint32_t(buf[i-9]), i+1); // Data shifted down by 10 elements
+    // Read within the line
+    EXPECT_NOTHROW(dmi->read(64, BLOCK_SIZE-10, buf));
+    for (uint32_t i = 0; i < BLOCK_SIZE-10; ++i) {
+        EXPECT_EQUAL(uint32_t(buf[i]), 0xFF); // Data shifted down by 10 elements
     }
 
     // Get a DMI deeper into a memory region

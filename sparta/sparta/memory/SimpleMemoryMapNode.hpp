@@ -178,7 +178,11 @@ namespace sparta
              * or the given address/size, combo, nullptr will be returned.
              */
             DMIBlockingMemoryIF *getDMI(addr_t addr, addr_t size) override {
-                return nullptr;
+                const Mapping * m = findMapping(addr);
+                if(!m) {
+                    return nullptr;
+                }
+                return m->memif->getDMI(m->mapAddress(addr), size);
             }
 
             ////////////////////////////////////////////////////////////////////////

@@ -424,6 +424,31 @@ void testMemoryMap() {
     EXPECT_EQUAL(mwos[5].writes, 2);
 
 
+    // Get some DMI pointers
+    // Current mapping up to this point
+    // map: [    0,  0x40) -> "memory object 5" +0x40
+    // map: [0x100, 0x200) -> "memory object 1" +0x0
+    // map: [0x300, 0x400) -> "memory object 4" +0x0
+    // map: [0x400, 0x500) -> "memory object 5" +0x0
+    // map: [0x500, 0x700) -> "memory object 2" +0x0
+    EXPECT_NOTEQUAL(mmap.getDMI(  0x0, BLOCK_SIZE), nullptr);
+    EXPECT_NOTEQUAL(mmap.getDMI(0x100, BLOCK_SIZE), nullptr);
+    EXPECT_NOTEQUAL(mmap.getDMI(0x300, BLOCK_SIZE), nullptr);
+    EXPECT_NOTEQUAL(mmap.getDMI(0x400, BLOCK_SIZE), nullptr);
+    EXPECT_NOTEQUAL(mmap.getDMI(0x500, BLOCK_SIZE), nullptr);
+
+    // Try getting a DMI to 4K of memory.  This will be illegal as the
+    // object at that location can only allow access to BLOCK_SIZE of
+    // data at a time.
+    EXPECT_EQUAL(mmap.getDMI(0x100, MEM_SIZE), nullptr);
+
+    // Block m5 is mapped in 2 places: one at 0x0 -> 0x40 for offest
+    // of 0x40 and at 0x400.  We should be able to get DMIs to both
+    // locations via two different calls.  In theory the DMIs should be the same
+    sparta::memory::DMIBlockingMemoryIF * m5bmi_offset = mmap.getDMI(0x0, BLOCK_SIZE);
+    sparta::memory::DMIBlockingMemoryIF * m5bmi = mmap.getDMI(0x440, BLOCK_SIZE);
+    EXPECT_TRUE(m5bmi_offset->getRawDataPtr() == m5bmi->getRawDataPtr());
+
     std::cout << "Tree:\n" << root.renderSubtree(-1, true) << std::endl;
 
     std::cout << "Done: " << std::endl
