@@ -38,16 +38,46 @@ namespace sparta {
             { }
 
             //! \return The internal raw pointer.
+            //! \throw SpartaException if the pointer is not valid
             //!
             //! This is dangerous to use directly as memory bounds
             //! checking can easily be bypassed
-            void * getRawDataPtr() { return raw_pointer_; }
+            void * getRawDataPtr() {
+                sparta_assert(isValid(), "This DMI pointer is invalid " << this);
+                return raw_pointer_;
+            }
 
             //! \return true if the DMI is still valid to use
             bool isValid() const { return valid_; }
 
             //! \brief Typically called by the creator of the DMI Mem IF
             void clearValid() { valid_ = false; }
+
+            /**
+             * \brief Override of sparta::BlockingMemoryIF::tryRead
+             */
+            bool tryRead(addr_t addr,
+                         addr_t size,
+                         uint8_t *buf,
+                         const void *in_supplement=nullptr,
+                         void *out_supplement=nullptr) override final
+            {
+                sparta_assert(isValid(), "This DMI pointer is invalid " << this);
+                return BlockingMemoryIF::tryRead(addr, size, buf, in_supplement, out_supplement);
+            }
+
+            /**
+             * \brief Override of sparta::BlockingMemoryIF::tryWrite
+             */
+            bool tryWrite(addr_t addr,
+                          addr_t size,
+                          const uint8_t *buf,
+                          const void *in_supplement=nullptr,
+                          void *out_supplement=nullptr) override final
+            {
+                sparta_assert(isValid(), "This DMI pointer is invalid " << this);
+                return BlockingMemoryIF::tryWrite(addr, size, buf, in_supplement, out_supplement);
+            }
 
         private:
 

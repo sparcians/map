@@ -332,6 +332,18 @@ namespace sparta
                 return dmi_ifs_[aligned_addr].get();
             }
 
+            /*!
+             * \brief Invalidate all DMI pointers
+             *
+             * Does not delete them.  Just invalidates them.  It's up
+             * to the user of the DMI interface to ensure the DMI's validity.
+             */
+            void invalidateAllDMI() override {
+                for (auto & dmi_if : dmi_ifs_) {
+                    dmi_if.second->clearValid();
+                }
+            }
+
         protected:
             //! Override of DebugMemoryIF::tryPeek_
             virtual bool tryPeek_(addr_t addr,

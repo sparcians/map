@@ -883,5 +883,15 @@ void testDMIAccess()
     for (uint32_t i = 0; i < BLOCK_SIZE; ++i) {
         EXPECT_EQUAL(buf[i], i);
     }
+
+    // Some silly things -- the following lines of code get around the
+    // private getDMI method in DMIBlockingMemoryIF
+    sparta::memory::BlockingMemoryIF * dmi_blocking_if = dmi;
+    EXPECT_THROW(dmi_blocking_if->getDMI(0, BLOCK_SIZE));
+
+    membif.invalidateAllDMI();
+    EXPECT_THROW(dmi->read(0, BLOCK_SIZE, buf));
+    EXPECT_FALSE(dmi->isValid());
+
     root.enterTeardown();
 }

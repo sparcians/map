@@ -240,6 +240,11 @@ namespace sparta
                 return nullptr;
             }
 
+            /**
+             * \brief Invalidate all DMI's
+             */
+            virtual void invalidateAllDMI() { return; }
+
             ////////////////////////////////////////////////////////////////////////
             //! @}
 
