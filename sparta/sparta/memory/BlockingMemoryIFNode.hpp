@@ -32,7 +32,7 @@ namespace sparta
          * Access counters are in a StatisticSet node which is a child of this
          * node. This StatisticSet can be accessed via getStatisticSet()
          *
-         * sparta::memory::BlockingMemoryObjectIF provides an implementation of
+         * sparta::memory::BlockingMemoryObjectIFNode provides an implementation of
          * this class which binds to a MemoryObject instance.
          */
         class BlockingMemoryIFNode : public sparta::TreeNode, public BlockingMemoryIF
@@ -337,7 +337,6 @@ namespace sparta
                     return tryRead_(addr, size, buf, in_supplement, out_supplement); // Read and return if unobserved
                 }
 
-                // XXX what implementation of tryRead_ is used here?  It is pure-virtual in the BlockingMemoryIF base.
                 bool result = tryRead_(addr, size, buf, in_supplement, out_supplement);
 
                 if(result){
@@ -534,4 +533,3 @@ namespace sparta
         }; // class BlockingMemoryIFNode
     }; // namespace memory
 }; // namespace sparta
-
