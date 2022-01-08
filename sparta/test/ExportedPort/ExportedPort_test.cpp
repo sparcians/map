@@ -36,12 +36,16 @@ private:
         SubUnit1(sparta::TreeNode * my_node, const sparta::ParameterSet *) :
             sparta::Unit(my_node)
         {
-            sparta::StartupEvent(my_node, CREATE_SPARTA_HANDLER(SubUnit1, driveSignal_));
+            sparta::StartupEvent(my_node, CREATE_SPARTA_HANDLER(SubUnit1, writer_));
         }
     private:
-        void driveSignal_() { a_signal_out_port_.send(); }
-
-        sparta::SignalOutPort a_signal_out_port_{getPortSet(), "a_deep_signal_out_port"};
+        void writer_() {
+            a_signal_out_port_.send(count_++);
+            drive_.schedule();
+        }
+        int count_ = 1;
+        sparta::Event<> drive_{getEventSet(), "drive", CREATE_SPARTA_HANDLER(SubUnit1, writer_), 1};
+        sparta::DataOutPort<int> a_signal_out_port_{getPortSet(), "a_deep_signal_out_port"};
     };
     sparta::ParameterSet sub_unit_params_;
     sparta::DynamicResourceTreeNode<SubUnit1, sparta::ParameterSet> dyn_rtn_;
@@ -55,16 +59,21 @@ public:
     Unit2(sparta::TreeNode * my_node):
         sparta::Unit(my_node)
     {
-        a_signal_in_port.registerConsumerHandler(CREATE_SPARTA_HANDLER(Unit2, receivedSignal));
+        a_signal_in_port_.registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Unit2, reader, int));
     }
 
-    void receivedSignal() {
-        std::cout << __PRETTY_FUNCTION__ << ": received signal" << std::endl;
+    ~Unit2() { std::cout << "Last payload: " << last_payload_ << std::endl; }
+
+    void reader(const int & payload) {
+        //std::cout << __PRETTY_FUNCTION__ << ": received signal" << std::endl;
+        last_payload_ = payload;
     }
 
 private:
     //sparta::ExportedPort a_signal_in_port_{getPortSet(), "a_signal_in_port"};
-    sparta::SignalInPort a_signal_in_port{getPortSet(), "a_signal_in_port"};
+    sparta::DataInPort<int> a_signal_in_port_{getPortSet(), "a_signal_in_port"};
+
+    int last_payload_ = 0;
 };
 
 
@@ -93,7 +102,7 @@ int main()
 
     sched.finalize();
 
-    sched.run(1);
+    sched.run(20000000);
 
     root.enterTeardown();
 

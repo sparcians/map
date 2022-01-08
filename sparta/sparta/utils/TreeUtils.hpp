@@ -36,6 +36,7 @@ namespace sparta::utils
                                  const std::string & name,
                                  std::vector<sparta::TreeNode*> & found_nodes)
     {
+        // XXXX check for dots
         if(starting_node->getName() == name) {
             found_nodes.emplace_back(starting_node);
         }

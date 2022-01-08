@@ -74,21 +74,39 @@ namespace sparta
     {
     public:
 
-        ExportedPort(sparta::TreeNode *    portset,
-                     const std::string &   exported_port_name,
-                     sparta::TreeNode    * exported_port_search_path,
-                     const std::string &   internal_port_name) :
+        /**
+         * \brief Create an ExportedPort that exposes an internal port by name
+         *
+         * \param portset The sparta::PortSet this ExportedPort belongs to
+         * \param exported_port_name The exported port name; can be different from the internal port
+         * \param internal_port_search_path The TreeNode to search for the internal port
+         * \param internal_port_name The name of the internal port to represent
+         *
+         */
+        ExportedPort(sparta::TreeNode  * portset,
+                     const std::string & exported_port_name,
+                     sparta::TreeNode  * internal_port_search_path,
+                     const std::string & internal_port_name) :
             Port(portset, Port::Direction::UNKNOWN, exported_port_name),
-            exported_port_search_path_(exported_port_search_path),
+            internal_port_search_path_(internal_port_search_path),
             internal_port_name_(internal_port_name)
         {}
 
+        /**
+         *
+         * \brief Create an ExportedPort for an explicit internal port
+         *
+         * \param portset The sparta::PortSet this ExportedPort belongs to
+         * \param exported_port_name The exported port name; can be different from the internal port
+         * \param internal_port The internal port to be exported
+         *
+         */
         ExportedPort(sparta::TreeNode  * portset,
                      const std::string & exported_port_name,
-                     sparta::Port      * exported_port) :
-            Port(portset, sparta::notNull(exported_port)->getDirection(), exported_port_name),
-            exported_port_(exported_port),
-            internal_port_name_(exported_port->getName())
+                     sparta::Port      * interal_port) :
+            Port(portset, sparta::notNull(interal_port)->getDirection(), exported_port_name),
+            interal_port_(interal_port),
+            internal_port_name_(interal_port->getName())
         {}
 
         //! \brief Override Port::bind
@@ -96,11 +114,11 @@ namespace sparta
         void bind(Port * port) override final;
 
     private:
-        // The exported port -- to either be found or provided
-        sparta::Port * exported_port_ = nullptr;
+        // The interal port -- to either be found or provided
+        sparta::Port * interal_port_ = nullptr;
 
         // Non-const as the Port TreeNode contained in the path will be modified
-        sparta::TreeNode * exported_port_search_path_ = nullptr;
+        sparta::TreeNode * internal_port_search_path_ = nullptr;
         const std::string  internal_port_name_;
     };
 }
