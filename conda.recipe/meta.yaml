@@ -70,6 +70,7 @@ requirements:
     - sqlite
     - hdf5
     - boost
+    - valgrind
   run_constrained:
     # make sure that mac has good enough SDK
     # See https://conda-forge.org/docs/maintainer/knowledge_base.html?highlight=feature#requiring-newer-macos-sdks
