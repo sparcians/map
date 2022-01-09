@@ -34,6 +34,7 @@ namespace sparta
                     // the same name as the internal port, but there is no
                     // internal port with that name!
                     if(internal_port_ == this) {
+                        internal_port_ = nullptr;
                         // Throw to the catch handler below -- same error
                         throw sparta::SpartaException();
                     }

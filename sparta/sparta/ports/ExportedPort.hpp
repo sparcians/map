@@ -146,11 +146,30 @@ namespace sparta
         //! found during binding (and was not initially provided)
         const sparta::Port * getInternalPort() const { return internal_port_; }
 
+        //! \brief Print the exported port
+        //! \param pretty Make it a pretty print (ignored)
+        std::string stringize(bool pretty=false) const override {
+            sparta_assert(internal_port_ != this);
+            std::stringstream ss;
+            ss << "[exported port <" << getLocation() << "> ";
+            if(internal_port_) {
+                ss << internal_port_->stringize(pretty);
+            }
+            else {
+                ss << "undefined";
+            }
+            ss << "]";
+            return ss.str();
+        }
+
+
     private:
         // The interal port -- to either be found or provided
         sparta::Port * internal_port_ = nullptr;
 
-        // Non-const as the Port TreeNode contained in the path will be modified
+        // Non-const as the Port TreeNode contained in the path will
+        // be modified during binding.  If this variable were const,
+        // the code could not find the to-be-modified internal_port_
         sparta::TreeNode * internal_port_search_path_ = nullptr;
         const std::string  internal_port_name_;
     };

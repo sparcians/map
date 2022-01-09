@@ -100,6 +100,8 @@ int main()
     Unit2 unit2(&unit2_tn);
 
     root.enterConfiguring();
+    std::cout << root.renderSubtree() << std::endl;
+
     root.enterFinalized();
     std::cout << root.renderSubtree() << std::endl;
 
@@ -127,6 +129,8 @@ int main()
     EXPECT_TRUE(exported_port_in->isBound());
 
     sched.finalize();
+
+    std::cout << root.renderSubtree() << std::endl;
 
     sched.run(20000000);
 

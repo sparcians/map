@@ -5,7 +5,10 @@ include (CTest)
 # Setup options for valgrind testing.
 if (NOT APPLE)
   message(STATUS "Valgrind regression enabled")
-  set(VALGRIND_REGRESS_ENABLED TRUE)
+  find_program (VALGRIND_TOOL valgrind)
+  if (VALGRIND_TOOL)
+    set(VALGRIND_REGRESS_ENABLED TRUE)
+  endif()
 endif()
 
 set (VALGRIND_OPTS
