@@ -4,8 +4,11 @@ PROJECT (SPARTA_TESTS)
 include (CTest)
 
 # Setup options for valgrind testing.
-set(VALGRIND_REGRESS_ENABLED TRUE)
-set (VALGRIND_OPTS
+find_program (VALGRIND_TOOL valgrind)
+if (VALGRIND_TOOL)
+  message(STATUS "Valgrind enabled: ${VALGRIND_TOOL})")
+  set(VALGRIND_REGRESS_ENABLED TRUE)
+  set (VALGRIND_OPTS
     "--error-exitcode=5"
     "--leak-check=full"
     "--show-reachable=yes"
@@ -13,7 +16,10 @@ set (VALGRIND_OPTS
     "--suppressions=${SPARTA_BASE}/test/valgrind_leakcheck.supp"
     "--soname-synonyms=somalloc=NONE"
     )
-set (VALGRIND_TEST_LABEL valgrind_test)
+  set (VALGRIND_TEST_LABEL valgrind_test)
+else()
+  message(STATUS "valgrind testing NOT enabled")
+endif()
 
 # Since make does not pass the parallel jobs flag to ctest from the user,
 # a fixed count will be set based on core count w/ a max 8
