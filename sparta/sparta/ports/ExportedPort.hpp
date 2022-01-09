@@ -21,8 +21,15 @@ namespace sparta
      *
      * Built to address the request in GitHub issue #172, ExportedPort
      * allows a modeler to "represent" a Port deep in a component
-     * hierarchy at a higher level.  For example, if the modeler is
-     * building a CPU model with the following hierarchy:
+     * hierarchy at a higher level for the sole purpose of _binding
+     * only_.  This is not a fully functioning Port (hence the private
+     * inheritance of sparta::Port).
+     *
+     * The internal port can be either provided directly or searched
+     * for during binding.
+     *
+     * For example, if the modeler is building a CPU model with the
+     * following hierarchy:
      *
      * \code
      * top.cpu
@@ -70,7 +77,7 @@ namespace sparta
      * \endcode
      *
      */
-    class ExportedPort : public Port
+    class ExportedPort : private Port
     {
     public:
 
@@ -103,19 +110,45 @@ namespace sparta
          */
         ExportedPort(sparta::TreeNode  * portset,
                      const std::string & exported_port_name,
-                     sparta::Port      * interal_port) :
-            Port(portset, sparta::notNull(interal_port)->getDirection(), exported_port_name),
-            interal_port_(interal_port),
-            internal_port_name_(interal_port->getName())
+                     sparta::Port      * internal_port) :
+            Port(portset, sparta::notNull(internal_port)->getDirection(), exported_port_name),
+            internal_port_(internal_port),
+            internal_port_name_(internal_port->getName())
         {}
 
         //! \brief Override Port::bind
         //! \param port The port to bind the internal exported port
         void bind(Port * port) override final;
 
+        //! \brief Override Port::isBound
+        //! \return true if internal port is bound; false if not bound
+        bool isBound() const override final
+        {
+            // If the internal_port is nullptr, it has not been bound
+            // yet (searched for)
+            if(nullptr != internal_port_) {
+                return internal_port_->isBound();
+            }
+            return false;
+        }
+
+        //! \brief Return the intenal representative port (non-const)
+        //! \return The internal port this ExportedPort represents
+        //!
+        //! This method _might_ return nullptr if the port is to be
+        //! found during binding (and was not initially provided)
+        sparta::Port * getInternalPort() { return internal_port_; }
+
+        //! \brief Return the intenal representative port (const)
+        //! \return The internal port this ExportedPort represents
+        //!
+        //! This method _might_ return nullptr if the port is to be
+        //! found during binding (and was not initially provided)
+        const sparta::Port * getInternalPort() const { return internal_port_; }
+
     private:
         // The interal port -- to either be found or provided
-        sparta::Port * interal_port_ = nullptr;
+        sparta::Port * internal_port_ = nullptr;
 
         // Non-const as the Port TreeNode contained in the path will be modified
         sparta::TreeNode * internal_port_search_path_ = nullptr;

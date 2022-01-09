@@ -377,7 +377,7 @@ namespace sparta
          */
         void bind(Port * out) override
         {
-            if(out->getDirection() != Port::Direction::OUT) {
+            if(out->getDirection() != Direction::OUT) {
                 throw SpartaException("ERROR: Attempt to bind an inny: '" + out->getName() +
                                     "' to an inny: '" + getName() + "'");
             }

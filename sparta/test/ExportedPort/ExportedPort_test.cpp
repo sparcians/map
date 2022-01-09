@@ -25,7 +25,11 @@ public:
         sub_unit_params_(my_node),
         dyn_rtn_(my_node, "subunit", "Subunit in Unit1", &sub_unit_params_),
         exported_port_(getPortSet(), "a_signal_out_port",
-                       my_node,      "a_deep_signal_out_port")
+                       my_node,      "a_deep_signal_out_port"),
+        exported_port_same_name_(getPortSet(), "a_deep_signal_out_port",
+                                 my_node,      "a_deep_signal_out_port"),
+        exported_port_bad_(getPortSet(), "a_non_existant_port",
+                           my_node,      "a_non_existant_port")
     { }
 
 private:
@@ -51,6 +55,8 @@ private:
     sparta::DynamicResourceTreeNode<SubUnit1, sparta::ParameterSet> dyn_rtn_;
 
     sparta::ExportedPort exported_port_;
+    sparta::ExportedPort exported_port_same_name_;
+    sparta::ExportedPort exported_port_bad_;
 };
 
 class Unit2 : public sparta::Unit
@@ -97,8 +103,28 @@ int main()
     root.enterFinalized();
     std::cout << root.renderSubtree() << std::endl;
 
+    auto exported_port_out =
+        unit1.getPortSet()->getChildAs<sparta::Port>("a_signal_out_port");
+    auto exported_port_in  =
+        unit2.getPortSet()->getChildAs<sparta::Port>("a_signal_in_port");
+
+    EXPECT_FALSE(exported_port_out->isBound());
+    EXPECT_FALSE(exported_port_in->isBound());
+
     sparta::bind(unit1.getPortSet()->getChildAs<sparta::Port>("a_signal_out_port"),
                  unit2.getPortSet()->getChildAs<sparta::Port>("a_signal_in_port"));
+    bool caught_bad_bind = false;
+    try {
+        sparta::bind(unit1.getPortSet()->getChildAs<sparta::Port>("a_non_existant_port"),
+                     unit2.getPortSet()->getChildAs<sparta::Port>("a_signal_in_port"));
+    }
+    catch(...) {
+        caught_bad_bind = true;
+    }
+    EXPECT_TRUE(caught_bad_bind);
+
+    EXPECT_TRUE(exported_port_out->isBound());
+    EXPECT_TRUE(exported_port_in->isBound());
 
     sched.finalize();
 
