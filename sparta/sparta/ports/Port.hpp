@@ -131,7 +131,7 @@ namespace sparta
          * \brief The direction of the port
          * \return In or out
          */
-        Direction getDirection() const {
+        virtual Direction getDirection() const {
             return dir_;
         }
 
@@ -150,14 +150,14 @@ namespace sparta
          * will prevent the assertion that a Consumer/Producer Event
          * is be being registered after port binding.
          */
-        void participateInAutoPrecedence(bool participate) {
+        virtual void participateInAutoPrecedence(bool participate) {
             participate_in_auto_precedence_ = participate;
         }
 
         //! \brief Does this Port participate in auto-precedence
         //!        establishment by sparta::Unit?
         //! \return true if so, false otherwise
-        bool doesParticipateInAutoPrecedence() const {
+        virtual bool doesParticipateInAutoPrecedence() const {
             return participate_in_auto_precedence_;
         }
 

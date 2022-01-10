@@ -22,8 +22,7 @@ namespace sparta
      * Built to address the request in GitHub issue #172, ExportedPort
      * allows a modeler to "represent" a Port deep in a component
      * hierarchy at a higher level for the sole purpose of _binding
-     * only_.  This is not a fully functioning Port (hence the private
-     * inheritance of sparta::Port).
+     * only_.  This is not intended to be a fully functioning Port.
      *
      * The internal port can be either provided directly or searched
      * for during binding.
@@ -77,7 +76,7 @@ namespace sparta
      * \endcode
      *
      */
-    class ExportedPort : private Port
+    class ExportedPort : public Port
     {
     public:
 
@@ -132,6 +131,33 @@ namespace sparta
             return false;
         }
 
+        //! \brief Get the direction of the port
+        //! \return The Port direction of the internal port; UNKNOWN if not bound
+        //!
+        //! If the port is to be found during binding, this function
+        //! will return UNKNOWN until binding is complete.
+        Direction getDirection() const override {
+            if(nullptr == internal_port_) {
+                return Port::Direction::UNKNOWN;
+            }
+             return internal_port_->getDirection();
+        }
+
+        //! \brief Function that cannot be used in ExportedPort.
+        //! The user must set auto precedence directly in the internal port
+        void participateInAutoPrecedence(bool) override final {
+            sparta_assert(false, "You cannot set auto precedence on an ExportedPort");
+        }
+
+        //! \brief Does the internal Port participate in auto-precedence
+        //! \return true if so, false otherwise or the port is not available
+        bool doesParticipateInAutoPrecedence() const override final {
+            if(internal_port_) {
+                return internal_port_->doesParticipateInAutoPrecedence();
+            }
+            return false;
+        }
+
         //! \brief Return the intenal representative port (non-const)
         //! \return The internal port this ExportedPort represents
         //!
@@ -172,5 +198,8 @@ namespace sparta
         // the code could not find the to-be-modified internal_port_
         sparta::TreeNode * internal_port_search_path_ = nullptr;
         const std::string  internal_port_name_;
+
+        // Resolve the internal port
+        void resolvePort_();
     };
 }

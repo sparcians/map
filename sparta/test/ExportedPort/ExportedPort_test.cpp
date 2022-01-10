@@ -30,7 +30,8 @@ public:
                                  my_node,      "a_deep_signal_out_port"),
         exported_port_bad_(getPortSet(), "a_non_existant_port",
                            my_node,      "a_non_existant_port")
-    { }
+    {
+    }
 
 private:
 
@@ -41,6 +42,7 @@ private:
             sparta::Unit(my_node)
         {
             sparta::StartupEvent(my_node, CREATE_SPARTA_HANDLER(SubUnit1, writer_));
+            a_signal_out_port_.participateInAutoPrecedence(false);
         }
     private:
         void writer_() {
@@ -76,8 +78,8 @@ public:
     }
 
 private:
-    //sparta::ExportedPort a_signal_in_port_{getPortSet(), "a_signal_in_port"};
     sparta::DataInPort<int> a_signal_in_port_{getPortSet(), "a_signal_in_port"};
+    sparta::ExportedPort a_signal_in_port_exported_{getPortSet(), "a_signal_in_port_exported", &a_signal_in_port_};
 
     int last_payload_ = 0;
 };
@@ -108,17 +110,20 @@ int main()
     auto exported_port_out =
         unit1.getPortSet()->getChildAs<sparta::Port>("a_signal_out_port");
     auto exported_port_in  =
-        unit2.getPortSet()->getChildAs<sparta::Port>("a_signal_in_port");
+        unit2.getPortSet()->getChildAs<sparta::Port>("a_signal_in_port_exported");
 
     EXPECT_FALSE(exported_port_out->isBound());
     EXPECT_FALSE(exported_port_in->isBound());
 
+    EXPECT_EQUAL(exported_port_in->getDirection(), sparta::Port::Direction::IN);
+    EXPECT_EQUAL(exported_port_out->getDirection(), sparta::Port::Direction::UNKNOWN);
+
     sparta::bind(unit1.getPortSet()->getChildAs<sparta::Port>("a_signal_out_port"),
-                 unit2.getPortSet()->getChildAs<sparta::Port>("a_signal_in_port"));
+                 unit2.getPortSet()->getChildAs<sparta::Port>("a_signal_in_port_exported"));
     bool caught_bad_bind = false;
     try {
         sparta::bind(unit1.getPortSet()->getChildAs<sparta::Port>("a_non_existant_port"),
-                     unit2.getPortSet()->getChildAs<sparta::Port>("a_signal_in_port"));
+                     unit2.getPortSet()->getChildAs<sparta::Port>("a_signal_in_port_exported"));
     }
     catch(...) {
         caught_bad_bind = true;
@@ -127,6 +132,11 @@ int main()
 
     EXPECT_TRUE(exported_port_out->isBound());
     EXPECT_TRUE(exported_port_in->isBound());
+    EXPECT_EQUAL(exported_port_in->getDirection(), sparta::Port::Direction::IN);
+    EXPECT_EQUAL(exported_port_out->getDirection(), sparta::Port::Direction::OUT);
+
+    EXPECT_TRUE(exported_port_in->doesParticipateInAutoPrecedence());
+    EXPECT_FALSE(exported_port_out->doesParticipateInAutoPrecedence());
 
     sched.finalize();
 
