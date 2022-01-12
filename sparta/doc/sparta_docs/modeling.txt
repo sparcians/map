@@ -51,6 +51,7 @@
   sparta::Bus | \copybrief sparta::Bus &nbsp;
   sparta::DataInPort | \copybrief sparta::DataInPort &nbsp;
   sparta::DataOutPort | \copybrief sparta::DataOutPort &nbsp;
+  sparta::ExportedPort | \copybrief sparta::ExportedPort &nbsp;
   sparta::Port | \copybrief sparta::Port &nbsp;
   sparta::PortSet | \copybrief sparta::PortSet &nbsp;
   sparta::SignalInPort | \copybrief sparta::SignalInPort &nbsp;
