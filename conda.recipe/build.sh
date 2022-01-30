@@ -72,29 +72,30 @@ df -h /
 
 # if we want to create individual packages this should move into a separate install script for only SPARTA
 # and we might want to create separate install targets for the headers and the libs and the doc
-cmake --build . --target install
-df -h /
-
-popd
-
-
-################################################################################
+#cmake --build . --target install
+#df -h /
 #
-# Preserve build-phase test results so that we can track them individually
+#popd
 #
-################################################################################
 #
-# conda-build will remove the directory where it cloned and built
-# everything after a successful build.  It does this so that
-# when it goes to the conda-build test phase and installs the conda
-# package, any tests that are run will only use the installed
-# conda package and not accidentally use stuff from the source
-# build that isn't included in the package.
-rsync -a \
-    --include '**/Test.xml' \
-    --include '*/' \
-    --exclude '**' \
-    --prune-empty-dirs  \
-    --verbose \
-    . "$BUILD_TEST_DEST/build_test_artifacts/" || \
-    true # don't let failure of saving artifacts fail the build
+#################################################################################
+##
+## Preserve build-phase test results so that we can track them individually
+##
+#################################################################################
+##
+## conda-build will remove the directory where it cloned and built
+## everything after a successful build.  It does this so that
+## when it goes to the conda-build test phase and installs the conda
+## package, any tests that are run will only use the installed
+## conda package and not accidentally use stuff from the source
+## build that isn't included in the package.
+#rsync -a \
+#    --include '**/Test.xml' \
+#    --include '*/' \
+#    --exclude '**' \
+#    --prune-empty-dirs  \
+#    --verbose \
+#    . "$BUILD_TEST_DEST/build_test_artifacts/" || \
+#    true # don't let failure of saving artifacts fail the build
+#
