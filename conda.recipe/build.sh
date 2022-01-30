@@ -72,8 +72,8 @@ df -h /
 
 # if we want to create individual packages this should move into a separate install script for only SPARTA
 # and we might want to create separate install targets for the headers and the libs and the doc
-#cmake --build . --target install
-#df -h /
+cmake --build . --target install
+df -h /
 
 popd
 
