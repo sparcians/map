@@ -158,9 +158,13 @@ namespace sparta
         //! Handy typedef
         using element_type = PointerT;
 
-        //! Used for defining a custom watermark callback.
+        //! Used for defining a custom watermark warning callback.
         //! Default is to print a warning
         using WaterMarkWarningCallback = std::function<void (const SpartaSharedPointerAllocator &)>;
+
+        //! Used for defining a custom over allocation callback.
+        //! Default is to throw an exception
+        using OverAllocationCallback = std::function<void (const SpartaSharedPointerAllocator &)>;
 
         /**
          * \brief Construct this allocator with num_blocks of initial memory
@@ -177,7 +181,8 @@ namespace sparta
                                      const size_t water_mark) :
             memory_blocks_(max_num_blocks),
             water_mark_(water_mark),
-            watermark_warning_callback_(waterMarkWarningCallback_)
+            watermark_warning_callback_(waterMarkWarningCallback_),
+            over_allocation_callback_(overAllocationCallback_)
         {
             sparta_assert(water_mark <= max_num_blocks,
                           "The water_mark on SpartaSharedPointerAllocator should be less than or " <<
@@ -249,7 +254,7 @@ namespace sparta
         }
 
         /**
-         * \brief Set a custom watermark callback
+         * \brief Set a custom watermark warning callback
          *
          * \param callback The callback to use when the allocator hits the watermark
          *
@@ -257,6 +262,17 @@ namespace sparta
          */
         void registerCustomWaterMarkCallback(const WaterMarkWarningCallback & callback) {
             watermark_warning_callback_ = callback;
+        }
+
+        /**
+         * \brief Set a custom over allocation callback
+         *
+         * \param callback The callback to use when the allocator exceeds max blocks
+         *
+         * The callback will be called only after the allocated exceeds the max blocks.
+         */
+        void registerCustomOverAllocationCallback(const OverAllocationCallback & callback) {
+            over_allocation_callback_ = callback;
         }
 
     private:
@@ -391,6 +407,7 @@ namespace sparta
 
                     // Only need to check for overallocation if we've passed the watermark
                     if(SPARTA_EXPECT_FALSE(allocated_ >= memory_blocks_.capacity())) {
+                        over_allocation_callback_(*this);
                         SpartaException ex;
                         ex << "This allocator has run out of memory: \n\n\t"
                            << __PRETTY_FUNCTION__
@@ -413,6 +430,10 @@ namespace sparta
                       << "\n\n"
                       << "\t\tNumber blocks preallocated: " << allocator.memory_blocks_.capacity()
                       << "\n\t\tWatermark                 : " << allocator.water_mark_ << std::endl;
+        }
+
+        // Default over allocation callback
+        static void overAllocationCallback_(const SpartaSharedPointerAllocator & allocator) {
         }
 
         /**
@@ -445,6 +466,7 @@ namespace sparta
         const size_t             water_mark_;
         bool                     water_mark_warning_ = false;
         WaterMarkWarningCallback watermark_warning_callback_;
+        OverAllocationCallback   over_allocation_callback_;
     };
 
     /**

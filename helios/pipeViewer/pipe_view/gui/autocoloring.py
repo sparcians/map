@@ -86,9 +86,7 @@ class BrushRepository(object):
         self._generate_colorblind_brushes(color_dict)
 
     def _generate_colorblind_brushes(self, color_dict):
-        # daltonize was license incompatable with MIT and removed. If colorblind pallets are needed
-        # we will need to reimplement or find a compatible version
-        # For now, we just return.
+        # daltonize might be incompatible with the license of this project
         return
 
         for palette in self._COLORBLIND_MODES:
@@ -243,4 +241,3 @@ def BuildBrushes(colorblindness_mode, shuffle_mode):
     REASON_BRUSHES.generate_all_brushes(REASON_COLORS)
     SetPalettes(colorblindness_mode)
     SetShuffleModes(shuffle_mode)
-
