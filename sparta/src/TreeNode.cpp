@@ -192,7 +192,7 @@ TreeNode::TreeNode(TreeNode&& rhp) :
     // Note: asume name/group/desc have already been validated
 
     // Detach rhp from parent & children
-    std::vector<TreeNode*> children = rhp.children_;
+    std::vector<TreeNode*> children = std::move(rhp.children_);
     rhp.detachFromParent_();
     rhp.detachFromChildren_();
     rhp.is_expired_ = true; // Set after detaching node
@@ -1793,7 +1793,7 @@ void TreeNode::addChild_(TreeNode* child, bool inherit_phase) {
 
     try {
 
-        // Add am mapping for all identifiers of this node
+        // Add a mapping for all identifiers of this node
         std::vector<const std::string*> idents = child->getIdentifiers();
         for(const std::string* ident : idents){
             addChildNameMapping_(*ident, child);
@@ -2379,7 +2379,7 @@ void TreeNode::removeChildForTeardown_(TreeNode* child) {
                   "Cannot removeChildForTeardown_ from " << getLocation()
                   << " with a null child pointer");
 
-    onDestroyingChild_(this);
+    onDestroyingChild_(child);
 
     auto erase_child = [this, child] (ChildrenVector& list, bool ignore_missing) {
                            // Remove child from children_ list

@@ -274,6 +274,36 @@ namespace sparta
         }
 
         /*!
+         * \brief Hook for reacting to having an immediate child node destroyed
+         * \param child Child that is being destroyed. This child can be
+         * accessed during this function, but not after. child must be accessed
+         * as a TreeNode or base class. Subclasses of TreeNode may have already
+         * been destructed.
+         *
+         * Can be called when a Counter/Stat is being moved
+         */
+        virtual void onDestroyingChild_(TreeNode* child) noexcept override
+        {
+            auto ctr = std::find(ctrs_.begin(), ctrs_.end(), child);
+            if(ctr != ctrs_.end()) {
+                ctrs_.erase(ctr);
+            }
+            auto stat = std::find(stats_.begin(), stats_.end(), child);
+            if(stat != stats_.end()) {
+                stats_.erase(stat);
+            }
+            auto uctr = std::find_if(owned_ctrs_.begin(), owned_ctrs_.end(),
+                                     [child] (const auto & oc)
+                                     {
+                                         return (oc.get() == child);
+                                     });
+            if(uctr != owned_ctrs_.end()) {
+                owned_ctrs_.erase(uctr);
+            }
+        }
+
+
+        /*!
          * \brief Vector of unique pointers to statistics
          */
         typedef std::vector<std::unique_ptr<StatisticDef>> OwnedStatisticVector;
@@ -312,4 +342,3 @@ namespace sparta
     };
 
 } // namespace sparta
-

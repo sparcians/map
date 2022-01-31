@@ -80,9 +80,16 @@ int main()
     // from top.stats, refer to 'sd1' and then 'top.dummy.stats.a'
     StatisticDef sd3(&sset, "sd3", "Neighbor-accessing stat", &sset, "sd1 + .dummy.stats.a");
 
+    // Issue 245, bug for statistic set move
+    TreeNode dummy2(&root, "dummy2", "A second dummy node");
+    sparta::StatisticSet moved_stats_set(&dummy2);
+    sparta::Counter orig_counter(&moved_stats_set, "moved_stat", "A stat to be moved", Counter::COUNT_NORMAL);
+    EXPECT_EQUAL(moved_stats_set.getNumCounters(), 1);
+    sparta::Counter moved_counter(std::move(orig_counter));
+    EXPECT_EQUAL(moved_stats_set.getNumCounters(), 1);
+
 
     // Finalize tree
-
     root.enterConfiguring();
     root.enterFinalized();
 
