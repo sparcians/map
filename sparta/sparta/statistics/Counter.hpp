@@ -127,7 +127,7 @@ namespace sparta
             CounterBase(std::move(rhp)),
             val_(rhp.val_)
         {
-            TreeNode* parent = rhp.getParent();
+            TreeNode* parent = getParent();
             if(parent != nullptr){
                 parent->addChild(this);
             }
@@ -304,4 +304,3 @@ namespace sparta
     };
 
 } // namespace sparta
-

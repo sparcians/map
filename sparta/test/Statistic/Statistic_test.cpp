@@ -88,6 +88,13 @@ int main()
     sparta::Counter moved_counter(std::move(orig_counter));
     EXPECT_EQUAL(moved_stats_set.getNumCounters(), 1);
 
+    // Hmmm... how does this work?
+    auto & created_stat =
+        moved_stats_set.createCounter<sparta::Counter>("another_moved_stat", "Another stat to be moved", Counter::COUNT_NORMAL);
+    EXPECT_EQUAL(moved_stats_set.getNumCounters(), 2);
+    sparta::Counter new_moved_counter(std::move(created_stat));
+    (void) new_moved_counter;
+    EXPECT_EQUAL(moved_stats_set.getNumCounters(), 2);
 
     // Finalize tree
     root.enterConfiguring();

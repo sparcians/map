@@ -1087,7 +1087,14 @@ public:
 
         ReportDescriptorFileEventHandlerYAML handler(def_file_, {scope});
 
-        while(parser_->HandleNextDocument(*((YP::EventHandler*)&handler))) {}
+        try {
+            while(parser_->HandleNextDocument(*((YP::EventHandler*)&handler))) {}
+        }
+        catch(YAML::ParserException &yml_error) {
+            std::cerr << "YAML Error detected while parsing '" << def_file_ << "': "
+                      << yml_error.what() << std::endl;
+            throw;
+        }
 
         return handler.getDescriptors();
     }

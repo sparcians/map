@@ -225,7 +225,7 @@ namespace sparta
         CounterT & createCounter(_Args&&... __args) {
             if(isFinalized()){
                 throw SpartaException("Cannot create a new Counter once a StatisticSet is finalized. "
-                                    "Error with: ")
+                                      "Error with: ")
                     << getLocation();
             }
             owned_ctrs_.emplace_back(new CounterT(this, __args...));
@@ -292,14 +292,14 @@ namespace sparta
             if(stat != stats_.end()) {
                 stats_.erase(stat);
             }
-            auto uctr = std::find_if(owned_ctrs_.begin(), owned_ctrs_.end(),
-                                     [child] (const auto & oc)
-                                     {
-                                         return (oc.get() == child);
-                                     });
-            if(uctr != owned_ctrs_.end()) {
-                owned_ctrs_.erase(uctr);
-            }
+
+            // What about cleaning up the owned_ctrs_?  The memory is
+            // still allocated from the create* functions, but the
+            // objects contained will be destroyed when the
+            // StatisticSet is torn down.  The also applies to
+            // std::move operations, where the object still has
+            // memory, but technically is still alive, but fully
+            // disconnected.
         }
 
 

@@ -336,6 +336,7 @@ void TreeNode::detachFromParent_()
     // Inform Parent
     if(parent_){
         removeFromParentForTeardown_(parent_);
+        parent_ = nullptr;
     }
 }
 
