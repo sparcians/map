@@ -25,7 +25,7 @@ struct dummy_struct
     std::string s_field;
 
     dummy_struct() = default;
-    dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) : 
+    dummy_struct(const uint16_t int16_field, const uint32_t int32_field, const std::string &s_field) :
         int16_field{int16_field},
         int32_field{int32_field},
         s_field{s_field} {}
@@ -293,6 +293,7 @@ int main ()
     sparta::Pipeline<uint64_t> examplePipeline7("mySeventhSpartaPipeline", 2, root_clk.get());
 
     sparta::Pipeline<uint64_t, sparta::PhasedPayloadEvent<uint64_t>> examplePipeline8(&es, "myEighthSpartaPipeline", 3, root_clk.get());
+    sparta::Pipeline<uint64_t, sparta::PhasedPayloadEvent<uint64_t>> examplePipeline9(     "myNinethSpartaPipeline", 3, root_clk.get());
 
     sparta::Pipeline<bool> stwr_pipe("STWR_Pipe", 5, root_clk.get());
 
@@ -318,6 +319,7 @@ int main ()
     examplePipeline6.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
     examplePipeline7.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
     examplePipeline8.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
+    examplePipeline9.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
     stwr_pipe.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
 #endif
 
@@ -527,6 +529,11 @@ int main ()
     // examplePipeline8 Stage[2] handler: Tick phase
     EXPECT_NOTHROW(
         examplePipeline8.registerHandlerAtStage<sparta::SchedulingPhase::Tick>
+            (2, CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(DummyClass, &dummyObj1, stage2_T_DataHandle, uint64_t)));
+
+    // issue 306 - Pipeline constructed with a PLE and NO event set would wrongfully throw an exception
+    EXPECT_NOTHROW(
+        examplePipeline9.registerHandlerAtStage<sparta::SchedulingPhase::Tick>
             (2, CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(DummyClass, &dummyObj1, stage2_T_DataHandle, uint64_t)));
 
     rtn.enterConfiguring();
