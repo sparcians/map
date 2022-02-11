@@ -247,6 +247,9 @@ namespace sparta
                 (es_, name + "_update_event", CREATE_SPARTA_HANDLER(Pipeline, internalUpdate_), 1),
             num_stages_(num_stages)
         {
+            sparta_assert(clk != nullptr, "Pipeline requires a clock");
+            dummy_es_.setClock(clk);
+
             // Only support the following Event types:
             // 1. PhasedUniqueEvent
             // 2. PhasedPayloadEvent<DataT>
@@ -1099,4 +1102,3 @@ namespace sparta
     };
 
 }
-
