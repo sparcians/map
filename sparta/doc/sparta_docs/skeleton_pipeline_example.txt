@@ -54,7 +54,7 @@
 
   When the data arrives on the Consumer's sparta::DataInPort, the
   Consumer defers consumption of that data using a sparta::UniqueEvent
-  (registered callbac is Consumer::dataArrived_).
+  (registered callback is Consumer::dataArrived_).
 
   While the purpose of the simulator is simple, there's a lot that can
   be done with it.  Try the following command lines.
@@ -98,8 +98,8 @@
   \code{.sh}
   # Run the simulation with default number of producers: 1
   % ./sparta_skeleton --report-all output.html html # HTML format
-  % ./sparta_skeleton --report-all output.html text # Plain text
-  % ./sparta_skeleton --report-all output.html json # JSON format
+  % ./sparta_skeleton --report-all output.text text # Plain text
+  % ./sparta_skeleton --report-all output.json json # JSON format
   \endcode
 
   Running the simulator and generating logs
