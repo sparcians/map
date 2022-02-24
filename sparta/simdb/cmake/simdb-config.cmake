@@ -10,4 +10,4 @@ message("-- Using SQLite3 ${SQLite3_VERSION}")
 enable_language(C)
 find_package(HDF5 1.10 REQUIRED)
 
-set(SimDB_LIBS simdb hdf5 sqlite3 z pthread)
+set(SimDB_LIBS simdb ${HDF5_LIBRARIES} sqlite3 z pthread)
