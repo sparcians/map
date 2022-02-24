@@ -3,7 +3,8 @@
 
 language: generic
 
-
+vm:
+  size: large
 
 matrix:
   include:
