@@ -59,7 +59,7 @@ message (STATUS "Using BOOST ${Boost_VERSION_STRING}")
 
 # Find YAML CPP
 find_package (yaml-cpp 0.6 REQUIRED)
-message (STATUS "Using YAML CPP ${PACKAGE_VERSION}")
+message (STATUS "Using YAML CPP ${yaml-cpp_VERSION}")
 
 # Find RapidJSON
 find_package (RapidJSON 1.1 REQUIRED)
