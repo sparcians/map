@@ -107,7 +107,7 @@ namespace sparta
 
             using PipelinePointerType =
                 typename std::conditional<is_const_iterator,
-                                          const Pipeline<DataT> *, Pipeline<DataT> *>::type;
+                                          const Pipeline<DataT, EventT> *, Pipeline<DataT, EventT> *>::type;
 
         public:
             friend class PipelineIterator<true>;
@@ -247,6 +247,9 @@ namespace sparta
                 (es_, name + "_update_event", CREATE_SPARTA_HANDLER(Pipeline, internalUpdate_), 1),
             num_stages_(num_stages)
         {
+            sparta_assert(clk != nullptr, "Pipeline requires a clock");
+            dummy_es_.setClock(clk);
+
             // Only support the following Event types:
             // 1. PhasedUniqueEvent
             // 2. PhasedPayloadEvent<DataT>
@@ -384,8 +387,8 @@ namespace sparta
          * \param c_pipeline The consumer pipeline
          * \param cid The stage number of the consumer pipeline stage-handling event
          */
-        template<typename DataT2>
-        void setPrecedenceBetweenPipeline(const uint32_t & pid, Pipeline<DataT2> & c_pipeline, const uint32_t & cid)
+        template<class DataT2, class EventT2>
+        void setPrecedenceBetweenPipeline(const uint32_t & pid, Pipeline<DataT2, EventT2> & c_pipeline, const uint32_t & cid)
         {
             sparta_assert(static_cast<void*>(&c_pipeline) != static_cast<void*>(this),
                           "Cannot use this function to set precedence between stages within the same pipeline instance!");
@@ -1099,4 +1102,3 @@ namespace sparta
     };
 
 }
-
