@@ -62,7 +62,7 @@ namespace cache {
         void print(std::ostream& ss) const override
         {
             YAML::Emitter out;
-            out << *yaml_node_;
+            out << yaml_node_;
             ss << "{" << out.c_str() << "}";
         }
 
@@ -127,4 +127,3 @@ namespace cache {
 
 } // namespace cache
 } //namespace sparta
-
