@@ -53,10 +53,10 @@ namespace sparta
                     ++el;
                 }
             }
+            efact.removeEdge(ei->second);
             outbound_edge_map_.erase(ei);
             sparta_assert(w->num_inbound_edges_ > 0);
             --(w->num_inbound_edges_);
-            efact.removeEdge(ei->second);
         }
         return true;
     }

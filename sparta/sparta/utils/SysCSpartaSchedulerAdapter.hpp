@@ -36,9 +36,6 @@ namespace sparta
          * \param sysc_offset The SystemC offset to convert
          * \return The sparta::Clock::Cycle that be used to schedule an event/send data
          *
-         * Example usage:
-         * \code
-         *
          */
         inline Clock::Cycle calculateSpartaOffset(const sparta::Clock * sparta_clk,
                                                   sc_core::sc_time::value_type sysc_offset)
@@ -68,11 +65,11 @@ namespace sparta
         }
     }
 
-//! \def SC_Sparta_SCHEDULER_NAME
+//! \def SC_SPARTA_SCHEDULER_NAME
 //! The name of the scheduler adapter
 #define SC_SPARTA_SCHEDULER_NAME  "SysCSpartaSchedulerAdapter"
 
-//! \def SC_Sparta_STOP_EVENT_NAME
+//! \def SC_SPARTA_STOP_EVENT_NAME
 //! The name of the SystemC event used to stop simulation
 #define SC_SPARTA_STOP_EVENT_NAME "sc_ev_stop_simulation"
 
@@ -96,13 +93,13 @@ namespace sparta
  *
  * There are some caveats to know about this adapter.  See the todo.
  *
- * \todo The Sparta scheduler is on its own SC_THREAD and put to sleep
- * between scheduled events.  For example, if the Sparta scheduler has
- * an event scheduled @ tick 1000, and time is currently 500, the Sparta
- * scheduler thread will wait() for 500 ticks. However, if a SystemC
- * component puts an event on the Sparta scheduler during this sleep
- * window (say at 750 ticks), we do not have a mechanism to wake this
- * thread early.
+ * \todo The Sparta scheduler is on its own SC_THREAD and is put to
+ * sleep between scheduled events.  For example, if the Sparta
+ * scheduler has an event scheduled @ tick 1000, and time is currently
+ * 500, the Sparta scheduler thread will wait() for 500
+ * ticks. However, if a SystemC component puts an event on the Sparta
+ * scheduler during this sleep window (say at 750 ticks), we do not
+ * have a mechanism to wake this thread early.
  */
 class SysCSpartaSchedulerAdapter : public sc_core::sc_module
 {

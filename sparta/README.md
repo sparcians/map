@@ -22,7 +22,7 @@ design.
 #    cmake boost hdf5 yaml-cpp rapidJSON xz sqlite doxygen
 #
 # Versions tested and known to work:
-#    cmake     3.14
+#    cmake     3.15
 #    boost     1.71  (can go older, can go newer)
 #    yaml-cpp  0.6
 #    RapidJSON 1.1
