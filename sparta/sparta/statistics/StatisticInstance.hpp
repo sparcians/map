@@ -1,4 +1,4 @@
-// <StatisticInstance> -*- C++ -*-
+// <StatisticInstance.hpp> -*- C++ -*-
 
 /*!
  * \file StatisticInstance.hpp
@@ -96,17 +96,7 @@ namespace sparta
         /*!
          * \brief Private Default constructor
          */
-        StatisticInstance() :
-            sdef_(nullptr),
-            ctr_(nullptr),
-            par_(nullptr),
-            start_tick_(0),
-            end_tick_(Scheduler::INDEFINITE),
-            initial_(NAN),
-            result_(NAN),
-            sub_statistics_()
-        {
-        }
+        StatisticInstance() = default;
 
         /*!
          * \brief Private constructor. Exactly one of the pointers contained
@@ -122,91 +112,7 @@ namespace sparta
                           const CounterBase* ctr,
                           const ParameterBase* par,
                           const TreeNode* n,
-                          std::vector<const TreeNode*>* used) :
-            StatisticInstance()
-        {
-            const StatisticDef* stat_def;
-            if(!sd){
-                stat_def = dynamic_cast<const StatisticDef*>(n);
-
-                sdef_ = stat_def;
-            }else{
-                sdef_ = stat_def = sd;
-            }
-            const CounterBase* counter;
-            if(!ctr){
-                counter = dynamic_cast<const CounterBase*>(n);
-                ctr_ = counter;
-            }else{
-                ctr_ = counter = ctr;
-            }
-            const ParameterBase* param;
-            if(!par){
-                param = dynamic_cast<const ParameterBase*>(n);
-                par_ = param;
-            }else{
-                par_ = param = par;
-            }
-
-            // Find the non-null argument
-            const TreeNode* node = n;
-            if(!node){
-                node = sd;
-                if(!node){
-                    node = ctr;
-                    if(!node){
-                        node = par;
-                        sparta_assert(node,
-                                    "StatisticInstance was constructed with all null arguments. "
-                                    "This is not allowed");
-                    }
-                }
-            }
-            sparta_assert(int(nullptr != sdef_) + int(nullptr != ctr_) + int(nullptr != par_) == 1,
-                             "Can only instantiate a StatisticInstance with either a StatisticDef, "
-                             "a Counter, or a Parameter of any numeric type. Got Node: \"" << node->getLocation()
-                             << "\". This node is not a stat, counter, or parameter.");
-
-            // Get the Scheduler as context
-            if(node->getClock()) {
-                scheduler_ = n->getClock()->getScheduler();
-            }
-
-            if(sdef_){
-                node_ref_ = stat_def->getWeakPtr();
-
-                std::vector<const TreeNode*>* local_used_ptr;
-                std::vector<const TreeNode*> temp_used;
-                if(!used){
-                    local_used_ptr = &temp_used;
-                }else{
-                    local_used_ptr = used;
-                }
-                stat_expr_ = sdef_->realizeExpression(*local_used_ptr);
-                if(stat_expr_.hasContent() == false){
-                    throw SpartaException("Cannot construct StatisticInstance based on node ")
-                        << stat_def->getLocation() << " because its expression: "
-                        << stat_def->getExpression() << " parsed to an empty expression";
-                }
-                const auto & sub_stats_info = sdef_->getSubStatistics();
-                for (auto & sub_stat_creation_info : sub_stats_info) {
-                    addSubStatistic_(sub_stat_creation_info);
-                }
-            }else if(ctr_){
-                node_ref_ = counter->getWeakPtr();
-            }else if(par_){
-                node_ref_ = param->getWeakPtr();
-            }else{
-                // Should not have been able to call constructor without 1 or
-                // the 3 args being non-null
-                throw SpartaException("Cannot instantiate a StatisticInstance without a statistic "
-                                    "definition or counter pointer");
-            }
-
-            start();
-
-            sparta_assert(false == node_ref_.expired());
-        }
+                          std::vector<const TreeNode*>* used);
 
     public:
 
@@ -221,10 +127,8 @@ namespace sparta
          *       call.  The Expression might or might not know the context for the Scheduler
          */
         StatisticInstance(statistics::expression::Expression&& expr) :
-            StatisticInstance()
-        {
-            stat_expr_ = expr;
-        }
+            stat_expr_(expr)
+        { }
 
         /*!
          * \brief Construct with a StatisticDef or Counter as a TreeNode*
@@ -250,106 +154,13 @@ namespace sparta
          * in this constructor)
          */
         StatisticInstance(std::shared_ptr<StatInstCalculator> & calculator,
-                          std::vector<const TreeNode*>& used) :
-            StatisticInstance(nullptr, nullptr, nullptr, calculator->getNode(), &used)
-        {
-            // Creating SI's using this constructor essentially means that you
-            // want to perform your own StatisticDef calculation, the math/logic
-            // of which is too complicated or cumbersome to express in a single
-            // std::string. Counter and Parameter SI's are simple enough that
-            // SPARTA will not let you try to override their SI value calculation.
-            // StatisticDef's and their subclasses are the exception.
-            sparta_assert(sdef_);
-            sparta_assert(ctr_ == nullptr);
-            sparta_assert(par_ == nullptr);
-            user_calculated_si_value_ = calculator;
-        }
+                          std::vector<const TreeNode*>& used);
 
         //! \brief Copy Constructor
-        StatisticInstance(const StatisticInstance& rhp) :
-            node_ref_(rhp.node_ref_),
-            sdef_(rhp.sdef_),
-            ctr_(rhp.ctr_),
-            par_(rhp.par_),
-            stat_expr_(rhp.stat_expr_),
-            start_tick_(rhp.start_tick_),
-            end_tick_(rhp.end_tick_),
-            scheduler_(rhp.scheduler_),
-            initial_(rhp.initial_),
-            result_(rhp.result_),
-            sub_statistics_(rhp.sub_statistics_),
-            user_calculated_si_value_(rhp.user_calculated_si_value_),
-            direct_lookup_si_value_(rhp.direct_lookup_si_value_),
-            provided_metadata_(rhp.provided_metadata_)
-        {
-            if (rhp.provided_location_.isValid()) {
-                provided_location_ = rhp.provided_location_.getValue();
-            }
-            if (rhp.provided_description_.isValid()) {
-                provided_description_ = rhp.provided_description_.getValue();
-            }
-            if (rhp.provided_expr_string_.isValid()) {
-                provided_expr_string_ = rhp.provided_expr_string_.getValue();
-            }
-            if (rhp.provided_value_semantic_.isValid()) {
-                provided_value_semantic_ = rhp.provided_value_semantic_.getValue();
-            }
-            if (rhp.provided_visibility_.isValid()) {
-                provided_visibility_ = rhp.provided_visibility_.getValue();
-            }
-            if (rhp.provided_class_.isValid()) {
-                provided_class_ = rhp.provided_class_.getValue();
-            }
-        }
+        StatisticInstance(const StatisticInstance& rhp);
 
         //! \brief Move Constructor
-        StatisticInstance(StatisticInstance&& rhp) :
-            node_ref_(std::move(rhp.node_ref_)),
-            sdef_(rhp.sdef_),
-            ctr_(rhp.ctr_),
-            par_(rhp.par_),
-            stat_expr_(std::move(rhp.stat_expr_)),
-            start_tick_(rhp.start_tick_),
-            end_tick_(rhp.end_tick_),
-            scheduler_(rhp.scheduler_),
-            initial_(rhp.initial_),
-            result_(rhp.result_),
-            sub_statistics_(std::move(rhp.sub_statistics_)),
-            user_calculated_si_value_(std::move(rhp.user_calculated_si_value_)),
-            direct_lookup_si_value_(std::move(rhp.direct_lookup_si_value_)),
-            provided_metadata_(std::move(rhp.provided_metadata_))
-        {
-            rhp.sdef_ = nullptr;
-            rhp.ctr_ = nullptr;
-            rhp.par_ = nullptr;
-            rhp.result_ = NAN;
-
-            if (rhp.provided_location_.isValid()) {
-                provided_location_ = rhp.provided_location_.getValue();
-            }
-            if (rhp.provided_description_.isValid()) {
-                provided_description_ = rhp.provided_description_.getValue();
-            }
-            if (rhp.provided_expr_string_.isValid()) {
-                provided_expr_string_ = rhp.provided_expr_string_.getValue();
-            }
-            if (rhp.provided_value_semantic_.isValid()) {
-                provided_value_semantic_ = rhp.provided_value_semantic_.getValue();
-            }
-            if (rhp.provided_visibility_.isValid()) {
-                provided_visibility_ = rhp.provided_visibility_.getValue();
-            }
-            if (rhp.provided_class_.isValid()) {
-                provided_class_ = rhp.provided_class_.getValue();
-            }
-
-            rhp.provided_location_.clearValid();
-            rhp.provided_description_.clearValid();
-            rhp.provided_expr_string_.clearValid();
-            rhp.provided_value_semantic_.clearValid();
-            rhp.provided_visibility_.clearValid();
-            rhp.provided_class_.clearValid();
-        }
+        StatisticInstance(StatisticInstance&& rhp);
 
         /*!
          * \brief Construct a StatisticInstance with its metadata
@@ -362,17 +173,7 @@ namespace sparta
                           const StatisticDef::ValueSemantic value_semantic,
                           const InstrumentationNode::visibility_t visibility,
                           const InstrumentationNode::class_t cls,
-                          const std::vector<std::pair<std::string, std::string>> & metadata = {}) :
-            StatisticInstance()
-        {
-            provided_location_ = location;
-            provided_description_ = description;
-            provided_expr_string_ = expression_str;
-            provided_value_semantic_ = value_semantic;
-            provided_visibility_ = visibility;
-            provided_class_ = cls;
-            provided_metadata_ = metadata;
-        }
+                          const std::vector<std::pair<std::string, std::string>> & metadata = {});
 
         /*!
          * \brief Construct a StatisticInstance with its location and
@@ -386,23 +187,10 @@ namespace sparta
             const std::shared_ptr<StatInstCalculator> & calculator,
             const InstrumentationNode::visibility_t visibility = InstrumentationNode::DEFAULT_VISIBILITY,
             const InstrumentationNode::class_t cls = InstrumentationNode::DEFAULT_CLASS,
-            const std::vector<std::pair<std::string, std::string>> & metadata = {}) :
-            StatisticInstance()
-        {
-            if (!location.empty()) {
-                provided_location_ = location;
-            }
-            if (!description.empty()) {
-                provided_description_ = description;
-            }
-            user_calculated_si_value_ = calculator;
-            provided_visibility_ = visibility;
-            provided_class_ = cls;
-            provided_metadata_ = metadata;
-        }
+            const std::vector<std::pair<std::string, std::string>> & metadata = {});
 
         /*!
-         * \brief Virtual destructor
+         * \brief Non-Virtual destructor
          */
         ~StatisticInstance() {;}
 
@@ -418,26 +206,7 @@ namespace sparta
         //! @}
 
         //! \brief Assignment Operator
-        StatisticInstance& operator=(const StatisticInstance& rhp) {
-            node_ref_ = rhp.node_ref_;
-            sdef_ = rhp.sdef_;
-            ctr_ = rhp.ctr_;
-            par_ = rhp.par_;
-
-            stat_expr_ = rhp.stat_expr_;
-            start_tick_ = rhp.start_tick_;
-            end_tick_ = rhp.end_tick_;
-            scheduler_ = rhp.scheduler_;
-            initial_ = rhp.initial_;
-            result_ = rhp.result_;
-
-            sub_statistics_ = rhp.sub_statistics_;
-            user_calculated_si_value_ = rhp.user_calculated_si_value_;
-            direct_lookup_si_value_ = rhp.direct_lookup_si_value_;
-            provided_metadata_ = rhp.provided_metadata_;
-
-            return *this;
-        }
+        StatisticInstance& operator=(const StatisticInstance& rhp);
 
         //! \name Computation Window
         //! @{
@@ -451,46 +220,7 @@ namespace sparta
          * \throw SpartaException if node reference is expired (and there is a
          * node reference)
          */
-        void start() {
-            sparta_assert(direct_lookup_si_value_ == nullptr,
-                        "You cannot call StatisticInstance::start() for an SI "
-                        "that was recreated from a SimDB record");
-
-            start_tick_ = getScheduler_()->getElapsedTicks();
-            end_tick_ = Scheduler::INDEFINITE;
-
-            if(user_calculated_si_value_){
-                initial_.resetValue(user_calculated_si_value_->getCurrentValue());
-                result_ = NAN;
-                return;
-            }
-
-            if(sdef_ != nullptr){
-                if(node_ref_.expired() == true){
-                    throw SpartaException("Cannot start() a StatisticInstance referring to a "
-                                        "destructed StatisticDef");
-                }
-                stat_expr_.start();
-                initial_.resetValue(0);
-            }else if(ctr_){
-                if(node_ref_.expired() == true){
-                    throw SpartaException("Cannot start() a StatisticInstance referring to a "
-                                        "destructed Counter");
-                }
-                initial_.resetValue(ctr_->get());
-            }else if(par_){
-                if(node_ref_.expired() == true){
-                    throw SpartaException("Cannot start() a StatisticInstance referring to a "
-                                        "destructed Parameter");
-                }
-                initial_.resetValue(par_->getDoubleValue());
-            }else{
-                stat_expr_.start();
-            }
-
-            // Clear result value
-            result_ = NAN;
-        }
+        void start();
 
         /*!
          * \brief Ends the window for this instance. Computes and caches the
@@ -500,38 +230,7 @@ namespace sparta
          * \throw SpartaException if node reference is expired (and there is a
          * node reference)
          */
-        void end(){
-            sparta_assert(direct_lookup_si_value_ == nullptr,
-                        "You cannot call StatisticInstance::end() for an SI "
-                        "that was recreated from a SimDB record");
-
-            end_tick_ = getScheduler_()->getElapsedTicks();
-
-            if(sdef_ != nullptr){
-                if(node_ref_.expired() == true){
-                    throw SpartaException("Cannot end() a StatisticInstance referring to a "
-                                        "destructed StatisticDef");
-                }
-                stat_expr_.end();
-            }else if(ctr_ != nullptr){
-                if(node_ref_.expired() == true){
-                    throw SpartaException("Cannot end() a StatisticInstance referring to a "
-                                        "destructed Counter");
-                }
-                // Do nothing to counter
-            }else if(par_ != nullptr){
-                if(node_ref_.expired() == true){
-                    throw SpartaException("Cannot end() a StatisticInstance referring to a "
-                                        "destructed Parameter");
-                }
-                // Do nothing to Parameter
-            }else{
-                stat_expr_.end();
-            }
-
-            // Recompute result value
-            result_ = computeValue_();
-        }
+        void end();
 
         /*!
          * \brief Returns the time at which this computation window was started.
@@ -613,42 +312,7 @@ namespace sparta
          * Scheduler::INDEFINITE) and it is greater than the current scheduler
          * tick (Scheduler::getCurrentTick)
          */
-        double getValue() const {
-            if (direct_lookup_si_value_ != nullptr) {
-                return computeValue_();
-            }
-
-            if(end_tick_ < start_tick_){
-                throw ReversedStatisticRange("Range is reversed. End < start");
-            }
-
-            if(start_tick_ > getScheduler_()->getElapsedTicks()){
-                throw FutureStatisticRange("Range starts in the future at ") << start_tick_;
-            }
-
-            double value;
-            if(end_tick_ == Scheduler::INDEFINITE){
-                // Compute Value
-                value = computeValue_();
-            }
-
-            else if(end_tick_ > getScheduler_()->getElapsedTicks()){
-                // Rang ends in the future - probable because of a checkpoint
-                throw FutureStatisticRange("Range ends in the future at ") << end_tick_;
-            }
-
-            else {
-                // End tick <= current tick. Use pre-computed value because this
-                // window ended in the past
-                value = result_;
-            }
-
-            //Update any snapshot loggers that are listening for these updates
-            for (auto & logger : snapshot_loggers_) {
-                logger.takeSnapshot(value);
-            }
-            return value;
-        }
+        double getValue() const;
 
         /*!
          * \brief Returns the initial value of this instance at start_tick_
@@ -662,53 +326,12 @@ namespace sparta
          * statistic or counter it contains. This could fiffer from getValue()
          * since it disregards the computation window
          */
-        double getRawLatest() const {
-            if(sdef_){
-                if(node_ref_.expired() == true){
-                    return NAN;
-                }
-                // Evaluate the expression
-                return stat_expr_.evaluate();
-            }else if(ctr_){
-                if(node_ref_.expired() == true){
-                    return NAN;
-                }
-                return ctr_->get();
-            }else if(par_){
-                if(node_ref_.expired() == true){
-                    return NAN;
-                }
-                return par_->getDoubleValue();
-            }else{
-                return stat_expr_.evaluate();
-            }
+        double getRawLatest() const;
 
-            return NAN;
-        }
-
-        bool supportsCompression() const {
-            if (user_calculated_si_value_) {
-                return false;
-            }
-            if (sdef_) {
-                if (node_ref_.expired()) {
-                    return false;
-                }
-                return stat_expr_.supportsCompression();
-            } else if (ctr_) {
-                if (node_ref_.expired()) {
-                    return false;
-                }
-                return ctr_->supportsCompression();
-            } else if (par_) {
-                if (node_ref_.expired()) {
-                    return false;
-                }
-                return par_->supportsCompression();
-            }
-
-            return stat_expr_.supportsCompression();
-        }
+        /*!
+         * Does this StatisticInstance support compression (database)?
+         */
+        bool supportsCompression() const;
 
         /*!
          * \brief Renders this StatisticInstance to a string containing
@@ -721,38 +344,7 @@ namespace sparta
          * containing only counters.
          */
         std::string stringize(bool show_range=true,
-                              bool resolve_subexprs=true) const {
-            std::stringstream ss;
-            ss << "<Inst of ";
-
-            // Source
-            if(sdef_ || ctr_ || par_){
-                if(false == node_ref_.expired()){
-                    ss << node_ref_.lock()->getLocation();
-                }else{
-                    ss << "<destroyed>";
-                }
-            }else{
-                ss << "expression: " << getExpressionString(show_range,
-                                                            resolve_subexprs);
-            }
-
-            // Range
-            if(show_range){
-                ss << " [" << start_tick_ << ",";
-                if(end_tick_ == Scheduler::INDEFINITE){
-                    ss << "now";
-                }else{
-                    ss << end_tick_;
-                }
-                ss << "]";
-            }
-
-            // Value
-            //! \note Could produce nan, -nan, -inf, +inf, or inf depending on glibc
-            ss << " = " << getValue() << ">";
-            return ss.str();
-        }
+                              bool resolve_subexprs=true) const;
 
         /*!
          * \brief Returns a string containing the expression that this statistic
@@ -766,35 +358,7 @@ namespace sparta
          * containing only counters.
          */
         std::string getExpressionString(bool show_range=true,
-                                        bool resolve_subexprs=true) const {
-            if(provided_expr_string_.isValid()) {
-                return provided_expr_string_.getValue();
-            }
-            if(sdef_){
-                if(node_ref_.expired() == false){
-                    // Print the fully rendered expression string instead of the
-                    // string used to construct the StatisticDef node
-                    return stat_expr_.stringize(show_range, resolve_subexprs);
-                    //return sdef_->getExpression(resolve_subexprs);
-                }else{
-                    return "<expired StatisticDef reference>";
-                }
-            }else if(ctr_){
-                if(node_ref_.expired() == false){
-                    return ctr_->getLocation();
-                }else{
-                    return "<expired Counter reference>";
-                }
-            }else if(par_){
-                if(node_ref_.expired() == false){
-                    return par_->getLocation();
-                }else{
-                    return "<expired Parameter reference>";
-                }
-            }else{
-                return stat_expr_.stringize(show_range, resolve_subexprs);
-            }
-        }
+                                        bool resolve_subexprs=true) const;
 
         /*!
          * \brief Returns a string that describes the statistic instance
@@ -804,41 +368,7 @@ namespace sparta
          * \param show_stat_node_expressions If true, also shows expressions for
          * nodes which are StatisticDefs
          */
-        std::string getDesc(bool show_stat_node_expressions) const {
-            if(provided_description_.isValid()) {
-                return provided_description_.getValue();
-            }
-            if(sdef_){
-                if(node_ref_.expired() == false){
-                    std::string result = sdef_->getDesc();
-                    if(show_stat_node_expressions){
-                        result += " ";
-                        result += stat_expr_.stringize(false, // show_range
-                                                       true); // result_subexprs;
-                    }
-                    return result;
-                }else{
-                    return "<expired StatisticDef reference>";
-                }
-            }else if(ctr_){
-                if(node_ref_.expired() == false){
-                    return ctr_->getDesc();
-                }else{
-                    return "<expired Counter reference>";
-                }
-            }else if(par_){
-                if(node_ref_.expired() == false){
-                    return par_->getDesc();
-                }else{
-                    return "<expired Parameter reference>";
-                }
-            }
-
-            std::string result = "Free Expression: ";
-            result += stat_expr_.stringize(false, // show_range
-                                           true); // result_subexprs
-            return result;
-        }
+        std::string getDesc(bool show_stat_node_expressions) const;
 
         /*!
          * \brief Renders this StatisticInstance to a string containing
@@ -847,29 +377,7 @@ namespace sparta
          * \oaram show_range Should range information for this instance be
          * written to \a o?
          */
-        void dump(std::ostream& o, bool show_range=false) const {
-            // Source
-            if(false == node_ref_.expired()){
-                o << node_ref_.lock()->getLocation() << " # "
-                  << getExpressionString();
-            }else{
-                o << "<destroyed>";
-            }
-
-            // Range
-            if(show_range){
-                o << " [" << start_tick_ << ",";
-                if(end_tick_ == Scheduler::INDEFINITE){
-                    o << "now";
-                }else{
-                    o << end_tick_;
-                }
-                o << "]";
-            }
-
-            // Value
-            o << " = " << getValue();
-        }
+        void dump(std::ostream& o, bool show_range=false) const;
 
         /*!
          * \brief Allow this statistic instance to emit statistic value
@@ -904,32 +412,7 @@ namespace sparta
          * "<expression>". If any referenced node is expired, returns
          * "<expired>".
          */
-        std::string getLocation() const {
-            if(provided_location_.isValid()) {
-                return provided_location_.getValue();
-            }
-            if(sdef_){
-                if(node_ref_.expired() == false){
-                    return node_ref_.lock()->getLocation();
-                }else{
-                    return "<expired>";
-                }
-            }else if(ctr_){
-                if(node_ref_.expired() == false){
-                    return node_ref_.lock()->getLocation();
-                }else{
-                    return "<expired>";
-                }
-            }else if(par_){
-                if(node_ref_.expired() == false){
-                    return node_ref_.lock()->getLocation();
-                }else{
-                    return "<expired>";
-                }
-            }else{
-                return "<expression>";
-            }
-        }
+        std::string getLocation() const;
 
         /*!
          * \brief Gets the statistic value semantic associated with this
@@ -938,68 +421,19 @@ namespace sparta
          * For counters and expressions, returns StatisticDef::VS_INVALID.
          * For expired node references, returns StatisticDef::VS_INVALID
          */
-        StatisticDef::ValueSemantic getValueSemantic() const {
-            if(provided_value_semantic_.isValid()) {
-                return provided_value_semantic_.getValue();
-            }
-            if(sdef_){
-                if(node_ref_.expired() == false){
-                    return sdef_->getValueSemantic();
-                }else{
-                    return StatisticDef::VS_INVALID;
-                }
-            }else if(ctr_){
-                return StatisticDef::VS_INVALID;
-            }else if(par_){
-                return StatisticDef::VS_INVALID;
-            }else{
-                return StatisticDef::VS_INVALID;
-            }
-        }
+        StatisticDef::ValueSemantic getValueSemantic() const;
 
         /*!
          * \brief Gets the visibility associated with this
          * statistic instance.
          */
-        InstrumentationNode::visibility_t getVisibility() const {
-            if(provided_visibility_.isValid()) {
-                return provided_visibility_.getValue();
-            }
-            if(node_ref_.expired()) {
-                return InstrumentationNode::VIS_NORMAL;
-            }
-            if(sdef_){
-                return sdef_->getVisibility();
-            }else if(ctr_){
-                return ctr_->getVisibility();
-            }else if(par_){
-                return InstrumentationNode::VIS_NORMAL; // Use normal for parameters for now
-            }
-
-            return InstrumentationNode::VIS_NORMAL;
-        }
+        InstrumentationNode::visibility_t getVisibility() const;
 
         /*!
          * \brief Gets the Class associated with this
          * statistic instance.
          */
-        InstrumentationNode::class_t getClass() const {
-            if(provided_class_.isValid()) {
-                return provided_class_.getValue();
-            }
-            if(node_ref_.expired()) {
-                return InstrumentationNode::DEFAULT_CLASS;
-            }
-            if(sdef_){
-                return sdef_->getClass();
-            }else if(ctr_){
-                return ctr_->getClass();
-            }else if(par_){
-                return InstrumentationNode::DEFAULT_CLASS; // Use normal for parameters for now
-            }
-
-            return InstrumentationNode::DEFAULT_CLASS;
-        }
+        InstrumentationNode::class_t getClass() const;
 
         /*!
          * \brief Give the reporting infrastructure access to all metadata
@@ -1049,28 +483,7 @@ namespace sparta
          * \throw SpartaException if this StatisticInstance refers to an expired
          * TreeNode.
          */
-        void getClocks(std::vector<const Clock*>& clocks) const {
-            if(sdef_){
-                if(node_ref_.expired() == true){
-                    throw SpartaException("Cannot getClocks() on a StatisticInstance refering to "
-                                        "an expired TreeNode reference");
-                }
-
-                stat_expr_.getClocks(clocks);
-            }else if(ctr_){
-                if(node_ref_.expired() == true){
-                    throw SpartaException("Cannot getClocks() on a Counter refering to "
-                                        "an expired TreeNode reference");
-                }
-
-                const Clock* clk = node_ref_.lock()->getClock();
-                if(clk != nullptr){
-                    clocks.push_back(clk);
-                }
-            }else{
-                stat_expr_.getClocks(clocks);
-            }
-        }
+        void getClocks(std::vector<const Clock*>& clocks) const;
 
         ////////////////////////////////////////////////////////////////////////
         //! @}
@@ -1102,38 +515,7 @@ namespace sparta
          * counters or StatisticDefs have expired, returns NAN.
          * \pre Referenced StatisticDef or Counter must not have been destroyed
          */
-        double computeValue_() const {
-            if(user_calculated_si_value_){
-                return user_calculated_si_value_->getCurrentValue() - getInitial();
-            }
-            if(direct_lookup_si_value_){
-                return getCurrentValueFromDirectLookup_();
-            }
-            if(sdef_){
-                if(node_ref_.expired() == true){
-                    return NAN;
-                }
-                // Evaluate the expression
-                return stat_expr_.evaluate();
-            }else if(ctr_){
-                if(node_ref_.expired() == true){
-                    return NAN;
-                }
-                if(ctr_->getBehavior() == CounterBase::COUNT_LATEST){
-                    return ctr_->get();
-                }else{
-                    // Compute the delta
-                    return ctr_->get() - getInitial();
-                }
-            }else if(par_){
-                if(node_ref_.expired() == true){
-                    return NAN;
-                }
-                return par_->getDoubleValue();
-            }else{
-                return stat_expr_.evaluate();
-            }
-        }
+        double computeValue_() const;
 
         /*!
          * \brief Ask the StatInstValueLookup object for our current
@@ -1168,41 +550,41 @@ namespace sparta
          * compute its value. (nullptr if there is no StatisticDef to
          * reference)
          */
-        const StatisticDef* sdef_;
+        const StatisticDef* sdef_ = nullptr;
 
         /*!
          * \brief Counter reference from which this statistic instance will
          * compute its value (nullptr if there is no Counter to reference)
          */
-        const CounterBase* ctr_;
+        const CounterBase* ctr_ = nullptr;
 
         /*!
          * \brief Parameter reference from which this statistic instance will
          * compute its value (nullptr if there is no Parameter to reference)
          */
-        const ParameterBase* par_;
+        const ParameterBase* par_ = nullptr;
 
         /*!
          * \brief Expression containing the representation of sdef_.
-         * If this StatisticInstance refers to a StatisticDef, this will contain
-         * the instantiate expression from that stat def. This is not used for
-         * Counters. If this StatisticInstance is
-         * constructed only with a anonymous Expression, then this will be a
-         * copy of that expression
+         * If this StatisticInstance refers to a StatisticDef, this
+         * will contain the instantiated expression from that stat
+         * def. This is not used for Counters. If this
+         * StatisticInstance is constructed only with a anonymous
+         * Expression, then this will be a copy of that expression
          */
         sparta::statistics::expression::Expression stat_expr_;
 
         /*!
          * \brief Tick on which this statistic started (exclusive)
          */
-        Scheduler::Tick start_tick_;
+        Scheduler::Tick start_tick_{0};
 
         /*!
          * \brief Tick on which this statistic ended (inclusive)
          *
          * Is Scheduler::INDEFINITE; if not yet ended
          */
-        Scheduler::Tick end_tick_;
+        Scheduler::Tick end_tick_{Scheduler::INDEFINITE};
 
         /*!
          * \brief Cached Scheduler object
@@ -1212,30 +594,7 @@ namespace sparta
         /*!
          * \brief Get the Scheduler associated with this StatisticInstance
          */
-        const Scheduler * getScheduler_() const {
-            if (scheduler_) {
-                return scheduler_;
-            }
-
-            sparta_assert(false == node_ref_.expired(),
-                          "This node has expired and taken the Scheduler with it");
-
-            const Clock * clk = nullptr;
-            if (sdef_) {
-                clk = sdef_->getClock();
-            } else if (ctr_) {
-                clk = ctr_->getClock();
-            } else if (par_) {
-                clk = par_->getClock();
-            }
-            if (clk) {
-                scheduler_ = clk->getScheduler();
-            }
-
-            // Should always be able to fall back on singleton scheduler
-            sparta_assert(nullptr != scheduler_);
-            return scheduler_;
-        }
+        const Scheduler * getScheduler_() const;
 
         /*!
          * \brief Helper class which wraps an initial value together
@@ -1291,12 +650,12 @@ namespace sparta
         /*!
          * \brief Initial value at start_tick_
          */
-        mutable InitialStatValue initial_;
+        mutable InitialStatValue initial_{NAN};
 
         /*!
          * \brief Result value (truncated during output if required)
          */
-        double result_;
+        double result_{NAN};
 
         /*!
          * \brief Snapshot objects who have requested access to statistics values
@@ -1364,4 +723,3 @@ namespace sparta
     }
 
 } // namespace sparta
-

@@ -535,6 +535,22 @@ content:
         r9.setContext(root.getSearchScope());
         r9.addFile("test_report_multi_nested.yaml");
 
+        // issue #311: referring to pre-defined expressions
+        const std::string report_def2 =
+R"(name: "String-based report Autopopulation Test"
+content:
+    top:
+        subreport:
+            name: Self Referring
+            content:
+                core0.stats:
+                      "c1 + c2": c1_plus_c2
+                      "c1_plus_c2 + cycles": c1_plus_c2_plus_cycles
+        )";
+
+        Report r10;
+        r10.setContext(root.getSearchScope());
+        r10.addDefinitionString(report_def2);
 
         // Create a report formatter to which we will append data over time
         sparta::report::format::CSV periodic_csv(&r5, "test_periodic.csv", std::ios::out);

@@ -390,7 +390,7 @@ ExpressionGrammar::variable_::variable_(sparta::TreeNode* n,
     variable_::base_type(start)
 {
     sparta_assert(nullptr != n,
-                      "cannot construct ExpressionGrammar::variable_ with a null context");
+                  "cannot construct ExpressionGrammar::variable_ with a null context");
 
     using qi::ascii::char_;
     using qi::_val;
@@ -551,7 +551,7 @@ ExpressionGrammar::ExpressionGrammar(sparta::TreeNode* root,
 {
     (void) root_;
     sparta_assert(nullptr != root,
-                      "cannot construct ExpressionGrammar with a null context");
+                  "cannot construct ExpressionGrammar with a null context");
 
     namespace qi = qi;
     using qi::real_parser;
