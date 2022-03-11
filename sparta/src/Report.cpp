@@ -1272,7 +1272,7 @@ void Report::recursAddSubtree_(const TreeNode* n,
             //std::cerr << "\n\nAdding " << n->getLocation() << " to " << getName() << std::endl
             //          << "Report: " << getName() << std::endl;
             //for(auto& s : stats_){
-            //    std::cerr << "  Stat " << s.second->stringize() << " " << s.second->getLocation() << std::endl;
+            //    std::cerr << "  Stat " << s.second.stringize() << " " << s.second.getLocation() << std::endl;
             //}
             add(n, child_stat_prefix + n->getName());
         }
@@ -1686,7 +1686,7 @@ simdb::DatabaseID getRootReportNodeIDFrom(
 void recursValidateSIDirectLookups(const Report & report)
 {
     for (const auto & si : report.getStatistics()) {
-        if (!si.second->isSIValueDirectLookupValid()) {
+        if (!si.second.isSIValueDirectLookupValid()) {
             throw SpartaException("Encountered an SI whose StatInstValueLookup ")
                 << "could not be read. This indicates there is a bug in the SimDB "
                 << "tables/records related to report hierarchies.";
@@ -1958,7 +1958,7 @@ Report::Report(const simdb::DatabaseID report_hier_node_id,
         for (const auto & leaf_si_db_info : nextgen_si_leaves) {
             auto simdb_si = createSIFromSimDB(leaf_si_db_info.db_id, obj_mgr);
             sparta_assert(simdb_si != nullptr);
-            stats_.emplace_back(leaf_si_db_info.name, simdb_si.release());
+            stats_.emplace_back(leaf_si_db_info.name, StatisticInstance(*simdb_si.release()));
             si_node_ids_.emplace_back(leaf_si_db_info.db_id);
 
             //Similar to the StatInstRowIterator for report nodes, we
@@ -1972,7 +1972,7 @@ Report::Report(const simdb::DatabaseID report_hier_node_id,
                 new placeholders::StatInstValueLookup(
                     leaf_si_db_info.linear_idx.getValue()));
 
-            stats_.back().second->setSIValueDirectLookupPlaceholder(
+            stats_.back().second.setSIValueDirectLookupPlaceholder(
                 direct_lookup);
         }
 
@@ -2131,7 +2131,7 @@ void Report::recursGetReportAndSINodeDatabaseIDs_(
 
     sparta_assert(stats_.size() == si_node_ids_.size());
     for (size_t idx = 0; idx < stats_.size(); ++idx) {
-        si_nodes_by_id[si_node_ids_[idx]] = stats_[idx].second;
+        si_nodes_by_id[si_node_ids_[idx]] = &stats_[idx].second;
     }
 
     for (auto & sr : subreps_) {
@@ -2200,7 +2200,7 @@ void Report::recursSetSIRowIterator_(
     //
     //Step 5 is what we're doing here:
     for (auto & si : stats_) {
-        si.second->realizeSIValueDirectLookup(*si_row_iterator_);
+        si.second.realizeSIValueDirectLookup(*si_row_iterator_);
     }
 }
 

@@ -287,9 +287,9 @@ private:
 
         for (const auto & stat : subreport.getStatistics()) {
             const std::string name = !stat.first.empty() ?
-                stat.first : stat.second->getLocation();
+                stat.first : stat.second.getLocation();
 
-            const StatisticInstance * stat_inst = stat.second;
+            const StatisticInstance * stat_inst = &stat.second;
             const StatisticDef * def = stat_inst->getStatisticDef();
             const CounterBase * ctr = stat_inst->getCounter();
             const ParameterBase * prm = stat_inst->getParameter();
@@ -321,7 +321,7 @@ private:
                 leftmost_si_index, is_leaf,
                 obj_mgr);
 
-            createLeafSIMetadata_(stat.second,
+            createLeafSIMetadata_(&stat.second,
                                   *leaf_report_node,
                                   obj_mgr);
 
@@ -337,7 +337,7 @@ private:
                     leaf_report_node->getId());
             }
 
-            unordered_si_ids_[stat.second] = leaf_report_node->getId();
+            unordered_si_ids_[&stat.second] = leaf_report_node->getId();
         }
 
         for (const auto & sr : subreport.getSubreports()) {
@@ -378,7 +378,7 @@ private:
 
         const simdb::DatabaseID report_node_id = report_node_iter->second;
         for (const auto & stat : r->getStatistics()) {
-            const auto stat_def = stat.second->getStatisticDef();
+            const auto stat_def = stat.second.getStatisticDef();
             if (!stat_def) {
                 continue;
             }
@@ -397,7 +397,7 @@ private:
                 }
 
                 const simdb::DatabaseID si_node_id = si_node_iter->second;
-                auto parent_si_node_iter = unordered_si_ids_.find(stat.second);
+                auto parent_si_node_iter = unordered_si_ids_.find(&stat.second);
                 if (parent_si_node_iter == unordered_si_ids_.end()) {
                     continue;
                 }
@@ -482,4 +482,3 @@ private:
 
 } // namespace statistics
 } // namespace sparta
-

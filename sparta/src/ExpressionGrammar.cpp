@@ -173,6 +173,7 @@ class lazy_gen_var_
 {
     TreeNode* n_; //!< Context node
     std::vector<const TreeNode*>& used_; //!< Disallowed nodes
+    //std::vector<Expression> & previous_expressions_; //!< Already created expressions that can be referenced
 
 public:
 

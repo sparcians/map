@@ -99,7 +99,7 @@ void recursCreateSubreportSIHierarchy(
             //Create leaf SI nodes for all StatisticInstance's
             //we encounter. For example, "top.core0.rob.ipc"
             const std::string name = !stat.first.empty() ?
-                stat.first : stat.second->getLocation();
+                stat.first : stat.second.getLocation();
 
             SINodeCreator::createLeafSINode(
                 obj_mgr, timeseries_id,

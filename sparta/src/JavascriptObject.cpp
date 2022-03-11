@@ -208,7 +208,7 @@ void sparta::report::format::JavascriptObject::writeStats_(std::ostream& out, co
             // explicit name. Since ths full path is used, do not append the
             // stat_prefix because it would make the resulting stat name very
             // confusing.
-            sname = si.second->getLocation();
+            sname = si.second.getLocation();
         } else {
             if (sname.length() > 0) {
                 sname += ".";
@@ -218,7 +218,7 @@ void sparta::report::format::JavascriptObject::writeStats_(std::ostream& out, co
 
         all_stat_names.push_back(sname);
         out << "      \"" << sname << "\": { ";
-        double val = si.second->getValue();
+        double val = si.second.getValue();
         out << "\"val\" : ";
         if (isnan(val)){
             out << "\"nan\"";
@@ -230,10 +230,10 @@ void sparta::report::format::JavascriptObject::writeStats_(std::ostream& out, co
 
         // Escape all " characters
 
-        std::string desc = si.second->getDesc(false);
+        std::string desc = si.second.getDesc(false);
         boost::replace_all(desc, "\"", "\\\"");
 
-        out << ", \"vis\" : " << si.second->getVisibility();
+        out << ", \"vis\" : " << si.second.getVisibility();
         out << ", \"desc\" : \"" << desc << "\"},";
         out << "\n";
     }

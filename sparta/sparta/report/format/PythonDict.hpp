@@ -114,7 +114,7 @@ protected:
                     out << ", ";
                 }
                 out << "\"" << si.first << "\": " ;
-                double val = si.second->getValue();
+                double val = si.second.getValue();
                 if(isnan(val)){
                     out << "float('nan')";
                 }else if(isinf(val)){

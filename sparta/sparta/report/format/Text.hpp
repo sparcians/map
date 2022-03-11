@@ -222,7 +222,7 @@ protected:
                 rcol = std::max<uint32_t>(rcol, indent + si.first.size());
             }else{
                 // Print location as stat name
-                rcol = std::max<uint32_t>(rcol, indent + si.second->getLocation().size());
+                rcol = std::max<uint32_t>(rcol, indent + si.second.getLocation().size());
             }
         }
 
@@ -331,12 +331,12 @@ protected:
                     name << si.first;
                 }else{
                     // Print location = value
-                    name << si.second->getLocation();
+                    name << si.second.getLocation();
                 }
                 name << " = ";
 
                 // Generate Value
-                double val = si.second->getValue();
+                double val = si.second.getValue();
                 name << Report::formatNumber(val);
 
                 // Print description column
@@ -348,11 +348,11 @@ protected:
                     }
 
                     // Print the expression after the value
-                    //name << " # " << si.second->getExpressionString();
+                    //name << " # " << si.second.getExpressionString();
 
                     // Print the description
                     const bool include_stat_expression = false;
-                    std::string desc = si.second->getDesc(include_stat_expression);
+                    std::string desc = si.second.getDesc(include_stat_expression);
                     uint32_t pos = 0;
                     name << " # " << desc.substr(0,std::min<size_t>(desc.size(), desc_col_width_));
                     pos += desc_col_width_;
@@ -471,4 +471,3 @@ inline std::ostream& operator<< (std::ostream& out, Text & f) {
         } // namespace format
     } // namespace report
 } // namespace sparta
-

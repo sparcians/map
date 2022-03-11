@@ -214,18 +214,18 @@ protected:
 
         auto extract_stat = [&local_name](const Report::stat_pair_t & si) {
             std::string full_name = local_name + "." + si.first;
-            std::string desc = si.second->getDesc(false);
+            std::string desc = si.second.getDesc(false);
             boost::replace_all(desc, "\"", "\\\"");
             struct info_data tmp;
             tmp.name = full_name;
             tmp.desc = desc;
-            tmp.vis = si.second->getVisibility();
-            tmp.n_class = si.second->getClass();
-            const StatisticDef * stat_defn = si.second->getStatisticDef();
+            tmp.vis = si.second.getVisibility();
+            tmp.n_class = si.second.getClass();
+            const StatisticDef * stat_defn = si.second.getStatisticDef();
             if (stat_defn != nullptr) {
                 tmp.metadata = stat_defn->getMetadata();
             } else {
-                tmp.metadata = si.second->getMetadata();
+                tmp.metadata = si.second.getMetadata();
             }
             return tmp;
         };
@@ -237,10 +237,10 @@ protected:
         std::set<const void*> db_dont_print_these;
         for (const Report::stat_pair_t& si : r->getStatistics()) {
             if(si.first != ""){
-                const StatisticInstance * stat_inst = si.second;
-                const StatisticDef * stat_defn = si.second->getStatisticDef();
-                const CounterBase * ctr = si.second->getCounter();
-                const ParameterBase * prm = si.second->getParameter();
+                const StatisticInstance * stat_inst = &si.second;
+                const StatisticDef * stat_defn = si.second.getStatisticDef();
+                const CounterBase * ctr = si.second.getCounter();
+                const ParameterBase * prm = si.second.getParameter();
                 sparta_assert(static_cast<const void*>(this) != static_cast<const void*>(ctr));
                 sparta_assert(static_cast<const void*>(this) != static_cast<const void*>(prm));
 
@@ -328,4 +328,3 @@ inline std::ostream& operator<< (std::ostream& out, JSON_detail & f) {
         } // namespace format
     } // namespace report
 } // namespace sparta
-

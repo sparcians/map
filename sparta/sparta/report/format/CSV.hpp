@@ -194,7 +194,7 @@ protected:
                     out << prefix + si.first;
                 }else{
                     // Print location = value
-                    out << prefix + si.second->getLocation();
+                    out << prefix + si.second.getLocation();
                 }
 
                 wrote_value = true;
@@ -270,7 +270,7 @@ protected:
 
                 // Print the value
                 const Report::stat_pair_t& si = *itr;
-                out << Report::formatNumber(si.second->getValue());
+                out << Report::formatNumber(si.second.getValue());
 
                 wrote_value = true; // 1 or more values written here
 
@@ -327,4 +327,3 @@ inline std::ostream& operator<< (std::ostream& out, CSV & f) {
         } // namespace format
     } // namespace report
 } // namespace sparta
-

@@ -24,9 +24,9 @@ void createStatsMappingForReport(const Report * r,
 {
     for (const auto & si : r->getStatistics()) {
         if (!si.first.empty()) {
-            mapping[prefix + si.first] = si.second->getLocation();
+            mapping[prefix + si.first] = si.second.getLocation();
         } else {
-            mapping[prefix + si.second->getLocation()] = si.second->getLocation();
+            mapping[prefix + si.second.getLocation()] = si.second.getLocation();
         }
     }
 

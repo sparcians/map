@@ -13,6 +13,7 @@
 #include <iomanip>
 #include <sstream>
 #include <unordered_map>
+#include <vector>
 #include <cmath>
 
 #include "sparta/statistics/StatisticInstance.hpp"
@@ -57,7 +58,7 @@ namespace sparta
         /*!
          * \brief Type for storing each stat added
          */
-        typedef std::pair<std::string, StatisticInstance*> stat_pair_t;
+        typedef std::pair<std::string, StatisticInstance> stat_pair_t;
 
         /*!
          * \brief Function pointer for deciding whether to make a subreport
@@ -226,7 +227,7 @@ namespace sparta
 
             // Copy StatisticInstances
             for(const stat_pair_t& sp : rhp.stats_){
-                add(*sp.second, sp.first);
+                add(sp.second, sp.first);
             }
         }
 
@@ -258,17 +259,6 @@ namespace sparta
             }
         }
 
-        /*!
-         * \brief Virtual Destructor
-         */
-        virtual ~Report()
-        {
-            // Delete all StatisticInstances
-            for(auto& sp : stats_){
-                delete sp.second;
-            }
-        }
-
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
@@ -289,15 +279,11 @@ namespace sparta
                 sr.setParent_(this);
             }
 
-            // Clear StatisticInstancesx
-            for(auto& sp : stats_){
-                delete sp.second;
-            }
             stats_.clear(); // Clear local stats
 
             // Copy StatisticInstances
             for(const stat_pair_t& sp : rhp.stats_){
-                add(*sp.second, sp.first);
+                add(sp.second, sp.first);
             }
             start_tick_ = rhp.start_tick_;
             end_tick_ = rhp.end_tick_;
@@ -424,7 +410,7 @@ namespace sparta
             if(name != "" && stat_names_.find(name) != stat_names_.end()){
                 throw SpartaException("There is already a statistic instance in this Report (")
                                     << getName() << ") named \"" << name << "\" pointing to "
-                                    << stat_names_.find(name)->second->getLocation()
+                                    << getStatistic(name).getLocation()
                                     << " and the new stat would be pointing to a StatisticInstance "
                                     << si.getExpressionString();
             }
@@ -432,9 +418,7 @@ namespace sparta
             // Track a new stat with helpful exception wrapping
             addField_(name, si);
 
-            if(name != ""){
-                stat_names_[name] = stats_.back().second;
-            }
+            if(name != ""){ stat_names_.insert(name); }
 
             addSubStatistics_(&si);
 
@@ -456,7 +440,7 @@ namespace sparta
             if(name != "" && stat_names_.find(name) != stat_names_.end()){
                 throw SpartaException("There is already a statistic instance in this Report (")
                                     << getName() << ") named \"" << name << "\" pointing to "
-                                    << stat_names_.find(name)->second->getLocation()
+                                    << getStatistic(name).getLocation()
                                     << " and the new stat would be pointing to a StatisticInstance "
                                     << si.getExpressionString();
             }
@@ -464,9 +448,7 @@ namespace sparta
             // Track a new stat with helpful exception wrapping
             addField_(name, si);
 
-            if(name != ""){
-                stat_names_[name] = stats_.back().second;
-            }
+            if(name != ""){ stat_names_.insert(name); }
 
             addSubStatistics_(&si);
 
@@ -478,7 +460,7 @@ namespace sparta
             if(name != "" && stat_names_.find(name) != stat_names_.end()){
                 throw SpartaException("There is already a statistic instance in this Report (")
                                     << getName() << ") named \"" << name << "\" pointing to "
-                                    << stat_names_.find(name)->second->getLocation()
+                                    << getStatistic(name).getLocation()
                                     << " and the new stat would be the the statistic def at "
                                     << sd->getLocation() << " with the expression \""
                                     << sd->getExpression() << "\"";
@@ -487,9 +469,7 @@ namespace sparta
             // Track a new stat with helpful exception wrapping
             addField_(name, sd);
 
-            if(name != ""){
-                stat_names_[name] = stats_.back().second;
-            }
+            if(name != ""){ stat_names_.insert(name); }
 
             return StatAdder(*this);
         }
@@ -499,7 +479,7 @@ namespace sparta
             if(name != "" && stat_names_.find(name) != stat_names_.end()){
                 throw SpartaException("There is already a statistic instance in this Report (")
                                     << getName() << ") named \"" << name << "\" pointing to "
-                                    << stat_names_.find(name)->second->getLocation()
+                                    << getStatistic(name).getLocation()
                                     << " and the new stat would be the counter to "
                                     << ctr->getLocation();
             }
@@ -507,9 +487,7 @@ namespace sparta
             // Track a new stat with helpful exception wrapping
             addField_(name, ctr);
 
-            if(name != ""){
-                stat_names_[name] = stats_.back().second;
-            }
+            if(name != ""){ stat_names_.insert(name); }
 
             return StatAdder(*this);
         }
@@ -519,7 +497,7 @@ namespace sparta
             if(name != "" && stat_names_.find(name) != stat_names_.end()){
                 throw SpartaException("There is already a statistic instance in this Report (")
                                     << getName() << ") named \"" << name << "\" pointing to "
-                                    << stat_names_.find(name)->second->getLocation()
+                                    << getStatistic(name).getLocation()
                                     << " and the new stat would be the node to "
                                     << n->getLocation();
             }
@@ -527,9 +505,7 @@ namespace sparta
             // Track a new stat with helpful exception wrapping
             addField_(name, n);
 
-            if(name != ""){
-                stat_names_[name] = stats_.back().second;
-            }
+            if(name != ""){ stat_names_.insert(name); }
 
             return StatAdder(*this);
         }
@@ -565,7 +541,7 @@ namespace sparta
             if(name != "" && stat_names_.find(name) != stat_names_.end()){
                 throw SpartaException("There is already a statistic instance in this Report (")
                                     << getName() << ") named \"" << name << "\" pointing to "
-                                    << stat_names_.find(name)->second->getLocation()
+                                    << getStatistic(name).getLocation()
                                     << " and the new stat would be the expression \""
                                     << expression << "\"";
             }
@@ -616,7 +592,7 @@ namespace sparta
          */
         void accumulateStats() const {
             for (const auto & stat : stats_) {
-                stat.second->accumulateStatistic();
+                stat.second.accumulateStatistic();
             }
             for (const auto & sr : getSubreports()) {
                 sr.accumulateStats();
@@ -755,7 +731,7 @@ namespace sparta
                 subreps_.back().setParent_(this);
             }
             for(const stat_pair_t& sp : r.stats_){
-                add(*sp.second, sp.first);
+                add(sp.second, sp.first);
             }
         }
 
@@ -906,7 +882,7 @@ namespace sparta
          * \throw SpartaException if idx is out of bounds
          */
         StatisticInstance& getStatistic(size_t idx) {
-            return *stats_.at(idx).second;
+            return stats_.at(idx).second;
         }
 
         /*!
@@ -919,14 +895,25 @@ namespace sparta
          * \see hasStatistic
          */
         StatisticInstance& getStatistic(const std::string& name) {
-            auto itr = stat_names_.find(name);
-            if(itr == stat_names_.end()){
+            auto name_itr = stat_names_.find(name);
+            if(name_itr == stat_names_.end()){
                 throw SpartaException("Could not find statistic named \"") << name
                     << "\" in report \"" << getName() << "\"";
             }
-            return *(itr->second);
+            // Get the statistic from the vector pair
+            auto itr = std::find_if(stats_.begin(), stats_.end(),
+                                    [name] (const auto & p) -> bool {
+                                        return name == p.first;
+                                    });
+            sparta_assert(itr != stats_.end());
+            return (*itr).second;
         }
 
+        /*!
+         * \brief Return true if this report has the given stat name
+         * \param name The name of the stat to look for
+         * \return true has stat, false otherwise
+         */
         bool hasStatistic(const std::string& name) const {
             auto itr = stat_names_.find(name);
             return (itr != stat_names_.end());
@@ -1094,7 +1081,7 @@ namespace sparta
 
             // Start all contents
             for(auto& s : stats_){
-                s.second->start();
+                s.second.start();
             }
             for(auto& r : subreps_){
                 r.start();
@@ -1119,7 +1106,7 @@ namespace sparta
             // End all contents
             // Start all contents
             for(auto& s : stats_){
-                s.second->end();
+                s.second.end();
             }
             for(auto& r : subreps_){
                 r.end();
@@ -1340,15 +1327,15 @@ namespace sparta
                     o << si.first;
                 }else{
                     // Print "stat_location = value"
-                    o << si.second->getLocation();
+                    o << si.second.getLocation();
                 }
                 o << " = ";
 
-                double val = si.second->getValue();
+                double val = si.second.getValue();
                 o << formatNumber(val);
 
                 // Could print the expression after the value
-                //o << "  # " << si.second->getExpressionString();
+                //o << "  # " << si.second.getExpressionString();
 
                 o << std::endl;
             }
@@ -1392,9 +1379,8 @@ namespace sparta
         template <typename T>
         void addField_(const std::string& name, T si_arg) {
             try{
-                StatisticInstance * si;
-                stats_.emplace_back(name, si = new StatisticInstance(si_arg));
-                si->setContext(scheduler_);
+                stats_.emplace_back(name, StatisticInstance(si_arg));
+                stats_.back().second.setContext(scheduler_);
             }catch(SpartaException& ex){
                 ex << " StatisticInstance would have been named \"" << name << "\"";
                 throw;
@@ -1418,7 +1404,7 @@ namespace sparta
                 //Update mapping from statistic definition to substatistic instance
                 const StatisticDef * stat_def = parent_stat->getStatisticDef();
                 if (stat_def != nullptr) {
-                    sub_statistics_[stat_def].emplace_back(stats_.back().second);
+                    sub_statistics_[stat_def].emplace_back(&stats_.back().second);
                 }
             }
         }
@@ -1606,7 +1592,7 @@ namespace sparta
         /*!
          * \brief Map of string identifiers to statistics in the stats_ vector
          */
-        std::map<std::string, StatisticInstance*> stat_names_;
+        std::set<std::string> stat_names_;
 
         /*!
          * \brief Tick on which this statistic started (exclusive)

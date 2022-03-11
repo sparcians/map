@@ -317,7 +317,7 @@ protected:
             for(const Report::stat_pair_t& si : r->getStatistics()){
                 size_t leading_space = 0;
                 size_t decimal_pos = 0;
-                formatDecimalAlignedNum(si.second->getValue(),
+                formatDecimalAlignedNum(si.second.getValue(),
                                         40,
                                         leading_space,
                                         decimal_pos,
@@ -349,11 +349,11 @@ protected:
 
                     // Compute expression with < and > characters escaped for HTML
                     // Be sure to omit range and fully resolve all sub-expressions
-                    std::string expr = si.second->getExpressionString(false, true);
+                    std::string expr = si.second.getExpressionString(false, true);
                     replaceSubstring(expr, "<", "&lt;");
                     replaceSubstring(expr, ">", "&gt;");
 
-                    std::string tool_tip_text = si.second->getDesc(false) + "\n" + expr;
+                    std::string tool_tip_text = si.second.getDesc(false) + "\n" + expr;
                     out << "\n<td class='name' ";
                     out << "title='" << tool_tip_text << "'";
                     out << ">";
@@ -361,7 +361,7 @@ protected:
                     if(si.first != ""){
                         out << si.first;
                     }else{
-                        std::string loc = si.second->getLocation();
+                        std::string loc = si.second.getLocation();
                         replaceSubstring(loc, "<", "&lt;");
                         replaceSubstring(loc, ">", "&gt;");
                         out << loc;
@@ -369,7 +369,7 @@ protected:
 
                     size_t leading_space = 0;
                     size_t decimal_pos = 0;
-                    std::string val = formatDecimalAlignedNum(si.second->getValue(),
+                    std::string val = formatDecimalAlignedNum(si.second.getValue(),
                                                               val_decimal_alignment,
                                                               leading_space,
                                                               decimal_pos,
@@ -382,8 +382,8 @@ protected:
 
                     // If value semantic is percentage and value is greater than 100% + epsilon,
                     // show that the data is bad
-                    const auto vs = si.second->getValueSemantic();
-                    if(vs == StatisticDef::VS_PERCENTAGE && si.second->getValue() > 100.01){
+                    const auto vs = si.second.getValueSemantic();
+                    if(vs == StatisticDef::VS_PERCENTAGE && si.second.getValue() > 100.01){
                         additional_td_style = "background-color:#df0000;color:#ffffff;font-weight:bold;";
                     }
 
@@ -404,7 +404,7 @@ protected:
 
                     if (show_descriptions) {
                         out << "<td class='expression'>"
-                            << si.second->getDesc(false); // do not show stat expressions
+                            << si.second.getDesc(false); // do not show stat expressions
                         out << "</td>\n";
                     }
                 }
@@ -438,4 +438,3 @@ private:
         } // namespace format
     } // namespace report
 } // namespace sparta
-
