@@ -445,24 +445,24 @@ class ReportFileParserYAML
                                 }
                             }
                             else{
+                                Report* const r = report_map_.at(scope.uid);
                                 statistics::expression::Expression expr(assoc_key, n);
                                 StatisticInstance si(std::move(expr));
                                 si.setContext(n);
                                 std::string full_name = value;
                                 auto& captures = scope.second;
-                                Report* const r = report_map_.at(scope.uid);
                                 if(getSubstituteForStatName(full_name, n, captures)){
                                     r->add(si, full_name);
                                 }
                             }
                         }
                         else{
+                            Report* const r = report_map_.at(scope.uid);
                             statistics::expression::Expression expr(assoc_key, n);
                             StatisticInstance si(std::move(expr));
                             si.setContext(n);
                             std::string full_name = value;
                             auto& captures = scope.second;
-                            Report* const r = report_map_.at(scope.uid);
                             if(getSubstituteForStatName(full_name, n, captures)){
                                 r->add(si, full_name);
                             }
@@ -1158,6 +1158,171 @@ private:
     YP::Parser parser_;    //!< YP::Parser to which events will be written
     std::string filename_; //!< For recalling errors
 }; // class ReportFileParserYAML
+
+constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_REPORT[];
+constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_SUBREPORT[];
+constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_CONTENT[];
+constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_NAME[];
+constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTHOR[];
+constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE[];
+constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE_ATTRIBUTES[];
+constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE_MAX_RECURSION_DEPTH[];
+constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE_MAX_REPORT_DEPTH[];
+constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_STYLE[];
+constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_TRIGGER[];
+constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_REPORT_IGNORE[];
+constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_REPORT_OPTIONAL[];
+
+Report::StatAdder Report::add(const StatisticInstance& si, const std::string& name) {
+    if(name != "" && stat_names_.find(name) != stat_names_.end()){
+        throw SpartaException("There is already a statistic instance in this Report (")
+            << getName() << ") named \"" << name << "\" pointing to "
+            << getStatistic(name).getLocation()
+            << " and the new stat would be pointing to a StatisticInstance "
+            << si.getExpressionString();
+    }
+
+    // Track a new stat with helpful exception wrapping
+    addField_(name, si);
+
+    if(name != ""){ stat_names_.insert(name); }
+
+    addSubStatistics_(&si);
+
+    return Report::StatAdder(*this);
+}
+
+Report::StatAdder Report::add(StatisticInstance&& si, const std::string& name) {
+    if(name != "" && stat_names_.find(name) != stat_names_.end()){
+        throw SpartaException("There is already a statistic instance in this Report (")
+            << getName() << ") named \"" << name << "\" pointing to "
+            << getStatistic(name).getLocation()
+            << " and the new stat would be pointing to a StatisticInstance "
+            << si.getExpressionString();
+    }
+
+    // Track a new stat with helpful exception wrapping
+    addField_(name, si);
+
+    if(name != ""){ stat_names_.insert(name); }
+
+    addSubStatistics_(&si);
+
+    return Report::StatAdder(*this);
+}
+
+Report::StatAdder Report::add(StatisticDef* sd, const std::string& name) {
+    sparta_assert(sd);
+    if(name != "" && stat_names_.find(name) != stat_names_.end()){
+        throw SpartaException("There is already a statistic instance in this Report (")
+            << getName() << ") named \"" << name << "\" pointing to "
+            << getStatistic(name).getLocation()
+            << " and the new stat would be the the statistic def at "
+            << sd->getLocation() << " with the expression \""
+            << sd->getExpression() << "\"";
+    }
+
+    // Track a new stat with helpful exception wrapping
+    addField_(name, sd);
+
+    if(name != ""){ stat_names_.insert(name); }
+
+    return Report::StatAdder(*this);
+}
+
+Report::StatAdder Report::add(CounterBase* ctr, const std::string& name) {
+    sparta_assert(ctr);
+    if(name != "" && stat_names_.find(name) != stat_names_.end()){
+        throw SpartaException("There is already a statistic instance in this Report (")
+            << getName() << ") named \"" << name << "\" pointing to "
+            << getStatistic(name).getLocation()
+            << " and the new stat would be the counter to "
+            << ctr->getLocation();
+    }
+
+    // Track a new stat with helpful exception wrapping
+    addField_(name, ctr);
+
+    if(name != ""){ stat_names_.insert(name); }
+
+    return Report::StatAdder(*this);
+}
+
+Report::StatAdder Report::add(TreeNode* n, const std::string& name) {
+    sparta_assert(n);
+    if(name != "" && stat_names_.find(name) != stat_names_.end()){
+        throw SpartaException("There is already a statistic instance in this Report (")
+            << getName() << ") named \"" << name << "\" pointing to "
+            << getStatistic(name).getLocation()
+            << " and the new stat would be the node to "
+            << n->getLocation();
+    }
+
+    // Track a new stat with helpful exception wrapping
+    addField_(name, n);
+
+    if(name != ""){ stat_names_.insert(name); }
+
+    return Report::StatAdder(*this);
+}
+
+Report::StatAdder Report::addSubStats(StatisticDef * n, const std::string & name_prefix) {
+    sparta_assert(auto_expand_context_counter_stats_,
+                  "Call to Report::addSubStats(StatisticDef*, name_prefix) is not "
+                  "allowed since ContextCounter auto-expansion is disabled. Enable "
+                  "this by calling Report::enableContextCounterAutoExpansion()");
+    for (const auto & sub_stat : n->getSubStatistics()) {
+        TreeNode * sub_stat_node = const_cast<TreeNode*>(sub_stat.getNode());
+        const std::string prefix =
+            !name_prefix.empty() ? name_prefix : sub_stat_node->getLocation();
+        const std::string sub_stat_name = prefix + "." + sub_stat.getName();
+        add(sub_stat_node, sub_stat_name);
+    }
+    return Report::StatAdder(*this);
+}
+
+Report::StatAdder Report::add(const std::string& expression, const std::string& name) {
+    if(name != "" && stat_names_.find(name) != stat_names_.end()){
+        throw SpartaException("There is already a statistic instance in this Report (")
+            << getName() << ") named \"" << name << "\" pointing to "
+            << getStatistic(name).getLocation()
+            << " and the new stat would be the expression \""
+            << expression << "\"";
+    }
+    if(nullptr == context_){
+        throw SpartaException("This report currently has no context. To add an item by "
+                              "expression \"")
+            << expression << "\", specify a context TreeNode using setContext as the "
+            "context from which TreeNodes can be searched for";
+    }
+
+    if(TreeNodePrivateAttorney::hasChild(context_, expression)){
+        // Add as a TreeNode statistic
+        add(TreeNodePrivateAttorney::getChild(context_, expression), name);
+    }else{
+        statistics::expression::Expression expr(expression, context_);
+        StatisticInstance si(std::move(expr));
+        add(std::move(si), name);
+    }
+
+    return Report::StatAdder(*this);
+}
+
+Report::StatAdder Report::add(const std::vector<TreeNode*>& nv) {
+    for(TreeNode* n : nv){
+        add(n);
+    }
+    return Report::StatAdder(*this);
+}
+
+void Report::accumulateStats() const {
+    for (const auto & stat : stats_) {
+        stat.second.accumulateStatistic();
+    }
+    for (const auto & sr : getSubreports()) {
+        sr.accumulateStats();
+    }
+}
 
 void Report::addFile(const std::string& file_path, bool verbose)
 {

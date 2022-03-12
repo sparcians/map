@@ -778,5 +778,3 @@ inline std::ostream& operator<<(std::ostream& o, const sparta::statistics::expre
         } // namespace expression
     } // namespace statistics
 } // namespace sparta
-
-#pragma once

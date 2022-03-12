@@ -225,5 +225,3 @@ namespace color {
 
 } // namespace color
 } // namespace sparta
-
-#pragma once
