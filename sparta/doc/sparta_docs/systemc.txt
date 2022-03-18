@@ -52,7 +52,7 @@
   class, the modeler is not responsible for advancing time on the
   Sparta scheduler.  SystemC will be doing that via SC_THREADs.
 
-  However, Sparta assume "control" of the scheduling in that the
+  However, Sparta assumes "control" of the scheduling in that the
   adapter by starting the SystemC scheduler (`sc_core::sc_start`) via
   the sparta::SysCSpartaSchedulerAdapter::run method.
 

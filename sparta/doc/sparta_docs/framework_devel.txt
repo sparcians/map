@@ -3,65 +3,69 @@
   \page framework_dev Framework Development
   \tableofcontents
 
-  This is intended for anyone modifying Sparta
+  This is intended for anyone contributing to Sparta
 
-  \section changelogs Changelogs
-  The intent of sparta/ChangeLog is to document API-level changes and other breaking changes to sparta.
-  This file must be updated whenever changes are made which may break an API or change the behavior of
-  of the sparta framework in a way that can cause any clients of the sparta framework (including models
-  and interfaces) or any tools which consume sparta output to break. This includes API changes, API
-  semantic changes, file formats changes, and textual output formatting changes.
+  \section coding_style Coding Style
 
-  All changes (including API changes) should be included in version-control-system commit messages.
-  The ChangeLog is an additional summary of breaking changes in sparta.
+  Sparta's coding style follows the general coding style guidelines
+  for C++ development as documented by Google:
+  https://google.github.io/styleguide/cppguide.html.  However, the
+  following exceptions/additions to the rules:
 
-  At a component level, some API changes may be missing from the ChangeLog early in the project.
+  -# Class names are camel case with the camel's head up: `MyClass`
+  -# Class function names are camel case, with the camel's head down: `myMethodCall`
+  -# Variable names are always lower case with '_' between words: `my_variable_name`
+  -# Variable names will not be single letter names
+  -# Private and protected methods and variables will include an '_' at the end of the name:
+     `myPrivateOrProtectedMethod_` and `my_private_or_protected_variable_`
 
   \section regression Regression Testing
-  All sparta components and multi-component assemblies should have tests in subdirectories of the tests
-  directory at the root of the repository. These tests should follow the style and conventions of
-  existing test and be added to the Makefile in the test directory.
+
+  All sparta components and multi-component assemblies should have
+  tests in subdirectories of the tests directory at the root of the
+  repository. These tests should follow the style and conventions of
+  existing test and be added to the CMakeLists in the test directory.
+  No coding additions/fixes will be accepted without a test.  All
+  tests _must pass_ before a PR is accepted.
+  \code
+  # Top level regression
+  make regress
+
+  # Example regression
+  make example_regress
+
+  # SimDB regression
+  make simdb_regress
+  \endcode
+
+  \section doxygen_convention Doxygen Convention
+
+  \subsection code_conv Code Documentation Convention
+
+  -# C++ and Python code in sparta should be completely documented with block-style doxygen comments
+    \verbatim /*! */ \endverbatim
+  -# All namespaces, classes, enums, typedefs, constants, and functions must be documented
+  regardless of scope. Whenever possible, all parameters and pre/post conditions of each function
+  should be described.
+  -# All files should have a \\file doxygen entry.
+  -# Code comments should not extend past character column 80 except for preformatted content such as
+  example code.
+
+  \subsection text_conv Textual Documentation Convention
+
+  The doxygen pages automatically generated from namespace and classes
+  related to each Sparta component should contain detailed
+  explanations of how to use that component's features.  However, some
+  concepts involve multiple components which requires standalone
+  documentation pages to be written. These are mainly use-case-based
+  (e.g. \ref logging How to Log).  These manually-written doxygen
+  pages can be found in source code and text files within sparta and
+  should be left-aligned at column 0 and should contain no lines that
+  extend past character column 100 except for preformatted content
+  such as example code.
 
   \section meta_doc Meta Documentation
 
   All Sparta features should be consistently documented. Whenever possible, hand-written documentation
   should reference to Sparta C++ documentation using doxygen \\ref
-
-  \section content Page Content
-  Where appropriate, a Sparta feature (whether a single class or collection of features) should contain
-  documentation to justify its existance and current implementation.
-  \subsection desc Feature Description
-  This describes the feature in a few short sentances
-  \subsection goal Goals
-  This section describes the overal goal of the feature and what problem it attempts to solve. This
-  is effectively an existence rationale and needn't be exhaustive. Design documents for sparta are
-  expected to exist outside of this documentation
-  \subsection reqs Relevant Requirements
-  This is a brief list of requirements driving the design of the feature. This list should give the
-  reader a sense of why the feature behaves the way it does.
-  \subsection concept Conceptual Usage
-  A high-level overview of how to developer or user should use this feature
-  \subsection examples Example Usage
-  This should contain example C++/Python code as appropriate
-  \subsection references References
-  This should contain a list of links (\\ref) to other related features or components
-
-  \section doxygen convention Doxygen Convention
-
-  \subsection code_conv Code Documentation Convention
-  C++ and Python code in sparta should be completely documented with block-style doxygen comments
-  (i.e. /&amp; &amp;/). All namespaces, classes, enums, typedefs, constants, and functions must be documented
-  regardless of scope. Whenever possible, all parameters and pre/post conditions of each function
-  should be described. All files should have a \\file doxygen entry.
-  Code comments should not extend past character column 80 except for preformatted content such as
-  example code.
-
-  \subsection text_conv Texual Documentation Convention
-  The doxygen pages automatically generated from namespace and classes related to each Sparta
-  component should contain detailed explanations of how to use that component's features.
-  However, some concepts involve multiple components which requires standalone documentation pages to
-  be written. These are mainly use-case-based (e.g. \ref logging How to Log).
-  These manually-written doxygen pages can be found in source code and text files within sparta and
-  should be left-aligned at column 0 and should contain no lines that extend past character column 100
-  except for preformatted content such as example code.
 */

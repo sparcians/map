@@ -2,7 +2,7 @@
 /*!
   \page modeling Sparta API
   \tableofcontents
-  ================================================================================
+
   \subsection app_overview Sparta Application APIs (sparta/app)
 
   Class | Brief Description
