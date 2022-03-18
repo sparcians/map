@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.15)
 
 # FIXME this should not depend on SPARTA_BASE but instead use:
 # find_package(Sparta X.Y REQUIRED)
