@@ -62,7 +62,7 @@
   \section param_format_nesting Nesting
 
   It is often useful to nest configuration files. For example if a simualtor contains repeating
-  hierarchies, one configuration file can be used for each level. Using the reserved "<b>include</b>"
+  hierarchies, one configuration file can be used for each level. Using the reserved <b>include</b>
   key allows a configuration file to specify that another configuration file should be applied at that
   context. At this time, the second configuration file is expected to be a relative path to the
   currently-parsed config file.
