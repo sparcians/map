@@ -66,10 +66,7 @@ public:
     /*!
      * \brief Constructs an expression containing no content
      */
-    Expression()
-    {
-        //std::cout << "Construction " << this << std::endl;
-    }
+    Expression() = default;
 
     /*!
      * \brief Copy Constructor
