@@ -25,6 +25,7 @@
 #include "sparta/events/PhasedUniqueEvent.hpp"
 #include "sparta/events/PhasedPayloadEvent.hpp"
 #include "sparta/kernel/SpartaHandler.hpp"
+#include "sparta/utils/IteratorTraits.hpp"
 
 namespace sparta
 {
@@ -97,7 +98,7 @@ namespace sparta
          * referred to by the iterator is not valid.
          */
         template<bool is_const_iterator = true>
-        class PipelineIterator : public std::iterator<std::forward_iterator_tag, DataT>
+        class PipelineIterator : public utils::IteratorTraits<std::forward_iterator_tag, DataT>
         {
             using DataReferenceType =
                 typename std::conditional<is_const_iterator, const DataT &, DataT &>::type;

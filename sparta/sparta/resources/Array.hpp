@@ -7,13 +7,15 @@
  */
 #pragma once
 
+#include <cinttypes>
 #include <vector>
-#include <map>
-#include <set>
+#include <string>
+#include <memory>
 
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/statistics/CycleHistogram.hpp"
 #include "sparta/collection/IterableCollector.hpp"
+#include "sparta/utils/IteratorTraits.hpp"
 
 namespace sparta
 {
@@ -104,7 +106,7 @@ namespace sparta
          * index for which they point.
          */
         template<bool is_const_iterator = true>
-        struct ArrayIterator : public std::iterator<std::forward_iterator_tag, value_type>
+        struct ArrayIterator : public utils::IteratorTraits<std::forward_iterator_tag, value_type>
         {
         private:
 

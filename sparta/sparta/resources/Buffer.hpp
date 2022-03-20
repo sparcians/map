@@ -10,6 +10,8 @@
 #pragma once
 
 #include <cinttypes>
+#include <vector>
+#include <algorithm>
 #include <type_traits>
 
 #include "sparta/utils/SpartaAssert.hpp"
@@ -19,6 +21,7 @@
 #include "sparta/statistics/StatisticDef.hpp"
 #include "sparta/collection/IterableCollector.hpp"
 #include "sparta/statistics/Counter.hpp"
+#include "sparta/utils/IteratorTraits.hpp"
 
 namespace sparta
 {
@@ -132,7 +135,7 @@ namespace sparta
          *
          */
         template <bool is_const_iterator = true>
-        class BufferIterator : public std::iterator<std::bidirectional_iterator_tag, value_type>
+        class BufferIterator : public utils::IteratorTraits<std::bidirectional_iterator_tag, value_type>
         {
         private:
             friend class Buffer<value_type>;

@@ -19,6 +19,7 @@
 #include "sparta/utils/MathUtils.hpp"
 #include "sparta/collection/IterableCollector.hpp"
 #include "sparta/utils/ValidValue.hpp"
+#include "sparta/utils/IteratorTraits.hpp"
 
 namespace sparta
 {
@@ -75,7 +76,7 @@ public:
     typedef uint32_t size_type;
 
     template <bool is_const_iterator = true>
-    class PipeIterator : public std::iterator<std::forward_iterator_tag, value_type>
+    class PipeIterator : public utils::IteratorTraits<std::forward_iterator_tag, value_type>
     {
         typedef typename std::conditional<is_const_iterator,
                                           const value_type &,
@@ -589,4 +590,3 @@ private:
 };
 
 }
-
