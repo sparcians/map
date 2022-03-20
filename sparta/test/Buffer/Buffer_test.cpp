@@ -21,7 +21,7 @@ TEST_INIT;
 
 #define PIPEOUT_GEN
 
-#define QUICK_PRINT(x) \
+#define QUICK_PRINT(x)                          \
     std::cout << x << std::endl
 
 int32_t dummy_allocs = 0;
@@ -108,7 +108,7 @@ void generalTest()
 
 #ifdef PIPEOUT_GEN
     sparta::collection::PipelineCollector pc("testBuffer", 1000000,
-                                           root_clk.get(), &rtn);
+                                             root_clk.get(), &rtn);
 #endif
 
     sched.finalize();
@@ -370,10 +370,10 @@ void generalTest()
 
     buf10_iter = buf10.begin();
     EXPECT_NOTHROW(
-                   *buf10_iter  = 1234.51;
-                   EXPECT_EQUAL(*buf10_iter, 1234.51);
-                   *buf10_iter  = 1234.5;
-                   );
+        *buf10_iter  = 1234.51;
+        EXPECT_EQUAL(*buf10_iter, 1234.51);
+        *buf10_iter  = 1234.5;
+        );
 
     sparta::Buffer<double>::const_iterator buf10_const_iter = buf10.begin();
     EXPECT_EQUAL(*buf10_const_iter, 1234.5);
@@ -619,8 +619,8 @@ void testConstIterator()
 
     sparta::StatisticSet buf_stats(&rtn);
     sparta::Buffer<B> b("buf_const_test", 10,
-                      root_clk.get(),
-                      &buf_stats);
+                        root_clk.get(),
+                        &buf_stats);
     const std::string report_def =
         R"(name: "String-based report Autopopulation Test"
 style:
@@ -656,6 +656,78 @@ content:
     a.foo();
 
     std::cout << r1 << std::endl;
+
+    rtn.enterTeardown();
+}
+
+void testBufferStats()
+{
+    sparta::Scheduler sched;
+    sparta::RootTreeNode rtn;
+    sparta::ClockManager cm(&sched);
+    sparta::Clock::Handle root_clk;
+    root_clk = cm.makeRoot(&rtn, "root_clk");
+    rtn.setClock(root_clk.get());
+    cm.normalize();
+    sparta::Report r1("report 1", &rtn);
+    sparta::Report r2("report 2", &rtn);
+
+    sparta::StatisticSet buf_stats(&rtn);
+    sparta::Buffer<B> b("buf_const_test", 10, root_clk.get(), &buf_stats);
+
+    const std::string report_def =
+        R"(name: "Looking at Buffer stats"
+style:
+    decimal_places: 3
+content:
+    top:
+        subreport:
+            name: All stats
+            style:
+                collapsible_children: no
+            content:
+                autopopulate:
+                    attributes: "!=vis:hidden && !=vis:summary"
+                    max_report_depth: 1
+        subreport:
+            name: Hidden stats
+            style:
+                collapsible_children: no
+            content:
+                autopopulate:
+                    attributes: "==vis:hidden"
+                    max_report_depth: 1
+        )";
+
+    r1.setContext(rtn.getSearchScope());
+    r1.addDefinitionString(report_def);
+    r2.setContext(rtn.getSearchScope());
+    r2.addDefinitionString(report_def);
+
+    rtn.enterConfiguring();
+    rtn.enterFinalized();
+    sched.finalize();
+
+    sched.run(1, true);
+    for(uint32_t i = 0; i < b.capacity(); ++i) {
+        b.push_back(B());
+    }
+    sched.run(10, true);
+    b.clear();
+    // Start report 2 later
+    r2.start();
+    for(uint32_t i = 0; i < b.capacity()/2; ++i) {
+        b.push_back(B());
+    }
+    sched.run(5, true);
+    b.clear();
+    for(uint32_t i = 0; i < b.capacity()/4; ++i) {
+        b.push_back(B());
+    }
+    sched.run(5, true);
+
+    std::cout << r1 << std::endl;
+    std::cout << r2 << std::endl;
 
     rtn.enterTeardown();
 }
@@ -752,6 +824,7 @@ int main()
     testPointerTypes<sparta::SpartaSharedPointer<dummy_struct>>();
     generalTest();
     testConstIterator();
+    testBufferStats();
     testInvalidates();
 
     REPORT_ERROR;
