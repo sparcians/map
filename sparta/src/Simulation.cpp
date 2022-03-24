@@ -933,6 +933,7 @@ void Simulation::run(uint64_t run_time)
 
         // Rethrow exception if necessary
         if(eptr != std::exception_ptr()){
+            simulation_successful_ = false;
             std::rethrow_exception(eptr);
         }
 
