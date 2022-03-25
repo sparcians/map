@@ -984,10 +984,18 @@ public:
 
     ~Impl()
     {
-        try {
-            this->saveReports();
-        } catch (...) {
-            std::cerr << "WARNING: Error saving reports to file" << std::endl;
+        // If we're not in the middle of an exception, we can save
+        // reports, unless report_on_error is defined
+        const bool save_reports =
+            (sim_ && sim_->getSimulationConfiguration()->report_on_error) ||
+            (sim_ && sim_->simulationSuccessful());
+        if(save_reports)
+        {
+            try {
+                this->saveReports();
+            } catch (...) {
+                std::cerr << "WARNING: Error saving reports to file" << std::endl;
+            }
         }
     }
 

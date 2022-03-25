@@ -371,6 +371,12 @@ public:
     // Status
 
     /*!
+     * \brief Was simulation successful?
+     * \return true if no exceptions were thrown; false otherwise
+     */
+    bool simulationSuccessful() const { return simulation_successful_; }
+
+    /*!
      * \brief return the number of events fired on the scheduler
      * during simulation.
      */
@@ -923,6 +929,11 @@ protected:
      * collection
      */
     std::unique_ptr<trigger::Trigger> debug_trigger_;
+
+    /*!
+     * \brief Was simulation successful?  I.e. no exceptions were thrown
+     */
+    bool simulation_successful_ = true;
 
 private:
 

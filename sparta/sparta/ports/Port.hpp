@@ -583,7 +583,7 @@ namespace sparta
 
             InPort * inp = nullptr;
             if((inp = dynamic_cast<InPort *>(in)) == 0) {
-                throw SpartaException("ERROR: Could not case '" +
+                throw SpartaException("ERROR: Could not cast '" +
                                     in->getName() + "' to an InPort for some reason...");
             }
 
