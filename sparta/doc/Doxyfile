@@ -885,7 +885,11 @@ EXCLUDE                = ../sparta/kernel/EdgeFactory.hpp \
                          ../sparta/kernel/SleeperThread.hpp \
                          ../sparta/kernel/SleeperThreadBase.hpp \
                          ../sparta/kernel/Vertex.hpp \
-                         ../sparta/kernel/VertexFactory.hpp
+                         ../sparta/kernel/VertexFactory.hpp \
+                         sparta_docs/analysis_tools.txt \
+                         sparta_docs/application.txt \
+                         sparta_docs/tutorial.txt \
+                         sparta_docs/kernel_overview.txt
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded

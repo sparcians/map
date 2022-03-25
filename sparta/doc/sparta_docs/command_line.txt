@@ -7,7 +7,7 @@
 
   \section cmdline_sim CommandLineSimulator
   sparta::app::CommandLineSimulator provides a command-line parser and help-text generator based on
-  boost::program_options. This interface dozens of options common to all sparta-based simulations and
+  boost::program_options. This interface contains dozens of options common to all sparta-based simulations and
   allows simulator-specific options to be added from outside of sparta as needed.
 
   Among all features provided by this class (in conjunction with sparta::app::Simulation, the most

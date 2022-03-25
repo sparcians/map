@@ -23,10 +23,10 @@ design.
 #
 # Versions tested and known to work:
 #    cmake     3.15
-#    boost     1.71  (can go older, can go newer)
-#    yaml-cpp  0.6
+#    boost     1.71, 1.76
+#    yaml-cpp  0.6,  0.7
 #    RapidJSON 1.1
-#    SQLite3   3.19
+#    SQLite3   3.19, 3.36
 #    HDF5      1.10
 #    Doxygen   1.8
 
@@ -58,7 +58,7 @@ open html/index.html
 
 All great projects have great documentation.  The Sparta team is striving to have the same, but there's always room for improvement.  There are presentations and online documentation being built, with a few ready for use.
 
-Specifically, start by generating your own Doxygen build or flip through the [online generated documentation](https://sparcians.github.io/map/).  
+Specifically, start by generating your own Doxygen build or flip through the [online generated documentation](https://sparcians.github.io/map/).
 
 To build your own copy, after cloning the repo, ensure Doxygen and dot (part of the Graphviz tool suite) are installed.  Then `cd doc; make`.  On the Mac, type `open html/index.html` and peruse the documentation about the `SkeletalPipeline` and the `Core Example`.
 

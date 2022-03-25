@@ -61,12 +61,12 @@
   Communication between resources in a user's model occurs via Ports.
   In SystemC, Ports are used as a mechanism to exchange interfaces
   between blocks, but in Sparta, Ports are used to exchange data and
-  signals at given time intervals.  This follows a similar cohesion
-  pattern allowing any component to bind to another as long as it
-  understands the shared data type.
+  signals at given time intervals.  This follows a cohesive pattern
+  allowing any component to bind to another as long as it understands
+  the shared data type.
 
-  A typical modeled block using Sparta, looks like the following, with
-  each section following the next section in the order listed.
+  A typical modeled block using Sparta looks like the following, with
+  each phase following the next phase in the order listed.
 
   Phase                           | Intended Use
   --------------------------------|-----------------------------------------------------------------------
@@ -116,10 +116,10 @@
 
   \subsection using_phase Using The Phases
 
-  - Construction occurs first and only once.  During this "phase" the
-     modeler should add sparta::Event, sparta::Port, and sparta::Counter
-     objects to the base class sparta::Unit's sets:
-     .
+  Construction occurs first and only once.  During this "phase" the
+  modeler should add sparta::Event, sparta::Port, and sparta::Counter
+  objects to the base class sparta::Unit's sets:
+
      \code
      // Construction phase
      MyBlock::MyBlock(sparta::TreeNode * node, MyParameters * params) :
@@ -144,31 +144,31 @@
          my_internal_tick_event_.schedule();  // schedule internal tick event for this cycle
      }
      \endcode
-     .
-     <BR>
-     The framework will automatically set precedence between
-     registered sparta::Event objects in the sparta::EventSet and
-     registered sparta::Port objects in the sparta::PortSet.  However,
-     the framework will _not_ set precedence between events *defined
-     directly* in the block.  I.e. if there is an event called
-     `my_first_event_` created in the sparta::SchedulingPhase::Tick
-     phase, and another event called `my_second_event_` also created
-     in the sparta::SchedulingPhase::Tick phase, the order in which
-     these events are scheduled is random (however, persistent from
-     simulation to simulation run) _unless_ a precedence is
+
+     The framework will automatically set precedence between Events
+     (sparta::Event) and Ports (sparta::Port) registered in the
+     sparta::Unit EventSet (sparta::EventSet) and PortSet
+     (sparta::PortSet).  However, the framework will _not_ set
+     precedence between events *defined directly* in the block.
+     I.e. if there is an event called `my_first_event_` created in the
+     sparta::SchedulingPhase::Tick phase, and another event called
+     `my_second_event_` also created in the
+     sparta::SchedulingPhase::Tick phase, the order in which these
+     events are scheduled is random (however, deterministic between
+     simulation runs of the same binary) _unless_ a precedence is
      established:
-     .
-     <BR>
+
+     \*
+
      \code
      my_first_event_ >> my_second_event_;
      \endcode
-     .
-     <BR>
+
      Automatic precedence establishment can be disabled by calling the
      method sparta::Resource::setAutoPrecedence(false) in the
      constructor of MyBlock.
 
-  - After the block is instantiated and the simulator is now running,
+    After the block is instantiated and the simulator is now running,
     events will be scheduled based on established operations.
     .
     \dot
@@ -210,7 +210,7 @@
        modeler's code will be in this phase.
     .
 
-  - Simulation will terminate when there are no more continuing events
-    scheduled for execution.
+  Simulation will terminate when there are no more continuing (see
+  sparta::Scheduleable::setContinuing) events scheduled for execution.
 
 */

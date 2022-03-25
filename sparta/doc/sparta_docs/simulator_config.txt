@@ -13,11 +13,6 @@
   \section config_usage Simulator Subclass Configuration
   The user-side configuration of a simulator is covered in \ref ctrl_cfg and \ref param_format
 
-  Further background information on configuration files, parameters, and tree construction phases is available
-  in this <TBD>,
-  which contains diagrams of Sparta tree elaboration.
-  The following information is the most current documentation on Sparta simulator construction.
-
   \par Overview
   Simulator initialization, at it's simplest, establishes an initial device tree (\ref trees) containing the parameters
   available for a simulator which is then populated from user configuration files and command-line
@@ -49,7 +44,7 @@
   Sparta parameters would need to be specified before reading the configuration at all. The result was that
   Sparta parameters could not be used to dictate how many instances of another component should be
   constructed if that other component had its own Sparta parameters.
-
+  <br/>
   While this limitation forced the model owner to define their entire parameterized "topologies" in
   C++ code, probably makes simulator initialization code maintainable and clearly outlines the
   simulation hierarchy. It is also analogous to how "Topology Files" will work once implemented.
@@ -70,7 +65,7 @@
   parameter-tree structure which handles pattern-based parameter paths and ensures each parameter is
   consumed by code, even if not actually associated with a sparta::Parameter node in the final device tree.
   <br/>
-  This feature is currently missing functionality (Nov 12, 2013). The missing functionality includes:
+  This feature is not complete specifically due to this limitation:
   \li The ParameterTree is not capable of understanding configuration files or command line parameters
   containing parent references (e.g. "x..y" or ".x"). This is mainly an inconvenience. If encountered
   in a configuration file, generates a warning.
@@ -85,17 +80,24 @@
       std::cout << "Got parameter Value for x = " << pn->getValue() << std::endl;
   }
   \endcode
+
   This behavior is still experimental and under development. It should be improved soon.
-  \li The contents of the unbound parameter tree are not yet written as part of the the final
-  configuration output (see \--write-final-config). Therefore, unbound parameters may be missing when
-  trying to reproduce a simulation run using the final configuration output of that run. The best
-  practice for this issue is that all unbound parameters should correspond to sparta::Parameter nodes
-  by the time the simulation is finalized. At any time before finalization the simulator should simply
-  create new ParameterSet and Parameter Nodes matching the location of the unbound parameters consumed
-  earlier
+
+  \li The contents of the unbound parameter tree are not yet written
+  as part of the the final configuration output (see
+  \--write-final-config command line option). Therefore, unbound
+  parameters may be missing when trying to reproduce a simulation run
+  using the final configuration output of that run. The best practice
+  for this issue is that all unbound parameters should correspond to
+  sparta::Parameter nodes by the time the simulation is finalized. At
+  any time before finalization the simulator should simply create new
+  ParameterSet and Parameter Nodes matching the location of the
+  unbound parameters consumed earlier
+
   \li The unbound parameter tree provides no method for lexical casting its content to a vector like a
   sparta::Parameter node does. Interpreting a value from the unbound parameter tree as a vector must
   currently be done manually.
+
   \li No default values are provided by the unbound parameter tree. Therefore, building-phase code that
   consumes unbound parameters must be made aware of the defaults for those parameters in case the user
   does not specify that parmeter as input. This could be done by accessing a static variable which
@@ -221,7 +223,6 @@
   Configuration is an opportune time to create and attached clocks to the tree. This can be done
   during buildTree, but must be done before the end of configuration to prevent resources from being
   instantiated with no clock
-
   \code
     // Within configureTree_
     sparta::Clock::Handle master_clock = getClockManager().getRoot();

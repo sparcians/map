@@ -3,9 +3,6 @@
   \page modeling Sparta API
   \tableofcontents
 
-  \subsection spartaparts Sparta Pieces/Parts
-
-  ================================================================================
   \subsection app_overview Sparta Application APIs (sparta/app)
 
   Class | Brief Description
