@@ -256,11 +256,11 @@
   Field names within a report must be unique. However, \ref report_def_subreports can be used to get
   around this restriction. \ref report_def_field_name_variables help accomplish this.
 
-  <em>The code in \ref sparta::Report refers to it's report fields as "statistics" because it makes sense
+  <em>The code in sparta::Report refers to it's report fields as "statistics" because it makes sense
   within the scope of that code. Fom an end-user perspective, it is less confusing toe call them
   fields.</em>
 
-  Report fields can be added using a report definition using either \ref report_def_field_declaration
+  Report fields can be added using a report definition using either \ref report_def_field_declarations
   or \ref report_def_autopop.
 
   \subsection report_def_example Example Report Definition
@@ -312,10 +312,12 @@
   The report above would be called "Example Report" and every field in every subreport would be
   formatted to 2 decimal places (see \ref report_def_style).
 
-  Note the "top:" line just within the highest content section. This is a scope qualifier (see
-  \ref report_def_scope_qual) which tells the report parser that any node names or node name patterns
-  nested within the dictionaries associated with that "top:" section will be resolved within the scope
-  of "top". For example, "core0.foo" would resolve to "top.core0.foo" within that block.
+  Note the "top:" line just within the highest content section. This
+  is a scope qualifier which tells the report parser that any node
+  names or node name patterns nested within the dictionaries
+  associated with that "top:" section will be resolved within the
+  scope of "top". For example, "core0.foo" would resolve to
+  "top.core0.foo" within that block.
 
   A subreport called "Automatic Summary" would be created and would be populated by all counters/stats
   below the top-level "top" node which were created with "SUMMARY"
@@ -394,7 +396,7 @@
   "core0" just changes the current scope for anything in the nested dictionary associated with it.
   Since the scope enclosing this node is "top", the scope inside this section is "top.core0". The
   following line changes the scope to "top.core0.foo.stats". The third line is a field definition line
-  which simply creates a field named "BUZ 0: which points to the node "top.core0.foo.stats.buz".
+  which simply creates a field named "BUZ 0:" which points to the node "top.core0.foo.stats.buz".
 
   It should be obvious from these lines that the current scope is a stack, and when the dictionary
   associated with each of these lines ends, the scope is set back to what it was before the dictionary
@@ -402,6 +404,7 @@
   of "top" because they are not within the "core0" scope qualifier's associated dictionary.
 
   The final report contents after parsing this entire report definition are:
+
   \verbatim
   Report "Example Report"
   Subreport "Autmatic Summary"
@@ -437,13 +440,13 @@
   thrown.
 
   <em>field_name</em> names the field. If the left side of a field declaration or any enclosing scope
-  node (see \ref report_def_scope_qual) contains wildcards, then this name should contain a variable
+  node contains wildcards, then this name should contain a variable
   as explained in \ref report_def_field_name_variables.
 
   See \ref report_def_example for some example usages
 
   \subsection report_def_field_name_variables Field Name Variables
-  The wildcards contained in \ref report_def_scope_qual and \ref report_def_field_declarations node
+  The wildcards contained in report scope qualifiers and \ref report_def_field_declarations node
   paths allow a number of nodes having similar paths matching a given pattern to be added to a report
   in a single line in the report definition. However, this functionality can often cause report field
   name collisions. For example, the following line will always cause a report field name collision
@@ -863,7 +866,7 @@
 
   <h4>Parentheses are, of course, supported.</h4>
 
-  The grammar is fully defined and implemented \ref sparta::tree::filter::grammar::Grammar
+  The grammar is fully defined and implemented sparta::tree::filter::grammar::Grammar
 
   <em>Often, these expressions contain characters not accepted by YAML and must be written in quotes.</em>
 

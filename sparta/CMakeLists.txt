@@ -140,11 +140,12 @@ if (CCACHE_PROGRAM)
 endif ()
 
 # -Wpedantic
-add_definitions(-DSPARTA_VERSION=\"${GIT_REPO_VERSION}\")
+add_definitions(-DSPARTA_VERSION=\"${GIT_REPO_VERSION}\" -DRAPIDJSON_NOMEMBERITERATORCLASS)
 add_compile_options(-Werror -fPIC
   -Wall -Wextra -Winline -Winit-self -Wno-unused-function
   -Wuninitialized -Wno-sequence-point -Wno-inline -Wno-unknown-pragmas
-  -Woverloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers)
+  -Woverloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers
+  -Wno-deprecated)
 
 if (GEN_DEBUG_INFO)
   message (STATUS "Building with debug info -g")

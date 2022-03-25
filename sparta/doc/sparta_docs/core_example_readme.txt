@@ -196,7 +196,7 @@
                        -l top.cpu.core?.fetch  info fetch_decode.out
   \endcode
 
-  Enable a Decode and Fetch "info" log for 1K instructiona _after_ the
+  Enable a Decode and Fetch "info" log for 1K instructions _after_ the
   first 100K instructions:
 
   \code
