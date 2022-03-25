@@ -79,6 +79,8 @@ public:
     OrderBy() = default;
     OrderBy(const OrderBy &) = default;
 
+    OrderBy& operator=(const OrderBy&) = default;
+
     operator std::string() const {
         std::ostringstream oss;
         oss << (*this);
@@ -803,4 +805,3 @@ private:
 };
 
 } // namespace simdb
-
