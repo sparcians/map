@@ -7,12 +7,11 @@ version: 2
 jobs:
   build_linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version11:
     working_directory: ~/test
-    machine:
-      image: ubuntu-2004:202111-02
+    machine: true
     environment:
       - CONFIG: "linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version11"
       - UPLOAD_PACKAGES: "False"
-        DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7"
+        DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7-x86_64"
     steps:
       - checkout
       - run:
@@ -30,17 +29,14 @@ jobs:
             else
               export IS_PR_BUILD="True"
             fi
-            id
-            docker run hello-world
             ./.scripts/run_docker_build.sh
   build_linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version13:
     working_directory: ~/test
-    machine:
-      image: ubuntu-2004:202111-02
+    machine: true
     environment:
       - CONFIG: "linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version13"
       - UPLOAD_PACKAGES: "False"
-        DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7"
+        DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7-x86_64"
     steps:
       - checkout
       - run:
@@ -61,12 +57,11 @@ jobs:
             ./.scripts/run_docker_build.sh
   build_linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version11:
     working_directory: ~/test
-    machine:
-      image: ubuntu-2004:202111-02
+    machine: true
     environment:
       - CONFIG: "linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version11"
       - UPLOAD_PACKAGES: "False"
-        DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7"
+        DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7-x86_64"
     steps:
       - checkout
       - run:
@@ -87,12 +82,11 @@ jobs:
             ./.scripts/run_docker_build.sh
   build_linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version13:
     working_directory: ~/test
-    machine:
-      image: ubuntu-2004:202111-02
+    machine: true
     environment:
       - CONFIG: "linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version13"
       - UPLOAD_PACKAGES: "False"
-        DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7"
+        DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7-x86_64"
     steps:
       - checkout
       - run:
