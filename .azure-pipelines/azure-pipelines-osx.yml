@@ -8,14 +8,10 @@ jobs:
     vmImage: macOS-10.15
   strategy:
     matrix:
-      osx_64_c_compiler_version11cxx_compiler_version11:
-        CONFIG: osx_64_c_compiler_version11cxx_compiler_version11
+      osx_64_:
+        CONFIG: osx_64_
         UPLOAD_PACKAGES: 'False'
-        SHORT_CONFIG: osx_64_c_compiler_version11cxx_comp_h829c69ac17
-      osx_64_c_compiler_version13cxx_compiler_version13:
-        CONFIG: osx_64_c_compiler_version13cxx_compiler_version13
-        UPLOAD_PACKAGES: 'False'
-        SHORT_CONFIG: osx_64_c_compiler_version13cxx_comp_h19b59de7ea
+        SHORT_CONFIG: osx_64_
   timeoutInMinutes: 360
 
   steps:

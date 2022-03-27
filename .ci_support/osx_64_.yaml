@@ -1,27 +1,27 @@
+MACOSX_DEPLOYMENT_TARGET:
+- '10.13'
 boost:
 - 1.74.0
 boost_cpp:
 - 1.74.0
 c_compiler:
-- gcc
+- clang
 c_compiler_version:
-- '10'
-cdt_name:
-- cos6
+- '12'
 channel_sources:
 - conda-forge
 channel_targets:
 - conda-forge main
 cxx_compiler:
-- gxx
+- clangxx
 cxx_compiler_version:
-- '10'
-docker_image:
-- quay.io/condaforge/linux-anvil-cos7-x86_64
+- '12'
 hdf5:
 - 1.10.6
-linux_clang_version:
-- '11'
+macos_machine:
+- x86_64-apple-darwin13.4.0
+macos_min_version:
+- '10.13'
 numpy:
 - '1.19'
 pin_run_as_build:
@@ -39,9 +39,11 @@ python:
 sqlite:
 - '3'
 target_platform:
-- linux-64
+- osx-64
 zip_keys:
 - - c_compiler_version
   - cxx_compiler_version
+- - macos_min_version
+  - MACOSX_DEPLOYMENT_TARGET
 - - python
   - numpy

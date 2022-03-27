@@ -5,90 +5,12 @@
 version: 2
 
 jobs:
-  build_linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version11:
+  build_linux_64_:
     working_directory: ~/test
     machine:
       - image: ubuntu-2004:current
     environment:
-      - CONFIG: "linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version11"
-      - UPLOAD_PACKAGES: "False"
-        DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7-x86_64"
-    steps:
-      - checkout
-      - run:
-          name: Fast finish outdated PRs and merge PRs
-          command: |
-            ./.circleci/fast_finish_ci_pr_build.sh
-            ./.circleci/checkout_merge_commit.sh
-      - run:
-          # Run, test and (if we have a BINSTAR_TOKEN) upload the distributions.
-          command: |
-            export CI=circle
-            export FEEDSTOCK_NAME=$(basename ${CIRCLE_PROJECT_REPONAME})
-            if [[ "${CIRCLE_PR_NUMBER:-}" == "" ]]; then
-              export IS_PR_BUILD="False"
-            else
-              export IS_PR_BUILD="True"
-            fi
-            ./.scripts/run_docker_build.sh
-  build_linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version13:
-    working_directory: ~/test
-    machine:
-      - image: ubuntu-2004:current
-    environment:
-      - CONFIG: "linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version13"
-      - UPLOAD_PACKAGES: "False"
-        DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7-x86_64"
-    steps:
-      - checkout
-      - run:
-          name: Fast finish outdated PRs and merge PRs
-          command: |
-            ./.circleci/fast_finish_ci_pr_build.sh
-            ./.circleci/checkout_merge_commit.sh
-      - run:
-          # Run, test and (if we have a BINSTAR_TOKEN) upload the distributions.
-          command: |
-            export CI=circle
-            export FEEDSTOCK_NAME=$(basename ${CIRCLE_PROJECT_REPONAME})
-            if [[ "${CIRCLE_PR_NUMBER:-}" == "" ]]; then
-              export IS_PR_BUILD="False"
-            else
-              export IS_PR_BUILD="True"
-            fi
-            ./.scripts/run_docker_build.sh
-  build_linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version11:
-    working_directory: ~/test
-    machine:
-      - image: ubuntu-2004:current
-    environment:
-      - CONFIG: "linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version11"
-      - UPLOAD_PACKAGES: "False"
-        DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7-x86_64"
-    steps:
-      - checkout
-      - run:
-          name: Fast finish outdated PRs and merge PRs
-          command: |
-            ./.circleci/fast_finish_ci_pr_build.sh
-            ./.circleci/checkout_merge_commit.sh
-      - run:
-          # Run, test and (if we have a BINSTAR_TOKEN) upload the distributions.
-          command: |
-            export CI=circle
-            export FEEDSTOCK_NAME=$(basename ${CIRCLE_PROJECT_REPONAME})
-            if [[ "${CIRCLE_PR_NUMBER:-}" == "" ]]; then
-              export IS_PR_BUILD="False"
-            else
-              export IS_PR_BUILD="True"
-            fi
-            ./.scripts/run_docker_build.sh
-  build_linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version13:
-    working_directory: ~/test
-    machine:
-      - image: ubuntu-2004:current
-    environment:
-      - CONFIG: "linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version13"
+      - CONFIG: "linux_64_"
       - UPLOAD_PACKAGES: "False"
         DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7-x86_64"
     steps:
@@ -114,7 +36,4 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - build_linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version11
-      - build_linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version13
-      - build_linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version11
-      - build_linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version13
+      - build_linux_64_
