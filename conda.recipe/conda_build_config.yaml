@@ -54,6 +54,15 @@ cxx_compiler_version:          # [unix]
 linux_clang_version:           # [linux]
   - 14                         # [linux]
   - 11                         # [linux]
+# cf uses gfortran on both linux and osx
+# so we just need to provide two versions
+# so that the zip_keys will work and since
+# we don't use fortran, it doesn't matter
+# but I make the versions match gcc,g++ so
+# to be less confusing
+fortran_compiler_version:
+  - 11
+  - 10
 docker_image:
   - quay.io/condaforge/linux-anvil-cos7
   - quay.io/condaforge/linux-anvil-cos7
@@ -79,16 +88,20 @@ python_impl:
 # as well so that it is easier to see what we're doing.
 # I dropped the cuda stuff out of conda-forge zip_keys because
 # we don't care about CUDA as we aren't using it.
-zip_keys:
-    -
-        - c_compiler_version
-        - cxx_compiler_version
-        - linux_clang_version  # [linux]
-        - cdt_name      # [linux]
-        - docker_image  # [linux]
-    -
-        - python
-        - numpy
-        - python_impl
+#
+# I guess you can't override zip_keys, you can only add combinations to the
+# list and keys can only be in one, so, we have to constrain fortran to be
+# a matrix as well even though we don't use it.
+#zip_keys:
+#    -
+#        - c_compiler_version
+#        - cxx_compiler_version
+#        - linux_clang_version  # [linux]
+#        - cdt_name      # [linux]
+#        - docker_image  # [linux]
+#    -
+#        - python
+#        - numpy
+#        - python_impl
 
 
