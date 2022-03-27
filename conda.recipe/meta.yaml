@@ -36,9 +36,9 @@ requirements:
     - {{ compiler('cxx') }}
     - {{ compiler('c') }}
     # add duplicate clang dep per https://gitter.im/conda-forge/conda-forge.github.io?at=5e5feaf7ec7f8746aab200c4
-    - clang 10
-    - clangxx 10
-    - llvm-tools 10
+    - clang       {{ linux_clang_version }}  # [linux]
+    - clangxx     {{ linux_clang_version }}  # [linux]
+    - llvm-tools  {{ linux_clang_version }}  # [linux]
     - rsync
     # add runtime requirements for argos to make it easier to script
     # creation of a 'dev' environment that can also run Argos
@@ -80,7 +80,7 @@ requirements:
 about:
   home: https://github.com/sparcians/map
   summary: a set of classes, tools, and flows to aid in modeling/simulation of complex hardware for the purpose of performance analysis and design exploration
-  license: Apache License 2.0
+  license: Apache-2.0
   license_family: APACHE
   license_file: LICENSE
   dev_url: https://github.com/sparcians/map

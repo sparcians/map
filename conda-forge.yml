@@ -14,7 +14,7 @@ skip_render:
   - .github/workflows/webservices.yml
   - .github/workflows/automerge.yml
 provider:
-  linux: travis
+  linux: circle
   osx: azure
   win: None
   linux_ppc64le: None
@@ -22,6 +22,7 @@ provider:
 azure:
   force: False
   upload_packages: False
+  store_build_artifacts: True
 github:
   user_or_org: sparcians
   repo_name: map

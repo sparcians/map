@@ -35,23 +35,50 @@ zip_keys:                       # [osx]
     - MACOSX_DEPLOYMENT_TARGET  # [osx]
 
 
-# pin linux compiler to old build before the sysroot change because clang 9 wasn't updated
-# to work with latest build of gcc
 c_compiler:
   - gcc                        # [linux]
   - clang                      # [osx]
-  - vs2017                     # [win]
 c_compiler_version:            # [unix]
-  - 11                         # [osx and arm64]
-  - 10                         # [osx and x86_64]
-  - 7                          # [linux64 or aarch64]
-  - 8                          # [ppc64le or armv7l]
+  - 14                         # [osx]
+  - 11                         # [osx]
+  - 11                         # [linux]
+  - 10                         # [linux]
 cxx_compiler:
   - gxx                        # [linux]
   - clangxx                    # [osx]
-  - vs2017                     # [win]
 cxx_compiler_version:          # [unix]
-  - 11                         # [osx and arm64]
-  - 10                         # [osx and x86_64]
-  - 7                          # [linux64 or aarch64]
-  - 8                          # [ppc64le or armv7l]
+  - 14                         # [osx]
+  - 11                         # [osx]
+  - 11                         # [linux]
+  - 10                         # [linux]
+linux_clang_version:           # [linux]
+  - 14                         # [linux]
+  - 11                         # [linux]
+docker_image:
+  - quay.io/condaforge/linux-anvil-cos7
+  - quay.io/condaforge/linux-anvil-cos7
+cdt_name:
+  - cos6
+  - cos6
+
+# conda-forge-pinnings-feedstock/recipe/conda_build_config.yaml
+# uses c_compiler_version and cxx_compiler_version in a zip_keys
+# https://docs.conda.io/projects/conda-build/en/latest/resources/variants.html#coupling-keys
+# They typically only have a single version of the compilers that they
+# are building packages with at a time.  However, we want to regress
+# across a few.  That means we need to balance the size of the
+# elements of the zip_keys.  I'm going to override those here
+# as well so that it is easier to see what we're doing.
+# I dropped the cuda stuff out of conda-forge zip_keys because
+# we don't care about CUDA as we aren't using it.
+zip_keys:
+    -
+        - c_compiler_version
+        - cxx_compiler_version
+        - linux_clang_version  # [linux]
+        - cdt_name      # [linux]
+        - docker_image  # [linux]
+    -
+        - python
+        - numpy
+        - python_impl
