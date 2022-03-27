@@ -12,10 +12,10 @@ jobs:
         CONFIG: osx_64_c_compiler_version11cxx_compiler_version11
         UPLOAD_PACKAGES: 'False'
         SHORT_CONFIG: osx_64_c_compiler_version11cxx_comp_h829c69ac17
-      osx_64_c_compiler_version14cxx_compiler_version14:
-        CONFIG: osx_64_c_compiler_version14cxx_compiler_version14
+      osx_64_c_compiler_version13cxx_compiler_version13:
+        CONFIG: osx_64_c_compiler_version13cxx_compiler_version13
         UPLOAD_PACKAGES: 'False'
-        SHORT_CONFIG: osx_64_c_compiler_version14cxx_comp_hdbfbbed8fa
+        SHORT_CONFIG: osx_64_c_compiler_version13cxx_comp_h19b59de7ea
   timeoutInMinutes: 360
 
   steps:
@@ -25,6 +25,7 @@ jobs:
       export OSX_FORCE_SDK_DOWNLOAD="1"
       export GIT_BRANCH=$BUILD_SOURCEBRANCHNAME
       export FEEDSTOCK_NAME=$(basename ${BUILD_REPOSITORY_NAME})
+      export UPLOAD_ON_BRANCH="never_upload_packages"
       if [[ "${BUILD_REASON:-}" == "PullRequest" ]]; then
         export IS_PR_BUILD="True"
       else

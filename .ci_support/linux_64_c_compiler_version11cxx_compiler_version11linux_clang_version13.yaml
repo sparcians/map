@@ -5,7 +5,7 @@ boost_cpp:
 c_compiler:
 - gcc
 c_compiler_version:
-- '10'
+- '11'
 cdt_name:
 - cos6
 channel_sources:
@@ -15,13 +15,13 @@ channel_targets:
 cxx_compiler:
 - gxx
 cxx_compiler_version:
-- '10'
+- '11'
 docker_image:
 - quay.io/condaforge/linux-anvil-cos7
 hdf5:
 - 1.10.6
 linux_clang_version:
-- '14'
+- '13'
 numpy:
 - '1.19'
 pin_run_as_build:

@@ -30,11 +30,11 @@ jobs:
               export IS_PR_BUILD="True"
             fi
             ./.scripts/run_docker_build.sh
-  build_linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version14:
+  build_linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version13:
     working_directory: ~/test
     machine: true
     environment:
-      - CONFIG: "linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version14"
+      - CONFIG: "linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version13"
       - UPLOAD_PACKAGES: "True"
         DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7"
     steps:
@@ -80,11 +80,11 @@ jobs:
               export IS_PR_BUILD="True"
             fi
             ./.scripts/run_docker_build.sh
-  build_linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version14:
+  build_linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version13:
     working_directory: ~/test
     machine: true
     environment:
-      - CONFIG: "linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version14"
+      - CONFIG: "linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version13"
       - UPLOAD_PACKAGES: "True"
         DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7"
     steps:
@@ -111,6 +111,6 @@ workflows:
   build_and_test:
     jobs:
       - build_linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version11
-      - build_linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version14
+      - build_linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version13
       - build_linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version11
-      - build_linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version14
+      - build_linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version13
