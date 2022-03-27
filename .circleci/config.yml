@@ -10,7 +10,7 @@ jobs:
     machine: true
     environment:
       - CONFIG: "linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version11"
-      - UPLOAD_PACKAGES: "True"
+      - UPLOAD_PACKAGES: "False"
         DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7"
     steps:
       - checkout
@@ -35,7 +35,7 @@ jobs:
     machine: true
     environment:
       - CONFIG: "linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version13"
-      - UPLOAD_PACKAGES: "True"
+      - UPLOAD_PACKAGES: "False"
         DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7"
     steps:
       - checkout
@@ -60,7 +60,7 @@ jobs:
     machine: true
     environment:
       - CONFIG: "linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version11"
-      - UPLOAD_PACKAGES: "True"
+      - UPLOAD_PACKAGES: "False"
         DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7"
     steps:
       - checkout
@@ -85,7 +85,7 @@ jobs:
     machine: true
     environment:
       - CONFIG: "linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version13"
-      - UPLOAD_PACKAGES: "True"
+      - UPLOAD_PACKAGES: "False"
         DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7"
     steps:
       - checkout

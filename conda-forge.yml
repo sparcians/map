@@ -23,6 +23,8 @@ azure:
   force: False
   upload_packages: False
   store_build_artifacts: True
+circle:
+  upload_packages: False
 github:
   user_or_org: sparcians
   repo_name: map
