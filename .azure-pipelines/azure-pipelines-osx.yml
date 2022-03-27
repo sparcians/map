@@ -8,13 +8,14 @@ jobs:
     vmImage: macOS-10.15
   strategy:
     matrix:
-#      osx_64_python3.7.____cpython:
-#        CONFIG: osx_64_python3.7.____cpython
-#        UPLOAD_PACKAGES: 'False'
-      osx_64_python3.8.____cpython:
-        CONFIG: osx_64_python3.8.____cpython
+      osx_64_c_compiler_version11cxx_compiler_version11:
+        CONFIG: osx_64_c_compiler_version11cxx_compiler_version11
         UPLOAD_PACKAGES: 'False'
-    maxParallel: 8
+        SHORT_CONFIG: osx_64_c_compiler_version11cxx_comp_h829c69ac17
+      osx_64_c_compiler_version14cxx_compiler_version14:
+        CONFIG: osx_64_c_compiler_version14cxx_compiler_version14
+        UPLOAD_PACKAGES: 'False'
+        SHORT_CONFIG: osx_64_c_compiler_version14cxx_comp_hdbfbbed8fa
   timeoutInMinutes: 360
 
   steps:
@@ -24,7 +25,41 @@ jobs:
       export OSX_FORCE_SDK_DOWNLOAD="1"
       export GIT_BRANCH=$BUILD_SOURCEBRANCHNAME
       export FEEDSTOCK_NAME=$(basename ${BUILD_REPOSITORY_NAME})
+      if [[ "${BUILD_REASON:-}" == "PullRequest" ]]; then
+        export IS_PR_BUILD="True"
+      else
+        export IS_PR_BUILD="False"
+      fi
       ./.scripts/run_osx_build.sh
     displayName: Run OSX build
     env:
       BINSTAR_TOKEN: $(BINSTAR_TOKEN)
+  - script: |
+      export CI=azure
+      export CI_RUN_ID=$(build.BuildNumber).$(system.JobAttempt)
+      export FEEDSTOCK_NAME=$(basename ${BUILD_REPOSITORY_NAME})
+      export CONDA_BLD_DIR=/Users/runner/miniforge3/conda-bld
+      export ARTIFACT_STAGING_DIR="$(Build.ArtifactStagingDirectory)"
+      # Archive everything in CONDA_BLD_DIR except environments
+      export BLD_ARTIFACT_PREFIX=conda_artifacts
+      if [[ "$AGENT_JOBSTATUS" == "Failed" ]]; then
+        # Archive the CONDA_BLD_DIR environments only when the job fails
+        export ENV_ARTIFACT_PREFIX=conda_envs
+      fi
+      ./.scripts/create_conda_build_artifacts.sh
+    displayName: Prepare conda build artifacts
+    condition: succeededOrFailed()
+
+  - task: PublishPipelineArtifact@1
+    displayName: Store conda build artifacts
+    condition: not(eq(variables.BLD_ARTIFACT_PATH, ''))
+    inputs:
+      targetPath: $(BLD_ARTIFACT_PATH)
+      artifactName: $(BLD_ARTIFACT_NAME)
+
+  - task: PublishPipelineArtifact@1
+    displayName: Store conda build environment artifacts
+    condition: not(eq(variables.ENV_ARTIFACT_PATH, ''))
+    inputs:
+      targetPath: $(ENV_ARTIFACT_PATH)
+      artifactName: $(ENV_ARTIFACT_NAME)
