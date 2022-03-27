@@ -7,7 +7,8 @@ version: 2
 jobs:
   build_linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version11:
     working_directory: ~/test
-    machine: true
+    machine:
+      image: ubuntu-2004:202111-02
     environment:
       - CONFIG: "linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version11"
       - UPLOAD_PACKAGES: "False"
@@ -32,7 +33,8 @@ jobs:
             ./.scripts/run_docker_build.sh
   build_linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version13:
     working_directory: ~/test
-    machine: true
+    machine:
+      image: ubuntu-2004:202111-02
     environment:
       - CONFIG: "linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version13"
       - UPLOAD_PACKAGES: "False"
@@ -57,7 +59,8 @@ jobs:
             ./.scripts/run_docker_build.sh
   build_linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version11:
     working_directory: ~/test
-    machine: true
+    machine:
+      image: ubuntu-2004:202111-02
     environment:
       - CONFIG: "linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version11"
       - UPLOAD_PACKAGES: "False"
@@ -82,7 +85,8 @@ jobs:
             ./.scripts/run_docker_build.sh
   build_linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version13:
     working_directory: ~/test
-    machine: true
+    machine:
+      image: ubuntu-2004:202111-02
     environment:
       - CONFIG: "linux_64_c_compiler_version11cxx_compiler_version11linux_clang_version13"
       - UPLOAD_PACKAGES: "False"
