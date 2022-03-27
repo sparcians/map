@@ -39,7 +39,7 @@ c_compiler:
   - gcc                        # [linux]
   - clang                      # [osx]
 c_compiler_version:            # [unix]
-  - 14                         # [osx]
+  - 13                         # [osx]
   - 11                         # [osx]
   - 11                         # [linux]
   - 10                         # [linux]
@@ -47,12 +47,12 @@ cxx_compiler:
   - gxx                        # [linux]
   - clangxx                    # [osx]
 cxx_compiler_version:          # [unix]
-  - 14                         # [osx]
+  - 13                         # [osx]
   - 11                         # [osx]
   - 11                         # [linux]
   - 10                         # [linux]
 linux_clang_version:           # [linux]
-  - 14                         # [linux]
+  - 13                         # [linux]
   - 11                         # [linux]
 # cf uses gfortran on both linux and osx
 # so we just need to provide two versions
