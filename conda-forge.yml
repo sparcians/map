@@ -26,3 +26,4 @@ azure:
 github:
   user_or_org: sparcians
   repo_name: map
+upload_on_branch: never_upload_packages
