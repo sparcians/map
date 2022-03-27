@@ -30,6 +30,8 @@ jobs:
             else
               export IS_PR_BUILD="True"
             fi
+            id
+            docker run hello-world
             ./.scripts/run_docker_build.sh
   build_linux_64_c_compiler_version10cxx_compiler_version10linux_clang_version13:
     working_directory: ~/test
