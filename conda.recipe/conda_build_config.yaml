@@ -61,6 +61,14 @@ cdt_name:
   - cos6
   - cos6
 
+# limit ourselves to a single python version
+numpy:
+    - 1.19
+python:
+    - 3.8.* *_cpython
+python_impl:
+    - cpython
+
 # conda-forge-pinnings-feedstock/recipe/conda_build_config.yaml
 # uses c_compiler_version and cxx_compiler_version in a zip_keys
 # https://docs.conda.io/projects/conda-build/en/latest/resources/variants.html#coupling-keys
@@ -82,3 +90,5 @@ zip_keys:
         - python
         - numpy
         - python_impl
+
+
