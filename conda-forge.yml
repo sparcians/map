@@ -6,13 +6,7 @@ skip_render:
   - .gitignore
   - LICENSE
   - build-locally.py
-  - .github/CONTRIBUTING.md
-  - .github/ISSUE_TEMPLATE.md
-  - .github/PULL_REQUEST_TEMPLATE.md
-  - .circleci/config.yml
-  - .github/workflows/main.yml
-  - .github/workflows/webservices.yml
-  - .github/workflows/automerge.yml
+  - .github
 provider:
   linux: circle
   osx: azure
