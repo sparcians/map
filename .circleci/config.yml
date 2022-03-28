@@ -5,20 +5,44 @@
 version: 2
 
 jobs:
-  build:
+  build_linux_64_:
     working_directory: ~/test
-    machine: true
+    machine:
+      image: ubuntu-2004:current
+    environment:
+      CONFIG: "linux_64_"
+      UPLOAD_PACKAGES: "False"
+      DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7-x86_64"
     steps:
+      - checkout
       - run:
-          # The Circle-CI build should not be active, but if this is not true for some reason, do a fast finish.
-          command: exit 0
+          name: Fast finish outdated PRs and merge PRs
+          command: |
+            ./.circleci/fast_finish_ci_pr_build.sh
+            ./.circleci/checkout_merge_commit.sh
+      - run:
+          # Run, test and (if we have a BINSTAR_TOKEN) upload the distributions.
+          command: |
+            export CI=circle
+            export FEEDSTOCK_NAME=$(basename ${CIRCLE_PROJECT_REPONAME})
+            if [[ "${CIRCLE_PR_NUMBER:-}" == "" ]]; then
+              export IS_PR_BUILD="False"
+            else
+              export IS_PR_BUILD="True"
+            fi
+            ./.scripts/run_docker_build.sh
 
 workflows:
   version: 2
   build_and_test:
     jobs:
-      - build:
+      - build_linux_64_:
+        # Knute says he only wants it to build for PR's
+        # That is accomplished by turning on "build only on pull requests"
+        # on https://app.circleci.com/settings/project/github/sparcians/map/advanced
+        # which still will build commits on master but we also add filters to ignore
+        # all branches here as suggested in https://discuss.circleci.com/t/only-build-pull-requests-not-every-branch/200/8
           filters:
             branches:
-              ignore:
-                - /.*/
+              ignore: master
+

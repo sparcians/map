@@ -1,29 +1,29 @@
 MACOSX_DEPLOYMENT_TARGET:
 - '10.13'
 boost:
-- 1.70.0
+- 1.74.0
 boost_cpp:
-- 1.70.0
+- 1.74.0
 c_compiler:
 - clang
 c_compiler_version:
-- '10'
+- '12'
 channel_sources:
-- conda-forge,defaults
+- conda-forge
 channel_targets:
 - conda-forge main
 cxx_compiler:
 - clangxx
 cxx_compiler_version:
-- '10'
+- '12'
 hdf5:
-- 1.10.5
+- 1.10.6
 macos_machine:
 - x86_64-apple-darwin13.4.0
 macos_min_version:
 - '10.13'
 numpy:
-- '1.16'
+- '1.19'
 pin_run_as_build:
   boost:
     max_pin: x.x.x
@@ -35,11 +35,15 @@ pin_run_as_build:
   sqlite:
     max_pin: x
 python:
-- 3.7.* *_cpython
+- 3.8.* *_cpython
 sqlite:
 - '3'
 target_platform:
 - osx-64
 zip_keys:
+- - c_compiler_version
+  - cxx_compiler_version
 - - macos_min_version
   - MACOSX_DEPLOYMENT_TARGET
+- - python
+  - numpy
