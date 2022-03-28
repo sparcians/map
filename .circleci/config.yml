@@ -44,5 +44,5 @@ workflows:
         # all branches here as suggested in https://discuss.circleci.com/t/only-build-pull-requests-not-every-branch/200/8
           filters:
             branches:
-              ignore: /.*/
+              ignore: master
 
