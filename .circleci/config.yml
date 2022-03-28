@@ -36,4 +36,13 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - build_linux_64_
+      - build_linux_64_:
+        # Knute says he only wants it to build for PR's
+        # That is accomplished by turning on "build only on pull requests"
+        # on https://app.circleci.com/settings/project/github/sparcians/map/advanced
+        # which still will build commits on master but we also add filters to ignore
+        # all branches here as suggested in https://discuss.circleci.com/t/only-build-pull-requests-not-every-branch/200/8
+        filters:
+          branches:
+            ignore: /.*/
+
