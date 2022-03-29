@@ -17,6 +17,6 @@ MAP is broken into two parts:
 
 ## Current build status
 
-[![Linux Build Status](https://travis-ci.com/sparcians/map.svg?branch=master)](https://travis-ci.com/sparcians/map/branches)
+[![CircleCI](https://circleci.com/gh/sparcians/map.svg?style=svg)](https://circleci.com/gh/sparcians/map)
 [![MacOS Build Status](https://dev.azure.com/sparcians/map/_apis/build/status/sparcians.map?branchName=master&label=MacOS)](https://dev.azure.com/sparcians/map/_build/latest?definitionId=1&branchName=master)
 [![Documentation](https://github.com/sparcians/map/workflows/Documentation/badge.svg)](https://sparcians.github.io/map/)
