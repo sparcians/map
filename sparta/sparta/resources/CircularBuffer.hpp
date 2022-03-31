@@ -198,6 +198,16 @@ namespace sparta
             {}
 
             /**
+             * \brief a copy constructor that allows for implicit conversion from a
+             * regular iterator to a const_iterator.
+             */
+            CircularBufferIterator(const CircularBufferIterator<true> & iter) :
+                attached_circularbuffer_(iter.attached_circularbuffer_),
+                circularbuffer_entry_(iter.circularbuffer_entry_),
+                window_idx_(iter.window_idx_)
+            {}
+
+            /**
              * \brief Assignment operator
              * The copy also alerts the validator_ item that another CircularBufferIterator is
              * now attached to it.
