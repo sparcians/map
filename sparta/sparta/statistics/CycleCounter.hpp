@@ -4,7 +4,6 @@
 #pragma once
 
 #include "sparta/simulation/TreeNode.hpp"
-#include "sparta/functional/DataView.hpp"
 #include "sparta/utils/ByteOrder.hpp"
 #include "sparta/statistics/Counter.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -38,8 +37,7 @@ namespace sparta
 
         /*!
          * \brief CycleCounter constructor
-         * \param parent parent node. Must not be nullptr. Must have an ArchData
-         *               accessible through getArchData_
+         * \param parent parent node. Must not be nullptr.
          * \param name Name of this counter. Must be a valid TreeNode name
          * \param group Group of this counter. Must be a valid TreeNode group
          *              when paired with group_idx.
@@ -322,4 +320,3 @@ namespace sparta
     }; // class CycleCounter
 
 } // namespace sparta
-

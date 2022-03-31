@@ -171,4 +171,3 @@ private:
      */
     std::shared_ptr<sparta_simdb::DatabaseTester> simdb_tester_;
 };
-

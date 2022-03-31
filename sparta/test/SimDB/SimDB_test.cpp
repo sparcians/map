@@ -11,6 +11,7 @@
 #include "simdb/ObjectManager.hpp"
 #include "simdb/ObjectRef.hpp"
 #include "simdb/impl/sqlite/SQLiteConnProxy.hpp"
+#include "simdb/utils/ObjectQuery.hpp"
 #include "sparta/report/Report.hpp"
 #include "sparta/utils/ValidValue.hpp"
 #include "sparta/utils/SpartaException.hpp"
