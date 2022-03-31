@@ -58,15 +58,13 @@ case "$(uname)" in
 	;;
 esac
 
-pyver="3.7"
-
 # script must run from root of the repo
 script_bin=$(dirname $0)
 cd "$script_bin/.."
 
 
 # variant file names are subject to change when we rerender the CI
-variant_file=".ci_support/${conda_platform}_python${pyver}.____cpython.yaml"
+variant_file=".ci_support/${conda_platform}_.yaml"
 if [[ ! -e "$variant_file" ]]; then
     echo "::ERROR:: variant file '$PWD/$variant_file' does not exist. Giving up."
     exit 1

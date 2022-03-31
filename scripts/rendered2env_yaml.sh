@@ -58,7 +58,6 @@ esac
 rendered2env_yaml() {
     echo "channels:"
     echo "  - conda-forge"
-    echo "  - defaults"
     echo "dependencies:"
     #shyaml get-values requirements.build requirements.host requirements.run | \
     cat "$recipe" | \
