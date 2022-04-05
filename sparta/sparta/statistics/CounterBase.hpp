@@ -5,7 +5,6 @@
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/statistics/InstrumentationNode.hpp"
-#include "sparta/functional/DataView.hpp"
 #include "sparta/utils/ByteOrder.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
@@ -111,8 +110,7 @@ namespace sparta
 
         /*!
          * \brief CounterBase constructor
-         * \param parent parent node. Must not be nullptr. Must have an ArchData
-         * accessible through getArchData_
+         * \param parent parent node. Must not be nullptr
          * \param name Name of this counter. Must be a valid TreeNode name
          * \param group Group of this counter. Must be a valid TreeNode group
          * when paired with group_idx.
@@ -302,4 +300,3 @@ namespace sparta
     }; // class CounterBase
 
 } // namespace sparta
-

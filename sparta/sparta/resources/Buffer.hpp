@@ -191,14 +191,19 @@ namespace sparta
                 buffer_entry_(iter.buffer_entry_)
             {}
 
+            /**
+             * \brief a copy constructor that allows for implicit conversion from a
+             * regular iterator to a const_iterator.
+             */
+            BufferIterator(const BufferIterator<true> & iter) :
+                attached_buffer_(iter.attached_buffer_),
+                buffer_entry_(iter.buffer_entry_)
+            {}
 
             /**
              * \brief Assignment operator
-             * The copy also alerts the validator_ item that another BufferIterator is
-             * now attached to it.
              */
-            BufferIterator& operator=(const BufferIterator& rhs) = default;
-
+            BufferIterator& operator=(const BufferIterator&) = default;
 
             /// override the comparison operator.
             bool operator<(const BufferIterator& rhs) const

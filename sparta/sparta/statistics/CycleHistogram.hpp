@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <numeric>
 #include "sparta/utils/MathUtils.hpp"
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/utils/SpartaAssert.hpp"

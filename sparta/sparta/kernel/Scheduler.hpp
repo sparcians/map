@@ -11,7 +11,7 @@
 #include <ctime>
 #include <unistd.h>
 #include <boost/timer/timer.hpp>
-#include <boost/algorithm/string/predicate.hpp>
+//#include <boost/algorithm/string/predicate.hpp>
 #include <cstdint>
 #include <string>
 #include <cmath>

@@ -10,6 +10,8 @@
 #include "sparta/events/StartupEvent.hpp"
 #include "sparta/app/FeatureConfiguration.hpp"
 #include "sparta/report/DatabaseInterface.hpp"
+#include "simdb/ObjectManager.hpp"
+#include "simdb/ObjectRef.hpp"
 
 namespace core_example
 {

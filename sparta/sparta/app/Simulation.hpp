@@ -431,8 +431,33 @@ public:
 protected:
 
     /*!
-     * \brief This class is used for simulation control callbacks. The callback
-     * conditions (trigger expressions) are specified in control YAML files.
+     * \brief This class is used for simulation control callbacks.
+     *
+     * The callback conditions (trigger expressions) are specified in
+     * control YAML files (and eventually the pythong shell).  The
+     * purpose of this class in the command line fashion (see
+     * example/CoreModel/ctrl.yaml) is to allow the user to "control"
+     * simulation during runtime by relating behaviors (like start,
+     * stop, resume) with simulation triggers.  Simulation triggers
+     * can be sparta::NotificationSource, sparta::Counter,
+     * sparta::StatisicDef, other expressions.
+     *
+     * A use case for such a control could include the simulation is
+     * instructed to send a notification (via
+     * sparta::NotificationSource) when a specific address of a test
+     * case is encountered.  The modeler could have a trigger set up
+     * on that notification to stop simulation:
+     *
+     * \code
+     * # stop on address hit (stop.yaml)
+     * control:
+     *     stop: notif.address_hit
+     * \endcode
+     *
+     * And the simulation:
+     * \code
+     *  ./my_simulator ...<args>...  --control stop.yaml
+     * \endcode
      */
     class SimulationController
     {
@@ -779,8 +804,7 @@ protected:
     sparta::ResourceSet res_list_;
 
     /*!
-     * \brief Scheduler this simulation will use. If no scheduler was given
-     * to the simulation's constructor, it will use the singleton scheduler.
+     * \brief Scheduler this simulation will use.
      */
     Scheduler *const scheduler_;
 

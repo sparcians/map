@@ -14,7 +14,7 @@ include (${SPARTA_BASE}/cmake/sparta-config.cmake)
 include_directories (SYSTEM ${RAPIDJSON_INCLUDE_DIRS})
 
 # Add YAML CPP
-include_directories (${YAML_CPP_INCLUDE_DIR})
+include_directories (SYSTEM ${YAML_CPP_INCLUDE_DIR})
 
 # Add local includes
 include_directories ("./")
@@ -144,8 +144,7 @@ add_definitions(-DSPARTA_VERSION=\"${GIT_REPO_VERSION}\" -DRAPIDJSON_NOMEMBERITE
 add_compile_options(-Werror -fPIC
   -Wall -Wextra -Winline -Winit-self -Wno-unused-function
   -Wuninitialized -Wno-sequence-point -Wno-inline -Wno-unknown-pragmas
-  -Woverloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers
-  -Wno-deprecated)
+  -Woverloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers)
 
 if (GEN_DEBUG_INFO)
   message (STATUS "Building with debug info -g")

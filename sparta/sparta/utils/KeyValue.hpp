@@ -8,7 +8,7 @@
 
 #include <boost/mpl/for_each.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
 #include <boost/variant.hpp>
 #include <boost/foreach.hpp>
 #include <boost/mpl/vector.hpp>
@@ -366,4 +366,3 @@ namespace sparta
     TypeToTypeNameMap KeyValue::GBL_type_name_map;                      \
     static NameMapper mapper;                                           \
     }
-
