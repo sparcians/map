@@ -42,12 +42,16 @@ public:
      * \brief Construct a parser in the context of a specific TreeNode
      * \param n TreeNode context for parsing expressions using this parser
      * \param already_used Nodes which have been used by an expression
-     * containing this. These Nodes are off-limits for parsing here and should
-     * throw an Exception if encountered
+     *                     containing this. These Nodes are off-limits
+     *                     for parsing here and should throw an
+     *                     Exception if encountered
+     * \param report_si StatisticInstance objects already created from
+     *                   previous expressions that now live in the report
      */
     ExpressionParser(TreeNode* n,
-                     std::vector<const TreeNode*>& already_used) :
-        grammar_(n, already_used)
+                     std::vector<const TreeNode*>& already_used,
+                     const std::vector<statistics::stat_pair_t> &report_si) :
+        grammar_(n, already_used, report_si)
     { }
 
     Expression&& parse(const std::string& input) {

@@ -15,6 +15,7 @@
 #include "sparta/report/format/ReportHeader.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
+#include "sparta/statistics/Expression.hpp" // stat_pair_t
 
 namespace sparta
 {
@@ -188,7 +189,7 @@ protected:
                     out << ","; // Insert comma following last data (which has no trailing comma) before the first value here.
                 }
 
-                const Report::stat_pair_t& si = *itr;
+                const statistics::stat_pair_t& si = *itr;
                 if(si.first != ""){
                     // Print name = value
                     out << prefix + si.first;
@@ -269,7 +270,7 @@ protected:
                 }
 
                 // Print the value
-                const Report::stat_pair_t& si = *itr;
+                const statistics::stat_pair_t& si = *itr;
                 out << Report::formatNumber(si.second.getValue());
 
                 wrote_value = true; // 1 or more values written here

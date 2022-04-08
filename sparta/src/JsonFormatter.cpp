@@ -113,7 +113,7 @@ void extractStatisticsJsonFull(rapidjson::Document & doc,
     const Report::SubStaticticInstances & sub_stats = r->getSubStatistics();
     const Report::DBSubStatisticInstances & db_sub_stats = r->getDBSubStatistics();
 
-    for (const Report::stat_pair_t & si : r->getStatistics())
+    for (const statistics::stat_pair_t & si : r->getStatistics())
     {
         const std::string stat_name = !si.first.empty() ? si.first : si.second.getLocation();
         if (!stat_name.empty()) {
@@ -396,7 +396,7 @@ void extractStatisticsJsonReduced(rapidjson::Document & doc,
     std::set<const void*> dont_print_these;
     std::set<const void*> db_dont_print_these;
 
-    for (const Report::stat_pair_t & si : r->getStatistics()) {
+    for (const statistics::stat_pair_t & si : r->getStatistics()) {
         const std::string stat_name = !si.first.empty() ? si.first : si.second.getLocation();
         if (!stat_name.empty()) {
             const StatisticInstance * stat_inst = &si.second;

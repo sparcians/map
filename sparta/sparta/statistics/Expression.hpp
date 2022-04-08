@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <memory>
+#include <string>
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
@@ -23,6 +24,11 @@ namespace sparta {
      * structures such as Counters
      */
     namespace statistics {
+
+        /*!
+         * \brief Type for storing each stat added
+         */
+        typedef std::pair<std::string, StatisticInstance> stat_pair_t;
 
         /*!
          * \brief Namespace containing methods for parsing, building, and
@@ -97,6 +103,16 @@ public:
      */
     Expression(const std::string& expression,
                TreeNode* context);
+
+    /*!
+     * \brief Construct with string expression
+     * \param expr String containing an arithmetic expression
+     * \param context TreeNode from which variables in the expression
+     * \param report_si Previously defined StatisticInstances in the report
+     */
+    Expression(const std::string& expression,
+               TreeNode* context,
+               const std::vector<stat_pair_t>&report_si);
 
     /*!
      * \brief Construct with string expression
@@ -543,7 +559,8 @@ private:
      */
     void parse_(const std::string& expression,
                 TreeNode* context,
-                std::vector<const TreeNode*>& already_used);
+                std::vector<const TreeNode*>& already_used,
+                const std::vector<stat_pair_t>&report_si);
 };
 
 inline Expression::Expression(double d) :

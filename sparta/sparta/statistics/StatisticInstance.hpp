@@ -11,6 +11,7 @@
 #include <iostream>
 #include <sstream>
 #include <math.h>
+#include <utility>
 
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/statistics/StatisticDef.hpp"
@@ -703,6 +704,7 @@ namespace sparta
         std::vector<std::pair<std::string, std::string>> provided_metadata_;
 
     }; // class StatisticInstance
+
 
     //! \brief StatisticInstance stream operator
     inline std::ostream& operator<< (std::ostream& out,

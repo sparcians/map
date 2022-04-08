@@ -216,7 +216,7 @@ protected:
 
         indent += INDENT_STR.size() + ADDITIONAL_STAT_INDENT.size();
 
-        for(const Report::stat_pair_t& si : r->getStatistics()){
+        for(const statistics::stat_pair_t& si : r->getStatistics()){
             if(si.first != ""){
                 // Stat name
                 rcol = std::max<uint32_t>(rcol, indent + si.first.size());
@@ -318,7 +318,7 @@ protected:
             if(val_col_after_indent >= indent.str().size()){
                 val_col_after_indent -= indent.str().size();
             }
-            for(const Report::stat_pair_t& si : r->getStatistics()){
+            for(const statistics::stat_pair_t& si : r->getStatistics()){
                 out << indent.str();
                 std::stringstream name;
                 if(val_col_ > 0){

@@ -314,7 +314,7 @@ protected:
             // whole number portion of any output for the purpose of decimal
             // alignment
             size_t val_decimal_alignment = 0;
-            for(const Report::stat_pair_t& si : r->getStatistics()){
+            for(const statistics::stat_pair_t& si : r->getStatistics()){
                 size_t leading_space = 0;
                 size_t decimal_pos = 0;
                 formatDecimalAlignedNum(si.second.getValue(),
@@ -325,7 +325,7 @@ protected:
                 val_decimal_alignment = std::max(val_decimal_alignment, decimal_pos);
             }
 
-            const std::vector<Report::stat_pair_t> & stats = r->getStatistics();
+            const std::vector<statistics::stat_pair_t> & stats = r->getStatistics();
             uint32_t num_rows = stats.size() / num_stat_columns;
             if ((stats.size() % num_stat_columns) != 0) {
                 num_rows++;
@@ -345,7 +345,7 @@ protected:
                         continue;
                     }
 
-                    const Report::stat_pair_t & si = stats[stat_idx];
+                    const statistics::stat_pair_t & si = stats[stat_idx];
 
                     // Compute expression with < and > characters escaped for HTML
                     // Be sure to omit range and fully resolve all sub-expressions

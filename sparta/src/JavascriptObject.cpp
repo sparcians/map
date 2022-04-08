@@ -197,10 +197,10 @@ void sparta::report::format::JavascriptObject::mergeReportList_(std::ostream& ou
 void sparta::report::format::JavascriptObject::writeStats_(std::ostream& out, const Report & report,
                                                          const std::string & stat_prefix, std::vector<std::string> & all_stat_names) const
 {
-    const std::vector<Report::stat_pair_t>& stats = report.getStatistics();
+    const std::vector<statistics::stat_pair_t>& stats = report.getStatistics();
     for (uint32_t idx = 0; idx < stats.size(); idx++) {
 
-        const Report::stat_pair_t & si = stats[idx];
+        const statistics::stat_pair_t & si = stats[idx];
 
         std::string sname = stat_prefix;
         if (si.first == "") {

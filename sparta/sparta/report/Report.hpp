@@ -56,11 +56,6 @@ namespace sparta
     public:
 
         /*!
-         * \brief Type for storing each stat added
-         */
-        typedef std::pair<std::string, StatisticInstance> stat_pair_t;
-
-        /*!
          * \brief Function pointer for deciding whether to make a subreport
          * during recursive addition of statistics/counters from a subtree
          * \param n Context node for which a subreport could be created
@@ -226,7 +221,7 @@ namespace sparta
             }
 
             // Copy StatisticInstances
-            for(const stat_pair_t& sp : rhp.stats_){
+            for(const statistics::stat_pair_t& sp : rhp.stats_){
                 add(sp.second, sp.first);
             }
         }
@@ -282,7 +277,7 @@ namespace sparta
             stats_.clear(); // Clear local stats
 
             // Copy StatisticInstances
-            for(const stat_pair_t& sp : rhp.stats_){
+            for(const statistics::stat_pair_t& sp : rhp.stats_){
                 add(sp.second, sp.first);
             }
             start_tick_ = rhp.start_tick_;
@@ -617,7 +612,7 @@ namespace sparta
                 subreps_.push_back(sr); // Copies
                 subreps_.back().setParent_(this);
             }
-            for(const stat_pair_t& sp : r.stats_){
+            for(const statistics::stat_pair_t& sp : r.stats_){
                 add(sp.second, sp.first);
             }
         }
@@ -844,7 +839,7 @@ namespace sparta
          * \brief Gets the set of statistic instances immediately contained in
          * this Report
          */
-        const std::vector<stat_pair_t>& getStatistics() const {
+        const std::vector<statistics::stat_pair_t>& getStatistics() const {
             return stats_;
         }
 
@@ -1207,7 +1202,7 @@ namespace sparta
 
             indent << INDENT_STR;
 
-            for(const stat_pair_t& si : stats_){
+            for(const statistics::stat_pair_t& si : stats_){
                 o << indent.str();
                 if(si.first != ""){
                     // Print "custom_name = value"
@@ -1474,7 +1469,7 @@ namespace sparta
          * \note Anything removed from this list needs to be removed from
          * stat_names_ as well.
          */
-        std::vector<stat_pair_t> stats_;
+        std::vector<statistics::stat_pair_t> stats_;
 
         /*!
          * \brief Map of string identifiers to statistics in the stats_ vector

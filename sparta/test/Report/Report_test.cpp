@@ -699,7 +699,7 @@ content:
         (void) subreps;
         std::cout << "Num subreports     : " << r.getNumSubreports() << std::endl;
         std::cout << "Subreport depth    : " << r.getSubreportDepth() << std::endl;
-        const std::vector<Report::stat_pair_t>& immediate_stats = r.getStatistics();
+        const std::vector<sparta::statistics::stat_pair_t>& immediate_stats = r.getStatistics();
         (void) immediate_stats;
         std::cout << "Num immediate stats: " << r.getNumStatistics() << std::endl;
         std::cout << "Num recursive stats: " << r.getRecursiveNumStatistics() << std::endl;

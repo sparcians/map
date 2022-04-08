@@ -212,7 +212,7 @@ protected:
             local_name = p_name + "." + flattenReportName(r->getName());
         }
 
-        auto extract_stat = [&local_name](const Report::stat_pair_t & si) {
+        auto extract_stat = [&local_name](const statistics::stat_pair_t & si) {
             std::string full_name = local_name + "." + si.first;
             std::string desc = si.second.getDesc(false);
             boost::replace_all(desc, "\"", "\\\"");
@@ -235,7 +235,7 @@ protected:
 
         std::set<const void*> dont_print_these;
         std::set<const void*> db_dont_print_these;
-        for (const Report::stat_pair_t& si : r->getStatistics()) {
+        for (const statistics::stat_pair_t& si : r->getStatistics()) {
             if(si.first != ""){
                 const StatisticInstance * stat_inst = &si.second;
                 const StatisticDef * stat_defn = si.second.getStatisticDef();

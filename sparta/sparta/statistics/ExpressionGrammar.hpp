@@ -55,7 +55,7 @@ class ExpressionGrammar :
          * \brief Constructor
          * \param n TreeNode context for evaluating builtin variables
          * \param used TreeNodes which cannot be variables because they have
-         * already been used by an expression containing this one
+         *             already been used by an expression containing this one
          */
         builtin_vars_(sparta::TreeNode* n,
                       std::vector<const TreeNode*>& used);
@@ -73,10 +73,12 @@ class ExpressionGrammar :
          * \brief Constructor
          * \param n TreeNode context for evaluating dynamic variables
          * \param used TreeNodes which cannot be variables because they have
-         * already been used by an expression containing this one
+         *             already been used by an expression containing this one
+         * \param report_si Exising report statistic instances
          */
         variable_(sparta::TreeNode* n,
-                  std::vector<const TreeNode*>& used);
+                  std::vector<const TreeNode*>& used,
+                  const std::vector<stat_pair_t> & report_si);
 
         qi::rule<std::string::const_iterator,
                  Expression(),
@@ -207,9 +209,12 @@ public:
      * \param already_used Nodes which have been used by an expression
      * containing this. These Nodes are off-limits for parsing here and should
      * throw an Exception if encountered
+     * \param report_si StatisticInstance objects already created from
+     *                   previous expressions that now live in the report
      */
     ExpressionGrammar(sparta::TreeNode* root,
-                      std::vector<const TreeNode*>& already_used);
+                      std::vector<const TreeNode*>& already_used,
+                      const std::vector<statistics::stat_pair_t> &report_si);
 
 
 }; // struct grammar

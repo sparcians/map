@@ -173,7 +173,7 @@ class lazy_gen_var_
 {
     TreeNode* n_; //!< Context node
     std::vector<const TreeNode*>& used_; //!< Disallowed nodes
-    //std::vector<Expression> & previous_expressions_; //!< Already created expressions that can be referenced
+    const std::vector<stat_pair_t> & report_si_; //!< existing SI instances in the report
 
 public:
 
@@ -182,10 +182,13 @@ public:
      * \param n Context node in which to search for children
      * \param used Children already used in a parent expression. These nodes
      * must be rejected as they would create cycles if encountered
+     * \param report_si Exising report statistic instances
      */
-    lazy_gen_var_(TreeNode* n, std::vector<const TreeNode*>& used) :
+    lazy_gen_var_(TreeNode* n, std::vector<const TreeNode*>& used,
+                  const std::vector<stat_pair_t> & report_si) :
         n_(n),
-        used_(used)
+        used_(used),
+        report_si_(report_si)
     { }
 
     template <typename A1>
@@ -222,24 +225,28 @@ public:
             }
         }
 
-        if(n == nullptr) {
-            sparta_assert(calculator == nullptr);
-            SpartaException ex("While parsing the expression or term of expression: '");
-            ex << a1 << "', SPARTA was unable to find a tree node that matched this name.";
-            throw ex;
+        if()
+        {
         }
+        else {
+            if(n == nullptr) {
+                sparta_assert(calculator == nullptr);
+                SpartaException ex("While parsing the expression or term of expression: '");
+                ex << a1 << "', SPARTA was unable to find a tree node that matched this name.";
+                throw ex;
+            }
 
-        used_.push_back(n); // Add to used list
+            used_.push_back(n); // Add to used list
 
-        StatVariable * sv = nullptr;
-        if(calculator == nullptr) {
-            sv = new StatVariable(n, used_); // Throws if cannot convert
-        } else {
-            sv = new StatVariable(calculator, used_);
+            StatVariable * sv = nullptr;
+            if(calculator == nullptr) {
+                sv = new StatVariable(n, used_); // Throws if cannot convert
+            } else {
+                sv = new StatVariable(calculator, used_);
+            }
+            used_.pop_back(); // Remove the stat so it can be used higher up or by
+                              // other sibling expressions in the expression
         }
-
-        used_.pop_back(); // Remove the stat so it can be used higher up or by
-                          // other sibling expressions in the expression
 
         return Expression(sv);
     }
@@ -302,7 +309,7 @@ ExpressionGrammar::builtin_vars_::builtin_vars_(TreeNode* n,
                                                 std::vector<const TreeNode*>& used)
 {
     sparta_assert(nullptr != n,
-                      "cannot construct ExpressionGrammar::builtin_vars_ with a null context");
+                  "cannot construct ExpressionGrammar::builtin_vars_ with a null context");
 
     static auto get_clock_from_node = [](TreeNode* n) -> const Clock & {
         //If we are tied to a clock object directly, return it.
@@ -387,7 +394,8 @@ ExpressionGrammar::builtin_vars_::builtin_vars_(TreeNode* n,
 }
 
 ExpressionGrammar::variable_::variable_(sparta::TreeNode* n,
-                                        std::vector<const TreeNode*>& used) :
+                                        std::vector<const TreeNode*>& used,
+                                        const std::vector<stat_pair_t> & report_si) :
     variable_::base_type(start)
 {
     sparta_assert(nullptr != n,
@@ -397,7 +405,7 @@ ExpressionGrammar::variable_::variable_(sparta::TreeNode* n,
     using qi::_val;
 
     // Variable factory
-    helpers::lazy_gen_var_ lgv(n, used);
+    helpers::lazy_gen_var_ lgv(n, used, report_si);
     phoenix::function<helpers::lazy_gen_var_> lazy_gen_var(lgv);
 
     start = str [_val = lazy_gen_var(qi::_1)];
@@ -541,13 +549,14 @@ ExpressionGrammar::tfunc_::tfunc_(const std::vector<const TreeNode*>& used)
 }
 
 ExpressionGrammar::ExpressionGrammar(sparta::TreeNode* root,
-                                     std::vector<const TreeNode*>& used) :
+                                     std::vector<const TreeNode*>& used,
+                                     const std::vector<stat_pair_t> & report_si) :
     ExpressionGrammar::base_type(expression),
     builtin_vars(root, used),
     ufunc(used),
     bfunc(used),
     tfunc(used),
-    var(root, used),
+    var(root, used, report_si),
     root_(root)
 {
     (void) root_;
