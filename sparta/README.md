@@ -83,6 +83,10 @@ Open a MacOS Terminal
 1. `sudo easy_install Pygments==2.5.2` # Do not use HomeBrew! Needed for cppcheck-htmlreport
 1. Install XCode and check for clang: `clang --version`
 
+Additionally, there are Python packages to install
+1. `pip install cython`
+2. `pip install `
+
 Clone sparta through ssh: `git clone ssh://github.com/sparcians/map.git`
 
 Attempt a build:
@@ -90,7 +94,8 @@ Attempt a build:
 1. `mkdir release` (directory name not important)
 1. `cd release`
 1. `CC=clang CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release`
-1. `make`
+2. NOTE: Some MacOS environments will need `cmake .. -DCMAKE_CXX_FLAGS=-isystem\ /usr/local/include -DCMAKE_BUILD_TYPE=Release`
+3. `make`
 
 If you're having issues on MacOS X with Boost-python not found, try this:
 
