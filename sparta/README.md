@@ -85,7 +85,6 @@ Open a MacOS Terminal
 
 Additionally, there are Python packages to install
 1. `pip install cython`
-2. `pip install `
 
 Clone sparta through ssh: `git clone ssh://github.com/sparcians/map.git`
 
