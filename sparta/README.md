@@ -60,6 +60,9 @@ All great projects have great documentation.  The Sparta team is striving to hav
 
 Specifically, start by generating your own Doxygen build or flip through the [online generated documentation](https://sparcians.github.io/map/).
 
+We are starting to build a series of presentations made to RISC-V International via the Performance Modeling SIG:
+- [Sparta Overview](https://docs.google.com/presentation/d/e/2PACX-1vS1BWtVv0x3qXKQWAeECe2gsF9cMG3Zp2HnXJw52grCAcl21lv3a9pLW6J0lZ32e5DWdZkFyUMcE_AI/pub?start=false&loop=false&delayms=3000)
+
 To build your own copy, after cloning the repo, ensure Doxygen and dot (part of the Graphviz tool suite) are installed.  Then `cd doc; make`.  On the Mac, type `open html/index.html` and peruse the documentation about the `SkeletalPipeline` and the `Core Example`.
 
 ## Getting Sparta to build on MacOS X
