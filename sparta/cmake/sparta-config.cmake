@@ -60,7 +60,6 @@ message (STATUS "Using BOOST ${Boost_VERSION_STRING}")
 # Find YAML CPP
 find_package (yaml-cpp 0.6 REQUIRED)
 message (STATUS "Using YAML CPP ${yaml-cpp_VERSION}")
-#get_target_property(YAML_CPP_INCLUDE_DIR yaml-cpp INTERFACE_INCLUDE_DIRECTORIES)
 get_property(YAML_CPP_INCLUDE_DIR TARGET yaml-cpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 
 # Find RapidJSON
