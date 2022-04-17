@@ -224,30 +224,30 @@ public:
                 n = calculator->getNode();
             }
         }
-
-        if()
-        {
-        }
-        else {
-            if(n == nullptr) {
-                sparta_assert(calculator == nullptr);
-                SpartaException ex("While parsing the expression or term of expression: '");
-                ex << a1 << "', SPARTA was unable to find a tree node that matched this name.";
-                throw ex;
-            }
-
-            used_.push_back(n); // Add to used list
-
-            StatVariable * sv = nullptr;
-            if(calculator == nullptr) {
-                sv = new StatVariable(n, used_); // Throws if cannot convert
-            } else {
-                sv = new StatVariable(calculator, used_);
-            }
-            used_.pop_back(); // Remove the stat so it can be used higher up or by
-                              // other sibling expressions in the expression
+        auto it = std::find_if(report_si_.begin(), report_si_.end(), [a1] (const auto & si_pair) {
+                                                                         return (si_pair.first == a1);
+                                                                     });
+        if(it != report_si_.end()) {
+            return Expression(it->second);
         }
 
+        if(n == nullptr) {
+            sparta_assert(calculator == nullptr);
+            SpartaException ex("While parsing the expression or term of expression: '");
+            ex << a1 << "', SPARTA was unable to find a tree node that matched this name.";
+            throw ex;
+        }
+
+        used_.push_back(n); // Add to used list
+
+        StatVariable * sv = nullptr;
+        if(calculator == nullptr) {
+            sv = new StatVariable(n, used_); // Throws if cannot convert
+        } else {
+            sv = new StatVariable(calculator, used_);
+        }
+        used_.pop_back(); // Remove the stat so it can be used higher up or by
+        // other sibling expressions in the expression
         return Expression(sv);
     }
 }; // class lazy_gen_var_
