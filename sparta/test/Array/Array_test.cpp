@@ -494,8 +494,6 @@ int main()
     sched.run(1);
 #endif
 
-   EXPECT_THROW(aged_array.write(0,0));
-
     AgedArray::iterator it = aged_array.getCircularIterator();
     while(it != aged_array.getCircularIterator(aged_array.capacity() - 1))
     {

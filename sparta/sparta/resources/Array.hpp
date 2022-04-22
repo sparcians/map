@@ -732,6 +732,9 @@ namespace sparta
          * \brief Write data to the array.
          * \param idx The index to write at
          * \param dat The data to write at that index.
+         *
+         * This will write to the location at \a idx, whether
+         * the position is valid or not.
          */
         void write(const uint32_t idx, const DataT& dat)
         {
@@ -742,6 +745,9 @@ namespace sparta
          * \brief Write data to the array.
          * \param idx The index to write at
          * \param dat The data to write at that index.
+         *
+         * This will write to the location at \a idx, whether
+         * the position is valid or not.
          */
         void write(const uint32_t idx, DataT&& dat)
         {
@@ -867,8 +873,6 @@ namespace sparta
         {
             sparta_assert(idx < num_entries_,
                         "Cannot write to an index outside the bounds of the array.");
-            sparta_assert(valid_index_set_.find(idx) == valid_index_set_.end(),
-                        "It is illegal write over an already valid index.");
 
             // Since we are not timed. Write the data and validate it,
             // then do pipeline collection.
