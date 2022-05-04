@@ -80,9 +80,8 @@ namespace sparta
                     p /= name;
 
                     // Check for suffixed veriations first.
-
                     auto rf = name.rfind(".yaml");
-                    if(rf != std::string::npos || rf != name.size()-5){ // Not at end
+                    if(rf == std::string::npos || rf != name.size()-5){ // Not at end
                         bfs::path p_yaml = p.string() + ".yaml";
                         if(bfs::exists(p_yaml)){
                             return p_yaml.string();
