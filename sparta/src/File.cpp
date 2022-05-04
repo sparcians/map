@@ -79,27 +79,24 @@ namespace sparta
                     p = bfs::canonical(p);
                     p /= name;
 
-                    if (false == bfs::exists(p)) {
-                        // Check for suffixed variations first.
-                        const std::string YAML_SUFFIX = ".yaml";
-                        if (false == std::equal(YAML_SUFFIX.rbegin(), YAML_SUFFIX.rend(), name.rbegin())) {
-                            bfs::path p_yaml = p.string() + ".yaml";
-                            if (bfs::exists(p_yaml)) {
-                                return p_yaml.string();
-                            }
+                    // Check for suffixed variations first.
+                    const std::string YAML_SUFFIX = ".yaml";
+                    if (false == std::equal(YAML_SUFFIX.rbegin(), YAML_SUFFIX.rend(), name.rbegin())) {
+                        bfs::path p_yaml = p.string() + ".yaml";
+                        if (bfs::exists(p_yaml)) {
+                            return p_yaml.string();
                         }
+                    }
 
-                        const std::string YML_SUFFIX = ".yml";
-                        if (false == std::equal(YML_SUFFIX.rbegin(), YML_SUFFIX.rend(), name.rbegin())){
-                            bfs::path p_yml = p.string() + ".yml";
-                            if (bfs::exists(p_yml)) {
-                                return p_yml.string();
-                            }
+                    const std::string YML_SUFFIX = ".yml";
+                    if (false == std::equal(YML_SUFFIX.rbegin(), YML_SUFFIX.rend(), name.rbegin())){
+                        bfs::path p_yml = p.string() + ".yml";
+                        if (bfs::exists(p_yml)) {
+                            return p_yml.string();
                         }
-                    } else if(bfs::is_regular_file(p)) {
-                        // Found regular file with input name
-                        return p.string();
-                    } else if (bfs::is_directory(p)) {
+                    }
+
+                    if (bfs::is_directory(p)) {
                         try {
                             // Recrusively search for a file of the same name with .yaml within this directory.
                             return findArchitectureConfigFile({p.string()}, name);
@@ -111,11 +108,14 @@ namespace sparta
                                 "which is required if using a directory to represent an architecture. "
                                 << ARCH_OPTIONS_RESOLUTION_RULES;
                         }
-                    } else if(bfs::is_symlink(p)) {
+                    } else if (bfs::is_regular_file(p)) {
+                        // Found regular file with input name
+                        return p.string();
+                    } else if (bfs::is_symlink(p)) {
                         auto slp = bfs::read_symlink(p);
-                        if(slp == bfs::path()) {
+                        if (slp == bfs::path()) {
                             // Empty path object means we could not read symlink
-                        } else if(bfs::is_directory(slp)) {
+                        } else if (bfs::is_directory(slp)) {
                             // Symlink was a dir
                             try {
                                 // Recrusively search for a file of the same name with .yaml within this directory.
@@ -128,7 +128,7 @@ namespace sparta
                                     "which is required if using a directory to represent an architecture. "
                                     << ARCH_OPTIONS_RESOLUTION_RULES;
                             }
-                        } else if(bfs::is_regular_file(slp)) {
+                        } else if (bfs::is_regular_file(slp)) {
                         // Symlink was regular file. Return the input path not the canonical
                             return p.string();
                         }
