@@ -104,7 +104,11 @@ if (COMPILE_WITH_PYTHON)
     python/sparta_support/Completer.cpp)
 endif ()
 
-execute_process (COMMAND bash "-c" "git describe --tags --always" OUTPUT_VARIABLE GIT_REPO_VERSION RESULT_VARIABLE rc)
+execute_process (COMMAND bash "-c" "git describe --tags --always"
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_REPO_VERSION RESULT_VARIABLE rc
+)
+
 if (NOT rc EQUAL "0")
   message (FATAL_ERROR "could not run git command 'git describe --tags --always', rc=${rc}")
 endif ()
