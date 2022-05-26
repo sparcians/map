@@ -142,6 +142,7 @@
   LexicalCast.hpp | Methods for fancy casting operations
   sparta::utils::LifeTracker | \copybrief sparta::utils::LifeTracker &nbsp;
   sparta::utils::LockedValue | \copybrief sparta::utils::LockedValue &nbsp;
+  LogUtils.hpp | Set of macros to simplify printing to sparta:Unit loggers
   MathUtils.hpp | Lots and lots and lots of math utils for use.
   MetaStructs.hpp  | Structs to extend C++ meta-tools like `enable_if` and what-not
   MetaTypeList.hpp | Types to extend c++ meta-types
