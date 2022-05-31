@@ -3,8 +3,8 @@
 #Exe:      
 #SimulatorVersion:
 #Repro:    
-#Start:    Friday Fri Jan  3 16:55:56 2020
-#Elapsed:  0.009088s
+#Start:    Tuesday Tue May 31 12:54:16 2022
+#Elapsed:  0.002891s
 {0000000000 -------- top.a.b.c mycategory} Message from C in category 'mycategory'
 {0000000000 -------- top.a.b.c mycategory} Another message from C in category 'mycategory' with a newline char in the middle that should be converted to a ""
 {0000000000 00000000 top.a.e.g mycategory} Message from G. Should be seen by e_tap_mycategory, a_tap_mycategory
@@ -12,4 +12,7 @@
 {0000000000 -------- top.a.b.c mycategory} Another message from C in category 'mycategory' after removing the tap to a_removed.log.basic
 {0000000000 00000000 top.a.e.g mycategory} Message from G. Should be seen by e_tap_mycategory but NOT a_removed
 {0000000000 00000000 top.a.e.g warning} Another warning after removing the temporary tap on a
+{0000000000 -------- top.a.b.c hexutils} 0xffffffffffffffff
+{0000000000 -------- top.a.b.c hexutils} 0xffffffffffffffff
+{0000000000 -------- top.a.b.c hexutils} 0xffffffffffffffff
 {0000000000 00000000 top.a.e.g talk} Neato, I'm starting teardown

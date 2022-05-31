@@ -3,8 +3,8 @@
 #Exe:      
 #SimulatorVersion:
 #Repro:    
-#Start:    Friday Fri Jan  3 16:55:56 2020
-#Elapsed:  0.00644s
+#Start:    Tuesday Tue May 31 12:53:17 2022
+#Elapsed:  0.001787s
 top.a.b.c: mycategory: Test Message 1 with some numbers like 1 and 2. Neat
 top.a.e.g: talk: Hi, I'm constructing
 top.a.b.c: mycategory: Message from C in category 'mycategory'
@@ -14,5 +14,8 @@ top.a.d: other_category: Message from D. Should be seen by top_tap_all, a_tap_al
 top.a.b.c: mycategory: Another message from C in category 'mycategory' after removing the tap to a_removed.log.basic
 top.a.e.g: mycategory: Message from G. Should be seen by e_tap_mycategory but NOT a_removed
 top.a.e.g: warning: Another warning after removing the temporary tap on a
+top.a.b.c: hexutils: 0xffffffffffffffff
+top.a.b.c: hexutils: 0xffffffffffffffff
+top.a.b.c: hexutils: 0xffffffffffffffff
 top.a.e.g: talk: Neato, I'm starting teardown
 top.a.e.g: talk: Help, I'm destructing

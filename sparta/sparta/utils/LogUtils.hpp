@@ -29,27 +29,32 @@
 /** Macro to simplify sending messages to the Unit debug logger
  *  @param msg The message to send to the debug logger
  */
+#ifndef DLOG
 #define DLOG(msg) \
     if (SPARTA_EXPECT_FALSE(debug_logger_)) { \
         debug_logger_ << __func__ <<  ": " << msg; \
     }
+#endif
 
 /** Macro to simplify sending messages to the Unit info logger
  *  @param msg The message to send to the info logger
  */
+#ifndef ILOG
 #define ILOG(msg) \
     if (SPARTA_EXPECT_FALSE(info_logger_)) { \
         info_logger_ << __func__ <<  ": " << msg; \
     }
-
+#endif
 
 /** Macro to simplify sending messages to the Unit warn logger
  *  @param msg The message to send to the warn logger
  */
+#ifndef WLOG
 #define WLOG(msg) \
     if (SPARTA_EXPECT_FALSE(warn_logger_)) { \
         warn_logger_ << __func__ <<  ": " << msg; \
     }
+#endif
 
 /** @} */
 
@@ -77,18 +82,24 @@
  *  @param val The value to print
  *  @param width The number of digits to print
  */
+#ifndef HEX
 #define HEX(val, width) \
     "0x" << std::setw(width) << std::setfill('0') << std::hex \
          << std::right << val << std::setfill(' ') << std::dec
+#endif
 
 /** Macro to simplify printing of 16 digit hex value
  *  @param val The value to print
  */
+#ifndef HEX16
 #define HEX16(val) HEX(val, 16)
+#endif
 
 /** Macro to simplify printing of 8 digit hex values
  *  @param val The value to print
  */
+#ifndef HEX8
 #define HEX8(val) HEX(val, 8)
+#endif
 
 /** @} */
