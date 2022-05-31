@@ -874,6 +874,15 @@ namespace sparta
             sparta_assert(idx < num_entries_,
                         "Cannot write to an index outside the bounds of the array.");
 
+            // We're overwriting an entry, clear valid and age information.
+            if(SPARTA_EXPECT_FALSE(isValid(idx)))
+            {
+                --num_valid_;
+                if(ArrayT == ArrayType::AGED) {
+                    aged_list_.erase(array_[idx].list_pointer);
+                }
+            }
+
             // Since we are not timed. Write the data and validate it,
             // then do pipeline collection.
             new (array_.get() + idx) ArrayPosition(std::forward<U>(dat));
@@ -883,6 +892,7 @@ namespace sparta
             array_[idx].age_id = next_age_id_;
             ++next_age_id_;
 
+            // Validate the entry and increase valids
             array_[idx].valid = true;
             ++num_valid_;
 
