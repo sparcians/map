@@ -697,7 +697,7 @@ namespace sparta
             array_[idx].valid = false;
             --num_valid_;
             // Remove the index from our aged list.
-            if(ArrayT == ArrayType::AGED)
+            if constexpr (ArrayT == ArrayType::AGED)
             {
                 aged_list_.erase(array_[idx].list_pointer);
             }
@@ -823,7 +823,7 @@ namespace sparta
                                                         SchedulingPhase::Collection, true>
                       (parent, name_, this, capacity()));
 
-            if(ArrayT == ArrayType::AGED) {
+            if constexpr (ArrayT == ArrayType::AGED) {
                 age_collector_.reset(new collection::IterableCollector<AgedArrayCollectorProxy>
                                      (parent, name_ + "_age_ordered",
                                       &aged_array_col_, capacity()));
@@ -878,7 +878,7 @@ namespace sparta
             if(SPARTA_EXPECT_FALSE(isValid(idx)))
             {
                 --num_valid_;
-                if(ArrayT == ArrayType::AGED) {
+                if constexpr (ArrayT == ArrayType::AGED) {
                     aged_list_.erase(array_[idx].list_pointer);
                 }
             }
@@ -897,7 +897,7 @@ namespace sparta
             ++num_valid_;
 
             // Maintain our age order if we are an aged array.
-            if(ArrayT == ArrayType::AGED)
+            if constexpr (ArrayT == ArrayType::AGED)
             {
                 // To maintain aged items, add the index to the front
                 // of a list.
