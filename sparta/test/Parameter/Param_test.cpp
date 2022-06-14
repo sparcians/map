@@ -18,7 +18,7 @@
 TEST_INIT;
 
 // Test result constants
-const uint32_t EXPECTED_NUM_PARAMS = 57;
+const uint32_t EXPECTED_NUM_PARAMS = 59;
 const uint32_t EXPECTED_BOUND_TYPES = 14;
 
 class ExampleSimulator : public sparta::app::Simulation{
@@ -742,6 +742,14 @@ int main ()
     EXPECT_THROW(gps->getParameter("test_bool")->getValueAs<uint32_t>());
     EXPECT_NOTHROW(sca_int32 = sps->test_int32);
     EXPECT_TRUE(sca_int32 == -1);
+
+    EXPECT_EQUAL(sps->test_int8, 0xf);
+    EXPECT_EQUAL(gps->getParameterValueAs<int8_t>("test_int8"), -1);
+    EXPECT_EQUAL(gps->getParameter("test_int8")->getValueAs<int8_t>(), -1);
+    EXPECT_EQUAL(sps->test_uint8, -1);
+    EXPECT_EQUAL(gps->getParameterValueAs<uint8_t>("test_uint8"), -1);
+    EXPECT_EQUAL(gps->getParameter("test_uint8")->getValueAs<uint8_t>(), -1);
+
     EXPECT_EQUAL(sps->test_int32, -1);
     EXPECT_EQUAL(gps->getParameterValueAs<int32_t>("test_int32"), -1);
     EXPECT_EQUAL(gps->getParameter("test_int32")->getValueAs<int32_t>(), -1);
@@ -819,12 +827,12 @@ int main ()
     std::cout << "result of search for \"lengt*\": " << result1 << std::endl << std::endl;
 
     result1.clear();
-    EXPECT_EQUAL((gps->findParameters("test_*", result1)), 15u);
+    EXPECT_EQUAL((gps->findParameters("test_*", result1)), 17u);
     EXPECT_EQUAL(result1.size(), (size_t)15);
     std::cout << "result of search for \"test_*\": " << result1 << std::endl << std::endl;
 
     result1.clear();
-    EXPECT_EQUAL((gps->findParameters("*st_*", result1)), 15u);
+    EXPECT_EQUAL((gps->findParameters("*st_*", result1)), 17u);
     EXPECT_EQUAL(result1.size(), (size_t)15);
     std::cout << "result of search for \"*st_*\": " << result1 << std::endl << std::endl;
 

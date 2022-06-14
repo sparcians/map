@@ -170,6 +170,8 @@ public:
 
         // Test every type of param
         VOLATILE_PARAMETER(bool,            test_bool,      true,                       "Docstring for test_bool")
+        PARAMETER(int8_t,                   test_int8,      0xf,                        "Docstring for test_int8")
+        PARAMETER(uint8_t,                  test_uint8,     0xf,                        "Docstring for test_uint8")
         PARAMETER(int32_t,                  test_int32,     -1,                         "Docstring for test_int32")
         PARAMETER(uint32_t,                 test_uint32,    2,                          "Docstring for test_uint32")
         PARAMETER(int64_t,                  test_int64,     -3,                         "Docstring for test_int64")
@@ -288,4 +290,3 @@ public:
         sparta::ParameterSet(0)
     {}
 };
-
