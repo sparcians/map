@@ -3,7 +3,7 @@
   \page building Building the Framework
   See <a href="https://github.com/sparcians/map/blob/master/sparta/README.md">README.md</a> on GitHub for instructions on building.
 
-  Notes on to what's built...
+  Notes on what's built...
 
   Building sparta produces two main libraries:
   - \c libsparta.a containing the core sparta code

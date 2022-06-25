@@ -54,12 +54,12 @@
 
   When the data arrives on the Consumer's sparta::DataInPort, the
   Consumer defers consumption of that data using a sparta::UniqueEvent
-  (registered callbac is Consumer::dataArrived_).
+  (registered callback is Consumer::dataArrived_).
 
   While the purpose of the simulator is simple, there's a lot that can
   be done with it.  Try the following command lines.
 
-  Getting Help and Simulation Layout
+  ## Getting Help and Simulation Layout
   \code{.sh}
   # Get help
   % ./sparta_skeleton --help
@@ -82,7 +82,7 @@
   % ./sparta_skeleton -p top.producer0.params.max_ints_to_send 10K --show-parameters --no-run
   \endcode
 
-  Running the simulator
+  ## Running the simulator
   \code{.sh}
   # Run the simulation with default number of producers: 1
   % ./sparta_skeleton
@@ -94,7 +94,7 @@
   % ./sparta_skeleton -p top.consumer.params.num_producers 10
   \endcode
 
-  Running the simulator and generating reports
+  ## Running the simulator and generating reports
   \code{.sh}
   # Run the simulation with default number of producers: 1
   % ./sparta_skeleton --report-all output.html html # HTML format
@@ -102,7 +102,7 @@
   % ./sparta_skeleton --report-all output.html json # JSON format
   \endcode
 
-  Running the simulator and generating logs
+  ## Running the simulator and generating logs
   \code{.sh}
   # Run the simulation with default number of producers: 1
   % ./sparta_skeleton -l top info all.msgs
@@ -111,7 +111,7 @@
   % ./sparta_skeleton -l top.producer* info producer_consumer.msgs -l top.consumer info producer_consumer.msgs
   \endcode
 
-  Running the simulator and configuring it
+  ## Running the simulator and configuring it
   \code{.sh}
   # Run the simulation with default parameter and generate a configuration file
   % ./sparta_skeleton --write-final-config skeleton_default_config.yaml --no-run
