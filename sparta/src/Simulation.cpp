@@ -302,7 +302,7 @@ void printSchedulerPerformanceInfo(std::ostream& o, const boost::timer::cpu_time
     //const double MILLION = 1000000;
 
     if(elapsed_user_seconds != 0) {
-        o << "  Simulation Performace      : " << timer.format(4, "wall(%w), system(%s), user(%u)") << std::endl;
+        o << "  Simulation Performance      : " << timer.format(4, "wall(%w), system(%s), user(%u)") << std::endl;
         o << "  Scheduler Tick Rate  (KTPS): "
           << scheduler->getCurrentTick()/elapsed_user_seconds/THOUSAND
           << "  (1k ticks per second)" << std::endl;
