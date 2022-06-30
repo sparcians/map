@@ -65,6 +65,27 @@ We are starting to build a series of presentations made to RISC-V International 
 
 To build your own copy, after cloning the repo, ensure Doxygen and dot (part of the Graphviz tool suite) are installed.  Then `cd doc; make`.  On the Mac, type `open html/index.html` and peruse the documentation about the `SkeletalPipeline` and the `Core Example`.
 
+## Building Sparta with packages used in Continuous Integration (MacOS & CentOS7 or newer Linux)
+
+<!-- Centos7 was the sysroot used by default for most conda-forge packages at the time of writing and as such, conda-forge
+     packages should work on any linux distribution newer than Centos7.  The conda-forge sysroot pinnings were be found at
+     https://github.com/conda-forge/conda-forge-pinning-feedstock/blob/119668995b2ac2c797f673ce56d51cae05f65ce4/recipe/conda_build_config.yaml#L131-L154
+-->
+
+The tested dependencies are maintained in the `conda.recipe/` directory at the toplevel of the repository.  To install packages using that same tested recipe:
+1. If you already have `conda` or `mamba` installed and in your `PATH`, skip to step 3.
+1. Download and install the latest [miniforge installer](https://github.com/conda-forge/miniforge#miniforge3). For example, on linux running on x86_64 `wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh && bash ./Miniforge3-Linux-x86_64.sh`.  Make sure to `activate` or start a new shell as directed by the installer.
+1. `conda install yq` it is not a dependency of Sparta unless you are using the script to create an environment.  The script will tell you to install it if you don't have it in your path.  
+1. `./scripts/create_conda_env.sh <environment_name> dev` using whatever name you would like in place of `<environment_name>`to create a named [conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) containing all of the dependencies needed to **dev**elop Sparta.   Be patient, this takes a few minutes.
+1. `conda activate <environment_name>` using the `<environment_name>` you created above.
+1. Follow the normal cmake-based build steps in the [Quick Start](#quick-start-for-the-impatient-yet-confident).  After running cmake for a build, you should notice that `USING_CONDA` has been set because the version string reported by the conda-forge compiler contains the string "conda". 
+
+Using conda is not a requirement for building sparta but it is *one* way to install the required dependencies.  See below for alternatives on MacOS and Ubuntu.
+
+We leverage [the conda-forge CI management system](https://conda-forge.org/docs/user/ci-skeleton.html) to define the matrix of target machines and dependency versions that we run through CI.
+
+Please also note that `conda` will solve the package requirements and may install newer or different packages than were installed duing CI.
+
 ## Getting Sparta to build on MacOS X
 
 ### Time to Brew
