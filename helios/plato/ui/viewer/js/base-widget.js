@@ -920,11 +920,11 @@ class BaseWidget {
     }
 
     _check_new_data_id(data_id) {
-         if (data_id != this.data_id) {
+        if (data_id != this.data_id) {
             // Cannot drag a stat and change data id at the moment (it would be a surprise)
             // TODO: Show a custom styled dialog asking if the user wants to replace the data-id
             const msg = 'This stat is from a different data source than the existing stats in this widget.\n\nAccepting this change will replace all stats currently in this widget.\nSupport for multiple data sources per widget may come later.\n\nProceed?'
-            if (!confirm(msg)) {
+            if (this.data_id !== null && !confirm(msg)) { // Skip confirm for the first time to add data
                 return false
             }
 
