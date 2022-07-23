@@ -35,6 +35,7 @@ add_custom_command (TARGET regress_valgrind POST_BUILD COMMAND ctest -L  ${VALGR
 #add_subdirectory (pipeViewer)
 add_subdirectory (Array)
 add_subdirectory (Audience)
+add_subdirectory (BasicHistogram)
 add_subdirectory (Buffer)
 add_subdirectory (Bus)
 add_subdirectory (cache)

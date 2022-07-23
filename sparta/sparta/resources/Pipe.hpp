@@ -266,6 +266,13 @@ public:
         return appendImpl_(std::move(data));
     }
 
+    //! Is the pipe already appended data?
+    bool isAppended() const
+    {
+        const PipeEntry & pe = pipe_[getPhysicalStage_(-1)];
+        return pe.data.isValid();
+    }
+
     //! Append data to the beginning of the Pipe
     void push_front (const DataT & data)
     {
@@ -408,6 +415,13 @@ public:
         }
     }
 
+    /**
+    * \brief Name of this resource.
+    */
+    const std::string & getName() const {
+        return name_;
+    }
+
     //! See if there is something at the given stage
     bool isValid (uint32_t stage) const
     {
@@ -488,7 +502,7 @@ public:
     template<sparta::SchedulingPhase phase = SchedulingPhase::Collection>
     void enableCollection(TreeNode * parent) {
         collector_.reset (new collection::IterableCollector<Pipe<DataT>, phase, true>
-                          (parent, name_, *this, capacity()));
+                          (parent, name_, this, capacity()));
     }
 
 private:

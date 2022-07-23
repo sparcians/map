@@ -43,7 +43,7 @@ class HoverPreview:
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
             self.__panel = wx.Panel(self)
-            self.__panel.SetFont(GetMonospaceFont(11))
+            self.__panel.SetFont(GetMonospaceFont(self.__canvas.GetSettings().hover_font_size))
             self.__panel.SetForegroundColour(wx.BLACK)
             self.__text_ctrl = wx.StaticText(self.__panel)
             panel_sizer.Add(self.__text_ctrl)

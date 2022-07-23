@@ -86,7 +86,7 @@ namespace sparta
  *
  * Time in the sparta::Scheduler can be interpreted anyway the user wishes,
  * but the base unit is a sparta::Scheduler::Tick.  For most
- * simulation uses, the Tick is considered a NS of time.  To convert a
+ * simulation uses, the Tick is considered a PS of time.  To convert a
  * Tick to a higher-order unit such as a clock cycle, use a
  * sparta::Clock made from a sparta::ClockManager to perform the
  * conversions.
@@ -1045,14 +1045,26 @@ private:
     StatisticDef nanoseconds_stat_;
 
     //! user runtime of the process, in seconds
-    Counter user_runtime_stat_;
+    StatisticDef user_runtime_stat_;
 
     //! system runtime f the process, in seconds
-    Counter system_runtime_stat_;
+    StatisticDef system_runtime_stat_;
+
+    //! wall clock runtime f the process, in seconds
+    StatisticDef wall_runtime_stat_;
 
     //! Timer used to calculate runtime
     boost::timer::cpu_timer timer_;
 
+    //! User, System, and Wall clock counts
+    uint64_t        user_time_ = 0;
+    ReadOnlyCounter user_time_cnt_;
+
+    uint64_t        system_time_ = 0;
+    ReadOnlyCounter system_time_cnt_;
+
+    uint64_t        wall_time_ = 0;
+    ReadOnlyCounter wall_time_cnt_;
 
 public:
     /**

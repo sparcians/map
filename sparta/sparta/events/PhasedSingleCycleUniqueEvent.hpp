@@ -129,7 +129,7 @@ namespace sparta
             const auto to_be_scheduled_abs_tick =
                 local_scheduler_->calcIndexTime(to_be_scheduled_relative_tick);
 
-            if(SPARTA_EXPECT_TRUE(next_scheduled_tick_ < to_be_scheduled_abs_tick))
+            if(SPARTA_EXPECT_TRUE(next_scheduled_tick_ < to_be_scheduled_abs_tick || is_init_tick_))
             {
                 // This is a handy debug assertion to see if
                 // SingleCycleUniqueEvent is actually only scheduled once.
@@ -139,6 +139,7 @@ namespace sparta
                     scheduleRelativeTick(to_be_scheduled_relative_tick, local_scheduler_);
                 prev_scheduled_tick_ = next_scheduled_tick_;
                 next_scheduled_tick_ = to_be_scheduled_abs_tick;
+                is_init_tick_ = false; //only allow one event in tick 0
             }
             else if(to_be_scheduled_abs_tick < next_scheduled_tick_)
             {
@@ -198,6 +199,9 @@ namespace sparta
 
         //! The actual scheduled item on the scheduler
         Scheduleable single_cycle_event_scheduleable_;
+
+        //! Track if is in the initial tick = tick 0
+        bool is_init_tick_ = true;
     };
 
 }

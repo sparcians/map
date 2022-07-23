@@ -269,6 +269,9 @@ void testCycleCounters()
 
     dd.dummyCallback();
 
+    // proceed to tick 1, nothing should happen, but time advancement
+    sched.run(1, true, false);
+
     // Now, clock everything 1 cycle
     sched.run(3); // 1, 2, 3, ends at 4
     single_context.context(0).stopCounting(); // 4 cycles have elapsed

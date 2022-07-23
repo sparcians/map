@@ -1630,14 +1630,7 @@ bool CommandLineSimulator::parse(int argc,
         const std::string & pattern = std::get<0>(pvalue);
         const std::string & value = std::get<1>(pvalue);
         const bool is_optional = std::get<2>(pvalue);
-        //Individual extensions name/value pairs must be forwarded
-        //to the dedicated ParameterTree for extensions.
-        if (pattern.find(".extension") != std::string::npos) {
-            auto & extensions_ptree = sim_config_.getExtensionsUnboundParameterTree();
-            extensions_ptree.set(pattern, value, !is_optional);
-        } else {
-            sim_config_.processParameter(pattern, value, is_optional);
-        }
+        sim_config_.processParameter(pattern, value, is_optional);
     }
 
     // Interpret debug-dump post-run value
@@ -1966,7 +1959,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
     try{
         if(show_tree_){
             std::cout << "\nPre-processed UnboundParameterTree:" << std::endl;
-            sim_config_.getUnboundParameterTree().recursPrint(std::cout);
+            sim_config_.getUnboundParameterTree().recursePrint(std::cout);
         }
 
         // Construction phases. Typically, these are invoked by a startup script
@@ -2026,16 +2019,15 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
         // Store final config file(s) after finalization so that all dynamic parameters are built
         //! \todo Print configuration if finalizeTree fails with exception then rethrow
         if(final_config_file_ != ""){
-            sparta::ConfigEmitter::YAML param_out_(final_config_file_,
-                                                 false); // Hide descriptions
-            param_out_.addParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg);
-
+            sparta::ConfigEmitter::YAML param_out(final_config_file_,
+                                                  false); // Hide descriptions
+            param_out.addParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg);
         }
 
         if(final_config_file_verbose_ != ""){
-            sparta::ConfigEmitter::YAML param_out_(final_config_file_verbose_,
-                                                 true); // Show descriptions
-            param_out_.addParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg);
+            sparta::ConfigEmitter::YAML param_out(final_config_file_verbose_,
+                                                  true); // Show descriptions
+            param_out.addParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg);
         }
 
         if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)

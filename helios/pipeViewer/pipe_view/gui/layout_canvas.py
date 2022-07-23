@@ -13,7 +13,7 @@ from .hover_preview import HoverPreview, HoverRedrawEvent, EVT_HOVER_REDRAW
 from functools import partial
 from . import autocoloring
 import model.highlighting_utils as highlighting_utils
-from gui.font_utils import GetMonospaceFont
+from gui.font_utils import GetMonospaceFont, GetDefaultFont
 
 # Import Argos transaction database module from SPARTA
 # #__MODULE_ENV_VAR_NAME = 'RENDERED_MODULE_DIR'
@@ -63,6 +63,7 @@ class Layout_Canvas(wx.ScrolledWindow):
 
         # full canvas scale
         self.__canvas_scale = 1.0
+        self.__font_scale = (1.0, 1.0)
 
         self.__SCROLL_RATE = 20
         self.__scroll_ratios = (0, 0)
@@ -89,7 +90,8 @@ class Layout_Canvas(wx.ScrolledWindow):
         self.__hover_preview = HoverPreview(self, context)
         # Load images
 
-        self.__fnt_layout = GetMonospaceFont(11)
+        self.__fnt_layout = GetMonospaceFont(self.GetSettings().layout_font_size)
+        self.__UpdateFontScaling()
 
         # Disable background erasing
         def disable_event(*pargs, **kwargs):
@@ -468,8 +470,8 @@ class Layout_Canvas(wx.ScrolledWindow):
     def __CalcCanvasSize(self):
 
         l, t, r, b = self.__context.GetElementExtents()
-        r *= self.__canvas_scale
-        b *= self.__canvas_scale
+        r *= self.__canvas_scale * self.__font_scale[0]
+        b *= self.__canvas_scale * self.__font_scale[1]
 
         width = max(self.MIN_WIDTH, r + self.__AUTO_CANVAS_SIZE_MARGIN)
         height = max(self.MIN_HEIGHT, b + self.__AUTO_CANVAS_SIZE_MARGIN)
@@ -520,3 +522,23 @@ class Layout_Canvas(wx.ScrolledWindow):
         assert gridsize % 2 == 0
         self.__snap_capture_delta = 7
         assert self.__snap_capture_delta <= gridsize / 2
+
+    def GetSettings(self):
+        return self.__parent.GetSettings()
+
+    def __UpdateFontScaling(self):
+        default_font_w, default_font_h = GetDefaultFont().GetPixelSize()
+        cur_font_w, cur_font_h = self.__fnt_layout.GetPixelSize()
+        self.__font_scale = (cur_font_w / default_font_w, cur_font_h / default_font_h)
+        for e in self.__context.GetElementPairs():
+            e.GetElement().SetProperty('scale_factor', self.__font_scale)
+
+    def UpdateFontSize(self):
+        old_font = self.__fnt_layout
+        self.__fnt_layout = GetMonospaceFont(self.GetSettings().layout_font_size)
+        if old_font.GetPointSize() != self.__fnt_layout.GetPointSize():
+            self.__set_renderer_font = False
+            self.__UpdateFontScaling()
+            self.__CalcCanvasSize()
+            self.__context.FullRedraw()
+            self.FullUpdate()

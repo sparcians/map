@@ -295,18 +295,19 @@ namespace sparta {
 /*!
  * \brief Helper for printing scheduler information with respect to elapsed time
  */
-void printSchedulerPerformanceInfo(std::ostream& o, uint64_t ns, Scheduler * scheduler)
+void printSchedulerPerformanceInfo(std::ostream& o, const boost::timer::cpu_timer &timer, Scheduler * scheduler)
 {
-    double elapsed_seconds = ns/1000000000.0;
+    double elapsed_user_seconds   = timer.elapsed().user/1000000000.0;
     const double THOUSAND = 1000;
     //const double MILLION = 1000000;
 
-    if(elapsed_seconds != 0) {
-        o << "  Simulation Performance: "
-          << scheduler->getCurrentTick()/elapsed_seconds/THOUSAND
-          << " KTPS (1k ticks per second)" << std::endl;
-        o << "  Scheduler Event Rate:   "
-          << scheduler->getNumFired()/elapsed_seconds/THOUSAND
+    if(elapsed_user_seconds != 0) {
+        o << "  Simulation Performace      : " << timer.format(4, "wall(%w), system(%s), user(%u)") << std::endl;
+        o << "  Scheduler Tick Rate  (KTPS): "
+          << scheduler->getCurrentTick()/elapsed_user_seconds/THOUSAND
+          << "  (1k ticks per second)" << std::endl;
+        o << "  Scheduler Event Rate (KEPS): "
+          << scheduler->getNumFired()/elapsed_user_seconds/THOUSAND
           << " KEPS (1k events per second)" << std::endl;
     }
     else {
@@ -760,6 +761,9 @@ void Simulation::finalizeTree()
 
         // Ensure that all unbound parameters have been consumed by ParameterSets or explicitly
         checkAllVirtualParamsRead_(sim_config_->getUnboundParameterTree());
+
+        // Ensure that all unbound extension parameters were consumed
+        checkAllVirtualParamsRead_(sim_config_->getExtensionsUnboundParameterTree());
     }
 
     // Check ports and such
@@ -895,8 +899,8 @@ void Simulation::run(uint64_t run_time)
     try{
         //! \todo Time actual run time by moving this to run controller instead of here
         //! \todo Time running per thread
-        boost::timer::cpu_timer t;
-        t.start();
+        boost::timer::cpu_timer timer;
+        timer.start();
         try{
             // Actually run the simulation (or allow it to be controlled)
             PHASE_PROFILER(memory_profiler_, MemoryProfiler::Phase::Simulate);
@@ -909,12 +913,12 @@ void Simulation::run(uint64_t run_time)
         } catch (...) {
             eptr = std::current_exception();
         }
-        t.stop();
+        timer.stop();
 
         if(eptr == std::exception_ptr()){
             std::cout << "Running Complete\n";
             // Show simulator performance
-            printSchedulerPerformanceInfo(std::cout, t.elapsed().user, scheduler_);
+            printSchedulerPerformanceInfo(std::cout, timer, scheduler_);
         }else{
             std::cerr << SPARTA_CMDLINE_COLOR_ERROR "Exception while running" SPARTA_CMDLINE_COLOR_NORMAL
                       << std::endl;
@@ -2223,7 +2227,7 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
                     err_list << "    ERROR: unread unbound parameter: \"" << path << "\" from: \""
                               << node->getOrigin() << "\". value: \"" << node->getValue() << "\". Path exists in tree up to: \""
                               << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"" << std::endl;
-                }else{
+                }else if(!sim_config_->suppress_unread_parameter_warnings) {
                     std::cerr << "    NOTE: unread optional unbound parameter: \"" << path << "\" from: \""
                               << node->getOrigin() << "\". value: \"" << node->getValue() << "\". Path exists in tree up to: \""
                               << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"" << std::endl;

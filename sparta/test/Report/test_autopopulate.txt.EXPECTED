@@ -31,7 +31,11 @@ Report "Report Autopopulation Test" [0,61]
       milliseconds = 6e-08
       microseconds = 6e-05
       nanoseconds = 0.06
-      user_runtime_seconds = 0
-      system_runtime_seconds = 0
+      host_machine_user_runtime_seconds = 0
+      host_machine_system_runtime_seconds = 0
+      host_machine_wall_runtime_seconds = 0
+      host_user_time_count_ms = 0
+      host_system_time_count_ms = 0
+      host_wall_time_count_ms = 0
 
 

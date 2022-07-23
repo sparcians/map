@@ -55,8 +55,8 @@ class ClockManager:
         #  differently
         def LocalToHypercycle(self, local_cycle):
             assert local_cycle is not None
-            # Absolute cycle counts begin at 1. Subtract 1 before scaling into ticks
-            return int(math.floor((local_cycle - 1) * self.__hc_tick_period))
+            # Absolute cycle counts begin at 0.
+            return int(math.floor((local_cycle) * self.__hc_tick_period))
 
         ## Convert a cycle in terms of hypercycle ticks into number of cycles on
         #  this clock domain.
@@ -67,19 +67,19 @@ class ClockManager:
         #  @return integer number of cycles on this clock domain
         def HypercycleToLocal(self, hc):
             assert hc is not None
-            # Absolute cycle counts begin at 1. Add 1 after scaling into ticks
-            return 1 + int(math.floor(hc / self.__hc_tick_period))
+            # Absolute cycle counts begin at 0.
+            return int(math.floor(hc / self.__hc_tick_period))
 
         ## With a given hypercycle, compute a hypercycle that represents the
         #  next local cycle.
         #  @param hc Hypercycle to use for computation
-        #  @return hypercycle representing (local cycle + 1) where local_cycle
+        #  @return hypercycle representing (local cycle) where local_cycle
         #  is computed by the \a hc argument.
         #
-        #  Implemented as LocalToHypercycle(1+HypercycleToLocal(hc))
+        #  Implemented as LocalToHypercycle(HypercycleToLocal(hc))
         def NextLocalCycle(self, hc):
             assert hc is not None
-            return self.LocalToHypercycle(1 + self.HypercycleToLocal(hc))
+            return self.LocalToHypercycle(self.HypercycleToLocal(hc))
 
 
     ## Describes the clock file

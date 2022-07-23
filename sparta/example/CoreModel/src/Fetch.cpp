@@ -113,14 +113,14 @@ namespace core_example
         if (p->fetch_max_ipc == true) {
             fetch_inst_event_.reset(new sparta::SingleCycleUniqueEvent<>(&unit_event_set_, "fetch_max_ipc",
                                                                          CREATE_SPARTA_HANDLER(Fetch, fetchInstruction_<true>)));
-            // Schedule a single event to start reading
-            sparta::StartupEvent(node, CREATE_SPARTA_HANDLER(Fetch, fetchInstruction_<true>));
+            // Schedule a single event to start reading -- not needed since receiveFetchQueueCredits launches fetch_instruction_event.
+            //sparta::StartupEvent(node, CREATE_SPARTA_HANDLER(Fetch, fetchInstruction_<true>));
         }
         else {
             fetch_inst_event_.reset(new sparta::SingleCycleUniqueEvent<>(&unit_event_set_, "fetch_random",
                                                                          CREATE_SPARTA_HANDLER(Fetch, fetchInstruction_<false>)));
-            // Schedule a single event to start reading from a trace file
-            sparta::StartupEvent(node, CREATE_SPARTA_HANDLER(Fetch, fetchInstruction_<false>));
+            // Schedule a single event to start reading from a trace file -- not needed since receiveFetchQueueCredits launches fetch_instruction_event.
+            //sparta::StartupEvent(node, CREATE_SPARTA_HANDLER(Fetch, fetchInstruction_<false>));
         }
 
         in_fetch_flush_redirect_.registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Fetch, flushFetch_, uint64_t));

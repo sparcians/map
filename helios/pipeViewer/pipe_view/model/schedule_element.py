@@ -8,7 +8,6 @@ from .element import *
 _WHITE_BRUSH = None
 _BLACK_PEN = None
 
-
 # # Initialize the white brush
 def InitWhiteBrush():
     global _WHITE_BRUSH
@@ -68,11 +67,13 @@ class ScheduleLineElement(LocationallyKeyedElement):
                             'line_style' : ('default', decodeScheduleDraw),
                             'short_format'  : ('single_char', valid.validateString)})
 
-    DRAW_LOOKUP = {'default' : DRAW_DEFAULT,
-                    'clean' : DRAW_CLEAN,
-                    'dots' : DRAW_DOTS,
-                    'fast_classic' : DRAW_FAST_CLASSIC,
-                    'classic' : DRAW_CLASSIC}
+    DRAW_LOOKUP = {
+        'default' : DRAW_DEFAULT,
+        'clean' : DRAW_CLEAN,
+        'dots' : DRAW_DOTS,
+        'fast_classic' : DRAW_FAST_CLASSIC,
+        'classic' : DRAW_CLASSIC
+    }
 
     def __init__(self, *args, **kwargs):
         LocationallyKeyedElement.__init__(self, *args, **kwargs)
@@ -109,24 +110,24 @@ class ScheduleLineElement(LocationallyKeyedElement):
         parent = self._parent
         if key == 'dimensions':
             if parent:
-                x_pdim, y_pdim = parent.GetProperty(key)
-                x_dim, y_dim = self._properties[key]
-                return x_pdim, y_dim
+                x_dim, _ = parent.GetProperty(key)
+                _, y_dim = LocationallyKeyedElement.GetProperty(self, key)
+                return x_dim, y_dim
         elif key == 'position':
             if parent:
-                x_ppos, y_ppos = parent.GetProperty(key)
-                x_pos, y_pos = self._properties[key]
-                return x_ppos, y_pos
+                x_pos, _ = parent.GetProperty(key)
+                _, y_pos = LocationallyKeyedElement.GetProperty(self, key)
+                return x_pos, y_pos
         elif key == 'time_scale':
             if parent:
                 return parent.GetProperty(key)
             else:
-                return self._properties[key]
+                return self._properties[key] / self.GetProperty('scale_factor')[0]
         elif key == 't_offset':
             if parent:
                 # assume parent is schedule (for now)
                 return -parent.GetProperty('pixel_offset') * parent.GetProperty('time_scale') / period
-        return self._properties[key]
+        return LocationallyKeyedElement.GetProperty(self, key)
 
     def SetProperty(self, key, val):
         LocationallyKeyedElement.SetProperty(self, key, val)
@@ -137,19 +138,19 @@ class ScheduleLineElement(LocationallyKeyedElement):
         if self._parent:
             return self._parent.GetXDim()
         else:
-            return self._properties['dimensions'][0]
+            return LocationallyKeyedElement.GetProperty(self, 'dimensions')[0]
 
     def GetYDim(self):
-        return self._properties['dimensions'][1]
+        return LocationallyKeyedElement.GetProperty(self, 'dimensions')[1]
 
     def GetXPos(self):
         if self._parent:
             return self._parent.GetXPos()
         else:
-            return self._properties['position'][0]
+            return LocationallyKeyedElement.GetProperty(self, 'position')[0]
 
     def GetYPos(self):
-        return self._properties['position'][1]
+        return LocationallyKeyedElement.GetProperty(self, 'position')[1]
 
     def DrawRoutine(self,
                     pair,
@@ -540,6 +541,13 @@ class ScheduleElement(MultiElement):
     def __RefreshProperty(self, key):
         self.SetProperty(key, self.GetProperty(key))
 
+    def GetProperty(self, key):
+        if key == 'pixel_offset' or key == 'pixels_per_cycle':
+            return round(MultiElement.GetProperty(self, key) * MultiElement.GetProperty(self, 'scale_factor')[0])
+        elif key == 'time_scale':
+            return MultiElement.GetProperty(self, key) / MultiElement.GetProperty(self, 'scale_factor')[0]
+        return MultiElement.GetProperty(self, key)
+
     def SetProperty(self, key, val):
         MultiElement.SetProperty(self, key, val)
         if key == 'clock':
@@ -683,6 +691,7 @@ class ScheduleElement(MultiElement):
             time_range = None
             clip_region = None
             if self.__old_dimensions != (c_w, sched_height):
+                self.__dc.SetFont(dc.GetFont())
                 # we need to make a new buffer
                 self.__ReinitializeBuffer(canvas, c_w, sched_height)
             self.__dc.Clear()

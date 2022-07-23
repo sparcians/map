@@ -238,8 +238,10 @@ int main ()
     EXPECT_FALSE(pipe1.isValid(4));
 
     pipe1.append(23);
+    EXPECT_EQUAL(pipe1.isAppended(), true);
     EXPECT_THROW(pipe1.flushPS(-1U));
     pipe1.flushAppend();
+    EXPECT_EQUAL(pipe1.isAppended(), false);
     EXPECT_EQUAL(pipe1.numValid(), 0);
 
     // Flush everything

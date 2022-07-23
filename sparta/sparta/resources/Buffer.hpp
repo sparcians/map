@@ -721,7 +721,7 @@ namespace sparta
         void enableCollection(TreeNode * parent) {
             collector_.
                 reset(new collection::IterableCollector<Buffer<DataT> >(parent, getName(),
-                                                                        *this, capacity()));
+                                                                        this, capacity()));
         }
 
         /**
@@ -1084,7 +1084,7 @@ namespace sparta
         rval.collector_ = nullptr;
         validator_->validator_ = std::move(rval.validator_->validator_);
         if(collector_) {
-            collector_->reattach(*this);
+            collector_->reattach(this);
         }
     }
 }

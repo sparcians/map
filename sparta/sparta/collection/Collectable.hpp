@@ -133,7 +133,10 @@ namespace sparta{
                         uint64_t parentid = 0,
                         const std::string & desc = "Collectable <manual, no desc>") :
                 Collectable(parent, name, nullptr, parentid, desc)
-            {}
+            {
+                // Can't auto collect without setting collected_object_
+                setManualCollection();
+            }
 
             //! Virtual destructor -- does nothing
             virtual ~Collectable() {}
@@ -197,6 +200,11 @@ namespace sparta{
             //! CollectableTreeNode/PipelineCollector when a user of the
             //! TreeNode requests this object to be collected.
             void collect() override final {
+                // If pointer has become nullified, close the record
+                if(nullptr == collected_object_) {
+                    closeRecord();
+                    return;
+                }
                 collect(*collected_object_);
             }
 
@@ -206,6 +214,11 @@ namespace sparta{
              * \pre Must have constructed wit ha non-null collected object
              */
             void collectWithDuration(sparta::Clock::Cycle duration) {
+                // If pointer has become nullified, close the record
+                if(nullptr == collected_object_) {
+                    closeRecord();
+                    return;
+                }
                 collectWithDuration(*collected_object_, duration);
             }
 
@@ -258,8 +271,7 @@ namespace sparta{
                             << getLocation() << " before a record can be written");
 
                 // This record hasn't changed, don't write it
-                if(__builtin_expect(argos_record_.time_Start ==
-                                    pipeline_col_->getScheduler()->getCurrentTick(), false)) {
+                if(SPARTA_EXPECT_FALSE(argos_record_.time_Start == pipeline_col_->getScheduler()->getCurrentTick())) {
                     return false;
                 }
 
@@ -522,7 +534,10 @@ namespace sparta{
                         uint64_t parentid = 0,
                         const std::string & desc = "Collectable <manual, no desc>") :
                 Collectable(parent, name, nullptr, parentid, desc)
-            {}
+            {
+                // Can't auto collect without setting collected_object_
+                setManualCollection();
+            }
 
             //! Virtual destructor -- does nothing
             virtual ~Collectable() {}
@@ -564,7 +579,6 @@ namespace sparta{
                 // previous value pairs and the previous record is still open
                 if(!isSameRecord() && !record_closed_)
                 {
-
                     //Close the old record (if there is one)
                     closeRecord();
                 }
@@ -574,7 +588,7 @@ namespace sparta{
                 updateLastRecord_();
 
                 // If the new Value pairs are not empty and current record is closed, we start a new record.
-                if(!last_record_values_.empty() && record_closed_){
+                if(record_closed_ && hasData_()){
                     startNewRecord_();
                     record_closed_ = false;
                 }
@@ -586,26 +600,12 @@ namespace sparta{
             template <typename T>
             MetaStruct::enable_if_t<MetaStruct::is_any_pointer<T>::value, void>
             collect(const T & val){
-                collect_(*val);
-
-                // if the value pairs are not the same as the
-                // previous value pairs and the previous record is still open
-                if(!isSameRecord() && !record_closed_)
-                {
-
-                    //Close the old record (if there is one)
+                // If pointer has become nullified, close the record
+                if(nullptr == val) {
                     closeRecord();
+                    return;
                 }
-
-                // Remember the new value pairs for a new record and start
-                // a new record if not empty.
-                updateLastRecord_();
-
-                // If the new Value pairs are not empty and current record is closed, we start a new record.
-                if(!last_record_values_.empty() && record_closed_){
-                    startNewRecord_();
-                    record_closed_ = false;
-                }
+                collect(*val);
             }
 
             /*!
@@ -643,19 +643,23 @@ namespace sparta{
             template<typename T>
             MetaStruct::enable_if_t<MetaStruct::is_any_pointer<T>::value, void>
             collectWithDuration(const T & val, sparta::Clock::Cycle duration){
-                if(SPARTA_EXPECT_FALSE(isCollected()))
-                {
-                    if(duration != 0) {
-                        ev_close_record_.preparePayload(false)->schedule(duration);
-                    }
-                    collect(*val);
+                // If pointer has become nullified, close the record
+                if(nullptr == val) {
+                    closeRecord();
+                    return;
                 }
+                collectWithDuration(*val, duration);
             }
 
             //! Virtual method called by
             //! CollectableTreeNode/PipelineCollector when a user of the
             //! TreeNode requests this object to be collected.
             void collect() override final {
+                // If pointer has become nullified, close the record
+                if(nullptr == collected_object_) {
+                    closeRecord();
+                    return;
+                }
                 collect(*collected_object_);
             }
 
@@ -665,6 +669,11 @@ namespace sparta{
              * \pre Must have constructed wit ha non-null collected object
              */
             void collectWithDuration(sparta::Clock::Cycle duration) {
+                // If pointer has become nullified, close the record
+                if(nullptr == collected_object_) {
+                    closeRecord();
+                    return;
+                }
                 collectWithDuration(*collected_object_, duration);
             }
 
@@ -690,7 +699,8 @@ namespace sparta{
                     if(!record_closed_ && writeRecord_(simulation_ending)) {
 
                         // Clear the previous vector containing the Name Value pairs.
-                        last_record_values_.clear();
+                        argos_record_.valueVector.clear();
+                        argos_record_.stringVector.clear();
                     }
                     record_closed_ = true;
                 }
@@ -705,7 +715,7 @@ namespace sparta{
             //! \brief Before writing a record to file, we need to check
             //  if any of the old Values have changed or not.
             bool isSameRecord() const {
-                return last_record_values_ == getDataVector();
+                return (argos_record_.valueVector == getDataVector()) && (argos_record_.stringVector == getStringVector());
             }
 
             //! \brief Strictly a Debug/Testing API.
@@ -758,7 +768,19 @@ namespace sparta{
             //! \brief Fill it with the new Name Value pairs from
             //  this cycle of Collection.
             void updateLastRecord_(){
-                last_record_values_ = getDataVector();
+                // These values will change every time the transaction changes
+                argos_record_.valueVector = getDataVector();
+                argos_record_.stringVector = getStringVector();
+                argos_record_.sizeOfVector = getSizeOfVector();
+
+                if (has_display_id_field_) {
+                    argos_record_.display_ID = argos_record_.valueVector[0].first & 0x0fff;
+                }
+            }
+
+            //! \brief Does this transaction contain any data yet?
+            bool hasData_() const {
+                return !(argos_record_.valueVector.empty() && argos_record_.stringVector.empty());
             }
 
             //! \brief Send the Pair Structure Record to Outputter
@@ -770,8 +792,7 @@ namespace sparta{
                             << getLocation() << " before a record can be written");
 
                 // This record hasn't changed, don't write it
-                if(__builtin_expect(argos_record_.time_Start ==
-                                    pipeline_col_->getScheduler()->getCurrentTick(), false)) {
+                if(SPARTA_EXPECT_FALSE(argos_record_.time_Start == pipeline_col_->getScheduler()->getCurrentTick())) {
                     return false;
                 }
 
@@ -779,16 +800,6 @@ namespace sparta{
                 argos_record_.transaction_ID = pipeline_col_->getUniqueTransactionId();
 
                 argos_record_.pairId = getUniquePairID_();
-                argos_record_.nameVector = getNameStrings();
-                argos_record_.sizeOfVector = getSizeOfVector();
-                argos_record_.valueVector = last_record_values_;
-                argos_record_.stringVector = getStringVector();
-                argos_record_.length = argos_record_.nameVector.size();
-                argos_record_.delimVector.emplace_back(getArgosFormatGuide());
-
-                if (argos_record_.nameVector[0] == "DID") {
-                    argos_record_.display_ID = argos_record_.valueVector[0].first & 0x0fff;
-                }
 
                 // Capture the end time
                 argos_record_.time_End =
@@ -818,7 +829,14 @@ namespace sparta{
                 sparta_assert(pipeline_col_ != nullptr,
                             "Collectables can only added to PipelineCollectors... for now");
 
-                if(collect && !last_record_values_.empty()){
+                // These fields only need to be set once - they define the format of the collectable
+                // and remain constant for the duration of the simulation
+                argos_record_.nameVector = getNameStrings();
+                argos_record_.length = argos_record_.nameVector.size();
+                has_display_id_field_ = (argos_record_.nameVector[0] == "DID");
+                argos_record_.delimVector.emplace_back(getArgosFormatGuide());
+
+                if(collect && hasData_()){
 
                     // Set the start time for this transaction to be
                     // moment collection is enabled.
@@ -849,11 +867,6 @@ namespace sparta{
             // The live transaction record
             pair_t argos_record_;
 
-            // The Vector of pairs of string and unsigned ints to hold
-            // a Name String and its corresponding Value.
-            typedef std::pair<uint64_t, bool> ValidPair;
-            std::vector<ValidPair> last_record_values_;
-
             // Ze Collec-tor
             PipelineCollector * pipeline_col_ = nullptr;
 
@@ -867,6 +880,9 @@ namespace sparta{
 
             // Should we auto-collect?
             bool auto_collect_ = true;
+
+            // Is the first field the display ID (DID)?
+            bool has_display_id_field_ = false;
 
             std::string log_string_;
         };

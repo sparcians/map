@@ -12,6 +12,7 @@ import os
 import logging
 import pstats
 from logging import info, debug, error, warn
+from model.settings import ArgosSettings
 from model.utilities import LogFormatter
 import cProfile
 
@@ -144,16 +145,13 @@ else:
 
     app = ArgosApp(0)
 
+    settings = ArgosSettings()
     # The user can specify default colorblindness and palette shuffle modes with these environment variables
-    colorblindness_option = os.environ.get('ARGOS_COLORBLINDNESS_MODE', 'default')
-    palette_shuffle_option = os.environ.get('ARGOS_PALETTE_SHUFFLE_MODE', 'default')
-    gui.autocoloring.BuildBrushes(colorblindness_option, palette_shuffle_option)
+    gui.autocoloring.BuildBrushes(settings.palette, settings.palette_shuffle)
 
     # Preconfigure the workspace with options
     # Must be after wx.App is instantiated
-    ws = Workspace()
-    ws.SetPalette(colorblindness_option)
-    ws.SetColorShuffleState(palette_shuffle_option)
+    ws = Workspace(settings)
 
     if args.resource_dir is not None:
         for rd in args.resource_dir:
@@ -339,4 +337,5 @@ else:
         for stat in stats:
             info(stat)
 
+    ws.Cleanup()
     sys.exit(rc)

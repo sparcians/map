@@ -64,7 +64,7 @@ int main()
     sparta::EventSet es(nullptr);
     es.setClock(&clk);
 
-    EXPECT_TRUE(sched.getCurrentTick()  == 1);
+    EXPECT_TRUE(sched.getCurrentTick()  == 0); //unfinalized sched at tick 0
     EXPECT_TRUE(sched.getElapsedTicks() == 0);
     EXPECT_TRUE(sched.isRunning() == false);
 
@@ -81,6 +81,9 @@ int main()
     sparta::SleeperThread::getInstance()->finalize();
     sched.finalize();
 
+    // proceed to tick 1, nothing should happen, but time advancement
+    sched.run(1, true, false);
+
     // To be scheduled at the expected time, you need to take into
     // account the current time
     cval.ev_test_cycle.schedule(cval.expected_time -
@@ -91,6 +94,7 @@ int main()
 
     boost::timer::cpu_timer t;
     sched.printNextCycleEventTree(std::cout, 0, 0);
+
     sched.run(102);
     // we should of exited in less than a second
     std::cout << t.elapsed().user << std::endl;

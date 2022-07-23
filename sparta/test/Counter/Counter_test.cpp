@@ -177,6 +177,9 @@ int main()
         std::cout << "\nFINALIZED" << std::endl;
 
 
+        // proceed to tick 1, nothing should happen, but time advancement
+        sched.run(1, true, false);
+
         // Child Counter lookup:
         // by name
         Counter *a=0, *b=0, *c=0, *d=0;

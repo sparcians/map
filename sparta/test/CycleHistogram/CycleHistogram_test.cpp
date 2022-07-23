@@ -129,6 +129,9 @@ void binsOneThroughThree()
 
     std::cout << sset << std::endl;
 
+    // proceed to tick 1, nothing should happen, but time advancement
+    scheduler.run(1, true, false);
+
     EXPECT_EQUAL(cycle_histogram_tn.getNumBins(), 3);
     EXPECT_EQUAL(cycle_histogram_sa.getNumBins(), 4);
 
@@ -298,6 +301,9 @@ void binsZeroThroughThree()
     scheduler.finalize();
 
     std::cout << sset << std::endl;
+
+    // proceed to tick 1, nothing should happen, but time advancement
+    scheduler.run(1, true, false);
 
     EXPECT_EQUAL(cycle_histogram_tn.getNumBins(), 4);
     EXPECT_EQUAL(cycle_histogram_sa.getNumBins(), 4);

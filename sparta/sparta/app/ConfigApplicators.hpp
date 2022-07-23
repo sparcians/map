@@ -329,10 +329,10 @@ public:
                     // Parse the string as YAML and assign it to this node
                     ParameterTree ptree;
                     sparta::ConfigParser::YAML::EventHandler handler("<command line>",
-                                                                   {p},
-                                                                   ptree,
-                                                                   {},
-                                                                   verbose);
+                                                                     {p},
+                                                                     ptree,
+                                                                     {},
+                                                                     verbose);
 
                     // These parameters will be in the unbound list first
                     // and then applied later where it MUST match existing nodes
@@ -606,7 +606,7 @@ public:
         sparta::ConfigParser::YAML param_file(filename_, include_paths_);
         param_file.allowMissingNodes(true);
         param_file.consumeParameters(&dummy, verbose);
-        //param_file.getParameterTree().recursPrint(std::cout);
+        //param_file.getParameterTree().recursePrint(std::cout);
         ptree.create(loc_pattern_, false)->appendTree(param_file.getParameterTree().getRoot()); // Apply to existing ptree
     }
 };
@@ -668,7 +668,7 @@ public:
         sparta::ConfigParser::YAML param_file(filename_, include_paths_);
         param_file.allowMissingNodes(true);
         param_file.consumeParameters(&dummy, verbose);
-        //param_file.getParameterTree().recursPrint(std::cout);
+        //param_file.getParameterTree().recursePrint(std::cout);
         ptree.create(loc_pattern_, false)->appendTree(param_file.getParameterTree().getRoot()); // Apply to existing ptree
     }
 };
@@ -680,5 +680,3 @@ typedef std::vector<std::unique_ptr<ConfigApplicator>>   ConfigVec;
 
 } // namespace app
 } // namespace sparta
-
-

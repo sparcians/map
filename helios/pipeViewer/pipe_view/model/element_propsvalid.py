@@ -161,6 +161,23 @@ def validateList(name, val):
     return val
 
 
+# # Confirms that an X/Y scale value is in the form (number, number)
+def validateScale(name, raw):
+    if isinstance(raw, str):
+        val = tuplify(raw)
+    else:
+        val = raw
+    if not isinstance(val, tuple):
+        raise TypeError(f'Parameter {name} must be a 2-tuple of numbers')
+    if len(val) != 2:
+        raise ValueError(f'Parameter {name} must be 2-tuple of numbers')
+    if not isinstance(val[0], (int, float)):
+        raise TypeError(f'Parameter {name}: only numbers allowed for x-scale factors')
+    if not isinstance(val[1], (int, float)):
+        raise TypeError(f'Parameter {name}: only numbers allowed for y-scale factors')
+    return val
+
+
 # Takes a string (of supposed user input) and converts it, if possible, to a
 #  tuple of ints. Floats are currently discarded and disregarded
 def tuplify(raw):
