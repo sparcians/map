@@ -339,50 +339,47 @@ class SimpleLinePlotWidget extends BaseWidget {
                 const point = data.points[0]
 
                 // bp hovering. TODO: Move this to bp line plot subclasss
-                //if (this.instruction_nums.length > 0) {
-                    const inst_id = this.instruction_nums[point.pointIndex]
-                    const branch_index = this.indices[point.pointIndex]
-                    const addr = this.addresses[point.pointIndex]
-                    const tgt = this.targets[point.pointIndex]
+                const inst_id = this.instruction_nums[point.pointIndex]
+                const branch_index = this.indices[point.pointIndex]
+                const addr = this.addresses[point.pointIndex]
+                const tgt = this.targets[point.pointIndex]
 
-                    const ay = point.y <= 0.5 ? 60 : -60 // pixels (must be larger than the height of the annotation text)
-                    const new_index = (this.plot_div[0].layout.annotations || []).length
-                    let removed = false
-                    if (new_index > 0) {
-                        // Remove if clicked on one that is already there
-                        this.plot_div[0].layout.annotations.forEach((ann, idx) => {
-                            if (ann.branch_index && ann.branch_index == branch_index) {
-                                Plotly.relayout(this.plot_div[0], `annotations[${idx}]`, 'remove')
-                                this.num_annotations.html((this.plot_div[0].layout.annotations || []).length.toString())
-                                removed = true
-                                console.log("Remove anno")
-                            }
-                        })
-                    }
-                    if (!removed) {
-                        const new_anno = {
-                            x: point.xaxis.d2l(point.x),
-                            y: point.yaxis.d2l(point.y),
-                            arrowhead: 5,
-                            arrowsize: 2,
-                            arrowwidth: 1,
-                            ax: 0,
-                            ay: ay,
-                            bgcolor: 'rgba(255,255,255,0.8)',
-                            font: {size:11, family:'Courier New, monospace', color:'#404040'},
-                            branch_index: branch_index,
-                            index: new_index,
-                            captureevents: true, // allow click events
-
+                const ay = point.y <= 0.5 ? 60 : -60 // pixels (must be larger than the height of the annotation text)
+                const new_index = (this.plot_div[0].layout.annotations || []).length
+                let removed = false
+                if (new_index > 0) {
+                    this.plot_div[0].layout.annotations.forEach((ann, idx) => {
+                        if (ann.branch_index && ann.branch_index == branch_index) {
+                            Plotly.relayout(this.plot_div[0], `annotations[${idx}]`, 'remove')
+                            this.num_annotations.html((this.plot_div[0].layout.annotations || []).length.toString())
+                            removed = true
+                            console.log("Remove anno")
                         }
-                        if (this.downsampling == 1) {
-                            new_anno['text'] = `inst#:${inst_id}<br>uBrn#:${branch_index}<br>ha:0x${addr.toString(16)}<br>tgt:0x${tgt.toString(16)}`
-                        }
+                    })
+                }
+                if (!removed) {
+                    const new_anno = {
+                        x: point.xaxis.d2l(point.x),
+                        y: point.yaxis.d2l(point.y),
+                        arrowhead: 5,
+                        arrowsize: 2,
+                        arrowwidth: 1,
+                        ax: 0,
+                        ay: ay,
+                        bgcolor: 'rgba(255,255,255,0.8)',
+                        font: {size:11, family:'Courier New, monospace', color:'#404040'},
+                        branch_index: branch_index,
+                        index: new_index,
+                        captureevents: true, // allow click events
 
-                        Plotly.relayout(this.plot_div[0], `annotations[${new_index}]`, new_anno)
-                        this.num_annotations.html(this.plot_div[0].layout.annotations.length.toString())
                     }
-                //}
+                    if (this.downsampling == 1) {
+                        new_anno['text'] = `inst#:${inst_id}<br>uBrn#:${branch_index}<br>ha:0x${addr.toString(16)}<br>tgt:0x${tgt.toString(16)}`
+                    }
+
+                    Plotly.relayout(this.plot_div[0], `annotations[${new_index}]`, new_anno)
+                    this.num_annotations.html(this.plot_div[0].layout.annotations.length.toString())
+                }
             })
 
             this.plot_div[0].on('plotly_clickannotation', (event) => {
