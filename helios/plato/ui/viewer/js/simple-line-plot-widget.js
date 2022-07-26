@@ -339,7 +339,7 @@ class SimpleLinePlotWidget extends BaseWidget {
                 const point = data.points[0]
 
                 // bp hovering. TODO: Move this to bp line plot subclasss
-                if (this.instruction_nums.length > 0) {
+                //if (this.instruction_nums.length > 0) {
                     const inst_id = this.instruction_nums[point.pointIndex]
                     const branch_index = this.indices[point.pointIndex]
                     const addr = this.addresses[point.pointIndex]
@@ -351,20 +351,15 @@ class SimpleLinePlotWidget extends BaseWidget {
                     if (new_index > 0) {
                         // Remove if clicked on one that is already there
                         this.plot_div[0].layout.annotations.forEach((ann, idx) => {
-                            if (ann.branch_index == branch_index) {
+                            if (ann.branch_index && ann.branch_index == branch_index) {
                                 Plotly.relayout(this.plot_div[0], `annotations[${idx}]`, 'remove')
                                 this.num_annotations.html((this.plot_div[0].layout.annotations || []).length.toString())
                                 removed = true
+                                console.log("Remove anno")
                             }
                         })
                     }
                     if (!removed) {
-                        if (this.downsampling > 1) {
-                            this.viewer.show_error_popup('Cannot add annotation',
-                                                         `Annotations can only be added to line plots when viewing data with no downsampling applied. Downsampling is currently ${this.downsampling}. Zoom in to reduce downsampling.`)
-                            return
-                        }
-
                         const new_anno = {
                             x: point.xaxis.d2l(point.x),
                             y: point.yaxis.d2l(point.y),
@@ -375,17 +370,19 @@ class SimpleLinePlotWidget extends BaseWidget {
                             ay: ay,
                             bgcolor: 'rgba(255,255,255,0.8)',
                             font: {size:11, family:'Courier New, monospace', color:'#404040'},
-                            text: `inst#:${inst_id}<br>uBrn#:${branch_index}<br>ha:0x${addr.toString(16)}<br>tgt:0x${tgt.toString(16)}`,
                             branch_index: branch_index,
                             index: new_index,
                             captureevents: true, // allow click events
 
                         }
+                        if (this.downsampling == 1) {
+                            new_anno['text'] = `inst#:${inst_id}<br>uBrn#:${branch_index}<br>ha:0x${addr.toString(16)}<br>tgt:0x${tgt.toString(16)}`
+                        }
 
                         Plotly.relayout(this.plot_div[0], `annotations[${new_index}]`, new_anno)
                         this.num_annotations.html(this.plot_div[0].layout.annotations.length.toString())
                     }
-                }
+                //}
             })
 
             this.plot_div[0].on('plotly_clickannotation', (event) => {
