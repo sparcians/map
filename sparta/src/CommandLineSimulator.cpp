@@ -1993,8 +1993,20 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                                                        filter_parameters);
         }
 
-        // If we are reading a final config. Assert that we actually loaded a final config.
+        // Store the arch param
         std::vector<sparta::TreeNode*> children;
+        sim->getMetaParamRoot()->findChildren("params.architecture", children);
+        sparta_assert (children.size() > 0, "Sparta should have made a default meta.params.architecture.");
+        sparta::Parameter<std::string>* arch_p = dynamic_cast<sparta::Parameter<std::string>*>(children.at(0));
+        sparta_assert(arch_p);
+        const auto run_metadata = getSimulationConfiguration().getRunMetadata();
+        const auto run_metadata_it = std::find_if(run_metadata.begin(), run_metadata.end(),
+            [] (const auto md_param) { return md_param.first == "arch"; });
+        sparta_assert(run_metadata_it != run_metadata.end());
+        arch_p->setValueFromString(run_metadata_it->second);
+
+        // If we are reading a final config. Assert that we actually loaded a final config.
+        children.clear();
         sim->getMetaParamRoot()->findChildren("params.is_final_config", children);
         sparta_assert (children.size() > 0, "Sparta should have made a default meta.params.is_final_config.");
         sparta::Parameter<bool>* is_final_p = dynamic_cast<sparta::Parameter<bool>*>(children.at(0));
