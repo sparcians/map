@@ -673,7 +673,7 @@ namespace sparta
                 bool allow_slide = false;
                 bool is_fwd_progress = false;
 
-                send_(dat, receiver_clock_, sparta::Clock::Cycle(0), allow_slide, is_fwd_progress);
+                send_(dat, receiver_clock_, sparta::Clock::Cycle(1), allow_slide, is_fwd_progress);
                 sparta_assert(num_in_flight_ > 0);
             }
 
