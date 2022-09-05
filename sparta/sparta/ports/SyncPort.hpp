@@ -3,7 +3,7 @@
 /**
  * \file   SyncPort.hpp
  *
- * \brief  File that defines syncrhonized input/output ports.
+ * \brief  File that defines synchronized input/output ports.
  *
  * Explanation of ready/valid mechanism:
  *
@@ -33,7 +33,7 @@
  *
  *   o When trying to send new data, SyncOutPort will then call
  *     SyncInPort::couldAccept_() to determine if data could be delivered
- *     on the given cycle.
+ *     in the current cycle.
  *
  *   o Data can be scheduled for sending:
  *     SyncInPort is currently ready OR
@@ -122,7 +122,7 @@ namespace sparta
          *
          * \param portset Name of the sparta::PortSet this port belongs to
          * \param name Name of the port
-         * \param clk The clock this port wil use for sending
+         * \param clk The clock this port will use for sending
          * \param presume_zero_delay For precedence, presume a
          *        zero-delay send() on this OutPort, i.e. a send call
          *        with zero cycle delay
@@ -166,15 +166,22 @@ namespace sparta
 
         /**
          * Return whether the output port is ready to send data to the
-         * input port.  This takes into account both the ready signal and
+         * input port. This takes into account both the ready signal and
          * whether any data has been sent this cycle.
-         *
-         * \param send_delay_cycles Number of cycles the sender would
-         *                          use in a send() call when sending.
+         * 
+         * If the connected input port becomes unready in this cycle, isReady
+         * still returns true and the data is accepted when send is called, if
+         * there is no data already in flight. In the next clock cycle, 
+         * SyncInPort::setReady(false) comes into effect and this SyncOutPort
+         * will not accept any new data independent, if there is data in flight
+         * or not. Data that is already in flight, will be recirculated until
+         * the port becomes ready again.
+         * Hence this method cannot be used to check if setReady has been called in
+         * the current cycle.
          */
-        bool isReady(sparta::Clock::Cycle send_delay_cycles = 0) const {
+        bool isReady() const {
             sparta_assert(sync_in_port_ != 0, "isReady() check on unbound port:" << getLocation());
-            return sync_in_port_->couldAccept_(clk_, send_delay_cycles);
+            return sync_in_port_->couldAccept_(clk_);
         }
 
         /**
@@ -493,8 +500,17 @@ namespace sparta
         }
 
         /*!
-         *  Put backpressure on the connection to indicate that the input
-         *  port isn't ready for anymore requests.
+         * Put backpressure on the connection to indicate that the input
+         * port is not ready for anymore requests.
+         * Note, that the new value of is_ready becomes known to the connected
+         * SyncOutPort in the next clock cycle. Hence, the connected SyncOutPort
+         * will still be able to send data, which then recirculates until the
+         * SyncInPort becomes ready again.
+         * After that, it takes 1 clock cycle until the recirculated data is
+         * delivered. 
+         * 
+         * \param is_ready New state of the input port communicated to the connected
+         *                 output port in 1 clock cycle.
          */
         void setReady(bool is_ready) {
             if (SPARTA_EXPECT_FALSE(info_logger_)) {
@@ -714,7 +730,7 @@ namespace sparta
         friend uint64_t SyncOutPort<DataT>::send(const DataT &, uint64_t, const bool);
 
         //! Allow DataOutPort::isReady() to call DataInPort::couldAccept_()
-        friend bool SyncOutPort<DataT>::isReady(sparta::Clock::Cycle send_delay_cycles) const;
+        friend bool SyncOutPort<DataT>::isReady() const;
 
         //! Allow DataOutPort::isReadyPS() to call DataInPort::getLatchedReady_()
         friend bool SyncOutPort<DataT>::isReadyPS() const;
@@ -730,26 +746,11 @@ namespace sparta
          *  of delay cycles.
          *
          * \param send_clk The sender's clock
-         * \param send_delay_cycles The number of sender-introduced delay
-         * cycles
          */
-        bool couldAccept_(const Clock *send_clk, Clock::Cycle send_delay_cycles) const {
-            return couldAccept_(send_clk, static_cast<double>(send_delay_cycles));
-        }
-
-        /*!
-         *  Return whether the input port could receive data if it were
-         *  sent from a different sender's clock domain, given the number
-         *  of delay cycles.
-         *
-         * \param send_clk The sender's clock
-         * \param send_delay_cycles The number of sender-introduced delay
-         * cycles
-         */
-        bool couldAccept_(const Clock *send_clk, double send_delay_cycles) const {
+        bool couldAccept_(const Clock *send_clk) const {
 
             Scheduler::Tick num_delay_ticks =
-                calculateClockCrossingDelay(send_clk->getTick(send_delay_cycles), send_clk, receive_delay_ticks_, receiver_clock_);
+                calculateClockCrossingDelay(send_clk->currentTick(), send_clk, receive_delay_ticks_, receiver_clock_);
 
             sparta::Scheduler::Tick cur_tick =
                 scheduler_->getCurrentTick();
@@ -765,7 +766,6 @@ namespace sparta
             // 'ready' if downstream indicated it couldn't take data
             if (getLatchedReady_(cur_tick) == false) {
                 sparta_assert(send_clk->getFrequencyMhz() == receiver_clock_->getFrequencyMhz(), "Error in port:" << getLocation());
-                sparta_assert(send_delay_cycles == 0, "Error in port:" << getLocation());
                 sparta_assert(getPortDelay() == 1 || getPortDelay() == 0,
                               "Ready/Valid only tested for zero and one cycle delays (not "<< getPortDelay() <<"); relax this assert once more testing is done; location=" << getLocation());
 
