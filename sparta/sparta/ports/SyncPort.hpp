@@ -229,7 +229,10 @@ namespace sparta
         }
 
         /**
-         *  \brief Send data on the output port and allow slide
+         *  \brief Send data on the output port. In case of a conflict (multiple packets scheduled
+         *  to be received within the same clock cycle), the new packet is rescheduled for transmission
+         *  in the next clock cycle automatically. There is no limit on how many packets can be
+         *  rescheduled, the FIFO is without an upper bound.
          *  \param dat The data to send
          *  \param send_delay_cycles Cycles to delay before sending
          *
@@ -244,8 +247,12 @@ namespace sparta
          *  \brief Send data on the output port
          *  \param dat The data to send
          *  \param send_delay_cycles Cycles to delay before sending
-         *  \param allow_slide Allows the receive to slide relative to
-         *                     previous requests
+         *  \param allow_slide If set to true and, in case of packets already in flight and scheduled to be
+         *                     delivered in the same clock cycle, automatically reschedule this new packet to be
+         *                     transmitted in the next following clock cycle. If set to false, no rescheduling is
+         *                     performed. In case of of a collision, the port will throw an assertion.
+         *                     There is no limit on the number of packets that can be rescheduled as the FIFO
+         *                     does not have an upper bound.
          *
          *  \return The delay in ticks from sending
          */
