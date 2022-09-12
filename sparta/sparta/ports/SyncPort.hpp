@@ -331,7 +331,7 @@ namespace sparta
             // Convert the absolute tick of the send event into a current
             // cycle relative cycle and return that value
             Clock::Cycle next_send_cycle = clk_->getCycle(send_tick) + send_delay_cycles;
-            sparta_assert(next_send_cycle > current_cycle);
+            sparta_assert(next_send_cycle >= current_cycle);
             return next_send_cycle;
         }
 
@@ -855,7 +855,7 @@ namespace sparta
                                                    send_clk->getTick(send_delay_cycles),
                                                    send_clk, receive_delay_ticks_, receiver_clock_);
 
-            sparta_assert( data_arrival_tick > num_delay_ticks );
+            sparta_assert( data_arrival_tick >= num_delay_ticks );
             return num_delay_ticks;
         }
 
