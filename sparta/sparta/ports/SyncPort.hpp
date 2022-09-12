@@ -733,7 +733,6 @@ namespace sparta
         friend void SyncOutPort<DataT>::bind(Port * in);
 
         //! Allow SyncOutPort::send() to call SyncInPort::send_()
-        //! and SyncInPort::getNumInFlight()
         friend uint64_t SyncOutPort<DataT>::send(const DataT &, uint64_t, const bool);
 
         //! Allow DataOutPort::isReady() to call DataInPort::couldAccept_()
@@ -931,16 +930,6 @@ namespace sparta
             return num_delay_ticks;
         }
         
-        /*!
-         * \brief Called by SyncOutPort, only if allow_slide is true.
-         * To calculate, at what clock cycle a packet can be sent to this SyncInPort, the
-         * SyncOutPort needs to know, how many packets are already in flight to "slide" the new
-         * packet into the earliest cycle possible.
-         * \return The number of packets that are currently in flight.
-         */
-        uint32_t getNumInFlight() {
-            return num_in_flight_;
-        }
 
     private:
 
