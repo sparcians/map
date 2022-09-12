@@ -93,7 +93,7 @@ namespace sparta
      *  a bus.  The destination SyncInPort will handle any latch
      *  delays.  Note that since this potentially send occurs across a
      *  clock boundary, the number of cycles actually delayed won't
-     *  necessarily be in the sending clock comain.
+     *  necessarily be in the sending clock domain.
      *
      *  The rules for sending across clock boundaries are:
      *
@@ -261,11 +261,7 @@ namespace sparta
             sparta_assert(sync_in_port_ != 0, "Attempting to send data on unbound port:" << getLocation());
             sparta_assert(clk_->isPosedge(), "Posedge check failed in port:" << getLocation());
 
-            Clock::Cycle send_cycle = clk_->currentCycle() + send_delay_cycles;
-            
-            if(allow_slide) {
-                send_cycle += sync_in_port_->getNumInFlight();
-            }
+            Clock::Cycle send_cycle = computeNextAvailableCycleForSend(send_delay_cycles, 0);
             
             if (SPARTA_EXPECT_FALSE(info_logger_)) {
                 info_logger_ << "SEND @" << send_cycle
@@ -334,11 +330,9 @@ namespace sparta
 
             // Convert the absolute tick of the send event into a current
             // cycle relative cycle and return that value
-            Clock::Cycle next_send_cycle = clk_->getCycle(send_tick);
+            Clock::Cycle next_send_cycle = clk_->getCycle(send_tick) + send_delay_cycles;
             sparta_assert(next_send_cycle > current_cycle);
-            Clock::Cycle delay_cycle = next_send_cycle - current_cycle;
-
-            return delay_cycle;
+            return next_send_cycle;
         }
 
 
