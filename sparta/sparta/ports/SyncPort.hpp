@@ -93,7 +93,7 @@ namespace sparta
      *  a bus.  The destination SyncInPort will handle any latch
      *  delays.  Note that since this potentially send occurs across a
      *  clock boundary, the number of cycles actually delayed won't
-     *  necessarily be in the sending clock comain.
+     *  necessarily be in the sending clock domain.
      *
      *  The rules for sending across clock boundaries are:
      *
@@ -229,7 +229,10 @@ namespace sparta
         }
 
         /**
-         *  \brief Send data on the output port and allow slide
+         *  \brief Send data on the output port. In case of a conflict (multiple packets scheduled
+         *  to be received within the same clock cycle), the new packet is rescheduled for transmission
+         *  in the next clock cycle automatically. There is no limit on how many packets can be
+         *  rescheduled, the FIFO is without an upper bound.
          *  \param dat The data to send
          *  \param send_delay_cycles Cycles to delay before sending
          *
@@ -244,8 +247,12 @@ namespace sparta
          *  \brief Send data on the output port
          *  \param dat The data to send
          *  \param send_delay_cycles Cycles to delay before sending
-         *  \param allow_slide Allows the receive to slide relative to
-         *                     previous requests
+         *  \param allow_slide If set to true and, in case of packets already in flight and scheduled to be
+         *                     delivered in the same clock cycle, automatically reschedule this new packet to be
+         *                     transmitted in the next following clock cycle. If set to false, no rescheduling is
+         *                     performed. In case of of a collision, the port will throw an assertion.
+         *                     There is no limit on the number of packets that can be rescheduled as the FIFO
+         *                     does not have an upper bound.
          *
          *  \return The delay in ticks from sending
          */
@@ -254,7 +261,8 @@ namespace sparta
             sparta_assert(sync_in_port_ != 0, "Attempting to send data on unbound port:" << getLocation());
             sparta_assert(clk_->isPosedge(), "Posedge check failed in port:" << getLocation());
 
-            Clock::Cycle send_cycle = clk_->currentCycle() + send_delay_cycles;
+            Clock::Cycle send_cycle = computeNextAvailableCycleForSend(send_delay_cycles, 0);
+            
             if (SPARTA_EXPECT_FALSE(info_logger_)) {
                 info_logger_ << "SEND @" << send_cycle
                              << " allow_slide=" << allow_slide
@@ -322,11 +330,9 @@ namespace sparta
 
             // Convert the absolute tick of the send event into a current
             // cycle relative cycle and return that value
-            Clock::Cycle next_send_cycle = clk_->getCycle(send_tick);
-            sparta_assert(next_send_cycle > current_cycle);
-            Clock::Cycle delay_cycle = next_send_cycle - current_cycle;
-
-            return delay_cycle;
+            Clock::Cycle next_send_cycle = clk_->getCycle(send_tick) + send_delay_cycles;
+            sparta_assert(next_send_cycle >= current_cycle);
+            return next_send_cycle;
         }
 
 
@@ -849,7 +855,7 @@ namespace sparta
                                                    send_clk->getTick(send_delay_cycles),
                                                    send_clk, receive_delay_ticks_, receiver_clock_);
 
-            sparta_assert( data_arrival_tick > num_delay_ticks );
+            sparta_assert( data_arrival_tick >= num_delay_ticks );
             return num_delay_ticks;
         }
 
@@ -923,6 +929,7 @@ namespace sparta
 
             return num_delay_ticks;
         }
+        
 
     private:
 
