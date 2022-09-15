@@ -573,7 +573,14 @@ namespace sparta
                 EventHandler handler(filename_, device_trees, ptree_, include_search_dirs_, verbose);
                 handler.allowMissingNodes(allow_missing_nodes_);
                 handler.setParameterApplyFilter(filter_predicate_);
-                while(parser_->HandleNextDocument(*((YP::EventHandler*)&handler))) {}
+                try {
+                    while(parser_->HandleNextDocument(*((YP::EventHandler*)&handler))) {}
+                }
+                catch(...) {
+                    // fall through
+                    std::cerr << "ERROR: Exception while parsing file: " << filename_ << std::endl;
+                    throw;
+                }
 
                 if(handler.getErrors().size() != 0){
                     SpartaException ex("One or more errors detected while consuming the parameter file:\n");
