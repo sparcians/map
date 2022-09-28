@@ -323,10 +323,7 @@ void Unit::schedule_commands(double other_clk_mhz)
         std::cout << getName() << ": sending data '" << data << "' at tick '"
                   << src_delay * src_clk_period << "' expecting arrival at '" << src_data_arrival_tick << "'\n";
 #endif
-        if (!EXPECT_TRUE(out_cmd.isReady(src_delay + src_delay_factor))) {
-            std::cout << "ERROR: " << getName() << ": should always be ready next cycle (idx=" << idx << ", delay="<< src_delay + src_delay_factor << ")\n";
-        }
-        if (!EXPECT_FALSE(out_cmd.isReady(src_delay))) {
+        if (!EXPECT_FALSE(out_cmd.isReady())) {
             std::cout << "ERROR: " << getName() << ": should never be ready this cycle (idx=" << idx << ")\n";
         }
 
