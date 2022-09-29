@@ -31,7 +31,7 @@ design.
 #    Doxygen   1.8
 
 # Clone Sparta via the MAP GitHub repo and 'cd' into it
-git clone ssh://github.com/sparcians/map
+git clone http://github.com/sparcians/map
 cd map/sparta
 
 # Build a release version
@@ -110,7 +110,7 @@ Open a MacOS Terminal
 Additionally, there are Python packages to install
 1. `pip install cython`
 
-Clone sparta through ssh: `git clone ssh://github.com/sparcians/map.git`
+Clone sparta through ssh: `git clone http://github.com/sparcians/map.git`
 
 Attempt a build:
 
