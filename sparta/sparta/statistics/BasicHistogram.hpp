@@ -66,9 +66,13 @@ public:
             auto &v = bucket_vals_[i];
             std::ostringstream os_name;
             if (v < 0)
+            {
                 os_name << name << "_n" << -v; // negative
+            }
             else
+            {
                 os_name << name << '_' << v;
+            }
 
             std::ostringstream os_desc;
             if (i == 0)
