@@ -801,6 +801,11 @@ private:
         for (auto & r : reports_) {
             auto & header = r->getHeader();
             populate_header_content(header);
+
+            const auto header_metadata getDescriptor().header_metadata_;
+            for(auto [key, value] : header_metadata) {
+                header.set(key, value);
+            }
         }
     }
 
