@@ -1814,7 +1814,7 @@ bool CommandLineSimulator::parse(int argc,
     sim_config_.reports                 = reports;
 
     //pevents
-    run_pevents_ = (vm_.count("pevents-at") > 0) | (vm_.count("pevents") > 0) | (vm_.count("verbose-pevents") > 0);
+    run_pevents_ = (vm_.count("pevents-at") > 0) || (vm_.count("pevents") > 0) || (vm_.count("verbose-pevents") > 0);
 
     bool show_options = vm_.count("show-options") > 0;
     if(show_options){
