@@ -886,6 +886,7 @@ class ReportDescriptorFileParserYAML
         static constexpr char KEY_SKIP[]            = "skip";
         static constexpr char KEY_AUTO_EXPAND_CC[]  = "expand-cc";
         static constexpr char KEY_METADATA[]        = "header_metadata";
+        static constexpr char KEY_COUNTER[]         = "counter";
 
         virtual bool handleEnterMap_(
             const std::string & key,
@@ -975,6 +976,8 @@ class ReportDescriptorFileParserYAML
             const NavNode& scope) override final
         {
             if (in_header_metadata_) {
+                sparta_assert(assoc_key != KEY_COUNTER,
+                    "Metadata key \"counter\" is reserved");
                 header_metadata_kv_pairs_[assoc_key] = value;
                 return true;
             }
@@ -1177,6 +1180,9 @@ constexpr char ReportDescriptorFileParserYAML::
 
 constexpr char ReportDescriptorFileParserYAML::
     ReportDescriptorFileEventHandlerYAML::KEY_METADATA[];
+
+constexpr char ReportDescriptorFileParserYAML::
+    ReportDescriptorFileEventHandlerYAML::KEY_COUNTER[];
 
 /*!
  * \brief Parse a YAML file containing key-value pairs into a
