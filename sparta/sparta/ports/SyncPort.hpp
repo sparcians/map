@@ -158,7 +158,7 @@ namespace sparta
 
             OutPort::bind(in);
 
-            bound_ports_.push_back(in);
+            bound_in_ports_.push_back(inp);
         }
 
         //! Promote base class bind method for references
@@ -192,6 +192,37 @@ namespace sparta
         bool isReadyPS() const {
             sparta_assert(sync_in_port_ != 0, "isReadyPS() check on unbound port:" << getLocation());
             return sync_in_port_->getRawReady_();
+        }
+
+        /*! \brief Determine if this DataOutPort has any connected
+         *        DataInPort where the data is to be delivered on the
+         *        given cycle.
+         *
+         *
+         * \param rel_cycle The relative cycle (from now) the data
+         *                  will be delivered
+         * \return true if driven at the given cycle (data not yet delivered)
+         */
+        bool isDriven(Clock::Cycle rel_cycle) const override {
+            for(SyncInPort<DataT>* itr : bound_in_ports_) {
+                if(itr->isDriven(rel_cycle)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        //! \brief Does this DataOutPort have _any_ DataInPort's where
+        //!        the data is not yet delivered?
+        //!
+        //! \return true if driven at all (data not yet delivered)
+         bool isDriven() const override {
+            for(SyncInPort<DataT>* itr : bound_in_ports_) {
+                if(itr->isDriven()) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /**
@@ -365,6 +396,9 @@ namespace sparta
 
         /// loggers
         sparta::log::MessageSource info_logger_;
+
+        //! The bound SyncIn ports
+        std::vector <SyncInPort<DataT>*> bound_in_ports_;
     };
 
 
@@ -437,6 +471,28 @@ namespace sparta
 
         //! Promote base class bind method for references
         using Port::bind;
+
+        /*!
+         * \brief Determine if this DataInPort is driven on the
+         *        given cycle
+         * \param rel_cycle The relative cycle (from now) the data
+         *                  will be delivered
+         * \return true if driven at the given cycle (data not yet delivered)
+         * \note If the DataInPort was driven with a zero-cycle delay,
+         *       this function will always return false.
+         */
+        bool isDriven(Clock::Cycle rel_cycle) const override {
+            return forward_event_->isScheduled(rel_cycle);
+        }
+
+        /*! \brief Is this Port driven at all?
+         *  \return true if driven at all (data not yet delivered)
+         *  \note If the DataInPort was driven with a zero-cycle delay,
+         *       this function will always return false.
+         */
+        bool isDriven() const override {
+            return forward_event_->isScheduled();
+        }
 
         /**
          * \brief Get the port delay associated with this port
