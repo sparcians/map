@@ -26,6 +26,7 @@
 #include "sparta/utils/LexicalCast.hpp"
 #include "sparta/utils/SmartLexicalCast.hpp"
 #include "sparta/utils/Printing.hpp"
+#include "sparta/utils/VectorUtils.hpp"
 #include "sparta/kernel/PhasedObject.hpp"
 
 /*!
@@ -1283,6 +1284,9 @@ namespace sparta
          * Refer to 'sparta::stringize' for vector-to-string formatting.
          */
         std::string getValueAsString() const override final {
+            if(sparta::utils::is_vector<ValueType>{} && string_quote_.empty()){
+                return sparta::utils::stringize_value(val_, disp_base_, "\"");
+            }
             return sparta::utils::stringize_value(val_, disp_base_, string_quote_);
         }
 
