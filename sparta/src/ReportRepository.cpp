@@ -730,8 +730,14 @@ private:
         for (auto & r : reports_) {
             auto & header = r->getHeader();
 
-            if (start_trigger_counter_.isValid()) {
-                header.set("counter", start_trigger_counter_.getValue()->getLocation());
+            if (report_start_trigger_ && report_start_trigger_->getCounter()) {
+                header.set("start_counter", report_start_trigger_->getCounter()->getLocation());
+            }
+            if (report_stop_trigger_ && report_stop_trigger_->getCounter()) {
+                header.set("stop_counter", report_stop_trigger_->getCounter()->getLocation());
+            }
+            if (report_update_trigger_ && report_update_trigger_->getCounter()) {
+                header.set("update_counter", report_update_trigger_->getCounter()->getLocation());
             }
 
             const auto header_metadata = getDescriptor().header_metadata_;

@@ -886,7 +886,9 @@ class ReportDescriptorFileParserYAML
         static constexpr char KEY_SKIP[]            = "skip";
         static constexpr char KEY_AUTO_EXPAND_CC[]  = "expand-cc";
         static constexpr char KEY_METADATA[]        = "header_metadata";
-        static constexpr char KEY_COUNTER[]         = "counter";
+        static constexpr char KEY_START_COUNTER[]   = "start_counter";
+        static constexpr char KEY_STOP_COUNTER[]    = "stop_counter";
+        static constexpr char KEY_UPDATE_COUNTER[]  = "update_counter";
 
         virtual bool handleEnterMap_(
             const std::string & key,
@@ -976,8 +978,8 @@ class ReportDescriptorFileParserYAML
             const NavNode& scope) override final
         {
             if (in_header_metadata_) {
-                sparta_assert(assoc_key != KEY_COUNTER,
-                    "Metadata key \"counter\" is reserved");
+                sparta_assert(isMetadataReservedKey_(assoc_key) == false,
+                    "Metadata key \""+assoc_key+"\" is reserved");
                 header_metadata_kv_pairs_[assoc_key] = value;
                 return true;
             }
@@ -1062,6 +1064,14 @@ class ReportDescriptorFileParserYAML
                     key == KEY_SKIP             ||
                     key == KEY_AUTO_EXPAND_CC   ||
                     key == KEY_METADATA);
+        }
+
+        bool isMetadataReservedKey_(
+            const std::string & key) const
+        {
+            return (key == KEY_START_COUNTER  ||
+                    key == KEY_STOP_COUNTER   ||
+                    key == KEY_UPDATE_COUNTER);
         }
 
         void prepareForNextDescriptor_()
@@ -1182,7 +1192,13 @@ constexpr char ReportDescriptorFileParserYAML::
     ReportDescriptorFileEventHandlerYAML::KEY_METADATA[];
 
 constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_COUNTER[];
+    ReportDescriptorFileEventHandlerYAML::KEY_START_COUNTER[];
+
+constexpr char ReportDescriptorFileParserYAML::
+    ReportDescriptorFileEventHandlerYAML::KEY_STOP_COUNTER[];
+
+constexpr char ReportDescriptorFileParserYAML::
+    ReportDescriptorFileEventHandlerYAML::KEY_UPDATE_COUNTER[];
 
 /*!
  * \brief Parse a YAML file containing key-value pairs into a

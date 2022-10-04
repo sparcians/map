@@ -366,6 +366,14 @@ public:
     };
     const ExpressionTriggerInternals & getInternals();
 
+    /*!
+     * \brief Get counter of source counter trigger
+     */
+    const CounterBase * getCounter() const {
+        return source_counter_triggers_.empty() ? nullptr :
+            source_counter_triggers_[0]->getCounter();
+    }
+
     /*
      * \brief Helper which splits expressions like these:
      *           "entityA >= 90"
