@@ -370,7 +370,7 @@ public:
      * \brief Get counter of source counter trigger
      */
     const CounterBase * getCounter() const {
-        return source_counter_triggers_.empty() ? nullptr :
+        return !supports_single_ct_trig_cb_ ? nullptr :
             source_counter_triggers_[0]->getCounter();
     }
 

@@ -223,17 +223,8 @@ public:
 
     const CounterBase * getCounter() const
     {
-        if (internal_counters_.empty()) {
-            return nullptr;
-        }
-        if (internal_counters_.size() == 1) {
-            return internal_counters_[0];
-        }
-        throw SpartaException("You may not call the getCounter() method on this "
-                            "ContextCounterTrigger since it has ")
-            << internal_counters_.size()
-            << " internal counters, not just one.";
-        return nullptr;
+        return internal_counters_.empty() ? nullptr :
+            internal_counters_[0];
     }
 
     ~Impl() = default;
