@@ -194,8 +194,8 @@ namespace sparta
             return sync_in_port_->getRawReady_();
         }
 
-        /*! \brief Determine if this DataOutPort has any connected
-         *        DataInPort where the data is to be delivered on the
+        /*! \brief Determine if this SyncOutPort has any connected
+         *        SyncInPort where the data is to be delivered on the
          *        given cycle.
          *
          *
@@ -212,7 +212,7 @@ namespace sparta
             return false;
         }
 
-        //! \brief Does this DataOutPort have _any_ DataInPort's where
+        //! \brief Does this SyncOutPort have _any_ SyncInPort's where
         //!        the data is not yet delivered?
         //!
         //! \return true if driven at all (data not yet delivered)
@@ -473,12 +473,12 @@ namespace sparta
         using Port::bind;
 
         /*!
-         * \brief Determine if this DataInPort is driven on the
+         * \brief Determine if this SyncInPort is driven on the
          *        given cycle
          * \param rel_cycle The relative cycle (from now) the data
          *                  will be delivered
          * \return true if driven at the given cycle (data not yet delivered)
-         * \note If the DataInPort was driven with a zero-cycle delay,
+         * \note If the SyncInPort was driven with a zero-cycle delay,
          *       this function will always return false.
          */
         bool isDriven(Clock::Cycle rel_cycle) const override {
@@ -487,7 +487,7 @@ namespace sparta
 
         /*! \brief Is this Port driven at all?
          *  \return true if driven at all (data not yet delivered)
-         *  \note If the DataInPort was driven with a zero-cycle delay,
+         *  \note If the SyncInPort was driven with a zero-cycle delay,
          *       this function will always return false.
          */
         bool isDriven() const override {
