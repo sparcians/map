@@ -851,6 +851,7 @@ class ReportDescriptorFileParserYAML
     private:
         std::stack<bool> in_report_stack_;
         bool in_trigger_definition_ = false;
+        bool in_header_metadata_ = false;
         ReportDescVec completed_descriptors_;
 
         std::string loc_pattern_;
@@ -862,6 +863,7 @@ class ReportDescriptorFileParserYAML
         bool auto_expand_context_counter_stats_ = false;
 
         app::TriggerKeyValues trigger_kv_pairs_;
+        app::MetaDataKeyValues header_metadata_kv_pairs_;
 
         /*!
          * \brief Reserved keywords for this parser's dictionary
@@ -883,6 +885,10 @@ class ReportDescriptorFileParserYAML
         static constexpr char KEY_TAG[]             = "tag";
         static constexpr char KEY_SKIP[]            = "skip";
         static constexpr char KEY_AUTO_EXPAND_CC[]  = "expand-cc";
+        static constexpr char KEY_METADATA[]        = "header_metadata";
+        static constexpr char KEY_START_COUNTER[]   = "start_counter";
+        static constexpr char KEY_STOP_COUNTER[]    = "stop_counter";
+        static constexpr char KEY_UPDATE_COUNTER[]  = "update_counter";
 
         virtual bool handleEnterMap_(
             const std::string & key,
@@ -908,6 +914,9 @@ class ReportDescriptorFileParserYAML
                         "Nested trigger definitions are not supported");
                 }
                 in_trigger_definition_ = true;
+                return false;
+            } else if (key == KEY_METADATA) {
+                in_header_metadata_ = true;
                 return false;
             }
 
@@ -962,6 +971,21 @@ class ReportDescriptorFileParserYAML
             }
         }
 
+        virtual bool handleLeafScalarUnknownKey_(
+            TreeNode * n,
+            const std::string & value,
+            const std::string & assoc_key,
+            const NavNode& scope) override final
+        {
+            if (in_header_metadata_) {
+                sparta_assert(isMetadataReservedKey_(assoc_key) == false,
+                    "Metadata key \""+assoc_key+"\" is reserved");
+                header_metadata_kv_pairs_[assoc_key] = value;
+                return true;
+            }
+            return false;
+        }
+
         virtual bool handleExitMap_(
             const std::string & key,
             const NavVector & context) override final
@@ -1002,12 +1026,18 @@ class ReportDescriptorFileParserYAML
                     auto & descriptor = completed_descriptors_.back();
                     descriptor.extensions_.swap(trigger_extensions);
                 }
+                if (!header_metadata_kv_pairs_.empty()) {
+                    auto & descriptor = completed_descriptors_.back();
+                    descriptor.header_metadata_.swap(header_metadata_kv_pairs_);
+                }
                 if (auto_expand_context_counter_stats_) {
                     auto & descriptor = completed_descriptors_.back();
                     descriptor.extensions_["expand-cc"] = true;
                 }
             } else if (key == KEY_TRIGGER) {
                 in_trigger_definition_ = false;
+            } else if (key == KEY_METADATA) {
+                in_header_metadata_ = false;
             }
 
             return false;
@@ -1032,7 +1062,16 @@ class ReportDescriptorFileParserYAML
                     key == KEY_UPDATE_WHENEVER  ||
                     key == KEY_TAG              ||
                     key == KEY_SKIP             ||
-                    key == KEY_AUTO_EXPAND_CC);
+                    key == KEY_AUTO_EXPAND_CC   ||
+                    key == KEY_METADATA);
+        }
+
+        bool isMetadataReservedKey_(
+            const std::string & key) const
+        {
+            return (key == KEY_START_COUNTER  ||
+                    key == KEY_STOP_COUNTER   ||
+                    key == KEY_UPDATE_COUNTER);
         }
 
         void prepareForNextDescriptor_()
@@ -1148,6 +1187,18 @@ constexpr char ReportDescriptorFileParserYAML::
 
 constexpr char ReportDescriptorFileParserYAML::
     ReportDescriptorFileEventHandlerYAML::KEY_AUTO_EXPAND_CC[];
+
+constexpr char ReportDescriptorFileParserYAML::
+    ReportDescriptorFileEventHandlerYAML::KEY_METADATA[];
+
+constexpr char ReportDescriptorFileParserYAML::
+    ReportDescriptorFileEventHandlerYAML::KEY_START_COUNTER[];
+
+constexpr char ReportDescriptorFileParserYAML::
+    ReportDescriptorFileEventHandlerYAML::KEY_STOP_COUNTER[];
+
+constexpr char ReportDescriptorFileParserYAML::
+    ReportDescriptorFileEventHandlerYAML::KEY_UPDATE_COUNTER[];
 
 /*!
  * \brief Parse a YAML file containing key-value pairs into a
