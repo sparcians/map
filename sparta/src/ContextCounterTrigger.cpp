@@ -223,8 +223,22 @@ public:
 
     const CounterBase * getCounter() const
     {
-        return internal_counters_.empty() ? nullptr :
-            internal_counters_[0];
+        // There is an assert in the constructor to ensure that internal_counters_ is never empty
+        if(internal_counters_.size() == 1) {
+            sparta_assert(false == internal_counters_[0]->isExpired(),
+                "Cannot getCounter on a ContextCounterTrigger because the referenced counter "
+                "has expired");
+            return internal_counters_[0];
+        }
+        else {
+            throw SpartaException("ContextCounterTrigger supports multiple counters. "
+                                  "Use \"getCounters()\" instead");
+        }
+    }
+
+    const Counters& getCounters() const
+    {
+        return internal_counters_;
     }
 
     ~Impl() = default;
@@ -321,9 +335,19 @@ bool ContextCounterTrigger::isTriggerReached_() const
     return impl_->isTriggerReached();
 }
 
+bool ContextCounterTrigger::supportsMultipleCounters() const
+{
+    return true;
+}
+
 const CounterBase * ContextCounterTrigger::getCounter() const
 {
     return impl_->getCounter();
+}
+
+const Counters& ContextCounterTrigger::getCounters() const
+{
+    return impl_->getCounters();
 }
 
 void ContextCounterTrigger::registerContextCounterCalcFunction(

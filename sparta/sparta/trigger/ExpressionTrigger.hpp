@@ -370,8 +370,14 @@ public:
      * \brief Get counter of source counter trigger
      */
     const CounterBase * getCounter() const {
-        return !supports_single_ct_trig_cb_ ? nullptr :
-            source_counter_triggers_[0]->getCounter();
+        if (!supports_single_ct_trig_cb_) {
+            return nullptr;
+        }
+        else {
+            const auto& first_trigger = source_counter_triggers_[0];
+            return first_trigger->supportsMultipleCounters() ? first_trigger->getCounters()[0]
+                                                             : first_trigger->getCounter();
+        }
     }
 
     /*

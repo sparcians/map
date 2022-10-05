@@ -730,15 +730,21 @@ private:
         for (auto & r : reports_) {
             auto & header = r->getHeader();
 
-            if (report_start_trigger_ && report_start_trigger_->getCounter()) {
-                header.set("start_counter", report_start_trigger_->getCounter()->getLocation());
-            }
-            if (report_stop_trigger_ && report_stop_trigger_->getCounter()) {
-                header.set("stop_counter", report_stop_trigger_->getCounter()->getLocation());
-            }
-            if (report_update_trigger_ && report_update_trigger_->getCounter()) {
-                header.set("update_counter", report_update_trigger_->getCounter()->getLocation());
-            }
+            auto set_header_trigger_content =
+                [this](report::format::ReportHeader & header,
+                       const std::string key,
+                       const trigger::ExpiringExpressionTrigger & trigger) {
+                if (trigger) {
+                    const auto counter = trigger->getCounter();
+                    if(counter) {
+                        header.set(key, counter->getLocation());
+                    }
+                }
+            };
+
+            set_header_trigger_content(header, "start_counter",  report_start_trigger_);
+            set_header_trigger_content(header, "stop_counter",   report_stop_trigger_);
+            set_header_trigger_content(header, "update_counter", report_update_trigger_);
 
             const auto header_metadata = getDescriptor().header_metadata_;
             for(auto [key, value] : header_metadata) {
