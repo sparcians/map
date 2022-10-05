@@ -731,9 +731,9 @@ private:
             auto & header = r->getHeader();
 
             auto set_header_trigger_content =
-                [this](report::format::ReportHeader & header,
-                       const std::string key,
-                       const trigger::ExpiringExpressionTrigger & trigger) {
+                [](report::format::ReportHeader & header,
+                   const std::string key,
+                   const trigger::ExpiringExpressionTrigger & trigger) {
                 if (trigger) {
                     const auto counter = trigger->getCounter();
                     if(counter) {
