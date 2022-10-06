@@ -912,7 +912,7 @@ class ReportFileParserYAML
             if(itr == next_uid_map_.end()){
                 // Inherit form parent, no entry in the map
                 verbose() << indent_() << "(getNextNodeID_) parent entry: " << *parent
-                          << " not found. in map. Inheriting parent uid " << parent->uid << std::endl;
+                          << " not found in map. Inheriting parent uid " << parent->uid << std::endl;
                 verbose() << indent_() << "(getNextNodeID_) next uid map (" << next_uid_map_.size()
                           << " entries):" << std::endl;
                 for(auto& e : next_uid_map_){

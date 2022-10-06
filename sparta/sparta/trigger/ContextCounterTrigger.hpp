@@ -181,7 +181,9 @@ public:
 
 private:
     virtual bool isTriggerReached_() const override;
+    virtual bool supportsMultipleCounters() const override;
     virtual const CounterBase * getCounter() const override;
+    virtual const Counters& getCounters() const override;
 
     class Impl;
 

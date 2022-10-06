@@ -1,3 +1,5 @@
+header_metadata:
+  warmup: %CORE0_WARMUP%
 content:
   report:
     pattern:   _global
