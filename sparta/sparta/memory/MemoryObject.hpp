@@ -395,8 +395,8 @@ namespace sparta
 
         }; // class BlockingMemoryIF
 
-    }; // namespace memory
-}; // namespace sparta
+    } // namespace memory
+} // namespace sparta
 
 //! \brief MemoryObject stream operator
 inline std::ostream& operator<<(std::ostream& out, const sparta::memory::MemoryObject& mo) {
