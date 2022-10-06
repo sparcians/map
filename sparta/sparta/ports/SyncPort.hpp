@@ -205,7 +205,7 @@ namespace sparta
          */
         bool isDriven(Clock::Cycle rel_cycle) const override {
             for(SyncInPort<DataT>* itr : bound_in_ports_) {
-                if(itr->isDriven(rel_cycle)) {
+                if(itr->isDriven(rel_cycle, clk_)) {
                     return true;
                 }
             }
@@ -216,9 +216,9 @@ namespace sparta
         //!        the data is not yet delivered?
         //!
         //! \return true if driven at all (data not yet delivered)
-         bool isDriven() const override {
+        bool isDriven() const override {
             for(SyncInPort<DataT>* itr : bound_in_ports_) {
-                if(itr->isDriven()) {
+                if(itr->isDriven(clk_)) {
                     return true;
                 }
             }
@@ -492,6 +492,50 @@ namespace sparta
          */
         bool isDriven() const override {
             return forward_event_->isScheduled();
+        }
+
+        /*!
+         * \brief Determine if this SyncInPort is driven on the
+         *        given cycle
+         * \param rel_cycle The relative cycle (from now) the data
+         *                  will be delivered
+         * \param send_clk The sender's clock
+         * \return true if driven at the given cycle (data not yet delivered)
+         * \note If the SyncInPort was driven with a zero-cycle delay,
+         *       this function will always return false.
+         */
+        bool isDriven(Clock::Cycle rel_cycle, const Clock * send_clk) {
+            Scheduler::Tick num_delay_ticks =
+                computeSendToReceiveTickDelay_(send_clk, rel_cycle, false, prev_data_arrival_tick_);
+
+            sparta::Scheduler::Tick current_tick = scheduler_->getCurrentTick();
+            sparta::Scheduler::Tick abs_scheduled_tick = num_delay_ticks + current_tick;
+
+            bool is_already_driven =
+                     !( prev_data_arrival_tick_ < abs_scheduled_tick ||
+                        prev_data_arrival_tick_ == PREV_DATA_ARRIVAL_TICK_INIT );
+
+            return is_already_driven;
+        }
+
+        /*! \brief Is this Port driven at all?
+         *  \param send_clk The sender's clock
+         *  \return true if driven at all (data not yet delivered)
+         *  \note If the SyncInPort was driven with a zero-cycle delay,
+         *       this function will always return false.
+         */
+        bool isDriven(const Clock * send_clk) {
+            Scheduler::Tick num_delay_ticks =
+                computeSendToReceiveTickDelay_(send_clk, 0, false, prev_data_arrival_tick_);
+
+            sparta::Scheduler::Tick current_tick = scheduler_->getCurrentTick();
+            sparta::Scheduler::Tick abs_scheduled_tick = num_delay_ticks + current_tick;
+
+            bool is_already_driven =
+                     !( prev_data_arrival_tick_ < abs_scheduled_tick ||
+                        prev_data_arrival_tick_ == PREV_DATA_ARRIVAL_TICK_INIT );
+
+            return is_already_driven;
         }
 
         /**
