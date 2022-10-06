@@ -72,7 +72,7 @@ sparta::SpartaSharedPointerAllocator<MyType>           trivial_type_allocator(11
 sparta::SpartaSharedPointerAllocator<MyNonTrivialType> non_trivial_type_allocator(11000, 10000);
 
 
-TEST_INIT;
+TEST_INIT
 
 void func(const sparta::SpartaSharedPointer<MyType> & my_ref, const unsigned int val)
 {

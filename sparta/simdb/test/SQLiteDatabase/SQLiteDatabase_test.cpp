@@ -25,7 +25,7 @@
 
 #define DB_DIR "test_dbs"
 
-TEST_INIT;
+TEST_INIT
 
 #define PRINT_ENTER_TEST \
   std::cout << std::endl; \

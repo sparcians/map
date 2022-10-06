@@ -12,7 +12,7 @@
 #include "sparta/utils/SpartaTester.hpp"
 
 
-TEST_INIT;
+TEST_INIT
 
 struct auto_update
 {

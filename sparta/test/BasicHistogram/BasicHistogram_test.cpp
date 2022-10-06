@@ -11,7 +11,7 @@
 #include "sparta/sparta.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 class TestBasicHistogram : public sparta::BasicHistogram<int64_t, false>
 {

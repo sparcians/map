@@ -20,7 +20,7 @@
 #include <math.h>
 #include <boost/filesystem.hpp>
 
-TEST_INIT;
+TEST_INIT
 
 //! Put all the temporary .db files into one directory
 //! right in the build folder where tests are run from.

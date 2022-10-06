@@ -13,7 +13,7 @@
  * \brief Test for TreeNode with shadowing features.
  */
 using namespace sparta;
-TEST_INIT;
+TEST_INIT
 
 class ProxyResource : public Resource
 {

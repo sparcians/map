@@ -18,7 +18,7 @@
 
 #include "sparta/sparta.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 //#define TEST_PIPEOUT_COLLECTION
 

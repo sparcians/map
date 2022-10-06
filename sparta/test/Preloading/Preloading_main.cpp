@@ -14,7 +14,7 @@
 #include "cache/TreePLRUReplacement.hpp"
 #include "cache/preload/PreloadEmitter.hpp"
 
-TEST_INIT;
+TEST_INIT
 using namespace std::placeholders;
 class MyPreloadableCache : public sparta::TreeNode
 {

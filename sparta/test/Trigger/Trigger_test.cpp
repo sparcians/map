@@ -9,7 +9,7 @@
 #include "sparta/trigger/TriggerManager.hpp"
 #include "sparta/simulation/ClockManager.hpp"
 #include <list>
-TEST_INIT;
+TEST_INIT
 
 typedef std::list<uint32_t> AssertList;
 

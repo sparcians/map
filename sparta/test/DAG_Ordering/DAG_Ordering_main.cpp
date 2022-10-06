@@ -9,7 +9,7 @@
 #include "sparta/utils/SpartaTester.hpp"
 #include "sparta/log/Tap.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 using namespace sparta;
 using sparta::DAG;

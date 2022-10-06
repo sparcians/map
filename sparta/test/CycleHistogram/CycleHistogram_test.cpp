@@ -74,7 +74,7 @@ double getMeanBinCount(const std::vector<uint64_t>& histogram_vector) {
     return sum / histogram_vector.size();
 };
 
-TEST_INIT;
+TEST_INIT
 
 #define PRINT_ENTER_TEST  \
   std::cout << std::endl; \
