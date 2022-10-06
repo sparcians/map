@@ -56,7 +56,7 @@ namespace sparta {
         SchedulerAccess(const int val) : val(val) {}
         const int val;
     };
-};
+}
 
 void testStatsOutput()
 {

@@ -91,7 +91,6 @@ public:
     }
 };
 
-constexpr char TalkativeTreeNode::TalkativeResource::name[];
 sparta::ResourceFactory<TalkativeTreeNode::TalkativeResource> TalkativeTreeNode::talktive_res_fact;
 
 int main()
