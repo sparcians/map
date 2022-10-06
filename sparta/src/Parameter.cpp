@@ -17,8 +17,6 @@
 #include "sparta/simulation/Resource.hpp"
 #include "sparta/app/SimulationConfiguration.hpp"
 
-constexpr char sparta::ParameterBase::PARAMETER_NODE_TAG[];
-
 void sparta::ParameterSet::lock(const ParameterBase * lock_param) {
     locking_params_stack_.push_back(lock_param);
 

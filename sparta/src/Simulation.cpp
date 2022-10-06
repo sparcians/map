@@ -277,15 +277,6 @@ private:
     std::unique_ptr<SimControlFileEventHandlerYAML> evt_handler_;
 };
 
-constexpr char SimControlFileParserYAML::
-    SimControlFileEventHandlerYAML::KEY_CONTENT[];
-constexpr char SimControlFileParserYAML::
-    SimControlFileEventHandlerYAML::KEY_PAUSE[];
-constexpr char SimControlFileParserYAML::
-    SimControlFileEventHandlerYAML::KEY_RESUME[];
-constexpr char SimControlFileParserYAML::
-    SimControlFileEventHandlerYAML::KEY_TERM[];
-
 }
 }
 

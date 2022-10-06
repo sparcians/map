@@ -703,7 +703,7 @@ public:
 
 };
 
-}; // namespace sparta
+} // namespace sparta
 
 /*!
  * \brief Macro to generate a helper templated struct to check if template
@@ -732,4 +732,3 @@ public:
                                                                         \
         enum { value = sizeof(test<T>(nullptr)) == sizeof(one) };       \
     };
-

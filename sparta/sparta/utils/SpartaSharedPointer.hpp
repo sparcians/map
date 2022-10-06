@@ -517,7 +517,7 @@ namespace sparta
 
     template<typename PtrT>
     bool operator!=(const SpartaSharedPointer<PtrT>& ptr1, std::nullptr_t) noexcept
-    { return (bool)ptr1; };
+    { return (bool)ptr1; }
 
     template<typename PtrT>
     bool operator!=(std::nullptr_t, const SpartaSharedPointer<PtrT>& ptr1) noexcept

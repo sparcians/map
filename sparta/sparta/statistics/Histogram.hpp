@@ -525,4 +525,4 @@ private:
 // was always a TreeNode
 typedef HistogramTreeNode Histogram;
 
-}; // namespace sparta
+} // namespace sparta

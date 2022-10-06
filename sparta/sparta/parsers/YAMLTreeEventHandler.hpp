@@ -732,7 +732,6 @@ private:
     inline std::ostream& operator<<(std::ostream& o, const YAMLTreeEventHandler::NavNode& nn) {
         nn.dump(o);
         return o;
-    };
+    }
 
-}; // namespace sparta
-
+} // namespace sparta

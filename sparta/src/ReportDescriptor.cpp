@@ -1137,69 +1137,6 @@ private:
     std::string def_file_;
 };
 
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_CONTENT[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_REPORT[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_DEF_FILE[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_DEST_FILE[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_PATTERN[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_FORMAT[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_TRIGGER[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_START[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_STOP[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_WHENEVER[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_UPDATE_TIME[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_UPDATE_CYCLE[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_UPDATE_COUNT[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_UPDATE_WHENEVER[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_TAG[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_SKIP[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_AUTO_EXPAND_CC[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_METADATA[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_START_COUNTER[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_STOP_COUNTER[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_UPDATE_COUNTER[];
-
 /*!
  * \brief Parse a YAML file containing key-value pairs into a
  * single ReportYamlReplacements data structure.

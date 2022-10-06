@@ -71,6 +71,6 @@ namespace sparta
 
         }; // class BasicCacheItem
 
-    }; // namespace cache
+    } // namespace cache
 
-}; // namespace sparta
+} // namespace sparta

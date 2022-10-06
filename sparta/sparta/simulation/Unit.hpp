@@ -168,9 +168,3 @@ namespace sparta {
     };
 
 } // namespace sparta
-
-#define SPARTA_UNIT_BODY                                 \
-    constexpr const char * sparta::Unit::INFO_LOG;       \
-    constexpr const char * sparta::Unit::WARN_LOG;       \
-    constexpr const char * sparta::Unit::DEBUG_LOG;
-
