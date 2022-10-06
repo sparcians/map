@@ -57,9 +57,7 @@ namespace sparta
 
         const SchedulingPhase & getSchedulingPhase() const { return phase_; }
 
-        ~GlobalEventProxy() {
-            //std::cout << "Destroy GlobalEventProxy!\n";
-        }
+        ~GlobalEventProxy() = default;
 
     private:
         SchedulingPhase                                 phase_;
@@ -139,5 +137,3 @@ namespace sparta
     };
 
 }
-
-

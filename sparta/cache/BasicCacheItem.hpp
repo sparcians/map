@@ -26,7 +26,9 @@ namespace sparta
                 tag_(0),
                 addr_decoder_(nullptr)
             { }
-            virtual ~BasicCacheItem() {}
+
+            // Required virtual constructor (rule of 3)
+            virtual ~BasicCacheItem() = default;
 
             // The way in the cache set this item belongs
             // This method should be called only once when the

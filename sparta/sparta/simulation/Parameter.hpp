@@ -58,6 +58,12 @@ namespace sparta
     {
     public:
 
+        //! Default construction (rule of 3)
+        ParameterException() = default;
+
+        //! Default copy (rule of 3)
+        ParameterException(const ParameterException &) = default;
+
         /*!
          * \brief Construct with a default string.
          * \note Stream insertion operator can be used to add more text to the reason.
