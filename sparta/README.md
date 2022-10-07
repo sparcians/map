@@ -203,11 +203,12 @@ few rules...
         memory variable is private or protected.  Placing an `_`
         between words: preferred.
      1. Header file guards are `#pragma once`
-     1. Any function/class from `std` namespace must always be explicit on the path: `std::vector` NOT `vector`
-     1. Never use `using namespace` in *any* header file
+     1. Any function/class from `std` namespace must always be
+        explicit: `std::vector` NOT `vector`.  Never use `using
+        namespace <blah>;` in *any* header file
      1. Consider using source files for non-critical path code
      1. Try to keep methods short and concise (yes, we break this rule a bit)
-     1. Do not go nuts with `auto`: `auto foo(const auto & in)` is ... irritating
+     1. Do not go nuts with `auto`.  This `auto foo(const auto & in)` is ... irritating
      1. All public APIs *must be doxygenated*.  No exceptions.
 
 ## CppCheck Support
