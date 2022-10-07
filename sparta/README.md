@@ -187,14 +187,14 @@ Bug fixes, enhancements are welcomed and encouraged.  But there are a
 few rules...
 
 * Rule1: Any bug fix/enhancement _must be accompanied_ with a test
-  that illustrates the bug fix/enhancement.  No test == no acceptance of
-  the change.  Documentation fixes obviously don't require this...
+  that illustrates the bug fix/enhancement.  No test == no acceptance.
+  Documentation fixes obviously don't require this...
 
 * Rule2: Adhere to Sparta's Coding Style. Look at the existing code
   and mimic it.  Don't mix another preferred style with Sparta's.
   Stick with Sparta's.
 
-  There are simple rules:
+* There are simple style rules:
      1. Class names are `CamelCase` with the Camel's head up: `class SpartaHandler`
      1. Public class method names are `camelCase` with the camel's head down: `void myMethod()`
      1. Private/protected class method names are `camelCase_` with the camel's head down and a trailing `_`: `void myMethod_()`
