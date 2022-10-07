@@ -444,25 +444,25 @@ public:
     // Called before simulation by the testing framework to
     //    - Send commands on the SyncOut port to the destn
     //    - Calculate the expected input Ticks and Data from the destn
-    void schedule_commands();
+    void scheduleCommands();
 
     // Self-scheduled method.  In this method we check:
     //    - The SyncPort's events can be ordered with other events
     void doWork();
 
-    sparta::PortSet ps;
+    sparta::PortSet ps_;
 
     // These are the classes we're actually testing
-    sparta::SyncOutPort<char>     out_data;
+    sparta::SyncOutPort<char>     out_data_;
 
     static constexpr const char* name = "Source";
 
 private:
     // Event set for the unit
-    sparta::EventSet ev_set;
+    sparta::EventSet ev_set_;
 
     // Self-scheduling event
-    sparta::UniqueEvent<> ev_do_work;
+    sparta::UniqueEvent<> ev_do_work_;
 
     // Total commands that should be scheduled in both directions across
     // the interfaces
@@ -473,10 +473,10 @@ private:
 
 Source::Source(sparta::TreeNode* node, const Source::ParameterSet*) :
     sparta::Resource(node),
-    ps(node),
-    out_data(&ps, "out_data", node->getClock()),
-    ev_set(node),
-    ev_do_work(&ev_set, "source_do_work_event", CREATE_SPARTA_HANDLER(Source, doWork))
+    ps_(node),
+    out_data_(&ps_, "out_data", node->getClock()),
+    ev_set_(node),
+    ev_do_work_(&ev_set_, "source_do_work_event", CREATE_SPARTA_HANDLER(Source, doWork))
 {
 
 }
@@ -490,34 +490,34 @@ Source::~Source()
 
 //////////////////////////////////////////////////////////////////////
 
-void Source::schedule_commands()
+void Source::scheduleCommands()
 {
     // not driven in this cycle
-    EXPECT_FALSE(out_data.isDriven());
+    EXPECT_FALSE(out_data_.isDriven());
 
-    out_data.send('x');
-    EXPECT_TRUE(out_data.isDriven());
+    out_data_.send('x');
+    EXPECT_TRUE(out_data_.isDriven());
 
-    EXPECT_TRUE(out_data.isDriven(getClock()->currentCycle()));
+    EXPECT_TRUE(out_data_.isDriven(getClock()->currentCycle()));
 
-    sparta::Clock::Cycle clk_gap = out_data.computeNextAvailableCycleForSend(0,1);
+    sparta::Clock::Cycle clk_gap = out_data_.computeNextAvailableCycleForSend(0,1);
 
     for(uint32_t idx=1; idx<=NUM_COMMANDS_TO_SEND; idx++)
     {
         sparta::Clock::Cycle delay_cycles = idx * clk_gap;
         auto driven_cycles = delay_cycles;
 
-        EXPECT_FALSE(out_data.isDriven(delay_cycles));
+        EXPECT_FALSE(out_data_.isDriven(delay_cycles));
 
-        while(out_data.isDriven(driven_cycles)) driven_cycles++;
+        while(out_data_.isDriven(driven_cycles)) driven_cycles++;
 
         // send after delay (source)cycles
-        out_data.send('y', delay_cycles);
+        out_data_.send('y', delay_cycles);
 
-        EXPECT_TRUE(out_data.isDriven(delay_cycles));
+        EXPECT_TRUE(out_data_.isDriven(delay_cycles));
 
         // trigger event in delay cycles
-        ev_do_work.schedule(delay_cycles);
+        ev_do_work_.schedule(delay_cycles);
     }
 }
 
@@ -545,35 +545,35 @@ public:
 
     // Callback for data.  This method is to test that the command is
     // received before the data.  The data is ignored.
-    void data_callback(const char &);
+    void dataCallback(const char &);
 
     void doWork() {};
 
-    sparta::PortSet ps;
+    sparta::PortSet ps_;
 
     // These are the classes we're actually testing
-    sparta::SyncInPort<char>     in_data;
+    sparta::SyncInPort<char>     in_data_;
 
     static constexpr const char* name = "Destn";
 
 private:
     // Event set for the unit
-    sparta::EventSet ev_set;
+    sparta::EventSet ev_set_;
 
     // Self-scheduling event
-    sparta::UniqueEvent<> ev_do_work;
+    sparta::UniqueEvent<> ev_do_work_;
 };
 
 //////////////////////////////////////////////////////////////////////
 
 Destn::Destn(sparta::TreeNode* node, const Destn::ParameterSet*) :
     sparta::Resource(node),
-    ps(node),
-    in_data(&ps, "in_data", node->getClock()),
-    ev_set(node),
-    ev_do_work(&ev_set, "destn_do_work_event", CREATE_SPARTA_HANDLER(Destn, doWork))
+    ps_(node),
+    in_data_(&ps_, "in_data", node->getClock()),
+    ev_set_(node),
+    ev_do_work_(&ev_set_, "destn_do_work_event", CREATE_SPARTA_HANDLER(Destn, doWork))
 {
-    in_data.registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Destn, data_callback, char));
+    in_data_.registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Destn, dataCallback, char));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -583,7 +583,7 @@ Destn::~Destn()
     std::cout << "Destructing '" << getName() << "'\n";
 }
 
-void Destn::data_callback(const char &data)
+void Destn::dataCallback(const char &data)
 {
     //std::cout << "Destination got " << data << " in cycle " << getClock()->currentCycle() << std::endl;
 }
@@ -656,9 +656,9 @@ TestSystem2::TestSystem2(double master_frequency_mhz, double slave_frequency_mhz
     Destn * slave_unit = slave_tn->getResourceAs<Destn*>();
     sparta_assert (slave_unit !=0);
 
-    slave_unit->in_data.setPortDelay(static_cast<sparta::Clock::Cycle>(1));
+    slave_unit->in_data_.setPortDelay(static_cast<sparta::Clock::Cycle>(1));
 
-    master_unit->out_data.bind(&slave_unit->in_data);
+    master_unit->out_data_.bind(&slave_unit->in_data_);
 
     sched.finalize();
 
@@ -667,7 +667,7 @@ TestSystem2::TestSystem2(double master_frequency_mhz, double slave_frequency_mhz
         sched.run(1, true, false); // exacting_run = true, measure time = false
     }
 
-    master_unit->schedule_commands();
+    master_unit->scheduleCommands();
 }
 
 //////////////////////////////////////////////////////////////////////
