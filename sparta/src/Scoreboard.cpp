@@ -104,6 +104,7 @@ namespace sparta
         const auto num_producers = params->latency_matrix.getValue().size() - 1;
         forwarding_latencies_.resize(num_producers);
         unit_id_to_scoreboard_views_.resize(num_producers);
+        producer_to_consumer_scoreboard_views_.resize(num_producers);
 
         // Skip the first row -- it's a header
         for (uint32_t producer_row_idx = 1;
@@ -153,10 +154,7 @@ namespace sparta
         {
             for (auto * sbv : sbvs)
             {
-                if(nullptr != sbv)
-                {
-                    sbv->receiveScoreboardUpdate_(bits, INVALID_UNIT_ID);
-                }
+                sbv->receiveScoreboardUpdate_(bits, INVALID_UNIT_ID);
             }
         }
     }
@@ -166,26 +164,13 @@ namespace sparta
         sparta_assert(producer < forwarding_latencies_.size(),
                       "could not find producer ID in forwarding_latencies table");
 
-        const auto & consumers = forwarding_latencies_[producer];
-        for(uint32_t unit_id = 0; unit_id < consumers.size(); ++unit_id)
+        for(auto [sbv, latency] : producer_to_consumer_scoreboard_views_[producer])
         {
-            const auto latency = consumers[unit_id];
-            if (SPARTA_EXPECT_FALSE(latency == INVALID_LATENCY)) {
-                // TODO: For now, we ignore this. Eventually, we can optimize these out
-                continue;
-            }
-
-            for(auto * scoreboard_view : unit_id_to_scoreboard_views_[unit_id])
-            {
-                if (SPARTA_EXPECT_FALSE(nullptr == scoreboard_view)) {
-                    continue;
-                }
-                if(latency != 0) {
-                    scoreboard_view_updates_.
-                        preparePayload(ScoreboardViewUpdate{{bits, producer}, scoreboard_view, false})->schedule(latency);
-                } else {
-                    scoreboard_view->receiveScoreboardUpdate_(bits, producer);
-                }
+            if(latency != 0) {
+                scoreboard_view_updates_.
+                    preparePayload(ScoreboardViewUpdate{{bits, producer}, sbv, false})->schedule(latency);
+            } else {
+                sbv->receiveScoreboardUpdate_(bits, producer);
             }
         }
     }
@@ -198,9 +183,7 @@ namespace sparta
         // Update registered scoreboards
         for(auto & sbvs : unit_id_to_scoreboard_views_) {
             for (auto * sbv : sbvs) {
-                if(nullptr != sbv) {
-                    sbv->clearBits_(bits);
-                }
+                sbv->clearBits_(bits);
             }
         }
     }
@@ -216,13 +199,21 @@ namespace sparta
         sparta_assert(it != unit_name_to_id_.end(),
                       "Error: " << producer_name << " not found in scoreboard "
                       << getContainer()->getLocation());
-
+        // Setup the mapping from Unit ID to scoreboard view
         const auto unit_id = it->second;
         sparta_assert(unit_id < unit_id_to_scoreboard_views_.size(),
                       "Ack!  Bug in Scoreboard registerView.  The unit_name_to_id_ map "
                       "is outta wack with with the unit_id_to_scoreboard_views_ vector");
         unit_id_to_scoreboard_views_[unit_id].emplace_back(view);
         view->receiveScoreboardUpdate_(Scoreboard::RegisterBitMask({global_reg_ready_mask_}), INVALID_UNIT_ID);
+        // Setup the mapping from other producers to this scoreboard view as consumer
+        for(uint32_t producer = 0; producer < producer_to_consumer_scoreboard_views_.size(); ++producer)
+        {
+            if(const auto latency = forwarding_latencies_[producer][unit_id];
+               latency != INVALID_LATENCY) {
+               producer_to_consumer_scoreboard_views_[producer].emplace_back(std::make_tuple(view, latency));
+            }
+        }
         return unit_id;
     }
 

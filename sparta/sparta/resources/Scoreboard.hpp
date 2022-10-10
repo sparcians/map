@@ -148,6 +148,12 @@ namespace sparta
         using UnitIDToSBVs = std::vector<std::vector<ScoreboardView *>>;
         UnitIDToSBVs unit_id_to_scoreboard_views_;
 
+        // Producer UnitID to consumer ScoreboardViews
+        using ConsumerSBV = std::tuple<ScoreboardView *, ForwardingLatency>;
+        using ConsumerSBVs = std::vector<ConsumerSBV>;
+        using ProducerToConsumerSBVs = std::vector<ConsumerSBVs>;
+        ProducerToConsumerSBVs producer_to_consumer_scoreboard_views_;
+
         // Unit ID count
         uint32_t unit_id_ = 0;
 
