@@ -24,7 +24,7 @@
  * if(SPARTA_EXPECT_FALSE(my_usually_false_condition)) {}
  * \endcode
  */
-#define SPARTA_EXPECT_FALSE(x) __builtin_expect((x), false)
+#define SPARTA_EXPECT_FALSE(x) __builtin_expect(!!(x), false)
 
 /*!
  * \def SPARTA_EXPECT_TRUE
@@ -35,7 +35,7 @@
  * if(SPARTA_EXPECT_TRUE(my_usually_true_condition)) {}
  * \endcode
  */
-#define SPARTA_EXPECT_TRUE(x) __builtin_expect((x), true)
+#define SPARTA_EXPECT_TRUE(x) __builtin_expect(!!(x), true)
 
 #ifndef DO_NOT_DOCUMENT
 
