@@ -564,6 +564,7 @@ namespace sparta{
                                             // Max value, so probably bad...push empty string
                                             pairt.stringVector.emplace_back("");
                                         } else if (field_name == "pc" ||
+                                                   field_name == "fa_pc" ||
                                                    field_name == "pred_target" ||
                                                    field_name == "vaddr" ||
                                                    field_name == "va" ||
