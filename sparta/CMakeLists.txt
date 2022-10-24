@@ -71,6 +71,7 @@ list (APPEND SourceCppFiles
             src/RootTreeNode.cpp
             src/Scheduler.cpp
             src/Scheduleable.cpp
+            src/Scoreboard.cpp
             src/Simulation.cpp
             src/SimulationConfiguration.cpp
             src/SimulationInfo.cpp
