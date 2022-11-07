@@ -27,6 +27,8 @@ namespace sparta
                 addr_decoder_(nullptr)
             { }
 
+            BasicCacheItem(const BasicCacheItem &) = default;
+
             // Required virtual constructor (rule of 3)
             virtual ~BasicCacheItem() = default;
 
