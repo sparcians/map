@@ -24,6 +24,8 @@ template <typename DataT>
 class ComparatorBase
 {
 public:
+    ComparatorBase() = default;
+    ComparatorBase(const ComparatorBase &) = default;
     virtual ~ComparatorBase() = default;
     virtual bool eval(const DataT & compareTo) const = 0;
     virtual ComparatorBase<DataT> * clone(const DataT & val) const = 0;
