@@ -1439,7 +1439,7 @@ class Selection_Mgr():
                 (x, y), (w, h) = e.GetProperty('position'), e.GetProperty('dimensions')
                 (x, y) = (x - xoff, y - yoff)
                 dc.SetBrush(brush)
-                dc.DrawRectangle(x, y, w, h)
+                dc.DrawRectangle(int(x), int(y), int(w), int(h))
                 c_box_wid = self.__c_box_wid
                 corners = [(x - c_box_wid / 2.0, y - c_box_wid / 2.0),
                            (x - c_box_wid / 2.0, y + h - c_box_wid / 2.0),
@@ -1452,9 +1452,9 @@ class Selection_Mgr():
                 dc.SetBrush(brush2)
                 # Put the selection 'hit' handles around the corners/middles of edges
                 for coords in corners:
-                    dc.DrawRectangle(coords[0], coords[1], c_box_wid, c_box_wid)
+                    dc.DrawRectangle(int(coords[0]), int(coords[1]), int(c_box_wid), int(c_box_wid))
                 for coords in edges:
-                    dc.DrawRectangle(coords[0], coords[1], c_box_wid, c_box_wid)
+                    dc.DrawRectangle(int(coords[0]), int(coords[1]), int(c_box_wid), int(c_box_wid))
             # Draw the rubber-band box if applicable
             if self.__history == self.rubber_band:
                 (x, y) = self.__rubberendpt
@@ -1464,7 +1464,7 @@ class Selection_Mgr():
                 brush = wx.Brush((255, 255, 255), wx.TRANSPARENT)
                 dc.SetBrush(brush)
                 top_left = (self.__position[0] - xoff, self.__position[1] - yoff)
-                dc.DrawRectangle(top_left[0], top_left[1], x - top_left[0], y - top_left[1])
+                dc.DrawRectangle(int(top_left[0]), int(top_left[1]), int(x - top_left[0]), int(y - top_left[1]))
         elif self.__playback_selected:
             # playback mode has selected object
             e = self.__playback_selected.GetElement()
@@ -1473,7 +1473,7 @@ class Selection_Mgr():
             dc.SetBrush(brush)
             (x, y), (w, h) = e.GetProperty('position'), e.GetProperty('dimensions')
             (x, y) = (x - xoff, y - yoff)
-            dc.DrawRectangle(x, y, w, h)
+            dc.DrawRectangle(int(x), int(y), int(w), int(h))
 
     # # For detecting collisions with the resize-handles on elements within
     #  the selection

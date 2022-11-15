@@ -1,4 +1,3 @@
-
 import wx
 from .element import *
 
@@ -192,11 +191,11 @@ class ScheduleLineElement(LocationallyKeyedElement):
             if render_box[2] == 0 or render_box[3] == 0:
                 return # we're done
 
-            dc.SetClippingRegion(*render_box)
-            dc.DrawRectangle(render_box[0] - 1, c_y, render_box[2] + 2, c_h)
+            dc.SetClippingRegion(*[int(r) for r in render_box])
+            dc.DrawRectangle(int(render_box[0] - 1), int(c_y), int(render_box[2] + 2), int(c_h))
         else:
-            dc.SetClippingRegion(c_x, c_y, c_w, c_h)
-            dc.DrawRectangle(c_x, c_y, c_w, c_h)
+            dc.SetClippingRegion(int(c_x), int(c_y), int(c_w), int(c_h))
+            dc.DrawRectangle(int(c_x), int(c_y), int(c_w), int(c_h))
 
         if period == -1:
             # we can't render more with an invalid period
@@ -235,14 +234,14 @@ class ScheduleLineElement(LocationallyKeyedElement):
             # These vertical lines can be too close together, so make sure they
             # are at least 1px apart or don't draw them
             end_x = clip[0] + clip[1]
-            dc.DrawLine(clip[0], c_y, end_x, c_y)
+            dc.DrawLine(int(clip[0]), int(c_y), int(end_x), int(c_y))
 
             current_pixel = (time_range[0] - time_range[0] % period - self.__hc - t_offset * period) / t_scale
             width = period / t_scale
 
             while current_pixel <= end_x:
                 start = int(current_pixel)
-                dc.DrawLine(c_x + start, c_y, c_x + start, line_end_y)
+                dc.DrawLine(int(c_x + start), int(c_y), int(c_x + start), int(line_end_y))
                 current_pixel += width
 
         # Walk through intervals
@@ -426,8 +425,8 @@ class ScheduleLineRulerElement(ScheduleLineElement):
 
         dc.SetBrush(GetWhiteBrush())
 
-        dc.SetClippingRegion(c_x, c_y, c_w, c_h)
-        dc.DrawRectangle(c_x, c_y, c_w, c_h)
+        dc.SetClippingRegion(int(c_x), int(c_y), int(c_w), int(c_h))
+        dc.DrawRectangle(int(c_x), int(c_y), int(c_w), int(c_h))
 
         if period == -1:
             dc.DestroyClippingRegion()
@@ -719,7 +718,7 @@ class ScheduleElement(MultiElement):
                 sub_width = self.__buffer.GetWidth() - dest_x
 
             self.__graphics_dc.SetLogicalScale(1, 1)
-            self.__temp_dc.Blit(dest_x, 0, sub_width, self.__buffer.GetHeight(), self.__dc, sub_x, 0)
+            self.__temp_dc.Blit(int(dest_x), 0, int(sub_width), int(self.__buffer.GetHeight()), self.__dc, int(sub_x), 0)
             self.__SwapBuffers(canvas)
             self.__graphics_dc.SetLogicalScale(canvas.MAX_ZOOM, canvas.MAX_ZOOM)
 
@@ -758,20 +757,20 @@ class ScheduleElement(MultiElement):
         assert blit_src_width <= self.__buffer.GetWidth()
         assert blit_src_height <= self.__buffer.GetHeight()
 
-        dc.StretchBlit(blit_x,
-                       blit_y,
-                       blit_width,
-                       blit_height,
+        dc.StretchBlit(int(blit_x),
+                       int(blit_y),
+                       int(blit_width),
+                       int(blit_height),
                        self.__dc,
-                       blit_x_offset,
-                       blit_y_offset,
-                       blit_src_width,
-                       blit_src_height)
+                       int(blit_x_offset),
+                       int(blit_y_offset),
+                       int(blit_src_width),
+                       int(blit_src_height))
 
         # draw vertical line at offset 0
         dc.SetPen(GetBlackPen())
         zero_x_coord = c_x - tick_offset / t_scale
-        dc.DrawLine(zero_x_coord, highest_y - yoff, zero_x_coord, lowest_y - yoff)
+        dc.DrawLine(int(zero_x_coord), int(highest_y - yoff), int(zero_x_coord), int(lowest_y - yoff))
 
         if i_d_p != 0:
             self.__remainder_dp = d_p - i_d_p

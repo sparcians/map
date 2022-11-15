@@ -452,32 +452,26 @@ namespace sparta{
                             // record of the Data Struture and copy the values into out
                             // live Pair Transaction record
                             pairt.length = st.length;
-                            std::string token = "#";
-                            std::string guideString = st.formatGuide;
-                            while(guideString.size()){
-                                if(guideString.find(token) != std::string::npos){
-                                    uint16_t index = guideString.find(token);
-                                    pairt.delimVector.emplace_back(guideString.substr(0, index));
-                                    guideString = guideString.substr(index + token.size());
-                                    if(guideString.empty()){
-                                        pairt.delimVector.emplace_back(guideString);
-                                    }
-                                }
-                                else{
-                                    pairt.delimVector.emplace_back(guideString);
-                                    guideString = "";
-                                }
-                            }
-
                             pairt.nameVector.reserve(pairt.length);
                             pairt.sizeOfVector.reserve(pairt.length);
                             pairt.valueVector.reserve(pairt.length);
                             pairt.stringVector.reserve(pairt.length);
+                            pairt.delimVector.reserve(pairt.length);
 
                             pairt.nameVector.emplace_back("pairid");
                             pairt.sizeOfVector.emplace_back(sizeof(uint16_t));
                             pairt.valueVector.emplace_back(std::make_pair(st.UniqueID, false));
                             pairt.stringVector.emplace_back(std::to_string(st.UniqueID));
+                            pairt.delimVector.emplace_back(PairFormatter::DECIMAL);
+
+                            std::istringstream fmt_stream(st.formatGuide);
+                            fmt_stream.imbue(std::locale(std::locale(), new PairFormatReader()));
+
+                            while(!fmt_stream.eof()) {
+                                PairFormatterInt fmt;
+                                fmt_stream >> fmt;
+                                pairt.delimVector.emplace_back(static_cast<PairFormatter>(fmt));
+                            }
 
                             for(std::size_t i = 1; i != st.length; ++i){
                                 pairt.nameVector.emplace_back(st.names[i]);
@@ -556,26 +550,30 @@ namespace sparta{
 
                                     // Else, we convert integer value to string
                                     else{
-                                        const std::string &field_name = st.names[i];
-
                                         const pair_t::IntT &int_value = pairt.valueVector[i].first;
+                                        const auto& format_str = pairt.delimVector[i];
+
+                                        std::ios_base::fmtflags format_flags = std::ios::dec;
+                                        std::string fmt_prefix = "";
+
+                                        if(format_str == PairFormatter::HEX) {
+                                            format_flags = std::ios::hex;
+                                            fmt_prefix = "0x";
+                                        }
+                                        else if(format_str == PairFormatter::OCTAL) {
+                                            format_flags = std::ios::oct;
+                                            fmt_prefix = "0";
+                                        }
 
                                         if (int_value == std::numeric_limits<pair_t::IntT>::max()) {
                                             // Max value, so probably bad...push empty string
                                             pairt.stringVector.emplace_back("");
-                                        } else if (field_name == "pc" ||
-                                                   field_name == "fa_pc" ||
-                                                   field_name == "pred_target" ||
-                                                   field_name == "vaddr" ||
-                                                   field_name == "va" ||
-                                                   field_name == "stf_va" ||
-                                                   field_name == "pa") {
-                                            // This is a hex field
-                                            std::stringstream int_str;
-                                            int_str << "0x" << std::hex << int_value;
-                                            pairt.stringVector.emplace_back(int_str.str());
                                         } else {
-                                            pairt.stringVector.emplace_back(std::to_string(int_value));
+                                            std::stringstream int_str;
+                                            int_str << fmt_prefix;
+                                            int_str.setf(format_flags, std::ios::basefield);
+                                            int_str << int_value;
+                                            pairt.stringVector.emplace_back(int_str.str());
                                         }
                                     }
                                 }
@@ -1281,6 +1279,7 @@ namespace sparta{
         for(size_t i = 1; i < length; ++i) {
             const auto& name = nameVector[i];
             const auto& value = stringVector[i];
+
             if(name != "DID") {
                 annt_body << name << "(" << value << ") ";
             }
@@ -1290,7 +1289,7 @@ namespace sparta{
             }
             else if(name == "pc") {
                 flags.copyfmt(annt_preamble);
-                annt_preamble << std::setw(4) << std::setfill('0') << std::hex << "0x" << (std::stoull(value, 0, 16) & 0xffff) << ' ';
+                annt_preamble << "0x" << std::setw(4) << std::setfill('0') << std::hex << (std::stoull(value, 0, 16) & 0xffff) << ' ';
                 annt_preamble.copyfmt(flags);
             }
             else if(name == "mnemonic") {

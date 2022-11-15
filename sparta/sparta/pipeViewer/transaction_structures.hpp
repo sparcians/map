@@ -5,9 +5,12 @@
 
 #pragma once
 
-#include <inttypes.h>
+#include <cstdint>
+#include <string>
 #include <utility>
 #include <vector>
+
+#include "sparta/pairs/PairFormatter.hpp"
 
 #define is_Annotation 0x1
 #define is_Instruction 0x2
@@ -183,8 +186,7 @@ struct pair_t : public transaction_t {
     // the enum vector field is empty at that position.
     std::vector<std::string> stringVector;
 
-    // Vector used for pipeViewer Formatting.
-    std::vector<std::string> delimVector;
+    sparta::PairFormatterVector delimVector;
 
     // The default constructor suffices for this structure.
     // No Move Constructor needed for this structure as there

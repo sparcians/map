@@ -104,7 +104,7 @@ else:
 # causes a LLVM warning that gets treated like an error, let's not care about unused linker args
 # for right now
 if "clang" in os.environ.get("CC",""):
-    compile_args.extend(('-Wno-unused-command-line-argument',))
+    compile_args.extend(('-Wno-unused-command-line-argument','-Wno-ignored-optimization-argument'))
 
 for d in system_include_dirs:
     compile_args.append('-isystem' + d)

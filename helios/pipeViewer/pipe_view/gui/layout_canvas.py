@@ -207,7 +207,7 @@ class Layout_Canvas(wx.ScrolledWindow):
             # dc.SetLogicalFunction(wx.INVERT)
             xoff, yoff = self.GetRenderOffsets()
             for x, y, x1, y1 in self.__gridlines:
-                dc.DrawLine(x - xoff, y - yoff, x1 - xoff, y1 - yoff)
+                dc.DrawLine(int(x - xoff), int(y - yoff), int(x1 - xoff), int(y1 - yoff))
 
         t_start = time.monotonic()
         self.__renderer.drawElements(dc, self, self.__context.GetHC())
@@ -505,10 +505,10 @@ class Layout_Canvas(wx.ScrolledWindow):
 
         self.SetScrollbars(sr,
                            sr,
-                           x_bound,
-                           y_bound,
-                           x * x_bound * (1 - percent_bar_x),
-                           y * y_bound * (1 - percent_bar_y),
+                           int(x_bound),
+                           int(y_bound),
+                           int(x * x_bound * (1 - percent_bar_x)),
+                           int(y * y_bound * (1 - percent_bar_y)),
                            True)
 
     # # Regenerates the gridlines based on __WIDTH and __HEIGHT

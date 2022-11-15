@@ -453,6 +453,7 @@ namespace sparta{
             using PairCollector<PairDef_t>::getNameStrings;
             using PairCollector<PairDef_t>::getDataVector;
             using PairCollector<PairDef_t>::getStringVector;
+            using PairCollector<PairDef_t>::getFormatVector;
             using PairCollector<PairDef_t>::getSizeOfVector;
             using PairCollector<PairDef_t>::getPEventLogVector;
             using PairCollector<PairDef_t>::getArgosFormatGuide;
@@ -834,7 +835,9 @@ namespace sparta{
                 argos_record_.nameVector = getNameStrings();
                 argos_record_.length = argos_record_.nameVector.size();
                 has_display_id_field_ = (argos_record_.nameVector[0] == "DID");
-                argos_record_.delimVector.emplace_back(getArgosFormatGuide());
+                for(const auto formatter: getFormatVector()) {
+                    argos_record_.delimVector.emplace_back(formatter);
+                }
 
                 if(collect && hasData_()){
 

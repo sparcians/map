@@ -181,7 +181,7 @@ class Element(object):
         # At end of construction, mark as clean
         self.__changed = False
 
-        self._pen = wx.Pen(self._properties['color'], 1)
+        self._pen = wx.Pen([int(c) for c in self._properties['color']], 1)
 
     # # Return the unique identifier of this element
     def GetPIN(self):
@@ -234,7 +234,7 @@ class Element(object):
             self._layout.Refresh(self)
         elif key == 'color':
             self._properties[key] = val
-            self._pen = wx.Pen(val, 1)
+            self._pen = wx.Pen([int(c) for c in val], 1)
         else:
             self._properties[key] = val
 
@@ -643,12 +643,12 @@ class ImageElement(LocationallyKeyedElement):
         dc.SetBackground(wx.Brush('WHITE'))
 
         if self.__image is not None:
-            dc.DrawBitmap(self.__image, x, y)
+            dc.DrawBitmap(self.__image, int(x), int(y))
         else:
             # Draw border and X through box
-            dc.DrawRectangle(x, y, w, h)
-            dc.DrawLine(x, y, x + w, y + h)
-            dc.DrawLine(x + w, y, x, y + h)
+            dc.DrawRectangle(int(x), int(y), int(w), int(h))
+            dc.DrawLine(int(x), int(y), int(x + w), int(y + h))
+            dc.DrawLine(int(x + w), int(y), int(x), int(y + h))
 
         self.UnsetNeedsRedraw()
         # #dc.DestroyClippingRegion()
@@ -773,7 +773,7 @@ class LogElement(LocationallyKeyedElement):
                     render_box = None,
                     fixed_offset = None):
 
-        border_color = self.GetProperty('color')
+        border_color = [int(c) for c in self.GetProperty('color')]
         normal_pen = wx.Pen(border_color, 1) # TODO: Use a pen cache
         dc.SetPen(normal_pen)
 
@@ -798,12 +798,12 @@ class LogElement(LocationallyKeyedElement):
             dc.SetBackground(wx.Brush(self.__def_background_color))
 
             # Draw border and X through box
-            dc.DrawRectangle(x, y, w, h)
+            dc.DrawRectangle(int(x), int(y), int(w), int(h))
 
             # Draw x through box
-            dc.DrawLine(x, y, x + w, y + h)
-            dc.DrawLine(x + w, y, x, y + h)
-            dc.DrawText('No such file:\n' + filename, x, y)
+            dc.DrawLine(int(x), int(y), int(x + w), int(y + h))
+            dc.DrawLine(int(x + w), int(y), int(x), int(y + h))
+            dc.DrawText('No such file:\n' + filename, int(x), int(y))
         elif t_offset != 0 and period == -1:
             brush = wx.Brush((200, 200, 200), style = wx.SOLID) # TODO: use a brush cache
             dc.SetBrush(brush)
@@ -811,11 +811,11 @@ class LogElement(LocationallyKeyedElement):
             dc.SetBackground(wx.Brush(self.__def_background_color))
 
             # Draw border and X through box
-            dc.DrawRectangle(x, y, w, h)
+            dc.DrawRectangle(int(x), int(y), int(w), int(h))
 
             # Draw x through box
-            dc.DrawLine(x, y, x + w, y + h)
-            dc.DrawLine(x + w, y, x, y + h)
+            dc.DrawLine(int(x), int(y), int(x + w), int(y + h))
+            dc.DrawLine(int(x + w), int(y), int(x), int(y + h))
             dc.DrawText('t_offset is nonzero ({}) but this element\n' \
                         'element is not associated with a database\n' \
                         'location which has a clock. Change location\n' \
@@ -824,7 +824,7 @@ class LogElement(LocationallyKeyedElement):
                         'compute the offset in that location\'s clock\n' \
                         'cycles. Or change t_offset to 0\n' \
                         .format(t_offset, self.GetProperty('LocationString')),
-                        x, y)
+                        int(x), int(y))
         else:
             regex_str = self.GetProperty('regex')
             sub_pat_str = self.GetProperty('sub_pattern')
@@ -835,7 +835,7 @@ class LogElement(LocationallyKeyedElement):
                 expr = re.compile(regex_str)
             brush = wx.Brush(border_color, style = wx.TRANSPARENT) # TODO: use a brush cache
             dc.SetBrush(brush)
-            dc.DrawRectangle(x, y, w, h)
+            dc.DrawRectangle(int(x), int(y), int(w), int(h))
 
             tick = render_tick + (t_offset * period)
 
@@ -907,7 +907,7 @@ class LogElement(LocationallyKeyedElement):
             ly = y + 1
             dc.SetBackgroundMode(wx.SOLID)
             for t, color in self.__line_cache:
-                dc.DrawTextList([t.rstrip()], [(lx, ly)], backgrounds = color)
+                dc.DrawTextList([t.rstrip()], [(int(lx), int(ly))], backgrounds = color)
                 ly += 12 # Figure out line height
 
         dc.DestroyClippingRegion()

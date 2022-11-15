@@ -8,6 +8,9 @@
 #pragma once
 
 #include <iostream>
+#include <string>
+#include <vector>
+#include "sparta/pairs/PairFormatter.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 
 namespace sparta {
@@ -35,7 +38,7 @@ public:
     std::vector<std::pair<uint64_t, bool>> valueVector; /*! Vector of integers containing the actual data of every field */
     std::vector<std::string> nameVector ; /*! Vector of strings containing the actual Names of every field */
     std::vector<std::string> stringVector; /*! Vector of strings containing the actual string value of every field */
-    std::vector<std::string> delimVector;
+    PairFormatterVector delimVector;
 
     // Constructor for transaction_t
     transactionInterval( const Dat_t &lval, const Dat_t &rval,
@@ -104,7 +107,7 @@ public:
         const std::vector<std::pair<uint64_t, bool>>& vals,
         const std::vector<std::string>& nams,
         const std::vector<std::string>& str,
-        const std::vector<std::string>& del) :
+        const PairFormatterVector& del) :
         transactionInterval(lval, rval, cpid, trid, dispid, lctn, flgs) {
         sparta_assert(time_Start_ <= time_End_);
         parent_ID = ptid;
@@ -172,7 +175,7 @@ public:
         return size;
     }
 
-    /*! Funcenumstion: Return the Left value of the event*/
+    /*! Function: Return the Left value of the event*/
     Dat_t getLeft() const noexcept{ return( time_Start_ ); }
     /*! Function: Return the Right value of the event*/
     Dat_t getRight() const noexcept{ return( time_End_ ); }

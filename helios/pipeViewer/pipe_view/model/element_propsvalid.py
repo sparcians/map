@@ -121,7 +121,7 @@ def validateTimeScale(name, raw):
 # Confirms that an offset is an int
 def validateOffset(name, raw):
     if isinstance(raw, str) and isNumeral(raw):
-        val = string.atoi(raw)
+        val = int(raw)
     else:
         val = raw
     if not isinstance(val, int):

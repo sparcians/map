@@ -292,13 +292,15 @@ cdef class Renderer(object):
 
     # # @brief Sets color of background brush and parses annotation according to type.
     #
-    def parseAnnotationAndGetColor(self, string_to_display, content_type, field_type = None, field_string = ''):
+    def parseAnnotationAndGetColor(self, string_to_display, content_type, field_type = None, field_string = None):
         cdef char * c_seq_id_str
         cdef unsigned long int c_seq_id
         cdef char * c_endptr
 
         brush = None
 
+        if field_string is None:
+            field_string = ''
         #--------------------------------------------------
         # Choose brush color
         # - uop seq ID is first three hex digits
@@ -423,7 +425,7 @@ cdef class Renderer(object):
                           auto_color, # type, basis
                           clip_x, # (start, width)
                           schedule_settings = None,
-                          short_format = ''):
+                          short_format = None):
                           # schedule_settings: (period_width, 0/1/2 (none/dots/boxed))
         cdef wxGCDC * c_dc = getDC(dc)
 
@@ -446,6 +448,8 @@ cdef class Renderer(object):
         cdef int c_content_str_len
         cdef wxPen old_pen
 
+        if short_format is None:
+            short_format = ''
         x_offs = 0
 
         c_x, c_y, c_w, c_h = rect
@@ -612,7 +616,7 @@ cdef class Renderer(object):
             color = e.GetProperty('color')
             content_type = e.GetProperty('Content')
 
-            c_color = wxColour(color[0], color[1], color[2])
+            c_color = wxColour(int(color[0]), int(color[1]), int(color[2]))
 
             color_rgb = c_color.GetRGB()
             if self.c_pens_map.count(color_rgb):

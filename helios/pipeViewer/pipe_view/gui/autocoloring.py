@@ -63,7 +63,7 @@ class BrushRepository(object):
             raise NotImplementedError('Shuffle mode {} has not been implemented.'.format(shuffle_mode))
 
     def create_brush_dict(self, color_dict):
-        return { key: wx.Brush([255 * x for x in value]) for key, value in color_dict.items() }
+        return { key: wx.Brush([int(255 * x) for x in value]) for key, value in color_dict.items() }
 
     def generate_all_brushes(self, color_dict):
         PATCH_WIDTH = 2

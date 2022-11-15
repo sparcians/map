@@ -76,7 +76,14 @@ class HoverPreview:
                 return # screen too small
 
             x, y = self.__canvas.ClientToScreen((x, y))
+            old_rect = self.GetRect()
             self.SetRect((x, y, width, height))
+            self.__UpdateCanvas(old_rect)
+
+        def __UpdateCanvas(self, old_rect):
+            old_rect.SetPosition(self.__canvas.CalcUnscrolledPosition(old_rect.GetTopLeft()))
+            old_rect.Inflate(10, 10)
+            self.__canvas.RefreshRect(old_rect)
 
         def AcceptsFocus(self):
             return False
@@ -84,6 +91,13 @@ class HoverPreview:
         # Handle the corner case where the user manages to mouse over the window
         def OnMouse(self, event):
             self.__handler.DestroyWindow()
+
+        def Destroy(self):
+            old_rect = self.GetRect()
+            self.__UpdateCanvas(old_rect)
+            self.Disable()
+            self.Show(False)
+            self.DestroyLater()
 
 
     def __init__(self, canvas, context):
@@ -480,9 +494,7 @@ class HoverPreview:
 
     def DestroyWindow(self):
         if self.__window:
-            self.__window.Disable()
-            self.__window.Show(False)
-            self.__window.DestroyLater()
+            self.__window.Destroy()
             self.__window = None
 
 

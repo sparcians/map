@@ -209,7 +209,11 @@ namespace sparta{
                     }
                 }
                 data_file_ << "\n";
-                display_format_file_ << dat.pairId << ":" << dat.delimVector[0] << "\n";
+                display_format_file_ << dat.pairId;
+                for(const auto& fmt: dat.delimVector) {
+                    display_format_file_ << ":" << static_cast<PairFormatterInt>(fmt);
+                }
+                display_format_file_ << "\n";
             }
 
             // If we find a Pair ID we have seen before,

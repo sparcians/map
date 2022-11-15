@@ -140,7 +140,7 @@ namespace pipeViewer
             }
 
             static void printPairOp(pair_t * p, std::ostream & os) {
-                os << "*pair* ";
+                os << "*pair* @ " << p->location_ID << " ";
                 for (uint32_t i = 0; i < p->nameVector.size(); ++i) {
                     os << p->nameVector[i] << "(" << p->stringVector[i] << ") ";
                 }

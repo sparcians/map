@@ -158,7 +158,7 @@ class FramePlaybackBar(wx.Panel):
                                                     'per second during playback. This can be positive or negative. ' \
                                                     'A value of 0 prevents playing')
         self.__spin_playback_speed.SetRange(-self.MAX_PLAY_RATE, self.MAX_PLAY_RATE)
-        self.__spin_playback_speed.SetValue(1.5)
+        self.__spin_playback_speed.SetValue(1)
         self.__btn_playpause = ShyButton(self, wx.ID_ANY, self.LABEL_PLAY, size = (45, -1))
         self.__btn_playpause.SetToolTip('Automatically steps through cycles (in the current clock domain) at ' \
                                               'the rate (positive or negative) specified by the "cyc/sec" ' \
@@ -326,7 +326,7 @@ class FramePlaybackBar(wx.Panel):
             # Do not update the slider unless the actual cycle has changed
             prev_slider_cycle = self.__ComputeSliderCycle(cyc_range)
             if prev_slider_cycle != new_slider_cycle:
-                self.__time_slider.SetValue(new_slider_cycle * self.TIME_SLIDER_RANGE)
+                self.__time_slider.SetValue(int(new_slider_cycle * self.TIME_SLIDER_RANGE))
 
     # # Moves to the start cycle of this database
     def __OnGotoStart(self, evt):
