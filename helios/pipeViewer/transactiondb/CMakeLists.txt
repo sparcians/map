@@ -11,7 +11,6 @@ project(transactiondb)
 
 set(TRANSACTIONDB_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 
-
 ##################################################################
 # Build the transactiondb.so
 ##################################################################
@@ -23,6 +22,7 @@ add_custom_command(OUTPUT transactiondb.sh
   TARGETDIR="lib"
   BUILD_MODULES="transactiondb"
   REQUIRED_SPARTA_LIBS="sparta simdb hdf5 sqlite3"
+  HDF5_LIBS="${HDF5_LIBRARIES}"
   LIB_SPARTA_BUILT_PATH="${MAP_BINARY_DIR}/sparta ${MAP_BINARY_DIR}/sparta/simdb"
   CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
   CC="${CMAKE_C_COMPILER}"

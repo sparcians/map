@@ -147,7 +147,7 @@ namespace sparta{
                 locIDSet.insert(dat.location_ID);
 
                 // We add the Location Id followed by the Pair Id of that record in the map file.
-                map_file_ << dat.location_ID << ":" << dat.pairId << ":" << "\n";
+                map_file_ << dat.location_ID << ':' << dat.pairId << '\n';
             }
 
             // If we find a Pair ID we have not seen before, we store it in the Pair ID set.
@@ -157,18 +157,18 @@ namespace sparta{
                 // We write the Pair ID to the data file followed by the Number of pairs
                 // this kind of pair collectable contains.
                 // The first pair of every pair record is its PairID, so we do not add that to the database.
-                data_file_ << dat.pairId << ":" << dat.length << ":";
+                data_file_ << dat.pairId << ':' << dat.length;
 
                 // We write the generic transaction structure to the record file.
                 writeTransaction<transaction_t>((const transaction_t &)dat);
 
                 // We iterate over all the name value pairs of the current pair record.
-                for(std::size_t i = 0; i < dat.length; ++i){
-
+                for(std::size_t i = 0; i < dat.length; ++i) {
+                    data_file_ << ':';
                     if(dat.valueVector[i].second){
 
                         // We add the Name String followed by the Sizeof in the data file.
-                        data_file_ << dat.nameVector[i] << ":" << dat.sizeOfVector[i] << ":0:";
+                        data_file_ << dat.nameVector[i] << ':' << dat.sizeOfVector[i] << ":0";
 
                         // We write the Value for field "i" and only write as much Bytes
                         // as it needs to by checking Sizes[i].
@@ -190,15 +190,16 @@ namespace sparta{
 
                                 // We add this mapping into out String Map file which we will
                                 // use when reading back from the database.
-                                string_file_ << dat.pairId << ":" << i << ":"
-                                             << dat.valueVector[i].first << ":" << dat.stringVector[i]
-                                             << ":" << "\n";
+                                string_file_ << dat.pairId
+                                             << ':' << i
+                                             << ':' << dat.valueVector[i].first
+                                             << ':' << dat.stringVector[i] << '\n';
                             }
                         }
                     }
                     else{
                         // We add the Name String followed by the Sizeof in the data file.
-                        data_file_ << dat.nameVector[i] << ":0:1:";
+                        data_file_ << dat.nameVector[i] << ":0:1";
 
                         // We write the Value for field "i" and only write as much Bytes
                         // as it needs to by checking Sizes[i].
@@ -208,12 +209,12 @@ namespace sparta{
                         writeData_(record_file_, annotation, length);
                     }
                 }
-                data_file_ << "\n";
+                data_file_ << '\n';
                 display_format_file_ << dat.pairId;
                 for(const auto& fmt: dat.delimVector) {
-                    display_format_file_ << ":" << static_cast<PairFormatterInt>(fmt);
+                    display_format_file_ << ':' << static_cast<PairFormatterInt>(fmt);
                 }
-                display_format_file_ << "\n";
+                display_format_file_ << '\n';
             }
 
             // If we find a Pair ID we have seen before,
@@ -246,9 +247,10 @@ namespace sparta{
 
                                 // We add this mapping into out String Map file which we will
                                 // use when reading back from the database.
-                                string_file_ << dat.pairId << ":" << i
-                                             << ":" << dat.valueVector[i].first << ":"
-                                             << dat.stringVector[i] << ":" << "\n";
+                                string_file_ << dat.pairId
+                                             << ':' << i
+                                             << ':' << dat.valueVector[i].first
+                                             << ':' << dat.stringVector[i] << '\n';
                             }
                         }
                     }

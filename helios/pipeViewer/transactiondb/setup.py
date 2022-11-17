@@ -48,6 +48,10 @@ sparta_lib_path = os.environ['LIB_SPARTA_BUILT_PATH'].split()
 sparta_lib_path = [x.lstrip('-L').strip('\\') for x in sparta_lib_path]
 print(sparta_lib_path, required_sparta_libs)
 
+hdf5_lib_dirs = os.environ['HDF5_LIBS'].split()
+hdf5_lib_dirs = list(set([os.path.dirname(x) for x in hdf5_lib_dirs]))
+print(hdf5_lib_dirs)
+
 compile_args = ['-std=c++17'] # Required for sparta C++ code
 if plat_flags != '':
     compile_args.extend(plat_flags.split())
@@ -62,7 +66,6 @@ else:
     print('Building in Release mode')
     def_macros.append(('NDEBUG', None))
     compile_args.extend(('-g3', '-Ofast'))
-
 
 # conda python sysconfig data contains '-Wl,export_dynamic' which the linker isn't using
 # causes a warning that gets treated like an error, let's not care about unused linker args
@@ -113,7 +116,7 @@ for module_name, source_files in modules.items():
                         sources = sources,
                         include_dirs = [sparta_inc_dir ] + system_include_dirs,
                         libraries = required_sparta_libs,
-                        library_dirs = sparta_lib_path,
+                        library_dirs = sparta_lib_path + hdf5_lib_dirs,
                         define_macros = def_macros,
                         extra_compile_args = compile_args,
                         extra_link_args = link_args,

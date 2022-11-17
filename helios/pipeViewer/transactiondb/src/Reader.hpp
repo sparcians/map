@@ -12,10 +12,12 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <cstring>
+#include <locale>
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <tuple>
+#include <unordered_map>
 #include <sys/stat.h>
 
 #include "PipelineDataCallback.hpp"
@@ -27,13 +29,22 @@
 // #define READER_DBG 1
 // #define READER_LOG 1
 
-#if READER_DBG==1
+#define _LOG_MSG(strm, x) strm << "READER: " << x << std::endl
+
+#if READER_DBG == 1
 #define READER_LOG 1
+#define READER_DBG_MSG(x) _LOG_MSG(std::cerr, x)
+#else
+#define READER_DBG_MSG(x)
 #endif
 
-namespace sparta{
-    namespace pipeViewer{
+#if READER_LOG == 1
+#define READER_LOG_MSG(x) _LOG_MSG(std::cout, x)
+#else
+#define READER_LOG_MSG(x)
+#endif
 
+namespace sparta::pipeViewer {
     /*!
      * \brief Sanity checker for records. Used when doing a dump of the index
      * file to check that all transactions in the heartbeat actually belong
@@ -80,20 +91,6 @@ namespace sparta{
         }
     };
 
-    // Memory Layout of pair_struct. We build a vector of such structs before we start reading record back from the database.
-    // This structs help us by telling us exactly how may pair values
-    // there are in the current pair type, what their names are and how much bytes each of the values occupy.
-    // We inquire such a vector of structs by giving it a unique id and this vector gives
-    // us such a struct where the unique id matches.
-    struct pair_struct{
-        uint16_t UniqueID;
-        uint16_t length;
-        std::vector<uint16_t> types;
-        std::vector<uint16_t> sizes;
-        std::string formatGuide;
-        std::vector<std::string> names;
-    };
-
     /*!
      * \class Reader
      * @ brief A class that facilitates reading transactions from disk that
@@ -106,6 +103,259 @@ namespace sparta{
     class Reader
     {
     private:
+        /**
+         * \brief Reopens an std::ifstream with the given filename and mode
+         */
+        static inline void reopenFileStream_(std::ifstream& fs, const std::string& filename, std::ios::openmode mode = std::ios::in) {
+            size_t cur_pos = fs.tellg();
+            fs.close();
+            fs.clear();
+            fs.open(filename, mode);
+            fs.seekg(cur_pos);
+        }
+
+        /**
+         * \class ColonDelimitedFile
+         * \brief Class that knows how to read ':'-delimited files used by the Argos pair format
+         */
+        class ColonDelimitedFile {
+            private:
+                const std::string filename_;
+                const std::ios_base::openmode mode_;
+                std::ifstream fstream_;
+
+                /**
+                 * \struct CustomSpaceCType
+                 * \brief Subclass of std::ctype<char> that allows overriding which characters should be
+                 * considered whitespace
+                 */
+                template<char... SpaceChars>
+                struct CustomSpaceCType : std::ctype<char> {
+                    private:
+                        using CTypeArray = std::array<std::ctype_base::mask, table_size>;
+
+                        /**
+                         * \brief Generates a constexpr character table with the characters in SpaceChars set as whitespace
+                         */
+                        static inline constexpr CTypeArray genSpaceTable_() {
+                            CTypeArray space_table{};
+                            // First set every character to std::ctype_base::mask - treating them as non-whitespace
+                            for(size_t i = 0; i < table_size; ++i) {
+                                space_table[i] = std::ctype_base::mask();
+                            }
+
+                            // Lambda that sets a character to whitespace
+                            auto add_space_char = [&](const char c) { space_table[c] = std::ctype_base::space; };
+                            // Apply the lambda over all of the characters in SpaceChars
+                            (add_space_char(SpaceChars), ...);
+                            return space_table;
+                        }
+
+                    public:
+                        CustomSpaceCType() :
+                            std::ctype<char>(getTable())
+                        {
+                        }
+
+                        static inline std::ctype_base::mask const* getTable() {
+                            // Init the table
+                            static constexpr CTypeArray space_table = genSpaceTable_();
+                            // Return a pointer to the table
+                            return space_table.data();
+                        }
+                };
+
+                // The FileLineCType only treats newlines as whitespace, causing the >> operator to grab an entire line at a time
+                using FileLineCType = CustomSpaceCType<'\n'>;
+
+            public:
+                /**
+                 * \class LineStream
+                 * \brief Subclass of std::istringstream with some useful specializations for the >> operator. This class is used to
+                 * automatically tokenize each line in a ':'-delimited file using the >> operator.
+                 */
+                class LineStream : public std::istringstream {
+                    private:
+                        // The PairFormatCType treats ':' as whitespace, causing the >> operator to tokenize on
+                        // any ':' in its internal string buffer
+                        using PairFormatCType = CustomSpaceCType<':'>;
+
+                        /**
+                         * \brief Reads an aribitrary tuple from the stream
+                         */
+                        template<size_t idx, typename ... Args>
+                        inline LineStream& readTuple_(std::tuple<Args...>& val) {
+                            // We reached the end of the tuple, so no more work to be done
+                            if constexpr(idx >= sizeof...(Args)) {
+                                return *this;
+                            }
+                            else {
+                                // Grab the current index and then recursively grab the next one
+                                // (this will get unrolled by the compiler)
+                                *this >> std::get<idx>(val);
+                                return readTuple_<idx+1>(val);
+                            }
+                        }
+
+                        /**
+                         * \brief Sets the locale to a PairFormatCType
+                         */
+                        inline void setLocale_() {
+                            imbue(std::locale(std::locale(), new PairFormatCType()));
+                        }
+
+                    public:
+                        LineStream() :
+                            std::istringstream()
+                        {
+                            setLocale_();
+                        }
+
+                        explicit LineStream(const std::string& str) :
+                            std::istringstream(str)
+                        {
+                            setLocale_();
+                        }
+
+                        using std::istringstream::operator>>;
+
+                        /**
+                         * \brief >> operator specialization for enums
+                         */
+                        template<typename T>
+                        inline std::enable_if_t<std::is_enum_v<T>, LineStream&> operator>>(T& val) {
+                            // Read into a temporary variable of the underlying type of the enum
+                            std::underlying_type_t<T> new_val;
+                            *this >> new_val;
+                            // Then cast it to the enum type
+                            val = static_cast<T>(new_val);
+                            return *this;
+                        }
+
+                        /**
+                         * \brief >> operator specialization for std::pair
+                         */
+                        template<typename T, typename U>
+                        inline LineStream& operator>>(std::pair<T, U>& val) {
+                            *this >> val.first >> val.second;
+                            return *this;
+                        }
+
+                        /**
+                         * \brief >> operator specialization for std::tuple
+                         */
+                        template<typename ... Args>
+                        inline LineStream& operator>>(std::tuple<Args...>& val) {
+                            return readTuple_<0>(val);
+                        }
+
+                        /**
+                         * \brief >> operator specialization for std::unordered_map
+                         * Reads in the key and value as an std::pair and then does a move-emplace into the map
+                         * Note that this only adds 1 element at a time rather than attempting to read an entire map at once
+                         */
+                        template<typename Key,
+                                 typename T,
+                                 typename Hash = std::hash<Key>,
+                                 typename KeyEqual = std::equal_to<Key>,
+                                 typename Allocator = std::allocator<std::pair<const Key, T>>>
+                        inline LineStream& operator>>(std::unordered_map<Key, T, Hash, KeyEqual, Allocator>& map) {
+                            std::pair<Key, T> new_pair;
+                            *this >> new_pair;
+                            map.emplace(std::move(new_pair));
+                            return *this;
+                        }
+
+                        /**
+                         * \brief >> operator specialization for std::vector
+                         * Reads in the value then does a move-emplace into the vector
+                         * Note that this only adds 1 element at a time rather than attempting to read an entire vector at once
+                         */
+                        template<typename T, typename Allocator = std::allocator<T>>
+                        inline LineStream& operator>>(std::vector<T, Allocator>& val) {
+                            T new_val;
+                            *this >> new_val;
+                            val.emplace_back(std::move(new_val));
+                            return *this;
+                        }
+                };
+
+                explicit ColonDelimitedFile(const std::string& filename, std::ios_base::openmode mode = std::ios_base::in) :
+                    filename_(filename),
+                    mode_(mode),
+                    fstream_(filename, mode)
+                {
+                    fstream_.imbue(std::locale(std::locale(), new FileLineCType));
+                }
+
+                inline ~ColonDelimitedFile() {
+                    fstream_.close();
+                }
+
+                /**
+                 * \brief Iterates over the entire file line by line, tokenizing the line with a LineStream and then
+                 * calling a callback function for further processing
+                 */
+                template<typename CallbackFunc>
+                inline void processWith(CallbackFunc&& func) {
+                    LineStream strm;
+                    for(auto it = std::istream_iterator<std::string>(fstream_); it != std::istream_iterator<std::string>(); ++it) {
+                        strm.str(*it);
+                        strm.clear();
+                        func(strm);
+                    }
+                }
+
+                /**
+                 * \brief Simplified form of processWith that reads an entire file into a single object
+                 */
+                template<typename T>
+                inline void processInto(T& obj) {
+                    processWith([&](LineStream& strm) { strm >> obj; });
+                }
+
+                /**
+                 * \brief Reopens the file
+                 */
+                inline void reopen() {
+                    reopenFileStream_(fstream_, filename_, mode_);
+                }
+        };
+
+        // Memory Layout of pair_struct. We build a map of such structs before we start reading record back from the database.
+        // This structs help us by telling us exactly how may pair values
+        // there are in the current pair type, what their names are and how much bytes each of the values occupy.
+        struct pair_struct{
+            uint16_t length;
+            std::vector<uint16_t> types;
+            std::vector<uint16_t> sizes;
+            PairFormatterVector formats;
+            std::vector<std::string> names;
+
+            explicit pair_struct(ColonDelimitedFile::LineStream& strm) :
+                length(0),
+                types(1, 0),
+                sizes(1, sizeof(uint16_t)),
+                formats(1, PairFormatter::DECIMAL),
+                names(1, "pairid")
+            {
+                strm >> length;
+                ++length;
+
+                types.reserve(length);
+                sizes.reserve(length);
+                formats.reserve(length);
+                names.reserve(length);
+
+                // Iterate through the rest of the delimiters in the stringline
+                // and build up the Name Strings and the Sizeof values for every field.
+                // Formats are read later from a different file
+                while(!strm.eof()) {
+                    strm >> names >> sizes >> types;
+                }
+            }
+        };
+
         /**
          * \brief return the correct position in the record file that corresponds
          * to the start cycle.
@@ -148,12 +398,10 @@ namespace sparta{
          * interval values.
          * example 4600 rounds to 5000 when the interval is "1000"
          */
-        uint64_t roundUp_(uint64_t num)
+        uint64_t roundUp_(const uint64_t num)
         {
-            int remainder = num % heartbeat_;
-            if(remainder == 0)
-                return num;
-            return num + heartbeat_ - remainder;
+            const auto sub_sum = num + heartbeat_ - 1;
+            return sub_sum - (sub_sum % heartbeat_);
         }
 
         /**
@@ -230,8 +478,7 @@ namespace sparta{
             pos += sizeof(version1::transaction_t);
 
             if((transaction.flags & TYPE_MASK) == is_Annotation){
-                version1::annotation_t annot;
-                memcpy(&annot, &transaction, sizeof(version1::transaction_t));
+                version1::annotation_t annot(transaction);
                 record_file_.read(reinterpret_cast<char*>(&annot.length), sizeof(uint16_t));
                 pos += sizeof(uint16_t);
                 annot.annt = annt_buf;
@@ -255,20 +502,16 @@ namespace sparta{
 
                 // Only send along transaction in the query range
                 if(transaction.time_End < start || transaction.time_Start > end){
-#if READER_DBG
                     // Skip transactions by not sending them along to the callback.
                     // read is faster than seekg aparently. This DOES help performance
-                    std::cerr << "READER: skipped transaction outside of window [" << start << ", "
-                              << end << "). start: " << transaction.time_Start << " end: "
-                              << transaction.time_End
-                              << " parent: " << transaction.parent_ID << std::endl;
-#endif
+                    READER_DBG_MSG("skipped transaction outside of window [" << start << ", "
+                                   << end << "). start: " << transaction.time_Start << " end: "
+                                   << transaction.time_End
+                                   << " parent: " << transaction.parent_ID);
                 }else{
-#ifdef READER_DBG
-                    std::cout << "READER: found annt. " << "loc: " << annot.location_ID << " start: "
-                              << annot.time_Start << " end: " << annot.time_End
-                              << " parent: " << annot.parent_ID << std::endl;
-#endif
+                    READER_DBG_MSG("found annt. " << "loc: " << annot.location_ID << " start: "
+                                   << annot.time_Start << " end: " << annot.time_End
+                                   << " parent: " << annot.parent_ID);
                     annotation_t new_anno(std::move(annot));
                     data_callback_->foundAnnotationRecord(&new_anno);
                 }
@@ -279,9 +522,9 @@ namespace sparta{
                 version1::instruction_t inst;
                 record_file_.read(reinterpret_cast<char*>(&inst), sizeof(version1::instruction_t));
                 pos += sizeof(version1::instruction_t);
-#ifdef READER_DBG
-                std::cout << "READER: found inst. start: " << inst.time_Start << " end: " << inst.time_End << std::endl;
-#endif
+
+                READER_DBG_MSG("found inst. start: " << inst.time_Start << " end: " << inst.time_End);
+
                 instruction_t new_inst(std::move(inst));
                 data_callback_->foundInstRecord(&new_inst);
                 return;
@@ -291,9 +534,9 @@ namespace sparta{
                 version1::memoryoperation_t memop;
                 record_file_.read(reinterpret_cast<char*>(&memop), sizeof(version1::memoryoperation_t));
                 pos += sizeof(version1::memoryoperation_t);
-#ifdef READER_DBG
-                std::cout << "READER: found inst. start: " << memop.time_Start << " end: " << memop.time_End << std::endl;
-#endif
+
+                READER_DBG_MSG("found inst. start: " << memop.time_Start << " end: " << memop.time_End);
+
                 memoryoperation_t new_memop(std::move(memop));
                 data_callback_->foundMemRecord(&new_memop);
                 return;
@@ -318,18 +561,11 @@ namespace sparta{
 
             pos += sizeof(transaction_t);
 
-            // some struct to populate the record too.
-            annotation_t annot;
-            instruction_t inst;
-            memoryoperation_t memop;
-            pair_t pairt;
-
             switch (transaction.flags & TYPE_MASK)
             {
                 case is_Annotation :
                 {
-
-                    memcpy(&annot, &transaction, sizeof(transaction_t));
+                    annotation_t annot(transaction);
                     record_file_.read(reinterpret_cast<char*>(&annot.length), sizeof(uint16_t));
                     pos += sizeof(uint16_t);
                     annot.annt = annt_buf;
@@ -351,7 +587,6 @@ namespace sparta{
                         pos += annot.length;
                     }
 
-                    (void) start;
                     //// Sanity check the transactions coming out
                     //if(start % heartbeat_ == 0 // Only try this sanity checking if start is a multiple of heartbeat_
                     //   && transaction.time_Start < start // Got a transaction starting before the first heartbeat containing this query
@@ -363,50 +598,48 @@ namespace sparta{
                     //              << std::endl;
                     //}
 
-                    (void) end;
                     // Only send along transaction in the query range
                     if(transaction.time_End < start || transaction.time_Start > end){
-#if READER_DBG
                         // Skip transactions by not sending them along to the callback.
                         // read is faster than seekg aparently. This DOES help performance
-                        std::cerr << "READER: skipped transaction outside of window [" << start << ", "
-                                  << end << "). start: " << transaction.time_Start << " end: "
-                                  << transaction.time_End
-                                  << " parent: " << transaction.parent_ID << std::endl;
-#endif
+                        READER_DBG_MSG("skipped transaction outside of window [" << start << ", "
+                                       << end << "). start: " << transaction.time_Start << " end: "
+                                       << transaction.time_End
+                                       << " parent: " << transaction.parent_ID);
                     }else{
-#ifdef READER_DBG
-                        std::cout << "READER: found annt. " << "loc: " << annot.location_ID << " start: "
-                                  << annot.time_Start << " end: " << annot.time_End
-                                  << " parent: " << annot.parent_ID << std::endl;
-#endif
+                        READER_DBG_MSG("found annt. " << "loc: " << annot.location_ID << " start: "
+                                       << annot.time_Start << " end: " << annot.time_End
+                                       << " parent: " << annot.parent_ID);
                         data_callback_->foundAnnotationRecord(&annot);
                     }
                 } break;
 
                 case is_Instruction:
                 {
+                    instruction_t inst;
                     record_file_.seekg(-sizeof(transaction_t), std::ios::cur);
                     pos -= sizeof(transaction_t);
 
                     record_file_.read(reinterpret_cast<char*>(&inst), sizeof(instruction_t));
                     pos += sizeof(instruction_t);
-#ifdef READER_DBG
-                    std::cout << "READER: found inst. start: " << inst.time_Start << " end: " << inst.time_End << std::endl;
-#endif
+
+                    READER_DBG_MSG("found inst. start: " << inst.time_Start << " end: " << inst.time_End);
+
                     data_callback_->foundInstRecord(&inst);
                 } break;
 
                 case is_MemoryOperation:
                 {
+                    memoryoperation_t memop;
+
                     record_file_.seekg(-sizeof(transaction_t), std::ios::cur);
                     pos -= sizeof(transaction_t);
 
                     record_file_.read(reinterpret_cast<char*>(&memop), sizeof(memoryoperation_t));
                     pos += sizeof(memoryoperation_t);
-#ifdef READER_DBG
-                    std::cout << "READER: found inst. start: " << memop.time_Start << " end: " << memop.time_End << std::endl;
-#endif
+
+                    READER_DBG_MSG("found inst. start: " << memop.time_Start << " end: " << memop.time_End);
+
                     data_callback_->foundMemRecord(&memop);
                 } break;
 
@@ -417,22 +650,14 @@ namespace sparta{
                 // and In-memory data structures and rebuild the pair
                 // record one by one.
                 case is_Pair : {
-
-                    // First, we do a simple memcpy of the generic transaction structure
-                    // we read into our pair structure
-                    memcpy(&pairt, &transaction, sizeof(transaction_t));
-
-                    // We grab the location Id of this record we are about to read from
-                    // the generic transaction structure
-                    unsigned long long location_ID = transaction.location_ID;
-                    std::string delim = ":";
+                    pair_t pairt(transaction);
 
                     // The loc_map is an In-memory Map which contains a mapping
                     // of Location ID to Pair ID.
                     // We are going to use this map to lookup the Location ID we
                     // just read from this current record
                     // and find out the pair id of such a record
-                    std::string token = loc_map_[std::to_string(location_ID)];
+                    const auto unique_id = loc_map_.at(transaction.location_ID);
 
                     // We are now going to use the In-memory data structure we built
                     //during the Reader construction.
@@ -444,191 +669,117 @@ namespace sparta{
                     // from the record file
                     // matches the pair id of the current record we retrieved from
                     // the In-memory data Structure.
-                    for(auto & st : map_){
-                        if(st.UniqueID == std::stoull(token)){
+                    auto& st = map_.at(unique_id);
 
-                            // We lookup the length, the name strings and the sizeofs of
-                            // every anme string from the retrieved
-                            // record of the Data Struture and copy the values into out
-                            // live Pair Transaction record
-                            pairt.length = st.length;
-                            pairt.nameVector.reserve(pairt.length);
-                            pairt.sizeOfVector.reserve(pairt.length);
-                            pairt.valueVector.reserve(pairt.length);
-                            pairt.stringVector.reserve(pairt.length);
-                            pairt.delimVector.reserve(pairt.length);
+                    // We lookup the length, the name strings and the sizeofs of
+                    // every anme string from the retrieved
+                    // record of the Data Struture and copy the values into out
+                    // live Pair Transaction record
+                    pairt.length = st.length;
+                    pairt.nameVector = st.names;
+                    pairt.sizeOfVector = st.sizes;
+                    pairt.delimVector = st.formats;
 
-                            pairt.nameVector.emplace_back("pairid");
-                            pairt.sizeOfVector.emplace_back(sizeof(uint16_t));
-                            pairt.valueVector.emplace_back(std::make_pair(st.UniqueID, false));
-                            pairt.stringVector.emplace_back(std::to_string(st.UniqueID));
-                            pairt.delimVector.emplace_back(PairFormatter::DECIMAL);
+                    pairt.valueVector.reserve(pairt.length);
+                    pairt.valueVector.emplace_back(std::make_pair(unique_id, false));
 
-                            std::istringstream fmt_stream(st.formatGuide);
-                            fmt_stream.imbue(std::locale(std::locale(), new PairFormatReader()));
+                    pairt.stringVector.reserve(pairt.length);
+                    pairt.stringVector.emplace_back(std::to_string(unique_id));
 
-                            while(!fmt_stream.eof()) {
-                                PairFormatterInt fmt;
-                                fmt_stream >> fmt;
-                                pairt.delimVector.emplace_back(static_cast<PairFormatter>(fmt));
+                    for(std::size_t i = 1; i != st.length; ++i){
+                        if(st.types[i] == 0) {
+                            // Type 0 = integer
+                            const auto item_size = pairt.sizeOfVector[i];
+                            sparta_assert(item_size <= sizeof(pair_t::IntT),
+                                          "Data Type not supported for reading/writing.");
+                            pair_t::IntT tmp = 0;
+                            record_file_.read(reinterpret_cast<char*>(&tmp), item_size);
+                            pos += item_size;
+                            pairt.valueVector.emplace_back(std::make_pair(tmp, true));
+
+                            // Finally for a certain field "i", we check if there is a string
+                            // representation for the integral value, by checking,
+                            // if a key with current pair id, current field id, current integral value
+                            // exists in the In-memory String Map. If yes, we grab the value
+                            // and place it in the enum vector.
+                            if(const auto it = stringMap_.find(std::make_tuple(pairt.valueVector[0].first,
+                                                                               i,
+                                                                               pairt.valueVector[i].first));
+                               it != stringMap_.end()) {
+                                pairt.stringVector.emplace_back(it->second);
+                                pairt.valueVector[i].second = false;
                             }
 
-                            for(std::size_t i = 1; i != st.length; ++i){
-                                pairt.nameVector.emplace_back(st.names[i]);
-                                pairt.sizeOfVector.emplace_back(st.sizes[i]);
-                                if(st.types[i] == 0){
-                                    // Type 0 = integer
-                                    switch(pairt.sizeOfVector[i]){
-                                        case sizeof(uint8_t) : {
-                                            uint8_t tmp;
+                            // Else, we convert integer value to string
+                            else {
+                                const auto int_value = pairt.valueVector[i].first;
 
-                                            // We read exactly the number of bytes
-                                            // this value occupies from the database.
-                                            // This is a crucial step else if we read
-                                            // wrong number of bytes, our read procedure
-                                            // will crash in near future.
-                                            record_file_.read(reinterpret_cast<char*>(&tmp), sizeof(uint8_t));
-                                            pos += sizeof(uint8_t);
-                                            pairt.valueVector.emplace_back(std::make_pair(tmp, true));
-                                        }break;
-                                        case sizeof(uint16_t) : {
-                                            uint16_t tmp;
-
-                                            // We read exactly the number of bytes this
-                                            // value occupies from the database.
-                                            // This is a crucial step else if we read wrong
-                                            // number of bytes, our read procedure will crash in near future.
-                                            record_file_.read(reinterpret_cast<char*>(&tmp), sizeof(uint16_t));
-                                            pos += sizeof(uint16_t);
-                                            pairt.valueVector.emplace_back(std::make_pair(tmp, true));
-                                        }break;
-                                        case sizeof(uint32_t) : {
-                                            uint32_t tmp;
-
-                                            // We read exactly the number of bytes
-                                            // this value occupies from the database.
-                                            // This is a crucial step else if we read
-                                            // wrong number of bytes, our read procedure
-                                            // will crash in near future.
-                                            record_file_.read(reinterpret_cast<char*>(&tmp), sizeof(uint32_t));
-                                            pos += sizeof(uint32_t);
-                                            pairt.valueVector.emplace_back(std::make_pair(tmp, true));
-                                        }break;
-                                        case sizeof(uint64_t) : {
-                                            uint64_t tmp;
-
-                                            // We read exactly the number of bytes
-                                            // this value occupies from the database.
-                                            // This is a crucial step else if we read
-                                            // wrong number of bytes, our read procedure
-                                            // will crash in near future.
-                                            record_file_.read(reinterpret_cast<char*>(&tmp), sizeof(uint64_t));
-                                            pos += sizeof(uint64_t);
-                                            pairt.valueVector.emplace_back(std::make_pair(tmp, true));
-                                        }break;
-                                        default : {
-                                            throw sparta::SpartaException(
-                                                "Data Type not supported for reading/writing.");
-                                        }
-                                    }
-
-                                    // Finally for a certain field "i", we check if there is a string
-                                    // representation for the integral value, by checking,
-                                    // if a key with current pair id, current field id, current integral value
-                                    // exists in the In-memory String Map. If yes, we grab the value
-                                    // and place it in the enum vector.
-                                    if(stringMap_.find(std::make_tuple(pairt.valueVector[0].first,
-                                                                       i - 1,
-                                                                       pairt.valueVector[i].first)) !=
-                                       stringMap_.end()){
-                                        pairt.stringVector.emplace_back(stringMap_[std::make_tuple(
-                                                                                pairt.valueVector[0].first,
-                                                                                i - 1,
-                                                                                pairt.valueVector[i].first)]);
-                                        pairt.valueVector[i].second = false;
-                                    }
-
-                                    // Else, we convert integer value to string
-                                    else{
-                                        const pair_t::IntT &int_value = pairt.valueVector[i].first;
-                                        const auto& format_str = pairt.delimVector[i];
-
-                                        std::ios_base::fmtflags format_flags = std::ios::dec;
-                                        std::string fmt_prefix = "";
-
-                                        if(format_str == PairFormatter::HEX) {
-                                            format_flags = std::ios::hex;
-                                            fmt_prefix = "0x";
-                                        }
-                                        else if(format_str == PairFormatter::OCTAL) {
-                                            format_flags = std::ios::oct;
-                                            fmt_prefix = "0";
-                                        }
-
-                                        if (int_value == std::numeric_limits<pair_t::IntT>::max()) {
-                                            // Max value, so probably bad...push empty string
-                                            pairt.stringVector.emplace_back("");
-                                        } else {
-                                            std::stringstream int_str;
-                                            int_str << fmt_prefix;
-                                            int_str.setf(format_flags, std::ios::basefield);
-                                            int_str << int_value;
-                                            pairt.stringVector.emplace_back(int_str.str());
-                                        }
-                                    }
-                                }
-                                else if(st.types[i] == 1){
-                                    // Type 1 = string
-                                    uint16_t annotationLength;
-                                    record_file_.read(reinterpret_cast<char*>(&annotationLength), sizeof(uint16_t));
-                                    pos += sizeof(uint16_t);
-
-                                    std::unique_ptr<char[] , std::function<void(char * ptr)>>
-                                        annot_ptr(new char[annotationLength + 1],
-                                                  [&](char * ptr) { delete [] ptr; });
-                                    record_file_.read(annot_ptr.get(), annotationLength);
-                                    pos += annotationLength;
-                                    std::string annot_str(annot_ptr.get(), annotationLength);
-                                    annot_str = std::string(annot_str.c_str());  // Get rid of terminating null
-                                    pairt.stringVector.emplace_back(annot_str);
-
-                                    // This bool value describes if this field has a string-only value.
-                                    // String only values are those values which are stored in database as
-                                    // strings and has no integral representation of itself.
-                                    const bool string_only_field = true;
-                                    pairt.valueVector.emplace_back(std::make_pair(
-                                                                       std::numeric_limits<
-                                                                       typename decltype(pairt.valueVector)::value_type::first_type>::max(),
-                                                                       string_only_field));
+                                if (int_value == std::numeric_limits<pair_t::IntT>::max()) {
+                                    // Max value, so probably bad...push empty string
+                                    pairt.stringVector.emplace_back("");
                                 } else {
-                                    pairt.stringVector.emplace_back("none");
-                                    pairt.valueVector.emplace_back(std::make_pair(0, false));
+                                    const auto& format_str = pairt.delimVector[i];
+
+                                    std::ios_base::fmtflags format_flags = std::ios::dec;
+                                    std::string_view fmt_prefix = "";
+
+                                    if(format_str == PairFormatter::HEX) {
+                                        format_flags = std::ios::hex;
+                                        fmt_prefix = "0x";
+                                    }
+                                    else if(format_str == PairFormatter::OCTAL) {
+                                        format_flags = std::ios::oct;
+                                        fmt_prefix = "0";
+                                    }
+
+                                    std::ostringstream int_str;
+                                    int_str << fmt_prefix;
+                                    int_str.setf(format_flags, std::ios::basefield);
+                                    int_str << int_value;
+                                    pairt.stringVector.emplace_back(int_str.str());
                                 }
                             }
-                            break;
+                        }
+                        else if(st.types[i] == 1){
+                            // Type 1 = string
+                            uint16_t annotationLength;
+                            record_file_.read(reinterpret_cast<char*>(&annotationLength), sizeof(uint16_t));
+                            pos += sizeof(uint16_t);
+
+                            // The string in the file is null-terminated, but std::string isn't
+                            std::string annot_str(annotationLength-1, '\0');
+                            record_file_.read(annot_str.data(), annotationLength-1);
+                            // skip over null terminator
+                            record_file_.seekg(1, std::ios_base::cur);
+                            pos += annotationLength;
+                            pairt.stringVector.emplace_back(std::move(annot_str));
+
+                            // This bool value describes if this field has a string-only value.
+                            // String only values are those values which are stored in database as
+                            // strings and has no integral representation of itself.
+                            const bool string_only_field = true;
+                            pairt.valueVector.emplace_back(
+                                std::make_pair(
+                                    std::numeric_limits<decltype(pairt.valueVector)::value_type::first_type>::max(),
+                                    string_only_field
+                                )
+                            );
+                        } else {
+                            pairt.stringVector.emplace_back("none");
+                            pairt.valueVector.emplace_back(std::make_pair(0, false));
                         }
                     }
-#ifdef READER_DBG
-                    std::cout << "READER: found pair. start: " << pairt.time_Start << " end: " << pairt.time_End << std::endl;
-#endif
+
+                    READER_DBG_MSG("found pair. start: " << pairt.time_Start << " end: " << pairt.time_End);
+
                     data_callback_->foundPairRecord(&pairt);
-                }
-                    break;
+                } break;
 
                 default:
                 {
                     throw sparta::SpartaException("Unknown Transaction Found. Data might be corrupt.");
                 }
             }
-        }
-
-        void reopenFileStream_(std::fstream & fs, const std::string & filename, std::ios::openmode mode = std::ios::in)
-        {
-            size_t cur_pos = fs.tellg();
-            fs.close();
-            fs.clear();
-            fs.open(filename, mode);
-            fs.seekg(cur_pos);
         }
 
         void checkIndexUpdates_()
@@ -650,8 +801,8 @@ namespace sparta{
 
                 reopenFileStream_(record_file_, record_file_path_, std::ios::in | std::ios::binary);
                 reopenFileStream_(index_file_, index_file_path_, std::ios::in | std::ios::binary);
-                reopenFileStream_(map_file_, map_file_path_, std::ios::in);
-                reopenFileStream_(data_file_, data_file_path_, std::ios::in);
+                map_file_.reopen();
+                data_file_.reopen();
 
                 size_of_index_file_ = index_stat_result.st_size;
 
@@ -679,16 +830,12 @@ namespace sparta{
             filepath_(std::move(filepath)),
             record_file_path_(filepath_ + "record.bin"),
             index_file_path_(filepath_ + "index.bin"),
-            map_file_path_(filepath_ + "map.dat"),
-            data_file_path_(filepath_ + "data.dat"),
-            string_file_path_(filepath_ + "string_map.dat"),
-            display_file_path_(filepath_ + "display_format.dat"),
             record_file_(record_file_path_, std::fstream::in | std::fstream::binary ),
             index_file_(index_file_path_, std::fstream::in | std::fstream::binary),
-            map_file_(map_file_path_, std::fstream::in),
-            data_file_(data_file_path_, std::fstream::in),
-            string_file_(string_file_path_, std::fstream::in),
-            display_file_(display_file_path_, std::fstream::in),
+            map_file_(filepath_ + "map.dat", std::fstream::in),
+            data_file_(filepath_ + "data.dat", std::fstream::in),
+            string_file_(filepath_ + "string_map.dat", std::fstream::in),
+            display_file_(filepath_ + "display_format.dat", std::fstream::in),
             data_callback_(std::move(data_callback)),
             size_of_index_file_(0),
             size_of_record_file_(0),
@@ -703,52 +850,49 @@ namespace sparta{
             sparta_assert(data_callback_);
 
             //Make sure the file opened correctly!
-            if(!record_file_.is_open())
-            {
-                throw sparta::SpartaException("Failed to open file, "+filepath+"record.bin");
-            }
-            if(record_file_.peek() == std::ifstream::traits_type::eof()) {
-                throw sparta::SpartaException("Database file is empty.  Anything recorded? "+filepath+"record.bin");
-            }
+            sparta_assert(record_file_.is_open(),
+                          "Failed to open file, " + filepath_ + "record.bin");
 
-            if(!index_file_.is_open()) {
-                throw sparta::SpartaException("Failed to open file, "+filepath+"index.bin");
-            }
-            if(index_file_.peek() == std::ifstream::traits_type::eof()) {
-                throw sparta::SpartaException("Index file is empty.  Argos database collection complete? "+filepath+"record.bin");
-            }
+            sparta_assert(record_file_.peek() != std::ifstream::traits_type::eof(),
+                          "Database file is empty.  Anything recorded? " + filepath_ + "record.bin");
 
-#ifdef READER_LOG
-            std::cout << "READER: pipeViewer reader opened: " << filepath << "record.bin" << std::endl;
-#endif
+            sparta_assert(index_file_.is_open(),
+                          "Failed to open file, " + filepath_ + "index.bin");
+
+            sparta_assert(index_file_.peek() != std::ifstream::traits_type::eof(),
+                          "Index file is empty.  Argos database collection complete? " + filepath_ + "record.bin");
+
+            READER_LOG_MSG("pipeViewer reader opened: " << filepath_ << "record.bin");
 
             // Read header from index file
             char header_buf[64];
             // Note that this is not shared with pipeViewer::Outputter since it must
             // remain even if the Outputter is changed
-            const std::string EXPECTED_HEADER_PREFIX = "sparta_pipeout_version:";
-            const std::size_t HEADER_SIZE = EXPECTED_HEADER_PREFIX.size() + 4 + 1; // prefix + number + newline
+            static constexpr std::string_view EXPECTED_HEADER_PREFIX = "sparta_pipeout_version:";
+            static constexpr size_t HEADER_SIZE = EXPECTED_HEADER_PREFIX.size() + 4 + 1; // prefix + number + newline
             index_file_.read(header_buf, HEADER_SIZE);
             // Assuming older version until header proves otherwise
             version_ = 1;
-            if(index_file_.gcount() != (int)HEADER_SIZE){
+            if(static_cast<size_t>(index_file_.gcount()) != HEADER_SIZE) {
                 // Assume old version because the file is too small to have a header
                 index_file_.clear(); // Clear error flags after failing to read enough data
                 index_file_.seekg(0, std::ios::beg); // Restore
-            }if(strncmp(header_buf, EXPECTED_HEADER_PREFIX.c_str(), EXPECTED_HEADER_PREFIX.size())){
+            }
+            else if(EXPECTED_HEADER_PREFIX.compare(0, EXPECTED_HEADER_PREFIX.size(), header_buf, EXPECTED_HEADER_PREFIX.size())) {
                 // Header prefix did not match. Assume old version
                 index_file_.seekg(0, std::ios::beg); // Restore
-            }else{
+            }
+            else {
                 // Header prefix matched. Read version
                 *(header_buf + HEADER_SIZE - 1) = '\0'; // Insert null
                 version_ = sparta::lexicalCast<decltype(version_)>(header_buf+EXPECTED_HEADER_PREFIX.size());
             }
             sparta_assert(version_ > 0 && version_ <= Outputter::FILE_VERSION,
-                          "pipeout file " << filepath << " determined to be format "
+                          "pipeout file " << filepath_ << " determined to be format "
                           << version_ << " which is not known by this version of SPARTA. Version "
                           "expected to be in range [1, " << Outputter::FILE_VERSION << "]");
             sparta_assert(index_file_.good(),
-                          "Finished reading index file header for " << filepath << " but "
+                          "Finished reading index file header for " << filepath_ << " but "
                           "ended up with non-good file handle somehow. This is a bug in the "
                           "header-reading logic");
 
@@ -761,11 +905,10 @@ namespace sparta{
             // Save the first index entry position
             first_index_ = index_file_.tellg();
 
-#ifdef READER_LOG
-            std::cout << "READER: Heartbeat is: " << heartbeat_ << std::endl;
-#endif
+            READER_LOG_MSG("Heartbeat is: " << heartbeat_);
+
             sparta_assert(heartbeat_ != 0,
-                          "Pipeout database \"" << filepath << "\" had a heartbeat of 0. This "
+                          "Pipeout database \"" << filepath_ << "\" had a heartbeat of 0. This "
                           "would be too slow to actually load");
 
             //Determine the size of our index file
@@ -779,8 +922,6 @@ namespace sparta{
             lowest_cycle_ = findCycleFirst_();
             highest_cycle_ = findCycleLast_();
 
-            std::string delim = ":";
-
             // Building the In-Memory LocationID -> PairID Lookup structure
             // from the map_file_ which contains the same.
             // We read this map_file_ just once during the construction
@@ -792,38 +933,8 @@ namespace sparta{
             // about its name strings and sizeof and pair length from other data structures.
             //The fields in the file are separated by ":"
 
-            // Read throught the whole map File
-            while(map_file_){
-                std::string Data_String;
-
-                // Read a line from the file, and if we cannot find a line,
-                // that means we have read the whole file
-                if(!getline(map_file_, Data_String)){
-                    break;
-                }
-
-                //Parse the string, one delimiter at a time.
-                size_t last = 0;
-                size_t next = 0;
-                next = Data_String.find(delim, last);
-
-                // We know the format of the map file is always like,
-                // A:B: so we know we can iterate twice over the
-                // delimiters in every single line and retrieve the individual values as strings
-                std::string key_ = Data_String.substr(last, next - last);
-                last = next + 1;
-                next = Data_String.find(delim, last);
-                std::string val_ = Data_String.substr(last, next - last);
-
-                // Once we have got the kep string and value string,
-                // we immediately put the pair in the Map.
-                // We don't even have to check for duplicate pairs as
-                // there never will be a duplicate strings,
-                // because, in the Outputter.h we build the Map file
-                // with only unique Location IDs.
-                loc_map_.insert(std::make_pair(key_, val_));
-                last = next + 1;
-            }
+            // Read through the whole map File
+            map_file_.processInto(loc_map_);
 
             // Building the In-memory Pair Lookup structure, such that,
             // in future when reading back record from transaction file,
@@ -833,73 +944,28 @@ namespace sparta{
             // We read through the Data file just once, and populate this structure.
             //The fields in the file are separated by ":"
 
-            //Read through the whole Data File
-            while(data_file_){
-                pair_struct pStruct;
-                std::string Data_String;
+            data_file_.processWith([&](auto& strm) {
+                uint16_t unique_id;
+                strm >> unique_id;
 
-                // Read a line from the file, and if we cannot find a line,
-                // that means we have read the whole file
-                if(!getline(data_file_, Data_String)){
-                    break;
-                }
-
-                //Parse the string, one delimiter at a time.
-                size_t last = 0;
-                size_t next = 0;
-                next = Data_String.find(delim, last);
-
-                //We know the first value in such a string is always the Pair ID
-                pStruct.UniqueID = std::stoull(Data_String.substr(last, next - last));
-                last = next + 1;
-                next = Data_String.find(delim, last);
-
-                // We know the second value in such a string
-                // is always the Length of this particular Pair.
-                pStruct.length = std::stoull(Data_String.substr(last, next - last)) + 1;
-                last = next + 1;
-
-                // The first pair value is the pair-id. We can make up any name
-                // for the name string for this pair.
-                pStruct.names.push_back("pairid");
-                pStruct.sizes.push_back(sizeof(uint16_t));
-                pStruct.types.emplace_back(0);
-
-                // Iterate through the rest of the delimiters in the stringline
-                // and build up the Name Strings and the Sizeof values for every field.
-                while((next = Data_String.find(delim, last)) != std::string::npos){
-                    pStruct.names.emplace_back(Data_String.substr(last, next - last));
-                    last = next + 1;
-                    next = Data_String.find(delim, last);
-                    pStruct.sizes.emplace_back(std::stoull(Data_String.substr(last, next - last)));
-                    last = next + 1;
-                    next = Data_String.find(delim, last);
-                    pStruct.types.emplace_back(std::stoull(Data_String.substr(last, next - last)));
-                    last = next + 1;
-                }
+                pair_struct pStruct(strm);
 
                 //Finally, when we have completely parsed one line of this file,
                 // it means we have complete knowledge of one pair type.
                 // We then insert this pair into out Lookup structure.
-                map_.emplace_back(pStruct);
-            }
+                map_.emplace(unique_id, pStruct);
+            });
 
-            while(display_file_){
-                std::string dataString;
-                if(!getline(display_file_, dataString)){
-                    break;
+            display_file_.processWith([&](auto& strm) {
+                uint16_t pairId;
+                strm >> pairId;
+
+                auto& fmt_vec = map_.at(pairId).formats;
+
+                while(!strm.eof()) {
+                    strm >> fmt_vec;
                 }
-                size_t last = 0, next = 0;
-                next = dataString.find(delim, last);
-                uint16_t pairId = std::stoull(dataString.substr(last, next - last));
-                last = next + 1;
-                next = dataString.find("\n", last);
-                for(auto& st : map_){
-                    if(st.UniqueID == pairId){
-                        st.formatGuide = dataString.substr(last, next - last);
-                    }
-                }
-            }
+            });
 
             // Now, we are the In-memory Structure that will help us perform
             // a lookup to find out the Actual String Representation from an integer.
@@ -923,41 +989,8 @@ namespace sparta{
             // records and send the record back to the pipeViewer side, so that we can
             // represent such strings in the pipeViewer Viewer.
             // Read every line of the String Map file
-            while(string_file_){
-                std::string Data_String;
 
-                // If we do not find a string line, that means we have read all
-                // the lines and have reached the end of the file
-                if(!getline(string_file_, Data_String)){
-                    break;
-                }
-
-                // We do not need to iterate throuogh this because we know exactly
-                // how many delimiters there would be in every line of this file
-                size_t last = 0;
-                size_t next = 0;
-                next = Data_String.find(delim, last);
-
-                //The first value before the delimiter would be our pair ID
-                uint64_t pid = std::stoull(Data_String.substr(last, next - last));
-                last = next + 1;
-                next = Data_String.find(delim, last);
-
-                // The first value before the second delimiter would be our Field ID
-                uint64_t fid = std::stoull(Data_String.substr(last, next - last));
-                last = next + 1;
-                next = Data_String.find(delim, last);
-
-                // The first value before the third delimiter would be our actual mapped value
-                uint64_t fval = std::stoull(Data_String.substr(last, next - last));
-                last = next + 1;
-                next = Data_String.find(delim, last);
-
-                // the value before the final delimiter would be a string value and we parse this string value,
-                // create a tuple key with the previous index values and put this string as the value for key.
-                std::string strval = Data_String.substr(last, next - last);
-                stringMap_[std::make_tuple(pid, fid, fval)] = strval;
-            }
+            string_file_.processInto(stringMap_);
         }
 
         Reader(Reader&& rhs) = default;
@@ -967,10 +1000,6 @@ namespace sparta{
         {
             index_file_.close();
             record_file_.close();
-            map_file_.close();
-            data_file_.close();
-            string_file_.close();
-            display_file_.close();
         }
 
         template<typename CallbackType, typename ... CallbackArgs>
@@ -1007,9 +1036,7 @@ namespace sparta{
          */
         void getWindow(uint64_t start, uint64_t end)
         {
-#ifdef READER_LOG
-            std::cout << "\nREADER: returning window. START: " << start << " END: " << end << std::endl;
-#endif
+            READER_LOG_MSG("returning window. START: " << start << " END: " << end);
             // sparta_assert(//start < end, "Cannot return a window where the start value is greater than the end value");
 
             //Make sure the user is not abusing our NON thread safe method.
@@ -1017,9 +1044,9 @@ namespace sparta{
             lock = true;
             //round the end up to the nearest interval.
             uint64_t chunk_end = roundUp_(end);
-#ifdef READER_LOG
-            std::cout << "READER: end rounded to: " << chunk_end << std::endl;
-#endif
+
+            READER_LOG_MSG("end rounded to: " << chunk_end);
+
             //First we will want to make sure we are ready to read at the correct
             //position in the record file.
             int64_t pos = findRecordReadPos_(start);
@@ -1030,9 +1057,7 @@ namespace sparta{
             //Now start processing the chunk.
             int64_t end_pos = pos + full_data_size;
 
-#ifdef READER_LOG
-            std::cout << "READER: start_pos: " << pos << " end_pos: " << end_pos << std::endl;
-#endif
+            READER_LOG_MSG("start_pos: " << pos << " end_pos: " << end_pos);
 
             //Make sure we have not passed the end position, also make sure we
             //are not at -1 bc that means we reached the end of the file!
@@ -1041,29 +1066,34 @@ namespace sparta{
             //then pass the a pointer to the struct to the appropriate callback.
 
 
+#ifdef READER_LOG
             uint32_t recsread = 0;
+#endif
             if(version_ == 1){
                 while(pos < end_pos && pos != -1)
                 {
                     // Read, checking for chunk_end
                     readRecord_v1_(pos, start, chunk_end);
+#ifdef READER_LOG
                     recsread++;
+#endif
                 }
             }else if(version_ == 2){
                 while(pos < end_pos && pos != -1)
                 {
                     // Read, checking for chunk_end
                     readRecord_v2_(pos, start, chunk_end);
+#ifdef READER_LOG
                     recsread++;
+#endif
                 }
             }else{
                 throw SpartaException("This pipeViewer reader library does not know how to read a window "
                                       " for version ") << version_ << " file: " << filepath_;
             }
 
-#ifdef READER_LOG
-            std::cout << "READER: read " << std::dec << recsread << " records" << std::endl;
-#endif
+            READER_LOG_MSG("read " << std::dec << recsread << " records");
+
             //unlock our assertion test.
             sparta_assert(lock);
             lock = false;
@@ -1079,10 +1109,6 @@ namespace sparta{
                 index_file_.seekg(0, std::ios::beg);
                 while(tick <= getCycleLast() + (heartbeat_-1)){
                     int64_t pos;
-                    //index_file_.read((char*)&pos, sizeof(uint64_t));
-                    //if(index_file_.eof()){
-                    //    break;
-                    //}
 
                     // Set up a record checker to ensure all transactions fall
                     // within the range being queried
@@ -1095,8 +1121,8 @@ namespace sparta{
 
 
                     uint64_t chunk_end = roundUp_(tick + heartbeat_);
-                    std::cout << "chunk end rounded to: " << chunk_end << std::endl;
-                    std::cout << "record file pos before: " << record_file_.tellg() << std::endl;
+                    std::cout << "chunk end rounded to: " << chunk_end << std::endl
+                              << "record file pos before: " << record_file_.tellg() << std::endl;
                     record_file_.seekg(pos, std::ios::beg);
                     std::cout << "record file pos after:  " << record_file_.tellg() << std::endl;
                     if(record_file_.tellg() == EOF) {
@@ -1120,7 +1146,6 @@ namespace sparta{
                             recsread++;
                         }
 
-                        //readRecord_(pos, tick, tick + heartbeat_);
                         std::cout << "Records: " << recsread << std::endl;
                     }
                     std::cout << "record file pos after read: " << record_file_.tellg() << std::endl;
@@ -1161,13 +1186,12 @@ namespace sparta{
          */
         uint64_t getCycleFirst() const
         {
-#ifdef READER_DBG
-            std::cout << "READER: Returning first cycle: " << lowest_cycle_ << std::endl;
-#endif
+            READER_DBG_MSG("Returning first cycle: " << lowest_cycle_);
             //This needs to be changed.
             //BUG When this returns 0, we miss many transactions in the viewer.
             return lowest_cycle_;
         }
+
         /**
          * \brief Return the last end time in the file.
          * Our output saved the last index to point to
@@ -1175,9 +1199,7 @@ namespace sparta{
          */
         uint64_t getCycleLast() const
         {
-#ifdef READER_DBG
-            std::cout << "READER: Returning last cycle: " << highest_cycle_ << std::endl;
-#endif
+            READER_DBG_MSG("Returning last cycle: " << highest_cycle_);
             return highest_cycle_;
 
         }
@@ -1215,20 +1237,12 @@ namespace sparta{
         const std::string filepath_; /*!< Path to this file */
         const std::string record_file_path_; /*!< Path to the record file */
         const std::string index_file_path_; /*!< Path to the index file */
-        const std::string map_file_path_; /*!< Path to the map file which maps LocationID to Pair number */
-        // Path to the data file which contains information about the name strings and the size in Bytes
-        // their values hold for every different pair
-        const std::string data_file_path_;
-        // Path to the string_map file which contains String Representations of the actual values,
-        // mapped from the intermediate Tuple used to write in Database
-        const std::string string_file_path_;
-        const std::string display_file_path_;
-        std::fstream record_file_; /*!< The record file stream */
-        std::fstream index_file_;  /*!< The index file stream */
-        std::fstream map_file_;    /*!< The map file stream */
-        std::fstream data_file_;   /*!< The data file stream */
-        std::fstream string_file_; /*!< The string map file stream */
-        std::fstream display_file_;
+        std::ifstream record_file_; /*!< The record file stream */
+        std::ifstream index_file_;  /*!< The index file stream */
+        ColonDelimitedFile map_file_;    /*!< The map file stream */
+        ColonDelimitedFile data_file_;   /*!< The data file stream */
+        ColonDelimitedFile string_file_; /*!< The string map file stream */
+        ColonDelimitedFile display_file_;
         std::unique_ptr<PipelineDataCallback> data_callback_; /*<! A pointer to a callback to pass records too */
         uint64_t heartbeat_; /*!< The heartbeast-size in cycles of our indexes in the index file */
         uint64_t first_index_; /*!< Position in file of first index entry */
@@ -1242,11 +1256,11 @@ namespace sparta{
         // In-memory data structure to hold the mapping of Location ID
         // of generic transaction structures
         // and map them to Pair IDs of pair transaction structs.
-        std::unordered_map<std::string, std::string> loc_map_;
+        std::unordered_map<uint32_t, uint16_t> loc_map_;
         // In-memory data structure to hold the unique pairId and
         // subsequent information about its name strings and
         // sizeofs for every different pair type
-        std::vector<pair_struct> map_;
+        std::unordered_map<uint16_t, pair_struct> map_;
         // In-memory data structure to hold the string map structure
         // which maps a tuple of integers reflecting the pair type,
         // field number and field value to the actual String
@@ -1281,7 +1295,7 @@ namespace sparta{
             const auto& value = stringVector[i];
 
             if(name != "DID") {
-                annt_body << name << "(" << value << ") ";
+                annt_body << name << '(' << value << ") ";
             }
 
             if(name == "uid") {
@@ -1309,5 +1323,4 @@ namespace sparta{
                                       pair->nameVector,
                                       pair->stringVector);
     }
-}//NAMESPACE:pipeViewer
-}//NAMESPACE:sparta
+}//NAMESPACE:sparta::pipeViewer

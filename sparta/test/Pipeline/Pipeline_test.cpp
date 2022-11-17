@@ -985,13 +985,11 @@ int main ()
 
     // Test operator* and operator-> of pipeline iterator
     auto iter = examplePipeline2.begin();
-    uint32_t valid_cnt = 0;
     for (uint32_t i = 0; iter != examplePipeline2.end(); i++) {
         if (iter.isValid()) {
             std::cout << "Pipeline Stage[" << i << "]: "
                       << "ObjectID(" << iter->getID() << "), "
                       << "ObjectName(" << (*iter).getName() << ")\n";
-            valid_cnt++;
         }
         iter++;
     }
