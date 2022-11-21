@@ -27,7 +27,6 @@ class DatabaseHandle(object):
                             .format(type(db)))
 
         self.__db = db
-        #self.__iw = transactiondb.IntervalWindow(db.filename)
         self.__dbapi = self.__db.api
 
         if logging.root.isEnabledFor(logging.DEBUG):
@@ -41,16 +40,6 @@ class DatabaseHandle(object):
     @property
     def database(self):
         return self.__db
-
-    ## The point where an external vendor like a Context can interface with
-    #  the Database and the ISL API to get query results
-    ##def Query(self, hc):
-    ##    if hc in self.__db.cache:
-    ##        results = self.__db.Fetch(hc)
-    ##    else:
-    ##        results = self.__iw.query(hc)
-    ##        self.__db.Cache(hc, results)
-    ##    return results
 
     def query(self, start_inc, end_inc, cb, mod_tracking=True):
         assert end_inc >= start_inc, 'Query range must be ordered such that start <= end'
@@ -72,15 +61,6 @@ class DatabaseHandle(object):
                                end_inc,
                                cb,
                                modify_tracking = mod_tracking)
-
-    ## API for performing queries. This is a SPARTA transactiondb.IntervalWindow
-    #  object
-    #
-    #  Results of queries through this interface will refer to locations and
-    #  clocks available through the 'database' attribute
-    @property
-    def query_api(self):
-        return self.__iw
 
     @property
     def api(self):
