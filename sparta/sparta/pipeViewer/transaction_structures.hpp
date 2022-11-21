@@ -21,6 +21,10 @@
 
 static constexpr uint64_t BAD_DISPLAY_ID = 0x1000;
 
+static constexpr std::string_view HEADER_PREFIX = "sparta_pipeout_version:";
+static constexpr int VERSION_LENGTH = 4;
+static constexpr size_t HEADER_SIZE = HEADER_PREFIX.size() + VERSION_LENGTH + 1; // prefix + number + newline
+
 /*!
  * \brief Old version of the transaction structures namespace
  */
@@ -59,12 +63,12 @@ namespace version1 {
     // Annotation Event (Catch-All)
     struct annotation_t : public transaction_t {
         uint16_t length = 0;  //! Annotation Length 2 Bytes
-        const char *annt = nullptr; //! Pointer to Annotation Start
+        std::string annt; //! Pointer to Annotation Start
 
         annotation_t() = default;
 
-        explicit annotation_t(const transaction_t& rhs) :
-            transaction_t(rhs)
+        explicit annotation_t(transaction_t&& rhs) :
+            transaction_t(std::move(rhs))
         {
         }
     };
@@ -148,12 +152,12 @@ struct memoryoperation_t : public transaction_t {
 // Annotation Event (Catch-All)
 struct annotation_t : public transaction_t {
     uint16_t length = 0;  //! Annotation Length 2 Bytes
-    const char *annt = nullptr; //! Pointer to Annotation Start
+    std::string annt; //! Pointer to Annotation Start
 
     annotation_t() = default;
 
-    explicit annotation_t(const transaction_t& rhs) :
-        transaction_t(rhs)
+    explicit annotation_t(transaction_t&& rhs) :
+        transaction_t(std::move(rhs))
     {
     }
 
@@ -161,11 +165,11 @@ struct annotation_t : public transaction_t {
     explicit annotation_t(version1::annotation_t&& old_obj) :
         transaction_t(std::move(old_obj)),
         length(old_obj.length),
-        annt(old_obj.annt)
+        annt(std::move(old_obj.annt))
     {
 
         old_obj.length = 0;
-        old_obj.annt = nullptr;
+        old_obj.annt.clear();
     }
 };
 
@@ -185,8 +189,8 @@ struct pair_t : public transaction_t {
     // actual value or the Integral representation of the
     // actual values of every Name string in a record.
     // We only store these values in the database.
-    typedef uint64_t IntT;
-    typedef std::pair<IntT, bool> ValidPair;
+    using IntT = uint64_t;
+    using ValidPair = std::pair<IntT, bool>;
     std::vector<ValidPair> valueVector;
 
     // Vector of the different Name Strings in a record.
@@ -205,8 +209,8 @@ struct pair_t : public transaction_t {
     // is no older version of such a structure.
     pair_t() = default;
 
-    explicit pair_t(const transaction_t& rhs) :
-        transaction_t(rhs)
+    explicit pair_t(transaction_t&& rhs) :
+        transaction_t(std::move(rhs))
     {
     }
 
