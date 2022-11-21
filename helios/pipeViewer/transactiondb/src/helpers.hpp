@@ -1,16 +1,13 @@
 
 /*!
- * \file helpers.h
+ * \file helpers.hpp
  * \brief Helpers for wrapper of transaction database structures
  */
 
-#ifndef __HELPERS_H__
-#define __HELPERS_H__
+#pragma once
 
 namespace transactiondb {
 
     //! \brief Target-dependent pointer type for use by Cython
-    typedef void* ptr_t;
+    using ptr_t = void*;
 }
-
-#endif // #ifndef __HELPERS_H__

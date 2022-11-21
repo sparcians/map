@@ -7,12 +7,12 @@
 
 import sys
 sys.path.append("../../")
-from c_common cimport *
 from libcpp.vector cimport vector
 from libcpp.utility cimport pair
 from libcpp.string cimport string
+from libc.stdint cimport *
 
-cdef extern from "helpers.h" namespace "transactiondb":
+cdef extern from "helpers.hpp" namespace "transactiondb":
 
     ctypedef long ptr_t
 
@@ -32,23 +32,23 @@ cdef extern from "TransactionInterval.hpp" namespace "sparta::pipeViewer":
 
         c_TransactionInterval_uint64_t(c_TransactionInterval_uint64_t) # Const ref arg
 
-        uint16_t control_ProcessID
-        uint64_t transaction_ID
-        uint64_t display_ID
-        uint32_t location_ID
-        uint16_t flags
-        uint64_t parent_ID
-        uint32_t operation_Code
-        uint64_t virtual_ADR
-        uint64_t real_ADR
-        uint16_t length
-        uint8_t *annt
-        uint16_t pairId
-        vector[uint16_t] sizeOfVector
-        vector[pair[uint64_t, bint]] valueVector
-        vector[string] nameVector
-        vector[string] stringVector
-        vector[string] delimVector
+        const uint16_t control_ProcessID
+        const uint64_t transaction_ID
+        const uint64_t display_ID
+        const uint32_t location_ID
+        const uint16_t flags
+        const uint64_t parent_ID
+        const uint32_t operation_Code
+        const uint64_t virtual_ADR
+        const uint64_t real_ADR
+        const uint16_t length
+        const string annt
+        const uint16_t pairId
+        const vector[uint16_t] sizeOfVector
+        const vector[pair[uint64_t, bint]] valueVector
+        const vector[string] nameVector
+        const vector[string] stringVector
+        const vector[string] delimVector
 
         uint64_t getLeft() # const
         uint64_t getRight() # const

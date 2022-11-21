@@ -8,169 +8,236 @@
 #pragma once
 
 #include <iostream>
+#include <numeric>
 #include <string>
 #include <vector>
 #include "sparta/pairs/PairFormatter.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 
-namespace sparta {
-namespace pipeViewer {
+namespace sparta::pipeViewer {
 template <class Dat_t>
 class transactionInterval {
 private:
-    Dat_t time_Start_;    /*! Left Boundary of Interval */
-    Dat_t time_End_;    /*! Right Boundary of Interval */
+    const Dat_t time_Start_;    /*! Left Boundary of Interval */
+    const Dat_t time_End_;    /*! Right Boundary of Interval */
+
+    transactionInterval(const Dat_t lval,
+                        const Dat_t rval,
+                        const uint16_t cpid,
+                        const uint64_t trid,
+                        const uint64_t dispid,
+                        const uint64_t lctn,
+                        const uint16_t flgs,
+                        const uint64_t ptid,
+                        const uint32_t opcd,
+                        const uint64_t vadr,
+                        const uint64_t radr,
+                        const uint16_t lngt,
+                        std::string&& iannt,
+                        const uint16_t pair_id,
+                        const std::vector<uint16_t>& sz,
+                        const std::vector<std::pair<uint64_t, bool>>& vals,
+                        const std::vector<std::string>& nams,
+                        const std::vector<std::string>& str,
+                        const PairFormatterVector& del) :
+        time_Start_(lval),
+        time_End_(rval),
+        control_ProcessID(cpid),
+        transaction_ID(trid),
+        display_ID(dispid),
+        location_ID(lctn),
+        flags(flgs),
+        parent_ID(ptid),
+        operation_Code(opcd),
+        virtual_ADR(vadr),
+        real_ADR(radr),
+        length(lngt),
+        annt(std::move(iannt)),
+        pairId(pair_id),
+        sizeOfVector(sz),
+        valueVector(vals),
+        nameVector(nams),
+        stringVector(str),
+        delimVector(del)
+    {
+        sparta_assert( time_Start_ <= time_End_);
+    }
+
+    transactionInterval(const Dat_t lval,
+                        const Dat_t rval,
+                        const uint16_t cpid,
+                        const uint64_t trid,
+                        const uint64_t dispid,
+                        const uint64_t lctn,
+                        const uint16_t flgs,
+                        const uint64_t ptid,
+                        const uint32_t opcd,
+                        const uint64_t vadr,
+                        const uint64_t radr,
+                        const uint16_t lngt,
+                        std::string&& iannt) :
+        transactionInterval(lval,
+                            rval,
+                            cpid,
+                            trid,
+                            dispid,
+                            lctn,
+                            flgs,
+                            ptid,
+                            opcd,
+                            vadr,
+                            radr,
+                            lngt,
+                            std::move(iannt),
+                            0,
+                            {},
+                            {},
+                            {},
+                            {},
+                            {})
+    {
+    }
+
 public:
-    typedef Dat_t IntervalDataT;
-    uint16_t control_ProcessID;    /*! Core ID*/
-    uint64_t transaction_ID;    /*! Transaction ID*/
-    uint64_t display_ID;      /*! Use to control display character and color */
-    uint16_t location_ID;    /*! Location ID*/
-    uint16_t flags;    /*! Assorted Transaction Flags*/
-    uint64_t parent_ID;    /*! Parent Transaction ID*/
-    uint32_t operation_Code;    /*! Operation Code*/
-    uint64_t virtual_ADR;    /*! Virtual Address*/
-    uint64_t real_ADR;    /*! Real Address*/
-    uint16_t length;   /*! Annotation Length or Name Value Pair count*/
-    char* annt; /*! Annotation Pointer*/
-    uint16_t pairId; /*! Unique id required for pipeline collection*/
-    std::vector<uint16_t> sizeOfVector; /*! Vector of integers representing Sizeof of every field */
-    std::vector<std::pair<uint64_t, bool>> valueVector; /*! Vector of integers containing the actual data of every field */
-    std::vector<std::string> nameVector ; /*! Vector of strings containing the actual Names of every field */
-    std::vector<std::string> stringVector; /*! Vector of strings containing the actual string value of every field */
-    PairFormatterVector delimVector;
+    using IntervalDataT = Dat_t;
+    const uint16_t control_ProcessID;    /*! Core ID*/
+    const uint64_t transaction_ID;    /*! Transaction ID*/
+    const uint64_t display_ID;      /*! Use to control display character and color */
+    const uint16_t location_ID;    /*! Location ID*/
+    const uint16_t flags;    /*! Assorted Transaction Flags*/
+    const uint64_t parent_ID;    /*! Parent Transaction ID*/
+    const uint32_t operation_Code;    /*! Operation Code*/
+    const uint64_t virtual_ADR;    /*! Virtual Address*/
+    const uint64_t real_ADR;    /*! Real Address*/
+    const uint16_t length;   /*! Annotation Length or Name Value Pair count*/
+    const std::string annt; /*! Annotation Pointer*/
+    const uint16_t pairId; /*! Unique id required for pipeline collection*/
+    const std::vector<uint16_t> sizeOfVector; /*! Vector of integers representing Sizeof of every field */
+    const std::vector<std::pair<uint64_t, bool>> valueVector; /*! Vector of integers containing the actual data of every field */
+    const std::vector<std::string> nameVector ; /*! Vector of strings containing the actual Names of every field */
+    const std::vector<std::string> stringVector; /*! Vector of strings containing the actual string value of every field */
+    const PairFormatterVector delimVector;
 
     // Constructor for transaction_t
-    transactionInterval( const Dat_t &lval, const Dat_t &rval,
-                         const uint16_t &cpid, const uint64_t &trid, const uint64_t &dispid,
-                         const uint64_t &lctn, const uint16_t &flgs) :
-        time_Start_(lval), time_End_(rval), control_ProcessID(cpid),
-        transaction_ID(trid), display_ID(dispid), location_ID(lctn), flags(flgs) ,
-        parent_ID(0), operation_Code(0), virtual_ADR(0), real_ADR(0),
-        length(0), annt(nullptr), pairId(0), sizeOfVector(), valueVector(),
-        nameVector(), stringVector(), delimVector(){
-            sparta_assert( time_Start_ <= time_End_);
-        }
+    transactionInterval( const Dat_t lval, const Dat_t rval,
+                         const uint16_t cpid, const uint64_t trid, const uint64_t dispid,
+                         const uint64_t lctn, const uint16_t flgs) :
+        transactionInterval(lval, rval, cpid, trid, dispid, lctn, flgs, 0, 0, 0)
+    {
+    }
 
     // Constructor for annotation_t
-    transactionInterval( const Dat_t &lval, const Dat_t &rval,
-        const uint16_t &cpid, const uint64_t &trid, const uint64_t &dispid,
-        const uint64_t &lctn, const uint16_t &flgs,
-        const uint64_t &ptid, const uint16_t &lngt, const char *iannt) :
-        transactionInterval(lval, rval, cpid, trid, dispid, lctn, flgs)
-        {
-            length = lngt;
-            annt = nullptr;
-            sparta_assert( time_Start_ <= time_End_);
-            sparta_assert(lngt!=0);
-            if(iannt != nullptr) {
-                annt = new char[lngt];
-                memcpy(annt,iannt,lngt);
-            }
-        }
+    transactionInterval( const Dat_t lval, const Dat_t rval,
+        const uint16_t cpid, const uint64_t trid, const uint64_t dispid,
+        const uint64_t lctn, const uint16_t flgs,
+        const uint64_t ptid, const uint16_t lngt, std::string iannt) :
+        transactionInterval(lval,
+                            rval,
+                            cpid,
+                            trid,
+                            dispid,
+                            lctn,
+                            flgs,
+                            ptid,
+                            0,
+                            0,
+                            0,
+                            lngt,
+                            std::move(iannt))
+    {
+        sparta_assert(lngt!=0);
+    }
 
     // Constructor for instrucation_t
-    transactionInterval( const Dat_t &lval, const Dat_t &rval,
-        const uint16_t &cpid, const uint64_t &trid, const uint64_t &dispid,
-        const uint64_t &lctn, const uint16_t &flgs,
-        const uint64_t &ptid, const uint32_t &opcd,
-        const uint64_t &vadr, const uint64_t &radr) :
-        transactionInterval(lval, rval, cpid, trid, dispid, lctn, flgs)
-        {
-            parent_ID = ptid;
-            operation_Code = opcd;
-            virtual_ADR = vadr;
-            real_ADR = radr;
-            sparta_assert( time_Start_ <= time_End_);
-        }
+    transactionInterval( const Dat_t lval, const Dat_t rval,
+        const uint16_t cpid, const uint64_t trid, const uint64_t dispid,
+        const uint64_t lctn, const uint16_t flgs,
+        const uint64_t ptid, const uint32_t opcd,
+        const uint64_t vadr, const uint64_t radr) :
+        transactionInterval(lval,
+                            rval,
+                            cpid,
+                            trid,
+                            dispid,
+                            lctn,
+                            flgs,
+                            ptid,
+                            opcd,
+                            vadr,
+                            radr,
+                            0,
+                            "")
+    {
+    }
 
     // Constructor for memoryoperation_t
-    transactionInterval( const Dat_t &lval, const Dat_t &rval,
-        const uint16_t &cpid, const uint64_t &trid, const uint64_t &dispid,
-        const uint64_t &lctn, const uint16_t &flgs,
-        const uint64_t &ptid, const uint64_t &vadr,
-        const uint64_t &radr) :
-        transactionInterval(lval, rval, cpid, trid, dispid, lctn, flgs)
-        {
-            parent_ID = ptid;
-            virtual_ADR = vadr;
-            real_ADR = radr;
-            sparta_assert( time_Start_ <= time_End_);
-        }
+    transactionInterval( const Dat_t lval, const Dat_t rval,
+        const uint16_t cpid, const uint64_t trid, const uint64_t dispid,
+        const uint64_t lctn, const uint16_t flgs,
+        const uint64_t ptid, const uint64_t vadr,
+        const uint64_t radr) :
+        transactionInterval(lval,
+                            rval,
+                            cpid,
+                            trid,
+                            dispid,
+                            lctn,
+                            flgs,
+                            ptid,
+                            0,
+                            vadr,
+                            radr)
+    {
+    }
 
     // Constructor for pair_t
-    transactionInterval(const Dat_t& lval, const Dat_t& rval,
-        const uint16_t& cpid, const uint64_t& trid, const uint64_t& dispid,
-        const uint64_t& lctn, const uint16_t& flgs,
-        const uint64_t& ptid, const uint16_t& lngt,
+    transactionInterval(const Dat_t lval, const Dat_t rval,
+        const uint16_t cpid, const uint64_t trid, const uint64_t dispid,
+        const uint64_t lctn, const uint16_t flgs,
+        const uint64_t ptid, const uint16_t lngt,
         const uint16_t pair_id, const std::vector<uint16_t>& sz,
         const std::vector<std::pair<uint64_t, bool>>& vals,
         const std::vector<std::string>& nams,
         const std::vector<std::string>& str,
         const PairFormatterVector& del) :
-        transactionInterval(lval, rval, cpid, trid, dispid, lctn, flgs) {
-        sparta_assert(time_Start_ <= time_End_);
-        parent_ID = ptid;
-        length = lngt;
-        pairId = pair_id;
-        sizeOfVector = sz;
-        valueVector = vals;
-        nameVector = nams;
-        stringVector = str;
-        delimVector = del;
+        transactionInterval(lval,
+                            rval,
+                            cpid,
+                            trid,
+                            dispid,
+                            lctn,
+                            flgs,
+                            ptid,
+                            0,
+                            0,
+                            0,
+                            lngt,
+                            "",
+                            pair_id,
+                            sz,
+                            vals,
+                            nams,
+                            str,
+                            del)
+    {
     }
 
     // Copy Constructor
-    transactionInterval( const transactionInterval<Dat_t>& rhp ) :
-        time_Start_      (rhp.time_Start_),
-        time_End_        (rhp.time_End_),
-        control_ProcessID(rhp.control_ProcessID),
-        transaction_ID   (rhp.transaction_ID),
-        display_ID       (rhp.display_ID),
-        location_ID      (rhp.location_ID),
-        flags            (rhp.flags),
-        parent_ID        (rhp.parent_ID),
-        operation_Code   (rhp.operation_Code),
-        virtual_ADR      (rhp.virtual_ADR),
-        real_ADR         (rhp.real_ADR),
-        length           (rhp.length),
-        annt             (rhp.annt),
-        pairId           (rhp.pairId),
-        sizeOfVector     (rhp.sizeOfVector),
-        valueVector      (rhp.valueVector),
-        nameVector       (rhp.nameVector),
-        stringVector     (rhp.stringVector),
-        delimVector      (rhp.delimVector)
-        {
-            if(rhp.annt){
-                assert(length > 0);
-                annt = new char[length];
-                memcpy(annt, rhp.annt, length);
-            }
-        }
+    transactionInterval(const transactionInterval<Dat_t>& rhp) = default;
 
-    /*!
-     * \brief Not assignable
-    */
-    transactionInterval& operator=( const transactionInterval<Dat_t>& rhp ) = delete;
-
-    /*!
-     * \brief Destructor
-     */
-    ~transactionInterval() { delete [] annt; };
+    // Move Constructor
+    transactionInterval(transactionInterval<Dat_t>&& rhp) = default;
 
     /*!
      * \brief Compute size of this interval including memory allocated for the annotation or the memory allocated by all the values for the pair
      */
     uint64_t getSizeInBytes() const {
         uint64_t size = sizeof(*this);
-        if(annt){
+        if(!annt.empty()) {
             size += length;
         }
-        else{
-            for(size_t i = 1; i != length; ++i){
-                size += sizeOfVector[i];
-            }
+        else {
+            size = std::accumulate(std::next(sizeOfVector.begin()), sizeOfVector.end(), size);
         }
         return size;
     }
@@ -181,17 +248,16 @@ public:
     Dat_t getRight() const noexcept{ return( time_End_ ); }
 
     /*! Function: Check if &V is within the event range*/
-    bool contains(const Dat_t &V)const noexcept{
+    bool contains(const Dat_t V) const noexcept {
         return( (V >= time_Start_) && ( V < time_End_) );
     }
 
     /*! Function: Check if &l,&r are within the event range*/
-    bool containsInterval( const Dat_t &l, const Dat_t &r ) const noexcept{
+    bool containsInterval(const Dat_t l, const Dat_t r) const noexcept {
         return ( (time_Start_ <= l) && (time_End_ >= r) );
     }
 }; // transactionInterval
 
-}//NAMESPACE:pipeViewer
-}//NAMESPACE:sparta
+}//NAMESPACE:sparta::pipeViewer
 
 #pragma once

@@ -11,7 +11,7 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
-#include <memory>
+#include <numeric>
 #include <thread>
 #include <mutex>
 #include <chrono>
@@ -26,8 +26,7 @@
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/TimeManager.hpp"
 
-namespace sparta {
-    namespace pipeViewer {
+namespace sparta::pipeViewer {
 
 class TransactionDatabaseInterface
 {
@@ -36,34 +35,34 @@ public:
     /*!
      * \brief Transaction type
      */
-    typedef transactionInterval<uint64_t> Transaction;
+    using Transaction = transactionInterval<uint64_t>;
 
-    typedef Transaction* interval_ptr;
-    typedef uint32_t interval_idx;
-    typedef const interval_idx const_interval_idx;
+    using interval_ptr = Transaction*;
+    using interval_idx = uint32_t;
+    using const_interval_idx = const interval_idx;
 
     /*!
      * \brief Constant representing ID Of NO transaction
      */
-    static const_interval_idx NO_TRANSACTION = 0xffffffff;
+    static constexpr interval_idx NO_TRANSACTION = 0xffffffff;
 
     /*!
      * \brief Stop after exceeding this threshold.
      * A low threshold is required for testing the sliding window algorithm
      */
-    //const uint64_t MEMORY_THRESHOLD_BYTES = 1000000000; // 1 GB
-    //const uint64_t MEMORY_THRESHOLD_BYTES = 100000000; // 100 MB
-    const uint64_t MEMORY_THRESHOLD_BYTES = 500000000; // 500 MB
+    //static constexpr uint64_t MEMORY_THRESHOLD_BYTES = 1000000000; // 1 GB
+    //static constexpr uint64_t MEMORY_THRESHOLD_BYTES = 100000000; // 100 MB
+    static constexpr uint64_t MEMORY_THRESHOLD_BYTES = 500000000; // 500 MB
 
     /*!
      * \brief Background thread sleep period between checks
      */
-    const uint32_t BACKGROUND_THREAD_SLEEP_MS = 100;
+    static constexpr uint32_t BACKGROUND_THREAD_SLEEP_MS = 100;
 
     /*!
      * \brief Interval between DB update checks in seconds
      */
-    const time_t DB_UPDATE_INTERVAL_S = 10;
+    static constexpr time_t DB_UPDATE_INTERVAL_S = 10;
 
 private:
 
@@ -95,10 +94,10 @@ private:
              * \param prev Previous TickData (if being inserted after another)
              * \param next Next TickData (if being inserted before another)
              */
-            TickData(uint64_t _tick_offset, uint32_t num_locations,
+            TickData(const uint64_t _tick_offset, const uint32_t num_locations,
                      const TickData* prev = nullptr, const TickData* next = nullptr) :
                 tick_offset(_tick_offset),
-                data(new interval_idx[num_locations])
+                data(num_locations, NO_TRANSACTION)
             {
                 sparta_assert(!prev || prev->tick_offset < _tick_offset);
                 sparta_assert(!next || next->tick_offset > _tick_offset);
@@ -108,7 +107,6 @@ private:
                 // list.
 
                 if(!prev && !next){
-                    memset(&(data[0]), NO_TRANSACTION, sizeof(interval_idx) * num_locations); // "null" all pointers
                     return; // early-out, no existing transactions to look at
                 }
 
@@ -116,9 +114,6 @@ private:
                     if(prev && next && (prev->data[x] == next->data[x])){
                         // Has prev AND has same next or no next
                         data[x] = prev->data[x];
-                    }else{
-                        // No prev or no next or they are different. This must be empty.
-                        data[x] = NO_TRANSACTION;
                     }
                 }
             }
@@ -126,12 +121,12 @@ private:
             /*!
              * \brief This tick's tick offset
              */
-            uint64_t tick_offset;
+            const uint64_t tick_offset;
 
             /*!
              * \brief Indices into all_intervals_ for this tick
              */
-            std::unique_ptr<interval_idx[]> data;
+            std::vector<interval_idx> data;
         };
 
     private:
@@ -178,7 +173,7 @@ private:
          * \brief Constructor
          * \param num_locations Number of locations to support. Must be > 0
          */
-        Node(uint64_t start_inc, uint64_t size, uint32_t _num_locations) :
+        Node(const uint64_t start_inc, const uint64_t size, const uint32_t _num_locations) :
             should_del_(false),
             start_inclusive(start_inc),
             end_exclusive(start_inc + size),
@@ -193,12 +188,6 @@ private:
             sparta_assert(num_locations > 0,
                               "A transaction database node requires a location count of 1 or more");
             all_intervals_.reserve(512);
-
-            //tick_content.reset(new interval_idx[size * num_locations]);
-
-            // If NO_TRANSACTION is changed, which it shouldn't be, update the memset in TickData
-            sparta_assert(NO_TRANSACTION == 0xffffffff);
-            //memset(&(tick_content[0]), 0xffffffff, sizeof(interval_idx) * size * num_locations); // null all pointers
 
             // Insert the first node at tick-offset = 0 so that there always data to walk.
             tick_content.emplace_back(0, num_locations, nullptr, nullptr);
@@ -236,13 +225,14 @@ private:
          * \param tick_entry_limit Number of tick entries to show. 0 if
          * unlimited. Value is always clamped to total number of tick entries
          */
-        void dumpContent(std::ostream& o, uint32_t location_start=0, uint32_t location_end=0, uint32_t tick_entry_limit=0) const {
+        void dumpContent(std::ostream& o,
+                         const uint32_t location_start = 0,
+                         const uint32_t location_end = 0,
+                         const uint32_t tick_entry_limit = 0) const {
             auto itr = tick_content.begin();
             uint32_t tick_entries = 0;
-            uint32_t real_loc_limit = location_end > 0 ? location_end : ~(decltype(real_loc_limit))0;
-            if(real_loc_limit > num_locations){
-                real_loc_limit = num_locations;
-            }
+            const uint32_t real_loc_limit = std::min(num_locations,
+                                                     location_end > 0 ? location_end : std::numeric_limits<uint32_t>::max());
             o << std::setw(8) << "location: ";
             for(uint32_t loc = location_start; loc < real_loc_limit; ++loc){
                 o << std::dec << std::setw(4) << loc << ' ';
@@ -272,7 +262,7 @@ private:
                 if(tids >= all_intervals_.size()){
                     break;
                 }
-                auto trans = all_intervals_[tids];
+                const auto& trans = all_intervals_[tids];
                 o << "Transaction " << std::dec << trans.transaction_ID
                   << " disp=" << trans.display_ID
                   << " loc="  << trans.location_ID
@@ -284,8 +274,10 @@ private:
         /*!
          * \brief Get the content string from dumpContent
          */
-        std::string getContentString(uint32_t location_start=0, uint32_t location_end=0, uint32_t tick_entry_limit=0) const {
-            std::stringstream ss;
+        std::string getContentString(const uint32_t location_start = 0,
+                                     const uint32_t location_end = 0,
+                                     const uint32_t tick_entry_limit = 0) const {
+            std::ostringstream ss;
             dumpContent(ss, location_start, location_end, tick_entry_limit);
             return ss.str();
         }
@@ -340,38 +332,34 @@ private:
          * \param time_End exclusive end tick
          */
         template<typename... _Args>
-        void addTransaction(Transaction::IntervalDataT time_Start,
-                            Transaction::IntervalDataT time_End,
-                            uint16_t control_Process_ID,
-                            uint64_t transaction_ID,
-                            uint64_t display_ID,
-                            uint32_t location_ID,
+        void addTransaction(const Transaction::IntervalDataT time_Start,
+                            const Transaction::IntervalDataT time_End,
+                            const uint16_t control_Process_ID,
+                            const uint64_t transaction_ID,
+                            const uint64_t display_ID,
+                            const uint32_t location_ID,
                             _Args&&... __args)
         {
             // Interpret the time_End differently depending on whether the
             // endpoint is inclusive or exclusive. This is a property of the
             // pipeline collector.
-            const bool IS_TRANSACTION_END_INCLUSIVE = false;
-            uint64_t transaction_exclusive_end = time_End;
-            if(transaction_exclusive_end > time_Start){
-                transaction_exclusive_end -= (uint64_t)IS_TRANSACTION_END_INCLUSIVE; // Compute exclusive endpoint
-            }
-            sparta_assert(transaction_exclusive_end > start_inclusive);
+            static constexpr bool IS_TRANSACTION_END_INCLUSIVE = false;
 
             // Ensure this location fits within this Node.
             sparta_assert(time_Start < end_exclusive);
 
-            // Clamp end to the valid range for this node
-            if(transaction_exclusive_end > end_exclusive){
-                transaction_exclusive_end = end_exclusive;
-            }
-
-            //uint16_t loc_id = location_ID % num_locations;
-            auto loc_id = location_ID;
-            sparta_assert(loc_id < num_locations,
-                        "Encountered a transaction with location ID=" << loc_id
+            sparta_assert(location_ID < num_locations,
+                        "Encountered a transaction with location ID=" << location_ID
                         << " when the database window was initialized expecting only "
                         << num_locations << " locations");
+
+            // Compute exclusive endpoint, clamping it to the valid range for this node
+            const uint64_t transaction_exclusive_end = std::min(
+                time_End - static_cast<uint64_t>(IS_TRANSACTION_END_INCLUSIVE && (time_End > time_Start)),
+                end_exclusive
+            );
+
+            sparta_assert(transaction_exclusive_end > start_inclusive);
 
             // Track a copy locally in this node
             all_intervals_.emplace_back(time_Start,
@@ -380,19 +368,20 @@ private:
                                         transaction_ID,
                                         display_ID,
                                         location_ID,
-                                        __args...);
+                                        std::forward<_Args>(__args)...);
             transaction_bytes_ += all_intervals_.back().getSizeInBytes();
 
             // Index of this transaction within the node-scoped transaction list
-            auto trans_pos = all_intervals_.size() - 1;
+            const auto trans_pos = all_intervals_.size() - 1;
 
             // Place pointers to this transaction in every relevant slot
-            uint64_t start_cycle_offset = std::max<uint64_t>(time_Start, start_inclusive) - start_inclusive;
+            const uint64_t start_cycle_offset = std::max<uint64_t>(time_Start, start_inclusive) - start_inclusive;
             const uint64_t trans_end_exclusive = std::min<uint64_t>(transaction_exclusive_end, end_exclusive);
             const uint64_t end_entry_offset = trans_end_exclusive - start_inclusive;
 
             // Insert the tick data
-            sparta_assert(IS_TRANSACTION_END_INCLUSIVE == false); // Some assumptions of the following routine assume exclusive endpoints
+            static_assert(IS_TRANSACTION_END_INCLUSIVE == false,
+                          "Some assumptions of the following routine assume exclusive endpoints");
             TickData* prev_td = nullptr;
             bool marked_start = false;
             bool marked_ending = false;
@@ -407,33 +396,31 @@ private:
                     // Continue - haven't reached first cycle in the transaction
                 }else if(td.tick_offset == start_cycle_offset){
                     // Reached a TickData matching the start of this transaction
-                    if(td.data[loc_id] != NO_TRANSACTION){
+                    if(td.data[location_ID] != NO_TRANSACTION){
                         overwrites++;
                     }
-                    td.data[loc_id] = trans_pos;
+                    td.data[location_ID] = trans_pos;
                     marked_start = true;
                     marked_ending |= single_tick_entry;
                 }else{
                     // td.tick_offset > start_cycle_offset
-                     if(td.tick_offset > start_cycle_offset){
-                        if(!marked_start){
-                            // Passed the start of this transaction while missing the start point. Need to
-                            // insert a TickData at the start of the transaction
-                            auto new_itr = tick_content.emplace(itr, start_cycle_offset, num_locations, prev_td, &td);
-                            prev_td = &(*new_itr);
-                            new_itr->data[loc_id] = trans_pos;
-                            sparseness--;
-                            marked_start = true;
-                        }
+                    if(!marked_start){
+                        // Passed the start of this transaction while missing the start point. Need to
+                        // insert a TickData at the start of the transaction
+                        const auto new_itr = tick_content.emplace(itr, start_cycle_offset, num_locations, prev_td, &td);
+                        prev_td = &(*new_itr);
+                        new_itr->data[location_ID] = trans_pos;
+                        sparseness--;
+                        marked_start = true;
                     }
 
                     if(td.tick_offset == end_entry_offset - 1){
                         // Reached final cycle in the transaction
                         // Just update the pointer in this TickData
-                        if(td.data[loc_id] != NO_TRANSACTION && td.data[loc_id] != loc_id){
+                        if(td.data[location_ID] != NO_TRANSACTION && td.data[location_ID] != location_ID){
                             overwrites++;
                         }
-                        td.data[loc_id] = trans_pos;
+                        td.data[location_ID] = trans_pos;
                         marked_ending = true;
 
                     }else if(td.tick_offset >= end_entry_offset){
@@ -446,9 +433,9 @@ private:
                         // transacation IS the startpoint
                         if(!marked_ending && !single_tick_entry){
                             // Insert the new tick which pulls from prev or next.
-                            auto new_itr = tick_content.emplace(itr, end_entry_offset-1, num_locations, prev_td, &td);
+                            const auto new_itr = tick_content.emplace(itr, end_entry_offset-1, num_locations, prev_td, &td);
                             prev_td = &(*new_itr);
-                            new_itr->data[loc_id] = trans_pos;
+                            new_itr->data[location_ID] = trans_pos;
                             sparseness--;
                         }
 
@@ -462,11 +449,11 @@ private:
                             // TickDatas have the same transaction. We're inserting a TickData in the
                             // middle of a transactions that was sparsely indicated in the file.
                             // Insert the new tick which pulls from prev and next.
-                            // Note that td.data[loc_id] will already be NO_TRANSACTION
+                            // Note that td.data[location_ID] will already be NO_TRANSACTION
                             if(end_entry_offset < end_exclusive){ // Do not insert at exclusive endpoint of this NODE
-                                auto new_itr = tick_content.emplace(itr, end_entry_offset, num_locations, prev_td, &td);
+                                const auto new_itr = tick_content.emplace(itr, end_entry_offset, num_locations, prev_td, &td);
                                 prev_td = &(*new_itr);
-                                sparta_assert(new_itr->data[loc_id] == NO_TRANSACTION);
+                                sparta_assert(new_itr->data[location_ID] == NO_TRANSACTION);
                                 sparseness--;
                             }
                         }
@@ -476,10 +463,10 @@ private:
                     }else{
                         // Current tick-data is before the inclusive end of the transaction. Update
                         // it to point to this transaction
-                        if(td.data[loc_id] != NO_TRANSACTION && td.data[loc_id] != loc_id){
+                        if(td.data[location_ID] != NO_TRANSACTION && td.data[location_ID] != location_ID){
                             overwrites++;
                         }
-                        td.data[loc_id] = trans_pos;
+                        td.data[location_ID] = trans_pos;
                     }
                 }
 
@@ -507,30 +494,26 @@ private:
                     if(!marked_start){
                         // Passed the start of this transaction while missing the start point. Need to
                         // insert a TickData at the start of the transaction
-                        auto new_itr = tick_content.emplace(itr, start_cycle_offset, num_locations, prev_td, nullptr);
+                        const auto new_itr = tick_content.emplace(itr, start_cycle_offset, num_locations, prev_td, nullptr);
                         prev_td = &(*new_itr);
-                        new_itr->data[loc_id] = trans_pos;
+                        new_itr->data[location_ID] = trans_pos;
                         sparseness--;
-                        marked_start = true;
                     }
 
                     // Mark last tick INSIDE transaction if not marked and start != ending
                     if(!marked_ending && !single_tick_entry){
                         // Allow insertion at end_exclusive (no later)
-                        uint64_t entry_tick = end_entry_offset-1;
                         const auto num_ticks_in_node = end_exclusive - start_inclusive;
-                        if(entry_tick > num_ticks_in_node){
-                            entry_tick = num_ticks_in_node;
-                        }
-                        auto new_itr = tick_content.emplace(itr, entry_tick, num_locations, prev_td, nullptr);
+                        const uint64_t entry_tick = std::min(num_ticks_in_node, end_entry_offset-1);
+                        const auto new_itr = tick_content.emplace(itr, entry_tick, num_locations, prev_td, nullptr);
                         prev_td = &(*new_itr);
-                        new_itr->data[loc_id] = trans_pos;
+                        new_itr->data[location_ID] = trans_pos;
                         sparseness--;
                     }
 
                     if(end_entry_offset < end_exclusive){ // Do not insert at exclusive endpoint. It will never be accessed
-                        auto new_itr = tick_content.emplace(itr, end_entry_offset, num_locations, prev_td, nullptr);
-                        sparta_assert(new_itr->data[loc_id] == NO_TRANSACTION);
+                        const auto new_itr = tick_content.emplace(itr, end_entry_offset, num_locations, prev_td, nullptr);
+                        sparta_assert(new_itr->data[location_ID] == NO_TRANSACTION);
                         sparseness--;
                     }
                 }
@@ -540,8 +523,9 @@ private:
             int64_t last_off = -1;
             itr = tick_content.begin();
             for(; itr != tick_content.end(); ++itr){
-                sparta_assert((int64_t)itr->tick_offset > last_off);
-                last_off = (int64_t) itr->tick_offset;
+                const auto tick_offset = static_cast<int64_t>(itr->tick_offset);
+                sparta_assert(tick_offset > last_off);
+                last_off = tick_offset;
             }
 
             // Dump data for a range of locations. Here, after each insertion
@@ -549,7 +533,7 @@ private:
             // the last insertion.
             //dumpContent(std::cout, 4566, 4567, 0);
 
-            //interval_idx * ref_ptr = &(tick_content[(start_cycle_offset*num_locations) + loc_id]);
+            //interval_idx * ref_ptr = &(tick_content[(start_cycle_offset*num_locations) + location_ID]);
             //sparta_assert(ref_ptr >= &(tick_content[0]));
             //sparta_assert(ref_ptr < &(tick_content[0]) + (end_exclusive - start_inclusive) * num_locations);
             //uint32_t slots = 0;
@@ -563,17 +547,14 @@ private:
         }
 
         std::string stringize() const {
-            std::stringstream ss;
+            std::ostringstream ss;
             ss << "<Node [" << start_inclusive << ',' << end_exclusive << ") trans="
                 << all_intervals_.size();
             if(should_del_){
                 ss << " deleteme";
             }
             if(false == complete_){
-                ss << " loading";
-            }
-            if(false == complete_){
-                ss << " incomplete";
+                ss << " loading incomplete";
             }
             ss << ' ' << "tdatas:" << tick_content.size();
             ss << ' ' << "sparse:" << sparseness << "(" << std::setprecision(4) << 100.*float(sparseness)/(end_exclusive-start_inclusive) << "%)";
@@ -610,28 +591,25 @@ private:
          * allowed because the presence of at least 1 TickData is guaranteed at
          * construction.
          */
-        std::list<TickData>::const_iterator getTickData(uint64_t abstime) const {
+        std::list<TickData>::const_iterator getTickData(const uint64_t abstime) const {
             sparta_assert(abstime >= start_inclusive && abstime < end_exclusive,
                               "tick (" << abstime << ") being queried is not within range of node "
                               << stringize());
-            uint64_t t = abstime - start_inclusive;
+            const uint64_t t = abstime - start_inclusive;
 
             // Mutiple TickDatas Guaranteed by Node constructor. Required for following code to work
-            sparta_assert(tick_content.size() > 0);
+            sparta_assert(!tick_content.empty());
 
             // Find the locations
-            auto itr = tick_content.cbegin();
-            sparta_assert(itr != tick_content.end());
-            std::list<TickData>::const_iterator prev_itr = itr;
-            while(itr != tick_content.cend()){
-                if(itr->tick_offset == t){
+            auto prev_itr = tick_content.cbegin();
+            for(auto itr = prev_itr; itr != tick_content.cend(); ++itr){
+                if(itr->tick_offset == t) {
                     return itr;
                 }
-                if(itr->tick_offset > t){
+                if(itr->tick_offset > t) {
                     return prev_itr;
                 }
                 prev_itr = itr;
-                ++itr;
             }
 
             return prev_itr;
@@ -679,13 +657,13 @@ private:
                      * \brief Add a transaction to this smart reader
                      */
                     template<typename... _Args>
-                    void addTransaction_(Transaction::IntervalDataT time_Start,
-                                         Transaction::IntervalDataT time_End,
-                                         uint16_t control_Process_ID,
-                                         uint64_t transaction_ID,
-                                         uint64_t display_ID,
-                                         uint32_t location_ID,
-                                         uint16_t flags,
+                    void addTransaction_(const Transaction::IntervalDataT time_Start,
+                                         const Transaction::IntervalDataT time_End,
+                                         const uint16_t control_Process_ID,
+                                         const uint64_t transaction_ID,
+                                         const uint64_t display_ID,
+                                         const uint32_t location_ID,
+                                         const uint16_t flags,
                                          _Args&&... __args)
                     {
                         //std::cout << "Interval " << std::setw(6) << location_ID << " @ ["
@@ -713,7 +691,7 @@ private:
                                                                 display_ID,
                                                                 location_ID,
                                                                 flags,
-                                                                __args...);
+                                                                std::forward<_Args>(__args)...);
                                 }
                             }
                             ++node_itr;
@@ -724,31 +702,31 @@ private:
                     /*!
                      * \brief Callback from PipelineDataCallback
                      */
-                    void foundTransactionRecord(transaction_t* loc) override {
+                    void foundTransactionRecord(const transaction_t* loc) override {
                         addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
                                         loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags);
                     }
-                    void foundInstRecord(instruction_t* loc) override {
+                    void foundInstRecord(const instruction_t* loc) override {
                         addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
                                         loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
-                                        (uint16_t)loc->parent_ID, loc->operation_Code, loc->virtual_ADR,
+                                        loc->parent_ID, loc->operation_Code, loc->virtual_ADR,
                                         loc->real_ADR);
                     }
-                    void foundMemRecord(memoryoperation_t* loc) override {
+                    void foundMemRecord(const memoryoperation_t* loc) override {
                         addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
                                         loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
-                                        (uint16_t)loc->parent_ID, loc->virtual_ADR, loc->real_ADR);
+                                        loc->parent_ID, loc->virtual_ADR, loc->real_ADR);
                     }
-                    void foundAnnotationRecord(annotation_t* loc) override {
+                    void foundAnnotationRecord(const annotation_t* loc) override {
                         addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
                                         loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
-                                        (uint16_t)loc->parent_ID, loc->length, (const char*)loc->annt);
+                                        loc->parent_ID, loc->length, std::move(loc->annt));
                     }
 
-                    void foundPairRecord(pair_t* loc) override {
+                    void foundPairRecord(const pair_t* loc) override {
                         addTransaction_(loc->time_Start, loc->time_End, loc->control_Process_ID,
                                         loc->transaction_ID, loc->display_ID, loc->location_ID, loc->flags,
-                                        (uint16_t)loc->parent_ID, loc->length, loc->pairId, loc->sizeOfVector,
+                                        loc->parent_ID, loc->length, loc->pairId, loc->sizeOfVector,
                                         loc->valueVector, loc->nameVector,
                                         loc->stringVector, loc->delimVector);
                     }
@@ -776,7 +754,7 @@ private:
              * \param file_prefix Prefix of the pipeViewer database that will be opened
              * \post Handle to pipeViewer database identified by \a file_prefix is open
              */
-            SmartReader(const std::string& file_prefix) :
+            explicit SmartReader(const std::string& file_prefix) :
                 event_reader_(Reader::construct<SmartReaderCallback>(file_prefix)),
                 reader(event_reader_)
             {;}
@@ -816,7 +794,9 @@ private:
              * \pre this reader must be locked via lock by the thread calling this
              * method.
              */
-            void loadDataToNodes(uint64_t start, uint64_t end, std::vector<Node*> const * load_to)
+            void loadDataToNodes(const uint64_t start,
+                                 const uint64_t end,
+                                 std::vector<Node*> const * load_to)
             {
                 sparta_assert(load_to != nullptr, "cannot loadDataToNodes with a null load_to vector");
                 auto& cb = event_reader_.getCallbackAs<SmartReaderCallback>();
@@ -844,10 +824,10 @@ private:
      * \brief Type for Node list. This must be a list so that objects are
      * perserved
      */
-    typedef std::list<Node> node_list_t;
+    using node_list_t = std::list<Node>;
 
-    typedef node_list_t::iterator node_iterator_t;
-    typedef node_list_t::const_iterator node_const_iterator_t;
+    using node_iterator_t = node_list_t::iterator;
+    using node_const_iterator_t = node_list_t::const_iterator;
 
     const std::string file_prefix_; //!< Database filename prefix
 
@@ -928,11 +908,11 @@ public:
      * \null values for the pointers (other than user_data) indicate no data at
      * the specified tick
      */
-    typedef void (*callback_fxn)(void* user_data,
-                                 uint64_t tick,
-                                 const_interval_idx * location_contents,
-                                 const TransactionDatabaseInterface::Transaction* transactions,
-                                 uint32_t num_locations);
+    using callback_fxn = void (*)(void* user_data,
+                                  uint64_t tick,
+                                  const_interval_idx * location_contents,
+                                  const TransactionDatabaseInterface::Transaction* transactions,
+                                  uint32_t num_locations);
 
     TransactionDatabaseInterface() = delete;
     TransactionDatabaseInterface(const TransactionDatabaseInterface&) = delete;
@@ -943,7 +923,9 @@ public:
      * \param file_prefix Path and prefix of database files
      * \param num_locations Number of locations in the tree
      */
-    TransactionDatabaseInterface(const std::string& file_prefix, uint32_t num_locations, bool update_enabled = false) :
+    TransactionDatabaseInterface(const std::string& file_prefix,
+                                 const uint32_t num_locations,
+                                 const bool update_enabled = false) :
         smart_reader_(file_prefix),
         file_prefix_(file_prefix),
         num_locations_(num_locations),
@@ -961,10 +943,10 @@ public:
         last_updated_(0)
     {
         // Find a node size that is an even integer division of chunk_size_
-        const uint64_t MAX_NODE_SIZE = 200000;
+        static constexpr uint64_t MAX_NODE_SIZE = 200000;
         node_size_ = chunk_size_;
-        for(uint32_t i = 1; i < 2000; ++i){
-            uint64_t temp_size = chunk_size_ / i;
+        for(uint32_t i = 1; i < 2000; ++i) {
+            const uint64_t temp_size = chunk_size_ / i;
             if(temp_size * i == chunk_size_){
                 if(temp_size <= MAX_NODE_SIZE){
                     node_size_ = temp_size;
@@ -973,8 +955,8 @@ public:
             }
         }
         sparta_assert(node_size_ >= 100,
-                          "Size of node could not be determined. Heartbeat ("
-                          << chunk_size_ << ") is not a multiple of 100");
+                      "Size of node could not be determined. Heartbeat ("
+                      << chunk_size_ << ") is not a multiple of 100");
         if(node_size_ > MAX_NODE_SIZE){
             std::cerr << "Warning: unable to find a suitable node size evenly divisible by chunk "
                 "size (" << chunk_size_ << ")" << std::endl;
@@ -1006,7 +988,7 @@ public:
      * \brief Sets the current verbose logging state of this interface
      * \param verbose New verbose logging state
      */
-    void setVerbose(bool verbose) { verbose_ = verbose;}
+    void setVerbose(const bool verbose) { verbose_ = verbose;}
 
     /*!
      * \brief Gets the current verbose logging state of this interface
@@ -1089,11 +1071,11 @@ public:
      * unloaded, but the queried range must be a subset of the prior query range.
      * \pre Must not be call from within a callback of another query.
      */
-    void query(uint64_t _start_inclusive,
-               uint64_t _end_inclusive,
-               callback_fxn cb,
+    void query(const uint64_t _start_inclusive,
+               const uint64_t _end_inclusive,
+               callback_fxn&& cb,
                void* user_data=nullptr,
-               bool modify_tracking=true)
+               const bool modify_tracking=true)
     {
         std::lock_guard<std::recursive_mutex> lock(node_list_mutex_);
 
@@ -1106,8 +1088,8 @@ public:
         }
 
         // Clamp to file range
-        uint64_t start_inclusive = std::max(_start_inclusive, start_tick_);
-        uint64_t end_exclusive = std::min(_end_inclusive+1, end_tick_);
+        const uint64_t start_inclusive = std::max(_start_inclusive, start_tick_);
+        const uint64_t end_exclusive = std::min(_end_inclusive+1, end_tick_);
 
         // This is to prevent recursion when querying from within callback
         // functions. This has nothing to do with thread safety.
@@ -1159,16 +1141,13 @@ public:
             //itr->dumpContent(std::cout, 890, 905, 0);
         }
 
-        while(itr != nodes_.end()){
+        for(; itr != nodes_.end(); ++itr){
             //std::cout << "Looking at node " << itr->stringize() << std::endl;
             // Assuming exclusive right endpoint of transactions
 
             if(itr->getStartInclusive() <= t){
                 // Calculate limit for iterating in this node
-                uint64_t endpoint_exclusive = itr->getEndExclusive();
-                if(endpoint_exclusive >= end_exclusive){
-                    endpoint_exclusive = end_exclusive;
-                }
+                const uint64_t endpoint_exclusive = std::min(itr->getEndExclusive(), end_exclusive);
 
                 // Iterate through necessary ticks in this node.
                 // Wait for it to be loaded first
@@ -1205,7 +1184,7 @@ public:
                     //    }
                     //}
 
-                    cb(user_data, t, td->data.get(), &itr->getIntervals()[0], num_locations_);
+                    cb(user_data, t, td->data.data(), &itr->getIntervals()[0], num_locations_);
                     ++t;
                 }
 
@@ -1251,14 +1230,13 @@ public:
                                   "Exceeded end of blocks at " << t << " where block start is "
                                   << itr->getStartInclusive());
             }
-            ++itr;
         }
 
         in_query_ = false;
-        sparta_assert(0,
-                          "Unexpected end of iteration when querying for " << _start_inclusive
-                          << " to " << _end_inclusive << " clamped down to [" << start_inclusive
-                          << ", " << end_exclusive << ")");
+        sparta_assert(false,
+                      "Unexpected end of iteration when querying for " << _start_inclusive
+                      << " to " << _end_inclusive << " clamped down to [" << start_inclusive
+                      << ", " << end_exclusive << ")");
     }
 
     /*!
@@ -1311,12 +1289,15 @@ public:
     }
 
     std::string getNodeStates() const {
-        std::stringstream ss;
+        std::ostringstream ss;
         writeNodeStates(ss);
         return ss.str();
     }
 
-    std::string getNodeDump(uint32_t node_idx, uint32_t location_start=0, uint32_t location_end=0, uint32_t tick_entry_limit=0) const {
+    std::string getNodeDump(const uint32_t node_idx,
+                            const uint32_t location_start = 0,
+                            const uint32_t location_end = 0,
+                            const uint32_t tick_entry_limit = 0) const {
         uint32_t idx = 0;
         for(const auto& n : nodes_){
             if(idx == node_idx){
@@ -1330,7 +1311,7 @@ public:
     std::string stringize() const {
         std::lock_guard<std::recursive_mutex> lock(node_list_mutex_);
 
-        std::stringstream ss;
+        std::ostringstream ss;
         ss << "<TransactionDatabase \"" << file_prefix_
             << "\" total=[" << start_tick_ << ','
             << end_tick_ << ") window=[" << window_.start << ',' << window_.end << ") "
@@ -1341,17 +1322,15 @@ public:
 
     uint64_t getSizeInBytes() const {
         std::lock_guard<std::recursive_mutex> lock(node_list_mutex_);
-
-        uint64_t sum = 0;
-        for(const auto& n : nodes_){
-            sum += n.getSizeInBytes();
-        }
-        return sum;
+        return std::accumulate(nodes_.begin(),
+                               nodes_.end(),
+                               0,
+                               [](const uint64_t sum, const Node& n){ return sum + n.getSizeInBytes(); });
     }
 
-    bool isFileUpdated(bool force = false)
+    bool isFileUpdated(const bool force = false)
     {
-        time_t cur_time = time(NULL);
+        const time_t cur_time = time(NULL);
         if(!force)
         {
             if((cur_time - last_updated_) >= DB_UPDATE_INTERVAL_S)
@@ -1367,7 +1346,7 @@ public:
         {
             last_updated_ = cur_time;
         }
-        bool result = smart_reader_.isUpdated();
+        const bool result = smart_reader_.isUpdated();
         if(result)
         {
             smart_reader_.ackUpdated();
@@ -1429,7 +1408,7 @@ private:
         //sparta_assert(background_loader_.get_id() == std::this_thread::get_id(),
         //            background_loader_.get_id() << " != " std::this_thread::get_id());
 
-        while(1){
+        while(true) {
             std::this_thread::sleep_for(std::chrono::milliseconds(BACKGROUND_THREAD_SLEEP_MS));
             if(background_thread_should_exit_){
                 return; // End of thread
@@ -1450,18 +1429,8 @@ private:
 
                     // Pick an end to load on based on how close the last
                     // query window was to the loaded window edges
-                    uint64_t low_distance;
-                    if(last_query_.start <= start_tick_){
-                        low_distance = 0; // Nothing to load
-                    }else{
-                        low_distance = last_query_.start - window_.start;
-                    }
-                    uint64_t high_distance;
-                    if(last_query_.end >= end_tick_){
-                        high_distance = 0; // Nothing to load
-                    }else{
-                        high_distance = window_.end - last_query_.end;
-                    }
+                    const uint64_t low_distance = (last_query_.start <= start_tick_) ? 0 : last_query_.start - window_.start;
+                    const uint64_t high_distance = (last_query_.end >= end_tick_) ? 0 : window_.end - last_query_.end;
 
                     // Did we hit the memory ceiling for this window. If so, loading new nodes will
                     // be prevented unless there is a significant imbalance in the window size
@@ -1471,7 +1440,8 @@ private:
                     // (here) is for additional window loading only
                     const bool hit_memory_ceiling = getSizeInBytes() >= MEMORY_THRESHOLD_BYTES;
 
-                    uint64_t load_node_pos = ~(uint64_t)0;
+                    static constexpr uint64_t INVALID_NODE = std::numeric_limits<uint64_t>::max();
+                    uint64_t load_node_pos = INVALID_NODE;
                     const uint64_t low_pos = window_.start - node_size_;
                     const uint64_t high_pos = window_.end;
                     const bool low_limited = window_.start <= start_tick_; // No more to load on the low-end, window reached start_tick
@@ -1494,7 +1464,7 @@ private:
                         }
                     }
 
-                    int64_t dist_diff;
+                    //int64_t dist_diff;
                     //if(high_distance == ~(uint64_t)0){
                     //    if(low_distance == ~(uint64_t)0){
                     //        dist_diff = 0; // Full file is loaded. Do not evict anything
@@ -1504,10 +1474,12 @@ private:
                     //}else if(low_distance == ~(uint64_t)0){
                     //    dist_diff = high_distance;
                     //}else{
-                        dist_diff = std::abs(((int64_t)high_distance) - ((int64_t)low_distance));
+                    //  dist_diff = std::abs(((int64_t)high_distance) - ((int64_t)low_distance));
                     //}
+                    const int64_t dist_diff = std::abs(static_cast<int64_t>(high_distance) -
+                                                       static_cast<int64_t>(low_distance));
 
-                    if(load_node_pos < ~(uint64_t)0){
+                    if(load_node_pos < INVALID_NODE){
                         // Check whether it is feasible to add more nodes
                         if(hit_memory_ceiling){
                             // Exceeded memory threshold. May need to load new
@@ -1522,9 +1494,9 @@ private:
                             //    << dist_diff << ")" << std::endl;
 
                             if(nodes_.size() == 1 ||
-                                dist_diff <= (int64_t)node_size_){
+                                dist_diff <= static_cast<int64_t>(node_size_)){
                                 // Cannot possibly drop anything and maintain window, so cannot load anything new
-                                load_node_pos = ~(uint64_t)0;
+                                load_node_pos = INVALID_NODE;
                             }else{
                                 //if(verbose_){
                                 //    std::cout << "(background)" << window_.start << "|<--" << low_distance << "--[" << last_query_.start << ", "
@@ -1548,17 +1520,17 @@ private:
                                                 std::cout << "(background) want to slide left, but cannot delete "
                                                     << delitr->stringize() << std::endl;
                                             }
-                                            load_node_pos = ~(uint64_t)0; // Cannot delete this node
+                                            load_node_pos = INVALID_NODE; // Cannot delete this node
                                         }
                                     }else{
                                         if(verbose_){
                                             std::cout << "(background) want to slide left, but cannot find node containing "
                                                     << window_.end - 1 << std::endl;
                                         }
-                                        load_node_pos = ~(uint64_t)0; // Cannot delete this node
+                                        load_node_pos = INVALID_NODE; // Cannot delete this node
                                     }
                                 }else if(!low_limited || low_distance >= 2*node_size_){ // given: load_node_pos == high_pos
-                                    node_iterator_t delitr = findNode(window_.start);
+                                    const node_iterator_t delitr = findNode(window_.start);
                                     if(nodes_.end() != delitr){
                                         if(delitr->isComplete() && delitr->getEndExclusive() <= last_query_.start){
                                             if(verbose_){
@@ -1572,28 +1544,28 @@ private:
                                                 std::cout << "(background) want to slide right, but cannot delete "
                                                     << delitr->stringize() << std::endl;
                                             }
-                                            load_node_pos = ~(uint64_t)0; // Cannot delete this node
+                                            load_node_pos = INVALID_NODE; // Cannot delete this node
                                         }
                                     }else{
                                         if(verbose_){
                                             std::cout << "(background) want to slide right, but cannot find node containing "
                                                     << window_.start << std::endl;
                                         }
-                                        load_node_pos = ~(uint64_t)0; // Cannot delete this node
+                                        load_node_pos = INVALID_NODE; // Cannot delete this node
                                     }
                                 }else{
-                                    load_node_pos = ~(uint64_t)0;
+                                    load_node_pos = INVALID_NODE;
                                 }
                             }
                         }
                     }
 
-                    if(load_node_pos < ~(uint64_t)0){
+                    if(load_node_pos < INVALID_NODE){
                         if(verbose_){
                             std::cout << "(background) memory use is " << getSizeInBytes() / 1000000000.0 << " GB" << std::endl;
                         }
 
-                        node_iterator_t itr = findNode(load_node_pos);
+                        const node_iterator_t itr = findNode(load_node_pos);
 
                         nodes_.emplace(itr, load_node_pos, node_size_, num_locations_);
                         Node& added = *std::prev(itr);
@@ -1611,7 +1583,7 @@ private:
                         }
 
                         // Defferred read to avoid walking over the same chunks when
-                        uint64_t chunk_start = chunk_size_ * (load_node_pos/chunk_size_);
+                        const uint64_t chunk_start = chunk_size_ * (load_node_pos/chunk_size_);
                         if(verbose_){
                             std::cout << "(background) loading <CHUNK> @ " << chunk_start << " size " << chunk_size_ << std::endl;
                         }
@@ -1628,7 +1600,7 @@ private:
 
                         smart_reader_.loadDataToNodes(chunk_start, chunk_start + chunk_size_, &added_nodes);
                         if(verbose_){
-                            auto t_delta = sparta::TimeManager::getTimeManager().getAbsoluteSeconds() - t_start;
+                            const auto t_delta = sparta::TimeManager::getTimeManager().getAbsoluteSeconds() - t_start;
                             std::cout << "(background)    took " << t_delta << " seconds" << std::endl;
                         }
 
@@ -1681,7 +1653,7 @@ private:
     /*!
      * \brief Loads data necessary to populate the given range
      */
-    void load_(uint64_t start_inclusive, uint64_t end_exclusive)
+    void load_(const uint64_t start_inclusive, const uint64_t end_exclusive)
     {
         if(verbose_){
             std::cout << "(main) Attempting to load [" << start_inclusive << ", "
@@ -1710,7 +1682,7 @@ private:
         if(itr != nodes_.end()){
             // Window begins where there is valid data
             window_.start = itr->getStartInclusive();
-            do{
+            for(; itr != nodes_.end(); ++itr) {
                 if(itr->getEndExclusive() <= cur_pos){
                     if(verbose_){
                         std::cout << "(main) Flagging for deletion: " << itr->stringize() << std::endl;
@@ -1721,9 +1693,7 @@ private:
                     // (or overlaps) the current load position
                     break;
                 }
-
-                ++itr;
-            }while(itr != nodes_.end());
+            }
         }else{
             // Window begins where data will first be loaded
             window_.start = cur_pos;
@@ -1764,7 +1734,7 @@ private:
                 }
 
                 // Defferred read to avoid walking over the same chunks when
-                uint64_t chunk_start = chunk_size_ * (cur_pos/chunk_size_);
+                const uint64_t chunk_start = chunk_size_ * (cur_pos/chunk_size_);
                 if(chunks_to_read.size() == 0 or chunks_to_read[chunks_to_read.size() - 1] != chunk_start){
                     chunks_to_read.push_back(chunk_start);
                 }
@@ -1814,24 +1784,22 @@ private:
         if(itr != nodes_.end()){
             if(cur_pos == itr->getStartInclusive()){
                 // Contiguous nodes, flag for deletion
-                do{
+                for(; itr != nodes_.end(); ++itr) {
                     if(verbose_){
                         std::cout << "(main) Flagging for deletion: " << itr->stringize() << std::endl;
                     }
                     itr->flagForDeletion();
                     cur_pos = itr->getEndExclusive();
-                    ++itr;
-                }while(itr != nodes_.end());
+                }
             }else{
                 // Non-contiguous nodes. Gaps are not allowed. Remove immediately
-                do{
-                    node_iterator_t temp = itr++;
+                for(node_iterator_t temp = itr++; itr != nodes_.end(); temp = itr++) {
                     if(verbose_){
                         std::cout << "(main) Erasing non-contiguous node following data: "
                             << temp->stringize() << std::endl;
                     }
                     nodes_.erase(temp);
-                }while(itr != nodes_.end());
+                }
             }
         }
 
@@ -1865,7 +1833,7 @@ private:
                     }
                 }
 
-                node_iterator_t temp = n;
+                const node_iterator_t temp = n;
                 ++n;
                 nodes_.erase(temp);
             }else{
@@ -1902,7 +1870,7 @@ private:
      * \brief Finds first node containing tick or, if no nodes contain tick, the
      * first node node after the tick.
      */
-    node_iterator_t findNode(uint64_t tick)
+    node_iterator_t findNode(const uint64_t tick)
     {
         node_iterator_t n = nodes_.begin();
         if(n == nodes_.end()){
@@ -1920,6 +1888,5 @@ private:
     }
 };
 
-    } // pipeViewer
-} // sparta
+} // sparta::pipeViewer
 
