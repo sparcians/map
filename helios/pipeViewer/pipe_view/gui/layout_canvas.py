@@ -327,10 +327,10 @@ class Layout_Canvas(wx.ScrolledWindow):
     # Used by schedule elements to determine where to blit
     def GetScaledUpdateRegion(self):
         box = self.GetUpdateRegion().GetBox()
-        box = wx.Rect(math.floor(box[0] / self.__canvas_scale),
-                      math.floor(box[1] / self.__canvas_scale),
-                      math.ceil(box[2] / self.__canvas_scale),
-                      math.ceil(box[3] / self.__canvas_scale))
+        box = wx.Rect(int(math.floor(box[0] / self.__canvas_scale)),
+                      int(math.floor(box[1] / self.__canvas_scale)),
+                      int(math.ceil(box[2] / self.__canvas_scale)),
+                      int(math.ceil(box[3] / self.__canvas_scale)))
 
         box.Inflate(10, 10) # Fudge factor to ensure no dirt is left behind
         return box
@@ -341,8 +341,8 @@ class Layout_Canvas(wx.ScrolledWindow):
     def GetScrolledUpdateRegion(self):
         box = self.GetUpdateRegion().GetBox()
         box.SetPosition(self.CalcUnscrolledPosition(box.GetTopLeft()))
-        box.SetHeight(math.ceil(box.GetHeight() / self.__canvas_scale))
-        box.SetWidth(math.ceil(box.GetWidth() / self.__canvas_scale))
+        box.SetHeight(int(math.ceil(box.GetHeight() / self.__canvas_scale)))
+        box.SetWidth(int(math.ceil(box.GetWidth() / self.__canvas_scale)))
 
         box.Inflate(10, 10) # Fudge factor to ensure no dirt is left behind
         return box
@@ -461,9 +461,9 @@ class Layout_Canvas(wx.ScrolledWindow):
     # # override to handle full-canvas scale
     def CalcUnscrolledPosition(self, position):
         view_start = self.GetViewStart()
-        x0 = view_start[0] * self.scrollrate / self.__canvas_scale
-        y0 = view_start[1] * self.scrollrate / self.__canvas_scale
-        return x0 + position[0] / self.__canvas_scale, y0 + position[1] / self.__canvas_scale
+        x0 = view_start[0] * self.scrollrate
+        y0 = view_start[1] * self.scrollrate
+        return int((x0 + position[0]) / self.__canvas_scale), int((y0 + position[1]) / self.__canvas_scale)
 
     # # Calculate the canvas size based on all elements
     #  @return True if size changed, False if not
