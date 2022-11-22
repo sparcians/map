@@ -27,7 +27,7 @@ cdef class LogSearch(object):
     def __cinit__(self, filename):
         self.c_logsearch = new c_LogSearch(filename)
 
-    def __init__(self, *args):
+    def __init__(self):
         pass
 
     def __dealloc__(self):

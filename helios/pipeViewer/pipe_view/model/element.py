@@ -5,6 +5,7 @@ import sys
 import copy
 import re
 import sre_constants
+from typing import Any, Callable, Dict, List, Tuple
 import weakref
 
 sys.path.append('../')
@@ -51,7 +52,7 @@ class Element(object):
     _METADATA_KEY_PROPERTY = ''
 
     # Additional metadata properties that should be associated with this element type
-    _AUX_METADATA_PROPERTIES = []
+    _AUX_METADATA_PROPERTIES : List[str] = []
 
     __CONTENT_OPTIONS = valid.GetContentOptions()
 
@@ -395,9 +396,9 @@ class Element(object):
 Element._ALL_PROPERTIES['type'] = (Element.GetType(), valid.validateString)
 
 
-# # eneric element capable of holding other elements.
+# # Generic element capable of holding other elements.
 class MultiElement(Element):
-    _MULTI_PROPERTIES = {'children' : ([], valid.validateList)}
+    _MULTI_PROPERTIES: Dict[str, Tuple[List[Dict[str, Any]], Callable]] = {'children' : ([], valid.validateList)}
     _ALL_PROPERTIES = Element._ALL_PROPERTIES.copy()
     _ALL_PROPERTIES.update(_MULTI_PROPERTIES)
 

@@ -26,16 +26,16 @@ FLIP_SELECTION_VERT = [wx.WXK_PAGEDOWN, wx.WXK_PAGEUP]
 
 
 # #checks if motion of element should be fast
-def isFastMove(event):
+def isFastMove(event: wx.KeyEvent) -> bool:
     return event.ShiftDown() and not event.ControlDown()
 
 
-def isSlowMove(event):
+def isSlowMove(event: wx.KeyEvent) -> bool:
     return event.ControlDown() and not event.ShiftDown()
 
 
 # #when selecting objects, negative selection behavior
-def isNegativeSelection(key, event):
+def isNegativeSelection(key: wx.KeyCode, event: wx.KeyEvent) -> bool:
     if (key == wx.WXK_CONTROL) and event.ShiftDown():
         return True
     elif (key == wx.WXK_SHIFT) and event.ControlDown():
@@ -43,32 +43,32 @@ def isNegativeSelection(key, event):
     return False
 
 
-def isToggleBackgroundGrid(key, event):
+def isToggleBackgroundGrid(key: wx.KeyCode, event: wx.KeyEvent) -> bool:
     return key == ord('G') and event.ControlDown()
 
 
-def isSnapToGrid(key, event):
+def isSnapToGrid(key: wx.KeyCode, event: wx.KeyEvent) -> bool:
     return key == ord('G') and event.ShiftDown()
 
 
-def isZoomInKey(key, event):
+def isZoomInKey(key: wx.KeyCode, event: wx.KeyEvent) -> bool:
     return key == ord('=') and event.ControlDown()
 
 
-def isZoomOutKey(key, event):
+def isZoomOutKey(key: wx.KeyCode, event: wx.KeyEvent) -> bool:
     return key == ord('-') and event.ControlDown()
 
 
-def isZoomResetKey(key, event):
+def isZoomResetKey(key: wx.KeyCode, event: wx.KeyEvent) -> bool:
     return key == ord('0') and event.ControlDown()
 
 
 # # Goto Next annotation change
-def isNextChange(key, event):
+def isNextChange(key: wx.KeyCode, event: wx.KeyEvent) -> bool:
     return key == ord('N') and not event.ShiftDown()
 
 
 # # Goto Prev annotation change
-def isPrevChange(key, event):
+def isPrevChange(key: wx.KeyCode, event: wx.KeyEvent) -> bool:
     return key == ord('N') and event.ShiftDown()
 

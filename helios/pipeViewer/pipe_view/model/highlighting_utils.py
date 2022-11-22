@@ -1,9 +1,10 @@
 import re
+from typing import Optional
 
 __UOP_UID_REGEX = re.compile(r'.*\buid\(([0-9]+)\)')
 
 # @profile
-def GetUopUid(anno_string):
+def GetUopUid(anno_string: Optional[str]) -> Optional[int]:
     if not isinstance(anno_string, str):
         return None
 

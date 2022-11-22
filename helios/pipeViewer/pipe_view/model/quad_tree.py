@@ -1,28 +1,36 @@
+from __future__ import annotations
+from typing import Dict, List, Optional, Set, Tuple, cast
 
+from model.element_value import Element_Value
 
 class QuadNode:
     '''
     Node used by QuadTree
     '''
 
-    def __init__(self, bounds, contents, elements, parent = None, parent_index = None):
+    def __init__(self,
+                 bounds: Tuple[int, int, int, int],
+                 contents: List[QuadNode],
+                 elements: List[Element_Value],
+                 parent: Optional[QuadNode] = None,
+                 parent_index: Optional[int] = None) -> None:
         self.bounds = bounds
         self.contents = contents # list of QuadNodes
         self.elements = elements
         self.parent_index = parent_index
         self.parent = parent
 
-    def BisectCreateNodes(self):
+    def BisectCreateNodes(self) -> None:
         if not self.contents:
             min_x, min_y, max_x, max_y = self.bounds
-            midpoint_x = (max_x + min_x) / 2.0
-            midpoint_y = (max_y + min_y) / 2.0
+            midpoint_x = int((max_x + min_x) / 2.0)
+            midpoint_y = int((max_y + min_y) / 2.0)
             self.contents = [QuadNode((min_x, min_y, midpoint_x, midpoint_y), [], [], self, 0),
                              QuadNode((midpoint_x, min_y, max_x, midpoint_y), [], [], self, 1),
                              QuadNode((min_x, midpoint_y, midpoint_x, max_y), [], [], self, 2),
                              QuadNode((midpoint_x, midpoint_y, max_x, max_y), [], [], self, 3)]
 
-    def SetVisibilityTickOnAllChildElements(self, vis_tick):
+    def SetVisibilityTickOnAllChildElements(self, vis_tick: int) -> None:
         if self.elements: # leaves only
             for x in self.elements:
                 x.SetVisibilityTick(vis_tick)
@@ -30,20 +38,20 @@ class QuadNode:
             for cnode in self.contents:
                 cnode.SetVisibilityTickOnAllChildElements(vis_tick)
 
-    def GetAllChildElements(self): # contains duplicates
-        l = []
+    def GetAllChildElements(self) -> List[Element_Value]: # contains duplicates
+        l: List[Element_Value] = []
         self.__GetAllChildren(self, l)
         return l
 
-    def __GetAllChildren(self, node, output_list):
+    def __GetAllChildren(self, node: QuadNode, output_list: List[Element_Value]) -> None:
         if node.elements and not node.contents: # leaves only
             output_list.extend(node.elements)
         else:
             for cnode in node.contents:
                 self.__GetAllChildren(cnode, output_list)
 
-    def GetAllBoxes(self, node = None):
-        if node == None:
+    def GetAllBoxes(self, node: Optional[QuadNode] = None) -> List[Tuple[int, int, int, int]]:
+        if node is None:
             node = self
         if not node.contents:
             bounds = [node.bounds]
@@ -54,8 +62,8 @@ class QuadNode:
         return bounds
 
     # # Debug printout for this node and nodes below it.
-    def PrintRecursive(self, node = None, level = 0):
-        if node == None:
+    def PrintRecursive(self, node: Optional[QuadNode] = None, level: int = 0) -> None:
+        if node is None:
             node = self
         space = '      ' * level
         print('%sNode %s:' % (space, node))
@@ -72,43 +80,42 @@ class QuadTree:
     FULL_REBUILD_THRESHOLD = 30
     WIDTH_LIMIT = 100
 
-    def __init__(self):
-        self.__objects = []
-        self.__tree = None
+    def __init__(self) -> None:
+        self.__objects: List[Element_Value] = []
+        self.__tree: Optional[QuadNode] = None
 
         # Dictionary keyed by objects which stores
         # all nodes object is in
         # e.g. self.__lookup_table[myObj] = [QuadNode_instance1, QuadNode_instance2]
-        self.__lookup_table = {}
-        self.__dirty_objects = set()
-        self.__removes = []
+        self.__lookup_table: Dict[Element_Value, List[QuadNode]] = {}
+        self.__dirty_objects: Set[Element_Value] = set()
         self.Build()
 
     # # Add function.
-    def AddObject(self, obj, push_update = False):
+    def AddObject(self, obj: Element_Value, push_update: bool = False) -> None:
         self.__objects.append(obj)
         if push_update:
             self.AddSingleToTree(obj)
         else:
             self.__dirty_objects.add(obj)
 
-    def AddObjects(self, objs):
+    def AddObjects(self, objs: List[Element_Value]) -> None:
         self.__objects.extend(objs)
         self.__dirty_objects.update(objs)
 
-    def RemoveObject(self, obj):
+    def RemoveObject(self, obj: Element_Value) -> None:
         self.__dirty_objects.difference_update([obj])
         self.__objects.remove(obj)
         self.RemoveSingleFromTree(obj)
 
-    def RemoveSingleFromTree(self, obj):
+    def RemoveSingleFromTree(self, obj: Element_Value) -> None:
         lookup_entry = self.__lookup_table.get(obj)
 
         while lookup_entry:
             node_owner = lookup_entry.pop()
             node_owner.elements.remove(obj)
 
-    def Update(self):
+    def Update(self) -> None:
         if len(self.__dirty_objects) >= self.FULL_REBUILD_THRESHOLD:
             self.Build()
         else:
@@ -116,13 +123,15 @@ class QuadTree:
                 self.AddSingleToTree(obj, no_remove = True)
         self.__dirty_objects.clear()
 
-    def AddSingleToTree(self, obj, no_remove = False):
+    def AddSingleToTree(self, obj: Element_Value, no_remove: bool = False) -> None:
         lookup_entry = self.__lookup_table.get(obj)
         if lookup_entry:
             return # already there.
         if not no_remove:
             self.__dirty_objects.difference_update([obj])
         bounds = obj.GetElement().GetBounds()
+
+        assert self.__tree is not None
         if bounds[0] < self.__tree.bounds[0] or \
             bounds[1] < self.__tree.bounds[1] or \
             bounds[2] > self.__tree.bounds[2] or \
@@ -133,7 +142,7 @@ class QuadTree:
             # limited recalc
             self.Build(update = [obj]) # not a full rebuild
 
-    def CalculateBounds(self):
+    def CalculateBounds(self) -> Tuple[int, int, int, int]:
         lowest_x = 1000000
         highest_x = 0
         lowest_y = 1000000
@@ -155,8 +164,12 @@ class QuadTree:
     # 0 1
     # 2 3
     # if an update list is specified, then only objects in there are updated
-    def Build(self, update = [], no_clear = False):
+    def Build(self, update: Optional[List[Element_Value]] = None, no_clear: bool = False) -> QuadNode:
+        if update is None:
+            update = []
+
         if update:
+            assert self.__tree is not None
             self.__tree.elements.extend(update)
         else:
             if not no_clear:
@@ -216,16 +229,16 @@ class QuadTree:
         # print self.__lookup_table
         return self.__tree
 
-    def GetObjects(self, given_bounds):
-        s = set()
+    def GetObjects(self, given_bounds: Tuple[int, int, int, int]) -> Set[Element_Value]:
+        s: Set[Element_Value] = set()
         # if not built yet
-        if not self.__tree:
+        if self.__tree is None:
             return s
         # recursive queryng of objects inside given_bounds
         self.__GetObjects(self.__tree, given_bounds, s)
         return s
 
-    def __GetObjects(self, node, given_bounds, output_set): # left, upper, right, lower
+    def __GetObjects(self, node: QuadNode, given_bounds: Tuple[int, int, int, int], output_set: Set[Element_Value]) -> None: # left, upper, right, lower
         if not node.contents: # leaf
             output_set.update(node.elements)
         else:
@@ -245,11 +258,11 @@ class QuadTree:
                     else:
                         self.__GetObjects(cnode, given_bounds, output_set)
 
-    def SetVisibilityTick(self, given_bounds, vis_tick):
+    def SetVisibilityTick(self, given_bounds: Tuple[int, int, int, int], vis_tick: int) -> None:
         if self.__tree:
             self.__SetVisibilityTick(self.__tree, given_bounds, vis_tick)
 
-    def __SetVisibilityTick(self, node, given_bounds, vis_tick):
+    def __SetVisibilityTick(self, node: QuadNode, given_bounds: Tuple[int, int, int, int], vis_tick: int) -> None:
         if not node.contents: # leaf
             for x in node.elements:
                 x.SetVisibilityTick(vis_tick)
@@ -270,10 +283,10 @@ class QuadTree:
                     else:
                         self.__SetVisibilityTick(cnode, given_bounds, vis_tick)
 
-    def GetAllObjects(self):
+    def GetAllObjects(self) -> List[Element_Value]:
         return self.__objects
 
-    def RefreshObject(self, obj):
+    def RefreshObject(self, obj: Element_Value) -> None:
         self.RemoveSingleFromTree(obj)
         self.AddSingleToTree(obj)
 

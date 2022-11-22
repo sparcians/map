@@ -4,6 +4,7 @@
 # the current selection, hence importing wx
 import os
 import traceback
+from typing import Dict, Tuple
 
 import wx
 
@@ -26,7 +27,7 @@ class Selection_Mgr():
     # For storing the proposed changes to the properties of elements in the
     # selection. 'Queue' as in, 'this information is queued up, and it will
     # all be accounted for at once'
-    __queue = {}
+    __queue: Dict[Element, Tuple[int, int, int, int]] = {}
 
     # # Max depth of the undo/redo stack
     #  This is really intended to prevent runaway allocations and should not be
@@ -943,8 +944,7 @@ class Selection_Mgr():
         Permanently remove all Elements in the selection from the specified layout
         '''
         to_delete = self.__selected
-        if len:
-
+        if to_delete:
             self.ClearSelection()
             self.Add(to_delete)
             self.BeginCheckpoint('delete element')
@@ -1330,7 +1330,7 @@ class Selection_Mgr():
             pin = e.GetPIN()
             if pin in set_to_match:
                 if full_set is False:
-                    if len(results) == 0:
+                    if not results:
                         return [-1]
                     return results # Found first match. Stop here
 
@@ -1365,7 +1365,7 @@ class Selection_Mgr():
     # # Returns a bounding box in the form (l,t,r,b)
     #  If there is no selection, returns None
     def GetBoundingBox(self):
-        if len(self.__selected) == 0:
+        if not self.__selected:
             return None
 
         l, t, r, b = [None, None, None, None]
@@ -1650,7 +1650,7 @@ class Selection_Mgr():
     #  direction
     #  @param direction The side of each Element to align
     def Align(self, direction):
-        if len(self.__selected) == 0:
+        if not self.__selected:
             return
 
         self.BeginCheckpoint('align elements')

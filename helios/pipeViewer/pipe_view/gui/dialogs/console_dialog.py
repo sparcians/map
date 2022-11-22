@@ -2,10 +2,11 @@
 
 import wx
 from wx.py.shell import Shell
+from gui.layout_frame import Layout_Frame
 
 ## This class displays a python console
 class ConsoleDlg(wx.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent: Layout_Frame) -> None:
         self.__layout_frame = parent
         self.__context = parent.GetContext()
         
@@ -27,7 +28,7 @@ class ConsoleDlg(wx.Frame):
         self.Bind(wx.EVT_CLOSE, lambda evt: self.Hide()) # Hide instead of closing
         self.Bind(wx.EVT_MENU, self.OnRunScript)
 
-    def OnRunScript(self, evt):
+    def OnRunScript(self, evt: wx.MenuEvent) -> None:
         # Loop until user saves or cancels
         dlg = wx.FileDialog(self,
             'Run Python Script',

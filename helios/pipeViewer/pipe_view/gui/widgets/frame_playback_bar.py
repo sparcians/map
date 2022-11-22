@@ -292,12 +292,6 @@ class FramePlaybackBar(wx.Panel):
     def Refresh(self):
         self.__Update()
 
-    # # Public interface to pause playing (from Frame)
-    #  @note This exists to stop playing when the owning frame is trying to close using a
-    #  wx.CallAfter but playback is not allowing the event queue to completely drain
-    def PausePlaying(self):
-        self.__PausePlaying()
-
     # # Updates values displayed to match current context and selection
     #  @note Does not invoke FullUpdate on the associated layout canvas
     def __Update(self):
@@ -819,6 +813,9 @@ class FramePlaybackBar(wx.Panel):
         self.__StartPlaying(step, delay = delay)
 
     # # Used by input decoder when arrow key is released
+    # # Public interface to pause playing (from Frame)
+    #  @note This exists to stop playing when the owning frame is trying to close using a
+    #  wx.CallAfter but playback is not allowing the event queue to completely drain
     def PausePlaying(self):
         self.__PausePlaying()
 

@@ -1,19 +1,22 @@
 import logging
+from typing import List, Optional
 import weakref
+
+from model.layout_context import Layout_Context
 
 class Group(object):
 
-    def __init__(self):
-        self.__contexts = [] # Managed contexts (weak refs)
+    def __init__(self) -> None:
+        self.__contexts: List[weakref.ReferenceType[Layout_Context]] = [] # Managed contexts (weak refs)
 
-    def AddContext(self, frame):
+    def AddContext(self, frame: Layout_Context) -> None:
         self.__contexts.append(weakref.ref(frame, self.__RemoveContext))
 
-    def GetContexts(self):
-        return [ctxt() for ctxt in self.__contexts if ctxt() != None]
+    def GetContexts(self) -> List[Layout_Context]:
+        return [c for ctxt in self.__contexts if (c := ctxt()) is not None]
 
     ## Set current tick in the context of
-    def MoveTo(self, tick, context, no_broadcast = False):
+    def MoveTo(self, tick: int, context: Layout_Context, no_broadcast: bool = False) -> None:
         ## \todo All contexts in this group are synced at the same tick.
         #  In the future, they will be synced with relative offsets (per
         #  context). Support for this must be added.
@@ -44,7 +47,7 @@ class Group(object):
                 ctxt.RefreshFrame()
         context.RefreshFrame()
     
-    def RemoveContext(self, context):
+    def RemoveContext(self, context: Optional[Layout_Context]) -> None:
         if context is not None:
             for ctxtref in self.__contexts:
                 ctxt = ctxtref()
@@ -53,7 +56,7 @@ class Group(object):
                     self.__RemoveContext(ctxtref)
                     break
 
-    def __RemoveContext(self, context):
+    def __RemoveContext(self, context: weakref.ReferenceType[Layout_Context]) -> None:
         assert isinstance(context, weakref.ref)
         assert context in self.__contexts
         self.__contexts.remove(context)

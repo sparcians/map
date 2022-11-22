@@ -480,8 +480,8 @@ class Layout(object):
                 file_data = f.read()
                 try:
                     d = yaml.safe_load(file_data)
-                except Exception as e:
-                    raise Exception("Failed to load yaml file \"{0}\":\n{1}".format(filename, str(e)))
+                except Exception as exc:
+                    raise Exception("Failed to load yaml file \"{0}\":\n{1}".format(filename, str(exc)))
 
             if not hasattr(d, '__iter__'):
                 raise ValueError('Data retrieved from Argos layout file "{0}" is not an iterable structure : \n{1}' \

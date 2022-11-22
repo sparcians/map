@@ -1,8 +1,19 @@
+from __future__ import annotations
 from collections import OrderedDict
+from typing import Dict, Optional, Set, TypedDict, Union, TYPE_CHECKING
 import wx
 
+from model.settings import ArgosSettings
+if TYPE_CHECKING:
+    from gui.layout_frame import Layout_Frame
+
 class ViewSettingsDialog(wx.Dialog):
-    __SETTINGS = OrderedDict((
+    class ViewSettingType(TypedDict):
+        label: str
+        type: str
+        ctrl: Optional[wx.SpinCtrl]
+
+    __SETTINGS: OrderedDict[str, ViewSettingType]  = OrderedDict((
         ('layout_font_size',
             {
                 'label': 'Layout Font Size',
@@ -26,12 +37,12 @@ class ViewSettingsDialog(wx.Dialog):
         )
     ))
 
-    def __init__(self, parent, settings):
+    def __init__(self, parent: Layout_Frame, settings: ArgosSettings):
         wx.Dialog.__init__(self, parent, wx.NewId(), 'View Settings')
 
         self.__settings_controls = ViewSettingsDialog.__SETTINGS.copy()
 
-        self.__changed_settings = set()
+        self.__changed_settings: Set[str] = set()
         self.__ctrl_map = {}
         sizer = wx.BoxSizer(wx.VERTICAL)
         setting_sizer = wx.FlexGridSizer(cols=2, gap=(10,0))
@@ -42,6 +53,7 @@ class ViewSettingsDialog(wx.Dialog):
                 new_ctrl = wx.SpinCtrl(self, id=wx.NewId(), value=str(settings[k]))
                 new_ctrl.SetRange(1, 999)
                 new_ctrl.SetMinSize(new_ctrl.GetSizeFromTextSize(new_ctrl.GetTextExtent('000')))
+            assert new_ctrl is not None
             self.__ctrl_map[new_ctrl.GetId()] = k
             setting_sizer.Add(new_ctrl, 0, wx.ALIGN_CENTER_VERTICAL)
             self.Bind(wx.EVT_SPINCTRL, self.OnSpinCtrl, new_ctrl)
@@ -52,8 +64,11 @@ class ViewSettingsDialog(wx.Dialog):
         sizer.SetSizeHints(self)
         self.SetSizer(sizer)
 
-    def OnSpinCtrl(self, evt):
-        self.__changed_settings.add(self.__ctrl_map.get(evt.GetId()))
+    def OnSpinCtrl(self, evt: wx.SpinEvent) -> None:
+        self.__changed_settings.add(self.__ctrl_map[evt.GetId()])
 
-    def GetSettings(self):
-        return {k: self.__settings_controls[k]['ctrl'].GetValue() for k in self.__changed_settings}
+    def GetSettings(self) -> Dict[str, int]:
+        def get_value(ctrl: Optional[wx.SpinCtrl]) -> int:
+            assert ctrl is not None
+            return ctrl.GetValue()
+        return {k: get_value(self.__settings_controls[k]['ctrl']) for k in self.__changed_settings}

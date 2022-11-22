@@ -40,8 +40,7 @@ class SelectLayoutDlg(wx.Dialog):
                              label='The layout controls how information in the ' \
                              'transaction database is displayed on the screen. ' \
                              'Once loaded, layouts can be modified. A "shared" layout ' \
-                             'can be can be modified by several view frames simultaneously\n' \
-                             .format(Layout.LAYOUT_FILE_EXTENSION))
+                             'can be can be modified by several view frames simultaneously\n')
         info.Wrap(self.GetSize()[0]-5)
 
 

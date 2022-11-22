@@ -6,11 +6,11 @@ class Plain:
     NODE_POSY = 1
     NODE_DATA = 4
 
-    def __init__(self, filename):
+    def __init__(self, filename: str) -> None:
         # objects keyed by identifiers
         self.nodes = {}
         self.edges = []
-        self.bounds = (0, 0)
+        self.bounds = (0.0, 0.0)
         s = open(filename)
         for line in s:
             fields = shlex.split(line)

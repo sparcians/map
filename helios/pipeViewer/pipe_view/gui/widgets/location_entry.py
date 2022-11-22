@@ -1,17 +1,21 @@
+from typing import Any, List, Optional
+
 import wx
+
+from model.location_manager import LocationTree
 
 ## An Auto-suggesting Box for Entry of Location Strings
 class LocationEntry(wx.ComboBox):
-    def __init__(self, parent, value, location_tree, style=0, **par):
+    def __init__(self, parent: wx.Panel, value: str, location_tree: LocationTree, style: int = 0, **kwargs: Any) -> None:
         wx.ComboBox.__init__(self, parent, wx.ID_ANY, value,
-                        style=style|wx.CB_DROPDOWN, choices=[], **par)
+                        style=style|wx.CB_DROPDOWN, choices=[], **kwargs)
         self.__location_tree = location_tree
         self.AppendItems(self.GetChoices(value))
         self.Bind(wx.EVT_TEXT, self.EvtText)
 
-    def GetChoices(self, string):
+    def GetChoices(self, string: str) -> List[str]:
         keys = string.split('.')
-        current_level = self.__location_tree
+        current_level: Optional[LocationTree] = self.__location_tree
         last_level = keys.pop()
         base = ''
         while keys and current_level:
@@ -33,7 +37,7 @@ class LocationEntry(wx.ComboBox):
                         return_list.append(base+'.'+p_entry)
                 return return_list
 
-    def EvtText(self, event):
+    def EvtText(self, event: wx.CommandEvent) -> None:
         currentText = event.GetString()
         self.Clear()
         self.AppendItems(self.GetChoices(currentText))

@@ -11,6 +11,7 @@ import sys
 import os
 import logging
 import pstats
+from typing import Dict, List, Optional, Tuple, Union, cast
 from logging import info, debug, error, warn
 from model.settings import ArgosSettings
 from model.utilities import LogFormatter
@@ -118,9 +119,9 @@ else:
         sys.exit(1)
     elif args.profile:
         info("enabling profiling")
-        prof = cProfile.Profile()
-        prof.enable(subcalls = True,
-                    builtins = True)
+        prof = cProfile.Profile(subcalls = True,
+                                builtins = True)
+        prof.enable()
     elif args.tracemalloc:
         info("enabling tracemalloc profiling")
         import tracemalloc
@@ -158,6 +159,7 @@ else:
             ws.AddUserResourceDir(rd)
 
     # Parse clock
+    select_clock: Optional[str]
     if args.clock is not None:
         select_clock = str(args.clock)
     else:
@@ -212,10 +214,11 @@ else:
         layout_files = [dlg.GetFilename()]
         # Note: '' or None is an acceptable layout file which will cause an empty layout to be created
 
+    layout_vardicts: Optional[List]
     if args.layout_vars is not None:
         layout_vardicts = []
         for lv in args.layout_vars:
-            d = {}
+            d: Dict[str, str] = {}
             layout_vardicts.append(d)
 
             last_match_size = [0]
@@ -240,6 +243,7 @@ else:
     else:
         layout_vardicts = None
 
+    layout_geos: Optional[List[Union[Tuple[int, int], Tuple[int, int, int, int]]]]
     if args.layout_geometry is not None:
         layout_geos = []
         for lgs in args.layout_geometry:
@@ -294,12 +298,15 @@ else:
             wdiff = frame.GetSize()[0] - frame.GetClientSize()[0]
             hdiff = frame.GetSize()[1] - frame.GetClientSize()[1]
             if len(lg) == 4:
+                lg = cast(Tuple[int, int, int, int], lg)
                 if lg == (0, 0, 0, 0):
                     frame.Iconize()
                 else:
                     w, h, x, y = lg
                     frame.SetRect(wx.Rect(x, y, w - wdiff, h - hdiff))
             elif len(lg) == 2:
+                lg = cast(Tuple[int, int], lg)
+                w, h = lg
                 frame.SetSize((w, h))
             else:
                 error("layout_geos is not 2 or 4")

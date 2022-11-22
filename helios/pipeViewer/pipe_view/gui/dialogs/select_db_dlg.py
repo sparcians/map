@@ -3,6 +3,7 @@
 
 import sys
 import os
+from typing import Optional
 import wx
 import wx.lib.scrolledpanel as scrolledpanel
 
@@ -21,7 +22,7 @@ class SelectDatabaseDlg(wx.Dialog):
     # # Initialized the dialog
     #  @param init_prefix Value of prefix to show in the box by default.
     #  Must be a str or None
-    def __init__(self, init_prefix = None):
+    def __init__(self, init_prefix: Optional[str] = None) -> None:
         wx.Dialog.__init__(self,
                            None,
                            title = 'Select an Argos transaction database',
@@ -30,7 +31,7 @@ class SelectDatabaseDlg(wx.Dialog):
         if not isinstance(init_prefix, str) and init_prefix is not None:
             raise TypeError('init_prefix must be a str or None, is a {0}'.format(type(init_prefix)))
 
-        self.__prefix = None # Updated in CheckSelectionState
+        self.__prefix: Optional[str] = None # Updated in CheckSelectionState
 
         if init_prefix is not None:
             filepath = init_prefix + self.INFO_FILE_EXTENSION
@@ -94,11 +95,11 @@ class SelectDatabaseDlg(wx.Dialog):
         border.Add(sz, 1, wx.EXPAND | wx.ALL, 10)
         self.SetSizer(border)
 
-        self.SetAutoLayout(1)
+        self.SetAutoLayout(True)
 
         self.__CheckSelectionState()
 
-    def Show(self):
+    def Show(self) -> None:
         raise NotImplementedError('Cannot Show() this dialog. Use ShowModal instead')
 
     # # Gets the prefix selected by the dialog
@@ -106,21 +107,21 @@ class SelectDatabaseDlg(wx.Dialog):
     #  found and None if no database was chosen
     #
     #  This should be checked after invoking ShowModal() on this object
-    def GetPrefix(self):
+    def GetPrefix(self) -> Optional[str]:
         return self.__prefix
 
     # # Handler for Close button
-    def __OnClose(self, evt):
+    def __OnClose(self, evt: wx.CommandEvent) -> None:
         self.__prefix = None
         self.EndModal(wx.CANCEL)
 
     # # Handler for Ok button
-    def __OnOk(self, evt):
+    def __OnOk(self, evt: wx.CommandEvent) -> None:
         # self.__filename already set before this button was enabled
         self.EndModal(wx.OK)
 
     # # Handler for Find button
-    def __OnFindFile(self, evt):
+    def __OnFindFile(self, evt: wx.CommandEvent) -> None:
         dlg = wx.FileDialog(self, "Select Argos database simulation.info file",
                             defaultFile = self.__file_txt.GetValue(),
                             wildcard = 'Argos Simulation info files (*{0})|*{0}' \
@@ -134,7 +135,7 @@ class SelectDatabaseDlg(wx.Dialog):
         self.__CheckSelectionState()
 
     # # Handler for Changing the filename in file_txt
-    def __OnChangeFilename(self, evt):
+    def __OnChangeFilename(self, evt: wx.CommandEvent) -> None:
         self.__CheckSelectionState()
 
     # # Checks on the value in the self.__file_txt box to see if it points to a
@@ -143,7 +144,7 @@ class SelectDatabaseDlg(wx.Dialog):
     #  Updates self.__prefix
     #  Updates or clears self.__file_info and en/disables self.__ok_btn depending
     #  on whether selection points to a valid file. Also changes colors of box
-    def __CheckSelectionState(self):
+    def __CheckSelectionState(self) -> None:
         filepath = self.__file_txt.GetValue()
         suffix_pos = filepath.find(self.INFO_FILE_EXTENSION)
         if suffix_pos != len(filepath) - len(self.INFO_FILE_EXTENSION):

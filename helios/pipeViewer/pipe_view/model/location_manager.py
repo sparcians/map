@@ -5,17 +5,21 @@ import functools
 import re
 import sys
 import time
+from typing import Dict, List, Optional, TextIO, Tuple
 
 # # Expression for searching for variables in location strings
 #  @note value can be empty string
 LOCATION_STRING_VARIABLE_RE = re.compile('{(\w+)\s*(?:=\s*(\w*))?}')
 
+LocationTree = Dict[str, LocationTree]
+LocationType = Tuple[int, str, int]
+__LocationDict = Dict[str, LocationType]
 
 # # Consumes an Argos location file and provides a means of lookup up location
 #  IDs via location strings
 #
 #  Also allows browsing of availble locations
-class LocationManager(object):
+class LocationManager:
 
     # # Describes the location file
     LOCATION_FILE_EXTENSION = 'location.dat'
@@ -40,12 +44,12 @@ class LocationManager(object):
     #  @param prefix Argos transaction database prefix to open.
     #  LOCATION_FILE_EXTENSION will be appended to determine the actual
     #  filename to open
-    def __init__(self, prefix, update_enabled):
+    def __init__(self, prefix: str, update_enabled: bool) -> None:
 
-        self.__locs = {} # { Location Name : ( LocationID, name, ClockID ) }
+        self.__locs: __LocationDict = {} # { Location Name : ( LocationID, name, ClockID ) }
         self.__id_to_string = {} # { LocationID : Location Name }
-        self.__loc_tree = {} # Location tree
-        self.__regex_cache = {}
+        self.__loc_tree: LocationTree = {} # Location tree
+        self.__regex_cache: Dict[str, str] = {}
         try_count = self.FILE_WAIT_TIMEOUT
 
         index_file_exists = False
@@ -67,6 +71,7 @@ class LocationManager(object):
             # Find version information
             while 1:
                 first = self.__findNextLine(f)
+                assert first is not None
                 if first == '':
                     continue
 
@@ -101,12 +106,12 @@ class LocationManager(object):
                 els = ln.split(',')
 
                 try:
-                    uid, name, clockid = els[:3]
+                    uid_str, name, clockid_str = els[:3]
                 except:
                     raise ValueError('Failed to parse line "{0}"'.format(ln))
 
-                uid = int(uid)
-                clockid = int(clockid)
+                uid = int(uid_str)
+                clockid = int(clockid_str)
 
                 self.__insertLocationInTree(name)
                 self.__locs[name] = (uid, name, clockid)
@@ -124,14 +129,14 @@ class LocationManager(object):
     #  }
     #  @endcode
     @property
-    def location_tree(self):
+    def location_tree(self) -> LocationTree:
         return self.__loc_tree
 
     # # Gets next line from file which is not a comment.
     #  Strips comments on the line and whitespace from each end
     #  @param f File to read next line from
     #  @return '' if line is empty or comment, None if EOF is reached
-    def __findNextLine(self, f):
+    def __findNextLine(self, f: TextIO) -> Optional[str]:
         ln = f.readline().strip()
         if ln == '':
             return None
@@ -153,7 +158,7 @@ class LocationManager(object):
     #  @param variables dict of variables that can be substituted into the locname
     #  @return 3-tuple (locationID, location name, clock id) if found. If not
     #  found, returns LOC_NOT_FOUND
-    def getLocationInfo(self, locname, variables, loc_vars_changed = False):
+    def getLocationInfo(self, locname: str, variables: Dict[str, str], loc_vars_changed: bool = False) -> LocationType:
         if not isinstance(locname, str):
             raise TypeError('locname must be a str, is a {0}'.format(type(locname)))
 
@@ -168,7 +173,7 @@ class LocationManager(object):
     #  @param locname Location name string to lookup
     #  @return 3-tuple (locationID, location name, clock id) if found. If not
     #  found, returns LOC_NOT_FOUND
-    def getLocationInfoNoVars(self, locname):
+    def getLocationInfoNoVars(self, locname: str) -> LocationType:
         if not isinstance(locname, str):
             raise TypeError('locname must be a str, is a {0}'.format(type(locname)))
         try:
@@ -181,7 +186,7 @@ class LocationManager(object):
     #  @param locname Location string
     #  @param variables dict of variables and values
     #  @param loc_vars_changed True if we need to refresh the entry in the regex cache
-    def replaceLocationVariables(self, locname, variables, loc_vars_changed = False):
+    def replaceLocationVariables(self, locname: str, variables: Dict[str, str], loc_vars_changed: bool = False) -> str:
         if loc_vars_changed:
             self.__regex_cache[locname] = LOCATION_STRING_VARIABLE_RE.sub(functools.partial(self.__replaceVariable, variables), locname)
         try:
@@ -193,7 +198,7 @@ class LocationManager(object):
     # # Find all location variables in location string
     #  Returns a list of tuples (variable name, value) representing each variable found
     @staticmethod
-    def findLocationVariables(locname):
+    def findLocationVariables(locname: str) -> List[Tuple[str, str]]:
         if not isinstance(locname, str):
             raise TypeError('locname must be a str, is a {0}'.format(type(locname)))
 
@@ -208,13 +213,13 @@ class LocationManager(object):
     #  @note This is slow because this list is generated on request
     #  @note Order of results is not necessarily consistent
     #  @return List of str instances containing names of all known locations
-    def getLocationStrings(self):
-        return [x[1] for x in list(self.__locs.values())]
+    def getLocationStrings(self) -> List[str]:
+        return [x[1] for x in self.__locs.values()]
 
     # # Gets location strings for the given locid
     #  @param locid Location ID to lookup a string for
     #  @return Location string (str) if found, None otherwise
-    def getLocationString(self, locid):
+    def getLocationString(self, locid: int) -> Optional[str]:
         return self.__id_to_string.get(locid, None)
 
     # # Gets a sequence of potential location string completions given the
@@ -223,7 +228,7 @@ class LocationManager(object):
     #  @warning This is a very slow method since it iterates the entire list
     #  @todo Use an internal tree of location names (between '.'s) for
     #  generating completions more quickly
-    def getLocationStringCompletions(self, locname):
+    def getLocationStringCompletions(self, locname: str) -> List[str]:
         results = []
         for k, v in self.__locs.items():
             _, n, _ = v
@@ -233,28 +238,28 @@ class LocationManager(object):
         return results
 
     # # Returns the maximum location ID known to this manager
-    def getMaxLocationID(self):
+    def getMaxLocationID(self) -> int:
         if len(self.__id_to_string) == 0:
             return 0
         return max(self.__id_to_string.keys())
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.__locs)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '<LocationManager locs={0}>'.format(len(self.__locs))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
-    def __insertLocationInTree(self, loc_name):
+    def __insertLocationInTree(self, loc_name: str) -> None:
         '''
         Parses a location name by '.' and builds a tree from its content
         '''
         parent = self.__loc_tree
         paths = loc_name.split('.')
         for obj in paths:
-            if parent.get(obj) is None:
+            if obj not in parent:
                 parent[obj] = {}
             parent = parent[obj]
 
@@ -262,7 +267,7 @@ class LocationManager(object):
     #  @param variables dict of variable names with values
     #  @param match Match regex result. Contains 2 groups: the variable name and default value
     #  (which is None if no default was supplied)
-    def __replaceVariable(self, variables, match):
+    def __replaceVariable(self, variables: Dict[str, str], match: re.Match) -> str:
         # Get the replacement form the variables dictionary
         replacement = variables.get(match.group(1), None)
         if replacement is None:

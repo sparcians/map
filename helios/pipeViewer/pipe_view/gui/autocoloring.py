@@ -6,6 +6,7 @@ import wx
 import colorsys # For easy HSL to RGB conversion
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+from typing import Dict, Set, Tuple
 import warnings
 
 
@@ -14,42 +15,46 @@ class BrushRepository(object):
     _PALETTES = set(('default',)) | _COLORBLIND_MODES
     _SHUFFLE_MODES = set(('default', 'shuffled'))
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.palette = 'default'
         self.shuffle_mode = 'default'
-        self.brushes = {}
+        self.brushes: Dict[str, Dict[str, Dict[int, wx.Brush]]] = {}
         for shuffle_mode in self._SHUFFLE_MODES:
             self.brushes[shuffle_mode] = {}
 
     @classmethod
-    def get_supported_palettes(cls):
+    def get_supported_palettes(cls) -> Set[str]:
         return cls._PALETTES
 
     @classmethod
-    def get_supported_shuffle_modes(cls):
+    def get_supported_shuffle_modes(cls) -> Set[str]:
         return cls._SHUFFLE_MODES
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> wx.Brush:
         return self.as_dict()[idx]
 
-    def as_dict(self):
+    def as_dict(self) -> Dict[int, wx.Brush]:
         return self.brushes[self.shuffle_mode][self.palette]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.as_dict())
 
-    def validate_shuffle_mode(self, shuffle_mode):
+    def validate_shuffle_mode(self, shuffle_mode: str) -> None:
         if shuffle_mode not in self._SHUFFLE_MODES:
             raise ValueError('Shuffle mode shoud be one of the following values: {}'.format(self._SHUFFLE_MODES))
 
-    def validate_palette(self, palette):
+    def validate_palette(self, palette: str) -> None:
         if palette in self._COLORBLIND_MODES:
             raise ValueError('Colorblindness modes were removed due to licensing concerns.' +
                     ' Please contact developers to ask for their re-implementation')
         if palette not in self._PALETTES:
             raise ValueError('Palette mode should be one of the following values: {}'.format(self._PALETTES))
 
-    def generate_shuffled_palette(self, shuffle_mode, color_dict):
+    def generate_shuffled_palette(
+        self,
+        shuffle_mode: str,
+        color_dict: Dict[int, Tuple[float, float, float]]
+    ) -> Dict[int, Tuple[float, float, float]]:
         self.validate_shuffle_mode(shuffle_mode)
         if shuffle_mode == 'default':
             return color_dict
@@ -62,10 +67,10 @@ class BrushRepository(object):
         else:
             raise NotImplementedError('Shuffle mode {} has not been implemented.'.format(shuffle_mode))
 
-    def create_brush_dict(self, color_dict):
+    def create_brush_dict(self, color_dict: Dict[int, Tuple[float, float, float]]) -> Dict[int, wx.Brush]:
         return { key: wx.Brush([int(255 * x) for x in value]) for key, value in color_dict.items() }
 
-    def generate_all_brushes(self, color_dict):
+    def generate_all_brushes(self, color_dict: Dict[int, Tuple[float, float, float]]) -> None:
         PATCH_WIDTH = 2
 
         shuffle_idx = 0
@@ -85,62 +90,62 @@ class BrushRepository(object):
 
         self._generate_colorblind_brushes(color_dict)
 
-    def _generate_colorblind_brushes(self, color_dict):
+    def _generate_colorblind_brushes(self, color_dict: Dict[int, Tuple[float, float, float]]) -> None:
         # daltonize might be incompatible with the license of this project
         return
 
-        for palette in self._COLORBLIND_MODES:
-            plt.close()
-            fig = plt.figure()
-            fig.set_canvas(plt.gcf().canvas)
+        #for palette in self._COLORBLIND_MODES:
+        #    plt.close()
+        #    fig = plt.figure()
+        #    fig.set_canvas(plt.gcf().canvas)
 
-            ax = plt.gca()
+        #    ax = plt.gca()
 
-            plt.axis('off')
-            max_xlim = 0
-            max_ylim = 0
-            shuffle_idx = 0
-            for shuffle_mode in self._SHUFFLE_MODES:
-                # Draw a row of 2x2 squares for each shuffle combination that has been defined
-                # Each row corresponds to one of the color dicts in ALL_COLORS
-                for patch_idx, color in shuffled_color_dicts[shuffle_mode].items():
-                    xlim = PATCH_WIDTH * patch_idx
-                    ylim = PATCH_WIDTH * shuffle_idx
-                    ax.add_patch(patches.Rectangle((xlim, ylim), PATCH_WIDTH, PATCH_WIDTH, color = color, fill = True))
-                    max_xlim = max(max_xlim, xlim)
-                    max_ylim = max(max_ylim, ylim)
-                shuffle_idx += 1
+        #    plt.axis('off')
+        #    max_xlim = 0
+        #    max_ylim = 0
+        #    shuffle_idx = 0
+        #    for shuffle_mode in self._SHUFFLE_MODES:
+        #        # Draw a row of 2x2 squares for each shuffle combination that has been defined
+        #        # Each row corresponds to one of the color dicts in ALL_COLORS
+        #        for patch_idx, color in shuffled_color_dicts[shuffle_mode].items():
+        #            xlim = PATCH_WIDTH * patch_idx
+        #            ylim = PATCH_WIDTH * shuffle_idx
+        #            ax.add_patch(patches.Rectangle((xlim, ylim), PATCH_WIDTH, PATCH_WIDTH, color = color, fill = True))
+        #            max_xlim = max(max_xlim, xlim)
+        #            max_ylim = max(max_ylim, ylim)
+        #        shuffle_idx += 1
 
-            ax.set_xlim(0, max_xlim + PATCH_WIDTH)
-            ax.set_ylim(0, max_ylim + PATCH_WIDTH)
+        #    ax.set_xlim(0, max_xlim + PATCH_WIDTH)
+        #    ax.set_ylim(0, max_ylim + PATCH_WIDTH)
 
-            new_dict = {}
+        #    new_dict = {}
 
-            # Convert the figure to colorblind-friendly colors
-            with warnings.catch_warnings(): # Matplotlib gives a warning here
-                warnings.simplefilter('ignore', UnicodeWarning)
-                daltonized_fig = daltonize.daltonize_mpl(fig, palette)
+        #    # Convert the figure to colorblind-friendly colors
+        #    with warnings.catch_warnings(): # Matplotlib gives a warning here
+        #        warnings.simplefilter('ignore', UnicodeWarning)
+        #        daltonized_fig = daltonize.daltonize_mpl(fig, palette)
 
-            # Go back through the figure and get the new colors from each square
-            for patch in daltonized_fig.gca().patches:
-                color_idx = patch.get_x() / PATCH_WIDTH
-                shuffle_idx = patch.get_y() / PATCH_WIDTH
-                shuffle_mode = shuffle_idx_to_mode[shuffle_idx]
-                # Matplotlib returns RGBA, we only care about RGB
-                new_color = patch.get_fc()[0:3]
-                # Build a new color dictionary for the daltonized colors
-                if shuffle_mode not in new_dict:
-                    new_dict[shuffle_mode] = {}
-                new_dict[shuffle_mode][color_idx] = new_color
-            # Convert each color dict into brushes
-            for shuffle_mode in self._SHUFFLE_MODES:
-                self.brushes[shuffle_mode][palette] = self.create_brush_dict(new_dict[shuffle_mode])
+        #    # Go back through the figure and get the new colors from each square
+        #    for patch in daltonized_fig.gca().patches:
+        #        color_idx = patch.get_x() / PATCH_WIDTH
+        #        shuffle_idx = patch.get_y() / PATCH_WIDTH
+        #        shuffle_mode = shuffle_idx_to_mode[shuffle_idx]
+        #        # Matplotlib returns RGBA, we only care about RGB
+        #        new_color = patch.get_fc()[0:3]
+        #        # Build a new color dictionary for the daltonized colors
+        #        if shuffle_mode not in new_dict:
+        #            new_dict[shuffle_mode] = {}
+        #        new_dict[shuffle_mode][color_idx] = new_color
+        #    # Convert each color dict into brushes
+        #    for shuffle_mode in self._SHUFFLE_MODES:
+        #        self.brushes[shuffle_mode][palette] = self.create_brush_dict(new_dict[shuffle_mode])
 
-    def set_shuffle_mode(self, shuffle_mode):
+    def set_shuffle_mode(self, shuffle_mode: str) -> None:
         self.validate_shuffle_mode(shuffle_mode)
         self.shuffle_mode = shuffle_mode
 
-    def set_palette(self, palette):
+    def set_palette(self, palette: str) -> None:
         self.validate_palette(palette)
         self.palette = palette
 
@@ -149,18 +154,18 @@ BACKGROUND_BRUSHES = BrushRepository()
 REASON_BRUSHES = BrushRepository()
 
 
-def SetPalettes(palette):
+def SetPalettes(palette: str) -> None:
     BACKGROUND_BRUSHES.set_palette(palette)
     REASON_BRUSHES.set_palette(palette)
 
 
-def SetShuffleModes(mode):
+def SetShuffleModes(mode: str) -> None:
     BACKGROUND_BRUSHES.set_shuffle_mode(mode)
     REASON_BRUSHES.set_shuffle_mode(mode)
 
 
 # call after wx.App init
-def BuildBrushes(colorblindness_mode, shuffle_mode):
+def BuildBrushes(colorblindness_mode: str, shuffle_mode: str) -> None:
     global BACKGROUND_BRUSHES
     global REASON_BRUSHES
     # # Map of background colors based on annotation content
@@ -218,7 +223,7 @@ def BuildBrushes(colorblindness_mode, shuffle_mode):
         }
 
     REASON_COLORS = {
-        0 : [1.0, 1.0, 1.0],
+        0 : (1.0, 1.0, 1.0),
         1 : colorsys.hls_to_rgb(1 / 16.0, 0.75, 1),
         2 : colorsys.hls_to_rgb(2 / 16.0, 0.75, 1),
         3 : colorsys.hls_to_rgb(3 / 16.0, 0.75, 1),

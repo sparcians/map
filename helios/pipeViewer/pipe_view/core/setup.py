@@ -7,6 +7,7 @@ import os.path
 import glob
 import distutils
 import shutil
+from typing import List, cast
 
 # Force use of a different Cython
 cython_dir = os.environ.get('CYTHON_DIR', None)
@@ -25,7 +26,14 @@ from Cython.Build import cythonize
 from pathlib import Path
 
 import pkgutil
+from _frozen_importlib_external import SourceFileLoader
+
 wx_pkg = pkgutil.get_loader('wx')
+if wx_pkg is None:
+    print("wx python library is not installed!")
+    sys.exit(1)
+
+assert isinstance(wx_pkg, SourceFileLoader)
 inc_dirs = [os.path.join(os.path.dirname(wx_pkg.get_filename()), 'include')]
 
 # Environment Setup
@@ -35,7 +43,7 @@ if 'TARGETDIR' not in os.environ:
 destination_dir = os.environ["TARGETDIR"]
 extension = os.environ.get("BUILD", '') # Required from caller for choosing an extension to build
 
-system_include_dirs = []
+system_include_dirs: List[str] = []
 
 py_src_dir = Path(__file__).parent.resolve() / 'src'
 
@@ -61,8 +69,10 @@ if wx_config is None:
     print('wx-config must be installed and present in your PATH in order to build Argos')
     sys.exit(1)
 
-flags = subprocess.check_output([wx_config, '--cppflags']).decode('utf-8')
-flags = flags.split()
+def get_wx_flags(*args):
+    return subprocess.check_output([wx_config] + list(args)).decode('utf-8').split()
+
+flags = get_wx_flags('--cppflags')
 wx_inc_dirs = [flg[2:] for flg in flags if flg.startswith('-I')]
 wx_defines = [tuple(flg[2:].split('=')) for flg in flags if flg[:2] == '-D']
 
@@ -75,8 +85,7 @@ def ensure_2_tuple(t):
 
 wx_defines = list(map(ensure_2_tuple, wx_defines))
 
-flags = subprocess.check_output([wx_config, '--libs']).decode('utf-8')
-flags = flags.split()
+flags = get_wx_flags('--libs')
 wx_link_args = flags
 
 compile_args = ['--std=c++17'] # Required for ISL C++ code

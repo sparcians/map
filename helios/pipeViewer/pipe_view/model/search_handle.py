@@ -4,6 +4,9 @@ import time
 import sys
 import subprocess
 from logging import debug, error, info
+from typing import Callable, List, Optional, Tuple
+
+from model.layout_context import Layout_Context
 
 __SEARCH_PROGRAM_ENV_VAR_NAME = 'TRANSACTIONSEARCH_PROGRAM'
 TRANSACTION_SEARCH_PROGRAM = os.environ.get(__SEARCH_PROGRAM_ENV_VAR_NAME, os.getcwd())
@@ -45,7 +48,7 @@ else:
 # # Gets data for use by search dialog.
 class SearchHandle:
 
-    def __init__(self, context):
+    def __init__(self, context: Layout_Context) -> None:
         # other access to db. only used for resolving location id's the strings
         self.__db = context.dbhandle.database
 
@@ -55,13 +58,20 @@ class SearchHandle:
     #  Callback returns a 2-tuple: (continue, skip)
     #  @return Results list. Each entry is a tuple of matches (start, end, loc ID, annotation)
     # TODO does this really need to launch a subprocess? can't it just make an API call to transaction db?
-    def Search(self, query_type, query_string, start_tick = None, end_tick = None, locations = [], progress_callback = None, invert = False):
+    def Search(self,
+               query_type: str,
+               query_string: str,
+               start_tick: Optional[int] = None,
+               end_tick: Optional[int] = None,
+               locations: List[int] = [],
+               progress_callback: Optional[Callable] = None,
+               invert: bool = False) -> List[Tuple[int, int, int, str]]:
         assert isinstance(query_string, str)
         if not query_type in ['string', 'regex']:
             raise Exception('query type must be string or regex, got %s', query_type)
         if not can_search:
             raise Exception('There were problems with the initialization of search. You cannot search.')
-        results = []
+        results: List[Tuple[int, int, int, str]] = []
         arglist = [TRANSACTION_SEARCH_PROGRAM, \
                    self.__db.filename, \
                    query_type, \
@@ -81,7 +91,7 @@ class SearchHandle:
             arglist.append(str(-1))
 
         # Location filter arg
-        if len(locations) > 0:
+        if locations:
             arglist.append(','.join([str(loc) for loc in locations]))
         else:
             arglist.append('')
@@ -92,9 +102,11 @@ class SearchHandle:
 
         process.poll()
         if process.returncode is not None and process.returncode != 0:
-            raise IOError('Search subprocess failed: {}'.format(process.stderr.read()))
+            assert process.stderr is not None
+            raise IOError(f'Search subprocess failed: {process.stderr.read().decode("utf-8")}')
 
         cont = True
+        assert process.stdout is not None
         while cont: # Loop until process terminates
             line = process.stdout.readline()
             while line:
@@ -103,7 +115,7 @@ class SearchHandle:
                 if line_type == b'p'[0]: # process
                     if progress_callback:
                         percent = min(99.99, float(line_content) * 100)
-                        cont, skip = progress_callback(percent, len(results), '{} Potential Matches'.format(len(results)))
+                        cont, skip = progress_callback(percent, len(results), f'{len(results)} Potential Matches')
                         if cont is False:
                             break # early exit when cont is False
                 elif line_type == b'r'[0]: # result
@@ -114,8 +126,8 @@ class SearchHandle:
                         start, end = time_range.split(b',')
                         annotation = line_content[annotation_start + 1:]
                     except Exception as ex:
-                        error('Failed to parse search output line "{}" from "{}"' \
-                              .format(line_content, line_content))
+                        line_str = line_content.decode('utf-8')
+                        error(f'Failed to parse search output line "{line_str}"')
                         raise
                     results.append((int(start), int(end), int(loc_id), annotation.decode('utf-8')))
                 # update line
@@ -140,8 +152,10 @@ class SearchHandle:
         # If waiting for process completion above, there is no need to check for
         # a 'None' returncode here.
         if process.returncode != 0 and process.returncode is not None:
-            print('Search subprocess returned non-zero error code: {}: {}' \
-                                 .format(process.returncode, process.stderr.read()), file = sys.stderr)
+            assert process.stderr is not None
+            print('Search subprocess returned non-zero error code: '
+                  f'{process.returncode}: {process.stderr.read().decode("utf-8")}',
+                  file = sys.stderr)
 
         # #print 'Search results = ', len(results)
 
