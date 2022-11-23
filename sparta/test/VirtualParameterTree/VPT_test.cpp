@@ -12,7 +12,7 @@
 
 using sparta::ParameterTree;
 
-TEST_INIT;
+TEST_INIT
 
 /*
  * Tests virtual parameter tree construction and extraction.

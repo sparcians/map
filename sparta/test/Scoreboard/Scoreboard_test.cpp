@@ -14,7 +14,7 @@
 #include "sparta/statistics/StatisticSet.hpp"
 #include "sparta/events/UniqueEvent.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 enum Units
     {

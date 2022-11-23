@@ -801,4 +801,4 @@ namespace sparta
 
     using CycleHistogram = CycleHistogramTreeNode;
 
-}; // namespace sparta
+} // namespace sparta

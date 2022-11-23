@@ -354,4 +354,4 @@ namespace sparta
             last_val_ = "";
         }
     }
-}; // namespace sparta
+} // namespace sparta

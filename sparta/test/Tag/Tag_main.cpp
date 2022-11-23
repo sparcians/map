@@ -5,7 +5,7 @@
 #include "sparta/utils/Tag.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 using namespace sparta;
 using namespace std;

@@ -19,7 +19,7 @@
  * \brief Test for Logging in a simple tree
  */
 
-TEST_INIT;
+TEST_INIT
 
 // Test for expected observation status
 #define EXPECT_NUM_OBSERVATION_POINTS(ms, num_pts_expected) {              \
@@ -91,7 +91,6 @@ public:
     }
 };
 
-constexpr char TalkativeTreeNode::TalkativeResource::name[];
 sparta::ResourceFactory<TalkativeTreeNode::TalkativeResource> TalkativeTreeNode::talktive_res_fact;
 
 int main()

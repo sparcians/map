@@ -14,7 +14,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <fstream>
 
-TEST_INIT;
+TEST_INIT
 
 using sparta::SpartaTester;
 namespace db = sparta::db;

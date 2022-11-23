@@ -276,5 +276,5 @@ namespace sparta
             //! @}
 
         }; // class SimpleMemoryMapNode
-    }; // namespace memory
-}; // namespace sparta
+    } // namespace memory
+} // namespace sparta

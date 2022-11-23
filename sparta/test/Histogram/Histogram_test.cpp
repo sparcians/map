@@ -17,7 +17,7 @@
 #include "sparta/sparta.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 double calculateStDev(const std::vector<uint64_t>& histogram_vector) {
     sparta_assert(!histogram_vector.empty());

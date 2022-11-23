@@ -143,7 +143,6 @@ namespace sparta
             uint8_t * data_ = nullptr;
         }; // class LineData
 
-    }; // namespace cache
+    } // namespace cache
 
-}; // namespace sparta
-
+} // namespace sparta

@@ -1160,20 +1160,6 @@ private:
     std::string filename_; //!< For recalling errors
 }; // class ReportFileParserYAML
 
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_REPORT[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_SUBREPORT[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_CONTENT[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_NAME[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTHOR[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE_ATTRIBUTES[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE_MAX_RECURSION_DEPTH[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE_MAX_REPORT_DEPTH[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_STYLE[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_TRIGGER[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_REPORT_IGNORE[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_REPORT_OPTIONAL[];
-
 void Report::addFile(const std::string& file_path, bool verbose)
 {
     const std::vector<std::string> replacements;

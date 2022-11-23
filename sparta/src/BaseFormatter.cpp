@@ -183,8 +183,6 @@ bool BaseFormatter::isValidFormatName(const std::string& format)
     return false;
 }
 
-constexpr char BaseOstreamFormatter::OSTREAM_TARGET_NAME[];
-
-        } // namespace format
-    } // namespace report
+} // namespace format
+} // namespace report
 } // namespace sparta

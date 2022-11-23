@@ -13,7 +13,7 @@
  * \brief Test for notifications
  */
 
-TEST_INIT;
+TEST_INIT
 
 typedef sparta::NotificationSourceBase::ObservationStateChange ObservationStateChange;
 

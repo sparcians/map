@@ -17,7 +17,7 @@
 #include "sparta/statistics/CycleCounter.hpp"
 #include "sparta/utils/SpartaSharedPointer.hpp"
 #include "sparta/utils/SpartaSharedPointerAllocator.hpp"
-TEST_INIT;
+TEST_INIT
 
 #define PIPEOUT_GEN
 

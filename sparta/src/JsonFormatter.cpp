@@ -84,7 +84,7 @@ void getTotalNumReports(unsigned int & total_num_reports,
     for (const Report & sr : r->getSubreports()) {
         getTotalNumReports(total_num_reports, total_num_stats, &sr);
     }
-};
+}
 
 //////////////////////// JSON Formatter methods (full) /////////////////////
 

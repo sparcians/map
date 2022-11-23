@@ -613,6 +613,5 @@ namespace sparta
             }
         }
 
-    }; // namespace ConfigParser
-
-}; // namespace sparta
+} // namespace ConfigParser
+} // namespace sparta

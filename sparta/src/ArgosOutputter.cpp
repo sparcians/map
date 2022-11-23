@@ -18,7 +18,7 @@
 // #define PIPELINE_DBG 1
 namespace sparta{
     namespace pipeViewer{
-        constexpr uint32_t Outputter::FILE_VERSION;
+
         Outputter::Outputter(const std::string& filepath, const uint64_t interval) :
             record_file_(),
             index_file_(),

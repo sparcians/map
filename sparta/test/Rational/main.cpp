@@ -5,7 +5,7 @@
 #include "sparta/utils/Rational.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 using sparta::utils::Rational;
 using namespace std;

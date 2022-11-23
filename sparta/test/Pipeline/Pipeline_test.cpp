@@ -13,7 +13,7 @@
 #include "sparta/simulation/ClockManager.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
-TEST_INIT;
+TEST_INIT
 #define PIPEOUT_GEN
 
 #define TEST_MANUAL_UPDATE

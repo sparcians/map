@@ -17,7 +17,7 @@
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/statistics/CycleCounter.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 #define PIPEOUT_GEN
 

@@ -14,7 +14,7 @@
 #include "sparta/events/AsyncEvent.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 /*
  * Simple test with eight threads that each schedules a bunch of async events.
@@ -176,9 +176,6 @@ private:
 
     unsigned long async_event_count_ = 0;
 };
-
-constexpr unsigned int TestDriver::THREADS;
-constexpr unsigned int TestDriver::ASYNC_EVENTS_PER_THREAD;
 
 int main()
 {

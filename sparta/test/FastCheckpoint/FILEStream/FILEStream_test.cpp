@@ -12,7 +12,7 @@
  * \brief Test for istream and ostream objects backed by FILE *
  */
 
-TEST_INIT;
+TEST_INIT
 
 /*! Write stuff out to an ostream
  *

@@ -18,7 +18,7 @@
 #include <cinttypes>
 #include <iostream>
 
-TEST_INIT;
+TEST_INIT
 
 // Pipeout generation does not work with this test
 #define PIPEOUT_GEN
