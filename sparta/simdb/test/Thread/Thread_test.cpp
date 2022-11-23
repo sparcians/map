@@ -14,7 +14,7 @@
 #include <iostream>
 #include <vector>
 
-TEST_INIT
+TEST_INIT;
 
 using simdb::TimerThread;
 using simdb::AsyncTaskEval;

@@ -22,7 +22,7 @@
 
 using ObjectDatabase = simdb::ObjectManager::ObjectDatabase;
 
-TEST_INIT
+TEST_INIT;
 
 #define PRINT_ENTER_TEST                                                       \
   std::cout << std::endl;                                                      \

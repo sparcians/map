@@ -12,7 +12,7 @@
 
 #include "simdb/async/AsyncTaskEval.hpp"
 
-TEST_INIT
+TEST_INIT;
 
 using simdb::AsyncTaskEval;
 
