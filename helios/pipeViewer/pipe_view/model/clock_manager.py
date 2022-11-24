@@ -3,7 +3,7 @@
 ## @package clock_manager.py
 #  @brief Consumes argos clock files through ClockManager class
 
-
+from __future__ import annotations
 import sys
 import math
 from typing import Dict, List, Optional, TextIO, Tuple

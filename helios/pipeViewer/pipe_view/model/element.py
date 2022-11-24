@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import traceback
 
 import os
@@ -5,13 +7,19 @@ import sys
 import copy
 import re
 import sre_constants
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Optional, TextIO, Tuple, TypeVar, Union, cast, TYPE_CHECKING
 import weakref
 
 sys.path.append('../')
 import yaml
 
 from . import element_propsvalid as valid
+
+if TYPE_CHECKING:
+    from .layout import Layout
+    from .element_value import Element_Value
+    from gui.layout_canvas import Layout_Canvas
+
 import logging
 
 import wx # Though this is part of the model-side, it is easier to place some
@@ -20,16 +28,23 @@ import wx # Though this is part of the model-side, it is easier to place some
 # Another view-side import since elements here have rendering code embedded.
 import gui.autocoloring
 
-import logsearch # Argos module for searching logfiles
+from logsearch import LogSearch # Argos module for searching logfiles
 
+
+if TYPE_CHECKING:
+    T = TypeVar('T')
+    PropertyValue = Union[str, int, float, Tuple[int, int], Tuple[int, int, int], List[PropertyValue]]
+    PropertyDict = Dict[str, PropertyValue]
+    ValidatedPropertyDictElement = Tuple[T, Callable]
+    ValidatedPropertyDict = Dict[str, ValidatedPropertyDictElement[PropertyValue]]
 
 # # The building blocks of a Layout
-class Element(object):
+class Element:
 #    __FRAME_COLOR = (230, 230, 230)
     __FRAME_COLOR = (128, 128, 128)
 
     # Set the default values for each property of an Element
-    _ALL_PROPERTIES = {
+    _ALL_PROPERTIES: ValidatedPropertyDict = {
         'type'                  : (''              , valid.validateString),
         'position'              : ((10, 7)          , valid.validatePos),
         'dimensions'            : ((120, 14)        , valid.validateDim),
@@ -60,35 +75,35 @@ class Element(object):
 
     # Store PIN in root class
     @staticmethod
-    def Gen_PIN():
+    def Gen_PIN() -> int:
         Element.__cur_pin += 1
         return Element.__cur_pin
 
     # # called to see if we element should be considered for rendering
     # Currently there is no 'ghost' type
     @staticmethod
-    def IsDrawable():
+    def IsDrawable() -> bool:
         return False
 
     # # called to see if we element will be making queries
     @staticmethod
-    def NeedsDatabase():
+    def NeedsDatabase() -> bool:
         return False
 
     # # called to see if we element is selectable in playback mode
     @staticmethod
-    def IsSelectable():
+    def IsSelectable() -> bool:
         return True
 
     # # called to see if we element will gather data from additional'meta'
     # table of data from database
     @staticmethod
-    def UsesMetadata():
+    def UsesMetadata() -> bool:
         return False
 
     # # called when drawn is not null
     @staticmethod
-    def GetDrawRoutine():
+    def GetDrawRoutine() -> Optional[Callable]:
         return None
 
     # # indicates if this is a possible container
@@ -97,27 +112,27 @@ class Element(object):
     # AddChild(self, Element)
     # RemoveChild(self, Element)
     @staticmethod
-    def HasChildren():
+    def HasChildren() -> bool:
         return False
 
     @staticmethod
-    def GetElementProperties():
+    def GetElementProperties() -> ValidatedPropertyDict:
         return Element._ALL_PROPERTIES
 
     @staticmethod
-    def GetType():
+    def GetType() -> str:
         return ''
 
     # # returns a list of property names (keys) to exclude from
     # element property dialog
     @staticmethod
-    def GetHiddenProperties():
+    def GetHiddenProperties() -> List[str]:
         return ['scale_factor']
 
     # # returns a list of property names (keys) to mark read-only in
     # element property dialog
     @staticmethod
-    def GetReadOnlyProperties():
+    def GetReadOnlyProperties() -> List[str]:
         return []
 
     # # The constructor
@@ -129,7 +144,12 @@ class Element(object):
     #  responsible for prevenging layout duplicates
     #  @profile
     #  Must be run by subclass implementing _ALL_PROPERTIES static varible
-    def __init__(self, duplicate = None, container = None, initial_properties = None, parent = None, force_pin = None):
+    def __init__(self,
+                 duplicate: Optional[Element] = None,
+                 container: Optional[Layout] = None,
+                 initial_properties: Optional[PropertyDict] = None,
+                 parent: Optional[Element] = None,
+                 force_pin: Optional[int] = None) -> None:
         self._parent = parent
         self.__draw = True
         self.__needs_redraw = True
@@ -149,7 +169,7 @@ class Element(object):
 
             if initial_properties:
                 # Overwrite defaults with any initial settings we have.
-                for key in initial_properties:
+                for key in initial_properties.keys():
                     if key in self._VIRTUAL_PROPERTIES:
                         raise Exception(f'Property {key} is a virtual property and cannot be initialized')
 
@@ -182,35 +202,35 @@ class Element(object):
         # At end of construction, mark as clean
         self.__changed = False
 
-        self._pen = wx.Pen([int(c) for c in self._properties['color']], 1)
+        self._pen = wx.Pen([int(c) for c in cast(Tuple[int, int, int], self._properties['color'])], 1)
 
     # # Return the unique identifier of this element
-    def GetPIN(self):
+    def GetPIN(self) -> int:
         return self.__pin
 
     # # Return parent for this object
-    def GetParent(self):
+    def GetParent(self) -> Optional[Element]:
         return self._parent
 
     # # Return the layout which this element belongs to
-    def GetLayout(self):
+    def GetLayout(self) -> Optional[Layout]:
         return self._layout
 
-    def GetBounds(self):
-        pos = self.GetProperty('position')
-        size = self.GetProperty('dimensions')
+    def GetBounds(self) -> Tuple[int, int, int, int]:
+        pos = cast(Tuple[int, int], self.GetProperty('position'))
+        size = cast(Tuple[int, int], self.GetProperty('dimensions'))
         return pos[0], pos[1], pos[0] + size[0], pos[1] + size[1]
 
     # # Set a flag that the element needs to be redrawn
-    def SetNeedsRedraw(self):
+    def SetNeedsRedraw(self) -> None:
         self.__needs_redraw = True
 
     # # Unset the redraw flag
-    def UnsetNeedsRedraw(self):
+    def UnsetNeedsRedraw(self) -> None:
         self.__needs_redraw = False
 
     # # Query the redraw flag
-    def NeedsRedraw(self):
+    def NeedsRedraw(self) -> bool:
         return self.__needs_redraw
 
     # # Set the Element's property key to the value val, if it passes the
@@ -218,22 +238,25 @@ class Element(object):
     #  @param key Property to change
     #  @param val New value for the property. Note that val can always be a
     #  string regardless of property type
-    def SetProperty(self, key, val):
+    def SetProperty(self, key: str, val: PropertyValue) -> None:
         if not key in self._properties:
             raise ValueError('Attempting to set a non-existent property: ' + str(key))
 
         orig_val = self._properties[key]
 
-        props = self._ALL_PROPERTIES.get(key)
+        props = self._ALL_PROPERTIES[key]
         val = props[1](key, val)
         if (key == 'caption'):
             self._properties[key] = val
+            assert self._layout is not None
             self._layout.Refresh(self)
         elif key == 'position' or key == 'dimensions':
             self._properties[key] = val
+            assert self._layout is not None
             self._layout.ElementsMoved(self)
             self._layout.Refresh(self)
         elif key == 'color':
+            val = cast(Tuple[int, int, int], val)
             self._properties[key] = val
             self._pen = wx.Pen([int(c) for c in val], 1)
         else:
@@ -242,13 +265,15 @@ class Element(object):
         # Setting a property is a change if the new value is actually different
         if val != orig_val and key != 'scale_factor':
             self.__changed = True
+            assert self._layout is not None
             self._layout.SetChanged()
 
-    def SetX(self, x):
-        current = self._properties['position']
+    def SetX(self, x: int) -> None:
+        current = cast(Tuple[int, int], self._properties['position'])
         orig_val = current[0]
         val = self._ALL_PROPERTIES['position'][1]('position', (x, current[1]))
         self._properties['position'] = val
+        assert self._layout is not None
         self._layout.ElementsMoved(self)
 
         # Setting a property is a change if the new value is actually different
@@ -256,11 +281,12 @@ class Element(object):
             self.__changed = True
             self._layout.SetChanged()
 
-    def SetY(self, y):
-        current = self._properties['position']
+    def SetY(self, y: int) -> None:
+        current = cast(Tuple[int, int], self._properties['position'])
         orig_val = current[1]
         val = self._ALL_PROPERTIES['position'][1]('position', (current[0], y))
         self._properties['position'] = val
+        assert self._layout is not None
         self._layout.ElementsMoved(self)
 
         # Setting a property is a change if the new value is actually different
@@ -269,74 +295,78 @@ class Element(object):
             self._layout.SetChanged()
 
     # # Fetch the value for the given key
-    def GetProperty(self, key, period = None):
+    def GetProperty(self, key: str, period: Optional[int] = None) -> PropertyValue:
         val = self._properties[key]
 
         if key not in self._SCALED_PROPERTIES:
             return val
 
-        x_scale, y_scale = self._properties['scale_factor']
         if key == 'position' or key == 'dimensions':
+            val = cast(Tuple[int, int], val)
+            x_scale, y_scale = cast(Tuple[int, int], self._properties['scale_factor'])
             return (round(val[0] * x_scale), round(val[1] * y_scale))
         else:
             raise NotImplementedError(f"Scaling not implemented for property '{key}'.")
 
     # # These shortcut functions were added in order to improve performance for some derived types
     # # Shortcut to get X dimension
-    def GetXDim(self):
-        return self.GetProperty('dimensions')[0]
+    def GetXDim(self) -> int:
+        return cast(Tuple[int, int], self.GetProperty('dimensions'))[0]
 
     # # Shortcut to get Y dimension
-    def GetYDim(self):
-        return self.GetProperty('dimensions')[1]
+    def GetYDim(self) -> int:
+        return cast(Tuple[int, int], self.GetProperty('dimensions'))[1]
 
     # # Shortcut to get X position
-    def GetXPos(self):
-        return self.GetProperty('position')[0]
+    def GetXPos(self) -> int:
+        return cast(Tuple[int, int], self.GetProperty('position'))[0]
 
     # # Shortcut to get Y position
-    def GetYPos(self):
-        return self.GetProperty('position')[1]
+    def GetYPos(self) -> int:
+        return cast(Tuple[int, int], self.GetProperty('position'))[1]
 
     # # Return the entire dict of properties
-    def GetProperties(self):
+    def GetProperties(self) -> PropertyDict:
         return self._properties
 
     # # Return the entire dict of properties
-    def GetSerializableProperties(self):
+    def GetSerializableProperties(self) -> PropertyDict:
         return {k: v for k, v in self._properties.items() if k not in self._VIRTUAL_PROPERTIES}
 
     # # Does this element have a particular property
-    def HasProperty(self, key):
+    def HasProperty(self, key: str) -> bool:
         return key in self._properties
 
     # # Return a listing of the valid options for the 'Content' property
-    def GetContentOptions(self):
+    def GetContentOptions(self) -> List[str]:
         return self.__CONTENT_OPTIONS
 
     # # Override and return offset times to query range of data at update.
-    def GetQueryFrame(self, period):
+    def GetQueryFrame(self, period: int) -> Optional[Tuple[int, int]]:
         return None
 
     # # Indicates whether this element has been modified in any way that could
     #  affect the save state on disk
     #  @return True if the element has changed
     #  @see _MarkAsUnchanged
-    def HasChanged(self):
+    def HasChanged(self) -> bool:
         return self.__changed
 
     # # Mark the element for update.
-    def SetChanged(self):
+    def SetChanged(self) -> None:
         self.__changed = True
 
     # # Sets if element should be drawn.
     # Useful after a parent has handled the draw for the children.
-    def EnableDraw(self, state):
+    def EnableDraw(self, state: bool) -> None:
         self.__draw = state
 
     # # Returns if draw is enabled on this element.
-    def ShouldDraw(self):
+    def ShouldDraw(self) -> bool:
         return self.__draw
+
+    def GetChildren(self) -> List[Element]:
+        raise NotImplementedError('GetChildren not implemented for this class')
 
     # # Append YAML content of this element to a YAML event list
     #  @pre Assumes this element can just append a self-contained YAML
@@ -347,8 +377,8 @@ class Element(object):
     #  @return None
     #
     #  Intended to be called by a Layout during saving
-    def _GetYAMLEvents(self):
-        events = []
+    def _GetYAMLEvents(self) -> List[yaml.Event]:
+        events: List[yaml.Event] = []
         events.append(yaml.MappingStartEvent(anchor = None, tag = None, implicit = True, flow_style = False))
 
         # Serialize all properties to yaml pairs
@@ -376,20 +406,21 @@ class Element(object):
 
     # # Flags this layout and all comprising elements as Not Changed.
     #  This is intended to be called by the owning Layout
-    def _MarkAsUnchanged(self):
+    def _MarkAsUnchanged(self) -> None:
         self.__changed = False
 
     # # Will return a hash of the Elements PIN, which is a unique identifier
     #  for each Element (and therefore each Element Value)
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.GetPIN())
 
     # # Determine if two Element instances are equivalent, as determined by
     #  sharing the same PIN or the other element being None.
     #  Comparison with other types is not allowed
-    def __eq__(self, other):
-        if other is None:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Element):
             return False
+
         return self.GetPIN() == other.GetPIN()
 
 
@@ -398,41 +429,41 @@ Element._ALL_PROPERTIES['type'] = (Element.GetType(), valid.validateString)
 
 # # Generic element capable of holding other elements.
 class MultiElement(Element):
-    _MULTI_PROPERTIES: Dict[str, Tuple[List[Dict[str, Any]], Callable]] = {'children' : ([], valid.validateList)}
+    _MULTI_PROPERTIES: ValidatedPropertyDict = {'children' : ([], valid.validateList)}
     _ALL_PROPERTIES = Element._ALL_PROPERTIES.copy()
     _ALL_PROPERTIES.update(_MULTI_PROPERTIES)
 
     @staticmethod
-    def HasChildren():
+    def HasChildren() -> bool:
         return True
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         Element.__init__(self, *args, **kwargs)
         # store child elements
-        self.__children = []
+        self.__children: List[Element] = []
         # map PINs to child elements
-        self.__children_by_pin = {}
+        self.__children_by_pin: Dict[int, Element] = {}
 
     @staticmethod
-    def GetHiddenProperties():
+    def GetHiddenProperties() -> List[str]:
         # we use pixel_offset instead
         return ['scale_factor', 'children']
 
-    def GetChildren(self):
+    def GetChildren(self) -> List[Element]:
         return self.__children
 
-    def GetChildByPIN(self, pin):
+    def GetChildByPIN(self, pin: int) -> Optional[Element]:
         return self.__children_by_pin.get(pin, None)
 
-    def RemoveChild(self, e):
+    def RemoveChild(self, e: Element) -> None:
         self.__children.remove(e)
         del self.__children_by_pin[e.GetPIN()]
 
-    def AddChild(self, e):
+    def AddChild(self, e: Element) -> None:
         self.__children.append(e)
         self.__children_by_pin[e.GetPIN()] = e
 
-    def SetNeedsRedraw(self):
+    def SetNeedsRedraw(self) -> None:
         for child in self.GetChildren():
             child.SetNeedsRedraw()
 
@@ -452,68 +483,69 @@ class LocationallyKeyedElement(Element):
     COLOR_BASIS_TYPES = ['string_key', 'python_exp', 'python_func']
 
     @staticmethod
-    def NeedsDatabase():
+    def NeedsDatabase() -> bool:
         return True
 
     __brush_cache_needs_purging = False
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         Element.__init__(self, *args, **kwargs)
         self.__has_vars = False
         # keep track of state among all LocationallyKeyed Elements
 
-    def SetProperty(self, key, val):
+    def SetProperty(self, key: str, val: PropertyValue) -> None:
         Element.SetProperty(self, key, val)
         val = self.GetProperty(key)
         if (key == 'LocationString' or key == 't_offset') \
            and (self._layout is not None and self._layout.HasContext()):
             if key == 'LocationString':
-                loc = val
+                loc = cast(str, val)
                 # This allows us to avoid using an expensive regex later on if there aren't any variables in the location string
-                if '{' in val:
+                if '{' in loc:
                     self.__has_vars = True
-                t_off = self._properties['t_offset']
+                t_off = cast(int, self._properties['t_offset'])
             else:
-                t_off = val
-                loc = self._properties['LocationString']
+                t_off = cast(int, val)
+                loc = cast(str, self._properties['LocationString'])
             self._layout.ReSort(self, t_off, loc)
             self._properties[key] = val
             self._layout.Refresh(self)
         elif (key == 'Content'):
+            assert self._layout is not None
             self._properties[key] = val
             self._layout.Refresh(self)
         elif key == 'auto_color_basis' or key == 'color_basis_type':
             self.__brush_cache_needs_purging = True
 
-    def SetBrushesWerePurged(self):
+    def SetBrushesWerePurged(self) -> None:
         self.__brush_cache_needs_purging = False
 
-    def BrushCacheNeedsPurging(self):
+    def BrushCacheNeedsPurging(self) -> bool:
         return self.__brush_cache_needs_purging
 
     # Return if the location string has any variables
-    def LocationHasVars(self):
+    def LocationHasVars(self) -> bool:
         return self.__has_vars
 
     # # Debug purposes only
-    def __str__(self):
+    def __str__(self) -> str:
         return '<{} element: loc={} toff={}>' \
                .format(self._properties['type'], self._properties['LocationString'], str(self._properties['t_offset']))
 
     # # Debug purposes only
-    def __repr__(self):
-        return self._properties['LocationString'] + ' ' + self._properties['Content']
+    def __repr__(self) -> str:
+        return cast(str, self._properties['LocationString']) + ' ' + cast(str, self._properties['Content'])
 
 
 # # For purposes of consistency, we don't use the base type Element directly.
 class BoxElement(LocationallyKeyedElement):
 
     @staticmethod
-    def GetType():
+    def GetType() -> str:
         return 'box'
 
     @staticmethod
-    def IsDrawable():
+    def IsDrawable() -> bool:
         return True
 
 
@@ -530,26 +562,26 @@ class ImageElement(LocationallyKeyedElement):
 
         class BitmapOriginalPair:
 
-            def __init__(self, bmp_wref, original_img):
+            def __init__(self, bmp_wref: weakref.ReferenceType[wx.Bitmap], original_img: wx.Image) -> None:
                 self.bmp_wref = bmp_wref
                 self.original_img = original_img
 
-        def __init__(self):
-            self.__originals = weakref.WeakValueDictionary() # {(filename): wx.Image}
-            self.__bmps = {} # {(filename,(w,h): (wx.Bitmap, original wx.Image)}
+        def __init__(self) -> None:
+            self.__originals: weakref.WeakValueDictionary = weakref.WeakValueDictionary() # {(filename): wx.Image}
+            self.__bmps: Dict[Tuple[str, Tuple[int, int]], ImageElement.ImageManager.BitmapOriginalPair] = {} # {(filename,(w,h): (wx.Bitmap, original wx.Image)}
 
         # A bit map being tracked expired. Free it
-        def __OnBmpExpire(self, wref):
+        def __OnBmpExpire(self, wref: weakref.ReferenceType[wx.Bitmap]) -> None:
             print(wref)
             for k, v in self.__bmps.items():
-                if k.bmp_wref == wref:
+                if v.bmp_wref == wref:
                     del self.__bmps[k]
                     break
 
         # # Get an item from the manager, loading if necessary
         #  @param info Info about the item to load including filename and
         #  dimensions as nested tuples: (filename, (w,h))
-        def __getitem__(self, info):
+        def __getitem__(self, info: Tuple[str, Tuple[int, int]]) -> Optional[wx.Bitmap]:
             # See if a scaled image matching the info exists already
             bmp_and_img = self.__bmps.get(info)
             if bmp_and_img is not None:
@@ -568,7 +600,7 @@ class ImageElement(LocationallyKeyedElement):
             if img is None:
                 # #print 'Loading original image:'.format(info)
                 bmp = wx.Bitmap(filename, wx.BITMAP_TYPE_ANY)
-                if bmp.Ok() == False:
+                if not bmp.IsOk():
                     raise IOError('Bitmap {} could not be loaded'.format(filename))
                 img = wx.ImageFromBitmap(bmp)
                 self.__originals[filename] = img
@@ -595,40 +627,40 @@ class ImageElement(LocationallyKeyedElement):
     _IMAGE_MANAGER = ImageManager() # Static image manager/loader for ImageElements per process
 
     @staticmethod
-    def GetType():
+    def GetType() -> str:
         return 'image'
 
     @staticmethod
-    def IsDrawable():
+    def IsDrawable() -> bool:
         return True
 
     # # called when drawn is not null
     @classmethod
-    def GetDrawRoutine(cls):
+    def GetDrawRoutine(cls) -> Callable:
         return cls.DrawRoutine
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         LocationallyKeyedElement.__init__(self, *args, **kwargs)
 
-        self.__image = None
-        self.__loaded_filename = None
+        self.__image: Optional[wx.Bitmap] = None
+        self.__loaded_filename: Optional[str] = None
 
-        self.ScaleImage(self.GetProperty('filename'), self.GetProperty('dimensions'))
+        self.ScaleImage(cast(str, self.GetProperty('filename')), cast(Tuple[int, int], self.GetProperty('dimensions')))
 
     def DrawRoutine(self,
-                    pair,
-                    dc,
-                    canvas,
-                    tick,
-                    time_range = None,
-                    render_box = None,
-                    fixed_offset = None):
+                    pair: Element_Value,
+                    dc: wx.DC,
+                    canvas: Layout_Canvas,
+                    tick: int,
+                    time_range: Optional[Tuple[int, int]] = None,
+                    render_box: Optional[Tuple[int, int, int, int]] = None,
+                    fixed_offset: Optional[Tuple[int, int]] = None) -> None:
 
-        border_color = self.GetProperty('color')
+        border_color = cast(Tuple[int, int, int], self.GetProperty('color'))
         pen = wx.Pen(border_color, 1) # TODO: Use a pen cache
         dc.SetPen(pen)
 
-        (x, y), (w, h) = self.GetProperty('position'), self.GetProperty('dimensions')
+        (x, y), (w, h) = cast(Tuple[int, int], self.GetProperty('position')), cast(Tuple[int, int], self.GetProperty('dimensions'))
         xoff, yoff = canvas.GetRenderOffsets()
         if not fixed_offset:
             (x, y) = (x - xoff, y - yoff)
@@ -654,23 +686,27 @@ class ImageElement(LocationallyKeyedElement):
         self.UnsetNeedsRedraw()
         # #dc.DestroyClippingRegion()
 
-    def SetProperty(self, key, val):
+    def SetProperty(self, key: str, val: PropertyValue) -> None:
         LocationallyKeyedElement.SetProperty(self, key, val)
 
         val = self.GetProperty(key)
-        if (key == 'filename'):
-            self.ScaleImage(val, self.GetProperty('dimensions'))
-        if (key == 'dimensions'):
-            self.ScaleImage(self.GetProperty('filename'), val)
+        if key == 'filename':
+            val = cast(str, val)
+            self.ScaleImage(val, cast(Tuple[int, int], self.GetProperty('dimensions')))
+        if key == 'dimensions':
+            val = cast(Tuple[int, int], val)
+            self.ScaleImage(cast(str, self.GetProperty('filename')), val)
 
     # # Scale image, reloading if necessary
-    def ScaleImage(self, filename, dims):
+    def ScaleImage(self, filename: str, dims: Tuple[int, int]) -> None:
         imgpath = self.__ChooseImage(filename)
 
         if imgpath is None or not os.path.exists(imgpath):
             print('Image does not exist in known resource dirs: "{}"->"{}". Use -R to specify others' \
                   .format(filename, imgpath))
-            ws = self.GetLayout().GetWorkspace()
+            layout = self.GetLayout()
+            assert layout is not None
+            ws = layout.GetWorkspace()
             print('Resource dirs:')
             if ws is not None:
                 for rd in self.__GetResourceDirs():
@@ -689,12 +725,14 @@ class ImageElement(LocationallyKeyedElement):
             self.__images = None
 
         self.__loaded_filename = imgpath
-        return
 
-    def __GetResourceDirs(self):
+    def __GetResourceDirs(self) -> List[str]:
         dirs = []
 
-        lfn = self.GetLayout().GetFilename()
+        layout = self.GetLayout()
+        assert layout is not None
+
+        lfn = layout.GetFilename()
         # import pdb; pdb.set_trace()
         import traceback
         traceback.print_stack()
@@ -703,16 +741,18 @@ class ImageElement(LocationallyKeyedElement):
         if lfn is not None:
             dirs.append(os.path.dirname(lfn)) # Use layout file path
 
-        ws = self.GetLayout().GetWorkspace()
+        ws = layout.GetWorkspace()
         if ws is not None:
             dirs.extend(ws.GetResourceResolutionList()) # Get resource paths
 
         return dirs
 
     # # Determines a path to an image given a relative path to this session's resource directories
-    def __ChooseImage(self, filename):
-        lfn = self.GetLayout().GetFilename()
-        ws = self.GetLayout().GetWorkspace()
+    def __ChooseImage(self, filename: str) -> str:
+        layout = self.GetLayout()
+        assert layout is not None
+        lfn = layout.GetFilename()
+        ws = layout.GetWorkspace()
         if ws is not None:
             imgpath = ws.LocateResource(filename, try_first = (os.path.dirname(lfn) if lfn is not None else None))
         else:
@@ -740,45 +780,45 @@ class LogElement(LocationallyKeyedElement):
     _ALL_PROPERTIES['dimensions'] = ((200, 200), _ALL_PROPERTIES['dimensions'][1])
 
     @staticmethod
-    def GetType():
+    def GetType() -> str:
         return 'log'
 
     @staticmethod
-    def IsDrawable():
+    def IsDrawable() -> bool:
         return True
 
     # # called when drawn is not null
     @classmethod
-    def GetDrawRoutine(cls):
+    def GetDrawRoutine(cls) -> Callable:
         return cls.DrawRoutine
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         LocationallyKeyedElement.__init__(self, *args, **kwargs)
 
         self.__def_background_color = wx.Colour(255, 255, 255)
 
-        self.__searcher = None # Searcher (logsearcher) for scanning log for ticks
-        self.__file = None # File handle for reading log
-        self.__line_cache = [] # Log lines for current cycle
-        self.__tick = None
-        self.__prev_loc = None
+        self.__searcher: Optional[LogSearch] = None # Searcher (logsearcher) for scanning log for ticks
+        self.__file: Optional[TextIO] = None # File handle for reading log
+        self.__line_cache: Optional[List[Tuple[str, wx.Colour]]] = [] # Log lines for current cycle
+        self.__tick: Optional[int] = None
+        self.__prev_loc: Optional[int] = None
 
-        self.LoadLog(self.GetProperty('filename'))
+        self.LoadLog(cast(str, self.GetProperty('filename')))
 
     def DrawRoutine(self,
-                    pair,
-                    dc,
-                    canvas,
-                    render_tick,
-                    time_range = None,
-                    render_box = None,
-                    fixed_offset = None):
+                    pair: Element_Value,
+                    dc: wx.DC,
+                    canvas: Layout_Canvas,
+                    render_tick: int,
+                    time_range: Optional[Tuple[int, int]] = None,
+                    render_box: Optional[Tuple[int, int, int, int]] = None,
+                    fixed_offset: Optional[Tuple[int, int]] = None) -> None:
 
-        border_color = [int(c) for c in self.GetProperty('color')]
+        border_color = [int(c) for c in cast(Tuple[int, int, int], self.GetProperty('color'))]
         normal_pen = wx.Pen(border_color, 1) # TODO: Use a pen cache
         dc.SetPen(normal_pen)
 
-        (x, y), (w, h) = self.GetProperty('position'), self.GetProperty('dimensions')
+        (x, y), (w, h) = cast(Tuple[int, int], self.GetProperty('position')), cast(Tuple[int, int], self.GetProperty('dimensions'))
         xoff, yoff = canvas.GetRenderOffsets()
         if not fixed_offset:
             (x, y) = (x - xoff, y - yoff)
@@ -787,11 +827,11 @@ class LogElement(LocationallyKeyedElement):
             y = y - fixed_offset[1]
 
         period = pair.GetClockPeriod()
-        t_offset = self.GetProperty('t_offset')
+        t_offset = cast(int, self.GetProperty('t_offset'))
 
         dc.SetClippingRegion(x, y, w, h)
 
-        filename = self.GetProperty('filename')
+        filename = cast(str, self.GetProperty('filename'))
         if not self.__searcher:
             brush = wx.Brush((200, 200, 200), style = wx.SOLID) # TODO: use a brush cache
             dc.SetBrush(brush)
@@ -827,9 +867,9 @@ class LogElement(LocationallyKeyedElement):
                         .format(t_offset, self.GetProperty('LocationString')),
                         int(x), int(y))
         else:
-            regex_str = self.GetProperty('regex')
-            sub_pat_str = self.GetProperty('sub_pattern')
-            color_pat_str = self.GetProperty('color_group_pattern')
+            regex_str = cast(str, self.GetProperty('regex'))
+            sub_pat_str = cast(str, self.GetProperty('sub_pattern'))
+            color_pat_str = cast(str, self.GetProperty('color_group_pattern'))
             if regex_str == '':
                 expr = None
             else:
@@ -839,6 +879,8 @@ class LogElement(LocationallyKeyedElement):
             dc.DrawRectangle(int(x), int(y), int(w), int(h))
 
             tick = render_tick + (t_offset * period)
+
+            assert self.__file is not None
 
             if self.__tick != tick or self.__line_cache is None:
                 if self.__tick is None or tick > self.__tick:
@@ -850,6 +892,7 @@ class LogElement(LocationallyKeyedElement):
 
                 if self.__prev_loc is None or self.__prev_loc == self.__searcher.BAD_LOCATION:
                     self.__prev_loc = 0 # Reset for a new search
+                assert self.__tick is not None
                 self.__prev_loc = self.__searcher.getLocationByTick(self.__tick, self.__prev_loc if after_last else 0)
                 if self.__prev_loc == self.__searcher.BAD_LOCATION:
                     pass
@@ -914,22 +957,22 @@ class LogElement(LocationallyKeyedElement):
         dc.DestroyClippingRegion()
         self.UnsetNeedsRedraw()
 
-    def SetProperty(self, key, val):
+    def SetProperty(self, key: str, val: PropertyValue) -> None:
         LocationallyKeyedElement.SetProperty(self, key, val)
 
-        val = self.GetProperty(key)
-        if (key == 'filename'):
+        if key == 'filename':
+            val = cast(str, self.GetProperty(key))
             self.LoadLog(val)
-        elif (key == 'regex'):
+        elif key == 'regex':
             self.__line_cache = None # Force reloading
         elif key == 'sub_pattern':
             self.__line_cache = None # Force reloading
         elif key == 'color_group_pattern':
             self.__line_cache = None # Force reloading
 
-    def LoadLog(self, filename):
+    def LoadLog(self, filename: str) -> None:
         if os.path.exists(filename):
-            self.__searcher = logsearch.LogSearch(filename)
+            self.__searcher = LogSearch(filename)
             self.__file = open(filename, 'r')
         else:
             self.__searcher = None
@@ -948,45 +991,45 @@ LogElement._ALL_PROPERTIES['type'] = (LogElement.GetType(), valid.validateString
 # Used for collision events for mouse-over.
 class FakeElement:
 
-    def __init__(self):
-        self._properties = {}
+    def __init__(self) -> None:
+        self._properties: PropertyDict = {}
 
     @staticmethod
-    def IsSelectable():
+    def IsSelectable() -> bool:
         return True
 
-    def GetProperty(self, key, period = None):
+    def GetProperty(self, key: str, period: Optional[int] = None) -> Optional[PropertyValue]:
         # try...except is faster than dict.get()
         try:
             return self._properties[key]
         except:
             return None
 
-    def SetProperty(self, key, value):
+    def SetProperty(self, key: str, value: PropertyValue) -> None:
         self._properties[key] = value
 
     # # Does this element have a particular property
-    def HasProperty(self, key):
+    def HasProperty(self, key: str) -> bool:
         return key in self._properties
 
 
 # # For same purpose as fake element, just plays a different role.
 class FakeElementValue:
 
-    def __init__(self, element, value):
+    def __init__(self, element: FakeElement, value: PropertyValue) -> None:
         self.__element = element
         self.__value = value
         self.__clock_period = 1
 
-    def GetVal(self):
+    def GetVal(self) -> PropertyValue:
         return self.__value
 
-    def GetElement(self):
+    def GetElement(self) -> FakeElement:
         return self.__element
 
-    def GetClockPeriod(self):
+    def GetClockPeriod(self) -> int:
         return self.__clock_period
 
-    def SetClockPeriod(self, period):
+    def SetClockPeriod(self, period: int) -> None:
         self.__clock_period = period
 

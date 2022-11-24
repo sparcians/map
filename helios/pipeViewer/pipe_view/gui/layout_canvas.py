@@ -215,7 +215,7 @@ class Layout_Canvas(wx.ScrolledWindow):
         logging.debug('{0}s: C drawing'.format(time.monotonic() - t_start))
 
     def ScrollWin(self, evt):
-        super(self.__class__, self).Refresh()
+        super().Refresh()
 
         bounds = self.__GetScrollBounds()
         x_bound = bounds[0] - self.scrollrate
@@ -288,7 +288,7 @@ class Layout_Canvas(wx.ScrolledWindow):
             self.__UpdateScrollbars()
             self.__UpdateGrid(self.__gridsize)
 
-        super(self.__class__, self).Refresh()
+        super().Refresh()
 
     # # Gets called when the window is resized, and when the canvas is initialized
     def OnSize(self, event):
@@ -452,7 +452,7 @@ class Layout_Canvas(wx.ScrolledWindow):
         self.__UpdateScrollbars()
         self.__UpdateGrid(self.__gridsize)
 
-        super(self.__class__, self).Refresh()
+        super().Refresh()
 
     # # Returns a list of all Elements beneath the given point
     def DetectCollision(self, pt):

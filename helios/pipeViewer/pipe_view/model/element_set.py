@@ -3,17 +3,24 @@ from .element_value import Element_Value
 from .query_set import QuerySet
 from .quad_tree import QuadTree
 
+from typing import Callable, Dict, List, Optional, Tuple, cast, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from model.element import LocationallyKeyedElement
+    from model.extension_manager import ExtensionManager
+    from model.layout_context import Layout_Context
+
 ## ElementSet stores all elements in a LayoutContext and bins them by time appropriately
 # Purely drawable objects are only put in a draw list.
 # Objects that request data from the database are put in a QuerySet,
 # Objects with both are placed in both.
 class ElementSet:
-    def __init__(self, layout_context, extensions):
-        self.__draw_set = []
-        self.__meta_set = []
+    def __init__(self, layout_context: Layout_Context, extensions: ExtensionManager) -> None:
+        self.__draw_set: List[Element_Value] = []
+        self.__meta_set: List[Element_Value] = []
         self.__query_set = QuerySet(layout_context)
         #used to quickly find pairs from elements
-        self.__elements_to_pairs = {}
+        self.__elements_to_pairs: Dict[LocationallyKeyedElement, Element_Value] = {}
         self.__layout_context = layout_context
         self.__extensions = extensions
         # tree used for display calls
@@ -23,7 +30,7 @@ class ElementSet:
     ## Adds a new element to the set
     #  @param e Element to add
     #  @parm after_pins ordered PINs of elements after which to insert this element
-    def AddElement(self, e, after_pins=[None]):
+    def AddElement(self, e: LocationallyKeyedElement, after_pins: List[Optional[int]] = [None]) -> None:
         pair = Element_Value(e)
         self.__elements_to_pairs[e] = pair
         if e.NeedsDatabase():
@@ -37,18 +44,18 @@ class ElementSet:
         if e.UsesMetadata():
             self.__meta_set.append(pair)
         if e.HasProperty('on_init'):
-            on_init = e.GetProperty('on_init')
+            on_init = cast(str, e.GetProperty('on_init'))
             if on_init and on_init != 'None':
                 func = self.__extensions.GetFunction(on_init)
                 if func:
                     func(pair, self.__layout_context, 0)
                 else:
-                    print('Warning: unable to call \"%s\"'%e.GetProperty('on_init'))
+                    print('Warning: unable to call \"%s\"' % on_init)
                     print(func)
 
 
     ## Removes an element from the set
-    def RemoveElement(self, e):
+    def RemoveElement(self, e: LocationallyKeyedElement) -> None:
         pair = self.__elements_to_pairs[e]
         if e.NeedsDatabase():
             self.__query_set.DeletePair(pair)
@@ -61,7 +68,7 @@ class ElementSet:
 
 
     ## Resorts an element. Mostly for query-type objects.
-    def ReSort(self, e, t_offs, id):
+    def ReSort(self, e: LocationallyKeyedElement, t_offs: int, id: int) -> None:
         #q-frame objects need no resorting. make a bogus call to GetQueryFrame
         if e.NeedsDatabase() and not e.GetQueryFrame(1):
             pair = self.__elements_to_pairs[e]
@@ -69,31 +76,31 @@ class ElementSet:
         # Don't currently do anything for pure drawables.
 
     ## Resort all elements which depend on database queries
-    def ReSortAll(self):
+    def ReSortAll(self) -> None:
         for e in list(self.__elements_to_pairs.keys()):
             if e.NeedsDatabase() and not e.GetQueryFrame(1):
-                loc = e.GetProperty("LocationString")
-                t_off = e.GetProperty("t_offset")
+                loc = cast(str, e.GetProperty("LocationString"))
+                t_off = cast(int, e.GetProperty("t_offset"))
                 id = self.__layout_context.dbhandle.database.location_manager.getLocationInfo(loc, self.__layout_context.GetLocationVariables())[0]
                 self.ReSort(e, t_off, id)
 
     ## Update value
-    def ReValue(self, e):
+    def ReValue(self, e: LocationallyKeyedElement) -> None:
         if e.NeedsDatabase():
             pair = self.__elements_to_pairs[e]
             self.__query_set.ReValue(pair)
 
     ## Used in the event that many elements were changed (e.g. a location string
     #  variable was updated)
-    def ReValueAll(self):
+    def ReValueAll(self) -> None:
         for pair in self.__elements_to_pairs.values():
             self.__query_set.ReValue(pair)
 
-    def RefreshPair(self, pair):
+    def RefreshPair(self, pair: Element_Value) -> None:
         self.__tree.RefreshObject(pair)
 
     ## Called every major render update. This makes sure objects are updated when they are moved.
-    def MicroUpdate(self):
+    def MicroUpdate(self) -> None:
         self.__tree.Update()
         if self.__layout_context.IsElementMoved():
             frame = self.__layout_context.GetFrame()
@@ -102,14 +109,14 @@ class ElementSet:
                 for el in elements:
                     self.RefreshPair(self.__elements_to_pairs[el])
 
-    def HandleCycleChangedEvent(self):
+    def HandleCycleChangedEvent(self) -> None:
         # call custom updates
         # keyed by function, stores number of times function accessed in Update
-        indices = {}
-        
+        indices: Dict[Callable, int] = {}
+
         for element in self.GetElements():
             if element.HasProperty('on_cycle_changed'):
-                 on_cycle_changed = element.GetProperty('on_cycle_changed')
+                 on_cycle_changed = cast(str, element.GetProperty('on_cycle_changed'))
                  if on_cycle_changed and on_cycle_changed != 'None':
                      func = self.__extensions.GetFunction(on_cycle_changed)
                      if func:
@@ -119,12 +126,12 @@ class ElementSet:
                          func(self.__elements_to_pairs[element], self.__layout_context, indices[func])
                          indices[func] += 1
                      else:
-                         print('Warning: unable to call \"%s\"'%element.GetProperty('on_cycle_changed'))
+                         print('Warning: unable to call \"%s\"' % on_cycle_changed)
 
     ## Update what needs to be updated.
     #  @param tick Tick at which update is happening (Helps in maintaining
     #  metadata between layout windows)
-    def Update(self, tick):
+    def Update(self, tick: int) -> None:
 
         # Update element content before updating meta-data
         # Could go into a slower-updating loop
@@ -132,7 +139,7 @@ class ElementSet:
 
         # call custom updates
         # keyed by function, stores number of times function accessed in Update
-        indices = {}
+        indices: Dict[Callable, int] = {}
 
         # Purge metadata at the start of a new tick
         if self.__layout_context.dbhandle.database.GetMetadataTick() != tick:
@@ -141,7 +148,7 @@ class ElementSet:
 
         for element in self.GetElements():
             if element.HasProperty('on_update'):
-                 on_update = element.GetProperty('on_update')
+                 on_update = cast(str, element.GetProperty('on_update'))
                  if on_update and on_update != 'None':
                      func = self.__extensions.GetFunction(on_update)
                      if func:
@@ -150,12 +157,12 @@ class ElementSet:
                          func(self.__elements_to_pairs[element], self.__layout_context, indices[func])
                          indices[func] += 1
                      else:
-                         print('Warning: unable to call \"%s\"'%element.GetProperty('on_update'))
+                         print('Warning: unable to call \"%s\"' % on_update)
 
     ## Updates meta-data for elements in this element set
     #  @note Call immediately before drawing
     #  @param tick Tick at which update/redraw is happening
-    def MetaUpdate(self, tick):
+    def MetaUpdate(self, tick: int) -> None:
         assert self.__layout_context.dbhandle.database.GetMetadataTick() == tick, \
                'MetaUpdate called where meta data was stale'
 
@@ -168,20 +175,20 @@ class ElementSet:
 
 
     ## Always refreshes all objects and clears local buffers
-    def FullUpdate(self):
+    def FullUpdate(self) -> None:
         for element in self.GetElements():
             element.SetChanged()
         self.Update(self.__layout_context.GetHC())
 
     ## Force a redraw of all elements that have changed their highlighting state.
-    def RedrawHighlighted(self):
+    def RedrawHighlighted(self) -> None:
         for element, pair in self.__elements_to_pairs.items():
             if element.GetType() == 'schedule_line_ruler':
                 continue
             for key in pair.GetTimedValues().keys():
                 redraw_set = False
                 if element.HasProperty('LocationString'):
-                    location = element.GetProperty('LocationString')
+                    location = cast(str, element.GetProperty('LocationString'))
                     if (self.__layout_context.IsSearchResult(key, location) or self.__layout_context.WasSearchResult(key, location)):
                         element.SetNeedsRedraw()
                         redraw_set = True
@@ -193,12 +200,12 @@ class ElementSet:
                             element.SetNeedsRedraw()
 
     ## Force a full redraw of the elements.
-    def RedrawAll(self):
+    def RedrawAll(self) -> None:
         for element in self.GetElements():
             element.SetNeedsRedraw()
 
     ## Force a DB update.
-    def DBUpdate(self):
+    def DBUpdate(self) -> None:
         self.RedrawAll()
         self.Update(self.__layout_context.GetHC())
 
@@ -206,8 +213,8 @@ class ElementSet:
     #  visibility tick for filtering by renders/selectors
     #  @return All drawables pairs sorted by draw depth (back first). Caller must filter
     #  out-of-bounds elements using ElementValue.GetVisibilityTick()
-    def GetDrawPairs(self, bounds=None):
-        if bounds:
+    def GetDrawPairs(self, bounds: Optional[Tuple[int, int, int, int]] = None) -> List[Element_Value]:
+        if bounds is not None:
             # Use quadtree
             ##self.__tree.GetObjects(bounds)
             self.__vis_tick += 1
@@ -222,22 +229,22 @@ class ElementSet:
         # with ElementValue.GetVisibilityTick
         return self.__draw_set
 
-    def GetVisibilityTick(self):
+    def GetVisibilityTick(self) -> int:
         return self.__vis_tick
 
     ##Get Element_Value pairs from set.
-    def GetPairs(self, bounds=None):
+    def GetPairs(self, bounds: Optional[Tuple[int, int]] = None) -> List[Element_Value]:
         return list(self.__elements_to_pairs.values())
 
-    def GetPair(self, e):
+    def GetPair(self, e: LocationallyKeyedElement) -> Optional[Element_Value]:
         return self.__elements_to_pairs.get(e)
 
     ## Get Elements from set.
-    def GetElements(self):
+    def GetElements(self) -> List[LocationallyKeyedElement]:
         return list(self.__elements_to_pairs.keys())
 
     ## Insert a drawable after the given PIN
-    def __InsertDrawableAfterPIN(self, pair, after_pins=[None]):
+    def __InsertDrawableAfterPIN(self, pair: Element_Value, after_pins: List[Optional[int]] = [None]) -> None:
         ##print 'Inserting to draw context pair {} after PINs {}'.format(pair, after_pins)
 
         self.__tree.AddObject(pair) # No pin ordering support yet

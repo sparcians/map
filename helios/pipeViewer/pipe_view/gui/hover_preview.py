@@ -1,5 +1,6 @@
 
 
+from __future__ import annotations
 from logging import warn, debug, error
 import string
 import logging
@@ -11,6 +12,15 @@ import wx.lib.newevent
 
 from gui.dialogs.watchlist_dialog import WatchListDlg
 from gui.font_utils import GetMonospaceFont
+
+from typing import Any, List, Optional, Tuple, cast, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from model.element import Element
+    from model.element_value import Element_Value
+    from model.layout_context import Layout_Context
+    from gui.argos_menu import Argos_Menu
+    from gui.layout_canvas import Layout_Canvas
 
 # # @brief This new event triggers the canvas to just redraw the mouse-over text.
 # No update of the underlying view is executed on this event.
@@ -34,8 +44,8 @@ class HoverPreview:
 
     # The hover will be rendered in a separate window so we don't have to deal with manually repainting the layout canvas
     class HoverPreviewWindow(wx.PopupWindow):
-        def __init__(self, canvas, handler):
-            super(self.__class__, self).__init__(canvas.GetParent())
+        def __init__(self, canvas: Layout_Canvas, handler: HoverPreview) -> None:
+            super().__init__(canvas.GetParent())
             self.Show(False)
             self.__canvas = canvas
             self.__handler = handler
@@ -53,7 +63,7 @@ class HoverPreview:
                       border=1)
             self.SetSizer(sizer)
 
-        def UpdateInfo(self, element, annotation, text, position):
+        def UpdateInfo(self, element: Optional[Element], annotation: str, text: str, position: wx.Point) -> None:
             BORDER_LIGHTNESS = 70
 
             _, brush = self.__canvas.UpdateTransactionColor(element, annotation)
@@ -80,19 +90,19 @@ class HoverPreview:
             self.SetRect((x, y, width, height))
             self.__UpdateCanvas(old_rect)
 
-        def __UpdateCanvas(self, old_rect):
+        def __UpdateCanvas(self, old_rect: wx.Rect) -> None:
             old_rect.SetPosition(self.__canvas.CalcUnscrolledPosition(old_rect.GetTopLeft()))
             old_rect.Inflate(10, 10)
             self.__canvas.RefreshRect(old_rect)
 
-        def AcceptsFocus(self):
+        def AcceptsFocus(self) -> bool:
             return False
 
         # Handle the corner case where the user manages to mouse over the window
-        def OnMouse(self, event):
+        def OnMouse(self, event: wx.MouseEvent) -> None:
             self.__handler.DestroyWindow()
 
-        def Destroy(self):
+        def Destroy(self) -> None:
             old_rect = self.GetRect()
             self.__UpdateCanvas(old_rect)
             self.Disable()
@@ -100,49 +110,49 @@ class HoverPreview:
             self.DestroyLater()
 
 
-    def __init__(self, canvas, context):
+    def __init__(self, canvas: Layout_Canvas, context: Layout_Context) -> None:
         self.__canvas = canvas
         self.__context = context
         self.__value = ""
         self.annotation = ""
-        self.element = None
+        self.element: Optional[Element] = None
         self.__enabled = False
         self.show = False
-        self.position = (0, 0)
+        self.position = wx.Point(0, 0)
         self.__last_move_tick = None
-        self.__window = None
+        self.__window: Optional[HoverPreview.HoverPreviewWindow] = None
 
         self.__fields = ['annotation']
 
-    def Enable(self, is_enable):
+    def Enable(self, is_enable: bool) -> None:
         '''
         Setter for enable bool
         '''
         self.__enabled = is_enable
 
     # Getter for enable bool
-    def IsEnabled(self):
+    def IsEnabled(self) -> bool:
         return self.__enabled
 
-    def SetFields(self, fields):
+    def SetFields(self, fields: List[str]) -> None:
         self.__fields = fields
 
-    def GetFields(self):
+    def GetFields(self) -> List[str]:
         return self.__fields
 
-    def GetElement(self):
+    def GetElement(self) -> Optional[Element]:
         '''
         Gets the element currently referenced by this hover preview
         @return None if there is none
         '''
         return self.element
 
-    def IsDifferent(self, element):
+    def IsDifferent(self, element: Optional[Element]) -> bool:
         '''
         Determine if a given element is different enough from the current element
         (self.element) to warrant updating the tooltip.
         '''
-        if not (self.element and element):
+        if self.element is None or element is None:
             return True
         elif self.element.GetProperty('t_offset') != element.GetProperty('t_offset'):
             return True
@@ -160,7 +170,7 @@ class HoverPreview:
                 else:
                     return False
 
-    def SetValue(self, string):
+    def SetValue(self, string: str) -> None:
         '''
         Set what is supposed to be drawn.
         '''
@@ -168,18 +178,18 @@ class HoverPreview:
                             self.LINE_LENGTH,
                             replace_whitespace = False)
 
-    def GetText(self):
+    def GetText(self) -> str:
         '''
         Get what is suppsed to be drawn.
         '''
         return self.__value
 
-    def GetWindow(self):
-        if not self.__window:
+    def GetWindow(self) -> HoverPreview.HoverPreviewWindow:
+        if self.__window is None:
             self.__window = HoverPreview.HoverPreviewWindow(self.__canvas, self)
         return self.__window
 
-    def HandleMenuClick(self, position):
+    def HandleMenuClick(self, position: wx.Point) -> None:
         '''
         if applicable, pops up menu to copy and paste from hover
         '''
@@ -203,8 +213,8 @@ class HoverPreview:
             self.__canvas.Bind(wx.EVT_MENU, self.__OnAddWatchRelative, watch_rel)
             self.__canvas.Bind(wx.EVT_MENU, self.__OnAddWatchAbsolute, watch_abs)
             if self.element is not None \
-              and self.element.HasProperty('LocationString') is True \
-              and self.element.GetProperty('LocationString') != '':
+              and self.element.HasProperty('LocationString') \
+              and cast(str, self.element.GetProperty('LocationString')) != '':
                 self.__canvas.Bind(wx.EVT_MENU, self.__OnSearchLocation, search_loc)
                 self.__canvas.Bind(wx.EVT_MENU, self.__OnNextAnno, next_anno)
                 self.__canvas.Bind(wx.EVT_MENU, self.__OnPrevAnno, prev_anno)
@@ -214,7 +224,7 @@ class HoverPreview:
                 highlight_uop_toggle.Enable(False)
             self.__canvas.PopupMenu(menu, position)
 
-    def GotoNextChange(self):
+    def GotoNextChange(self) -> None:
         '''
         Goto the next annotation change
         '''
@@ -223,7 +233,7 @@ class HoverPreview:
 
             self.__GotoNextAnno(pair.GetElement())
 
-    def GotoPrevChange(self):
+    def GotoPrevChange(self) -> None:
         '''
         Goto the previous annotation change
         '''
@@ -235,7 +245,7 @@ class HoverPreview:
         self.__GotoPrevAnno(el)
 
     # @profile
-    def __HighlightUopToggle(self, event):
+    def __HighlightUopToggle(self, event: wx.MenuEvent) -> None:
         '''
         Handle click on "Highlight Uop"
         '''
@@ -248,7 +258,7 @@ class HoverPreview:
         self.__context.RedrawHighlightedElements()
         self.__canvas.FullUpdate()
 
-    def __OnCopyText(self, event):
+    def __OnCopyText(self, event: wx.MenuEvent) -> None:
         '''
         Called when copy text entry in popup menu is pressed.
         '''
@@ -261,26 +271,27 @@ class HoverPreview:
         else:
             warn("Cannot copy. Clipboard already open.")
 
-    def __OnAddWatchRelative(self, evt):
+    def __OnAddWatchRelative(self, evt: wx.MenuEvent) -> None:
         # frame could be None. Probably not in this case though.
         # going to let it throw an exception if it is None
         self.__AddWatch(relative = True)
 
-    def __OnAddWatchAbsolute(self, evt):
+    def __OnAddWatchAbsolute(self, evt: wx.MenuEvent) -> None:
         self.__AddWatch(relative = False)
 
     # # Handle click on "Search From this Location"
-    def __OnSearchLocation(self, evt):
+    def __OnSearchLocation(self, evt: wx.MenuEvent) -> None:
+        assert self.element is not None
         self.__canvas.GetFrame().ShowSearch(location = self.element.GetProperty('LocationString'))
 
     # # Handle click on the "Next Change in Annotation"
-    def __OnNextAnno(self, evt = None):
+    def __OnNextAnno(self, evt: Optional[wx.MenuEvent] = None) -> None:
         if self.element is None:
             return
 
         self.__GotoNextAnno(self.element)
 
-    def __GotoNextAnno(self, el):
+    def __GotoNextAnno(self, el: Element) -> None:
         if not el.HasProperty('LocationString'):
             return
 
@@ -300,7 +311,7 @@ class HoverPreview:
         if cur_annotation is None:
             cur_annotation = ''
 
-        def progress_cb(percent, num_results, info):
+        def progress_cb(percent: int, num_results: int, info: str) -> Tuple[bool, bool]:
             cont = True
             skip = False
             if num_results > 0:
@@ -318,7 +329,7 @@ class HoverPreview:
                                                          progress_cb,
                                                          invert = True)
         except Exception as ex:
-            error('Error searching: ', ex, file = sys.stderr)
+            error('Error searching: ', ex)
             return # Failed to search
         finally:
             wx.EndBusyCursor()
@@ -338,13 +349,13 @@ class HoverPreview:
             wx.EndBusyCursor()
 
     # # Handle click on the "Previous Change in Annotation"
-    def __OnPrevAnno(self, evt = None):
+    def __OnPrevAnno(self, evt: Optional[wx.MenuEvent] = None) -> None:
         if self.element is None:
             return
 
         self.__GotoPrevAnno(self.element)
 
-    def __GotoPrevAnno(self, el):
+    def __GotoPrevAnno(self, el: Element) -> None:
         if not el.HasProperty('LocationString'):
             return
 
@@ -364,7 +375,7 @@ class HoverPreview:
         if cur_annotation is None:
             cur_annotation = ''
 
-        def progress_cb(self, percent, *args):
+        def progress_cb(percent: int, *args: Any) -> Tuple[bool, bool]:
             cont = True
             skip = False
             return (cont, skip)
@@ -398,14 +409,15 @@ class HoverPreview:
         if wx.IsBusy():
             wx.EndBusyCursor()
 
-    def __AddWatch(self, relative):
+    def __AddWatch(self, relative: bool) -> None:
         frame = self.__context.GetFrame()
         watch = frame.ShowDialog('watchlist', WatchListDlg)
-        t_offset = int(self.element.GetProperty('t_offset'))
-        loc = self.element.GetProperty('LocationString')
+        assert self.element is not None
+        t_offset = cast(int, self.element.GetProperty('t_offset'))
+        loc = cast(str, self.element.GetProperty('LocationString'))
         watch.Add(loc, t_offset, relative = relative)
 
-    def HandleMouseMove(self, position, canvas, redraw = True):
+    def HandleMouseMove(self, position: wx.Point, canvas: Layout_Canvas, redraw: bool = True) -> None:
         '''
         Called when mouse move event happens in correct circumstances.
         hover needs to be enabled and mode needs to not be edit
@@ -423,7 +435,7 @@ class HoverPreview:
                 self.show = True
                 # As long as we're showing the preview eventually, capture the position.
                 # offset our box slightly so pointer doesn't obscure the text
-                self.position = (position[0] + 10, position[1] + 10)
+                self.position = wx.Point(position[0] + 10, position[1] + 10)
                 if force_update or self.IsDifferent(e):
                     self.__SetElement(hit)
 
@@ -437,7 +449,7 @@ class HoverPreview:
         elif not self.show:
             self.DestroyWindow()
 
-    def __SetElement(self, pair):
+    def __SetElement(self, pair: Element_Value) -> None:
         '''
         Sets current element
         @param pair Element_Value pair
@@ -476,7 +488,7 @@ class HoverPreview:
                 self.SetValue(self.annotation)
         else:
             if e.HasProperty('tooltip') and e.GetProperty('tooltip'):
-                self.annotation = e.GetProperty('tooltip')
+                self.annotation = cast(str, e.GetProperty('tooltip'))
                 self.SetValue(self.annotation)
             elif has_loc_str:
                 self.annotation = '<{}>'.format(loc_str)
@@ -492,7 +504,7 @@ class HoverPreview:
                 self.annotation = repr(e)
                 self.SetValue(self.annotation)
 
-    def DestroyWindow(self):
+    def DestroyWindow(self) -> None:
         if self.__window:
             self.__window.Destroy()
             self.__window = None
@@ -503,7 +515,7 @@ class HoverPreviewOptionsDialog(wx.Dialog):
     Hover Options dialog display and collection code. No really good place to put this.
     '''
 
-    def __init__(self, parent, hover_preview):
+    def __init__(self, parent: Argos_Menu, hover_preview: HoverPreview) -> None:
         wx.Dialog.__init__(self, parent, wx.NewId(), 'Hover Preview Options', size = (200, 300))
 
         self.hover_preview = hover_preview
@@ -541,28 +553,28 @@ class HoverPreviewOptionsDialog(wx.Dialog):
         self.SetOptions()
 
     # # Goes through check box elements and appends the checked keys to a list.
-    def GetOptions(self):
+    def GetOptions(self) -> List[str]:
         checked_options = []
-        for key, val in list(self.checkOptions.items()):
+        for key, val in self.checkOptions.items():
             if val.GetValue():
                 checked_options.append(key)
         return checked_options
 
-    def SetOptions(self):
+    def SetOptions(self) -> None:
         fields = self.hover_preview.GetFields()
-        for key, val in list(self.checkOptions.items()):
+        for key, val in self.checkOptions.items():
             if key in fields:
                 val.SetValue(True)
 
-    def OnSelect(self, evt):
+    def OnSelect(self, evt: wx.CommandEvent) -> None:
         if self.is_all_selected:
             self.__select.SetLabel('Deselect')
         else:
             self.__select.SetLabel('Select All')
-        for val in list(self.checkOptions.values()):
+        for val in self.checkOptions.values():
             val.SetValue(self.is_all_selected)
         self.is_all_selected = not self.is_all_selected
 
-    def OnDone(self, evt):
+    def OnDone(self, evt: wx.CommandEvent) -> None:
         self.EndModal(wx.ID_OK)
         self.hover_preview.SetFields(self.GetOptions())

@@ -6,7 +6,7 @@ import sys
 import logging
 from logging import warn, debug, info, error
 from types import ModuleType
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Type
 
 from .location_manager import LocationManager
 from .clock_manager import ClockManager
@@ -42,6 +42,8 @@ finally:
 # Inform users which transactiondb interface they are getting
 info('Using transactiondb at "{}"'.format(transactiondb.__file__))
 
+Transaction = transactiondb.Transaction
+TransactionDatabase = transactiondb.TransactionDatabase
 
 # # Consumes an Argos database and creates a location manager, a clock manager,
 #  and a transaction database API

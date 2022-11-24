@@ -5,8 +5,9 @@
 import os
 import sys
 import logging
+from typing import Callable
 
-from .database import Database
+from .database import Database, TransactionDatabase
 
 
 ## Associates a database with a query method and some result caching
@@ -20,7 +21,7 @@ class DatabaseHandle(object):
 
     ## Constructor
     #  @param db argos Database instance
-    def __init__(self, db):
+    def __init__(self, db: Database) -> None:
 
         if not isinstance(db, Database):
             raise TypeError('db must be an instance of database.Database, is a {0}'
@@ -38,10 +39,10 @@ class DatabaseHandle(object):
     #  Transaction information refering to the locations and clockos in this
     #  database is available through the 'api' attribute
     @property
-    def database(self):
+    def database(self) -> Database:
         return self.__db
 
-    def query(self, start_inc, end_inc, cb, mod_tracking=True):
+    def query(self, start_inc: int, end_inc: int, cb: Callable, mod_tracking: bool = True) -> None:
         assert end_inc >= start_inc, 'Query range must be ordered such that start <= end'
 
         # Handles queries with negative starts by invoking the callback for each
@@ -63,11 +64,11 @@ class DatabaseHandle(object):
                                modify_tracking = mod_tracking)
 
     @property
-    def api(self):
+    def api(self) -> TransactionDatabase:
         return self.__dbapi
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '<DatabaseHandle database="{0}">'.format(self.database)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()

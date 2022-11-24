@@ -5,11 +5,22 @@ from . import key_definitions
 
 from model.element import FakeElementValue
 
+from typing import Optional, cast, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from wx.lib.dragscroller import DragScroller
+    from gui.dialogs.element_propsdlg import Element_PropsDlg
+    from gui.hover_preview import HoverPreview
+    from gui.layout_canvas import Layout_Canvas
+    from gui.selection_manager import Selection_Mgr
+    from model.layout_context import Layout_Context
+    from model.workspace import Workspace
+
 ## This class provides a central hub of intelligence for responding to
 #  user-events, namely Mouse or Keyboard, & issuing commands to the likes of
 #  Canvases, Selection Mgrs, Property Dialogs, etc.
 #  Should be a singleton class on the view-side
-class Input_Decoder():
+class Input_Decoder:
 
     __MOVE_SPEED = 5
     __ACCEL_FACTOR = 2.0
@@ -20,7 +31,7 @@ class Input_Decoder():
     __CTRL_STEP_DISTANCE = 100
 
     ## TODO: improve later
-    def __init__(self, parent, workspace=None):
+    def __init__(self, parent: Layout_Canvas, workspace: Optional[Workspace] = None) -> None:
         self.__edit_mode = False
         self.__parent = parent
         self.__context = parent.context
@@ -34,13 +45,17 @@ class Input_Decoder():
 
     ## Handle scenarios for selecting/deslecting Elements based off of Left
     #  Mouse Down events
-    def LeftDown(self, event=None, canvas=None, selection=None, dialog=None):
+    def LeftDown(self,
+                 event: wx.MouseEvent,
+                 canvas: Layout_Canvas,
+                 selection: Selection_Mgr,
+                 dialog: Element_PropsDlg) -> None:
         #Quickfix for re-enabling canvas key events after using frame
         #playback controls
         canvas.SetFocus()
 
         canvas.CaptureMouse()
-        event_pos = canvas.ScreenToClient(event.GetEventObject().ClientToScreen(event.GetPosition()))
+        event_pos = canvas.ScreenToClient(cast(wx.Window, event.GetEventObject()).ClientToScreen(event.GetPosition()))
         (x,y) = canvas.CalcUnscrolledPosition(event_pos)
 
         # small routine for playback mode
@@ -209,7 +224,11 @@ class Input_Decoder():
                 selection.Clear()
 
     ## Handle scenarios for selecting/deselecting Elements
-    def LeftUp(self, event=None, canvas=None, selection=None, dialog=None):
+    def LeftUp(self,
+               event: wx.MouseEvent,
+               canvas: Layout_Canvas,
+               selection: Selection_Mgr,
+               dialog: Element_PropsDlg) -> None:
 
         # Allow Mouse UP action in non-edit mode
 
@@ -257,7 +276,11 @@ class Input_Decoder():
         canvas.FullUpdate()
 
     ## Set & Show the Element Props Dlg, if double clicked on an Element
-    def LeftDouble(self, event=None, canvas=None, selection=None, dialog=None):
+    def LeftDouble(self,
+                   event: wx.MouseEvent,
+                   canvas: Layout_Canvas,
+                   selection: Selection_Mgr,
+                   dialog: Element_PropsDlg) -> None:
 
         # Perform no action unless in edit mode
         if not self.__edit_mode:
@@ -274,7 +297,10 @@ class Input_Decoder():
                 dialog.Raise()
 
     ## When the Mouse Right button is pressed,
-    def RightDown(self, event, canvas, drgscrl):
+    def RightDown(self,
+                  event: wx.MouseEvent,
+                  canvas: Layout_Canvas,
+                  drgscrl: DragScroller) -> None:
 
         # Perform no action unless in edit mode
         if not self.__edit_mode:
@@ -283,14 +309,22 @@ class Input_Decoder():
         drgscrl.Start(canvas.CalcUnscrolledPosition(event.GetPosition()))
 
     ## When the Mouse Right button is released,
-    def RightUp(self, event, canvas, drgscrl):
+    def RightUp(self,
+                event: wx.MouseEvent,
+                canvas: Layout_Canvas,
+                drgscrl: DragScroller) -> None:
         if self.__edit_mode:
             drgscrl.Stop()
         canvas.GetHoverPreview().HandleMenuClick(event.GetPosition())
 
     ## Watch the mouse move, re-draw & update Element positions if the user
     #  is click-and-dragging Elements, or rubber-band-boxing stuff
-    def MouseMove(self, event, canvas, selection, context, mouse_over_preview):
+    def MouseMove(self,
+                  event: wx.MouseEvent,
+                  canvas: Layout_Canvas,
+                  selection: Selection_Mgr,
+                  context: Layout_Context,
+                  mouse_over_preview: HoverPreview) -> None:
         if self.__edit_mode:
             (x,y) = canvas.CalcUnscrolledPosition(event.GetPosition())
 
@@ -329,7 +363,7 @@ class Input_Decoder():
         elif mouse_over_preview.IsEnabled():
             mouse_over_preview.HandleMouseMove(event.GetPosition(), canvas)
 
-    def MouseWheel(self, event, canvas):
+    def MouseWheel(self, event: wx.MouseEvent, canvas: Layout_Canvas) -> None:
         # canvas scale
         if event.GetModifiers() == wx.MOD_CONTROL:
             rotation = event.GetWheelRotation()/event.GetWheelDelta()
@@ -343,7 +377,7 @@ class Input_Decoder():
             event.Skip()
 
     ## Initiate a scrolling operation on the canvas
-    def MiddleDown(self, event, canvas, selection):
+    def MiddleDown(self, event: wx.MouseEvent, canvas: Layout_Canvas, selection: Selection_Mgr) -> None:
 
         # Perform no action unless in edit mode
         if not self.__edit_mode:
@@ -352,11 +386,16 @@ class Input_Decoder():
         return
 
     ## End the scrolling operation
-    def MiddleUp(self, event, canvas, selection):
+    def MiddleUp(self, event: wx.MouseEvent, canvas: Layout_Canvas, selection: Selection_Mgr) -> None:
         return
 
     ## Handle keystrokes as necessary
-    def KeyDown(self, event, canvas, selection, dialog, context):
+    def KeyDown(self,
+                event: wx.KeyEvent,
+                canvas: Layout_Canvas,
+                selection: Selection_Mgr,
+                dialog: Element_PropsDlg,
+                context: Layout_Context) -> None:
         #Note: KeyCodes are all equivalent to the ASCII values for the
         #corresponding capital character
         key = event.GetKeyCode()
@@ -418,56 +457,56 @@ class Input_Decoder():
 
             #up-arrow Move Selection
             elif key == key_definitions.MOVE_EL_UP:
-                mod = 1
+                mod = 1.0
                 if key_definitions.isSlowMove(event):
                     mod = self.__move_speed
                 elif key_definitions.isFastMove(event):
                     mod = 1/self.__accel_factor
                 selection.BeginCheckpoint('move element up')
                 try:
-                    selection.Move(delta=(0,-self.__move_speed/mod))
+                    selection.Move(delta=(0, int(-self.__move_speed/mod)))
                 finally:
                     selection.CommitCheckpoint()
                 key_handled = True
 
             #down-arrow Move Selection
             elif key == key_definitions.MOVE_EL_DOWN:
-                mod = 1
+                mod = 1.0
                 if key_definitions.isSlowMove(event):
                     mod = self.__move_speed
                 elif key_definitions.isFastMove(event):
                     mod = 1/self.__accel_factor
                 selection.BeginCheckpoint('move element down')
                 try:
-                    selection.Move(delta=(0,self.__move_speed/mod))
+                    selection.Move(delta=(0, int(self.__move_speed/mod)))
                 finally:
                     selection.CommitCheckpoint()
                 key_handled = True
 
             # Left-arrow Move Selection
             elif key == key_definitions.MOVE_EL_LEFT:
-                mod = 1
+                mod = 1.0
                 if key_definitions.isSlowMove(event):
                     mod = self.__move_speed
                 elif key_definitions.isFastMove(event):
                     mod = 1/self.__accel_factor
                 selection.BeginCheckpoint('move element left')
                 try:
-                    selection.Move(delta=(-self.__move_speed/mod,0))
+                    selection.Move(delta=(int(-self.__move_speed/mod), 0))
                 finally:
                     selection.CommitCheckpoint()
                 key_handled = True
 
             #right-arrow Move Selection
             elif key == key_definitions.MOVE_EL_RIGHT:
-                mod = 1
+                mod = 1.0
                 if key_definitions.isSlowMove(event):
                     mod = self.__move_speed
                 elif key_definitions.isFastMove(event):
                     mod = 1/self.__accel_factor
                 selection.BeginCheckpoint('move element right')
                 try:
-                    selection.Move(delta=(self.__move_speed/mod,0))
+                    selection.Move(delta=(int(self.__move_speed/mod), 0))
                 finally:
                     selection.CommitCheckpoint()
                 key_handled = True
@@ -520,7 +559,12 @@ class Input_Decoder():
 
 
     ## Handle key releases as necessary
-    def KeyUp(self, event, canvas, selection, dialog, context):
+    def KeyUp(self,
+              event: wx.KeyEvent,
+              canvas: Layout_Canvas,
+              selection: Selection_Mgr,
+              dialog: Element_PropsDlg,
+              context: Layout_Context) -> None:
         #Note: KeyCodes are all equivalent to the ASCII values for the
         #corresponding capital character
         key = event.GetKeyCode()
@@ -536,20 +580,20 @@ class Input_Decoder():
                 layout_frame.GetPlaybackPanel().PausePlaying()
                 self.__is_traveling = False
 
-    def Undo(self):
+    def Undo(self) -> None:
         self.__parent.GetSelectionManager().Undo()
 
-    def Redo(self):
+    def Redo(self) -> None:
         self.__parent.GetSelectionManager().Redo()
 
     ## Used for specifying edit mode
     #  @param menuEditBool Edit Mode on or off
     #  @param selection SelectionManager instance
-    def SetEditMode(self, menuEditBool, selection):
+    def SetEditMode(self, menuEditBool: bool, selection: Selection_Mgr) -> None:
         self.__edit_mode = menuEditBool
         selection.SetEditMode(menuEditBool)
 
     ## Returns whether this decoder is in edit mode
-    def GetEditMode(self):
+    def GetEditMode(self) -> bool:
         return self.__edit_mode
 

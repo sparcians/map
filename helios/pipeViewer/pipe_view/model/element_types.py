@@ -3,7 +3,6 @@
 
 from .element import FakeElement, BoxElement, ImageElement, LogElement
 from .schedule_element import *
-from .node_element import NodeElement
 from .rpc_element import RPCElement
 from .speedo_element import SpeedoElement
 
@@ -14,7 +13,6 @@ creatables = {
     ScheduleElement.GetType()     : ScheduleElement,
     ScheduleLineElement.GetType() : ScheduleLineElement,
     ScheduleLineRulerElement.GetType() : ScheduleLineRulerElement,
-    NodeElement.GetType()         : NodeElement,
     ImageElement.GetType()        : ImageElement,
     RPCElement.GetType()          : RPCElement,
     SpeedoElement.GetType()       : SpeedoElement,

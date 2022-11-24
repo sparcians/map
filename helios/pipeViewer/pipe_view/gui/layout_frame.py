@@ -125,7 +125,7 @@ class Layout_Frame(wx.Frame):
         watchdlgs = self.__dialogs.get('watchlist', [])
         for wdlg in watchdlgs:
             if wdlg.IsShown():
-                wdlg.Update(self.__context.hc)
+                wdlg.TickUpdate(self.__context.hc)
 
         wx.Frame.Refresh(self)
         if show_wait_cursor:
@@ -160,7 +160,7 @@ class Layout_Frame(wx.Frame):
         watchdlgs = self.__dialogs.get('watchlist', [])
         for wdlg in watchdlgs:
             if wdlg.IsShown():
-                wdlg.Update(self.__context.hc)
+                wdlg.TickUpdate(self.__context.hc)
 
         wx.Frame.Refresh(self)
 

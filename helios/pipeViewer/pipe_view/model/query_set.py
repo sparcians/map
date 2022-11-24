@@ -1,14 +1,31 @@
 
-
+from __future__ import annotations
 import copy
 import logging
 import sys
 import time
+from typing import Dict, List, Optional, Tuple, cast, TYPE_CHECKING
 
 from . import content_options as content
 
 from logging import info, debug, warn, error
 
+if TYPE_CHECKING:
+    from model.element_value import Element_Value
+    from model.layout_context import Layout_Context
+    from model.schedule_element import ScheduleLineElement
+    from model.database import TransactionDatabase
+
+    TOffDict = Dict[int, Dict[int, List[Element_Value]]]
+
+class ContinuedTransaction:
+    def __init__(self, interval: Tuple[int, int], processed_val: str, last: bool):
+        self.interval = interval
+        self.processed_val = processed_val
+        self.last = last
+
+    def unwrap(self) -> Tuple[Tuple[int, int], str, bool]:
+        return self.interval, self.processed_val, self.last
 
 # #Formerly known as Ordered_Dict
 class QuerySet:
@@ -17,33 +34,28 @@ class QuerySet:
 
     # # Get the Ordered Dict initialized. Note: in order to force-populate the
     #  Ordered Dict upon initialization, both optional parameters must be provided
-    def __init__(self, layout_context, d = None, l = None):
+    def __init__(self, layout_context: Layout_Context):
         self.__layout_context = layout_context
         self.__handle = self.__layout_context.dbhandle
 
         # keeps track of the ranges we've already queried
         self.old_hc = 0
         # stores elements that need ranges of data
-        self.__range_pairs = []
-        self.__continued_transactions = {}
+        self.__range_pairs: List[Element_Value] = []
+        self.__continued_transactions: Dict[int, ContinuedTransaction] = {}
 
         # A count of the number of times this Layout Context has requested to
         # move to a different HC. NOTE: not an index of the current HC, nor
         # number of stabbing queries performed
         self.__stab_index = 0
-        # Don't use this unless you know what you are doing. Read below.
-        if (d is not None) and (l is not None) and (isinstance(d, dict) and isinstance(l, list)):
-            self.__t_off_sorted = d
-        # Instantiate a blank dictionary and list to
-        else:
-            # This will be a series of nested dictionaries, with t_offsets (in
-            # HC's) and loc_id's as their respective keys. The inmost values
-            # will be lists of Element Values
-            self.__t_off_sorted = {}
+        # This will be a series of nested dictionaries, with t_offsets (in
+        # HC's) and loc_id's as their respective keys. The inmost values
+        # will be lists of Element Values
+        self.__t_off_sorted: TOffDict = {}
 
     # # Adds a pair to the query set and stashes in correct location
     # @profile
-    def AddPair(self, pair):
+    def AddPair(self, pair: Element_Value) -> None:
         e = pair.GetElement()
         # Recompute t_off in terms of plain HC's
         ####clock = self.GetClock(pair)
@@ -51,7 +63,7 @@ class QuerySet:
         loc_str = e.GetProperty('LocationString')
         variables = self.__layout_context.GetLocationVariables()
         loc, _, clock = lmgr.getLocationInfo(loc_str, vars)
-        t_off_property = e.GetProperty('t_offset', period = pair.GetClockPeriod())
+        t_off_property = cast(int, e.GetProperty('t_offset', period = pair.GetClockPeriod()))
 
         # Warn about invalid locations for content types which DO require transactions
         if loc == lmgr.INVALID_LOCATION_ID and e.GetProperty('Content') not in content.NO_TRANSACTIONS_REQUIRED:
@@ -90,7 +102,7 @@ class QuerySet:
 
     # # Helper method to AddPair()
     # @profile
-    def __AddAtLoc(self, pair, sub_dict = None):
+    def __AddAtLoc(self, pair: Element_Value, sub_dict: Optional[Dict[int, List[Element_Value]]] = None) -> Dict[int, List[Element_Value]]:
         if sub_dict:
             if self.GetID(pair) in sub_dict:
                 if pair not in sub_dict[self.GetID(pair)]:
@@ -103,7 +115,7 @@ class QuerySet:
 
     # # Used for re-sorting an Element's location within t_off_sorted{},
     #  before the Element's Properties have actually changed
-    def __ForceAddSingleQueryPair(self, pair, t_off_in, id):
+    def __ForceAddSingleQueryPair(self, pair: Element_Value, t_off_in: int, id: int) -> None:
         e = pair.GetElement()
 
         # Recompute t_off in terms of plain HC's
@@ -135,18 +147,8 @@ class QuerySet:
         # This will be recalled when deleting this pair
         pair.SetLocationAndTimingInformation(t_off_in, lmgr.getLocationString(loc))
 
-        # Makes sure that draw_order and t_off_sorted have the same Element
-        # Value instance after this operation, and it is in the correct
-        # location within draw_order
-        # for i in range(len(self.__draw_order)):
-        #    if self.__draw_order[i] == pair:
-        #        self.__draw_order[i] = pair
-        #        return True
-        # return False
-        return True
-
     # # Helper method to __ForceAddSingleQueryPair()
-    def __ForceAddAtLoc(self, pair, id, sub_dict = None):
+    def __ForceAddAtLoc(self, pair: Element_Value, id: int, sub_dict: Optional[Dict[int, List[Element_Value]]] = None) -> Dict[int, List[Element_Value]]:
         if sub_dict:
             if id in sub_dict:
                 if pair not in sub_dict[id]:
@@ -162,7 +164,7 @@ class QuerySet:
     #  @param pair Element_Value pair. The element in this pair must not have
     #  had its location or t_offset changed since it was added, otherwise it will
     #  not be found in the expecected __t_offset_sorted bucket.
-    def DeletePair(self, pair):
+    def DeletePair(self, pair: Element_Value) -> None:
         # In the case of Resorting an Element in t_off_sorted, draw order
         # delete range pair_entry if we have one
         e = pair.GetElement()
@@ -209,7 +211,7 @@ class QuerySet:
             if len(self.__t_off_sorted[t_off]) == 0:
                 del self.__t_off_sorted[t_off]
 
-    def CheckLocationVariablesChanged(self):
+    def CheckLocationVariablesChanged(self) -> bool:
         loc_vars_status = self.__layout_context.GetLocationVariablesChanged()
         if loc_vars_status:
            self.__layout_context.AckLocationVariablesChanged()
@@ -217,7 +219,7 @@ class QuerySet:
 
     # # Returns the internal ID which maps to the given Element's Location
     #  String, per the Location Manager
-    def GetID(self, pair):
+    def GetID(self, pair: Element_Value) -> int:
         el = pair.GetElement()
         if not el.LocationHasVars():
             return self.__layout_context.dbhandle.database.location_manager.getLocationInfoNoVars(el.GetProperty('LocationString'))[0]
@@ -226,7 +228,7 @@ class QuerySet:
 
     # # Returns the clock ID which maps to the given' Element's location
     #  string, per the Location Manager
-    def GetClock(self, pair):
+    def GetClock(self, pair: Element_Value) -> int:
         el = pair.GetElement()
         if el.LocationHasVars():
             return self.__layout_context.dbhandle.database.location_manager.getLocationInfo(el.GetProperty('LocationString'), self.__layout_context.GetLocationVariables(), self.CheckLocationVariablesChanged())[2]
@@ -237,19 +239,13 @@ class QuerySet:
     #  it's t_offset changed, it needs to be resorted in the
     #  dictionary. This method is called, and executes, BEFORE the new
     #  property is assigned to the Element
-    def ReSort(self, pair, t_off, id):
+    def ReSort(self, pair: Element_Value, t_off: int, id: int) -> None:
         self.DeletePair(pair)
-        res = self.__ForceAddSingleQueryPair(pair, t_off, id)
-        if res:
-            logging.debug('An Element was properly resorted')
-        else:
-            logging.warning("""An Element was unable to be resorted properly,
-            there is now a discrepancy between the Element Values stored in
-            t_off_sorted{} and draw_order[] inside Ordered Dict""")
+        self.__ForceAddSingleQueryPair(pair, t_off, id)
 
     # # Update the val of an Element Value when the Element's 'Content'
     #  property is changed
-    def ReValue(self, pair):
+    def ReValue(self, pair: Element_Value) -> None:
         e = pair.GetElement()
         if e.GetQueryFrame(pair.GetClockPeriod()):
             pair.ClearTimedValues()
@@ -258,7 +254,7 @@ class QuerySet:
             if e.GetProperty('Content') in content.NO_TRANSACTIONS_REQUIRED:
                 # Recompute t_off in terms of plain HC's
                 clock = self.GetClock(pair)
-                t_off = e.GetProperty('t_offset')
+                t_off = cast(int, e.GetProperty('t_offset'))
                 if clock == self.__handle.database.location_manager.NO_CLOCK:
                     # Makes the assumption that there will always be something else at
                     # t_offset of 0. If not, then this could stand to be optimized
@@ -268,7 +264,7 @@ class QuerySet:
                 temp = self.__t_off_sorted[t_off][self.GetID(pair)]
                 for pair_tmp in temp:
                     if pair_tmp == e:
-                        pair.SetVal(content.ProcessContent(e.GetProperty('Content'),
+                        pair.SetVal(content.ProcessContent(cast(str, e.GetProperty('Content')),
                                                            None,
                                                            e,
                                                            self.__handle,
@@ -281,7 +277,7 @@ class QuerySet:
                 self.__layout_context.GoToHC(self.__layout_context.hc)
 
     # @profile
-    def Update(self):
+    def Update(self) -> None:
         '''
         This is where all Element Values get re-synchronized to the current hc
         not sure if everything here is final, or best implemented
@@ -303,6 +299,7 @@ class QuerySet:
         top_of_pair = -100000000000
         for pair in self.__range_pairs:
             e = pair.GetElement()
+            assert isinstance(e, ScheduleLineElement)
             e.SetTime(hc) # Always set time because it is used for drawing the schedule group
             period = pair.GetClockPeriod()
             if period == -1:
@@ -335,7 +332,7 @@ class QuerySet:
         total_updates = [0]
 
         # @profile
-        def callback(t, tapi):
+        def callback(t: int, tapi: TransactionDatabase) -> None:
             total_callbacks[0] += 1
             next_tick = next_tick_idx[0]
             if len(ordered_ticks) == 0:
@@ -365,6 +362,7 @@ class QuerySet:
                     continue
                 e = range_pair.GetElement()
                 frame = e.GetQueryFrame(period)
+                assert frame is not None
                 tick_start = frame[0] + self.__layout_context.hc
                 tick_end = frame[1] + self.__layout_context.hc
                 if tick_start <= t <= tick_end:
@@ -372,7 +370,7 @@ class QuerySet:
                     if not timed_val or not timed_val[0]:
                         updated += 1
                         loc_id = GetID(range_pair)
-                        content_type = e.GetProperty('Content')
+                        content_type = cast(str, e.GetProperty('Content'))
 
                         # Update element content based on transaction
                         # If there is no data for this tick, this will return None
@@ -380,11 +378,11 @@ class QuerySet:
 
                         if trans_proxy is not None and trans_proxy.isValid():
                             if range_pair_idx in self.__continued_transactions:
-                                old_interval, _, last = self.__continued_transactions[range_pair_idx]
+                                old_interval, _, last = self.__continued_transactions[range_pair_idx].unwrap()
                                 if last and t >= old_interval[1]:
                                     del self.__continued_transactions[range_pair_idx]
                             if range_pair_idx in self.__continued_transactions:
-                                old_interval, old_processed_val, last = self.__continued_transactions[range_pair_idx]
+                                old_interval, old_processed_val, last = self.__continued_transactions[range_pair_idx].unwrap()
                                 old_left = old_interval[0]
                                 new_interval = (old_left, trans_proxy.getRight())
                                 # Fix for ARGOS-158/ARGOS-164
@@ -395,8 +393,8 @@ class QuerySet:
                                     ordered_ticks.insert(next_tick_idx[0], new_interval[1])
                                 self.__range_pairs[range_pair_idx].SetTimedVal(old_left, (old_processed_val, new_interval))
                                 if not trans_proxy.isContinued():
-                                    self.__continued_transactions[range_pair_idx][0] = new_interval
-                                    self.__continued_transactions[range_pair_idx][2] = True
+                                    self.__continued_transactions[range_pair_idx].interval = new_interval
+                                    self.__continued_transactions[range_pair_idx].last = True
 
                             else:
                                 processed_val = content.ProcessContent(content_type,
@@ -407,7 +405,7 @@ class QuerySet:
                                                                        loc_vars)
                                 interval = (trans_proxy.getLeft(), trans_proxy.getRight())
                                 if trans_proxy.isContinued():
-                                    self.__continued_transactions[range_pair_idx] = [interval, copy.copy(processed_val), False]
+                                    self.__continued_transactions[range_pair_idx] = ContinuedTransaction(interval, copy.copy(processed_val), False)
                                     # Fix for ARGOS-158/ARGOS-164
                                     # There's a corner case where a heartbeat occurs in the middle of a clock period. We would ordinarily skip over it, and
                                     # consequently miss the last part of a continued transaction. If a continued transaction ends before the next clock period begins,
@@ -449,7 +447,7 @@ class QuerySet:
                     for pair in els:
                         e = pair.GetElement()
 
-                        content_type = e.GetProperty('Content')
+                        content_type = cast(str, e.GetProperty('Content'))
                         if content_type in no_trans:
                             # Update this element, which is not dependent on a transaction
                             pair.SetVal(content.ProcessContent(content_type,
@@ -509,13 +507,13 @@ class QuerySet:
         # print self.__layout_context.dbhandle.api.getNodeDump(0, 890, 905, 40);
 
     # # For debug purposes
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '<Ordered_Dict>'.format()
 
-    def GetElementDump(self):
+    def GetElementDump(self) -> str:
         res = ''
         for t_off in self.__t_off_sorted:
             res += str(t_off) + '\t'

@@ -1,4 +1,4 @@
-
+from __future__ import annotations
 
 import yaml
 import hashlib as md5
@@ -7,17 +7,21 @@ import wx
 import time
 import logging
 import pickle
+from typing import Any, Dict, List, Optional, TextIO, cast, TYPE_CHECKING
 
 import model.element_types as etypes
-from .plain_file import Plain
 
+if TYPE_CHECKING:
+    from model.element import Element, MultiElement, PropertyDict
+    from model.layout_context import Layout_Context
+    from model.workspace import Workspace
 
 # # The reason this application exists, Layouts allow users to group together
 #  the elements they are viewing
 #
 #  Layouts can only be loaded at Layout.__init__. To load a new layout, a new
 #  Layout instance must be created.
-class Layout(object):
+class Layout:
 
     # # File name and extension for layout files
     LAYOUT_FILE_EXTENSION = '.alf'
@@ -40,22 +44,21 @@ class Layout(object):
     #  changes. If None or '', no file is loaded
     #  @param workspace Argos Workspace object if one is available
     #  @note Layout files can only be loaded during construction
-    def __init__(self, filename = None, workspace = None):
+    def __init__(self, filename: Optional[str] = None, workspace: Optional[Workspace] = None) -> None:
         if filename is not None and not isinstance(filename, str):
             raise TypeError('filename must be None or a str, is {0}'.format(type(filename)))
 
         logging.info("Constructing layout \"{0}\"".format(filename))
         t_start = time.time()
 
-        self.__elements = []
-        self.__elements_by_pin = {}
-        self.__elements_with_children = []
-        self.__graph_nodes = {} # fast access
+        self.__elements: List[Element] = []
+        self.__elements_by_pin: Dict[int, Element] = {}
+        self.__elements_with_children: List[MultiElement] = []
         self.__workspace = workspace
-        self.lay_cons = []
+        self.lay_cons: List[Layout_Context] = []
 
-        self.__file_checksum = None # Checksum of file as loaded
-        self.__filename = None # Name of file loaded
+        self.__file_checksum: Optional[str] = None # Checksum of file as loaded
+        self.__filename: Optional[str] = None # Name of file loaded
 
         if filename:
             self.__LoadLayout(str(filename)) # Load elements (only called during init where no elements are present).
@@ -67,25 +70,23 @@ class Layout(object):
         logging.info("Layout loaded with {0} elements in {1}s".format(len(self.__elements), (time.time() - t_start)))
 
     # # Returns the workspace associated with this layout
-    def GetWorkspace(self):
+    def GetWorkspace(self) -> Optional[Workspace]:
         return self.__workspace
 
     # # This should only be called by a Layout_Context
     #  Causes the Layout_Context to be registered with the Layout
-    def LinkLayoutContext(self, lay_con):
+    def LinkLayoutContext(self, lay_con: Layout_Context) -> None:
         self.lay_cons.append(lay_con)
 
     # # This should only be called by a Layout_Context
     #  Unregisters the Layout_Context from the Layout
-    def UnLinkLayoutContext(self, lay_con):
+    def UnLinkLayoutContext(self, lay_con: Layout_Context) -> None:
         if lay_con in self.lay_cons:
             self.lay_cons.remove(lay_con)
 
     # # Tells whether any Layout_Contexts are currently registered with this Layout
-    def HasContext(self):
-        if len(self.lay_cons) > 0:
-            return True
-        return False
+    def HasContext(self) -> bool:
+        return not not self.lay_cons
 
     # # Determine PINs of elements preceding the given list of elements' pins.
     #  @return List of sequences of all preceeding pins:
@@ -103,9 +104,9 @@ class Layout(object):
     #  @warning This may use lots of memory for large displays and should be
     #  tested for scalability
     # @profile
-    def DeterminePriorPins(self, els):
+    def DeterminePriorPins(self, els: List[Element]) -> List[List[int]]:
         pin_map = {} # {pin:pin_index}
-        results = [[]] * len(els) # Pins preceeding pin of each element in els. Initialize with empty values
+        results: List[List[int]] = [[]] * len(els) # Pins preceeding pin of each element in els. Initialize with empty values
 
         for idx, e in enumerate(els):
             pin_map[e.GetPIN()] = idx
@@ -128,7 +129,12 @@ class Layout(object):
 
     # # Creates and returns a new element. Does not add it to the layout.
     # @profile
-    def CreateElement(self, duplicate = None, initial_properties = None, element_type = None, parent = None, **kwargs):
+    def CreateElement(self,
+                      duplicate: Optional[Element] = None,
+                      initial_properties: Optional[PropertyDict] = None,
+                      element_type: Optional[str] = None,
+                      parent: Optional[Element] = None,
+                      **kwargs: Any) -> Element:
         if not element_type:
             # Default for compatibility
             element_type = 'box'
@@ -149,7 +155,12 @@ class Layout(object):
     #  @return Element created
     #  @see Element.__init__
     # @profile
-    def CreateAndAddElement(self, duplicate = None, initial_properties = None, element_type = None, parent = None, **kwargs):
+    def CreateAndAddElement(self,
+                            duplicate: Optional[Element] = None,
+                            initial_properties: Optional[PropertyDict] = None,
+                            element_type: Optional[str] = None,
+                            parent: Optional[Element] = None,
+                            **kwargs: Any) -> Element:
         add_kwargs = {}
         if 'follows_pins' in kwargs:
             add_kwargs['follows_pins'] = kwargs['follows_pins'] # Forward argument
@@ -167,13 +178,13 @@ class Layout(object):
 
     # # Removes the Element from the list and instructs all subscribed Layout
     #  Contexts to do the same
-    def RemoveElement(self, e):
+    def RemoveElement(self, e: Element) -> None:
         for element in self.__elements:
             # initialize recurisve search and if we've already found something in base level
             # indicate that by setting chop_all
-            pruned = self.__PruneOnElement(e, element)
-            if pruned:
-                pruned = set(pruned) # don't delete things twice
+            pruned_lst = self.__PruneOnElement(e, element)
+            if pruned_lst:
+                pruned = set(pruned_lst) # don't delete things twice
                 break # found
         else:
             raise Exception('Zombie objects: unable to remove %s' % e)
@@ -184,15 +195,15 @@ class Layout(object):
         if e in self.__elements:
             self.__elements.remove(e)
             del self.__elements_by_pin[e.GetPIN()]
-        if e.GetParent() is not None:
-            e.GetParent().SetNeedsRedraw()
+        if (parent := e.GetParent()) is not None:
+            parent.SetNeedsRedraw()
 
     # # Adds the given element to the list and instructs all subscribed Layout
     #  Contexts to do the same
     #  @param follows_pin=PIN Pin of element after which to insert this element
     #  @param skip_list=Skips adding element to the local list if true
     # @profile
-    def AddElement(self, e, **kwargs):
+    def AddElement(self, e: Element, **kwargs: Any) -> None:
         follows_pins = kwargs.get('follows_pins', [None])
         skip_list = kwargs.get('skip_list', False)
         if not skip_list:
@@ -200,38 +211,31 @@ class Layout(object):
             # #self.__elements.append(e)
             self.__elements_by_pin[e.GetPIN()] = e
             if e.HasChildren():
-                self.__elements_with_children.append(e)
-        if e.GetType() == 'node':
-            self.__graph_nodes[e.GetProperty('name')] = e
+                self.__elements_with_children.append(cast(MultiElement, e))
         for lay_con in self.lay_cons:
             lay_con.AddElement(e, after_pins = follows_pins)
         self.__changed = True
 
-    # # Return graph nodes within this layout.
-    #  @warning Do not modify the result
-    def GetGraphNodes(self):
-        return self.__graph_nodes
-
     # # If a property (t_offset or LocationString) for an Element is changed
     #  such that it will no longer be correctly sorted in the OrderedDict,
     #  this method will figure out where it goes
-    def ReSort(self, e, t_off, loc):
+    def ReSort(self, e: Element, t_off: int, loc: str) -> None:
         for lay_con in self.lay_cons:
             lay_con.ReSort(e, t_off, loc)
 
     # # If a property for an Element indicating position or size is changed,
     #  this method is invoked. Alerts all layout contexts110
-    def ElementsMoved(self, e):
+    def ElementsMoved(self, e: Element) -> None:
         for lay_con in self.lay_cons:
             lay_con.ElementMoved(e)
 
-    def Refresh(self, e):
+    def Refresh(self, e: Element) -> None:
         for lay_con in self.lay_cons:
             lay_con.ReValue(e)
 
     # # Find an element by its PIN
     #  @return The element with the given pin if found. Otherwise returns None
-    def FindByPIN(self, pin):
+    def FindByPIN(self, pin: int) -> Optional[Element]:
         el = self.__elements_by_pin.get(pin, None)
         # If we didn't find the element, it might be because it's a child of another element
         # Search those next
@@ -244,62 +248,28 @@ class Layout(object):
 
     # # Returns the list (un-sorted) of all Elements in the Layout
     #  It is not safe to modify this list
-    def GetElements(self):
+    def GetElements(self) -> List[Element]:
         return self.__elements
 
     # @ Returns filename used by latest SaveToFile() either explicitly or
     #  implicitly. Or, if SaveToFile has not yet been called, returns the
     #  construction filename. If no construction filename was specified either,
     #  returns None.
-    def GetFilename(self):
+    def GetFilename(self) -> Optional[str]:
         return self.__filename
 
     # @ Returns file checksum obtained by latest SaveToFile call. Or, if
     #  SaveToFile has not yet been called, returns the construction filename.
     #  If no construction filename was specified either, returns None.
-    def GetFileChecksum(self):
+    def GetFileChecksum(self) -> Optional[str]:
         return self.__file_checksum
-
-    # # Import plain file from Neato into Argos
-    #  @return List of all elements created by this import
-    def ImportPlain(self, filename):
-        elements = []
-        pf = Plain(filename)
-        for name, val in list(pf.nodes.items()):
-            # convert name to hex
-            if name.isdigit():
-                name = '%x' % int(name)
-
-            pos = int(float(val[pf.NODE_POSX]) * 40), int(float(val[pf.NODE_POSY]) * 40)
-            dims = (62, 18) # (56, 13)
-            # # @todo Tweak dimensions. This might be done dynamically after placing all nodes by
-            #  seeing how big they can get without colliding with their neighbors
-            props = {'position':pos, 'name':name, 'dimensions': dims, 'data':val[pf.NODE_DATA]}
-            el = self.CreateAndAddElement(initial_properties = props, element_type = 'node')
-            elements.append(el)
-
-        for edge in pf.edges:
-            # convert to hex
-            if edge[0].isdigit():
-                edge0 = '%x' % int(edge[0])
-            else:
-                edge0 = edge[0]
-            if edge[1].isdigit():
-                edge1 = '%x' % int(edge[1])
-            else:
-                edge1 = edge[1]
-
-            self.__graph_nodes[edge0].AddConnectionOut(self.__graph_nodes[edge1])
-            self.__graph_nodes[edge1].AddConnectionIn(self.__graph_nodes[edge0])
-
-        return elements
 
     # # Store the layout to a file as YAML. Preserves draw order
     #  @param filename. If None, stores to the current filename returned by
     #  GetFilename. If there is no current filename, raises ValueError.
     #  If a str, attempts to store to this file. If None, effectively behaves
     #  like a typical "save" feature. If a str, behaves like a "save-as".
-    def SaveToFile(self, filename = None):
+    def SaveToFile(self, filename: Optional[str] = None) -> None:
         if filename is None:
             filename = self.__filename
         elif not isinstance(filename, str):
@@ -310,6 +280,7 @@ class Layout(object):
             if not self.CanSaveToFile():
                 raise IOError('Cannot save layout {0} back to file "{1}" without overwriting other changes in that file' \
                               .format(self, filename))
+        assert filename is not None
 
         try:
             with open(filename, 'w') as f:
@@ -338,7 +309,7 @@ class Layout(object):
     #
     #  For filenames other than the current GetFilename(), this Layout just
     #  assumes it can write without consequence
-    def CanSaveToFile(self):
+    def CanSaveToFile(self) -> bool:
         if self.__filename is None:
             return False
         if not os.path.exists(self.__filename):
@@ -353,7 +324,7 @@ class Layout(object):
     # # Indicates whether this Layout or any of its comprising elements have
     #  been modified in any way that could affect the save state on disk
     #  @return True if this layout or elements have changed
-    def HasChanged(self):
+    def HasChanged(self) -> bool:
         if self.__changed == True:
             return True
 
@@ -365,11 +336,11 @@ class Layout(object):
 
     # # Mark the layout as changed. Ideally, this is not needed since HasChanged
     #  inspects elements for their changes.
-    def SetChanged(self):
+    def SetChanged(self) -> None:
         self.__changed = True
 
     # # Insert an element following an element with the given pin
-    def __InsertElementAfterPIN(self, e, after_pin = -1):
+    def __InsertElementAfterPIN(self, e: Element, after_pin: int = -1) -> None:
         # #print 'Inserting into layout {} after PIN {}'.format(e, after_pin)
         if after_pin == None:
             self.__elements.append(e)
@@ -388,13 +359,14 @@ class Layout(object):
                 # #print '  @back (2) ap={}'.format(after_pin)
 
     # # Recursive removal of element and its children, returns the pruned elements
-    def __PruneOnElement(self, e, element, chop_all = False):
+    def __PruneOnElement(self, e: Element, element: Element, chop_all: bool = False) -> List[Element]:
         if e == element or chop_all:
             chop_all = True
             chopped = [element]
         else:
             chopped = []
         if element.HasChildren() and element.GetChildren():
+            element = cast(MultiElement, element)
             children = element.GetChildren()
             for child in children:
                 if chop_all: # collection mode used on nodes subordinate to target node
@@ -417,7 +389,7 @@ class Layout(object):
     #  @note Does not update filename or file_checksum attributes
     #  @note Emits YAML stream start/end events, so storing multiple layouts in
     #  1 file might not be parseable
-    def _StoreYAMLToStream(self, stream):
+    def _StoreYAMLToStream(self, stream: TextIO) -> None:
         events = [yaml.StreamStartEvent(encoding = 'ascii'),
                   yaml.DocumentStartEvent(explicit = True),
                   yaml.SequenceStartEvent(anchor = None, tag = None, implicit = True, flow_style = False),
@@ -435,23 +407,25 @@ class Layout(object):
         yaml.emit(events, stream)
 
     # # Computes a checksum of the file specified
-    def __ComputeChecksum(self, filename):
-        f = open(filename, 'r')
-        return md5.md5(f.read().encode('utf-8')).hexdigest()
+    @staticmethod
+    def __ComputeChecksum(filename: str) -> str:
+        with open(filename, 'r') as f:
+            return md5.md5(f.read().encode('utf-8')).hexdigest()
 
     # #Loads an element from YAML, returns element
-    def __LoadElement(self, elinfo, idx, filename, parent = None):
+    def __LoadElement(self, elinfo: PropertyDict, idx: int, filename: str, parent: Optional[Element] = None) -> Element:
         if not isinstance(elinfo, dict):
             raise ValueError('Element {0} in Argos layout file "{1}" was not a map structure, was a {2}' \
                         .format(idx, filename, type(elinfo)))
 
         # Peek at type before further reading
-        el_type = elinfo.get('type')
+        el_type = cast(str, elinfo.get('type'))
         # # TODO: reintroduce unknown property checking
         e = self.CreateElement(initial_properties = elinfo, element_type = el_type, parent = parent)
         # load children if any exist
-        children = elinfo.get('children')
+        children = cast(List[PropertyDict], elinfo.get('children'))
         if e.HasChildren() and children:
+            e = cast(MultiElement, e)
             for child in children:
                 e.AddChild(self.__LoadElement(child, idx, filename, parent = e))
         return e
@@ -466,7 +440,7 @@ class Layout(object):
     #  @note Sets __filename and __file_checksum
     #  @todo Parse YAML events or tokens with Marks so that Layout-file semantic
     #  errors in the layout file can be pinpointed to a line/col.
-    def __LoadLayout(self, filename):
+    def __LoadLayout(self, filename: str) -> None:
         # Store filename before loading the layout since some elements care
         # about this for determining resource locations
         self.__filename = os.path.abspath(filename) # Name of file loaded
@@ -493,11 +467,6 @@ class Layout(object):
                 e = self.__LoadElement(elinfo, idx, filename)
                 self.AddElement(e)
 
-        # build graph hashmap
-        for e in self.__elements:
-            if e.GetType() == 'node':
-                e.BuildConnectionsFromProperty(self.__graph_nodes)
-
         # # @todo Use file date modified instead - probably faster
         self.__file_checksum = self.__ComputeChecksum(filename) # Checksum of file as loaded
 
@@ -509,14 +478,17 @@ class Layout(object):
         self.__MarkAsUnchanged()
 
     # # Load individual element from pickle
-    def __LoadElementFromPickle(self, pdict, parent = None):
-        children = pdict.get('children')
-        if children:
+    def __LoadElementFromPickle(self, pdict: PropertyDict, parent: Optional[Element] = None) -> Element:
+        if 'children' in pdict:
             # child property only is generated at compile time. Strip out.
-            children = pdict.pop('children')
+            children = cast(List[PropertyDict], pdict.pop('children'))
+        else:
+            children = None
 
-        e = self.CreateElement(initial_properties = pdict, element_type = pdict.get('type'), parent = parent)
+        e = self.CreateElement(initial_properties = pdict, element_type = cast(Optional[str], pdict.get('type')), parent = parent)
         if children:
+            assert isinstance(e, MultiElement)
+
             for child in children:
                 e.AddChild(self.__LoadElementFromPickle(child, parent = e))
 
@@ -526,7 +498,7 @@ class Layout(object):
     #  @return True if load was successful and False if not.
     #  @note Logs to warning and debug about loading issues
     # #@profile
-    def __TryLoadPrecompiledLayout(self, filename, precompiled_filename):
+    def __TryLoadPrecompiledLayout(self, filename: str, precompiled_filename: str) -> bool:
         if not os.path.exists(precompiled_filename):
             return False
 
@@ -536,7 +508,7 @@ class Layout(object):
         f = open(precompiled_filename, 'rb')
 
         # Compare
-        pc_ver_code = f.readline().strip()
+        pc_ver_code = f.readline().strip().decode('utf-8')
         if pc_ver_code != self.PRECOMPILED_VERSION_CODE:
             logging.info('Precompiled alf "{}" is in an older format. Version code "{}" differs ' \
                          'from current precompiled layout version code "{}"'
@@ -544,7 +516,7 @@ class Layout(object):
             return False
 
         # Compare checksum
-        pc_checksum = f.readline().strip()
+        pc_checksum = f.readline().strip().decode('utf-8')
         alf_checksum = self.__ComputeChecksum(filename)
         if pc_checksum != alf_checksum:
             logging.info('Precompiled alf "{}" is out of date. checksum {} differs from checkum ' \
@@ -564,19 +536,19 @@ class Layout(object):
             self.AddElement(e)
         return True
 
-    def __MakeSerializable(self, el):
+    def __MakeSerializable(self, el: Element) -> PropertyDict:
         output = {}
         output = el.GetSerializableProperties() # get all fields
         if el.HasChildren():
             children = el.GetChildren()
             output['children'] = []
             for child in children:
-                output['children'].append(self.__MakeSerializable(child))
+                cast(List[PropertyDict], output['children']).append(self.__MakeSerializable(child))
 
         return output
 
     # # Writes a precompiled layout file having the given name
-    def __WritePrecompiledLayout(self, precompiled_filename):
+    def __WritePrecompiledLayout(self, precompiled_filename: str) -> None:
         try:
             f = open(precompiled_filename, 'wb')
         except IOError as ex:
@@ -598,22 +570,22 @@ class Layout(object):
                 logging.info('Successfully wrote precompiled alf: {}'.format(precompiled_filename))
 
     # # Generates precompiled filename for a given layout filename
-    def __GenPrecompiledLayoutFilename(self, filename):
+    def __GenPrecompiledLayoutFilename(self, filename: str) -> str:
         return filename + 'c' # e.g. layout.alfc
 
     # # Flags this layout and all comprising elements as Not Changed.
     #  This is intended to be called when a layout is being loaded or saved
-    def __MarkAsUnchanged(self):
+    def __MarkAsUnchanged(self) -> None:
         self.__changed = False
         for c in self.__elements:
             c._MarkAsUnchanged()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '<Layout "{}">'.format(self.GetFilename())
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
     # # Add a region of two offsets from current time to ask for when updated.
-    def GetElementDump(self):
+    def GetElementDump(self) -> str:
         return repr(self.__elements)

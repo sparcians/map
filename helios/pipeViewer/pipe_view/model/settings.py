@@ -1,11 +1,12 @@
 import json
 import os
 import sys
+from typing import Any, Dict
 from gui.autocoloring import BrushRepository
 from gui.font_utils import GetDefaultFontSize, GetDefaultControlFontSize
 
 ## Stores settings in a JSON file in the user's config directory so that they can be persisted across runs
-class ArgosSettings(object):
+class ArgosSettings:
     __DEFAULT_CONFIG = {
         'layout_font_size': GetDefaultFontSize(),
         'hover_font_size': GetDefaultFontSize(),
@@ -19,7 +20,7 @@ class ArgosSettings(object):
         'palette_shuffle': BrushRepository.get_supported_shuffle_modes()
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__dirty = False
 
         argos_config_dir = 'argos'
@@ -52,23 +53,23 @@ class ArgosSettings(object):
         for k, v in self.__config.items():
             self.__validate_setting(k, v)
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.save()
 
-    def save(self):
+    def save(self) -> None:
         if self.__dirty:
             with open(self.__config_json_path, 'w') as f:
                 json.dump(self.__config, f)
                 self.__dirty = False
 
-    def update(self, new_settings):
+    def update(self, new_settings: Dict[str, Any]) -> None:
         if not isinstance(new_settings, dict):
             raise TypeError('update() must be called with a dict argument')
 
         for k, v in new_settings.items():
             self[k] = v
 
-    def __validate_setting(self, key, value):
+    def __validate_setting(self, key: str, value: Any) -> None:
         if key not in ArgosSettings.__DEFAULT_CONFIG:
             raise KeyError(f'{key} is not a recognized settings field')
 
@@ -76,21 +77,21 @@ class ArgosSettings(object):
         if allowed_values and value not in allowed_values:
             raise ValueError(f'{value} is not an allowed value for setting {key}. Allowed values are: {allowed_values}')
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Any:
         return self.__config[key]
 
-    def __getattr__(self, key):
+    def __getattr__(self, key: str) -> Any:
         try:
             return self.__getitem__(key)
         except KeyError:
             raise AttributeError
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: Any) -> None:
         self.__validate_setting(key, value)
         self.__config[key] = value
         self.__dirty = True
 
-    def __setattr__(self, key, value):
+    def __setattr__(self, key: str, value: Any) -> None:
         try:
             self.__setitem__(key, value)
         except KeyError:

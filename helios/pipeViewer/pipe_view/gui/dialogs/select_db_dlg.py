@@ -99,7 +99,7 @@ class SelectDatabaseDlg(wx.Dialog):
 
         self.__CheckSelectionState()
 
-    def Show(self) -> None:
+    def Show(self, show: bool = True) -> bool:
         raise NotImplementedError('Cannot Show() this dialog. Use ShowModal instead')
 
     # # Gets the prefix selected by the dialog

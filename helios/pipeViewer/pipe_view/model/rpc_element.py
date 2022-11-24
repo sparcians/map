@@ -1,3 +1,4 @@
+from __future__ import annotations
 from .element import Element
 from . import element_propsvalid as valid
 
@@ -5,16 +6,24 @@ import wx
 import math
 import re
 import sys
+from typing import Any, Callable, List, Optional, Tuple, cast, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .element_value import Element_Value
+    from .extension_manager import ExtensionManager
+    from gui.layout_canvas import Layout_Canvas
+    from .element import PropertyValue, ValidatedPropertyDict
 
 ## An element that acts as a graph node
 class RPCElement(Element):
-    _RPC_PROPERTIES = {'id'                 : ('', valid.validateString),
-                       'Content'            : ('annotation' , valid.validateContent), # See content_options.py
-                       'auto_color_basis'   : ('' , valid.validateString),
-                       'color_basis_type'   : ('string_key' , valid.validateString), # needs better validator eventually
-                       'meta_properties'    : ([], valid.validateList),
-                       'annotation_basis'   : ('', valid.validateString),
-                       'anno_basis_type'    : ('meta_property' , valid.validateString), # needs better validator eventually
+    _RPC_PROPERTIES: ValidatedPropertyDict = {
+        'id'                 : ('', valid.validateString),
+        'Content'            : ('annotation' , valid.validateContent), # See content_options.py
+        'auto_color_basis'   : ('' , valid.validateString),
+        'color_basis_type'   : ('string_key' , valid.validateString), # needs better validator eventually
+        'meta_properties'    : ([], valid.validateList),
+        'annotation_basis'   : ('', valid.validateString),
+        'anno_basis_type'    : ('meta_property' , valid.validateString), # needs better validator eventually
     }
 
     __CONTENT_OPTIONS = ['annotation', 'auto_color_annotation', 'auto_color_anno_notext', 'auto_color_anno_nomunge']
@@ -37,30 +46,31 @@ class RPCElement(Element):
     __EXPR_NAMESPACE = {'re':re, 'math':math}
 
     @staticmethod
-    def GetType():
+    def GetType() -> str:
         return 'rpc'
 
     @staticmethod
-    def IsDrawable():
+    def IsDrawable() -> bool:
         return True
 
     @staticmethod
-    def UsesMetadata():
+    def UsesMetadata() -> bool:
         return True
 
     @staticmethod
-    def GetDrawRoutine():
+    def GetDrawRoutine() -> Callable:
         return RPCElement.DrawRoutine
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         Element.__init__(self, *args, **kwargs)
+        self.__extensions = ExtensionManager()
 
     ## Update the meta_properties property for this instance
-    def UpdateMetaProperties(self):
+    def UpdateMetaProperties(self) -> None:
         _AUX_METADATA_PROPERTIES = list(Element._AUX_METADATA_PROPERTIES)
-        _AUX_METADATA_PROPERTIES.append(self.GetProperty('meta_properties'))
+        _AUX_METADATA_PROPERTIES.extend(cast(List[str], self.GetProperty('meta_properties')))
 
-    def SetProperty(self, key, val):
+    def SetProperty(self, key: str, val: PropertyValue) -> None:
         if key == 'Content' and val not in self.__CONTENT_OPTIONS:
             raise ValueError('Content type {} not allowed for RPC elements'.format(val))
 
@@ -70,16 +80,16 @@ class RPCElement(Element):
             self.UpdateMetaProperties()
 
     ## Return a listing of the valid options for the 'Content' property
-    def GetContentOptions(self):
+    def GetContentOptions(self) -> List[str]:
         return self.__CONTENT_OPTIONS
 
     ## Return the annotation for this element
-    def GetAnnotation(self, pair):
+    def GetAnnotation(self, pair: Element_Value) -> Optional[str]:
         meta_entry = pair.GetMetaEntries()
 
         # Get the annotation basis and basis type
         anno_basis_type = self.GetProperty('anno_basis_type')
-        annotation_basis = self.GetProperty('annotation_basis')
+        annotation_basis = cast(str, self.GetProperty('annotation_basis'))
 
         # Just use the value of a metadata property
         if anno_basis_type == 'meta_property':
@@ -116,11 +126,11 @@ class RPCElement(Element):
             return None
 
     def DrawRoutine(self,
-                    pair,
-                    dc,
-                    canvas,
-                    tick):
-        (c_x,c_y),(c_w,c_h) = self.GetProperty('position'),self.GetProperty('dimensions')
+                    pair: Element_Value,
+                    dc: wx.DC,
+                    canvas: Layout_Canvas,
+                    tick: int) -> None:
+        (c_x,c_y),(c_w,c_h) = cast(Tuple[int, int], self.GetProperty('position')), cast(Tuple[int, int], self.GetProperty('dimensions'))
         xoff, yoff = canvas.GetRenderOffsets()
         (c_x,c_y) = (c_x-xoff, c_y-yoff)
 

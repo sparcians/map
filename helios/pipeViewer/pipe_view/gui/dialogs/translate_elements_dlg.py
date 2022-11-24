@@ -1,18 +1,22 @@
 
 
+from __future__ import annotations
 import sys
 import wx
 from functools import partial
 from gui.widgets.element_list import ElementList
 from gui.font_utils import GetMonospaceFont
+from typing import Optional, Tuple, Union, TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from gui.layout_frame import Layout_Frame
 
 # # TranslateElementsDlg allows relative or absolute translation of a group of
 #  elements based on user-specified coordinates. This is exepected to be used
 #  modally
 class TranslateElementsDlg(wx.Dialog):
 
-    def __init__(self, parent):
+    def __init__(self, parent: Layout_Frame) -> None:
         self.__layout_frame = parent
         self.__context = parent.GetContext()
         self.__sel_mgr = parent.GetCanvas().GetSelectionManager()
@@ -132,16 +136,17 @@ class TranslateElementsDlg(wx.Dialog):
         self.__chk_rel_x.Bind(wx.EVT_CHECKBOX, self.OnCoordChange)
         self.__chk_rel_y.Bind(wx.EVT_CHECKBOX, self.OnCoordChange)
 
-    def Show(self):
+    def Show(self, show: bool = True) -> bool:
         raise Exception('This dialog should only be shown modally')
 
     # # defines how the dialog should pop up
-    def ShowModal(self):
-        wx.Dialog.ShowModal(self)
+    def ShowModal(self) -> int:
+        res = wx.Dialog.ShowModal(self)
         self.Raise()
+        return res
 
     # # callback that listens for enter being pressed to initiate search
-    def OnKeyPress(self, evt):
+    def OnKeyPress(self, evt: wx.KeyEvent) -> None:
         if evt.GetKeyCode() == wx.WXK_ESCAPE:
             self.EndModal(0)
             self.__layout_frame.SetFocus()
@@ -160,7 +165,7 @@ class TranslateElementsDlg(wx.Dialog):
         self.__UpdateDesc()
 
     # # Handle x/y textbox/checkbox change
-    def OnCoordChange(self, evt = None):
+    def OnCoordChange(self, evt: Optional[wx.CommandEvent] = None) -> None:
         dx, dy = self.__ComputeMoveDeltas()
 
         WHITE = (255, 255, 255)
@@ -178,11 +183,11 @@ class TranslateElementsDlg(wx.Dialog):
         if evt is not None:
             evt.Skip()
 
-    def OnExit(self, evt):
+    def OnExit(self, evt: wx.CommandEvent) -> None:
         self.EndModal(0)
 
     # # Move elements as described
-    def OnApply(self, evt = None):
+    def OnApply(self, evt: Optional[wx.CommandEvent] = None) -> None:
         # Move elements to absolute or relative position. Always use the delta
         # argument to Selection_Mgr.Move() because it may compute its absolute
         # position differently than this dialog (i.e. center of selection rather
@@ -212,7 +217,7 @@ class TranslateElementsDlg(wx.Dialog):
     #  @return (dx,dy) indicating arguments to Selection_Mgr.Move. Either value
     #  in this tuple may be None if value data cannot be extracted form the
     #  dialog widgets
-    def __ComputeMoveDeltas(self):
+    def __ComputeMoveDeltas(self) -> Union[Tuple[int, int], Tuple[None, None]]:
         try:
             xstr = self.__txt_x.GetValue()
             # For relative moves, value can be empty to mean no move
@@ -255,7 +260,7 @@ class TranslateElementsDlg(wx.Dialog):
 
         return (dx, dy)
 
-    def __UpdateDesc(self):
+    def __UpdateDesc(self) -> None:
         bbox = self.__sel_mgr.GetBoundingBox() # l,t,r,b
         if bbox is not None:
             l, t, r, b = bbox

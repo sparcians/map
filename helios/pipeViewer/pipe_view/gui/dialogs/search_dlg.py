@@ -1,8 +1,13 @@
+from __future__ import annotations
 import sys
 import wx
 from functools import partial
 from gui.widgets.transaction_list import TransactionList
 from gui.widgets.location_entry import LocationEntry
+from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from gui.layout_frame import Layout_Frame
 
 ## SearchDialog is a window that enables the user to enter a string, conduct a search and
 # jump to a location and transaction based on the result. It gets its data from search_handle.py
@@ -13,12 +18,12 @@ class SearchDialog(wx.Frame):
 
     INITIAL_SEARCH = 0
 
-    def __init__(self, parent):
+    def __init__(self, parent: Layout_Frame) -> None:
         self.__context = parent.GetContext()
         self.__canvas = parent.GetCanvas()
         self.__search_handle = self.__context.searchhandle
-        self.__full_results = []
-        self.__filters = []
+        self.__full_results: List[Dict[str, str]] = []
+        self.__filters: List[SearchFilter] = []
         # initialize graphical part
         wx.Frame.__init__(self, parent, -1, 'Search', size=(700,600),
             style=wx.MAXIMIZE_BOX|wx.RESIZE_BORDER|wx.CAPTION|wx.CLOSE_BOX|wx.SYSTEM_MENU)
@@ -79,7 +84,6 @@ class SearchDialog(wx.Frame):
 
         # Everything else
         self.__results_box = TransactionList(self,
-                    wx.NewId(),
                     parent.GetCanvas(),
                     name='listbox')
 
@@ -95,43 +99,44 @@ class SearchDialog(wx.Frame):
         self.Bind(wx.EVT_CLOSE, lambda evt: self.Hide()) # Hide instead of closing
 
     ## defines how the dialog should pop up
-    def Show(self):
-        wx.Frame.Show(self)
+    def Show(self, show: bool = True) -> bool:
+        res = wx.Frame.Show(self, show)
         self.Raise()
         self.FocusQueryBox()
+        return res
 
-    def FocusQueryBox(self):
+    def FocusQueryBox(self) -> None:
         self.__input.SetFocus()
 
     ## Sets the location in the location box
     #  @pre Requires there be no filters created because this means that the
     #  original search (which defines location) cannot be replaced. Has no
     #  effect if there are filters.
-    def SetSearchLocation(self, loc):
-        if len(self.__filters) == 0:
+    def SetSearchLocation(self, loc: str) -> None:
+        if not self.__filters:
             self.__location_to_search.SetValue(loc)
 
     ## callback that listens for enter being pressed to initiate search
-    def OnKeyPress(self, evt):
+    def OnKeyPress(self, evt: wx.KeyEvent) -> None:
         if evt.GetKeyCode() == wx.WXK_RETURN:
             self.OnSearch(None)
         else:
             evt.Skip()
 
-    def __AddResult(self, entry):
+    def __AddResult(self, entry: Dict[str, str]) -> None:
         self.__results_box.Add(entry)
         self.__context.AddSearchResult(entry)
 
-    def __ClearResults(self):
+    def __ClearResults(self) -> None:
         self.__results_box.Clear()
         self.__context.ClearSearchResults()
 
-    def __UpdateSearchHighlighting(self):
+    def __UpdateSearchHighlighting(self) -> None:
         self.__canvas.UpdateTransactionHighlighting()
         self.__context.RedrawHighlightedElements()
         self.__canvas.FullUpdate()
 
-    def ApplyFilters(self):
+    def ApplyFilters(self) -> None:
         # full N time complexity for any call because not doing incrementally
         # to speed up, keep track of currently already applied filters
         self.__results_box.Colorize(self.__colorize.GetValue())
@@ -147,7 +152,7 @@ class SearchDialog(wx.Frame):
 
         self.__UpdateSearchHighlighting()
 
-    def OnSearch(self, evt):
+    def OnSearch(self, evt: Optional[wx.CommandEvent]) -> None:
         wx.BeginBusyCursor()
         query = self.__input.GetValue()
         dialog = wx.ProgressDialog('Progress',
@@ -157,7 +162,7 @@ class SearchDialog(wx.Frame):
                                    style=wx.PD_CAN_ABORT | wx.PD_REMAINING_TIME)
 
         ## Callback adapter to forward to wx.ProgressDialog.Update while ignoring some args
-        def progress_update(percent, num_results, info):
+        def progress_update(percent: int, num_results: int, info: str) -> Tuple[bool, bool]:
             return dialog.Update(percent, info)
 
         if self.__use_regex.GetValue():
@@ -241,27 +246,28 @@ class SearchDialog(wx.Frame):
     ## deletes filter and updates results.
     # index is indexed on filters not sizers
     # e.g. (0 is first filter, not search)
-    def __OnRemoveFilter(self, evt, obj):
+    def __OnRemoveFilter(self, evt: wx.CommandEvent, obj: SearchFilter) -> None:
         index = self.__filters.index(obj)
         self.__RemoveFilter(index)
         self.ApplyFilters()
         self.Layout()
 
-    def __RemoveFilter(self, index):
+    def __RemoveFilter(self, index: int) -> None:
         filter_obj = self.__filters.pop(index)
         panel = filter_obj.GetPanel()
-        self.__filter_sizer.Detach(panel)
-        panel.Destroy()
-        # never use this filter object again
+        if panel is not None:
+            self.__filter_sizer.Detach(panel)
+            panel.Destroy()
+            # never use this filter object again
 
-    def OnClickTransaction(self, evt):
+    def OnClickTransaction(self, evt: wx.ListEvent) -> None:
         transaction = self.__results_box.GetTransaction(evt.GetIndex())
         start_loc = transaction.get('start')
         if start_loc:
             self.__context.GoToHC(start_loc)
 
-    def __OnResetSearch(self, evt):
-        while len(self.__filters):
+    def __OnResetSearch(self, evt: wx.CommandEvent) -> None:
+        while self.__filters:
             self.__RemoveFilter(0)
 
         self.__filter_sizer.Show(self.INITIAL_SEARCH, True)
@@ -271,7 +277,7 @@ class SearchDialog(wx.Frame):
         # No need to clear. Wait until a new search is done... ##self.__results_box.Clear()
         self.FocusQueryBox()
 
-    def __AddFilter(self, filter_object):
+    def __AddFilter(self, filter_object: SearchFilter) -> None:
         panel, remove_button = filter_object.MakePanel(parent=self)
         index = len(self.__filters)
         self.__filter_sizer.Insert(index, panel, 0, wx.EXPAND)
@@ -282,7 +288,7 @@ class SearchDialog(wx.Frame):
         else:
             panel.Bind(wx.EVT_BUTTON, partial(self.__OnRemoveFilter, obj=filter_object))
 
-    def __OnAddFilter(self, evt):
+    def __OnAddFilter(self, evt: wx.CommandEvent) -> None:
         query = self.__new_filter_query.GetValue()
         if query:
             self.__AddFilter(SearchFilter(query, False))
@@ -292,25 +298,25 @@ class SearchDialog(wx.Frame):
 
 ## stores the settings for each filter applied
 class SearchFilter:
-    def __init__(self, query, initial=False, regex=False, location='', num_results=None):
+    def __init__(self, query: str, initial: bool = False, regex: bool = False, location: str = '', num_results: Optional[int] = None):
         # string used for search
         self.query = query
         self.initial = initial
         self.location = location
         self.num_results = num_results
-        self.__panel = None
-        self.__remove = None
+        self.__panel: Optional[wx.Panel] = None
+        self.__remove: Optional[wx.Button] = None
         # when we evntually get the python regex and boost regex consistent
         # or have our program do filtering (feed results into std-in and get std-out results) (pipe output)
         #self.regex = regex
 
     # Get panel, none if no panel
-    def GetPanel(self):
+    def GetPanel(self) -> Optional[wx.Panel]:
         return self.__panel
 
     ## make visual portion
-    def MakePanel(self, parent):
-        if not self.__panel:
+    def MakePanel(self, parent: SearchDialog) -> Tuple[wx.Panel, wx.Button]:
+        if self.__panel is None:
             self.__panel = wx.Panel(parent, wx.NewId(), style=wx.BORDER_SUNKEN)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             if self.initial:
@@ -328,5 +334,6 @@ class SearchFilter:
             self.__remove = wx.Button(self.__panel, wx.NewId(), button_string)
             sizer.Add(self.__remove, ratio, wx.ALIGN_RIGHT)
             self.__panel.SetSizer(sizer)
+        assert self.__remove is not None
         return self.__panel, self.__remove
 

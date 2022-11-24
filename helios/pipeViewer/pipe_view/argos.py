@@ -55,7 +55,7 @@ else:
 
     logging.getLogger().setLevel(logging.INFO)
     streamHandler = logging.StreamHandler(sys.stderr)
-    streamHandler.setFormatter(LogFormatter(()))
+    streamHandler.setFormatter(LogFormatter())
     logging.getLogger().addHandler(streamHandler)
 
     # # Expression for searchign for variable assignments inside a --layout-vars option
@@ -141,10 +141,10 @@ else:
     # Argos Application
     class ArgosApp(wx.App):
 
-        def OnInit(self):
+        def OnInit(self) -> bool:
             return True
 
-    app = ArgosApp(0)
+    app = ArgosApp()
 
     settings = ArgosSettings()
     # The user can specify default colorblindness and palette shuffle modes with these environment variables
@@ -177,6 +177,7 @@ else:
             logging.warn('--start-cycle is overriding --start-tick because both were specified')
             start_tick = 0
 
+    dlg: wx.Dialog
     # Select Database
     if args.database is not None:
         database_prefix = args.database
@@ -223,10 +224,11 @@ else:
 
             last_match_size = [0]
 
-            def replace(match):
+            def replace(match: re.Match[str]) -> str:
                 # group(1) is key, group(2) is value. group(0) is full string (x=y)
                 d[str(match.group(1))] = str(match.group(2))
                 last_match_size[0] = len(match.group(0))
+                return ''
 
             pos = 0
             lv = lv[0]

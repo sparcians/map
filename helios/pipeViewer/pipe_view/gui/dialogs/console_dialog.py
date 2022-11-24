@@ -1,15 +1,18 @@
 
-
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import wx
 from wx.py.shell import Shell
-from gui.layout_frame import Layout_Frame
+
+if TYPE_CHECKING:
+    from gui.layout_frame import Layout_Frame
 
 ## This class displays a python console
 class ConsoleDlg(wx.Frame):
     def __init__(self, parent: Layout_Frame) -> None:
         self.__layout_frame = parent
         self.__context = parent.GetContext()
-        
+
         # create GUI
         wx.Frame.__init__(self, parent, -1, 'Python Console', size=(500,300),
                        style=wx.MAXIMIZE_BOX|wx.RESIZE_BORDER|wx.CAPTION|wx.CLOSE_BOX|wx.SYSTEM_MENU)
@@ -21,7 +24,7 @@ class ConsoleDlg(wx.Frame):
         self.SetMenuBar(menu_bar)
 
         self.__shell = Shell(self)
-        
+
         # set up what user is given to work with
         self.__shell.interp.locals = {'context':self.__context}
 

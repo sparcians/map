@@ -1,12 +1,14 @@
 
+from __future__ import annotations
 import os
 import time
 import sys
 import subprocess
 from logging import debug, error, info
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple, TYPE_CHECKING
 
-from model.layout_context import Layout_Context
+if TYPE_CHECKING:
+    from model.layout_context import Layout_Context
 
 __SEARCH_PROGRAM_ENV_VAR_NAME = 'TRANSACTIONSEARCH_PROGRAM'
 TRANSACTION_SEARCH_PROGRAM = os.environ.get(__SEARCH_PROGRAM_ENV_VAR_NAME, os.getcwd())

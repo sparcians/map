@@ -22,7 +22,6 @@ ID_FILE_NEW = wx.NewId()
 ID_FILE_OPEN = wx.NewId()
 ID_FILE_CLOSE = wx.NewId()
 ID_FILE_QUIT = wx.NewId()
-ID_FILE_IMPORT_PLAIN = wx.NewId()
 ID_FILE_SAVE = wx.NewId()
 ID_FILE_SAVEAS = wx.NewId()
 ID_FILE_OPTIONS = wx.NewId()
@@ -164,9 +163,6 @@ class Argos_Menu(wx.MenuBar):
 
         menuMoveDown = arrangemenu.Append(wx.NewId(), "Move Backward\tCTRL+ALT+SHIFT+PGDN", "")
         accelentries.append((wx.ACCEL_CTRL | wx.ACCEL_ALT | wx.ACCEL_SHIFT, wx.WXK_PAGEDOWN, menuMoveDown.GetId()))
-
-        # Tools
-        menuImportPlain = toolsmenu.Append(ID_FILE_IMPORT_PLAIN, "Import Graph", " Import Neato Plain File")
 
         # Edit
         self.menuEditMode = self.__editmenu.Append(wx.NewId(), "Edit mode\tCTRL+M", kind = wx.ITEM_CHECK)
@@ -479,7 +475,6 @@ class Argos_Menu(wx.MenuBar):
         self.__parent.Bind(wx.EVT_TOOL, self.OnNew, self.toolbarNew)
         self.__parent.Bind(wx.EVT_MENU, self.OnOpen, menuOpen)
         self.__parent.Bind(wx.EVT_TOOL, self.OnOpen, self.toolbarOpen)
-        self.__parent.Bind(wx.EVT_MENU, self.OnImportPlain, menuImportPlain)
         self.__parent.Bind(wx.EVT_MENU, self.OnSave, menuSave)
         self.__parent.Bind(wx.EVT_TOOL, self.OnSave, self.toolbarSave)
         self.__parent.Bind(wx.EVT_MENU, self.OnSaveAs, menuSaveAs)
@@ -881,40 +876,6 @@ class Argos_Menu(wx.MenuBar):
 
         lf = dlg.GetFilename()
         self.__parent.GetWorkspace().OpenLayoutFrame(lf, context.dbhandle.database, context.GetHC(), self.menuPollDB.IsChecked(), self.__parent.GetTitlePrefix(), self.__parent.GetTitleOverride(), self.__parent.GetTitleSuffix(), loc_vars)
-
-    # # Import graph into Argos of type 'plain' produced by neato
-    def OnImportPlain(self, evt):
-        if self.__last_loaded_graph_dir is None:
-            fp = self.__parent.GetContext().dbhandle.database.filename
-            if fp is not None:
-                self.__last_loaded_graph_dir = os.path.dirname(os.path.abspath(fp)) + '/' # directory
-            else:
-                self.__last_loaded_graph_dir = os.getcwd() + '/'
-        # Loop until user saves or cancels
-        dlg = wx.FileDialog(self,
-                            "Import Neato Plain File",
-                            defaultFile = self.__last_loaded_graph_dir,
-                            wildcard = 'Neato Plain Graph Files (*.plain)|*.plain',
-                            style = wx.FD_OPEN | wx.FD_CHANGE_DIR)
-        dlg.ShowModal()
-        ret = dlg.GetReturnCode()
-        fp = dlg.GetPath()
-        self.__last_loaded_graph_dir = os.path.dirname(os.path.abspath(fp)) + '/'
-        dlg.Destroy()
-
-        if ret == wx.ID_CANCEL:
-            return # No import
-
-        shortpath = fp if len(fp) < 13 else '...' + fp[-10:]
-        self.__selection.BeginCheckpoint('import plain "{}"'.format(shortpath), force_elements = [])
-        try:
-            new_els = self.__layout.ImportPlain(fp)
-            self.__selection.ClearSelection()
-            self.__selection.Add(new_els)
-        finally:
-            self.__selection.CommitCheckpoint() # Use current selection since it was just set
-
-        self.__parent.Refresh()
 
     # # 'Saving' means saving the Layout to file, nothing else is currently
     #  preserved about a session (no user preferences, current selection, HC)

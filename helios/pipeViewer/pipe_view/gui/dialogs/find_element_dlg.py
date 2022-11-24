@@ -1,9 +1,14 @@
 
 
+from __future__ import annotations
 import sys
 import wx
 from functools import partial
 from gui.widgets.element_list import ElementList
+from typing import Dict, List, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from gui.layout_frame import Layout_Frame
 
 
 # # FindElementDialog is a window that enables the user to enter a string, conduct a search and
@@ -15,10 +20,10 @@ class FindElementDialog(wx.Frame):
 
     INITIAL_SEARCH = 0
 
-    def __init__(self, parent):
+    def __init__(self, parent: Layout_Frame) -> None:
         self.__layout_frame = parent
         self.__context = parent.GetContext()
-        self.__full_results = []
+        self.__full_results: List[Dict[str, str]] = []
         # initialize graphical part
         wx.Frame.__init__(self, parent,
                           -1,
@@ -35,7 +40,7 @@ class FindElementDialog(wx.Frame):
         choices = set()
         for el in self.__context.GetElements():
             choices.update(el._properties.keys())
-        self.__choices = sorted(list(choices))
+        self.__choices: List[str] = sorted(list(choices))
 
         lbl_find = wx.StaticText(self, -1, "Elements where: ")
         self.__drop_content = wx.ComboBox(self,
@@ -59,7 +64,6 @@ class FindElementDialog(wx.Frame):
         self.__search_sizer.Add(self.__btn_submit, 0, 0, 4)
 
         self.__results_box = ElementList(self,
-                                         wx.NewId(),
                                          parent.GetCanvas(),
                                          name = 'listbox',
                                          properties = [''])
@@ -74,30 +78,30 @@ class FindElementDialog(wx.Frame):
         self.Bind(wx.EVT_CLOSE, lambda evt: self.Hide())
 
     # # defines how the dialog should pop up
-    def Show(self):
-        wx.Frame.Show(self)
+    def Show(self, show: bool = True) -> bool:
+        res = wx.Frame.Show(self, show)
         self.Raise()
         self.FocusQueryBox()
+        return res
 
-    def FocusQueryBox(self):
+    def FocusQueryBox(self) -> None:
         self.__txt_input.SetFocus()
 
     # # Sets the location in the location box
     #  @pre Requires there be no filters created because this means that the
     #  original search (which defines location) cannot be replaced. Has no
     #  effect if there are filters.
-    def SetSearchLocation(self, loc):
-        if len(self.__filters) == 0:
-            self.__location_to_search.SetValue(loc)
+    def SetSearchLocation(self, loc: str) -> None:
+        self.__txt_input.SetValue(loc)
 
     # # callback that listens for enter being pressed to initiate search
-    def OnKeyPress(self, evt):
+    def OnKeyPress(self, evt: wx.KeyEvent) -> None:
         if evt.GetKeyCode() == wx.WXK_RETURN:
             self.OnSearch(None)
         else:
             evt.Skip()
 
-    def OnSearch(self, evt):
+    def OnSearch(self, evt: Optional[wx.CommandEvent]) -> None:
         self.__results_box.Clear()
         self.__full_results = []
         self.__results_box.RefreshAll()
@@ -114,10 +118,10 @@ class FindElementDialog(wx.Frame):
                     matches.append(el)
 
         # Assemble properties based on matches
-        properties = set()
+        properties_set = set()
         for m in matches:
-            properties.update(m._properties.keys())
-        properties = sorted(list(properties))
+            properties_set.update(m._properties.keys())
+        properties = sorted(list(properties_set))
 
         # If no properties found, assume no matches and terminate the search
         if len(properties) == 0:
@@ -140,7 +144,7 @@ class FindElementDialog(wx.Frame):
         self.__results_box.FitColumns()
 
     # # Attempts to select the element in the associated layout
-    def OnClickElement(self, evt):
+    def OnClickElement(self, evt: wx.ListEvent) -> None:
         element = self.__results_box.GetElement(evt.GetIndex())
         if element is not None:
             if self.__layout_frame.GetCanvas().GetInputDecoder().GetEditMode():

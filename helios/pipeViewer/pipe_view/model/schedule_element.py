@@ -1,45 +1,40 @@
+from __future__ import annotations
+from typing import Any, Callable, List, Optional, Tuple, cast, TYPE_CHECKING
 import wx
 from .element import *
 
+if TYPE_CHECKING:
+    from .clock_manager import ClockManager
+    from .element_value import Element_Value
+    from gui.layout_canvas import Layout_Canvas
 # # Global module members for commonly used brushes/pens so that they only need to be created once
 # # TODO: Maybe encapsulate these in some kind of singleton class?
 
-_WHITE_BRUSH = None
-_BLACK_PEN = None
+_WHITE_BRUSH: Optional[wx.Brush] = None
+_BLACK_PEN: Optional[wx.Pen] = None
 
-# # Initialize the white brush
-def InitWhiteBrush():
+# # Get the white brush
+def GetWhiteBrush() -> wx.Brush:
     global _WHITE_BRUSH
     if _WHITE_BRUSH is None:
         _WHITE_BRUSH = wx.Brush((255, 255, 255))
-
-
-# # Get the white brush
-def GetWhiteBrush():
-    global _WHITE_BRUSH
     return _WHITE_BRUSH
 
 
-# # Initialize the black pen
-def InitBlackPen():
+# # Get the black pen
+def GetBlackPen() -> wx.Pen:
     global _BLACK_PEN
     if _BLACK_PEN is None:
         _BLACK_PEN = wx.Pen(wx.BLACK, 1)
-
-
-# # Get the black pen
-def GetBlackPen():
-    global _BLACK_PEN
     return _BLACK_PEN
 
 
 # # validates schedule draw style.
 # Should be in valid, but I don't want circular dependencies.
-def decodeScheduleDraw(name, raw):
-    if raw in list(ScheduleLineElement.DRAW_LOOKUP.keys()):
+def decodeScheduleDraw(name: str, raw: str) -> str:
+    if raw in ScheduleLineElement.DRAW_LOOKUP:
         return raw
-    else:
-        raise TypeError('Parameter' + name + ' must be a valid schedule line draw style')
+    raise TypeError('Parameter' + name + ' must be a valid schedule line draw style')
 
 
 class ScheduleLineElement(LocationallyKeyedElement):
@@ -60,7 +55,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
     SHORT_FORMAT_TYPES = ['single_char', 'multi_char']
 
     # time is relative to current clock.
-    _ALL_PROPERTIES = LocationallyKeyedElement._ALL_PROPERTIES.copy()
+    _ALL_PROPERTIES = copy.copy(LocationallyKeyedElement._ALL_PROPERTIES)
     # time scale in ticks per pixel
     _ALL_PROPERTIES.update({'time_scale' : (30.0, valid.validateTimeScale),
                             'line_style' : ('default', decodeScheduleDraw),
@@ -74,34 +69,33 @@ class ScheduleLineElement(LocationallyKeyedElement):
         'classic' : DRAW_CLASSIC
     }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         LocationallyKeyedElement.__init__(self, *args, **kwargs)
         self.__buffer = None
         self.__hc = 0
-        self.__line_style = self.DRAW_LOOKUP[self.GetProperty('line_style')]
-        InitWhiteBrush()
+        self.__line_style = self.DRAW_LOOKUP[cast(str, self.GetProperty('line_style'))]
 
     @staticmethod
-    def GetType():
+    def GetType() -> str:
         return 'schedule_line'
 
     @staticmethod
-    def GetElementProperties():
+    def GetElementProperties() -> ValidatedPropertyDict:
         return ScheduleLineElement._ALL_PROPERTIES
 
     @staticmethod
-    def GetReadOnlyProperties():
+    def GetReadOnlyProperties() -> List[str]:
         # we use pixel_offset instead
         return ['t_offset', 'time_scale']
 
     @staticmethod
-    def GetDrawRoutine():
+    def GetDrawRoutine() -> Callable:
         return ScheduleLineElement.DrawRoutine
 
     # # override to add inheritance stuff
     # period is local period for line element
     # only used when there is a parent schedule giving a t_offset
-    def GetProperty(self, key, period = 1):
+    def GetProperty(self, key: str, period: Optional[int] = 1) -> PropertyValue:
         # lock horizontal scale to container
         if key[0].isupper():
             return self._properties[key]
@@ -109,56 +103,58 @@ class ScheduleLineElement(LocationallyKeyedElement):
         parent = self._parent
         if key == 'dimensions':
             if parent:
-                x_dim, _ = parent.GetProperty(key)
-                _, y_dim = LocationallyKeyedElement.GetProperty(self, key)
+                x_dim, _ = cast(Tuple[int, int], parent.GetProperty(key))
+                _, y_dim = cast(Tuple[int, int], LocationallyKeyedElement.GetProperty(self, key))
                 return x_dim, y_dim
         elif key == 'position':
             if parent:
-                x_pos, _ = parent.GetProperty(key)
-                _, y_pos = LocationallyKeyedElement.GetProperty(self, key)
+                x_pos, _ = cast(Tuple[int, int], parent.GetProperty(key))
+                _, y_pos = cast(Tuple[int, int], LocationallyKeyedElement.GetProperty(self, key))
                 return x_pos, y_pos
         elif key == 'time_scale':
             if parent:
                 return parent.GetProperty(key)
             else:
-                return self._properties[key] / self.GetProperty('scale_factor')[0]
+                return cast(float, self._properties[key]) / cast(Tuple[int, int], self.GetProperty('scale_factor'))[0]
         elif key == 't_offset':
             if parent:
                 # assume parent is schedule (for now)
-                return -parent.GetProperty('pixel_offset') * parent.GetProperty('time_scale') / period
+                assert period is not None
+                return -cast(int, parent.GetProperty('pixel_offset')) * cast(float, parent.GetProperty('time_scale')) / period
         return LocationallyKeyedElement.GetProperty(self, key)
 
-    def SetProperty(self, key, val):
+    def SetProperty(self, key: str, val: PropertyValue) -> None:
         LocationallyKeyedElement.SetProperty(self, key, val)
         if key == 'line_style':
+            assert isinstance(val, str)
             self.__line_style = self.DRAW_LOOKUP[val]
 
-    def GetXDim(self):
+    def GetXDim(self) -> int:
         if self._parent:
             return self._parent.GetXDim()
         else:
-            return LocationallyKeyedElement.GetProperty(self, 'dimensions')[0]
+            return cast(Tuple[int, int], LocationallyKeyedElement.GetProperty(self, 'dimensions'))[0]
 
-    def GetYDim(self):
-        return LocationallyKeyedElement.GetProperty(self, 'dimensions')[1]
+    def GetYDim(self) -> int:
+        return cast(Tuple[int, int], LocationallyKeyedElement.GetProperty(self, 'dimensions'))[1]
 
-    def GetXPos(self):
+    def GetXPos(self) -> int:
         if self._parent:
             return self._parent.GetXPos()
         else:
-            return LocationallyKeyedElement.GetProperty(self, 'position')[0]
+            return cast(Tuple[int, int], LocationallyKeyedElement.GetProperty(self, 'position'))[0]
 
-    def GetYPos(self):
-        return LocationallyKeyedElement.GetProperty(self, 'position')[1]
+    def GetYPos(self) -> int:
+        return cast(Tuple[int, int], LocationallyKeyedElement.GetProperty(self, 'position'))[1]
 
     def DrawRoutine(self,
-                    pair,
-                    dc,
-                    canvas,
-                    tick,
-                    time_range = None,
-                    render_box = None,
-                    fixed_offset = None):
+                    pair: Element_Value,
+                    dc: wx.DC,
+                    canvas: Layout_Canvas,
+                    tick: int,
+                    time_range: Optional[Tuple[int, int]] = None,
+                    render_box: Optional[Tuple[int, int, int, int]] = None,
+                    fixed_offset: Optional[Tuple[int, int]] = None) -> None:
 
         # -Set up draw style-
         line_style = self.__line_style
@@ -173,17 +169,17 @@ class ScheduleLineElement(LocationallyKeyedElement):
         elif line_style == self.DRAW_CLASSIC:
             renderer_flags = 2
 
-        (c_x, c_y), (c_w, c_h) = self.GetProperty('position'), self.GetProperty('dimensions')
+        (c_x, c_y), (c_w, c_h) = cast(Tuple[int, int], self.GetProperty('position')), cast(Tuple[int, int], self.GetProperty('dimensions'))
         xoff, yoff = canvas.GetRenderOffsets()
-        if not fixed_offset:
+        if fixed_offset is None:
             (c_x, c_y) = (c_x - xoff, c_y - yoff)
         else:
             c_x = c_x - fixed_offset[0]
             c_y = c_y - fixed_offset[1]
 
         period = pair.GetClockPeriod()
-        t_scale = self.GetProperty('time_scale')
-        t_offset = self.GetProperty('t_offset', period = period)
+        t_scale = cast(float, self.GetProperty('time_scale'))
+        t_offset = cast(int, self.GetProperty('t_offset', period = period))
 
         dc.SetBrush(GetWhiteBrush())
 
@@ -223,8 +219,8 @@ class ScheduleLineElement(LocationallyKeyedElement):
         # latest full value rendered
         latest_solid_value = None
         # TODO convert this to an enum instead, take an enum, return an enum
-        content_type = self.GetProperty('Content')
-        auto_color = self.GetProperty('color_basis_type'), self.GetProperty('auto_color_basis')
+        content_type = cast(str, self.GetProperty('Content'))
+        auto_color = cast(str, self.GetProperty('color_basis_type')), cast(str, self.GetProperty('auto_color_basis'))
 
         # Draw vertical ticks in background
         if line_style == self.DRAW_CLASSIC or line_style == self.DRAW_FAST_CLASSIC:
@@ -260,6 +256,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
                 if not latest_solid_value and val != None:
                     # backtrack
                     # phantom's value is main object's start HC
+                    assert isinstance(val, int)
                     if val < interval[0]:
                         # Element outside of view may not still be in cache,
                         # especially if they are long. This could cause trouble.
@@ -290,7 +287,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
 
             # val = val.decode('utf-8') # integer when phantom elements refer to other phantom elements
             NOT_MISSING_LOC = False
-            short_format = self.GetProperty('short_format')
+            short_format = cast(str, self.GetProperty('short_format'))
             canvas.GetRenderer().drawInfoRectangle(interval[0],
                                                    self,
                                                    dc,
@@ -307,41 +304,41 @@ class ScheduleLineElement(LocationallyKeyedElement):
         dc.DestroyClippingRegion()
         self.UnsetNeedsRedraw()
 
-    def GetTime(self):
+    def GetTime(self) -> int:
         return self.__hc
 
-    def SetTime(self, hc):
+    def SetTime(self, hc: int) -> None:
         self.__hc = hc
 
     # # Called at  query time and indicates what should be updated
-    def GetQueryFrame(self, period):
+    def GetQueryFrame(self, period: int) -> Tuple[int, int]:
         parent = self._parent
 
         # Optimized version for parent case
         if parent:
             getParentProperty = parent.GetProperty
             # assume parent is schedule (for now)
-            time_scale = getParentProperty('time_scale')
-            offs = -getParentProperty('pixel_offset') * time_scale
+            time_scale = cast(float, getParentProperty('time_scale'))
+            offs = -cast(int, getParentProperty('pixel_offset')) * time_scale
             return (int(offs - period), int((offs + period) + self.GetXDim() * time_scale))
         else:
-            offs = self.GetProperty('t_offset', period = period) # in ticks
-            return (int((offs - 1) * period), int((offs + 1) * period + self.GetXDim() * self.GetProperty('time_scale')))
+            offs = cast(int, self.GetProperty('t_offset', period = period)) # in ticks
+            return (int((offs - 1) * period), int((offs + 1) * period + self.GetXDim() * cast(float, self.GetProperty('time_scale'))))
 
     # # Generates elements with addresses based on the x coordinate.
     # passes these (fake) elements to the hover preview, which then
     # queries all the needed data fresh.
     # accepts point in local coord
-    def DetectCollision(self, pt, pair):
+    def DetectCollision(self, pt: wx.Point, pair: Element_Value) -> FakeElementValue:
         mx, my = pt
 
         period = pair.GetClockPeriod()
-        t_scale = self.GetProperty('time_scale')
-        offs = self.GetProperty('t_offset', period = period) * period
-        offs += t_scale * pt[0]
+        t_scale = cast(float, self.GetProperty('time_scale'))
+        offs = cast(int, self.GetProperty('t_offset', period = period)) * period
+        offs += int(t_scale * pt[0])
 
-        location = self.GetProperty('LocationString')
-        t_offset = offs / period
+        location = cast(str, self.GetProperty('LocationString'))
+        t_offset = offs // period
 
         fake_element = FakeElement()
         fake_element.SetProperty('LocationString', location)
@@ -352,10 +349,10 @@ class ScheduleLineElement(LocationallyKeyedElement):
         fake_element.SetProperty('auto_color_basis', self.GetProperty('auto_color_basis'))
 
         # calculate out coordinates of current transaction
-        pos = self.GetProperty('position')
-        fake_x = pt[0] + pos[0] - (offs % period) / t_scale
+        pos = cast(Tuple[int, int], self.GetProperty('position'))
+        fake_x = pt[0] + pos[0] - int((offs % period) / t_scale)
         fake_y = pos[1]
-        fake_w = period / t_scale
+        fake_w = int(period / t_scale)
         fake_h = self.GetYDim()
         fake_element.SetProperty('position', (fake_x, fake_y))
         fake_element.SetProperty('dimensions', (fake_w, fake_h))
@@ -379,14 +376,14 @@ class ScheduleLineRulerElement(ScheduleLineElement):
     DRAW_RULER = 10
 
     @staticmethod
-    def GetType():
+    def GetType() -> str:
         return 'schedule_line_ruler'
 
     @staticmethod
-    def GetDrawRoutine():
+    def GetDrawRoutine() -> Callable:
         return ScheduleLineRulerElement.DrawRoutine
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         ScheduleLineElement.__init__(self, *args, **kwargs)
         self.__step = 5
 
@@ -395,20 +392,20 @@ class ScheduleLineRulerElement(ScheduleLineElement):
     # however it was buggy and added too many special cases and hacks
     # this is quick and simple in comparison
     def DrawRoutine(self,
-                    pair,
-                    dc,
-                    canvas,
-                    tick,
-                    time_range = None,
-                    render_box = None,
-                    fixed_offset = None):
+                    pair: Element_Value,
+                    dc: wx.DC,
+                    canvas: Layout_Canvas,
+                    tick: int,
+                    time_range: Optional[Tuple[int, int]] = None,
+                    render_box: Optional[Tuple[int, int, int, int]] = None,
+                    fixed_offset: Optional[Tuple[int, int]] = None) -> None:
 
         # render box is disregarded so shift is
         # over-written when acting as a child of a container
         hc = self.GetTime()
         dc.SetPen(self._pen)
 
-        (c_x, c_y), (c_w, c_h) = self.GetProperty('position'), self.GetProperty('dimensions')
+        (c_x, c_y), (c_w, c_h) = cast(Tuple[int, int], self.GetProperty('position')), cast(Tuple[int, int], self.GetProperty('dimensions'))
         xoff, yoff = canvas.GetRenderOffsets()
         if not fixed_offset:
             (c_x, c_y) = (c_x - xoff, c_y - yoff)
@@ -416,8 +413,8 @@ class ScheduleLineRulerElement(ScheduleLineElement):
             c_x = c_x - fixed_offset[0]
             c_y = c_y - fixed_offset[1]
 
-        t_scale = self.GetProperty('time_scale')
-        t_offset = self.GetProperty('t_offset', period = pair.GetClockPeriod())
+        t_scale = cast(float, self.GetProperty('time_scale'))
+        t_offset = cast(int, self.GetProperty('t_offset', period = pair.GetClockPeriod()))
 
         period = pair.GetClockPeriod()
         # width of period in pixels
@@ -480,20 +477,20 @@ class ScheduleElement(MultiElement):
     _ALL_PROPERTIES.update({'cycle_offset' : (0 , valid.validateOffset)})
     _ALL_PROPERTIES.update({'clock'         : ('', valid.validateString)})
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         MultiElement.__init__(self, *args, **kwargs)
-        self.__buffer = None
+        self.__buffer: Optional[wx.Bitmap] = None
+        self.__temp_buffer: Optional[wx.Bitmap] = None
         self.__dc = wx.MemoryDC() # store our own DC
         self.__temp_dc = wx.MemoryDC()
-        self.__graphics_dc = None
+        self.__graphics_dc: Optional[wx.GCDC] = None
 
-        self.__old_dimensions = None
-        self.__last_hc = None
+        self.__old_dimensions: Optional[Tuple[int, int]] = None
+        self.__last_hc: Optional[int] = None
         self.__old_period = 1
         self.__remainder_dp = 0.0
-        InitBlackPen()
         # Check that the clock name (if any) is valid.
-        clock_name = self.GetProperty('clock')
+        clock_name = cast(str, self.GetProperty('clock'))
         if clock_name:
             if self.__FindClockOrWarn(clock_name) is not None:
                 # If it is, go ahead and refresh the scale and offset parameters
@@ -501,32 +498,33 @@ class ScheduleElement(MultiElement):
                 self.__RefreshProperty('cycle_offset')
 
     @staticmethod
-    def GetType():
+    def GetType() -> str:
         return 'schedule'
 
     @staticmethod
-    def IsDrawable():
+    def IsDrawable() -> bool:
         return True
 
     @staticmethod
-    def IsSelectable():
+    def IsSelectable() -> bool:
         return False
 
     @staticmethod
-    def GetElementProperties():
+    def GetElementProperties() -> ValidatedPropertyDict:
         return ScheduleElement._ALL_PROPERTIES
 
     @staticmethod
-    def GetReadOnlyProperties():
+    def GetReadOnlyProperties() -> List[str]:
         # we use pixel_offset instead
         return ['t_offset', 'time_scale', 'pixel_offset']
 
     @staticmethod
-    def GetDrawRoutine():
+    def GetDrawRoutine() -> Callable:
         return ScheduleElement.DrawRoutine
 
-    def __FindClockOrWarn(self, clock_name):
+    def __FindClockOrWarn(self, clock_name: str) -> Optional[ClockManager.ClockDomain]:
         clock_domain = None
+        assert self._layout is not None
         if self._layout.HasContext():
             for context in self._layout.lay_cons:
                 clock_manager = context.dbhandle.database.clock_manager
@@ -537,17 +535,17 @@ class ScheduleElement(MultiElement):
             print('Warning: Could not find clock named {}. Falling back to time_scale value.'.format(clock_name))
         return clock_domain
 
-    def __RefreshProperty(self, key):
+    def __RefreshProperty(self, key: str) -> None:
         self.SetProperty(key, self.GetProperty(key))
 
-    def GetProperty(self, key):
+    def GetProperty(self, key: str, period: Optional[int] = None) -> PropertyValue:
         if key == 'pixel_offset' or key == 'pixels_per_cycle':
-            return round(MultiElement.GetProperty(self, key) * MultiElement.GetProperty(self, 'scale_factor')[0])
+            return round(cast(int, MultiElement.GetProperty(self, key)) * cast(Tuple[int, int], MultiElement.GetProperty(self, 'scale_factor'))[0])
         elif key == 'time_scale':
-            return MultiElement.GetProperty(self, key) / MultiElement.GetProperty(self, 'scale_factor')[0]
+            return cast(float, MultiElement.GetProperty(self, key)) / cast(Tuple[int, int], MultiElement.GetProperty(self, 'scale_factor'))[0]
         return MultiElement.GetProperty(self, key)
 
-    def SetProperty(self, key, val):
+    def SetProperty(self, key: str, val: PropertyValue) -> None:
         MultiElement.SetProperty(self, key, val)
         if key == 'clock':
             if val:
@@ -555,26 +553,30 @@ class ScheduleElement(MultiElement):
                 self.__RefreshProperty('cycle_offset')
         elif key == 'pixels_per_cycle':
             # Need to add the ability for an element to access the clock manager...
-            clock_name = self.GetProperty('clock')
+            clock_name = cast(str, self.GetProperty('clock'))
             clock_domain = self.__FindClockOrWarn(clock_name)
+            val = cast(float, val)
             if clock_domain is not None and val != 0:
-                time_scale = clock_domain.tick_period / float(val)
+                time_scale = clock_domain.tick_period / val
                 self.SetProperty('time_scale', time_scale)
                 self.__RefreshProperty('cycle_offset')
         elif key == 'cycle_offset':
             # Need to add the ability for an element to access the clock manager...
-            clock_name = self.GetProperty('clock')
+            clock_name = cast(str, self.GetProperty('clock'))
             clock_domain = self.__FindClockOrWarn(clock_name)
             if clock_domain is not None:
-                pixel_offset = int(clock_domain.tick_period * float(val) / self.GetProperty('time_scale'))
+                val = cast(float, val)
+                pixel_offset = int(clock_domain.tick_period * val / cast(float, self.GetProperty('time_scale')))
                 self.SetProperty('pixel_offset', pixel_offset)
 
-    def __ReinitializeBuffer(self, canvas, width, height):
+    def __ReinitializeBuffer(self, canvas: Layout_Canvas, width: int, height: int) -> None:
         self.__buffer = wx.Bitmap(canvas.MAX_ZOOM * width, canvas.MAX_ZOOM * height)
         self.__temp_buffer = wx.Bitmap(canvas.MAX_ZOOM * width, canvas.MAX_ZOOM * height)
         self.__SwapBuffers(canvas)
 
-    def __SwapBuffers(self, canvas):
+    def __SwapBuffers(self, canvas: Layout_Canvas) -> None:
+        assert self.__buffer is not None
+        assert self.__temp_buffer is not None
         self.__buffer, self.__temp_buffer = self.__temp_buffer, self.__buffer
         self.__dc.SelectObject(self.__buffer)
         self.__temp_dc.SelectObject(self.__temp_buffer)
@@ -582,13 +584,13 @@ class ScheduleElement(MultiElement):
         self.__graphics_dc.SetFont(self.__dc.GetFont())
         self.__graphics_dc.SetLogicalScale(canvas.MAX_ZOOM, canvas.MAX_ZOOM)
 
-    def DrawRoutine(self, pair, dc, canvas, tick):
+    def DrawRoutine(self, pair: Element_Value, dc: wx.DC, canvas: Layout_Canvas, tick: int) -> None:
         children = self.GetChildren()
         if not children:
             # our work is done here
             return
 
-        (c_x, c_y), (c_w, c_h) = self.GetProperty('position'), self.GetProperty('dimensions')
+        (c_x, c_y), (c_w, c_h) = cast(Tuple[int, int], self.GetProperty('position')), cast(Tuple[int, int], self.GetProperty('dimensions'))
         absolute_x = c_x
         xoff, yoff = canvas.GetRenderOffsets()
         (c_x, c_y) = (c_x - xoff, c_y - yoff)
@@ -639,17 +641,18 @@ class ScheduleElement(MultiElement):
             possible_period = pair.GetClockPeriod()
             if possible_period > largest_period:
                 largest_period = possible_period
-        hc = children[0].GetTime()
-        t_scale = children[0].GetProperty('time_scale') # ticks per pixel
+        first_child = cast(ScheduleLineElement, children[0])
+        hc = first_child.GetTime()
+        t_scale = cast(float, first_child.GetProperty('time_scale')) # ticks per pixel
         first_pair = pairs[0]
-        tick_offset = children[0].GetProperty('t_offset')
+        tick_offset = cast(int, first_child.GetProperty('t_offset'))
         frame_range = (int(tick_offset), int(tick_offset + self.GetXDim() * t_scale))
 
         # # Determine update type
         if self.__old_period != largest_period:
             full_update = True
             self.__old_period = largest_period
-        if self.__last_hc == None:
+        if self.__last_hc is None:
             full_update = True
             self.__last_hc = hc
 
@@ -680,7 +683,7 @@ class ScheduleElement(MultiElement):
 
         sched_height = lowest_y - highest_y
         # # Execute the set update type
-        if not self.__buffer:
+        if self.__buffer is None:
             time_range = None # draw full frame
             clip_region = None
             self.__dc.SetFont(dc.GetFont())
@@ -717,20 +720,25 @@ class ScheduleElement(MultiElement):
                 dest_x = canvas.MAX_ZOOM * i_d_p
                 sub_width = self.__buffer.GetWidth() - dest_x
 
+            assert self.__graphics_dc is not None
             self.__graphics_dc.SetLogicalScale(1, 1)
             self.__temp_dc.Blit(int(dest_x), 0, int(sub_width), int(self.__buffer.GetHeight()), self.__dc, int(sub_x), 0)
             self.__SwapBuffers(canvas)
             self.__graphics_dc.SetLogicalScale(canvas.MAX_ZOOM, canvas.MAX_ZOOM)
 
+        assert self.__buffer is not None
+
         # --Render Loop--
         for child_idx, child in enumerate(children):
-            child.DrawRoutine(pairs[child_idx],
-                              self.__graphics_dc,
-                              canvas,
-                              tick,
-                              time_range,
-                              clip_region,
-                              fixed_offset = (absolute_x, highest_y))
+            draw_routine = child.GetDrawRoutine()
+            assert draw_routine is not None
+            draw_routine(pairs[child_idx],
+                         self.__graphics_dc,
+                         canvas,
+                         tick,
+                         time_range,
+                         clip_region,
+                         fixed_offset = (absolute_x, highest_y))
 
         # Calculate the blit destination location, width, and height
         update_box = canvas.GetScaledUpdateRegion()
@@ -784,19 +792,19 @@ class ScheduleElement(MultiElement):
     # # Detect collision with children (they are likely not drawn)
     #  @param pt Point to test
     #  @return First child which includes pt
-    def DetectCollision(self, pt):
+    def DetectCollision(self, pt: wx.Point) -> Optional[Element]:
         mx, my = pt
 
         for child in self.GetChildren():
-            x, y = child.GetProperty('position')
-            w, h = child.GetProperty('dimensions')
+            x, y = cast(Tuple[int, int], child.GetProperty('position'))
+            w, h = cast(Tuple[int, int], child.GetProperty('dimensions'))
 
             if x <= mx <= (x + w) and y <= my <= (y + h):
                 return child
 
         return None # No collision detected
 
-    def AddChild(self, child):
+    def AddChild(self, child: Element) -> None:
         if not isinstance(child, ScheduleLineElement):
             raise Exception('Children of ScheduleElement must be ScheduleLineElements or descendants.')
 

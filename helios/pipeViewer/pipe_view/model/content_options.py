@@ -4,13 +4,15 @@
 #  options and the logic to extract the specified content from a transaction
 
 # # Transaction type strings known to the viewer
+from __future__ import annotations
+from typing import Any, Callable, Dict, List, Optional, Tuple, cast, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from model.database import Transaction
+    from model.database_handle import DatabaseHandle
+    from model.element import Element
+
 TRANSACTION_TYPES = ['Annotation', 'Instruction', 'MemoryOp']
-
-from typing import Any, Callable, Dict, List, Optional, Tuple
-
-from transactiondb import Transaction
-from model.database_handle import DatabaseHandle
-from model.element import Element
 
 # # These methods are used to actually acquire the data specified by the
 #  various content options
@@ -35,7 +37,7 @@ def GetTransactionID(trans: Transaction, e: Element, *args: Any) -> Optional[int
 
 
 def GetLocation(trans: Transaction, e: Element, *args: Any) -> str:
-    return e.GetProperty('LocationString')
+    return cast(str, e.GetProperty('LocationString'))
 
 
 def GetLocationTrunc(trans: Transaction,
@@ -44,7 +46,7 @@ def GetLocationTrunc(trans: Transaction,
                      tick: int,
                      loc_vars: Dict[str, str],
                      *args: Any) -> str:
-    return dbhandle.database.location_manager.replaceLocationVariables(e.GetProperty('LocationString'), loc_vars).split('.')[-1]
+    return dbhandle.database.location_manager.replaceLocationVariables(GetLocation(trans, e), loc_vars).split('.')[-1]
 
 
 def GetLocationID(trans: Transaction,
@@ -53,7 +55,7 @@ def GetLocationID(trans: Transaction,
                   tick: int,
                   loc_vars: Dict[str, str],
                   *args: Any) -> int:
-    return dbhandle.database.location_manager.getLocationInfo(e.GetProperty('LocationString'), loc_vars)[0]
+    return dbhandle.database.location_manager.getLocationInfo(GetLocation(trans, e), loc_vars)[0]
 
 
 def __check_optional_int(val: Optional[int]) -> int:
@@ -86,7 +88,7 @@ def GetAnnotation(trans: Transaction, *args: Any) -> Optional[str]:
 
 
 def GetCaption(trans: Transaction, e: Element, *args: Any) -> str:
-    return e.GetProperty('caption')
+    return cast(str, e.GetProperty('caption'))
 
 
 def GetImage(*args: Any) -> str:
@@ -99,7 +101,7 @@ def GetClock(trans: Transaction,
              tick: int,
              loc_vars: Dict[str, str],
              *args: Any) -> str:
-    clock_id = dbhandle.database.location_manager.getLocationInfo(e.GetProperty('LocationString'), loc_vars)[2]
+    clock_id = dbhandle.database.location_manager.getLocationInfo(GetLocation(trans, e), loc_vars)[2]
     if clock_id != dbhandle.database.location_manager.NO_CLOCK:
         clk = dbhandle.database.clock_manager.getClockDomain(clock_id)
         return clk.name
@@ -112,7 +114,7 @@ def GetCycle(trans: Transaction,
              tick: int,
              loc_vars: Dict[str, str],
              *args: Any) -> str:
-    clock_id = dbhandle.database.location_manager.getLocationInfo(e.GetProperty('LocationString'), loc_vars)[2]
+    clock_id = dbhandle.database.location_manager.getLocationInfo(GetLocation(trans, e), loc_vars)[2]
     if clock_id != dbhandle.database.location_manager.NO_CLOCK:
         clk = dbhandle.database.clock_manager.getClockDomain(clock_id)
         return str(clk.HypercycleToLocal(tick))
@@ -214,7 +216,7 @@ def OverrideState(key: str) -> str:
 # # This method is used by an Ordered Dictionary to populate it's
 #  Element_Value's with the data
 def ProcessContent(content: str,
-                   trans: Transaction,
+                   trans: Optional[Transaction],
                    e: Element,
                    dbhandle: DatabaseHandle,
                    tick: int,

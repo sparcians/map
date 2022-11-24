@@ -465,7 +465,7 @@ class ColorCellEditor(PopupCellEditor):
 
     # make the selection dialog
     def Create(self, parent, id, event_handler):
-        super(ColorCellEditor, self).Create(parent, id, event_handler)
+        super().Create(parent, id, event_handler)
         # This event doesn't exist in wx v2.8
         self.GetChooser().Bind(wx.EVT_TEXT_ENTER, self.OnColorPickerChanged)
         self.GetChooser().Bind(wx.EVT_TEXT, self.OnTextChanged)
@@ -630,7 +630,7 @@ class TreeCellEditor(PopupCellEditor):
         self.__loc_tree = loc_tree
 
     def Create(self, parent, id, event_handler):
-        super(TreeCellEditor, self).Create(parent, id, event_handler)
+        super().Create(parent, id, event_handler)
         self.GetPopup().SetLocationTree(self.__loc_tree)
         self.GetChooser().Bind(wx.EVT_TEXT, self.OnTextChanged)
         self.GetChooser().Bind(wx.EVT_TEXT_ENTER, self.OnTreeChanged)

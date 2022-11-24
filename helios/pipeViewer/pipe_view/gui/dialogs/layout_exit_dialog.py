@@ -1,16 +1,21 @@
 
+from __future__ import annotations
 import sys
+from typing import Any, Callable, Optional, TYPE_CHECKING
 import wx
 import os
 
 import wx.lib.platebtn as platebtn
 from gui.font_utils import ScaleFont
 
+if TYPE_CHECKING:
+    from gui.layout_frame import Layout_Frame
+
 ## SearchDialog is a window that enables the user to enter a string, conduct a search and
 # jump to a location and transaction based on the result. It gets its data from search_handle.py
 class LayoutExitDialog(wx.Dialog):
-    def __init__(self, frame):
-        super(LayoutExitDialog, self).__init__(frame, -1, title='Unsaved Changes to this Layout')
+    def __init__(self, frame: Layout_Frame) -> None:
+        super().__init__(frame, -1, title='Unsaved Changes to this Layout')
 
         layout_name = frame.GetContext().GetLayout().GetFilename()
         if layout_name is not None:
@@ -18,7 +23,7 @@ class LayoutExitDialog(wx.Dialog):
         else:
             layout_name = '<unsaved layout>'
 
-        fnt_filename = wx.Font(ScaleFont(13), wx.NORMAL, wx.NORMAL, wx.NORMAL, wx.FONTWEIGHT_BOLD)
+        fnt_filename = wx.Font(ScaleFont(13), wx.NORMAL, wx.NORMAL, wx.FONTWEIGHT_BOLD)
 
         lbl_filename = wx.StaticText(self, -1, layout_name)
         lbl_filename.SetFont(fnt_filename)
@@ -62,8 +67,10 @@ class LayoutExitDialog(wx.Dialog):
         self.Layout()
         self.Fit()
 
-        def GenAssigner(val):
-            def Assigner(*args):
+        self.__result: Optional[int] = None
+
+        def GenAssigner(val: int) -> Callable:
+            def Assigner(*args: Any) -> None:
                 self.__result = val
                 self.EndModal(val)
             return Assigner
@@ -73,14 +80,13 @@ class LayoutExitDialog(wx.Dialog):
         btn_return.Bind(wx.EVT_BUTTON, GenAssigner(wx.ID_CANCEL))
         self.Bind(wx.EVT_CLOSE, GenAssigner(wx.ID_CANCEL))
 
-        self.__result = None
-
     ## Show modal dialog.
     #  @return wx.ID_DELETE to discard changes, wx.ID_SAVE to save & quit, and
     #  wx.ID_CANCEL to return
-    def ShowModal(self):
-        super(LayoutExitDialog, self).ShowModal()
-        return self.__result
+    def ShowModal(self) -> int:
+        super().ShowModal()
+        return self.GetReturnCode()
 
-    def GetReturnCode(self):
+    def GetReturnCode(self) -> int:
+        assert self.__result is not None
         return self.__result

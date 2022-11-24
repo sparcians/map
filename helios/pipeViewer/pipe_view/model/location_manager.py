@@ -1,6 +1,7 @@
 # # @package location_manager.py
 #  @brief Consumes argos location files through LocationManager class
 
+from __future__ import annotations
 import functools
 import re
 import sys
@@ -11,7 +12,7 @@ from typing import Dict, List, Optional, TextIO, Tuple
 #  @note value can be empty string
 LOCATION_STRING_VARIABLE_RE = re.compile('{(\w+)\s*(?:=\s*(\w*))?}')
 
-LocationTree = Dict[str, LocationTree]
+LocationTree = Dict[str, 'LocationTree']
 LocationType = Tuple[int, str, int]
 __LocationDict = Dict[str, LocationType]
 

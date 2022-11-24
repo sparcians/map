@@ -8,11 +8,19 @@ import model.element_types as eltypes
 from gui.widgets.element_property_list import ElementPropertyList
 from gui.font_utils import ScaleFont
 
+from typing import List, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from model.element import Element
+    from gui.layout_canvas import Layout_Canvas
+    from gui.layout_frame import Layout_Frame
+    from gui.selection_manager import Selection_Mgr
+
 # # The GUI-side window for editing the properties of an Element
 class Element_PropsDlg(wx.Frame):
 
     # # The constructor
-    def __init__(self, parent, id, title, elements = None):
+    def __init__(self, parent: Layout_Frame, id: int, title: str) -> None:
         size = (500, 300)
         self.__parent = parent
         wx.Frame.__init__(self, parent, id, "Element Properties Editor", size = size, \
@@ -46,14 +54,14 @@ class Element_PropsDlg(wx.Frame):
     #  object around. The next time the user want to see this dialog, rather
     #  than re-initializing or instantiating a new one, we Show this one and
     #  re-assign one or more Elements to it
-    def Hide(self, event):
-        self.Show(False)
+    def Hide(self, event: Optional[wx.CommandEvent] = None) -> bool:
+        return self.Show(False)
 
-    def GetCanvas(self):
+    def GetCanvas(self) -> Layout_Canvas:
         return self.__parent.GetCanvas()
 
     # # Gotta make sure the StatusBar displays the correct message
-    def Draw(self, evt = None):
+    def Draw(self, evt: Optional[wx.TimerEvent] = None) -> None:
         self.__timer.Stop()
         font = self.GetStatusBar().GetFont()
         font.SetWeight(wx.NORMAL)
@@ -62,14 +70,14 @@ class Element_PropsDlg(wx.Frame):
         # self.SetStatusText("I don't currently know what Frame I belong to"#fix this later
         self.SetStatusText('{0} elements'.format(self.__list.GetNumberOfElements()))
 
-    def Refresh(self):
+    def Refresh(self) -> None:
         self.__list.Refresh()
         self.Layout()
         self.Draw()
 
     # # If the validation of setting an Element property fails / raises an
     #  error, this method will be told to update the status bar accordingly
-    def ShowError(self, error):
+    def ShowError(self, error: str) -> None:
         self.SetStatusText(str(error))
         font = self.GetStatusBar().GetFont()
         font.SetWeight(wx.BOLD)
@@ -81,13 +89,13 @@ class Element_PropsDlg(wx.Frame):
     #  multiple selections
     #  @note This must be the only method through which elements on which the dialog
     #  should operate can be set
-    def SetElements(self, elements, sel_mgr):
+    def SetElements(self, elements: List[Element], sel_mgr: Selection_Mgr) -> None:
         self.__list.SetElements(elements, sel_mgr)
         self.Fit() # Resize window to fit contents
         # self.__sizer.Layout() # No noticable effect, probably because autolayout is on
 
     # # Key handler
-    def __OnKeyDown(self, evt):
+    def __OnKeyDown(self, evt: wx.KeyEvent) -> None:
         if evt.GetKeyCode() == ord('Z') and evt.ControlDown():
             self.__parent.GetCanvas().GetSelectionManager().Undo()
         elif evt.GetKeyCode() == ord('Y') and evt.ControlDown() and evt.ShiftDown():
@@ -102,7 +110,7 @@ class Element_PropsDlg(wx.Frame):
 # Kind of fits in this module. It's small code so I'd rather not give it its own module.
 class ElementTypeSelectionDialog(wx.Dialog):
 
-    def __init__(self, parent):
+    def __init__(self, parent: Layout_Canvas) -> None:
         wx.Dialog.__init__(self, parent, wx.NewId(), 'Select an Element Type', size = (200, 70))
 
         self.creatables = list(eltypes.creatables.keys())
@@ -119,10 +127,10 @@ class ElementTypeSelectionDialog(wx.Dialog):
         self.__type_string = ''
         self.__drop_down.SetFocus()
 
-    def GetSelection(self):
+    def GetSelection(self) -> str:
         return self.__type_string
 
-    def OnDone(self, evt):
+    def OnDone(self, evt: wx.CommandEvent) -> None:
         self.__type_string = self.creatables[int(self.__drop_down.GetSelection())]
         # close off selection
         self.EndModal(wx.ID_OK)
