@@ -59,7 +59,7 @@ class TransactionList(wx.ListCtrl):
         if self.__colorize and annotation:
             color = self.__canvas.GetAutocolorColor(annotation)
         else:
-            color = (255, 255, 255)
+            color = wx.Colour(255, 255, 255)
         self.SetItemBackgroundColour(index, color)
 
     def GetTransaction(self, index: int) -> Dict[str, Any]:

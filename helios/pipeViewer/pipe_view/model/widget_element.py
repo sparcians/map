@@ -1,5 +1,5 @@
 from __future__ import annotations
-from .element import LocationallyKeyedElement, PropertyValue
+from .element import LocationallyKeyedElement
 from . import element_propsvalid as valid
 
 import wx
@@ -7,6 +7,7 @@ from typing import Any, Callable, Optional, Tuple, Union, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from model.element_value import Element_Value
+    from model.element import PropertyValue
     from gui.layout_canvas import Layout_Canvas
 
 class WidgetElement(LocationallyKeyedElement):

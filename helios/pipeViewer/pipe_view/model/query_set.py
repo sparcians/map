@@ -7,13 +7,13 @@ import time
 from typing import Dict, List, Optional, Tuple, cast, TYPE_CHECKING
 
 from . import content_options as content
+from model.schedule_element import ScheduleLineElement
 
 from logging import info, debug, warn, error
 
 if TYPE_CHECKING:
     from model.element_value import Element_Value
     from model.layout_context import Layout_Context
-    from model.schedule_element import ScheduleLineElement
     from model.database import TransactionDatabase
 
     TOffDict = Dict[int, Dict[int, List[Element_Value]]]

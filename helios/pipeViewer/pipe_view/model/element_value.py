@@ -10,9 +10,9 @@ from typing import Any, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
 from . import content_options as content
 import time as ptime
 from . import highlighting_utils
+from .element import Element, LocationallyKeyedElement
 
 if TYPE_CHECKING:
-    from .element import Element, LocationallyKeyedElement
     from .schedule_element import ScheduleLineElement
 
 TimedVal = Tuple[Optional[Union[int, str]], Tuple[int, int]]

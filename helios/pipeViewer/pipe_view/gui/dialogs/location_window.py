@@ -1,9 +1,17 @@
+from __future__ import annotations
 import fnmatch
 from gui.dialogs.element_propsdlg import ElementTypeSelectionDialog
 import logging
 import wx
 import wx.lib.gizmos
+from typing import Optional, TYPE_CHECKING
+
 from gui.font_utils import ScaleFont
+
+if TYPE_CHECKING:
+    from gui.dialogs.element_propsdlg import Element_PropsDlg
+    from gui.layout_frame import Layout_Frame
+    from model.location_manager import LocationTree
 
 
 class LocationWindow(wx.Frame):
@@ -20,7 +28,7 @@ class LocationWindow(wx.Frame):
     # ID of full-path column
     COL_PATH = 2
 
-    def  __init__(self, parent, elpropsdlg):
+    def  __init__(self, parent: Layout_Frame, elpropsdlg: Element_PropsDlg) -> None:
         '''
         @param parent Parent Layout_Frame
         @param elpropsdlg Element Properties Dialog for this frame
@@ -29,7 +37,7 @@ class LocationWindow(wx.Frame):
         self.__el_props_dlg = elpropsdlg
 
         self.__db = parent.GetContext().dbhandle.database
-        self.__tree_dict = {}
+        self.__tree_dict: LocationTree = {}
 
         # Create Controls
 
@@ -109,13 +117,13 @@ class LocationWindow(wx.Frame):
         # Fire a text event to load the filter for the first time
         wx.PostEvent(self.__filter_ctrl.GetEventHandler(), wx.PyCommandEvent(wx.EVT_TEXT.typeId, self.GetId()))
 
-    def __OnActivate(self, evt):
+    def __OnActivate(self, evt: wx.ActivateEvent) -> None:
         '''
         Sets the focus on the filter text control when the window is shown
         '''
         self.__filter_ctrl.SetFocus()
 
-    def __SetLocationTree(self, tree):
+    def __SetLocationTree(self, tree: LocationTree) -> None:
         '''
         Set the location tree dictionary for this tree view and populate the
         top-level entities
@@ -138,7 +146,7 @@ class LocationWindow(wx.Frame):
             if tree[key] != {}:
                 self.__tree_ctrl.SetItemHasChildren(child, True)
 
-    def __OnExpandItem(self, evt):
+    def __OnExpandItem(self, evt: wx.TreeEvent) -> None:
         '''
         This intelligently populates the tree as its nodes are expanded instead
         of doing it all at once - reduces time to open the popup
@@ -151,7 +159,7 @@ class LocationWindow(wx.Frame):
                 curdict = curdict[token]
             self.SetTree(curdict, item, path)
 
-    def SetTree(self, tree, item = None, path = ""):
+    def SetTree(self, tree: LocationTree, item: Optional[wx.TreeItemId] = None, path: str = "") -> None:
         '''
         Adds every member at the top level of location dictionary "tree" to
         node "item"
@@ -185,7 +193,7 @@ class LocationWindow(wx.Frame):
             if v != {}:
                 self.__tree_ctrl.SetItemHasChildren(child, True)
 
-    def __RecursiveExpand(self, node, limit, level = 0):
+    def __RecursiveExpand(self, node: wx.TreeItemId, limit: int, level: int = 0) -> None:
         '''
         Recursively expand tree nodes up to a given level
         '''
@@ -198,7 +206,7 @@ class LocationWindow(wx.Frame):
                 self.__RecursiveExpand(cur_node, limit, level + 1)
             cur_node = self.__tree_ctrl.GetNextSibling(cur_node)
 
-    def __GenerateFilteredTree(self, tree, path = ''):
+    def __GenerateFilteredTree(self, tree: LocationTree, path: str = '') -> LocationTree:
         '''
         Generates a filtered tree to populate the location tree control
         '''
@@ -222,7 +230,7 @@ class LocationWindow(wx.Frame):
 
         return subtree
 
-    def __OnFilterChanged(self, evt):
+    def __OnFilterChanged(self, evt: wx.CommandEvent) -> None:
         '''
         Handles changes to the filter
         '''
@@ -241,14 +249,14 @@ class LocationWindow(wx.Frame):
         if self.__use_filter:
             self.__RecursiveExpand(self.__root, self.__filter.count('.'))
 
-    def __OnTreeSelChanged(self, evt):
+    def __OnTreeSelChanged(self, evt: wx.TreeEvent) -> None:
         '''
         Handles selection changes in the location tree
         Updates button enable/caption states based on selection
         '''
         self.__UpdateButtons()
 
-    def __OnCreateElements(self, evt):
+    def __OnCreateElements(self, evt: wx.CommandEvent) -> None:
         '''
         Handles Clicks on "create elements" button
         Sets the selected location string as the location for the entire selection
@@ -293,7 +301,7 @@ class LocationWindow(wx.Frame):
         # Need to reflect new selection in element properties dialog
         self.__el_props_dlg.Refresh()
 
-    def __OnSetLocation(self, evt):
+    def __OnSetLocation(self, evt: wx.CommandEvent) -> None:
         '''
         Handles Clicks on "set location" button
         Sets the selected location string as the location for the entire selection
@@ -311,7 +319,7 @@ class LocationWindow(wx.Frame):
         self.__layout_frame.Refresh()
         self.__el_props_dlg.Refresh()
 
-    def __UpdateButtons(self):
+    def __UpdateButtons(self) -> None:
         '''
         Enables buttons based on the selection state
         '''

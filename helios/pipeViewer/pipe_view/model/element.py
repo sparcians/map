@@ -748,7 +748,7 @@ class ImageElement(LocationallyKeyedElement):
         return dirs
 
     # # Determines a path to an image given a relative path to this session's resource directories
-    def __ChooseImage(self, filename: str) -> str:
+    def __ChooseImage(self, filename: str) -> Optional[str]:
         layout = self.GetLayout()
         assert layout is not None
         lfn = layout.GetFilename()

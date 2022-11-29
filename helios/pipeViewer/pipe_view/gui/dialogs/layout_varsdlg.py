@@ -4,7 +4,7 @@ import wx
 import os
 import logging
 import sys
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import Dict, List, Optional, Tuple, Union, TYPE_CHECKING
 
 import wx.lib.mixins.listctrl  as  listmix
 from gui.font_utils import ScaleFont
@@ -36,7 +36,7 @@ class VarsListCtrl(wx.ListCtrl,
 
     # # Convenience method for forwarding calls to Populate(), which clears
     #  and reconstitutes the table with up-to-date values
-    def Refresh(self) -> None:
+    def Refresh(self, eraseBackground: bool = True, rect: Optional[Union[wx.Rect, Tuple[int, int, int, int]]] = None) -> None:
         self.Populate()
 
     # # Returns the number of items in the dialog

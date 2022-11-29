@@ -1,4 +1,4 @@
-
+from __future__ import annotations
 from .element_value import Element_Value
 from .query_set import QuerySet
 from .quad_tree import QuadTree

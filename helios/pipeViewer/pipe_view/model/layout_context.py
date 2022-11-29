@@ -14,7 +14,7 @@ import model.content_options as content
 import model.highlighting_utils as highlighting_utils
 
 
-class Layout_Context(object):
+class Layout_Context:
 
     EXTENT_L = 0 # Left
     EXTENT_T = 1 # Top

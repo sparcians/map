@@ -211,7 +211,7 @@ class Layout:
             # #self.__elements.append(e)
             self.__elements_by_pin[e.GetPIN()] = e
             if e.HasChildren():
-                self.__elements_with_children.append(cast(MultiElement, e))
+                self.__elements_with_children.append(cast('MultiElement', e))
         for lay_con in self.lay_cons:
             lay_con.AddElement(e, after_pins = follows_pins)
         self.__changed = True
@@ -366,7 +366,7 @@ class Layout:
         else:
             chopped = []
         if element.HasChildren() and element.GetChildren():
-            element = cast(MultiElement, element)
+            element = cast('MultiElement', element)
             children = element.GetChildren()
             for child in children:
                 if chop_all: # collection mode used on nodes subordinate to target node
@@ -423,9 +423,9 @@ class Layout:
         # # TODO: reintroduce unknown property checking
         e = self.CreateElement(initial_properties = elinfo, element_type = el_type, parent = parent)
         # load children if any exist
-        children = cast(List[PropertyDict], elinfo.get('children'))
+        children = cast(List['PropertyDict'], elinfo.get('children'))
         if e.HasChildren() and children:
-            e = cast(MultiElement, e)
+            e = cast('MultiElement', e)
             for child in children:
                 e.AddChild(self.__LoadElement(child, idx, filename, parent = e))
         return e
@@ -481,7 +481,7 @@ class Layout:
     def __LoadElementFromPickle(self, pdict: PropertyDict, parent: Optional[Element] = None) -> Element:
         if 'children' in pdict:
             # child property only is generated at compile time. Strip out.
-            children = cast(List[PropertyDict], pdict.pop('children'))
+            children = cast(List['PropertyDict'], pdict.pop('children'))
         else:
             children = None
 
@@ -543,7 +543,7 @@ class Layout:
             children = el.GetChildren()
             output['children'] = []
             for child in children:
-                cast(List[PropertyDict], output['children']).append(self.__MakeSerializable(child))
+                cast(List['PropertyDict'], output['children']).append(self.__MakeSerializable(child))
 
         return output
 

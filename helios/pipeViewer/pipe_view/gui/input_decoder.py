@@ -1,11 +1,10 @@
-
-
+from __future__ import annotations
 import wx
 from . import key_definitions
 
 from model.element import FakeElementValue
 
-from typing import Optional, cast, TYPE_CHECKING
+from typing import Optional, Tuple, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from wx.lib.dragscroller import DragScroller
@@ -14,7 +13,6 @@ if TYPE_CHECKING:
     from gui.layout_canvas import Layout_Canvas
     from gui.selection_manager import Selection_Mgr
     from model.layout_context import Layout_Context
-    from model.workspace import Workspace
 
 ## This class provides a central hub of intelligence for responding to
 #  user-events, namely Mouse or Keyboard, & issuing commands to the likes of
@@ -31,11 +29,10 @@ class Input_Decoder:
     __CTRL_STEP_DISTANCE = 100
 
     ## TODO: improve later
-    def __init__(self, parent: Layout_Canvas, workspace: Optional[Workspace] = None) -> None:
+    def __init__(self, parent: Layout_Canvas) -> None:
         self.__edit_mode = False
         self.__parent = parent
         self.__context = parent.context
-        self.__workspace = workspace
         self.__move_speed = self.__MOVE_SPEED
         self.__accel_factor = self.__ACCEL_FACTOR
         #used to prevent insane quantities of rapid fire copied elementts
@@ -87,8 +84,8 @@ class Input_Decoder:
             selection.SetHistory(selection.collision)
             top_hit = hits[0].GetElement()
             selection.SetDominant(top_hit)
-            top_hit_pos = top_hit.GetProperty('position')
-            top_hit_dim = top_hit.GetProperty('dimensions')
+            top_hit_pos = cast(Tuple[int, int], top_hit.GetProperty('position'))
+            top_hit_dim = cast(Tuple[int, int], top_hit.GetProperty('dimensions'))
             exes = [top_hit_pos[0]]
             whys = [top_hit_pos[1]]
             exes.append(top_hit_pos[0]+top_hit_dim[0])
@@ -97,8 +94,8 @@ class Input_Decoder:
             for val in hits:
                 e = val.GetElement()
                 if selection.IsSelected(e):
-                    (ex,ey) = e.GetProperty('position')
-                    (w,h) = e.GetProperty('dimensions')
+                    (ex,ey) = cast(Tuple[int, int], e.GetProperty('position'))
+                    (w,h) = cast(Tuple[int, int], e.GetProperty('dimensions'))
                     exes.append(ex)
                     whys.append(ey)
                     exes.append(ex+w)

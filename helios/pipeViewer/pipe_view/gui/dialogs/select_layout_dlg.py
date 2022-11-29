@@ -3,10 +3,12 @@
 ## @package select_layout_dbg.py
 #  @brief Dialog for selecting a layout file
 
+from __future__ import annotations
 import sys
 import os
 import wx
 import wx.lib.scrolledpanel as scrolledpanel
+from typing import Optional
 
 from model.layout import Layout
 
@@ -19,7 +21,7 @@ class SelectLayoutDlg(wx.Dialog):
     ## Initialized the dialog
     #  @param init_prefix Value of the filename to show in the alf file textbox by default
     #  Must be a str or None.
-    def __init__(self, init_prefix=None):
+    def __init__(self, init_prefix: Optional[str] = None) -> None:
         wx.Dialog.__init__(self,
                            None,
                            title='Select an Argos layout file',
@@ -28,7 +30,7 @@ class SelectLayoutDlg(wx.Dialog):
         if not isinstance(init_prefix, str) and init_prefix is not None:
             raise TypeError('init_prefix must be a str or None, is a {0}'.format(type(init_prefix)))
 
-        self.__filename = None # Updated in CheckSelectionState
+        self.__filename: Optional[str] = None # Updated in CheckSelectionState
 
         if init_prefix is not None:
             filepath = init_prefix
@@ -119,11 +121,11 @@ class SelectLayoutDlg(wx.Dialog):
         self.SetSizer(border)
 
         self.Fit()
-        self.SetAutoLayout(1)
+        self.SetAutoLayout(True)
         
         self.__CheckSelectionState()
 
-    def Show(self):
+    def Show(self, show: bool = True) -> bool:
         raise NotImplementedError('Cannot Show() this dialog. Use ShowModal instead')
 
     ## Gets the Argos layout filename selected by the dialog
@@ -131,21 +133,22 @@ class SelectLayoutDlg(wx.Dialog):
     #  found and None if no database was chosen
     #
     #  This should be checked after invoking ShowModal() on this object
-    def GetFilename(self):
+    def GetFilename(self) -> str:
+        assert self.__filename is not None
         return self.__filename
 
     ## Handler for Close button
-    def __OnClose(self, evt):
+    def __OnClose(self, evt: wx.CommandEvent) -> None:
         self.__filename = None
         self.EndModal(wx.CANCEL)
 
     ## Handler for Ok button
-    def __OnOk(self, evt):
+    def __OnOk(self, evt: wx.CommandEvent) -> None:
         # self.__filename already set before this button was enabled
         self.EndModal(wx.OK)
 
     ## Handler for Find button
-    def __OnFindFile(self, evt):
+    def __OnFindFile(self, evt: wx.CommandEvent) -> None:
         dlg = wx.FileDialog(self, "Select Argos layout file",
                             defaultFile=self.__file_txt.GetValue(),
                             wildcard='Argos layout files (*{0})|*{0}' \
@@ -159,7 +162,7 @@ class SelectLayoutDlg(wx.Dialog):
         self.__CheckSelectionState()
 
     ## Handler for Changing the filename in file_txt
-    def __OnChangeFilename(self, evt):
+    def __OnChangeFilename(self, evt: wx.CommandEvent) -> None:
         self.__CheckSelectionState()
 
     ## Checks on the value in the self.__file_txt box to see if it points to a
@@ -168,7 +171,7 @@ class SelectLayoutDlg(wx.Dialog):
     #  Updates self.__filename
     #  Updates or clears self.__file_info and en/disables self.__ok_btn depending
     #  on whether selection points to a valid file. Also changes colors of box
-    def __CheckSelectionState(self):
+    def __CheckSelectionState(self) -> None:
         if self.__rad_blank.GetValue():
             self.__panel_sel_file.Disable()
             filepath = None

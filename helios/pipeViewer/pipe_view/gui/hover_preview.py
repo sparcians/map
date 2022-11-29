@@ -63,7 +63,7 @@ class HoverPreview:
                       border=1)
             self.SetSizer(sizer)
 
-        def UpdateInfo(self, element: Optional[Element], annotation: str, text: str, position: wx.Point) -> None:
+        def UpdateInfo(self, element: Element, annotation: str, text: str, position: wx.Point) -> None:
             BORDER_LIGHTNESS = 70
 
             _, brush = self.__canvas.UpdateTransactionColor(element, annotation)
@@ -441,6 +441,7 @@ class HoverPreview:
 
         is_dirty = old_show_state or self.show
         if is_dirty:
+            assert self.element is not None
             self.GetWindow().UpdateInfo(self.element, self.annotation, self.__value, self.position)
             if self.__value:
                 self.GetWindow().Show(True)

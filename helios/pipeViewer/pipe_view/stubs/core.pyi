@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 import wx
 
 from gui.layout_canvas import Layout_Canvas
@@ -18,8 +18,8 @@ class Renderer:
                           element: Element,
                           dc: wx.DC,
                           canvas: Layout_Canvas,
-                          rect: wx.Rect,
-                          annotation: str,
+                          rect: Union[wx.Rect, Tuple[int, int, int, int]],
+                          annotation: Optional[Union[int, str]],
                           missing_needed_loc: bool,
                           content_type: str,
                           auto_color: Tuple[str, str], # type, basis

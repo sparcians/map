@@ -134,7 +134,7 @@ class RPCElement(Element):
         xoff, yoff = canvas.GetRenderOffsets()
         (c_x,c_y) = (c_x-xoff, c_y-yoff)
 
-        auto_color = self.GetProperty('color_basis_type'), self.GetProperty('auto_color_basis')
+        auto_color = cast(str, self.GetProperty('color_basis_type')), cast(str, self.GetProperty('auto_color_basis'))
 
         annotation = self.GetAnnotation(pair)
 
@@ -145,14 +145,14 @@ class RPCElement(Element):
         # Set the element value to the generated annotation
         pair.SetVal(annotation)
 
-        content_type = self.GetProperty('Content')
+        content_type = cast(str, self.GetProperty('Content'))
 
         # Generate the color for the element
         record = canvas.GetTransactionColor(annotation, content_type, auto_color[0], auto_color[1])
-        if record:
-            string_to_display, brush = record
+        if record is not None:
+            string_to_display, brush, _, _, _, _ = record
         else:
-            string_to_display, brush = canvas.AddColoredTransaction(annotation, content_type, auto_color[0], auto_color[1], tick, self)
+            string_to_display, brush, _, _ = canvas.AddColoredTransaction(annotation, content_type, auto_color[0], auto_color[1], tick, self)
 
         dc.SetBrush(brush)
 
@@ -167,13 +167,10 @@ class RPCElement(Element):
             (c_char_width, c_char_height) = dc.GetTextExtent(c_str)
             # Truncate text if possible
             if c_char_width != 0:
-                c_num_chars = 1 + (c_w / c_char_width)
+                c_num_chars = int(1 + (c_w / c_char_width))
                 c_content_str_len = len(c_str)
                 if c_num_chars < c_content_str_len:
-                    c_tmp_char = c_str[c_num_chars]
-                    c_str[c_num_chars] = '\0'
-                    dc.DrawText(c_str, c_x+c_x_adj, c_y+c_y_adj)
-                    c_str[c_num_chars] = c_tmp_char
+                    dc.DrawText(c_str[:c_num_chars], c_x+c_x_adj, c_y+c_y_adj)
 
                 elif c_content_str_len > 0:
                     dc.DrawText(c_str, c_x+c_x_adj, c_y+c_y_adj)

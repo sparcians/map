@@ -1,5 +1,4 @@
-
-
+from __future__ import annotations
 import time
 import wx
 import sys
@@ -8,7 +7,7 @@ import model.element_types as eltypes
 from gui.widgets.element_property_list import ElementPropertyList
 from gui.font_utils import ScaleFont
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, Optional, Tuple, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from model.element import Element
@@ -70,14 +69,16 @@ class Element_PropsDlg(wx.Frame):
         # self.SetStatusText("I don't currently know what Frame I belong to"#fix this later
         self.SetStatusText('{0} elements'.format(self.__list.GetNumberOfElements()))
 
-    def Refresh(self) -> None:
+    def Refresh(self,
+                eraseBackground: bool = True,
+                rect: Optional[Union[Tuple[int, int, int, int], wx.Rect]] = None) -> None:
         self.__list.Refresh()
         self.Layout()
         self.Draw()
 
     # # If the validation of setting an Element property fails / raises an
     #  error, this method will be told to update the status bar accordingly
-    def ShowError(self, error: str) -> None:
+    def ShowError(self, error: Union[Exception, str]) -> None:
         self.SetStatusText(str(error))
         font = self.GetStatusBar().GetFont()
         font.SetWeight(wx.BOLD)

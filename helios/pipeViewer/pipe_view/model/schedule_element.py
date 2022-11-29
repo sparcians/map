@@ -214,7 +214,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
             clip = c_x - 1, c_w + 2
 
         # width of period in pixels
-        local_period_width = period / t_scale
+        local_period_width = int(period / t_scale)
 
         # latest full value rendered
         latest_solid_value = None
@@ -730,15 +730,15 @@ class ScheduleElement(MultiElement):
 
         # --Render Loop--
         for child_idx, child in enumerate(children):
-            draw_routine = child.GetDrawRoutine()
-            assert draw_routine is not None
-            draw_routine(pairs[child_idx],
-                         self.__graphics_dc,
-                         canvas,
-                         tick,
-                         time_range,
-                         clip_region,
-                         fixed_offset = (absolute_x, highest_y))
+            child = cast(ScheduleLineElement, child)
+            assert self.__graphics_dc is not None
+            child.DrawRoutine(pairs[child_idx],
+                              self.__graphics_dc,
+                              canvas,
+                              tick,
+                              time_range,
+                              clip_region,
+                              fixed_offset = (absolute_x, highest_y))
 
         # Calculate the blit destination location, width, and height
         update_box = canvas.GetScaledUpdateRegion()
