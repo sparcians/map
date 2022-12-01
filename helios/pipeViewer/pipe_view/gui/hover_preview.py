@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from gui.argos_menu import Argos_Menu
     from gui.layout_canvas import Layout_Canvas
 
-# # @brief This new event triggers the canvas to just redraw the mouse-over text.
+# @brief This new event triggers the canvas to just redraw the mouse-over text.
 # No update of the underlying view is executed on this event.
 HoverRedrawEvent, EVT_HOVER_REDRAW = wx.lib.newevent.NewEvent()
 
@@ -277,12 +277,12 @@ class HoverPreview:
     def __OnAddWatchAbsolute(self, evt: wx.MenuEvent) -> None:
         self.__AddWatch(relative = False)
 
-    # # Handle click on "Search From this Location"
+    # Handle click on "Search From this Location"
     def __OnSearchLocation(self, evt: wx.MenuEvent) -> None:
         assert self.element is not None
         self.__canvas.GetFrame().ShowSearch(location = self.element.GetProperty('LocationString'))
 
-    # # Handle click on the "Next Change in Annotation"
+    # Handle click on the "Next Change in Annotation"
     def __OnNextAnno(self, evt: Optional[wx.MenuEvent] = None) -> None:
         if self.element is None:
             return
@@ -296,10 +296,10 @@ class HoverPreview:
         location_str = cast(str, el.GetProperty('LocationString'))
         loc_results = self.__context.dbhandle.database.location_manager.getLocationInfo(location_str, {})
         if loc_results == self.__context.dbhandle.database.location_manager.LOC_NOT_FOUND:
-            return # # @todo Prevent this command from being called without a valid location
+            return # @todo Prevent this command from being called without a valid location
         location_id, _, clock = loc_results
 
-        # # @todo Current tick should be based on this element's t_offset.
+        # @todo Current tick should be based on this element's t_offset.
         cur_tick = self.__context.GetHC()
 
         fields = self.__context.GetTransactionFields(cur_tick,
@@ -318,7 +318,7 @@ class HoverPreview:
 
         wx.BeginBusyCursor()
         try:
-            # # @todo Include location ID in searches
+            # @todo Include location ID in searches
             results = self.__context.searchhandle.Search('string',
                                                          cur_annotation,
                                                          cur_tick + 1, # start tick
@@ -346,7 +346,7 @@ class HoverPreview:
         if wx.IsBusy():
             wx.EndBusyCursor()
 
-    # # Handle click on the "Previous Change in Annotation"
+    # Handle click on the "Previous Change in Annotation"
     def __OnPrevAnno(self, evt: Optional[wx.MenuEvent] = None) -> None:
         if self.element is None:
             return
@@ -360,10 +360,10 @@ class HoverPreview:
         location_str = cast(str, el.GetProperty('LocationString'))
         loc_results = self.__context.dbhandle.database.location_manager.getLocationInfo(location_str, {})
         if loc_results == self.__context.dbhandle.database.location_manager.LOC_NOT_FOUND:
-            return # # \todo Prevent this command from being called without a valid location
+            return # \todo Prevent this command from being called without a valid location
         location_id, _, clock = loc_results
 
-        # # @todo Current tick should be based on this element's t_offset.
+        # @todo Current tick should be based on this element's t_offset.
         cur_tick = self.__context.GetHC()
 
         fields = self.__context.GetTransactionFields(cur_tick,
@@ -552,7 +552,7 @@ class HoverPreviewOptionsDialog(wx.Dialog):
         # set current settings
         self.SetOptions()
 
-    # # Goes through check box elements and appends the checked keys to a list.
+    # Goes through check box elements and appends the checked keys to a list.
     def GetOptions(self) -> List[str]:
         checked_options = []
         for key, val in self.checkOptions.items():

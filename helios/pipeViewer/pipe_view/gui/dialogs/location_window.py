@@ -291,10 +291,10 @@ class LocationWindow(wx.Frame):
             dims = cast(Tuple[int, int], e.GetProperty('dimensions'))
 
             # Shift down by grid
-            # #last_el_pos = (last_el_pos[0] + canvas.gridsize, last_el_pos[1] + canvas.gridsize)
+            #last_el_pos = (last_el_pos[0] + canvas.gridsize, last_el_pos[1] + canvas.gridsize)
 
-            # ## Shift by half-dimensions of new element
-            # #last_el_pos = (last_el_pos[0] + dims[0]/2, last_el_pos[1] + dims[1]/2)
+            ## Shift by half-dimensions of new element
+            #last_el_pos = (last_el_pos[0] + dims[0]/2, last_el_pos[1] + dims[1]/2)
 
             # Stack elements by default
             last_el_pos = (last_el_pos[0], last_el_pos[1] + dims[1])

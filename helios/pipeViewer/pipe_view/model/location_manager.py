@@ -1,4 +1,4 @@
-# # @package location_manager.py
+# @package location_manager.py
 #  @brief Consumes argos location files through LocationManager class
 
 from __future__ import annotations
@@ -8,7 +8,7 @@ import sys
 import time
 from typing import Dict, List, Optional, TextIO, Tuple
 
-# # Expression for searching for variables in location strings
+# Expression for searching for variables in location strings
 #  @note value can be empty string
 LOCATION_STRING_VARIABLE_RE = re.compile('{(\w+)\s*(?:=\s*(\w*))?}')
 
@@ -16,32 +16,32 @@ LocationTree = Dict[str, 'LocationTree']
 LocationType = Tuple[int, str, int]
 __LocationDict = Dict[str, LocationType]
 
-# # Consumes an Argos location file and provides a means of lookup up location
+# Consumes an Argos location file and provides a means of lookup up location
 #  IDs via location strings
 #
 #  Also allows browsing of availble locations
 class LocationManager:
 
-    # # Describes the location file
+    # Describes the location file
     LOCATION_FILE_EXTENSION = 'location.dat'
 
-    # # Expeted version number from file. Otherwise the data cannot be consumed
+    # Expeted version number from file. Otherwise the data cannot be consumed
     VERSION_NUMBER = 1
 
-    # # Integer refering to no clock when seen as a clock ID in this location
+    # Integer refering to no clock when seen as a clock ID in this location
     #  file
     NO_CLOCK = -1
 
-    # # Integer refering to invalid location ID
+    # Integer refering to invalid location ID
     INVALID_LOCATION_ID = -1
 
-    # # Tuple indicating that a location string was not found in the map when a
+    # Tuple indicating that a location string was not found in the map when a
     #  location was queried through getLocationInfo
     LOC_NOT_FOUND = (INVALID_LOCATION_ID, '', NO_CLOCK)
 
     FILE_WAIT_TIMEOUT = 60
 
-    # # Constructor
+    # Constructor
     #  @param prefix Argos transaction database prefix to open.
     #  LOCATION_FILE_EXTENSION will be appended to determine the actual
     #  filename to open
@@ -118,7 +118,7 @@ class LocationManager:
                 self.__locs[name] = (uid, name, clockid)
                 self.__id_to_string[uid] = name
 
-    # # Gets a tree of location strings represented as a dictionary with keys equal to
+    # Gets a tree of location strings represented as a dictionary with keys equal to
     #  objects between dots in location strings: Leaf nodes are empty dictionaries
     #
     #  Example:
@@ -133,7 +133,7 @@ class LocationManager:
     def location_tree(self) -> LocationTree:
         return self.__loc_tree
 
-    # # Gets next line from file which is not a comment.
+    # Gets next line from file which is not a comment.
     #  Strips comments on the line and whitespace from each end
     #  @param f File to read next line from
     #  @return '' if line is empty or comment, None if EOF is reached
@@ -153,7 +153,7 @@ class LocationManager:
 
         return ln
 
-    # # Gets a tuple containing location information associated with a location
+    # Gets a tuple containing location information associated with a location
     #  string
     #  @param locname Location name string to lookup
     #  @param variables dict of variables that can be substituted into the locname
@@ -169,7 +169,7 @@ class LocationManager:
         except:
             return self.LOC_NOT_FOUND
 
-    # # Gets a tuple containing location information associated with a location
+    # Gets a tuple containing location information associated with a location
     #  string
     #  @param locname Location name string to lookup
     #  @return 3-tuple (locationID, location name, clock id) if found. If not
@@ -182,7 +182,7 @@ class LocationManager:
         except:
             return self.LOC_NOT_FOUND
 
-    # # Gets a location string with variables in it replaced by the given
+    # Gets a location string with variables in it replaced by the given
     #  variables dictionary. Caches results to improve performance for repeated calls.
     #  @param locname Location string
     #  @param variables dict of variables and values
@@ -196,7 +196,7 @@ class LocationManager:
             self.__regex_cache[locname] = LOCATION_STRING_VARIABLE_RE.sub(functools.partial(self.__replaceVariable, variables), locname)
             return self.__regex_cache[locname]
 
-    # # Find all location variables in location string
+    # Find all location variables in location string
     #  Returns a list of tuples (variable name, value) representing each variable found
     @staticmethod
     def findLocationVariables(locname: str) -> List[Tuple[str, str]]:
@@ -210,20 +210,20 @@ class LocationManager:
 
         return found
 
-    # # Gets location srings in no particular order
+    # Gets location srings in no particular order
     #  @note This is slow because this list is generated on request
     #  @note Order of results is not necessarily consistent
     #  @return List of str instances containing names of all known locations
     def getLocationStrings(self) -> List[str]:
         return [x[1] for x in self.__locs.values()]
 
-    # # Gets location strings for the given locid
+    # Gets location strings for the given locid
     #  @param locid Location ID to lookup a string for
     #  @return Location string (str) if found, None otherwise
     def getLocationString(self, locid: int) -> Optional[str]:
         return self.__id_to_string.get(locid, None)
 
-    # # Gets a sequence of potential location string completions given the
+    # Gets a sequence of potential location string completions given the
     #  input \a locname
     #  @param locname Location name string input
     #  @warning This is a very slow method since it iterates the entire list
@@ -238,7 +238,7 @@ class LocationManager:
 
         return results
 
-    # # Returns the maximum location ID known to this manager
+    # Returns the maximum location ID known to this manager
     def getMaxLocationID(self) -> int:
         if len(self.__id_to_string) == 0:
             return 0
@@ -264,7 +264,7 @@ class LocationManager:
                 parent[obj] = {}
             parent = parent[obj]
 
-    # # Handles replacing a word in a string with
+    # Handles replacing a word in a string with
     #  @param variables dict of variable names with values
     #  @param match Match regex result. Contains 2 groups: the variable name and default value
     #  (which is None if no default was supplied)
@@ -275,10 +275,10 @@ class LocationManager:
             if match.group(1) is not None:
                 # Use the default value associated with with variable in the location string
                 replacement = match.group(2)
-                # #print 'Used default {} for {}. Variables were {}'.format(match.group(2), match.group(1), variables)
+                #print 'Used default {} for {}. Variables were {}'.format(match.group(2), match.group(1), variables)
             else:
                 return '<undefined:{}!>'.format(match.group(0))
         else:
-            pass # #print 'Used variable for {}'.format(match.group(1))
+            pass #print 'Used variable for {}'.format(match.group(1))
         return replacement
 

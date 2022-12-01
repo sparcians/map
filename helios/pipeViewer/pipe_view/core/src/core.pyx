@@ -1,4 +1,4 @@
-# # @package PipeViewer drawing loop and support routines
+# @package PipeViewer drawing loop and support routines
 
 import sys
 import wx
@@ -182,7 +182,7 @@ cdef extern from "helpers.h":
 def get_argos_version():
     return 1;
 
-# # Extracts a value from a string \a s by its \a key. Key is separated from
+# Extracts a value from a string \a s by its \a key. Key is separated from
 #  value by 0 or more spaces, then a character in \a separators, followed by 0 or
 #  more additional spaces. After extracing the value for the given key, the
 #  first \a skip_chars characters are dropped form the result
@@ -290,7 +290,7 @@ cdef class Renderer:
         else: # empty string
             return string_to_display, None
 
-    # # @brief Sets color of background brush and parses annotation according to type.
+    # @brief Sets color of background brush and parses annotation according to type.
     #
     def parseAnnotationAndGetColor(self, string_to_display, content_type, field_type = None, field_string = None):
         cdef char * c_seq_id_str

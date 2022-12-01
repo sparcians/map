@@ -61,7 +61,7 @@ class QuadNode:
             bounds.extend(self.GetAllBoxes(content))
         return bounds
 
-    # # Debug printout for this node and nodes below it.
+    # Debug printout for this node and nodes below it.
     def PrintRecursive(self, node: Optional[QuadNode] = None, level: int = 0) -> None:
         if node is None:
             node = self
@@ -74,7 +74,7 @@ class QuadNode:
             self.PrintRecursive(content, level + 1)
 
 
-# # A small QuadTree-based container for pairs.
+# A small QuadTree-based container for pairs.
 class QuadTree:
     # when more than this number of objects are dirty, the bsp rebuilds
     FULL_REBUILD_THRESHOLD = 30
@@ -91,7 +91,7 @@ class QuadTree:
         self.__dirty_objects: Set[Element_Value] = set()
         self.Build()
 
-    # # Add function.
+    # Add function.
     def AddObject(self, obj: Element_Value, push_update: bool = False) -> None:
         self.__objects.append(obj)
         if push_update:
@@ -159,7 +159,7 @@ class QuadTree:
                 highest_y = bounds[3]
         return (lowest_x, lowest_y, highest_x, highest_y)
 
-    # # places objects in tree buckets
+    # places objects in tree buckets
     # pattern for indices used
     # 0 1
     # 2 3

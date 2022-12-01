@@ -24,14 +24,14 @@ if TYPE_CHECKING:
 
 DialogUnion = Union[wx.Frame, wx.Dialog]
 
-# # The GUI-side top-level 'window' which will house a Layout Canvas, MenuBar
+# The GUI-side top-level 'window' which will house a Layout Canvas, MenuBar
 #  and Playback Controls. One-to-one mapping with a layout display, and has
 #  minimal functionality itself. Primarily provides the hosting frame/window
 #  for the Layout Canvas
 class Layout_Frame(wx.Frame):
     _DB_UPDATE_DELAY_MS = 10000
 
-    # # Gets the wx frame created, and ties together a Layout Canvas and a
+    # Gets the wx frame created, and ties together a Layout Canvas and a
     #  Element Properties Dialog
     def  __init__(self,
                   ws: Workspace,
@@ -168,7 +168,7 @@ class Layout_Frame(wx.Frame):
             self.__context.dbhandle.api.forceUpdate()
             self.OnDBUpdate(False)
 
-    # # Performs a full redraw
+    # Performs a full redraw
     def Refresh(self, eraseBackground: bool = True, rect: Optional[Union[Tuple[int, int, int, int], wx.Rect]] = None) -> None:
         self.__canvas.FullUpdate()
         self.__playback_panel.Refresh()
@@ -182,11 +182,11 @@ class Layout_Frame(wx.Frame):
 
         wx.Frame.Refresh(self)
 
-    # # Returns the workspace owned by this frame
+    # Returns the workspace owned by this frame
     def GetWorkspace(self) -> Workspace:
         return self.__workspace
 
-    # # Returns the Canvas owned by this Layout Frame
+    # Returns the Canvas owned by this Layout Frame
     def GetCanvas(self) -> Layout_Canvas:
         return self.__canvas
 
@@ -199,20 +199,20 @@ class Layout_Frame(wx.Frame):
     def GetTitleSuffix(self) -> str:
         return self.__title_suffix
 
-    # # Returns the context contained by this Layout Frame
+    # Returns the context contained by this Layout Frame
     def GetContext(self) -> Layout_Context:
         return self.__context
 
-    # # Returns the window title
+    # Returns the window title
     def GetTitle(self) -> str:
         return self.__title
 
-    # # Returns the Playback Panel owned by this Layout Frame
+    # Returns the Playback Panel owned by this Layout Frame
     def GetPlaybackPanel(self) -> FramePlaybackBar:
         return self.__playback_panel
 
-    # # Show a dialog. Shows existing dialog unless create_new=True.
-    # # Forwards **kwargs to dialog_class
+    # Show a dialog. Shows existing dialog unless create_new=True.
+    # Forwards **kwargs to dialog_class
     def ShowDialog(self, name: str, dialog_class: Type[DialogUnion], create_new: bool = False, **kwargs: Any) -> DialogUnion:
         windows = self.__dialogs.setdefault(name, [])
         if len(windows) == 0 or create_new is True:
@@ -224,12 +224,12 @@ class Layout_Frame(wx.Frame):
         dlg.SetFocus()
         return dlg
 
-    # # Shows the location list dialog
+    # Shows the location list dialog
     #  @note Location list does not disappear when close. It is just hidden
     def ShowLocationsList(self) -> None:
         self.ShowDialog('locations', LocationWindow, False, elpropsdlg = self.__dlg)
 
-    # # Shows the search dialog
+    # Shows the search dialog
     #  @note Search does not disappear when close. It is just hidden
     #  @param kwargs Interperts and does not foward certain kwargs:
     #  \li location="starting search location"
@@ -243,32 +243,32 @@ class Layout_Frame(wx.Frame):
         if loc is not None:
             dlg.SetSearchLocation(loc)
 
-    # # Shows the find-element dialog
+    # Shows the find-element dialog
     #  @note Search does not disappear when close. It is just hidden
     def ShowFindElement(self, *args: Any, **kwargs: Any) -> None:
         self.ShowDialog('find element', FindElementDialog, False, *args, **kwargs)
 
-    # # Show or hide the navigation controls
+    # Show or hide the navigation controls
     def ShowNavigationControls(self, show: bool = True) -> None:
         self.__playback_panel.Show(show)
-        # #self.__menu.Show(show) # Menu bar space cannot be reclaimed when hidden, so this is useless. Also might disable hotkeys
+        #self.__menu.Show(show) # Menu bar space cannot be reclaimed when hidden, so this is useless. Also might disable hotkeys
         self.Layout()
 
-    # # Attempt to select the given clock by name
+    # Attempt to select the given clock by name
     def SetDisplayClock(self, clock_name: str, error_if_not_found: bool = True) -> bool:
         return self.__playback_panel.SetDisplayClock(clock_name, error_if_not_found)
 
-    # # To to a specific cyle on the currently displayed clock for this frame
+    # To to a specific cyle on the currently displayed clock for this frame
     def GoToCycle(self, cycle: int) -> None:
         assert cycle is not None
         self.__playback_panel.GoToCycle(cycle)
 
-    # # Handles shutting down both this window and the Element Properties Dialog
+    # Handles shutting down both this window and the Element Properties Dialog
     def Close(self, force: bool = False) -> bool:
         self._HandleClose()
         return True
 
-    # # 'Saving' means saving the Layout to file, nothing else is currently
+    # 'Saving' means saving the Layout to file, nothing else is currently
     #  preserved about a session (no user preferences, current selection, HC)
     #  @return True if saved, False if cancelled (because it deferred to SaveAs)
     def Save(self) -> bool:
@@ -298,7 +298,7 @@ class Layout_Frame(wx.Frame):
 
         return True
 
-    # # Handle saving the file to a selected path
+    # Handle saving the file to a selected path
     #  @return True if saved, False if cancelled
     def SaveAs(self) -> bool:
         assert self.__layout is not None
@@ -349,7 +349,7 @@ class Layout_Frame(wx.Frame):
             dlg.ShowModal()
             dlg.Destroy()
 
-    # # Determine if the user frame can be closed and gives the user a chance to
+    # Determine if the user frame can be closed and gives the user a chance to
     #  save of discard or cancel if the layout was modified. This does not
     #  close the frame, but must be followed by a _HandleClose(force=True) call
     #  @note This exists so that all layouts can be tested for changes before
@@ -377,13 +377,13 @@ class Layout_Frame(wx.Frame):
         else:
             raise Exception('Unkonwn result from LayoutExitDialog: {}'.format(ret))
 
-    # # Handles a closing request from this frame or the menu bar.
+    # Handles a closing request from this frame or the menu bar.
     #  @param force (kwargs only, default False) Force closed without prompting.
     #  This is dangerous and should only be done when proceeded by a call to
     #  _PromptBeforeClose().
     #
     #  Prompts the user about actually quitting if the layout has changed.
-    # # If successful, destroys
+    # If successful, destroys
     def _HandleClose(self, **kwargs: Any) -> None:
         force = False
         for k, v in list(kwargs.items()):
@@ -412,7 +412,7 @@ class Layout_Frame(wx.Frame):
         wx.CallAfter(self.Destroy) # Delay destruction to ensure that this handler does not refer to this window
         self.__workspace.RemoveFrame(self)
 
-    # # Handle resize events on this frame
+    # Handle resize events on this frame
     def __OnResize(self, evt: wx.SizeEvent) -> None:
         # Resize pauses playing because when timer events are too close together there is
         # no chance to refresh the whole frame as is needed.
@@ -420,7 +420,7 @@ class Layout_Frame(wx.Frame):
 
         evt.Skip()
 
-    # # Computes a good window title containing the database and layout file information
+    # Computes a good window title containing the database and layout file information
     def ComputeTitle(self) -> str:
         title = os.path.split(self.__context.dbhandle.database.filename)[1]
         title += ':'
@@ -433,11 +433,11 @@ class Layout_Frame(wx.Frame):
             title += "<no layout file>";
         return title
 
-    # # Updates the current title based on ComputeTitle
+    # Updates the current title based on ComputeTitle
     def UpdateTitle(self) -> None:
         self.SetTitle(self.ComputeTitle())
 
-    # # Used for specifying edit mode
+    # Used for specifying edit mode
     def SetEditMode(self, menuEditBool: bool) -> None:
         self.GetCanvas().GetInputDecoder().SetEditMode(menuEditBool, \
                                                        self.__canvas.GetSelectionManager())
@@ -456,18 +456,18 @@ class Layout_Frame(wx.Frame):
     def SetHoverPreviewFields(self, fields: List[str]) -> None:
         self.GetCanvas().GetHoverPreview().SetFields(fields)
 
-    # # Sets cursor to busy if True
+    # Sets cursor to busy if True
     def SetBusy(self, busy: bool) -> None:
         if busy:
             wx.BeginBusyCursor()
         else:
             wx.EndBusyCursor()
 
-    # # focuses the jump-to-time box in the playback panel
+    # focuses the jump-to-time box in the playback panel
     def FocusJumpBox(self) -> None:
        self.__playback_panel.FocusJumpBox()
 
-    # # Updates the mouse location in the edit toolbar
+    # Updates the mouse location in the edit toolbar
     def UpdateMouseLocation(self, x: int, y: int) -> None:
         self.__menu.UpdateMouseLocation(x, y)
 

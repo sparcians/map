@@ -227,7 +227,7 @@ class Element_Value:
     def __hash__(self) -> int:
         return self.GetPIN()
 
-# # For same purpose as fake element, just plays a different role.
+# For same purpose as fake element, just plays a different role.
 class FakeElementValue(Element_Value):
     def __init__(self, element: FakeElement, value: PropertyValue) -> None:
         self.__element = element

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from gui.layout_canvas import Layout_Canvas
 
 
-# # This class is responsible for keeping track of which Elements have been
+# This class is responsible for keeping track of which Elements have been
 #  'selected' by the user, within a given Layout, as viewed through a Layout
 #  Context.
 class Selection_Mgr:
@@ -36,7 +36,7 @@ class Selection_Mgr:
     # all be accounted for at once'
     __queue: Dict[Element, Tuple[int, int, int, int]] = {}
 
-    # # Max depth of the undo/redo stack
+    # Max depth of the undo/redo stack
     #  This is really intended to prevent runaway allocations and should not be
     #  a burden during normal use.
     MAX_UNDO_STACK_SIZE = 200
@@ -52,7 +52,7 @@ class Selection_Mgr:
     TOP = 1
     NONE = 0
 
-    # # Calculates the actual resize operation, relative to the data in the
+    # Calculates the actual resize operation, relative to the data in the
     #  queue,  and saves results to the queue
     #  @param pt The current mouse location
     #  @param base The element who owns the selection handle being dragged
@@ -73,7 +73,7 @@ class Selection_Mgr:
                     self.__queue[e] = (x, y + delta, w, h)
         self.__prev_y = pt[1]
 
-    # # Calculates the actual resize operation, relative to the data in the
+    # Calculates the actual resize operation, relative to the data in the
     #  queue,  and saves results to the queue
     def __LeftResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         bx, _, bw, bh = self.__queue[base]
@@ -89,7 +89,7 @@ class Selection_Mgr:
                     self.__queue[e] = (x + delta, y, w, h)
         self.__prev_x = pt[0]
 
-    # # Calculates the actual resize operation, relative to the data in the
+    # Calculates the actual resize operation, relative to the data in the
     #  queue,  and saves results to the queue
     def __RightResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         bx, _, bw, bh = self.__queue[base]
@@ -123,51 +123,51 @@ class Selection_Mgr:
                     self.__queue[e] = (x, y, w, h)
         self.__prev_y = pt[1]
 
-    # # Forwarder method
+    # Forwarder method
     def __BottomMidResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__BottomResize(pt, base)
         self.SetProperties([self.BOTTOM])
 
-    # # Forwarder method
+    # Forwarder method
     def __TopMidResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__TopResize(pt, base)
         self.SetProperties([self.TOP])
 
-    # # Forwarder method
+    # Forwarder method
     def __LeftMidResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__LeftResize(pt, base)
         self.SetProperties([self.LEFT])
 
-    # # Forwarder method
+    # Forwarder method
     def __RightMidResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__RightResize(pt, base)
         self.SetProperties([self.RIGHT])
 
-    # # Forwarder method
+    # Forwarder method
     def __TopLeftResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__TopResize(pt, base)
         self.__LeftResize(pt, base)
         self.SetProperties([self.TOP, self.LEFT])
 
-    # # Forwarder method
+    # Forwarder method
     def __TopRightResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__TopResize(pt, base)
         self.__RightResize(pt, base)
         self.SetProperties([self.TOP, self.RIGHT])
 
-    # # Forwarder method
+    # Forwarder method
     def __BottomLeftResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__BottomResize(pt, base)
         self.__LeftResize(pt, base)
         self.SetProperties([self.BOTTOM, self.LEFT])
 
-    # # Forwarder method
+    # Forwarder method
     def __BottomRightResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__BottomResize(pt, base)
         self.__RightResize(pt, base)
         self.SetProperties([self.BOTTOM, self.RIGHT])
 
-    # # Look at all the proposed data for Element properties stored in the
+    # Look at all the proposed data for Element properties stored in the
     #  __queue, and actually write them to their respective Elements,
     #  modifying them for snapping if applicable. This method is called at
     #  the end of all resize operations
@@ -238,11 +238,11 @@ class Selection_Mgr:
             e.SetProperty('position', (x, y))
             e.SetProperty('dimensions', (w, h))
 
-    # # Delete all the temporary storage of Element properties
+    # Delete all the temporary storage of Element properties
     def FlushQueue(self) -> None:
         self.__queue = {}
 
-    # # Original resize callbacks, these operations allow overlap
+    # Original resize callbacks, these operations allow overlap
     __RESIZE_OPTIONS_ONE = {
         0:__TopLeftResize,
         1:__BottomLeftResize,
@@ -282,7 +282,7 @@ class Selection_Mgr:
                     self.__queue[e] = (x, y, w, h)
         self.__prev_y = pt[1]
 
-    # # Calculates the actual resize operation, relative to the queue, and
+    # Calculates the actual resize operation, relative to the queue, and
     #  saves results to the queue. This is 'Scale' mode
     def __LeftResizeScaling(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         bx, by, bw, bh = self.__queue[base]
@@ -303,7 +303,7 @@ class Selection_Mgr:
                     self.__queue[e] = (x, y, w, h)
         self.__prev_x = pt[0]
 
-    # # Calculates the actual resize operation, relative to the queue, and
+    # Calculates the actual resize operation, relative to the queue, and
     #  saves results to the queue. This is 'Scale' mode
     def __RightResizeScaling(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         bx, by, bw, bh = self.__queue[base]
@@ -324,7 +324,7 @@ class Selection_Mgr:
                     self.__queue[e] = (x, y, w, h)
         self.__prev_x = pt[0]
 
-    # # Calculates the actual resize operation, relative to the queue, and
+    # Calculates the actual resize operation, relative to the queue, and
     #  saves results to the queue. This is 'Scale' mode
     def __BottomResizeScaling(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         bx, by, bw, bh = self.__queue[base]
@@ -348,45 +348,45 @@ class Selection_Mgr:
                     self.__queue[e] = (x, y, w, h)
         self.__prev_y = pt[1]
 
-    # # Forwarder method
+    # Forwarder method
     def __BottomMidResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__BottomResizeScaling(pt, base)
         self.SetProperties([self.BOTTOM, self.TOP])
 
-    # # Forwarder method
+    # Forwarder method
     def __TopMidResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__TopResizeScaling(pt, base)
         self.SetProperties([self.TOP, self.BOTTOM])
 
-    # # Forwarder method
+    # Forwarder method
     def __LeftMidResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__LeftResizeScaling(pt, base)
         self.SetProperties([self.LEFT, self.RIGHT])
 
-    # # Forwarder method
+    # Forwarder method
     def __RightMidResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__RightResizeScaling(pt, base)
         self.SetProperties([self.RIGHT, self.LEFT])
 
-    # # Forwarder method
+    # Forwarder method
     def __TopLeftResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__TopResizeScaling(pt, base)
         self.__LeftResizeScaling(pt, base)
         self.SetProperties([self.TOP, self.LEFT, self.RIGHT, self.BOTTOM])
 
-    # # Forwarder method
+    # Forwarder method
     def __TopRightResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__TopResizeScaling(pt, base)
         self.__RightResizeScaling(pt, base)
         self.SetProperties([self.TOP, self.RIGHT, self.LEFT, self.BOTTOM])
 
-    # # Forwarder method
+    # Forwarder method
     def __BottomLeftResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__BottomResizeScaling(pt, base)
         self.__LeftResizeScaling(pt, base)
         self.SetProperties([self.BOTTOM, self.LEFT, self.RIGHT, self.TOP])
 
-    # # Forwarder method
+    # Forwarder method
     def __BottomRightResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
         self.__BottomResizeScaling(pt, base)
         self.__RightResizeScaling(pt, base)
@@ -404,7 +404,7 @@ class Selection_Mgr:
         7:__RightMidResize2
         }
 
-    # # Prepare for a resize operation on the named side. Get the bounding box
+    # Prepare for a resize operation on the named side. Get the bounding box
     #  of the selection, find the smallest Element in the corresponding
     #  dimension. Called on MouseDown before the operation actually takes place
     def __TopMidResizePrep(self, base: Element) -> None:
@@ -425,7 +425,7 @@ class Selection_Mgr:
             if y + h > self.__bottom:
                 self.__bottom = y + h
 
-    # # Prepare for a resize operation on the named side. Get the bounding box
+    # Prepare for a resize operation on the named side. Get the bounding box
     #  of the selection, find the smallest Element in the corresponding
     #  dimension. Called on MouseDown before the operation actually takes place
     def __LeftMidResizePrep(self, base: Element) -> None:
@@ -446,7 +446,7 @@ class Selection_Mgr:
             if x + w > self.__right:
                 self.__right = x + w
 
-    # # Prepare for a resize operation on the named side. Get the bounding box
+    # Prepare for a resize operation on the named side. Get the bounding box
     #  of the selection, find the smallest Element in the corresponding
     #  dimension. Called on MouseDown before the operation actually takes place
     def __RightMidResizePrep(self, base: Element) -> None:
@@ -467,7 +467,7 @@ class Selection_Mgr:
             if x + w > self.__right:
                 self.__right = x + w
 
-    # # Prepare for a resize operation on the named side. Get the bounding box
+    # Prepare for a resize operation on the named side. Get the bounding box
     #  of the selection, find the smallest Element in the corresponding
     #  dimension. Called on MouseDown before the operation actually takes place
     def __BottomMidResizePrep(self, base: Element) -> None:
@@ -488,27 +488,27 @@ class Selection_Mgr:
             if y + h > self.__bottom:
                 self.__bottom = y + h
 
-    # # Forwarder method
+    # Forwarder method
     def __TopLeftResizePrep(self, base: Element) -> None:
         self.__TopMidResizePrep(base)
         self.__LeftMidResizePrep(base)
 
-    # # Forwarder method
+    # Forwarder method
     def __TopRightResizePrep(self, base: Element) -> None:
         self.__TopMidResizePrep(base)
         self.__RightMidResizePrep(base)
 
-    # # Forwarder method
+    # Forwarder method
     def __BottomRightResizePrep(self, base: Element) -> None:
         self.__BottomMidResizePrep(base)
         self.__RightMidResizePrep(base)
 
-    # # Forwarder method
+    # Forwarder method
     def __BottomLeftResizePrep(self, base: Element) -> None:
         self.__LeftMidResizePrep(base)
         self.__BottomMidResizePrep(base)
 
-    # # Callbacks for pre-resize op preparations
+    # Callbacks for pre-resize op preparations
     __RESIZE_PREPARATIONS = {
         0:__TopLeftResizePrep,
         1:__BottomLeftResizePrep,
@@ -553,7 +553,7 @@ class Selection_Mgr:
     EACH_ELEMENT_SELECTED = False
     NO_SNAP_ON_MOVE = False
 
-    # # Get prepared to start tracking and adjusting user-selected Elements
+    # Get prepared to start tracking and adjusting user-selected Elements
     #  @param canvas Layout_Canvas
     #  @param elpropsdlg Elements Properties Dialog
     def __init__(self, canvas: Layout_Canvas, elpropsdlg: Element_PropsDlg) -> None:
@@ -607,7 +607,7 @@ class Selection_Mgr:
         nwse_image.SetOption(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 6)
         self.__custom_cursor_nwse = wx.Cursor(nwse_image)
 
-    # # Open and return a checkpoint. The returned checkpoint must be 'after'ed to complete the delta
+    # Open and return a checkpoint. The returned checkpoint must be 'after'ed to complete the delta
     #  so that it can be used as an undo/redo delta.
     #  Appends new delta to the undo stack. Removes everything at and after the current next undo
     #  pointer from the undo stack because it cannot be redone following this new change. Maybe an
@@ -635,7 +635,7 @@ class Selection_Mgr:
                'Checkpoint undo stack next ({}) != size ({})'.format(self.__undo_next_ptr, len(self.__undo_stack))
         return chkpt
 
-    # # Add an undo/redo hook to be called when an undo/redo has taken place or
+    # Add an undo/redo hook to be called when an undo/redo has taken place or
     #  the undo/redo stack has been modified. This can be used to update the
     #  menu or undo/redo lists
     #  @param hook nullary function
@@ -643,11 +643,11 @@ class Selection_Mgr:
     def AddUndoRedoHook(self, hook: Callable) -> None:
         self.__undo_redo_hooks.append(hook)
 
-    # # Removes a undo/redo hook installed by AddUndoRedoHook
+    # Removes a undo/redo hook installed by AddUndoRedoHook
     def RemoveUndoRedoHook(self, hook: Callable) -> None:
         self.__undo_redo_hooks.remove(hook)
 
-    # # Invoke all undo/redo hooks installed by AddUndoRedoHook
+    # Invoke all undo/redo hooks installed by AddUndoRedoHook
     def __CallUndoRedoHooks(self) -> None:
         for hook in self.__undo_redo_hooks:
             try:
@@ -655,7 +655,7 @@ class Selection_Mgr:
             except Exception as ex:
                 print('Exception in Undo/Redo hook:', ex)
 
-    # # Undo the next delta
+    # Undo the next delta
     #  @return True if checkpoint was undone
     def Undo(self) -> None:
         if self.__undo_next_ptr == 0:
@@ -674,7 +674,7 @@ class Selection_Mgr:
 
         self.__CallUndoRedoHooks()
 
-    # # Redo the next delta
+    # Redo the next delta
     #  @return True if checkpoint was undone
     def Redo(self) -> None:
         if self.__undo_next_ptr >= len(self.__undo_stack):
@@ -694,7 +694,7 @@ class Selection_Mgr:
 
         self.__CallUndoRedoHooks()
 
-    # # Redo all deltas
+    # Redo all deltas
     #  @return True if checkpoint was undone
     def RedoAll(self) -> None:
         current = None
@@ -716,27 +716,27 @@ class Selection_Mgr:
 
         self.__CallUndoRedoHooks()
 
-    # # Number of undos remaining before the reaching the bottom of the stack
+    # Number of undos remaining before the reaching the bottom of the stack
     def NumUndos(self) -> int:
         return self.__undo_next_ptr
 
-    # # Gets the description of the next undo. "" If NumUndos() is 0
+    # Gets the description of the next undo. "" If NumUndos() is 0
     def GetNextUndoDesc(self) -> str:
         if self.NumUndos() == 0:
             return ''
         return self.__undo_stack[self.__undo_next_ptr - 1].description
 
-    # # Number of redos remainign before reaching the top of the stack
+    # Number of redos remainign before reaching the top of the stack
     def NumRedos(self) -> int:
         return len(self.__undo_stack) - self.__undo_next_ptr
 
-    # # Gets the description of the next redo. "" If NumRedos() is 0
+    # Gets the description of the next redo. "" If NumRedos() is 0
     def GetNextRedoDesc(self) -> str:
         if self.NumRedos() == 0:
             return ''
         return self.__undo_stack[self.__undo_next_ptr].description
 
-    # # Used to prevent insane quantities of rapid fire copied elements
+    # Used to prevent insane quantities of rapid fire copied elements
     #  being added to the layout
     def PrepNextCopy(self) -> None:
         self.__copy_completed = False
@@ -781,11 +781,11 @@ class Selection_Mgr:
     def resize(self) -> int:
         return self.RESIZE
 
-    # # Clears the current selection
+    # Clears the current selection
     def ClearSelection(self) -> None:
         self.SetSelection({})
 
-    # # Used for forcing the current selection, instantly disregarding what
+    # Used for forcing the current selection, instantly disregarding what
     #  was stored previously
     #  @param selected Dictionary of elements {element:[rel_x,rel_y]}. The
     #  values in this dict are implementation details so are not explained here.
@@ -797,15 +797,15 @@ class Selection_Mgr:
         self.__el_props_dlg.SetElements(list(self.__selected.keys()), self)
         self.__canvas.Refresh()
 
-    # # Sets selected object to supplied pair
+    # Sets selected object to supplied pair
     def SetPlaybackSelected(self, pair: Optional[Element_Value]) -> None:
         self.__playback_selected = pair
 
-    # # Returns selected object pair (None if none selected)
+    # Returns selected object pair (None if none selected)
     def GetPlaybackSelected(self) -> Optional[Element_Value]:
         return self.__playback_selected
 
-    # # Return the entire selection as a sequence
+    # Return the entire selection as a sequence
     def GetSelection(self) -> Dict[Element, Tuple[int, int]]:
         return self.__selected
 
@@ -823,16 +823,16 @@ class Selection_Mgr:
         self.Remove(to_remove)
         self.Add(to_add)
 
-    # # Sets whether selection manager should be in edit mode or playback mode
+    # Sets whether selection manager should be in edit mode or playback mode
     def SetEditMode(self, is_edit_mode: bool) -> None:
         self.__is_edit_mode = is_edit_mode
 
-    # # Set which Element is the 'dominant' one for the selection. i.e. which
+    # Set which Element is the 'dominant' one for the selection. i.e. which
     #  is directly beneath the mouse, used for a snapping mode during move operations
     def SetDominant(self, e: Element) -> None:
         self.__dominant = e
 
-    # # Used for specifiying which mode of snapping during resize operations
+    # Used for specifiying which mode of snapping during resize operations
     def SetSnapMode(self, mode: str) -> None:
         # Move  operation snap modes
         if mode == 'mdominant':
@@ -855,7 +855,7 @@ class Selection_Mgr:
         elif mode == 'freesize':
             self.SNAP_ON_RESIZE = False
 
-    # # Snap each side of each selected Element to the grid, if able
+    # Snap each side of each selected Element to the grid, if able
     def SnapFill(self) -> None:
         self.FlushQueue()
         for e in self.__selected:
@@ -865,7 +865,7 @@ class Selection_Mgr:
         self.SetProperties([self.TOP, self.BOTTOM, self.RIGHT, self.LEFT])
         self.__canvas.FullUpdate()
 
-    # # Snap the closest corner of each selected Element to the grid, if able
+    # Snap the closest corner of each selected Element to the grid, if able
     def SnapCorner(self) -> None:
         self.FlushQueue()
         grid = self.__canvas.gridsize
@@ -901,7 +901,7 @@ class Selection_Mgr:
             e.SetProperty('position', (x, y))
         self.__canvas.FullUpdate()
 
-    # # Add an Element (or overwrite the associated tuple)
+    # Add an Element (or overwrite the associated tuple)
     #  @param e Element or sequence of elements to append to selection
     def Add(self, element: Union[Element, Sequence[Element]]) -> None:
         if isinstance(element, Element):
@@ -970,7 +970,7 @@ class Selection_Mgr:
             self.Clear()
             self.CommitCheckpoint() # Nothing selected after checkpoint
 
-    # # Generate a brand new Element in the layout, select it
+    # Generate a brand new Element in the layout, select it
     #  @param add_to_selection Should the new element be added to the
     #  existent selection. If False, element becomes new selection
     #  @return Returns the newly-created element
@@ -993,7 +993,7 @@ class Selection_Mgr:
         self.CommitCheckpoint()
         return e
 
-    # # Generate a complete copy of the currently selected Elements in the
+    # Generate a complete copy of the currently selected Elements in the
     #  layout, offset by delta. This operation prevented from happening continuously
     #  @param layout Layout to modify
     #  @param delta Single integer specifying both the x and y coordinate
@@ -1023,7 +1023,7 @@ class Selection_Mgr:
             # from the selection with which the checkpoint was created
             self.CommitCheckpoint(force_elements = temp_buffer + original_selection)
 
-    # # Toggles the selection state of each element on the canvas
+    # Toggles the selection state of each element on the canvas
     def InvertSelection(self, layout: Layout) -> None:
         # Mouse info needed for accurate offsets to store in self.__selected
         # when self.Add() is eventually called
@@ -1035,14 +1035,14 @@ class Selection_Mgr:
         self.Toggle(self.__canvas.GetElements())
         self.__canvas.FullUpdate()
 
-    # # Empty the current selection. Does not modify the layout.
+    # Empty the current selection. Does not modify the layout.
     #  @note No current implementation for 'undo'
     def Clear(self) -> None:
         self.__selected = {}
         self.__el_props_dlg.SetElements(list(self.__selected.keys()), self)
         self.__canvas.Refresh()
 
-    # # Selects every Element on the Canvas/in the Layout. Ctrl-A
+    # Selects every Element on the Canvas/in the Layout. Ctrl-A
     def SelectEntireLayout(self) -> None:
         mouse: Union[wx.Point, Tuple[int, int]] = wx.GetMousePosition()
         mouse = self.__canvas.CalcUnscrolledPosition(mouse)
@@ -1054,7 +1054,7 @@ class Selection_Mgr:
             self.SetCursor(wx.Cursor(wx.CURSOR_SIZING))
         self.__canvas.FullUpdate()
 
-    # # Begin checkpoint before a move
+    # Begin checkpoint before a move
     #  @note This is separate from Move. It must be explicitly called to ensure
     #  that there are clear stats and ends to undo/redo checkpoint creation.
     #  Implicitly calling this may hide bugs.
@@ -1067,7 +1067,7 @@ class Selection_Mgr:
         assert self.__cur_open_chkpt is None, 'Should not enter BeginCheckpoint with an open checkpoint'
         self.__cur_open_chkpt = self.__Checkpoint(description, kwargs.get('force_elements'))
 
-    # # Complete checkpoint after a move
+    # Complete checkpoint after a move
     #  @pre self.__selected must contain all elements which changed as a result
     #  of this checkpoint OR force_elements must be used to override
     #  @param force_elements (kwarg only) Begins using a specific set of
@@ -1084,18 +1084,18 @@ class Selection_Mgr:
         chkpt.after(selected)
         self.__CallUndoRedoHooks()
 
-    # # Cancel the open checkpoint.
+    # Cancel the open checkpoint.
     #  @note does not require an open checkpoint. Has no effect if there is no
     #  open checkpoint
     def CancelCheckpoint(self) -> None:
         self.__cur_open_chkpt = None
 
-    # # Is there a checkpoint currently open (between BeginCheckpoint and
+    # Is there a checkpoint currently open (between BeginCheckpoint and
     #  CommitCheckpoint calls)
     def HasOpenCheckpoint(self) -> bool:
         return self.__cur_open_chkpt is not None
 
-    # # Translate the entire selection
+    # Translate the entire selection
     #  @param pos move to given position, usually a Mouse position
     #  @param delta move from current position by the specified offset
     def Move(self,
@@ -1168,7 +1168,7 @@ class Selection_Mgr:
 
         self.__canvas.FullUpdate()
 
-    # # Add spacing between the selected Elements
+    # Add spacing between the selected Elements
     #  @param base The element to remain stationary
     #  @param subtractive When true the operation removes spacing
     def Indent(self, base: int, subtractive: bool = False) -> None:
@@ -1222,7 +1222,7 @@ class Selection_Mgr:
         self.__canvas.Refresh()
         self.CommitCheckpoint()
 
-    # # Flip/Reverse the selection in the given direction
+    # Flip/Reverse the selection in the given direction
     #  @param self.TOP & self.BOTTOM behave identically, same with RIGHT & LEFT
     def Flip(self, direction: int) -> None:
         if not self.__selected:
@@ -1332,7 +1332,7 @@ class Selection_Mgr:
             self.CommitCheckpoint()
         self.__canvas.FullUpdate()
 
-    # # Iterate through a sequence of elements until every PIN (or the first
+    # Iterate through a sequence of elements until every PIN (or the first
     #  encountered, depending on the value of full_set) in set_to_match
     #  has been matched with an element pin from the elements list while
     #  appending to a results list each element's PIN from elements which is not
@@ -1370,7 +1370,7 @@ class Selection_Mgr:
 
         return results
 
-    # # Take the selection and make every element the average dimensions
+    # Take the selection and make every element the average dimensions
     def Average(self) -> None:
         self.BeginCheckpoint('average elements')
         tot_w = 0.0
@@ -1386,7 +1386,7 @@ class Selection_Mgr:
         self.CommitCheckpoint()
         self.__canvas.Refresh()
 
-    # # Returns a bounding box in the form (l,t,r,b)
+    # Returns a bounding box in the form (l,t,r,b)
     #  If there is no selection, returns None
     def GetBoundingBox(self) -> Optional[Tuple[int, int, int, int]]:
         if not self.__selected:
@@ -1411,7 +1411,7 @@ class Selection_Mgr:
         assert b is not None
         return (l, t, r, b)
 
-    # # Set the current reference position and re-compute the offsets to each
+    # Set the current reference position and re-compute the offsets to each
     #  Element in the selection. Usually happens due to a MouseDown evt
     def SetPos(self, position: Tuple[int, int]) -> None:
         self.__position = position
@@ -1419,12 +1419,12 @@ class Selection_Mgr:
             x, y = cast(Tuple[int, int], e.GetProperty('position'))
             self.__selected[e] = (x - self.__position[0], y - self.__position[1])
 
-    # # Returns the selection mgr's last recorded position from which to
+    # Returns the selection mgr's last recorded position from which to
     #  compute offsets
     def GetPos(self) -> Tuple[int, int]:
         return self.__position
 
-    # # Accomplishes the calculating of what is selected by the rubber-band
+    # Accomplishes the calculating of what is selected by the rubber-band
     #  box and either adds or removes those Elements. Called while processing
     #  a MouseMove evt while history is set to rubber_band
     def ProcessRubber(self, xxx_todo_changeme: Tuple[int, int], action: Optional[int] = None) -> None:
@@ -1451,7 +1451,7 @@ class Selection_Mgr:
             self.Add([e for e in self.__temp_rubber if e not in remove_these])
             self.__temp_rubber = list(remove_these)
 
-    # # After the Layout Canvas has done its normal rendering, draw a faint
+    # After the Layout Canvas has done its normal rendering, draw a faint
     #  outline & resize handles on the Elements in a selection
     #  @param dc The device context upon which to draw
     def Draw(self, dc: wx.DC) -> None:
@@ -1504,7 +1504,7 @@ class Selection_Mgr:
             (x, y) = (x - xoff, y - yoff)
             dc.DrawRectangle(int(x), int(y), int(w), int(h))
 
-    # # For detecting collisions with the resize-handles on elements within
+    # For detecting collisions with the resize-handles on elements within
     #  the selection
     def HitHandle(self, pt: Union[wx.Point, Tuple[int, int]]) -> bool:
         if not self.__is_edit_mode:
@@ -1548,7 +1548,7 @@ class Selection_Mgr:
         # Nope, mouse not over a selection handle
         return False
 
-    # # Set's the history to correspond to the most recent type of event.
+    # Set's the history to correspond to the most recent type of event.
     #  @param val should correspond to one of the previously declared options
     def SetHistory(self, val: int) -> None:
         self.__history = val
@@ -1557,12 +1557,12 @@ class Selection_Mgr:
             self.__RESIZE_PREPARATIONS[self.__resize_direction[1]](self, self.__resize_direction[0])
             self.__canvas.FullUpdate()
 
-    # # Returns the most recent class of event. NOTE: this cannot be used for
+    # Returns the most recent class of event. NOTE: this cannot be used for
     #  redo/undo purposes
     def GetHistory(self) -> int:
         return self.__history
 
-    # # Resize the entire selection to match the mouse position. Forwards the
+    # Resize the entire selection to match the mouse position. Forwards the
     #  call to one or more actually specific methods with the resize logic
     #  @param pt The current mouse location
     #  @param mode Which of the available implemented modes of resize to do
@@ -1575,7 +1575,7 @@ class Selection_Mgr:
             self.__RESIZE_OPTIONS_TWO[self.__resize_direction[1]](self, pt, self.__resize_direction[0])
         self.__canvas.FullUpdate()
 
-    # # Sets the Canvas' cursor according to what sort of resize option the
+    # Sets the Canvas' cursor according to what sort of resize option the
     #  mouse is over. @note: cursor options/functionality currently limited 8/23/2012
     def SetCursor(self, cursor: Optional[wx.Cursor] = None) -> None:
         if cursor is None:
@@ -1590,7 +1590,7 @@ class Selection_Mgr:
         else:
             self.__canvas.SetCursor(cursor)
 
-    # # Figure out what Elements are currently within the rubber-band box the
+    # Figure out what Elements are currently within the rubber-band box the
     #  user is drawing that are eligible to be added to the selection
     #  (clk-n-drag)
     #  @param pt Usually the mouse position. The point to use as the opposite
@@ -1616,7 +1616,7 @@ class Selection_Mgr:
                     res.append(e)
         return res
 
-    # # Figure out what Elements are currently within the rubber-band box the
+    # Figure out what Elements are currently within the rubber-band box the
     #  user is drawing that are eligible to be removed from selection (alt
     #  clk-n-drag)
     #  @param pt Usually the mouse position. The point to use as the opposite
@@ -1642,7 +1642,7 @@ class Selection_Mgr:
                     res.append(e)
         return res
 
-    # # Returns lists and dictionaries of positions and elements in the
+    # Returns lists and dictionaries of positions and elements in the
     #  selection, organized by their positions (and dimensions). Align,
     #  Indent, Flip, and Stack make use of this
     def SortByPosition(self) -> Tuple[List[int], Dict[int, List[Element]], List[int], Dict[int, List[Element]], List[int], Dict[Element, int], List[int], Dict[Element, int]]:
@@ -1678,7 +1678,7 @@ class Selection_Mgr:
         plus_w.sort()
         return exes, x_sorted, whys, y_sorted, plus_w, w_sorted, plus_h, h_sorted
 
-    # # Align the given edge of every Element in the selection to the
+    # Align the given edge of every Element in the selection to the
     #  corresponding edge of the Element currently located farthest in that
     #  direction
     #  @param direction The side of each Element to align
@@ -1711,7 +1711,7 @@ class Selection_Mgr:
         self.__canvas.FullUpdate()
         self.CommitCheckpoint()
 
-    # # Line the selection up in a row/column behind the element located
+    # Line the selection up in a row/column behind the element located
     #  farthest in the given direction
     #  @param direction The element located farthest in this direction
     #  becomes the stationary base of the 'stack' which will progress in the
@@ -1843,12 +1843,12 @@ class Selection_Mgr:
         self.__canvas.FullUpdate()
         self.CommitCheckpoint()
 
-    # # This should be called on mouse ups in order to make sure that the
+    # This should be called on mouse ups in order to make sure that the
     #  Elements selected by rubber-band operation stay selected
     def FlushTempRubber(self) -> None:
         self.__temp_rubber = []
 
-    # # Returns true if there is a selected Element beneath the given point
+    # Returns true if there is a selected Element beneath the given point
     def DetectCollision(self, pt: Union[wx.Point, Tuple[int, int]]) -> bool:
         mx, my = pt
         for e in self.__selected:
@@ -1858,6 +1858,6 @@ class Selection_Mgr:
                 return True
         return False
 
-    # # debug purposes only
+    # debug purposes only
     def __str__(self) -> str:
         return str(self.__selected)

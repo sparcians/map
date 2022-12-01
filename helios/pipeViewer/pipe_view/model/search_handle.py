@@ -47,14 +47,14 @@ else:
           'to path of your transactionsearch executable', file = sys.stderr)
 
 
-# # Gets data for use by search dialog.
+# Gets data for use by search dialog.
 class SearchHandle:
 
     def __init__(self, context: Layout_Context) -> None:
         # other access to db. only used for resolving location id's the strings
         self.__db = context.dbhandle.database
 
-    # # Does search, first argument query_type takes 'string' or 'regex'
+    # Does search, first argument query_type takes 'string' or 'regex'
     #  @param progress_callback This is NOT wx.ProgressDialog's update function.
     #  Takes 3 arguments (percentage complete, result count, result info string).
     #  Callback returns a 2-tuple: (continue, skip)
@@ -148,7 +148,7 @@ class SearchHandle:
         # above code, cont=False can be an early exit when the search subprocess
         # reports 100% completion of the file. The subprocess might not be ended
         # yet though. This is just for sanity checking if enabled
-        # #process.wait()
+        #process.wait()
 
         # Check for failures after stdin has been exhausted.
         # If waiting for process completion above, there is no need to check for
@@ -159,6 +159,6 @@ class SearchHandle:
                   f'{process.returncode}: {process.stderr.read().decode("utf-8")}',
                   file = sys.stderr)
 
-        # #print 'Search results = ', len(results)
+        #print 'Search results = ', len(results)
 
         return results

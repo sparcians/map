@@ -36,7 +36,7 @@ PropertyDict = Dict[str, PropertyValue]
 ValidatedPropertyDictElement = Tuple[T, Callable]
 ValidatedPropertyDict = Dict[str, ValidatedPropertyDictElement[PropertyValue]]
 
-# # The building blocks of a Layout
+# The building blocks of a Layout
 class Element:
 #    __FRAME_COLOR = (230, 230, 230)
     __FRAME_COLOR = (128, 128, 128)
@@ -77,34 +77,34 @@ class Element:
         Element.__cur_pin += 1
         return Element.__cur_pin
 
-    # # called to see if we element should be considered for rendering
+    # called to see if we element should be considered for rendering
     # Currently there is no 'ghost' type
     @staticmethod
     def IsDrawable() -> bool:
         return False
 
-    # # called to see if we element will be making queries
+    # called to see if we element will be making queries
     @staticmethod
     def NeedsDatabase() -> bool:
         return False
 
-    # # called to see if we element is selectable in playback mode
+    # called to see if we element is selectable in playback mode
     @staticmethod
     def IsSelectable() -> bool:
         return True
 
-    # # called to see if we element will gather data from additional'meta'
+    # called to see if we element will gather data from additional'meta'
     # table of data from database
     @staticmethod
     def UsesMetadata() -> bool:
         return False
 
-    # # called when drawn is not null
+    # called when drawn is not null
     @staticmethod
     def GetDrawRoutine() -> Optional[Callable]:
         return None
 
-    # # indicates if this is a possible container
+    # indicates if this is a possible container
     # if it is then the following methods must be added:
     # GetChildren(self) -> [Element, ...]
     # AddChild(self, Element)
@@ -121,19 +121,19 @@ class Element:
     def GetType() -> str:
         return ''
 
-    # # returns a list of property names (keys) to exclude from
+    # returns a list of property names (keys) to exclude from
     # element property dialog
     @staticmethod
     def GetHiddenProperties() -> List[str]:
         return ['scale_factor']
 
-    # # returns a list of property names (keys) to mark read-only in
+    # returns a list of property names (keys) to mark read-only in
     # element property dialog
     @staticmethod
     def GetReadOnlyProperties() -> List[str]:
         return []
 
-    # # The constructor
+    # The constructor
     #  if an Element is passed in, then a duplicate is created, otherwise the
     #  default values are loaded
     #  @param initial_properties Properties dictionary that overrides any
@@ -192,7 +192,7 @@ class Element:
                 self._properties[k] = v.replace('\\"', '"').replace('\\n', '\n').replace('\\r', '\r')
             # for key in duplicate.__properties:
             #    self._properties[key]=duplicate.__properties[key]
-            # #logging.debug("Successfully duplicated an element")
+            #logging.debug("Successfully duplicated an element")
 
         # These need to be set after the properties are set
         self._layout = container
@@ -202,15 +202,15 @@ class Element:
 
         self._pen = wx.Pen([int(c) for c in cast(Tuple[int, int, int], self._properties['color'])], 1)
 
-    # # Return the unique identifier of this element
+    # Return the unique identifier of this element
     def GetPIN(self) -> int:
         return self.__pin
 
-    # # Return parent for this object
+    # Return parent for this object
     def GetParent(self) -> Optional[Element]:
         return self._parent
 
-    # # Return the layout which this element belongs to
+    # Return the layout which this element belongs to
     def GetLayout(self) -> Optional[Layout]:
         return self._layout
 
@@ -219,19 +219,19 @@ class Element:
         size = cast(Tuple[int, int], self.GetProperty('dimensions'))
         return pos[0], pos[1], pos[0] + size[0], pos[1] + size[1]
 
-    # # Set a flag that the element needs to be redrawn
+    # Set a flag that the element needs to be redrawn
     def SetNeedsRedraw(self) -> None:
         self.__needs_redraw = True
 
-    # # Unset the redraw flag
+    # Unset the redraw flag
     def UnsetNeedsRedraw(self) -> None:
         self.__needs_redraw = False
 
-    # # Query the redraw flag
+    # Query the redraw flag
     def NeedsRedraw(self) -> bool:
         return self.__needs_redraw
 
-    # # Set the Element's property key to the value val, if it passes the
+    # Set the Element's property key to the value val, if it passes the
     #  validation effort
     #  @param key Property to change
     #  @param val New value for the property. Note that val can always be a
@@ -292,7 +292,7 @@ class Element:
             self.__changed = True
             self._layout.SetChanged()
 
-    # # Fetch the value for the given key
+    # Fetch the value for the given key
     def GetProperty(self, key: str, period: Optional[int] = None) -> PropertyValue:
         val = self._properties[key]
 
@@ -306,67 +306,67 @@ class Element:
         else:
             raise NotImplementedError(f"Scaling not implemented for property '{key}'.")
 
-    # # These shortcut functions were added in order to improve performance for some derived types
-    # # Shortcut to get X dimension
+    # These shortcut functions were added in order to improve performance for some derived types
+    # Shortcut to get X dimension
     def GetXDim(self) -> int:
         return cast(Tuple[int, int], self.GetProperty('dimensions'))[0]
 
-    # # Shortcut to get Y dimension
+    # Shortcut to get Y dimension
     def GetYDim(self) -> int:
         return cast(Tuple[int, int], self.GetProperty('dimensions'))[1]
 
-    # # Shortcut to get X position
+    # Shortcut to get X position
     def GetXPos(self) -> int:
         return cast(Tuple[int, int], self.GetProperty('position'))[0]
 
-    # # Shortcut to get Y position
+    # Shortcut to get Y position
     def GetYPos(self) -> int:
         return cast(Tuple[int, int], self.GetProperty('position'))[1]
 
-    # # Return the entire dict of properties
+    # Return the entire dict of properties
     def GetProperties(self) -> PropertyDict:
         return self._properties
 
-    # # Return the entire dict of properties
+    # Return the entire dict of properties
     def GetSerializableProperties(self) -> PropertyDict:
         return {k: v for k, v in self._properties.items() if k not in self._VIRTUAL_PROPERTIES}
 
-    # # Does this element have a particular property
+    # Does this element have a particular property
     def HasProperty(self, key: str) -> bool:
         return key in self._properties
 
-    # # Return a listing of the valid options for the 'Content' property
+    # Return a listing of the valid options for the 'Content' property
     def GetContentOptions(self) -> List[str]:
         return self.__CONTENT_OPTIONS
 
-    # # Override and return offset times to query range of data at update.
+    # Override and return offset times to query range of data at update.
     def GetQueryFrame(self, period: int) -> Optional[Tuple[int, int]]:
         return None
 
-    # # Indicates whether this element has been modified in any way that could
+    # Indicates whether this element has been modified in any way that could
     #  affect the save state on disk
     #  @return True if the element has changed
     #  @see _MarkAsUnchanged
     def HasChanged(self) -> bool:
         return self.__changed
 
-    # # Mark the element for update.
+    # Mark the element for update.
     def SetChanged(self) -> None:
         self.__changed = True
 
-    # # Sets if element should be drawn.
+    # Sets if element should be drawn.
     # Useful after a parent has handled the draw for the children.
     def EnableDraw(self, state: bool) -> None:
         self.__draw = state
 
-    # # Returns if draw is enabled on this element.
+    # Returns if draw is enabled on this element.
     def ShouldDraw(self) -> bool:
         return self.__draw
 
     def GetChildren(self) -> List[Element]:
         raise NotImplementedError('GetChildren not implemented for this class')
 
-    # # Append YAML content of this element to a YAML event list
+    # Append YAML content of this element to a YAML event list
     #  @pre Assumes this element can just append a self-contained YAML
     #  block-style map right here (no leading map key/scalar or
     #  sequence start events will be emitted).
@@ -402,7 +402,7 @@ class Element:
         events.append(yaml.MappingEndEvent())
         return events
 
-    # # Flags this layout and all comprising elements as Not Changed.
+    # Flags this layout and all comprising elements as Not Changed.
     #  This is intended to be called by the owning Layout
     def _MarkAsUnchanged(self) -> None:
         self.__changed = False
@@ -410,12 +410,12 @@ class Element:
     def LocationHasVars(self) -> bool:
         return False
 
-    # # Will return a hash of the Elements PIN, which is a unique identifier
+    # Will return a hash of the Elements PIN, which is a unique identifier
     #  for each Element (and therefore each Element Value)
     def __hash__(self) -> int:
         return hash(self.GetPIN())
 
-    # # Determine if two Element instances are equivalent, as determined by
+    # Determine if two Element instances are equivalent, as determined by
     #  sharing the same PIN or the other element being None.
     #  Comparison with other types is not allowed
     def __eq__(self, other: object) -> bool:
@@ -428,7 +428,7 @@ class Element:
 Element._ALL_PROPERTIES['type'] = (Element.GetType(), valid.validateString)
 
 
-# # Generic element capable of holding other elements.
+# Generic element capable of holding other elements.
 class MultiElement(Element):
     _MULTI_PROPERTIES: ValidatedPropertyDict = {'children' : ([], valid.validateList)}
     _ALL_PROPERTIES = Element._ALL_PROPERTIES.copy()
@@ -469,7 +469,7 @@ class MultiElement(Element):
             child.SetNeedsRedraw()
 
 
-# # Element that gets queries from database.
+# Element that gets queries from database.
 class LocationallyKeyedElement(Element):
     _LOC_KEYED_PROPERTIES = {'LocationString' : ('top' , valid.validateLocation),
                             #  'annotation'    : ('', valid.validateAnnotation), #unused, phase out
@@ -528,17 +528,17 @@ class LocationallyKeyedElement(Element):
     def LocationHasVars(self) -> bool:
         return self.__has_vars
 
-    # # Debug purposes only
+    # Debug purposes only
     def __str__(self) -> str:
         return '<{} element: loc={} toff={}>' \
                .format(self._properties['type'], self._properties['LocationString'], str(self._properties['t_offset']))
 
-    # # Debug purposes only
+    # Debug purposes only
     def __repr__(self) -> str:
         return cast(str, self._properties['LocationString']) + ' ' + cast(str, self._properties['Content'])
 
 
-# # For purposes of consistency, we don't use the base type Element directly.
+# For purposes of consistency, we don't use the base type Element directly.
 class BoxElement(LocationallyKeyedElement):
 
     @staticmethod
@@ -553,10 +553,10 @@ class BoxElement(LocationallyKeyedElement):
 BoxElement._ALL_PROPERTIES['type'] = (BoxElement.GetType(), valid.validateString)
 
 
-# # For purposes of consistency, we don't use the base type Element directly.
+# For purposes of consistency, we don't use the base type Element directly.
 class ImageElement(LocationallyKeyedElement):
 
-    # # Manages loaded images
+    # Manages loaded images
     #  @note This is required as an optimization for undo/redo/scale operations
     #  so that images needn't be reloaded.
     class ImageManager:
@@ -579,17 +579,17 @@ class ImageElement(LocationallyKeyedElement):
                     del self.__bmps[k]
                     break
 
-        # # Get an item from the manager, loading if necessary
+        # Get an item from the manager, loading if necessary
         #  @param info Info about the item to load including filename and
         #  dimensions as nested tuples: (filename, (w,h))
         def __getitem__(self, info: Tuple[str, Tuple[int, int]]) -> Optional[wx.Bitmap]:
             # See if a scaled image matching the info exists already
             bmp_and_img = self.__bmps.get(info)
             if bmp_and_img is not None:
-                # #print 'Re-using scaled image {}'.format(info)
+                #print 'Re-using scaled image {}'.format(info)
                 return bmp_and_img.bmp_wref() # Use the existing scaled bitmap. Will expedite copy/paste undo/redo
             else:
-                pass # #print 'Could not find scaled image in {}'.format(self.__bmps.keys())
+                pass #print 'Could not find scaled image in {}'.format(self.__bmps.keys())
 
             # Unpack args for new image
             filename, dims = info
@@ -599,7 +599,7 @@ class ImageElement(LocationallyKeyedElement):
             img = self.__originals.get(filename)
 
             if img is None:
-                # #print 'Loading original image:'.format(info)
+                #print 'Loading original image:'.format(info)
                 bmp = wx.Bitmap(filename, wx.BITMAP_TYPE_ANY)
                 if not bmp.IsOk():
                     raise IOError('Bitmap {} could not be loaded'.format(filename))
@@ -607,15 +607,15 @@ class ImageElement(LocationallyKeyedElement):
                 self.__originals[filename] = img
 
             # Scale the new image
-            # #print 'Scaling image {}'.format(info)
+            #print 'Scaling image {}'.format(info)
             img2 = img.Scale(w, h, wx.IMAGE_QUALITY_HIGH)
             bmp = wx.BitmapFromImage(img2)
 
             # Track in list
             self.__bmps[info] = self.BitmapOriginalPair(weakref.ref(bmp), img)
 
-            # #print 'BMPs:', self.__bmps.keys()
-            # #print 'ORIGs: ', self.__originals.keys()
+            #print 'BMPs:', self.__bmps.keys()
+            #print 'ORIGs: ', self.__originals.keys()
 
             return bmp
 
@@ -635,7 +635,7 @@ class ImageElement(LocationallyKeyedElement):
     def IsDrawable() -> bool:
         return True
 
-    # # called when drawn is not null
+    # called when drawn is not null
     @classmethod
     def GetDrawRoutine(cls) -> Callable:
         return cls.DrawRoutine
@@ -672,7 +672,7 @@ class ImageElement(LocationallyKeyedElement):
         brush = wx.Brush((0, 0, 0), style = wx.SOLID) # TODO: use a brush cache
         dc.SetBrush(brush)
 
-        # #dc.SetClippingRegion(x, y, w, h)
+        #dc.SetClippingRegion(x, y, w, h)
 
         dc.SetBackground(wx.Brush('WHITE'))
 
@@ -685,7 +685,7 @@ class ImageElement(LocationallyKeyedElement):
             dc.DrawLine(int(x + w), int(y), int(x), int(y + h))
 
         self.UnsetNeedsRedraw()
-        # #dc.DestroyClippingRegion()
+        #dc.DestroyClippingRegion()
 
     def SetProperty(self, key: str, val: PropertyValue) -> None:
         LocationallyKeyedElement.SetProperty(self, key, val)
@@ -698,7 +698,7 @@ class ImageElement(LocationallyKeyedElement):
             val = cast(Tuple[int, int], val)
             self.ScaleImage(cast(str, self.GetProperty('filename')), val)
 
-    # # Scale image, reloading if necessary
+    # Scale image, reloading if necessary
     def ScaleImage(self, filename: str, dims: Tuple[int, int]) -> None:
         imgpath = self.__ChooseImage(filename)
 
@@ -748,7 +748,7 @@ class ImageElement(LocationallyKeyedElement):
 
         return dirs
 
-    # # Determines a path to an image given a relative path to this session's resource directories
+    # Determines a path to an image given a relative path to this session's resource directories
     def __ChooseImage(self, filename: str) -> Optional[str]:
         layout = self.GetLayout()
         assert layout is not None
@@ -766,7 +766,7 @@ class ImageElement(LocationallyKeyedElement):
 ImageElement._ALL_PROPERTIES['type'] = (ImageElement.GetType(), valid.validateString)
 
 
-# # For purposes of consistency, we don't use the base type Element directly.
+# For purposes of consistency, we don't use the base type Element directly.
 class LogElement(LocationallyKeyedElement):
 
     _LOG_PROPERTIES = {'filename': ('logo.png', valid.validateString),
@@ -788,7 +788,7 @@ class LogElement(LocationallyKeyedElement):
     def IsDrawable() -> bool:
         return True
 
-    # # called when drawn is not null
+    # called when drawn is not null
     @classmethod
     def GetDrawRoutine(cls) -> Callable:
         return cls.DrawRoutine
@@ -988,7 +988,7 @@ class LogElement(LocationallyKeyedElement):
 LogElement._ALL_PROPERTIES['type'] = (LogElement.GetType(), valid.validateString)
 
 
-# # Class which only is used to identify transactions.
+# Class which only is used to identify transactions.
 # Used for collision events for mouse-over.
 class FakeElement(Element):
 
@@ -1009,6 +1009,6 @@ class FakeElement(Element):
     def SetProperty(self, key: str, value: PropertyValue) -> None:
         self._properties[key] = value
 
-    # # Does this element have a particular property
+    # Does this element have a particular property
     def HasProperty(self, key: str) -> bool:
         return key in self._properties

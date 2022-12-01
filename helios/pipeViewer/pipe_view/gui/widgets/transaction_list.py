@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 TransactionListBaseEntry = Dict[str, Any]
 TransactionListEntry = Union['SearchResult', TransactionListBaseEntry]
 
-# # This class is a GUI list control element that shows transactions.
+# This class is a GUI list control element that shows transactions.
 class TransactionList(wx.ListCtrl):
 
     def __init__(self, parent: wx.Frame, canvas: Layout_Canvas, name: str = '') -> None:
@@ -41,7 +41,7 @@ class TransactionList(wx.ListCtrl):
     def Colorize(self, colorize: bool) -> None:
         self.__colorize = colorize
 
-    # # Destroy all graphical elements and recreate them
+    # Destroy all graphical elements and recreate them
     def RefreshAll(self) -> None:
         self.ClearAll()
         # make header
@@ -74,7 +74,7 @@ class TransactionList(wx.ListCtrl):
         self.RefreshTransaction(self.__current_new_idx)
         self.__current_new_idx += 1
 
-    # # Add a new element to bottom of list. New item must be dictionary of properties.
+    # Add a new element to bottom of list. New item must be dictionary of properties.
     def Add(self, transaction_properties: TransactionListEntry) -> int:
         self.__transactions.append(transaction_properties)
         self.__AddGraphicalTransaction(transaction_properties)
@@ -85,7 +85,7 @@ class TransactionList(wx.ListCtrl):
         self.DeleteItem(index)
         self.__current_new_idx -= 1
 
-    # # Attempts to resize the columns based on size
+    # Attempts to resize the columns based on size
     #  @pre All content should be added before this is called (once)
     def FitColumns(self) -> None:
         for idx, _ in enumerate(self.__properties):

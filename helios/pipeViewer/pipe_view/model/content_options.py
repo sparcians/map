@@ -1,9 +1,9 @@
-# # @package contentoptions
+# @package contentoptions
 #  This module exists to provide a centralized listing of all content options
 #  an Element can display, combined with descriptions of those content
 #  options and the logic to extract the specified content from a transaction
 
-# # Transaction type strings known to the viewer
+# Transaction type strings known to the viewer
 from __future__ import annotations
 from typing import Any, Callable, Dict, List, Optional, Tuple, cast, TYPE_CHECKING
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 TRANSACTION_TYPES = ['Annotation', 'Instruction', 'MemoryOp']
 
-# # These methods are used to actually acquire the data specified by the
+# These methods are used to actually acquire the data specified by the
 #  various content options
 #
 #  TODO: Implement checks on each of these Get* methods to see if there is
@@ -147,7 +147,7 @@ def IsContinued(trans: Transaction, e: Element, *args: Any) -> bool:
     return trans.isContinued()
 
 
-# # The dictionary with all the content options, how to get the specified
+# The dictionary with all the content options, how to get the specified
 #  content, and a description of each content option. Add additional content
 #  options in this dictionary, and write the related function above
 __CONTENT_PROC: Dict[str, Tuple[Callable, str]] = {
@@ -177,7 +177,7 @@ __CONTENT_PROC: Dict[str, Tuple[Callable, str]] = {
     'continued':             (IsContinued, "Whether the transaction is continued over a heartbeat interval")
 }
 
-# # The dictionary with all display states and the string which will be used
+# The dictionary with all display states and the string which will be used
 #  to override the val of an Element Value
 __DISPLAY_STATES = {
     'normal':   '', # Display whatever belongs inside the element
@@ -188,7 +188,7 @@ __DISPLAY_STATES = {
                     # actual location in the locations file
 }
 
-# # A listing of the content options which do not require a transaction
+# A listing of the content options which do not require a transaction
 #  from a stabbing query in order to be determined. Use a dictionary for faster
 #  lookup in the critical path
 NO_TRANSACTIONS_REQUIRED = {'caption':None,
@@ -198,7 +198,7 @@ NO_TRANSACTIONS_REQUIRED = {'caption':None,
                             'truncated_location':None,
                             'cycle':None}
 
-# # A listing of the content options which do not require a database at all.
+# A listing of the content options which do not require a database at all.
 #  Use a dictionary for faster lookup in the critical path
 NO_DATABASE_REQUIRED = {'caption':None}
 
@@ -213,7 +213,7 @@ def OverrideState(key: str) -> str:
     return __DISPLAY_STATES[key]
 
 
-# # This method is used by an Ordered Dictionary to populate it's
+# This method is used by an Ordered Dictionary to populate it's
 #  Element_Value's with the data
 def ProcessContent(content: str,
                    trans: Optional[Transaction],
@@ -224,7 +224,7 @@ def ProcessContent(content: str,
     return __CONTENT_PROC[content][0](trans, e, dbhandle, tick, loc_vars)
 
 
-# # Returns the string describing the specified content option
+# Returns the string describing the specified content option
 def ContentDescription(content: str) -> str:
     return __CONTENT_PROC[content][1]
 
@@ -232,6 +232,6 @@ def ContentDescription(content: str) -> str:
 __CONTENT_OPTIONS = list(__CONTENT_PROC.keys())
 
 
-# # Returns a listing of the available content options
+# Returns a listing of the available content options
 def GetContentOptions() -> List[str]:
     return __CONTENT_OPTIONS

@@ -7,13 +7,13 @@ from .element_value import Element_Value, FakeElementValue
 if TYPE_CHECKING:
     from .clock_manager import ClockManager
     from gui.layout_canvas import Layout_Canvas
-# # Global module members for commonly used brushes/pens so that they only need to be created once
-# # TODO: Maybe encapsulate these in some kind of singleton class?
+# Global module members for commonly used brushes/pens so that they only need to be created once
+# TODO: Maybe encapsulate these in some kind of singleton class?
 
 _WHITE_BRUSH: Optional[wx.Brush] = None
 _BLACK_PEN: Optional[wx.Pen] = None
 
-# # Get the white brush
+# Get the white brush
 def GetWhiteBrush() -> wx.Brush:
     global _WHITE_BRUSH
     if _WHITE_BRUSH is None:
@@ -21,7 +21,7 @@ def GetWhiteBrush() -> wx.Brush:
     return _WHITE_BRUSH
 
 
-# # Get the black pen
+# Get the black pen
 def GetBlackPen() -> wx.Pen:
     global _BLACK_PEN
     if _BLACK_PEN is None:
@@ -29,7 +29,7 @@ def GetBlackPen() -> wx.Pen:
     return _BLACK_PEN
 
 
-# # validates schedule draw style.
+# validates schedule draw style.
 # Should be in valid, but I don't want circular dependencies.
 def decodeScheduleDraw(name: str, raw: str) -> str:
     if raw in ScheduleLineElement.DRAW_LOOKUP:
@@ -92,7 +92,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
     def GetDrawRoutine() -> Callable:
         return ScheduleLineElement.DrawRoutine
 
-    # # override to add inheritance stuff
+    # override to add inheritance stuff
     # period is local period for line element
     # only used when there is a parent schedule giving a t_offset
     def GetProperty(self, key: str, period: Optional[int] = 1) -> PropertyValue:
@@ -310,7 +310,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
     def SetTime(self, hc: int) -> None:
         self.__hc = hc
 
-    # # Called at  query time and indicates what should be updated
+    # Called at  query time and indicates what should be updated
     def GetQueryFrame(self, period: int) -> Tuple[int, int]:
         parent = self._parent
 
@@ -325,7 +325,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
             offs = cast(int, self.GetProperty('t_offset', period = period)) # in ticks
             return (int((offs - 1) * period), int((offs + 1) * period + self.GetXDim() * cast(float, self.GetProperty('time_scale'))))
 
-    # # Generates elements with addresses based on the x coordinate.
+    # Generates elements with addresses based on the x coordinate.
     # passes these (fake) elements to the hover preview, which then
     # queries all the needed data fresh.
     # accepts point in local coord
@@ -365,7 +365,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
 ScheduleLineElement._ALL_PROPERTIES['type'] = (ScheduleLineElement.GetType(), valid.validateString)
 
 
-# # Element shows start times every few cycles.
+# Element shows start times every few cycles.
 class ScheduleLineRulerElement(ScheduleLineElement):
     _ALL_PROPERTIES = ScheduleLineElement._ALL_PROPERTIES.copy()
 
@@ -387,7 +387,7 @@ class ScheduleLineRulerElement(ScheduleLineElement):
         ScheduleLineElement.__init__(self, *args, **kwargs)
         self.__step = 5
 
-    # # very brief rendering function generating time-line
+    # very brief rendering function generating time-line
     # I tried just showing transactions and their start time,
     # however it was buggy and added too many special cases and hacks
     # this is quick and simple in comparison
@@ -463,7 +463,7 @@ class ScheduleLineRulerElement(ScheduleLineElement):
         dc.DestroyClippingRegion()
         self.UnsetNeedsRedraw()
 
-# # Container class for Schedule Lines.
+# Container class for Schedule Lines.
 # Gives schedule elements the following properties:
 # Clock, Width, Time Offset
 # Also Controls drawing of schedule lines.
@@ -607,7 +607,7 @@ class ScheduleElement(MultiElement):
         pairs = []
         largest_period = 0
 
-        # # @todo This is imporper. HasChanged refers to layout state, not
+        # @todo This is imporper. HasChanged refers to layout state, not
         #  drawing state. Reading HasChanged to determine if an update should
         #  be done is not appropriate. Writing MarkAsUnchanged() will break
         #  other frames using the same layout AND break "modified layout"
@@ -651,7 +651,7 @@ class ScheduleElement(MultiElement):
         tick_offset = cast(int, first_child.GetProperty('t_offset'))
         frame_range = (int(tick_offset), int(tick_offset + self.GetXDim() * t_scale))
 
-        # # Determine update type
+        # Determine update type
         if self.__old_period != largest_period:
             full_update = True
             self.__old_period = largest_period
@@ -659,7 +659,7 @@ class ScheduleElement(MultiElement):
             full_update = True
             self.__last_hc = hc
 
-        # # Find deltas
+        # Find deltas
         d_t = hc - self.__last_hc
         d_p = -d_t / t_scale + self.__remainder_dp
         i_d_p = int(d_p)
@@ -685,7 +685,7 @@ class ScheduleElement(MultiElement):
                 end_range = hc
 
         sched_height = lowest_y - highest_y
-        # # Execute the set update type
+        # Execute the set update type
         if self.__buffer is None:
             time_range = None # draw full frame
             clip_region = None
@@ -792,7 +792,7 @@ class ScheduleElement(MultiElement):
         self._MarkAsUnchanged()
         self.UnsetNeedsRedraw()
 
-    # # Detect collision with children (they are likely not drawn)
+    # Detect collision with children (they are likely not drawn)
     #  @param pt Point to test
     #  @return First child which includes pt
     def DetectCollision(self, pt: Union[Tuple[int, int], wx.Point]) -> Optional[Element]:

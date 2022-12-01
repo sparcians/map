@@ -16,21 +16,21 @@ if TYPE_CHECKING:
     from model.layout_context import Layout_Context
     from model.workspace import Workspace
 
-# # The reason this application exists, Layouts allow users to group together
+# The reason this application exists, Layouts allow users to group together
 #  the elements they are viewing
 #
 #  Layouts can only be loaded at Layout.__init__. To load a new layout, a new
 #  Layout instance must be created.
 class Layout:
 
-    # # File name and extension for layout files
+    # File name and extension for layout files
     LAYOUT_FILE_EXTENSION = '.alf'
 
-    # # Layout file wildcard for use in file selection dialog boxes
+    # Layout file wildcard for use in file selection dialog boxes
     LAYOUT_FILE_WILDCARD = 'Argos layout files (*{0})|*{0}' \
                            .format(LAYOUT_FILE_EXTENSION)
 
-    # # Code at start of each precompiled alf file (alfc) indicating its version.
+    # Code at start of each precompiled alf file (alfc) indicating its version.
     #  @note This Layout class can only load specific versions.
     #  @note Must not contain any whitespace!
     #  @note There is likely no need to support historic versions assuming
@@ -38,7 +38,7 @@ class Layout:
     #  additional reload time each time this code is updated.
     PRECOMPILED_VERSION_CODE = 'argos-alfc-v3'.strip()
 
-    # # Initialize two lists to store Elements and registerd Layout_Contexts
+    # Initialize two lists to store Elements and registerd Layout_Contexts
     #  @param filename Layout file to parse and open. This filename and a
     #  checksum will be stored in case the file is to be stored again following
     #  changes. If None or '', no file is loaded
@@ -69,26 +69,26 @@ class Layout:
 
         logging.info("Layout loaded with {0} elements in {1}s".format(len(self.__elements), (time.time() - t_start)))
 
-    # # Returns the workspace associated with this layout
+    # Returns the workspace associated with this layout
     def GetWorkspace(self) -> Optional[Workspace]:
         return self.__workspace
 
-    # # This should only be called by a Layout_Context
+    # This should only be called by a Layout_Context
     #  Causes the Layout_Context to be registered with the Layout
     def LinkLayoutContext(self, lay_con: Layout_Context) -> None:
         self.lay_cons.append(lay_con)
 
-    # # This should only be called by a Layout_Context
+    # This should only be called by a Layout_Context
     #  Unregisters the Layout_Context from the Layout
     def UnLinkLayoutContext(self, lay_con: Layout_Context) -> None:
         if lay_con in self.lay_cons:
             self.lay_cons.remove(lay_con)
 
-    # # Tells whether any Layout_Contexts are currently registered with this Layout
+    # Tells whether any Layout_Contexts are currently registered with this Layout
     def HasContext(self) -> bool:
         return not not self.lay_cons
 
-    # # Determine PINs of elements preceding the given list of elements' pins.
+    # Determine PINs of elements preceding the given list of elements' pins.
     #  @return List of sequences of all preceeding pins:
     #     e.g. [[1,2], [1,2,3,4], [1,2,3,4,5,6,7]]
     #  Result is in same order as input pins. May contain [-1] to indicate that
@@ -127,7 +127,7 @@ class Layout:
                .format(results.count([]), [e.GetPIN() for e in els], results)
         return results
 
-    # # Creates and returns a new element. Does not add it to the layout.
+    # Creates and returns a new element. Does not add it to the layout.
     # @profile
     def CreateElement(self,
                       duplicate: Optional[Element] = None,
@@ -146,7 +146,7 @@ class Layout:
 
         return e
 
-    # # Adds a new element to the list and informs any subscribed Layout
+    # Adds a new element to the list and informs any subscribed Layout
     #  Contexts, supports duplicating an Element that is passed in as a parameter
     #  @param duplicate Optional element from which this element will copy
     #  properties
@@ -173,10 +173,10 @@ class Layout:
 
         self.AddElement(e, **add_kwargs)
 
-        # #logging.debug("Element created in layout")
+        #logging.debug("Element created in layout")
         return e
 
-    # # Removes the Element from the list and instructs all subscribed Layout
+    # Removes the Element from the list and instructs all subscribed Layout
     #  Contexts to do the same
     def RemoveElement(self, e: Element) -> None:
         for element in self.__elements:
@@ -198,7 +198,7 @@ class Layout:
         if (parent := e.GetParent()) is not None:
             parent.SetNeedsRedraw()
 
-    # # Adds the given element to the list and instructs all subscribed Layout
+    # Adds the given element to the list and instructs all subscribed Layout
     #  Contexts to do the same
     #  @param follows_pin=PIN Pin of element after which to insert this element
     #  @param skip_list=Skips adding element to the local list if true
@@ -208,7 +208,7 @@ class Layout:
         skip_list = kwargs.get('skip_list', False)
         if not skip_list:
             self.__InsertElementAfterPIN(e, follows_pins[-1])
-            # #self.__elements.append(e)
+            #self.__elements.append(e)
             self.__elements_by_pin[e.GetPIN()] = e
             if e.HasChildren():
                 self.__elements_with_children.append(cast('MultiElement', e))
@@ -216,14 +216,14 @@ class Layout:
             lay_con.AddElement(e, after_pins = follows_pins)
         self.__changed = True
 
-    # # If a property (t_offset or LocationString) for an Element is changed
+    # If a property (t_offset or LocationString) for an Element is changed
     #  such that it will no longer be correctly sorted in the OrderedDict,
     #  this method will figure out where it goes
     def ReSort(self, e: Element, t_off: int, loc: str) -> None:
         for lay_con in self.lay_cons:
             lay_con.ReSort(e, t_off, loc)
 
-    # # If a property for an Element indicating position or size is changed,
+    # If a property for an Element indicating position or size is changed,
     #  this method is invoked. Alerts all layout contexts110
     def ElementsMoved(self, e: Element) -> None:
         for lay_con in self.lay_cons:
@@ -233,7 +233,7 @@ class Layout:
         for lay_con in self.lay_cons:
             lay_con.ReValue(e)
 
-    # # Find an element by its PIN
+    # Find an element by its PIN
     #  @return The element with the given pin if found. Otherwise returns None
     def FindByPIN(self, pin: int) -> Optional[Element]:
         el = self.__elements_by_pin.get(pin, None)
@@ -246,7 +246,7 @@ class Layout:
                     break
         return el
 
-    # # Returns the list (un-sorted) of all Elements in the Layout
+    # Returns the list (un-sorted) of all Elements in the Layout
     #  It is not safe to modify this list
     def GetElements(self) -> List[Element]:
         return self.__elements
@@ -264,7 +264,7 @@ class Layout:
     def GetFileChecksum(self) -> Optional[str]:
         return self.__file_checksum
 
-    # # Store the layout to a file as YAML. Preserves draw order
+    # Store the layout to a file as YAML. Preserves draw order
     #  @param filename. If None, stores to the current filename returned by
     #  GetFilename. If there is no current filename, raises ValueError.
     #  If a str, attempts to store to this file. If None, effectively behaves
@@ -299,7 +299,7 @@ class Layout:
         # Just saved, layout is now unchanged
         self.__MarkAsUnchanged()
 
-    # # Determines if this can be stored to the current GetFilename() without
+    # Determines if this can be stored to the current GetFilename() without
     #  overwriting changes to that file. If GetFilename returns None, this
     #  always returns False.
     #  @note Does not determine write-access for destination directory
@@ -321,7 +321,7 @@ class Layout:
 
         return True
 
-    # # Indicates whether this Layout or any of its comprising elements have
+    # Indicates whether this Layout or any of its comprising elements have
     #  been modified in any way that could affect the save state on disk
     #  @return True if this layout or elements have changed
     def HasChanged(self) -> bool:
@@ -334,31 +334,31 @@ class Layout:
 
         return False
 
-    # # Mark the layout as changed. Ideally, this is not needed since HasChanged
+    # Mark the layout as changed. Ideally, this is not needed since HasChanged
     #  inspects elements for their changes.
     def SetChanged(self) -> None:
         self.__changed = True
 
-    # # Insert an element following an element with the given pin
+    # Insert an element following an element with the given pin
     def __InsertElementAfterPIN(self, e: Element, after_pin: int = -1) -> None:
-        # #print 'Inserting into layout {} after PIN {}'.format(e, after_pin)
+        #print 'Inserting into layout {} after PIN {}'.format(e, after_pin)
         if after_pin == None:
             self.__elements.append(e)
-            # #print '  @back'
+            #print '  @back'
         elif after_pin == -1:
             self.__elements.insert(0, e)
-            # #print '  @front'
+            #print '  @front'
         else:
             for idx, el in enumerate(self.__elements):
                 if el.GetPIN() == after_pin:
                     self.__elements.insert(idx + 1, e)
-                    # #print '  @{}'.format(idx+1)
+                    #print '  @{}'.format(idx+1)
                     break
             else:
                 self.__elements.append(e)
-                # #print '  @back (2) ap={}'.format(after_pin)
+                #print '  @back (2) ap={}'.format(after_pin)
 
-    # # Recursive removal of element and its children, returns the pruned elements
+    # Recursive removal of element and its children, returns the pruned elements
     def __PruneOnElement(self, e: Element, element: Element, chop_all: bool = False) -> List[Element]:
         if e == element or chop_all:
             chop_all = True
@@ -381,7 +381,7 @@ class Layout:
                             return out
         return chopped
 
-    # # Store the layout to a given stream as a new YAML stream without any
+    # Store the layout to a given stream as a new YAML stream without any
     #  safety checks about the stream itself.
     #  Preserves draw order
     #  @param stream Stream with writeability. Layout representation will be
@@ -406,13 +406,13 @@ class Layout:
 
         yaml.emit(events, stream)
 
-    # # Computes a checksum of the file specified
+    # Computes a checksum of the file specified
     @staticmethod
     def __ComputeChecksum(filename: str) -> str:
         with open(filename, 'r') as f:
             return md5.md5(f.read().encode('utf-8')).hexdigest()
 
-    # #Loads an element from YAML, returns element
+    #Loads an element from YAML, returns element
     def __LoadElement(self, elinfo: PropertyDict, idx: int, filename: str, parent: Optional[Element] = None) -> Element:
         if not isinstance(elinfo, dict):
             raise ValueError('Element {0} in Argos layout file "{1}" was not a map structure, was a {2}' \
@@ -420,7 +420,7 @@ class Layout:
 
         # Peek at type before further reading
         el_type = cast(str, elinfo.get('type'))
-        # # TODO: reintroduce unknown property checking
+        # TODO: reintroduce unknown property checking
         e = self.CreateElement(initial_properties = elinfo, element_type = el_type, parent = parent)
         # load children if any exist
         children = cast(List['PropertyDict'], elinfo.get('children'))
@@ -430,7 +430,7 @@ class Layout:
                 e.AddChild(self.__LoadElement(child, idx, filename, parent = e))
         return e
 
-    # # Loads layout from a YAML file
+    # Loads layout from a YAML file
     #  @param filename File to load
     #  @throw Raises an Exception if file cannot be opened or there are errors
     #  parsing
@@ -467,7 +467,7 @@ class Layout:
                 e = self.__LoadElement(elinfo, idx, filename)
                 self.AddElement(e)
 
-        # # @todo Use file date modified instead - probably faster
+        # @todo Use file date modified instead - probably faster
         self.__file_checksum = self.__ComputeChecksum(filename) # Checksum of file as loaded
 
         # Store the precompiled alf
@@ -477,7 +477,7 @@ class Layout:
         # Just loaded - No changes
         self.__MarkAsUnchanged()
 
-    # # Load individual element from pickle
+    # Load individual element from pickle
     def __LoadElementFromPickle(self, pdict: PropertyDict, parent: Optional[Element] = None) -> Element:
         if 'children' in pdict:
             # child property only is generated at compile time. Strip out.
@@ -494,10 +494,10 @@ class Layout:
 
         return e
 
-    # # Loads a precompiled layout file
+    # Loads a precompiled layout file
     #  @return True if load was successful and False if not.
     #  @note Logs to warning and debug about loading issues
-    # #@profile
+    #@profile
     def __TryLoadPrecompiledLayout(self, filename: str, precompiled_filename: str) -> bool:
         if not os.path.exists(precompiled_filename):
             return False
@@ -547,7 +547,7 @@ class Layout:
 
         return output
 
-    # # Writes a precompiled layout file having the given name
+    # Writes a precompiled layout file having the given name
     def __WritePrecompiledLayout(self, precompiled_filename: str) -> None:
         try:
             f = open(precompiled_filename, 'wb')
@@ -569,11 +569,11 @@ class Layout:
             else:
                 logging.info('Successfully wrote precompiled alf: {}'.format(precompiled_filename))
 
-    # # Generates precompiled filename for a given layout filename
+    # Generates precompiled filename for a given layout filename
     def __GenPrecompiledLayoutFilename(self, filename: str) -> str:
         return filename + 'c' # e.g. layout.alfc
 
-    # # Flags this layout and all comprising elements as Not Changed.
+    # Flags this layout and all comprising elements as Not Changed.
     #  This is intended to be called when a layout is being loaded or saved
     def __MarkAsUnchanged(self) -> None:
         self.__changed = False
@@ -586,6 +586,6 @@ class Layout:
     def __repr__(self) -> str:
         return self.__str__()
 
-    # # Add a region of two offsets from current time to ask for when updated.
+    # Add a region of two offsets from current time to ask for when updated.
     def GetElementDump(self) -> str:
         return repr(self.__elements)

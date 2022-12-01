@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from model.element import PropertyValue
     from gui.layout_canvas import Layout_Canvas
 
+
 class WidgetElement(LocationallyKeyedElement):
     _ALL_PROPERTIES = LocationallyKeyedElement._ALL_PROPERTIES.copy()
 
@@ -25,7 +26,10 @@ class WidgetElement(LocationallyKeyedElement):
     def GetDrawRoutine() -> Callable:
         return WidgetElement.DrawRoutine
 
-    def __init__(self, widget_init: Callable, *args: Any, **kwargs: Any) -> None:
+    def __init__(self,
+                 widget_init: Callable,
+                 *args: Any,
+                 **kwargs: Any) -> None:
         self.__canvas: Optional[wx.Panel] = None
         self.__parent: Optional[Layout_Canvas] = None
         self.__widget: Optional[wx.Window] = None
@@ -46,7 +50,8 @@ class WidgetElement(LocationallyKeyedElement):
             self.__SetCanvasSize(val)
             self.__canvas.Update()
 
-    def __SetCanvasPosition(self, val: Union[Tuple[int, int], wx.Point]) -> None:
+    def __SetCanvasPosition(self,
+                            val: Union[Tuple[int, int], wx.Point]) -> None:
         if self.__canvas is not None:
             assert self.__parent is not None
             self.__canvas.SetPosition(self.__parent.CalcScrolledPosition(val))
@@ -68,7 +73,7 @@ class WidgetElement(LocationallyKeyedElement):
         self.__canvas.Show(False)
 
     def DrawRoutine(self,
-                    pair : Element_Value,
+                    pair: Element_Value,
                     dc: wx.DC,
                     canvas: Layout_Canvas,
                     tick: int) -> None:
@@ -119,5 +124,6 @@ class WidgetElement(LocationallyKeyedElement):
         self.__SetCanvasSize(wx.Size(self.GetXDim(), self.GetYDim()))
         self.__SetCanvasPosition(wx.Point(self.GetXPos(), self.GetYPos()))
 
-WidgetElement._ALL_PROPERTIES['type'] = (WidgetElement.GetType(), valid.validateString)
 
+WidgetElement._ALL_PROPERTIES['type'] = \
+    (WidgetElement.GetType(), valid.validateString)

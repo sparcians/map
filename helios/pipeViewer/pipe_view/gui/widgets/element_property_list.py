@@ -20,7 +20,7 @@ MULTIPLE_VALS_STR = '<multiple values>'
 MULTIPLE_VALS_COLOR = wx.Colour(200, 200, 100)
 
 
-# # Grid descendent used to display and edit element properties
+# Grid descendent used to display and edit element properties
 class ElementPropertyList(wx.grid.Grid):
 
     def __init__(self, parent: Element_PropsDlg, id: int) -> None:
@@ -46,7 +46,7 @@ class ElementPropertyList(wx.grid.Grid):
         self.__InstallGridHint()
 
     def OnResize(self, evt: wx.SizeEvent) -> None:
-        # #self.AutoSizeColumn(0, False)
+        #self.AutoSizeColumn(0, False)
         remaining = max(0, self.GetClientSize()[0] - self.GetRowLabelSize())
 
         # UPdate column sizes with recursion prevention
@@ -63,7 +63,7 @@ class ElementPropertyList(wx.grid.Grid):
 
         evt.Skip()
 
-    # # Set the elements.
+    # Set the elements.
     #  @param elements Elements being edited
     #  @param sem_mgr Selection manager
     def SetElements(self, elements: List[Element], sel_mgr: Selection_Mgr) -> None:
@@ -74,12 +74,12 @@ class ElementPropertyList(wx.grid.Grid):
             props_set = set(self.__elements[0].GetProperties().keys())
             hidden_props_set = set(self.__elements[0].GetHiddenProperties())
             read_only_props_set = set(self.__elements[0].GetReadOnlyProperties())
-            # #props_set.difference_update(self.__elements[0].GetHiddenProperties())
+            #props_set.difference_update(self.__elements[0].GetHiddenProperties())
             for i in range(1, len(self.__elements)):
                 el = self.__elements[i]
-                # #props_set.intersection_update(el.GetElementProperties())
+                #props_set.intersection_update(el.GetElementProperties())
                 props_set.union(el.GetElementProperties())
-                # #props_set.difference_update(self.__elements[i].GetHiddenProperties())
+                #props_set.difference_update(self.__elements[i].GetHiddenProperties())
                 hidden_props_set.intersection_update(el.GetHiddenProperties())
                 read_only_props_set.intersection_update(el.GetReadOnlyProperties())
 
@@ -200,7 +200,7 @@ class ElementPropertyList(wx.grid.Grid):
     def GetNumberOfElements(self) -> int:
         return len(self.__elements)
 
-    # # override read-only setter to gray out text
+    # override read-only setter to gray out text
     def SetReadOnly(self, row: int, col: int, is_read_only: bool = True) -> None:
         wx.grid.Grid.SetReadOnly(self, row, col, is_read_only)
         if is_read_only:
@@ -252,10 +252,10 @@ class ElementPropertyList(wx.grid.Grid):
         #wx.EVT_MOTION(self.GetGridWindow(), OnMouseMotion)
         self.GetGridWindow().Bind(wx.EVT_MOTION, OnMouseMotion, id = wx.ID_NONE)
 
-# # Class which displays drop-down-list formatted options when the user edits a cell
+# Class which displays drop-down-list formatted options when the user edits a cell
 class DropdownCellEditor(wx.grid.GridCellEditor):
 
-    # # options is a list of options.
+    # options is a list of options.
     def __init__(self, options: List[str]) -> None:
         wx.grid.GridCellEditor.__init__(self)
         self.__options = options
@@ -327,7 +327,7 @@ class DropdownCellEditor(wx.grid.GridCellEditor):
         return DropdownCellEditor(self.__options)
 
 
-# # Class which allows user to edit a cell with text entry or a popup window
+# Class which allows user to edit a cell with text entry or a popup window
 class PopupCellEditor(wx.grid.GridCellEditor):
     __chooser = None
     __popup = None

@@ -14,47 +14,47 @@ if TYPE_CHECKING:
     from gui.layout_frame import Layout_Frame
     from model.settings import ArgosSettings
 
-# # @package frame_playback_bar.py
+# @package frame_playback_bar.py
 #  @brief Contains FramePlaybackBar which holds all playback controls for a single
 #  LayoutFrame
 
 
-# # @brief A wide, stretchable panel containing playback controls for a single Argos Frame
+# @brief A wide, stretchable panel containing playback controls for a single Argos Frame
 class FramePlaybackBar(wx.Panel):
 
-    # # Label for start-of-database cycle number
+    # Label for start-of-database cycle number
     START_TIME_FMT = 'cyc-start:{0}'
 
-    # # Label for end-of-database cycle number
+    # Label for end-of-database cycle number
     END_TIME_FMT = 'cyc-end:{0}'
 
-    # # Label for tick number
+    # Label for tick number
     CUR_TIME_FMT = 'tick:{0}'
 
-    # # Label for current-time current cycle number
+    # Label for current-time current cycle number
     CUR_CYCLE_FMT = 'cycle:{0}'
 
-    # # Range of time slider values (input resolution)
+    # Range of time slider values (input resolution)
     TIME_SLIDER_RANGE = 1000000
 
-    # # Label for play button
+    # Label for play button
     LABEL_PLAY = 'play'
     LABEL_PAUSE = 'pause'
 
-    # # Amount to step when a key is used to press the rewind or fast-forwardx buttons
+    # Amount to step when a key is used to press the rewind or fast-forwardx buttons
     COARSE_KEYPRESS_STEP = 5
 
-    # # Default size of the query API's dynamic in-memory data window in terms of ticks
+    # Default size of the query API's dynamic in-memory data window in terms of ticks
     DB_PRELOAD_WINDOW_SIZE = 1000
 
-    # # Rate of playback when the rewind or fast-forward key is held with the mouse
+    # Rate of playback when the rewind or fast-forward key is held with the mouse
     #  (in current clock cycles per second)
     COARSE_MOUSE_RATE = 10
 
-    # # Maximum animated playback rate
+    # Maximum animated playback rate
     MAX_PLAY_RATE = 1000
 
-    # # Set up all the menus and embedded sub-menus, with all their bindings/callbacks
+    # Set up all the menus and embedded sub-menus, with all their bindings/callbacks
     def __init__(self, frame: Layout_Frame) -> None:
         self.__parent = frame
         wx.Panel.__init__(self, self.__parent, wx.ID_ANY)
@@ -293,19 +293,19 @@ class FramePlaybackBar(wx.Panel):
         self.__GetSelectedClock()
         self.__Update()
 
-    # # Refreshes the content of this panel
+    # Refreshes the content of this panel
     def Refresh(self, eraseBackground: bool = True, rect: Optional[Union[wx.Rect, Tuple[int, int, int, int]]] = None) -> None:
         self.__Update()
 
-    # # Updates values displayed to match current context and selection
+    # Updates values displayed to match current context and selection
     #  @note Does not invoke FullUpdate on the associated layout canvas
     def __Update(self) -> None:
-        # #clock_name = self.__drop_clock.GetValue()
-        # #for clk in clocks:
-        # #    if clk.name == clock_name:
-        # #        break
-        # #else:
-        # #    assert 'Could not find a clock by the name "{0}"'.format(clock_name)
+        #clock_name = self.__drop_clock.GetValue()
+        #for clk in clocks:
+        #    if clk.name == clock_name:
+        #        break
+        #else:
+        #    assert 'Could not find a clock by the name "{0}"'.format(clock_name)
 
         # Compute cycle to display
         assert self.__current_clock is not None
@@ -328,19 +328,19 @@ class FramePlaybackBar(wx.Panel):
             if prev_slider_cycle != new_slider_cycle:
                 self.__time_slider.SetValue(int(new_slider_cycle * self.TIME_SLIDER_RANGE))
 
-    # # Moves to the start cycle of this database
+    # Moves to the start cycle of this database
     def __OnGotoStart(self, evt: hl.HyperLinkEvent) -> None:
         hc = self.__qapi.getFileStart()
         self.__parent.GetContext().GoToHC(hc)
         ####self.__parent.Refresh()
 
-    # # Moves to the end cycle of this database
+    # Moves to the end cycle of this database
     def __OnGotoEnd(self, evt: hl.HyperLinkEvent) -> None:
         hc = self.__qapi.getFileEnd()
         self.__parent.GetContext().GoToHC(hc)
         ####self.__parent.Refresh()
 
-    # # Time slider being moved.
+    # Time slider being moved.
     #  Pauses playback
     def __OnTimeSlider(self, evt: wx.ScrollEvent) -> None:
         self.__PausePlaying();
@@ -352,11 +352,11 @@ class FramePlaybackBar(wx.Panel):
         self.__static_curcycle.SetLabel(self.CUR_CYCLE_FMT.format(cur_cycle))
         self.__static_curtick.SetLabel(self.CUR_TIME_FMT.format(clk.LocalToHypercycle(cur_cycle)))
 
-    # # Mouse down even on time slider
+    # Mouse down even on time slider
     def __OnTimeSliderLeftDown(self, evt: wx.MouseEvent) -> None:
         evt.Skip()
 
-    # # Moves to a specific cycle of this database
+    # Moves to a specific cycle of this database
     #  Also pauses playback
     def __OnTimeSliderLeftUp(self, evt: wx.MouseEvent) -> None:
         self.__PausePlaying();
@@ -370,8 +370,8 @@ class FramePlaybackBar(wx.Panel):
 
             # Do not do this. It currently confuses the IntervalWindow
             # Reduce preload window to 1 tick in either direction to maximize load speed
-            # #self.__qapi.setOffsetLeft(1);
-            # #self.__qapi.setOffsetRight(1);
+            #self.__qapi.setOffsetLeft(1);
+            #self.__qapi.setOffsetRight(1);
             self.__parent.GetContext().GoToHC(hc)
             ####self.__parent.Refresh()
 
@@ -381,17 +381,17 @@ class FramePlaybackBar(wx.Panel):
         finally:
             self.__slider_hooked = False
 
-            # # Do not change these. They currently do not work and seem to confuse the IntervalWindow
+            # Do not change these. They currently do not work and seem to confuse the IntervalWindow
             # self.__qapi.setOffsetLeft(int(self.DB_PRELOAD_WINDOW_SIZE/2));
             # self.__qapi.setOffsetRight(int(self.DB_PRELOAD_WINDOW_SIZE/2));
 
             evt.Skip()
 
-    # # Handles keyboard input on the time slider
+    # Handles keyboard input on the time slider
     def __OnTimeSliderChar(self, evt: wx.KeyEvent) -> None:
         pass # Do not forward the event
 
-    # # Updates information for new clock selection.
+    # Updates information for new clock selection.
     #  Does not actually change context
     def __OnClockSelect(self, evt: wx.CommandEvent) -> None:
         self.__referenced_clocks = self.__parent.GetContext().GetVisibleClocks()
@@ -499,14 +499,14 @@ class FramePlaybackBar(wx.Panel):
             self.__parent.GetCanvas().SetFocus() # go back to canvas
             ####self.__parent.Refresh()
 
-    # # Changed spin value
+    # Changed spin value
     #
     #  Enables or disables the play/pause button depending on current value
     def __OnPlaySpinValChange(self, evt: wx.SpinEvent) -> None:
         spin_val = self.__spin_playback_speed.GetValue()
         self.__btn_playpause.Enable(spin_val != 0)
 
-    # # Keystroke on spin value
+    # Keystroke on spin value
     #
     # Starts or stops playing if enter is pressed
     def __OnPlaySpinValChar(self, evt: wx.KeyEvent) -> None:
@@ -515,7 +515,7 @@ class FramePlaybackBar(wx.Panel):
         else:
             evt.Skip()
 
-    # # Handler for clicking the play-pause button
+    # Handler for clicking the play-pause button
     def __OnPlayPause(self, evt: Optional[wx.CommandEvent] = None) -> None:
         if self.__btn_playpause.GetLabel() == self.LABEL_PLAY:
             self.__StartPlaying()
@@ -524,7 +524,7 @@ class FramePlaybackBar(wx.Panel):
         else:
             raise RuntimeError('Play button label was neither play nor pause')
 
-    # # If a ShyButton is being focused, focus the canvas instead
+    # If a ShyButton is being focused, focus the canvas instead
     def __OnChildFocus(self, evt: wx.FocusEvent) -> None:
         obj = evt.GetWindow()
         if obj and not obj.AcceptsFocus():
@@ -532,7 +532,7 @@ class FramePlaybackBar(wx.Panel):
 
     # Helper methods
 
-    # # Steps current clock forward by a number of cycles on the current clock
+    # Steps current clock forward by a number of cycles on the current clock
     #  @param step Number of cycles on local clock to step forward
     def __StepForward(self, step: int = 1) -> None:
         # to avoid rounding errors
@@ -544,7 +544,7 @@ class FramePlaybackBar(wx.Panel):
         self.__parent.GetContext().GoToHC(clk.LocalToHypercycle(cur_cycle))
         ####self.__parent.Refresh()
 
-    # # Steps current clock backward by a number of cycles on the current clock
+    # Steps current clock backward by a number of cycles on the current clock
     #  @param step Number of cycles on local clock to step backward (should be
     #  positive)
     def __StepBackward(self, step: int = 1) -> None:
@@ -553,15 +553,15 @@ class FramePlaybackBar(wx.Panel):
         cur_cycle = self.__GetPrevCycle(clk, step)
 
         # because of floor and since the clock is already behind hc, add one
-        # # @todo Stepping backward (and forward) should actually choose the
-        # # closest clock edge-by-edge. It should never take the closest clock
-        # # and add/subtract a number greater than 1.
-        # #if self.__is_auto_clock and clk.LocalToHypercycle(cur_cycle+1) < self.__parent.GetContext().GetHC():
-        # #    cur_cycle+=1
+        # @todo Stepping backward (and forward) should actually choose the
+        # closest clock edge-by-edge. It should never take the closest clock
+        # and add/subtract a number greater than 1.
+        #if self.__is_auto_clock and clk.LocalToHypercycle(cur_cycle+1) < self.__parent.GetContext().GetHC():
+        #    cur_cycle+=1
         self.__parent.GetContext().GoToHC(clk.LocalToHypercycle(cur_cycle))
         ####self.__parent.Refresh()
 
-    # # Gets the value of the goto (jump) text box and converts it to a tuple:
+    # Gets the value of the goto (jump) text box and converts it to a tuple:
     #  (absolute_value, relative) where absolute_value is the integer value in
     #  the textbox and relative is the sign character extracted. If no sign
     #  character is found at the start of the string, the relative component
@@ -583,7 +583,7 @@ class FramePlaybackBar(wx.Panel):
         cyc_text = cyc_text.strip()
         return (self.__StringToInt(cyc_text), relative)
 
-    # # Computes the current cycle indicated by the slider in terms of the given clock.
+    # Computes the current cycle indicated by the slider in terms of the given clock.
     def __ComputeSliderLocalCycle(self, clk: ClockManager.ClockDomain) -> int:
         start_cycle = clk.HypercycleToLocal(self.__qapi.getFileStart())
         inc_end_cycle = clk.HypercycleToLocal(self.__qapi.getFileInclusiveEnd())
@@ -591,14 +591,14 @@ class FramePlaybackBar(wx.Panel):
         cyc_range = max(float(inc_end_cycle - start_cycle), 0.1)
         return int(self.__ComputeSliderCycle(cyc_range))
 
-    # # Computes the current cycle based on the slider position interpolated within the
+    # Computes the current cycle based on the slider position interpolated within the
     #  given cycle range tuple representing the range of cycles addressable by the slider
     def __ComputeSliderCycle(self, cyc_range: float) -> int:
         portion = self.__time_slider.GetValue() / float(self.TIME_SLIDER_RANGE) # Scale into [0,1) range
         assert self.__current_clock is not None
         return int((portion * cyc_range) + self.__current_clock.HypercycleToLocal(self.__qapi.getFileStart()))
 
-    # # Gets the current Clock object selected by the dropdown
+    # Gets the current Clock object selected by the dropdown
     def __GetSelectedClock(self, forward: bool = True, auto_chosen: bool = False) -> ClockManager.ClockDomain:
         # Find the current clock
         clocks = self.__db.clock_manager.getClocks()
@@ -615,7 +615,7 @@ class FramePlaybackBar(wx.Panel):
         self.__is_auto_clock = auto_chosen
         return clk
 
-    # # Sets up timer to start playing with given rate in cycles/sec.
+    # Sets up timer to start playing with given rate in cycles/sec.
     #  @param rate Rate to attempt to refresh in current-clock-cycles/sec.
     #  If rate==None, uses the rate from self.__spin_playback_speed control
     def __StartPlaying(self, rate: Optional[float] = None, delay: int = 0) -> None:
@@ -625,7 +625,7 @@ class FramePlaybackBar(wx.Panel):
         self.__btn_playpause.SetLabel(self.LABEL_PAUSE)
         self.__UpdatePlayTimer(delay = delay)
 
-    # # Handle clicking on the pause button
+    # Handle clicking on the pause button
     def __PausePlaying(self) -> None:
         self.__play_timer.Stop()
         self.__play_rate = None
@@ -636,7 +636,7 @@ class FramePlaybackBar(wx.Panel):
         if self.__btn_playpause.GetLabel() != self.LABEL_PLAY:
             self.__btn_playpause.SetLabel(self.LABEL_PLAY)
 
-    # # Handler for __play_timer event
+    # Handler for __play_timer event
     def __OnPlayTimer(self, evt: wx.TimerEvent) -> None:
         # Determine play rate
         if self.__play_rate is not None:
@@ -709,7 +709,7 @@ class FramePlaybackBar(wx.Panel):
               .format(advance, self.__accum_play_cycle_fraction, delta_time, cur_time)
         logging.getLogger('FramePlayback').debug(msg)
 
-    # # Updates the play timer value based on the play speed spin ctrl
+    # Updates the play timer value based on the play speed spin ctrl
     #  @pre Do not invoke if spin ctrl value is 0
     def __UpdatePlayTimer(self, delay: int = 0) -> None:
         # Determine play rate
@@ -734,7 +734,7 @@ class FramePlaybackBar(wx.Panel):
         else:
             if cps == 0:
                 self.__PausePlaying()
-                # #raise RuntimeError('Should not have allowed an updated of the play timer with cycles/sec == 0')
+                #raise RuntimeError('Should not have allowed an updated of the play timer with cycles/sec == 0')
             else:
 
                 # Actually play
@@ -744,7 +744,7 @@ class FramePlaybackBar(wx.Panel):
                 logging.getLogger('FramePlayback').debug(msg)
 
                 # Immediately schedule timer
-                # #self.__play_timer.Start(next_timer, oneShot=True)
+                #self.__play_timer.Start(next_timer, oneShot=True)
 
                 # Delay scheduling of timer and always schedule immediately.
                 # This lets us redraw as fast as possible. May need to specially
@@ -760,7 +760,7 @@ class FramePlaybackBar(wx.Panel):
 
                 wx.CallAfter(TimerStarter)
 
-    # # Converts a string to an integer allowing for hex, binary, and octal prefixes
+    # Converts a string to an integer allowing for hex, binary, and octal prefixes
     #  @note Does NOT support negative or positive prefixes
     #  @throw ValueError if number cannot be converted
     def __StringToInt(self, num_str: str) -> int:
@@ -778,11 +778,11 @@ class FramePlaybackBar(wx.Panel):
 
         return num
 
-    # # Returns the current cycle in the selected clock domain
+    # Returns the current cycle in the selected clock domain
     def __GetCurrentCycle(self, clk: ClockManager.ClockDomain) -> int:
         return clk.HypercycleToLocal(self.__parent.GetContext().GetHC())
 
-    # # Determines the next clock cycle within the database file extents.
+    # Determines the next clock cycle within the database file extents.
     #  @param step Size of forward step (should be a positive number)
     #  @return an integer with the next local cycle if valid. This may be
     #  the same as the current value if the current value is at the right
@@ -792,7 +792,7 @@ class FramePlaybackBar(wx.Panel):
         next = step + cur
         return next
 
-    # # Determines the prev clock cycle within the database file extents.
+    # Determines the prev clock cycle within the database file extents.
     #  @param step Size of backward step (should be a positive number)
     #  @return an integer with the next local cycle if valid. This may be
     #  the same as the current value if the current value is at the left
@@ -802,31 +802,31 @@ class FramePlaybackBar(wx.Panel):
         prev = cur - step
         return prev
 
-    # # Steps current clock forward by a number of cycles on the current clock
+    # Steps current clock forward by a number of cycles on the current clock
     #  @param step Number of cycles on local clock to step forward
     #  Called by external element
     def StepForward(self, step: int = 1) -> None:
         self.__StepForward(step)
 
-    # # Steps current clock backward by a number of cycles on the current clock
+    # Steps current clock backward by a number of cycles on the current clock
     #  @param step Number of cycles on local clock to step backward (should be
     #  positive)
     #  Called by external element
     def StepBackward(self, step: int = 1) -> None:
         self.__StepBackward(step)
 
-    # # Used by input decoder when arrow key is held down
+    # Used by input decoder when arrow key is held down
     def StartPlaying(self, step: int = 1, delay: int = 0) -> None:
         self.__StartPlaying(step, delay = delay)
 
-    # # Used by input decoder when arrow key is released
-    # # Public interface to pause playing (from Frame)
+    # Used by input decoder when arrow key is released
+    # Public interface to pause playing (from Frame)
     #  @note This exists to stop playing when the owning frame is trying to close using a
     #  wx.CallAfter but playback is not allowing the event queue to completely drain
     def PausePlaying(self) -> None:
         self.__PausePlaying()
 
-    # # Attempt to select the given clock by name
+    # Attempt to select the given clock by name
     def SetDisplayClock(self, clock_name: str, error_if_not_found: bool = True) -> bool:
         cn = clock_name.lower()
         for idx, item in enumerate(self.__drop_clock.GetItems()):
@@ -844,22 +844,22 @@ class FramePlaybackBar(wx.Panel):
 
         return False
 
-    # # To to a specific cyle on the currently displayed clock for this frame
+    # To to a specific cyle on the currently displayed clock for this frame
     def GoToCycle(self, cycle: int) -> None:
         assert cycle is not None
         clk = self.__GetSelectedClock()
         assert clk is not None
         self.__parent.GetContext().GoToHC(clk.LocalToHypercycle(cycle))
 
-    # # Sets focus to the jump-to-time text entry box
+    # Sets focus to the jump-to-time text entry box
     def FocusJumpBox(self) -> None:
         self.__txt_goto.SetFocus()
 
-    # # Gets the global settings object
+    # Gets the global settings object
     def GetSettings(self) -> ArgosSettings:
         return self.__parent.GetSettings()
 
-    # # Updates font sizes for all of the controls
+    # Updates font sizes for all of the controls
     def UpdateFontSize(self) -> None:
         self.__fnt_tiny = wx.Font(ScaleFont(self.GetSettings().playback_font_size), wx.NORMAL, wx.NORMAL, wx.NORMAL)
         self.__fnt_bold_med = wx.Font(ScaleFont(self.GetSettings().playback_font_size), wx.NORMAL, wx.NORMAL, wx.BOLD)
@@ -891,13 +891,13 @@ class FramePlaybackBar(wx.Panel):
         self.Layout()
 
 
-# # A button which does not accept focus
+# A button which does not accept focus
 class ShyButton(wx.Button):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         wx.Button.__init__(self, *args, **kwargs)
 
-    # # overriding this method should do the trick, but although it doesn't work we use
+    # overriding this method should do the trick, but although it doesn't work we use
     # this method to identify shy button objects and de-focus them if they get focused
     def AcceptsFocus(self) -> bool:
         return False

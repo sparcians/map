@@ -1,4 +1,4 @@
-# # @package select_db_dbg.py
+# @package select_db_dbg.py
 #  @brief Dialog for selecting a database file
 
 from __future__ import annotations
@@ -9,18 +9,18 @@ import wx
 import wx.lib.scrolledpanel as scrolledpanel
 
 
-# # Dialog for selecting an Argos database.
+# Dialog for selecting an Argos database.
 #
 #  Use ShowModal to display the dialog and then use GetPrefix to see selected
 #  filename
 class SelectDatabaseDlg(wx.Dialog):
 
-    # # File name and extension for simulation info files
+    # File name and extension for simulation info files
     #
     #  This can be appended to a prefix to get simulation information
     INFO_FILE_EXTENSION = 'simulation.info'
 
-    # # Initialized the dialog
+    # Initialized the dialog
     #  @param init_prefix Value of prefix to show in the box by default.
     #  Must be a str or None
     def __init__(self, init_prefix: Optional[str] = None) -> None:
@@ -103,7 +103,7 @@ class SelectDatabaseDlg(wx.Dialog):
     def Show(self, show: bool = True) -> bool:
         raise NotImplementedError('Cannot Show() this dialog. Use ShowModal instead')
 
-    # # Gets the prefix selected by the dialog
+    # Gets the prefix selected by the dialog
     #  @return The prefix selected while the dialog was shown. Is a string if
     #  found and None if no database was chosen
     #
@@ -111,17 +111,17 @@ class SelectDatabaseDlg(wx.Dialog):
     def GetPrefix(self) -> Optional[str]:
         return self.__prefix
 
-    # # Handler for Close button
+    # Handler for Close button
     def __OnClose(self, evt: wx.CommandEvent) -> None:
         self.__prefix = None
         self.EndModal(wx.CANCEL)
 
-    # # Handler for Ok button
+    # Handler for Ok button
     def __OnOk(self, evt: wx.CommandEvent) -> None:
         # self.__filename already set before this button was enabled
         self.EndModal(wx.OK)
 
-    # # Handler for Find button
+    # Handler for Find button
     def __OnFindFile(self, evt: wx.CommandEvent) -> None:
         dlg = wx.FileDialog(self, "Select Argos database simulation.info file",
                             defaultFile = self.__file_txt.GetValue(),
@@ -135,11 +135,11 @@ class SelectDatabaseDlg(wx.Dialog):
 
         self.__CheckSelectionState()
 
-    # # Handler for Changing the filename in file_txt
+    # Handler for Changing the filename in file_txt
     def __OnChangeFilename(self, evt: wx.CommandEvent) -> None:
         self.__CheckSelectionState()
 
-    # # Checks on the value in the self.__file_txt box to see if it points to a
+    # Checks on the value in the self.__file_txt box to see if it points to a
     #  valid simulation
     #
     #  Updates self.__prefix

@@ -11,7 +11,7 @@ from typing import Optional, Tuple, Union, TYPE_CHECKING
 if TYPE_CHECKING:
     from gui.layout_frame import Layout_Frame
 
-# # TranslateElementsDlg allows relative or absolute translation of a group of
+# TranslateElementsDlg allows relative or absolute translation of a group of
 #  elements based on user-specified coordinates. This is exepected to be used
 #  modally
 class TranslateElementsDlg(wx.Dialog):
@@ -118,19 +118,19 @@ class TranslateElementsDlg(wx.Dialog):
         # TODO: bind escape to exit!
 
         # Could show currently selected elements for excluding some from the xlate operation
-        # #self.__results_box = ElementList(panel,
-        # #            wx.NewId(),
-        # #            parent.GetCanvas(),
-        # #            name='listbox',
-        # #            properties=[''])
-        # #main_sizer.Add(self.__results_box, 1, wx.EXPAND, 5)
+        #self.__results_box = ElementList(panel,
+        #            wx.NewId(),
+        #            parent.GetCanvas(),
+        #            name='listbox',
+        #            properties=[''])
+        #main_sizer.Add(self.__results_box, 1, wx.EXPAND, 5)
 
         # bind to events
         self.__btn_apply.Bind(wx.EVT_BUTTON, self.OnApply)
         self.__btn_exit.Bind(wx.EVT_BUTTON, self.OnExit)
         panel.Bind(wx.EVT_KEY_UP, self.OnKeyPress)
-        # #panel.Bind(wx.EVT_KEY_DOWN, self.OnKeyPress)
-        # #panel.Bind(wx.EVT_CHAR, self.OnKeyPress)
+        #panel.Bind(wx.EVT_KEY_DOWN, self.OnKeyPress)
+        #panel.Bind(wx.EVT_CHAR, self.OnKeyPress)
         self.__txt_x.Bind(wx.EVT_TEXT, self.OnCoordChange)
         self.__txt_y.Bind(wx.EVT_TEXT, self.OnCoordChange)
         self.__chk_rel_x.Bind(wx.EVT_CHECKBOX, self.OnCoordChange)
@@ -139,13 +139,13 @@ class TranslateElementsDlg(wx.Dialog):
     def Show(self, show: bool = True) -> bool:
         raise Exception('This dialog should only be shown modally')
 
-    # # defines how the dialog should pop up
+    # defines how the dialog should pop up
     def ShowModal(self) -> int:
         res = wx.Dialog.ShowModal(self)
         self.Raise()
         return res
 
-    # # callback that listens for enter being pressed to initiate search
+    # callback that listens for enter being pressed to initiate search
     def OnKeyPress(self, evt: wx.KeyEvent) -> None:
         if evt.GetKeyCode() == wx.WXK_ESCAPE:
             self.EndModal(0)
@@ -164,7 +164,7 @@ class TranslateElementsDlg(wx.Dialog):
         # In case undo/redo made changes:
         self.__UpdateDesc()
 
-    # # Handle x/y textbox/checkbox change
+    # Handle x/y textbox/checkbox change
     def OnCoordChange(self, evt: Optional[wx.CommandEvent] = None) -> None:
         dx, dy = self.__ComputeMoveDeltas()
 
@@ -186,7 +186,7 @@ class TranslateElementsDlg(wx.Dialog):
     def OnExit(self, evt: wx.CommandEvent) -> None:
         self.EndModal(0)
 
-    # # Move elements as described
+    # Move elements as described
     def OnApply(self, evt: Optional[wx.CommandEvent] = None) -> None:
         # Move elements to absolute or relative position. Always use the delta
         # argument to Selection_Mgr.Move() because it may compute its absolute
@@ -194,7 +194,7 @@ class TranslateElementsDlg(wx.Dialog):
         # than top-left corner)
 
         dx, dy = self.__ComputeMoveDeltas()
-        # #print 'Move Deltas: ', dx, ',', dy
+        #print 'Move Deltas: ', dx, ',', dy
 
         # Apply should be ignored for invalid textbox content. Apply button will
         # be disabled and textboxes will be red
@@ -213,7 +213,7 @@ class TranslateElementsDlg(wx.Dialog):
 
         self.__UpdateDesc() # Update label with new coordinates
 
-    # # Compute Move deltas based on current textbox/checkbox values
+    # Compute Move deltas based on current textbox/checkbox values
     #  @return (dx,dy) indicating arguments to Selection_Mgr.Move. Either value
     #  in this tuple may be None if value data cannot be extracted form the
     #  dialog widgets

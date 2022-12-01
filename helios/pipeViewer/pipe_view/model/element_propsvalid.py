@@ -1,4 +1,4 @@
-# # @package elementpropertiesvalidation
+# @package elementpropertiesvalidation
 #  This module exists to pair with element.py and validate anything that is
 #  being attempted to set as a value for one of an Element's properties
 
@@ -9,17 +9,17 @@ import string
 import ast
 from typing import List, Optional, Tuple, TypeVar, Union, cast
 
-# # A listing of the available options for the 'Content' field of an Element
+# A listing of the available options for the 'Content' field of an Element
 __CONTENT_OPTIONS = content.GetContentOptions()
 
 
-# # Returns the listing of options for the 'Content' field of an Element
+# Returns the listing of options for the 'Content' field of an Element
 def GetContentOptions() -> List[str]:
     return __CONTENT_OPTIONS
 
 StringTuple = Union[str, Tuple[int, int]]
 
-# # Confirms that a position is in the form (int, int) for (x,y)
+# Confirms that a position is in the form (int, int) for (x,y)
 def validatePos(name: str, raw: StringTuple) -> Tuple[int, int]:
     if isinstance(raw, str):
         val = tuplify(raw)
@@ -37,7 +37,7 @@ def validatePos(name: str, raw: StringTuple) -> Tuple[int, int]:
     return val
 
 
-# # Confirms that dimensions are in the form (int, int) for (width, height)
+# Confirms that dimensions are in the form (int, int) for (width, height)
 def validateDim(name: str, raw: StringTuple) -> Tuple[int, int]:
     if isinstance(raw, str):
         val = tuplify(raw)
@@ -57,7 +57,7 @@ def validateDim(name: str, raw: StringTuple) -> Tuple[int, int]:
     return val
 
 
-# # Confirms that a color is in the form (int, int, int) for (R,G,B)
+# Confirms that a color is in the form (int, int, int) for (R,G,B)
 def validateColor(name: str, raw: Union[str, Tuple[int, int, int]]) -> Tuple[int, int, int]:
     if isinstance(raw, str):
         val = tuplify(raw)
@@ -83,7 +83,7 @@ def validateColor(name: str, raw: Union[str, Tuple[int, int, int]]) -> Tuple[int
     return val
 
 
-# # Confirms that an LocationString is a str
+# Confirms that an LocationString is a str
 def validateLocation(name: str, val: str) -> str:
     val = str(val)
     if not isinstance(val, str):
@@ -91,7 +91,7 @@ def validateLocation(name: str, val: str) -> str:
     return val
 
 
-# # Confirms that the Content specification is a str corresponding to the
+# Confirms that the Content specification is a str corresponding to the
 #  available options
 def validateContent(name: str, val: str) -> str:
     if not isinstance(val, str):
@@ -102,7 +102,7 @@ def validateContent(name: str, val: str) -> str:
     return val
 
 
-# ## Confirms that the clock offset is valid
+## Confirms that the clock offset is valid
 def validateClockOffset(name: str, raw: StringTuple) -> Tuple[int, int]:
     if isinstance(raw, str):
         val = tuplify(raw)
@@ -116,7 +116,7 @@ def validateClockOffset(name: str, raw: StringTuple) -> Tuple[int, int]:
     return val
 
 
-# ## Confirms that scale factor is an int
+## Confirms that scale factor is an int
 def validateTimeScale(name: str, raw: Union[str, float, int]) -> float:
     try:
         val = float(raw)
@@ -137,7 +137,7 @@ def validateOffset(name: str, raw: Union[str, int]) -> int:
     return val
 
 
-# # Confirms this is a string
+# Confirms this is a string
 #  Treats None objects as empty string
 def validateString(name: str, val: Optional[str]) -> str:
     if val is None:
@@ -149,7 +149,7 @@ def validateString(name: str, val: Optional[str]) -> str:
     return val
 
 
-# # Confirms this is a bool and converts if necessary
+# Confirms this is a bool and converts if necessary
 def validateBool(name: str, val: Optional[bool]) -> bool:
     if val is None:
         val = False
@@ -158,7 +158,7 @@ def validateBool(name: str, val: Optional[bool]) -> bool:
     return val
 
 
-# # Confirms this is list
+# Confirms this is list
 T = TypeVar('T')
 def validateList(name: str, val: Union[str, List[T]]) -> List[T]:
     if isinstance(val, str):
@@ -170,7 +170,7 @@ def validateList(name: str, val: Union[str, List[T]]) -> List[T]:
     return val
 
 
-# # Confirms that an X/Y scale value is in the form (number, number)
+# Confirms that an X/Y scale value is in the form (number, number)
 def validateScale(name: str, raw: Union[Tuple[float, float], StringTuple]) -> Union[Tuple[float, float], Tuple[int, int]]:
     val: Union[Tuple[float, float], Tuple[int, int]]
     if isinstance(raw, str):
@@ -206,7 +206,7 @@ def tuplify(raw: str) -> Tuple[int, ...]:
     return val
 
 
-# # A simple helper method for tuplify(), providing a level of abstraction for
+# A simple helper method for tuplify(), providing a level of abstraction for
 #  checking that every character within a string is a digit (base 10)
 def isNumeral(s: str) -> bool:
     options = string.digits + '-'

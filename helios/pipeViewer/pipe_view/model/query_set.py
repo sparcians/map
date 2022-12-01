@@ -28,12 +28,12 @@ class ContinuedTransaction:
     def unwrap(self) -> Tuple[Tuple[int, int], str, bool]:
         return self.interval, self.processed_val, self.last
 
-# #Formerly known as Ordered_Dict
+#Formerly known as Ordered_Dict
 class QuerySet:
     # For sorting elements with no clock
     __DEFAULT_T_OFF = 0
 
-    # # Get the Ordered Dict initialized. Note: in order to force-populate the
+    # Get the Ordered Dict initialized. Note: in order to force-populate the
     #  Ordered Dict upon initialization, both optional parameters must be provided
     def __init__(self, layout_context: Layout_Context):
         self.__layout_context = layout_context
@@ -54,7 +54,7 @@ class QuerySet:
         # will be lists of Element Values
         self.__t_off_sorted: TOffDict = {}
 
-    # # Adds a pair to the query set and stashes in correct location
+    # Adds a pair to the query set and stashes in correct location
     # @profile
     def AddPair(self, pair: Element_Value) -> None:
         e = pair.GetElement()
@@ -101,7 +101,7 @@ class QuerySet:
         # This will be recalled when deleting this pair
         pair.SetLocationAndTimingInformation(t_off_property, lmgr.getLocationString(loc))
 
-    # # Helper method to AddPair()
+    # Helper method to AddPair()
     # @profile
     def __AddAtLoc(self, pair: Element_Value, sub_dict: Optional[Dict[int, List[Element_Value]]] = None) -> Dict[int, List[Element_Value]]:
         if sub_dict:
@@ -114,7 +114,7 @@ class QuerySet:
         else:
             return {self.GetID(pair):[pair]}
 
-    # # Used for re-sorting an Element's location within t_off_sorted{},
+    # Used for re-sorting an Element's location within t_off_sorted{},
     #  before the Element's Properties have actually changed
     def __ForceAddSingleQueryPair(self, pair: Element_Value, t_off_in: int, id: int) -> None:
         e = pair.GetElement()
@@ -148,7 +148,7 @@ class QuerySet:
         # This will be recalled when deleting this pair
         pair.SetLocationAndTimingInformation(t_off_in, lmgr.getLocationString(loc))
 
-    # # Helper method to __ForceAddSingleQueryPair()
+    # Helper method to __ForceAddSingleQueryPair()
     def __ForceAddAtLoc(self, pair: Element_Value, id: int, sub_dict: Optional[Dict[int, List[Element_Value]]] = None) -> Dict[int, List[Element_Value]]:
         if sub_dict:
             if id in sub_dict:
@@ -160,7 +160,7 @@ class QuerySet:
         else:
             return {id:[pair]}
 
-    # # Removes the Element-Value associated with the provided Element from
+    # Removes the Element-Value associated with the provided Element from
     #  both draw_order and the t_off_sorted, without leaving lose ends.
     #  @param pair Element_Value pair. The element in this pair must not have
     #  had its location or t_offset changed since it was added, otherwise it will
@@ -181,7 +181,7 @@ class QuerySet:
                     break
         else:
             # Recompute t_off in terms of plain HC's
-            # #clock = self.GetClock(pair)
+            #clock = self.GetClock(pair)
             lmgr = self.__layout_context.dbhandle.database.location_manager
             if prev_locstr is not None:
                 loc, _, clock = lmgr.getLocationInfo(prev_locstr, {})
@@ -228,17 +228,17 @@ class QuerySet:
         return self.__layout_context.dbhandle.database.location_manager.getLocationInfoNoVars(loc_str)
 
 
-    # # Returns the internal ID which maps to the given Element's Location
+    # Returns the internal ID which maps to the given Element's Location
     #  String, per the Location Manager
     def GetID(self, pair: Element_Value) -> int:
         return self.__GetLocationInfo(pair)[0]
 
-    # # Returns the clock ID which maps to the given' Element's location
+    # Returns the clock ID which maps to the given' Element's location
     #  string, per the Location Manager
     def GetClock(self, pair: Element_Value) -> int:
         return self.__GetLocationInfo(pair)[2]
 
-    # # When an element has it's LocationString (therefore LocationID) or
+    # When an element has it's LocationString (therefore LocationID) or
     #  it's t_offset changed, it needs to be resorted in the
     #  dictionary. This method is called, and executes, BEFORE the new
     #  property is assigned to the Element
@@ -246,7 +246,7 @@ class QuerySet:
         self.DeletePair(pair)
         self.__ForceAddSingleQueryPair(pair, t_off, id)
 
-    # # Update the val of an Element Value when the Element's 'Content'
+    # Update the val of an Element Value when the Element's 'Content'
     #  property is changed
     def ReValue(self, pair: Element_Value) -> None:
         e = pair.GetElement()
@@ -309,7 +309,7 @@ class QuerySet:
                 # unset/invalid
                 continue
             qframe = e.GetQueryFrame(period)
-            # #print 'QUERY FRAME @ hc={} FOR {} = {}. Period = {}'.format(hc, e, qframe, period)
+            #print 'QUERY FRAME @ hc={} FOR {} = {}. Period = {}'.format(hc, e, qframe, period)
             curr_time = qframe[0] + hc
             end_time = qframe[1] + hc
             curr_time = curr_time - curr_time % period
@@ -343,8 +343,8 @@ class QuerySet:
             next_t = ordered_ticks[next_tick]
 
             # Show tick info
-            # #print 'On t=', t, ' @idx ', next_tick
-            # #print'  next t=', next_t
+            #print 'On t=', t, ' @idx ', next_tick
+            #print'  next t=', next_t
 
             if t < next_t:
                 # print ' ignored callback at t={}. t < next_t ({})'.format(t, next_t)
@@ -432,19 +432,19 @@ class QuerySet:
             # exists.
             # assert t-hc in self.__t_off_sorted, 'bad tick {0}'.format(t)
             if t - hc in self.__t_off_sorted:
-                ids = self.__t_off_sorted[t - hc] # #.keys()
-                # #print 'IDs @ {0} = {1}'.format(t, ids)
+                ids = self.__t_off_sorted[t - hc] #.keys()
+                #print 'IDs @ {0} = {1}'.format(t, ids)
 
                 # Dump all locations in a row with locaiton transacitons IDs coded into ascii
-                # #for locid in xrange(0, self.__layout_context.dbhandle.database.location_manager.getMaxLocationID()):
-                # #    trans_proxy = self.__layout_context.dbhandle.api.getTransactionProxy(locid)
-                # #    if trans_proxy is not None and trans_proxy.isValid():
-                # #        sys.stdout.write('{:1s}'.format(chr((0x21 + trans_proxy.getTransactionID())
-                # #                                            % (ord('~') - ord('!'))
-                # #                                            )))
-                # #    else:
-                # #        sys.stdout.write('_')
-                # #print ''
+                #for locid in xrange(0, self.__layout_context.dbhandle.database.location_manager.getMaxLocationID()):
+                #    trans_proxy = self.__layout_context.dbhandle.api.getTransactionProxy(locid)
+                #    if trans_proxy is not None and trans_proxy.isValid():
+                #        sys.stdout.write('{:1s}'.format(chr((0x21 + trans_proxy.getTransactionID())
+                #                                            % (ord('~') - ord('!'))
+                #                                            )))
+                #    else:
+                #        sys.stdout.write('_')
+                #print ''
 
                 for loc_id, els in self.__t_off_sorted[t - hc].items():
                     for pair in els:
@@ -509,7 +509,7 @@ class QuerySet:
         # print 'Node 0 dump:\n'
         # print self.__layout_context.dbhandle.api.getNodeDump(0, 890, 905, 40);
 
-    # # For debug purposes
+    # For debug purposes
     def __repr__(self) -> str:
         return self.__str__()
 
