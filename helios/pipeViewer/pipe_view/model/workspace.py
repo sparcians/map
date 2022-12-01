@@ -1,8 +1,7 @@
-
-
 ## @package workspace.py
 #  @brief Contains the workspace class which is central to an argos session
 
+from __future__ import annotations
 import os
 import sys
 import weakref
@@ -75,7 +74,7 @@ class Workspace:
     #  change current time before rendering the layoutframe
     #  @return frame created
     def OpenLayoutFrame(self,
-                        lf: str,
+                        lf: Optional[str],
                         db: Database,
                         start_tick: Optional[int],
                         update_enabled: bool,
@@ -97,7 +96,7 @@ class Workspace:
 
         lc = Layout_Context(layout, db, start_tick, loc_vars) # Jump to startup tick on construction
 
-        frame = Layout_Frame(None, self, -1, lc, update_enabled, title_prefix, title_override, title_suffix)
+        frame = Layout_Frame(self, lc, update_enabled, title_prefix, title_override, title_suffix)
 
         if not norefresh:
             frame.Show(True)
@@ -253,7 +252,7 @@ class Workspace:
                 self.__frames.remove(framewr)
 
     ## Returns a 2-tuple window position based on the existing windows
-    def GetNextNewFramePosition(self, size: wx.Size) -> Tuple[int, int]:
+    def GetNextNewFramePosition(self, size: Union[Tuple[int, int], wx.Size]) -> Tuple[int, int]:
         lg = logging.getLogger('Workspace')
         if self.__last_window_pos is not None:
             # Selet position based on previous position, with an x and y offset
@@ -286,7 +285,7 @@ class Workspace:
     ## Remove a frame given its reference. This is meant to be called by Frames
     #  themselves, but could be used for inter-workspace frame management
     #  @return True if the frame was removed, False if not
-    def RemoveFrame(self, frame: weakref.ReferenceType[Layout_Frame]) -> bool:
+    def RemoveFrame(self, frame: Layout_Frame) -> bool:
         for fwr in self.__frames:
             if fwr() == frame:
                 self.__RemoveFrame(fwr)

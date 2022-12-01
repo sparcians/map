@@ -4,7 +4,7 @@ from gui.dialogs.element_propsdlg import ElementTypeSelectionDialog
 import logging
 import wx
 import wx.lib.gizmos
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, Tuple, cast, TYPE_CHECKING
 
 from gui.font_utils import ScaleFont
 
@@ -267,6 +267,7 @@ class LocationWindow(wx.Frame):
         canvas = self.__layout_frame.GetCanvas()
         sel_mgr = canvas.GetSelectionManager()
         layout = self.__layout_frame.GetContext().GetLayout()
+        assert layout is not None
         canvas_visible = self.__layout_frame.GetCanvas().GetVisibleArea()
 
         sel_mgr.Clear()
@@ -287,7 +288,7 @@ class LocationWindow(wx.Frame):
 
             loc_str = self.__tree_ctrl.GetItemText(item, self.COL_PATH)
             e.SetProperty('LocationString', loc_str)
-            dims = e.GetProperty('dimensions')
+            dims = cast(Tuple[int, int], e.GetProperty('dimensions'))
 
             # Shift down by grid
             # #last_el_pos = (last_el_pos[0] + canvas.gridsize, last_el_pos[1] + canvas.gridsize)

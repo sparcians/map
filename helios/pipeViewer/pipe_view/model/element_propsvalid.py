@@ -2,6 +2,7 @@
 #  This module exists to pair with element.py and validate anything that is
 #  being attempted to set as a value for one of an Element's properties
 
+from __future__ import annotations
 from . import content_options as content
 # used for tuplifying
 import string
@@ -170,9 +171,10 @@ def validateList(name: str, val: Union[str, List[T]]) -> List[T]:
 
 
 # # Confirms that an X/Y scale value is in the form (number, number)
-def validateScale(name: str, raw: StringTuple) -> Tuple[int, int]:
+def validateScale(name: str, raw: Union[Tuple[float, float], StringTuple]) -> Union[Tuple[float, float], Tuple[int, int]]:
+    val: Union[Tuple[float, float], Tuple[int, int]]
     if isinstance(raw, str):
-        val = tuplify(raw)
+        val = cast(Tuple[int, int], tuplify(raw))
     else:
         val = raw
     if not isinstance(val, tuple):
@@ -183,7 +185,6 @@ def validateScale(name: str, raw: StringTuple) -> Tuple[int, int]:
         raise TypeError(f'Parameter {name}: only numbers allowed for x-scale factors')
     if not isinstance(val[1], (int, float)):
         raise TypeError(f'Parameter {name}: only numbers allowed for y-scale factors')
-    val = cast(Tuple[int, int], val)
     return val
 
 

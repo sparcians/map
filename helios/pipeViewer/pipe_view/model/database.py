@@ -1,6 +1,7 @@
 # # @package database.py
 #  @brief Consumes argos database files based on prefix
 
+from __future__ import annotations
 import os
 import sys
 import logging
@@ -53,7 +54,7 @@ TransactionDatabase = transactiondb.TransactionDatabase
 #
 #  The static database structure exposed through this class and its children is
 #  can be shared between many DatabaseHandle instances
-class Database(object):
+class Database:
 
     # # Constructor
     #  @param prefix Argos transaction database prefix to open.

@@ -1,5 +1,3 @@
-
-
 from __future__ import annotations
 from logging import warn, debug, error
 import string
@@ -13,7 +11,7 @@ import wx.lib.newevent
 from gui.dialogs.watchlist_dialog import WatchListDlg
 from gui.font_utils import GetMonospaceFont
 
-from typing import Any, List, Optional, Tuple, cast, TYPE_CHECKING
+from typing import Any, List, Optional, Tuple, Union, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from model.element import Element
@@ -119,7 +117,7 @@ class HoverPreview:
         self.__enabled = False
         self.show = False
         self.position = wx.Point(0, 0)
-        self.__last_move_tick = None
+        self.__last_move_tick: Optional[int] = None
         self.__window: Optional[HoverPreview.HoverPreviewWindow] = None
 
         self.__fields = ['annotation']
@@ -295,19 +293,19 @@ class HoverPreview:
         if not el.HasProperty('LocationString'):
             return
 
-        location_str = el.GetProperty('LocationString')
-        results = self.__context.dbhandle.database.location_manager.getLocationInfo(location_str, {})
-        if results == self.__context.dbhandle.database.location_manager.LOC_NOT_FOUND:
+        location_str = cast(str, el.GetProperty('LocationString'))
+        loc_results = self.__context.dbhandle.database.location_manager.getLocationInfo(location_str, {})
+        if loc_results == self.__context.dbhandle.database.location_manager.LOC_NOT_FOUND:
             return # # @todo Prevent this command from being called without a valid location
-        location_id, _, clock = results
+        location_id, _, clock = loc_results
 
         # # @todo Current tick should be based on this element's t_offset.
         cur_tick = self.__context.GetHC()
 
-        results = self.__context.GetTransactionFields(cur_tick,
-                                                      location_str,
-                                                      ['annotation'])
-        cur_annotation = results.get('annotation')
+        fields = self.__context.GetTransactionFields(cur_tick,
+                                                     location_str,
+                                                     ['annotation'])
+        cur_annotation = fields.get('annotation')
         if cur_annotation is None:
             cur_annotation = ''
 
@@ -359,19 +357,19 @@ class HoverPreview:
         if not el.HasProperty('LocationString'):
             return
 
-        location_str = el.GetProperty('LocationString')
-        results = self.__context.dbhandle.database.location_manager.getLocationInfo(location_str, {})
-        if results == self.__context.dbhandle.database.location_manager.LOC_NOT_FOUND:
+        location_str = cast(str, el.GetProperty('LocationString'))
+        loc_results = self.__context.dbhandle.database.location_manager.getLocationInfo(location_str, {})
+        if loc_results == self.__context.dbhandle.database.location_manager.LOC_NOT_FOUND:
             return # # \todo Prevent this command from being called without a valid location
-        location_id, _, clock = results
+        location_id, _, clock = loc_results
 
         # # @todo Current tick should be based on this element's t_offset.
         cur_tick = self.__context.GetHC()
 
-        results = self.__context.GetTransactionFields(cur_tick,
-                                                      location_str,
-                                                      ['annotation'])
-        cur_annotation = results.get('annotation')
+        fields = self.__context.GetTransactionFields(cur_tick,
+                                                     location_str,
+                                                     ['annotation'])
+        cur_annotation = fields.get('annotation')
         if cur_annotation is None:
             cur_annotation = ''
 
@@ -411,7 +409,8 @@ class HoverPreview:
 
     def __AddWatch(self, relative: bool) -> None:
         frame = self.__context.GetFrame()
-        watch = frame.ShowDialog('watchlist', WatchListDlg)
+        assert frame is not None
+        watch = cast(WatchListDlg, frame.ShowDialog('watchlist', WatchListDlg))
         assert self.element is not None
         t_offset = cast(int, self.element.GetProperty('t_offset'))
         loc = cast(str, self.element.GetProperty('LocationString'))
@@ -461,20 +460,20 @@ class HoverPreview:
         self.element = e
         has_loc_str = e.HasProperty('LocationString')
         if has_loc_str:
-            loc_str = e.GetProperty('LocationString')
+            loc_str = cast(str, e.GetProperty('LocationString'))
             has_loc_str = has_loc_str and loc_str != ''
         else:
             loc_str = None
 
         if annotation and has_loc_str: # If element currently has an annotation to display
-            t_offset = e.GetProperty('t_offset')
-            self.annotation = annotation
+            t_offset = cast(int, e.GetProperty('t_offset'))
+            self.annotation = cast(str, annotation)
             tick_time = int(t_offset * pair.GetClockPeriod() + self.__context.GetHC())
             if tick_time >= 0:
                 # make query
 
                 results = self.__context.GetTransactionFields(tick_time,
-                                                              self.element.GetProperty('LocationString'),
+                                                              cast(str, self.element.GetProperty('LocationString')),
                                                               self.__fields)
                 intermediate = ''
                 for field in list(results.keys()):
@@ -498,7 +497,7 @@ class HoverPreview:
                 self.annotation = '<{}>'.format(e.GetProperty('data'))
                 self.SetValue(self.annotation)
             elif e.HasProperty('annotation_basis'): # For rpc_element
-                self.annotation = annotation
+                self.annotation = cast(str, annotation)
                 self.SetValue(self.annotation)
             else:
                 # No idea what to print for whatever type of element this is

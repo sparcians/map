@@ -1,3 +1,4 @@
+from __future__ import annotations
 import wx
 import wx.grid
 from wx.lib.colourchooser.pycolourchooser import ColourChangedEvent, PyColourChooser, EVT_COLOUR_CHANGED
@@ -40,7 +41,7 @@ class ElementPropertyList(wx.grid.Grid):
 
         self.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnCellChange)
         self.Bind(wx.EVT_SIZE, self.OnResize)
-        self.__db = cast(Layout_Frame, self.__parent.GetParent()).GetContext().dbhandle.database
+        self.__db = cast('Layout_Frame', self.__parent.GetParent()).GetContext().dbhandle.database
 
         self.__InstallGridHint()
 

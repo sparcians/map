@@ -1,7 +1,6 @@
-
-
 # # @package Argos auto-coloring color map
 
+from __future__ import annotations
 import wx
 import colorsys # For easy HSL to RGB conversion
 import matplotlib.pyplot as plt
@@ -10,7 +9,7 @@ from typing import Dict, Set, Tuple
 import warnings
 
 
-class BrushRepository(object):
+class BrushRepository:
     _COLORBLIND_MODES = set(('d', 'p', 't'))
     _PALETTES = set(('default',)) | _COLORBLIND_MODES
     _SHUFFLE_MODES = set(('default', 'shuffled'))

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 import wx
-from gui.widgets.transaction_list import TransactionList
+from gui.widgets.transaction_list import TransactionList, TransactionListBaseEntry
 from functools import partial
-from typing import List, Tuple, TYPE_CHECKING
+from typing import List, Tuple, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from gui.layout_frame import Layout_Frame
@@ -81,14 +81,14 @@ class WatchListDlg(wx.Frame):
     ## called every hc change. Updates relative entries
     def TickUpdate(self, hc: int) -> None:
         for relative_index in self.__relative_indices:
-            transaction = self.__list.GetTransaction(relative_index)
+            transaction = cast(TransactionListBaseEntry, self.__list.GetTransaction(relative_index))
             q_fields = list(self.__list.GetProperties())
             for p in self.__NON_QUERIED_PROPERTIES:
                 q_fields.remove(p)
             t_offset = transaction['t_offset']
             period = transaction['period']
             updated = self.__context.GetTransactionFields(hc + t_offset*period,
-                                                            transaction.get('loc'),
+                                                            transaction['loc'],
                                                             q_fields)
             # copy over
             for key in updated.keys():

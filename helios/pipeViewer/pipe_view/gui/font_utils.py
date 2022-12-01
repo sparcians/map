@@ -1,9 +1,22 @@
+from __future__ import annotations
+from tkinter import Tk
+from typing import Optional
 import wx
 
+__DPI: Optional[float] = None
+
+def _GetDPI() -> float:
+    global __DPI
+    if __DPI is None:
+        root = Tk()
+        root.withdraw()
+        __DPI = root.winfo_fpixels('1i')
+    return __DPI
+
 def ScaleFont(font_size: int) -> int:
-    # Assume default DPI is 72
     DEFAULT_DPI = 72
-    dpi = wx.GetDisplayPPI()[1] # Point size determines font height, so look at the vertical DPI
+    dpi = _GetDPI()
+    assert dpi > 0
     return int(round((font_size * DEFAULT_DPI) / dpi)) # Rounding up seems to give better results
 
 def GetMonospaceFont(size: int) -> wx.Font:

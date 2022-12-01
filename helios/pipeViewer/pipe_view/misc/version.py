@@ -1,8 +1,7 @@
-
-
 # # @package version.py
 #  @brief Argos version finder
 
+from __future__ import annotations
 import os
 import core # Argos core
 

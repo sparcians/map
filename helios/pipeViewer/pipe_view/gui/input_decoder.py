@@ -2,8 +2,6 @@ from __future__ import annotations
 import wx
 from . import key_definitions
 
-from model.element import FakeElementValue
-
 from typing import Optional, Tuple, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -107,8 +105,8 @@ class Input_Decoder:
             bry = max(whys)
             selection.SetPos((tlx,tly))
             add_these = selection.CalcAddable((brx,bry))
-            for e in add_these:
-                selection.Add(e)
+            for el in add_these:
+                selection.Add(el)
             #necessary to make the selection permanent, and also prevent it
             #from interfering with future rubber-band operations
             selection.FlushTempRubber()
@@ -120,8 +118,8 @@ class Input_Decoder:
             if corner_case == 0:
                 #Trust me, it is indeed supposed to be Addable(), not Removable()
                 remove_these = selection.CalcAddable((x,y))
-                for e in remove_these:
-                    selection.Remove(e)
+                for el in remove_these:
+                    selection.Remove(el)
                 selection.FlushTempRubber()
                 selection.SetPos((x,y))
             elif corner_case == 1:

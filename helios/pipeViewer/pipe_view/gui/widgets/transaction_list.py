@@ -1,10 +1,14 @@
 from __future__ import annotations
-from typing import Any, Dict, List, Tuple, TYPE_CHECKING
+from typing import Any, Dict, List, Tuple, Union, TYPE_CHECKING
 import wx
 from gui.font_utils import GetMonospaceFont
 
 if TYPE_CHECKING:
     from gui.layout_canvas import Layout_Canvas
+    from gui.dialogs.search_dlg import SearchResult
+
+TransactionListBaseEntry = Dict[str, Any]
+TransactionListEntry = Union['SearchResult', TransactionListBaseEntry]
 
 # # This class is a GUI list control element that shows transactions.
 class TransactionList(wx.ListCtrl):
@@ -16,7 +20,7 @@ class TransactionList(wx.ListCtrl):
         # used for coloring
         self.__canvas = canvas
         # list of dictionary of properties
-        self.__transactions: List[Dict[str, Any]] = []
+        self.__transactions: List[TransactionListEntry] = []
         # properties to show.
         self.__properties: Tuple[str, ...] = ('start', 'location', 'annotation') # must have at least 1
         # insertion point for elements at end
@@ -62,16 +66,16 @@ class TransactionList(wx.ListCtrl):
             color = wx.Colour(255, 255, 255)
         self.SetItemBackgroundColour(index, color)
 
-    def GetTransaction(self, index: int) -> Dict[str, Any]:
+    def GetTransaction(self, index: int) -> TransactionListEntry:
         return self.__transactions[index]
 
-    def __AddGraphicalTransaction(self, transaction: Dict[str, Any]) -> None:
+    def __AddGraphicalTransaction(self, transaction: TransactionListEntry) -> None:
         self.InsertItem(self.__current_new_idx, str(transaction.get(self.__properties[0])))
         self.RefreshTransaction(self.__current_new_idx)
         self.__current_new_idx += 1
 
     # # Add a new element to bottom of list. New item must be dictionary of properties.
-    def Add(self, transaction_properties: Dict[str, Any]) -> int:
+    def Add(self, transaction_properties: TransactionListEntry) -> int:
         self.__transactions.append(transaction_properties)
         self.__AddGraphicalTransaction(transaction_properties)
         return self.__current_new_idx - 1

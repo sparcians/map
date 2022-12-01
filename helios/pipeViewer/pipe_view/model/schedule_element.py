@@ -2,10 +2,10 @@ from __future__ import annotations
 from typing import Any, Callable, List, Optional, Tuple, cast, TYPE_CHECKING
 import wx
 from .element import *
+from .element_value import Element_Value, FakeElementValue
 
 if TYPE_CHECKING:
     from .clock_manager import ClockManager
-    from .element_value import Element_Value
     from gui.layout_canvas import Layout_Canvas
 # # Global module members for commonly used brushes/pens so that they only need to be created once
 # # TODO: Maybe encapsulate these in some kind of singleton class?
@@ -115,7 +115,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
             if parent:
                 return parent.GetProperty(key)
             else:
-                return cast(float, self._properties[key]) / cast(Tuple[int, int], self.GetProperty('scale_factor'))[0]
+                return cast(float, self._properties[key]) / cast(Union[Tuple[float, float], Tuple[int, int]], self.GetProperty('scale_factor'))[0]
         elif key == 't_offset':
             if parent:
                 # assume parent is schedule (for now)
@@ -329,7 +329,7 @@ class ScheduleLineElement(LocationallyKeyedElement):
     # passes these (fake) elements to the hover preview, which then
     # queries all the needed data fresh.
     # accepts point in local coord
-    def DetectCollision(self, pt: wx.Point, pair: Element_Value) -> FakeElementValue:
+    def DetectCollision(self, pt: Union[Tuple[int, int], wx.Point], pair: Element_Value) -> FakeElementValue:
         mx, my = pt
 
         period = pair.GetClockPeriod()
@@ -540,9 +540,9 @@ class ScheduleElement(MultiElement):
 
     def GetProperty(self, key: str, period: Optional[int] = None) -> PropertyValue:
         if key == 'pixel_offset' or key == 'pixels_per_cycle':
-            return round(cast(int, MultiElement.GetProperty(self, key)) * cast(Tuple[int, int], MultiElement.GetProperty(self, 'scale_factor'))[0])
+            return round(cast(int, MultiElement.GetProperty(self, key)) * cast(Union[Tuple[float, float], Tuple[int, int]], MultiElement.GetProperty(self, 'scale_factor'))[0])
         elif key == 'time_scale':
-            return cast(float, MultiElement.GetProperty(self, key)) / cast(Tuple[int, int], MultiElement.GetProperty(self, 'scale_factor'))[0]
+            return cast(float, MultiElement.GetProperty(self, key)) / cast(Union[Tuple[float, float], Tuple[int, int]], MultiElement.GetProperty(self, 'scale_factor'))[0]
         return MultiElement.GetProperty(self, key)
 
     def SetProperty(self, key: str, val: PropertyValue) -> None:
@@ -636,7 +636,10 @@ class ScheduleElement(MultiElement):
                 highest_y = ycpos
 
             # collect pairs from elements
-            pair = canvas.context.GetElementPair(child)
+            assert isinstance(child, LocationallyKeyedElement)
+            new_pair = canvas.context.GetElementPair(child)
+            assert new_pair is not None
+            pair = new_pair
             pairs.append(pair)
             possible_period = pair.GetClockPeriod()
             if possible_period > largest_period:
@@ -792,7 +795,7 @@ class ScheduleElement(MultiElement):
     # # Detect collision with children (they are likely not drawn)
     #  @param pt Point to test
     #  @return First child which includes pt
-    def DetectCollision(self, pt: wx.Point) -> Optional[Element]:
+    def DetectCollision(self, pt: Union[Tuple[int, int], wx.Point]) -> Optional[Element]:
         mx, my = pt
 
         for child in self.GetChildren():

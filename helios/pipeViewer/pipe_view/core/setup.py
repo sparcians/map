@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
 import subprocess
 import sys
 import os
@@ -7,7 +8,7 @@ import os.path
 import glob
 import distutils
 import shutil
-from typing import List, cast
+from typing import List, Optional, Tuple, Union, cast
 
 # Force use of a different Cython
 cython_dir = os.environ.get('CYTHON_DIR', None)
@@ -26,7 +27,7 @@ from Cython.Build import cythonize
 from pathlib import Path
 
 import pkgutil
-from _frozen_importlib_external import SourceFileLoader
+from _frozen_importlib_external import SourceFileLoader  # type: ignore
 
 wx_pkg = pkgutil.get_loader('wx')
 if wx_pkg is None:
@@ -65,25 +66,23 @@ if wx_config is None:
     wx_config = shutil.which('wx-config')
 
 # Couldn't find wx-config - cannot continue
-if wx_config is None:
-    print('wx-config must be installed and present in your PATH in order to build Argos')
-    sys.exit(1)
+assert wx_config is not None, 'wx-config must be installed and present in your PATH in order to build Argos'
 
-def get_wx_flags(*args):
+def get_wx_flags(*args: str) -> List[str]:
+    assert wx_config is not None
     return subprocess.check_output([wx_config] + list(args)).decode('utf-8').split()
 
 flags = get_wx_flags('--cppflags')
 wx_inc_dirs = [flg[2:] for flg in flags if flg.startswith('-I')]
-wx_defines = [tuple(flg[2:].split('=')) for flg in flags if flg[:2] == '-D']
+wx_defines: List[Union[Tuple[str, ...], Tuple[str, None]]] = [tuple(flg[2:].split('=')) for flg in flags if flg[:2] == '-D']
 
 
-def ensure_2_tuple(t):
+def ensure_2_tuple(t: Union[Tuple[str, ...], Tuple[str, None]]) -> Union[Tuple[str, str], Tuple[str, None]]:
     if len(t) == 1:
         return t[0], None
-    return t
+    return cast(Tuple[str, str], t)
 
-
-wx_defines = list(map(ensure_2_tuple, wx_defines))
+wx_defines = [ensure_2_tuple(a) for a in wx_defines]
 
 flags = get_wx_flags('--libs')
 wx_link_args = flags
@@ -168,7 +167,7 @@ for module_name, module_info in modules.items():
                         language = 'c++',
                         )
 
-    # Build 
+    # Build
     print((me, "CC orig: ", os.environ.get('CC', '""')))
     print((me, "CXX orig: ", os.environ.get('CXX', '""')))
     print((me, "CFLAGS: ", os.environ.get('CFLAGS', '""')))

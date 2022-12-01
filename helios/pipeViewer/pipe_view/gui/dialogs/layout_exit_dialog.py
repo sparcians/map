@@ -17,7 +17,9 @@ class LayoutExitDialog(wx.Dialog):
     def __init__(self, frame: Layout_Frame) -> None:
         super().__init__(frame, -1, title='Unsaved Changes to this Layout')
 
-        layout_name = frame.GetContext().GetLayout().GetFilename()
+        layout = frame.GetContext().GetLayout()
+        assert layout is not None
+        layout_name = layout.GetFilename()
         if layout_name is not None:
             layout_name = os.path.split(layout_name)[-1]
         else:

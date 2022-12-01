@@ -1,6 +1,4 @@
-
-
-
+from __future__ import annotations
 from .element import FakeElement, BoxElement, ImageElement, LogElement
 from .schedule_element import *
 from .rpc_element import RPCElement

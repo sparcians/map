@@ -1,7 +1,7 @@
-
 ## @package database_handle.py
 #  @brief Structure that associates an ISL API and a Database instance
 
+from __future__ import annotations
 import os
 import sys
 import logging
@@ -17,7 +17,7 @@ from .database import Database, TransactionDatabase
 #
 #  The static database structure exposed through this class and its children is
 #  can be shared between many DatabaseHandle instances
-class DatabaseHandle(object):
+class DatabaseHandle:
 
     ## Constructor
     #  @param db argos Database instance

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from logging import info, debug, error, warning, LogRecord, StrFormatStyle
 import logging
 import os

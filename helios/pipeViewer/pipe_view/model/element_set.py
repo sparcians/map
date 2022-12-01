@@ -6,7 +6,7 @@ from .quad_tree import QuadTree
 from typing import Callable, Dict, List, Optional, Tuple, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from model.element import LocationallyKeyedElement
+    from model.element import Element
     from model.extension_manager import ExtensionManager
     from model.layout_context import Layout_Context
 
@@ -20,7 +20,7 @@ class ElementSet:
         self.__meta_set: List[Element_Value] = []
         self.__query_set = QuerySet(layout_context)
         #used to quickly find pairs from elements
-        self.__elements_to_pairs: Dict[LocationallyKeyedElement, Element_Value] = {}
+        self.__elements_to_pairs: Dict[Element, Element_Value] = {}
         self.__layout_context = layout_context
         self.__extensions = extensions
         # tree used for display calls
@@ -30,7 +30,7 @@ class ElementSet:
     ## Adds a new element to the set
     #  @param e Element to add
     #  @parm after_pins ordered PINs of elements after which to insert this element
-    def AddElement(self, e: LocationallyKeyedElement, after_pins: List[Optional[int]] = [None]) -> None:
+    def AddElement(self, e: Element, after_pins: List[Optional[int]] = [None]) -> None:
         pair = Element_Value(e)
         self.__elements_to_pairs[e] = pair
         if e.NeedsDatabase():
@@ -55,7 +55,7 @@ class ElementSet:
 
 
     ## Removes an element from the set
-    def RemoveElement(self, e: LocationallyKeyedElement) -> None:
+    def RemoveElement(self, e: Element) -> None:
         pair = self.__elements_to_pairs[e]
         if e.NeedsDatabase():
             self.__query_set.DeletePair(pair)
@@ -68,7 +68,7 @@ class ElementSet:
 
 
     ## Resorts an element. Mostly for query-type objects.
-    def ReSort(self, e: LocationallyKeyedElement, t_offs: int, id: int) -> None:
+    def ReSort(self, e: Element, t_offs: int, id: int) -> None:
         #q-frame objects need no resorting. make a bogus call to GetQueryFrame
         if e.NeedsDatabase() and not e.GetQueryFrame(1):
             pair = self.__elements_to_pairs[e]
@@ -85,7 +85,7 @@ class ElementSet:
                 self.ReSort(e, t_off, id)
 
     ## Update value
-    def ReValue(self, e: LocationallyKeyedElement) -> None:
+    def ReValue(self, e: Element) -> None:
         if e.NeedsDatabase():
             pair = self.__elements_to_pairs[e]
             self.__query_set.ReValue(pair)
@@ -169,9 +169,9 @@ class ElementSet:
         # update pairs with current metadata (happens anyway with pointers?)
         db = self.__layout_context.dbhandle.database
         for pair in self.__meta_set:
-            pair.SetMetaEntries(db.GetMetadata(pair.GetElement().GetProperty(pair.GetMetadataKey())))
+            pair.SetMetaEntries(db.GetMetadata(cast(str, pair.GetElement().GetProperty(pair.GetMetadataKey()))))
             for aux_prop in pair.GetAuxMetadataProperties():
-                pair.UpdateMetaEntries(db.GetMetadata(pair.GetElement().GetProperty(aux_prop)))
+                pair.UpdateMetaEntries(db.GetMetadata(cast(str, pair.GetElement().GetProperty(aux_prop))))
 
 
     ## Always refreshes all objects and clears local buffers
@@ -188,8 +188,8 @@ class ElementSet:
             for key in pair.GetTimedValues().keys():
                 redraw_set = False
                 if element.HasProperty('LocationString'):
-                    location = cast(str, element.GetProperty('LocationString'))
-                    if (self.__layout_context.IsSearchResult(key, location) or self.__layout_context.WasSearchResult(key, location)):
+                    location_id = self.__layout_context.GetLocationId(element)
+                    if (self.__layout_context.IsSearchResult(key, location_id) or self.__layout_context.WasSearchResult(key, location_id)):
                         element.SetNeedsRedraw()
                         redraw_set = True
 
@@ -236,11 +236,11 @@ class ElementSet:
     def GetPairs(self, bounds: Optional[Tuple[int, int]] = None) -> List[Element_Value]:
         return list(self.__elements_to_pairs.values())
 
-    def GetPair(self, e: LocationallyKeyedElement) -> Optional[Element_Value]:
+    def GetPair(self, e: Element) -> Optional[Element_Value]:
         return self.__elements_to_pairs.get(e)
 
     ## Get Elements from set.
-    def GetElements(self) -> List[LocationallyKeyedElement]:
+    def GetElements(self) -> List[Element]:
         return list(self.__elements_to_pairs.keys())
 
     ## Insert a drawable after the given PIN

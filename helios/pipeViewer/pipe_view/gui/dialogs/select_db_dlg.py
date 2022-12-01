@@ -1,6 +1,7 @@
 # # @package select_db_dbg.py
 #  @brief Dialog for selecting a database file
 
+from __future__ import annotations
 import sys
 import os
 from typing import Optional

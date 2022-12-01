@@ -1,10 +1,11 @@
+from __future__ import annotations
 import logging
 from typing import List, Optional
 import weakref
 
 from model.layout_context import Layout_Context
 
-class Group(object):
+class Group:
 
     def __init__(self) -> None:
         self.__contexts: List[weakref.ReferenceType[Layout_Context]] = [] # Managed contexts (weak refs)
@@ -46,7 +47,7 @@ class Group(object):
                 lg.debug('  Refreshing {}'.format(ctxt))
                 ctxt.RefreshFrame()
         context.RefreshFrame()
-    
+
     def RemoveContext(self, context: Optional[Layout_Context]) -> None:
         if context is not None:
             for ctxtref in self.__contexts:

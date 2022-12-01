@@ -1,5 +1,4 @@
-
-
+from __future__ import annotations
 import sys
 from types import ModuleType
 from typing import Callable, Dict, List, Optional
@@ -27,7 +26,7 @@ class ExtensionManager:
                 except:
                     pass
         return None
-    
+
     ## Adds a path to manager's list of paths to import from
     def AddPath(self, path: str) -> None:
         self.__paths.append(path)

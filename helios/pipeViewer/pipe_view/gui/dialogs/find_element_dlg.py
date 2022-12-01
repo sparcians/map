@@ -5,7 +5,7 @@ import sys
 import wx
 from functools import partial
 from gui.widgets.element_list import ElementList
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import Dict, List, Optional, Set, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from gui.layout_frame import Layout_Frame
@@ -37,7 +37,7 @@ class FindElementDialog(wx.Frame):
         self.__search_sizer = wx.BoxSizer(wx.HORIZONTAL)
         main_sizer.Add(self.__search_sizer, 0, wx.EXPAND, 5)
 
-        choices = set()
+        choices: Set[str] = set()
         for el in self.__context.GetElements():
             choices.update(el._properties.keys())
         self.__choices: List[str] = sorted(list(choices))
@@ -118,7 +118,7 @@ class FindElementDialog(wx.Frame):
                     matches.append(el)
 
         # Assemble properties based on matches
-        properties_set = set()
+        properties_set: Set[str] = set()
         for m in matches:
             properties_set.update(m._properties.keys())
         properties = sorted(list(properties_set))

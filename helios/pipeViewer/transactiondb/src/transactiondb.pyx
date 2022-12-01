@@ -73,7 +73,7 @@ cdef extern from "Reader.hpp" namespace "sparta::pipeViewer":
                                   const vector[string]& nameVector, \
                                   const vector[string]& stringVector);
 
-cdef class Transaction(object):
+cdef class Transaction:
 
     FLAGS_MASK_TYPE = 0b111
     CONTINUE_FLAG = 0x10
@@ -489,8 +489,7 @@ cdef class TransactionDatabase:
             raise RuntimeError(self.OBJECT_DESTROYED_ERROR)
 
         cdef bytes py_s = self.__window.getNodeStates().c_str()
-        cdef str s = <str>py_s
-        return s
+        return py_s.decode('utf-8')
 
     def getNodeDump(self, node_idx, loc_start=0, loc_end=0, tick_entry_limit=0):
         """Gets a string representing a node's content. To fit this on the
@@ -502,8 +501,7 @@ cdef class TransactionDatabase:
             raise RuntimeError(self.OBJECT_DESTROYED_ERROR)
 
         cdef bytes py_s = self.__window.getNodeDump(node_idx, loc_start, loc_end, tick_entry_limit).c_str()
-        cdef str s = <str>py_s
-        return s
+        return py_s.decode('utf-8')
 
     def getSizeInBytes(self):
         """Returns the current (approximate) memory used by this structure in

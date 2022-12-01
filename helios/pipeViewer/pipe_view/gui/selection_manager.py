@@ -618,7 +618,9 @@ class Selection_Mgr:
         assert self.__cur_open_chkpt is None, \
               'Cannot start a undo/redo checkpoint before the current move checkpoint is closed'
         selection = list(self.__selected.keys()) if force_elements is None else force_elements
-        chkpt = Checkpoint(self.__canvas.context.GetLayout(), selection, description)
+        layout = self.__canvas.context.GetLayout()
+        assert layout is not None
+        chkpt = Checkpoint(layout, selection, description)
 
         # Drop the first element if stack is at maximum size
         if len(self.__undo_stack) == self.MAX_UNDO_STACK_SIZE:
@@ -796,7 +798,7 @@ class Selection_Mgr:
         self.__canvas.Refresh()
 
     # # Sets selected object to supplied pair
-    def SetPlaybackSelected(self, pair: Element_Value) -> None:
+    def SetPlaybackSelected(self, pair: Optional[Element_Value]) -> None:
         self.__playback_selected = pair
 
     # # Returns selected object pair (None if none selected)
@@ -1169,7 +1171,7 @@ class Selection_Mgr:
     # # Add spacing between the selected Elements
     #  @param base The element to remain stationary
     #  @param subtractive When true the operation removes spacing
-    def Indent(self, base: Element, subtractive: bool = False) -> None:
+    def Indent(self, base: int, subtractive: bool = False) -> None:
         if not self.__selected:
             return
 

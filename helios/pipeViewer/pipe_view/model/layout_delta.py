@@ -1,5 +1,3 @@
-
-
 # Selection Mgrs are in charge of drawing to the canvas a demonstration of
 # the current selection, hence importing wx
 from __future__ import annotations

@@ -4,10 +4,16 @@ import wx
 from functools import partial
 from gui.widgets.transaction_list import TransactionList
 from gui.widgets.location_entry import LocationEntry
-from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
+from typing import List, Optional, Tuple, TypedDict, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from gui.layout_frame import Layout_Frame
+
+class SearchResult(TypedDict):
+    start: int
+    location: int
+    annotation: str
+
 
 ## SearchDialog is a window that enables the user to enter a string, conduct a search and
 # jump to a location and transaction based on the result. It gets its data from search_handle.py
@@ -22,7 +28,7 @@ class SearchDialog(wx.Frame):
         self.__context = parent.GetContext()
         self.__canvas = parent.GetCanvas()
         self.__search_handle = self.__context.searchhandle
-        self.__full_results: List[Dict[str, str]] = []
+        self.__full_results: List[SearchResult] = []
         self.__filters: List[SearchFilter] = []
         # initialize graphical part
         wx.Frame.__init__(self, parent, -1, 'Search', size=(700,600),
@@ -123,7 +129,7 @@ class SearchDialog(wx.Frame):
         else:
             evt.Skip()
 
-    def __AddResult(self, entry: Dict[str, str]) -> None:
+    def __AddResult(self, entry: SearchResult) -> None:
         self.__results_box.Add(entry)
         self.__context.AddSearchResult(entry)
 
@@ -202,30 +208,25 @@ class SearchDialog(wx.Frame):
         location_root_search = self.__location_to_search.GetValue()
         if location_root_search is None:
             location_root_search = "[]"
-        convert_id_to_str = self.__context.dbhandle.database.location_manager.getLocationString
         truncated = False
-        if self.__exclude_locations_not_shown.GetValue():
-            for start, end, loc_id, annotation in results:
-                loc = convert_id_to_str(loc_id)
-                loc = str(loc).translate({ord(c): None for c in '[]'})
-                if loc.startswith(location_root_search) and loc_id in visible_locations:
-                    entry = {'start':start, 'location':loc, 'annotation':annotation}
-                    self.__full_results.append(entry)
-                    self.__AddResult(entry)
-                    if len(self.__full_results) == SEARCH_LIMIT:
-                        truncated = True
-                        break
-        else:
-             for start, end, loc, annotation in results:
-                loc = convert_id_to_str(loc)
-                loc = str(loc).translate({ord(c): None for c in '[]'})
-                if loc.startswith(location_root_search):
-                    entry = {'start':start, 'location':loc, 'annotation':annotation}
-                    self.__full_results.append(entry)
-                    self.__AddResult(entry)
-                    if len(self.__full_results) == SEARCH_LIMIT:
-                        truncated = True
-                        break
+
+        def loc_str(loc_id: int) -> str:
+            loc = self.__context.dbhandle.database.location_manager.getLocationString(loc_id)
+            loc = str(loc).translate({ord(c): None for c in '[]'})
+            return loc
+
+        for start, end, loc_id, annotation in results:
+            if loc_str(loc_id).startswith(location_root_search) and (not self.__exclude_locations_not_shown.GetValue() or loc_id in visible_locations):
+                entry: SearchResult = {
+                    'start': start,
+                    'location': loc_id,
+                    'annotation': annotation
+                }
+                self.__full_results.append(entry)
+                self.__AddResult(entry)
+                if len(self.__full_results) == SEARCH_LIMIT:
+                    truncated = True
+                    break
 
         self.__results_box.FitColumns()
         self.__filter_sizer.Hide(self.INITIAL_SEARCH)

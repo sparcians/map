@@ -1,9 +1,9 @@
-
-
+from __future__ import annotations
 import wx
 import wx.adv
 import os
 import logging
+from typing import Optional, cast, TYPE_CHECKING
 
 from misc.version import get_version
 from model.layout import Layout
@@ -16,6 +16,9 @@ from .dialogs.console_dialog import ConsoleDlg
 from .dialogs.select_layout_dlg import SelectLayoutDlg
 from .dialogs.translate_elements_dlg import TranslateElementsDlg
 from .dialogs.view_settings_dlg import ViewSettingsDialog
+
+if TYPE_CHECKING:
+    from gui.layout_frame import Layout_Frame
 
 # Name each ID by ID_MENU_SUBMENU_etc...
 ID_FILE_NEW = wx.NewId()
@@ -40,7 +43,7 @@ REDO_ALL_FMT = 'Redo All ({})\tCTRL+SHIFT+Y'
 class Argos_Menu(wx.MenuBar):
 
     # # Set up all the menus and embedded sub-menus, with all their bindings/callbacks
-    def __init__(self, frame, layout, update_enabled):
+    def __init__(self, frame: Layout_Frame, layout: Layout, update_enabled: bool) -> None:
         this_script_filename = os.path.join(os.getcwd(), __file__)
 
         self.__parent = frame
@@ -468,7 +471,7 @@ class Argos_Menu(wx.MenuBar):
         # #refresh enabling/disabling of items
         self.SetEditModeSettings(edit_mode)
 
-        self.hover_options_dialog = None
+        self.hover_options_dialog: Optional[HoverPreviewOptionsDialog] = None
 
         # Event Bindings
         self.__parent.Bind(wx.EVT_MENU, self.OnNew, menuNew)
@@ -598,76 +601,76 @@ class Argos_Menu(wx.MenuBar):
         else:
             raise ValueError('Invalid value specified for ARGOS_PALETTE_SHUFFLE_MODE: {}'.format(palette_shuffle_option))
 
-    def OnFlipHoriz(self, evt):
+    def OnFlipHoriz(self, evt: wx.CommandEvent) -> None:
         self.__selection.Flip(self.__selection.RIGHT)
 
-    def OnFlipVert(self, evt):
+    def OnFlipVert(self, evt: wx.CommandEvent) -> None:
         self.__selection.Flip(self.__selection.TOP)
 
-    def OnMoveToTop(self, evt):
+    def OnMoveToTop(self, evt: wx.CommandEvent) -> None:
         self.__selection.MoveToTop()
 
-    def OnMoveToBottom(self, evt):
+    def OnMoveToBottom(self, evt: wx.CommandEvent) -> None:
         self.__selection.MoveToBottom()
 
-    def OnMoveUp(self, evt):
+    def OnMoveUp(self, evt: wx.CommandEvent) -> None:
         self.__selection.MoveUp()
 
-    def OnMoveDown(self, evt):
+    def OnMoveDown(self, evt: wx.CommandEvent) -> None:
         self.__selection.MoveDown()
 
-    def OnAvg(self, evt):
+    def OnAvg(self, evt: wx.CommandEvent) -> None:
         self.__selection.Average()
 
-    def OnIndUp(self, evt):
+    def OnIndUp(self, evt: wx.CommandEvent) -> None:
         self.__selection.Indent(self.__selection.BOTTOM)
 
-    def OnIndDown(self, evt):
+    def OnIndDown(self, evt: wx.CommandEvent) -> None:
         self.__selection.Indent(self.__selection.TOP)
 
-    def OnIndLeft(self, evt):
+    def OnIndLeft(self, evt: wx.CommandEvent) -> None:
         self.__selection.Indent(self.__selection.RIGHT)
 
-    def OnIndRight(self, evt):
+    def OnIndRight(self, evt: wx.CommandEvent) -> None:
         self.__selection.Indent(self.__selection.LEFT)
 
-    def OnSubtIndUp(self, evt):
+    def OnSubtIndUp(self, evt: wx.CommandEvent) -> None:
         self.__selection.Indent(self.__selection.TOP, True)
 
-    def OnSubtIndDown(self, evt):
+    def OnSubtIndDown(self, evt: wx.CommandEvent) -> None:
         self.__selection.Indent(self.__selection.BOTTOM, True)
 
-    def OnSubtIndLeft(self, evt):
+    def OnSubtIndLeft(self, evt: wx.CommandEvent) -> None:
         self.__selection.Indent(self.__selection.LEFT, True)
 
-    def OnSubtIndRight(self, evt):
+    def OnSubtIndRight(self, evt: wx.CommandEvent) -> None:
         self.__selection.Indent(self.__selection.RIGHT, True)
 
-    def OnRowLeft(self, evt):
+    def OnRowLeft(self, evt: wx.CommandEvent) -> None:
         self.__selection.Stack('left')
 
-    def OnColumnUp(self, evt):
+    def OnColumnUp(self, evt: wx.CommandEvent) -> None:
         self.__selection.Stack('top')
 
-    def OnRowRight(self, evt):
+    def OnRowRight(self, evt: wx.CommandEvent) -> None:
         self.__selection.Stack('right')
 
-    def OnColumnDown(self, evt):
+    def OnColumnDown(self, evt: wx.CommandEvent) -> None:
         self.__selection.Stack('bottom')
 
-    def OnAlignTop(self, evt):
+    def OnAlignTop(self, evt: wx.CommandEvent) -> None:
         self.__selection.Align('top')
 
-    def OnAlignBottom(self, evt):
+    def OnAlignBottom(self, evt: wx.CommandEvent) -> None:
         self.__selection.Align('bottom')
 
-    def OnAlignLeft(self, evt):
+    def OnAlignLeft(self, evt: wx.CommandEvent) -> None:
         self.__selection.Align('left')
 
-    def OnAlignRight(self, evt):
+    def OnAlignRight(self, evt: wx.CommandEvent) -> None:
         self.__selection.Align('right')
 
-    def OnMoveSnap(self, evt):
+    def OnMoveSnap(self, evt: wx.CommandEvent) -> None:
         if not self.menuMoveSnap.IsChecked():
             self.__selection.SetSnapMode('freemove')
         else:
@@ -677,15 +680,15 @@ class Argos_Menu(wx.MenuBar):
             else:
                 self.__selection.SetSnapMode('meach')
 
-    def OnMDominant(self, evt):
+    def OnMDominant(self, evt: wx.CommandEvent) -> None:
         if self.menuMoveSnap.IsChecked():
             self.__selection.SetSnapMode('mdominant')
 
-    def OnMEach(self, evt):
+    def OnMEach(self, evt: wx.CommandEvent) -> None:
         if self.menuMoveSnap.IsChecked():
             self.__selection.SetSnapMode('meach')
 
-    def OnResizeSnap(self, evt):
+    def OnResizeSnap(self, evt: wx.CommandEvent) -> None:
         if not self.menuResizeSnap.IsChecked():
             self.__selection.SetSnapMode('freesize')
         else:
@@ -694,7 +697,7 @@ class Argos_Menu(wx.MenuBar):
             else:
                 self.__selection.SetSnapMode('reach')
 
-    def OnTranslate(self, evt):
+    def OnTranslate(self, evt: wx.CommandEvent) -> None:
         if self.__selection.GetSelection():
             # Translation is done within the dialog
             dlg = TranslateElementsDlg(self.__parent)
@@ -703,17 +706,17 @@ class Argos_Menu(wx.MenuBar):
             finally:
                 dlg.Destroy()
 
-    def OnRDominant(self, evt):
+    def OnRDominant(self, evt: wx.CommandEvent) -> None:
         if self.menuResizeSnap.IsChecked():
             self.__selection.SetSnapMode('rdominant')
 
-    def OnREach(self, evt):
+    def OnREach(self, evt: wx.CommandEvent) -> None:
         if self.menuResizeSnap.IsChecked():
             self.__selection.SetSnapMode('reach')
 
     # # sets settings based on status of edit mode
-    def SetEditModeSettings(self, menuEditBool):
-        edit_mode = self.menuEditMode.Check(menuEditBool)
+    def SetEditModeSettings(self, menuEditBool: bool) -> None:
+        self.menuEditMode.Check(menuEditBool)
         items_to_change = self.__editmenu.GetMenuItems()
         for item in items_to_change:
             if not item.GetId() in self.__no_toggle_in_edit_mode:
@@ -734,69 +737,70 @@ class Argos_Menu(wx.MenuBar):
             self.__parent.SetAcceleratorTable(wx.NullAcceleratorTable)
             dialog.Show(False)
 
-    def OnRefreshDB(self, evt):
+    def OnRefreshDB(self, evt: wx.CommandEvent) -> None:
         self.__parent.ForceDBUpdate()
 
-    def OnToggleUpdate(self, evt):
+    def OnToggleUpdate(self, evt: wx.CommandEvent) -> None:
         poll_mode = self.menuPollDB.IsChecked()
         self.__parent.SetPollMode(poll_mode)
 
-    def OnToggleUpdateKey(self, evt):
-        self.menuPollDB.Toggle()
+    def OnToggleUpdateKey(self, evt: wx.CommandEvent) -> None:
+        self.menuPollDB.Check(not self.menuPollDB.IsChecked())
         self.OnToggleUpdate(evt)
 
-    def OnEditMode(self, evt):
+    def OnEditMode(self, evt: wx.CommandEvent) -> None:
         edit_mode = self.menuEditMode.IsChecked()
         self.__parent.SetEditMode(edit_mode)
 
-    def OnEditModeKey(self, evt):
+    def OnEditModeKey(self, evt: wx.CommandEvent) -> None:
         self.menuEditMode.Check(not self.menuEditMode.IsChecked())
         self.OnEditMode(evt)
 
-    def OnUndo(self, evt = None):
+    def OnUndo(self, evt: Optional[wx.CommandEvent] = None) -> None:
         self.__selection.Undo()
 
-    def OnRedo(self, evt = None):
+    def OnRedo(self, evt: Optional[wx.CommandEvent] = None) -> None:
         self.__selection.Redo()
 
-    def OnRedoAll(self, evt = None):
+    def OnRedoAll(self, evt: Optional[wx.CommandEvent] = None) -> None:
         self.__selection.RedoAll()
 
-    def OnHoverPreview(self, evt):
+    def OnHoverPreview(self, evt: wx.CommandEvent) -> None:
         hover_preview = self.menuHoverPreview.IsChecked()
         self.__parent.SetHoverPreview(hover_preview)
         self.__parent.Refresh()
 
-    def OnHoverPreviewKey(self, evt):
-        self.menuHoverPreview.Toggle()
+    def OnHoverPreviewKey(self, evt: wx.CommandEvent) -> None:
+        self.menuHoverPreview.Check(not self.menuHoverPreview.IsChecked())
         self.OnHoverPreview(evt)
 
-    def OnHoverOptions(self, evt):
+    def OnHoverOptions(self, evt: wx.CommandEvent) -> None:
         self.hover_options_dialog = HoverPreviewOptionsDialog(self, self.__parent.GetCanvas().GetHoverPreview())
         self.hover_options_dialog.ShowWindowModal()
 
-    def OnViewSettings(self, evt):
+    def OnViewSettings(self, evt: wx.CommandEvent) -> None:
         settings = self.__parent.GetSettings()
         with ViewSettingsDialog(self.__parent, settings) as view_settings_dialog:
+            view_settings_dialog = cast(ViewSettingsDialog, view_settings_dialog)
             if view_settings_dialog.ShowModal() == wx.ID_OK:
                 new_settings = view_settings_dialog.GetSettings()
                 if new_settings:
                     self.__parent.UpdateSettings(new_settings)
                     settings.save()
 
-    def OnElementSettings(self, evt):
+    def OnElementSettings(self, evt: wx.CommandEvent) -> None:
         dialog = self.__parent.GetCanvas().GetDialog()
         dialog.Show()
         dialog.SetFocus()
         dialog.Raise()
 
-    def OnConsole(self, evt):
+    def OnConsole(self, evt: wx.CommandEvent) -> None:
         self.__parent.ShowDialog('console', ConsoleDlg)
 
-    def OnWatchList(self, evt):
+    def OnWatchList(self, evt: wx.CommandEvent) -> None:
         self.__parent.ShowDialog('watchlist', WatchListDlg)
 
-    def OnChooseScheduleStyle(self, evt):
+    def OnChooseScheduleStyle(self, evt: wx.CommandEvent) -> None:
         dl = ScheduleLineElement.DRAW_LOOKUP
         dialog = wx.SingleChoiceDialog(self, 'Global Style for Schedule Lines.', '',
                             list(dl.keys()),
@@ -806,7 +810,7 @@ class Argos_Menu(wx.MenuBar):
         dialog.Destroy()
 
     # # Show dialog containing menu layout variables
-    def OnShowLayoutVariables(self, evt):
+    def OnShowLayoutVariables(self, evt: wx.CommandEvent) -> None:
         self.__parent.GetContext().UpdateLocationVariables()
         dialog = LayoutVariablesDialog(self,
                                        wx.NewId(),
@@ -815,24 +819,24 @@ class Argos_Menu(wx.MenuBar):
         dialog.Show()
 
     # # Handle clicking of Open Locations List
-    def OnLocationsList(self, evt):
+    def OnLocationsList(self, evt: wx.CommandEvent) -> None:
         self.__parent.ShowLocationsList()
 
     # # Handle clicking of Search menu
-    def OnSearch(self, evt):
+    def OnSearch(self, evt: wx.CommandEvent) -> None:
         self.__parent.ShowSearch()
 
-    def OnFindElement(self, evt):
+    def OnFindElement(self, evt: wx.CommandEvent) -> None:
         self.__parent.ShowFindElement()
 
-    def OnToggleControls(self, evt):
+    def OnToggleControls(self, evt: wx.CommandEvent) -> None:
         self.__parent.ShowNavigationControls(self.menuToggleControls.IsChecked())
 
-    def OnToggleControlsKey(self, evt):
-        self.menuToggleControls.Toggle()
+    def OnToggleControlsKey(self, evt: wx.CommandEvent) -> None:
+        self.menuToggleControls.Check(not self.menuToggleControls.IsChecked())
         self.OnToggleControls(evt)
 
-    def OnColorMapChange(self, evt):
+    def OnColorMapChange(self, evt: wx.CommandEvent) -> None:
         if self.menuDefaultColors.IsChecked():
             palette = 'default'
         elif self.menuDeuteranopiaColors.IsChecked():
@@ -846,7 +850,7 @@ class Argos_Menu(wx.MenuBar):
 
         self.__parent.GetWorkspace().SetPalette(palette)
 
-    def OnShuffleColors(self, evt):
+    def OnShuffleColors(self, evt: wx.CommandEvent) -> None:
         if self.menuShuffleColors.IsChecked():
             shuffle_state = 'shuffled'
         else:
@@ -854,14 +858,19 @@ class Argos_Menu(wx.MenuBar):
         self.__parent.GetWorkspace().SetColorShuffleState(shuffle_state)
 
     # # Placeholder method
-    def OnNew(self, evt):
+    def OnNew(self, evt: wx.CommandEvent) -> None:
         context = self.__parent.GetContext()
-        loc_vars = {}
-        self.__parent.GetWorkspace().OpenLayoutFrame(None, context.dbhandle.database, context.GetHC(), self.menuPollDB.IsChecked(), self.__parent.GetTitlePrefix(), self.__parent.GetTitleOverride(), self.__parent.GetTitleSuffix(), loc_vars)
+        self.__parent.GetWorkspace().OpenLayoutFrame(None,
+                                                     context.dbhandle.database,
+                                                     context.GetHC(),
+                                                     self.menuPollDB.IsChecked(),
+                                                     self.__parent.GetTitlePrefix(),
+                                                     self.__parent.GetTitleOverride(),
+                                                     self.__parent.GetTitleSuffix(),
+                                                     None)
 
-    def OnOpen(self, evt):
+    def OnOpen(self, evt: wx.CommandEvent) -> None:
         context = self.__parent.GetContext()
-        loc_vars = {}
 
         layout = self.__parent.GetContext().GetLayout()
         if layout is not None:
@@ -875,19 +884,26 @@ class Argos_Menu(wx.MenuBar):
         dlg.Destroy()
 
         lf = dlg.GetFilename()
-        self.__parent.GetWorkspace().OpenLayoutFrame(lf, context.dbhandle.database, context.GetHC(), self.menuPollDB.IsChecked(), self.__parent.GetTitlePrefix(), self.__parent.GetTitleOverride(), self.__parent.GetTitleSuffix(), loc_vars)
+        self.__parent.GetWorkspace().OpenLayoutFrame(lf,
+                                                     context.dbhandle.database,
+                                                     context.GetHC(),
+                                                     self.menuPollDB.IsChecked(),
+                                                     self.__parent.GetTitlePrefix(),
+                                                     self.__parent.GetTitleOverride(),
+                                                     self.__parent.GetTitleSuffix(),
+                                                     None)
 
     # # 'Saving' means saving the Layout to file, nothing else is currently
     #  preserved about a session (no user preferences, current selection, HC)
-    def OnSave(self, evt):
+    def OnSave(self, evt: wx.CommandEvent) -> None:
         self.__parent.Save()
 
     # # Handle saving the file to a selected path
-    def OnSaveAs(self, evt = None):
+    def OnSaveAs(self, evt: Optional[wx.CommandEvent] = None) -> None:
         self.__parent.SaveAs()
 
     # # Show information about this frame
-    def OnFrameInfo(self, evt):
+    def OnFrameInfo(self, evt: wx.CommandEvent) -> None:
         layout_file = self.__layout.GetFilename()
         if layout_file is None:
             layout_file = '<New, Unsaved Layout file>'
@@ -906,6 +922,8 @@ class Argos_Menu(wx.MenuBar):
         h += hdiff
         x, y = self.__parent.GetPosition()
 
+        context = self.__parent.GetContext()
+        assert context.dbhandle.database.dbmodule.__file__ is not None
         message = 'Version:{}\n\nLayout:\n{}\n\nDatabase:\n"{}" (v{})\n\nLayout Elements: {}\n\nFrame Geometry (w,h,x,y): {},{},{},{}\n\nReader Library:\n{}' \
                   .format(get_version(),
                           layout_file,
@@ -913,12 +931,12 @@ class Argos_Menu(wx.MenuBar):
                           self.__parent.GetContext().dbhandle.api.getFileVersion(),
                           len(self.__layout.GetElements()),
                           w, h, x, y,
-                          os.path.dirname(self.__parent.GetContext().dbhandle.database.dbmodule.__file__))
+                          os.path.dirname(context.dbhandle.database.dbmodule.__file__))
         dlg = wx.MessageDialog(self, message, "Argos Frame-Specific Information", wx.OK)
         dlg.ShowModal()
         dlg.Destroy()
 
-    def OnNewElement(self, evt):
+    def OnNewElement(self, evt: wx.CommandEvent) -> None:
         if self.__parent.GetCanvas().GetInputDecoder().GetEditMode():
             type_dialog = ElementTypeSelectionDialog(self.__parent.GetCanvas())
             type_dialog.Center()
@@ -926,29 +944,29 @@ class Argos_Menu(wx.MenuBar):
                 self.__selection.GenerateElement(self.__layout,
                                                                             type_dialog.GetSelection())
 
-    def OnCloneElement(self, evt):
+    def OnCloneElement(self, evt: wx.CommandEvent) -> None:
         if self.__parent.GetCanvas().GetInputDecoder().GetEditMode():
             self.__selection.PrepNextCopy()
             self.__selection.GenerateDuplicateSelection(self.__layout, delta = 5)
 
-    def OnDeleteElement(self, evt):
+    def OnDeleteElement(self, evt: wx.CommandEvent) -> None:
         if self.__parent.GetCanvas().GetInputDecoder().GetEditMode():
             self.__selection.Delete(self.__layout)
 
-    def OnSelectAll(self, evt):
+    def OnSelectAll(self, evt: wx.CommandEvent) -> None:
         if self.__parent.GetCanvas().GetInputDecoder().GetEditMode():
             self.__selection.SelectEntireLayout()
 
-    def OnRelease(self, evt):
+    def OnRelease(self, evt: wx.CommandEvent) -> None:
         # Allow clearing selection in edit mode
         self.__selection.Clear()
 
-    def OnInvertSelection(self, evt):
+    def OnInvertSelection(self, evt: wx.CommandEvent) -> None:
         if self.__parent.GetCanvas().GetInputDecoder().GetEditMode():
             self.__selection.InvertSelection(self.__layout)
 
     # # Show about dialog
-    def OnAbout(self, evt):
+    def OnAbout(self, evt: wx.CommandEvent) -> None:
         # # @todo Forward to workspace!
         info = wx.adv.AboutDialogInfo()
         info.SetName('Argos')
@@ -957,30 +975,30 @@ class Argos_Menu(wx.MenuBar):
         wx.adv.AboutBox(info) # Show modal about box
 
     # # Handle exit menu event
-    def OnClose(self, evt):
+    def OnClose(self, evt: wx.CommandEvent) -> None:
         self.__parent._HandleClose()
 
     # # Handle exit menu event
-    def OnExit(self, evt):
+    def OnExit(self, evt: wx.CommandEvent) -> None:
         logging.info('OnExit')
         self.__parent.GetWorkspace().Exit()
 
-    def GetEditToolbar(self):
+    def GetEditToolbar(self) -> wx.ToolBar:
         return self.__edit_toolbar
 
-    def ShowEditToolbar(self, show):
+    def ShowEditToolbar(self, show: bool) -> None:
         self.__edit_toolbar.Show(show)
 
-    def UpdateMouseLocation(self, x, y):
+    def UpdateMouseLocation(self, x: int, y: int) -> None:
         self.toolbarCursorLocation.SetValue('(%d, %d)' % (x, y))
 
     # # Undo/Redo hook from selection manager
-    def __OnUndoRedo(self):
+    def __OnUndoRedo(self) -> None:
         self.__UpdateUndoRedoItems()
 
     # # Update the undo and redo items based on the number of undos/redos tracked
     #  in the selection manager
-    def __UpdateUndoRedoItems(self):
+    def __UpdateUndoRedoItems(self) -> None:
         editmode = self.__parent.GetCanvas().GetInputDecoder().GetEditMode()
         undos = self.__selection.NumUndos()
         redos = self.__selection.NumRedos()

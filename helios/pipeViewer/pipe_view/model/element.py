@@ -30,13 +30,11 @@ import gui.autocoloring
 
 from logsearch import LogSearch # Argos module for searching logfiles
 
-
-if TYPE_CHECKING:
-    T = TypeVar('T')
-    PropertyValue = Union[str, int, float, Tuple[int, int], Tuple[int, int, int], List[PropertyValue]]
-    PropertyDict = Dict[str, PropertyValue]
-    ValidatedPropertyDictElement = Tuple[T, Callable]
-    ValidatedPropertyDict = Dict[str, ValidatedPropertyDictElement[PropertyValue]]
+T = TypeVar('T')
+PropertyValue = Optional[Union[str, int, float, Tuple[int, int], Tuple[float, float], Tuple[int, int, int], List['PropertyValue']]]
+PropertyDict = Dict[str, PropertyValue]
+ValidatedPropertyDictElement = Tuple[T, Callable]
+ValidatedPropertyDict = Dict[str, ValidatedPropertyDictElement[PropertyValue]]
 
 # # The building blocks of a Layout
 class Element:
@@ -303,7 +301,7 @@ class Element:
 
         if key == 'position' or key == 'dimensions':
             val = cast(Tuple[int, int], val)
-            x_scale, y_scale = cast(Tuple[int, int], self._properties['scale_factor'])
+            x_scale, y_scale = cast(Union[Tuple[float, float], Tuple[int, int]], self._properties['scale_factor'])
             return (round(val[0] * x_scale), round(val[1] * y_scale))
         else:
             raise NotImplementedError(f"Scaling not implemented for property '{key}'.")
@@ -408,6 +406,9 @@ class Element:
     #  This is intended to be called by the owning Layout
     def _MarkAsUnchanged(self) -> None:
         self.__changed = False
+
+    def LocationHasVars(self) -> bool:
+        return False
 
     # # Will return a hash of the Elements PIN, which is a unique identifier
     #  for each Element (and therefore each Element Value)
@@ -989,7 +990,7 @@ LogElement._ALL_PROPERTIES['type'] = (LogElement.GetType(), valid.validateString
 
 # # Class which only is used to identify transactions.
 # Used for collision events for mouse-over.
-class FakeElement:
+class FakeElement(Element):
 
     def __init__(self) -> None:
         self._properties: PropertyDict = {}
@@ -998,7 +999,7 @@ class FakeElement:
     def IsSelectable() -> bool:
         return True
 
-    def GetProperty(self, key: str, period: Optional[int] = None) -> Optional[PropertyValue]:
+    def GetProperty(self, key: str, period: Optional[int] = None) -> PropertyValue:
         # try...except is faster than dict.get()
         try:
             return self._properties[key]
@@ -1011,25 +1012,3 @@ class FakeElement:
     # # Does this element have a particular property
     def HasProperty(self, key: str) -> bool:
         return key in self._properties
-
-
-# # For same purpose as fake element, just plays a different role.
-class FakeElementValue:
-
-    def __init__(self, element: FakeElement, value: PropertyValue) -> None:
-        self.__element = element
-        self.__value = value
-        self.__clock_period = 1
-
-    def GetVal(self) -> PropertyValue:
-        return self.__value
-
-    def GetElement(self) -> FakeElement:
-        return self.__element
-
-    def GetClockPeriod(self) -> int:
-        return self.__clock_period
-
-    def SetClockPeriod(self, period: int) -> None:
-        self.__clock_period = period
-

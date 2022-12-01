@@ -13,8 +13,9 @@ from logging import info, debug, warn, error
 
 if TYPE_CHECKING:
     from model.element_value import Element_Value
-    from model.layout_context import Layout_Context
     from model.database import TransactionDatabase
+    from model.layout_context import Layout_Context
+    from model.location_manager import LocationType
 
     TOffDict = Dict[int, Dict[int, List[Element_Value]]]
 
@@ -60,9 +61,9 @@ class QuerySet:
         # Recompute t_off in terms of plain HC's
         ####clock = self.GetClock(pair)
         lmgr = self.__layout_context.dbhandle.database.location_manager
-        loc_str = e.GetProperty('LocationString')
+        loc_str = cast(str, e.GetProperty('LocationString'))
         variables = self.__layout_context.GetLocationVariables()
-        loc, _, clock = lmgr.getLocationInfo(loc_str, vars)
+        loc, _, clock = lmgr.getLocationInfo(loc_str, variables)
         t_off_property = cast(int, e.GetProperty('t_offset', period = pair.GetClockPeriod()))
 
         # Warn about invalid locations for content types which DO require transactions
@@ -121,7 +122,7 @@ class QuerySet:
         # Recompute t_off in terms of plain HC's
         ####clock = self.GetClock(pair)
         lmgr = self.__layout_context.dbhandle.database.location_manager
-        loc_str = e.GetProperty('LocationString')
+        loc_str = cast(str, e.GetProperty('LocationString'))
         loc, _, clock = lmgr.getLocationInfo(loc_str, self.__layout_context.GetLocationVariables())
 
         if clock == self.__handle.database.location_manager.NO_CLOCK:
@@ -194,6 +195,7 @@ class QuerySet:
                 # t_offset of 0. If not, then this could stand to be optimized
                 t_off = self.__DEFAULT_T_OFF
             else:
+                assert prev_t_off is not None
                 t_off = self.__handle.database.clock_manager.getClockDomain(clock).tick_period * prev_t_off
 
             # Note that we could ignore missing t_offs here, but then we might
@@ -217,23 +219,24 @@ class QuerySet:
            self.__layout_context.AckLocationVariablesChanged()
         return loc_vars_status
 
+    def __GetLocationInfo(self, pair: Element_Value) -> LocationType:
+        el = pair.GetElement()
+        loc_str = cast(str, el.GetProperty('LocationString'))
+        if el.LocationHasVars():
+            return self.__layout_context.dbhandle.database.location_manager.getLocationInfo(loc_str, self.__layout_context.GetLocationVariables(), self.CheckLocationVariablesChanged())
+
+        return self.__layout_context.dbhandle.database.location_manager.getLocationInfoNoVars(loc_str)
+
+
     # # Returns the internal ID which maps to the given Element's Location
     #  String, per the Location Manager
     def GetID(self, pair: Element_Value) -> int:
-        el = pair.GetElement()
-        if not el.LocationHasVars():
-            return self.__layout_context.dbhandle.database.location_manager.getLocationInfoNoVars(el.GetProperty('LocationString'))[0]
-        else:
-            return self.__layout_context.dbhandle.database.location_manager.getLocationInfo(el.GetProperty('LocationString'), self.__layout_context.GetLocationVariables(), self.CheckLocationVariablesChanged())[0]
+        return self.__GetLocationInfo(pair)[0]
 
     # # Returns the clock ID which maps to the given' Element's location
     #  string, per the Location Manager
     def GetClock(self, pair: Element_Value) -> int:
-        el = pair.GetElement()
-        if el.LocationHasVars():
-            return self.__layout_context.dbhandle.database.location_manager.getLocationInfo(el.GetProperty('LocationString'), self.__layout_context.GetLocationVariables(), self.CheckLocationVariablesChanged())[2]
-        else:
-            return self.__layout_context.dbhandle.database.location_manager.getLocationInfoNoVars(el.GetProperty('LocationString'))[2]
+        return self.__GetLocationInfo(pair)[2]
 
     # # When an element has it's LocationString (therefore LocationID) or
     #  it's t_offset changed, it needs to be resorted in the
@@ -497,7 +500,7 @@ class QuerySet:
             logging.debug('{0}s: Query+Update for {1} elements. {2} callbacks ({3} useful)' \
                           .format(time.monotonic() - t_start, total_updates[0], total_callbacks[0], total_useful_callbacks[0]))
             logging.debug('  {}'.format(self.__layout_context.dbhandle.api))
-            node_states = self.__layout_context.dbhandle.api.getNodeStates().decode('utf-8').split('\n')
+            node_states = self.__layout_context.dbhandle.api.getNodeStates().split('\n')
             for ns in node_states:
                 logging.debug('  {}'.format(ns))
 

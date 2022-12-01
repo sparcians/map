@@ -6,7 +6,7 @@
 from __future__ import annotations
 import sys
 import math
-from typing import Dict, List, Optional, TextIO, Tuple
+from typing import Dict, List, Optional, TextIO, Tuple, Union
 
 ## Consumes an Argos clock file and provides a means of lookup up clock info
 #  via clock IDs
@@ -208,8 +208,8 @@ class ClockManager:
         return tuple(self.__clock_list) # Convert to tuple to prevent modification to internal list
 
     ## Of all clocks, which is closest to our current time
-    def getClosestClock(self, hc: int, clocks: List[int], forward: bool = True) -> ClockManager.ClockDomain:
-        if not len(clocks):
+    def getClosestClock(self, hc: int, clocks: Optional[Union[Tuple[int, ...], List[int]]], forward: bool = True) -> ClockManager.ClockDomain:
+        if not clocks:
             return self.__clock_list[0]
         closest_clock = self.__clocks[clocks[0]]
         if not forward:

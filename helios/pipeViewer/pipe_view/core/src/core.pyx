@@ -203,7 +203,7 @@ cdef wxFont* getFont(font):
 cdef wxBrush* getBrush(brush):
     return getBrush_wrapped(<PyObject*>brush)
 
-cdef class Renderer(object):
+cdef class Renderer:
 
     cdef unordered_map[int, wxPen] c_pens_map
     cdef dict __reason_brushes

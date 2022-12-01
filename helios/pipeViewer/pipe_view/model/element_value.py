@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
 from . import content_options as content
 import time as ptime
 from . import highlighting_utils
-from .element import Element, LocationallyKeyedElement
+from .element import Element, FakeElement, PropertyValue
 
 if TYPE_CHECKING:
     from .schedule_element import ScheduleLineElement
@@ -23,7 +23,7 @@ class Element_Value:
 
     # number of periods on either side of edge of window to leave transactions
     __EVICT_MARGIN = 3
-    def __init__(self, e: LocationallyKeyedElement, val: str='') -> None:
+    def __init__(self, e: Element, val: str='') -> None:
         self.__element = e
         self.__val = val
         self.__clock_period = -1
@@ -50,7 +50,7 @@ class Element_Value:
 
     ## Sets the metadata to reference the \a entries argument
     #  @param entries Dictionary of meta-data
-    def SetMetaEntries(self, entries: Dict[str, Any]) -> None:
+    def SetMetaEntries(self, entries: Optional[Dict[str, Any]]) -> None:
         assert entries is None or isinstance(entries, dict), 'Attempted to set metadata which was not a dict: {}'.format(entries)
         self.__metas = entries
 
@@ -58,7 +58,7 @@ class Element_Value:
     #  simply a dictionary update and should only be used if the SetMetaEntries
     #  method has already been used this tick
     #  @param entries Dictionary of meta-data. If None, has no effect
-    def UpdateMetaEntries(self, entries: Dict[str, Any]) -> None:
+    def UpdateMetaEntries(self, entries: Optional[Dict[str, Any]]) -> None:
         assert entries is None or isinstance(entries, dict), 'Attempted to set metadata which was not a dict: {}'.format(entries)
         if self.__metas is None:
             self.__metas = entries
@@ -178,7 +178,7 @@ class Element_Value:
         return self.__update_index
 
     ## Returns the Element belonging to this instance
-    def GetElement(self) -> LocationallyKeyedElement:
+    def GetElement(self) -> Element:
         return self.__element
 
     ## Used so that Element_Values can be compared to Elements
@@ -202,7 +202,7 @@ class Element_Value:
     #  clock (through location) and t_offset
     #  @param t_offset Current value of t_offset property
     #  @param location Location string with location-string variables resolved
-    def SetLocationAndTimingInformation(self, t_offset: int, location: str) -> None:
+    def SetLocationAndTimingInformation(self, t_offset: int, location: Optional[str]) -> None:
         self.__display_t_offset = t_offset
         self.__resolved_location = location
 
@@ -226,3 +226,22 @@ class Element_Value:
 
     def __hash__(self) -> int:
         return self.GetPIN()
+
+# # For same purpose as fake element, just plays a different role.
+class FakeElementValue(Element_Value):
+    def __init__(self, element: FakeElement, value: PropertyValue) -> None:
+        self.__element = element
+        self.__value = str(value)
+        self.__clock_period = 1
+
+    def GetVal(self) -> str:
+        return self.__value
+
+    def GetElement(self) -> Element:
+        return self.__element
+
+    def GetClockPeriod(self) -> int:
+        return self.__clock_period
+
+    def SetClockPeriod(self, period: int) -> None:
+        self.__clock_period = period

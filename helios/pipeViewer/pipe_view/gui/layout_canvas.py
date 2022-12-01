@@ -20,7 +20,7 @@ from gui.font_utils import GetMonospaceFont, GetDefaultFont
 if TYPE_CHECKING:
     from gui.dialogs.element_propsdlg import Element_PropsDlg
     from gui.layout_frame import Layout_Frame
-    from model.element import Element, LocationallyKeyedElement
+    from model.element import Element
     from model.element_value import Element_Value
     from model.layout_context import Layout_Context
     from model.settings import ArgosSettings
@@ -315,7 +315,7 @@ class Layout_Canvas(wx.ScrolledWindow):
 
     # # Forward on the draw-orderd list of all Elements in this
     #  frame/canvas/layout...
-    def GetElements(self) -> List[LocationallyKeyedElement]:
+    def GetElements(self) -> List[Element]:
         return self.__context.GetElements()
 
     # # Return Element/Value pairs
@@ -436,7 +436,7 @@ class Layout_Canvas(wx.ScrolledWindow):
         highlighted = self.__context.IsUopUidHighlighted(uop_uid)
 
         if element.HasProperty('LocationString'):
-            search_result_hash = self.__context.SearchResultHash(start_tick, element.GetProperty('LocationString'))
+            search_result_hash = self.__context.SearchResultHash(start_tick, self.__context.GetLocationId(element))
         else:
             search_result_hash = None
 
@@ -490,8 +490,8 @@ class Layout_Canvas(wx.ScrolledWindow):
     def __CalcCanvasSize(self) -> bool:
 
         l, t, r, b = self.__context.GetElementExtents()
-        r *= self.__canvas_scale * self.__font_scale[0]
-        b *= self.__canvas_scale * self.__font_scale[1]
+        r = int(r * self.__canvas_scale * self.__font_scale[0])
+        b = int(b * self.__canvas_scale * self.__font_scale[1])
 
         width = max(self.MIN_WIDTH, r + self.__AUTO_CANVAS_SIZE_MARGIN)
         height = max(self.MIN_HEIGHT, b + self.__AUTO_CANVAS_SIZE_MARGIN)

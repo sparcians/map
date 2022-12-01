@@ -1,5 +1,4 @@
-
-
+from __future__ import annotations
 import wx
 
 # #This module provides a central place to define how the keys

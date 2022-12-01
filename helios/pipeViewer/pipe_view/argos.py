@@ -7,6 +7,7 @@
 #
 #  This file must be run as a script and not imported
 
+from __future__ import annotations
 import sys
 import os
 import logging
@@ -38,7 +39,6 @@ import wx
 import logging
 
 import gui.autocoloring
-from gui.layout_frame import Layout_Frame
 from gui.dialogs.select_db_dlg import SelectDatabaseDlg
 from gui.dialogs.select_layout_dlg import SelectLayoutDlg
 
