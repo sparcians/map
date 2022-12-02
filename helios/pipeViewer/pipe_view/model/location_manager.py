@@ -4,17 +4,17 @@
 from __future__ import annotations
 import functools
 import re
-import sys
 import time
 from typing import Dict, List, Optional, TextIO, Tuple
 
 # Expression for searching for variables in location strings
 #  @note value can be empty string
-LOCATION_STRING_VARIABLE_RE = re.compile('{(\w+)\s*(?:=\s*(\w*))?}')
+LOCATION_STRING_VARIABLE_RE = re.compile(r'{(\w+)\s*(?:=\s*(\w*))?}')
 
 LocationTree = Dict[str, 'LocationTree']
 LocationType = Tuple[int, str, int]
 __LocationDict = Dict[str, LocationType]
+
 
 # Consumes an Argos location file and provides a means of lookup up location
 #  IDs via location strings
@@ -46,29 +46,30 @@ class LocationManager:
     #  LOCATION_FILE_EXTENSION will be appended to determine the actual
     #  filename to open
     def __init__(self, prefix: str, update_enabled: bool) -> None:
-
-        self.__locs: __LocationDict = {} # { Location Name : ( LocationID, name, ClockID ) }
-        self.__id_to_string = {} # { LocationID : Location Name }
-        self.__loc_tree: LocationTree = {} # Location tree
+        # { Location Name : ( LocationID, name, ClockID ) }
+        self.__locs: __LocationDict = {}
+        self.__id_to_string = {}  # { LocationID : Location Name }
+        self.__loc_tree: LocationTree = {}  # Location tree
         self.__regex_cache: Dict[str, str] = {}
         try_count = self.FILE_WAIT_TIMEOUT
 
         index_file_exists = False
 
+        filename = prefix + self.LOCATION_FILE_EXTENSION
         while update_enabled and not index_file_exists:
             try:
-                with open(prefix + self.LOCATION_FILE_EXTENSION) as f:
+                with open(filename) as f:
                     index_file_exists = True
             except IOError as e:
                 if try_count == self.FILE_WAIT_TIMEOUT:
-                    print("Index file", prefix + self.LOCATION_FILE_EXTENSION, "doesn't exist yet.")
+                    print(f"Index file{filename} doesn't exist yet.")
                 elif try_count == 0:
                     raise e
                 print("Retrying:", self.FILE_WAIT_TIMEOUT - try_count)
                 try_count -= 1
                 time.sleep(1)
 
-        with open(prefix + self.LOCATION_FILE_EXTENSION, 'r') as f:
+        with open(filename, 'r') as f:
             # Find version information
             while 1:
                 first = self.__findNextLine(f)
@@ -79,20 +80,25 @@ class LocationManager:
                 try:
                     els = first.split(' \t#')
                     ver = int(els[0])
-                except:
+                except ValueError:
                     if update_enabled and (not first and try_count > 0):
-                        print("Could not read version string. File may be in-progress and not flushed yet. Retrying:", self.FILE_WAIT_TIMEOUT - try_count)
+                        print("Could not read version string. File may be "
+                              "in-progress and not flushed yet. Retrying: "
+                              f"{self.FILE_WAIT_TIMEOUT - try_count}")
                         try_count -= 1
                         f.seek(0)
                         time.sleep(1)
                         continue
                     else:
-                        raise ValueError('Found an unparsable (non-integer) version number string: "{0}". Expected "{1}".' \
-                                     .format(first, self.VERSION_NUMBER))
+                        raise ValueError('Found an unparsable (non-integer) '
+                                         f'version number string: "{first}". '
+                                         f'Expected "{self.VERSION_NUMBER}".')
 
                 if ver != self.VERSION_NUMBER:
-                    raise ValueError('Found incorrect version number: "{0}". Expected "{1}". This reader may need to be updated' \
-                                     .format(ver, self.VERSION_NUMBER))
+                    raise ValueError('Found incorrect version number: '
+                                     f'"{ver}". Expected '
+                                     f'"{self.VERSION_NUMBER}". This reader '
+                                     'may need to be updated')
                 break
 
             # Read subsequent location lines
@@ -108,18 +114,18 @@ class LocationManager:
 
                 try:
                     uid_str, name, clockid_str = els[:3]
-                except:
-                    raise ValueError('Failed to parse line "{0}"'.format(ln))
-
-                uid = int(uid_str)
-                clockid = int(clockid_str)
+                    uid = int(uid_str)
+                    clockid = int(clockid_str)
+                except ValueError:
+                    raise ValueError(f'Failed to parse line "{ln}"')
 
                 self.__insertLocationInTree(name)
                 self.__locs[name] = (uid, name, clockid)
                 self.__id_to_string[uid] = name
 
-    # Gets a tree of location strings represented as a dictionary with keys equal to
-    #  objects between dots in location strings: Leaf nodes are empty dictionaries
+    # Gets a tree of location strings represented as a dictionary with keys
+    #  equal to objects between dots in location strings: Leaf nodes are empty
+    #  dictionaries
     #
     #  Example:
     #  @code
@@ -156,17 +162,23 @@ class LocationManager:
     # Gets a tuple containing location information associated with a location
     #  string
     #  @param locname Location name string to lookup
-    #  @param variables dict of variables that can be substituted into the locname
+    #  @param variables dict of variables that can be substituted into the
+    #  locname
     #  @return 3-tuple (locationID, location name, clock id) if found. If not
     #  found, returns LOC_NOT_FOUND
-    def getLocationInfo(self, locname: str, variables: Dict[str, str], loc_vars_changed: bool = False) -> LocationType:
+    def getLocationInfo(self,
+                        locname: str,
+                        variables: Dict[str, str],
+                        loc_vars_changed: bool = False) -> LocationType:
         if not isinstance(locname, str):
-            raise TypeError('locname must be a str, is a {0}'.format(type(locname)))
+            raise TypeError(f'locname must be a str, is a {type(locname)}')
 
-        resolved_loc = self.replaceLocationVariables(locname, variables, loc_vars_changed)
+        resolved_loc = self.replaceLocationVariables(locname,
+                                                     variables,
+                                                     loc_vars_changed)
         try:
             return self.__locs[resolved_loc]
-        except:
+        except KeyError:
             return self.LOC_NOT_FOUND
 
     # Gets a tuple containing location information associated with a location
@@ -176,32 +188,42 @@ class LocationManager:
     #  found, returns LOC_NOT_FOUND
     def getLocationInfoNoVars(self, locname: str) -> LocationType:
         if not isinstance(locname, str):
-            raise TypeError('locname must be a str, is a {0}'.format(type(locname)))
+            raise TypeError(f'locname must be a str, is a {type(locname)}')
         try:
             return self.__locs[locname]
-        except:
+        except KeyError:
             return self.LOC_NOT_FOUND
 
     # Gets a location string with variables in it replaced by the given
-    #  variables dictionary. Caches results to improve performance for repeated calls.
+    #  variables dictionary. Caches results to improve performance for repeated
+    #  calls.
     #  @param locname Location string
     #  @param variables dict of variables and values
-    #  @param loc_vars_changed True if we need to refresh the entry in the regex cache
-    def replaceLocationVariables(self, locname: str, variables: Dict[str, str], loc_vars_changed: bool = False) -> str:
+    #  @param loc_vars_changed True if we need to refresh the entry in the
+    #  regex cache
+    def replaceLocationVariables(self,
+                                 locname: str,
+                                 variables: Dict[str, str],
+                                 loc_vars_changed: bool = False) -> str:
         if loc_vars_changed:
-            self.__regex_cache[locname] = LOCATION_STRING_VARIABLE_RE.sub(functools.partial(self.__replaceVariable, variables), locname)
+            self.__regex_cache[locname] = LOCATION_STRING_VARIABLE_RE.sub(
+                functools.partial(self.__replaceVariable, variables), locname
+            )
         try:
             return self.__regex_cache[locname]
-        except:
-            self.__regex_cache[locname] = LOCATION_STRING_VARIABLE_RE.sub(functools.partial(self.__replaceVariable, variables), locname)
+        except KeyError:
+            self.__regex_cache[locname] = LOCATION_STRING_VARIABLE_RE.sub(
+                functools.partial(self.__replaceVariable, variables), locname
+            )
             return self.__regex_cache[locname]
 
     # Find all location variables in location string
-    #  Returns a list of tuples (variable name, value) representing each variable found
+    #  Returns a list of tuples (variable name, value) representing each
+    #  variable found
     @staticmethod
     def findLocationVariables(locname: str) -> List[Tuple[str, str]]:
         if not isinstance(locname, str):
-            raise TypeError('locname must be a str, is a {0}'.format(type(locname)))
+            raise TypeError(f'locname must be a str, is a {type(locname)}')
 
         found = []
         matches = LOCATION_STRING_VARIABLE_RE.findall(locname)
@@ -248,7 +270,7 @@ class LocationManager:
         return len(self.__locs)
 
     def __str__(self) -> str:
-        return '<LocationManager locs={0}>'.format(len(self.__locs))
+        return f'<LocationManager locs={len(self.__locs)}>'
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -266,19 +288,20 @@ class LocationManager:
 
     # Handles replacing a word in a string with
     #  @param variables dict of variable names with values
-    #  @param match Match regex result. Contains 2 groups: the variable name and default value
-    #  (which is None if no default was supplied)
-    def __replaceVariable(self, variables: Dict[str, str], match: re.Match) -> str:
+    #  @param match Match regex result. Contains 2 groups: the variable name
+    #  and default value (which is None if no default was supplied)
+    def __replaceVariable(self,
+                          variables: Dict[str, str],
+                          match: re.Match) -> str:
         # Get the replacement form the variables dictionary
         replacement = variables.get(match.group(1), None)
         if replacement is None:
             if match.group(1) is not None:
-                # Use the default value associated with with variable in the location string
+                # Use the default value associated with with variable in the
+                # location string
                 replacement = match.group(2)
-                #print 'Used default {} for {}. Variables were {}'.format(match.group(2), match.group(1), variables)
             else:
-                return '<undefined:{}!>'.format(match.group(0))
+                return f'<undefined:{match.group(0)}!>'
         else:
-            pass #print 'Used variable for {}'.format(match.group(1))
+            pass
         return replacement
-

@@ -1,8 +1,6 @@
 from __future__ import annotations
 import wx
 import wx.lib.dragscroller as drgscrlr
-import os
-import colorsys # For easy HSL to RGB conversion
 import math
 import sys
 import time
@@ -11,7 +9,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union, cast, TYPE_CHECKING
 
 from .selection_manager import Selection_Mgr
 from .input_decoder import Input_Decoder
-from .hover_preview import HoverPreview, HoverRedrawEvent, EVT_HOVER_REDRAW
+from .hover_preview import HoverPreview
 from functools import partial
 from . import autocoloring
 import model.highlighting_utils as highlighting_utils
@@ -25,23 +23,22 @@ if TYPE_CHECKING:
     from model.layout_context import Layout_Context
     from model.settings import ArgosSettings
 
-# Import Argos transaction database module from SPARTA
-#__MODULE_ENV_VAR_NAME = 'RENDERED_MODULE_DIR'
-#added_path = os.environ.get(__MODULE_ENV_VAR_NAME, None)
-
 try:
     import core
 except ImportError as e:
-    print('Argos failed to import module: "renderer". Argos requires Make'.format(), file = sys.stderr)
-    print('Exception: {0}'.format(e), file = sys.stderr)
+    print('Argos failed to import module: "core". Argos requires Make',
+          file=sys.stderr)
+    print(f'Exception: {e}', file=sys.stderr)
     sys.exit(1)
 
 
-ColoredTransactionTuple = Tuple[str, wx.Brush, bool, bool, Optional[int], Optional[int]]
+ColoredTransactionTuple = \
+    Tuple[str, wx.Brush, bool, bool, Optional[int], Optional[int]]
+
 
 class Layout_Canvas(wx.ScrolledWindow):
 
-    __AUTO_CANVAS_SIZE_MARGIN = 40 # Pixels
+    __AUTO_CANVAS_SIZE_MARGIN = 40  # Pixels
 
     MIN_WIDTH = 500
     MIN_HEIGHT = 500
@@ -66,10 +63,12 @@ class Layout_Canvas(wx.ScrolledWindow):
         self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
         self.SetBackgroundColour(wx.WHITE)
         self.__renderer = core.Renderer()
-        assert len(autocoloring.REASON_BRUSHES) > 0 and len(autocoloring.BACKGROUND_BRUSHES) > 0
+        assert autocoloring.REASON_BRUSHES and autocoloring.BACKGROUND_BRUSHES
         self.SetRendererBrushes()
         self.__renderer.setExtensions(context.GetExtensionManager())
-        self.__dragscrl = drgscrlr.DragScroller(self, rate = 300, sensitivity = .01)
+        self.__dragscrl = drgscrlr.DragScroller(self,
+                                                rate=300,
+                                                sensitivity=.01)
         self.__WIDTH = 2000
         self.__HEIGHT = 2000
 
@@ -85,16 +84,16 @@ class Layout_Canvas(wx.ScrolledWindow):
         self.__layout = context.GetLayout()
         self.__dlg = dialog
         self.__draw_grid = False
-        #TODO, make neat ####################################
+        # TODO, make neat ####################################
         self.__gridsize = 14
         self.__gridlines: List[Tuple[int, int, int, int]] = []
         self.__UpdateGrid(self.__gridsize)
-        #End TODO ###########################################
+        # End TODO ###########################################
         self.__selection = Selection_Mgr(self, dialog)
         self.__user_handler = Input_Decoder(self)
 
         self.__set_renderer_font = False
-        self.__schedule_line_draw_style = 4 # classic
+        self.__schedule_line_draw_style = 4  # classic
 
         # used for color highlighting of transactions
         self.__colored_transactions: Dict[str, ColoredTransactionTuple] = {}
@@ -102,7 +101,9 @@ class Layout_Canvas(wx.ScrolledWindow):
         self.__hover_preview = HoverPreview(self, context)
         # Load images
 
-        self.__fnt_layout = GetMonospaceFont(self.GetSettings().layout_font_size)
+        self.__fnt_layout = GetMonospaceFont(
+            self.GetSettings().layout_font_size
+        )
         self.__UpdateFontScaling()
 
         # Disable background erasing
@@ -115,33 +116,50 @@ class Layout_Canvas(wx.ScrolledWindow):
 
         # Bindings for mouse events
         self.Bind(wx.EVT_LEFT_DOWN,
-                  partial(self.__user_handler.LeftDown, canvas = self,
-                          selection = self.__selection, dialog = self.__dlg))
+                  partial(self.__user_handler.LeftDown,
+                          canvas=self,
+                          selection=self.__selection,
+                          dialog=self.__dlg))
         self.Bind(wx.EVT_MOTION,
-                  partial(self.__user_handler.MouseMove, canvas = self,
-                  selection = self.__selection, context = self.__context,
-                  mouse_over_preview = self.__hover_preview))
+                  partial(self.__user_handler.MouseMove,
+                          canvas=self,
+                          selection=self.__selection,
+                          context=self.__context,
+                          mouse_over_preview=self.__hover_preview))
         self.Bind(wx.EVT_LEFT_DCLICK,
-                  partial(self.__user_handler.LeftDouble, canvas = self,
-                          selection = self.__selection, dialog = self.__dlg))
+                  partial(self.__user_handler.LeftDouble,
+                          canvas=self,
+                          selection=self.__selection,
+                          dialog=self.__dlg))
         self.Bind(wx.EVT_LEFT_UP,
-                  partial(self.__user_handler.LeftUp, canvas = self,
-                          selection = self.__selection, dialog = self.__dlg))
+                  partial(self.__user_handler.LeftUp,
+                          canvas=self,
+                          selection=self.__selection,
+                          dialog=self.__dlg))
         self.Bind(wx.EVT_RIGHT_DOWN,
-                  partial(self.__user_handler.RightDown, canvas = self, drgscrl = self.__dragscrl))
+                  partial(self.__user_handler.RightDown,
+                          canvas=self,
+                          drgscrl=self.__dragscrl))
         self.Bind(wx.EVT_RIGHT_UP,
-                  partial(self.__user_handler.RightUp, canvas = self, drgscrl = self.__dragscrl))
+                  partial(self.__user_handler.RightUp,
+                          canvas=self,
+                          drgscrl=self.__dragscrl))
         # Bindings for key events
         self.Bind(wx.EVT_KEY_DOWN,
-                  partial(self.__user_handler.KeyDown, canvas = self,
-                          selection = self.__selection, dialog = self.__dlg,
-                          context = self.__context))
+                  partial(self.__user_handler.KeyDown,
+                          canvas=self,
+                          selection=self.__selection,
+                          dialog=self.__dlg,
+                          context=self.__context))
         self.Bind(wx.EVT_KEY_UP,
-                  partial(self.__user_handler.KeyUp, canvas = self,
-                          selection = self.__selection, dialog = self.__dlg,
-                          context = self.__context))
+                  partial(self.__user_handler.KeyUp,
+                          canvas=self,
+                          selection=self.__selection,
+                          dialog=self.__dlg,
+                          context=self.__context))
 
-        self.Bind(wx.EVT_MOUSEWHEEL, partial(self.__user_handler.MouseWheel, canvas = self))
+        self.Bind(wx.EVT_MOUSEWHEEL,
+                  partial(self.__user_handler.MouseWheel, canvas=self))
 
         # required to actually receive key events
         self.SetFocus()
@@ -178,29 +196,36 @@ class Layout_Canvas(wx.ScrolledWindow):
         return (x, y, w, h)
 
     # Updates color for a transaction
-    def UpdateTransactionColor(self, el: Element, annotation: str) -> Tuple[str, wx.Brush]:
+    def UpdateTransactionColor(self,
+                               el: Element,
+                               annotation: str) -> Tuple[str, wx.Brush]:
         if el.HasProperty('auto_color_basis') \
           and el.HasProperty('color_basis_type'):
             auto_color_basis = cast(str, el.GetProperty('auto_color_basis'))
             color_basis_type = cast(str, el.GetProperty('color_basis_type'))
             content_type = cast(str, el.GetProperty('Content'))
-            record = self.GetTransactionColor(annotation, content_type, color_basis_type, auto_color_basis)
+            record = self.GetTransactionColor(annotation,
+                                              content_type,
+                                              color_basis_type,
+                                              auto_color_basis)
             if record:
                 string_to_display, brush, _, _, _, _ = record
             else:
-                string_to_display, brush, _, _ = self.AddColoredTransaction(annotation,
-                                                                            content_type,
-                                                                            color_basis_type,
-                                                                            auto_color_basis,
-                                                                            0,
-                                                                            el)
+                string_to_display, brush, _, _ = self.AddColoredTransaction(
+                    annotation,
+                    content_type,
+                    color_basis_type,
+                    auto_color_basis,
+                    0,
+                    el
+                )
         else:
             string_to_display = self.__hover_preview.annotation
             brush = wx.Brush((200, 200, 200))
 
         return string_to_display, brush
 
-    # Here the canvas does all it's drawing
+    # Here the canvas does all its drawing
     def DoDraw(self, dc: wx.DC) -> None:
         logging.debug('xxx: Started C drawing')
 
@@ -215,12 +240,15 @@ class Layout_Canvas(wx.ScrolledWindow):
             # dc.SetLogicalFunction(wx.INVERT)
             xoff, yoff = self.GetRenderOffsets()
             for x, y, x1, y1 in self.__gridlines:
-                dc.DrawLine(int(x - xoff), int(y - yoff), int(x1 - xoff), int(y1 - yoff))
+                dc.DrawLine(int(x - xoff),
+                            int(y - yoff),
+                            int(x1 - xoff),
+                            int(y1 - yoff))
 
         t_start = time.monotonic()
         self.__renderer.drawElements(dc, self, self.__context.GetHC())
 
-        logging.debug('{0}s: C drawing'.format(time.monotonic() - t_start))
+        logging.debug('%ss: C drawing', time.monotonic() - t_start)
 
     def ScrollWin(self, evt: wx.ScrollWinEvent) -> None:
         super().Refresh()
@@ -233,8 +261,10 @@ class Layout_Canvas(wx.ScrolledWindow):
         percent_bar_x = w_pix / self.__WIDTH
         percent_bar_y = h_pix / self.__HEIGHT
 
-        self.__scroll_ratios = (self.GetScrollPos(wx.HORIZONTAL) / x_bound + percent_bar_x / 4.0,
-                                self.GetScrollPos(wx.VERTICAL) / y_bound + percent_bar_y / 4.0)
+        self.__scroll_ratios = (
+            self.GetScrollPos(wx.HORIZONTAL) / x_bound + percent_bar_x / 4.0,
+            self.GetScrollPos(wx.VERTICAL) / y_bound + percent_bar_y / 4.0
+        )
 
         # If we're in edit mode, update the cursor location in the toolbar
         if self.__user_handler.GetEditMode():
@@ -247,7 +277,7 @@ class Layout_Canvas(wx.ScrolledWindow):
             elif evt.GetOrientation() == wx.VERTICAL:
                 y += offset * scroll_units[1]
 
-            self.__parent.UpdateMouseLocation(x, y)
+            self.__parent.UpdateMouseLocation((x, y))
 
         mousePos = wx.GetMousePosition()
         self.__hover_preview.HandleMouseMove(mousePos, self)
@@ -255,7 +285,9 @@ class Layout_Canvas(wx.ScrolledWindow):
 
     # Returns the position of the mouse within the canvas
     def GetMousePosition(self) -> Tuple[int, int]:
-        return self.CalcUnscrolledPosition(self.ScreenToClient(wx.GetMousePosition()))
+        return self.CalcUnscrolledPosition(
+            self.ScreenToClient(wx.GetMousePosition())
+        )
 
     # Execute all drawing logic
     def FullUpdate(self) -> None:
@@ -269,7 +301,7 @@ class Layout_Canvas(wx.ScrolledWindow):
     # Execute all drawing logic
     def OnPaint(self, event: wx.PaintEvent) -> None:
         paint_dc = wx.AutoBufferedPaintDC(self)
-        paint_dc.Clear();
+        paint_dc.Clear()
         context = wx.GraphicsContext.Create(paint_dc)
         dc = wx.GCDC(context)
         dc.SetLogicalScale(self.__canvas_scale, self.__canvas_scale)
@@ -290,9 +322,11 @@ class Layout_Canvas(wx.ScrolledWindow):
         self.Refresh()
 
     # Refresh. Recalc size and forward to superclass
-    def Refresh(self,
-                eraseBackground: bool = True,
-                rect: Optional[Union[Tuple[int, int, int, int], wx.Rect]] = None) -> None:
+    def Refresh(
+        self,
+        eraseBackground: bool = True,
+        rect: Optional[Union[Tuple[int, int, int, int], wx.Rect]] = None
+    ) -> None:
         # Recalculate canvas size
         if self.__CalcCanvasSize():
             self.__UpdateScrollbars()
@@ -300,7 +334,7 @@ class Layout_Canvas(wx.ScrolledWindow):
 
         super().Refresh()
 
-    # Gets called when the window is resized, and when the canvas is initialized
+    # Gets called when the window is resized and when the canvas is initialized
     def OnSize(self, event: wx.SizeEvent) -> None:
         # update the screen
         self.FullUpdate()
@@ -342,7 +376,7 @@ class Layout_Canvas(wx.ScrolledWindow):
                       int(math.ceil(box[2] / self.__canvas_scale)),
                       int(math.ceil(box[3] / self.__canvas_scale)))
 
-        box.Inflate(10, 10) # Fudge factor to ensure no dirt is left behind
+        box.Inflate(10, 10)  # Fudge factor to ensure no dirt is left behind
         return box
 
     # Gets the update region relative to the origin of the scrolled area
@@ -354,7 +388,7 @@ class Layout_Canvas(wx.ScrolledWindow):
         box.SetHeight(int(math.ceil(box.GetHeight() / self.__canvas_scale)))
         box.SetWidth(int(math.ceil(box.GetWidth() / self.__canvas_scale)))
 
-        box.Inflate(10, 10) # Fudge factor to ensure no dirt is left behind
+        box.Inflate(10, 10)  # Fudge factor to ensure no dirt is left behind
         return box
 
     # Returns element pairs suitable for drawing
@@ -370,18 +404,21 @@ class Layout_Canvas(wx.ScrolledWindow):
 
     # Set the brushes in the renderer to the current brush set
     def SetRendererBrushes(self) -> None:
-        self.__renderer.setBrushes(autocoloring.REASON_BRUSHES.as_dict(), autocoloring.BACKGROUND_BRUSHES.as_dict())
+        self.__renderer.setBrushes(autocoloring.REASON_BRUSHES.as_dict(),
+                                   autocoloring.BACKGROUND_BRUSHES.as_dict())
 
-    # Resets the renderer brushes and purges the brush cache - needed whenever the palette or color shuffle mode changes
+    # Resets the renderer brushes and purges the brush cache
+    # Needed whenever the palette or color shuffle mode changes
     def RefreshBrushes(self) -> None:
         self.SetRendererBrushes()
         self.PurgeBrushCache()
 
     # Returns brushes needed to draw elements
-    def GetBrushes(self) -> Tuple[autocoloring.BrushRepository, autocoloring.BrushRepository]:
+    def GetBrushes(self) -> Tuple[autocoloring.BrushRepository,
+                                  autocoloring.BrushRepository]:
         return autocoloring.BACKGROUND_BRUSHES, autocoloring.REASON_BRUSHES
 
-    #Returns offsets needed to render
+    # Returns offsets needed to render
     def GetRenderOffsets(self) -> Tuple[int, int]:
         return self.CalcUnscrolledPosition((0, 0))
 
@@ -403,51 +440,87 @@ class Layout_Canvas(wx.ScrolledWindow):
     # Updates the highlighting state of all cached transactions
     def UpdateTransactionHighlighting(self) -> None:
         for key, val in self.__colored_transactions.items():
-            self.__colored_transactions[key] = val[:2] + \
-                                               (self.__context.IsUopUidHighlighted(val[4]),) + \
-                                               (self.__context.IsSearchResult(val[5]),) + \
-                                               val[4:]
+            self.__colored_transactions[key] = \
+                val[:2] + \
+                (self.__context.IsUopUidHighlighted(val[4]),) + \
+                (self.__context.IsSearchResult(val[5]),) + \
+                val[4:]
 
-    def GetTransactionColor(self,
-                            annotation: str,
-                            content_type: str,
-                            color_basis_type: str,
-                            auto_color_basis: str) -> Optional[ColoredTransactionTuple]:
-        return self.__colored_transactions.get('%s:%s:%s:%s' % (annotation, color_basis_type, auto_color_basis, hash(content_type)))
+    @staticmethod
+    def __GetTransactionKey(
+        annotation: str,
+        content_type: str,
+        color_basis_type: str,
+        auto_color_basis: str
+    ) -> str:
+        return f'{annotation}:{color_basis_type}:{auto_color_basis}:{hash(content_type)}'  # noqa: E501
+
+    def GetTransactionColor(
+        self,
+        annotation: str,
+        content_type: str,
+        color_basis_type: str,
+        auto_color_basis: str
+    ) -> Optional[ColoredTransactionTuple]:
+        return self.__colored_transactions.get(
+            self.__GetTransactionKey(annotation,
+                                     content_type,
+                                     color_basis_type,
+                                     auto_color_basis)
+        )
 
     # Track the tagging of one transaction
     #  @note OThis can be called mutiple times to override existing colors
-    def AddColoredTransaction(self,
-                              annotation: str,
-                              content_type: str,
-                              color_basis_type: str,
-                              auto_color_basis: str,
-                              start_tick: int,
-                              element: Element) -> Tuple[str, wx.Brush, bool, bool]:
+    def AddColoredTransaction(
+        self,
+        annotation: str,
+        content_type: str,
+        color_basis_type: str,
+        auto_color_basis: str,
+        start_tick: int,
+        element: Element
+    ) -> Tuple[str, wx.Brush, bool, bool]:
         if len(self.__colored_transactions) > 10000:
             self.__colored_transactions.clear()
 
-        string_to_display, brush = self.__renderer.parseAnnotationAndGetColor(annotation,
-                                                                              content_type,
-                                                                              color_basis_type,
-                                                                              auto_color_basis)
-        key = '%s:%s:%s:%s' % (annotation, color_basis_type, auto_color_basis, hash(content_type))
+        string_to_display, brush = self.__renderer.parseAnnotationAndGetColor(
+            annotation,
+            content_type,
+            color_basis_type,
+            auto_color_basis
+        )
+
+        key = self.__GetTransactionKey(annotation,
+                                       content_type,
+                                       color_basis_type,
+                                       auto_color_basis)
+
         uop_uid = highlighting_utils.GetUopUid(annotation)
         highlighted = self.__context.IsUopUidHighlighted(uop_uid)
 
         if element.HasProperty('LocationString'):
-            search_result_hash = self.__context.SearchResultHash(start_tick, self.__context.GetLocationId(element))
+            search_result_hash = self.__context.SearchResultHash(
+                start_tick,
+                self.__context.GetLocationId(element)
+            )
         else:
             search_result_hash = None
 
         search_result = self.__context.IsSearchResult(search_result_hash)
-        self.__colored_transactions[key] = (string_to_display, brush, highlighted, search_result, uop_uid, search_result_hash)
+        self.__colored_transactions[key] = (string_to_display,
+                                            brush,
+                                            highlighted,
+                                            search_result,
+                                            uop_uid,
+                                            search_result_hash)
         return string_to_display, brush, highlighted, search_result
 
     # Gets old-style coloring (no basis configured)
     def GetAutocolorColor(self, annotation: str) -> wx.Colour:
-        string_to_display, brush = self.__renderer.parseAnnotationAndGetColor(annotation,
-                                                        'auto_color_annotation')
+        string_to_display, brush = self.__renderer.parseAnnotationAndGetColor(
+            annotation,
+            'auto_color_annotation'
+        )
         return brush.GetColour()
 
     # remove all entries from the dictionary of colored transactions
@@ -475,15 +548,22 @@ class Layout_Canvas(wx.ScrolledWindow):
         super().Refresh()
 
     # Returns a list of all Elements beneath the given point
-    def DetectCollision(self, pt: Union[Tuple[int, int], wx.Point]) -> List[Element_Value]:
+    def DetectCollision(
+        self,
+        pt: Union[Tuple[int, int], wx.Point]
+    ) -> List[Element_Value]:
         return self.__context.DetectCollision(pt)
 
     # override to handle full-canvas scale
-    def CalcUnscrolledPosition(self, position: Union[wx.Point, Tuple[int, int]]) -> Tuple[int, int]:
+    def CalcUnscrolledPosition(
+        self,
+        position: Union[wx.Point, Tuple[int, int]]
+    ) -> Tuple[int, int]:
         view_start = self.GetViewStart()
         x0 = view_start[0] * self.scrollrate
         y0 = view_start[1] * self.scrollrate
-        return int((x0 + position[0]) / self.__canvas_scale), int((y0 + position[1]) / self.__canvas_scale)
+        return (int((x0 + position[0]) / self.__canvas_scale),
+                int((y0 + position[1]) / self.__canvas_scale))
 
     # Calculate the canvas size based on all elements
     #  @return True if size changed, False if not
@@ -497,7 +577,7 @@ class Layout_Canvas(wx.ScrolledWindow):
         height = max(self.MIN_HEIGHT, b + self.__AUTO_CANVAS_SIZE_MARGIN)
 
         if self.__WIDTH == width and self.__HEIGHT == height:
-            return False # No change
+            return False  # No change
 
         self.__WIDTH = width
         self.__HEIGHT = height
@@ -539,9 +619,11 @@ class Layout_Canvas(wx.ScrolledWindow):
         assert self.__snap_capture_delta <= gridsize / 2
         self.__gridlines = []
         for x in range(round(self.__WIDTH / gridsize)):
-            self.__gridlines.append((x * gridsize, 0, x * gridsize, self.__HEIGHT))
+            grid_x = x * gridsize
+            self.__gridlines.append((grid_x, 0, grid_x, self.__HEIGHT))
         for y in range(round(self.__HEIGHT / gridsize)):
-            self.__gridlines.append((0, y * gridsize, self.__WIDTH, y * gridsize))
+            grid_y = y * gridsize
+            self.__gridlines.append((0, grid_y, self.__WIDTH, grid_y))
 
     def GetSettings(self) -> ArgosSettings:
         return self.__parent.GetSettings()
@@ -549,13 +631,16 @@ class Layout_Canvas(wx.ScrolledWindow):
     def __UpdateFontScaling(self) -> None:
         default_font_w, default_font_h = GetDefaultFont().GetPixelSize()
         cur_font_w, cur_font_h = self.__fnt_layout.GetPixelSize()
-        self.__font_scale = (cur_font_w / default_font_w, cur_font_h / default_font_h)
+        self.__font_scale = (cur_font_w / default_font_w,
+                             cur_font_h / default_font_h)
         for e in self.__context.GetElementPairs():
             e.GetElement().SetProperty('scale_factor', self.__font_scale)
 
     def UpdateFontSize(self) -> None:
         old_font = self.__fnt_layout
-        self.__fnt_layout = GetMonospaceFont(self.GetSettings().layout_font_size)
+        self.__fnt_layout = GetMonospaceFont(
+            self.GetSettings().layout_font_size
+        )
         if old_font.GetPointSize() != self.__fnt_layout.GetPointSize():
             self.__set_renderer_font = False
             self.__UpdateFontScaling()

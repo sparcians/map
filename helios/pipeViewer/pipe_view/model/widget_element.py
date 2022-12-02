@@ -109,16 +109,16 @@ class WidgetElement(LocationallyKeyedElement):
         return self.__widget
 
     def __InitializeWidget(self) -> None:
-        assert(self.__widget_init is not None)
+        assert self.__widget_init is not None
         self.__widget_init()
-        assert(self.__widget is not None)
+        assert self.__widget is not None
         self.__widget.Bind(wx.EVT_LEFT_DOWN, self.__SkipEvent)
         self.__widget.Bind(wx.EVT_KEY_DOWN, self.__SkipEvent)
         self.__widget.Bind(wx.EVT_KEY_UP, self.__SkipEvent)
         self.__widget.Bind(wx.EVT_SET_FOCUS, self.__OnFocus)
 
     def __CreateCanvas(self, parent: Layout_Canvas) -> None:
-        assert(self.__canvas is None)
+        assert self.__canvas is None
         self.__parent = parent
         self.__canvas = wx.Panel(parent)
         self.__SetCanvasSize(wx.Size(self.GetXDim(), self.GetYDim()))

@@ -1,14 +1,23 @@
 from __future__ import annotations
 import wx
 import wx.grid
-from wx.lib.colourchooser.pycolourchooser import ColourChangedEvent, PyColourChooser, EVT_COLOUR_CHANGED
+from wx.lib.colourchooser.pycolourchooser import (ColourChangedEvent,
+                                                  PyColourChooser,
+                                                  EVT_COLOUR_CHANGED)
 import model.content_options as copts
 from model.schedule_element import ScheduleLineElement
 from model.element import Element, LocationallyKeyedElement
 from model.rpc_element import RPCElement
 from ast import literal_eval
 from functools import cmp_to_key
-from typing import Dict, List, Optional, Tuple, Type, Union, cast, TYPE_CHECKING
+from typing import (Dict,
+                    List,
+                    Optional,
+                    Tuple,
+                    Type,
+                    Union,
+                    cast,
+                    TYPE_CHECKING)
 
 if TYPE_CHECKING:
     from gui.dialogs.element_propsdlg import Element_PropsDlg
@@ -41,22 +50,24 @@ class ElementPropertyList(wx.grid.Grid):
 
         self.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnCellChange)
         self.Bind(wx.EVT_SIZE, self.OnResize)
-        self.__db = cast('Layout_Frame', self.__parent.GetParent()).GetContext().dbhandle.database
+        self.__db = cast(
+            'Layout_Frame',
+            self.__parent.GetParent()
+        ).GetContext().dbhandle.database
 
         self.__InstallGridHint()
 
     def OnResize(self, evt: wx.SizeEvent) -> None:
-        #self.AutoSizeColumn(0, False)
         remaining = max(0, self.GetClientSize()[0] - self.GetRowLabelSize())
 
-        # UPdate column sizes with recursion prevention
-        if self.__in_resize == False and remaining != 0:
+        # Update column sizes with recursion prevention
+        if not self.__in_resize and remaining != 0:
             # Do a resize of slots here but ignore the next resize event
             # setColSize can cause recusion
             self.__in_resize = True
             self.SetColSize(0, remaining)
 
-            self.ForceRefresh() # Prevent ghosting of gridlines
+            self.ForceRefresh()  # Prevent ghosting of gridlines
 
         else:
             self.__in_resize = False
@@ -66,32 +77,33 @@ class ElementPropertyList(wx.grid.Grid):
     # Set the elements.
     #  @param elements Elements being edited
     #  @param sem_mgr Selection manager
-    def SetElements(self, elements: List[Element], sel_mgr: Selection_Mgr) -> None:
+    def SetElements(self,
+                    elements: List[Element],
+                    sel_mgr: Selection_Mgr) -> None:
         self.__elements = elements[:]
         self.__sel_mgr = sel_mgr
         if self.__elements:
             # show intersection of all current selected properties
             props_set = set(self.__elements[0].GetProperties().keys())
             hidden_props_set = set(self.__elements[0].GetHiddenProperties())
-            read_only_props_set = set(self.__elements[0].GetReadOnlyProperties())
-            #props_set.difference_update(self.__elements[0].GetHiddenProperties())
+            read_only_props_set = set(
+                self.__elements[0].GetReadOnlyProperties()
+            )
             for i in range(1, len(self.__elements)):
                 el = self.__elements[i]
-                #props_set.intersection_update(el.GetElementProperties())
                 props_set.union(el.GetElementProperties())
-                #props_set.difference_update(self.__elements[i].GetHiddenProperties())
                 hidden_props_set.intersection_update(el.GetHiddenProperties())
-                read_only_props_set.intersection_update(el.GetReadOnlyProperties())
+                read_only_props_set.intersection_update(
+                    el.GetReadOnlyProperties()
+                )
 
             # Remove hidden keys
             props_set.difference_update(hidden_props_set)
             read_only_props_set.difference_update(hidden_props_set)
             props = list(props_set)
-            hidden_props = list(hidden_props_set)
             read_only_props = list(read_only_props_set)
         else:
             props = []
-            hidden_props = []
             read_only_props = []
 
         self.__internal_editing = True
@@ -110,43 +122,75 @@ class ElementPropertyList(wx.grid.Grid):
                 break
 
         # Move read only keys to bottom
-        read_only_keys = list(filter(lambda k: k in read_only_props, self.__keys))
-        self.__keys = list(filter(lambda k: k not in read_only_props, self.__keys)) + read_only_keys
+        read_only_keys = list(filter(lambda k: k in read_only_props,
+                                     self.__keys))
+        self.__keys = list(filter(lambda k: k not in read_only_props,
+                                  self.__keys)) + read_only_keys
 
         index = 0
         for key in self.__keys:
             self.SetRowLabelValue(index, key)
-            self.__UpdateItem(index) # set value
-            if key in ['type', 'children', 'name', 'connections_in', 'connections_out']:
+            self.__UpdateItem(index)  # set value
+            if key in ('type',
+                       'children',
+                       'name',
+                       'connections_in',
+                       'connections_out'):
                 self.SetReadOnly(index, 0, True)
             elif key == 'Content':
                 cont_opts = copts.GetContentOptions()
                 self.SetCellEditor(index, 0, DropdownCellEditor(cont_opts))
             elif key == 'line_style':
-                self.SetCellEditor(index, 0,
-                            DropdownCellEditor(list(ScheduleLineElement.DRAW_LOOKUP.keys())))
+                self.SetCellEditor(
+                    index,
+                    0,
+                    DropdownCellEditor(
+                        list(ScheduleLineElement.DRAW_LOOKUP.keys())
+                    )
+                )
             elif key == 'color_basis_type':
-                self.SetCellEditor(index, 0,
-                            DropdownCellEditor(LocationallyKeyedElement.COLOR_BASIS_TYPES))
+                self.SetCellEditor(
+                    index,
+                    0,
+                    DropdownCellEditor(
+                        LocationallyKeyedElement.COLOR_BASIS_TYPES
+                    )
+                )
             elif key == 'anno_basis_type':
-                self.SetCellEditor(index, 0,
-                            DropdownCellEditor(RPCElement.ANNO_BASIS_TYPES))
+                self.SetCellEditor(
+                    index,
+                    0,
+                    DropdownCellEditor(RPCElement.ANNO_BASIS_TYPES)
+                )
             elif key == 'color':
                 self.SetCellEditor(index, 0, ColorCellEditor())
             elif key == 'LocationString':
-                self.SetCellEditor(index, 0, TreeCellEditor(self.__db.location_manager.location_tree))
+                self.SetCellEditor(
+                    index,
+                    0,
+                    TreeCellEditor(self.__db.location_manager.location_tree)
+                )
             elif key == 'short_format':
-                self.SetCellEditor(index, 0,
-                            DropdownCellEditor(ScheduleLineElement.SHORT_FORMAT_TYPES))
+                self.SetCellEditor(
+                    index,
+                    0,
+                    DropdownCellEditor(ScheduleLineElement.SHORT_FORMAT_TYPES)
+                )
             elif key == 'clock':
-                self.SetCellEditor(index, 0,
-                            DropdownCellEditor([clk.name for clk in self.__db.clock_manager.getClocks()]))
+                self.SetCellEditor(
+                    index,
+                    0,
+                    DropdownCellEditor(
+                        [clk.name
+                         for clk in self.__db.clock_manager.getClocks()]
+                    )
+                )
             if key in read_only_props:
                 self.SetReadOnly(index, 0, True)
                 self.SetReadOnly(index, 1, True)
             index += 1
         self.currentItem = 0
-        self.AutoSizeColumn(0, setAsMin = True)
+        self.AutoSizeColumn(0, setAsMin=True)
         self.__internal_editing = False
 
     def OnCellChange(self, evt: wx.grid.GridEvent) -> None:
@@ -159,25 +203,27 @@ class ElementPropertyList(wx.grid.Grid):
         # if the population function isn't calling
         if not self.__internal_editing:
             k = self.__keys[row]
-            # Begin checkpoint including all elements selected so that selection
-            # is correct checkpoint apply/remove
+            # Begin checkpoint including all elements selected so that
+            # selection is correct checkpoint apply/remove
             if self.__sel_mgr is not None:
-                self.__sel_mgr.BeginCheckpoint('set property {}'.format(k), force_elements = self.__elements)
+                self.__sel_mgr.BeginCheckpoint(f'set property {k}',
+                                               force_elements=self.__elements)
             try:
                 els = [e for e in self.__elements if e.HasProperty(k)]
                 success = False
                 for e in els:
                     try:
                         e.SetProperty(k, value)
-                        # but if it throws one of these errors, we'll catch it and display it
-                        # on the status bar. If other sorts of errors/expceptions are being
-                        # raised, they will need to be hardcoded in the same fashion
+                        # but if it throws one of these errors, we'll catch it
+                        # and display it on the status bar. If other sorts of
+                        # errors/exceptions are being raised, they will need to
+                        # be hardcoded in the same fashion
                     except ValueError as v:
                         self.__parent.ShowError(v)
-                        break # Show first error and break
+                        break  # Show first error and break
                     except TypeError as t:
                         self.__parent.ShowError(t)
-                        break # Show first error and break
+                        break  # Show first error and break
                 else:
                     # complete
                     if len(self.__elements) > 1:
@@ -191,17 +237,22 @@ class ElementPropertyList(wx.grid.Grid):
                     # not fully completed due to error
                     # set back
                     self.SetCellValue(row, 0, str(e.GetProperty(k)))
-            except:
+            except Exception:
                 raise
             finally:
                 if self.__sel_mgr is not None:
-                    self.__sel_mgr.CommitCheckpoint(force_elements = self.__elements)
+                    self.__sel_mgr.CommitCheckpoint(
+                        force_elements=self.__elements
+                    )
 
     def GetNumberOfElements(self) -> int:
         return len(self.__elements)
 
     # override read-only setter to gray out text
-    def SetReadOnly(self, row: int, col: int, is_read_only: bool = True) -> None:
+    def SetReadOnly(self,
+                    row: int,
+                    col: int,
+                    is_read_only: bool = True) -> None:
         wx.grid.Grid.SetReadOnly(self, row, col, is_read_only)
         if is_read_only:
             color = (128, 128, 128)
@@ -210,17 +261,17 @@ class ElementPropertyList(wx.grid.Grid):
         self.SetCellTextColour(row, col, color)
 
     def __UpdateItem(self, index: int) -> None:
-        # Look through each element. If property value read all match, show that value. If
-        # they differ, show a string saying that
+        # Look through each element. If property value read all match, show
+        # that value. If they differ, show a string saying that
         val = None
         prop = self.__keys[index]
         for e in self.__elements:
             if not e.HasProperty(prop):
                 continue
             el_val = str(e.GetProperty(prop))
-            if val is None: # First value encoutered in iteration
+            if val is None:  # First value encoutered in iteration
                 val = el_val
-            elif val != el_val: # Differs from last value
+            elif val != el_val:  # Differs from last value
                 val = MULTIPLE_VALS_STR
                 self.SetCellBackgroundColour(index, 0, MULTIPLE_VALS_COLOR)
                 break
@@ -249,12 +300,12 @@ class ElementPropertyList(wx.grid.Grid):
                 self.GetGridWindow().SetToolTip(hinttext)
             evt.Skip()
 
-        #wx.EVT_MOTION(self.GetGridWindow(), OnMouseMotion)
-        self.GetGridWindow().Bind(wx.EVT_MOTION, OnMouseMotion, id = wx.ID_NONE)
+        self.GetGridWindow().Bind(wx.EVT_MOTION, OnMouseMotion, id=wx.ID_NONE)
 
-# Class which displays drop-down-list formatted options when the user edits a cell
+
+# Class that displays drop-down-list formatted options when the user edits a
+# cell
 class DropdownCellEditor(wx.grid.GridCellEditor):
-
     # options is a list of options.
     def __init__(self, options: List[str]) -> None:
         wx.grid.GridCellEditor.__init__(self)
@@ -270,12 +321,20 @@ class DropdownCellEditor(wx.grid.GridCellEditor):
             new_val = self.__chooser.GetString(new_idx)
             self.__chooser.SetSelection(new_idx)
             self.__grid.SetCellValue(self.__row, self.__column, new_val)
-            grid_evt = wx.grid.GridEvent(id = wx.NewId(), type = wx.grid.EVT_GRID_CELL_CHANGED.typeId, obj = self.__grid, row = self.__row, col = self.__column)
+            grid_evt = wx.grid.GridEvent(
+                id=wx.NewId(),
+                type=wx.grid.EVT_GRID_CELL_CHANGED.typeId,
+                obj=self.__grid,
+                row=self.__row,
+                col=self.__column
+            )
             wx.PostEvent(self.__chooser.GetParent(), grid_evt)
 
     # make the selection dialog
-    def Create(self, parent: ElementPropertyList, id: int, event_handler: wx.EvtHandler) -> None:
-        self.__chooser = wx.Choice(parent, id, choices = self.__options)
+    def Create(self,
+               parent: ElementPropertyList,
+               id: int, event_handler: wx.EvtHandler) -> None:
+        self.__chooser = wx.Choice(parent, id, choices=self.__options)
         self.__chooser.Bind(wx.EVT_CHOICE, self.ChoiceEvent)
         self.SetControl(self.__chooser)
 
@@ -339,15 +398,22 @@ class PopupCellEditor(wx.grid.GridCellEditor):
     __in_update_handler = False
 
     # The class to use for the popup window is specified in popup_type
-    def __init__(self, popup_type: Optional[Type[wx.ComboPopup]] = None) -> None:
+    def __init__(self,
+                 popup_type: Optional[Type[wx.ComboPopup]] = None) -> None:
         wx.grid.GridCellEditor.__init__(self)
         self.__chooser = None
         self.__popup_type = popup_type
 
     # make the selection dialog
-    def Create(self, parent: ElementPropertyList, id: int, event_handler: wx.EvtHandler) -> None:
+    def Create(self,
+               parent: ElementPropertyList,
+               id: int,
+               event_handler: wx.EvtHandler) -> None:
         # A ComboCtrl handles the text entry and popup window
-        self.__chooser = wx.ComboCtrl(parent, wx.NewId(), "", style = wx.TE_PROCESS_ENTER)
+        self.__chooser = wx.ComboCtrl(parent,
+                                      wx.NewId(),
+                                      "",
+                                      style=wx.TE_PROCESS_ENTER)
         if self.__popup_type is not None:
             self.SetPopup(self.__popup_type())
         self.SetControl(self.__chooser)
@@ -365,7 +431,8 @@ class PopupCellEditor(wx.grid.GridCellEditor):
         if self.__chooser is not None:
             offset = 4
             assert self.__popup is not None
-            (popup_width, popup_height) = self.__popup.GetControl().GetBestSize()
+            (popup_width, popup_height) = \
+                self.__popup.GetControl().GetBestSize()
             self.__chooser.SetSize(rect.x, rect.y,
                                    rect.width + offset, rect.height + offset,
                                    wx.SIZE_ALLOW_MINUS_ONE)
@@ -406,11 +473,13 @@ class PopupCellEditor(wx.grid.GridCellEditor):
                 if self.__event_handler:
                     self.__chooser.PushEventHandler(self.__event_handler)
                 self.UpdateGrid()
-                grid_evt = wx.grid.GridEvent(id = wx.NewId(),
-                                             type = wx.grid.EVT_GRID_CELL_CHANGED.typeId,
-                                             obj = self.__chooser.GetParent(),
-                                             row = self.GetRow(),
-                                             col = self.GetColumn())
+                grid_evt = wx.grid.GridEvent(
+                    id=wx.NewId(),
+                    type=wx.grid.EVT_GRID_CELL_CHANGED.typeId,
+                    obj=self.__chooser.GetParent(),
+                    row=self.GetRow(),
+                    col=self.GetColumn()
+                )
                 wx.PostEvent(self.__chooser.GetParent(), grid_evt)
             else:
                 self.__in_update_handler = False
@@ -447,7 +516,8 @@ class PopupCellEditor(wx.grid.GridCellEditor):
         return PopupCellEditor(self.__popup_type)
 
 
-# Subclass of ComboPopup that allows us to set a flag for whether it should call back to the parent ComboCtrl and update its text
+# Subclass of ComboPopup that allows us to set a flag for whether it should
+# call back to the parent ComboCtrl and update its text
 class TextUpdatePopup(wx.ComboPopup):
 
     def __init__(self) -> None:
@@ -477,7 +547,9 @@ class ColorPopup(TextUpdatePopup):
     def OnColorChanged(self, evt: ColourChangedEvent) -> None:
         if self.ShouldUpdateText():
             assert self.__colour_chooser is not None
-            self.GetComboCtrl().SetText(str(self.__colour_chooser.GetValue().Get(includeAlpha=False)))
+            self.GetComboCtrl().SetText(
+                str(self.__colour_chooser.GetValue().Get(includeAlpha=False))
+            )
 
     def SetValue(self, color: wx.Colour) -> None:
         assert self.__colour_chooser is not None
@@ -509,7 +581,10 @@ class ColorCellEditor(PopupCellEditor):
         self.UpdateGrid()
 
     # make the selection dialog
-    def Create(self, parent: ElementPropertyList, id: int, event_handler: wx.EvtHandler) -> None:
+    def Create(self,
+               parent: ElementPropertyList,
+               id: int,
+               event_handler: wx.EvtHandler) -> None:
         super().Create(parent, id, event_handler)
         chooser = self.GetChooser()
         assert chooser is not None
@@ -520,7 +595,8 @@ class ColorCellEditor(PopupCellEditor):
     def OnTextChanged(self, evt: wx.CommandEvent) -> None:
         chooser = self.GetChooser()
         if evt.GetEventObject() == chooser:
-            # If a valid color tuple has been entered, update the color chooser's value
+            # If a valid color tuple has been entered, update the color
+            # chooser's value
             try:
                 assert chooser is not None
                 color_tuple = literal_eval(chooser.GetTextCtrl().GetValue())
@@ -533,7 +609,7 @@ class ColorCellEditor(PopupCellEditor):
                 popup.SetValue(color)
                 popup.SetUpdateText(True)
             # Otherwise, ignore the entered value
-            except:
+            except Exception:
                 pass
         else:
             evt.Skip()
@@ -548,11 +624,13 @@ class TreePopup(TextUpdatePopup):
     def __init__(self) -> None:
         TextUpdatePopup.__init__(self)
         self.__tree: Optional[wx.TreeCtrl] = None
-        # Maps full path strings (top.path.to.object) to their respective nodes in the TreeCtrl
+        # Maps full path strings (top.path.to.object) to their respective nodes
+        # in the TreeCtrl
         self.__tree_dict: Dict[str, wx.TreeItemId] = {}
         self.__loc_tree: LocationTree = {}
 
-    # Set the location tree dictionary for this tree view and populate the top level entities
+    # Set the location tree dictionary for this tree view and populate the top
+    # level entities
     def SetLocationTree(self, loc_tree: LocationTree) -> None:
         self.__loc_tree = loc_tree
         assert self.__tree is not None
@@ -565,7 +643,11 @@ class TreePopup(TextUpdatePopup):
             self.__tree_dict[key] = child
 
     def Create(self, parent: ElementPropertyList) -> bool:
-        self.__tree = wx.TreeCtrl(parent, wx.NewId(), style = wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS | wx.TR_SINGLE)
+        self.__tree = wx.TreeCtrl(
+            parent,
+            wx.NewId(),
+            style=wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS | wx.TR_SINGLE
+        )
         # Ensure that the tree calculates its best size correctly
         self.__tree.SetQuickBestSize(False)
         # Add the invisible root node
@@ -606,7 +688,8 @@ class TreePopup(TextUpdatePopup):
     def OnExpandedItem(self, evt: wx.TreeEvent) -> None:
         self.AutoSize()
 
-    # This intelligently populates the tree as its nodes are expanded instead of doing it all at once - reduces time to open the popup
+    # This intelligently populates the tree as its nodes are expanded instead
+    # of doing it all at once - reduces time to open the popup
     def OnExpandItem(self, evt: wx.TreeEvent) -> None:
         item = evt.GetItem()
         assert self.__tree is not None
@@ -635,14 +718,15 @@ class TreePopup(TextUpdatePopup):
         if val not in self.__tree_dict:
             tokens = val.split('.')
             curdict = self.__loc_tree
-            # Iterate through the tokens - if one of them doesn't appear at the correct
-            # level of the location tree dictionary, then this is an invalid value and we
-            # should stop processing.
+            # Iterate through the tokens - if one of them doesn't appear at the
+            # correct level of the location tree dictionary, then this is an
+            # invalid value and we should stop processing.
             for token in tokens:
                 if token not in curdict:
                     return
                 curdict = curdict[token]
-            # Otherwise, expand the tree from the deepest existing node until all necessary nodes are added
+            # Otherwise, expand the tree from the deepest existing node until
+            # all necessary nodes are added
             while val not in self.__tree_dict:
                 for i in range(len(tokens) - 1, -1, -1):
                     cur_path = '.'.join(tokens[:i])
@@ -652,12 +736,17 @@ class TreePopup(TextUpdatePopup):
 
         self.__tree.SelectItem(self.__tree_dict[val])
 
-    # Adds every member at the top level of location dictionary "tree" to node "item"
-    def SetTree(self, tree: LocationTree, item: Optional[wx.TreeItemId] = None, path: str = "") -> None:
+    # Adds every member at the top level of location dictionary "tree" to node
+    # "item"
+    def SetTree(self,
+                tree: LocationTree,
+                item: Optional[wx.TreeItemId] = None,
+                path: str = "") -> None:
         if not item:
             item = self.__root
 
-        def cmp_pair(x: Tuple[str, LocationTree], y: Tuple[str, LocationTree]) -> int:
+        def cmp_pair(x: Tuple[str, LocationTree],
+                     y: Tuple[str, LocationTree]) -> int:
             # Fix missing cmp() function in Python 3
             def cmp(a: Union[int, str], b: Union[int, str]) -> int:
                 if isinstance(a, int):
@@ -667,7 +756,8 @@ class TreePopup(TextUpdatePopup):
                     assert isinstance(b, str)
                     return (a > b) - (a < b)
 
-            return cmp(len(x[0]), len(y[0])) if len(x[0]) != len(y[0]) else cmp(x[0], y[0])
+            return cmp(len(x[0]), len(y[0])) \
+                if len(x[0]) != len(y[0]) else cmp(x[0], y[0])
 
         # Sort keys by length ascending then string-comparison alphabetically
         for k, v in sorted(tree.items(),
@@ -695,7 +785,10 @@ class TreeCellEditor(PopupCellEditor):
         PopupCellEditor.__init__(self, TreePopup)
         self.__loc_tree = loc_tree
 
-    def Create(self, parent: ElementPropertyList, id: int, event_handler: wx.EvtHandler) -> None:
+    def Create(self,
+               parent: ElementPropertyList,
+               id: int,
+               event_handler: wx.EvtHandler) -> None:
         super().Create(parent, id, event_handler)
         popup = self.GetPopup()
         assert popup is not None

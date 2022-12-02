@@ -17,7 +17,7 @@ from typing import Dict, List, Optional, Tuple, Union, cast
 import wx
 import cProfile
 
-info(f"currently with debug mode: {__debug__}")
+info("currently with debug mode: %s", __debug__)
 
 # Check Interpreter Version
 assert sys.version_info[0] == 3 and sys.version_info[1] >= 6, \
@@ -287,7 +287,7 @@ else:
     try:
         db = Database(database_prefix, args.poll)
     except IOError as ex:
-        error(f'Error opening pipeout database (prefix) "{database_prefix}"')
+        error('Error opening pipeout database (prefix) "%s"', database_prefix)
         error(ex)
         sys.exit(1)
 
@@ -329,12 +329,13 @@ else:
                     pos += last_match_size[0]
                 else:
                     if pos < len(lv):
-                        error(
-                            "Failed to evaluate layout variables argument "
-                            f"'{lv}' as a comma-separated list of key=value "
-                            f"pairs. Successfully parsed '{lv[:pos]}'. "
-                            f"Unable to parse '{lv[pos:]}'"
-                        )
+                        error("Failed to evaluate layout variables argument "
+                              "'%s' as a comma-separated list of key=value "
+                              "pairs. Successfully parsed '%s'. "
+                              "Unable to parse '%s'",
+                              lv,
+                              lv[:pos],
+                              lv[pos:])
                         sys.exit(1)
     else:
         layout_vardicts = None
@@ -433,7 +434,7 @@ else:
                     f'No such clock for frame "{frame.GetTitle()}". '
                     '--start-cycle will not be applied if set. '
                     "Available clocks are: "
-                    f"{', '.join(c.name for c in clock_mgr.GetClocks())}"
+                    f"{', '.join(c.name for c in clock_mgr.getClocks())}"
                 )
             elif start_cycle is not None:
                 frame.GoToCycle(start_cycle)  # Implies a frame refresh

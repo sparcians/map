@@ -188,7 +188,7 @@ def get_argos_version():
 #  first \a skip_chars characters are dropped form the result
 #  @return Value of first match if there are any matches. Otherwise returns \a not_found
 cpdef str extract_value(str s, str key, str separators = '=:', long skip_chars = 0, not_found = ''):
-    extractor = re.compile(r'{}\s*[{}]\s*([^ ]*)'.format(key, separators))
+    extractor = re.compile(f'{key}\\s*[{separators}]\\s*([^ ]*)')
     matches = extractor.findall(s)
     if len(matches) == 0:
         return not_found
@@ -331,7 +331,7 @@ cdef class Renderer:
                         else:
                             pass # Preserve current display string
                     except:
-                        error('Error: expression "{}"" raised exception on input "{}":'.format(field_string, string_to_display))
+                        error('Error: expression "%s" raised exception on input "%s":', field_string, string_to_display)
                         error(sys.exc_info())
                         string_to_display = '!'
                 elif field_type == 'python_func':
@@ -345,11 +345,11 @@ cdef class Renderer:
                             else:
                                 pass # Preserve current display string
                         except:
-                            error('Error: function "{}"" raised exception on input "{}":'.format(field_string, string_to_display))
+                            error('Error: function "%s" raised exception on input "%s":', field_string, string_to_display)
                             error(sys.exc_info())
                             string_to_display = '!'
                     else:
-                        error('Error: function "{}" can not be loaded.'.format(field_string))
+                        error('Error: function "%s" can not be loaded.', field_string)
                 if brush is None:
                     brush = wx.TheBrushList.FindOrCreateBrush(wx.WHITE, wx.SOLID)
                 return string_to_display, brush

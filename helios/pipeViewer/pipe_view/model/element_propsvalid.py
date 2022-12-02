@@ -17,7 +17,9 @@ __CONTENT_OPTIONS = content.GetContentOptions()
 def GetContentOptions() -> List[str]:
     return __CONTENT_OPTIONS
 
+
 StringTuple = Union[str, Tuple[int, int]]
+
 
 # Confirms that a position is in the form (int, int) for (x,y)
 def validatePos(name: str, raw: StringTuple) -> Tuple[int, int]:
@@ -30,9 +32,13 @@ def validatePos(name: str, raw: StringTuple) -> Tuple[int, int]:
     if len(val) != 2:
         raise ValueError(f'Parameter {name} must be 2-tuple of ints')
     if not isinstance(val[0], int):
-        raise TypeError(f'Parameter {name}: only integers allowed for x-coords')
+        raise TypeError(
+            f'Parameter {name}: only integers allowed for x-coords'
+        )
     if not isinstance(val[1], int):
-        raise TypeError(f'Parameter {name}: only integers allowed for y-coords')
+        raise TypeError(
+            f'Parameter {name}: only integers allowed for y-coords'
+        )
     val = cast(Tuple[int, int], val)
     return val
 
@@ -44,41 +50,44 @@ def validateDim(name: str, raw: StringTuple) -> Tuple[int, int]:
     else:
         val = raw
     if not isinstance(val, tuple):
-        raise TypeError('Parameter ' + name + ' must be a 2-tuple of ints')
+        raise TypeError(f'Parameter {name} must be a 2-tuple of ints')
     if len(val) != 2:
-        raise ValueError('Parameter ' + name + ' must be 2-tuple of ints')
-    if not(val[0] > 0 and val[1] > 0):
-        raise ValueError('Parameter ' + name + ' must only have positive values')
+        raise ValueError(f'Parameter {name} must be 2-tuple of ints')
+    if not (val[0] > 0 and val[1] > 0):
+        raise ValueError(f'Parameter {name} must only have positive values')
     if not isinstance(val[0], int):
-        raise TypeError('Parameter ' + name + ': only integers allowed for width')
+        raise TypeError(f'Parameter {name}: only integers allowed for width')
     if not isinstance(val[1], int):
-        raise TypeError('Parameter ' + name + ': only integers allowed for height')
+        raise TypeError(f'Parameter {name}: only integers allowed for height')
     val = cast(Tuple[int, int], val)
     return val
 
 
 # Confirms that a color is in the form (int, int, int) for (R,G,B)
-def validateColor(name: str, raw: Union[str, Tuple[int, int, int]]) -> Tuple[int, int, int]:
+def validateColor(
+    name: str,
+    raw: Union[str, Tuple[int, int, int]]
+) -> Tuple[int, int, int]:
     if isinstance(raw, str):
         val = tuplify(raw)
     else:
         val = raw
     if not isinstance(val, tuple):
-        raise TypeError('Parameter ' + name + ' must be a 3-tuple of ints')
+        raise TypeError(f'Parameter {name} must be a 3-tuple of ints')
     if len(val) != 3:
-        raise ValueError('Parameter ' + name + ' must be 3-tuple of ints')
+        raise ValueError(f'Parameter {name} must be 3-tuple of ints')
     if not isinstance(val[0], int):
-        raise TypeError('Parameter ' + name + ': only integers allowed for red')
+        raise TypeError(f'Parameter {name}: only integers allowed for red')
     if not isinstance(val[1], int):
-        raise TypeError('Parameter ' + name + ': only integers allowed for green')
+        raise TypeError(f'Parameter {name}: only integers allowed for green')
     if not isinstance(val[2], int):
-        raise TypeError('Parameter ' + name + ': only integers allowed for blue')
+        raise TypeError(f'Parameter {name}: only integers allowed for blue')
     if not 0 <= val[0] <= 255:
-        raise ValueError('Parameter ' + name + ': red must be between 0 & 255')
+        raise ValueError(f'Parameter {name}: red must be between 0 & 255')
     if not 0 <= val[1] <= 255:
-        raise ValueError('Parameter ' + name + ': green must be between 0 & 255')
+        raise ValueError(f'Parameter {name}: green must be between 0 & 255')
     if not 0 <= val[2] <= 255:
-        raise ValueError('Parameter ' + name + ': blue must be between 0 & 255')
+        raise ValueError(f'Parameter {name}: blue must be between 0 & 255')
     val = cast(Tuple[int, int, int], val)
     return val
 
@@ -87,7 +96,7 @@ def validateColor(name: str, raw: Union[str, Tuple[int, int, int]]) -> Tuple[int
 def validateLocation(name: str, val: str) -> str:
     val = str(val)
     if not isinstance(val, str):
-        raise TypeError('Parameter ' + name + ' must be an str')
+        raise TypeError(f'Parameter {name} must be an str')
     return val
 
 
@@ -95,14 +104,15 @@ def validateLocation(name: str, val: str) -> str:
 #  available options
 def validateContent(name: str, val: str) -> str:
     if not isinstance(val, str):
-        raise TypeError('Parameter ' + name + ' must be a str')
+        raise TypeError(f'Parameter {name} must be a str')
     if val not in __CONTENT_OPTIONS:
-        raise ValueError('Parameter ' + name + ' must be one of the options: '
-        +str(__CONTENT_OPTIONS))
+        raise ValueError(
+            f'Parameter {name} must be one of the options: {__CONTENT_OPTIONS}'
+        )
     return val
 
 
-## Confirms that the clock offset is valid
+# Confirms that the clock offset is valid
 def validateClockOffset(name: str, raw: StringTuple) -> Tuple[int, int]:
     if isinstance(raw, str):
         val = tuplify(raw)
@@ -110,18 +120,18 @@ def validateClockOffset(name: str, raw: StringTuple) -> Tuple[int, int]:
         val = raw
 
     if not isinstance(val, tuple):
-        raise TypeError('Parameter ' + name + ' must be a tuple of (clock, cycles)')
+        raise TypeError(f'Parameter {name} must be a tuple of (clock, cycles)')
 
     val = cast(Tuple[int, int], val)
     return val
 
 
-## Confirms that scale factor is an int
+# Confirms that scale factor is an int
 def validateTimeScale(name: str, raw: Union[str, float, int]) -> float:
     try:
         val = float(raw)
-    except:
-        raise TypeError('Parameter ' + name + ' must be a number')
+    except ValueError:
+        raise TypeError(f'Parameter {name} must be a number')
     return val
 
 
@@ -133,7 +143,7 @@ def validateOffset(name: str, raw: Union[str, int]) -> int:
     else:
         val = raw
     if not isinstance(val, int):
-        raise TypeError('Parameter ' + name + ' must be a int')
+        raise TypeError(f'Parameter {name} must be a int')
     return val
 
 
@@ -145,7 +155,7 @@ def validateString(name: str, val: Optional[str]) -> str:
     else:
         val = str(val)
         if not isinstance(val, str):
-            raise TypeError('Parameter ' + name + ' must be a str')
+            raise TypeError(f'Parameter {name} must be a str')
     return val
 
 
@@ -158,20 +168,25 @@ def validateBool(name: str, val: Optional[bool]) -> bool:
     return val
 
 
-# Confirms this is list
 T = TypeVar('T')
+
+
+# Confirms this is list
 def validateList(name: str, val: Union[str, List[T]]) -> List[T]:
     if isinstance(val, str):
         val = ast.literal_eval(val)
     else:
         val = list(val)
     if not isinstance(val, list):
-        raise TypeError('Parameter ' + name + ' must be a list')
+        raise TypeError(f'Parameter {name} must be a list')
     return val
 
 
 # Confirms that an X/Y scale value is in the form (number, number)
-def validateScale(name: str, raw: Union[Tuple[float, float], StringTuple]) -> Union[Tuple[float, float], Tuple[int, int]]:
+def validateScale(
+    name: str,
+    raw: Union[Tuple[float, float], StringTuple]
+) -> Union[Tuple[float, float], Tuple[int, int]]:
     val: Union[Tuple[float, float], Tuple[int, int]]
     if isinstance(raw, str):
         val = cast(Tuple[int, int], tuplify(raw))
@@ -182,9 +197,13 @@ def validateScale(name: str, raw: Union[Tuple[float, float], StringTuple]) -> Un
     if len(val) != 2:
         raise ValueError(f'Parameter {name} must be 2-tuple of numbers')
     if not isinstance(val[0], (int, float)):
-        raise TypeError(f'Parameter {name}: only numbers allowed for x-scale factors')
+        raise TypeError(
+            f'Parameter {name}: only numbers allowed for x-scale factors'
+        )
     if not isinstance(val[1], (int, float)):
-        raise TypeError(f'Parameter {name}: only numbers allowed for y-scale factors')
+        raise TypeError(
+            f'Parameter {name}: only numbers allowed for y-scale factors'
+        )
     return val
 
 

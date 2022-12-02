@@ -1,15 +1,6 @@
 from __future__ import annotations
-from logging import info, debug, error, warning, LogRecord, StrFormatStyle
 import logging
-import os
-from os.path import join, isfile, isdir, isabs, abspath, dirname, realpath
-import re
 import sys
-import shutil
-import signal
-from subprocess import Popen, PIPE, STDOUT
-import subprocess
-import time
 from typing import Any, Dict, Optional, Union, cast
 import yaml
 
@@ -27,7 +18,8 @@ class bcolors:
 
 class Settings:
     '''
-    will convert a nested dict into an object to make it easier to access various members
+    Will convert a nested dict into an object to make it easier to access
+    various members
     '''
 
     def __init__(self, value: Union[str, Dict[str, Any]]) -> None:
@@ -42,25 +34,33 @@ class Settings:
 
         for a, b in value.items():
             if isinstance(b, (list, tuple)):
-                setattr(self, a, [Settings(x) if isinstance(x, dict) else x for x in b])
+                setattr(self,
+                        a,
+                        [Settings(x) if isinstance(x, dict) else x for x in b])
             else:
                 setattr(self, a, Settings(b) if isinstance(b, dict) else b)
 
 
 class LogFormatter(logging.Formatter):
 
-    baseFormats = {logging.DEBUG : "DEBUG: {funcName}:{lineno}: {message}",
+    baseFormats = {logging.DEBUG: "DEBUG: {funcName}:{lineno}: {message}",
                    logging.WARNING: "WARN: {message}",
-                   logging.ERROR : "ERROR: {funcName}: {message}",
-                   logging.INFO : "{message}",
-                   'DEFAULT' : "{levelname}: {message}"}
+                   logging.ERROR: "ERROR: {funcName}: {message}",
+                   logging.INFO: "{message}",
+                   'DEFAULT': "{levelname}: {message}"}
 
-    def __init__(self, prefixValue: Optional[str] = None, isSmoke: bool = True, autoWidth: bool = False) -> None:
+    def __init__(self,
+                 prefixValue: Optional[str] = None,
+                 isSmoke: bool = True,
+                 autoWidth: bool = False) -> None:
         self.reset(prefixValue, isSmoke, autoWidth)
 
-    def reset(self, prefixValue: Optional[str] = None, isSmoke: bool = True, autoWidth: bool = False) -> None:
+    def reset(self,
+              prefixValue: Optional[str] = None,
+              isSmoke: bool = True,
+              autoWidth: bool = False) -> None:
 
-        self.formats: Dict[Union[int, str], StrFormatStyle] = {}
+        self.formats: Dict[Union[int, str], logging.StrFormatStyle] = {}
 
         if autoWidth:
             width = len(prefixValue) if prefixValue else 1
@@ -72,14 +72,19 @@ class LogFormatter(logging.Formatter):
             # TODO find some more elegant way to get this result
             # if k != logging.INFO and prefixValue:
             if prefixValue and (isSmoke or k != logging.INFO):
-                self.formats[k] = StrFormatStyle("%s%s" % (("[%%s%%%ds%%s] " % width) % (bcolors.OKGREEN if sys.stdout.isatty() else '',
-                                                                                         prefixValue if prefixValue else "",
-                                                                                         bcolors.ENDC if sys.stdout.isatty() else ''),
-                                                            v))
+                self.formats[k] = logging.StrFormatStyle(
+                    f'[{bcolors.OKGREEN if sys.stdout.isatty() else ""}'
+                    f'{prefixValue if prefixValue else "":{width}}'
+                    f'{bcolors.ENDC if sys.stdout.isatty() else ""}]{v}'
+                )
             else:
-                self.formats[k] = StrFormatStyle(v)
+                self.formats[k] = logging.StrFormatStyle(v)
 
-    def format(self, record: LogRecord) -> str:
-        # This doesn't play nicely with the base definition of logging.Formatter
-        self._style = self.formats.get(record.levelno, LogFormatter.baseFormats['DEFAULT']) # type: ignore
+    def format(self, record: logging.LogRecord) -> str:
+        # This doesn't play nicely with the base definition of
+        # logging.Formatter
+        self._style = self.formats.get(
+            record.levelno,
+            LogFormatter.baseFormats['DEFAULT']  # type: ignore
+        )
         return logging.Formatter.format(self, record)

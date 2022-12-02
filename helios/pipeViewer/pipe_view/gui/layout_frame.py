@@ -3,8 +3,16 @@ from contextlib import contextmanager, nullcontext
 import logging
 import os
 import wx
-import wx.lib.dragscroller as drgscrl
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union, cast, TYPE_CHECKING
+from typing import (Any,
+                    Dict,
+                    Iterator,
+                    List,
+                    Optional,
+                    Tuple,
+                    Type,
+                    Union,
+                    cast,
+                    TYPE_CHECKING)
 
 from .layout_canvas import Layout_Canvas
 from model.layout import Layout
@@ -22,7 +30,9 @@ if TYPE_CHECKING:
     from model.workspace import Workspace
     from model.settings import ArgosSettings
 
+
 DialogUnion = Union[wx.Frame, wx.Dialog]
+
 
 # The GUI-side top-level 'window' which will house a Layout Canvas, MenuBar
 #  and Playback Controls. One-to-one mapping with a layout display, and has
@@ -33,18 +43,19 @@ class Layout_Frame(wx.Frame):
 
     # Gets the wx frame created, and ties together a Layout Canvas and a
     #  Element Properties Dialog
-    def  __init__(self,
-                  ws: Workspace,
-                  context: Layout_Context,
-                  update_enabled: bool,
-                  title_prefix: str,
-                  title_override: str,
-                  title_suffix: str) -> None:
+    def __init__(self,
+                 ws: Workspace,
+                 context: Layout_Context,
+                 update_enabled: bool,
+                 title_prefix: str,
+                 title_override: str,
+                 title_suffix: str) -> None:
         self.__workspace = ws
         self.__context = context
         self.__layout = context.GetLayout()
         assert self.__layout is not None
-        self.__dialogs: Dict[str, List[DialogUnion]] = {} # stores currently active dialogs, keyed by name
+        # stores currently active dialogs, keyed by name
+        self.__dialogs: Dict[str, List[DialogUnion]] = {}
 
         size = (800, 600)
         if ws is not None:
@@ -69,21 +80,27 @@ class Layout_Frame(wx.Frame):
         if title_suffix is not None:
             title += title_suffix
 
-        wx.Frame.__init__(self, None, -1, title, pos = pos, size = size)
+        wx.Frame.__init__(self, None, -1, title, pos=pos, size=size)
         lg = logging.getLogger('Layout_Frame')
-        lg.debug('Creating Layout_Frame {} at pos {}, size {}'.format(self, pos, size))
+        lg.debug('Creating Layout_Frame %s at pos %s, size %s',
+                 self,
+                 pos,
+                 size)
 
         self.__title = title
         self.__playback_panel = FramePlaybackBar(self)
 
-        # Element properties dialog. It is important never to destroy this until the Frame dies
-        self.__dlg: Optional[Element_PropsDlg] = Element_PropsDlg(self, -1, title)
+        # Element properties dialog
+        # It is important never to destroy this until the Frame dies
+        self.__dlg: Optional[Element_PropsDlg] = Element_PropsDlg(self,
+                                                                  -1,
+                                                                  title)
         self.__canvas = Layout_Canvas(self, context, self.__dlg)
         self.__context.Update()
 
         self.__dlg.SetElements([], self.__canvas.GetSelectionManager())
         if self.__layout.GetElements():
-           self.__dlg.Show(False)
+            self.__dlg.Show(False)
 
         self.__menu = Argos_Menu(self, self.__layout, update_enabled)
         self.SetMenuBar(self.__menu)
@@ -136,7 +153,7 @@ class Layout_Frame(wx.Frame):
         def wait_cursor() -> Iterator[Union[wx.BusyCursor, nullcontext]]:
             yield wx.BusyCursor() if show_wait_cursor else nullcontext()
 
-        with wait_cursor() as cursor:
+        with wait_cursor():
             self.__playback_panel.Refresh()
             self.__context.DBUpdate()
             self.__canvas.FullUpdate()
@@ -169,7 +186,11 @@ class Layout_Frame(wx.Frame):
             self.OnDBUpdate(False)
 
     # Performs a full redraw
-    def Refresh(self, eraseBackground: bool = True, rect: Optional[Union[Tuple[int, int, int, int], wx.Rect]] = None) -> None:
+    def Refresh(
+        self,
+        eraseBackground: bool = True,
+        rect: Optional[Union[Tuple[int, int, int, int], wx.Rect]] = None
+    ) -> None:
         self.__canvas.FullUpdate()
         self.__playback_panel.Refresh()
 
@@ -213,7 +234,11 @@ class Layout_Frame(wx.Frame):
 
     # Show a dialog. Shows existing dialog unless create_new=True.
     # Forwards **kwargs to dialog_class
-    def ShowDialog(self, name: str, dialog_class: Type[DialogUnion], create_new: bool = False, **kwargs: Any) -> DialogUnion:
+    def ShowDialog(self,
+                   name: str,
+                   dialog_class: Type[DialogUnion],
+                   create_new: bool = False,
+                   **kwargs: Any) -> DialogUnion:
         windows = self.__dialogs.setdefault(name, [])
         if len(windows) == 0 or create_new is True:
             dlg = dialog_class(self, **kwargs)
@@ -227,7 +252,10 @@ class Layout_Frame(wx.Frame):
     # Shows the location list dialog
     #  @note Location list does not disappear when close. It is just hidden
     def ShowLocationsList(self) -> None:
-        self.ShowDialog('locations', LocationWindow, False, elpropsdlg = self.__dlg)
+        self.ShowDialog('locations',
+                        LocationWindow,
+                        False,
+                        elpropsdlg=self.__dlg)
 
     # Shows the search dialog
     #  @note Search does not disappear when close. It is just hidden
@@ -239,24 +267,34 @@ class Layout_Frame(wx.Frame):
             del kwargs['location']
         else:
             loc = None
-        dlg = cast(SearchDialog, self.ShowDialog('search', SearchDialog, True, *args, **kwargs))
+        dlg = cast(SearchDialog, self.ShowDialog('search',
+                                                 SearchDialog,
+                                                 True,
+                                                 *args,
+                                                 **kwargs))
         if loc is not None:
             dlg.SetSearchLocation(loc)
 
     # Shows the find-element dialog
     #  @note Search does not disappear when close. It is just hidden
     def ShowFindElement(self, *args: Any, **kwargs: Any) -> None:
-        self.ShowDialog('find element', FindElementDialog, False, *args, **kwargs)
+        self.ShowDialog('find element',
+                        FindElementDialog,
+                        False,
+                        *args,
+                        **kwargs)
 
     # Show or hide the navigation controls
     def ShowNavigationControls(self, show: bool = True) -> None:
         self.__playback_panel.Show(show)
-        #self.__menu.Show(show) # Menu bar space cannot be reclaimed when hidden, so this is useless. Also might disable hotkeys
         self.Layout()
 
     # Attempt to select the given clock by name
-    def SetDisplayClock(self, clock_name: str, error_if_not_found: bool = True) -> bool:
-        return self.__playback_panel.SetDisplayClock(clock_name, error_if_not_found)
+    def SetDisplayClock(self,
+                        clock_name: str,
+                        error_if_not_found: bool = True) -> bool:
+        return self.__playback_panel.SetDisplayClock(clock_name,
+                                                     error_if_not_found)
 
     # To to a specific cyle on the currently displayed clock for this frame
     def GoToCycle(self, cycle: int) -> None:
@@ -269,8 +307,8 @@ class Layout_Frame(wx.Frame):
         return True
 
     # 'Saving' means saving the Layout to file, nothing else is currently
-    #  preserved about a session (no user preferences, current selection, HC)
-    #  @return True if saved, False if cancelled (because it deferred to SaveAs)
+    # preserved about a session (no user preferences, current selection, HC)
+    # @return True if saved, False if cancelled (because it deferred to SaveAs)
     def Save(self) -> bool:
         logging.info('Saving')
         assert self.__layout is not None
@@ -282,11 +320,14 @@ class Layout_Frame(wx.Frame):
             self._SaveToFileWithErrorDlg()
             return True
 
-        message = 'The file "{0}" has been modified by another process (or a different ' \
-                  'layout instance) since being last written by this Layout. Do you want '\
-                  'to overwrite these changes?' \
-                  .format(filename)
-        dlg = wx.MessageDialog(self, message, "Save Layout - Overwrite Changed File?", wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
+        message = \
+            f'The file "{filename}" has been modified by another process (or '\
+            'a different layout instance) since being last written by this '\
+            'Layout. Do you want to overwrite these changes?'
+        dlg = wx.MessageDialog(self,
+                               message,
+                               "Save Layout - Overwrite Changed File?",
+                               wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
         dlg.ShowModal()
         ret = dlg.GetReturnCode()
         dlg.Destroy()
@@ -303,30 +344,33 @@ class Layout_Frame(wx.Frame):
     def SaveAs(self) -> bool:
         assert self.__layout is not None
         fp = self.__layout.GetFilename()
-        logging.info('Saving As. Current="{0}"'.format(fp))
+        logging.info('Saving As. Current="%s"', fp)
         if fp is not None:
-            initial_file = os.path.dirname(os.path.abspath(fp)) + '/' # directory
+            # directory
+            initial_file = os.path.dirname(os.path.abspath(fp)) + '/'
         else:
             initial_file = os.getcwd() + '/'
 
         # Loop until user saves or cancels
         dlg = wx.FileDialog(self,
                             "Save As Argos layout file as",
-                            defaultFile = initial_file,
-                            wildcard = Layout.LAYOUT_FILE_WILDCARD,
-                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT | wx.FD_CHANGE_DIR)
+                            defaultFile=initial_file,
+                            wildcard=Layout.LAYOUT_FILE_WILDCARD,
+                            style=(wx.FD_SAVE |
+                                   wx.FD_OVERWRITE_PROMPT |
+                                   wx.FD_CHANGE_DIR))
         dlg.ShowModal()
         ret = dlg.GetReturnCode()
         fp = dlg.GetPath()
         dlg.Destroy()
 
         if ret == wx.ID_CANCEL:
-            return False # No save
+            return False  # No save
 
         # NOTE: File guaranteed not to exisxt by FileDialog
         self._SaveToFileWithErrorDlg(fp)
 
-        self.UpdateTitle() # Title is based on layout filename
+        self.UpdateTitle()  # Title is based on layout filename
 
         return True
 
@@ -338,12 +382,15 @@ class Layout_Frame(wx.Frame):
             if filename is None:
                 filename = self.__layout.GetFilename()
             assert filename is not None
-            print(('Failed to save layout to\n"{}"\n\n{}' \
-                      .format(os.path.abspath(filename), ex)))
+
+            msg = 'Failed to save layout to\n' \
+                  f'"{os.path.abspath(filename)}"\n\n' \
+                  f'{ex}'
+
+            print(msg)
 
             dlg = wx.MessageDialog(self,
-                                   'Failed to save layout to\n"{}"\n\n{}' \
-                                   .format(os.path.abspath(filename), ex),
+                                   msg,
                                    'Save To File',
                                    wx.OK)
             dlg.ShowModal()
@@ -358,31 +405,29 @@ class Layout_Frame(wx.Frame):
     def _PromptBeforeClose(self) -> bool:
         assert self.__layout is not None
         if not self.__layout.HasChanged():
-            return True # Closing is OK
+            return True  # Closing is OK
 
         while self.__canvas.HasCapture():
             self.__canvas.ReleaseMouse()
-        message = 'This layout has changes. Are you sure you want to close this frame without saving?'
-        # dlg = wx.MessageDialog(self, message, "Close this frame without saving", wx.YES_NO | wx.NO_DEFAULT | wx.ICON_ASTERISK)
         dlg = LayoutExitDialog(self)
         ret = dlg.ShowModal()
         dlg.Destroy()
         if ret == wx.ID_CANCEL:
-            return False # Do not exit
+            return False  # Do not exit
         if ret == wx.ID_SAVE:
             # Attempt to save. Do not quit if user failed to save
             return self.Save()
         elif ret == wx.ID_DELETE:
-            return True # discard changes
+            return True  # discard changes
         else:
-            raise Exception('Unkonwn result from LayoutExitDialog: {}'.format(ret))
+            raise Exception(f'Unkonwn result from LayoutExitDialog: {ret}')
 
     # Handles a closing request from this frame or the menu bar.
-    #  @param force (kwargs only, default False) Force closed without prompting.
-    #  This is dangerous and should only be done when proceeded by a call to
-    #  _PromptBeforeClose().
+    # @param force (kwargs only, default False) Force closed without prompting.
+    # This is dangerous and should only be done when proceeded by a call to
+    # _PromptBeforeClose().
     #
-    #  Prompts the user about actually quitting if the layout has changed.
+    # Prompts the user about actually quitting if the layout has changed.
     # If successful, destroys
     def _HandleClose(self, **kwargs: Any) -> None:
         force = False
@@ -390,14 +435,15 @@ class Layout_Frame(wx.Frame):
             if k == 'force':
                 force = v
             else:
-                raise KeyError('Unknown kwargs {}'.format(k))
+                raise KeyError(f'Unknown kwargs {k}')
 
         # Only prompt about closing if force is False
         if force is False:
             if not self._PromptBeforeClose():
                 return
 
-        self.__playback_panel.PausePlaying() # Stop emitting messages which delay the wx.CallAfter
+        # Stop emitting messages which delay the wx.CallAfter
+        self.__playback_panel.PausePlaying()
         while self.__dialogs:
             name, dlgs = self.__dialogs.popitem()
             for dlg in dlgs:
@@ -409,18 +455,21 @@ class Layout_Frame(wx.Frame):
 
         self.__update_timer.Stop()
         self.__context.LeaveGroup()
-        wx.CallAfter(self.Destroy) # Delay destruction to ensure that this handler does not refer to this window
+        # Delay destruction to ensure that this handler does not refer to
+        # this window
+        wx.CallAfter(self.Destroy)
         self.__workspace.RemoveFrame(self)
 
     # Handle resize events on this frame
     def __OnResize(self, evt: wx.SizeEvent) -> None:
-        # Resize pauses playing because when timer events are too close together there is
-        # no chance to refresh the whole frame as is needed.
+        # Resize pauses playing because when timer events are too close
+        # together there is no chance to refresh the whole frame as is needed.
         self.__playback_panel.PausePlaying()
 
         evt.Skip()
 
-    # Computes a good window title containing the database and layout file information
+    # Computes a good window title containing the database and layout file
+    # information
     def ComputeTitle(self) -> str:
         title = os.path.split(self.__context.dbhandle.database.filename)[1]
         title += ':'
@@ -430,7 +479,7 @@ class Layout_Frame(wx.Frame):
         if lf is not None:
             title += os.path.split(lf)[1]
         else:
-            title += "<no layout file>";
+            title += "<no layout file>"
         return title
 
     # Updates the current title based on ComputeTitle
@@ -439,16 +488,17 @@ class Layout_Frame(wx.Frame):
 
     # Used for specifying edit mode
     def SetEditMode(self, menuEditBool: bool) -> None:
-        self.GetCanvas().GetInputDecoder().SetEditMode(menuEditBool, \
-                                                       self.__canvas.GetSelectionManager())
+        self.GetCanvas().GetInputDecoder().SetEditMode(
+            menuEditBool,
+            self.__canvas.GetSelectionManager()
+        )
         self.__menu.SetEditModeSettings(menuEditBool)
         self.__menu.ShowEditToolbar(menuEditBool)
-        # We have to send a resize event to get the toolbar drawn correctly in v2.x
+        # Need to send a resize event to draw the toolbar correctly in v2.x
         self.SendSizeEvent()
         # Update the mouse location in the edit bar
         if menuEditBool:
-            (x, y) = self.__canvas.GetMousePosition()
-            self.UpdateMouseLocation(x, y)
+            self.UpdateMouseLocation(self.__canvas.GetMousePosition())
 
     def SetHoverPreview(self, isHoverPreview: bool) -> None:
         self.GetCanvas().GetHoverPreview().Enable(isHoverPreview)
@@ -465,11 +515,12 @@ class Layout_Frame(wx.Frame):
 
     # focuses the jump-to-time box in the playback panel
     def FocusJumpBox(self) -> None:
-       self.__playback_panel.FocusJumpBox()
+        self.__playback_panel.FocusJumpBox()
 
     # Updates the mouse location in the edit toolbar
-    def UpdateMouseLocation(self, x: int, y: int) -> None:
-        self.__menu.UpdateMouseLocation(x, y)
+    def UpdateMouseLocation(self,
+                            pos: Union[Tuple[int, int], wx.Point]) -> None:
+        self.__menu.UpdateMouseLocation(pos)
 
     def GetSettings(self) -> ArgosSettings:
         return self.__workspace.GetSettings()

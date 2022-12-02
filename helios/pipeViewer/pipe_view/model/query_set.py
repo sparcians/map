@@ -1,15 +1,12 @@
-
 from __future__ import annotations
 import copy
-import logging
+from logging import debug, info
 import sys
 import time
 from typing import Dict, List, Optional, Tuple, cast, TYPE_CHECKING
 
 from . import content_options as content
 from model.schedule_element import ScheduleLineElement
-
-from logging import info, debug, warn, error
 
 if TYPE_CHECKING:
     from model.element_value import Element_Value
@@ -19,8 +16,12 @@ if TYPE_CHECKING:
 
     TOffDict = Dict[int, Dict[int, List[Element_Value]]]
 
+
 class ContinuedTransaction:
-    def __init__(self, interval: Tuple[int, int], processed_val: str, last: bool):
+    def __init__(self,
+                 interval: Tuple[int, int],
+                 processed_val: str,
+                 last: bool) -> None:
         self.interval = interval
         self.processed_val = processed_val
         self.last = last
@@ -28,13 +29,15 @@ class ContinuedTransaction:
     def unwrap(self) -> Tuple[Tuple[int, int], str, bool]:
         return self.interval, self.processed_val, self.last
 
-#Formerly known as Ordered_Dict
+
+# Formerly known as Ordered_Dict
 class QuerySet:
     # For sorting elements with no clock
     __DEFAULT_T_OFF = 0
 
     # Get the Ordered Dict initialized. Note: in order to force-populate the
-    #  Ordered Dict upon initialization, both optional parameters must be provided
+    #  Ordered Dict upon initialization, both optional parameters must be
+    #  provided
     def __init__(self, layout_context: Layout_Context):
         self.__layout_context = layout_context
         self.__handle = self.__layout_context.dbhandle
@@ -59,51 +62,62 @@ class QuerySet:
     def AddPair(self, pair: Element_Value) -> None:
         e = pair.GetElement()
         # Recompute t_off in terms of plain HC's
-        ####clock = self.GetClock(pair)
-        lmgr = self.__layout_context.dbhandle.database.location_manager
+        lmgr = self.__handle.database.location_manager
         loc_str = cast(str, e.GetProperty('LocationString'))
         variables = self.__layout_context.GetLocationVariables()
         loc, _, clock = lmgr.getLocationInfo(loc_str, variables)
-        t_off_property = cast(int, e.GetProperty('t_offset', period = pair.GetClockPeriod()))
+        t_off_property = cast(int, e.GetProperty('t_offset',
+                                                 period=pair.GetClockPeriod()))
 
-        # Warn about invalid locations for content types which DO require transactions
-        if loc == lmgr.INVALID_LOCATION_ID and e.GetProperty('Content') not in content.NO_TRANSACTIONS_REQUIRED:
-            print('Warning: No collected location matching "{}" (using variables:{})' \
-                                 .format(loc_str, variables), file = sys.stderr)
+        # Warn about invalid locations for content types which DO require
+        # transactions
+        if loc == lmgr.INVALID_LOCATION_ID and \
+           e.GetProperty('Content') not in content.NO_TRANSACTIONS_REQUIRED:
+            print(f'Warning: No collected location matching "{loc_str}" '
+                  f'(using variables:{variables})',
+                  file=sys.stderr)
 
-        if clock == self.__handle.database.location_manager.NO_CLOCK:
+        if clock == lmgr.NO_CLOCK:
             # Makes the assumption that there will always be something else at
             # t_offset of 0. If not, then this could stand to be optimized
             t_off = self.__DEFAULT_T_OFF
             period = -1
         else:
-            period = self.__handle.database.clock_manager.getClockDomain(clock).tick_period
+            period = self.__handle.database.clock_manager.getClockDomain(clock).tick_period  # noqa: E501
 
             t_off = period * t_off_property
             pair.SetClockPeriod(period)
 
-        #import pdb; pdb.set_trace()
-
         if e.GetQueryFrame(period):
             self.__range_pairs.append(pair)
         else:
-            if self.GetID(pair) == -1 and e.GetProperty('Content') not in content.NO_DATABASE_REQUIRED:
+            if self.GetID(pair) == -1 and \
+               e.GetProperty('Content') not in content.NO_DATABASE_REQUIRED:
                 pair.SetMissingLocation()
             else:
                 pair.SetVal('')
 
             if t_off in self.__t_off_sorted:
-                self.__t_off_sorted[t_off] = self.__AddAtLoc(pair, self.__t_off_sorted[t_off])
+                self.__t_off_sorted[t_off] = self.__AddAtLoc(
+                    pair,
+                    self.__t_off_sorted[t_off]
+                )
             else:
                 self.__t_off_sorted[t_off] = self.__AddAtLoc(pair)
 
-        # Update this pair to indicate that it was added with this this t_off and location
+        # Update this pair to indicate that it was added with this this t_off
+        # and location
         # This will be recalled when deleting this pair
-        pair.SetLocationAndTimingInformation(t_off_property, lmgr.getLocationString(loc))
+        pair.SetLocationAndTimingInformation(t_off_property,
+                                             lmgr.getLocationString(loc))
 
     # Helper method to AddPair()
     # @profile
-    def __AddAtLoc(self, pair: Element_Value, sub_dict: Optional[Dict[int, List[Element_Value]]] = None) -> Dict[int, List[Element_Value]]:
+    def __AddAtLoc(
+        self,
+        pair: Element_Value,
+        sub_dict: Optional[Dict[int, List[Element_Value]]] = None
+    ) -> Dict[int, List[Element_Value]]:
         if sub_dict:
             if self.GetID(pair) in sub_dict:
                 if pair not in sub_dict[self.GetID(pair)]:
@@ -112,44 +126,61 @@ class QuerySet:
                 sub_dict[self.GetID(pair)] = [pair]
             return sub_dict
         else:
-            return {self.GetID(pair):[pair]}
+            return {self.GetID(pair): [pair]}
 
     # Used for re-sorting an Element's location within t_off_sorted{},
     #  before the Element's Properties have actually changed
-    def __ForceAddSingleQueryPair(self, pair: Element_Value, t_off_in: int, id: int) -> None:
+    def __ForceAddSingleQueryPair(self,
+                                  pair: Element_Value,
+                                  t_off_in: int,
+                                  id: int) -> None:
         e = pair.GetElement()
 
         # Recompute t_off in terms of plain HC's
-        ####clock = self.GetClock(pair)
-        lmgr = self.__layout_context.dbhandle.database.location_manager
+        lmgr = self.__handle.database.location_manager
         loc_str = cast(str, e.GetProperty('LocationString'))
-        loc, _, clock = lmgr.getLocationInfo(loc_str, self.__layout_context.GetLocationVariables())
+        loc, _, clock = lmgr.getLocationInfo(
+            loc_str,
+            self.__layout_context.GetLocationVariables()
+        )
 
-        if clock == self.__handle.database.location_manager.NO_CLOCK:
+        if clock == lmgr.NO_CLOCK:
             # Makes the assumption that there will always be something else at
             # t_offset of 0. If not, then this could stand to be optimized
             t_off = self.__DEFAULT_T_OFF
         else:
-            period = self.__handle.database.clock_manager.getClockDomain(clock).tick_period
+            period = self.__handle.database.clock_manager.getClockDomain(clock).tick_period  # noqa: E501
             t_off = period * t_off_in
             pair.SetClockPeriod(period)
 
-        if id == -1 and e.GetProperty('Content') not in content.NO_DATABASE_REQUIRED:
+        if id == -1 and \
+           e.GetProperty('Content') not in content.NO_DATABASE_REQUIRED:
             pair.SetMissingLocation()
         else:
             pair.SetVal('')
 
         if t_off in self.__t_off_sorted:
-            self.__t_off_sorted[t_off] = self.__ForceAddAtLoc(pair, id, self.__t_off_sorted[t_off])
+            self.__t_off_sorted[t_off] = self.__ForceAddAtLoc(
+                pair,
+                id,
+                self.__t_off_sorted[t_off]
+            )
         else:
             self.__t_off_sorted[t_off] = self.__ForceAddAtLoc(pair, id)
 
-        # Update this pair to indicate that it was added with this this t_off and location
+        # Update this pair to indicate that it was added with this this t_off
+        # and location
         # This will be recalled when deleting this pair
-        pair.SetLocationAndTimingInformation(t_off_in, lmgr.getLocationString(loc))
+        pair.SetLocationAndTimingInformation(t_off_in,
+                                             lmgr.getLocationString(loc))
 
     # Helper method to __ForceAddSingleQueryPair()
-    def __ForceAddAtLoc(self, pair: Element_Value, id: int, sub_dict: Optional[Dict[int, List[Element_Value]]] = None) -> Dict[int, List[Element_Value]]:
+    def __ForceAddAtLoc(
+        self,
+        pair: Element_Value,
+        id: int,
+        sub_dict: Optional[Dict[int, List[Element_Value]]] = None
+    ) -> Dict[int, List[Element_Value]]:
         if sub_dict:
             if id in sub_dict:
                 if pair not in sub_dict[id]:
@@ -158,20 +189,22 @@ class QuerySet:
                 sub_dict[id] = [pair]
             return sub_dict
         else:
-            return {id:[pair]}
+            return {id: [pair]}
 
     # Removes the Element-Value associated with the provided Element from
     #  both draw_order and the t_off_sorted, without leaving lose ends.
     #  @param pair Element_Value pair. The element in this pair must not have
-    #  had its location or t_offset changed since it was added, otherwise it will
-    #  not be found in the expecected __t_offset_sorted bucket.
+    #  had its location or t_offset changed since it was added, otherwise it
+    #  will not be found in the expecected __t_offset_sorted bucket.
     def DeletePair(self, pair: Element_Value) -> None:
         # In the case of Resorting an Element in t_off_sorted, draw order
         # delete range pair_entry if we have one
         e = pair.GetElement()
 
-        # Get the properties related to rendering/sorting at the time this pair was added
-        prev_locstr = pair.GetDisplayLocationString() # get the fully-resolved (no variables) location string
+        # Get the properties related to rendering/sorting at the time this pair
+        # was added
+        # get the fully-resolved (no variables) location string
+        prev_locstr = pair.GetDisplayLocationString()
         prev_t_off = pair.GetDisplayTOffset()
 
         if e.GetQueryFrame(pair.GetClockPeriod()):
@@ -181,25 +214,24 @@ class QuerySet:
                     break
         else:
             # Recompute t_off in terms of plain HC's
-            #clock = self.GetClock(pair)
-            lmgr = self.__layout_context.dbhandle.database.location_manager
+            lmgr = self.__handle.database.location_manager
             if prev_locstr is not None:
                 loc, _, clock = lmgr.getLocationInfo(prev_locstr, {})
             else:
                 loc = lmgr.INVALID_LOCATION_ID
                 clock = lmgr.NO_CLOCK
-            ####t_off = e.GetProperty('t_offset')
 
             if clock == lmgr.NO_CLOCK:
-                # Makes the assumption that there will always be something else at
-                # t_offset of 0. If not, then this could stand to be optimized
+                # Makes the assumption that there will always be something else
+                # at t_offset of 0. If not, then this could stand to be
+                # optimized
                 t_off = self.__DEFAULT_T_OFF
             else:
                 assert prev_t_off is not None
-                t_off = self.__handle.database.clock_manager.getClockDomain(clock).tick_period * prev_t_off
+                t_off = self.__handle.database.clock_manager.getClockDomain(clock).tick_period * prev_t_off  # noqa: E501
 
             # Note that we could ignore missing t_offs here, but then we might
-            # have stale links in another t_off bucket. This guarantees that the
+            # have stale links in another t_off bucket. This guarantees that
             # the proper pair was removed by requiring it to be in the expected
             # bucket
             temp = self.__t_off_sorted[t_off].get(loc)
@@ -216,17 +248,22 @@ class QuerySet:
     def CheckLocationVariablesChanged(self) -> bool:
         loc_vars_status = self.__layout_context.GetLocationVariablesChanged()
         if loc_vars_status:
-           self.__layout_context.AckLocationVariablesChanged()
+            self.__layout_context.AckLocationVariablesChanged()
         return loc_vars_status
 
     def __GetLocationInfo(self, pair: Element_Value) -> LocationType:
         el = pair.GetElement()
         loc_str = cast(str, el.GetProperty('LocationString'))
         if el.LocationHasVars():
-            return self.__layout_context.dbhandle.database.location_manager.getLocationInfo(loc_str, self.__layout_context.GetLocationVariables(), self.CheckLocationVariablesChanged())
+            return self.__handle.database.location_manager.getLocationInfo(
+                loc_str,
+                self.__layout_context.GetLocationVariables(),
+                self.CheckLocationVariablesChanged()
+            )
 
-        return self.__layout_context.dbhandle.database.location_manager.getLocationInfoNoVars(loc_str)
-
+        return self.__handle.database.location_manager.getLocationInfoNoVars(
+            loc_str
+        )
 
     # Returns the internal ID which maps to the given Element's Location
     #  String, per the Location Manager
@@ -259,22 +296,26 @@ class QuerySet:
                 clock = self.GetClock(pair)
                 t_off = cast(int, e.GetProperty('t_offset'))
                 if clock == self.__handle.database.location_manager.NO_CLOCK:
-                    # Makes the assumption that there will always be something else at
-                    # t_offset of 0. If not, then this could stand to be optimized
+                    # Makes the assumption that there will always be something
+                    # else at t_offset of 0. If not, then this could stand to
+                    # be optimized
                     t_off = self.__DEFAULT_T_OFF
                 else:
-                    t_off = self.__handle.database.clock_manager.getClockDomain(clock).tick_period * t_off
+                    t_off = self.__handle.database.clock_manager.getClockDomain(clock).tick_period * t_off  # noqa: E501
                 temp = self.__t_off_sorted[t_off][self.GetID(pair)]
                 for pair_tmp in temp:
                     if pair_tmp == e:
-                        pair.SetVal(content.ProcessContent(cast(str, e.GetProperty('Content')),
-                                                           None,
-                                                           e,
-                                                           self.__handle,
-                                                           self.__layout_context.hc,
-                                                           self.__layout_context.GetLocationVariables()),
-                                    self.__stab_index,
-                                    )
+                        pair.SetVal(
+                            content.ProcessContent(
+                                cast(str, e.GetProperty('Content')),
+                                None,
+                                e,
+                                self.__handle,
+                                self.__layout_context.hc,
+                                self.__layout_context.GetLocationVariables()
+                            ),
+                            self.__stab_index,
+                        )
                         return
             else:
                 self.__layout_context.GoToHC(self.__layout_context.hc)
@@ -295,21 +336,23 @@ class QuerySet:
         loc_vars = self.__layout_context.GetLocationVariables()
 
         ordered_ticks = [hc + toff for toff in self.__t_off_sorted]
-        # Clear all continued transactions so that we don't accidentally draw garbage
+        # Clear all continued transactions so that we don't accidentally draw
+        # garbage
         self.__continued_transactions.clear()
-        # add intermediate values to make sure  Line-type  elements have what they need
+        # add intermediate values to make sure  Line-type  elements have what
+        # they need
         bottom_of_pair = 100000000000000000
         top_of_pair = -100000000000
         for pair in self.__range_pairs:
             e = pair.GetElement()
             assert isinstance(e, ScheduleLineElement)
-            e.SetTime(hc) # Always set time because it is used for drawing the schedule group
+            # Always set time because it is used for drawing the schedule group
+            e.SetTime(hc)
             period = pair.GetClockPeriod()
             if period == -1:
                 # unset/invalid
                 continue
             qframe = e.GetQueryFrame(period)
-            #print 'QUERY FRAME @ hc={} FOR {} = {}. Period = {}'.format(hc, e, qframe, period)
             curr_time = qframe[0] + hc
             end_time = qframe[1] + hc
             curr_time = curr_time - curr_time % period
@@ -325,7 +368,7 @@ class QuerySet:
 
                 curr_time += period
         if len(ordered_ticks) == 0:
-            return # Nothing to update
+            return  # Nothing to update
 
         ordered_ticks = sorted(set(ordered_ticks))
 
@@ -342,16 +385,9 @@ class QuerySet:
                 return
             next_t = ordered_ticks[next_tick]
 
-            # Show tick info
-            #print 'On t=', t, ' @idx ', next_tick
-            #print'  next t=', next_t
-
             if t < next_t:
-                # print ' ignored callback at t={}. t < next_t ({})'.format(t, next_t)
-                return # Ignore this t because there is no entry in ordered_ticks
-#            #in future, do this for all clocks.
-#            if t % period != 0:
-#                return
+                # Ignore this t because there is no entry in ordered_ticks
+                return
             next_tick_idx[0] += 1
             total_useful_callbacks[0] += 1
 
@@ -376,83 +412,102 @@ class QuerySet:
                         content_type = cast(str, e.GetProperty('Content'))
 
                         # Update element content based on transaction
-                        # If there is no data for this tick, this will return None
-                        trans_proxy = self.__layout_context.dbhandle.api.getTransactionProxy(loc_id)
+                        # If there is no data for this tick, this will return
+                        # None
+                        trans_proxy = \
+                            self.__handle.api.getTransactionProxy(loc_id)
 
                         if trans_proxy is not None and trans_proxy.isValid():
                             if range_pair_idx in self.__continued_transactions:
-                                old_interval, _, last = self.__continued_transactions[range_pair_idx].unwrap()
+                                old_interval, _, last = \
+                                    self.__continued_transactions[range_pair_idx].unwrap()  # noqa: E501
                                 if last and t >= old_interval[1]:
-                                    del self.__continued_transactions[range_pair_idx]
+                                    del self.__continued_transactions[range_pair_idx]  # noqa: E501
                             if range_pair_idx in self.__continued_transactions:
-                                old_interval, old_processed_val, last = self.__continued_transactions[range_pair_idx].unwrap()
+                                old_interval, old_processed_val, last = \
+                                    self.__continued_transactions[range_pair_idx].unwrap()  # noqa: E501
                                 old_left = old_interval[0]
-                                new_interval = (old_left, trans_proxy.getRight())
+                                new_interval = (old_left,
+                                                trans_proxy.getRight())
                                 # Fix for ARGOS-158/ARGOS-164
-                                # There's a corner case where a heartbeat occurs in the middle of a clock period. We would ordinarily skip over it, and
-                                # consequently miss the last part of a continued transaction. If a continued transaction ends before the next clock period begins,
-                                # we add it to the ordered_ticks list so that we can catch the next part of it.
+                                # There's a corner case where a heartbeat
+                                # occurs in the middle of a clock period. We
+                                # would ordinarily skip over it, and
+                                # consequently miss the last part of a
+                                # continued transaction. If a continued
+                                # transaction ends before the next clock period
+                                # begins, we add it to the ordered_ticks list
+                                # so that we can catch the next part of it.
                                 if new_interval[1] < new_interval[0] + period:
-                                    ordered_ticks.insert(next_tick_idx[0], new_interval[1])
-                                self.__range_pairs[range_pair_idx].SetTimedVal(old_left, (old_processed_val, new_interval))
+                                    ordered_ticks.insert(next_tick_idx[0],
+                                                         new_interval[1])
+                                self.__range_pairs[range_pair_idx].SetTimedVal(
+                                    old_left,
+                                    (old_processed_val, new_interval)
+                                )
                                 if not trans_proxy.isContinued():
-                                    self.__continued_transactions[range_pair_idx].interval = new_interval
-                                    self.__continued_transactions[range_pair_idx].last = True
+                                    self.__continued_transactions[range_pair_idx].interval = new_interval  # noqa: E501
+                                    self.__continued_transactions[range_pair_idx].last = True  # noqa: E501
 
                             else:
-                                processed_val = content.ProcessContent(content_type,
-                                                                       trans_proxy,
-                                                                       e,
-                                                                       handle,
-                                                                       hc,
-                                                                       loc_vars)
-                                interval = (trans_proxy.getLeft(), trans_proxy.getRight())
+                                processed_val = content.ProcessContent(
+                                    content_type,
+                                    trans_proxy,
+                                    e,
+                                    handle,
+                                    hc,
+                                    loc_vars
+                                )
+                                interval = (trans_proxy.getLeft(),
+                                            trans_proxy.getRight())
                                 if trans_proxy.isContinued():
-                                    self.__continued_transactions[range_pair_idx] = ContinuedTransaction(interval, copy.copy(processed_val), False)
+                                    self.__continued_transactions[range_pair_idx] = ContinuedTransaction(interval, copy.copy(processed_val), False)  # noqa: E501
                                     # Fix for ARGOS-158/ARGOS-164
-                                    # There's a corner case where a heartbeat occurs in the middle of a clock period. We would ordinarily skip over it, and
-                                    # consequently miss the last part of a continued transaction. If a continued transaction ends before the next clock period begins,
-                                    # we add it to the ordered_ticks list so that we can catch the next part of it.
+                                    # There's a corner case where a heartbeat
+                                    # occurs in the middle of a clock period.
+                                    # We would ordinarily skip over it, and
+                                    # consequently miss the last part of a
+                                    # continued transaction. If a continued
+                                    # transaction ends before the next clock
+                                    # period begins, we add it to the
+                                    # ordered_ticks list so that we can catch
+                                    # the next part of it.
                                     if interval[1] < interval[0] + period:
-                                        ordered_ticks.insert(next_tick_idx[0], interval[1])
+                                        ordered_ticks.insert(next_tick_idx[0],
+                                                             interval[1])
                                 else:
-                                    range_pair.SetTimedVal(interval[0], (processed_val, interval))
+                                    range_pair.SetTimedVal(interval[0],
+                                                           (processed_val,
+                                                            interval))
                                     if trans_proxy.getLeft() != t:
                                         if t % period == 0:
-                                            original_start = trans_proxy.getLeft()
-                                            range_pair.SetTimedVal(t, (original_start, (t, t))) # placeholder
-                                            if not range_pair.GetTimedVal(original_start):
-                                                info('Unable to make full query.')
+                                            original_start = \
+                                                trans_proxy.getLeft()
+                                            range_pair.SetTimedVal(
+                                                t,
+                                                (original_start, (t, t))
+                                            )  # placeholder
+                                            if not range_pair.GetTimedVal(original_start):  # noqa: E501
+                                                info('Unable to make full query.')  # noqa: E501
 
                         else:
                             if t % period == 0:
-                                range_pair.SetTimedVal(t, (None, (t, t))) # placeholder
+                                range_pair.SetTimedVal(
+                                    t,
+                                    (None, (t, t))
+                                )  # placeholder
 
-            # Query at this time and update all elements for which a transaction
-            # exists.
-            # assert t-hc in self.__t_off_sorted, 'bad tick {0}'.format(t)
+            # Query at this time and update all elements for which a
+            # transaction exists.
             if t - hc in self.__t_off_sorted:
-                ids = self.__t_off_sorted[t - hc] #.keys()
-                #print 'IDs @ {0} = {1}'.format(t, ids)
-
-                # Dump all locations in a row with locaiton transacitons IDs coded into ascii
-                #for locid in xrange(0, self.__layout_context.dbhandle.database.location_manager.getMaxLocationID()):
-                #    trans_proxy = self.__layout_context.dbhandle.api.getTransactionProxy(locid)
-                #    if trans_proxy is not None and trans_proxy.isValid():
-                #        sys.stdout.write('{:1s}'.format(chr((0x21 + trans_proxy.getTransactionID())
-                #                                            % (ord('~') - ord('!'))
-                #                                            )))
-                #    else:
-                #        sys.stdout.write('_')
-                #print ''
-
                 for loc_id, els in self.__t_off_sorted[t - hc].items():
                     for pair in els:
                         e = pair.GetElement()
 
                         content_type = cast(str, e.GetProperty('Content'))
                         if content_type in no_trans:
-                            # Update this element, which is not dependent on a transaction
+                            # Update this element, which is not dependent on a
+                            # transaction
                             pair.SetVal(content.ProcessContent(content_type,
                                                                None,
                                                                e,
@@ -462,59 +517,73 @@ class QuerySet:
                                         stab_index)
                         else:
                             # Update element content based on transaction
-                            # If there is no data for this tick, this will return None
-                            trans_proxy = self.__layout_context.dbhandle.api.getTransactionProxy(loc_id)
+                            # If there is no data for this tick, this will
+                            # return None
+                            trans_proxy = \
+                                self.__handle.api.getTransactionProxy(loc_id)
                             if loc_id == -1:
                                 pair.SetMissingLocation()
-                            elif trans_proxy is not None and trans_proxy.isValid():
-                                pair.SetVal(content.ProcessContent(content_type,
-                                                                   trans_proxy,
-                                                                   e,
-                                                                   handle,
-                                                                   hc,
-                                                                   loc_vars),
-                                                                   stab_index)
+                            elif trans_proxy is not None and trans_proxy.isValid():  # noqa: E501
+                                pair.SetVal(
+                                    content.ProcessContent(content_type,
+                                                           trans_proxy,
+                                                           e,
+                                                           handle,
+                                                           hc,
+                                                           loc_vars),
+                                    stab_index
+                                )
                             else:
-                                # There is no transaction here. It might be a fake query response or
-                                # a genuine empty transaction.
-                                # If previously, there was no transaction at this location,
-                                # assume this is still the case. If an element changes locations
-                                # and then points to a location that is valid but has no transaction
-                                # it is the responsibility of AddElement-related methods to clear
-                                # the 'no location' value so that it doesn't persist
-                                if pair.GetVal() is not content.OverrideState('no loc'):
-                                    pair.SetVal(content.OverrideState('no trans'))
+                                # There is no transaction here. It might be a
+                                # fake query response or a genuine empty
+                                # transaction.
+                                # If there was previously no transaction at
+                                # this location, assume this is still the case.
+                                # If an element changes locations and then
+                                # points to a location that is valid but has no
+                                # transaction, it is the responsibility of
+                                # AddElement-related methods to clear the 'no
+                                # location' value so that it doesn't persist
+                                if pair.GetVal() is not content.OverrideState('no loc'):  # noqa: E501
+                                    pair.SetVal(
+                                        content.OverrideState('no trans')
+                                    )
 
                         updated += 1
                 total_updates[0] += updated
 
-        logging.debug('Querying from {} to {}'.format(ordered_ticks[0], ordered_ticks[-1]))
+        debug('Querying from %s to %s', ordered_ticks[0], ordered_ticks[-1])
         t_start = time.monotonic()
         try:
-            self.__layout_context.dbhandle.query(ordered_ticks[0], ordered_ticks[-1], callback, True)
-            logging.debug("Done with db query")
+            self.__handle.query(ordered_ticks[0],
+                                ordered_ticks[-1],
+                                callback,
+                                True)
+            debug("Done with db query")
         except Exception as ex:
-            logging.debug('Exception while querying!: {}'.format(ex))
+            debug('Exception while querying!: %s', ex)
             raise
         finally:
-            logging.debug('{0}s: Query+Update for {1} elements. {2} callbacks ({3} useful)' \
-                          .format(time.monotonic() - t_start, total_updates[0], total_callbacks[0], total_useful_callbacks[0]))
-            logging.debug('  {}'.format(self.__layout_context.dbhandle.api))
-            node_states = self.__layout_context.dbhandle.api.getNodeStates().split('\n')
+            debug(
+                '%ss: Query+Update for %s elements. %s callbacks (%s useful)',
+                time.monotonic() - t_start,
+                total_updates[0],
+                total_callbacks[0],
+                total_useful_callbacks[0]
+            )
+            debug('  %s', self.__handle.api)
+            node_states = self.__handle.api.getNodeStates().split('\n')
             for ns in node_states:
-                logging.debug('  {}'.format(ns))
+                debug('  %s', ns)
 
-        logging.debug('Done')
-
-        # print 'Node 0 dump:\n'
-        # print self.__layout_context.dbhandle.api.getNodeDump(0, 890, 905, 40);
+        debug('Done')
 
     # For debug purposes
     def __repr__(self) -> str:
         return self.__str__()
 
     def __str__(self) -> str:
-        return '<Ordered_Dict>'.format()
+        return '<Ordered_Dict>'
 
     def GetElementDump(self) -> str:
         res = ''

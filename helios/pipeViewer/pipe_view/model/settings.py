@@ -6,7 +6,9 @@ from typing import Any, Dict
 from gui.autocoloring import BrushRepository
 from gui.font_utils import GetDefaultFontSize, GetDefaultControlFontSize
 
-## Stores settings in a JSON file in the user's config directory so that they can be persisted across runs
+
+# Stores settings in a JSON file in the user's config directory so that they
+# can be persisted across runs
 class ArgosSettings:
     __DEFAULT_CONFIG = {
         'layout_font_size': GetDefaultFontSize(),
@@ -26,15 +28,20 @@ class ArgosSettings:
 
         argos_config_dir = 'argos'
         # %APPDATA% = Windows user config directory
-        # $XDG_CONFIG_HOME = Unix-like (and sometimes OS X) user config directory
-        config_dir = os.environ.get('APPDATA') or os.environ.get('XDG_CONFIG_HOME')
+        # $XDG_CONFIG_HOME = Unix-like (and sometimes OS X) user config
+        # directory
+        config_dir = os.environ.get('APPDATA') or \
+            os.environ.get('XDG_CONFIG_HOME')
 
         if config_dir is None:
             if sys.platform == 'darwin':
-                config_dir = os.path.expanduser('~/Library/Preferences') # Apple-recommended location for program settings
+                # Apple-recommended location for program settings
+                config_dir = os.path.expanduser('~/Library/Preferences')
                 argos_config_dir = 'sparcians.argos'
             else:
-                config_dir = os.path.join(os.environ['HOME'], '.config') # Default for Unix-like systems that don't have XDG_* variables defined
+                # Default for Unix-like systems that don't have XDG_* variables
+                # defined
+                config_dir = os.path.join(os.environ['HOME'], '.config')
 
         full_config_dir = os.path.join(config_dir, argos_config_dir)
         self.__config_json_path = os.path.join(full_config_dir, 'config.json')
@@ -76,7 +83,10 @@ class ArgosSettings:
 
         allowed_values = ArgosSettings.__ALLOWED_VALUES.get(key)
         if allowed_values and value not in allowed_values:
-            raise ValueError(f'{value} is not an allowed value for setting {key}. Allowed values are: {allowed_values}')
+            raise ValueError(
+                f'{value} is not an allowed value for setting {key}. '
+                f'Allowed values are: {allowed_values}'
+            )
 
     def __getitem__(self, key: str) -> Any:
         return self.__config[key]
@@ -97,4 +107,3 @@ class ArgosSettings:
             self.__setitem__(key, value)
         except KeyError:
             object.__setattr__(self, key, value)
-

@@ -3,7 +3,7 @@ import wx
 import wx.adv
 import os
 import logging
-from typing import Optional, cast, TYPE_CHECKING
+from typing import Optional, cast, Tuple, Union, TYPE_CHECKING
 
 from misc.version import get_version
 from model.layout import Layout
@@ -1419,7 +1419,7 @@ class Argos_Menu(wx.MenuBar):
         if layout_file is None:
             layout_file = '<New, Unsaved Layout file>'
         else:
-            layout_file = '"{0}"'.format(layout_file)
+            layout_file = f'"{layout_file}"'
 
         # There is a diferent between client size and screen size (GetSize).
         # Both are too small and do not include border.
@@ -1509,8 +1509,9 @@ class Argos_Menu(wx.MenuBar):
     def ShowEditToolbar(self, show: bool) -> None:
         self.__edit_toolbar.Show(show)
 
-    def UpdateMouseLocation(self, x: int, y: int) -> None:
-        self.toolbarCursorLocation.SetValue('(%d, %d)' % (x, y))
+    def UpdateMouseLocation(self,
+                            pos: Union[Tuple[int, int], wx.Point]) -> None:
+        self.toolbarCursorLocation.SetValue(f'{pos}')
 
     # Undo/Redo hook from selection manager
     def __OnUndoRedo(self) -> None:

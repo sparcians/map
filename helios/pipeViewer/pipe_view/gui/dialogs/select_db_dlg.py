@@ -2,7 +2,6 @@
 #  @brief Dialog for selecting a database file
 
 from __future__ import annotations
-import sys
 import os
 from typing import Optional
 import wx
@@ -26,13 +25,15 @@ class SelectDatabaseDlg(wx.Dialog):
     def __init__(self, init_prefix: Optional[str] = None) -> None:
         wx.Dialog.__init__(self,
                            None,
-                           title = 'Select an Argos transaction database',
-                           size = (800, 380))
+                           title='Select an Argos transaction database',
+                           size=(800, 380))
 
         if not isinstance(init_prefix, str) and init_prefix is not None:
-            raise TypeError('init_prefix must be a str or None, is a {0}'.format(type(init_prefix)))
+            raise TypeError(
+                f'init_prefix must be a str or None, is a {type(init_prefix)}'
+            )
 
-        self.__prefix: Optional[str] = None # Updated in CheckSelectionState
+        self.__prefix: Optional[str] = None  # Updated in CheckSelectionState
 
         if init_prefix is not None:
             filepath = init_prefix + self.INFO_FILE_EXTENSION
@@ -40,22 +41,24 @@ class SelectDatabaseDlg(wx.Dialog):
             filepath = os.getcwd()
 
         # Controls
-        info = wx.StaticText(self,
-                             label = 'Specify a {0} file from an argos transaction database' \
-                             .format(self.INFO_FILE_EXTENSION))
+        info = wx.StaticText(
+            self,
+            label=f'Specify a {self.INFO_FILE_EXTENSION} file from an argos '
+                  'transaction database'
+        )
         info.Wrap(self.GetSize()[0] - 20)
 
-        self.__file_txt = wx.TextCtrl(self, size = (160, -1), value = filepath)
+        self.__file_txt = wx.TextCtrl(self, size=(160, -1), value=filepath)
         self.__orig_txt_colour = self.__file_txt.GetBackgroundColour()
-        file_btn = wx.Button(self, id = wx.ID_FIND)
+        file_btn = wx.Button(self, id=wx.ID_FIND)
 
-        quit_btn = wx.Button(self, id = wx.ID_EXIT)
-        self.__ok_btn = wx.Button(self, id = wx.ID_OK)
+        quit_btn = wx.Button(self, id=wx.ID_EXIT)
+        self.__ok_btn = wx.Button(self, id=wx.ID_OK)
 
-        file_info_box = wx.StaticBox(self, label = 'Simulation Info')
+        file_info_box = wx.StaticBox(self, label='Simulation Info')
         self.__scroll_win = scrolledpanel.ScrolledPanel(self)
         self.__scroll_win.SetupScrolling()
-        self.__file_info = wx.StaticText(self.__scroll_win, label = '')
+        self.__file_info = wx.StaticText(self.__scroll_win, label='')
 
         # Bindings
 
@@ -101,7 +104,9 @@ class SelectDatabaseDlg(wx.Dialog):
         self.__CheckSelectionState()
 
     def Show(self, show: bool = True) -> bool:
-        raise NotImplementedError('Cannot Show() this dialog. Use ShowModal instead')
+        raise NotImplementedError(
+            'Cannot Show() this dialog. Use ShowModal instead'
+        )
 
     # Gets the prefix selected by the dialog
     #  @return The prefix selected while the dialog was shown. Is a string if
@@ -123,10 +128,13 @@ class SelectDatabaseDlg(wx.Dialog):
 
     # Handler for Find button
     def __OnFindFile(self, evt: wx.CommandEvent) -> None:
-        dlg = wx.FileDialog(self, "Select Argos database simulation.info file",
-                            defaultFile = self.__file_txt.GetValue(),
-                            wildcard = 'Argos Simulation info files (*{0})|*{0}' \
-                            .format(self.INFO_FILE_EXTENSION))
+        ext = self.INFO_FILE_EXTENSION
+        dlg = wx.FileDialog(
+            self,
+            "Select Argos database simulation.info file",
+            defaultFile=self.__file_txt.GetValue(),
+            wildcard=f'Argos Simulation info files (*{ext})|*{ext}'
+        )
         dlg.ShowModal()
 
         fp = dlg.GetPath()
@@ -140,20 +148,19 @@ class SelectDatabaseDlg(wx.Dialog):
         self.__CheckSelectionState()
 
     # Checks on the value in the self.__file_txt box to see if it points to a
-    #  valid simulation
+    # valid simulation
     #
-    #  Updates self.__prefix
-    #  Updates or clears self.__file_info and en/disables self.__ok_btn depending
-    #  on whether selection points to a valid file. Also changes colors of box
+    # Updates self.__prefix
+    # Updates or clears self.__file_info and en/disables self.__ok_btn
+    # depending on whether selection points to a valid file. Also changes
+    # colors of box
     def __CheckSelectionState(self) -> None:
         filepath = self.__file_txt.GetValue()
         suffix_pos = filepath.find(self.INFO_FILE_EXTENSION)
         if suffix_pos != len(filepath) - len(self.INFO_FILE_EXTENSION):
             valid = False
-            reason = 'Filename does not contain suffix "{0}"'.format(self.INFO_FILE_EXTENSION)
         elif not os.path.exists(filepath):
             valid = False
-            reason = 'File does not exist'
         else:
             try:
                 summary = ''
@@ -168,11 +175,8 @@ class SelectDatabaseDlg(wx.Dialog):
 
             except IOError:
                 valid = False
-                reason = 'Cannot open file for reading'
-
             else:
                 valid = True
-                reason = ''
 
         self.__ok_btn.Enable(valid)
 

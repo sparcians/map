@@ -2,8 +2,16 @@ from __future__ import annotations
 import logging
 import weakref
 import os
-import time
-from typing import Any, Dict, List, Optional, Set, Tuple, Union, cast, overload, TYPE_CHECKING
+from typing import (Any,
+                    Dict,
+                    List,
+                    Optional,
+                    Set,
+                    Tuple,
+                    Union,
+                    cast,
+                    overload,
+                    TYPE_CHECKING)
 import wx
 
 from .layout import Layout
@@ -25,12 +33,12 @@ if TYPE_CHECKING:
     from model.group import Group
     from model.schedule_element import ScheduleLineElement, ScheduleElement
 
-class Layout_Context:
 
-    EXTENT_L = 0 # Left
-    EXTENT_T = 1 # Top
-    EXTENT_R = 2 # Right
-    EXTENT_B = 3 # Bottom
+class Layout_Context:
+    EXTENT_L = 0  # Left
+    EXTENT_T = 1  # Top
+    EXTENT_R = 2  # Right
+    EXTENT_B = 3  # Bottom
 
     # Dummy class for showing that extents are invalid
     class InvalidExtents:
@@ -46,9 +54,11 @@ class Layout_Context:
                  loc_vars: Optional[Dict[str, str]] = None) -> None:
         if hc is None:
             hc = 0
-        self.__layout = None # Will be updated later. Allows __str__ to succeed
-        self.__group: Optional[Group] = None # Sync group
-        self.__frame: Optional[weakref.ReferenceType[Layout_Frame]] = None # Parent Layout_Frame (weak reference)
+        # Will be updated later. Allows __str__ to succeed
+        self.__layout = None
+        self.__group: Optional[Group] = None  # Sync group
+        # Parent Layout_Frame (weak reference)
+        self.__frame: Optional[weakref.ReferenceType[Layout_Frame]] = None
         self.__db = db
         self.__dbhandle = DatabaseHandle(db)
         self.__searchhandle = SearchHandle(self)
@@ -61,9 +71,11 @@ class Layout_Context:
             self.__hc = inc_end
         else:
             self.__hc = hc
-        self.__extents: Union[Layout_Context.InvalidExtents, List[int]] = [0, 0, 1, 1]
+        self.__extents: Union[Layout_Context.InvalidExtents, List[int]] = \
+            [0, 0, 1, 1]
 
-        self.__loc_variables = loc_vars if loc_vars is not None else {} # Location-string variables
+        # Location-string variables
+        self.__loc_variables = loc_vars if loc_vars is not None else {}
         self.__loc_variables_changed = True if loc_vars is not None else False
 
         self.__extensions = ExtensionManager()
@@ -125,7 +137,8 @@ class Layout_Context:
     def GetLocationVariablesChanged(self) -> bool:
         return self.__loc_variables_changed
 
-    # Updates location variables based on any new element locations created with variables in them
+    # Updates location variables based on any new element locations created
+    # with variables in them
     def UpdateLocationVariables(self) -> None:
         assert self.__layout is not None
         for el in self.__layout.GetElements():
@@ -133,10 +146,14 @@ class Layout_Context:
                 loc_str = cast(str, el.GetProperty('LocationString'))
                 loc_vars = LocationManager.findLocationVariables(loc_str)
                 for k, v in loc_vars:
-                    if k in self.__loc_variables and self.__loc_variables[k] != v:
-                        pass # Do not add these to the table since there is a conflict
-                        # @todo Represent these conflicting variable defaults somehow so that they
-                        # can be resolved in the location variables dialog
+                    if k in self.__loc_variables and \
+                       self.__loc_variables[k] != v:
+                        # Do not add these to the table since there is a
+                        # conflict
+                        pass
+                        # @todo Represent these conflicting variable defaults
+                        # somehow so that they can be resolved in the location
+                        # variables dialog
                     else:
                         self.__loc_variables[k] = v
                         self.__loc_variables_changed = True
@@ -148,15 +165,17 @@ class Layout_Context:
     #  @param e Element to add
     #  @param after_pin PIN of element after which to insert this element
     # @profile
-    def AddElement(self, e: Element, after_pins: List[Optional[int]] = [None]) -> Element:
-        #print 'Adding {} after pins {}'.format(e, after_pins)
-        self.__elements.AddElement(e, after_pins = after_pins)
+    def AddElement(self,
+                   e: Element,
+                   after_pins: List[Optional[int]] = [None]) -> Element:
+        self.__elements.AddElement(e, after_pins=after_pins)
 
         # Update extents. This can only increase
         if isinstance(self.__extents, self.InvalidExtents):
             self.__extents = [0, 0, 1, 1]
 
-        (x, y), (w, h) = cast(Tuple[int, int], e.GetProperty('position')), cast(Tuple[int, int], e.GetProperty('dimensions'))
+        (x, y) = cast(Tuple[int, int], e.GetProperty('position'))
+        (w, h) = cast(Tuple[int, int], e.GetProperty('dimensions'))
         r = x + w
         b = y + h
         self.__extents[self.EXTENT_R] = max(r, self.__extents[self.EXTENT_R])
@@ -168,12 +187,13 @@ class Layout_Context:
     def RemoveElement(self, e: Element) -> None:
         self.__elements.RemoveElement(e)
 
-        (x, y), (w, h) = cast(Tuple[int, int], e.GetProperty('position')), cast(Tuple[int, int], e.GetProperty('dimensions'))
+        (x, y) = cast(Tuple[int, int], e.GetProperty('position'))
+        (w, h) = cast(Tuple[int, int], e.GetProperty('dimensions'))
         r = x + w
         b = y + h
 
         if isinstance(self.__extents, self.InvalidExtents):
-            return # Already invalid, nothing to do here. Will recalc later
+            return  # Already invalid, nothing to do here. Will recalc later
 
         # If this element was at the edge, we need a full recalc.
         # Invalidate extents and recalc when asked
@@ -187,49 +207,49 @@ class Layout_Context:
     #  @above_pin_list List of pins above which to move each element in the
     #  elements list. May contain None at the end to indicate "move to top"
     #  @note elements will retain their own ordering
-    def MoveElementsAbovePINs(self, elements: List[Element], above_pin_list: List[Optional[int]]) -> None:
+    def MoveElementsAbovePINs(self,
+                              elements: List[Element],
+                              above_pin_list: List[Optional[int]]) -> None:
         assert self.__layout is not None
         for e in elements:
             self.__layout.RemoveElement(e)
-            #self.__elements.RemoveElement(e)
 
         if not above_pin_list:
             above_pin_list = [-1]
 
         prev_pins_list = above_pin_list[:]
         for e in elements:
-            #self.__elements.AddElement(e, after_pin=prev_pin)
-            self.__layout.AddElement(e, follows_pins = prev_pins_list)
+            self.__layout.AddElement(e, follows_pins=prev_pins_list)
             prev_pins_list.append(e.GetPIN())
 
     # Move a set of elements to below the lowest entry in a list
     #  @below_pin_list List of pins below which to move each element in the
     #  elements list. May contain -1 at the start to indicate "move to bottom"
     #  @note elements will retain their own ordering
-    def MoveElementsBelowPINs(self, elements: List[Element], below_pin_list: List[Optional[int]]) -> None:
+    def MoveElementsBelowPINs(self,
+                              elements: List[Element],
+                              below_pin_list: List[Optional[int]]) -> None:
         assert self.__layout is not None
         for e in elements:
             self.__layout.RemoveElement(e)
-            #self.__elements.RemoveElement(e)
 
         if not below_pin_list:
             below_pin_list = [None]
 
         prev_pins_list = below_pin_list[:]
         for e in elements:
-            #self.__elements.AddElement(e, after_pin=prev_pin)
-            self.__layout.AddElement(e, follows_pins = prev_pins_list)
+            self.__layout.AddElement(e, follows_pins=prev_pins_list)
             prev_pins_list.append(e.GetPIN())
 
     # If a property for an Element is changed such that it will no longer be
     #  correctly sorted in the ElementSet, this method will figure out where
     #  it goes
     def ReSort(self, e: Element, t_off: int, loc: str) -> None:
-        id = self.__dbhandle.database.location_manager.getLocationInfo(loc, self.__loc_variables)[0]
+        id = self.__dbhandle.database.location_manager.getLocationInfo(loc, self.__loc_variables)[0]  # noqa: E501
         self.__elements.ReSort(e, t_off, id)
 
-    # Resort all elements because some locations variable has changed and all elements may be
-    #  effected
+    # Resort all elements because some locations variable has changed and all
+    # elements may be effected
     def ReSortAll(self) -> None:
         self.__elements.ReSortAll()
 
@@ -285,7 +305,9 @@ class Layout_Context:
         return self.__extensions
 
     def __GetLocationInfo(self, element: Element) -> LocationType:
-        return self.__db.location_manager.getLocationInfoNoVars(cast(str, element.GetProperty('LocationString')))
+        return self.__db.location_manager.getLocationInfoNoVars(
+            cast(str, element.GetProperty('LocationString'))
+        )
 
     # Return a set of all clockid's referred to
     def GetVisibleClocks(self) -> Optional[Tuple[int, ...]]:
@@ -296,7 +318,7 @@ class Layout_Context:
             for element in elements:
                 if element.NeedsDatabase():
                     info = self.__GetLocationInfo(element)
-                    if info[0] != self.__db.location_manager.INVALID_LOCATION_ID:
+                    if info[0] != self.__db.location_manager.INVALID_LOCATION_ID:  # noqa: E501
                         # only add if valid location
                         clock_set.add(info[2])
             clocks = tuple(clock_set)
@@ -321,7 +343,10 @@ class Layout_Context:
         return self.__elements.GetPairs()
 
     # Returns all pairs suitable for drawing
-    def GetDrawPairs(self, bounds: Optional[Tuple[int, int, int, int]]) -> List[Element_Value]:
+    def GetDrawPairs(
+        self,
+        bounds: Optional[Tuple[int, int, int, int]]
+    ) -> List[Element_Value]:
         return self.__elements.GetDrawPairs(bounds)
 
     def GetVisibilityTick(self) -> int:
@@ -344,29 +369,33 @@ class Layout_Context:
             self.__extents = [0, 0, 1, 1]
             els = self.GetElements()
             for e in els:
-                (x, y), (w, h) = cast(Tuple[int, int], e.GetProperty('position')), cast(Tuple[int, int], e.GetProperty('dimensions'))
-                self.__extents[self.EXTENT_R] = max(self.__extents[self.EXTENT_R], x + w)
-                self.__extents[self.EXTENT_B] = max(self.__extents[self.EXTENT_B], y + h)
+                (x, y) = cast(Tuple[int, int], e.GetProperty('position'))
+                (w, h) = cast(Tuple[int, int], e.GetProperty('dimensions'))
+                self.__extents[self.EXTENT_R] = \
+                    max(self.__extents[self.EXTENT_R], x + w)
+                self.__extents[self.EXTENT_B] = \
+                    max(self.__extents[self.EXTENT_B], y + h)
 
         return cast(Tuple[int, int, int, int], tuple(self.__extents))
 
     # For testing purposes only
     def __repr__(self) -> str:
-        return '<Layout_Context layout={}>'.format(self.__layout)
+        return f'<Layout_Context layout={self.__layout}>'
 
     # Jumps context to a specific tick.
-    #  @param hc Hypercycle (tick) to jump to. This tick will be constrained
-    #  to the endpoints of this database handle's file range
-    #  @note Directly refreshes the associated Frame if not attached to a group.
-    #  Otherwise, the this context and the associated frame will be refreshed
-    #  through the group, when it invokes 'RefreshFrame' on all its contained
-    #  layout
-    #  contexts
-    #  @todo rework this
+    # @param hc Hypercycle (tick) to jump to. This tick will be constrained
+    # to the endpoints of this database handle's file range
+    # @note Directly refreshes the associated Frame if not attached to a group.
+    # Otherwise, the this context and the associated frame will be refreshed
+    # through the group, when it invokes 'RefreshFrame' on all its contained
+    # layout
+    # contexts
+    # @todo rework this
     #
-    #  Performs new queries at the chosen tick and updates element data
-    def GoToHC(self, hc: Optional[int] = None, no_broadcast: bool = False) -> None:
-        # print "{}: GoToHC called".format(time.time())
+    # Performs new queries at the chosen tick and updates element data
+    def GoToHC(self,
+               hc: Optional[int] = None,
+               no_broadcast: bool = False) -> None:
         # show busy cursor every call
         assert self.__frame is not None
         frame = self.__frame()
@@ -377,11 +406,10 @@ class Layout_Context:
             hc = self.__hc
         hc = self.__ClampHC(hc)
         if self.__group is not None:
-            self.__group.MoveTo(hc, self, no_broadcast = no_broadcast)
+            self.__group.MoveTo(hc, self, no_broadcast=no_broadcast)
         else:
-            self.SetHC(hc, no_broadcast = no_broadcast)
+            self.SetHC(hc, no_broadcast=no_broadcast)
             self.RefreshFrame()
-        # print "{}: Refresh done".format(time.time())
 
         # set cursor back
         if frame:
@@ -401,7 +429,8 @@ class Layout_Context:
     # Refresh this context (and its associated frame)
     def RefreshFrame(self) -> None:
         assert self.__frame, \
-                   'A Layout_Context should always have a frame before attempting a RefreshFrame call'
+            'A Layout_Context should always have a frame before attempting ' \
+            'a RefreshFrame call'
         self.__elements.MetaUpdate(self.__hc)
         frame = self.__frame()
         if frame:
@@ -415,16 +444,25 @@ class Layout_Context:
 
     def SetGroup(self, group: Group) -> None:
         assert self.__group is None, \
-               '(for now) SetGroup cannot be called on a LayoutContext after it already has a group'
+            '(for now) SetGroup cannot be called on a LayoutContext after ' \
+            'it already has a group'
         assert group is not None, \
-               'SetGroup parameter group must not be None'
-        logging.getLogger('LayoutContext').debug('Context {} adding to group {}'.format(self, group))
+            'SetGroup parameter group must not be None'
+        logging.getLogger('LayoutContext').debug(
+            'Context %s adding to group %s',
+            self,
+            group
+        )
         self.__group = group
         self.__group.AddContext(self)
 
     def LeaveGroup(self) -> None:
-        assert self.__group is not None, 'LeaveGroup cannot be called on a LayoutContext before it has joined a group'
-        logging.getLogger('LayoutContext').debug('Context {} leaving group {}'.format(self, self.__group))
+        assert self.__group is not None, \
+            'LeaveGroup cannot be called on a LayoutContext before it has ' \
+            'joined a group'
+        logging.getLogger('LayoutContext').debug('Context %s leaving group %s',
+                                                 self,
+                                                 self.__group)
         self.__group.RemoveContext(self)
 
     def GetGroup(self) -> Optional[Group]:
@@ -432,10 +470,15 @@ class Layout_Context:
 
     def SetFrame(self, frame: Layout_Frame) -> None:
         assert self.__frame is None, \
-               'SetFrame cannot be called on a LayoutContext after it already has a frame'
+            'SetFrame cannot be called on a LayoutContext after it already ' \
+            'has a frame'
         assert frame is not None, \
                'SetFrame parameter frame must not be None'
-        logging.getLogger('LayoutContext').debug('Context {} associated with frame {}'.format(self, frame))
+        logging.getLogger('LayoutContext').debug(
+            'Context %s associated with frame %s',
+            self,
+            frame
+        )
         self.__frame = weakref.ref(frame)
 
     # Returns the frame associated with this context. If the associated frame
@@ -443,34 +486,36 @@ class Layout_Context:
     def GetFrame(self) -> Optional[Layout_Frame]:
         if self.__frame is None:
             return None
-        return self.__frame() # May be None
+        return self.__frame()  # May be None
 
     # Clamp the HC to the file extents
     def __ClampHC(self, hc: int) -> int:
         hc = max(hc, self.__qapi.getFileStart())
-        hc = min(hc, self.__qapi.getFileInclusiveEnd()) # End is normally exclusive
+        # End is normally exclusive
+        hc = min(hc, self.__qapi.getFileInclusiveEnd())
         return hc
 
     # Returns a list of all Elements beneath the given point
     #  @param pt Point to test for collision with elements
-    #  @param include_subelements Should subelements be searched (e.c. schedule line within a
-    #  schedule)
-    #  @param include_nondrawables Should selectable elements be returned even if they aren't
-    #  drawable? Depth ordering might be lost when including non drawables
+    #  @param include_subelements Should subelements be searched (e.g. schedule
+    #  line within a schedule)
+    #  @param include_nondrawables Should selectable elements be returned even
+    #  if they aren't drawable? Depth ordering might be lost when including non
+    #  drawables
     #  Subelements are fake elements generated by elements on a collision
-    def DetectCollision(self,
-                        pt: Union[Tuple[int, int], wx.Point],
-                        include_subelements: bool = False,
-                        include_nondrawables: bool = False) -> List[Element_Value]:
+    def DetectCollision(
+        self,
+        pt: Union[Tuple[int, int], wx.Point],
+        include_subelements: bool = False,
+        include_nondrawables: bool = False
+    ) -> List[Element_Value]:
         mx, my = pt
         res: List[Element_Value] = []
         # Search draw pairs instead of all element pairs because they are
         #  (1) visible
         #  (2) sorted by depth
-        ##for e in self.GetElementPairs():
 
         # Get bounds for quad-tree query
-        #bounds = None
         assert self.__frame is not None
         frame = self.__frame()
         if frame:
@@ -482,11 +527,14 @@ class Layout_Context:
         if include_nondrawables:
             pairs = self.GetElementPairs()
         else:
-            pairs = self.GetDrawPairs(bounds = bounds)
-            vis_tick = self.__elements.GetVisibilityTick() # After GetDrawPairs
+            pairs = self.GetDrawPairs(bounds=bounds)
+            # After GetDrawPairs
+            vis_tick = self.__elements.GetVisibilityTick()
+
+        exclude_offscreen = not include_nondrawables and bounds is not None
         for e in pairs:
-            if not include_nondrawables and bounds is not None and e.GetVisibilityTick() != vis_tick:
-                continue # Skip: this is off-screen
+            if exclude_offscreen and e.GetVisibilityTick() != vis_tick:
+                continue  # Skip: this is off-screen
 
             element = e.GetElement()
             x, y = cast(Tuple[int, int], element.GetProperty('position'))
@@ -499,10 +547,11 @@ class Layout_Context:
                         sl = element.DetectCollision((mx, my))
                         if sl and sl.GetProperty('type') == 'schedule_line':
                             sl = cast('ScheduleLineElement', sl)
-                            # Hierarchical point containment test assumes that schedule
-                            # objects contain schedule lines
+                            # Hierarchical point containment test assumes that
+                            # schedule objects contain schedule lines
                             mx, my = pt
-                            c_x, c_y = cast(Tuple[int, int], sl.GetProperty('position'))
+                            c_x, c_y = cast(Tuple[int, int],
+                                            sl.GetProperty('position'))
                             loc_x = mx - c_x
                             loc_y = my - c_y
 
@@ -513,7 +562,8 @@ class Layout_Context:
                     elif et == 'schedule_line':
                         element = cast('ScheduleLineElement', element)
                         mx, my = pt
-                        c_x, c_y = cast(Tuple[int, int], element.GetProperty('position'))
+                        c_x, c_y = cast(Tuple[int, int],
+                                        element.GetProperty('position'))
                         loc_x = mx - c_x
                         loc_y = my - c_y
 
@@ -533,18 +583,25 @@ class Layout_Context:
         '''
         a function for getting the period of the clock at a certain time
         '''
-        clock = self.dbhandle.database.location_manager.getLocationInfo(location_string,
-                                                                        self.GetLocationVariables())[2]
-        return self.dbhandle.database.clock_manager.getClockDomain(clock).tick_period
+        db = self.dbhandle.database
+        clock = db.location_manager.getLocationInfo(
+            location_string,
+            self.GetLocationVariables()
+        )[2]
+        return db.clock_manager.getClockDomain(clock).tick_period
 
-    def GetTransactionFields(self, time: int, location_string: str, fields: List[str]) -> Dict[str, Any]:
+    def GetTransactionFields(self,
+                             time: int,
+                             location_string: str,
+                             fields: List[str]) -> Dict[str, Any]:
         '''
-        performs random-access query at time and place and returns requested attributes in dictionary
+        performs random-access query at time and place and returns requested
+        attributes in dictionary
         @return Dictionary of results {field:value}
         '''
         # No results if time is outside of the currently loaded window.
-        # Cannot do a reasonably fast query and there is no way tha the data is currently visible to
-        # the user anyway
+        # Cannot do a reasonably fast query and there is no way that the data
+        # is currently visible to the user anyway
         dbapi = self.dbhandle.database.api
         if time < dbapi.getWindowLeft() or time >= dbapi.getWindowRight():
             return {}
@@ -563,23 +620,29 @@ class Layout_Context:
                         value = t
                     else:
                         fake_element = FakeElement()
-                        fake_element.SetProperty('LocationString', location_string)
-                        value = content.ProcessContent(field,
-                                                       trans_proxy,
-                                                       fake_element,
-                                                       self.dbhandle,
-                                                       t,
-                                                       self.GetLocationVariables())
+                        fake_element.SetProperty('LocationString',
+                                                 location_string)
+                        value = content.ProcessContent(
+                            field,
+                            trans_proxy,
+                            fake_element,
+                            self.dbhandle,
+                            t,
+                            self.GetLocationVariables()
+                        )
                     results[field] = value
 
-        self.dbhandle.query(time, time, callback, mod_tracking = False)
+        self.dbhandle.query(time, time, callback, mod_tracking=False)
         return results
 
     def SearchResultHash(self, start: int, location: int) -> int:
         return hash(f'{start}:{location}')
 
     def AddSearchResult(self, search_entry: SearchResult) -> None:
-        self.__search_results.add(self.SearchResultHash(search_entry['start'], search_entry['location']))
+        self.__search_results.add(
+            self.SearchResultHash(search_entry['start'],
+                                  search_entry['location'])
+        )
 
     def ClearSearchResults(self) -> None:
         self.__previous_search_results.update(self.__search_results)
@@ -591,7 +654,9 @@ class Layout_Context:
     @overload
     def IsSearchResult(self, start: int, location: int) -> bool: ...
 
-    def IsSearchResult(self, start: Optional[int], location: Optional[int] = None) -> bool:
+    def IsSearchResult(self,
+                       start: Optional[int],
+                       location: Optional[int] = None) -> bool:
         if location is None:
             # start is actually the hash
             return start in self.__search_results
@@ -605,7 +670,9 @@ class Layout_Context:
     @overload
     def WasSearchResult(self, start: int, location: int) -> bool: ...
 
-    def WasSearchResult(self, start: Optional[int], location: Optional[int] = None) -> bool:
+    def WasSearchResult(self,
+                        start: Optional[int],
+                        location: Optional[int] = None) -> bool:
         if location is None:
             # start is actually the hash
             return start in self.__search_results
@@ -647,7 +714,8 @@ class Layout_Context:
             return self.IsUopHighlighted(highlighting_utils.GetUopUid(uid))
         return uid in self.__highlighted_uops
 
-    # Check if a uop has been unhighlighted (by annotation string), but not yet redrawn
+    # Check if a uop has been unhighlighted (by annotation string), but not yet
+    # redrawn
     def WasUopHighlighted(self, uid: Optional[Union[int, str]]) -> bool:
         if isinstance(uid, str):
             return self.WasUopHighlighted(highlighting_utils.GetUopUid(uid))

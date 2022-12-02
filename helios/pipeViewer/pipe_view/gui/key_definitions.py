@@ -1,7 +1,7 @@
 from __future__ import annotations
 import wx
 
-#This module provides a central place to define how the keys
+# This module provides a central place to define how the keys
 # are mapped to the interface.
 
 # playback mode
@@ -11,7 +11,7 @@ STEP_FORWARD_10 = [wx.WXK_PAGEUP]
 STEP_BACKWARD_10 = [wx.WXK_PAGEDOWN]
 
 # edit mode
-#element moving keys
+# element moving keys
 MOVE_EL_UP = wx.WXK_UP
 MOVE_EL_DOWN = wx.WXK_DOWN
 MOVE_EL_LEFT = wx.WXK_LEFT
@@ -24,7 +24,7 @@ FLIP_SELECTION_HORIZ = [wx.WXK_HOME, wx.WXK_END]
 FLIP_SELECTION_VERT = [wx.WXK_PAGEDOWN, wx.WXK_PAGEUP]
 
 
-#checks if motion of element should be fast
+# checks if motion of element should be fast
 def isFastMove(event: wx.KeyEvent) -> bool:
     return event.ShiftDown() and not event.ControlDown()
 
@@ -33,7 +33,7 @@ def isSlowMove(event: wx.KeyEvent) -> bool:
     return event.ControlDown() and not event.ShiftDown()
 
 
-#when selecting objects, negative selection behavior
+# when selecting objects, negative selection behavior
 def isNegativeSelection(key: wx.KeyCode, event: wx.KeyEvent) -> bool:
     if (key == wx.WXK_CONTROL) and event.ShiftDown():
         return True
@@ -70,4 +70,3 @@ def isNextChange(key: wx.KeyCode, event: wx.KeyEvent) -> bool:
 # Goto Prev annotation change
 def isPrevChange(key: wx.KeyCode, event: wx.KeyEvent) -> bool:
     return key == ord('N') and event.ShiftDown()
-

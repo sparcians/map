@@ -28,7 +28,9 @@ class LocationWindow(wx.Frame):
     # ID of full-path column
     COL_PATH = 2
 
-    def  __init__(self, parent: Layout_Frame, elpropsdlg: Element_PropsDlg) -> None:
+    def __init__(self,
+                 parent: Layout_Frame,
+                 elpropsdlg: Element_PropsDlg) -> None:
         '''
         @param parent Parent Layout_Frame
         @param elpropsdlg Element Properties Dialog for this frame
@@ -41,11 +43,22 @@ class LocationWindow(wx.Frame):
 
         # Create Controls
 
-        title = "Locations for {0}".format(self.__db.filename)
-        wx.Frame.__init__(self, parent, -1, title, size = (1025, 600),
-                          style = wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
+        title = f"Locations for {self.__db.filename}"
+        wx.Frame.__init__(self,
+                          parent,
+                          -1,
+                          title,
+                          size=(1025, 600),
+                          style=(wx.MAXIMIZE_BOX |
+                                 wx.RESIZE_BORDER |
+                                 wx.CAPTION |
+                                 wx.CLOSE_BOX |
+                                 wx.SYSTEM_MENU))
 
-        self.__fnt_small = wx.Font(ScaleFont(12), wx.NORMAL, wx.NORMAL, wx.NORMAL)
+        self.__fnt_small = wx.Font(ScaleFont(12),
+                                   wx.NORMAL,
+                                   wx.NORMAL,
+                                   wx.NORMAL)
 
         static_heading = wx.StaticText(self, -1, "Showing all locations for:")
         static_filename = wx.StaticText(self, -1, self.__db.filename)
@@ -54,11 +67,15 @@ class LocationWindow(wx.Frame):
         self.__filter_ctrl = wx.TextCtrl(self, -1)
 
         # TODO style had wx.TR_EXTENDED but seemed missing from the API
-        self.__tree_ctrl = wx.lib.gizmos.treelistctrl.TreeListCtrl(self,
-                                                                   -1,
-                                                                   size = wx.Size(-1, 100),
-                                                                   style = wx.TR_DEFAULT_STYLE | wx.TR_FULL_ROW_HIGHLIGHT | \
-                                                                   wx.TR_MULTIPLE | wx.TR_HIDE_ROOT)
+        self.__tree_ctrl = wx.lib.gizmos.treelistctrl.TreeListCtrl(
+            self,
+            -1,
+            size=wx.Size(-1, 100),
+            style=(wx.TR_DEFAULT_STYLE |
+                   wx.TR_FULL_ROW_HIGHLIGHT |
+                   wx.TR_MULTIPLE |
+                   wx.TR_HIDE_ROOT)
+        )
         self.__tree_ctrl.AddColumn('Node')
         self.__tree_ctrl.SetColumnWidth(self.COL_NODE, 400)
         self.__tree_ctrl.AddColumn('Clock')
@@ -70,15 +87,18 @@ class LocationWindow(wx.Frame):
         self.__root = self.__tree_ctrl.AddRoot('<root>')
         self.__use_filter = False
         self.__SetLocationTree(tree)
-        # User preference is to NOT expand tree. ## self.__tree_ctrl.ExpandAll()
 
         self.__btn_create_element = wx.Button(self, -1, "Create Element(s)")
-        self.__btn_create_element.SetToolTip('Creates a new element for each of the selected ' \
-                                             'locations in the tree')
+        self.__btn_create_element.SetToolTip(
+            'Creates a new element for each of the selected locations in the '
+            'tree'
+        )
         self.__btn_set = wx.Button(self, -1, "Set Location to Selected")
-        self.__btn_set.SetToolTip('Sets the location string for all selected elements to the ' \
-                                  'selected location in the tree. Generally, the selected ' \
-                                  'location should be a leaf node')
+        self.__btn_set.SetToolTip(
+            'Sets the location string for all selected elements to the '
+            'selected location in the tree. Generally, the selected location '
+            'should be a leaf node'
+        )
 
         # Prepare
 
@@ -90,7 +110,8 @@ class LocationWindow(wx.Frame):
         self.__btn_create_element.Bind(wx.EVT_BUTTON, self.__OnCreateElements)
         self.__btn_set.Bind(wx.EVT_BUTTON, self.__OnSetLocation)
         self.__filter_ctrl.Bind(wx.EVT_TEXT, self.__OnFilterChanged)
-        self.Bind(wx.EVT_CLOSE, lambda evt: self.Hide()) # Hide instead of closing
+        # Hide instead of closing
+        self.Bind(wx.EVT_CLOSE, lambda evt: self.Hide())
         self.__tree_ctrl.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.__OnExpandItem)
 
         # Layout
@@ -115,7 +136,8 @@ class LocationWindow(wx.Frame):
         self.Bind(wx.EVT_ACTIVATE, self.__OnActivate)
 
         # Fire a text event to load the filter for the first time
-        wx.PostEvent(self.__filter_ctrl.GetEventHandler(), wx.PyCommandEvent(wx.EVT_TEXT.typeId, self.GetId()))
+        wx.PostEvent(self.__filter_ctrl.GetEventHandler(),
+                     wx.PyCommandEvent(wx.EVT_TEXT.typeId, self.GetId()))
 
     def __OnActivate(self, evt: wx.ActivateEvent) -> None:
         '''
@@ -130,8 +152,7 @@ class LocationWindow(wx.Frame):
         '''
         self.__tree_ctrl.DeleteChildren(self.__root)
         self.__tree_dict = {}
-        for key in sorted(tree.keys(),
-                          key = len):
+        for key in sorted(tree.keys(), key=len):
             child = self.__tree_ctrl.AppendItem(self.__root, key)
             self.__tree_ctrl.SetItemText(child, key, self.COL_PATH)
             self.__tree_dict[key] = child
@@ -142,7 +163,9 @@ class LocationWindow(wx.Frame):
                 clk = self.__db.clock_manager.getClockDomain(clock_id)
                 self.__tree_ctrl.SetItemText(child, clk.name, self.COL_CLOCK)
             else:
-                self.__tree_ctrl.SetItemText(child, '<unknown>', self.COL_CLOCK)
+                self.__tree_ctrl.SetItemText(child,
+                                             '<unknown>',
+                                             self.COL_CLOCK)
             if tree[key] != {}:
                 self.__tree_ctrl.SetItemHasChildren(child, True)
 
@@ -159,16 +182,18 @@ class LocationWindow(wx.Frame):
                 curdict = curdict[token]
             self.SetTree(curdict, item, path)
 
-    def SetTree(self, tree: LocationTree, item: Optional[wx.TreeItemId] = None, path: str = "") -> None:
+    def SetTree(self,
+                tree: LocationTree,
+                item: Optional[wx.TreeItemId] = None,
+                path: str = "") -> None:
         '''
         Adds every member at the top level of location dictionary "tree" to
         node "item"
         '''
-        if not item:
+        if item is None:
             item = self.__root
         # Sort keys by length ascending then string-comparison alphabetically
-        for k, v in sorted(tree.items(),
-                           key = len):
+        for k, v in sorted(tree.items(), key=len):
             if not path:
                 child_path = k
             else:
@@ -182,18 +207,25 @@ class LocationWindow(wx.Frame):
                 self.__tree_dict[child_path] = child
 
                 # set clock column
-                clock_id = self.__db.location_manager.getLocationInfo(child_path, {})[2]
+                clock_id = self.__db.location_manager.getLocationInfoNoVars(child_path)[2]  # noqa: E501
                 if clock_id != self.__db.location_manager.NO_CLOCK:
                     clk = self.__db.clock_manager.getClockDomain(clock_id)
-                    self.__tree_ctrl.SetItemText(child, clk.name, self.COL_CLOCK)
+                    self.__tree_ctrl.SetItemText(child,
+                                                 clk.name,
+                                                 self.COL_CLOCK)
                 else:
-                    self.__tree_ctrl.SetItemText(child, '<unknown>', self.COL_CLOCK)
+                    self.__tree_ctrl.SetItemText(child,
+                                                 '<unknown>',
+                                                 self.COL_CLOCK)
 
             # Leaf nodes aren't expandable
-            if v != {}:
+            if v:
                 self.__tree_ctrl.SetItemHasChildren(child, True)
 
-    def __RecursiveExpand(self, node: wx.TreeItemId, limit: int, level: int = 0) -> None:
+    def __RecursiveExpand(self,
+                          node: wx.TreeItemId,
+                          limit: int,
+                          level: int = 0) -> None:
         '''
         Recursively expand tree nodes up to a given level
         '''
@@ -206,25 +238,29 @@ class LocationWindow(wx.Frame):
                 self.__RecursiveExpand(cur_node, limit, level + 1)
             cur_node = self.__tree_ctrl.GetNextSibling(cur_node)
 
-    def __GenerateFilteredTree(self, tree: LocationTree, path: str = '') -> LocationTree:
+    def __GenerateFilteredTree(self,
+                               tree: LocationTree,
+                               path: str = '') -> LocationTree:
         '''
         Generates a filtered tree to populate the location tree control
         '''
         subtree = {}
-        for k, v in sorted(tree.items(), key = len):
+        for k, v in sorted(tree.items(), key=len):
             if not path:
                 child_path = k
             else:
                 child_path = path + '.' + k
 
-            # If the filter matches the child's path, add the child to the subtree
+            # Add the child to the subtree if the filter matches
             if fnmatch.fnmatch(child_path, self.__filter):
                 subtree[k] = self.__GenerateFilteredTree(v, child_path)
-            # Otherwise, if it isn't a leaf node, then it might be the parent of a match
+            # Otherwise, if it isn't a leaf node, then it might be the parent
+            # of a match
             elif v != {}:
                 # So, check its children
                 result = self.__GenerateFilteredTree(v, child_path)
-                # If it isn't empty, then it has children that match, so we add it to the subtree
+                # If it isn't empty, then it has children that match, so we add
+                # it to the subtree
                 if result != {}:
                     subtree[k] = result
 
@@ -259,10 +295,12 @@ class LocationWindow(wx.Frame):
     def __OnCreateElements(self, evt: wx.CommandEvent) -> None:
         '''
         Handles Clicks on "create elements" button
-        Sets the selected location string as the location for the entire selection
+        Sets the selected location string as the location for the entire
+        selection
         '''
         sels = self.__tree_ctrl.GetSelections()
-        assert sels, 'Create Elements Location button should not have been enabled if there were no locations selected'
+        assert sels, ('Create Elements Location button should not be enabled '
+                      'if there were no locations selected')
 
         canvas = self.__layout_frame.GetCanvas()
         sel_mgr = canvas.GetSelectionManager()
@@ -273,7 +311,7 @@ class LocationWindow(wx.Frame):
         sel_mgr.Clear()
 
         # Place in middle of the screen
-        last_el_pos = (int(canvas_visible[0] + canvas_visible[2] / 2), \
+        last_el_pos = (int(canvas_visible[0] + canvas_visible[2] / 2),
                        int(canvas_visible[1] + canvas_visible[3] / 2))
 
         if not canvas.GetInputDecoder().GetEditMode():
@@ -283,18 +321,15 @@ class LocationWindow(wx.Frame):
         type_dialog.ShowModal()
         type_dialog.Center()
         for item in sels:
-            e = sel_mgr.GenerateElement(layout, type_dialog.GetSelection(), add_to_selection = True) # Create and add to selection
+            # Create and add to selection
+            e = sel_mgr.GenerateElement(layout,
+                                        type_dialog.GetSelection(),
+                                        add_to_selection=True)
             e.SetProperty('position', last_el_pos)
 
             loc_str = self.__tree_ctrl.GetItemText(item, self.COL_PATH)
             e.SetProperty('LocationString', loc_str)
             dims = cast(Tuple[int, int], e.GetProperty('dimensions'))
-
-            # Shift down by grid
-            #last_el_pos = (last_el_pos[0] + canvas.gridsize, last_el_pos[1] + canvas.gridsize)
-
-            ## Shift by half-dimensions of new element
-            #last_el_pos = (last_el_pos[0] + dims[0]/2, last_el_pos[1] + dims[1]/2)
 
             # Stack elements by default
             last_el_pos = (last_el_pos[0], last_el_pos[1] + dims[1])
@@ -305,18 +340,21 @@ class LocationWindow(wx.Frame):
     def __OnSetLocation(self, evt: wx.CommandEvent) -> None:
         '''
         Handles Clicks on "set location" button
-        Sets the selected location string as the location for the entire selection
+        Sets the selected location string as the location for the entire
+        selection
         '''
         sels = self.__tree_ctrl.GetSelections()
-        assert len(sels) == 1, 'Set Location button should not have been enabled if there was not exactly one location selected'
+        assert len(sels) == 1, ('Set Location button should not be enabled if '
+                                'there was not exactly one location selected')
         item = sels[0]
-        els = self.__layout_frame.GetCanvas().GetSelectionManager().GetSelection()
+        els = self.__layout_frame.GetCanvas().GetSelectionManager().GetSelection()  # noqa: E501
         loc_str = self.__tree_ctrl.GetItemText(item, self.COL_PATH)
-        logging.debug(f'Setting all selection location to "{loc_str}"')
+        logging.debug('Setting all selection location to "%s"', loc_str)
         for e in els:
             e.SetProperty('LocationString', loc_str)
 
-        # Elements changed. Need to redraw and reflect changes in element properties dialog
+        # Elements changed. Need to redraw and reflect changes in element
+        # properties dialog
         self.__layout_frame.Refresh()
         self.__el_props_dlg.Refresh()
 

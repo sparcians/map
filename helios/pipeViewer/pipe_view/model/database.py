@@ -5,9 +5,9 @@ from __future__ import annotations
 import os
 import sys
 import logging
-from logging import warn, debug, info, error
+from logging import info, error
 from types import ModuleType
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Optional
 
 from .location_manager import LocationManager
 from .clock_manager import ClockManager
@@ -15,42 +15,46 @@ from .clock_manager import ClockManager
 # Import Argos transaction database module from SPARTA
 __MODULE_ENV_VAR_NAME = 'TRANSACTIONDB_MODULE_DIR'
 env_var = os.environ.get(__MODULE_ENV_VAR_NAME)
-if env_var == None:
+if env_var is None:
     # Try to find the transaction module in the Helios release dir
-    added_path = os.path.dirname(__file__) + "/../../../../release/helios/pipeViewer/transactiondb/lib"
+    added_path = os.path.dirname(__file__) + \
+        "/../../../../release/helios/pipeViewer/transactiondb/lib"
     added_path = os.path.abspath(added_path)
     if not os.path.isdir(added_path):
-        error('Argos cannot find the transactiondb directory: {0}'.format(added_path))
+        error('Argos cannot find the transactiondb directory: %s', added_path)
         sys.exit(1)
 else:
     added_path = os.environ.get(__MODULE_ENV_VAR_NAME, os.getcwd())
 
-sys.path.insert(0, added_path) # Add temporary search path
+sys.path.insert(0, added_path)  # Add temporary search path
 try:
     import transactiondb
 
 except ImportError as e:
     error('Argos failed to import module: "transactiondb"')
     error(f'The search paths (sys.path) were: {", ".join(sys.path)}')
-    error(f'Please export the environment variable {__MODULE_ENV_VAR_NAME} to ' \
-          'contain the absolute path of the directory wherein the SPARTA ' \
-          'transactiondb module can be found. Currently is "{added_path}"')
-    error('Exception: {0}'.format(e))
+    error('Please export the environment variable %s to contain the absolute '
+          'path of the directory wherein the SPARTA transactiondb module can '
+          'be found. Currently is "%s"',
+          __MODULE_ENV_VAR_NAME,
+          added_path)
+    error('Exception: %s', e)
     sys.exit(1)
 finally:
-    sys.path.remove(added_path) # Remove temporary path
+    sys.path.remove(added_path)  # Remove temporary path
 
 # Inform users which transactiondb interface they are getting
-info('Using transactiondb at "{}"'.format(transactiondb.__file__))
+info('Using transactiondb at "%s"', transactiondb.__file__)
 
 Transaction = transactiondb.Transaction
 TransactionDatabase = transactiondb.TransactionDatabase
 
+
 # Consumes an Argos database and creates a location manager, a clock manager,
 #  and a transaction database API
 #
-#  Also allows browsing of database static structure as well as creating handles
-#  to database transaction info.
+#  Also allows browsing of database static structure as well as creating
+#  handles to database transaction info.
 #
 #  The static database structure exposed through this class and its children is
 #  can be shared between many DatabaseHandle instances
@@ -66,17 +70,27 @@ class Database:
         self.__loc_mgr = LocationManager(prefix, update_enabled)
         self.__clk_mgr = ClockManager(prefix)
 
-        # stores extra data shared between objects across layout contexts using the same database
+        # stores extra data shared between objects across layout contexts using
+        # the same database
         self.__metadata: Dict[str, Dict[str, Any]] = {}
         self.__metadata_tick: Optional[int] = None
 
         # Note that this will need to move if multiple layout contexts access
         # the same database sporadically
-        logging.getLogger('Database').debug('Database {} about to open query API'.format(self))
-        self.__dbapi = transactiondb.TransactionDatabase(self.filename,
-                                                          1 + self.location_manager.getMaxLocationID(), update_enabled)
-        logging.getLogger('Database').debug('Database opened with node length {}, heartbeat size {}' \
-                                            .format(self.__dbapi.getNodeLength(), self.__dbapi.getChunkSize()))
+        logging.getLogger('Database').debug(
+            'Database %s about to open query API',
+            self
+        )
+        self.__dbapi = transactiondb.TransactionDatabase(
+            self.filename,
+            1 + self.location_manager.getMaxLocationID(),
+            update_enabled
+        )
+        logging.getLogger('Database').debug(
+            'Database opened with node length %s, heartbeat size %s',
+            self.__dbapi.getNodeLength(),
+            self.__dbapi.getChunkSize()
+        )
 
     # Gets the database implementation module
     @property
@@ -104,7 +118,7 @@ class Database:
         return self.__filename
 
     def __str__(self) -> str:
-        return '<Database "{0}">'.format(self.filename)
+        return f'<Database "{self.filename}">'
 
     def __repr__(self) -> str:
         return self.__str__()

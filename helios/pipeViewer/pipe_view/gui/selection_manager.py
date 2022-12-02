@@ -1,11 +1,19 @@
-
-
 # Selection Mgrs are in charge of drawing to the canvas a demonstration of
 # the current selection, hence importing wx
 from __future__ import annotations
 import os
 import traceback
-from typing import Any, Callable, Dict, List, Optional, Set, Sequence, Tuple, Union, cast, TYPE_CHECKING
+from typing import (Any,
+                    Callable,
+                    Dict,
+                    List,
+                    Optional,
+                    Set,
+                    Sequence,
+                    Tuple,
+                    Union,
+                    cast,
+                    TYPE_CHECKING)
 
 import wx
 
@@ -56,7 +64,9 @@ class Selection_Mgr:
     #  queue,  and saves results to the queue
     #  @param pt The current mouse location
     #  @param base The element who owns the selection handle being dragged
-    def __TopResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __TopResize(self,
+                    pt: Union[wx.Point, Tuple[int, int]],
+                    base: Element) -> None:
         _, by, _, bh = self.__queue[base]
         assert self.__prev_y is not None
         delta = pt[1] - self.__prev_y
@@ -75,7 +85,9 @@ class Selection_Mgr:
 
     # Calculates the actual resize operation, relative to the data in the
     #  queue,  and saves results to the queue
-    def __LeftResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __LeftResize(self,
+                     pt: Union[wx.Point, Tuple[int, int]],
+                     base: Element) -> None:
         bx, _, bw, bh = self.__queue[base]
         assert self.__prev_x is not None
         delta = pt[0] - self.__prev_x
@@ -91,11 +103,14 @@ class Selection_Mgr:
 
     # Calculates the actual resize operation, relative to the data in the
     #  queue,  and saves results to the queue
-    def __RightResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __RightResize(self,
+                      pt: Union[wx.Point, Tuple[int, int]],
+                      base: Element) -> None:
         bx, _, bw, bh = self.__queue[base]
         assert self.__prev_x is not None
         delta = pt[0] - self.__prev_x
-        if (delta < 0 and (bx + bw) > pt[0]) or (delta > 0 and (bx + bw) < pt[0]):
+        if (delta < 0 and (bx + bw) > pt[0]) or \
+           (delta > 0 and (bx + bw) < pt[0]):
             mw = self.__queue[self.__min_wid][2]
             mw = mw + delta
             if mw >= self.__c_box_wid * 2:
@@ -105,7 +120,9 @@ class Selection_Mgr:
                     self.__queue[e] = (x, y, w, h)
         self.__prev_x = pt[0]
 
-    def __BottomResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __BottomResize(self,
+                       pt: Union[wx.Point, Tuple[int, int]],
+                       base: Element) -> None:
         '''
         Calculates the actual resize operation, relative to the data in the
         queue,  and saves results to the queue
@@ -113,7 +130,8 @@ class Selection_Mgr:
         _, by, bw, bh = self.__queue[base]
         assert self.__prev_y is not None
         delta = pt[1] - self.__prev_y
-        if (delta < 0 and (by + bh) > pt[1]) or (delta > 0 and (by + bh) < pt[1]):
+        if (delta < 0 and (by + bh) > pt[1]) or \
+           (delta > 0 and (by + bh) < pt[1]):
             mh = self.__queue[self.__min_ht][3]
             mh = mh + delta
             if mh >= self.__c_box_wid * 2:
@@ -124,45 +142,61 @@ class Selection_Mgr:
         self.__prev_y = pt[1]
 
     # Forwarder method
-    def __BottomMidResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __BottomMidResize(self,
+                          pt: Union[wx.Point, Tuple[int, int]],
+                          base: Element) -> None:
         self.__BottomResize(pt, base)
         self.SetProperties([self.BOTTOM])
 
     # Forwarder method
-    def __TopMidResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __TopMidResize(self,
+                       pt: Union[wx.Point, Tuple[int, int]],
+                       base: Element) -> None:
         self.__TopResize(pt, base)
         self.SetProperties([self.TOP])
 
     # Forwarder method
-    def __LeftMidResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __LeftMidResize(self,
+                        pt: Union[wx.Point, Tuple[int, int]],
+                        base: Element) -> None:
         self.__LeftResize(pt, base)
         self.SetProperties([self.LEFT])
 
     # Forwarder method
-    def __RightMidResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __RightMidResize(self,
+                         pt: Union[wx.Point, Tuple[int, int]],
+                         base: Element) -> None:
         self.__RightResize(pt, base)
         self.SetProperties([self.RIGHT])
 
     # Forwarder method
-    def __TopLeftResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __TopLeftResize(self,
+                        pt: Union[wx.Point, Tuple[int, int]],
+                        base: Element) -> None:
         self.__TopResize(pt, base)
         self.__LeftResize(pt, base)
         self.SetProperties([self.TOP, self.LEFT])
 
     # Forwarder method
-    def __TopRightResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __TopRightResize(self,
+                         pt: Union[wx.Point, Tuple[int, int]],
+                         base: Element) -> None:
         self.__TopResize(pt, base)
         self.__RightResize(pt, base)
         self.SetProperties([self.TOP, self.RIGHT])
 
     # Forwarder method
-    def __BottomLeftResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __BottomLeftResize(self,
+                           pt: Union[wx.Point, Tuple[int, int]],
+                           base: Element) -> None:
         self.__BottomResize(pt, base)
         self.__LeftResize(pt, base)
         self.SetProperties([self.BOTTOM, self.LEFT])
 
     # Forwarder method
-    def __BottomRightResize(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __BottomRightResize(self,
+                            pt: Union[wx.Point, Tuple[int, int]],
+                            base: Element) -> None:
         self.__BottomResize(pt, base)
         self.__RightResize(pt, base)
         self.SetProperties([self.BOTTOM, self.RIGHT])
@@ -171,22 +205,22 @@ class Selection_Mgr:
     #  __queue, and actually write them to their respective Elements,
     #  modifying them for snapping if applicable. This method is called at
     #  the end of all resize operations
-    #  @param sides List of sides which are allowed to snap. Order doesn't matter
+    #  @param sides List of sides which are allowed to snap.
+    #         Order doesn't matter
     def SetProperties(self, sides: List[int]) -> None:
         grid = self.__canvas.gridsize
         canvasRange = self.__canvas.range
         for e in self.__selected:
-            (x, y, w, h) = self.__queue[e]
             # This was determined to be the currently best place of rounding
             # and typcasting, since Element properties can only be ints
-            (x, y, w, h) = (int(round(x)), int(round(y)), int(round(w)), int(round(h)))
+            (x, y, w, h) = (int(round(elem)) for elem in self.__queue[e])
             (nx, ny, nw, nh) = (x, y, w, h)
             for side in sides:
                 if side == self.TOP:
                     if self.SNAP_ON_RESIZE:
                         dy = y % grid
-                        # Check if the edge is within snapping canvasRange on either
-                        # side of a gridline
+                        # Check if the edge is within snapping canvasRange on
+                        # either side of a gridline
                         if dy <= canvasRange:
                             ny = y - dy
                             nh = h + dy
@@ -195,7 +229,8 @@ class Selection_Mgr:
                             nh = h + dy - grid
                         # Verify that the element hasn't shrunk beyond
                         # allowable limits
-                        if h == self.__c_box_wid * 2 or nh <= self.__c_box_wid * 2:
+                        if h == self.__c_box_wid * 2 or \
+                           nh <= self.__c_box_wid * 2:
                             nh = self.__c_box_wid * 2
                             ny = y + h - nh
 
@@ -208,7 +243,8 @@ class Selection_Mgr:
                         elif dx >= grid - canvasRange:
                             nx = x - dx + grid
                             nw = w + dx - grid
-                        if w == self.__c_box_wid * 2 or nw <= self.__c_box_wid * 2:
+                        if w == self.__c_box_wid * 2 or \
+                           nw <= self.__c_box_wid * 2:
                             nw = self.__c_box_wid * 2
                             nx = x + w - nw
 
@@ -219,7 +255,8 @@ class Selection_Mgr:
                             nw = w - dw
                         elif dw >= grid - canvasRange:
                             nw = w - dw + grid
-                        if w == self.__c_box_wid * 2 or nw <= self.__c_box_wid * 2:
+                        if w == self.__c_box_wid * 2 or \
+                           nw <= self.__c_box_wid * 2:
                             nw = self.__c_box_wid * 2
 
                 elif side == self.BOTTOM:
@@ -229,12 +266,14 @@ class Selection_Mgr:
                             nh = h - dh
                         elif dh >= grid - canvasRange:
                             nh = h - dh + grid
-                        if h == self.__c_box_wid * 2 or nh <= self.__c_box_wid * 2:
+                        if h == self.__c_box_wid * 2 or \
+                           nh <= self.__c_box_wid * 2:
                             nh = self.__c_box_wid * 2
                 # In case anything changed on this iteration, those changes
                 # are available to the next iteration
                 (x, y, w, h) = (nx, ny, nw, nh)
-            # All done verifying / snapping, go ahead and commit the new properties
+            # All done verifying / snapping, go ahead and commit the new
+            # properties
             e.SetProperty('position', (x, y))
             e.SetProperty('dimensions', (w, h))
 
@@ -244,17 +283,19 @@ class Selection_Mgr:
 
     # Original resize callbacks, these operations allow overlap
     __RESIZE_OPTIONS_ONE = {
-        0:__TopLeftResize,
-        1:__BottomLeftResize,
-        2:__TopRightResize,
-        3:__BottomRightResize,
-        4:__TopMidResize,
-        5:__BottomMidResize,
-        6:__LeftMidResize,
-        7:__RightMidResize
-        }
+        0: __TopLeftResize,
+        1: __BottomLeftResize,
+        2: __TopRightResize,
+        3: __BottomRightResize,
+        4: __TopMidResize,
+        5: __BottomMidResize,
+        6: __LeftMidResize,
+        7: __RightMidResize
+    }
 
-    def __TopResizeScaling(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __TopResizeScaling(self,
+                           pt: Union[wx.Point, Tuple[int, int]],
+                           base: Element) -> None:
         '''
         Calculates the actual resize operation, relative to the queue, and
         saves results to the queue. This is 'Scale' mode
@@ -268,8 +309,8 @@ class Selection_Mgr:
         # Check that the mouse is moving in a direction at a location worth
         # resizing, since due to snapping, the element may already be where
         # the mouse is headed
-        if (((-delta < 0 and by > pt[1]) or (-delta > 0 and by < pt[1])) and
-            current > 0):
+        if ((-delta < 0 and by > pt[1]) or (-delta > 0 and by < pt[1])) and \
+           current > 0:
             factor = -(delta / current + 1.0)
             mh = self.__queue[self.__min_ht][3]
             mh = int(-mh * factor)
@@ -284,13 +325,15 @@ class Selection_Mgr:
 
     # Calculates the actual resize operation, relative to the queue, and
     #  saves results to the queue. This is 'Scale' mode
-    def __LeftResizeScaling(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __LeftResizeScaling(self,
+                            pt: Union[wx.Point, Tuple[int, int]],
+                            base: Element) -> None:
         bx, by, bw, bh = self.__queue[base]
         assert self.__prev_x is not None
         delta = self.__prev_x - pt[0]
         current = self.__right - self.__prev_x
-        if (((-delta < 0 and bx > pt[0]) or (-delta > 0 and bx < pt[0])) and
-            current > 0):
+        if ((-delta < 0 and bx > pt[0]) or (-delta > 0 and bx < pt[0])) and \
+           current > 0:
             factor = -(delta / current + 1.0)
             mw = self.__queue[self.__min_wid][2]
             mw = int(-mw * factor)
@@ -305,13 +348,16 @@ class Selection_Mgr:
 
     # Calculates the actual resize operation, relative to the queue, and
     #  saves results to the queue. This is 'Scale' mode
-    def __RightResizeScaling(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __RightResizeScaling(self,
+                             pt: Union[wx.Point, Tuple[int, int]],
+                             base: Element) -> None:
         bx, by, bw, bh = self.__queue[base]
         assert self.__prev_x is not None
         delta = pt[0] - self.__prev_x
         current = self.__prev_x - self.__left
-        if (((delta < 0 and (bx + bw) > pt[0]) or (delta > 0 and (bx + bw) < pt[0]))
-            and current > 0):
+        if ((delta < 0 and (bx + bw) > pt[0]) or
+            (delta > 0 and (bx + bw) < pt[0])) and \
+           current > 0:
             factor = 1.0 + delta / current
             mw = self.__queue[self.__min_wid][2]
             mw = int(mw * factor)
@@ -326,13 +372,16 @@ class Selection_Mgr:
 
     # Calculates the actual resize operation, relative to the queue, and
     #  saves results to the queue. This is 'Scale' mode
-    def __BottomResizeScaling(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __BottomResizeScaling(self,
+                              pt: Union[wx.Point, Tuple[int, int]],
+                              base: Element) -> None:
         bx, by, bw, bh = self.__queue[base]
         assert self.__prev_y is not None
         delta = pt[1] - self.__prev_y
         current = self.__prev_y - self.__top
-        if (((delta < 0 and (by + bh) > pt[1]) or (delta > 0 and (by + bh) < pt[1]))
-            and not (current == 0)):
+        if ((delta < 0 and (by + bh) > pt[1]) or
+            (delta > 0 and (by + bh) < pt[1])) and \
+           current != 0:
             if current > 0:
                 factor = 1.0 + delta / current
             else:
@@ -349,60 +398,76 @@ class Selection_Mgr:
         self.__prev_y = pt[1]
 
     # Forwarder method
-    def __BottomMidResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __BottomMidResize2(self,
+                           pt: Union[wx.Point, Tuple[int, int]],
+                           base: Element) -> None:
         self.__BottomResizeScaling(pt, base)
         self.SetProperties([self.BOTTOM, self.TOP])
 
     # Forwarder method
-    def __TopMidResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __TopMidResize2(self,
+                        pt: Union[wx.Point, Tuple[int, int]],
+                        base: Element) -> None:
         self.__TopResizeScaling(pt, base)
         self.SetProperties([self.TOP, self.BOTTOM])
 
     # Forwarder method
-    def __LeftMidResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __LeftMidResize2(self,
+                         pt: Union[wx.Point, Tuple[int, int]],
+                         base: Element) -> None:
         self.__LeftResizeScaling(pt, base)
         self.SetProperties([self.LEFT, self.RIGHT])
 
     # Forwarder method
-    def __RightMidResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __RightMidResize2(self,
+                          pt: Union[wx.Point, Tuple[int, int]],
+                          base: Element) -> None:
         self.__RightResizeScaling(pt, base)
         self.SetProperties([self.RIGHT, self.LEFT])
 
     # Forwarder method
-    def __TopLeftResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __TopLeftResize2(self,
+                         pt: Union[wx.Point, Tuple[int, int]],
+                         base: Element) -> None:
         self.__TopResizeScaling(pt, base)
         self.__LeftResizeScaling(pt, base)
         self.SetProperties([self.TOP, self.LEFT, self.RIGHT, self.BOTTOM])
 
     # Forwarder method
-    def __TopRightResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __TopRightResize2(self,
+                          pt: Union[wx.Point, Tuple[int, int]],
+                          base: Element) -> None:
         self.__TopResizeScaling(pt, base)
         self.__RightResizeScaling(pt, base)
         self.SetProperties([self.TOP, self.RIGHT, self.LEFT, self.BOTTOM])
 
     # Forwarder method
-    def __BottomLeftResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __BottomLeftResize2(self,
+                            pt: Union[wx.Point, Tuple[int, int]],
+                            base: Element) -> None:
         self.__BottomResizeScaling(pt, base)
         self.__LeftResizeScaling(pt, base)
         self.SetProperties([self.BOTTOM, self.LEFT, self.RIGHT, self.TOP])
 
     # Forwarder method
-    def __BottomRightResize2(self, pt: Union[wx.Point, Tuple[int, int]], base: Element) -> None:
+    def __BottomRightResize2(self,
+                             pt: Union[wx.Point, Tuple[int, int]],
+                             base: Element) -> None:
         self.__BottomResizeScaling(pt, base)
         self.__RightResizeScaling(pt, base)
         self.SetProperties([self.BOTTOM, self.RIGHT, self.TOP, self.LEFT])
 
     # This is 'Scaling'-mode resize op callbacks
     __RESIZE_OPTIONS_TWO = {
-        0:__TopLeftResize2,
-        1:__BottomLeftResize2,
-        2:__TopRightResize2,
-        3:__BottomRightResize2,
-        4:__TopMidResize2,
-        5:__BottomMidResize2,
-        6:__LeftMidResize2,
-        7:__RightMidResize2
-        }
+        0: __TopLeftResize2,
+        1: __BottomLeftResize2,
+        2: __TopRightResize2,
+        3: __BottomRightResize2,
+        4: __TopMidResize2,
+        5: __BottomMidResize2,
+        6: __LeftMidResize2,
+        7: __RightMidResize2
+    }
 
     # Prepare for a resize operation on the named side. Get the bounding box
     #  of the selection, find the smallest Element in the corresponding
@@ -510,29 +575,29 @@ class Selection_Mgr:
 
     # Callbacks for pre-resize op preparations
     __RESIZE_PREPARATIONS = {
-        0:__TopLeftResizePrep,
-        1:__BottomLeftResizePrep,
-        2:__TopRightResizePrep,
-        3:__BottomRightResizePrep,
-        4:__TopMidResizePrep,
-        5:__BottomMidResizePrep,
-        6:__LeftMidResizePrep,
-        7:__RightMidResizePrep
-        }
+        0: __TopLeftResizePrep,
+        1: __BottomLeftResizePrep,
+        2: __TopRightResizePrep,
+        3: __BottomRightResizePrep,
+        4: __TopMidResizePrep,
+        5: __BottomMidResizePrep,
+        6: __LeftMidResizePrep,
+        7: __RightMidResizePrep
+    }
 
     # It is worth noting that as of right now (8/8/2012) wx.CURSOR_SIZENESW &
     # wx.CURSOR_SIZENWSE don't work in this environment,  so options 0-3 are
     # less-than-ideal standins, till someone custom creates bitmaps for cursors
     __CURSOR_OPTIONS = {
-        0:wx.CURSOR_SIZENWSE,
-        1:wx.CURSOR_SIZENESW,
-        2:wx.CURSOR_SIZENESW,
-        3:wx.CURSOR_SIZENWSE,
-        4:wx.CURSOR_SIZENS,
-        5:wx.CURSOR_SIZENS,
-        6:wx.CURSOR_SIZEWE,
-        7:wx.CURSOR_SIZEWE,
-        }
+        0: wx.CURSOR_SIZENWSE,
+        1: wx.CURSOR_SIZENESW,
+        2: wx.CURSOR_SIZENESW,
+        3: wx.CURSOR_SIZENWSE,
+        4: wx.CURSOR_SIZENS,
+        5: wx.CURSOR_SIZENS,
+        6: wx.CURSOR_SIZEWE,
+        7: wx.CURSOR_SIZEWE,
+    }
 
     # Available modes of rubber-band or lasso selecting
     ADD_TO_SELECTION = 1
@@ -556,12 +621,14 @@ class Selection_Mgr:
     # Get prepared to start tracking and adjusting user-selected Elements
     #  @param canvas Layout_Canvas
     #  @param elpropsdlg Elements Properties Dialog
-    def __init__(self, canvas: Layout_Canvas, elpropsdlg: Element_PropsDlg) -> None:
+    def __init__(self,
+                 canvas: Layout_Canvas,
+                 elpropsdlg: Element_PropsDlg) -> None:
         self.__canvas = canvas
         self.__el_props_dlg = elpropsdlg
         # The Elements will be stored as the keys to a dict, where the values
-        # corresponding to each Element are tuples indicating the offset between
-        # a MouseEvt & the Element's top left corner
+        # corresponding to each Element are tuples indicating the offset
+        # between a MouseEvt & the Element's top left corner
         self.__selected: Dict[Element, Tuple[int, int]] = {}
         self.__playback_selected: Optional[Element_Value] = None
         self.__is_edit_mode = False
@@ -591,33 +658,55 @@ class Selection_Mgr:
 
         # undo/redo stack
         self.__undo_stack: List[Checkpoint] = []
-        self.__undo_next_ptr = 0 # Position of next undo checkpoint to allocate
+        # Position of next undo checkpoint to allocate
+        self.__undo_next_ptr = 0
 
-        self.__cur_open_chkpt: Optional[Checkpoint] = None # Current move action checkpoint. To be closed after the move
+        # Current move action checkpoint. To be closed after the move
+        self.__cur_open_chkpt: Optional[Checkpoint] = None
 
-        self.__undo_redo_hooks: List[Callable] = [] # Hooks for notifying clients about undo/redo.
+        # Hooks for notifying clients about undo/redo.
+        self.__undo_redo_hooks: List[Callable] = []
 
-        this_script_filename = os.path.join(os.getcwd(), __file__)
-        nesw_image = wx.Image(os.path.dirname(os.path.dirname(this_script_filename)) + "/resources/resize_nesw.png", wx.BITMAP_TYPE_PNG)
+        resources_dir = os.path.join(
+            os.path.dirname(
+                os.path.dirname(os.path.join(os.getcwd(), __file__))
+            ),
+            'resources'
+        )
+        nesw_image = wx.Image(os.path.join(resources_dir, "resize_nesw.png"),
+                              wx.BITMAP_TYPE_PNG)
         nesw_image.SetOption(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 6)
         nesw_image.SetOption(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 6)
         self.__custom_cursor_nesw = wx.Cursor(nesw_image)
-        nwse_image = wx.Image(os.path.dirname(os.path.dirname(this_script_filename)) + "/resources/resize_nwse.png", wx.BITMAP_TYPE_PNG)
+        nwse_image = wx.Image(os.path.join(resources_dir, "resize_nwse.png"),
+                              wx.BITMAP_TYPE_PNG)
         nwse_image.SetOption(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 6)
         nwse_image.SetOption(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 6)
         self.__custom_cursor_nwse = wx.Cursor(nwse_image)
 
-    # Open and return a checkpoint. The returned checkpoint must be 'after'ed to complete the delta
-    #  so that it can be used as an undo/redo delta.
-    #  Appends new delta to the undo stack. Removes everything at and after the current next undo
-    #  pointer from the undo stack because it cannot be redone following this new change. Maybe an
-    #  undo/redo tree could be built, but that is probably unnecessary
+    # Open and return a checkpoint. The returned checkpoint must be 'after'ed
+    #  to complete the delta so that it can be used as an undo/redo delta.
+    #  Appends new delta to the undo stack. Removes everything at and after the
+    #  current next undo pointer from the undo stack because it cannot be
+    #  redone following this new change. Maybe an undo/redo tree could be
+    #  built, but that is probably unnecessary
     #  @param description Describes the checkpoint
-    #  @param force_elements Elements to use as the selection (if not self.__selected.keys())
-    def __Checkpoint(self, description: str, force_elements: Optional[List[Element]] = None) -> Checkpoint:
+    #  @param force_elements Elements to use as the selection
+    #         (if not self.__selected.keys())
+    def __Checkpoint(
+        self,
+        description: str,
+        force_elements: Optional[List[Element]] = None
+    ) -> Checkpoint:
         assert self.__cur_open_chkpt is None, \
-              'Cannot start a undo/redo checkpoint before the current move checkpoint is closed'
-        selection = list(self.__selected.keys()) if force_elements is None else force_elements
+              'Cannot start a undo/redo checkpoint before the current move ' \
+              'checkpoint is closed'
+
+        if force_elements is None:
+            selection = list(self.__selected.keys())
+        else:
+            selection = force_elements
+
         layout = self.__canvas.context.GetLayout()
         assert layout is not None
         chkpt = Checkpoint(layout, selection, description)
@@ -632,7 +721,8 @@ class Selection_Mgr:
         self.__undo_stack.append(chkpt)
         self.__undo_next_ptr += 1
         assert self.__undo_next_ptr == len(self.__undo_stack), \
-               'Checkpoint undo stack next ({}) != size ({})'.format(self.__undo_next_ptr, len(self.__undo_stack))
+               'Checkpoint undo stack next ' \
+               f'({self.__undo_next_ptr}) != size ({len(self.__undo_stack)})'
         return chkpt
 
     # Add an undo/redo hook to be called when an undo/redo has taken place or
@@ -667,7 +757,9 @@ class Selection_Mgr:
             print('Undo errors: ', errors)
         self.__undo_next_ptr -= 1
         self.ClearSelection()
-        self.Add(current) # Adds current elements after removing checkpoint and updates selection/elpropsdlg
+        # Adds current elements after removing checkpoint and updates
+        # selection/elpropsdlg
+        self.Add(current)
 
         self.__canvas.context.GoToHC()
         self.__canvas.Refresh()
@@ -687,7 +779,9 @@ class Selection_Mgr:
         self.__undo_next_ptr += 1
         self.ClearSelection()
         if current is not None:
-            self.Add(current) # Adds current elements after applying checkpoint and updates selection/elpropsdlg
+            # Adds current elements after applying checkpoint and updates
+            # selection/elpropsdlg
+            self.Add(current)
 
         self.__canvas.context.GoToHC()
         self.__canvas.Refresh()
@@ -707,9 +801,11 @@ class Selection_Mgr:
 
             self.ClearSelection()
 
+            # implies something was redone
             if current is not None:
-                # current != None implies something was redone
-                self.Add(current) # Adds current elements after applying checkpoint and updates selection/elpropsdlg
+                # Adds current elements after applying checkpoint and updates
+                # selection/elpropsdlg
+                self.Add(current)
 
         self.__canvas.context.GoToHC()
         self.__canvas.Refresh()
@@ -788,7 +884,7 @@ class Selection_Mgr:
     # Used for forcing the current selection, instantly disregarding what
     #  was stored previously
     #  @param selected Dictionary of elements {element:[rel_x,rel_y]}. The
-    #  values in this dict are implementation details so are not explained here.
+    #  values in this dict are implementation details so are not explained here
     #  @todo This is really an internal-only method and should be made hidden
     def SetSelection(self, selected: Dict[Element, Tuple[int, int]]) -> None:
         assert isinstance(selected, dict)
@@ -809,8 +905,9 @@ class Selection_Mgr:
     def GetSelection(self) -> Dict[Element, Tuple[int, int]]:
         return self.__selected
 
-    #  Toggle whether or not an Element is selected. Used for inveting selection
-    #  @param e Element or sequence of elements to toggle
+    # Toggle whether or not an Element is selected. Used for inverting
+    # selection
+    # @param e Element or sequence of elements to toggle
     def Toggle(self, e: Union[Element, Sequence[Element]]) -> None:
         if isinstance(e, Element):
             els = [e]
@@ -828,7 +925,8 @@ class Selection_Mgr:
         self.__is_edit_mode = is_edit_mode
 
     # Set which Element is the 'dominant' one for the selection. i.e. which
-    #  is directly beneath the mouse, used for a snapping mode during move operations
+    #  is directly beneath the mouse, used for a snapping mode during move
+    #  operations
     def SetDominant(self, e: Element) -> None:
         self.__dominant = e
 
@@ -851,7 +949,7 @@ class Selection_Mgr:
         elif mode == 'reach':
             self.SNAP_ON_RESIZE = True
         elif mode == 'rdominant':
-            pass # not implemented
+            pass  # not implemented
         elif mode == 'freesize':
             self.SNAP_ON_RESIZE = False
 
@@ -869,12 +967,12 @@ class Selection_Mgr:
     def SnapCorner(self) -> None:
         self.FlushQueue()
         grid = self.__canvas.gridsize
-        range = self.__canvas.range
 
         for e in self.__selected:
             x, y = cast(Tuple[int, int], e.GetProperty('position'))
             w, h = cast(Tuple[int, int], e.GetProperty('dimensions'))
-            # Calculate how far away both edges are from the grid in either direction
+            # Calculate how far away both edges are from the grid in either
+            # direction
             dx = x % grid
             dx1 = grid - dx
             dw = (x + w) % grid
@@ -883,12 +981,12 @@ class Selection_Mgr:
             # direction to the gridline
             horiz = [(dx, -1), (dx1, 1), (dw, -1), (dw1, 1)]
 
-            # used so that the horiz/vert lists can be sorted by the first value of
-            # each tuple
+            # used so that the horiz/vert lists can be sorted by the first
+            # value of each tuple
             def extract(tuple: Tuple[int, int]) -> int:
                 return tuple[0]
 
-            temp = sorted(horiz, key = extract)[0]
+            temp = sorted(horiz, key=extract)[0]
             # whichever edge is closest gets snapped
             x = x + temp[0] * temp[1]
             dy = y % grid
@@ -896,7 +994,7 @@ class Selection_Mgr:
             dh = (y + h) % grid
             dh1 = grid - dh
             vert = [(dy, -1), (dy1, 1), (dh, -1), (dh1, 1)]
-            temp = sorted(vert, key = extract)[0]
+            temp = sorted(vert, key=extract)[0]
             y = y + temp[0] * temp[1]
             e.SetProperty('position', (x, y))
         self.__canvas.FullUpdate()
@@ -911,7 +1009,8 @@ class Selection_Mgr:
         for e in els:
             x, y = cast(Tuple[int, int], e.GetProperty('position'))
             w, h = cast(Tuple[int, int], e.GetProperty('dimensions'))
-            self.__selected[e] = (x - self.__position[0], y - self.__position[1])
+            self.__selected[e] = (x - self.__position[0],
+                                  y - self.__position[1])
 
             # Continue aligning, if the selection used to be aligned, and the
             # new guy is on the same edge
@@ -938,7 +1037,10 @@ class Selection_Mgr:
             return True
         return False
 
-    def Remove(self, e: Union[Element, Tuple[Element, ...], Sequence[Element]]) -> None:
+    def Remove(
+        self,
+        e: Union[Element, Tuple[Element, ...], Sequence[Element]]
+    ) -> None:
         '''
         Remove an Element from the selection, if present
         @param e Element to remove or sequence of elements
@@ -957,7 +1059,8 @@ class Selection_Mgr:
 
     def Delete(self, layout: Layout) -> None:
         '''
-        Permanently remove all Elements in the selection from the specified layout
+        Permanently remove all Elements in the selection from the specified
+        layout
         '''
         to_delete = self.__selected
         if to_delete:
@@ -968,22 +1071,26 @@ class Selection_Mgr:
                 e.EnableDraw(False)
                 layout.RemoveElement(e)
             self.Clear()
-            self.CommitCheckpoint() # Nothing selected after checkpoint
+            self.CommitCheckpoint()  # Nothing selected after checkpoint
 
     # Generate a brand new Element in the layout, select it
     #  @param add_to_selection Should the new element be added to the
     #  existent selection. If False, element becomes new selection
     #  @return Returns the newly-created element
-    def GenerateElement(self, layout: Layout, type_string: str, add_to_selection: bool = False) -> Element:
+    def GenerateElement(self,
+                        layout: Layout,
+                        type_string: str,
+                        add_to_selection: bool = False) -> Element:
         self.BeginCheckpoint('create element')
-        e = layout.CreateAndAddElement(element_type = type_string)
+        e = layout.CreateAndAddElement(element_type=type_string)
         mouse: Union[wx.Point, Tuple[int, int]] = wx.GetMousePosition()
         mouse = self.__canvas.CalcUnscrolledPosition(mouse)
         screen = self.__canvas.GetScreenPosition()
         rel_pt = (mouse[0] - screen[0], mouse[1] - screen[1])
         self.SetPos(rel_pt)
         w, h = cast(Tuple[int, int], e.GetProperty('dimensions'))
-        e.SetProperty('position', (int(rel_pt[0] - w / 2), int(rel_pt[1] - h / 2)))
+        e.SetProperty('position', (int(rel_pt[0] - w / 2),
+                                   int(rel_pt[1] - h / 2)))
 
         # Add to selection, clearing unless asked not to
         if add_to_selection is not True:
@@ -994,7 +1101,8 @@ class Selection_Mgr:
         return e
 
     # Generate a complete copy of the currently selected Elements in the
-    #  layout, offset by delta. This operation prevented from happening continuously
+    #  layout, offset by delta. This operation is prevented from happening
+    #  continuously
     #  @param layout Layout to modify
     #  @param delta Single integer specifying both the x and y coordinate
     #  adjustment of the new element
@@ -1004,7 +1112,10 @@ class Selection_Mgr:
             temp_buffer = []
             original_selection = list(self.__selected.keys())
             for e in original_selection:
-                ce = layout.CreateAndAddElement(e, element_type = cast(str, e.GetProperty('type')))
+                ce = layout.CreateAndAddElement(
+                    e,
+                    element_type=cast(str, e.GetProperty('type'))
+                )
                 x, y = cast(Tuple[int, int], ce.GetProperty('position'))
                 ce.SetProperty('position', (x + delta, y + delta))
                 temp_buffer.append(ce)
@@ -1019,9 +1130,11 @@ class Selection_Mgr:
             # Requires that PrepNextCopy be called before this will work again
             self.__copy_completed = True
 
-            # Committed checkpoint must know about all elements that still exist
-            # from the selection with which the checkpoint was created
-            self.CommitCheckpoint(force_elements = temp_buffer + original_selection)
+            # Committed checkpoint must know about all elements that still
+            # exist from the selection with which the checkpoint was created
+            self.CommitCheckpoint(
+                force_elements=temp_buffer + original_selection
+            )
 
     # Toggles the selection state of each element on the canvas
     def InvertSelection(self, layout: Layout) -> None:
@@ -1064,8 +1177,10 @@ class Selection_Mgr:
     #  this checkpoint OR force_elements must be used to override. This
     #  obviously excludes any elements created as a result of the checkpoint
     def BeginCheckpoint(self, description: str, **kwargs: Any) -> None:
-        assert self.__cur_open_chkpt is None, 'Should not enter BeginCheckpoint with an open checkpoint'
-        self.__cur_open_chkpt = self.__Checkpoint(description, kwargs.get('force_elements'))
+        assert self.__cur_open_chkpt is None, \
+            'Should not enter BeginCheckpoint with an open checkpoint'
+        self.__cur_open_chkpt = self.__Checkpoint(description,
+                                                  kwargs.get('force_elements'))
 
     # Complete checkpoint after a move
     #  @pre self.__selected must contain all elements which changed as a result
@@ -1074,7 +1189,7 @@ class Selection_Mgr:
     #  elements. These elements will be treated as if they were selected
     def CommitCheckpoint(self, **kwargs: Any) -> None:
         if self.__cur_open_chkpt is None:
-            print('Should not enter CommitCheckpoint without an open checkpoint. This is a bug:')
+            print('Should not enter CommitCheckpoint without an open checkpoint. This is a bug:')  # noqa: E501
             print(traceback.format_stack())
             return
 
@@ -1107,7 +1222,7 @@ class Selection_Mgr:
             if k == 'force_no_snap':
                 force_no_snap = v
             else:
-                raise KeyError('Invalid argument to Move: {}={}'.format(k, v))
+                raise KeyError(f'Invalid argument to Move: {k}={v}')
 
         grid = self.__canvas.gridsize
         range = self.__canvas.range
@@ -1157,11 +1272,12 @@ class Selection_Mgr:
                     y1 = y + pos[1]
                     e.SetProperty('position', (int(x1), int(y1)))
             else:
-                raise ValueError('Move called with no snap types set and force_no_snap was not given as kwarg')
+                raise ValueError('Move called with no snap types set and force_no_snap was not given as kwarg')  # noqa: E501
         elif delta is not None:
             for e in self.__selected:
                 x, y = cast(Tuple[int, int], e.GetProperty('position'))
-                e.SetProperty('position', (int(x + delta[0]), int(y + delta[1])))
+                e.SetProperty('position', (int(x + delta[0]),
+                                           int(y + delta[1])))
             self.SetHistory(self.whitespace)
         else:
             raise ValueError('Move called with no position and no delta')
@@ -1181,7 +1297,7 @@ class Selection_Mgr:
             mod = -1
         else:
             mod = 1
-        exes, x_sorted, whys, y_sorted, plus_w, w_sorted, plus_h, h_sorted = self.SortByPosition()
+        exes, x_sorted, whys, y_sorted, plus_w, w_sorted, plus_h, h_sorted = self.SortByPosition()  # noqa: E501
 
         if base == self.TOP or base == self.BOTTOM:
             # add space in the opposite direction, and work the list backwards
@@ -1229,7 +1345,7 @@ class Selection_Mgr:
             return
 
         self.BeginCheckpoint('flip elements')
-        exes, x_sorted, whys, y_sorted, plus_w, w_sorted, plus_h, h_sorted = self.SortByPosition()
+        exes, x_sorted, whys, y_sorted, plus_w, w_sorted, plus_h, h_sorted = self.SortByPosition()  # noqa: E501
         if direction == self.TOP or direction == self.BOTTOM:
             for y in whys:
                 for e in y_sorted[y]:
@@ -1244,12 +1360,11 @@ class Selection_Mgr:
     def MoveToTop(self) -> None:
         if self.__selected:
             drawables = [e for e in self.__selected if e.IsDrawable()]
-            drawable_pins = set([e.GetPIN() for e in drawables])
 
             self.BeginCheckpoint('move to top')
             try:
                 self.__canvas.context.MoveElementsAbovePINs(drawables, [None])
-            except:
+            except Exception:
                 # TODO: other places should follow this protocol
                 self.CancelCheckpoint()
                 raise
@@ -1262,12 +1377,11 @@ class Selection_Mgr:
             return
 
         drawables = [e for e in self.__selected if e.IsDrawable()]
-        drawable_pins = set([e.GetPIN() for e in drawables])
 
         self.BeginCheckpoint('move to bottom')
         try:
             self.__canvas.context.MoveElementsBelowPINs(drawables, [-1])
-        except:
+        except Exception:
             # TODO: other places should follow this protocol
             self.CancelCheckpoint()
             raise
@@ -1283,19 +1397,26 @@ class Selection_Mgr:
         drawables = [e for e in self.__selected if e.IsDrawable()]
         drawable_pins = set([e.GetPIN() for e in drawables])
 
-        # All pairs - regardless of bounds. Note that no vis-tick filtering is needed because bounds=None
-        draw_pairs = [p.GetElement() for p in self.__canvas.context.GetDrawPairs(bounds = None)]
+        # All pairs - regardless of bounds.
+        # Note that no vis-tick filtering is needed because bounds=None
+        draw_pairs = [
+            p.GetElement()
+            for p in self.__canvas.context.GetDrawPairs(bounds=None)
+        ]
 
-        # Drawables found excluding elements in drawables up to the point where all drawables are
-        # accounted for (found==num_drawables).
-        # In other words, this is a list of PINS above which the selected elements should be moved
-        # as as result of this operation
-        above_list = self.__FindPINsUntilMatches(draw_pairs, drawable_pins, None, full_set = True)
+        # Drawables found excluding elements in drawables up to the point where
+        # all drawables are accounted for (found==num_drawables).
+        # In other words, this is a list of PINS above which the selected
+        # elements should be moved as a result of this operation
+        above_list = self.__FindPINsUntilMatches(draw_pairs,
+                                                 drawable_pins,
+                                                 None,
+                                                 full_set=True)
 
         self.BeginCheckpoint('move up')
         try:
             self.__canvas.context.MoveElementsAbovePINs(drawables, above_list)
-        except:
+        except Exception:
             # TODO: other places should follow this protocol
             self.CancelCheckpoint()
             raise
@@ -1310,21 +1431,29 @@ class Selection_Mgr:
         drawables = [e for e in self.__selected if e.IsDrawable()]
         drawable_pins = set([e.GetPIN() for e in drawables])
 
-        # All pairs - regardless of bounds. Note that no vis-tick filtering is needed because bounds=None
-        draw_pairs = [p.GetElement() for p in self.__canvas.context.GetDrawPairs(bounds = None)]
+        # All pairs - regardless of bounds. Note that no vis-tick filtering is
+        # needed because bounds=None
+        draw_pairs = [
+            p.GetElement()
+            for p in self.__canvas.context.GetDrawPairs(bounds=None)
+        ]
 
-        # Drawables found excluding elements in drawables up to the point where all drawables are
-        # accounted for (found==num_drawables).
-        # In other words, this is a list of PINS above which the selected elements should be moved
-        # as as result of this operation
-        below_list = self.__FindPINsUntilMatches(draw_pairs, drawable_pins, -1, full_set = False)
+        # Drawables found excluding elements in drawables up to the point where
+        # all drawables are accounted for (found==num_drawables).
+        # In other words, this is a list of PINS above which the selected
+        # elements should be moved as a result of this operation
+        below_list = self.__FindPINsUntilMatches(draw_pairs,
+                                                 drawable_pins,
+                                                 -1,
+                                                 full_set=False)
         if len(below_list) > 1:
-            below_list = below_list[:-1] # Drop last item so that these elements are inserted before it!
+            # Drop last item so that these elements are inserted before it!
+            below_list = below_list[:-1]
 
         self.BeginCheckpoint('move down')
         try:
             self.__canvas.context.MoveElementsBelowPINs(drawables, below_list)
-        except:
+        except Exception:
             # TODO: other places should follow this protocol
             self.CancelCheckpoint()
             raise
@@ -1335,8 +1464,8 @@ class Selection_Mgr:
     # Iterate through a sequence of elements until every PIN (or the first
     #  encountered, depending on the value of full_set) in set_to_match
     #  has been matched with an element pin from the elements list while
-    #  appending to a results list each element's PIN from elements which is not
-    #  contained within set_to_match. If the end of the elements list is
+    #  appending to a results list each element's PIN from elements which is
+    #  not contained within set_to_match. If the end of the elements list is
     #  reached before every element in the elements list is matched to a PIN in
     #  set_to_match, then the result list will have incomplete_set_append
     #  appended to its end
@@ -1346,7 +1475,7 @@ class Selection_Mgr:
                                incomplete_set_append: Optional[int],
                                full_set: bool = True) -> List[Optional[int]]:
         num_drawables = len(set_to_match)
-        found = 0 # set_to_match items found iterating the list
+        found = 0  # set_to_match items found iterating the list
 
         results: List[Optional[int]] = []
 
@@ -1356,17 +1485,21 @@ class Selection_Mgr:
                 if full_set is False:
                     if not results:
                         return [-1]
-                    return results # Found first match. Stop here
+                    return results  # Found first match. Stop here
 
-                # full_set = True
-                found += 1 # Found a match in the set. Assume no duplicates in the element sequence
+                # Found a match in the set
+                # Assume no duplicates in the element sequence
+                found += 1
                 continue
             else:
                 results.append(pin)
                 if found == num_drawables:
-                    break # Stop iterating now that the element above the last last drawable was found
+                    # Stop iterating now that the element above the last
+                    # drawable was found
+                    break
         else:
-            results.append(incomplete_set_append) # Indicates that things must be moved to the end of the list
+            # Indicates that things must be moved to the end of the list
+            results.append(incomplete_set_append)
 
         return results
 
@@ -1392,24 +1525,24 @@ class Selection_Mgr:
         if not self.__selected:
             return None
 
-        l, t, r, b = (None, None, None, None)
+        left, top, right, bottom = (None, None, None, None)
         for e in self.__selected:
             x, y = cast(Tuple[int, int], e.GetProperty('position'))
             w, h = cast(Tuple[int, int], e.GetProperty('dimensions'))
-            if l is None or x < l:
-                l = x
-            if r is None or x + w > r:
-                r = x + w
-            if t is None or y < t:
-                t = y
-            if b is None or y + h > b:
-                b = y + h
+            if left is None or x < left:
+                left = x
+            if right is None or x + w > right:
+                right = x + w
+            if top is None or y < top:
+                top = y
+            if bottom is None or y + h > bottom:
+                bottom = y + h
 
-        assert l is not None
-        assert t is not None
-        assert r is not None
-        assert b is not None
-        return (l, t, r, b)
+        assert left is not None
+        assert top is not None
+        assert right is not None
+        assert bottom is not None
+        return (left, top, right, bottom)
 
     # Set the current reference position and re-compute the offsets to each
     #  Element in the selection. Usually happens due to a MouseDown evt
@@ -1417,7 +1550,8 @@ class Selection_Mgr:
         self.__position = position
         for e in self.__selected:
             x, y = cast(Tuple[int, int], e.GetProperty('position'))
-            self.__selected[e] = (x - self.__position[0], y - self.__position[1])
+            self.__selected[e] = (x - self.__position[0],
+                                  y - self.__position[1])
 
     # Returns the selection mgr's last recorded position from which to
     #  compute offsets
@@ -1427,7 +1561,9 @@ class Selection_Mgr:
     # Accomplishes the calculating of what is selected by the rubber-band
     #  box and either adds or removes those Elements. Called while processing
     #  a MouseMove evt while history is set to rubber_band
-    def ProcessRubber(self, xxx_todo_changeme: Tuple[int, int], action: Optional[int] = None) -> None:
+    def ProcessRubber(self,
+                      xxx_todo_changeme: Tuple[int, int],
+                      action: Optional[int] = None) -> None:
         (x, y) = xxx_todo_changeme
         if action:
             self.__which_rubber_band = action
@@ -1464,44 +1600,61 @@ class Selection_Mgr:
             dc.SetPen(pen)
             for e in self.__selected:
                 # Outline each element
-                (x, y), (w, h) = cast(Tuple[int, int], e.GetProperty('position')), cast(Tuple[int, int], e.GetProperty('dimensions'))
+                (x, y) = cast(Tuple[int, int], e.GetProperty('position'))
                 (x, y) = (x - xoff, y - yoff)
+                (w, h) = cast(Tuple[int, int], e.GetProperty('dimensions'))
                 dc.SetBrush(brush)
                 dc.DrawRectangle(int(x), int(y), int(w), int(h))
                 c_box_wid = self.__c_box_wid
-                corners = [(x - c_box_wid / 2.0, y - c_box_wid / 2.0),
-                           (x - c_box_wid / 2.0, y + h - c_box_wid / 2.0),
-                           (x + w - c_box_wid / 2.0, y - c_box_wid / 2.0),
-                           (x + w - c_box_wid / 2.0, y + h - c_box_wid / 2.0)]
-                edges = [(x + w / 2.0 - c_box_wid / 2.0, y - c_box_wid / 2.0),
-                           (x + w / 2.0 - c_box_wid / 2.0, y + h - c_box_wid / 2.0),
-                           (x - c_box_wid / 2.0, y + h / 2.0 - c_box_wid / 2.0),
-                           (x + w - c_box_wid / 2.0, y + h / 2.0 - c_box_wid / 2.0)]
+                corners = [
+                    (x - c_box_wid / 2.0, y - c_box_wid / 2.0),
+                    (x - c_box_wid / 2.0, y + h - c_box_wid / 2.0),
+                    (x + w - c_box_wid / 2.0, y - c_box_wid / 2.0),
+                    (x + w - c_box_wid / 2.0, y + h - c_box_wid / 2.0)
+                ]
+                edges = [
+                    (x + w / 2.0 - c_box_wid / 2.0, y - c_box_wid / 2.0),
+                    (x + w / 2.0 - c_box_wid / 2.0, y + h - c_box_wid / 2.0),
+                    (x - c_box_wid / 2.0, y + h / 2.0 - c_box_wid / 2.0),
+                    (x + w - c_box_wid / 2.0, y + h / 2.0 - c_box_wid / 2.0)
+                ]
                 dc.SetBrush(brush2)
-                # Put the selection 'hit' handles around the corners/middles of edges
+                # Put the selection 'hit' handles around the corners/middles of
+                # edges
                 for coords in corners:
-                    dc.DrawRectangle(int(coords[0]), int(coords[1]), int(c_box_wid), int(c_box_wid))
+                    dc.DrawRectangle(int(coords[0]),
+                                     int(coords[1]),
+                                     int(c_box_wid),
+                                     int(c_box_wid))
                 for coords in edges:
-                    dc.DrawRectangle(int(coords[0]), int(coords[1]), int(c_box_wid), int(c_box_wid))
+                    dc.DrawRectangle(int(coords[0]),
+                                     int(coords[1]),
+                                     int(c_box_wid),
+                                     int(c_box_wid))
             # Draw the rubber-band box if applicable
             if self.__history == self.rubber_band:
                 assert self.__rubberendpt is not None
                 (x, y) = self.__rubberendpt
                 (x, y) = (x - xoff, y - yoff)
-                pen = wx.Pen(self.__rubber_color, 2, style = wx.LONG_DASH)
+                pen = wx.Pen(self.__rubber_color, 2, style=wx.LONG_DASH)
                 dc.SetPen(pen)
                 brush = wx.Brush((255, 255, 255), wx.TRANSPARENT)
                 dc.SetBrush(brush)
-                top_left = (self.__position[0] - xoff, self.__position[1] - yoff)
-                dc.DrawRectangle(int(top_left[0]), int(top_left[1]), int(x - top_left[0]), int(y - top_left[1]))
+                top_left = (self.__position[0] - xoff,
+                            self.__position[1] - yoff)
+                dc.DrawRectangle(int(top_left[0]),
+                                 int(top_left[1]),
+                                 int(x - top_left[0]),
+                                 int(y - top_left[1]))
         elif self.__playback_selected is not None:
             # playback mode has selected object
             e = self.__playback_selected.GetElement()
             pen = wx.Pen(self.__playback_handle_color, 2)
             dc.SetPen(pen)
             dc.SetBrush(brush)
-            (x, y), (w, h) = cast(Tuple[int, int], e.GetProperty('position')), cast(Tuple[int, int], e.GetProperty('dimensions'))
+            (x, y) = cast(Tuple[int, int], e.GetProperty('position'))
             (x, y) = (x - xoff, y - yoff)
+            (w, h) = cast(Tuple[int, int], e.GetProperty('dimensions'))
             dc.DrawRectangle(int(x), int(y), int(w), int(h))
 
     # For detecting collisions with the resize-handles on elements within
@@ -1513,18 +1666,24 @@ class Selection_Mgr:
         # TODO:: Right now, checking every single
         # element. Inefficient. revise later
         for e in self.__selected:
-            (x, y), (w, h) = cast(Tuple[int, int], e.GetProperty('position')), cast(Tuple[int, int], e.GetProperty('dimensions'))
-            corners = [(x - c_box_wid / 2.0, y - c_box_wid / 2.0),
-                       (x - c_box_wid / 2.0, y + h - c_box_wid / 2.0),
-                       (x + w - c_box_wid / 2.0, y - c_box_wid / 2.0),
-                       (x + w - c_box_wid / 2.0, y + h - c_box_wid / 2.0)]
-            edges = [(x + w / 2.0 - c_box_wid / 2.0, y - c_box_wid / 2.0),
-                       (x + w / 2.0 - c_box_wid / 2.0, y + h - c_box_wid / 2.0),
-                       (x - c_box_wid / 2.0, y + h / 2.0 - c_box_wid / 2.0),
-                       (x + w - c_box_wid / 2.0, y + h / 2.0 - c_box_wid / 2.0)]
+            (x, y) = cast(Tuple[int, int], e.GetProperty('position'))
+            (w, h) = cast(Tuple[int, int], e.GetProperty('dimensions'))
+            corners = [
+                (x - c_box_wid / 2.0, y - c_box_wid / 2.0),
+                (x - c_box_wid / 2.0, y + h - c_box_wid / 2.0),
+                (x + w - c_box_wid / 2.0, y - c_box_wid / 2.0),
+                (x + w - c_box_wid / 2.0, y + h - c_box_wid / 2.0)
+            ]
+            edges = [
+                (x + w / 2.0 - c_box_wid / 2.0, y - c_box_wid / 2.0),
+                (x + w / 2.0 - c_box_wid / 2.0, y + h - c_box_wid / 2.0),
+                (x - c_box_wid / 2.0, y + h / 2.0 - c_box_wid / 2.0),
+                (x + w - c_box_wid / 2.0, y + h / 2.0 - c_box_wid / 2.0)
+            ]
             tx, ty = pt
             for i in range(4):
-                if corners[i][0] < tx < corners[i][0] + c_box_wid and corners[i][1] < ty < corners[i][1] + c_box_wid:
+                if corners[i][0] < tx < corners[i][0] + c_box_wid and \
+                   corners[i][1] < ty < corners[i][1] + c_box_wid:
                     # e will become the base element, and i is used for
                     # indexing to the proper callback for the appropriate
                     # resize prep & operations. Reference 'RESIZE_OPTIONS_*'
@@ -1539,7 +1698,8 @@ class Selection_Mgr:
                     self.__prev_x, self.__prev_y = tx, ty
                     # Found a hit!
                     return True
-                if edges[i][0] < tx < edges[i][0] + c_box_wid and edges[i][1] < ty < edges[i][1] + c_box_wid:
+                if edges[i][0] < tx < edges[i][0] + c_box_wid and \
+                   edges[i][1] < ty < edges[i][1] + c_box_wid:
                     self.__resize_direction = (e, i + 4)
                     self.SetCursor()
                     self.__prev_x, self.__prev_y = tx, ty
@@ -1554,7 +1714,9 @@ class Selection_Mgr:
         self.__history = val
         if val == self.resize:
             assert self.__resize_direction is not None
-            self.__RESIZE_PREPARATIONS[self.__resize_direction[1]](self, self.__resize_direction[0])
+            self.__RESIZE_PREPARATIONS[self.__resize_direction[1]](
+                self, self.__resize_direction[0]
+            )
             self.__canvas.FullUpdate()
 
     # Returns the most recent class of event. NOTE: this cannot be used for
@@ -1566,17 +1728,24 @@ class Selection_Mgr:
     #  call to one or more actually specific methods with the resize logic
     #  @param pt The current mouse location
     #  @param mode Which of the available implemented modes of resize to do
-    def Resize(self, pt: Union[wx.Point, Tuple[int, int]], mode: str = 'one') -> None:
+    def Resize(self,
+               pt: Union[wx.Point, Tuple[int, int]],
+               mode: str = 'one') -> None:
         if mode == 'one':
             assert self.__resize_direction is not None
-            self.__RESIZE_OPTIONS_ONE[self.__resize_direction[1]](self, pt, self.__resize_direction[0])
+            self.__RESIZE_OPTIONS_ONE[self.__resize_direction[1]](
+                self, pt, self.__resize_direction[0]
+            )
         if mode == 'two':
             assert self.__resize_direction is not None
-            self.__RESIZE_OPTIONS_TWO[self.__resize_direction[1]](self, pt, self.__resize_direction[0])
+            self.__RESIZE_OPTIONS_TWO[self.__resize_direction[1]](
+                self, pt, self.__resize_direction[0]
+            )
         self.__canvas.FullUpdate()
 
     # Sets the Canvas' cursor according to what sort of resize option the
-    #  mouse is over. @note: cursor options/functionality currently limited 8/23/2012
+    #  mouse is over.
+    #  @note: cursor options/functionality currently limited 8/23/2012
     def SetCursor(self, cursor: Optional[wx.Cursor] = None) -> None:
         if cursor is None:
             assert self.__resize_direction is not None
@@ -1595,7 +1764,8 @@ class Selection_Mgr:
     #  (clk-n-drag)
     #  @param pt Usually the mouse position. The point to use as the opposite
     #  corner from self.__position, in determining the bounding box
-    def CalcAddable(self, pt: Union[wx.Point, Tuple[int, int]]) -> Sequence[Element]:
+    def CalcAddable(self,
+                    pt: Union[wx.Point, Tuple[int, int]]) -> Sequence[Element]:
         res = []
         # convert the coords into top left and bottom right
         tlx = min(pt[0], self.__position[0])
@@ -1608,8 +1778,8 @@ class Selection_Mgr:
             (x1, y1) = (x + w, y + h)
             # Check that the element is completely enclosed by the rubber band
             # box @note: change here for intersection opposed to enclosure
-            if (tlx <= x <= brx and tlx <= x1 <= brx and
-                tly <= y <= bry and tly <= y1 <= bry):
+            if tlx <= x <= brx and tlx <= x1 <= brx and \
+               tly <= y <= bry and tly <= y1 <= bry:
                 # Check that it is either on the temp list for previously
                 # captured via rubber band, or else it is not yet selected
                 if (e in self.__temp_rubber) or not self.IsSelected(e):
@@ -1621,7 +1791,10 @@ class Selection_Mgr:
     #  clk-n-drag)
     #  @param pt Usually the mouse position. The point to use as the opposite
     #  corner from self.__position, in determining the bounding box
-    def CalcRemovable(self, pt: Union[wx.Point, Tuple[int, int]]) -> Sequence[Element]:
+    def CalcRemovable(
+        self,
+        pt: Union[wx.Point, Tuple[int, int]]
+    ) -> Sequence[Element]:
         res = []
         # convert the coords into top left and bottom right
         tlx = min(pt[0], self.__position[0])
@@ -1634,8 +1807,8 @@ class Selection_Mgr:
             (x1, y1) = (x + w, y + h)
             # Check that the element is completely enclosed by the rubber band
             # box @note: change here for intersection opposed to enclosure
-            if (tlx <= x <= brx and tlx <= x1 <= brx and
-                tly <= y <= bry and tly <= y1 <= bry):
+            if tlx <= x <= brx and tlx <= x1 <= brx and \
+               tly <= y <= bry and tly <= y1 <= bry:
                 # Check that it is either on the temp list for previously
                 # captured via rubber band, or else it is currently selected
                 if (e in self.__temp_rubber) or self.IsSelected(e):
@@ -1645,16 +1818,25 @@ class Selection_Mgr:
     # Returns lists and dictionaries of positions and elements in the
     #  selection, organized by their positions (and dimensions). Align,
     #  Indent, Flip, and Stack make use of this
-    def SortByPosition(self) -> Tuple[List[int], Dict[int, List[Element]], List[int], Dict[int, List[Element]], List[int], Dict[Element, int], List[int], Dict[Element, int]]:
+    def SortByPosition(self) -> Tuple[List[int],
+                                      Dict[int, List[Element]],
+                                      List[int],
+                                      Dict[int, List[Element]],
+                                      List[int],
+                                      Dict[Element, int],
+                                      List[int],
+                                      Dict[Element, int]]:
         assert self.__selected
-        exes = [] # A list of the unique x-coords for Element positions, incrs.
-        x_sorted: Dict[int, List[Element]] = {} # Key = x-coord; Val = [Element,Element, ...]
-        whys = [] # A list of the unique y-coords for Element positions, incrs.
-        y_sorted: Dict[int, List[Element]] = {} # Key = y-coord; Val = [Element,Element, ...]
+        exes = []  # A list of the unique x-coords for Element positions, incrs
+        # Key = x-coord; Val = [Element,Element, ...]
+        x_sorted: Dict[int, List[Element]] = {}
+        whys = []  # A list of the unique y-coords for Element positions, incrs
+        # Key = y-coord; Val = [Element,Element, ...]
+        y_sorted: Dict[int, List[Element]] = {}
         plus_w = []
-        w_sorted = {} # Key = Element; Val = width (no extra calls  necessary)
+        w_sorted = {}  # Key = Element; Val = width (no extra calls  necessary)
         plus_h = []
-        h_sorted = {} # Key = Element; Val = height (no extra calls)
+        h_sorted = {}  # Key = Element; Val = height (no extra calls)
         for e in self.__selected:
             x, y = cast(Tuple[int, int], e.GetProperty('position'))
             w, h = cast(Tuple[int, int], e.GetProperty('dimensions'))
@@ -1672,11 +1854,18 @@ class Selection_Mgr:
             w_sorted[e] = w
             plus_h.append(y + h)
             h_sorted[e] = h
-        exes.sort() # Put 'em all in increasing order
+        exes.sort()  # Put 'em all in increasing order
         whys.sort()
         plus_h.sort()
         plus_w.sort()
-        return exes, x_sorted, whys, y_sorted, plus_w, w_sorted, plus_h, h_sorted
+        return (exes,
+                x_sorted,
+                whys,
+                y_sorted,
+                plus_w,
+                w_sorted,
+                plus_h,
+                h_sorted)
 
     # Align the given edge of every Element in the selection to the
     #  corresponding edge of the Element currently located farthest in that
@@ -1687,7 +1876,7 @@ class Selection_Mgr:
             return
 
         self.BeginCheckpoint('align elements')
-        exes, x_sorted, whys, y_sorted, plus_w, w_sorted, plus_h, h_sorted = self.SortByPosition()
+        exes, x_sorted, whys, y_sorted, plus_w, w_sorted, plus_h, h_sorted = self.SortByPosition()  # noqa: E501
         if direction == 'left':
             for e in self.__selected:
                 e.SetProperty('position', (exes[0], e.GetYPos()))
@@ -1700,12 +1889,14 @@ class Selection_Mgr:
             self.__edge = whys[0]
         elif direction == 'bottom':
             for e in self.__selected:
-                e.SetProperty('position', (e.GetXPos(), plus_h[-1] - h_sorted[e]))
+                e.SetProperty('position', (e.GetXPos(),
+                                           plus_h[-1] - h_sorted[e]))
             self.__alignment = self.BOTTOM
             self.__edge = plus_h[-1]
         elif direction == 'right':
             for e in self.__selected:
-                e.SetProperty('position', (plus_w[-1] - w_sorted[e], e.GetYPos()))
+                e.SetProperty('position', (plus_w[-1] - w_sorted[e],
+                                           e.GetYPos()))
             self.__alignment = self.RIGHT
             self.__edge = plus_w[-1]
         self.__canvas.FullUpdate()
@@ -1721,7 +1912,7 @@ class Selection_Mgr:
             return
 
         self.BeginCheckpoint('stack elements')
-        exes, x_sorted, whys, y_sorted, plus_w, w_sorted, plus_h, h_sorted = self.SortByPosition()
+        exes, x_sorted, whys, y_sorted, plus_w, w_sorted, plus_h, h_sorted = self.SortByPosition()  # noqa: E501
         # Stack from left
         if direction == 'left':
             bx = exes[0]

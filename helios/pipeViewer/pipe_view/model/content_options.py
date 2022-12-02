@@ -5,14 +5,23 @@
 
 # Transaction type strings known to the viewer
 from __future__ import annotations
-from typing import Any, Callable, Dict, List, Optional, Tuple, cast, TYPE_CHECKING
+from typing import (Any,
+                    Callable,
+                    Dict,
+                    List,
+                    Optional,
+                    Tuple,
+                    cast,
+                    TYPE_CHECKING)
 
 if TYPE_CHECKING:
     from model.database import Transaction
     from model.database_handle import DatabaseHandle
     from model.element import Element
 
+
 TRANSACTION_TYPES = ['Annotation', 'Instruction', 'MemoryOp']
+
 
 # These methods are used to actually acquire the data specified by the
 #  various content options
@@ -32,7 +41,9 @@ def GetEnd(trans: Transaction, e: Element, *args: Any) -> int:
     return trans.getRight()
 
 
-def GetTransactionID(trans: Transaction, e: Element, *args: Any) -> Optional[int]:
+def GetTransactionID(trans: Transaction,
+                     e: Element,
+                     *args: Any) -> Optional[int]:
     return trans.getTransactionID()
 
 
@@ -46,7 +57,10 @@ def GetLocationTrunc(trans: Transaction,
                      tick: int,
                      loc_vars: Dict[str, str],
                      *args: Any) -> str:
-    return dbhandle.database.location_manager.replaceLocationVariables(GetLocation(trans, e), loc_vars).split('.')[-1]
+    return dbhandle.database.location_manager.replaceLocationVariables(
+        GetLocation(trans, e),
+        loc_vars
+    ).split('.')[-1]
 
 
 def GetLocationID(trans: Transaction,
@@ -55,7 +69,10 @@ def GetLocationID(trans: Transaction,
                   tick: int,
                   loc_vars: Dict[str, str],
                   *args: Any) -> int:
-    return dbhandle.database.location_manager.getLocationInfo(GetLocation(trans, e), loc_vars)[0]
+    return dbhandle.database.location_manager.getLocationInfo(
+        GetLocation(trans, e),
+        loc_vars
+    )[0]
 
 
 def __check_optional_int(val: Optional[int]) -> int:
@@ -101,7 +118,10 @@ def GetClock(trans: Transaction,
              tick: int,
              loc_vars: Dict[str, str],
              *args: Any) -> str:
-    clock_id = dbhandle.database.location_manager.getLocationInfo(GetLocation(trans, e), loc_vars)[2]
+    clock_id = dbhandle.database.location_manager.getLocationInfo(
+        GetLocation(trans, e),
+        loc_vars
+    )[2]
     if clock_id != dbhandle.database.location_manager.NO_CLOCK:
         clk = dbhandle.database.clock_manager.getClockDomain(clock_id)
         return clk.name
@@ -114,7 +134,9 @@ def GetCycle(trans: Transaction,
              tick: int,
              loc_vars: Dict[str, str],
              *args: Any) -> str:
-    clock_id = dbhandle.database.location_manager.getLocationInfo(GetLocation(trans, e), loc_vars)[2]
+    clock_id = dbhandle.database.location_manager.getLocationInfo(
+        GetLocation(trans, e), loc_vars
+    )[2]
     if clock_id != dbhandle.database.location_manager.NO_CLOCK:
         clk = dbhandle.database.clock_manager.getClockDomain(clock_id)
         return str(clk.HypercycleToLocal(tick))
@@ -151,62 +173,89 @@ def IsContinued(trans: Transaction, e: Element, *args: Any) -> bool:
 #  content, and a description of each content option. Add additional content
 #  options in this dictionary, and write the related function above
 __CONTENT_PROC: Dict[str, Tuple[Callable, str]] = {
-    'type':                  (GetType, "Whether the transaction is an annotation, instruction, or memory_op"),
-    'start':                 (GetStart, "Start time in ticks"),
-    'end':                   (GetEnd, "End time in ticks"),
-    'start_cycle':           (GetStartCycle, "Start time in location's clock domain"),
-    'end_cycle':             (GetEndCycle, "End time in location's clock domain"),
-    'transaction':           (GetTransactionID, "Transaction ID"),
-    'loc':                   (GetLocation, "Location Name (string)"),
-    'loc_id':                (GetLocationID, "Internal Location ID (int)"),
-    'truncated_location':    (GetLocationTrunc, "Location Name Truncated (string)"),
-    'flags':                 (GetFlags, "Flags from transaction"),
-    'parent':                (GetParent, "Parent Transaction ID"),
-    'opcode':                (GetOpcode, "instruction opcode (\'-\' if transaction is a memory op"),
-    'vaddr':                 (GetVAddr, "instruction/mem-op virtual address"),
-    'paddr':                 (GetRAddr, "instruction/mem-op physical address"),
-    'annotation':            (GetAnnotation, "Show annotation selected by \'annotation\' property"),
-    'auto_color_annotation': (GetAnnotation, "Show annotation selected by \'annotation\' property colored based on seq ID"),
-    'auto_color_anno_notext':(GetAnnotation, "Color element based on seq ID, but do not display annotation"),
-    'auto_color_anno_nomunge':(GetAnnotation, "Color element based on seq ID, but do not munge text"),
-    'caption':               (GetCaption, "Caption (static text) from Element \'caption\' property"),
-    'image':                 (GetImage, "Image (currently hardcoded to nothing)"),
-    'clock':                 (GetClock, "Name of clock associated with this location"),
-    'cycle':                 (GetCycle, "Current Cycle of clock associated with this location"),
-    'tick_duration':         (GetTickDuration, "Duration of this transaction in ticks"),
-    'continued':             (IsContinued, "Whether the transaction is continued over a heartbeat interval")
+    'type':                    (GetType,
+                                "Whether the transaction is an annotation, "
+                                "instruction, or memory_op"),
+    'start':                   (GetStart, "Start time in ticks"),
+    'end':                     (GetEnd, "End time in ticks"),
+    'start_cycle':             (GetStartCycle,
+                                "Start time in location's clock domain"),
+    'end_cycle':               (GetEndCycle,
+                                "End time in location's clock domain"),
+    'transaction':             (GetTransactionID, "Transaction ID"),
+    'loc':                     (GetLocation, "Location Name (string)"),
+    'loc_id':                  (GetLocationID, "Internal Location ID (int)"),
+    'truncated_location':      (GetLocationTrunc,
+                                "Location Name Truncated (string)"),
+    'flags':                   (GetFlags, "Flags from transaction"),
+    'parent':                  (GetParent, "Parent Transaction ID"),
+    'opcode':                  (GetOpcode,
+                                "instruction opcode (\'-\' if transaction is "
+                                "a memory op"),
+    'vaddr':                   (GetVAddr,
+                                "instruction/mem-op virtual address"),
+    'paddr':                   (GetRAddr,
+                                "instruction/mem-op physical address"),
+    'annotation':              (GetAnnotation,
+                                "Show annotation selected by \'annotation\' "
+                                "property"),
+    'auto_color_annotation':   (GetAnnotation,
+                                "Show annotation selected by \'annotation\' "
+                                "property colored based on seq ID"),
+    'auto_color_anno_notext':  (GetAnnotation,
+                                "Color element based on seq ID, but do not "
+                                "display annotation"),
+    'auto_color_anno_nomunge': (GetAnnotation,
+                                "Color element based on seq ID, but do not "
+                                "munge text"),
+    'caption':                 (GetCaption,
+                                "Caption (static text) from Element "
+                                "\'caption\' property"),
+    'image':                   (GetImage,
+                                "Image (currently hardcoded to nothing)"),
+    'clock':                   (GetClock,
+                                "Name of clock associated with this location"),
+    'cycle':                   (GetCycle,
+                                "Current Cycle of clock associated with this "
+                                "location"),
+    'tick_duration':           (GetTickDuration,
+                                "Duration of this transaction in ticks"),
+    'continued':               (IsContinued,
+                                "Whether the transaction is continued over a "
+                                "heartbeat interval")
 }
 
 # The dictionary with all display states and the string which will be used
 #  to override the val of an Element Value
 __DISPLAY_STATES = {
-    'normal':   '', # Display whatever belongs inside the element
-    'no trans': '', # Display empy space
-    'no data':  '#NO! ', # Display a MS Excel-style "#NO! ContentOption" Where
-                         # ContentOption is some inappropriate value for content for a transaction
-    'no loc':   '?' # Display when the element has a location string that does not refer to an
-                    # actual location in the locations file
+    'normal':   '',  # Display whatever belongs inside the element
+    'no trans': '',  # Display empy space
+    'no data':  '#NO! ',  # Display a MS Excel-style "#NO! ContentOption" Where
+                          # ContentOption is some inappropriate value for
+                          # content for a transaction
+    'no loc':   '?'  # Display when the element has a location string that does
+                     # not refer to an actual location in the locations file
 }
 
 # A listing of the content options which do not require a transaction
 #  from a stabbing query in order to be determined. Use a dictionary for faster
 #  lookup in the critical path
-NO_TRANSACTIONS_REQUIRED = {'caption':None,
-                            'clock':None,
-                            'loc':None,
-                            'loc_id':None,
-                            'truncated_location':None,
-                            'cycle':None}
+NO_TRANSACTIONS_REQUIRED = {'caption': None,
+                            'clock': None,
+                            'loc': None,
+                            'loc_id': None,
+                            'truncated_location': None,
+                            'cycle': None}
 
 # A listing of the content options which do not require a database at all.
 #  Use a dictionary for faster lookup in the critical path
-NO_DATABASE_REQUIRED = {'caption':None}
+NO_DATABASE_REQUIRED = {'caption': None}
 
 # Check NO_DATABASE_REQUIRED table
 for x in NO_DATABASE_REQUIRED:
     assert x in NO_TRANSACTIONS_REQUIRED, \
-           'All content types specified in NO_DATABASE_REQUIRED must also be found in ' \
-           'NO_TRANSACTIONS_REQUIRED. "{}" violated this'.format(x)
+        'All content types specified in NO_DATABASE_REQUIRED must also be ' \
+        f'found in NO_TRANSACTIONS_REQUIRED. "{x}" violated this'
 
 
 def OverrideState(key: str) -> str:

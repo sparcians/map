@@ -118,7 +118,7 @@ link_args = wx_link_args[:]
 
 dbg_build = os.environ.get("DBG_BUILD", 0)
 debug = False
-if(dbg_build in (1, '1', 'true', 'True', 'TRUE')):
+if dbg_build in (1, '1', 'true', 'True', 'TRUE'):
     print('Building in DEBUG mode')
     compile_args.extend(('-g3', '-O0'))
     debug = True

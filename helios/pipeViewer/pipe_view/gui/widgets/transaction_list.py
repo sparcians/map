@@ -10,11 +10,18 @@ if TYPE_CHECKING:
 TransactionListBaseEntry = Dict[str, Any]
 TransactionListEntry = Union['SearchResult', TransactionListBaseEntry]
 
+
 # This class is a GUI list control element that shows transactions.
 class TransactionList(wx.ListCtrl):
-
-    def __init__(self, parent: wx.Frame, canvas: Layout_Canvas, name: str = '') -> None:
-        wx.ListCtrl.__init__(self, parent = parent, id = wx.NewId(), name = name, style = wx.LC_REPORT | wx.SUNKEN_BORDER)
+    def __init__(self,
+                 parent: wx.Frame,
+                 canvas: Layout_Canvas,
+                 name: str = '') -> None:
+        wx.ListCtrl.__init__(self,
+                             parent=parent,
+                             id=wx.NewId(),
+                             name=name,
+                             style=wx.LC_REPORT | wx.SUNKEN_BORDER)
         self.SetFont(GetMonospaceFont(canvas.GetSettings().layout_font_size))
 
         # used for coloring
@@ -22,7 +29,9 @@ class TransactionList(wx.ListCtrl):
         # list of dictionary of properties
         self.__transactions: List[TransactionListEntry] = []
         # properties to show.
-        self.__properties: Tuple[str, ...] = ('start', 'location', 'annotation') # must have at least 1
+        self.__properties: Tuple[str, ...] = ('start',  # must have at least 1
+                                              'location',
+                                              'annotation')
         # insertion point for elements at end
         self.__current_new_idx = 0
         self.__colorize = True
@@ -69,12 +78,15 @@ class TransactionList(wx.ListCtrl):
     def GetTransaction(self, index: int) -> TransactionListEntry:
         return self.__transactions[index]
 
-    def __AddGraphicalTransaction(self, transaction: TransactionListEntry) -> None:
-        self.InsertItem(self.__current_new_idx, str(transaction.get(self.__properties[0])))
+    def __AddGraphicalTransaction(self,
+                                  transaction: TransactionListEntry) -> None:
+        self.InsertItem(self.__current_new_idx,
+                        str(transaction.get(self.__properties[0])))
         self.RefreshTransaction(self.__current_new_idx)
         self.__current_new_idx += 1
 
-    # Add a new element to bottom of list. New item must be dictionary of properties.
+    # Add a new element to bottom of list
+    # New item must be dictionary of properties
     def Add(self, transaction_properties: TransactionListEntry) -> int:
         self.__transactions.append(transaction_properties)
         self.__AddGraphicalTransaction(transaction_properties)
