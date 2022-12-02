@@ -198,11 +198,7 @@ namespace sparta
         void schedule(Clock::Cycle delay, const Clock *clk)
         {
             sparta_assert(clk != nullptr);
-            Scheduler::Tick next_tick = clk->getTick(delay);
-            if(next_tick) {
-                next_tick -= clk->getScheduler()->getCurrentTick() % clk->getPeriod();
-            }
-            this->scheduleRelativeTick(next_tick,
+            this->scheduleRelativeTick(clk->getTick(delay),
                                        clk->getScheduler());
         }
 
