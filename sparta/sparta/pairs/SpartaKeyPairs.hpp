@@ -412,7 +412,7 @@ namespace sparta {
 
         /**
          * \brief populate the formatting tags to make this key's value
-         * display in proper format. Old way of doing stuff.
+         * display in proper format.
          */
         void setFormatter(const FormatFlags & formatter) {
             switch(formatter) {
