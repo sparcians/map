@@ -1,3 +1,6 @@
+# Stub definitions for the transactiondb library
+# Cython isn't very good at generating these automatically yet
+
 from typing import Callable, ClassVar, List, Optional, Union
 
 class Transaction:

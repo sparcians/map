@@ -1,3 +1,9 @@
+# wxPython doesn't (as of Dec. 2022) provide type hints in a format that mypy can use.
+# However, this is the one library that we need to type-check the most - passing the wrong
+# types (for example, passing floats when ints are expected) can cause all kinds of hard to
+# debug rendering bugs. So, this file provides stub definitions for all of the wxPython
+# classes, functions, and values that we use in Argos.
+
 from __future__ import annotations
 from types import TracebackType
 from typing import Any, Callable, Iterator, List, Optional, Sequence, Tuple, Type, Union, overload

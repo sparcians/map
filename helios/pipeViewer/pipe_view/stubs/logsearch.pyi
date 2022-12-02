@@ -1,3 +1,6 @@
+# Stub definitions for the logsearch library
+# Cython isn't very good at generating these automatically yet
+
 from typing import Any
 
 _DUMMY: str

@@ -1,3 +1,6 @@
+# Stub definitions for the renderer core library
+# Cython isn't very good at generating these automatically yet
+
 from typing import Dict, Optional, Tuple, Union
 import wx
 
