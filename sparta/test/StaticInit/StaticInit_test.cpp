@@ -28,7 +28,7 @@
  * which was fixed.
  */
 
-TEST_INIT;
+TEST_INIT
 
 using sparta::StatisticDef;
 using sparta::StatisticInstance;

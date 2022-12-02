@@ -1669,7 +1669,7 @@ void TreeNode::incrementGetChildCount_(const std::string& name) const {
                   << "regularly while the simulator is running because this is "
                   << "slow" << std::endl;
     }
-};
+}
 
 // Private Tree-Building Helpers
 

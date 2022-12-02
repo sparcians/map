@@ -24,7 +24,7 @@
 
 #include "WeightedContextCounter.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 void generateReport(sparta::RootTreeNode * root);
 

@@ -225,4 +225,4 @@ private:
 
 }; // class EnumHistogram
 
-}; // namespace sparta
+} // namespace sparta

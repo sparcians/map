@@ -75,10 +75,10 @@ To build your own copy, after cloning the repo, ensure Doxygen and dot (part of 
 The tested dependencies are maintained in the `conda.recipe/` directory at the toplevel of the repository.  To install packages using that same tested recipe:
 1. If you already have `conda` or `mamba` installed and in your `PATH`, skip to step 3.
 1. Download and install the latest [miniforge installer](https://github.com/conda-forge/miniforge#miniforge3). For example, on linux running on x86_64 `wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh && bash ./Miniforge3-Linux-x86_64.sh`.  Make sure to `activate` or start a new shell as directed by the installer.
-1. `conda install yq` it is not a dependency of Sparta unless you are using the script to create an environment.  The script will tell you to install it if you don't have it in your path.  
+1. `conda install yq` it is not a dependency of Sparta unless you are using the script to create an environment.  The script will tell you to install it if you don't have it in your path.
 1. `./scripts/create_conda_env.sh <environment_name> dev` using whatever name you would like in place of `<environment_name>`to create a named [conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) containing all of the dependencies needed to **dev**elop Sparta.   Be patient, this takes a few minutes.
 1. `conda activate <environment_name>` using the `<environment_name>` you created above.
-1. Follow the normal cmake-based build steps in the [Quick Start](#quick-start-for-the-impatient-yet-confident).  After running cmake for a build, you should notice that `USING_CONDA` has been set because the version string reported by the conda-forge compiler contains the string "conda". 
+1. Follow the normal cmake-based build steps in the [Quick Start](#quick-start-for-the-impatient-yet-confident).  After running cmake for a build, you should notice that `USING_CONDA` has been set because the version string reported by the conda-forge compiler contains the string "conda".
 
 Using conda is not a requirement for building sparta but it is *one* way to install the required dependencies.  See below for alternatives on MacOS and Ubuntu.
 
@@ -180,6 +180,36 @@ This can be done generally via "sudo apt install <package name>"
  from the project root directory. Delete the `CMakeCache.txt` file in
  the project root directory and try the `cmake ..` command again from
  the `build` subdirectory.
+
+## Developing on Sparta
+
+Bug fixes, enhancements are welcomed and encouraged.  But there are a
+few rules...
+
+* Rule1: Any bug fix/enhancement _must be accompanied_ with a test
+  that illustrates the bug fix/enhancement.  No test == no acceptance.
+  Documentation fixes obviously don't require this...
+
+* Rule2: Adhere to Sparta's Coding Style. Look at the existing code
+  and mimic it.  Don't mix another preferred style with Sparta's.
+  Stick with Sparta's.
+
+* There are simple style rules:
+     1. Class names are `CamelCase` with the Camel's head up: `class SpartaHandler`
+     1. Public class method names are `camelCase` with the camel's head down: `void myMethod()`
+     1. Private/protected class method names are `camelCase_` with the camel's head down and a trailing `_`: `void myMethod_()`
+     1. Member variable names that are `private` or `protected` must
+        be all `lower_case_` with a trailing `_` so developers know a
+        memory variable is private or protected.  Placing an `_`
+        between words: preferred.
+     1. Header file guards are `#pragma once`
+     1. Any function/class from `std` namespace must always be
+        explicit: `std::vector` NOT `vector`.  Never use `using
+        namespace <blah>;` in *any* header file
+     1. Consider using source files for non-critical path code
+     1. Try to keep methods short and concise (yes, we break this rule a bit)
+     1. Do not go nuts with `auto`.  This `auto foo(const auto & in)` is ... irritating
+     1. All public APIs *must be doxygenated*.  No exceptions.
 
 ## CppCheck Support
 Note that it is recomended to keep cppcheck up-to-date

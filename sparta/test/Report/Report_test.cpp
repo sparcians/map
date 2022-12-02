@@ -23,7 +23,7 @@
  * \brief Test for Report
  */
 
-TEST_INIT;
+TEST_INIT
 
 using sparta::Scheduler;
 using sparta::Counter;

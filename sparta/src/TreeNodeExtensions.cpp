@@ -423,21 +423,6 @@ private:
     std::string def_file_;
 };
 
-constexpr char TreeNodeExtensionFileParserYAML::
-    TreeNodeExtensionFileEventHandlerYAML::KEY_CONTENT[];
-
-constexpr char TreeNodeExtensionFileParserYAML::
-    TreeNodeExtensionFileEventHandlerYAML::KEY_EXTENSION[];
-
-constexpr char TreeNodeExtensionFileParserYAML::
-    TreeNodeExtensionFileEventHandlerYAML::KEY_NODE[];
-
-constexpr char TreeNodeExtensionFileParserYAML::
-    TreeNodeExtensionFileEventHandlerYAML::KEY_NAME[];
-
-constexpr char TreeNodeExtensionFileParserYAML::
-    TreeNodeExtensionFileEventHandlerYAML::KEY_PARAMS[];
-
 /*!
  * \brief Given a tree node extension YAML file, parse it out into individual
  * descriptors, one for each extension defined in the file.

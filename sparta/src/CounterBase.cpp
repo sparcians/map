@@ -16,8 +16,6 @@
 #include "sparta/statistics/StatisticDef.hpp"
 #include "sparta/simulation/TreeNode.hpp"
 
-constexpr char sparta::StatisticSet::NODE_NAME[];
-
 // Statistic Set
 void sparta::StatisticDef::ensureParentIsStatisticSet_(sparta::TreeNode* parent){
     if(dynamic_cast<sparta::StatisticSet*>(parent) == nullptr){

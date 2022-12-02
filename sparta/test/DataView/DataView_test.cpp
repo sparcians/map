@@ -12,7 +12,7 @@
  * \brief Test for DataView
  */
 
-TEST_INIT;
+TEST_INIT
 
 using sparta::ArchData;
 using sparta::ArchDataSegment;

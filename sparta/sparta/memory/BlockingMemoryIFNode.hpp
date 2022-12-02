@@ -531,5 +531,5 @@ namespace sparta
             ReadNotiSrc::data_type post_read_noti_data_; //!< Data associated with a post-read notification
 
         }; // class BlockingMemoryIFNode
-    }; // namespace memory
-}; // namespace sparta
+    } // namespace memory
+} // namespace sparta

@@ -7,7 +7,7 @@
 #include "sparta/simulation/ClockManager.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 using sparta::Clock;
 using sparta::Scheduler;

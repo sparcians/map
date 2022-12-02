@@ -234,7 +234,6 @@ namespace sparta
             std::vector<CacheItemT> ways_;
         }; // class Cache
 
-    }; // namespace cache
+    } // namespace cache
 
-}; // namespace sparta
-
+} // namespace sparta

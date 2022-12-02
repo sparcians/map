@@ -805,10 +805,3 @@ inline std::ostream& operator<< (std::ostream& out, sparta::ParameterSet const *
     out << ps->stringize(true); // pretty
     return out;
 }
-
-//! \brief Required in simulator source to define some globals.
-#define SPARTA_PARAMETER_BODY \
-    constexpr char sparta::ParameterSet::NODE_NAME[];                  \
-    constexpr char sparta::ParameterSet::PARAMETER_SET_NODE_TAG[];     \
-
-
