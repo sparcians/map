@@ -1677,130 +1677,140 @@ private:
         //std::cout << "Loading [" << start_inclusive << "," << end_exclusive << ")"
         //    << " => starting with "<<  chunk_start << std::endl;
 
-        // Flag any nodes before the load range for deletion
-        node_iterator_t itr = nodes_.begin();
-        if(itr != nodes_.end()){
-            // Window begins where there is valid data
-            window_.start = itr->getStartInclusive();
-            for(; itr != nodes_.end(); ++itr) {
-                if(itr->getEndExclusive() <= cur_pos){
-                    if(verbose_){
-                        std::cout << "(main) Flagging for deletion: " << itr->stringize() << std::endl;
-                    }
-                    itr->flagForDeletion();
-                }else{
-                    // Stop walking through these nodes because this one is after
-                    // (or overlaps) the current load position
-                    break;
-                }
-            }
-        }else{
-            // Window begins where data will first be loaded
-            window_.start = cur_pos;
-        }
-
-        // Insert nodes until cur_pos reaches the end of the range
-        std::vector<uint64_t> chunks_to_read; // Chunks containing newly created nodes
-        std::vector<Node*> added_nodes;
-        while(cur_pos < end_exclusive){
-
-            // Incomplete nodes are ok. Just don't read their data
-            //// Check for incomplete (BAD) nodes.
-            //// These can occur if an exception occurs during loading
-            //if(itr != nodes_.end() && itr->isComplete() == false){
-            //    // Remove this incomplete node
-            //    std::cerr << "Incomplete node encountered: " << itr->stringize()
-            //        << ", removing and reloading." << std::endl;
-            //    node_iterator_t temp = itr;
-            //    ++itr; // Move to next, allowing a replacement to be added
-            //    nodes_.erase(temp);
-            //}
-
-            // Add or skip the current element
-            if(itr == nodes_.end() ||
-                cur_pos < itr->getStartInclusive()){
-                // Assuming exclusive right endpoint of transactions
-                //nodes_.emplace(itr, Node(cur_pos, chunk_size_, num_locations_));
-                sparta_assert(cur_pos % node_size_ == 0);
-                nodes_.emplace(itr, cur_pos, node_size_, num_locations_);
-                added_nodes.push_back(&*(std::prev(itr)));
-                if(verbose_){
-                    std::cout << "(main)  Inserting Node  @ " << cur_pos << " size " << node_size_ << std::endl;
-                }
-
-                // Update window
-                if(window_.start > cur_pos){
-                    window_.start = cur_pos;
-                }
-
-                // Defferred read to avoid walking over the same chunks when
-                const uint64_t chunk_start = chunk_size_ * (cur_pos/chunk_size_);
-                if(chunks_to_read.size() == 0 or chunks_to_read[chunks_to_read.size() - 1] != chunk_start){
-                    chunks_to_read.push_back(chunk_start);
-                }
-            }else{
-                if(verbose_){
-                    std::cout << "(main) Skipping insertion @ " << cur_pos << " ended="
-                        << (itr==nodes_.end()) << ", node start=" << itr->getStartInclusive() << std::endl;
-                }
-                ++itr;
-            }
-            cur_pos += node_size_;
-        }
-
-        smart_reader_.lock();
-
-        // Load the chunks which broadcast to 1 or more Nodes
-        // Because node_size_ is an even division of chunk_size_, only the chunk
-        // at chunk_start must be read
-        for(uint64_t chunk_start : chunks_to_read) {
-            double t_start = 0;
-            if(verbose_){
-                std::cout << "(main) Loading <CHUNK> @ " << chunk_start << " size " << chunk_start + chunk_size_ << std::endl;
-                t_start = sparta::TimeManager::getTimeManager().getAbsoluteSeconds();
-            }
-            smart_reader_.loadDataToNodes(chunk_start, chunk_start + chunk_size_, &added_nodes);
-            if(verbose_){
-                auto t_delta = sparta::TimeManager::getTimeManager().getAbsoluteSeconds() - t_start;
-                std::cout << "(main)    took " << t_delta << " seconds" << std::endl;
-            }
-        }
-
-        // Mark fully loaded, newly constructed nodes as valid
-        for(auto& n : added_nodes){
-            n->markComplete();
-            if(verbose_){
-                std::cout << "(main) marking complete: " << n->stringize() << std::endl;
-            }
-        }
-
-        smart_reader_.unlock();
-
-        if(verbose_){
-            std::cout << "(main) Added nodes marked as complete" << std::endl;
-        }
-
-        // Walk through nodes out of the load range and flag them for deletion
-        if(itr != nodes_.end()){
-            if(cur_pos == itr->getStartInclusive()){
-                // Contiguous nodes, flag for deletion
+        // This scope block ensures we don't try to reuse itr after we're finished with it
+        {
+            // Flag any nodes before the load range for deletion
+            node_iterator_t itr = nodes_.begin();
+            if(itr != nodes_.end()){
+                // Window begins where there is valid data
+                window_.start = itr->getStartInclusive();
                 for(; itr != nodes_.end(); ++itr) {
-                    if(verbose_){
-                        std::cout << "(main) Flagging for deletion: " << itr->stringize() << std::endl;
+                    if(itr->getEndExclusive() <= cur_pos){
+                        if(verbose_){
+                            std::cout << "(main) Flagging for deletion: " << itr->stringize() << std::endl;
+                        }
+                        itr->flagForDeletion();
+                    }else{
+                        // Stop walking through these nodes because this one is after
+                        // (or overlaps) the current load position
+                        break;
                     }
-                    itr->flagForDeletion();
-                    cur_pos = itr->getEndExclusive();
                 }
             }else{
-                // Non-contiguous nodes. Gaps are not allowed. Remove immediately
-                for(node_iterator_t temp = itr++; itr != nodes_.end(); temp = itr++) {
-                    if(verbose_){
-                        std::cout << "(main) Erasing non-contiguous node following data: "
-                            << temp->stringize() << std::endl;
+                // Window begins where data will first be loaded
+                window_.start = cur_pos;
+            }
+
+            // Insert nodes until cur_pos reaches the end of the range
+            std::vector<uint64_t> chunks_to_read; // Chunks containing newly created nodes
+            std::vector<Node*> added_nodes;
+            while(cur_pos < end_exclusive){
+
+                // Incomplete nodes are ok. Just don't read their data
+                //// Check for incomplete (BAD) nodes.
+                //// These can occur if an exception occurs during loading
+                //if(itr != nodes_.end() && itr->isComplete() == false){
+                //    // Remove this incomplete node
+                //    std::cerr << "Incomplete node encountered: " << itr->stringize()
+                //        << ", removing and reloading." << std::endl;
+                //    node_iterator_t temp = itr;
+                //    ++itr; // Move to next, allowing a replacement to be added
+                //    nodes_.erase(temp);
+                //}
+
+                // Add or skip the current element
+                if(itr == nodes_.end() ||
+                    cur_pos < itr->getStartInclusive()){
+                    // Assuming exclusive right endpoint of transactions
+                    //nodes_.emplace(itr, Node(cur_pos, chunk_size_, num_locations_));
+                    sparta_assert(cur_pos % node_size_ == 0);
+                    const auto new_itr = nodes_.emplace(itr, cur_pos, node_size_, num_locations_);
+                    added_nodes.push_back(&*(new_itr));
+                    if(verbose_) {
+                        std::cout << "(main)  Inserting Node  @ " << cur_pos << " size " << node_size_ << std::endl;
                     }
-                    nodes_.erase(temp);
+
+                    // Update window
+                    if(window_.start > cur_pos){
+                        window_.start = cur_pos;
+                    }
+
+                    // Defferred read to avoid walking over the same chunks when
+                    const uint64_t chunk_start = chunk_size_ * (cur_pos/chunk_size_);
+                    if(chunks_to_read.size() == 0 or chunks_to_read[chunks_to_read.size() - 1] != chunk_start){
+                        chunks_to_read.push_back(chunk_start);
+                    }
+                }else{
+                    if(verbose_){
+                        std::cout << "(main) Skipping insertion @ " << cur_pos << " ended="
+                            << (itr==nodes_.end()) << ", node start=" << itr->getStartInclusive() << std::endl;
+                    }
+                    ++itr;
+                }
+                cur_pos += node_size_;
+            }
+
+            smart_reader_.lock();
+
+            // Load the chunks which broadcast to 1 or more Nodes
+            // Because node_size_ is an even division of chunk_size_, only the chunk
+            // at chunk_start must be read
+            for(uint64_t chunk_start : chunks_to_read) {
+                double t_start = 0;
+                if(verbose_){
+                    std::cout << "(main) Loading <CHUNK> @ " << chunk_start << " size " << chunk_start + chunk_size_ << std::endl;
+                    t_start = sparta::TimeManager::getTimeManager().getAbsoluteSeconds();
+                }
+                smart_reader_.loadDataToNodes(chunk_start, chunk_start + chunk_size_, &added_nodes);
+                if(verbose_){
+                    auto t_delta = sparta::TimeManager::getTimeManager().getAbsoluteSeconds() - t_start;
+                    std::cout << "(main)    took " << t_delta << " seconds" << std::endl;
                 }
             }
+
+            // Mark fully loaded, newly constructed nodes as valid
+            for(auto& n : added_nodes){
+                n->markComplete();
+                if(verbose_){
+                    std::cout << "(main) marking complete: " << n->stringize() << std::endl;
+                }
+            }
+
+            smart_reader_.unlock();
+
+            if(verbose_){
+                std::cout << "(main) Added nodes marked as complete" << std::endl;
+            }
+
+            // Walk through nodes out of the load range and flag them for deletion
+            if(itr != nodes_.end()) {
+                if(cur_pos == itr->getStartInclusive()) {
+                    // Contiguous nodes, flag for deletion
+
+                    for(; itr != nodes_.end(); ++itr) {
+                        if(verbose_) {
+                            std::cout << "(main) Flagging for deletion: " << itr->stringize() << std::endl;
+                        }
+                        itr->flagForDeletion();
+                        cur_pos = itr->getEndExclusive();
+                    }
+                }
+                else{
+                    // Non-contiguous nodes. Gaps are not allowed. Remove immediately
+                    if(verbose_) {
+                        while(itr != nodes_.end()) {
+                            std::cout << "(main) Erasing non-contiguous node following data: "
+                                      << itr->stringize() << std::endl;
+                            itr = nodes_.erase(itr);
+                        }
+                    }
+                    else {
+                        // Use the range erase method if we don't need to print any messages
+                        nodes_.erase(itr, nodes_.end());
+                    }
+                }
+            }
+            // We should be done with itr now, so we don't bother updating it in the above block
         }
 
         // New cur pos at the end of the data
@@ -1824,7 +1834,7 @@ private:
                 if(verbose_){
                     std::cout << "(main) CAN delete node " << n->stringize() << std::endl;
                 }
-                if(true == keeper_encountered){
+                if(keeper_encountered){
                     // Move window end to beginning of this node
                     // This should be hit on the first node after a stream of 1
                     // or more nodes that were kept (not deleted)
@@ -1841,7 +1851,7 @@ private:
                     std::cout << "(main) can NOT delete node " << n->stringize() << std::endl;
                 }
                 // Encountered first node that will be kept in the list
-                if(false == keeper_encountered){
+                if(!keeper_encountered){
                     // This is the first node to keep.
                     // Move window start to start of this node
                     window_.start = n->getStartInclusive();
