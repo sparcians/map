@@ -47,7 +47,6 @@ class SelectLayoutDlg(wx.Dialog):
         )
         info.Wrap(self.GetSize()[0]-5)
 
-        sbox_src = wx.StaticBox(self, label='Layout File')
         self.__rad_blank = wx.RadioButton(self, -1, 'Create a blank Layout')
         self.__rad_load = wx.RadioButton(
             self,
@@ -62,7 +61,6 @@ class SelectLayoutDlg(wx.Dialog):
         self.__orig_txt_colour = self.__file_txt.GetBackgroundColour()
         file_btn = wx.Button(self.__panel_sel_file, id=wx.ID_FIND)
 
-        sbox_options = wx.StaticBox(self, label='Layout Options')
         self.__chk_shared = wx.CheckBox(
             self,
             label='Shared Layout (NOT YET IMPLEMENTED)'
@@ -98,31 +96,25 @@ class SelectLayoutDlg(wx.Dialog):
         sbs_src_border.Add((1, 15), 0, wx.EXPAND)
         sbs_src_border.Add(self.__panel_sel_file, 0, wx.EXPAND)
 
-        sbs_src = wx.StaticBoxSizer(sbox_src, wx.VERTICAL)
+        sbs_src = wx.StaticBoxSizer(wx.VERTICAL, self, 'Layout File')
         sbs_src.Add(sbs_src_border, 1, wx.EXPAND | wx.ALL, 10)
 
         sbs_opts_border = wx.BoxSizer(wx.VERTICAL)
         sbs_opts_border.Add(self.__chk_shared, 0, wx.EXPAND)
 
-        sbs_opts = wx.StaticBoxSizer(sbox_options, wx.VERTICAL)
+        sbs_opts = wx.StaticBoxSizer(wx.VERTICAL, self, 'Layout Options')
         sbs_opts.Add(sbs_opts_border, 1, wx.EXPAND | wx.ALL, 10)
 
         buttons_row = wx.BoxSizer(wx.HORIZONTAL)
         buttons_row.Add(quit_btn, 0, wx.ALIGN_LEFT | wx.ALIGN_BOTTOM)
         buttons_row.Add((1, 1), 1, wx.EXPAND)
         buttons_row.Add(self.__ok_btn, 0, wx.ALIGN_BOTTOM)
-        ok_best_size = self.__ok_btn.GetBestSize()
-        quit_best_size = quit_btn.GetBestSize()
-        min_width = max(ok_best_size.GetWidth(), quit_best_size.GetWidth())
-        min_height = 60
-        min_size = wx.Size(min_width, min_height)
-        buttons_row.SetMinSize(min_size)
 
         sz = wx.BoxSizer(wx.VERTICAL)
         sz.Add(info, 0, wx.EXPAND)
-        sz.Add(sbs_src, 0, wx.EXPAND)
+        sz.Add(sbs_src, 1, wx.EXPAND)
         sz.Add((1, 15), 0, wx.EXPAND)
-        sz.Add(sbs_opts, 0, wx.EXPAND)
+        sz.Add(sbs_opts, 1, wx.EXPAND)
         sz.Add((1, 15), 0, wx.EXPAND)
         sz.Add(buttons_row, 0, wx.EXPAND)
 
@@ -145,8 +137,7 @@ class SelectLayoutDlg(wx.Dialog):
     #  found and None if no database was chosen
     #
     #  This should be checked after invoking ShowModal() on this object
-    def GetFilename(self) -> str:
-        assert self.__filename is not None
+    def GetFilename(self) -> Optional[str]:
         return self.__filename
 
     # Handler for Close button

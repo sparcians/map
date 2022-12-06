@@ -50,12 +50,14 @@ class ArgosSettings:
             os.makedirs(full_config_dir)
 
         self.__config = ArgosSettings.__DEFAULT_CONFIG.copy()
+        # Grab a reference to open() so we don't get any errors when at exit
+        self.__open = open
 
         if not os.path.exists(self.__config_json_path):
             self.__dirty = True
             self.save()
         else:
-            with open(self.__config_json_path, 'r') as f:
+            with self.__open(self.__config_json_path, 'r') as f:
                 self.__config.update(json.load(f))
 
         for k, v in self.__config.items():
@@ -66,7 +68,7 @@ class ArgosSettings:
 
     def save(self) -> None:
         if self.__dirty:
-            with open(self.__config_json_path, 'w') as f:
+            with self.__open(self.__config_json_path, 'w') as f:
                 json.dump(self.__config, f)
                 self.__dirty = False
 

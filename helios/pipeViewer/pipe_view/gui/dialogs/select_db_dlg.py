@@ -7,6 +7,7 @@ from typing import Optional
 import wx
 import wx.lib.scrolledpanel as scrolledpanel
 
+
 # Dialog for selecting an Argos database.
 #
 #  Use ShowModal to display the dialog and then use GetPrefix to see selected
@@ -183,7 +184,6 @@ class SelectDatabaseDlg(wx.Dialog):
         self.__ok_btn.Enable(valid)
 
         if valid:
-            #print("***" + filepath[:suffix_pos])
             self.__prefix = filepath[:suffix_pos]
             self.__file_txt.SetBackgroundColour(wx.Colour(235, 255, 235))
         else:

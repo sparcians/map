@@ -497,7 +497,7 @@ class Layout_Frame(wx.Frame):
         # Need to send a resize event to draw the toolbar correctly in v2.x
         self.SendSizeEvent()
         # Update the mouse location in the edit bar
-        if menuEditBool:
+        if menuEditBool and self.IsShown():
             self.UpdateMouseLocation(self.__canvas.GetMousePosition())
 
     def SetHoverPreview(self, isHoverPreview: bool) -> None:
