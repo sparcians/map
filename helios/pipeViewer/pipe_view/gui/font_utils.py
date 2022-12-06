@@ -1,5 +1,5 @@
 from __future__ import annotations
-from tkinter import Tk
+import platform
 from typing import Optional
 import wx
 
@@ -9,9 +9,16 @@ __DPI: Optional[float] = None
 def _GetDPI() -> float:
     global __DPI
     if __DPI is None:
-        root = Tk()
-        root.withdraw()
-        __DPI = root.winfo_fpixels('1i')
+        if platform.system() == 'Darwin':
+            from AppKit import NSScreen, NSDeviceResolution
+            screen = NSScreen.mainScreen()
+            description = screen.deviceDescription()
+            __DPI = description[NSDeviceResolution].sizeValue()[1]
+        else:
+            from tkinter import Tk
+            root = Tk()
+            root.withdraw()
+            __DPI = root.winfo_fpixels('1i')
     return __DPI
 
 
