@@ -7,7 +7,6 @@ from typing import Optional
 import wx
 import wx.lib.scrolledpanel as scrolledpanel
 
-
 # Dialog for selecting an Argos database.
 #
 #  Use ShowModal to display the dialog and then use GetPrefix to see selected
@@ -17,7 +16,7 @@ class SelectDatabaseDlg(wx.Dialog):
     # File name and extension for simulation info files
     #
     #  This can be appended to a prefix to get simulation information
-    INFO_FILE_EXTENSION = 'simulation.info'
+    INFO_FILE_EXTENSION = '.info'
 
     # Initialized the dialog
     #  @param init_prefix Value of prefix to show in the box by default.
@@ -138,6 +137,7 @@ class SelectDatabaseDlg(wx.Dialog):
         dlg.ShowModal()
 
         fp = dlg.GetPath()
+
         if fp is not None and fp != '':
             self.__file_txt.SetValue(fp)
 
@@ -156,8 +156,10 @@ class SelectDatabaseDlg(wx.Dialog):
     # colors of box
     def __CheckSelectionState(self) -> None:
         filepath = self.__file_txt.GetValue()
-        suffix_pos = filepath.find(self.INFO_FILE_EXTENSION)
-        if suffix_pos != len(filepath) - len(self.INFO_FILE_EXTENSION):
+
+        simulation_file_full_extention = 'simulation'+self.INFO_FILE_EXTENSION
+        suffix_pos = filepath.find(simulation_file_full_extention)
+        if suffix_pos != len(filepath) - len(simulation_file_full_extention):
             valid = False
         elif not os.path.exists(filepath):
             valid = False
@@ -181,7 +183,7 @@ class SelectDatabaseDlg(wx.Dialog):
         self.__ok_btn.Enable(valid)
 
         if valid:
-            print("***" + filepath[:suffix_pos])
+            #print("***" + filepath[:suffix_pos])
             self.__prefix = filepath[:suffix_pos]
             self.__file_txt.SetBackgroundColour(wx.Colour(235, 255, 235))
         else:
