@@ -1,5 +1,5 @@
 from __future__ import annotations
-import platform
+import os
 from typing import Optional
 import wx
 
@@ -9,16 +9,15 @@ __DPI: Optional[float] = None
 def _GetDPI() -> float:
     global __DPI
     if __DPI is None:
-        if platform.system() == 'Darwin':
-            from AppKit import NSScreen, NSDeviceResolution
-            screen = NSScreen.mainScreen()
-            description = screen.deviceDescription()
-            __DPI = description[NSDeviceResolution].sizeValue()[1]
-        else:
+        # Use Tk to get display DPI on Wayland platforms since a disconnected
+        # primary display may still show up as present to wx
+        if os.environ.get('WAYLAND_DISPLAY') is not None:
             from tkinter import Tk
             root = Tk()
             root.withdraw()
             __DPI = root.winfo_fpixels('1i')
+        else:
+            __DPI = wx.GetDisplayPPI()[1]
     return __DPI
 
 
