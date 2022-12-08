@@ -30,11 +30,11 @@ namespace pipeViewer
             bool merge_transactions = false;
             bool sort_by_end_time = false;
 
-            std::unordered_map<uint16_t, std::shared_ptr<transaction_t> > continued_transactions;
-            std::stringstream& output_buffer;
+            std::unordered_map<uint16_t, std::unique_ptr<transaction_t> > continued_transactions;
+            std::ostringstream& output_buffer;
 
             // Returns whether the given transaction is split across a heartbeat
-            bool isContinued(transaction_t *t) const
+            bool isContinued(const transaction_t *t) const
             {
                 return (t->flags & CONTINUE_FLAG) != 0;
             }
@@ -42,15 +42,13 @@ namespace pipeViewer
             // Prints a transaction to output_buffer
             // This is used for the default sort mode (by transaction ID) when merging transactions
             template<typename T>
-            void printToBuf(T* t, void(*print_func)(T*, std::ostream &)) const
+            void printToBuf(const T* t, void(*print_func)(const T*, std::ostream &)) const
             {
-                uint64_t trans_id = t->transaction_ID;
-
                 print_func(t, output_buffer);
             }
 
             template<typename T>
-            void genericTransactionHandler(T* t, void(*print_func)(T*, std::ostream &))
+            void genericTransactionHandler(const T* t, void(*print_func)(const T*, std::ostream &))
             {
                 // If there's no merging, then we can just print the transaction and be done
                 if(!merge_transactions)
@@ -67,7 +65,7 @@ namespace pipeViewer
                 if(continued_transactions.count(loc_id))
                 {
                     // Update the saved transaction with the latest end time
-                    std::shared_ptr<T> cont_trans = std::static_pointer_cast<T>(continued_transactions.at(loc_id));
+                    auto* cont_trans = static_cast<T*>(continued_transactions.at(loc_id).get());
                     cont_trans->time_End = t->time_End;
 
                     // If this transaction isn't continued, then it's the last one in the chain. So, we can print it and delete the entry.
@@ -76,12 +74,12 @@ namespace pipeViewer
                         if(!sort_by_end_time)
                         {
                             // This will be out of order with respect to transaction ID, so print it to the buffer instead of stdout
-                            printToBuf<T>(cont_trans.get(), print_func);
+                            printToBuf<T>(cont_trans, print_func);
                         }
                         else
                         {
                             // We're sorting by end time, so we can just print directly to stdout
-                            print_func(cont_trans.get(), std::cout);
+                            print_func(cont_trans, std::cout);
                         }
 
                         continued_transactions.erase(loc_id);
@@ -92,7 +90,7 @@ namespace pipeViewer
                     // This is the first part of a transaction that has been split across a heartbeat boundary
                     if(isContinued(t))
                     {
-                        continued_transactions[loc_id] = std::make_shared<T>(*t);
+                        continued_transactions[loc_id] = std::make_unique<T>(*t);
                     }
                     // This transaction isn't split at all
                     else
@@ -113,7 +111,7 @@ namespace pipeViewer
 
             }
 
-            static void printInst(instruction_t *t, std::ostream & os)
+            static void printInst(const instruction_t *t, std::ostream & os)
             {
                 os << std::setbase(10);
                 os << "*instruction* " << t->transaction_ID << " @ " << t->location_ID << " start: " << t->time_Start << " end: "<<t->time_End;
@@ -121,12 +119,12 @@ namespace pipeViewer
                 os << " real_addr: " << t->real_ADR << std::endl;
             }
 
-            virtual void foundInstRecord(instruction_t*t)
+            void foundInstRecord(const instruction_t*t) final
             {
                 genericTransactionHandler<instruction_t>(t, &printInst);
             }
 
-            static void printMemOp(memoryoperation_t *t, std::ostream & os)
+            static void printMemOp(const memoryoperation_t *t, std::ostream & os)
             {
                 os << std::setbase(10);
                 os << "*memop* " << t->transaction_ID << " @ " << t->location_ID << " start: " << t->time_Start << " end: "<<t->time_End;
@@ -134,13 +132,13 @@ namespace pipeViewer
                 os << " real_addr: " << t->real_ADR << std::endl;
             }
 
-            virtual void foundMemRecord(memoryoperation_t*t)
+            void foundMemRecord(const memoryoperation_t*t) final
             {
                 genericTransactionHandler<memoryoperation_t>(t, printMemOp);
             }
 
-            static void printPairOp(pair_t * p, std::ostream & os) {
-                os << "*pair* ";
+            static void printPairOp(const pair_t * p, std::ostream & os) {
+                os << "*pair* @ " << p->location_ID << " ";
                 for (uint32_t i = 0; i < p->nameVector.size(); ++i) {
                     os << p->nameVector[i] << "(" << p->stringVector[i] << ") ";
                 }
@@ -148,23 +146,23 @@ namespace pipeViewer
                 os << std::endl;
             }
 
-            virtual void foundPairRecord(pair_t * t){
+            void foundPairRecord(const pair_t * t) final {
                 genericTransactionHandler<pair_t>(t, printPairOp);
             }
 
-            static void printAnnotation(annotation_t * t, std::ostream & os)
+            static void printAnnotation(const annotation_t * t, std::ostream & os)
             {
                 os << "*annotation* " << t->transaction_ID << " @ " << t->location_ID << " start: " << t->time_Start << " end: "<<t->time_End;
                 os << t->annt << std::endl;
             }
 
-            virtual void foundAnnotationRecord(annotation_t*t)
+            void foundAnnotationRecord(const annotation_t*t) final
             {
                 genericTransactionHandler<annotation_t>(t, printAnnotation);
             }
 
         public:
-            DumpCallback(const bool merge, const bool sort, std::stringstream& buffer) :
+            DumpCallback(const bool merge, const bool sort, std::ostringstream& buffer) :
                 merge_transactions(merge),
                 sort_by_end_time(sort),
                 output_buffer(buffer)
@@ -187,7 +185,7 @@ void usage()
 
 int main(int argc, char ** argv)
 {
-    std::stringstream output_buffer;
+    std::ostringstream output_buffer;
     std::string db_path = "db_pipeout/pipeout";
     if (argc > 1) {
         db_path = argv[1];
