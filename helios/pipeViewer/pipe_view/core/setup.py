@@ -103,7 +103,6 @@ compile_args += [
     '-Wno-deprecated-declarations',
     '-Wno-strict-aliasing',
     '-Wall',
-    '-Werror',
     '-Wpedantic'
 ]
 
