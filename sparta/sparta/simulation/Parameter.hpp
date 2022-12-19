@@ -1573,15 +1573,21 @@ namespace sparta
         /*!
          * \brief Assigns the specified value to this parameter
          * \todo Perform independent parameter validation and throw exception
-         * if failed.
+         *       if failed.
          * \post Write count is incremented and read count reset
+         *
+         * \note If the user is initializing the parameters using a
+         *       final config, then parameters assignments are not
+         *       allocated.  The user must use the `override*`
+         *       methods.  This does _not_ apply to parameters whose
+         *       visibility is hidden
          */
         void operator=(const ValueType& v) {
             checkModificationPermission_();
             // if the simulator was setup using --read-final-config
             // we do not allow the simulator to override values
             // so just return out and warn that we are skipping this.
-            if (usingFinalConfig_())
+            if (usingFinalConfig_() && (false == isHidden()))
             {
                 static bool been_warned = false;
                 if(!been_warned) {
@@ -1662,26 +1668,6 @@ namespace sparta
             incrementWriteCount_();
 
             val_ = def_val_;
-        }
-
-        virtual void setValueFromStringImpl_(const std::string& str, bool poke=false) override final {
-            Parameter::template setValueFromString_<ValueType, ValueType>(str, poke);
-        }
-
-        virtual void setValueFromStringVectorImpl_(const std::vector<std::string>& vec, bool poke=false) override final {
-            Parameter::template setValueFromStringVector_<ValueType, ValueType>(vec, poke);
-        }
-
-        virtual void setItemValueFromStringImpl_(const std::vector<uint32_t>& indices,
-                                                 const std::string& str) override final {
-            if(indices.size() == 0){
-                // No indices given. This must be a non-vector type
-                Parameter::template setValueFromString_<ValueType, ValueType>(str);
-            }else{
-                // handle if this is a vector
-                const bool incr_write_count = true;
-                setVectorItemValueFromString_(val_, indices, 0, str, incr_write_count);
-            }
         }
 
         virtual bool equals(const ParameterBase &other) override final {
@@ -1769,6 +1755,17 @@ namespace sparta
             return Parameter::template operator_insert_<U, ValueType>(e);
         }
 
+        /*!
+         * \brief Query if this parameter is safe to be displayed via prints, dumps.
+         * A parameter should not be displayed if it is HIDDEN and the subtree containing
+         * this parameter is already locked.
+         */
+        virtual bool isVisibilityAllowed() const override{
+            return ((param_attr_ == ParameterAttribute::HIDDEN) and
+                    (this->areParametersLocked_())) ? false : true;
+        }
+
+    protected:
 
         template <class U, class C1>
         typename std::enable_if<is_vector<C1>::value, Parameter<ValueType>&>::type
@@ -1779,16 +1776,25 @@ namespace sparta
             return *this;
         }
 
-        /*!
-         * \brief Query if this parameter is safe to be displayed via prints, dumps.
-         * A parameter should not be displayed if it is HIDDEN and the subtree containing
-         * this parameter is already locked.
-         */
-        virtual bool isVisibilityAllowed() const override{
-            return ((param_attr_ == ParameterAttribute::HIDDEN) and
-                    (this->areParametersLocked_())) ? false : true;
+        virtual void setValueFromStringImpl_(const std::string& str, bool poke=false) override final {
+            Parameter::template setValueFromString_<ValueType, ValueType>(str, poke);
         }
-    protected:
+
+        virtual void setValueFromStringVectorImpl_(const std::vector<std::string>& vec, bool poke=false) override final {
+            Parameter::template setValueFromStringVector_<ValueType, ValueType>(vec, poke);
+        }
+
+        virtual void setItemValueFromStringImpl_(const std::vector<uint32_t>& indices,
+                                                 const std::string& str) override final {
+            if(indices.size() == 0){
+                // No indices given. This must be a non-vector type
+                Parameter::template setValueFromString_<ValueType, ValueType>(str);
+            }else{
+                // handle if this is a vector
+                const bool incr_write_count = true;
+                setVectorItemValueFromString_(val_, indices, 0, str, incr_write_count);
+            }
+        }
 
         //! Iternal getValue_ wrapper which does not increment the read counter
         const ValueType& getValue_() const {
