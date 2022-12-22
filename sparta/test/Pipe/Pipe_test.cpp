@@ -11,7 +11,7 @@
 #include "sparta/events/EventSet.hpp"
 #include "sparta/events/PayloadEvent.hpp"
 
-TEST_INIT;
+TEST_INIT
 #define PIPEOUT_GEN
 
 /*

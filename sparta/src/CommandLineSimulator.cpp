@@ -724,6 +724,9 @@ bool CommandLineSimulator::parse(int argc,
     // --parameter / -p (pattern, value as a string)
     std::vector<std::tuple<std::string, std::string, bool>> individual_parameter_values;
 
+    // metadata arch value read from config files
+    utils::ValidValue<std::pair<std::string, std::string>> config_metadata_arch;
+
     // Parse options from command line
     try{
         std::vector<std::string> pos_opts;
@@ -1597,9 +1600,44 @@ bool CommandLineSimulator::parse(int argc,
         sim_config_.omitStatsWithValueZeroForReportFormat("json_reduced");
     }
 
+    // Get metadata architecture param from config files
+    bool config_metadata_arch_final = false;
+    for (const auto & cfg : config_pattern_names) {
+        const std::string & filename = std::get<1>(cfg);
+        const bool is_final = std::get<2>(cfg);
+        if(config_metadata_arch_final && !is_final) { continue; }
+        TreeNode dummy("dummy", "dummy");
+        sparta::ConfigParser::YAML param_file(filename, sim_config_.getConfigSearchPath());
+        param_file.allowMissingNodes(true);
+        constexpr bool VERBOSE = false;
+        param_file.consumeParameters(&dummy, VERBOSE);
+
+        const auto ptree = param_file.getParameterTree();
+        if(ptree.hasValue("meta.params.architecture")) {
+            const std::string& arch = ptree.get("meta.params.architecture").getValue();
+            if(arch != "NONE") {
+                const std::string & pattern = std::get<0>(cfg);
+                config_metadata_arch = std::make_pair(pattern, arch);
+            }
+            if(is_final) {
+                config_metadata_arch_final = true;
+            }
+        }
+
+    }
+
     // Check for valid arch config if required by defaults
+    //
+    // Priority:
+    // 1. --arch
+    // 2. --read-final-config
+    // 3. --config-file / --node-config-file
+    // 4. Default (if required)
     if(arch_pattern_name.isValid()) {
         sim_config_.processArch(arch_pattern_name.getValue().first, arch_pattern_name.getValue().second);
+    }
+    else if(config_metadata_arch.isValid()) {
+        sim_config_.processArch(config_metadata_arch.getValue().first, config_metadata_arch.getValue().second);
     }
     else {
         if(!sim_config_.archFileProvided()) {
@@ -1776,7 +1814,7 @@ bool CommandLineSimulator::parse(int argc,
     sim_config_.reports                 = reports;
 
     //pevents
-    run_pevents_ = (vm_.count("pevents-at") > 0) | (vm_.count("pevents") > 0) | (vm_.count("verbose-pevents") > 0);
+    run_pevents_ = (vm_.count("pevents-at") > 0) || (vm_.count("pevents") > 0) || (vm_.count("verbose-pevents") > 0);
 
     bool show_options = vm_.count("show-options") > 0;
     if(show_options){
@@ -1993,8 +2031,21 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                                                        filter_parameters);
         }
 
-        // If we are reading a final config. Assert that we actually loaded a final config.
+        // Store the arch param
         std::vector<sparta::TreeNode*> children;
+        sim->getMetaParamRoot()->findChildren("params.architecture", children);
+        sparta_assert (children.size() > 0, "Sparta should have made a default meta.params.architecture.");
+        sparta::Parameter<std::string>* arch_p = dynamic_cast<sparta::Parameter<std::string>*>(children.at(0));
+        sparta_assert(arch_p);
+        const auto run_metadata = getSimulationConfiguration().getRunMetadata();
+        const auto run_metadata_it = std::find_if(run_metadata.begin(), run_metadata.end(),
+            [] (const auto md_param) { return md_param.first == "arch"; });
+        if(run_metadata_it != run_metadata.end()) {
+            arch_p->setValueFromString(run_metadata_it->second);
+        }
+
+        // If we are reading a final config. Assert that we actually loaded a final config.
+        children.clear();
         sim->getMetaParamRoot()->findChildren("params.is_final_config", children);
         sparta_assert (children.size() > 0, "Sparta should have made a default meta.params.is_final_config.");
         sparta::Parameter<bool>* is_final_p = dynamic_cast<sparta::Parameter<bool>*>(children.at(0));

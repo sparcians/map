@@ -37,6 +37,7 @@
 #include "sparta/report/db/format/toCSV.hpp"
 #include "simdb/ObjectManager.hpp"
 #include "simdb/ObjectRef.hpp"
+#include "simdb/utils/ObjectQuery.hpp"
 #include "simdb/async/AsyncTaskEval.hpp"
 
 #include <boost/python.hpp>

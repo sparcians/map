@@ -11,6 +11,7 @@
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/simulation/ParameterSet.hpp"
 #include "sparta/simulation/ResourceFactory.hpp"
+#include "sparta/functional/ArchData.hpp"
 
 namespace sparta
 {
@@ -261,4 +262,3 @@ namespace sparta
 
 
 } // namespace sparta
-

@@ -35,20 +35,22 @@ if 'TARGETDIR' not in os.environ:
 destination_dir = os.environ["TARGETDIR"]
 system_include_dirs = [a.strip('\\') for a in os.environ.get("SYSINCDIRS", None).split()]
 
-# cython likes to do things like #include "string", so this fixes that
-if "clang" in os.environ.get("CC",""):
-    system_include_dirs.append(join(dirname(dirname(spawn.find_executable(os.environ["CC"]))), "include", "c++", "v1"))
-
 sparta_base_dir = os.environ["SPARTA_BASE"]
 required_sparta_libs = os.environ['REQUIRED_SPARTA_LIBS'].split()
-required_sparta_libs = [x.lstrip('-l') for x in required_sparta_libs]
+required_sparta_libs = [x.lstrip('-l').strip('\\') for x in required_sparta_libs]
 sparta_inc_dir = sparta_base_dir
 selected_modules = os.environ.get("BUILD_MODULES", "").split()
 py_src_dir = os.environ["PY_SRC_DIR"]
 
 print('\n\nDEST DIR "{}"'.format(destination_dir))
 
-sparta_lib_path = os.environ['LIB_SPARTA_BUILT_PATH']
+sparta_lib_path = os.environ['LIB_SPARTA_BUILT_PATH'].split()
+sparta_lib_path = [x.lstrip('-L').strip('\\') for x in sparta_lib_path]
+print(sparta_lib_path, required_sparta_libs)
+
+hdf5_lib_dirs = os.environ['HDF5_LIBS'].split()
+hdf5_lib_dirs = list(set([os.path.dirname(x) for x in hdf5_lib_dirs]))
+print(hdf5_lib_dirs)
 
 compile_args = ['-std=c++17'] # Required for sparta C++ code
 if plat_flags != '':
@@ -64,7 +66,6 @@ else:
     print('Building in Release mode')
     def_macros.append(('NDEBUG', None))
     compile_args.extend(('-g3', '-Ofast'))
-
 
 # conda python sysconfig data contains '-Wl,export_dynamic' which the linker isn't using
 # causes a warning that gets treated like an error, let's not care about unused linker args
@@ -114,8 +115,8 @@ for module_name, source_files in modules.items():
     ext_def = Extension(module_name,
                         sources = sources,
                         include_dirs = [sparta_inc_dir ] + system_include_dirs,
-                        libraries = (required_sparta_libs),
-                        library_dirs = [sparta_lib_path],
+                        libraries = required_sparta_libs,
+                        library_dirs = sparta_lib_path + hdf5_lib_dirs,
                         define_macros = def_macros,
                         extra_compile_args = compile_args,
                         extra_link_args = link_args,

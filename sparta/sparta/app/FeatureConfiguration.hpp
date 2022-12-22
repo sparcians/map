@@ -118,8 +118,8 @@ public:
                 sparta_assert(strvec.size() == 2);
                 std::string & option_name = strvec[0];
                 std::string & option_value = strvec[1];
-                boost::trim(option_name);
-                boost::trim(option_value);
+                option_name  = sparta::utils::strip_whitespace(option_name);
+                option_value = sparta::utils::strip_whitespace(option_value);
                 feature_options_.set(option_name, option_value, false);
             }
         }
@@ -325,4 +325,3 @@ GetFeatureOptions(
 }
 
 } // namespace sparta
-

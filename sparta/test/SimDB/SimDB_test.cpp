@@ -11,6 +11,7 @@
 #include "simdb/ObjectManager.hpp"
 #include "simdb/ObjectRef.hpp"
 #include "simdb/impl/sqlite/SQLiteConnProxy.hpp"
+#include "simdb/utils/ObjectQuery.hpp"
 #include "sparta/report/Report.hpp"
 #include "sparta/utils/ValidValue.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -19,7 +20,7 @@
 #include <math.h>
 #include <boost/filesystem.hpp>
 
-TEST_INIT;
+TEST_INIT
 
 //! Put all the temporary .db files into one directory
 //! right in the build folder where tests are run from.

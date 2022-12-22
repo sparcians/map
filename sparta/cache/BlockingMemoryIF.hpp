@@ -22,5 +22,4 @@ namespace sparta
 
     }; // class SimpleCacheIF
 
-}; // namespace sparta
-
+} // namespace sparta

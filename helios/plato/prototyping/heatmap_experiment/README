@@ -1,5 +1,0 @@
-This was the initial PROTOTYPE for a branch predictor tool with heatmaps.
-It is client-side only, entirely javscript + html, and uses plotly for plotting.
-
-The data shown is not 100% correct, it does not handle large input files, and there
-are bugs... therefore this should not be used for any real analysis.

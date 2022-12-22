@@ -66,7 +66,4 @@ namespace core_example
         counter_incr_event_.schedule(counter_incr_period_);
     }
 
-    // Definition for Core::name symbol
-    constexpr char Core::name[];
-
 }

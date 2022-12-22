@@ -912,7 +912,7 @@ class ReportFileParserYAML
             if(itr == next_uid_map_.end()){
                 // Inherit form parent, no entry in the map
                 verbose() << indent_() << "(getNextNodeID_) parent entry: " << *parent
-                          << " not found. in map. Inheriting parent uid " << parent->uid << std::endl;
+                          << " not found in map. Inheriting parent uid " << parent->uid << std::endl;
                 verbose() << indent_() << "(getNextNodeID_) next uid map (" << next_uid_map_.size()
                           << " entries):" << std::endl;
                 for(auto& e : next_uid_map_){
@@ -1159,20 +1159,6 @@ private:
     YP::Parser parser_;    //!< YP::Parser to which events will be written
     std::string filename_; //!< For recalling errors
 }; // class ReportFileParserYAML
-
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_REPORT[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_SUBREPORT[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_CONTENT[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_NAME[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTHOR[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE_ATTRIBUTES[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE_MAX_RECURSION_DEPTH[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE_MAX_REPORT_DEPTH[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_STYLE[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_TRIGGER[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_REPORT_IGNORE[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_REPORT_OPTIONAL[];
 
 void Report::addFile(const std::string& file_path, bool verbose)
 {

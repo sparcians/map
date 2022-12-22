@@ -20,7 +20,7 @@ cdef extern from "log_search.cpp":
 
         uint64_t BAD_LOCATION
 
-cdef class LogSearch(object):
+cdef class LogSearch:
 
     cdef c_LogSearch* c_logsearch
 

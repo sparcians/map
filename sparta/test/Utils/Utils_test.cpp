@@ -10,7 +10,7 @@
 #include "sparta/utils/LifeTracker.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 class A {
  public:

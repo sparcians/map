@@ -253,7 +253,7 @@ namespace sparta
          * an ordered container (e.g. std::map) is required. A sorted contained
          * is probably desirable, but not required
          */
-        typedef std::map<std::string, TreeNode*> ChildNameMapping;
+        typedef std::multimap<std::string, TreeNode*> ChildNameMapping;
 
         /*!
          * \brief Index within a group
@@ -1346,16 +1346,18 @@ namespace sparta
          * search pattern '.' (after another '.') and searches the parent for
          * "a".
          * \warning May return duplicates if multiple aliases refer to the same
-         * TreeNode.
+         *          TreeNode.
          * \return The number of children found and appended to results.
-         * \note this is <b> not full path matching </b>. Patterns are extracted
-         * between each '.' and the ends of the pattern string. Each of these
-         * Extracted patterns is used to search in the current search context
-         * and either find the new child/parent to search within OR (if the end
-         * of the whole pattern has been reached), to find a node to add to the
-         * results output vector
+         * \note This is <b> not full path matching </b>. Patterns are
+         *       extracted between each '.' and the ends of the
+         *       pattern string. Each of these Extracted patterns is
+         *       used to search in the current search context and
+         *       either find the new child/parent to search within OR
+         *       (if the end of the whole pattern has been reached),
+         *       to find a node to add to the results output vector
+         * \note This method is not `const` to allow the caller to modify the found TreeNodes
          * \throw Does not throw. May print a warning when a pattern attempts to
-         * search up and the current node has no parent.
+         *        search up and the current node has no parent.
          * \see locationMatchesPattern
          *
          * The following glob wildcard patterns are supported
@@ -1505,7 +1507,7 @@ namespace sparta
         /*!
          * \brief Retrieves a child with this dotted path name
          * \note this is not a full recursive search. The child, if found, will
-         * be N levels below this node whrere N Is dependent on the number of
+         * be N levels below this node where N Is dependent on the number of
          * '.' tokens in the search string.
          * \param name path to child. This may be a single name or a dotted path
          * refering to a node several levels below this node.
@@ -1516,6 +1518,8 @@ namespace sparta
          * be found and must_exist==true, throws SpartaException. Otherwise
          * returns nullptr.
          * \note no pattern matching supported in this method
+         * \note if a name matches on both an alias and a TreeNode name,
+         * the TreeNode name will take precedence
          * \throw SpartaException if child is not found and must_exist==true
          *
          * Example:
@@ -1679,13 +1683,31 @@ namespace sparta
             return result;
         }
 
-        // Overload of getAs for const access with a pointer T type
+        /*!
+         * \brief Retrieves this node after casting to type const T
+         * \tparam T Type of child expected
+         * \return const T* if this node was castable to const T* using dynamic_cast.
+         * \throw SpartaException if this node could not be cast to T
+         * \warning This method performs a dynamic cast (for now) and should not
+         * be used in performance-critical code
+         *
+         * Overload of getAs for const access with a pointer T type.
+         */
         template <class T, typename = typename std::enable_if<!std::is_pointer<T>::value>::type>
         const T* getAs() const {
             return getAs<const T*>();
         }
 
-        // Overload of getAs for non-const access with pointer T type
+        /*!
+         * \brief Retrieves this node after casting to type const T
+         * \tparam T Type of child expected
+         * \return const T* if this node was castable to const T* using dynamic_cast.
+         * \throw SpartaException if this node could not be cast to T
+         * \warning This method performs a dynamic cast (for now) and should not
+         * be used in performance-critical code
+         *
+         * Overload of getAs for non-const access with pointer T type.
+         */
         template <class T, typename = typename std::enable_if<std::is_pointer<T>::value>::type>
         T getAs() {
             static_assert(std::is_base_of<TreeNode, typename std::remove_pointer<T>::type>::value == true,
@@ -1699,7 +1721,16 @@ namespace sparta
             return result;
         }
 
-        // Overload of getAs for non-const access with non-pointer T type
+        /*!
+         * \brief Retrieves this node after casting to type const T
+         * \tparam T Type of child expected
+         * \return const T* if this node was castable to const T* using dynamic_cast.
+         * \throw SpartaException if this node could not be cast to T
+         * \warning This method performs a dynamic cast (for now) and should not
+         * be used in performance-critical code
+         *
+         * Overload of getAs for non-const access with non-pointer T type
+         */
         template <class T, typename = typename std::enable_if<!std::is_pointer<T>::value>::type>
         T* getAs() {
             return getAs<T*>();

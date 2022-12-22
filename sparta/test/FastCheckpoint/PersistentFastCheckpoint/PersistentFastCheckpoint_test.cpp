@@ -29,7 +29,7 @@
  * to register sizes and layouts may be omitted from this test.
  */
 
-TEST_INIT;
+TEST_INIT
 
 using sparta::Register;
 using sparta::RegisterSet;

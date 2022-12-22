@@ -9,7 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <memory>
-#include <set>
+#include <vector>
 
 namespace sparta
 {
@@ -40,8 +40,8 @@ public:
     template<typename ...ArgTypes>
     Edge* newFactoryEdge(ArgTypes&&... args)
     {
-        Edge*   new_edge = new Edge(std::forward<ArgTypes>(args)...);
-        edges_.emplace(new_edge);
+        Edge*   new_edge = nullptr;
+        edges_.emplace_back(new_edge = new Edge(std::forward<ArgTypes>(args)...));
         return new_edge;
     }
 
@@ -49,13 +49,8 @@ public:
     void dumpToCSV(std::ostream& os) const;
 
 private:
-    // I use bare Edge* here instead of std::unique_ptr<> since I need
-    // to be able to do a set::find() on the Edge address. The
-    // class destructor zaps the Edges
-    std::set<const Edge*> edges_;
+    std::vector<std::unique_ptr<Edge>> edges_;
 };
 
 
 } // namespace sparta
-
-

@@ -16,7 +16,8 @@
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/statistics/CycleCounter.hpp"
 #include "sparta/utils/SpartaSharedPointer.hpp"
-TEST_INIT;
+#include "sparta/utils/SpartaSharedPointerAllocator.hpp"
+TEST_INIT
 
 #define PIPEOUT_GEN
 
@@ -37,7 +38,7 @@ struct dummy_struct
                                                                                                        s_field{s_field} {}
 };
 using dummy_struct_ptr = sparta::SpartaSharedPointer<dummy_struct>;
-sparta::SpartaSharedPointer<dummy_struct>::SpartaSharedPointerAllocator dummy_struct_allocator(6, 3);
+sparta::SpartaSharedPointerAllocator<dummy_struct> dummy_struct_allocator(6, 3);
 
 std::ostream &operator<<(std::ostream &os, const dummy_struct &obj)
 {

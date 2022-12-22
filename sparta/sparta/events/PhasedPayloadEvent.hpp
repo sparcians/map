@@ -175,7 +175,9 @@ namespace sparta
         //! The payload was delivered, this proxy object is now
         //! reusable.
         void reclaimProxy_(typename ProxyInflightList::iterator & pl_location) {
-            sparta_assert(pl_location != inflight_pl_.end());
+            if (SPARTA_EXPECT_FALSE(pl_location == inflight_pl_.end())) {
+                return;
+            }
             if constexpr(MetaStruct::is_any_pointer<DataT>::value) {
                 (*pl_location)->setPayload_(nullptr);
             }

@@ -12,6 +12,8 @@
 
 #include <cinttypes>
 #include <list>
+#include <limits>
+#include <algorithm>
 
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/statistics/CycleCounter.hpp"
@@ -19,6 +21,7 @@
 #include "sparta/statistics/StatisticDef.hpp"
 #include "sparta/collection/IterableCollector.hpp"
 #include "sparta/statistics/Counter.hpp"
+#include "sparta/utils/IteratorTraits.hpp"
 
 namespace sparta
 {
@@ -135,7 +138,7 @@ namespace sparta
          */
         template <bool is_const_iterator = true>
         class CircularBufferIterator :
-            public std::iterator<std::bidirectional_iterator_tag, value_type>
+            public utils::IteratorTraits<std::bidirectional_iterator_tag, value_type>
         {
         private:
             // Constant to indicate constness
@@ -189,6 +192,16 @@ namespace sparta
              * regular iterator to a const_iterator.
              */
             CircularBufferIterator(const CircularBufferIterator<false> & iter) :
+                attached_circularbuffer_(iter.attached_circularbuffer_),
+                circularbuffer_entry_(iter.circularbuffer_entry_),
+                window_idx_(iter.window_idx_)
+            {}
+
+            /**
+             * \brief a copy constructor that allows for implicit conversion from a
+             * regular iterator to a const_iterator.
+             */
+            CircularBufferIterator(const CircularBufferIterator<true> & iter) :
                 attached_circularbuffer_(iter.attached_circularbuffer_),
                 circularbuffer_entry_(iter.circularbuffer_entry_),
                 window_idx_(iter.window_idx_)
@@ -873,4 +886,3 @@ namespace sparta
 
 
 }
-

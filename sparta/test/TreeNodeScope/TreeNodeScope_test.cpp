@@ -11,7 +11,7 @@
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/simulation/TreeNodePrivateAttorney.hpp"
 #include "sparta/log/NotificationSource.hpp"
-TEST_INIT;
+TEST_INIT
 
 class TestFixture
 {

@@ -12,7 +12,7 @@
  * without crashing. There is no expectation of output
  */
 
-TEST_INIT;
+TEST_INIT
 
 int main() {
     // Try the Color scheme class

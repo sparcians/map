@@ -277,15 +277,6 @@ private:
     std::unique_ptr<SimControlFileEventHandlerYAML> evt_handler_;
 };
 
-constexpr char SimControlFileParserYAML::
-    SimControlFileEventHandlerYAML::KEY_CONTENT[];
-constexpr char SimControlFileParserYAML::
-    SimControlFileEventHandlerYAML::KEY_PAUSE[];
-constexpr char SimControlFileParserYAML::
-    SimControlFileEventHandlerYAML::KEY_RESUME[];
-constexpr char SimControlFileParserYAML::
-    SimControlFileEventHandlerYAML::KEY_TERM[];
-
 }
 }
 
@@ -302,7 +293,7 @@ void printSchedulerPerformanceInfo(std::ostream& o, const boost::timer::cpu_time
     //const double MILLION = 1000000;
 
     if(elapsed_user_seconds != 0) {
-        o << "  Simulation Performace      : " << timer.format(4, "wall(%w), system(%s), user(%u)") << std::endl;
+        o << "  Simulation Performance      : " << timer.format(4, "wall(%w), system(%s), user(%u)") << std::endl;
         o << "  Scheduler Tick Rate  (KTPS): "
           << scheduler->getCurrentTick()/elapsed_user_seconds/THOUSAND
           << "  (1k ticks per second)" << std::endl;
@@ -330,9 +321,9 @@ const DatabaseAccessor * Simulation::getSimulationDatabaseAccessor() const
 
 Simulation::Simulation(const std::string& sim_name,
                        Scheduler * scheduler) :
+    clk_manager_(scheduler),
     sim_name_(sim_name),
     scheduler_(scheduler),
-    clk_manager_(scheduler),
     root_clk_(nullptr),
     root_(this, scheduler->getSearchScope()),
     warn_to_cerr_(sparta::TreeNode::getVirtualGlobalNode(),
@@ -933,6 +924,7 @@ void Simulation::run(uint64_t run_time)
 
         // Rethrow exception if necessary
         if(eptr != std::exception_ptr()){
+            simulation_successful_ = false;
             std::rethrow_exception(eptr);
         }
 

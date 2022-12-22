@@ -16,6 +16,7 @@
 #include "sparta/pairs/SpartaKeyPairs.hpp"
 #include "sparta/simulation/State.hpp"
 #include "sparta/utils/SpartaSharedPointer.hpp"
+#include "sparta/utils/SpartaSharedPointerAllocator.hpp"
 
 #include "cache/TreePLRUReplacement.hpp"
 
@@ -192,7 +193,7 @@ namespace core_example
         };  // class MemoryAccessInfo
 
         // allocator for this object type
-        sparta::SpartaSharedPointer<MemoryAccessInfo>::SpartaSharedPointerAllocator memory_access_allocator;
+        sparta::SpartaSharedPointerAllocator<MemoryAccessInfo> memory_access_allocator;
 
         /*!
         * \class MemoryAccessInfoPairDef
@@ -213,7 +214,7 @@ namespace core_example
                                   SPARTA_ADDPAIR("valid", &MemoryAccessInfo::getPhyAddrIsReady),
                                   SPARTA_ADDPAIR("mmu",   &MemoryAccessInfo::getMMUState),
                                   SPARTA_ADDPAIR("cache", &MemoryAccessInfo::getCacheState),
-                                  SPARTA_FLATTEN(         &MemoryAccessInfo::getInstPtr));
+                                  SPARTA_FLATTEN(         &MemoryAccessInfo::getInstPtr))
         };
 
         // Forward declaration of the Pair Definition class is must as we are friending it.
@@ -309,7 +310,7 @@ namespace core_example
 
         };  // class LoadStoreInstInfo
 
-        sparta::SpartaSharedPointer<LoadStoreInstInfo>::SpartaSharedPointerAllocator load_store_info_allocator;
+        sparta::SpartaSharedPointerAllocator<LoadStoreInstInfo> load_store_info_allocator;
 
         /*!
         * \class LoadStoreInstInfoPairDef
@@ -328,7 +329,7 @@ namespace core_example
             SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("DID",   &LoadStoreInstInfo::getInstUniqueID),
                                   SPARTA_ADDPAIR("rank",  &LoadStoreInstInfo::getPriority),
                                   SPARTA_ADDPAIR("state", &LoadStoreInstInfo::getState),
-                                  SPARTA_FLATTEN(         &LoadStoreInstInfo::getMemoryAccessInfoPtr));
+                                  SPARTA_FLATTEN(         &LoadStoreInstInfo::getMemoryAccessInfoPtr))
         };
 
         void setTLB(SimpleTLB& tlb)

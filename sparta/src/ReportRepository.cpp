@@ -131,36 +131,6 @@ public:
         on_triggered_notifier_ = on_triggered_notifier;
     }
 
-    void writeTriggerMetadata(sparta::db::ReportHeader & db_header) const {
-        db_header.getObjectRef().getObjectManager().safeTransaction([&]() {
-            const std::string period =
-                report_update_trigger_ ?
-                report_update_trigger_->toString() :
-                "none";
-            db_header.setStringMetadata("period", period);
-
-            const std::string terminate =
-                report_stop_trigger_ ?
-                report_stop_trigger_->toString() :
-                "none";
-            db_header.setStringMetadata("terminate", terminate);
-
-            const std::string enabled =
-                report_toggle_trigger_ ?
-                report_toggle_trigger_->toString() :
-                "none";
-            db_header.setStringMetadata("enabled", enabled);
-
-            //Whether we write the "warmup" metadata right now
-            //or later depends on whether we have a report start
-            //trigger. If we *do* have such a trigger, we'll write
-            //the warmup value when the trigger hits.
-            if (report_start_trigger_ == nullptr) {
-                db_header.setStringMetadata("warmup", "none");
-            }
-        });
-    }
-
     void doPostProcessing(
         simdb::AsyncTaskEval * task_queue,
         simdb::ObjectManager * sim_db)
@@ -542,29 +512,14 @@ private:
         this->initializeReportInstantiations_();
 
         if (needs_header_overwrite_) {
-            const utils::ValidValue<uint64_t> warmup_insts = getMaxInstRetired_();
             db::ReportHeader * db_header = desc_.getTimeseriesDatabaseHeader();
-            if (warmup_insts.isValid() && db_header != nullptr) {
-                //The timeseries database is featured off by default, but this
-                //writes the warmup inst value to a database record.
-                const std::string warmup_str =
-                    boost::lexical_cast<std::string>(warmup_insts);
-                db_header->setStringMetadata("warmup", warmup_str);
-
+            if (db_header != nullptr) {
                 sparta_assert(reports_.size() == 1);
                 if (reports_[0]->hasHeader()) {
                     auto & header = reports_[0]->getHeader();
                     const std::map<std::string, std::string> stringified = header.getAllStringified();
                     for (const auto & meta : stringified) {
                         db_header->setStringMetadata(meta.first, meta.second);
-                    }
-                }
-            } else if (warmup_insts.isValid()) {
-                //CSV report files go through the report::format::ReportHeader
-                for (auto &r : reports_) {
-                    if (r->hasHeader()) {
-                        auto & header = r->getHeader();
-                        header.set("warmup", warmup_insts.getValue());
                     }
                 }
             }
@@ -772,35 +727,29 @@ private:
 
     void setHeaderInfoForReports_()
     {
-        auto populate_header_content = [this](report::format::ReportHeader & header) {
-            if (report_start_trigger_ != nullptr) {
-                header.reservePlaceholder("warmup");
-            } else {
-                header.set("warmup", "none");
-            }
-
-            if (report_update_trigger_ != nullptr) {
-                header.set("period", report_update_trigger_->toString());
-            } else {
-                header.set("period", "none");
-            }
-
-            if (report_stop_trigger_ != nullptr) {
-                header.set("terminate", report_stop_trigger_->toString());
-            } else {
-                header.set("terminate", "none");
-            }
-
-            if (report_toggle_trigger_ != nullptr) {
-                header.set("enabled", report_toggle_trigger_->toString());
-            } else {
-                header.set("enabled", "none");
-            }
-        };
-
         for (auto & r : reports_) {
             auto & header = r->getHeader();
-            populate_header_content(header);
+
+            auto set_header_trigger_content =
+                [](report::format::ReportHeader & header,
+                   const std::string key,
+                   const trigger::ExpiringExpressionTrigger & trigger) {
+                if (trigger) {
+                    const auto counter = trigger->getCounter();
+                    if(counter) {
+                        header.set(key, counter->getLocation());
+                    }
+                }
+            };
+
+            set_header_trigger_content(header, "start_counter",  report_start_trigger_);
+            set_header_trigger_content(header, "stop_counter",   report_stop_trigger_);
+            set_header_trigger_content(header, "update_counter", report_update_trigger_);
+
+            const auto header_metadata = getDescriptor().header_metadata_;
+            for(auto [key, value] : header_metadata) {
+                header.set(key, value);
+            }
         }
     }
 
@@ -984,10 +933,27 @@ public:
 
     ~Impl()
     {
-        try {
-            this->saveReports();
-        } catch (...) {
-            std::cerr << "WARNING: Error saving reports to file" << std::endl;
+        // If we're not in the middle of an exception, we can save
+        // reports, unless report_on_error is defined
+        bool save_reports = true;
+        if(nullptr != sim_)
+        {
+            save_reports = sim_->simulationSuccessful();
+            if(false == save_reports)
+            {
+                // Check simluation configuration to see if we still need to report on error
+                save_reports = (sim_->getSimulationConfiguration() &&
+                                sim_->getSimulationConfiguration()->report_on_error);
+            }
+        }
+
+        if(save_reports)
+        {
+            try {
+                this->saveReports();
+            } catch (...) {
+                std::cerr << "WARNING: Error saving reports to file" << std::endl;
+            }
         }
     }
 
@@ -1280,8 +1246,6 @@ private:
                 //Write any report trigger metadata into the header object
                 auto db_header = rd.getTimeseriesDatabaseHeader();
                 if (db_header) {
-                    dir.second->writeTriggerMetadata(*db_header);
-
                     //Simulation name is written as hidden metadata by
                     //by prefixing the name with "__"
                     db_header->setStringMetadata(

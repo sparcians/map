@@ -1,5 +1,6 @@
 
 #include "sparta/utils/SpartaSharedPointer.hpp"
+#include "sparta/utils/SpartaSharedPointerAllocator.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
 #include <array>
@@ -67,11 +68,11 @@ std::ostream& operator<<(std::ostream&os, const sparta::SpartaSharedPointer<MyTy
     return os;
 }
 
-sparta::SpartaSharedPointer<MyType>::SpartaSharedPointerAllocator           trivial_type_allocator(11000, 10000);
-sparta::SpartaSharedPointer<MyNonTrivialType>::SpartaSharedPointerAllocator non_trivial_type_allocator(11000, 10000);
+sparta::SpartaSharedPointerAllocator<MyType>           trivial_type_allocator(11000, 10000);
+sparta::SpartaSharedPointerAllocator<MyNonTrivialType> non_trivial_type_allocator(11000, 10000);
 
 
-TEST_INIT;
+TEST_INIT
 
 void func(const sparta::SpartaSharedPointer<MyType> & my_ref, const unsigned int val)
 {
@@ -294,7 +295,7 @@ void testWeakPointer()
     my_type_deleted = 0;
     sparta::SpartaSharedPointer<MyType> ptr(new MyType);
     sparta::SpartaSharedPointer<MyType> ptr2;
-    sparta::SpartaSharedPointer<MyType>::SpartaWeakPointer wp = ptr;
+    sparta::SpartaWeakPointer<MyType> wp = ptr;
 
     std::shared_ptr<MyType> sp_ptr(new MyType);
     std::shared_ptr<MyType> sp_ptr2;
@@ -326,7 +327,7 @@ void testWeakPointer()
         sparta::SpartaSharedPointer<MyType> inside_ptr(new MyType);
         wp = inside_ptr;
         EXPECT_FALSE(wp.expired());
-        sparta::SpartaSharedPointer<MyType>::SpartaWeakPointer wp2 = wp;
+        sparta::SpartaWeakPointer<MyType> wp2 = wp;
         EXPECT_FALSE(wp2.expired());
         EXPECT_EQUAL(wp2.use_count(), 1);
         EXPECT_EQUAL(wp.use_count(), 1);
@@ -363,7 +364,7 @@ void testWeakPointer()
     my_type_deleted = 0;
     ptr.reset(new MyType);
     wp = ptr;
-    sparta::SpartaSharedPointer<MyType>::SpartaWeakPointer wp2 = wp;
+    sparta::SpartaWeakPointer<MyType> wp2 = wp;
     EXPECT_EQUAL(my_type_deleted, 0);
     EXPECT_EQUAL(wp.use_count(), 1);
     EXPECT_EQUAL(ptr.use_count(), 1);
@@ -476,7 +477,7 @@ void testMemoryAllocation(const bool test_warning,
         // Test the watermark
         const size_t max = 10;
         const size_t water = 8;
-        sparta::SpartaSharedPointer<MyType>::SpartaSharedPointerAllocator limited_allocator(max, water);
+        sparta::SpartaSharedPointerAllocator<MyType> limited_allocator(max, water);
         limited_allocator.registerCustomWaterMarkCallback(waterMarkCallback);
         for(uint32_t i = 0; i < max; ++i) {
             sparta::SpartaSharedPointer<MyType> ptr =
@@ -494,7 +495,7 @@ void testMemoryAllocation(const bool test_warning,
         // Test over allocation
         const size_t max = 10;
         const size_t water = 8;
-        sparta::SpartaSharedPointer<MyType>::SpartaSharedPointerAllocator limited_allocator(max, water);
+        sparta::SpartaSharedPointerAllocator<MyType> limited_allocator(max, water);
         bool error_caught = false;
         for(uint32_t i = 0; i < max + 1; ++i) {
             try {
@@ -571,8 +572,7 @@ void testMemoryAllocationPerformance(const bool old_way)
         }
     }
     else {
-        sparta::SpartaSharedPointer<MyType>::SpartaSharedPointerAllocator
-            local_allocator(11000, 10000);
+        sparta::SpartaSharedPointerAllocator<MyType> local_allocator(11000, 10000);
         std::vector<sparta::SpartaSharedPointer<MyType>> ptrs(num_ptrs);
         for(uint32_t j = 0; j < iterations; ++j)
         {
@@ -592,12 +592,45 @@ void testMemoryAllocationPerformance(const bool old_way)
     }
 }
 
+void testClassInteralUsage()
+{
+    class Foo {
+    public:
+        using FooPtrType   = sparta::SpartaSharedPointer<Foo>;
+        using FooPtrWPType = sparta::SpartaWeakPointer<Foo>;
+
+        void setFoo (const FooPtrType & foo) {
+            foo_ = foo;
+            foo_wp_ = foo;
+        }
+
+        FooPtrType getFoo() const {
+            return foo_wp_.lock();
+        }
+    private:
+        FooPtrType foo_;
+        FooPtrWPType foo_wp_;
+    };
+
+    Foo::FooPtrType fptr(new Foo);
+    {
+        Foo f;
+        f.setFoo(fptr);
+        EXPECT_EQUAL(fptr.use_count(), 2);
+        EXPECT_EQUAL(f.getFoo().use_count(), 3);
+    }
+    EXPECT_EQUAL(fptr.use_count(), 1);
+}
+
 int main()
 {
     testBasicSpartaSharedPointer();
     testBasicAllocationSupport();
     testMoveSupport();
     testUpcastingConversionSupport();
+
+    testClassInteralUsage();
+
     testWeakPointer();
 
     for(uint32_t i = 0; i < 100; ++i) {

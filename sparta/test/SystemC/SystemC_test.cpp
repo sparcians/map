@@ -10,7 +10,7 @@
 #include "sparta/utils/SpartaTester.hpp"
 #include "sparta/utils/SysCSpartaSchedulerAdapter.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 /*
  * Hammers on the scheduler

@@ -214,7 +214,10 @@ private:
                 *emitter_ << YP::BeginMap;
                 sparta_assert(emitter_->good());
 
-                for(TreeNode* child : TreeNodePrivateAttorney::getAllChildren(subtree)){
+                for(TreeNode* child : TreeNodePrivateAttorney::getAllChildren(subtree))
+                {
+                    if(child->isHidden()) { continue; }
+
                     if(verbose){
                         std::cout << "handling child " << child->getLocation() << std::endl;
                     }
@@ -401,7 +404,7 @@ private:
 
 }; // class YAML
 
-    }; // namespace ConfigEmitter
-}; // namespace sparta
+} // namespace ConfigEmitter
+} // namespace sparta
 
 // __CONFIG_EMITTER_YAML__

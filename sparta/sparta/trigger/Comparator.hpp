@@ -24,7 +24,9 @@ template <typename DataT>
 class ComparatorBase
 {
 public:
-    virtual ~ComparatorBase() {}
+    ComparatorBase() = default;
+    ComparatorBase(const ComparatorBase &) = default;
+    virtual ~ComparatorBase() = default;
     virtual bool eval(const DataT & compareTo) const = 0;
     virtual ComparatorBase<DataT> * clone(const DataT & val) const = 0;
 };
@@ -97,4 +99,3 @@ std::unique_ptr<ComparatorBase<DataT>> createComparator(const std::string & op, 
 }
 // namespace sparta
 }
-

@@ -102,8 +102,8 @@ namespace sparta
                 {
                     if(start >= end){
                         throw SpartaException("Cannot construct a Memory AccessWindow \"")
-                            << name << "\"where start address ("
-                            << std::hex << start << ") >= end address (" << end << ")";
+                            << name << "\" where start address (0x"
+                            << std::hex << start << ") >= end address (0x" << end << ")";
                     }
                 }
 
@@ -633,6 +633,5 @@ namespace sparta
                                   const uint8_t *buf) = 0;
 
         }; // class DebugMemoryIF
-    }; // namespace memory
-}; // namespace sparta
-
+    } // namespace memory
+} // namespace sparta

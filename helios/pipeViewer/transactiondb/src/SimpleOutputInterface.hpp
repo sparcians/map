@@ -2,6 +2,7 @@
 
 #include "sparta/pipeViewer/Outputter.hpp"
 #include "sparta/pipeViewer/transaction_structures.hpp"
+#include "sparta/utils/SpartaException.hpp"
 
 namespace sparta{
     namespace pipeViewer{
@@ -54,7 +55,7 @@ namespace sparta{
                     annot_struct_.flags |= CONTINUE_FLAG;
                 }
 
-                assert(start != end);
+                sparta_assert(start != end);
                 if(SPARTA_EXPECT_FALSE(debug_))
                 {
                     std::cerr << " ----> wrote transaction: (" << start << ", "<< end << ") " << dat << std::endl;

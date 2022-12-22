@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.14)
+cmake_minimum_required (VERSION 3.15)
 
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,7 +14,7 @@ include (${SPARTA_BASE}/cmake/sparta-config.cmake)
 include_directories (SYSTEM ${RAPIDJSON_INCLUDE_DIRS})
 
 # Add YAML CPP
-include_directories (${YAML_CPP_INCLUDE_DIR})
+include_directories (SYSTEM ${YAML_CPP_INCLUDE_DIR})
 
 # Add local includes
 include_directories ("./")
@@ -48,6 +48,7 @@ list (APPEND SourceCppFiles
             src/Destination.cpp
             src/EdgeFactory.cpp
             src/EventNode.cpp
+            src/ExportedPort.cpp
             src/Expression.cpp
             src/ExpressionGrammar.cpp
             src/ExpressionTrigger.cpp
@@ -70,6 +71,7 @@ list (APPEND SourceCppFiles
             src/RootTreeNode.cpp
             src/Scheduler.cpp
             src/Scheduleable.cpp
+            src/Scoreboard.cpp
             src/Simulation.cpp
             src/SimulationConfiguration.cpp
             src/SimulationInfo.cpp
@@ -103,7 +105,11 @@ if (COMPILE_WITH_PYTHON)
     python/sparta_support/Completer.cpp)
 endif ()
 
-execute_process (COMMAND bash "-c" "git describe --tags --always" OUTPUT_VARIABLE GIT_REPO_VERSION RESULT_VARIABLE rc)
+execute_process (COMMAND bash "-c" "git describe --tags --always"
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_REPO_VERSION RESULT_VARIABLE rc
+)
+
 if (NOT rc EQUAL "0")
   message (FATAL_ERROR "could not run git command 'git describe --tags --always', rc=${rc}")
 endif ()
@@ -120,10 +126,10 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   message (STATUS "Building Sparta in Debug mode")
 elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
   message (STATUS "Building Sparta in Release mode")
-elseif (CMAKE_BUILD_TYPE STREQUAL "Profile")
-  message (STATUS "Building Sparta in Profile mode")
-  add_compile_options(-pg -O3)
-  add_link_options(-pg)
+elseif (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  message (STATUS "Building Sparta in Release With Debug Info mode")
+elseif (CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+  message (STATUS "Building Sparta in Release Minimal Size mode")
 else ()
   message (FATAL_ERROR "Unknown CMAKE_BUILD_TYPE.  See README.md OR type 'make' at the SPARTA root")
 endif ()
@@ -139,16 +145,18 @@ if (CCACHE_PROGRAM)
 endif ()
 
 # -Wpedantic
-add_definitions(-DSPARTA_VERSION=\"${GIT_REPO_VERSION}\")
-add_compile_options(-Werror -fPIC
+add_definitions(-DSPARTA_VERSION=\"${GIT_REPO_VERSION}\" -DRAPIDJSON_NOMEMBERITERATORCLASS)
+add_compile_options(-Werror -fPIC -Wdeprecated -pedantic -Wextra
   -Wall -Wextra -Winline -Winit-self -Wno-unused-function
   -Wuninitialized -Wno-sequence-point -Wno-inline -Wno-unknown-pragmas
   -Woverloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers)
 
 if (GEN_DEBUG_INFO)
   message (STATUS "Building with debug info -g")
-  add_compile_options ( -g )
-  add_link_options( -g )
+  if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+      add_compile_options ( -g )
+      add_link_options( -g )
+  endif ()
 else ()
   message (STATUS "Building without debug info -g")
 endif ()

@@ -27,15 +27,15 @@ cdef extern from "TransactionDatabaseInterface.hpp" namespace "sparta::pipeViewe
 
         void unload()
         void resetQueryState()
-        void query(uint64_t start_inc, \
-                   uint64_t end_inc, \
+        void query(const uint64_t start_inc, \
+                   const uint64_t end_inc, \
                    void (*cb)(void* obj, \
                               uint64_t tick, \
                               const_interval_idx * content, \
                               c_TransactionInterval_uint64_const_t* transactions, \
                               uint32_t content_len), \
                    void* user_data, \
-                   bint modify_tracking) except +
+                   const bint modify_tracking) except +
 
         uint64_t getFileStart()
         uint64_t getFileEnd()
@@ -73,7 +73,7 @@ cdef extern from "Reader.hpp" namespace "sparta::pipeViewer":
                                   const vector[string]& nameVector, \
                                   const vector[string]& stringVector);
 
-cdef class Transaction(object):
+cdef class Transaction:
 
     FLAGS_MASK_TYPE = 0b111
     CONTINUE_FLAG = 0x10
@@ -261,7 +261,6 @@ cdef class Transaction(object):
             return None
         cdef bytes py_str_preamble
         cdef bytes py_str_body
-        cdef char *value_str
         cdef int i
 
         bytes_re = re.compile("b'(.*?)'")  # Look for b'xxx'
@@ -269,8 +268,8 @@ cdef class Transaction(object):
         py_str_preamble = b''
         py_str_body     = b''
         if self.getType() == ANNOTATION:
-            value_str = <char*>self.__trans.annt
-            if value_str != NULL:
+            if not self.__trans.annt.empty():
+                value_str = bytes(self.__trans.annt)
                 if str(value_str).isnumeric():
                     hex_string = format(int(value_str) & 0xf, 'x')
                     my_display_id = "R" + hex_string + hex_string
@@ -490,8 +489,7 @@ cdef class TransactionDatabase:
             raise RuntimeError(self.OBJECT_DESTROYED_ERROR)
 
         cdef bytes py_s = self.__window.getNodeStates().c_str()
-        cdef str s = <str>py_s
-        return s
+        return py_s.decode('utf-8')
 
     def getNodeDump(self, node_idx, loc_start=0, loc_end=0, tick_entry_limit=0):
         """Gets a string representing a node's content. To fit this on the
@@ -503,8 +501,7 @@ cdef class TransactionDatabase:
             raise RuntimeError(self.OBJECT_DESTROYED_ERROR)
 
         cdef bytes py_s = self.__window.getNodeDump(node_idx, loc_start, loc_end, tick_entry_limit).c_str()
-        cdef str s = <str>py_s
-        return s
+        return py_s.decode('utf-8')
 
     def getSizeInBytes(self):
         """Returns the current (approximate) memory used by this structure in
@@ -598,7 +595,6 @@ cdef class TransactionDatabase:
 
         cdef bytes py_str_preamble
         cdef bytes py_str_body
-        cdef char *value_str
         cdef int i
 
         bytes_re = re.compile("b'(.*?)'")  # Look for b'xxx'
@@ -606,8 +602,8 @@ cdef class TransactionDatabase:
         py_str_preamble = b''
         py_str_body     = b''
         if self.getType() == ANNOTATION:
-            value_str = <char*>self.__trans.annt
-            if value_str != NULL:
+            if not self.__trans.annt.empty():
+                value_str = bytes(self.__trans.annt)
                 value_string = bytes_re.sub('r\1', str(value_str))  # Replace b'xxx' with xxx
                 hex_string = format(int(value_str) & 0xf, 'x')
                 my_display_id = "R" + hex_string + hex_string

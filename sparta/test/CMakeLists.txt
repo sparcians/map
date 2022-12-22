@@ -1,16 +1,25 @@
 PROJECT (SPARTA_TESTS)
 
-# Enable testing
-enable_testing ()
+# Enable testing and configures the test/DartConfiguration.tcl
+include (CTest)
 
 # Setup options for valgrind testing.
-set (VALGRIND_OPTS "--error-exitcode=5 \
-      --leak-check=full \
-      --show-reachable=yes \
-      --undef-value-errors=yes \
-      --suppressions=${SPARTA_BASE}/test/valgrind_leakcheck.supp \
-      --soname-synonyms=somalloc=NONE")
-set (VALGRIND_TEST_LABEL valgrind_test)
+find_program (VALGRIND_TOOL valgrind)
+if (VALGRIND_TOOL)
+  message(STATUS "Valgrind enabled: ${VALGRIND_TOOL})")
+  set(VALGRIND_REGRESS_ENABLED TRUE)
+  set (VALGRIND_OPTS
+    "--error-exitcode=5"
+    "--leak-check=full"
+    "--show-reachable=yes"
+    "--undef-value-errors=yes"
+    "--suppressions=${SPARTA_BASE}/test/valgrind_leakcheck.supp"
+    "--soname-synonyms=somalloc=NONE"
+    )
+  set (VALGRIND_TEST_LABEL valgrind_test)
+else()
+  message(STATUS "valgrind testing NOT enabled")
+endif()
 
 # Since make does not pass the parallel jobs flag to ctest from the user,
 # a fixed count will be set based on core count w/ a max 8
@@ -52,6 +61,7 @@ add_subdirectory (DAG_Ordering)
 add_subdirectory (DataView)
 add_subdirectory (Enum)
 add_subdirectory (Events)
+add_subdirectory (ExportedPort)
 add_subdirectory (FastCheckpoint)
 add_subdirectory (KeyPairCollect)
 add_subdirectory (KeyValue)
@@ -76,6 +86,7 @@ add_subdirectory (ReportVerifier)
 add_subdirectory (ResourceAssert)
 add_subdirectory (SpartaException)
 add_subdirectory (Scheduler)
+add_subdirectory (Scoreboard)
 add_subdirectory (SharedData)
 add_subdirectory (SimDB)
 add_subdirectory (SmartLexCast)

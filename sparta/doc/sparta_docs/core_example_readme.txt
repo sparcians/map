@@ -14,6 +14,10 @@
   instructions pulled from the PowerPC ISA listed in a table in
   Fetch.cpp.
 
+  For a more concrete core performance model, check out the RISC-V
+  Performance Model based on Sparta:
+     https://github.com/riscv-software-src/riscv-perf-model
+
   The example touches on Sparta command line simulation, construction
   phasing, unit creation, port creation and binding, event creation,
   and data transfer.
@@ -196,7 +200,7 @@
                        -l top.cpu.core?.fetch  info fetch_decode.out
   \endcode
 
-  Enable a Decode and Fetch "info" log for 1K instructiona _after_ the
+  Enable a Decode and Fetch "info" log for 1K instructions _after_ the
   first 100K instructions:
 
   \code

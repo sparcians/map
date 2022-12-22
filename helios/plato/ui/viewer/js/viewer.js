@@ -119,6 +119,35 @@ const viewer = new function () {
 
     this.min_widget_height = 20
 
+    this._load_source_dirs = async function(data_source_dirs) {
+        console.log("source dir", data_source_dirs)
+        if (this.data_manager === undefined) {
+            this.data_manager = new DataManager(this.prefix,
+                                                data_source_dirs[0],
+                                                (msg, detail)=>{ this.show_error_popup(msg,detail) },
+                                                (status)=>{ this.deactivate_widgets(this.wait_title, status) })
+        }
+
+        const browser = new RemoteDirBrowser(this.prefix, (msg, detail)=>{ this.show_error_popup(msg,detail) })
+        for (const data_dir of data_source_dirs) {
+            let obj = await browser.get(data_dir)
+
+            //obj.subdirectories
+
+            // Load all sources into plato
+            await this.data_manager.append_sources(obj.source_file_names)
+            time_log('done with appending sources?')
+        }
+
+        // TODO: This should require a hook on reconnect too.. so that data-sources & processors can be re-requested immediately
+        //await this.data_manager.refresh((ms)=>{ this.deactivate_widgets('Getting data-sources', 'Receiving Data') },
+        //                                {data_dirs: data_source_dirs}) // TODO: Display Wait Time using 2nd callback
+
+        // TODO: Load sources here by selection
+
+        this.on_data_loaded()
+    }
+
     // Handle internal periodic timer
     this._internal_gui_timer = function () {
         // This is a periodic internal timer for stat updates and heartbeats.
@@ -140,14 +169,12 @@ const viewer = new function () {
 
         // Datasource info (if created)
         if (typeof this.data_manager != 'undefined') {
-            $('#data-source-path').html(squish_string(this.data_manager.data_dir, 60))
-            $('#data-source-path').attr('title', this.data_manager.data_dir)
-            $('#data-source-count').html(this.data_manager.get_num_sources())
-            const source_status = this.data_manager.status()
-            const jsource_status = $('#data-server-status')
-            jsource_status.html(source_status)
-            jsource_status.css('background-color', status_color(source_status))
+            var source_status = this.data_manager.status()
         }
+
+        const jsource_status = $('#data-server-status')
+        jsource_status.html(source_status)
+        jsource_status.css('background-color', status_color(source_status))
 
         // Show notice of no widgets if appropriate
         if (this.pwidgets.length == 0) {
@@ -438,37 +465,20 @@ const viewer = new function () {
             const qparams = get_url_vars()
 
             // Get the data ready asynchronously
-            const wait_title = 'Getting Data-Sources'
-            this.deactivate_widgets(wait_title, 'Please wait')
+            this.wait_title = 'Getting Data-Sources'
+            this.deactivate_widgets(this.wait_title, 'Please wait')
 
             // TODO: Load data sources based on a menu
-            const data_source_dirs = (typeof qparams.dataSourceDir == 'undefined')
-                                ?
-                                ['/please/use/dataSourceDir/to/set/search/path']
-                                : qparams.dataSourceDir.split(',')
-            this.data_manager = new DataManager(this.prefix,
-                                                data_source_dirs[0],
-                                                (msg, detail)=>{ this.show_error_popup(msg,detail) },
-                                                (status)=>{ this.deactivate_widgets(wait_title, status) })
-
-            const browser = new RemoteDirBrowser(this.prefix, (msg, detail)=>{ this.show_error_popup(msg,detail) })
-            for (const data_dir of data_source_dirs) {
-                let obj = await browser.get(data_dir)
-
-                //obj.subdirectories
-
-                // Load all sources into plato
-                await this.data_manager.append_sources(obj.source_file_names)
-                time_log('done with appending sources?')
+            if (typeof qparams.dataSourceDir !== 'undefined') {
+                $('#data-source-path').val(qparams.dataSourceDir)
+                $('#data-source-path').attr(qparams.dataSourceDir)
+                this._load_source_dirs(qparams.dataSourceDir.split(','))
             }
 
-            // TODO: This should require a hook on reconnect too.. so that data-sources & processors can be re-requested immediately
-            //await this.data_manager.refresh((ms)=>{ this.deactivate_widgets('Getting data-sources', 'Receiving Data') },
-            //                                {data_dirs: data_source_dirs}) // TODO: Display Wait Time using 2nd callback
-
-            // TODO: Load sources here by selection
-
-            this.on_data_loaded()
+            const data_source_ld_btn = $('#data-source-ld-btn')
+            data_source_ld_btn.on('click', () => {
+                this._load_source_dirs($('#data-source-path').val().split(','))
+            })
 
             // Load an initial layout
             try {

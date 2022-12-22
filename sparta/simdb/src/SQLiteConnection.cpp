@@ -227,7 +227,7 @@ std::string getColumnsSqlCommand(const Table & table)
     if (command.back() == ',') { command.pop_back(); }
 
     return command;
-};
+}
 
 //! Execute a SQL statement against an open database connection.
 //! The optional callback arguments are only used for SELECT

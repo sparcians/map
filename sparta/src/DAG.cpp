@@ -188,7 +188,7 @@ namespace sparta
     }
 
 
-bool DAG::sort()
+    bool DAG::sort()
     {
         uint32_t vcount = alloc_vertices_.size();
         num_groups_ = 1;

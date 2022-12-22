@@ -965,8 +965,8 @@ uint32_t TreeNode::findImmediateChildren_(std::regex& expr,
                                           std::vector<std::vector<std::string>>& replacements,
                                           bool allow_private) {
     uint32_t num_found = 0;
-    for(ChildNameMapping::reference chp : names_){
-
+    for(ChildNameMapping::reference chp : names_)
+    {
         std::vector<std::string> replaced; // Replacements per name
         if(identityMatchesPattern_(chp.first, expr, replaced)){
             TreeNode* child = chp.second;
@@ -976,8 +976,11 @@ uint32_t TreeNode::findImmediateChildren_(std::regex& expr,
                 if (consider_child)
                 {
                     ++num_found;
-                    found.push_back(child);
-                    replacements.push_back(replaced);
+                    // Can already be added/found if an alias matched
+                    if(std::find(found.begin(), found.end(), child) == found.end()) {
+                        found.push_back(child);
+                        replacements.push_back(replaced);
+                    }
                 }
 
             }
@@ -1008,8 +1011,10 @@ uint32_t TreeNode::findImmediateChildren_(std::regex& expr,
             {
                 if(child){ // Ensure child is not null (e.g. grouping)
                     ++num_found;
-                    found.push_back(child);
-                    replacements.push_back(replaced);
+                    if(std::find(found.begin(), found.end(), child) == found.end()) {
+                        found.push_back(child);
+                        replacements.push_back(replaced);
+                    }
                 }
             }
         }
@@ -1098,7 +1103,8 @@ bool TreeNode::locationMatchesPattern(const std::string& pattern,
 
 TreeNode* TreeNode::getChild_(const std::string& name,
                               bool must_exist,
-                              bool private_also) {
+                              bool private_also)
+{
     incrementGetChildCount_(name);
 
     size_t name_pos = 0;
@@ -1106,8 +1112,8 @@ TreeNode* TreeNode::getChild_(const std::string& name,
     if(name.size() == 0){
         return this;
     }
-    while(node != nullptr && name_pos != std::string::npos){
-
+    while(node != nullptr && name_pos != std::string::npos)
+    {
         std::string immediate_child_name;
         immediate_child_name = getNextName(name, name_pos);
 
@@ -1663,7 +1669,7 @@ void TreeNode::incrementGetChildCount_(const std::string& name) const {
                   << "regularly while the simulator is running because this is "
                   << "slow" << std::endl;
     }
-};
+}
 
 // Private Tree-Building Helpers
 
@@ -1794,8 +1800,7 @@ void TreeNode::addChild_(TreeNode* child, bool inherit_phase) {
         }
 
         if(child->getGroup().size() > 0){ // Group may be empty string
-            // Ignore group mappings for now
-            //addChildNameMapping_(child->getGroup(), 0);
+            addChildNameMapping_(child->getGroup() + std::to_string(child->getGroupIdx()), child);
         }
 
         // Connect child to parent.
@@ -1978,8 +1983,14 @@ TreeNode*
 TreeNode::getImmediateChildByIdentity_(const std::string& name,
                                        bool must_exist)
 {
-    ChildNameMapping::iterator it = names_.find(name);
-    if(it == names_.end()){
+    // What's in a name?  The name could be an alias or the actual
+    // TreeNode.  Look for the actual TreeNode name first, then return
+    // the next alias.
+    const auto it = names_.equal_range(name);
+
+    // No match
+    if(it.first == it.second)
+    {
         if(false == must_exist){
             return nullptr;
         }
@@ -1994,23 +2005,41 @@ TreeNode::getImmediateChildByIdentity_(const std::string& name,
             << name << "\" in node \"" << getLocation() << "\". Valid names are:\n"
             << ss.str();
     }
-    if(nullptr == it->second){
-        if(false == must_exist){
-            return nullptr;
+    else
+    {
+        for(auto item = it.first; item != it.second; ++item)
+        {
+            if(item->first == name) {
+                if(nullptr != item->second) {
+                    return item->second;
+                }
+            }
         }
-        throw SpartaException("name \"")
-            << name << "\" resolved to a group (not a child) in node \""
-            << getLocation() << "\"";
     }
-    return it->second;
+
+    if(false == must_exist){
+        return nullptr;
+    }
+
+    throw SpartaException("name \"")
+        << name << "\" resolved to a group (not a child) in node \""
+        << getLocation() << "\"";
+
+    return nullptr;
 }
 
 const TreeNode*
 TreeNode::getImmediateChildByIdentity_(const std::string& name,
                                        bool must_exist) const
 {
-    ChildNameMapping::const_iterator it = names_.find(name);
-    if(it == names_.end()){
+    // What's in a name?  The name could be an alias or the actual
+    // TreeNode.  Look for the actual TreeNode name first, then return
+    // the next alias.
+    const auto it = names_.equal_range(name);
+
+    // No match
+    if(it.first == it.second)
+    {
         if(false == must_exist){
             return nullptr;
         }
@@ -2025,15 +2054,27 @@ TreeNode::getImmediateChildByIdentity_(const std::string& name,
             << name << "\" in node \"" << getLocation() << "\". Valid names are:\n"
             << ss.str();
     }
-    if(nullptr == it->second){
-        if(false == must_exist){
-            return nullptr;
+    else
+    {
+        for(auto item = it.first; item != it.second; ++item)
+        {
+            if(item->first == name) {
+                if(nullptr != item->second) {
+                    return item->second;
+                }
+            }
         }
-        throw SpartaException("name \"")
-            << name << "\" resolved to a group (not a child) in node \""
-            << getLocation() << "\"";
     }
-    return it->second;
+
+    if(false == must_exist){
+        return nullptr;
+    }
+
+    throw SpartaException("name \"")
+        << name << "\" resolved to a group (not a child) in node \""
+        << getLocation() << "\"";
+
+    return nullptr;
 }
 
 void TreeNode::ensureNoParent_(const char* action) {
@@ -2924,7 +2965,7 @@ void TreeNode::addChildNameMapping_(const std::string& name,
                   "Name of child identifier cannot be empty string. Parent is "
                   << getLocation());
 
-    names_[name] = child;
+    names_.emplace(name, child);
 }
 
 } // namespace sparta

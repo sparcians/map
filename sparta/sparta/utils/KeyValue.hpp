@@ -8,7 +8,7 @@
 
 #include <boost/mpl/for_each.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
 #include <boost/variant.hpp>
 #include <boost/foreach.hpp>
 #include <boost/mpl/vector.hpp>
@@ -60,7 +60,7 @@ namespace sparta
                       std::vector<int64_t>,
                       std::vector<uint64_t>,
                       std::vector<double>,
-                      std::vector<std::string>);
+                      std::vector<std::string>)
 
     //! \brief The type-to-type name map.  Not really necessary, but useful.
     typedef std::map<std::string, std::string> TypeToTypeNameMap;
@@ -366,4 +366,3 @@ namespace sparta
     TypeToTypeNameMap KeyValue::GBL_type_name_map;                      \
     static NameMapper mapper;                                           \
     }
-

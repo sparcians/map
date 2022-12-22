@@ -40,9 +40,6 @@
   -# \ref end_user <br>
   Simulator End-User Documentation for Sparta CLI Simulators<br>&nbsp;
 
-  -# \ref application <br>
-  Simulator front-end integration with sparta<br>&nbsp;
-
   -# \ref formats <br>
   File formats used by Sparta<br>&nbsp;
 
@@ -53,3 +50,9 @@
   Suggested best practices for using Sparta<br>&nbsp;
 
 */
+
+/*
+ * TBD
+ * -# \ref application <br>
+ * Simulator front-end integration with sparta<br>&nbsp;
+ */

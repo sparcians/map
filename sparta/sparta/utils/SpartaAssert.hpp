@@ -24,7 +24,7 @@
  * if(SPARTA_EXPECT_FALSE(my_usually_false_condition)) {}
  * \endcode
  */
-#define SPARTA_EXPECT_FALSE(x) __builtin_expect((x), false)
+#define SPARTA_EXPECT_FALSE(x) __builtin_expect(!!(x), false)
 
 /*!
  * \def SPARTA_EXPECT_TRUE
@@ -35,7 +35,7 @@
  * if(SPARTA_EXPECT_TRUE(my_usually_true_condition)) {}
  * \endcode
  */
-#define SPARTA_EXPECT_TRUE(x) __builtin_expect((x), true)
+#define SPARTA_EXPECT_TRUE(x) __builtin_expect(!!(x), true)
 
 #ifndef DO_NOT_DOCUMENT
 
@@ -82,7 +82,7 @@
                                     std::terminate(); }
 
 #define VA_NARGS_IMPL(_1, _2, _3, _4, _5, N, ...) N
-#define VA_NARGS(...) VA_NARGS_IMPL(__VA_ARGS__, 5, 4, 3, 2, 1)
+#define VA_NARGS(...) VA_NARGS_IMPL(__VA_ARGS__, 5, 4, 3, 2, 1, 0)
 #define sparta_assert_impl2(count, ...) sparta_assert##count(__VA_ARGS__)
 #define sparta_assert_impl(count, ...)  sparta_assert_impl2(count, __VA_ARGS__)
 #define sparta_abort_impl2(count, ...) sparta_abort##count(__VA_ARGS__)

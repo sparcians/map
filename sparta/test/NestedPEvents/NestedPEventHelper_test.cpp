@@ -105,11 +105,11 @@ public:
     }
 
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("Draw-P_Val_1", &DrawPacket::getVal1, std::ios::hex),
-                        SPARTA_ADDPAIR("Draw_P_Val_2", &DrawPacket::getVal2, std::ios::hex),
-                        SPARTA_ADDPAIR("Draw-P_Val_3", &DrawPacket::getVal3),
-                        SPARTA_ADDPAIR("Draw-P_Val_4", &DrawPacket::getVal4),
-                        SPARTA_ADDPAIR("Draw-P_Val_5", &DrawPacket::getPair),
-                        SPARTA_ADDPAIR("Draw-P_Val_6", &DrawPacket::getPair));
+                          SPARTA_ADDPAIR("Draw_P_Val_2", &DrawPacket::getVal2, std::ios::hex),
+                          SPARTA_ADDPAIR("Draw-P_Val_3", &DrawPacket::getVal3),
+                          SPARTA_ADDPAIR("Draw-P_Val_4", &DrawPacket::getVal4),
+                          SPARTA_ADDPAIR("Draw-P_Val_5", &DrawPacket::getPair),
+                          SPARTA_ADDPAIR("Draw-P_Val_6", &DrawPacket::getPair))
 };
 
 //! Forward Declaration of class.
@@ -143,10 +143,10 @@ public:
     }
 
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("D1_Val_1", &Derived_1::getVal1, std::ios::hex),
-                        SPARTA_ADDPAIR("D1_Val_2", &Derived_1::getVal2),
-                        SPARTA_ADDPAIR("D1_Val_3", &Derived_1::getPairs),
-                        SPARTA_ADDPAIR("D1_Val_4", &Derived_1::getPairs),
-                        SPARTA_FLATTEN(&Derived_1::getDP));
+                          SPARTA_ADDPAIR("D1_Val_2", &Derived_1::getVal2),
+                          SPARTA_ADDPAIR("D1_Val_3", &Derived_1::getPairs),
+                          SPARTA_ADDPAIR("D1_Val_4", &Derived_1::getPairs),
+                          SPARTA_FLATTEN(&Derived_1::getDP))
 };
 
 //! Forward Declaration of class.
@@ -173,7 +173,7 @@ public:
     }
 
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("D2_Val_1", &Derived_2::getVal1, std::ios::hex),
-                        SPARTA_ADDPAIR("D2_Val_2", &Derived_2::getVal2));
+                          SPARTA_ADDPAIR("D2_Val_2", &Derived_2::getVal2))
 };
 
 //! Forward Declaration of class.
@@ -205,10 +205,10 @@ public:
     }
 
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("D3_Val_1", &Derived_3::getVal1, std::ios::oct),
-                        SPARTA_ADDPAIR("D3_Val_2", &Derived_3::getVal2, std::ios::hex),
-                        SPARTA_ADDPAIR("D3_Val_3", &Derived_3::getPairs),
-                        SPARTA_ADDPAIR("D3_Val_4", &Derived_3::getPairs),
-                        SPARTA_ADDPAIR("D3_Val_5", &Derived_3::getString));
+                          SPARTA_ADDPAIR("D3_Val_2", &Derived_3::getVal2, std::ios::hex),
+                          SPARTA_ADDPAIR("D3_Val_3", &Derived_3::getPairs),
+                          SPARTA_ADDPAIR("D3_Val_4", &Derived_3::getPairs),
+                          SPARTA_ADDPAIR("D3_Val_5", &Derived_3::getString))
 };
 
 //! Forward Declaration of class.
@@ -247,12 +247,12 @@ public:
     }
 
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("D4_Val_1", &Derived_4::getBV),
-                        SPARTA_ADDPAIR("D4_Val_2", &Derived_4::getVal1, std::ios::hex),
-                        SPARTA_ADDPAIR("D4_Val_3", &Derived_4::getVal2, std::ios::oct),
-                        SPARTA_ADDPAIR("D4_Val_4", &Derived_4::getFV),
-                        SPARTA_ADDPAIR("D4_Val_5", &Derived_4::getPairs),
-                        SPARTA_ADDPAIR("D4_Val_6", &Derived_4::getPairs),
-                        SPARTA_ADDPAIR("D4_Val_7", &Derived_4::getString));
+                          SPARTA_ADDPAIR("D4_Val_2", &Derived_4::getVal1, std::ios::hex),
+                          SPARTA_ADDPAIR("D4_Val_3", &Derived_4::getVal2, std::ios::oct),
+                          SPARTA_ADDPAIR("D4_Val_4", &Derived_4::getFV),
+                          SPARTA_ADDPAIR("D4_Val_5", &Derived_4::getPairs),
+                          SPARTA_ADDPAIR("D4_Val_6", &Derived_4::getPairs),
+                          SPARTA_ADDPAIR("D4_Val_7", &Derived_4::getString))
 };
 //! Forward Declaration of class.
 class CollectedA;
@@ -300,11 +300,11 @@ public:
     }
 
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("i_val_", &A::geti_),
-                        SPARTA_ADDPAIR("j_val_", &A::getj_),
-                        SPARTA_ADDPAIR("k_val_", &A::getk_),
-                        SPARTA_ADDPAIR("l_val_", &A::getl_, std::ios::hex),
-                        SPARTA_ADDPAIR("x_val_", &A::getx_),
-                        SPARTA_FLATTEN(&A::getBP));
+                          SPARTA_ADDPAIR("j_val_", &A::getj_),
+                          SPARTA_ADDPAIR("k_val_", &A::getk_),
+                          SPARTA_ADDPAIR("l_val_", &A::getl_, std::ios::hex),
+                          SPARTA_ADDPAIR("x_val_", &A::getx_),
+                          SPARTA_FLATTEN(&A::getBP))
 };
 
 class CollectedB;
@@ -350,13 +350,13 @@ public:
     }
 
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("a_val_", &B::geti_, std::ios::oct),
-                        SPARTA_ADDPAIR("b_val_", &B::getj_, std::ios::hex),
-                        SPARTA_ADDPAIR("c_val_", &B::getk_),
-                        SPARTA_ADDPAIR("d_val_", &B::getl_),
-                        SPARTA_ADDPAIR("e_val_", &B::getx_),
-                        SPARTA_ADDPAIR("char_pointer_", &B::getCharP_),
-                        SPARTA_FLATTEN(&B::getBP),
-                        SPARTA_FLATTEN(&B::getNestedPtr));
+                          SPARTA_ADDPAIR("b_val_", &B::getj_, std::ios::hex),
+                          SPARTA_ADDPAIR("c_val_", &B::getk_),
+                          SPARTA_ADDPAIR("d_val_", &B::getl_),
+                          SPARTA_ADDPAIR("e_val_", &B::getx_),
+                          SPARTA_ADDPAIR("char_pointer_", &B::getCharP_),
+                          SPARTA_FLATTEN(&B::getBP),
+                          SPARTA_FLATTEN(&B::getNestedPtr))
 };
 
 class LambdaCollectPD;
@@ -419,16 +419,16 @@ public:
     }
 
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("lambda_random_val_", f_1, std::ios::hex),
-                        SPARTA_ADDPAIR("lambda_random_2_val_", f_2, std::ios::hex),
-                        SPARTA_ADDPAIR("lambda_d_val_", f_3, std::ios::hex),
-                        SPARTA_ADDPAIR("lambda_d+t_val_", f_4, std::ios::hex),
-                        SPARTA_ADDPAIR("lambda_i+j_val_", f_5, std::ios::hex),
-                        SPARTA_ADDPAIR("lambda_i*j_val_", f_6, std::ios::hex),
-                        SPARTA_ADDPAIR("lambda_i-j+t_val_", f_7, std::ios::hex),
-                        SPARTA_ADDPAIR("lambda_i/j+t*d_val_", f_8, std::ios::hex),
-                        SPARTA_ADDPAIR("lambda_i/j+t*k+d_val_", f_9, std::ios::hex),
-                        SPARTA_ADDPAIR("lambda_i/j*k+t/i*d+k^j_val_", f_10, std::ios::hex),
-                        SPARTA_ADDPAIR("member_lambda_i+j-k_val_", &LambdaCollect::testLambda_f, std::ios::hex));
+                          SPARTA_ADDPAIR("lambda_random_2_val_", f_2, std::ios::hex),
+                          SPARTA_ADDPAIR("lambda_d_val_", f_3, std::ios::hex),
+                          SPARTA_ADDPAIR("lambda_d+t_val_", f_4, std::ios::hex),
+                          SPARTA_ADDPAIR("lambda_i+j_val_", f_5, std::ios::hex),
+                          SPARTA_ADDPAIR("lambda_i*j_val_", f_6, std::ios::hex),
+                          SPARTA_ADDPAIR("lambda_i-j+t_val_", f_7, std::ios::hex),
+                          SPARTA_ADDPAIR("lambda_i/j+t*d_val_", f_8, std::ios::hex),
+                          SPARTA_ADDPAIR("lambda_i/j+t*k+d_val_", f_9, std::ios::hex),
+                          SPARTA_ADDPAIR("lambda_i/j*k+t/i*d+k^j_val_", f_10, std::ios::hex),
+                          SPARTA_ADDPAIR("member_lambda_i+j-k_val_", &LambdaCollect::testLambda_f, std::ios::hex))
 };
 
 int main() {

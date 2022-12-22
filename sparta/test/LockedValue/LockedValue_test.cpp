@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-TEST_INIT;
+TEST_INIT
 #define PRINT_ENTER_TEST \
   std::cout << std::endl; \
   std::cout << "*************************************************************" \

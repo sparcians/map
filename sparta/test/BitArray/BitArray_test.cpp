@@ -4,7 +4,7 @@
 #include "sparta/utils/BitArray.hpp"
 using namespace sparta::utils;
 
-TEST_INIT;
+TEST_INIT
 
 template <typename T>
 static void testValueConstructor(const uint64_t value)

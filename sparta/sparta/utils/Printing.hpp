@@ -101,7 +101,7 @@ namespace utils
      * \brief Converting a stl pair of intrinsic types (and std::string) to a
      * string
      * \tparam T first type in pair to stringize
-     * \tparam U second type in pair sto stringize
+     * \tparam U second type in pair to stringize
      * \param p pair to print (of type <T,U>)
      * \param base Base of displayed integers
      * \param string_quote Quote sequence for printing strings; defaults to no quoting
@@ -114,6 +114,25 @@ namespace utils
         std::ios_base::fmtflags old = setIOSFlags(out, base);
         out << stringize_value(p.first, base, string_quote) << ":"
             << stringize_value(p.second, base, string_quote);
+        out.setf(old);
+        return out.str();
+    }
+
+    /*!
+     * \brief Converting a stl tuple of intrinsic types (and std::string) to a
+     * string
+     * \tparam Ts types of tuple
+     * \param t tuple to print
+     * \param base Base of displayed integers
+     * \param string_quote Quote sequence for printing strings; defaults to no quoting
+     * \return std::string of form "t[0]:t[1]:...:t[N-1]"
+     */
+    template <class... Ts>
+    inline std::string stringize_value(const std::tuple<Ts...>& t, DisplayBase base=BASE_DEC,
+                                       const std::string& string_quote="") {
+        std::stringstream out;
+        std::ios_base::fmtflags old = setIOSFlags(out, base);
+        stringize_tuple(out, t, base, string_quote, std::index_sequence_for<Ts...>{});
         out.setf(old);
         return out.str();
     }
@@ -169,6 +188,15 @@ namespace utils
         return v;
     }
 
+    //! Helper for printing STL tuple
+    template <class T, std::size_t... Is>
+    inline void stringize_tuple(std::stringstream& ss,
+                                const T& t, DisplayBase base,
+                                const std::string& string_quote,
+                                std::index_sequence<Is...>) {
+        ((ss << (Is == 0 ? "" : ":") << stringize_value(std::get<Is>(t), base, string_quote)), ...);
+    }
+
 } // namespace utils
 } // namespace sparta
 
@@ -187,6 +215,14 @@ namespace std {
     inline std::basic_ostream<Ch,Tr>&
     operator<< (std::basic_ostream<Ch,Tr>& out, std::pair<T,U> const & p){
         out << sparta::utils::stringize_value(p);
+        return out;
+    }
+
+    //! Tuple Printer
+    template<class Ch, class... Ts, class Tr>
+    inline std::basic_ostream<Ch,Tr>&
+    operator<< (std::basic_ostream<Ch,Tr>& out, std::tuple<Ts...> const & t){
+        out << sparta::utils::stringize_value(t);
         return out;
     }
 }

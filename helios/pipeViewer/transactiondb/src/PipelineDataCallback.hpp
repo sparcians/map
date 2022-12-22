@@ -7,8 +7,7 @@
 #include "sparta/pipeViewer/transaction_structures.hpp"
 #include "sparta/utils/SpartaException.hpp"
 
-namespace sparta{
-namespace pipeViewer{
+namespace sparta::pipeViewer {
     /**
      * \class PipelineDataCallback
      * \brief An abstract class that recieves transactions as they are
@@ -19,17 +18,16 @@ namespace pipeViewer{
     public:
         virtual ~PipelineDataCallback() {}
 
-        virtual void foundTransactionRecord(transaction_t*)
+        virtual void foundTransactionRecord(const transaction_t*)
         {
             throw sparta::SpartaException("Read transaction with unknown transaction type");
         }
-        virtual void foundInstRecord(instruction_t*) = 0;
-        virtual void foundMemRecord(memoryoperation_t*) = 0;
-        virtual void foundAnnotationRecord(annotation_t*) = 0;
+        virtual void foundInstRecord(const instruction_t*) = 0;
+        virtual void foundMemRecord(const memoryoperation_t*) = 0;
+        virtual void foundAnnotationRecord(const annotation_t*) = 0;
         //! Add a virtual method for the case we find a Pair Transaction Record.
         // This method is called back in TransactionDatabaseInterval to build the
         // TransactionInterval to be used by pipeViewer.
-        virtual void foundPairRecord(pair_t*) = 0;
+        virtual void foundPairRecord(const pair_t*) = 0;
     };
-}//NAMESPACE:pipeViewer
-}//NAMESPACE:sparta
+}//NAMESPACE:sparta::pipeViewer

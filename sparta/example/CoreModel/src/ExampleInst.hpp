@@ -9,6 +9,7 @@
 #include "sparta/pairs/SpartaKeyPairs.hpp"
 #include "sparta/simulation/State.hpp"
 #include "sparta/utils/SpartaSharedPointer.hpp"
+#include "sparta/utils/SpartaSharedPointerAllocator.hpp"
 
 #include <cstdlib>
 #include <ostream>
@@ -160,7 +161,7 @@ namespace core_example
         sparta::State<Status> status_state_;
     };
 
-    extern sparta::SpartaSharedPointer<ExampleInst>::SpartaSharedPointerAllocator example_inst_allocator;
+    extern sparta::SpartaSharedPointerAllocator<ExampleInst> example_inst_allocator;
 
     inline std::ostream & operator<<(std::ostream & os, const ExampleInst & inst) {
         os << inst.getMnemonic();
@@ -246,6 +247,6 @@ namespace core_example
                               SPARTA_ADDPAIR("unit",     &ExampleInst::getUnit),
                               SPARTA_ADDPAIR("latency",  &ExampleInst::getExecuteTime),
                               SPARTA_ADDPAIR("raddr",    &ExampleInst::getRAdr, std::ios::hex),
-                              SPARTA_ADDPAIR("vaddr",    &ExampleInst::getVAdr, std::ios::hex));
+                              SPARTA_ADDPAIR("vaddr",    &ExampleInst::getVAdr, std::ios::hex))
     };
 }

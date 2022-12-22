@@ -19,6 +19,7 @@
 #include "sparta/statistics/StatisticSet.hpp"
 #include "sparta/collection/IterableCollector.hpp"
 #include "sparta/statistics/InstrumentationNode.hpp"
+#include "sparta/utils/IteratorTraits.hpp"
 
 namespace sparta
 {
@@ -223,7 +224,7 @@ namespace sparta
          *
          */
         template <bool is_const_iterator = true>
-        class QueueIterator : public std::iterator<std::bidirectional_iterator_tag, value_type>
+        class QueueIterator : public utils::IteratorTraits<std::bidirectional_iterator_tag, value_type>
         {
         private:
             using DataReferenceType = typename std::conditional<is_const_iterator,

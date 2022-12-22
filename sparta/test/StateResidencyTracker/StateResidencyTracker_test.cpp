@@ -10,7 +10,7 @@
 #include "sparta/utils/Enum.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 // Dummy enum class OperandState
 enum class OperandState : uint32_t {

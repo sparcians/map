@@ -101,6 +101,20 @@ namespace sparta
             //! @{
             ////////////////////////////////////////////////////////////////////////
 
+            /**
+             * \brief Read a block of memory
+             *
+             * \param addr The unmasked address to read
+             * \param size The amount of memory to read
+             * \param buf  The buffer to read the data into
+             * \param in_supplement  Metadata supplement (in data) to pass to the eventual memory interface
+             * \param out_supplement Metadata supplement (out data) to pass to the eventual memory interface
+             * \throw MemoryReadError if there's an issue reading memory at that address and size
+             *
+             * This method will attempt to map the given address to an
+             * internal memory interface and read data from that
+             * interface.  If the eventual interface fails, this method will throw
+             */
             void read(addr_t addr,
                       addr_t size,
                       uint8_t *buf,
@@ -114,7 +128,21 @@ namespace sparta
                 }
             }
 
-
+            /**
+             * \brief Write a block of memory
+             *
+             * \param addr The unmasked address to write to
+             * \param size The amount of memory to write
+             * \param buf  The buffer of data to write
+             * \param in_supplement  Metadata supplement (in data) to pass to the eventual memory interface
+             * \param out_supplement Metadata supplement (out data) to pass to the eventual memory interface
+             * \throw MemoryReadError if there's an issue writing memory at that address and size
+             *
+             * This method will attempt to map the given address to an
+             * internal memory interface write read data to that
+             * interface.  If the eventual interface fails, this
+             * method will throw
+             */
             void write(addr_t addr,
                        addr_t size,
                        const uint8_t *buf,
@@ -126,6 +154,35 @@ namespace sparta
                     verifyInAccessWindows(addr, size);
                     throw MemoryReadError(addr, size, "Unkonwn reason");
                 }
+            }
+
+            ////////////////////////////////////////////////////////////////////////
+            //! @}
+
+            //! \name DMI Access
+            //! @{
+            ////////////////////////////////////////////////////////////////////////
+
+            /**
+             * \brief Get a DMI blocking interface at the given address and size
+             *
+             * \param addr The intended address to read/write directly to/from
+             * \param size The intended block size
+             *
+             * \return Pointer a valid DMIBlockingMemoryIF that can
+             *         support the given address/size combo.  nullptr if not supported
+             *
+             * SimpleMemoryMap will find the equivalent mapped memory
+             * interface that can support the given address and size
+             * combo.  If the end memory interface cannot support DMI
+             * or the given address/size, combo, nullptr will be returned.
+             */
+            DMIBlockingMemoryIF *getDMI(addr_t addr, addr_t size) override {
+                const Mapping * m = findMapping(addr);
+                if(!m) {
+                    return nullptr;
+                }
+                return m->memif->getDMI(m->mapAddress(addr), size);
             }
 
             ////////////////////////////////////////////////////////////////////////
@@ -219,5 +276,5 @@ namespace sparta
             //! @}
 
         }; // class SimpleMemoryMapNode
-    }; // namespace memory
-}; // namespace sparta
+    } // namespace memory
+} // namespace sparta

@@ -35,23 +35,97 @@ zip_keys:                       # [osx]
     - MACOSX_DEPLOYMENT_TARGET  # [osx]
 
 
-# pin linux compiler to old build before the sysroot change because clang 9 wasn't updated
-# to work with latest build of gcc
-c_compiler:
-  - gcc                        # [linux]
-  - clang                      # [osx]
-  - vs2017                     # [win]
-c_compiler_version:            # [unix]
-  - 11                         # [osx and arm64]
-  - 10                         # [osx and x86_64]
-  - 7                          # [linux64 or aarch64]
-  - 8                          # [ppc64le or armv7l]
-cxx_compiler:
-  - gxx                        # [linux]
-  - clangxx                    # [osx]
-  - vs2017                     # [win]
-cxx_compiler_version:          # [unix]
-  - 11                         # [osx and arm64]
-  - 10                         # [osx and x86_64]
-  - 7                          # [linux64 or aarch64]
-  - 8                          # [ppc64le or armv7l]
+# linux_clang_version is not a part of zip_keys
+# from conda-forge, if you want to, you can 
+# easily matrix the linux builds using the same
+# backend from gcc but adding new clang versions
+# here
+linux_clang_version:           # [linux]
+  - 13                         # [linux]
+#  - 11                         # [linux]
+
+# limit ourselves to a single python version
+# since numpy and python_impl are zipped with it, we
+# must also override those to a single value
+numpy:
+    - 1.19
+python:
+    - 3.8.* *_cpython
+python_impl:
+    - cpython
+
+
+
+# The remainder of the file is an example of how you can
+# specify multiple versions of compilers for each platform
+#
+# You have to be aware of everything that conda-forge puts
+# into it's zip_keys configuration and make sure that you
+# provide lists of the same size for all of the dimensions
+# that are zipped on all platforms.
+# c_compiler:
+#   - gcc                        # [linux]
+#   - clang                      # [osx]
+# c_compiler_version:            # [unix]
+#   - 13                         # [osx]
+#   - 11                         # [osx]
+#   - 11                         # [linux]
+#   - 10                         # [linux]
+# cxx_compiler:
+#   - gxx                        # [linux]
+#   - clangxx                    # [osx]
+# cxx_compiler_version:          # [unix]
+#   - 13                         # [osx]
+#   - 11                         # [osx]
+#   - 11                         # [linux]
+#   - 10                         # [linux]
+# # cf uses gfortran on both linux and osx
+# # so we just need to provide two versions
+# # so that the zip_keys will work and since
+# # we don't use fortran, it doesn't matter
+# # but I make the versions match gcc,g++ so
+# # to be less confusing
+# fortran_compiler_version:
+#   - 11
+#   - 10
+# docker_image:
+#   - quay.io/condaforge/linux-anvil-cos7-x86_64
+#   - quay.io/condaforge/linux-anvil-cos7-x86_64
+# cdt_name:
+#   - cos6
+#   - cos6
+# 
+
+# conda-forge-pinnings-feedstock/recipe/conda_build_config.yaml
+# uses c_compiler_version and cxx_compiler_version in a zip_keys
+# https://docs.conda.io/projects/conda-build/en/latest/resources/variants.html#coupling-keys
+# They typically only have a single version of the compilers that they
+# are building packages with at a time.  However, we want to regress
+# across a few.  That means we need to balance the size of the
+# elements of the zip_keys.  I'm going to override those here
+# as well so that it is easier to see what we're doing.
+# I dropped the cuda stuff out of conda-forge zip_keys because
+# we don't care about CUDA as we aren't using it.
+#
+# I guess you can't override zip_keys, you can only add combinations to the
+# list and keys can only be in one, so, we have to constrain fortran to be
+# a matrix as well even though we don't use it.
+#
+# If we really want to define our own zip_keys, we can rerender with 
+# conda smithy rerender --exclusive-config <path to this file>
+#
+# and conda-smithy should just use our configuration
+#
+#zip_keys:
+#    -
+#        - c_compiler_version
+#        - cxx_compiler_version
+#        - linux_clang_version  # [linux]
+#        - cdt_name      # [linux]
+#        - docker_image  # [linux]
+#    -
+#        - python
+#        - numpy
+#        - python_impl
+
+

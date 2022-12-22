@@ -8,7 +8,7 @@
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/simulation/RootTreeNode.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 class EventHandler
 {

@@ -637,7 +637,7 @@ public:
     /*!
      * \brief Dumps the table of banks and registers
      */
-    void dumpBanks(std::ostream& out) {
+    void dumpBanks(std::ostream& out) const {
         banks_.dump(out);
     }
 
@@ -1116,4 +1116,3 @@ inline std::ostream &operator<<(std::ostream &o, const sparta::RegisterSet *rs)
     }
     return o;
 }
-

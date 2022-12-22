@@ -68,22 +68,20 @@ namespace sparta {
                 inline void handleResultOutput_(const uint64_t start_time,
                                                 const uint64_t end_time,
                                                 const uint64_t location_id,
-                                                const char* str) {
+                                                const std::string& str) {
                     std::cout << RESULT_TAG_
                               << start_time << "," << end_time << "@" << location_id
                               << START_DELIMITER_;
 
-                    if(str) {
-                        do {
-                            if(*str == '\n' || *str == '\r') {
+                    if(!str.empty()) {
+                        for(auto c: str) {
+                            if(c == '\n' || c == '\r') {
                                 std::cout << "\\n";
                             }
                             else {
-                                std::cout << *str;
+                                std::cout << c;
                             }
-                            ++str;
                         }
-                        while(*str != 0);
                     }
 
                     std::cout << std::endl;
@@ -104,14 +102,14 @@ namespace sparta {
                     handleResultOutput_(pairt->time_Start,
                                         pairt->time_End,
                                         pairt->location_ID,
-                                        formatted_pair.c_str());
+                                        formatted_pair);
                 }
 
             public:
                 BaseSearchCallback(const char* invert_search_str, const char* location_str) :
                     invert_search_(!!strtoull(invert_search_str, nullptr, 10))
                 {
-                    std::stringstream ss(location_str);
+                    std::istringstream ss(location_str);
                     uint32_t id;
                     while (ss >> id) {
                         locations_.insert(id);
@@ -132,7 +130,7 @@ namespace sparta {
                     std::cout << INFO_TAG_ << "search start:  " << search_start_ << std::endl
                               << INFO_TAG_ << "search locs:   (" <<  locations_.size() << ") [";
 
-                    for (auto & lid : locations_) {
+                    for (const auto& lid : locations_) {
                         std::cout << lid << " ";
                     }
 
@@ -166,7 +164,7 @@ namespace sparta {
                 {
                 }
 
-                virtual void foundAnnotationRecord(annotation_t* annotation) override {
+                virtual void foundAnnotationRecord(const annotation_t* annotation) override {
                     handleProgressOutput_(annotation->time_Start);
                     ++recs_viewed_;
                     ++recs_with_annot_;
@@ -199,17 +197,17 @@ namespace sparta {
                     }
                 }
 
-                virtual void foundInstRecord(instruction_t*) override {
+                virtual void foundInstRecord(const instruction_t*) override {
                     ++recs_viewed_;
                     ++recs_with_ins_;
                 }
 
-                virtual void foundMemRecord(memoryoperation_t*) override {
+                virtual void foundMemRecord(const memoryoperation_t*) override {
                     ++recs_viewed_;
                     ++recs_with_mem_;
                 }
 
-                virtual void foundPairRecord(pair_t* pair) override {
+                virtual void foundPairRecord(const pair_t* pair) override {
                     handleProgressOutput_(pair->time_Start);
                     ++recs_viewed_;
                     ++recs_with_pair_;
@@ -257,7 +255,7 @@ namespace sparta {
                 {
                 }
 
-                virtual void foundAnnotationRecord(annotation_t* annotation) override {
+                virtual void foundAnnotationRecord(const annotation_t* annotation) override {
                     handleProgressOutput_(annotation->time_Start);
                     ++recs_viewed_;
                     ++recs_with_annot_;
@@ -267,7 +265,7 @@ namespace sparta {
                     if (annotation->time_Start > search_end_ || annotation->time_End < search_start_) {
                         return;
                     }
-                    if (strlen(annotation->annt)) {
+                    if (!annotation->annt.empty()) {
                         ++recs_with_non_null_annot_;
                         if ((!invert_search_) == std::regex_search(annotation->annt, std::regex(regular_expression_))) {
                             handleResultOutput_(annotation);
@@ -276,17 +274,17 @@ namespace sparta {
                     }
                 }
 
-                virtual void foundInstRecord(instruction_t*) override {
+                virtual void foundInstRecord(const instruction_t*) override {
                     ++recs_viewed_;
                     ++recs_with_ins_;
                 }
 
-                virtual void foundMemRecord(memoryoperation_t*) override {
+                virtual void foundMemRecord(const memoryoperation_t*) override {
                     ++recs_viewed_;
                     ++recs_with_mem_;
                 }
 
-                virtual void foundPairRecord(pair_t* pair) override {
+                virtual void foundPairRecord(const pair_t* pair) override {
                     handleProgressOutput_(pair->time_Start);
                     ++recs_viewed_;
                     ++recs_with_pair_;
@@ -317,7 +315,7 @@ class ConstructReaderException : public std::exception {
         std::string type_;
 
     public:
-        ConstructReaderException(const char* type) :
+        explicit ConstructReaderException(const char* type) :
             type_("unknown search type ")
         {
             type_ += type;
