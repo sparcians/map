@@ -136,14 +136,13 @@ namespace sparta::pipeViewer {
                         return filename_;
                     }
 
+                    inline bool read(char* const buf, const size_t num_bytes) {
+                        return !!fstream_.read(buf, num_bytes);
+                    }
+
                     template<typename T>
                     inline bool read(T* const buf, const size_t num_bytes) {
                         return read(reinterpret_cast<char* const>(buf), num_bytes);
-                    }
-
-                    template<>
-                    inline bool read<char>(char* const buf, const size_t num_bytes) {
-                        return !!fstream_.read(buf, num_bytes);
                     }
 
                     template<typename T>
@@ -528,23 +527,16 @@ namespace sparta::pipeViewer {
 
             }
 
-            template<size_t Version, bool CountRecords>
+            template<bool CountRecords>
             inline size_t readRecordVersion_(const std::fstream::pos_type end_pos,
                                              const uint64_t start,
-                                             const uint64_t end) {
-                static_assert(Version >= 1 && Version <= 2,
-                              "The only allowed version numbers are 1 and 2");
-
+                                             const uint64_t end)
+            {
                 size_t recsread = 0;
-
-                for(auto pos = record_file_.tellg(); pos < end_pos && pos != -1; pos = record_file_.tellg()) {
+                for(auto pos = record_file_.tellg(); pos < end_pos && pos != -1; pos = record_file_.tellg())
+                {
                     // Read, checking for chunk_end
-                    if constexpr(Version == 1) {
-                        readRecord_v1_(start, end);
-                    }
-                    else if constexpr(Version == 2) {
-                        readRecord_v2_(start, end);
-                    }
+                    readRecord_(start, end);
                     if constexpr(CountRecords) {
                         ++recsread;
                     }
@@ -557,79 +549,14 @@ namespace sparta::pipeViewer {
              */
             template<bool CountRecords = false>
             inline size_t readRecords_(const std::fstream::pos_type end_pos, const uint64_t start, const uint64_t end) {
-                if(version_ == 1) {
-                    return readRecordVersion_<1, CountRecords>(end_pos, start, end);
-                }
-                else if(version_ == 2) {
-                    return readRecordVersion_<2, CountRecords>(end_pos, start, end);
-                }
-                else {
-                    throw SpartaException("This pipeViewer reader library does not know how to read a record "
-                                          " for version ") << version_ << " file " << filepath_;
-                }
-            }
-
-            /*!
-             * \brief Implementation of readRecord_ function which accepts the version 1 format)
-             */
-            inline void readRecord_v1_(const uint64_t start, const uint64_t end) {
-                version1::transaction_t transaction;
-                record_file_.read(transaction);
-
-                if((transaction.flags & TYPE_MASK) == is_Annotation){
-                    version1::annotation_t annot(std::move(transaction));
-                    record_file_.read(annot);
-
-                    // This string gets copied by the Python side of the library, so it's ok that the buffer
-                    // gets destroyed when we return
-                    annot.annt = readAnnotation_(annot.length);
-
-                    // Only send along transaction in the query range
-                    if(transaction.time_End < start || transaction.time_Start > end){
-                        // Skip transactions by not sending them along to the callback.
-                        // read is faster than seekg aparently. This DOES help performance
-                        READER_DBG_MSG("skipped transaction outside of window [" << start << ", "
-                                       << end << "). start: " << transaction.time_Start << " end: "
-                                       << transaction.time_End
-                                       << " parent: " << transaction.parent_ID);
-                    }else{
-                        READER_DBG_MSG("found annt. " << "loc: " << annot.location_ID << " start: "
-                                       << annot.time_Start << " end: " << annot.time_End
-                                       << " parent: " << annot.parent_ID);
-                        annotation_t new_anno(std::move(annot));
-                        data_callback_->foundAnnotationRecord(&new_anno);
-                    }
-                    return;
-                }else if((transaction.flags & TYPE_MASK) == is_Instruction){
-                    record_file_.seekg(-sizeof(version1::transaction_t), std::ios::cur);
-                    version1::instruction_t inst;
-                    record_file_.read(inst);
-
-                    READER_DBG_MSG("found inst. start: " << inst.time_Start << " end: " << inst.time_End);
-
-                    instruction_t new_inst(std::move(inst));
-                    data_callback_->foundInstRecord(&new_inst);
-                    return;
-                }else if((transaction.flags & TYPE_MASK) == is_MemoryOperation){
-                    record_file_.seekg(-sizeof(version1::transaction_t), std::ios::cur);
-                    version1::memoryoperation_t memop;
-                    record_file_.read(memop);
-
-                    READER_DBG_MSG("found inst. start: " << memop.time_Start << " end: " << memop.time_End);
-
-                    memoryoperation_t new_memop(std::move(memop));
-                    data_callback_->foundMemRecord(&new_memop);
-                    return;
-                }else{
-                    throw sparta::SpartaException("An unidentifiable transaction type found in this record."
-                                                  " It is possible the data may be corrupt.");
-                }
+                sparta_assert(version_ == 2, "Only version 2 is currenly supported");
+                return readRecordVersion_<CountRecords>(end_pos, start, end);
             }
 
             /**
              * \brief Read a single record at \a pos and increment pos
              */
-            inline void readRecord_v2_(const uint64_t start, const uint64_t end) {
+            inline void readRecord_(const uint64_t start, const uint64_t end) {
                 transaction_t transaction;
                 record_file_.read(transaction);
                 sparta_assert(record_file_.good(), "Previous read of the argos DB failed");
