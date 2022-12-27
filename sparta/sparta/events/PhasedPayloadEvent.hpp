@@ -238,8 +238,7 @@ namespace sparta
          * state changes in another block.
          */
         ScheduleableHandle preparePayload(const DataT & payload) {
-            auto proxy = allocateProxy_(payload);
-            return ScheduleableHandle(proxy);
+            return allocateProxy_(payload);
         }
 
         //! Overload precedence operator for PhasedPayloadEvents since they
