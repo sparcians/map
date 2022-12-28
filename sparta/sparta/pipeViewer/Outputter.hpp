@@ -21,7 +21,10 @@
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/TupleHashCompute.hpp"
 
-namespace sparta::pipeViewer{
+namespace sparta::pipeViewer
+{
+
+
     /**
      *  \class Outputter
      * @ brief A class that facilitates taking in Record objects and writing
@@ -42,22 +45,21 @@ namespace sparta::pipeViewer{
         /**
          * \brief Safely write data to a file with error checking.
          */
-        template<typename T>
-        static inline void writeData_(std::ofstream& ss, const T& data)
+        void writeData_(std::ofstream& ss, const char* const data, const std::size_t size)
         {
-            writeData_(ss, &data, sizeof(T));
+            ss.write(data, size);
         }
 
         template<typename T>
-        static inline void writeData_(std::ofstream& ss, const T* const data, const std::size_t size)
+        void writeData_(std::ofstream& ss, const T* const data, const std::size_t size = sizeof(T))
         {
             writeData_(ss, reinterpret_cast<const char* const>(data), size);
         }
 
-        template<>
-        inline void writeData_<char>(std::ofstream& ss, const char* const data, const std::size_t size)
+        template<typename T>
+        void writeData_(std::ofstream& ss, const T& data)
         {
-            ss.write(data, size);
+            writeData_(ss, &data, sizeof(T));
         }
 
     public:
@@ -88,7 +90,7 @@ namespace sparta::pipeViewer{
          * \param dat The transaction to be written.
          */
         template<class R_Type>
-        inline void writeTransaction(const R_Type& dat)
+        void writeTransaction(const R_Type& dat)
         {
             last_record_pos_ = record_file_.tellp();
 #ifdef PIPELINE_DBG
