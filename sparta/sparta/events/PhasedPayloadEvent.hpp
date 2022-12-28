@@ -161,7 +161,8 @@ namespace sparta
 
                 sparta_assert(allocation_idx_ < inflight_pl_.max_size(),
                               "The PayloadEvent: '" << getLocation() <<
-                              "' has allocated over " << inflight_pl_.max_size() << " outstanding events -- does that seem right?");
+                              "' has allocated over " << inflight_pl_.max_size() <<
+                              " outstanding events -- does that seem right?");
             }
             proxy->setInFlightLocation_(inflight_pl_.emplace_back(proxy));
             proxy->setPayload_(dat);
@@ -209,7 +210,8 @@ namespace sparta
             prototype_(consumer_event_handler, delay, sched_phase)
         {
             sparta_assert(consumer_event_handler.argCount() == 1,
-                          "You must assign a PhasedPayloadEvent a consumer handler ""that takes exactly one argument");
+                          "You must assign a PhasedPayloadEvent a consumer handler "
+                          "that takes exactly one argument");
             prototype_.setScheduleableClock(getClock());
             prototype_.setScheduler(determineScheduler(getClock()));
         }
@@ -612,7 +614,7 @@ namespace sparta
 
         ProxyAllocation   allocated_proxies_;
         ProxyFreeList     free_pl_;
-        ProxyInflightList inflight_pl_{1000};
+        ProxyInflightList inflight_pl_{1100};
 
         // Use 16, a power of 2 for allocation of more objects.  No
         // rhyme or reason, but this seems to be a sweet spot in
