@@ -196,6 +196,8 @@ if (USING_CONDA)
   endif()
 endif()
 
+message(STATUS "Using Compiler ${CMAKE_CXX_COMPILER_ID}, Version: ${CMAKE_CXX_COMPILER_VERSION}")
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # using Clang
   # -stdlib=libc++
