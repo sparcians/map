@@ -659,7 +659,8 @@ public:
 
     /**
      * \brief The current tick the Scheduler is working on or just finished
-     * \return The current tick
+     * \return The current tick if the scheduler is running or the
+     *         next tick the scheduler will be operating on
      * \note This can be called before finalization and works regardless of
      *       whether the scheduler is running
      */

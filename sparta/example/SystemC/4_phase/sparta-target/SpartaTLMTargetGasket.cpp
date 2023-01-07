@@ -26,7 +26,12 @@ namespace sparta_target
             case tlm::BEGIN_REQ:
             {
                 std::cout << "Info: Gasket: BEGIN_REQ" << std::endl;
-                //sc_core::sc_time delay_time = delay_time + accept_delay_;
+
+                //-----------------------------------------------------------------------------
+                // Force synchronization multiple timing points by returning TLM_ACCEPTED
+                // use a payload event queue to schedule BEGIN_RESP timing point
+                //-----------------------------------------------------------------------------
+                target_memory_.get_delay(gp, delay_time);  // get memory operation delay
 
                 MemoryRequest request = {
                     (gp.get_command() == tlm::TLM_READ_COMMAND ?
@@ -37,6 +42,11 @@ namespace sparta_target
                     // Always scary pointing to memory owned by someone else...
                     gp.get_data_ptr(),
                     (void *)&gp};
+
+                if (SPARTA_EXPECT_FALSE(info_logger_))
+                {
+                    info_logger_ << " sending to memory model: " << request;
+                }
 
                 event_end_req_.preparePayload(request)->
                     schedule(sparta::sparta_sysc_utils::calculateSpartaOffset

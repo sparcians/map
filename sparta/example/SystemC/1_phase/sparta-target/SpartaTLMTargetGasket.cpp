@@ -40,7 +40,9 @@ namespace sparta_target
                 // the modeler could just pass the payload through as a
                 // pointer on the DataOutPort.
                 MemoryRequest request = {
-                    (gp.get_command() == tlm::TLM_READ_COMMAND ? MemoryRequest::Command::READ : MemoryRequest::Command::WRITE),
+                    (gp.get_command() == tlm::TLM_READ_COMMAND ?
+                     MemoryRequest::Command::READ :
+                     MemoryRequest::Command::WRITE),
                     gp.get_address(),
                     gp.get_data_length(),
 
@@ -56,7 +58,8 @@ namespace sparta_target
                 // Send to memory with the given delay - NS -> clock cycles.
                 // The Clock is on the same freq as the memory block
                 out_memory_request_.send(request, getClock()->getCycle
-                                         (sparta::sparta_sysc_utils::calculateSpartaOffset(getClock(),delay_time.value())));
+                                         (sparta::sparta_sysc_utils::calculateSpartaOffset(getClock(),
+                                                                                           delay_time.value())));
 #endif
                 delay_time = accept_delay_;
                 // In a real system, the gasket could keep

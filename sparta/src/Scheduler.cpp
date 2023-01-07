@@ -381,6 +381,13 @@ void Scheduler::run(Tick num_ticks,
     sparta_assert(running_ == false, "Cannot run the scheduler because it is already running. "
                 "This is either a recursive run() call or an even more severe problem");
 
+    if(SPARTA_EXPECT_FALSE(debug_)) {
+        debug_ << SPARTA_CURRENT_COLOR_GREEN
+               << "=== SCHEDULER: Run called num_ticks: " << num_ticks
+               << " exacting_run: " << exacting_run
+               << SPARTA_CURRENT_COLOR_NORMAL;
+    }
+
     // This does happen sometimes, in the SysC environment.
     if(SPARTA_EXPECT_FALSE(num_ticks == 0)) {
         return;
