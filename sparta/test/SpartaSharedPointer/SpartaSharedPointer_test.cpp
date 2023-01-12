@@ -622,6 +622,17 @@ void testClassInteralUsage()
     EXPECT_EQUAL(fptr.use_count(), 1);
 }
 
+
+struct SelfReferential {
+    sparta::SpartaWeakPointer<SelfReferential> self_ptr;
+};
+
+void testSelfReferentialWeakPointer() {
+    sparta::SpartaSharedPointer<SelfReferential> tmp(new SelfReferential());
+    tmp->self_ptr = tmp;
+    tmp.reset();
+}
+
 int main()
 {
     testBasicSpartaSharedPointer();
@@ -632,6 +643,7 @@ int main()
     testClassInteralUsage();
 
     testWeakPointer();
+    testSelfReferentialWeakPointer();
 
     for(uint32_t i = 0; i < 100; ++i) {
         testMemoryAllocation(i == 0, i == 0);
