@@ -323,6 +323,49 @@ int main()
     EXPECT_EQUAL(str_vectors[1][2], "z");
     EXPECT_EQUAL(str_vectors[1][3], "buz");
 
+    // Test fast_floor_log2<uint16_t>()
+    for (uint16_t x = 0; x < (sizeof(uint16_t) * 8); ++x) {
+        uint16_t p2x = 0x1 << x;
+        EXPECT_EQUAL(sparta::utils::floor_log2(p2x), x);
+        EXPECT_EQUAL(sparta::utils::floor_log2(p2x), sparta::utils::floor_log2(double(p2x)));
+
+        uint16_t p2xm1 = (0x1 << x) - 1;
+        if (p2xm1 > 0) {
+            EXPECT_EQUAL(sparta::utils::floor_log2(p2xm1), x - 1);
+            EXPECT_EQUAL(sparta::utils::floor_log2(p2xm1), sparta::utils::floor_log2(double(p2xm1)));
+        }
+    }
+
+    // Test fast_floor_log2<uint32_t>()
+    for (uint32_t x = 0; x < (sizeof(uint32_t) * 8); ++x) {
+        uint32_t p2x = 0x1ul << x;
+        EXPECT_EQUAL(sparta::utils::floor_log2(p2x), x);
+        EXPECT_EQUAL(sparta::utils::floor_log2(p2x), sparta::utils::floor_log2(double(p2x)));
+
+        uint32_t p2xm1 = (0x1ul << x) - 1;
+        if (p2xm1 > 0) {
+            EXPECT_EQUAL(sparta::utils::floor_log2(p2xm1), x - 1);
+            EXPECT_EQUAL(sparta::utils::floor_log2(p2xm1), sparta::utils::floor_log2(double(p2xm1)));
+        }
+    }
+
+    // Test fast_floor_log2<uint64_t>()
+    for (uint64_t x = 0; x < (sizeof(uint64_t) * 8); ++x) {
+        uint64_t p2x = 0x1ull << x;
+        EXPECT_EQUAL(sparta::utils::floor_log2(p2x), x);
+        EXPECT_EQUAL(sparta::utils::floor_log2(p2x), sparta::utils::floor_log2(double(p2x)));
+
+        uint64_t p2xm1 = (0x1ull << x) - 1;
+        if (p2xm1 > 0) {
+            EXPECT_EQUAL(sparta::utils::floor_log2(p2xm1), x - 1);
+            if (x < 48) {
+                // NOTE: we can't check against floor_log2<double>() for values of x >= 48 here
+                // due to range/roundoff limits to doubles
+                EXPECT_EQUAL(sparta::utils::floor_log2(p2xm1), sparta::utils::floor_log2(double(p2xm1)));
+            }
+        }
+    }
+
     REPORT_ERROR;
     return ERROR_CODE;
 }
