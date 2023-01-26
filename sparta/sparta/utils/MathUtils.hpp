@@ -15,8 +15,9 @@ namespace sparta {
     namespace utils {
 
         inline double log2 (double x) {
-            double y = std::log(x) / std::log(2.0);
-            return y;
+            // double y = std::log(x) / std::log(2.0);
+            // return y;
+            return std::log2(x);
         }
 
         template <class T>
