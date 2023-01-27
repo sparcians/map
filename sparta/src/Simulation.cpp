@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <ctime>
 #include <exception>
+#include <filesystem>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -1959,10 +1960,9 @@ ReportDescVec Simulation::expandReportDescriptor_(const ReportDescriptor & rd) c
             expanded.format = fmt;
             auto underscore_idx = fmt.find("_");
             if (underscore_idx != std::string::npos) {
-                boost::filesystem::path dest_file_path(expanded.dest_file);
                 auto dot_idx = expanded.dest_file.find(".");
                 const std::string stem = expanded.dest_file.substr(0, dot_idx);
-                const std::string ext = boost::filesystem::extension(dest_file_path);
+                const std::string ext = std::filesystem::path(expanded.dest_file).extension();
                 expanded.dest_file = stem + fmt.substr(underscore_idx) + ext;
             }
             rds_out.emplace_back(expanded);
