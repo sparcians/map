@@ -31,6 +31,7 @@
 #include <ratio>
 #include <tuple>
 #include <utility>
+#include <filesystem>
 
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/utils/StringUtils.hpp"
@@ -73,7 +74,7 @@
 #include "sparta/utils/Printing.hpp"
 #include "sparta/utils/SmartLexicalCast.hpp"
 
-namespace bfs = boost::filesystem;
+namespace sfs = std::filesystem;
 
 namespace sparta {
     namespace app {
@@ -1398,10 +1399,10 @@ bool CommandLineSimulator::parse(int argc,
                 ++i;
             } else if(o.string_key == "simdb-dir") {
                 const std::string & db_dir = o.value[0];
-                auto p = bfs::path(db_dir);
-                if (!bfs::exists(p)) {
-                    bfs::create_directories(p);
-                } else if (!bfs::is_directory(p)) {
+                auto p = sfs::path(db_dir);
+                if (!sfs::exists(p)) {
+                    sfs::create_directories(p);
+                } else if (!sfs::is_directory(p)) {
                     throw SpartaException("Invalid 'simdb-dir' argument. Path ")
                         << "exists but is not a directory.";
                 }
@@ -1410,8 +1411,8 @@ bool CommandLineSimulator::parse(int argc,
             } else if(o.string_key == "simdb-enabled-components") {
                 std::vector<std::string> yaml_opts_files;
                 auto is_yaml_file = [](const std::string & opt) {
-                    auto p = bfs::path(opt);
-                    return (bfs::exists(p) && !bfs::is_directory(p));
+                    auto p = sfs::path(opt);
+                    return (sfs::exists(p) && !sfs::is_directory(p));
                 };
 
                 for (size_t idx = 0; idx < o.value.size(); ++idx) {
@@ -1426,10 +1427,10 @@ bool CommandLineSimulator::parse(int argc,
                 ++i;
             } else if(o.string_key == "collect-legacy-reports") {
                 const std::string & reports_root_dir = o.value[0];
-                auto p = bfs::path(reports_root_dir);
-                if (!bfs::exists(p)) {
-                    bfs::create_directories(p);
-                } else if (!bfs::is_directory(p)) {
+                auto p = sfs::path(reports_root_dir);
+                if (!sfs::exists(p)) {
+                    sfs::create_directories(p);
+                } else if (!sfs::is_directory(p)) {
                     throw SpartaException("Invalid 'collect-legacy-reports' argument. Path ")
                         << "exists but is not a directory.";
                 }
@@ -2378,18 +2379,18 @@ void CommandLineSimulator::postProcess_(Simulation* sim)
         if (IsFeatureValueEnabled(feature_cfg, "simdb-verify")) {
             std::string simdb_fname = simdb->getDatabaseFile();
             const std::string simdb_src_fname = simdb_fname;
-            simdb_fname = bfs::path(simdb_fname).filename().string();
+            simdb_fname = sfs::path(simdb_fname).filename().string();
 
-            bfs::path cwd = bfs::current_path();
+            sfs::path cwd = sfs::current_path();
             const std::string simdb_dest_dir =
                 cwd.string() + "/" + db::ReportVerifier::getVerifResultsDir();
 
             const std::string simdb_dest_fname = simdb_dest_dir + "/" + simdb_fname;
-            boost::system::error_code err;
-            bfs::copy_file(simdb_src_fname, simdb_dest_fname, err);
+            std::error_code err;
+            sfs::copy_file(simdb_src_fname, simdb_dest_fname, err);
             if (err) {
                 std::cout << "  [simdb] Warning: The 'simdb-verify' post processing step "
-                          << "encountered and trapped a boost::filesystem error: \""
+                          << "encountered and trapped a std::filesystem error: \""
                           << err.message() << "\"" << std::endl;
             }
         }
