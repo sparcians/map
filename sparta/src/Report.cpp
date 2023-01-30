@@ -13,6 +13,7 @@
 #include <sstream>
 #include <math.h>
 #include <string>
+#include <filesystem>
 
 #include "sparta/parsers/YAMLTreeEventHandler.hpp"
 #include "sparta/utils/Printing.hpp"
@@ -40,8 +41,6 @@
 
 //SQLite-specific headers
 #include "zlib.h"
-
-#include "boost/filesystem.hpp"
 
 namespace sparta
 {
@@ -540,9 +539,9 @@ class ReportFileParserYAML
                                      NavVector& device_trees) override {
             sparta_assert(report_stack_.size() > 0);
 
-            boost::filesystem::path filepath = filename;
-            if(false == boost::filesystem::is_regular_file(filepath.native())){
-                boost::filesystem::path curfile(getFilename());
+            std::filesystem::path filepath = filename;
+            if(false == std::filesystem::is_regular_file(filepath.native())){
+                std::filesystem::path curfile(getFilename());
                 filepath = curfile.parent_path() / filename;
                 verbose() << "Note: file \"" << filename << "\" does not exist. Attempting to "
                              "open \"" << filepath.native() << "\" instead" << std::endl;

@@ -12,8 +12,6 @@
 #include <boost/algorithm/string/detail/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
-#include <boost/filesystem/convenience.hpp>
-#include <boost/filesystem/operations.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <filesystem>
 #include <fstream>
@@ -1105,7 +1103,7 @@ public:
         parser_(),
         def_file_(def_file)
     {
-        sparta_assert(boost::filesystem::exists(def_file_),
+        sparta_assert(std::filesystem::exists(def_file_),
                     ("File '" + def_file + "' cannot be found"));
         fin_.open(def_file.c_str(), std::ios::in);
         sparta_assert(fin_.is_open());

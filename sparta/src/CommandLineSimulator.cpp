@@ -13,8 +13,6 @@
 #include <limits.h>
 #include <cstddef>
 #include <boost/algorithm/string/case_conv.hpp>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path_traits.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/lexical_cast/bad_lexical_cast.hpp>
 #include <boost/program_options/detail/parsers.hpp>
@@ -22,7 +20,6 @@
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/value_semantic.hpp>
 #include <boost/type_index/type_index_facade.hpp>
-#include <boost/filesystem/path.hpp>
 #include <iostream>
 #include <algorithm>
 #include <chrono>

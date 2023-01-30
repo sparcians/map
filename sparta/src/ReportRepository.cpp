@@ -5,8 +5,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <boost/any.hpp>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/type_index/type_index_facade.hpp>
 #include <unordered_map>
@@ -17,6 +15,7 @@
 #include <queue>
 #include <set>
 #include <utility>
+#include <filesystem>
 
 #include "sparta/report/Report.hpp"
 #include "sparta/report/SubContainer.hpp"
@@ -1031,7 +1030,7 @@ public:
             stats_archives_.reset(new statistics::StatisticsArchives);
 
             //Statistics archives get written to the temp dir by default
-            auto tempdir = boost::filesystem::temp_directory_path();
+            auto tempdir = std::filesystem::temp_directory_path();
             const std::string db_dir = tempdir.string();
 
             for (auto & dir : directories_) {

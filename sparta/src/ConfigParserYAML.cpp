@@ -3,8 +3,6 @@
 #include <cassert>
 #include <yaml-cpp/node/impl.h>
 #include <yaml-cpp/node/node.h>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
 #include <cstddef>
 #include <yaml-cpp/anchor.h>
 #include <yaml-cpp/emitterstyle.h>
@@ -17,6 +15,7 @@
 #include <stack>
 #include <string>
 #include <vector>
+#include <filesystem>
 
 #include "sparta/parsers/ConfigParserYAML.hpp"
 #include "sparta/simulation/TreeNode.hpp"
@@ -573,16 +572,16 @@ namespace sparta
             std::string filename_used = filename;
             // Check to see if we can point to the relative filepath to include based on the
             // filepath of the current yaml file in the case that the file does not exist.
-            boost::filesystem::path fp(filename);
+            std::filesystem::path fp(filename);
 
             bool found = false;
 
             // Try to find the incldue in the include paths list
             for(const auto & incl_path : include_paths_)
             {
-                boost::filesystem::path curr_inc(incl_path);
+                std::filesystem::path curr_inc(incl_path);
                 const auto combined_path = curr_inc / filename;
-                if (boost::filesystem::exists(combined_path))
+                if (std::filesystem::exists(combined_path))
                 {
                     std::cout << "  [PARAMETER INCLUDE NOTE] : Including " << combined_path << std::endl;
                     filename_used = combined_path.string();
