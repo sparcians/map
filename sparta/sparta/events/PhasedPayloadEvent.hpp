@@ -10,7 +10,6 @@
 
 #pragma once
 
-//#include <list>
 #include <memory>
 #include "sparta/events/EventNode.hpp"
 #include "sparta/events/Scheduleable.hpp"
