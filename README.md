@@ -20,3 +20,18 @@ MAP is broken into two parts:
 [![CircleCI](https://circleci.com/gh/sparcians/map.svg?style=svg)](https://circleci.com/gh/sparcians/map)
 [![MacOS Build Status](https://dev.azure.com/sparcians/map/_apis/build/status/sparcians.map?branchName=master&label=MacOS)](https://dev.azure.com/sparcians/map/_build/latest?definitionId=1&branchName=master)
 [![Documentation](https://github.com/sparcians/map/workflows/Documentation/badge.svg)](https://sparcians.github.io/map/)
+
+## Updating Regression/Build Environments
+
+CI files are generated when the command `conda smithy rerender` is run
+inside a MAP clone.  That command uses the following files to control
+the generation of the CI-specific control files:
+
+- `conda-forge.yml` - defines which platforms you want to support and some other higher-level things
+- `conda.recipe/conda_build_config.yaml` - defines lists of values for variables that are used in meta.yaml
+- `conda.recipe/meta.yaml` - uses variables (stuff inside {{ varname }} double curlies)
+
+To update versions of OSes, edit the following file:
+https://github.com/sparcians/map/blob/master/conda.recipe/conda_build_config.yaml
+and then run `conda smithy rerender`.  (Ensure `conda install
+conda-smithy` into your conda installation for that command to exist).
