@@ -7,7 +7,6 @@
 #include <sqlite3.h>
 #include <cstdlib>
 #include <cstring>
-#include <zconf.h>
 #include <limits>
 #include <iostream>
 #include <string>

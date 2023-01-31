@@ -3,7 +3,6 @@
 #include "sparta/report/db/SingleUpdateReport.hpp"
 
 #include <cassert>
-#include <zconf.h>
 #include <utility>
 
 #include "simdb/ObjectManager.hpp"

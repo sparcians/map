@@ -3,7 +3,6 @@
 #include "sparta/async/AsyncNonTimeseriesReport.hpp"
 
 #include <cstdint>
-#include <zconf.h>
 
 //SQLite-specific headers
 #include "zlib.h"

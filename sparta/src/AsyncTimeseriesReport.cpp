@@ -2,8 +2,6 @@
 
 #include "sparta/async/AsyncTimeseriesReport.hpp"
 
-#include <zconf.h>
-
 //SQLite-specific headers
 #include "zlib.h"
 
