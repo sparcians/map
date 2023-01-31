@@ -15,6 +15,9 @@
 #include <string>
 #include <filesystem>
 
+//SQLite-specific headers
+#include <zlib.h>
+
 #include "sparta/parsers/YAMLTreeEventHandler.hpp"
 #include "sparta/utils/Printing.hpp"
 
@@ -38,9 +41,6 @@
 #include "sparta/report/db/StatInstRowIterator.hpp"
 #include "sparta/report/db/StatInstValueLookup.hpp"
 #include "sparta/report/db/DatabaseContextCounter.hpp"
-
-//SQLite-specific headers
-#include "zlib.h"
 
 namespace sparta
 {

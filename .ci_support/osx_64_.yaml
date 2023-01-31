@@ -41,3 +41,5 @@ zip_keys:
   - cxx_compiler_version
 - - python
   - numpy
+zlib:
+- '1.2'

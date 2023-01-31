@@ -70,13 +70,18 @@ message (STATUS "Using RapidJSON CPP ${RapidJSON_VERSION}")
 find_package (SQLite3 3.19 REQUIRED)
 message (STATUS "Using SQLite3 ${SQLite3_VERSION}")
 
+# Find zlib
+find_package(ZLIB REQUIRED)
+message (STATUS "Using zlib ${ZLIB_VERSION_STRING}")
+include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
+
 # Find HDF5. Need to enable C language for HDF5 testing
 enable_language (C)
 find_package (HDF5 1.10 REQUIRED)
 
 # Populate the Sparta_LIBS variable with the required libraries for
 # basic Sparta linking
-set (Sparta_LIBS sparta simdb ${HDF5_LIBRARIES} sqlite3 yaml-cpp z pthread
+set (Sparta_LIBS sparta simdb ${HDF5_LIBRARIES} sqlite3 yaml-cpp ZLIB::ZLIB pthread
   Boost::date_time Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
 
 # On Linux we need to link against rt as well

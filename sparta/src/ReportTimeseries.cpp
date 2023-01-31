@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <utility>
+#include <zlib.h>
 
 #include "sparta/report/db/ReportHeader.hpp"
 #include "sparta/report/db/Schema.hpp"
@@ -22,7 +23,6 @@
 #include "simdb/impl/sqlite/SQLiteConnProxy.hpp"
 //SQLite-specific headers
 #include "simdb/impl/sqlite/TransactionUtils.hpp"
-#include "zlib.h"
 #include "simdb/Constraints.hpp"
 #include "simdb/DbConnProxy.hpp"
 #include "simdb/Errors.hpp"
