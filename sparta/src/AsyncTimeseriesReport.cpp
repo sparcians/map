@@ -2,10 +2,8 @@
 
 #include "sparta/async/AsyncTimeseriesReport.hpp"
 
-#include <zconf.h>
-
 //SQLite-specific headers
-#include "zlib.h"
+#include <zlib.h>
 
 //! Compress buffered SI values and write them to the database.
 //! This is called on a background thread.

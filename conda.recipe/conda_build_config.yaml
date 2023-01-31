@@ -22,21 +22,13 @@
 # override macos APK min version.
 # conda-forge supports from 10.9 but we
 # have code that needs 10.13.
-# See https://sifive.atlassian.net/wiki/x/0IBBJw
-# for details
-macos_min_version:             # [osx]
-  - 10.13                      # [osx]
+macos_machine:                 # [osx]
+  - arm64-apple-darwin20.0.0   # [osx and arm64]
 MACOSX_DEPLOYMENT_TARGET:      # [osx]
-  - 10.13                      # [osx]
-
-zip_keys:                       # [osx]
-  -                             # [osx]
-    - macos_min_version         # [osx]
-    - MACOSX_DEPLOYMENT_TARGET  # [osx]
-
+  - 11.1                       # [osx]
 
 # linux_clang_version is not a part of zip_keys
-# from conda-forge, if you want to, you can 
+# from conda-forge, if you want to, you can
 # easily matrix the linux builds using the same
 # backend from gcc but adding new clang versions
 # here
@@ -94,7 +86,7 @@ python_impl:
 # cdt_name:
 #   - cos6
 #   - cos6
-# 
+#
 
 # conda-forge-pinnings-feedstock/recipe/conda_build_config.yaml
 # uses c_compiler_version and cxx_compiler_version in a zip_keys
@@ -111,7 +103,7 @@ python_impl:
 # list and keys can only be in one, so, we have to constrain fortran to be
 # a matrix as well even though we don't use it.
 #
-# If we really want to define our own zip_keys, we can rerender with 
+# If we really want to define our own zip_keys, we can rerender with
 # conda smithy rerender --exclusive-config <path to this file>
 #
 # and conda-smithy should just use our configuration
@@ -127,5 +119,3 @@ python_impl:
 #        - python
 #        - numpy
 #        - python_impl
-
-

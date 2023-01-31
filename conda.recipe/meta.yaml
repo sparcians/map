@@ -57,6 +57,7 @@ requirements:
     - hdf5
     - python
     - rapidjson
+    - zlib
   run:
     - matplotlib-base
     - numpy

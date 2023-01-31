@@ -8,8 +8,8 @@ skip_render:
   - build-locally.py
   - .github
 provider:
-  linux: circle
-  osx: azure
+  linux_64: circle
+  osx_64: azure
   win: None
   linux_ppc64le: None
   linux_aarch64: None

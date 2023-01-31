@@ -12,9 +12,8 @@
 #include <boost/algorithm/string/detail/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
-#include <boost/filesystem/convenience.hpp>
-#include <boost/filesystem/operations.hpp>
 #include <boost/iterator/iterator_facade.hpp>
+#include <filesystem>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -121,7 +120,7 @@ bool ReportDescriptor::isSingleTimeseriesReport() const
         return false;
     }
 
-    std::string extension = boost::filesystem::extension(dest_file);
+    std::string extension = std::filesystem::path(dest_file).extension();
     utils::lowercase_string ext(extension);
     return ext.getString() == ".csv";
 }
@@ -529,7 +528,7 @@ report::format::BaseFormatter* ReportDescriptor::addInstantiation(Report* r,
                                      run_metadata.begin(),
                                      run_metadata.end());
 
-            const std::string extension = boost::filesystem::extension(filename);
+            const std::string extension = std::filesystem::path(filename).extension();
             if (sim_config->getDisabledPrettyPrintFormats().count(extension)) {
                 formatter->disablePrettyPrint();
             }
@@ -1104,7 +1103,7 @@ public:
         parser_(),
         def_file_(def_file)
     {
-        sparta_assert(boost::filesystem::exists(def_file_),
+        sparta_assert(std::filesystem::exists(def_file_),
                     ("File '" + def_file + "' cannot be found"));
         fin_.open(def_file.c_str(), std::ios::in);
         sparta_assert(fin_.is_open());
