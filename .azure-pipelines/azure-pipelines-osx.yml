@@ -5,7 +5,7 @@
 jobs:
 - job: osx
   pool:
-    vmImage: macOS-10.15
+    vmImage: macOS-11
   strategy:
     matrix:
       osx_64_:
@@ -46,15 +46,6 @@ jobs:
       ./.scripts/create_conda_build_artifacts.sh
     displayName: Prepare conda build artifacts
     condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    condition: succeededOrFailed()
-    inputs:
-        testResultsFormat: 'cTest'
-        testResultsFiles: '**/Test.xml'
-        mergeTestResults: false # Unclear on impact of setting this true
-        failTaskOnFailedTests: true
-        publishRunAttachments: true # uploads xml files for possible inspection
 
   - task: PublishPipelineArtifact@1
     displayName: Store conda build artifacts

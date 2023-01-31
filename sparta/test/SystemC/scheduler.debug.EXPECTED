@@ -3,11 +3,12 @@
 #Exe:      
 #SimulatorVersion:
 #Repro:    
-#Start:    Saturday Sat Jan  7 09:46:49 2023
-#Elapsed:  0.000749s
+#Start:    Monday Mon Jan 30 17:02:27 2023
+#Elapsed:  0.000775s
 {0000000000 -------- scheduler debug} Scheduler is firing interal cycle ZERO
 {0000000000 -------- scheduler debug} Clearing all events
 {0000000000 -------- scheduler debug} [1;36mscheduling: fire_event[DependencyTest::fire()] at tick: 1 rel_time: 1 group: 11 continuing: true[0;0m
+{0000000000 -------- scheduler debug} [0;32m=== SCHEDULER: Run called num_ticks: 2 exacting_run: 1[0;0m
 {0000000000 -------- scheduler debug} [1;36mscheduling: Scheduler::stopRunning() at tick: 1 rel_time: 1 group: 0 continuing: true[0;0m
 {0000000000 -------- scheduler debug} [0;32m=== SCHEDULER: Next tick boundary 1 ===[0;0m
 {0000000000 -------- scheduler debug} Scheduler's event tree for tick: 1
@@ -31,6 +32,7 @@
 {0000000000 -------- scheduler debug} Scheduler's event tree for tick: 1
 {0000000000 -------- scheduler debug} 	Group[zero]: [0;32m[1;32mScheduler::stopRunning()[0;0m
 {0000000000 -------- scheduler debug} [1;36m--> SCHEDULER: Firing Scheduler::stopRunning() at time: 1 group: 19[0;0m
+{0000000000 -------- scheduler debug} [0;32m=== SCHEDULER: Run called num_ticks: 50 exacting_run: 1[0;0m
 {0000000000 -------- scheduler debug} [1;36mscheduling: Scheduler::stopRunning() at tick: 51 rel_time: 49 group: 0 continuing: true[0;0m
 {0000000000 -------- scheduler debug} [0;32m=== SCHEDULER: Next tick boundary 51 ===[0;0m
 {0000000000 -------- scheduler debug} Scheduler's event tree for tick: 51

@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <unordered_map>
 #include <algorithm>
+#include <filesystem>
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/simulation/RootTreeNode.hpp"
@@ -1448,18 +1449,18 @@ void SimulationDatabase__printAllVerificationSummaries(
     const std::string & simdb_dir,
     const bool verbose)
 {
-    namespace bfs = boost::filesystem;
+    namespace sfs = std::filesystem;
 
-    auto p = bfs::path(simdb_dir);
-    if (!bfs::exists(p) || !bfs::is_directory(p)) {
+    auto p = sfs::path(simdb_dir);
+    if (!sfs::exists(p) || !sfs::is_directory(p)) {
         std::cout << "Not a valid directory: '" << simdb_dir << "'\n" << std::endl;
         return;
     }
 
-    for (bfs::directory_iterator iter(p); iter != bfs::directory_iterator(); ++iter) {
-        if (bfs::is_regular_file(iter->status()) && iter->path().extension().string() == ".db") {
+    for (sfs::directory_iterator iter(p); iter != sfs::directory_iterator(); ++iter) {
+        if (sfs::is_regular_file(iter->status()) && iter->path().extension().string() == ".db") {
             const std::string db_full_filename = iter->path().string();
-            bfs::path db_path(db_full_filename);
+            sfs::path db_path(db_full_filename);
             const std::string db_filename = db_path.stem().string() + db_path.extension().string();
             simdb::ObjectManager sim_db(simdb_dir);
             if (sim_db.connectToExistingDatabase(db_filename)) {
@@ -1519,18 +1520,18 @@ void SimulationDatabase__getVerificationFailureReportDiffs(
 void SimulationDatabase__getVerificationFailuresInDir(
     const std::string & simdb_dir)
 {
-    namespace bfs = boost::filesystem;
-    auto p = bfs::path(simdb_dir);
-    if (!bfs::exists(p) || !bfs::is_directory(p)) {
+    namespace sfs = std::filesystem;
+    auto p = sfs::path(simdb_dir);
+    if (!sfs::exists(p) || !sfs::is_directory(p)) {
         std::cout << "Not a valid directory: '" << simdb_dir << "'\n" << std::endl;
         return;
     }
 
     std::map<std::string, std::set<std::string>> db_subdirs_with_failures;
-    for (bfs::directory_iterator iter(p); iter != bfs::directory_iterator(); ++iter) {
-        if (bfs::is_regular_file(iter->status()) && iter->path().extension().string() == ".db") {
+    for (sfs::directory_iterator iter(p); iter != sfs::directory_iterator(); ++iter) {
+        if (sfs::is_regular_file(iter->status()) && iter->path().extension().string() == ".db") {
             const std::string db_full_filename = iter->path().string();
-            bfs::path db_path(db_full_filename);
+            sfs::path db_path(db_full_filename);
             const std::string db_filename = db_path.stem().string() + db_path.extension().string();
             simdb::ObjectManager sim_db(simdb_dir);
             if (sim_db.connectToExistingDatabase(db_filename)) {
