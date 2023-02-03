@@ -47,12 +47,15 @@ namespace sparta
          * \brief Construct a Scheduleable object
          *
          * \param consumer_event_handler The scheduled callback placed on the Scheduler
-         * \param clk   Clock used if none provided
          * \param delay Any delay of scheduling
-         * \param scheduler Pointer to the scheduler to used -- must NOT be nullptr
+         * \param sched_phase The scheduling phase for this Scheduleable
+         * \param is_unique_event Is this Scheduleable uniquely
+         *                        scheduled (not scheduled more than
+         *                        once per tick)?
          */
         Scheduleable(const SpartaHandler & consumer_event_handler,
-                     Clock::Cycle delay, SchedulingPhase sched_phase);
+                     Clock::Cycle delay, SchedulingPhase sched_phase,
+                     bool is_unique_event = false);
 
         /**
          * \brief Destructor
@@ -187,7 +190,7 @@ namespace sparta
         {
             sparta_assert(scheduler != nullptr);
             scheduler->scheduleEvent(this, rel_tick, pgid_,
-                                     continuing_);
+                                     continuing_, is_unique_event_);
         }
 
         /**
@@ -504,6 +507,10 @@ namespace sparta
         //! going.
         bool continuing_ = true;
 
+        //! Is this a unique event (not be scheduled more than once
+        //! per tick)
+        const bool is_unique_event_ = false;
+
     };//End class Scheduleable
 
 
@@ -539,6 +546,9 @@ namespace sparta
     public:
         //! Create an empty Handle
         ScheduleableHandle() = default;
+
+        // Default move
+        ScheduleableHandle(ScheduleableHandle &&) = default;
 
         //! Copy a Handle, increment the count
         ScheduleableHandle(const ScheduleableHandle & orig)
@@ -622,4 +632,3 @@ namespace sparta
     }
 
 }
-

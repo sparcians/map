@@ -279,16 +279,13 @@ namespace sparta
         void startCounting_(uint64_t val, uint64_t delay = 0)
         {
             if (val < lower_val_) {
-                sparta_assert((*underflow_bin_).isCounting() == false);
                 (*underflow_bin_).startCounting(delay);
             }
             else if (val > upper_val_) {
-                sparta_assert((*overflow_bin_).isCounting() == false);
                 (*overflow_bin_).startCounting(delay);
             }
             else {
                 uint64_t idx = (val - lower_val_) >> idx_shift_amount_;
-                sparta_assert((bin_.at(idx)).isCounting() == false);
                 (bin_.at(idx)).startCounting(delay);
             }
 
@@ -306,16 +303,13 @@ namespace sparta
         void stopCounting_(uint64_t val, uint64_t delay = 0)
         {
             if (val < lower_val_) {
-                sparta_assert((*underflow_bin_).isCounting() == true);
                 (*underflow_bin_).stopCounting(delay);
             }
             else if (val > upper_val_) {
-                sparta_assert((*overflow_bin_).isCounting() == true);
                 (*overflow_bin_).stopCounting(delay);
             }
             else {
                 const uint64_t idx = (val - lower_val_) >> idx_shift_amount_;
-                sparta_assert((bin_.at(idx)).isCounting() == true);
                 (bin_.at(idx)).stopCounting(delay);
             }
         }
