@@ -126,6 +126,8 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   message (STATUS "Building Sparta in Release With Debug Info mode")
 elseif (CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
   message (STATUS "Building Sparta in Release Minimal Size mode")
+elseif (CMAKE_BUILD_TYPE STREQUAL "Profile")
+  message (STATUS "Building Sparta with Profile support")
 else ()
   message (FATAL_ERROR "Unknown CMAKE_BUILD_TYPE.  See README.md OR type 'make' at the SPARTA root")
 endif ()
@@ -163,6 +165,8 @@ if (ENABLE_SANITIZERS)
     set (CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
 endif ()
 
+set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg -g")
+
 #
 # If we're using CONDA, we might be using the one suggested for
 # Sparta.  Need to use the llvm-ar found in the conda package to
@@ -187,6 +191,8 @@ if (USING_CONDA)
     endif()
   endif()
 endif()
+
+message(STATUS "Using Compiler ${CMAKE_CXX_COMPILER_ID}, Version: ${CMAKE_CXX_COMPILER_VERSION}")
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # using Clang

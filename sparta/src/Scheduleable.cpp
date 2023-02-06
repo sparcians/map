@@ -30,11 +30,14 @@ namespace sparta
     }
 
     Scheduleable::Scheduleable(const SpartaHandler & consumer_event_handler,
-                               Clock::Cycle delay, SchedulingPhase sched_phase) :
+                               Clock::Cycle delay, SchedulingPhase sched_phase,
+                               bool is_unique_event) :
         consumer_event_handler_(consumer_event_handler),
         label_(consumer_event_handler_.getName()),
         delay_(delay),
-        sched_phase_(sched_phase){
+        sched_phase_(sched_phase),
+        is_unique_event_(is_unique_event)
+    {
     }
 
     void Scheduleable::setLabel(const char * label) {
