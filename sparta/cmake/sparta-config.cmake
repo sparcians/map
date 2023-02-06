@@ -25,8 +25,6 @@ if (Sparta_VERBOSE)
     set (CMAKE_FIND_DEBUG_MODE ON) # verbosity for find_package
 endif()
 
-set (Boost_USE_STATIC_LIBS OFF)
-
 execute_process (COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE CXX_VERSION_STRING RESULT_VARIABLE rc)
 if (NOT rc EQUAL "0")
     message (FATAL_ERROR "could not run compiler command '${CMAKE_CXX_COMPILER} --version', rc=${rc}")
@@ -40,31 +38,37 @@ else ()
     set (USING_CONDA OFF)
 endif ()
 
+# Find Boost
+set (Boost_USE_STATIC_LIBS OFF)
 find_package (Boost 1.76.0 REQUIRED COMPONENTS ${_BOOST_COMPONENTS})
-
 message (STATUS "Using BOOST ${Boost_VERSION_STRING}")
+include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
 # Find YAML CPP
 find_package (yaml-cpp 0.6 REQUIRED)
 message (STATUS "Using YAML CPP ${yaml-cpp_VERSION}")
 get_property(YAML_CPP_INCLUDE_DIR TARGET yaml-cpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+include_directories (SYSTEM ${YAML_CPP_INCLUDE_DIR})
 
 # Find RapidJSON
 find_package (RapidJSON 1.1 REQUIRED)
+include_directories (SYSTEM ${RapidJSON_INCLUDE_DIRS})
 message (STATUS "Using RapidJSON CPP ${RapidJSON_VERSION}")
 
 # Find SQLite3
 find_package (SQLite3 3.19 REQUIRED)
+include_directories (SYSTEM ${SQLite3_INCLUDE_DIRS})
 message (STATUS "Using SQLite3 ${SQLite3_VERSION}")
 
 # Find zlib
 find_package(ZLIB REQUIRED)
-message (STATUS "Using zlib ${ZLIB_VERSION_STRING}")
 include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
+message (STATUS "Using zlib ${ZLIB_VERSION_STRING}")
 
 # Find HDF5. Need to enable C language for HDF5 testing
 enable_language (C)
 find_package (HDF5 1.10 REQUIRED)
+include_directories (SYSTEM ${HDF5_INCLUDE_DIRS})
 
 # Populate the Sparta_LIBS variable with the required libraries for
 # basic Sparta linking

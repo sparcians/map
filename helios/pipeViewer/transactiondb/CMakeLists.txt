@@ -16,7 +16,7 @@ set(TRANSACTIONDB_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 ##################################################################
 # FIXME use consistent cmake recipe for python extensions here and in ..
 add_custom_command(OUTPUT transactiondb.sh
-  COMMAND printf 'SYSINCDIRS="$ENV{SYSINCDIRS}"
+  COMMAND printf 'SYSINCDIRS="${YAML_CPP_INCLUDE_DIR}"
   PY_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/src"
   SPARTA_BASE="${SPARTA_BASE}"
   TARGETDIR="lib"
