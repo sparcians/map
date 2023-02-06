@@ -41,14 +41,14 @@ endif ()
 # Find Boost
 set (Boost_USE_STATIC_LIBS OFF)
 find_package (Boost 1.76.0 REQUIRED COMPONENTS ${_BOOST_COMPONENTS})
-message (STATUS "Using BOOST ${Boost_VERSION_STRING}")
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
+message (STATUS "Using BOOST ${Boost_VERSION_STRING}")
 
 # Find YAML CPP
 find_package (yaml-cpp 0.6 REQUIRED)
-message (STATUS "Using YAML CPP ${yaml-cpp_VERSION}")
 get_property(YAML_CPP_INCLUDE_DIR TARGET yaml-cpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 include_directories (SYSTEM ${YAML_CPP_INCLUDE_DIR})
+message (STATUS "Using YAML CPP ${yaml-cpp_VERSION}")
 
 # Find RapidJSON
 find_package (RapidJSON 1.1 REQUIRED)
@@ -69,6 +69,7 @@ message (STATUS "Using zlib ${ZLIB_VERSION_STRING}")
 enable_language (C)
 find_package (HDF5 1.10 REQUIRED)
 include_directories (SYSTEM ${HDF5_INCLUDE_DIRS})
+message (STATUS "Using HDF5 ${HDF5_VERSION}")
 
 # Populate the Sparta_LIBS variable with the required libraries for
 # basic Sparta linking
