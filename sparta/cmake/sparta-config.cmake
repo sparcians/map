@@ -45,12 +45,7 @@ else ()
     set (USING_CONDA OFF)
 endif ()
 
-
-if (APPLE AND NOT USING_CONDA)
-  set (CMAKE_CXX_COMPILER_VERSION 10.0)
-endif ()
-
-find_package (Boost 1.65.0 REQUIRED COMPONENTS ${_BOOST_COMPONENTS})
+find_package (Boost 1.76.0 REQUIRED COMPONENTS ${_BOOST_COMPONENTS})
 
 set (BUILD_SHARED_LIBS ${existing_build_shared})
 message (STATUS "Using BOOST ${Boost_VERSION_STRING}")
