@@ -14,6 +14,16 @@ list(APPEND SimDB_CPP
             src/simdb.cpp)
 
 add_library(simdb ${SimDB_CPP})
+
+
+# Add Inlude path for libs
+target_include_directories (simdb SYSTEM PUBLIC ${Boost_INCLUDE_DIRS}
+                                         PUBLIC ${RAPIDJSON_INCLUDE_DIRS}
+                                         PUBLIC ${YAML_CPP_INCLUDE_DIR}
+                                         PUBLIC ${HDF5_C_INCLUDE_DIRS}
+                                         PUBLIC ${HDF5_INCLUDE_DIRS})
+
+
 add_subdirectory(test EXCLUDE_FROM_ALL)
 
 install(TARGETS simdb

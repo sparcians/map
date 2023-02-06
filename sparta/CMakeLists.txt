@@ -10,23 +10,6 @@ set (GEN_DEBUG_INFO ON CACHE BOOL "Genearate debug info in compile & link -g")
 set (SPARTA_BASE ${CMAKE_CURRENT_SOURCE_DIR})
 include (${SPARTA_BASE}/cmake/sparta-config.cmake)
 
-# Add RapidJSON
-include_directories (SYSTEM ${RAPIDJSON_INCLUDE_DIRS})
-
-# Add YAML CPP
-include_directories (SYSTEM ${YAML_CPP_INCLUDE_DIR})
-
-# Add local includes
-include_directories ("./")
-include_directories ("simdb/include")
-
-# Add Boost (not typical system install)
-include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
-
-# Add HDF5 (not typical system install)
-include_directories (SYSTEM ${HDF5_C_INCLUDE_DIRS})
-include_directories (SYSTEM ${HDF5_INCLUDE_DIRS})
-
 # Add the source for libsparta.a
 list (APPEND SourceCppFiles
             src/ArgosOutputter.cpp
@@ -104,6 +87,19 @@ if (COMPILE_WITH_PYTHON)
     python/sparta_support/PythonInterpreter.cpp
     python/sparta_support/Completer.cpp)
 endif ()
+
+add_library (sparta ${SourceCppFiles})
+
+# Add Inlude path for libs
+target_include_directories (sparta SYSTEM PUBLIC ${Boost_INCLUDE_DIRS}
+                                         PUBLIC ${RAPIDJSON_INCLUDE_DIRS}
+                                         PUBLIC ${YAML_CPP_INCLUDE_DIR}
+                                         PUBLIC ${HDF5_C_INCLUDE_DIRS}
+                                         PUBLIC ${HDF5_INCLUDE_DIRS})
+
+# Add local includes
+target_include_directories (sparta PRIVATE "./")
+target_include_directories (sparta INTERFACE "simdb/include")
 
 execute_process (COMMAND bash "-c" "git describe --tags --always"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -215,7 +211,6 @@ set (CPPCHECK_EXCLUDES
 )
 find_package (Cppcheck)
 
-add_library (sparta ${SourceCppFiles})
 set (SPARTA_STATIC_LIBS ${PROJECT_BINARY_DIR}/libsparta.a)
 
 # Build the SimDB library
