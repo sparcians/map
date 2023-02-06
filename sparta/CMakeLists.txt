@@ -92,7 +92,7 @@ add_library (sparta ${SourceCppFiles})
 
 # Add local includes
 target_include_directories (sparta PRIVATE "./")
-target_include_directories (sparta INTERFACE "simdb/include")
+target_include_directories (sparta PRIVATE "simdb/include")
 
 execute_process (COMMAND bash "-c" "git describe --tags --always"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
