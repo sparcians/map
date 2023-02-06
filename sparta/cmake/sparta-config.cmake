@@ -27,11 +27,6 @@ endif()
 
 set (Boost_USE_STATIC_LIBS OFF)
 
-# BOOST_CMAKE logic for in versions before 1.72 to ask for the shared libraries is broken, you can only force it to use
-# them if you're building shared libs?  wtf?
-set (existing_build_shared ${BUILD_SHARED_LIBS})
-set (BUILD_SHARED_LIBS ON)
-
 execute_process (COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE CXX_VERSION_STRING RESULT_VARIABLE rc)
 if (NOT rc EQUAL "0")
     message (FATAL_ERROR "could not run compiler command '${CMAKE_CXX_COMPILER} --version', rc=${rc}")
@@ -47,7 +42,6 @@ endif ()
 
 find_package (Boost 1.76.0 REQUIRED COMPONENTS ${_BOOST_COMPONENTS})
 
-set (BUILD_SHARED_LIBS ${existing_build_shared})
 message (STATUS "Using BOOST ${Boost_VERSION_STRING}")
 
 # Find YAML CPP
