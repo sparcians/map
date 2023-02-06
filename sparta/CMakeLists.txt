@@ -90,13 +90,6 @@ endif ()
 
 add_library (sparta ${SourceCppFiles})
 
-# Add Inlude path for libs
-target_include_directories (sparta SYSTEM PUBLIC ${Boost_INCLUDE_DIRS}
-                                         PUBLIC ${RAPIDJSON_INCLUDE_DIRS}
-                                         PUBLIC ${YAML_CPP_INCLUDE_DIR}
-                                         PUBLIC ${HDF5_C_INCLUDE_DIRS}
-                                         PUBLIC ${HDF5_INCLUDE_DIRS})
-
 # Add local includes
 target_include_directories (sparta PRIVATE "./")
 target_include_directories (sparta INTERFACE "simdb/include")
@@ -227,7 +220,6 @@ add_subdirectory (simdb)
 #
 add_subdirectory (test EXCLUDE_FROM_ALL)
 add_subdirectory (example EXCLUDE_FROM_ALL)
-
 
 #
 # Installation
