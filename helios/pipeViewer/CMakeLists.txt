@@ -7,8 +7,9 @@ find_package(PythonLibs 3.7 REQUIRED)
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(NOT ${PYTHON})
-    find_program(PYTHON 'python3')
+if(NOT ${PYTHONINTERP_FOUND})
+  message(WARNING "Cmake could not find PythonInterp, trying to fall back on system default python3")
+  find_program(PYTHON_EXECUTABLE 'python3')
 endif()
 
 set(SETUP_PY "${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core/setup.py")
@@ -16,7 +17,7 @@ set(SETUP_PY "${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core/setup.py")
 set(PY_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/build/core.so.built")
 
 add_custom_command(OUTPUT "${PY_OUTPUT}"
-		   COMMAND ${CMAKE_COMMAND} -E env CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} LD=${CMAKE_LINKER} TARGETDIR=${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core ${PYTHON} ${SETUP_PY} build_ext --inplace
+         COMMAND ${CMAKE_COMMAND} -E env CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} LD=${CMAKE_LINKER} TARGETDIR=${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core -- ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext --inplace
                    COMMAND ${CMAKE_COMMAND} -E touch ${PY_OUTPUT}
                    DEPENDS ${SETUP_PY} "${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core/src/core.pyx"
                    )
