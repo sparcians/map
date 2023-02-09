@@ -28,7 +28,7 @@ add_custom_command(OUTPUT transactiondb.sh
   CC="${CMAKE_C_COMPILER}"
   CXX="${CMAKE_CXX_COMPILER}"
   LD="${CMAKE_LINKER}"
-  python3 ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --inplace;' > transactiondb.sh && chmod +x transactiondb.sh
+  ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --inplace;' > transactiondb.sh && chmod +x transactiondb.sh
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/setup.py)
 
 add_custom_target (transactiondb_sh_driver ALL DEPENDS transactiondb.sh)
