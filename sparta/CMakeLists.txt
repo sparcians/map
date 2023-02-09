@@ -225,6 +225,7 @@ add_subdirectory (example EXCLUDE_FROM_ALL)
 # Installation
 #
 install(DIRECTORY sparta/ DESTINATION include/sparta)
+install(DIRECTORY cache/ DESTINATION include/cache)
 install(FILES ${SPARTA_STATIC_LIBS} DESTINATION lib)
 install(DIRECTORY cmake/ DESTINATION lib/cmake/sparta)
 install(FILES test/TestingMacros.cmake DESTINATION lib/cmake/sparta)
