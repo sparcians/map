@@ -2,7 +2,7 @@ project(SIMDB_SQLiteDatabase_test)
 
 add_executable(SIMDB_SQLiteDatabase_test SQLiteDatabase_test.cpp)
 
-include(../TestingMacros.cmake)
+include(${CMAKE_SOURCE_DIR}/sparta/cmake/SimdbTestingMacros.cmake)
 
 simdb_recursive_copy(SIMDB_SQLiteDatabase_test test_dbs)
 

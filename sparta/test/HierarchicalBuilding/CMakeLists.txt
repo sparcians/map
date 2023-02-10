@@ -2,8 +2,6 @@ project(HierarchicalBuilding_test)
 
 sparta_add_test_executable(HierarchicalBuilding_test HierarchicalBuilding_test.cpp)
 
-include(../TestingMacros.cmake)
-
 #sparta_test(HierarchicalBuilding_test HierarchicalBuilding_test_RUN)
 #sparta_copy(HierarchicalBuilding_test *.yaml)
 

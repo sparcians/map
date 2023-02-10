@@ -1,7 +1,7 @@
 project(Dag_test)
 
-sparta_add_test_executable(DAG_test DAG_main.cpp)
+include(${CMAKE_SOURCE_DIR}/sparta/cmake/SpartaTestingMacros.cmake)
 
-include(../TestingMacros.cmake)
+sparta_add_test_executable(DAG_test DAG_main.cpp)
 
 sparta_test(DAG_test DAG_test_RUN)

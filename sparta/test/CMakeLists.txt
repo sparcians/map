@@ -3,6 +3,9 @@ PROJECT (SPARTA_TESTS)
 # Enable testing and configures the test/DartConfiguration.tcl
 include (CTest)
 
+# Convenience macros and functions for tests
+include(${CMAKE_SOURCE_DIR}/sparta/cmake/SpartaTestingMacros.cmake)
+
 # Setup options for valgrind testing.
 find_program (VALGRIND_TOOL valgrind)
 if (VALGRIND_TOOL)

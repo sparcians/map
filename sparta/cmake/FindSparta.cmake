@@ -73,7 +73,8 @@ if(NOT SPARTA_FOUND)
 			PROPERTY INTERFACE_COMPILE_FEATURES cxx_std_17)
     endif()
 
-    include(${CMAKE_CURRENT_LIST_DIR}/TestingMacros.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/SpartaTestingMacros.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/SimdbTestingMacros.cmake)
     mark_as_advanced(SPARTA_INCLUDE_DIRS SPARTA_LIBRARIES)
 
     #set(CMAKE_FIND_DEBUG_MODE FALSE)

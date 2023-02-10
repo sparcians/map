@@ -1,7 +1,7 @@
 project(ContextCounter_test)
 
-sparta_add_test_executable(ContextCounter_test ContextCounter_test.cpp)
+include(${CMAKE_SOURCE_DIR}/sparta/cmake/SpartaTestingMacros.cmake)
 
-include(../TestingMacros.cmake)
+sparta_add_test_executable(ContextCounter_test ContextCounter_test.cpp)
 
 sparta_test(ContextCounter_test ContextCounter_test_RUN)

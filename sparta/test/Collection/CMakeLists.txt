@@ -1,7 +1,7 @@
 project(Collection_test)
 
-sparta_add_test_executable(Collection_test Collection_test.cpp)
+include(${CMAKE_SOURCE_DIR}/sparta/cmake/SpartaTestingMacros.cmake)
 
-include(../TestingMacros.cmake)
+sparta_add_test_executable(Collection_test Collection_test.cpp)
 
 sparta_test(Collection_test Collection_test_RUN)

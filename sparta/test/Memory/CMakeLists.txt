@@ -2,8 +2,6 @@ project(Memory_test)
 
 sparta_add_test_executable(Memory_test Memory_test.cpp)
 
-include(../TestingMacros.cmake)
-
 sparta_named_test_no_valgrind(Memory_test Memory_test)
 
 # This test requires a larger stack size for valgrind

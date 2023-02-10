@@ -49,7 +49,6 @@ add_custom_command(TARGET core_example_regress_valgrind POST_BUILD COMMAND ctest
 #
 # Testing
 #
-include (../../test/TestingMacros.cmake)
 sparta_copy(sparta_core_example *.yaml)
 sparta_copy(sparta_core_example cpu_layout.alf)
 sparta_recursive_copy(sparta_core_example subdir_yamls*)

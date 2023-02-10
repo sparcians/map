@@ -2,6 +2,4 @@ project(StateTimer_test)
 
 sparta_add_test_executable(StateTimer_test StateTimer_test.cpp)
 
-include(../TestingMacros.cmake)
-
 sparta_test(StateTimer_test StateTimer_test_RUN)

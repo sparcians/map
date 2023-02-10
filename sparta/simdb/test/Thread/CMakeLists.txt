@@ -2,7 +2,7 @@ project(SIMDB_Thread_test)
 
 add_executable(SIMDB_Thread_test Thread_test.cpp)
 
-include(../TestingMacros.cmake)
+include(${CMAKE_SOURCE_DIR}/sparta/cmake/SimdbTestingMacros.cmake)
 
 simdb_test(SIMDB_Thread_test SIMDB_Thread_test_RUN)
 
