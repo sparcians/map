@@ -16,9 +16,8 @@ endif()
 
 # Point find_package to the right parts of the source and build tree
 set(CMAKE_MODULE_PATH  ${CMAKE_SOURCE_DIR}/sparta/cmake ${CMAKE_MODULE_PATH})
-set(SPARTA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sparta)
-set(SPARTA_LIBRARY ${CMAKE_BINARY_DIR}/sparta)
-find_package(Sparta REQUIRED)
+include_directories(${SPARTA_BASE} ${SPARTA_BASE}/simdb/include ./)
+include(${CMAKE_SOURCE_DIR}/sparta/cmake/sparta-config.cmake)
 
 set(SETUP_PY "${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core/setup.py")
 
