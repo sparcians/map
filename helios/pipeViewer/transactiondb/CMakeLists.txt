@@ -1,16 +1,9 @@
 cmake_minimum_required(VERSION 3.15)
 
-# FIXME this should not depend on SPARTA_BASE but instead use:
-# find_package(Sparta X.Y REQUIRED)
-# BUT, that will require creating a cmake find module for Sparta first...
-if (NOT DEFINED SPARTA_BASE)
-    message (FATAL_ERROR "SPARTA_BASE must be defined. cmake from the root of MAP repo")
-endif()
-
 project(transactiondb)
 
 set(TRANSACTIONDB_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
-
+get_property(YAML_CPP_INCLUDE_DIR TARGET yaml-cpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 ##################################################################
 # Build the transactiondb.so
 ##################################################################

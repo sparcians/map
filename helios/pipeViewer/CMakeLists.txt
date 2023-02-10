@@ -10,9 +10,15 @@ set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(NOT ${Python3_FOUND})
-  message(WARNING "Cmake could not find PythonInterp, trying to fall back on system default python3")
+  message(WARNING "Cmake could not find python3, trying to fall back on system default python3")
   find_program(Python3_EXECUTABLE 'python3')
 endif()
+
+# Point find_package to the right parts of the source and build tree
+set(CMAKE_MODULE_PATH  ${CMAKE_SOURCE_DIR}/sparta/cmake ${CMAKE_MODULE_PATH})
+set(SPARTA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sparta)
+set(SPARTA_LIBRARY ${CMAKE_BINARY_DIR}/sparta)
+find_package(Sparta REQUIRED)
 
 set(SETUP_PY "${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core/setup.py")
 
@@ -24,10 +30,6 @@ add_custom_command(OUTPUT "${PY_OUTPUT}"
                    DEPENDS ${SETUP_PY} "${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core/src/core.pyx"
                    )
 add_custom_target(pipe_view_py ALL DEPENDS "${PY_OUTPUT}")
-
-include_directories(${SPARTA_BASE} ${SPARTA_BASE}/simdb/include ./)
-
-include(${SPARTA_BASE}/cmake/sparta-config.cmake)
 
 add_subdirectory(transactiondb)
 add_subdirectory(transactionsearch)
