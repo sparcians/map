@@ -59,9 +59,3 @@ rm "$TMPFILE"
 # cleanup TMPENV (intentionally leaving it in case something goes wrong with creating environment
 # user can manually rerun
 rm "$TMPENV"
-
-
-
-
-
-
