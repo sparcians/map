@@ -39,7 +39,6 @@ requirements:
     - clang       {{ linux_clang_version }}  # [linux]
     - clangxx     {{ linux_clang_version }}  # [linux]
     - llvm-tools  {{ linux_clang_version }}  # [linux]
-    - rsync
     - cppcheck
     # add runtime requirements for argos to make it easier to script
     # creation of a 'dev' environment that can also run Argos
@@ -58,6 +57,10 @@ requirements:
     - python
     - rapidjson
     - zlib
+# "build" packages picked up binutis 2.39 for gcc, but the "host" package picked up binutils 2.40 for python.
+#   Force host to use same binutils as build by including them in here.
+    - {{ compiler('cxx') }}
+    - {{ compiler('c') }}
   run:
     - matplotlib-base
     - numpy
