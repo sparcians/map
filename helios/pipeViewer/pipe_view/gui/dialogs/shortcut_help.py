@@ -1,15 +1,25 @@
+from typing import Dict, Tuple, TypedDict, Union
 import wx
 import wx.html
 
+
+class ShortcutHelpEntry(TypedDict, total=False):
+    mod: str
+    keys: Union[Tuple[str, ...], str]
+    desc: str
+
+
 class ShortcutHelp(wx.Frame):
-    def is_mac_os():
+    @staticmethod
+    def is_mac_os() -> bool:
         os = wx.GetOsVersion()[0]
-        return os == wx.OS_MAC_OS or os == wx.OS_MAC_OSX_DARWIN or os == wx.OS_MAC
+        return os in [wx.OS_MAC_OS, wx.OS_MAC_OSX_DARWIN, wx.OS_MAC]
 
     __SHIFT_KEY = 'Shift'
     __CTRL_KEY = 'Command' if is_mac_os() else 'CTRL'
 
-    __SHORTCUT_ITEMS = {
+    ShortcutHelpDict = Dict[str, Tuple[ShortcutHelpEntry, ...]]
+    __SHORTCUT_ITEMS: ShortcutHelpDict = {
         'Global': (
             {'mod': __CTRL_KEY,
              'keys': ('-', 'Mousewheel Down'),
@@ -64,7 +74,8 @@ class ShortcutHelp(wx.Frame):
         )
     }
 
-    def __gen_message(shortcut_items):
+    @staticmethod
+    def __gen_message(shortcut_items: ShortcutHelpDict) -> str:
         msg = '<html>\n<body>\n<h2>Argos Keyboard Shortcuts</h2>\n'
 
         for k, v in shortcut_items.items():
@@ -91,23 +102,41 @@ class ShortcutHelp(wx.Frame):
 
     __MESSAGE = __gen_message(__SHORTCUT_ITEMS)
 
-    def __init__(self, parent, id):
-        wx.Frame.__init__(self, parent, id, "Argos Shortcut Information", \
-                          style = wx.RESIZE_BORDER | wx.CAPTION | wx.CLOSE_BOX | wx.CLIP_CHILDREN)
-        
-        self.__message_ctrl = wx.html.HtmlWindow(self, style=wx.html.HW_SCROLLBAR_AUTO, size=(400, 525))
+    def __init__(self, parent: wx.Window, id: int) -> None:
+        wx.Frame.__init__(
+            self,
+            parent,
+            id,
+            "Argos Shortcut Information",
+            style=(wx.RESIZE_BORDER |
+                   wx.CAPTION |
+                   wx.CLOSE_BOX |
+                   wx.CLIP_CHILDREN)
+        )
+
+        self.__message_ctrl = wx.html.HtmlWindow(
+            self,
+            style=wx.html.HW_SCROLLBAR_AUTO,
+            size=(400, 525)
+        )
         self.__message_ctrl.SetPage(ShortcutHelp.__MESSAGE)
         self.__close_btn = wx.Button(self, label="Close")
         self.__sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.Bind(wx.EVT_BUTTON, self.OnCloseButton, self.__close_btn)
 
-        self.__sizer.Add(self.__message_ctrl, proportion=1, flag=wx.ALL | wx.EXPAND, border=5)
-        self.__sizer.Add(self.__close_btn, proportion=0, flag=wx.ALL | wx.ALIGN_CENTER, border=5)
+        self.__sizer.Add(self.__message_ctrl,
+                         proportion=1,
+                         flag=wx.ALL | wx.EXPAND,
+                         border=5)
+        self.__sizer.Add(self.__close_btn,
+                         proportion=0,
+                         flag=wx.ALL | wx.ALIGN_CENTER,
+                         border=5)
         self.SetSizer(self.__sizer)
 
         self.Fit()
         self.Show(True)
 
-    def OnCloseButton(self, evt):
+    def OnCloseButton(self, evt: wx.CommandEvent) -> None:
         self.Destroy()

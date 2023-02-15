@@ -658,6 +658,6 @@ class Layout_Canvas(wx.ScrolledWindow):
             self.__set_renderer_font = False
             self.__UpdateFontScaling()
             self.__CalcCanvasSize()
-            self.__UpdateScrollbars(force_x = 0, force_y = 0)
+            self.__UpdateScrollbars(force_x=0, force_y=0)
             self.__context.FullRedraw()
             self.FullUpdate()

@@ -21,17 +21,24 @@ class QuadNode:
         self.parent_index = parent_index
         self.parent = parent
 
-    def __CalculateChildNodeBounds(self) -> Tuple[int, int, int, int]:
+    __CalcChildBoundsRetType = Tuple[int, int, int, int, int, int]
+
+    def __CalculateChildNodeBounds(self) -> __CalcChildBoundsRetType:
         min_x, min_y, max_x, max_y = self.bounds
         midpoint_x = int((max_x + min_x) / 2.0)
         midpoint_y = int((max_y + min_y) / 2.0)
         return (min_x, min_y, max_x, max_y, midpoint_x, midpoint_y)
 
-    def BisectCreateNodes(self):
+    def BisectCreateNodes(self) -> None:
         if not self.contents:
             min_x, min_y, max_x, max_y = self.bounds
             midpoint_x = int((max_x + min_x) / 2.0)
             midpoint_y = int((max_y + min_y) / 2.0)
+            self.contents = [
+                QuadNode((min_x, min_y, midpoint_x, midpoint_y),
+                         [],
+                         [],
+                         self,
                          0),
                 QuadNode((midpoint_x, min_y, max_x, midpoint_y),
                          [],
@@ -53,11 +60,36 @@ class QuadNode:
     def UpdateBounds(self, new_bounds: Tuple[int, int, int, int]) -> None:
         self.bounds = new_bounds
         if self.contents:
-            min_x, min_y, max_x, max_y, midpoint_x, midpoint_y = self.__CalculateChildNodeBounds()
-            self.contents[0].UpdateBounds((min_x, min_y, midpoint_x, midpoint_y))
-            self.contents[1].UpdateBounds((midpoint_x, min_y, max_x, midpoint_y))
-            self.contents[2].UpdateBounds((min_x, midpoint_y, midpoint_x, max_y))
-            self.contents[3].UpdateBounds((midpoint_x, midpoint_y, max_x, max_y))
+            (min_x,
+             min_y,
+             max_x,
+             max_y,
+             midpoint_x,
+             midpoint_y) = self.__CalculateChildNodeBounds()
+            self.contents[0].UpdateBounds(
+                (min_x,
+                 min_y,
+                 midpoint_x,
+                 midpoint_y)
+            )
+            self.contents[1].UpdateBounds(
+                (midpoint_x,
+                 min_y,
+                 max_x,
+                 midpoint_y)
+            )
+            self.contents[2].UpdateBounds(
+                (min_x,
+                 midpoint_y,
+                 midpoint_x,
+                 max_y)
+            )
+            self.contents[3].UpdateBounds(
+                (midpoint_x,
+                 midpoint_y,
+                 max_x,
+                 max_y)
+            )
 
     def SetVisibilityTickOnAllChildElements(self, vis_tick: int) -> None:
         if self.elements:  # leaves only
@@ -181,7 +213,8 @@ class QuadTree:
             # limited recalc
             self.Build(update=[obj])  # not a full rebuild
 
-    def UpdateBounds(self):
+    def UpdateBounds(self) -> None:
+        assert self.__tree is not None
         bounds = self.CalculateBounds()
         self.__tree.UpdateBounds(bounds)
 

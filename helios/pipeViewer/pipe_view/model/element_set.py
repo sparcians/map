@@ -284,5 +284,5 @@ class ElementSet:
             else:
                 self.__draw_set.append(pair)
 
-    def UpdateElementBounds(self):
+    def UpdateElementBounds(self) -> None:
         self.__tree.UpdateBounds()
