@@ -40,3 +40,5 @@ add_custom_target (transactiondb_driver ALL DEPENDS
   ${TRANSACTIONDB_SRC_DIR}/Reader.hpp
   ${TRANSACTIONDB_SRC_DIR}/TransactionDatabaseInterface.hpp)
 add_dependencies(transactiondb_driver sparta)
+
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/ TYPE LIB)

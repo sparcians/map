@@ -33,3 +33,5 @@ add_custom_target(pipe_view_py ALL DEPENDS "${PY_OUTPUT}")
 add_subdirectory(transactiondb)
 add_subdirectory(transactionsearch)
 add_subdirectory(argos_dumper)
+
+install(DIRECTORY pipe_view/ DESTINATION pipe_view PATTERN "__pycache__" EXCLUDE)
