@@ -283,3 +283,6 @@ class ElementSet:
                 pass
             else:
                 self.__draw_set.append(pair)
+
+    def UpdateElementBounds(self) -> None:
+        self.__tree.UpdateBounds()

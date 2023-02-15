@@ -1,4 +1,5 @@
 from __future__ import annotations
+import atexit
 import json
 import os
 import sys
@@ -62,6 +63,13 @@ class ArgosSettings:
 
         for k, v in self.__config.items():
             self.__validate_setting(k, v)
+
+        # Register atexit cleanup function so that we don't try to call save()
+        # after open() has been deleted
+        def cleanup() -> None:
+            self.save()
+
+        atexit.register(cleanup)
 
     def __del__(self) -> None:
         self.save()
