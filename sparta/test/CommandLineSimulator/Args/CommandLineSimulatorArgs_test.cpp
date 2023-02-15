@@ -25,7 +25,7 @@ using sparta::SpartaException;
  * \brief Test for CommandLineSimulator argument parsing functionality
  */
 
-TEST_INIT;
+TEST_INIT
 
 #define PRINT_ENTER_TEST \
   std::cout << std::endl; \

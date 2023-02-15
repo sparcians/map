@@ -45,6 +45,19 @@ that uses conda miniforge:
 
   conda activate plato
 
+# Other libraries/tools needed and installed in external
+
+ - plato/ui/viewer/js/external
+   - bokeh-1.3.1.js
+   - bokeh-api-1.3.1.min.js
+   - bokeh-gl-1.3.1.min.js
+   - bokeh-tables-1.3.1.min.js
+   - bokeh-widgets-1.3.1.js
+   - jquery-ui-1.12.1
+   - js.cookie.js
+   - palette.js
+   - plotly-latest.min.js
+
 # Setup and run servers
 
 - Three different servers are required to run plato correctly
@@ -81,7 +94,7 @@ Not sure what the best practice is for starting ASGI server implementation of Dj
 From the plato/django directory, run this to start the django/ASGI server
 
   - env LOG_FILE=uvicorn.log PYTHONUNBUFFERED=1 PYTHONPATH=$PWD/../py PYTHONOPTIMIZE=1 uvicorn server.asgi:application --host 0 --port 8002 --workers 1 --loop uvloop --ws websockets --reload
-  
+
 For convenience, use the start_plato.sh script, but be sure to the edit the path to your miniforge first.
 
 Note that this startup method runs the server in the foreground.  Ctrl-C to stop it.
@@ -105,7 +118,7 @@ ln -s nginx/var var
   - from the plato directory
     - nginx -c nginx/nginx.conf -p $PWD
     - When you want to stop server: nginx -c nginx/nginx.conf -p $PWD -s stop
-    - start_nginx.sh is provided for convenience 
+    - start_nginx.sh is provided for convenience
       - edit path to miniforge
       - to start nginx:
         -  start_nginx.sh
@@ -118,7 +131,7 @@ ln -s nginx/var var
 
 # Time to access plato from a browser
  - navigate to 'http://localhost:8002/plato?dataSourceDir=<absolute path to plato/demo/data>' and login
- 
+
 # Plato documentation
 For general plato documentation, see `docs/`
 
@@ -148,7 +161,7 @@ than the necessary steps and also less than the necessary steps):
 
 3. django/settings.py
 
- - uncomment the `import ldap` and `from django_auth_ldap` lines 
+ - uncomment the `import ldap` and `from django_auth_ldap` lines
 
  - uncomment `django_auth_ldap` from `INSTALLED_APPS`
 
@@ -157,7 +170,7 @@ than the necessary steps and also less than the necessary steps):
 4. in platoSite/platoView.py:
  - uncomment "from server.authenticationAD import ActiveDirectoryBackend"
  - switch the authenticate to ActiveDirectoryBackend().authenticate per the comments in the file
- 
+
 5. Notes
  - Might have to invoke Django migrate
 
@@ -165,7 +178,7 @@ than the necessary steps and also less than the necessary steps):
 
 ### Local user creation under Active Directory
 To create test users not in the Active Directory, follow these steps rather than the similar looking ones above:
-  - python3 manage.py shell  
+  - python3 manage.py shell
   - from server.models import AuthenticatedUser
   - AuthenticatedUser.objects.create(username='<newuser>')
   - exit()

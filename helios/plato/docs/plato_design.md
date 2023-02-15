@@ -2,7 +2,7 @@
 
 This document is a high-level overview of the design of plato. To simply get up and running, look at `getting_started.md`
 
-##Overview 
+## Overview 
 
 plato is a generic browser-based data-processing and visualization tool that allows users interactively view moderately large datasets (~100 million rows) of computer architecture simulation events using custom widgets. 
 

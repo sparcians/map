@@ -2,8 +2,10 @@
 
 #pragma once
 
-#include "simdb/ObjectManager.hpp"
 #include "simdb_fwd.hpp"
+
+#include "simdb/schema/ColumnTypedefs.hpp"
+#include "simdb/ObjectManager.hpp"
 
 #include <string>
 #include <vector>
@@ -203,5 +205,3 @@ void ObjectRef::getPropertyBlob(const std::string & prop_name,
 }
 
 } // namespace simdb
-
-

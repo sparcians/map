@@ -59,6 +59,7 @@ namespace app {
         sparta_assert(arch_applicator_ == nullptr, "Cannot specify more than one arch option");
         sparta_assert(!is_consumed_, "You cannot process arch files after simulation has been populated");
         std::string found_filename = utils::findArchitectureConfigFile(arch_search_paths_, filename);
+        addRunMetadata("arch", filename);
         arch_applicator_.reset(new ArchNodeConfigFileApplicator(pattern, found_filename, arch_search_paths_));
         arch_applicator_->applyUnbound(arch_ptree_, verbose_cfg);
         std::cout << "  [in] Arch Config: " << arch_applicator_->stringize() << std::endl;

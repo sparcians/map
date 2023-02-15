@@ -9,13 +9,13 @@
 #include "sparta/memory/MemoryExceptions.hpp"
 #include "sparta/memory/AddressTypes.hpp"
 #include "sparta/memory/DebugMemoryIF.hpp"
-#include "sparta/memory/DMI.hpp"
 
 namespace sparta
 {
     namespace memory
     {
         class TranslationIF;
+        class DMIBlockingMemoryIF;
 
         /*!
          * \brief Pure-virtual memory interface which represents a simple,
@@ -231,16 +231,19 @@ namespace sparta
             }
 
             /**
-             * Returns a (possibly invalid) DMI
-             *
+             * \brief Get a DMI blocking interface to access the given address/size
              * \param addr A guest physical address that is to be accessed via DMI
-             * \param callback Callback that is called when the DMI is invalidated
+             * \param size The intended size of data to get.  Must be in the access window
              */
-            virtual DMI getDMI(const addr_t addr,
-                               const DMIInvalidationCallback &callback)
+            virtual DMIBlockingMemoryIF * getDMI(addr_t addr, addr_t size)
             {
-                return DMI(addr);
+                return nullptr;
             }
+
+            /**
+             * \brief Invalidate all DMI's
+             */
+            virtual void invalidateAllDMI() { return; }
 
             ////////////////////////////////////////////////////////////////////////
             //! @}
@@ -315,8 +318,8 @@ namespace sparta
 
 
         }; // class BlockingMemoryIF
-    }; // namespace memory
-}; // namespace sparta
+    } // namespace memory
+} // namespace sparta
 
 
 //! \brief BlockingMemoryIF stream operator

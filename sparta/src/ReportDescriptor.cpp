@@ -12,9 +12,8 @@
 #include <boost/algorithm/string/detail/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
-#include <boost/filesystem/convenience.hpp>
-#include <boost/filesystem/operations.hpp>
 #include <boost/iterator/iterator_facade.hpp>
+#include <filesystem>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -121,7 +120,7 @@ bool ReportDescriptor::isSingleTimeseriesReport() const
         return false;
     }
 
-    std::string extension = boost::filesystem::extension(dest_file);
+    std::string extension = std::filesystem::path(dest_file).extension();
     utils::lowercase_string ext(extension);
     return ext.getString() == ".csv";
 }
@@ -529,7 +528,7 @@ report::format::BaseFormatter* ReportDescriptor::addInstantiation(Report* r,
                                      run_metadata.begin(),
                                      run_metadata.end());
 
-            const std::string extension = boost::filesystem::extension(filename);
+            const std::string extension = std::filesystem::path(filename).extension();
             if (sim_config->getDisabledPrettyPrintFormats().count(extension)) {
                 formatter->disablePrettyPrint();
             }
@@ -851,6 +850,7 @@ class ReportDescriptorFileParserYAML
     private:
         std::stack<bool> in_report_stack_;
         bool in_trigger_definition_ = false;
+        bool in_header_metadata_ = false;
         ReportDescVec completed_descriptors_;
 
         std::string loc_pattern_;
@@ -862,6 +862,7 @@ class ReportDescriptorFileParserYAML
         bool auto_expand_context_counter_stats_ = false;
 
         app::TriggerKeyValues trigger_kv_pairs_;
+        app::MetaDataKeyValues header_metadata_kv_pairs_;
 
         /*!
          * \brief Reserved keywords for this parser's dictionary
@@ -883,6 +884,10 @@ class ReportDescriptorFileParserYAML
         static constexpr char KEY_TAG[]             = "tag";
         static constexpr char KEY_SKIP[]            = "skip";
         static constexpr char KEY_AUTO_EXPAND_CC[]  = "expand-cc";
+        static constexpr char KEY_METADATA[]        = "header_metadata";
+        static constexpr char KEY_START_COUNTER[]   = "start_counter";
+        static constexpr char KEY_STOP_COUNTER[]    = "stop_counter";
+        static constexpr char KEY_UPDATE_COUNTER[]  = "update_counter";
 
         virtual bool handleEnterMap_(
             const std::string & key,
@@ -908,6 +913,9 @@ class ReportDescriptorFileParserYAML
                         "Nested trigger definitions are not supported");
                 }
                 in_trigger_definition_ = true;
+                return false;
+            } else if (key == KEY_METADATA) {
+                in_header_metadata_ = true;
                 return false;
             }
 
@@ -962,6 +970,21 @@ class ReportDescriptorFileParserYAML
             }
         }
 
+        virtual bool handleLeafScalarUnknownKey_(
+            TreeNode * n,
+            const std::string & value,
+            const std::string & assoc_key,
+            const NavNode& scope) override final
+        {
+            if (in_header_metadata_) {
+                sparta_assert(isMetadataReservedKey_(assoc_key) == false,
+                    "Metadata key \""+assoc_key+"\" is reserved");
+                header_metadata_kv_pairs_[assoc_key] = value;
+                return true;
+            }
+            return false;
+        }
+
         virtual bool handleExitMap_(
             const std::string & key,
             const NavVector & context) override final
@@ -1002,12 +1025,18 @@ class ReportDescriptorFileParserYAML
                     auto & descriptor = completed_descriptors_.back();
                     descriptor.extensions_.swap(trigger_extensions);
                 }
+                if (!header_metadata_kv_pairs_.empty()) {
+                    auto & descriptor = completed_descriptors_.back();
+                    descriptor.header_metadata_.swap(header_metadata_kv_pairs_);
+                }
                 if (auto_expand_context_counter_stats_) {
                     auto & descriptor = completed_descriptors_.back();
                     descriptor.extensions_["expand-cc"] = true;
                 }
             } else if (key == KEY_TRIGGER) {
                 in_trigger_definition_ = false;
+            } else if (key == KEY_METADATA) {
+                in_header_metadata_ = false;
             }
 
             return false;
@@ -1032,7 +1061,16 @@ class ReportDescriptorFileParserYAML
                     key == KEY_UPDATE_WHENEVER  ||
                     key == KEY_TAG              ||
                     key == KEY_SKIP             ||
-                    key == KEY_AUTO_EXPAND_CC);
+                    key == KEY_AUTO_EXPAND_CC   ||
+                    key == KEY_METADATA);
+        }
+
+        bool isMetadataReservedKey_(
+            const std::string & key) const
+        {
+            return (key == KEY_START_COUNTER  ||
+                    key == KEY_STOP_COUNTER   ||
+                    key == KEY_UPDATE_COUNTER);
         }
 
         void prepareForNextDescriptor_()
@@ -1065,7 +1103,7 @@ public:
         parser_(),
         def_file_(def_file)
     {
-        sparta_assert(boost::filesystem::exists(def_file_),
+        sparta_assert(std::filesystem::exists(def_file_),
                     ("File '" + def_file + "' cannot be found"));
         fin_.open(def_file.c_str(), std::ios::in);
         sparta_assert(fin_.is_open());
@@ -1097,57 +1135,6 @@ private:
     std::unique_ptr<YP::Parser> parser_;
     std::string def_file_;
 };
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_CONTENT[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_REPORT[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_DEF_FILE[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_DEST_FILE[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_PATTERN[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_FORMAT[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_TRIGGER[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_START[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_STOP[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_WHENEVER[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_UPDATE_TIME[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_UPDATE_CYCLE[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_UPDATE_COUNT[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_UPDATE_WHENEVER[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_TAG[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_SKIP[];
-
-constexpr char ReportDescriptorFileParserYAML::
-    ReportDescriptorFileEventHandlerYAML::KEY_AUTO_EXPAND_CC[];
 
 /*!
  * \brief Parse a YAML file containing key-value pairs into a

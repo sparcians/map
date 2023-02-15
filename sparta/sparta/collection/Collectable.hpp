@@ -280,11 +280,11 @@ namespace sparta{
 
                 // Notice that we make the length +1 in order to null
                 // terminate the data.
-                argos_record_.length = (uint16_t)(prev_annot_.size() + 1);
+                argos_record_.length = static_cast<uint16_t>(prev_annot_.size());
 
                 // We should just change the transaction structure to take
                 // an std::string instead of char* in the future.
-                argos_record_.annt = prev_annot_.c_str();
+                argos_record_.annt = prev_annot_;
 
                 // Capture the end time
                 argos_record_.time_End =
@@ -453,6 +453,7 @@ namespace sparta{
             using PairCollector<PairDef_t>::getNameStrings;
             using PairCollector<PairDef_t>::getDataVector;
             using PairCollector<PairDef_t>::getStringVector;
+            using PairCollector<PairDef_t>::getFormatVector;
             using PairCollector<PairDef_t>::getSizeOfVector;
             using PairCollector<PairDef_t>::getPEventLogVector;
             using PairCollector<PairDef_t>::getArgosFormatGuide;
@@ -483,10 +484,11 @@ namespace sparta{
                 event_set_(this),
                 ev_close_record_(&event_set_, name + "_pipeline_collectable_close_event",
                                  CREATE_SPARTA_HANDLER_WITH_DATA(Collectable, closeRecord, bool)) {
-                sparta_assert(getNodeUID() < ~(decltype(argos_record_.location_ID))0,
+                static constexpr auto MAX_UID = std::numeric_limits<decltype(argos_record_.location_ID)>::max();
+                sparta_assert(getNodeUID() < MAX_UID,
                             "Tree has at least " << getNodeUID() << " in it. Because pipeouts "
                             "use these locations and only have 32b location IDs, the pipeline "
-                            "collection system imposes a limit of " << ~(decltype(argos_record_.location_ID))0
+                            "collection system imposes a limit of " << MAX_UID
                             << " nodes in the tree. This is expected to be an unattainable number "
                             "without some kind of runaway allocation bug. If you are sure you "
                             "need more nodes than this, contact the SPARTA team. In the meantime, "
@@ -834,7 +836,9 @@ namespace sparta{
                 argos_record_.nameVector = getNameStrings();
                 argos_record_.length = argos_record_.nameVector.size();
                 has_display_id_field_ = (argos_record_.nameVector[0] == "DID");
-                argos_record_.delimVector.emplace_back(getArgosFormatGuide());
+                for(const auto formatter: getFormatVector()) {
+                    argos_record_.delimVector.emplace_back(formatter);
+                }
 
                 if(collect && hasData_()){
 

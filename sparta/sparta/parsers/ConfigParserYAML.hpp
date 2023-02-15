@@ -604,9 +604,9 @@ namespace sparta
 
         }; // class YAML
 
-    }; // namespace ConfigParser
+    } // namespace ConfigParser
 
-}; // namespace sparta
+} // namespace sparta
 
 // __CONFIG_PARSER_YAML)_
 

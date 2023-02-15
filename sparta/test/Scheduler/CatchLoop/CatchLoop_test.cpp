@@ -13,7 +13,7 @@
 #include "sparta/kernel/SleeperThread.hpp"
 // Simply force an infinit loop. And assert that the scheduler catches this loop, then exit cleanly.
 
-TEST_INIT;
+TEST_INIT
 
 class CycleValidator
 {

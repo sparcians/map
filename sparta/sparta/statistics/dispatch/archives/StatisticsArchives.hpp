@@ -6,7 +6,8 @@
 #include "sparta/statistics/dispatch/archives/RootArchiveNode.hpp"
 #include "sparta/statistics/dispatch/archives/ArchiveController.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
+
 #include <boost/archive/binary_iarchive.hpp>
 
 namespace sparta {
@@ -31,10 +32,10 @@ public:
     //! directory which describes the archive tree.
     explicit StatisticsArchives(const std::string & db_dir)
     {
-        namespace bfs = boost::filesystem;
-        bfs::path p(db_dir);
+        namespace sfs = std::filesystem;
+        sfs::path p(db_dir);
 
-        if (!bfs::is_directory(p)) {
+        if (!sfs::is_directory(p)) {
             throw SpartaException(
                 "The path given is not a directory: ") << db_dir;
         }
@@ -48,9 +49,9 @@ public:
         //
         //We need to loop over the subdirectories, and create
         //a RootArchiveNode object for each one.
-        std::vector<bfs::directory_entry> subdirs;
-        std::copy(bfs::directory_iterator(p),
-                  bfs::directory_iterator(),
+        std::vector<sfs::directory_entry> subdirs;
+        std::copy(sfs::directory_iterator(p),
+                  sfs::directory_iterator(),
                   std::back_inserter(subdirs));
 
         auto dir_iter = subdirs.begin();
@@ -168,4 +169,3 @@ private:
 
 } // namespace statistics
 } // namespace sparta
-

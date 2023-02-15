@@ -4,6 +4,7 @@ from django import forms
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
 from django.template.context import RequestContext
@@ -64,6 +65,24 @@ def loginView(request):
                                                 'assetPort': settings.NGINX_PORT,
                                                 })
     # return render_to_response('plato/login.html', {}, RequestContext(request))
+
+def signupView(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=raw_password)
+            login(request, user)
+            return HttpResponseRedirect(request.POST.get("next", request.GET.get("next", '/plato/')))
+    else:
+        form = UserCreationForm()
+    return render(request, 'plato/signup.html', {'currentHost': request.get_host().split(':')[0],
+                                                'next': request.GET.get("next", request.POST.get("next", '/plato/')),
+                                                'assetPort': settings.NGINX_PORT,
+                                                'form': form
+                                                })
 
 def logoutView(request):
     '''

@@ -55,6 +55,9 @@ namespace sparta
          */
         SpartaHandler(const SpartaHandler& rhp) = default;
 
+        //! Assignment operations
+        SpartaHandler& operator=(const SpartaHandler&) = default;
+
         template <class T, void (T::*TMethod)()>
         static SpartaHandler from_member(T* object_ptr, const char * name = "")
         {
@@ -516,4 +519,3 @@ namespace sparta
     sparta::SpartaHandler::from_member_1<clname, dataT, &clname::meth>   \
     (obj, #clname"::"#meth"("#dataT")")
 }
-

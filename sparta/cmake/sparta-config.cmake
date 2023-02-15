@@ -13,7 +13,7 @@
 ################################################################################
 
 # Find Boost
-set (_BOOST_COMPONENTS filesystem date_time iostreams serialization timer program_options)
+set (_BOOST_COMPONENTS date_time iostreams serialization timer program_options)
 if (COMPILE_WITH_PYTHON)
   list (APPEND _BOOST_COMPONENTS python)
   find_package (Python COMPONENTS Interpreter Development)
@@ -59,7 +59,8 @@ message (STATUS "Using BOOST ${Boost_VERSION_STRING}")
 
 # Find YAML CPP
 find_package (yaml-cpp 0.6 REQUIRED)
-message (STATUS "Using YAML CPP ${PACKAGE_VERSION}")
+message (STATUS "Using YAML CPP ${yaml-cpp_VERSION}")
+get_property(YAML_CPP_INCLUDE_DIR TARGET yaml-cpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 
 # Find RapidJSON
 find_package (RapidJSON 1.1 REQUIRED)
@@ -69,14 +70,19 @@ message (STATUS "Using RapidJSON CPP ${RapidJSON_VERSION}")
 find_package (SQLite3 3.19 REQUIRED)
 message (STATUS "Using SQLite3 ${SQLite3_VERSION}")
 
+# Find zlib
+find_package(ZLIB REQUIRED)
+message (STATUS "Using zlib ${ZLIB_VERSION_STRING}")
+include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
+
 # Find HDF5. Need to enable C language for HDF5 testing
 enable_language (C)
 find_package (HDF5 1.10 REQUIRED)
 
 # Populate the Sparta_LIBS variable with the required libraries for
 # basic Sparta linking
-set (Sparta_LIBS sparta simdb ${HDF5_LIBRARIES} sqlite3 yaml-cpp z pthread
-  Boost::date_time Boost::filesystem Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
+set (Sparta_LIBS sparta simdb ${HDF5_LIBRARIES} sqlite3 yaml-cpp ZLIB::ZLIB pthread
+  Boost::date_time Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
 
 # On Linux we need to link against rt as well
 if (NOT APPLE)

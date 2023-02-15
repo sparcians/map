@@ -6,11 +6,6 @@
 
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/spirit/include/phoenix_fusion.hpp>
-#include <boost/spirit/include/phoenix_stl.hpp>
-#include <boost/spirit/include/phoenix_object.hpp>
 
 #include "sparta/statistics/Expression.hpp"
 #include "sparta/simulation/TreeNode.hpp"
@@ -18,8 +13,6 @@
 #include <string>
 
 // Alias deep boost namespaces
-namespace fusion = boost::fusion;
-namespace phoenix = boost::phoenix;
 namespace qi = boost::spirit::qi;
 namespace ascii = boost::spirit::ascii;
 
@@ -37,7 +30,7 @@ namespace sparta {
 class ExpressionGrammar :
     public qi::grammar<std::string::const_iterator,
                        Expression(),
-                       boost::spirit::ascii::space_type>
+                       ascii::space_type>
 {
     /*!
      * \brief Symbol table for constant
@@ -74,7 +67,7 @@ class ExpressionGrammar :
      */
     struct variable_ : qi::grammar<std::string::const_iterator,
                                    Expression(),
-                                   boost::spirit::ascii::space_type>
+                                   ascii::space_type>
     {
         /*!
          * \brief Constructor
@@ -87,10 +80,10 @@ class ExpressionGrammar :
 
         qi::rule<std::string::const_iterator,
                  Expression(),
-                 boost::spirit::ascii::space_type> start;
+                 ascii::space_type> start;
         qi::rule<std::string::const_iterator,
                  std::string(),
-                 boost::spirit::ascii::space_type> str;
+                 ascii::space_type> str;
     }; // struct variable_
 
     /*!
@@ -198,7 +191,7 @@ class ExpressionGrammar :
 
     typedef qi::rule<std::string::const_iterator,
                      Expression(),
-                     boost::spirit::ascii::space_type> ExpressionRule;
+                     ascii::space_type> ExpressionRule;
 
     ExpressionRule expression,
                    term,

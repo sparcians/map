@@ -5,7 +5,6 @@
 
 namespace core_example
 {
-    constexpr char Preloader::name[];
     void Preloader::preload()
     {
         if (filepath_ != "")

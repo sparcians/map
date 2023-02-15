@@ -371,6 +371,12 @@ public:
     // Status
 
     /*!
+     * \brief Was simulation successful?
+     * \return true if no exceptions were thrown; false otherwise
+     */
+    bool simulationSuccessful() const { return simulation_successful_; }
+
+    /*!
      * \brief return the number of events fired on the scheduler
      * during simulation.
      */
@@ -425,8 +431,33 @@ public:
 protected:
 
     /*!
-     * \brief This class is used for simulation control callbacks. The callback
-     * conditions (trigger expressions) are specified in control YAML files.
+     * \brief This class is used for simulation control callbacks.
+     *
+     * The callback conditions (trigger expressions) are specified in
+     * control YAML files (and eventually the pythong shell).  The
+     * purpose of this class in the command line fashion (see
+     * example/CoreModel/ctrl.yaml) is to allow the user to "control"
+     * simulation during runtime by relating behaviors (like start,
+     * stop, resume) with simulation triggers.  Simulation triggers
+     * can be sparta::NotificationSource, sparta::Counter,
+     * sparta::StatisicDef, other expressions.
+     *
+     * A use case for such a control could include the simulation is
+     * instructed to send a notification (via
+     * sparta::NotificationSource) when a specific address of a test
+     * case is encountered.  The modeler could have a trigger set up
+     * on that notification to stop simulation:
+     *
+     * \code
+     * # stop on address hit (stop.yaml)
+     * control:
+     *     stop: notif.address_hit
+     * \endcode
+     *
+     * And the simulation:
+     * \code
+     *  ./my_simulator ...<args>...  --control stop.yaml
+     * \endcode
      */
     class SimulationController
     {
@@ -733,6 +764,13 @@ protected:
      */
     void setupStreamControllers_();
 
+    /*! \brief Clock manager for all clocks in simulation.
+     *
+     * This can be created first and destroyed last in case there are
+     * resources/reports that still need use of the clocks
+     */
+    sparta::ClockManager clk_manager_;
+
     /*!
      * \brief Heap profiler(s), if any
      */
@@ -766,14 +804,10 @@ protected:
     sparta::ResourceSet res_list_;
 
     /*!
-     * \brief Scheduler this simulation will use. If no scheduler was given
-     * to the simulation's constructor, it will use the singleton scheduler.
+     * \brief Scheduler this simulation will use.
      */
     Scheduler *const scheduler_;
 
-    /*! \brief Clock manager for all clocks in simulation.
-     */
-    sparta::ClockManager clk_manager_;
     /*!
      * \brief Default automaticly generated report containing the entire
      * simulation
@@ -919,6 +953,11 @@ protected:
      * collection
      */
     std::unique_ptr<trigger::Trigger> debug_trigger_;
+
+    /*!
+     * \brief Was simulation successful?  I.e. no exceptions were thrown
+     */
+    bool simulation_successful_ = true;
 
 private:
 

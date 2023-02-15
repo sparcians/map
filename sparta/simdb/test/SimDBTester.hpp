@@ -74,7 +74,7 @@ namespace simdb
      * Example usage:
      *
      *   \code
-     *       TEST_INIT;
+     *       TEST_INIT
      *
      *       int main() {
      *           EXPECT_TRUE(true);

@@ -18,7 +18,7 @@
 #include "sparta/utils/MetaStructs.hpp"
 #include "sparta/events/GlobalOrderingPoint.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 class EventHandler
 {

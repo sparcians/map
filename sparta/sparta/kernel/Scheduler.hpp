@@ -11,7 +11,7 @@
 #include <ctime>
 #include <unistd.h>
 #include <boost/timer/timer.hpp>
-#include <boost/algorithm/string/predicate.hpp>
+//#include <boost/algorithm/string/predicate.hpp>
 #include <cstdint>
 #include <string>
 #include <cmath>
@@ -206,11 +206,43 @@ private:
      */
     struct TickQuantum
     {
-        //! Typedef for a dynamic vector of events
-        typedef std::vector<Scheduleable *> Scheduleables;
+        struct ScheduleableGroup {
+        public:
+            using Scheduleables = std::vector<Scheduleable *>;
 
-        //! Typedef for a static vector of event groups.
-        typedef std::vector<Scheduleables>  Groups;
+            void addScheduleable(Scheduleable* sched) {
+                if(SPARTA_EXPECT_FALSE(current_idx_ == size_)) {
+                    scheduleables_.resize(scheduleables_.size() * 2, nullptr);
+                    size_ = scheduleables_.size();
+                }
+                scheduleables_[current_idx_++] = sched;
+            }
+
+            size_t size() const {
+                return current_idx_;
+            }
+
+            void clear() {
+                current_idx_ = 0;
+            }
+
+            Scheduleables::const_reference operator[](const size_t index) const {
+                sparta_assert(index < current_idx_);
+                return scheduleables_[index];
+            }
+
+            Scheduleables::reference operator[](const size_t index) {
+                sparta_assert(index < current_idx_);
+                return scheduleables_[index];
+            }
+
+        private:
+            size_t size_        = 16;
+            size_t current_idx_ = 0;
+            Scheduleables scheduleables_{size_, nullptr}; // start with 16 events.
+        };
+
+        using ScheduleableGroups = std::vector<ScheduleableGroup>;
 
         /*!
          * \brief Construct a TickQuantum with the number of groups in
@@ -219,7 +251,6 @@ private:
          * tick groups)
          */
         TickQuantum(uint32_t num_firing_groups) :
-            tick(0),
             groups(num_firing_groups)
         { }
 
@@ -232,12 +263,26 @@ private:
         void addEvent(uint32_t firing_group, Scheduleable * scheduleable) {
             sparta_assert(firing_group > 0);
             sparta_assert(firing_group < groups.size());
-            groups[firing_group].emplace_back(scheduleable);
+            groups[firing_group].addScheduleable(scheduleable);
             first_group_idx = std::min(first_group_idx, firing_group);
         }
 
-        Tick tick;     //!< The tick this quantum represents
-        Groups groups; //!< The list of firing groups. This is indexed by dag_group+1
+        void addEventIfNotScheduled(uint32_t firing_group, Scheduleable * scheduleable) {
+            sparta_assert(firing_group > 0);
+            sparta_assert(firing_group < groups.size());
+            auto & grp = groups[firing_group];
+            const auto grp_size = grp.size();
+            for(uint32_t idx = 0; idx < grp_size; ++idx) {
+                if(grp[idx] == scheduleable) {
+                    return;
+                }
+            }
+            grp.addScheduleable(scheduleable);
+            first_group_idx = std::min(first_group_idx, firing_group);
+        }
+
+        Tick               tick = 0; //!< The tick this quantum represents
+        ScheduleableGroups groups;   //!< The list of firing groups. This is indexed by dag_group+1
         uint32_t first_group_idx = std::numeric_limits<uint32_t>::max(); //!< The first group idx with events
         TickQuantum * next = nullptr;
     };
@@ -265,7 +310,7 @@ private:
 public:
 
     //! Const expression to calculate tick value for indexing
-    Tick calcIndexTime(const Tick rel_time) const {
+    constexpr Tick calcIndexTime(const Tick rel_time) const {
         return current_tick_ + rel_time;
     }
 
@@ -435,16 +480,22 @@ public:
      * \param dag_group the group id assigned by the Dag, default 0
      *
      * \param continuing If true, this event will cause the simulator
-     * to continue running at least until it is fired (or something
-     * explicitly stops the scheduler). If false, the simulator can
-     * exhaust its list of continuing events and stop before this
-     * event is reached. This usage is typically for infrastructure
-     * events or counters, etc.
+     *                   to continue running at least until it is
+     *                   fired (or something explicitly stops the
+     *                   scheduler). If false, the simulator can
+     *                   exhaust its list of continuing events and
+     *                   stop before this event is reached. This usage
+     *                   is typically for infrastructure events or
+     *                   counters, etc.
+     *
+     * \param add_if_not_scheduled Only add the event if not already
+     *                             scheduled at the given rel_time
      */
     void scheduleEvent(Scheduleable * scheduleable,
                        Tick rel_time,
                        uint32_t dag_group=0,
-                       bool continuing=true);
+                       bool continuing=true,
+                       bool add_if_not_scheduled=false);
 
     /**
      * \brief Asynchronously schedule an event.
@@ -659,7 +710,8 @@ public:
 
     /**
      * \brief The current tick the Scheduler is working on or just finished
-     * \return The current tick
+     * \return The current tick if the scheduler is running or the
+     *         next tick the scheduler will be operating on
      * \note This can be called before finalization and works regardless of
      *       whether the scheduler is running
      */
@@ -873,63 +925,7 @@ private:
      * \return TickQuantum* that can be scheduled on for \a rel_time ticks in
      * the future
      */
-    TickQuantum* determineTickQuantum_(Tick rel_time)
-    {
-        Tick index_time = (current_tick_ + rel_time);
-
-        // This might look inefficient, but 99.9% of the time the
-        // event being scheduled is either on the current time
-        // quantum or the next.  A straight walk of two elements
-        // is faster than a map lookup.
-        TickQuantum * rit = current_tick_quantum_;
-        TickQuantum * last_tq = nullptr;
-        while(rit != nullptr) {
-            if(rit->tick == index_time) {
-                // This is the time quantum to add the event to
-                break;
-            }
-            else if(rit->tick > index_time) {
-                // We're past the tick quantum.  Insert before rit
-                rit = tick_quantum_allocator_.create(firing_group_count_);
-                rit->tick = index_time;
-
-                // rit could have pointed to the
-                // current_tick_quantum_.  If so, move the
-                // current_tick_quantum_ back.
-                if(SPARTA_EXPECT_FALSE(last_tq == nullptr)) {
-                    rit->next = current_tick_quantum_;
-                    current_tick_quantum_ = rit;
-                }
-                else {
-                    rit->next = last_tq->next;
-                    last_tq->next = rit;
-                }
-                break;
-            }
-            last_tq = rit;
-            rit = rit->next;
-        }
-        // If we reached the end of our search in the time quantums,
-        // we need to append this event to the end of the list
-        //if(SPARTA_EXPECT_FALSE(rit == nullptr))
-        if(rit == nullptr)
-        {
-            rit = tick_quantum_allocator_.create(firing_group_count_);
-            rit->tick = index_time;
-            if(SPARTA_EXPECT_TRUE(last_tq != nullptr)) {
-                last_tq->next = rit;
-            }
-            else {
-                // If the last_tq was null, there is a good change the
-                // current_tick_quantum_ is null as well
-                if(current_tick_quantum_ == nullptr) {
-                    current_tick_quantum_ = rit;
-                }
-            }
-        }
-
-        return rit;
-    }
+    TickQuantum* determineTickQuantum_(Tick rel_time);
 
     //! The DAG used for grouping
     std::unique_ptr<DAG> dag_;
@@ -1144,7 +1140,7 @@ inline void Scheduler::printNextCycleEventTree(StreamType& os,
            << scheduler_map_idx << "' next event @"
            << current_tick_quantum_->tick << std::endl;
     }
-    const TickQuantum::Groups & group_array = current_tick_quantum_->groups;
+    const TickQuantum::ScheduleableGroups & group_array = current_tick_quantum_->groups;
     for(uint32_t i = curr_grp; i < group_array.size(); ++i)
     {
         std::stringstream output;
@@ -1154,7 +1150,7 @@ inline void Scheduler::printNextCycleEventTree(StreamType& os,
         else {
             output << "\tGroup[" << i + 1 << "]: ";
         }
-        const TickQuantum::Scheduleables & scheduleables = group_array[i];
+        const TickQuantum::ScheduleableGroup & scheduleables = group_array[i];
 
         output << SPARTA_CURRENT_COLOR_GREEN;
         for(uint32_t x = 0; x < scheduleables.size(); ++x)

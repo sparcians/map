@@ -36,43 +36,66 @@ namespace sparta
          * \param sysc_offset The SystemC offset to convert
          * \return The sparta::Clock::Cycle that be used to schedule an event/send data
          *
-         * Example usage:
-         * \code
+         * Since the Sparta scheduler is not re-entrant at the current
+         * tick, we might need to stop forward progress and report an
+         * issue (currently not doing this).  Reason for this:
+         *
+         * 1. Scheduling advancement is toggled between SysC and
+         *    Sparta.  SysC advances first, the Sparta.  The
+         *    expectation is that all events on the Sparta
+         *    scheduler have been scheduled from the SysC side and
+         *    that nothing new (0-cycle) will appear
+         * 2. When the Sparta scheduler is finished with its
+         *    current time quantum (return from the call to
+         *    Scheduler::run), it will assume time is not advanced
+         *    by 1 tick.  In other words, time for scheduling
+         *    anything _this_ tick is now oever.  Scheduling
+         *    something 0-cycle (or 0-tick) is meaningless.
          *
          */
         inline Clock::Cycle calculateSpartaOffset(const sparta::Clock * sparta_clk,
                                                   sc_core::sc_time::value_type sysc_offset)
         {
+
             //
             // This is a transaction coming from SysC that is on SysC's
             // clock, not Sparta's.  Need to find the same tick cycle on
             // the Sparta clock and align the time for the transaction.
-            // Keep in mind that Sparta's scheduler starts on tick 1, not
-            // 0 like SysC.
+            // The Sparta's scheduler starts at tick 0 like SysC.
+            //
+            // Another item to note is how the sparta::Scheduler sees
+            // time.  If the Scheduler is running, currentTick
+            // represents the time events are being fired.  If the
+            // Scheduler _is not running_ currentTick represents the
+            // tick _after_ the last successful run.  In the case the
+            // Scheduler is not running, use elapsedCycles to align
+            // the schedulers.
             //
             // For example,
-            //   - The Sparta's clock is at 7 ticks (6 from SysC POV, hence the - 1)
+            //   - The Sparta's clock is at 7 ticks
             //   - The SysC clock is at 10 ticks
             //   - The transaction's delay is 1 tick (to be fired at tick 11)
             //
-            //   sysc_clock - sparta_clock + delay = 4 cycles on sparta clock (11)
+            //   sysc_clock - sparta_clock + sysc_offset = 4 cycles on sparta clock (11)
             //
 
             // Send to memory with the given delay - NS -> clock cycles.
             // The Clock is on the same freq as the memory block
-            auto current_sc_time = sc_core::sc_time_stamp().value();
-            const auto current_tick = sparta_clk->currentTick() - 1;
-            sparta_assert(sc_core::sc_time_stamp().value() >= current_tick);
+            const auto current_sc_time = sc_core::sc_time_stamp().value();
+            const auto sparta_sched = sparta_clk->getScheduler();
+            const auto current_tick = sparta_sched->isRunning() ?
+                sparta_sched->getCurrentTick() : sparta_sched->getElapsedTicks();
+            sparta_assert(current_sc_time >= current_tick);
             const auto final_relative_tick = current_sc_time - current_tick + sysc_offset;
             return final_relative_tick;
         }
     }
 
-//! \def SC_Sparta_SCHEDULER_NAME
+//! \def SC_SPARTA_SCHEDULER_NAME
 //! The name of the scheduler adapter
 #define SC_SPARTA_SCHEDULER_NAME  "SysCSpartaSchedulerAdapter"
 
-//! \def SC_Sparta_STOP_EVENT_NAME
+//! \def SC_SPARTA_STOP_EVENT_NAME
 //! The name of the SystemC event used to stop simulation
 #define SC_SPARTA_STOP_EVENT_NAME "sc_ev_stop_simulation"
 
@@ -96,13 +119,13 @@ namespace sparta
  *
  * There are some caveats to know about this adapter.  See the todo.
  *
- * \todo The Sparta scheduler is on its own SC_THREAD and put to sleep
- * between scheduled events.  For example, if the Sparta scheduler has
- * an event scheduled @ tick 1000, and time is currently 500, the Sparta
- * scheduler thread will wait() for 500 ticks. However, if a SystemC
- * component puts an event on the Sparta scheduler during this sleep
- * window (say at 750 ticks), we do not have a mechanism to wake this
- * thread early.
+ * \todo The Sparta scheduler is on its own SC_THREAD and is put to
+ * sleep between scheduled events.  For example, if the Sparta
+ * scheduler has an event scheduled @ tick 1000, and time is currently
+ * 500, the Sparta scheduler thread will wait() for 500
+ * ticks. However, if a SystemC component puts an event on the Sparta
+ * scheduler during this sleep window (say at 750 ticks), we do not
+ * have a mechanism to wake this thread early.
  */
 class SysCSpartaSchedulerAdapter : public sc_core::sc_module
 {
@@ -282,8 +305,8 @@ private:
         sparta_assert(sysc_time.value() == sparta_scheduler_->nextEventTick());
         sparta_assert(sparta_scheduler_->nextEventTick() >= sparta_scheduler_->getCurrentTick());
 
-        const bool exacting_run = true;
-        const bool measure_scheduler_time = false; // no need to do this
+        constexpr bool exacting_run = true;
+        constexpr bool measure_scheduler_time = false; // no need to do this
         // Run to the next event scheduled and then run that cycle
         sparta_scheduler_->run(sparta_scheduler_->nextEventTick() - sparta_scheduler_->getCurrentTick() + 1,
                                exacting_run, measure_scheduler_time);

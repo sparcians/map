@@ -12,18 +12,18 @@
 namespace sparta
 {
 
-EdgeFactory::~EdgeFactory() {
-    for (auto e : edges_) {
-        delete(e);
-    }
-}
+EdgeFactory::~EdgeFactory(){}
 
-void EdgeFactory::removeEdge(const sparta::Edge* e) {
-    auto ei = edges_.find(e);
+void EdgeFactory::removeEdge(const sparta::Edge* edge) {
+    auto ei = std::find_if(edges_.begin(), edges_.end(),
+                           [edge] (const auto & ptr) -> bool
+                           {
+                               return ptr.get() == edge;
+                           });
+
     if (ei != edges_.end()) {
         edges_.erase(ei);
     }
-    delete(*ei);
 }
 
 void EdgeFactory::dumpToCSV(std::ostream &os) const {

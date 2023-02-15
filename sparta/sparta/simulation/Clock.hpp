@@ -18,15 +18,13 @@
 #include <list>
 #include <map>
 
-#include "sparta/simulation/TreeNode.hpp"
 #include "sparta/kernel/Scheduler.hpp"
+#include "sparta/simulation/TreeNode.hpp"
 #include "sparta/statistics/Counter.hpp"
-#include "sparta/simulation/RootTreeNode.hpp"
 #include "sparta/statistics/ReadOnlyCounter.hpp"
 #include "sparta/utils/Rational.hpp"
 #include "sparta/utils/MathUtils.hpp"
 #include "simdb_fwd.hpp"
-#include "simdb/ObjectManager.hpp"
 #include "simdb/schema/DatabaseTypedefs.hpp"
 #include "sparta/statistics/CounterBase.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
@@ -34,13 +32,13 @@
 #include "sparta/statistics/StatisticSet.hpp"
 
 namespace simdb {
-class TableRef;
+    class TableRef;
+    class ObjectManager;
 }  // namespace simdb
 
 namespace sparta
 {
-
-    /**
+        /**
       * \class Clock
       * \brief A representation of simulated time.
       *
@@ -68,13 +66,7 @@ namespace sparta
          * \param name The name of the clock
          * \param scheduler The scheduler to use; must be provided
          */
-        Clock(const std::string& name, Scheduler *scheduler) :
-            TreeNode(name, "Clock"),
-            scheduler_(scheduler)
-        {
-            sparta_assert(scheduler_ != nullptr);
-            scheduler_->registerClock(this);
-        }
+        Clock(const std::string& name, Scheduler *scheduler);
 
         /**
          * \brief Construct a named clock with a RootTreeNode as its
@@ -86,15 +78,7 @@ namespace sparta
          * \param name Name of this clock
          * \param scheduler The scheduler to use; must be provided
          */
-        Clock(RootTreeNode* parent_root,
-              const std::string& name,
-              Scheduler *scheduler ) :
-            Clock(name, scheduler)
-        {
-            if(parent_root){
-                parent_root->addChild(this);
-            }
-        }
+        Clock(RootTreeNode* parent_root, const std::string& name, Scheduler *scheduler);
 
         /*!
          * \brief Construct a named clock with a clock parent and a clock
@@ -108,66 +92,37 @@ namespace sparta
          * \note Inherits scheduler pointer from parent clock
          */
         Clock(const std::string& name, const Handle& parent_clk,
-              const uint32_t& p_rat = 1, const uint32_t& c_rat = 1) :
-            Clock(name, parent_clk->getScheduler())
-        {
-            sparta_assert(parent_clk != nullptr);
-            parent_ = parent_clk;
-
-            associate(parent_);
-            setRatio(p_rat, c_rat);
-        }
+              const uint32_t& p_rat = 1, const uint32_t& c_rat = 1);
 
         /*!
          * \brief Construct with a frequency
          * \note Inherits scheduler pointer from parent clock
          */
-        Clock(const std::string& name, const Handle& parent, double frequency_mhz) :
-            TreeNode(name, "Clock"),
-            parent_(parent),
-            scheduler_(parent_->getScheduler()),
-            frequency_mhz_(frequency_mhz)
-        {
-            sparta_assert(frequency_mhz != 0);
-            associate(parent);
-            setRatio(1, 1); // Must be a valid ratio or Rational.h will assert
-
-            sparta_assert(scheduler_ != nullptr);
-            scheduler_->registerClock(this);
-        }
+        Clock(const std::string& name, const Handle& parent, double frequency_mhz);
 
         //! \brief Destroy this Clock (deregisters from the Scheduler)
-        ~Clock() {
-            // Deregister from the scheduler
-            scheduler_->deregisterClock(this);
-        }
+        ~Clock();
 
-        void associate(const Handle& parent)
-        {
-            sparta_assert(parent_ == nullptr || parent_ == parent,
-                              "Cannot associate a clock with a new parent once it already has a parent");
-            parent_ = parent;
-            parent->addChild(this); // TreeNode::addChild
-            parent->children_.push_back(this);
-        }
+        //! \brief Associate this clock with another clock
+        void associate(const Handle& parent);
 
-        void setRatio(const uint32_t& p_rat = 1, const uint32_t& c_rat = 1)
-        {
-            parent_ratio_ = utils::Rational<uint32_t>(p_rat, c_rat);
-            root_ratio_   = parent_ratio_.inv();
-            period_       = 1;
-            normalized_   = false;
-        }
+        /*!
+          & \brief Set the ratio of the clock
+         */
+        void setRatio(const uint32_t& p_rat = 1, const uint32_t& c_rat = 1);
 
+        //! Get the clock frequency
         double getFrequencyMhz() const {
             return frequency_mhz_;
         }
 
+        //! Get the clock ratio
         utils::Rational<uint32_t> getRatio() const
         {
             return parent_ratio_;
         }
 
+        //! Calculate the norm
         uint32_t calcNorm(uint32_t partial_norm = 1)
         {
             if (parent_ != nullptr) {
@@ -333,8 +288,7 @@ namespace sparta
         //! treating 'this' sparta::Clock as the hierarchy root.
         //! Returns the database ID of the clock node that was
         //! put into this database.
-        simdb::DatabaseID serializeTo(
-            const simdb::ObjectManager & sim_db) const;
+        simdb::DatabaseID serializeTo(const simdb::ObjectManager & sim_db) const;
 
         // Overload of TreeNode::stringize
         virtual std::string stringize(bool pretty=false) const override {
@@ -544,4 +498,3 @@ inline Scheduler::Tick calculateReverseClockCrossingDelay(Scheduler::Tick dst_ar
     namespace sparta {                            \
         bool Clock::normalized_ = false;        \
     }
-

@@ -12,7 +12,7 @@
 
 #define TEST_DEAD_GLOBAL_EVENT
 
-TEST_INIT;
+TEST_INIT
 
 class EventHandler
 {

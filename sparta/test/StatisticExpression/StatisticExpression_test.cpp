@@ -15,7 +15,7 @@ using sparta::statistics::expression::ReferenceVariable;
 
 #include "sparta/utils/SpartaTester.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 class Params : public sparta::ParameterSet
 {

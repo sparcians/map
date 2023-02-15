@@ -2,6 +2,12 @@
 
 #include <cmath>
 
+#include <boost/phoenix/core.hpp>
+#include <boost/phoenix/operator.hpp>
+#include <boost/phoenix/fusion.hpp>
+#include <boost/phoenix/stl.hpp>
+#include <boost/phoenix/object.hpp>
+
 #include "sparta/statistics/ExpressionGrammar.hpp"
 #include "sparta/statistics/Expression.hpp"
 #include "sparta/statistics/ExpressionNodeVariables.hpp"
@@ -12,6 +18,8 @@
 #include "sparta/trigger/ContextCounterTrigger.hpp"
 #include "sparta/statistics/StatInstCalculator.hpp"
 #include <boost/math/constants/constants.hpp>
+
+namespace phoenix = boost::phoenix;
 
 namespace sparta {
     namespace statistics {

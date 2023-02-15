@@ -203,7 +203,7 @@ PythonInterpreter::PythonInterpreter(const std::string& progname, const std::str
     try{
         //main_namespace[name.c_str()] = bp::ptr(sim);
         global_ns["sparta_pyinterp"] = WrapperCache<PythonInterpreter>().wrap(this);
-    }catch(bp::error_already_set){
+    }catch(bp::error_already_set&){
         PyErr_Print();
         //throw sparta::SpartaException("Could not publish Simulation");
     }
@@ -276,7 +276,7 @@ void PythonInterpreter::publishSimulationConfiguration(sparta::app::SimulationCo
             "* * * use it to amend config/arch yaml file(s), set/inspect individual parameter\n"
             "* * * values, etc.\n"
             "* * * " << std::endl;
-    }catch (bp::error_already_set){
+    }catch (bp::error_already_set&){
         PyErr_Print();
     }
 
@@ -303,7 +303,7 @@ void PythonInterpreter::publishReportConfiguration(app::ReportConfiguration * re
                   << "* * * it to generate statistics reports from this simulation, optionally including \n"
                   << "* * * start/update/stop triggers.\n"
                   << "* * * " << std::endl;
-    }catch(bp::error_already_set){
+    }catch(bp::error_already_set&){
         PyErr_Print();
     }
 
@@ -329,7 +329,7 @@ void PythonInterpreter::publishStatisticsArchives(statistics::StatisticsArchives
         std::cout << "* * * You can now access the simulation's statistics values from the 'archives' object. \n"
                   << "* * * These archives are accessible for the lifetime of the simulation. \n"
                   << "* * * " << std::endl;
-    } catch(bp::error_already_set) {
+    } catch(bp::error_already_set&) {
         PyErr_Print();
     }
 
@@ -370,7 +370,7 @@ void PythonInterpreter::publishStatisticsStreams(statistics::StatisticsStreams *
                       << "* * * Could not load streaming.py.  Make sure streaming.py is in your path\n"
                       << "* * * " << std::endl;
         }
-    } catch (bp::error_already_set) {
+    } catch (bp::error_already_set&) {
         PyErr_Print();
     }
 
@@ -395,7 +395,7 @@ void PythonInterpreter::publishSimulationDatabase(simdb::ObjectManager * sim_db)
                   << "* * * You can now access any timeseries data produced by the simulator's \n"
             "* * * statistics reporting engine using the 'sim_db' object.             \n"
                   << "* * * " << std::endl;
-    } catch (bp::error_already_set) {
+    } catch (bp::error_already_set&) {
         PyErr_Print();
     }
 
@@ -415,7 +415,7 @@ void PythonInterpreter::publishDatabaseController(simdb::AsyncTaskEval * db_queu
 
     try {
         global_ns["__db_queue"] = WrapperCache<simdb::AsyncTaskEval>().wrap(db_queue);
-    } catch (bp::error_already_set) {
+    } catch (bp::error_already_set&) {
         PyErr_Print();
     }
 
@@ -434,7 +434,7 @@ void PythonInterpreter::publishSimulator(app::Simulation * sim) {
         //main_namespace[name.c_str()] = bp::ptr(sim);
         global_ns[name.c_str()] = WrapperCache<sparta::app::Simulation>().wrap(sim);
         published_obj_names_[sim] = name;
-    }catch(bp::error_already_set){
+    }catch(bp::error_already_set&){
         PyErr_Print();
         throw sparta::SpartaException("Could not publish Simulation");
     }
@@ -451,7 +451,7 @@ void PythonInterpreter::publishTree(RootTreeNode * n) {
         const auto &name = n->getName();
         global_ns[name.c_str()] = WrapperCache<sparta::RootTreeNode>().wrap(n);
         published_obj_names_[n] = name;
-    }catch(bp::error_already_set){
+    }catch(bp::error_already_set&){
         PyErr_Print();
         throw sparta::SpartaException("Could not publish RootTreeNode");
     }
@@ -467,7 +467,7 @@ void PythonInterpreter::publishRunController(sparta::control::TemporaryRunContro
 
     try{
         global_ns["rc"] = WrapperCache<sparta::control::TemporaryRunControl>().wrap(rc);
-    }catch(bp::error_already_set){
+    }catch(bp::error_already_set&){
         PyErr_Print();
         throw sparta::SpartaException("Could not publish TemporaryRunControl");
     }
@@ -481,7 +481,7 @@ void PythonInterpreter::publishRunController(sparta::control::TemporaryRunContro
         global_ns["curcycle"] = pyrc.attr("get_curcycle");
         global_ns["curtick"] = pyrc.attr("get_curtick");
         global_ns["curinst"] = pyrc.attr("get_curinst");
-    }catch(bp::error_already_set){
+    }catch(bp::error_already_set&){
         PyErr_Print();
         throw sparta::SpartaException("Could not publish TemporaryRunControl");
     }
@@ -493,7 +493,7 @@ void PythonInterpreter::publishRunController(sparta::control::TemporaryRunContro
                            "del_attr = [delattr(sparta.ParameterTree, attr) for attr in sim_config.arch_ptree.__cull_methods__]\n"
                            "del_attr = [delattr(sparta.Node, attr) for attr in sim_config.arch_ptree.root.__cull_methods__]\n"
                            "\n");
-    }catch(bp::error_already_set){
+    }catch(bp::error_already_set&){
         PyErr_Print();
         throw sparta::SpartaException("Could not perform culling of writable methods from global map.");
     }

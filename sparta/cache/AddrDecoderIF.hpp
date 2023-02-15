@@ -45,7 +45,6 @@ public:
     virtual uint64_t calcBlockOffset(uint64_t addr) const = 0;
 }; // class AddrDecoderIF
 
-}; // namespace cache
+} // namespace cache
 
-}; // namespace sparta
-
+} // namespace sparta

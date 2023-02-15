@@ -67,7 +67,7 @@ df -h /
 # by cd'ing into the example subdir and running ctest
 # because not all of the subdirs of example create their
 # own <subdir>_regress target like the core example.
-(cd sparta/example && ctest -j "$CPU_COUNT" --test-action test)
+(cd sparta/example && CTEST_OUTPUT_ON_FAILURE=1 ctest -j "$CPU_COUNT" --test-action test)
 df -h /
 
 # if we want to create individual packages this should move into a separate install script for only SPARTA

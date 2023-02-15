@@ -10,6 +10,8 @@
 #pragma once
 
 #include <cinttypes>
+#include <vector>
+#include <algorithm>
 #include <type_traits>
 
 #include "sparta/utils/SpartaAssert.hpp"
@@ -19,6 +21,7 @@
 #include "sparta/statistics/StatisticDef.hpp"
 #include "sparta/collection/IterableCollector.hpp"
 #include "sparta/statistics/Counter.hpp"
+#include "sparta/utils/IteratorTraits.hpp"
 
 namespace sparta
 {
@@ -132,7 +135,7 @@ namespace sparta
          *
          */
         template <bool is_const_iterator = true>
-        class BufferIterator : public std::iterator<std::bidirectional_iterator_tag, value_type>
+        class BufferIterator : public utils::IteratorTraits<std::bidirectional_iterator_tag, value_type>
         {
         private:
             friend class Buffer<value_type>;
@@ -188,14 +191,19 @@ namespace sparta
                 buffer_entry_(iter.buffer_entry_)
             {}
 
+            /**
+             * \brief a copy constructor that allows for implicit conversion from a
+             * regular iterator to a const_iterator.
+             */
+            BufferIterator(const BufferIterator<true> & iter) :
+                attached_buffer_(iter.attached_buffer_),
+                buffer_entry_(iter.buffer_entry_)
+            {}
 
             /**
              * \brief Assignment operator
-             * The copy also alerts the validator_ item that another BufferIterator is
-             * now attached to it.
              */
-            BufferIterator& operator=(const BufferIterator& rhs) = default;
-
+            BufferIterator& operator=(const BufferIterator&) = default;
 
             /// override the comparison operator.
             bool operator<(const BufferIterator& rhs) const

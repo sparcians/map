@@ -1,4 +1,4 @@
-# # @package PipeViewer drawing loop and support routines
+# @package PipeViewer drawing loop and support routines
 
 import sys
 import wx
@@ -182,13 +182,13 @@ cdef extern from "helpers.h":
 def get_argos_version():
     return 1;
 
-# # Extracts a value from a string \a s by its \a key. Key is separated from
+# Extracts a value from a string \a s by its \a key. Key is separated from
 #  value by 0 or more spaces, then a character in \a separators, followed by 0 or
 #  more additional spaces. After extracing the value for the given key, the
 #  first \a skip_chars characters are dropped form the result
 #  @return Value of first match if there are any matches. Otherwise returns \a not_found
 cpdef str extract_value(str s, str key, str separators = '=:', long skip_chars = 0, not_found = ''):
-    extractor = re.compile(r'{}\s*[{}]\s*([^ ]*)'.format(key, separators))
+    extractor = re.compile(f'{key}\\s*[{separators}]\\s*([^ ]*)')
     matches = extractor.findall(s)
     if len(matches) == 0:
         return not_found
@@ -203,7 +203,7 @@ cdef wxFont* getFont(font):
 cdef wxBrush* getBrush(brush):
     return getBrush_wrapped(<PyObject*>brush)
 
-cdef class Renderer(object):
+cdef class Renderer:
 
     cdef unordered_map[int, wxPen] c_pens_map
     cdef dict __reason_brushes
@@ -290,15 +290,17 @@ cdef class Renderer(object):
         else: # empty string
             return string_to_display, None
 
-    # # @brief Sets color of background brush and parses annotation according to type.
+    # @brief Sets color of background brush and parses annotation according to type.
     #
-    def parseAnnotationAndGetColor(self, string_to_display, content_type, field_type = None, field_string = ''):
+    def parseAnnotationAndGetColor(self, string_to_display, content_type, field_type = None, field_string = None):
         cdef char * c_seq_id_str
         cdef unsigned long int c_seq_id
         cdef char * c_endptr
 
         brush = None
 
+        if field_string is None:
+            field_string = ''
         #--------------------------------------------------
         # Choose brush color
         # - uop seq ID is first three hex digits
@@ -329,7 +331,7 @@ cdef class Renderer(object):
                         else:
                             pass # Preserve current display string
                     except:
-                        error('Error: expression "{}"" raised exception on input "{}":'.format(field_string, string_to_display))
+                        error('Error: expression "%s" raised exception on input "%s":', field_string, string_to_display)
                         error(sys.exc_info())
                         string_to_display = '!'
                 elif field_type == 'python_func':
@@ -343,11 +345,11 @@ cdef class Renderer(object):
                             else:
                                 pass # Preserve current display string
                         except:
-                            error('Error: function "{}"" raised exception on input "{}":'.format(field_string, string_to_display))
+                            error('Error: function "%s" raised exception on input "%s":', field_string, string_to_display)
                             error(sys.exc_info())
                             string_to_display = '!'
                     else:
-                        error('Error: function "{}" can not be loaded.'.format(field_string))
+                        error('Error: function "%s" can not be loaded.', field_string)
                 if brush is None:
                     brush = wx.TheBrushList.FindOrCreateBrush(wx.WHITE, wx.SOLID)
                 return string_to_display, brush
@@ -423,7 +425,7 @@ cdef class Renderer(object):
                           auto_color, # type, basis
                           clip_x, # (start, width)
                           schedule_settings = None,
-                          short_format = ''):
+                          short_format = None):
                           # schedule_settings: (period_width, 0/1/2 (none/dots/boxed))
         cdef wxGCDC * c_dc = getDC(dc)
 
@@ -446,6 +448,8 @@ cdef class Renderer(object):
         cdef int c_content_str_len
         cdef wxPen old_pen
 
+        if short_format is None:
+            short_format = ''
         x_offs = 0
 
         c_x, c_y, c_w, c_h = rect
@@ -612,7 +616,7 @@ cdef class Renderer(object):
             color = e.GetProperty('color')
             content_type = e.GetProperty('Content')
 
-            c_color = wxColour(color[0], color[1], color[2])
+            c_color = wxColour(int(color[0]), int(color[1]), int(color[2]))
 
             color_rgb = c_color.GetRGB()
             if self.c_pens_map.count(color_rgb):

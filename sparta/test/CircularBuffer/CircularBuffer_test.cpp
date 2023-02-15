@@ -12,7 +12,7 @@
 #include "sparta/utils/SpartaTester.hpp"
 #include "sparta/report/Report.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 //#define PIPEOUT_GEN
 struct dummy_struct

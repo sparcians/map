@@ -18,7 +18,7 @@
  * \brief Test for TreeNode, parameters, and simple parsing of configuration files
  */
 
-TEST_INIT;
+TEST_INIT
 
 //! Simple device which defines its own parameter set object.
 class SimpleDevice : public sparta::Resource
@@ -421,6 +421,10 @@ public:
         // Create a ResourceTreeNode called leaf as a child which will construct a LeafDevice.
         // We will find and delete this node in deleteSubtree when n is being destroyed
         new sparta::ResourceTreeNode(n, "leaf", "A leaf child ResourceTreeNode", &leaf_child_);
+    }
+
+    virtual void onBuilding(sparta::ResourceTreeNode* n) override {
+        createSubtree(n);
     }
 
     // Invoked at teardown of device tree at node n

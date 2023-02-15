@@ -311,9 +311,29 @@ namespace sparta
         static void releaseRefCount_(RefCount *& ref_count)
         {
             if(0 == ref_count->count) {
+                // Make it go negative to show there are no
+                // SpartaSharedPointer objects using this ref_count.
+                // We can't set it to nullptr because it might be
+                // allocated on the heap and we need to ensure all
+                // SpartaWeakPointer objects are done with it too.
+                //
+                // This pointer needs to be set here to prevent a weak pointer
+                // from being destructed and calling releaseObject_ in a cycle.
+                --(ref_count->count);
+
+                // Claim a weak-pointer reference on the block. This ensures
+                // that no one else will delete the reference count block out
+                // from under us higher up the call stack.
+                ++ref_count->wp_count;
+
                 BaseAllocator::MemBlockBase * memory_block =
                     static_cast<BaseAllocator::MemBlockBase *>(ref_count->mem_block);
 
+                // These calls are dangerous! When we're destroying our
+                // object, we may arrive at this point in the _same_ shared
+                // pointer _recursively_ further up the call stack if the
+                // pointed-to object contains a weak pointer that points back to
+                // itself.
                 if(SPARTA_EXPECT_TRUE(nullptr != memory_block)) {
                     memory_block->alloc->releaseObject_(memory_block);
                 }
@@ -321,16 +341,20 @@ namespace sparta
                     delete ref_count->p;
                     ref_count->p = nullptr;
                 }
-                // Make it go negative to show there are no
-                // SpartaSharedPointer objects using this ref_count.
-                // We can't set it to nullptr because it might be
-                // allocated on the heap and we need to ensure all
-                // SpartaWeakPointer objects are done with it too.
-                --(ref_count->count);
+
+                // Release the weak-pointer reference that we claimed above. Now
+                // we will proceed to release ref_count, and can rest assured
+                // that no recursive call to weak-pointer destruction released
+                // ref_count out from under us.
+                --ref_count->wp_count;
             }
 
             if((0 >= ref_count->count) && (0 == ref_count->wp_count))
             {
+                // Because we claimed the weak-pointer reference above, we can
+                // ensure that we only make one pass through this block---even
+                // if we destroy a weak pointer recursively, it will not try to
+                // destroy this block.
                 BaseAllocator::MemBlockBase * memory_block =
                     static_cast<BaseAllocator::MemBlockBase *>(ref_count->mem_block);
 
@@ -517,7 +541,7 @@ namespace sparta
 
     template<typename PtrT>
     bool operator!=(const SpartaSharedPointer<PtrT>& ptr1, std::nullptr_t) noexcept
-    { return (bool)ptr1; };
+    { return (bool)ptr1; }
 
     template<typename PtrT>
     bool operator!=(std::nullptr_t, const SpartaSharedPointer<PtrT>& ptr1) noexcept

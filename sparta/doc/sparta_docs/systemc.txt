@@ -47,12 +47,12 @@
 
   \section sysc_adapter SystemC/Sparta Adapter
 
-  The sparta::SysCSpartaSchedulerAdapter is just that, and adapter
+  The sparta::SysCSpartaSchedulerAdapter is just that, an adapter
   that syncs the SystemC clock with the Sparta Scheduler.  With this
   class, the modeler is not responsible for advancing time on the
   Sparta scheduler.  SystemC will be doing that via SC_THREADs.
 
-  However, Sparta assume "control" of the scheduling in that the
+  However, Sparta assumes "control" of the scheduling in that the
   adapter by starting the SystemC scheduler (`sc_core::sc_start`) via
   the sparta::SysCSpartaSchedulerAdapter::run method.
 
@@ -77,7 +77,10 @@
 
   Each directory is an example of using the TLM initiator/target
   at_*_phase example swapping out the TLM target with a Sparta memory
-  object and a Sparta/TLM socket adapter.
+  object and a Sparta/TLM socket adapter.  These examples can only be
+  built if the TLM examples are present in the SystemC directory.
+  Make sure `SYSTEMC_HOME` is set before running `cmake` on Sparta.
+  See above...
 
   Caveats on using the SystemC adapters:
 

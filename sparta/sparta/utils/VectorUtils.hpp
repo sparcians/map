@@ -12,6 +12,10 @@
 namespace sparta {
 namespace utils {
 
+template<typename T> struct is_vector : public std::false_type {};
+template<typename T, typename A>
+    struct is_vector<std::vector<T, A>> : public std::true_type {};
+
 /*!
  * \brief Utility for element-wise potentially-deep-copying a vector.
  * Invoked by methods at the end of this file

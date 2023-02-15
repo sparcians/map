@@ -7,13 +7,15 @@
  */
 #pragma once
 
+#include <cinttypes>
 #include <vector>
-#include <map>
-#include <set>
+#include <string>
+#include <memory>
 
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/statistics/CycleHistogram.hpp"
 #include "sparta/collection/IterableCollector.hpp"
+#include "sparta/utils/IteratorTraits.hpp"
 
 namespace sparta
 {
@@ -104,7 +106,7 @@ namespace sparta
          * index for which they point.
          */
         template<bool is_const_iterator = true>
-        struct ArrayIterator : public std::iterator<std::forward_iterator_tag, value_type>
+        struct ArrayIterator : public utils::IteratorTraits<std::forward_iterator_tag, value_type>
         {
         private:
 
@@ -695,7 +697,7 @@ namespace sparta
             array_[idx].valid = false;
             --num_valid_;
             // Remove the index from our aged list.
-            if(ArrayT == ArrayType::AGED)
+            if constexpr (ArrayT == ArrayType::AGED)
             {
                 aged_list_.erase(array_[idx].list_pointer);
             }
@@ -730,6 +732,9 @@ namespace sparta
          * \brief Write data to the array.
          * \param idx The index to write at
          * \param dat The data to write at that index.
+         *
+         * This will write to the location at \a idx, whether
+         * the position is valid or not.
          */
         void write(const uint32_t idx, const DataT& dat)
         {
@@ -740,6 +745,9 @@ namespace sparta
          * \brief Write data to the array.
          * \param idx The index to write at
          * \param dat The data to write at that index.
+         *
+         * This will write to the location at \a idx, whether
+         * the position is valid or not.
          */
         void write(const uint32_t idx, DataT&& dat)
         {
@@ -815,7 +823,7 @@ namespace sparta
                                                         SchedulingPhase::Collection, true>
                       (parent, name_, this, capacity()));
 
-            if(ArrayT == ArrayType::AGED) {
+            if constexpr (ArrayT == ArrayType::AGED) {
                 age_collector_.reset(new collection::IterableCollector<AgedArrayCollectorProxy>
                                      (parent, name_ + "_age_ordered",
                                       &aged_array_col_, capacity()));
@@ -865,8 +873,15 @@ namespace sparta
         {
             sparta_assert(idx < num_entries_,
                         "Cannot write to an index outside the bounds of the array.");
-            sparta_assert(valid_index_set_.find(idx) == valid_index_set_.end(),
-                        "It is illegal write over an already valid index.");
+
+            // We're overwriting an entry, clear valid and age information.
+            if(SPARTA_EXPECT_FALSE(isValid(idx)))
+            {
+                --num_valid_;
+                if constexpr (ArrayT == ArrayType::AGED) {
+                    aged_list_.erase(array_[idx].list_pointer);
+                }
+            }
 
             // Since we are not timed. Write the data and validate it,
             // then do pipeline collection.
@@ -877,11 +892,12 @@ namespace sparta
             array_[idx].age_id = next_age_id_;
             ++next_age_id_;
 
+            // Validate the entry and increase valids
             array_[idx].valid = true;
             ++num_valid_;
 
             // Maintain our age order if we are an aged array.
-            if(ArrayT == ArrayType::AGED)
+            if constexpr (ArrayT == ArrayType::AGED)
             {
                 // To maintain aged items, add the index to the front
                 // of a list.

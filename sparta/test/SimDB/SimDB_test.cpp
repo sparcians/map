@@ -11,15 +11,16 @@
 #include "simdb/ObjectManager.hpp"
 #include "simdb/ObjectRef.hpp"
 #include "simdb/impl/sqlite/SQLiteConnProxy.hpp"
+#include "simdb/utils/ObjectQuery.hpp"
 #include "sparta/report/Report.hpp"
 #include "sparta/utils/ValidValue.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
 #include <math.h>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
-TEST_INIT;
+TEST_INIT
 
 //! Put all the temporary .db files into one directory
 //! right in the build folder where tests are run from.
@@ -29,10 +30,10 @@ const std::string DB_DIR = "./temp_dbs";
 //! RAII for creating and deleting the temp db directory
 struct DirDeleter {
     DirDeleter() {
-        boost::filesystem::create_directories(DB_DIR);
+        std::filesystem::create_directories(DB_DIR);
     }
     ~DirDeleter() {
-        boost::filesystem::remove_all(DB_DIR);
+        std::filesystem::remove_all(DB_DIR);
     }
 };
 

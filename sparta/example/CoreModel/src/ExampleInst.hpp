@@ -247,6 +247,6 @@ namespace core_example
                               SPARTA_ADDPAIR("unit",     &ExampleInst::getUnit),
                               SPARTA_ADDPAIR("latency",  &ExampleInst::getExecuteTime),
                               SPARTA_ADDPAIR("raddr",    &ExampleInst::getRAdr, std::ios::hex),
-                              SPARTA_ADDPAIR("vaddr",    &ExampleInst::getVAdr, std::ios::hex));
+                              SPARTA_ADDPAIR("vaddr",    &ExampleInst::getVAdr, std::ios::hex))
     };
 }

@@ -11,7 +11,7 @@
 #include "sparta/utils/Enum.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 //____________________________________________________________
 // STATE TYPE DECLARATIONS

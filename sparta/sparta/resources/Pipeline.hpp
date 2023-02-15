@@ -25,6 +25,7 @@
 #include "sparta/events/PhasedUniqueEvent.hpp"
 #include "sparta/events/PhasedPayloadEvent.hpp"
 #include "sparta/kernel/SpartaHandler.hpp"
+#include "sparta/utils/IteratorTraits.hpp"
 
 namespace sparta
 {
@@ -97,7 +98,7 @@ namespace sparta
          * referred to by the iterator is not valid.
          */
         template<bool is_const_iterator = true>
-        class PipelineIterator : public std::iterator<std::forward_iterator_tag, DataT>
+        class PipelineIterator : public utils::IteratorTraits<std::forward_iterator_tag, DataT>
         {
             using DataReferenceType =
                 typename std::conditional<is_const_iterator, const DataT &, DataT &>::type;
@@ -107,7 +108,7 @@ namespace sparta
 
             using PipelinePointerType =
                 typename std::conditional<is_const_iterator,
-                                          const Pipeline<DataT> *, Pipeline<DataT> *>::type;
+                                          const Pipeline<DataT, EventT> *, Pipeline<DataT, EventT> *>::type;
 
         public:
             friend class PipelineIterator<true>;
@@ -247,6 +248,9 @@ namespace sparta
                 (es_, name + "_update_event", CREATE_SPARTA_HANDLER(Pipeline, internalUpdate_), 1),
             num_stages_(num_stages)
         {
+            sparta_assert(clk != nullptr, "Pipeline requires a clock");
+            dummy_es_.setClock(clk);
+
             // Only support the following Event types:
             // 1. PhasedUniqueEvent
             // 2. PhasedPayloadEvent<DataT>
@@ -384,8 +388,8 @@ namespace sparta
          * \param c_pipeline The consumer pipeline
          * \param cid The stage number of the consumer pipeline stage-handling event
          */
-        template<typename DataT2>
-        void setPrecedenceBetweenPipeline(const uint32_t & pid, Pipeline<DataT2> & c_pipeline, const uint32_t & cid)
+        template<class DataT2, class EventT2>
+        void setPrecedenceBetweenPipeline(const uint32_t & pid, Pipeline<DataT2, EventT2> & c_pipeline, const uint32_t & cid)
         {
             sparta_assert(static_cast<void*>(&c_pipeline) != static_cast<void*>(this),
                           "Cannot use this function to set precedence between stages within the same pipeline instance!");
@@ -898,6 +902,11 @@ namespace sparta
         template<SchedulingPhase phase = SchedulingPhase::Collection>
         void enableCollection(TreeNode * parent) { pipe_.template enableCollection<phase>(parent); }
 
+        /*!
+         * \brief Check if pipeline is collecting
+         */
+        bool isCollected() const { return pipe_.isCollected(); }
+
     private:
         template<typename U>
         void appendImpl_(U && item)
@@ -1099,4 +1108,3 @@ namespace sparta
     };
 
 }
-

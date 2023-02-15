@@ -23,7 +23,7 @@
  * \brief Test for reading from pipeout transaction database
  */
 
-TEST_INIT;
+TEST_INIT
 
 #define QUERIES_PER_SEC(num, boost_timer) ((num)/(boost_timer.elapsed().user/1000000000.0))
 #define SEC_PER_QUERY(num, boost_timer) ((boost_timer.elapsed().user/1000000000.0)/float(num))

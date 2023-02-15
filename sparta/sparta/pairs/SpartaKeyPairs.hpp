@@ -23,6 +23,7 @@
 #include <unordered_map>
 #include <functional>
 
+#include "sparta/pairs/PairFormatter.hpp"
 #include "sparta/pairs/RegisterPairsMacro.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/Utils.hpp"
@@ -77,7 +78,7 @@ namespace sparta {
         }
 
         //! Method which updates the Representation of the value at index id.
-        inline void updateFormatCache(const uint16_t val, const uint32_t id) {
+        inline void updateFormatCache(const PairFormatter val, const uint32_t id) {
             formatter_list_[id] = val;
         }
 
@@ -89,12 +90,12 @@ namespace sparta {
         /**
         * \brief add the new key strings to have a position in the cache.
         */
-        void addKey(const std::string & key, const uint32_t) {
+        void addKey(const std::string & key, const uint32_t, const PairFormatter format) {
 
             //! Fill up vector with placeholder values. ValidValue can also
             //  be used here.
             sizeof_list_.emplace_back(std::numeric_limits<uint16_t>::max());
-            formatter_list_.emplace_back(std::numeric_limits<uint16_t>::max());
+            formatter_list_.emplace_back(format);
             name_strings_list_.emplace_back(key);
             string_value_list_.emplace_back("");
             data_list_.emplace_back(std::make_pair(std::numeric_limits<uint64_t>::max(), false));
@@ -142,7 +143,7 @@ namespace sparta {
 
         //! Method which return a constant reference to our private vector
         //  of Representation.
-        inline const std::vector<uint16_t> & getFormatVector() const {
+        inline const PairFormatterVector & getFormatVector() const {
             return formatter_list_;
         }
 
@@ -156,7 +157,7 @@ namespace sparta {
                 }
                 else if(data_list_[i].second) {
                     switch(formatter_list_[i]) {
-                        case 1 :
+                        case PairFormatter::OCTAL :
                         {
                             std::stringstream ss;
                             ss << std::oct << data_list_[i].first;
@@ -164,7 +165,7 @@ namespace sparta {
                                 name_strings_list_[i], ss.str()));
                             break;
                         }
-                        case 2 :
+                        case PairFormatter::HEX :
                         {
                             std::stringstream ss;
                             ss << std::hex << data_list_[i].first;
@@ -197,7 +198,7 @@ namespace sparta {
         * is complete in Collectable class.
         */
         std::string string_format_;
-        std::vector<uint16_t> formatter_list_;
+        PairFormatterVector formatter_list_;
         std::vector<uint16_t> sizeof_list_;
         std::vector<std::string> name_strings_list_;
         std::vector<std::string> string_value_list_;
@@ -287,7 +288,7 @@ namespace sparta {
 
         //! Public method which is called by writeRecord function
         //  in Collectable class to get the Representation values.
-        inline const std::vector<uint16_t> & getFormatVector() const {
+        inline const PairFormatterVector & getFormatVector() const {
             return pair_cache_.getFormatVector();
         }
 
@@ -411,7 +412,7 @@ namespace sparta {
 
         /**
          * \brief populate the formatting tags to make this key's value
-         * display in proper format. Old way of doing stuff.
+         * display in proper format.
          */
         void setFormatter(const FormatFlags & formatter) {
             switch(formatter) {
@@ -422,25 +423,8 @@ namespace sparta {
                     setOct();
                     break;
                 default:
-                    return;
-            }
-        }
-
-        /**
-         * \brief populate the formatting tags to make this key's value
-         * display in proper format. New way of doing stuff.
-         */
-        inline void applyFormat(const FormatFlags & formatter) {
-            switch(formatter) {
-                case std::ios::hex :
-                    f_switch_ = 2;
+                    f_switch_ = PairFormatter::DECIMAL;
                     break;
-                case std::ios::oct :
-                    f_switch_ = 1;
-                    break;
-                default :
-                    f_switch_ = 0;
-                    return;
             }
         }
 
@@ -453,6 +437,7 @@ namespace sparta {
             format_tags_.prefix = "0x";
             format_tags_.swidth = hex_length;
             format_tags_.fill_char = '0';
+            f_switch_ = PairFormatter::HEX;
         }
 
         /**
@@ -464,6 +449,14 @@ namespace sparta {
             format_tags_.prefix = "0";
             format_tags_.swidth = oct_length;
             format_tags_.fill_char = '0';
+            f_switch_ = PairFormatter::OCTAL;
+        }
+
+        /**
+         * \brief get the formatter
+         */
+        PairFormatter getFormatter() {
+            return f_switch_;
         }
 
     private:
@@ -485,7 +478,7 @@ namespace sparta {
         //! Formatting options for this key's value.
         PrePostTags format_tags_;
         uint32_t id_ = 0;
-        uint16_t f_switch_ = 0;
+        PairFormatter f_switch_ = PairFormatter::DECIMAL;
     };
 
     /**
@@ -2006,7 +1999,7 @@ namespace sparta {
                 size, name, std::forward<Args>(args)...);
             pairs_.emplace_back(new_pair);
             bound_pairs_.emplace_back(new_pair);
-            new_pair->applyFormat(format);
+            new_pair->setFormatter(format);
         }
 
         //! Type is not Virtual Abstract, do the normal way
@@ -2112,16 +2105,17 @@ namespace sparta {
             pairs_.emplace_back(new_pair);
             arbitrary_pairs_.emplace_back(new_pair);
 
+            new_pair->setFormatter(format);
+
             // We allow this function to be called to add the positional argument directly to a pair cache.
             // if pair_cache is null, the pair will be added during finalizeKeys().
             if(pair_cache != nullptr) {
                 sparta_assert(finalized_);
-                pair_cache->addKey(pairs_[pairs_.size() - 1]->getKey(), pairs_.size() - 1);
+                pair_cache->addKey(pairs_[pairs_.size() - 1]->getKey(), pairs_.size() - 1, new_pair->getFormatter());
             }
             else {
                 sparta_assert(!finalized_);
             }
-            new_pair->setFormatter(format);
         }
 
         /**
@@ -2144,7 +2138,7 @@ namespace sparta {
                 pairs_.size(), name, std::forward<Args>(args)...);
             pairs_.emplace_back(new_pair);
             bound_pairs_.emplace_back(new_pair);
-            new_pair->applyFormat(std::ios::dec);
+            new_pair->setFormatter(std::ios::dec);
         }
 
         /**
@@ -2224,7 +2218,7 @@ namespace sparta {
         void finalizeKeys(PairCache * pair_cache) {
             pair_cache->reserveThemAll(pairs_.size());
             for(uint32_t i = 0; i < pairs_.size(); ++i) {
-                pair_cache->addKey(pairs_[i]->getKey(), i);
+                pair_cache->addKey(pairs_[i]->getKey(), i, pairs_[i]->getFormatter());
             }
             finalized_ = true;
         }

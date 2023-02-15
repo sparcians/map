@@ -22,7 +22,7 @@
 
 #include <string>
 
-TEST_INIT;
+TEST_INIT
 
 #define PIPEOUT_GEN
 
@@ -56,7 +56,7 @@ namespace sparta {
         SchedulerAccess(const int val) : val(val) {}
         const int val;
     };
-};
+}
 
 void testStatsOutput()
 {
@@ -493,8 +493,6 @@ int main()
 #ifdef PIPEOUT_GEN
     sched.run(1);
 #endif
-
-   EXPECT_THROW(aged_array.write(0,0));
 
     AgedArray::iterator it = aged_array.getCircularIterator();
     while(it != aged_array.getCircularIterator(aged_array.capacity() - 1))

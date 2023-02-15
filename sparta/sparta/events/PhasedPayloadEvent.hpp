@@ -10,13 +10,13 @@
 
 #pragma once
 
-#include <list>
 #include <memory>
 #include "sparta/events/EventNode.hpp"
 #include "sparta/events/Scheduleable.hpp"
 #include "sparta/events/SchedulingPhases.hpp"
 #include "sparta/utils/MetaStructs.hpp"
 #include "sparta/utils/ValidValue.hpp"
+#include "sparta/utils/FastList.hpp"
 #include "sparta/events/StartupEvent.hpp"
 
 namespace sparta
@@ -42,7 +42,7 @@ namespace sparta
         class PayloadDeliveringProxy;
         using ProxyAllocation   = std::vector<std::unique_ptr<PayloadDeliveringProxy>>;
         using ProxyFreeList     = std::vector<PayloadDeliveringProxy *>;
-        using ProxyInflightList = std::list  <PayloadDeliveringProxy *>;
+        using ProxyInflightList = sparta::utils::FastList <PayloadDeliveringProxy *>;
 
         //! Internal class used by PhasedPayloadEvent to schedule the
         //! delivery of a payload to a consumer sometime in the
@@ -158,12 +158,12 @@ namespace sparta
                 proxy = allocated_proxies_[allocation_idx_].get();
                 ++allocation_idx_;
 
-                sparta_assert(allocation_idx_ < 100000,
+                sparta_assert(allocation_idx_ < inflight_pl_.max_size(),
                               "The PayloadEvent: '" << getLocation() <<
-                              "' has allocated over 100000 outstanding events -- does that seem right?");
+                              "' has allocated over " << inflight_pl_.max_size() <<
+                              " outstanding events -- does that seem right?");
             }
-            inflight_pl_.push_front(proxy);
-            proxy->setInFlightLocation_(inflight_pl_.begin());
+            proxy->setInFlightLocation_(inflight_pl_.emplace_back(proxy));
             proxy->setPayload_(dat);
 
             return proxy;
@@ -175,7 +175,9 @@ namespace sparta
         //! The payload was delivered, this proxy object is now
         //! reusable.
         void reclaimProxy_(typename ProxyInflightList::iterator & pl_location) {
-            sparta_assert(pl_location != inflight_pl_.end());
+            if (SPARTA_EXPECT_FALSE(pl_location == inflight_pl_.end())) {
+                return;
+            }
             if constexpr(MetaStruct::is_any_pointer<DataT>::value) {
                 (*pl_location)->setPayload_(nullptr);
             }
@@ -207,7 +209,8 @@ namespace sparta
             prototype_(consumer_event_handler, delay, sched_phase)
         {
             sparta_assert(consumer_event_handler.argCount() == 1,
-                          "You must assign a PhasedPayloadEvent a consumer handler ""that takes exactly one argument");
+                          "You must assign a PhasedPayloadEvent a consumer handler "
+                          "that takes exactly one argument");
             prototype_.setScheduleableClock(getClock());
             prototype_.setScheduler(determineScheduler(getClock()));
         }
@@ -236,8 +239,7 @@ namespace sparta
          * state changes in another block.
          */
         ScheduleableHandle preparePayload(const DataT & payload) {
-            auto proxy = allocateProxy_(payload);
-            return ScheduleableHandle(proxy);
+            return allocateProxy_(payload);
         }
 
         //! Overload precedence operator for PhasedPayloadEvents since they
@@ -611,7 +613,7 @@ namespace sparta
 
         ProxyAllocation   allocated_proxies_;
         ProxyFreeList     free_pl_;
-        ProxyInflightList inflight_pl_;
+        ProxyInflightList inflight_pl_{1100};
 
         // Use 16, a power of 2 for allocation of more objects.  No
         // rhyme or reason, but this seems to be a sweet spot in
