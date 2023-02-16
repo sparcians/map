@@ -135,7 +135,8 @@ namespace sparta
                 // This is a handy debug assertion to see if
                 // SingleCycleUniqueEvent is actually only scheduled once.
                 //
-                sparta_assert(single_cycle_event_scheduleable_.isScheduled(rel_cycle) == false);
+                sparta_assert(single_cycle_event_scheduleable_.isScheduled(rel_cycle) == false,
+                              "Bummer!  You found a bug in PhasedSingleCycleUniqueEvent.  Please file a GitHub Issue");
 #endif
                 single_cycle_event_scheduleable_.
                     scheduleRelativeTick(to_be_scheduled_relative_tick, local_scheduler_);
@@ -143,14 +144,17 @@ namespace sparta
                 next_scheduled_tick_ = to_be_scheduled_abs_tick;
                 is_init_tick_ = false; //only allow one event in tick 0
             }
-            else if(to_be_scheduled_abs_tick < next_scheduled_tick_ && prev_scheduled_tick_ != to_be_scheduled_abs_tick)
+            else if((to_be_scheduled_abs_tick < next_scheduled_tick_) &&
+                    (prev_scheduled_tick_ != to_be_scheduled_abs_tick))
             {
 #ifndef NDEBUG
                 // This is a handy debug assertion to see if
                 // SingleCycleUniqueEvent is actually only scheduled once.
                 //
-                sparta_assert(single_cycle_event_scheduleable_.isScheduled(rel_cycle) == false);
-                sparta_assert(prev_scheduled_tick_ < to_be_scheduled_abs_tick)
+                sparta_assert(single_cycle_event_scheduleable_.isScheduled(rel_cycle) == false,
+                              "Bummer!  You found a bug in PhasedSingleCycleUniqueEvent.  Please file a GitHub Issue");
+                sparta_assert(prev_scheduled_tick_ < to_be_scheduled_abs_tick,
+                              "Bummer!  You found a bug in PhasedSingleCycleUniqueEvent.  Please file a GitHub Issue")
 #endif
                 single_cycle_event_scheduleable_.
                     scheduleRelativeTick(to_be_scheduled_relative_tick, local_scheduler_);
