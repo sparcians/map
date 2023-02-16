@@ -15,6 +15,10 @@ design.
 
 ## Quick Start for the Impatient, Yet Confident
 
+Quick guide that illustrates how to build _just the framework_ and not
+the visualization tools.  Highly suggested to use a conda environment as
+described in map/README.md.
+
 ```
 
 # Install the following
@@ -87,6 +91,9 @@ We leverage [the conda-forge CI management system](https://conda-forge.org/docs/
 Please also note that `conda` will solve the package requirements and may install newer or different packages than were installed duing CI.
 
 ## Getting Sparta to build on MacOS X
+
+Highly suggested to use a conda environment as described in
+map/README.md, but brew can work just as well.
 
 ### Time to Brew
 

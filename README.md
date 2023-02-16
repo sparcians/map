@@ -15,13 +15,51 @@ MAP is broken into two parts:
 1. **Sparta** -- A set of C++ classes (C++17) used to construct, bind, and run full simulation designs and produce performance analysis data in text form, database form, or HDF5. It's a modeling framework.
 1. **Helios** -- A set of python tools used to visualize, analyze, and deep dive data generated for a Sparta-built simulator.  It's a visualization toolset.
 
-## Current build status
+## Current Regression Status
 
 [![CircleCI](https://circleci.com/gh/sparcians/map.svg?style=svg)](https://circleci.com/gh/sparcians/map)
 [![MacOS Build Status](https://dev.azure.com/sparcians/map/_apis/build/status/sparcians.map?branchName=master&label=MacOS)](https://dev.azure.com/sparcians/map/_build/latest?definitionId=1&branchName=master)
 [![Documentation](https://github.com/sparcians/map/workflows/Documentation/badge.svg)](https://sparcians.github.io/map/)
 
-## Updating Regression/Build Environments
+## Building MAP
+
+Building MAP can be done in two ways:
+
+1. Here at the top level of the repository, which builds everything
+   * Argos, the transaction viewer in Helios
+   * Sparta, the modeling framework
+1. Down in Sparta, which only builds Sparta
+
+The MAP repository has numerous dependencies, which are listed in a
+[conda recipe](https://github.com/sparcians/map/blob/master/conda.recipe/meta.yaml),
+and the versions of these libraries continuously change.
+
+However, with the use of the conda recipe, users can set up a conda
+environment that will build and run the tools found in this repository.
+
+This guide assumes the user is not familiar with conda nor has it
+installed and would like to build everything (not just sparta).
+
+1. If conda is not installed, install it
+   * Get miniconda and install: https://docs.conda.io/en/latest/miniconda.html
+   * You can install miniconda anywhere
+1. Activate conda `conda activate`
+1. Go to the root of MAP
+   * `cd map`
+1. Install JSON and YAML parsers
+   * `conda install -c conda-forge jq`
+   * `conda install -c conda-forge yq`
+1. Create a sparta conda development environment
+   * `./scripts/create_conda_env.sh sparta dev`
+1. Activate the environment
+   * `conda activate sparta`
+1. To build MAP and it's components
+   * `conda activate sparta`
+   * `cd map; mkdir release; cd release`
+   * `cmake -DCMAKE_BUILD_TYPE=Release ..`
+   * `make`
+
+## Updating Regression/Build Environments for CI
 
 CI files are generated when the command `conda smithy rerender` is run
 inside a MAP clone.  That command uses the following files to control
