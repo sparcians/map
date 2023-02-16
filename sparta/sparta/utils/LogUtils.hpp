@@ -36,6 +36,13 @@
     }
 #endif
 
+#ifndef DLOG_IF
+#define DLOG_IF(condition, msg) \
+    if (SPARTA_EXPECT_FALSE(condition && debug_logger_)) { \
+        debug_logger_ << __func__ <<  ": " << msg; \
+    }
+#endif
+
 /** Macro to simplify sending messages to the Unit info logger
  *  @param msg The message to send to the info logger
  */
@@ -46,12 +53,26 @@
     }
 #endif
 
+#ifndef ILOG_IF
+#define ILOG_IF(condition, msg) \
+    if (SPARTA_EXPECT_FALSE(condition && info_logger_)) { \
+        info_logger_ << __func__ <<  ": " << msg; \
+    }
+#endif
+
 /** Macro to simplify sending messages to the Unit warn logger
  *  @param msg The message to send to the warn logger
  */
 #ifndef WLOG
 #define WLOG(msg) \
     if (SPARTA_EXPECT_FALSE(warn_logger_)) { \
+        warn_logger_ << __func__ <<  ": " << msg; \
+    }
+#endif
+
+#ifndef WLOG_IF
+#define WLOG_IF(condition, msg) \
+    if (SPARTA_EXPECT_FALSE(condition && warn_logger_)) { \
         warn_logger_ << __func__ <<  ": " << msg; \
     }
 #endif
