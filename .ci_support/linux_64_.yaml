@@ -21,9 +21,9 @@ docker_image:
 hdf5:
 - 1.12.2
 linux_clang_version:
-- '13'
+- '15'
 numpy:
-- '1.19'
+- '1.21'
 pin_run_as_build:
   boost:
     max_pin: x.x.x
@@ -33,7 +33,7 @@ pin_run_as_build:
     min_pin: x.x
     max_pin: x.x
 python:
-- 3.8.* *_cpython
+- 3.10.* *_cpython
 sqlite:
 - '3'
 target_platform:

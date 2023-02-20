@@ -16,6 +16,7 @@ from .dialogs.console_dialog import ConsoleDlg
 from .dialogs.select_layout_dlg import SelectLayoutDlg
 from .dialogs.translate_elements_dlg import TranslateElementsDlg
 from .dialogs.view_settings_dlg import ViewSettingsDialog
+from .dialogs.shortcut_help import ShortcutHelp
 
 if TYPE_CHECKING:
     from .layout_frame import Layout_Frame
@@ -30,6 +31,8 @@ ID_FILE_SAVEAS = wx.NewId()
 ID_FILE_OPTIONS = wx.NewId()
 
 ID_HELP_ABOUT = wx.NewId()
+
+ID_SHORTCUT_HELP = wx.NewId()
 
 # Undo/Redo menu string templates.
 # Render as 'Undo [num available] (next action)\thotkey'
@@ -60,6 +63,7 @@ class Argos_Menu(wx.MenuBar):
 
         # keeps track of the last location a graph was imported from
         self.__last_loaded_graph_dir = None
+        self.__shortcut_help_dlg: Optional[ShortcutHelp] = None
 
         # Setting up the menu(s).
         filemenu = wx.Menu()
@@ -581,6 +585,9 @@ class Argos_Menu(wx.MenuBar):
             "&Information",
             "Show information about the current frame and database."
         )
+        menuShortcutsHelp = helpmenu.Append(wx.NewId(),
+                                            "Shortcuts",
+                                            "Show shortcut information")
         menuAbout = helpmenu.Append(ID_HELP_ABOUT,
                                     "&About",
                                     "Information about this program")
@@ -922,6 +929,9 @@ class Argos_Menu(wx.MenuBar):
                            self.OnInvertSelection,
                            menuInvertSelection)
         self.__parent.Bind(wx.EVT_MENU, self.OnFrameInfo, menuInfo)
+        self.__parent.Bind(wx.EVT_MENU,
+                           self.OnShortcutsHelp,
+                           menuShortcutsHelp)
         self.__parent.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
         self.__parent.Bind(wx.EVT_MENU, self.OnRowLeft, menuRowLeft)
         self.__parent.Bind(wx.EVT_TOOL, self.OnRowLeft, self.toolbarRowLeft)
@@ -1452,6 +1462,11 @@ class Argos_Menu(wx.MenuBar):
                                wx.OK)
         dlg.ShowModal()
         dlg.Destroy()
+
+    def OnShortcutsHelp(self, evt: wx.CommandEvent) -> None:
+        if not self.__shortcut_help_dlg:
+            self.__shortcut_help_dlg = ShortcutHelp(self.__parent,
+                                                    ID_SHORTCUT_HELP)
 
     def OnNewElement(self, evt: wx.CommandEvent) -> None:
         if self.__parent.GetCanvas().GetInputDecoder().GetEditMode():
