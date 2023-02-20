@@ -5,13 +5,15 @@ import sys
 import subprocess
 from logging import error
 from typing import Callable, List, Optional, Tuple, TYPE_CHECKING
+import shutil
 
 if TYPE_CHECKING:
-    from model.layout_context import Layout_Context
+    from .layout_context import Layout_Context
 
 __SEARCH_PROGRAM_ENV_VAR_NAME = 'TRANSACTIONSEARCH_PROGRAM'
 TRANSACTION_SEARCH_PROGRAM = os.environ.get(__SEARCH_PROGRAM_ENV_VAR_NAME,
-                                            os.getcwd())
+                                            shutil.which("transactionsearch"))
+print("INFO: looking for ", TRANSACTION_SEARCH_PROGRAM)
 
 can_search = False
 if os.path.isfile(TRANSACTION_SEARCH_PROGRAM):

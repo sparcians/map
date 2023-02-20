@@ -1,12 +1,12 @@
 from __future__ import annotations
 import wx
-from gui.widgets.transaction_list import (TransactionList,
+from ..widgets.transaction_list import (TransactionList,
                                           TransactionListBaseEntry)
 from functools import partial
 from typing import List, Tuple, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from gui.layout_frame import Layout_Frame
+    from .layout_frame import Layout_Frame
 
 ID_WATCH_DELETE = wx.NewId()
 

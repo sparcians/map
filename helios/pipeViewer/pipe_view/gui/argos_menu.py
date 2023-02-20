@@ -5,9 +5,9 @@ import os
 import logging
 from typing import Optional, cast, Tuple, Union, TYPE_CHECKING
 
-from misc.version import get_version
-from model.layout import Layout
-from model.schedule_element import ScheduleLineElement
+from ..misc.version import get_version
+from ..model.layout import Layout
+from ..model.schedule_element import ScheduleLineElement
 from .hover_preview import HoverPreviewOptionsDialog
 from .dialogs.element_propsdlg import ElementTypeSelectionDialog
 from .dialogs.layout_varsdlg import LayoutVariablesDialog
@@ -18,7 +18,7 @@ from .dialogs.translate_elements_dlg import TranslateElementsDlg
 from .dialogs.view_settings_dlg import ViewSettingsDialog
 
 if TYPE_CHECKING:
-    from gui.layout_frame import Layout_Frame
+    from .layout_frame import Layout_Frame
 
 # Name each ID by ID_MENU_SUBMENU_etc...
 ID_FILE_NEW = wx.NewId()

@@ -25,14 +25,14 @@ from . import element_propsvalid as valid
 import wx
 
 # Another view-side import since elements here have rendering code embedded.
-import gui.autocoloring
+from ..gui import autocoloring
 
-from logsearch import LogSearch  # Argos module for searching logfiles
+from ..logsearch import LogSearch  # Argos module for searching logfiles
 
 if TYPE_CHECKING:
     from .layout import Layout
     from .element_value import Element_Value
-    from gui.layout_canvas import Layout_Canvas
+    from ..gui.layout_canvas import Layout_Canvas
 
 T = TypeVar('T')
 PropertyValue = Optional[Union[str,

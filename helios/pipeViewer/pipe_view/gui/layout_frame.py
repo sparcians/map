@@ -15,7 +15,7 @@ from typing import (Any,
                     TYPE_CHECKING)
 
 from .layout_canvas import Layout_Canvas
-from model.layout import Layout
+from ..model.layout import Layout
 from .argos_menu import Argos_Menu
 from .dialogs.search_dlg import SearchDialog
 from .dialogs.find_element_dlg import FindElementDialog
@@ -25,10 +25,10 @@ from .dialogs.layout_exit_dialog import LayoutExitDialog
 from .widgets.frame_playback_bar import FramePlaybackBar
 
 if TYPE_CHECKING:
-    from gui.dialogs.watchlist_dialog import WatchListDlg
-    from model.layout_context import Layout_Context
-    from model.workspace import Workspace
-    from model.settings import ArgosSettings
+    from .dialogs.watchlist_dialog import WatchListDlg
+    from ..model.layout_context import Layout_Context
+    from ..model.workspace import Workspace
+    from ..model.settings import ArgosSettings
 
 
 DialogUnion = Union[wx.Frame, wx.Dialog]

@@ -1,11 +1,11 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Tuple, Union, TYPE_CHECKING
 import wx
-from gui.font_utils import GetMonospaceFont
+from ..font_utils import GetMonospaceFont
 
 if TYPE_CHECKING:
-    from gui.layout_canvas import Layout_Canvas
-    from gui.dialogs.search_dlg import SearchResult
+    from ..layout_canvas import Layout_Canvas
+    from ..dialogs.search_dlg import SearchResult
 
 TransactionListBaseEntry = Dict[str, Any]
 TransactionListEntry = Union['SearchResult', TransactionListBaseEntry]

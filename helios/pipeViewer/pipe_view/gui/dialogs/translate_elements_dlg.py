@@ -1,10 +1,10 @@
 from __future__ import annotations
 import wx
-from gui.font_utils import GetMonospaceFont
+from ..font_utils import GetMonospaceFont
 from typing import Optional, Tuple, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from gui.layout_frame import Layout_Frame
+    from ..layout_frame import Layout_Frame
 
 
 # TranslateElementsDlg allows relative or absolute translation of a group of

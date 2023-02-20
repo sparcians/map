@@ -4,10 +4,10 @@ import wx.grid
 from wx.lib.colourchooser.pycolourchooser import (ColourChangedEvent,
                                                   PyColourChooser,
                                                   EVT_COLOUR_CHANGED)
-import model.content_options as copts
-from model.schedule_element import ScheduleLineElement
-from model.element import Element, LocationallyKeyedElement
-from model.rpc_element import RPCElement
+from ...model import content_options as copts
+from ...model.schedule_element import ScheduleLineElement
+from ...model.element import Element, LocationallyKeyedElement
+from ...model.rpc_element import RPCElement
 from ast import literal_eval
 from functools import cmp_to_key
 from typing import (Dict,
@@ -20,10 +20,10 @@ from typing import (Dict,
                     TYPE_CHECKING)
 
 if TYPE_CHECKING:
-    from gui.dialogs.element_propsdlg import Element_PropsDlg
-    from gui.layout_frame import Layout_Frame
-    from gui.selection_manager import Selection_Mgr
-    from model.location_manager import LocationTree
+    from ..dialogs.element_propsdlg import Element_PropsDlg
+    from ..layout_frame import Layout_Frame
+    from ..selection_manager import Selection_Mgr
+    from ...model.location_manager import LocationTree
 
 MULTIPLE_VALS_STR = '<multiple values>'
 MULTIPLE_VALS_COLOR = wx.Colour(200, 200, 100)

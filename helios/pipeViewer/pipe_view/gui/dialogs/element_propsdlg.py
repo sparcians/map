@@ -1,17 +1,17 @@
 from __future__ import annotations
 import wx
 
-import model.element_types as eltypes
-from gui.widgets.element_property_list import ElementPropertyList
-from gui.font_utils import ScaleFont
+from ...model import element_types as eltypes
+from ..widgets.element_property_list import ElementPropertyList
+from ..font_utils import ScaleFont
 
 from typing import List, Optional, Tuple, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from model.element import Element
-    from gui.layout_canvas import Layout_Canvas
-    from gui.layout_frame import Layout_Frame
-    from gui.selection_manager import Selection_Mgr
+    from ...model.element import Element
+    from ..layout_canvas import Layout_Canvas
+    from ..layout_frame import Layout_Frame
+    from ..selection_manager import Selection_Mgr
 
 
 # The GUI-side window for editing the properties of an Element

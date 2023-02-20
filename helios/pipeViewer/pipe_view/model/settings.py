@@ -3,8 +3,8 @@ import json
 import os
 import sys
 from typing import Any, Dict
-from gui.autocoloring import BrushRepository
-from gui.font_utils import GetDefaultFontSize, GetDefaultControlFontSize
+from ..gui.autocoloring import BrushRepository
+from ..gui.font_utils import GetDefaultFontSize, GetDefaultControlFontSize
 
 
 # Stores settings in a JSON file in the user's config directory so that they

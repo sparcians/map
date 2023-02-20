@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Dict, List, Optional, Set, Tuple
 
-from model.element_value import Element_Value
+from .element_value import Element_Value
 
 
 class QuadNode:

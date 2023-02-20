@@ -4,10 +4,10 @@ import wx
 import os
 
 import wx.lib.platebtn as platebtn
-from gui.font_utils import ScaleFont
+from ..font_utils import ScaleFont
 
 if TYPE_CHECKING:
-    from gui.layout_frame import Layout_Frame
+    from ..layout_frame import Layout_Frame
 
 
 # Prompts the user if there are unsaved changes when trying to close a layout

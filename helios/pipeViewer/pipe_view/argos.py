@@ -36,19 +36,17 @@ sys.path.insert(0, corePath)
 
 # Argos imports need to go below this line (some depend on the path to core.so)
 
-import gui.autocoloring  # noqa: E402
-from gui.dialogs.select_db_dlg import SelectDatabaseDlg  # noqa: E402
-from gui.dialogs.select_layout_dlg import SelectLayoutDlg  # noqa: E402
-from model.database import Database  # noqa: E402
-from model.settings import ArgosSettings  # noqa: E402
-from model.utilities import LogFormatter  # noqa: E402
-from model.workspace import Workspace  # noqa: E402
+from pipe_view.gui import autocoloring  # noqa: E402
+from pipe_view.gui.dialogs.select_db_dlg import SelectDatabaseDlg  # noqa: E402
+from pipe_view.gui.dialogs.select_layout_dlg import SelectLayoutDlg  # noqa: E402
+from pipe_view.model.database import Database  # noqa: E402
+from pipe_view.model.settings import ArgosSettings  # noqa: E402
+from pipe_view.model.utilities import LogFormatter  # noqa: E402
+from pipe_view.model.workspace import Workspace  # noqa: E402
 
 # End Argos imports
 
-if __name__ != '__main__':
-    raise ImportError('argos.py must be run as a script and not imported')
-else:
+def main():
     rc = 0
 
     logging.getLogger().setLevel(logging.INFO)
@@ -234,7 +232,7 @@ else:
     settings = ArgosSettings()
     # The user can specify default colorblindness and palette shuffle modes
     # with these environment variables
-    gui.autocoloring.BuildBrushes(settings.palette, settings.palette_shuffle)
+    autocoloring.BuildBrushes(settings.palette, settings.palette_shuffle)
 
     # Preconfigure the workspace with options
     # Must be after wx.App is instantiated
@@ -463,3 +461,6 @@ else:
 
     ws.Cleanup()
     sys.exit(rc)
+
+if __name__ == '__main__':
+    main()

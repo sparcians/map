@@ -3,9 +3,9 @@ from collections import OrderedDict
 from typing import Dict, Optional, Set, TypedDict, TYPE_CHECKING
 import wx
 
-from model.settings import ArgosSettings
+from ...model.settings import ArgosSettings
 if TYPE_CHECKING:
-    from gui.layout_frame import Layout_Frame
+    from ..layout_frame import Layout_Frame
 
 
 class ViewSettingsDialog(wx.Dialog):
