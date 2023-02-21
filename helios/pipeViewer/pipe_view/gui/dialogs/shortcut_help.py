@@ -9,16 +9,44 @@ class ShortcutHelpEntry(TypedDict, total=False):
     desc: str
 
 
+ShortcutHelpDict = Dict[str, Tuple[ShortcutHelpEntry, ...]]
+
+
+def __is_mac_os() -> bool:
+    os = wx.GetOsVersion()[0]
+    return os in [wx.OS_MAC_OS, wx.OS_MAC_OSX_DARWIN, wx.OS_MAC]
+
+
+def __gen_message(shortcut_items: ShortcutHelpDict) -> str:
+    msg = '<html>\n<body>\n<h2>Argos Keyboard Shortcuts</h2>\n'
+
+    for k, v in shortcut_items.items():
+        msg += f'<h3>{k}</h3>\n<ul>\n'
+        for item in v:
+            keys = item['keys']
+            desc = item['desc']
+            mod = item.get('mod')
+
+            if mod is not None:
+                if isinstance(keys, tuple):
+                    keys = tuple(f'{mod}</b>+<b>{k}' for k in keys)
+                else:
+                    keys = f'{mod}</b>+<b>{keys}'
+
+            if isinstance(keys, tuple):
+                keys = '</b></tt> <i>or</i> <tt><b>'.join(keys)
+
+            msg += f'<li><tt><b>{keys}:</b></tt> {desc}</li>\n'
+        msg += '</ul>\n'
+
+    msg += '</body></html>'
+    return msg
+
+
 class ShortcutHelp(wx.Frame):
-    @staticmethod
-    def is_mac_os() -> bool:
-        os = wx.GetOsVersion()[0]
-        return os in [wx.OS_MAC_OS, wx.OS_MAC_OSX_DARWIN, wx.OS_MAC]
-
     __SHIFT_KEY = 'Shift'
-    __CTRL_KEY = 'Command' if is_mac_os.__get__(object) else 'CTRL'
+    __CTRL_KEY = 'Command' if __is_mac_os() else 'CTRL'
 
-    ShortcutHelpDict = Dict[str, Tuple[ShortcutHelpEntry, ...]]
     __SHORTCUT_ITEMS: ShortcutHelpDict = {
         'Global': (
             {'mod': __CTRL_KEY,
@@ -74,33 +102,7 @@ class ShortcutHelp(wx.Frame):
         )
     }
 
-    @staticmethod
-    def __gen_message(shortcut_items: ShortcutHelpDict) -> str:
-        msg = '<html>\n<body>\n<h2>Argos Keyboard Shortcuts</h2>\n'
-
-        for k, v in shortcut_items.items():
-            msg += f'<h3>{k}</h3>\n<ul>\n'
-            for item in v:
-                keys = item['keys']
-                desc = item['desc']
-                mod = item.get('mod')
-
-                if mod is not None:
-                    if isinstance(keys, tuple):
-                        keys = tuple(f'{mod}</b>+<b>{k}' for k in keys)
-                    else:
-                        keys = f'{mod}</b>+<b>{keys}'
-
-                if isinstance(keys, tuple):
-                    keys = '</b></tt> <i>or</i> <tt><b>'.join(keys)
-
-                msg += f'<li><tt><b>{keys}:</b></tt> {desc}</li>\n'
-            msg += '</ul>\n'
-
-        msg += '</body></html>'
-        return msg
-
-    __MESSAGE = __gen_message.__func__(__SHORTCUT_ITEMS)
+    __MESSAGE = __gen_message(__SHORTCUT_ITEMS)
 
     def __init__(self, parent: wx.Window, id: int) -> None:
         wx.Frame.__init__(
