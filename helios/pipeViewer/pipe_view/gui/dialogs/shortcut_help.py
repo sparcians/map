@@ -16,7 +16,7 @@ class ShortcutHelp(wx.Frame):
         return os in [wx.OS_MAC_OS, wx.OS_MAC_OSX_DARWIN, wx.OS_MAC]
 
     __SHIFT_KEY = 'Shift'
-    __CTRL_KEY = 'Command' if is_mac_os() else 'CTRL'
+    __CTRL_KEY = 'Command' if is_mac_os.__get__(object) else 'CTRL'
 
     ShortcutHelpDict = Dict[str, Tuple[ShortcutHelpEntry, ...]]
     __SHORTCUT_ITEMS: ShortcutHelpDict = {
@@ -100,7 +100,7 @@ class ShortcutHelp(wx.Frame):
         msg += '</body></html>'
         return msg
 
-    __MESSAGE = __gen_message(__SHORTCUT_ITEMS)
+    __MESSAGE = __gen_message.__func__(__SHORTCUT_ITEMS)
 
     def __init__(self, parent: wx.Window, id: int) -> None:
         wx.Frame.__init__(
