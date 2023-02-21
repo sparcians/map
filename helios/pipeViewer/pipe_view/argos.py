@@ -47,7 +47,7 @@ from pipe_view.model.workspace import Workspace  # noqa: E402
 # End Argos imports
 
 
-def main():
+def main() -> None:
     rc = 0
 
     logging.getLogger().setLevel(logging.INFO)

@@ -11,9 +11,9 @@ from .font_utils import GetMonospaceFont
 from typing import Any, List, Optional, Tuple, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..element import Element
-    from ..element_value import Element_Value
-    from ..layout_context import Layout_Context
+    from ..model.element import Element
+    from ..model.element_value import Element_Value
+    from ..model.layout_context import Layout_Context
     from .argos_menu import Argos_Menu
     from .layout_canvas import Layout_Canvas
 

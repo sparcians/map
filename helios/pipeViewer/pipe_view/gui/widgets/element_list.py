@@ -5,7 +5,7 @@ from ..font_utils import GetMonospaceFont
 
 if TYPE_CHECKING:
     from ..layout_canvas import Layout_Canvas
-    from ...element import Element
+    from ...model.element import Element
 
 
 # This class is a GUI list control element that shows elements and allows

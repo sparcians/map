@@ -5,7 +5,7 @@ import wx
 from wx.py.shell import Shell
 
 if TYPE_CHECKING:
-    from gui.layout_frame import Layout_Frame
+    from ..layout_frame import Layout_Frame
 
 
 # This class displays a python console

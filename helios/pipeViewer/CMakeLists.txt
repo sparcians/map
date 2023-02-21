@@ -84,7 +84,7 @@ add_subdirectory(transactionsearch)
 
 install(CODE
   "execute_process(
-    COMMAND ${Python3_EXECUTABLE} setup.py install --prefix ${CMAKE_INSTALL_PREFIX}
+    COMMAND ${CMAKE_COMMAND} -E env PYTHONUSERBASE=${CMAKE_INSTALL_PREFIX} ${Python3_EXECUTABLE} -m pip install .
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})"
 )
 

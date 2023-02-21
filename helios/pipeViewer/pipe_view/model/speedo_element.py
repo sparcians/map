@@ -17,10 +17,10 @@ from typing import (Any,
                     cast)
 
 if TYPE_CHECKING:
-    from model.element import (PropertyValue,
-                               ValidatedPropertyDict)
-    from model.element_value import Element_Value
-    from gui.layout_canvas import Layout_Canvas
+    from .element import (PropertyValue,
+                          ValidatedPropertyDict)
+    from .element_value import Element_Value
+    from ..gui.layout_canvas import Layout_Canvas
 
 
 class SpeedoWidget(wx.Control):

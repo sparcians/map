@@ -6,7 +6,7 @@ from functools import partial
 from typing import List, Tuple, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .layout_frame import Layout_Frame
+    from ..layout_frame import Layout_Frame
 
 ID_WATCH_DELETE = wx.NewId()
 

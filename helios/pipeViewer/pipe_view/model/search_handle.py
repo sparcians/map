@@ -16,7 +16,7 @@ TRANSACTION_SEARCH_PROGRAM = os.environ.get(__SEARCH_PROGRAM_ENV_VAR_NAME,
 print("INFO: looking for ", TRANSACTION_SEARCH_PROGRAM)
 
 can_search = False
-if os.path.isfile(TRANSACTION_SEARCH_PROGRAM):
+if TRANSACTION_SEARCH_PROGRAM and os.path.isfile(TRANSACTION_SEARCH_PROGRAM):
     can_search = True
 else:
     # keep looking if not explicitly stated
@@ -88,6 +88,9 @@ class SearchHandle:
                 'You cannot search.'
             )
         results: List[Tuple[int, int, int, str]] = []
+
+        assert TRANSACTION_SEARCH_PROGRAM is not None
+
         arglist = [TRANSACTION_SEARCH_PROGRAM,
                    self.__db.filename,
                    query_type,

@@ -46,6 +46,7 @@ py_packages = ["pipe_view", "pipe_view.misc", "pipe_view.gui",
             "pipe_view.model", ]
 
 setuptools.setup(
+    name='pipe_view',
     packages=py_packages,
     ext_modules = cythonize(ext_modules, language_level=3,
                             include_path=['pipe_view/core/src'], # to find common.pxd
