@@ -2,8 +2,6 @@
 #  @brief Consumes argos database files based on prefix
 
 from __future__ import annotations
-import os
-import sys
 import logging
 from logging import info, error
 from types import ModuleType

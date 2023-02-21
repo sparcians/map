@@ -38,13 +38,14 @@ sys.path.insert(0, corePath)
 
 from pipe_view.gui import autocoloring  # noqa: E402
 from pipe_view.gui.dialogs.select_db_dlg import SelectDatabaseDlg  # noqa: E402
-from pipe_view.gui.dialogs.select_layout_dlg import SelectLayoutDlg  # noqa: E402
+from pipe_view.gui.dialogs.select_layout_dlg import SelectLayoutDlg  # noqa: E402, E501
 from pipe_view.model.database import Database  # noqa: E402
 from pipe_view.model.settings import ArgosSettings  # noqa: E402
 from pipe_view.model.utilities import LogFormatter  # noqa: E402
 from pipe_view.model.workspace import Workspace  # noqa: E402
 
 # End Argos imports
+
 
 def main():
     rc = 0
@@ -461,6 +462,7 @@ def main():
 
     ws.Cleanup()
     sys.exit(rc)
+
 
 if __name__ == '__main__':
     main()

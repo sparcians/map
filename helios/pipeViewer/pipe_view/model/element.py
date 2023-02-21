@@ -1022,14 +1022,14 @@ class LogElement(LocationallyKeyedElement):
                                         color = self.__def_background_color
                                     else:
                                         try:
-                                            idx = int(col_str) % len(gui.autocoloring.BACKGROUND_BRUSHES)  # noqa: E501
+                                            idx = int(col_str) % len(autocoloring.BACKGROUND_BRUSHES)  # noqa: E501
                                         except ValueError:
                                             try:
-                                                idx = int(col_str, 16) % len(gui.autocoloring.BACKGROUND_BRUSHES)  # noqa: E501
+                                                idx = int(col_str, 16) % len(autocoloring.BACKGROUND_BRUSHES)  # noqa: E501
                                             except ValueError:
-                                                idx = hash(col_str) % len(gui.autocoloring.BACKGROUND_BRUSHES)  # noqa: E501
+                                                idx = hash(col_str) % len(autocoloring.BACKGROUND_BRUSHES)  # noqa: E501
 
-                                        color = gui.autocoloring.BACKGROUND_BRUSHES[idx].GetColour()  # noqa: E501
+                                        color = autocoloring.BACKGROUND_BRUSHES[idx].GetColour()  # noqa: E501
 
                                 # Determine Content
                                 if sub_pat_str == '':  # Do no replacement

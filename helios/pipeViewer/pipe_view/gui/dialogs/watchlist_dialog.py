@@ -1,7 +1,7 @@
 from __future__ import annotations
 import wx
 from ..widgets.transaction_list import (TransactionList,
-                                          TransactionListBaseEntry)
+                                        TransactionListBaseEntry)
 from functools import partial
 from typing import List, Tuple, cast, TYPE_CHECKING
 
