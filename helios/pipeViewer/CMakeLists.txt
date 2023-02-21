@@ -27,7 +27,7 @@ endif()
 list(APPEND _INC_DIRS "$<TARGET_PROPERTY:sparta,INCLUDE_DIRECTORIES>" ${WX_PYTHON_INC} ${wxWidgets_INCLUDE_DIRS})
 
 # Populate list of library dirs:
-# Set up the include and link dirs for python's setuptools using setup.cfg file 
+# Set up the include and link dirs for python's setuptools using setup.cfg file
 # HDF5: need to extract dirs from paths to libs
 foreach(lib IN LISTS HDF5_LIBRARIES)
   get_filename_component(d ${lib} DIRECTORY)
@@ -76,7 +76,7 @@ add_custom_command(
       ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/transactiondb/src/transactiondb.pyx
       sparta simdb
     ${CMAKE_CURRENT_SOURCE_DIR}/setup.cfg
-  COMMENT "Building pipeViwer and its depenencies"
+  COMMENT "Building pipeViwer and its dependencies"
 )
 add_custom_target(pipeView ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cython.stamp)
 
@@ -84,7 +84,7 @@ add_subdirectory(transactionsearch)
 
 install(CODE
   "execute_process(
-    COMMAND ${Python3_EXECUTABLE} setup.py install
+    COMMAND ${Python3_EXECUTABLE} setup.py install --prefix ${CMAKE_INSTALL_PREFIX}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})"
 )
 
