@@ -61,13 +61,22 @@ add_custom_command(
   COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/cython.stamp
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   DEPENDS
-  #    ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings/setup.py
-  #    ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings/setup.cfg
-  #    ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings/src/foo/__init__.py
-  #    ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings/src/foo/c_foo.pxd
-  #    ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings/src/foo/foo_ext.pxd
-  #    ${CMAKE_CURRENT_SOURCE_DIR}/extras/python-bindings/src/foo/foo_ext.pyx
-    sparta simdb
+      ${CMAKE_CURRENT_SOURCE_DIR}/setup.py
+      ${CMAKE_CURRENT_SOURCE_DIR}/setup.cfg
+      ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core/src/common.pxd
+      ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core/src/core.pyx
+      ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core/src/helpers.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/logsearch/src/log_search.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/logsearch/src/logsearch.pyx
+      ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/transactiondb/src/PipelineDataCallback.hpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/transactiondb/src/Reader.hpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/transactiondb/src/SimpleOutputInterface.hpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/transactiondb/src/TransactionDatabaseInterface.hpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/transactiondb/src/TransactionInterval.hpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/transactiondb/src/helpers.hpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/transactiondb/src/common.pxd
+      ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/transactiondb/src/transactiondb.pyx
+      sparta simdb
     ${CMAKE_CURRENT_SOURCE_DIR}/setup.cfg
   COMMENT "Building pipeViwer and its depenencies"
 )
@@ -81,34 +90,5 @@ install(CODE
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})"
 )
 
-#find_package (Python3 3.7 REQUIRED COMPONENTS Interpreter Development)
-#
-#set (CMAKE_CXX_STANDARD 17)
-#set (CMAKE_CXX_STANDARD_REQUIRED ON)
-#
-#if(NOT ${Python3_FOUND})
-#  message(WARNING "Cmake could not find python3, trying to fall back on system default python3")
-#  find_program(Python3_EXECUTABLE 'python3')
-#endif()
-#
-# Point find_package to the right parts of the source and build tree
-#set(CMAKE_MODULE_PATH  ${CMAKE_SOURCE_DIR}/sparta/cmake ${CMAKE_MODULE_PATH})
-#include_directories(${SPARTA_BASE} ${SPARTA_BASE}/simdb/include ./)
-#include(${CMAKE_SOURCE_DIR}/sparta/cmake/sparta-config.cmake)
-#
-#set(SETUP_PY "${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core/setup.py")
-#
-#set(PY_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/build/core.so.built")
-#
-#add_custom_command(OUTPUT "${PY_OUTPUT}"
-#         COMMAND ${CMAKE_COMMAND} -E env CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} LD=${CMAKE_LINKER} TARGETDIR=${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core -- ${Python3_EXECUTABLE} ${SETUP_PY} build_ext --inplace
-#                   COMMAND ${CMAKE_COMMAND} -E touch ${PY_OUTPUT}
-#                   DEPENDS ${SETUP_PY} "${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/core/src/core.pyx"
-#                   )
-#add_custom_target(pipe_view_py ALL DEPENDS "${PY_OUTPUT}")
-##
-#add_subdirectory(transactiondb)
-#add_subdirectory(transactionsearch)
+# TODO: do we need to build argos_dumper?
 #add_subdirectory(argos_dumper)
-#
-#install(DIRECTORY pipe_view/ DESTINATION pipe_view PATTERN "__pycache__" EXCLUDE)

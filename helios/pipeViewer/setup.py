@@ -14,7 +14,6 @@ compile_args += [
 ]
 
 # Wrappers for the parts written in Cython
-# Transaction DB
 transaction_db = setuptools.Extension(
     'pipe_view.transactiondb',
     language='c++',
@@ -45,7 +44,6 @@ ext_modules = [transaction_db, core, logsearch]
 py_packages = ["pipe_view", "pipe_view.misc", "pipe_view.gui",
             "pipe_view.gui.dialogs", "pipe_view.gui.widgets",
             "pipe_view.model", ]
-cy_packages = ['pipe_view.core', 'pipe_view.transactiondb', 'pipe_view.logsearch', ]
 
 setuptools.setup(
     packages=py_packages,
@@ -56,10 +54,6 @@ setuptools.setup(
         'console_scripts': ['argos=pipe_view.argos:main'],
     },
     package_data={'pipe_view': ['core/src/common.pxd', 'transactiondb/src/common.pxd', 'resources/*.png', 'stubs/*.pyi']},
-    #package_dir={'': 'src'},
-#    package_data={
-#        'foo': ['foo_ext.pxd', 'c_foo.pxd']
-#    },
     include_package_data=True,
     setup_requires=[
         'cython',
