@@ -51,9 +51,7 @@ library_dirs=$<JOIN:${_LIB_DIRS},:>
 foreach(def IN LISTS wxWidgets_DEFINITIONS)
   string(APPEND PYTHON_CFLAGS "-D${def} ")
 endforeach()
-message(WARNING " " ${wxWidgets_LIBRARIES})
 string(JOIN " " PYTHON_LDFLAGS ${wxWidgets_LIBRARIES})
-message(WARNING " " ${PYTHON_LDFLAGS})
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cython.stamp
@@ -90,5 +88,4 @@ install(CODE
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})"
 )
 
-# TODO: do we need to build argos_dumper?
-#add_subdirectory(argos_dumper)
+add_subdirectory(argos_dumper)
