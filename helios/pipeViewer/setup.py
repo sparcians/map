@@ -51,7 +51,7 @@ setuptools.setup(
                             include_path=['pipe_view/core/src'], # to find common.pxd
                             ),
     entry_points = {
-        'console_scripts': ['argos=pipe_view.argos:main'],
+        'gui_scripts': ['argos=pipe_view.argos:main'],
     },
     package_data={'pipe_view': ['core/src/common.pxd', 'transactiondb/src/common.pxd', 'resources/*.png', 'stubs/*.pyi']},
     include_package_data=True,
