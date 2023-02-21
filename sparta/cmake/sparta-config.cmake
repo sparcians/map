@@ -40,7 +40,7 @@ endif ()
 
 # Find Boost
 set (Boost_USE_STATIC_LIBS OFF)
-find_package (Boost 1.76.0 REQUIRED COMPONENTS ${_BOOST_COMPONENTS})
+find_package (Boost 1.74.0 REQUIRED COMPONENTS ${_BOOST_COMPONENTS})
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 message (STATUS "Using BOOST ${Boost_VERSION_STRING}")
 

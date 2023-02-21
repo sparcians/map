@@ -88,12 +88,6 @@ if (COMPILE_WITH_PYTHON)
     python/sparta_support/Completer.cpp)
 endif ()
 
-add_library (sparta ${SourceCppFiles})
-
-# Add local includes
-target_include_directories (sparta PUBLIC "./")
-target_include_directories (sparta PUBLIC "simdb/include")
-
 execute_process (COMMAND bash "-c" "git describe --tags --always"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   OUTPUT_VARIABLE GIT_REPO_VERSION RESULT_VARIABLE rc
@@ -206,6 +200,12 @@ set (CPPCHECK_EXCLUDES
   ${SPARTA_BASE}/test
 )
 find_package (Cppcheck)
+
+add_library (sparta ${SourceCppFiles})
+
+# Add local includes
+target_include_directories (sparta PUBLIC "./")
+target_include_directories (sparta PUBLIC "simdb/include")
 
 set (SPARTA_STATIC_LIBS ${PROJECT_BINARY_DIR}/libsparta.a)
 
