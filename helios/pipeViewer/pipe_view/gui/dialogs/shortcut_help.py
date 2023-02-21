@@ -12,12 +12,12 @@ class ShortcutHelpEntry(TypedDict, total=False):
 ShortcutHelpDict = Dict[str, Tuple[ShortcutHelpEntry, ...]]
 
 
-def __is_mac_os() -> bool:
+def _is_mac_os() -> bool:
     os = wx.GetOsVersion()[0]
     return os in [wx.OS_MAC_OS, wx.OS_MAC_OSX_DARWIN, wx.OS_MAC]
 
 
-def __gen_message(shortcut_items: ShortcutHelpDict) -> str:
+def _gen_message(shortcut_items: ShortcutHelpDict) -> str:
     msg = '<html>\n<body>\n<h2>Argos Keyboard Shortcuts</h2>\n'
 
     for k, v in shortcut_items.items():
@@ -45,7 +45,7 @@ def __gen_message(shortcut_items: ShortcutHelpDict) -> str:
 
 class ShortcutHelp(wx.Frame):
     __SHIFT_KEY = 'Shift'
-    __CTRL_KEY = 'Command' if __is_mac_os() else 'CTRL'
+    __CTRL_KEY = 'Command' if _is_mac_os() else 'CTRL'
 
     __SHORTCUT_ITEMS: ShortcutHelpDict = {
         'Global': (
@@ -102,7 +102,7 @@ class ShortcutHelp(wx.Frame):
         )
     }
 
-    __MESSAGE = __gen_message(__SHORTCUT_ITEMS)
+    __MESSAGE = _gen_message(__SHORTCUT_ITEMS)
 
     def __init__(self, parent: wx.Window, id: int) -> None:
         wx.Frame.__init__(
