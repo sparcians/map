@@ -4,7 +4,7 @@ PROJECT (SPARTA_TESTS)
 include (CTest)
 
 # Convenience macros and functions for tests
-include(${CMAKE_SOURCE_DIR}/sparta/cmake/SpartaTestingMacros.cmake)
+include(${SPARTA_CMAKE_MACRO_PATH}/SpartaTestingMacros.cmake)
 
 # Setup options for valgrind testing.
 find_program (VALGRIND_TOOL valgrind)

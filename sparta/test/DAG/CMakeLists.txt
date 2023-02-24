@@ -1,6 +1,6 @@
 project(Dag_test)
 
-include(${CMAKE_SOURCE_DIR}/sparta/cmake/SpartaTestingMacros.cmake)
+include(${SPARTA_CMAKE_MACRO_PATH}/SpartaTestingMacros.cmake)
 
 sparta_add_test_executable(DAG_test DAG_main.cpp)
 
