@@ -6,11 +6,11 @@ from typing import Tuple, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from wx.lib.dragscroller import DragScroller
-    from gui.dialogs.element_propsdlg import Element_PropsDlg
-    from gui.hover_preview import HoverPreview
-    from gui.layout_canvas import Layout_Canvas
-    from gui.selection_manager import Selection_Mgr
-    from model.layout_context import Layout_Context
+    from .dialogs.element_propsdlg import Element_PropsDlg
+    from .hover_preview import HoverPreview
+    from .layout_canvas import Layout_Canvas
+    from .selection_manager import Selection_Mgr
+    from ..model.layout_context import Layout_Context
 
 
 # This class provides a central hub of intelligence for responding to

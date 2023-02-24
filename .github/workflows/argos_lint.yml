@@ -1,0 +1,45 @@
+name: Argos Linters
+
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the main branch
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+defaults:
+  run:
+    working-directory: helios/pipeViewer
+
+jobs:
+  build:
+    name: pylint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install mypy numpy flake8
+
+    - name: Running mypy
+      run: |
+        mypy --install-types --non-interactive pipe_view/argos.py
+
+    - name: Running flake8
+      run: |
+        flake8 $(git ls-files 'pipe_view/*.py')

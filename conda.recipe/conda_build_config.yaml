@@ -33,16 +33,16 @@ MACOSX_DEPLOYMENT_TARGET:      # [osx]
 # backend from gcc but adding new clang versions
 # here
 linux_clang_version:           # [linux]
-  - 13                         # [linux]
+  - 15                         # [linux]
 #  - 11                         # [linux]
 
 # limit ourselves to a single python version
 # since numpy and python_impl are zipped with it, we
 # must also override those to a single value
 numpy:
-    - 1.19
+    - 1.21
 python:
-    - 3.8.* *_cpython
+    - 3.10.* *_cpython
 python_impl:
     - cpython
 

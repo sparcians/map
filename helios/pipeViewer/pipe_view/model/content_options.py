@@ -15,9 +15,9 @@ from typing import (Any,
                     TYPE_CHECKING)
 
 if TYPE_CHECKING:
-    from model.database import Transaction
-    from model.database_handle import DatabaseHandle
-    from model.element import Element
+    from .database import Transaction
+    from .database_handle import DatabaseHandle
+    from .element import Element
 
 
 TRANSACTION_TYPES = ['Annotation', 'Instruction', 'MemoryOp']

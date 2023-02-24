@@ -6,9 +6,9 @@ import wx
 from typing import Any, Callable, Optional, Tuple, Union, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from model.element_value import Element_Value
-    from model.element import PropertyValue
-    from gui.layout_canvas import Layout_Canvas
+    from .element_value import Element_Value
+    from .element import PropertyValue
+    from ..gui.layout_canvas import Layout_Canvas
 
 
 class WidgetElement(LocationallyKeyedElement):

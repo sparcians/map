@@ -6,9 +6,9 @@ from .quad_tree import QuadTree
 from typing import Callable, Dict, List, Optional, Tuple, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from model.element import Element
-    from model.extension_manager import ExtensionManager
-    from model.layout_context import Layout_Context
+    from .element import Element
+    from .extension_manager import ExtensionManager
+    from .layout_context import Layout_Context
 
 
 # ElementSet stores all elements in a LayoutContext and bins them by time
@@ -283,3 +283,6 @@ class ElementSet:
                 pass
             else:
                 self.__draw_set.append(pair)
+
+    def UpdateElementBounds(self) -> None:
+        self.__tree.UpdateBounds()

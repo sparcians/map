@@ -5,16 +5,18 @@ import sys
 import subprocess
 from logging import error
 from typing import Callable, List, Optional, Tuple, TYPE_CHECKING
+import shutil
 
 if TYPE_CHECKING:
-    from model.layout_context import Layout_Context
+    from .layout_context import Layout_Context
 
 __SEARCH_PROGRAM_ENV_VAR_NAME = 'TRANSACTIONSEARCH_PROGRAM'
 TRANSACTION_SEARCH_PROGRAM = os.environ.get(__SEARCH_PROGRAM_ENV_VAR_NAME,
-                                            os.getcwd())
+                                            shutil.which("transactionsearch"))
+print("INFO: looking for ", TRANSACTION_SEARCH_PROGRAM)
 
 can_search = False
-if os.path.isfile(TRANSACTION_SEARCH_PROGRAM):
+if TRANSACTION_SEARCH_PROGRAM and os.path.isfile(TRANSACTION_SEARCH_PROGRAM):
     can_search = True
 else:
     # keep looking if not explicitly stated
@@ -86,6 +88,9 @@ class SearchHandle:
                 'You cannot search.'
             )
         results: List[Tuple[int, int, int, str]] = []
+
+        assert TRANSACTION_SEARCH_PROGRAM is not None
+
         arglist = [TRANSACTION_SEARCH_PROGRAM,
                    self.__db.filename,
                    query_type,

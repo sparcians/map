@@ -902,6 +902,11 @@ namespace sparta
         template<SchedulingPhase phase = SchedulingPhase::Collection>
         void enableCollection(TreeNode * parent) { pipe_.template enableCollection<phase>(parent); }
 
+        /*!
+         * \brief Check if pipeline is collecting
+         */
+        bool isCollected() const { return pipe_.isCollected(); }
+
     private:
         template<typename U>
         void appendImpl_(U && item)

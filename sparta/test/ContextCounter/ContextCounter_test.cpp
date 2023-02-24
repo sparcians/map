@@ -8,6 +8,7 @@
 #include "sparta/statistics/Counter.hpp"
 #include "sparta/statistics/ReadOnlyCounter.hpp"
 #include "sparta/statistics/CycleCounter.hpp"
+#include "sparta/statistics/WeightedContextCounter.hpp"
 
 #include "sparta/events/Event.hpp"
 #include "sparta/events/EventSet.hpp"
@@ -22,7 +23,6 @@
 #include "sparta/report/Report.hpp"
 #include "sparta/report/format/Text.hpp"
 
-#include "WeightedContextCounter.hpp"
 
 TEST_INIT
 

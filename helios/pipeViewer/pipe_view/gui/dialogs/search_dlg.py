@@ -2,12 +2,12 @@ from __future__ import annotations
 import sys
 import wx
 from functools import partial
-from gui.widgets.transaction_list import TransactionList
-from gui.widgets.location_entry import LocationEntry
+from ..widgets.transaction_list import TransactionList
+from ..widgets.location_entry import LocationEntry
 from typing import List, Optional, Tuple, TypedDict, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from gui.layout_frame import Layout_Frame
+    from ..layout_frame import Layout_Frame
 
 
 class SearchResult(TypedDict):

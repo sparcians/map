@@ -5,17 +5,17 @@ import textwrap
 import wx
 import wx.lib.newevent
 
-from gui.dialogs.watchlist_dialog import WatchListDlg
-from gui.font_utils import GetMonospaceFont
+from .dialogs.watchlist_dialog import WatchListDlg
+from .font_utils import GetMonospaceFont
 
 from typing import Any, List, Optional, Tuple, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from model.element import Element
-    from model.element_value import Element_Value
-    from model.layout_context import Layout_Context
-    from gui.argos_menu import Argos_Menu
-    from gui.layout_canvas import Layout_Canvas
+    from ..model.element import Element
+    from ..model.element_value import Element_Value
+    from ..model.layout_context import Layout_Context
+    from .argos_menu import Argos_Menu
+    from .layout_canvas import Layout_Canvas
 
 # @brief This new event triggers the canvas to just redraw the mouse-over text.
 # No update of the underlying view is executed on this event.
@@ -587,8 +587,7 @@ class HoverPreviewOptionsDialog(wx.Dialog):
         wx.Dialog.__init__(self,
                            parent,
                            wx.NewId(),
-                           'Hover Preview Options',
-                           size=(200, 300))
+                           'Hover Preview Options')
 
         self.hover_preview = hover_preview
         self.checkOptions = {
@@ -609,14 +608,14 @@ class HoverPreviewOptionsDialog(wx.Dialog):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         for value in list(self.checkOptions.values()):
-            sizer.Add(value, 1, 0, 0)
+            sizer.Add(value, proportion=1, flag=wx.LEFT, border=5)
 
         done = wx.Button(self, wx.NewId(), 'Done')
 
         sizerbuttons = wx.BoxSizer(wx.HORIZONTAL)
-        sizerbuttons.Add(done, 2, 0, 0)
+        sizerbuttons.Add(done, proportion=2, flag=wx.ALL, border=5)
         self.__select = wx.Button(self, wx.NewId(), 'Select All')
-        sizerbuttons.Add(self.__select, 2, 0, 0)
+        sizerbuttons.Add(self.__select, proportion=2, flag=wx.ALL, border=5)
         sizer.Add(sizerbuttons)
         self.SetSizer(sizer)
         self.Bind(wx.EVT_BUTTON, self.OnSelect, self.__select)
@@ -625,6 +624,7 @@ class HoverPreviewOptionsDialog(wx.Dialog):
 
         # set current settings
         self.SetOptions()
+        self.Fit()
 
     # Goes through check box elements and appends the checked keys to a list.
     def GetOptions(self) -> List[str]:

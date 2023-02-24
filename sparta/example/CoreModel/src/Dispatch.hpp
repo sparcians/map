@@ -16,7 +16,7 @@
 #include "sparta/log/MessageSource.hpp"
 #include "sparta/statistics/Counter.hpp"
 #include "sparta/statistics/ContextCounter.hpp"
-#include "test/ContextCounter/WeightedContextCounter.hpp"
+#include "sparta/statistics/WeightedContextCounter.hpp"
 
 #include "CoreTypes.hpp"
 #include "FlushManager.hpp"

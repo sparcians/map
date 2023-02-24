@@ -1,5 +1,8 @@
 // <SingleCycleUniqueEvent_test.cpp> -*- C++ -*-
 
+#ifndef NDEBUG
+#define NDEBUG
+#endif
 
 #include "sparta/events/SingleCycleUniqueEvent.hpp"
 #include "sparta/events/UniqueEvent.hpp"
@@ -25,6 +28,7 @@ public:
         test_handler_for_called_once(CREATE_SPARTA_HANDLER(SCUEEventHandler, testCalledOncePerCycle_)),
         test_handler_for_precedence_called_first(CREATE_SPARTA_HANDLER(SCUEEventHandler, testPrecedenceCalledFirst_)),
         test_handler_for_precedence_called_second(CREATE_SPARTA_HANDLER(SCUEEventHandler, testPrecedenceCalledSecond_)),
+        test_handler_self_schedule(CREATE_SPARTA_HANDLER(SCUEEventHandler, testSelfSchedule_)),
         do_nothing(CREATE_SPARTA_HANDLER(SCUEEventHandler, doNothing_)),
         do_nothing_data(CREATE_SPARTA_HANDLER_WITH_DATA(SCUEEventHandler, doNothingData_, int)),
         clk_(clk)
@@ -34,6 +38,7 @@ public:
 
     sparta::SpartaHandler test_handler_for_precedence_called_first;
     sparta::SpartaHandler test_handler_for_precedence_called_second;
+    sparta::SpartaHandler test_handler_self_schedule;
     sparta::SpartaHandler do_nothing;
     sparta::SpartaHandler do_nothing_data;
 
@@ -54,6 +59,10 @@ public:
         second_one_called_ = false;
     }
 
+    void setSelfSchedulingEvent(sparta::SingleCycleUniqueEvent<> & self_event) {
+        self_event_ = &self_event;
+    }
+
 private:
 
     bool first_one_called_ = false;
@@ -72,13 +81,25 @@ private:
 
     // This should only be called on a new cycle, one cycle in the
     // future
-    void testCalledOncePerCycle_(void) {
+    void testCalledOncePerCycle_() {
         EXPECT_TRUE((last_time_called_ + adjusted_time_) == clk_->currentCycle());
         ++called_;
         last_time_called_ = clk_->currentCycle();
         adjusted_time_ = 1;
     }
     uint32_t called_ = 0;
+
+    // This should fail -- the event shouldn't reschedule itself if it's already firing
+    void testSelfSchedule_() {
+        sparta_assert(self_event_ != nullptr);
+        sparta_assert(self_test_called_already_ == false);
+        self_event_->schedule(0);
+        self_event_->schedule(1);
+        self_event_->schedule(0);
+        self_event_->cancel();
+        self_event_->schedule(0);
+        self_test_called_already_ = true;
+    }
 
     void doNothing_() {}
     void doNothingData_(const int&) {}
@@ -89,6 +110,9 @@ private:
     // In case the tester moves the scheduler WAY ahead for testing adjust
     sparta::Clock::Cycle adjusted_time_ = 1;
     const sparta::Clock * clk_;
+
+    sparta::SingleCycleUniqueEvent<> * self_event_ = nullptr;
+    bool self_test_called_already_ = false;
 };
 
 // Test basic functionality:
@@ -111,6 +135,11 @@ void testBasicFunctionality()
                                                  "sc_uniq_event",
                                                  handler.test_handler_for_called_once);
 
+    sparta::SingleCycleUniqueEvent<> self_scheduling_uniq_event(&event_set,
+                                                                "sc_uniq_event_self_scheduled",
+                                                                handler.test_handler_self_schedule);
+    handler.setSelfSchedulingEvent(self_scheduling_uniq_event);
+
     basic_scheduler.finalize();
     rtn.enterConfiguring();
     rtn.enterFinalized();
@@ -121,6 +150,11 @@ void testBasicFunctionality()
     basic_scheduler.run(1, true); // 1 -> 2
 
     EXPECT_EQUAL(handler.getCalledCount(), 0);
+
+    // Schedule this event and do nothing else.  We should assert in
+    // the handler, which will attempt to reschedule this event for
+    // the same cycle
+    self_scheduling_uniq_event.schedule();
 
     sc_uniq_event.schedule(); // Schedules for cycle 2
     EXPECT_EQUAL(handler.getCalledCount(), 0);

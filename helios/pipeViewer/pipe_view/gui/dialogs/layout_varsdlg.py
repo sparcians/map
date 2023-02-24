@@ -3,10 +3,10 @@ import wx
 from typing import Dict, List, Optional, Tuple, Union, TYPE_CHECKING
 
 import wx.lib.mixins.listctrl as listmix
-from gui.font_utils import ScaleFont
+from ..font_utils import ScaleFont
 
 if TYPE_CHECKING:
-    from model.layout_context import Layout_Context
+    from ...model.layout_context import Layout_Context
 
 
 # A helper class for building a list of variables and values in separate

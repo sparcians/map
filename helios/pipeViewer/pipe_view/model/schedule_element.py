@@ -20,7 +20,7 @@ from .element_value import Element_Value, FakeElementValue
 
 if TYPE_CHECKING:
     from .clock_manager import ClockManager
-    from gui.layout_canvas import Layout_Canvas
+    from ..gui.layout_canvas import Layout_Canvas
 
 # Global module members for commonly used brushes/pens so that they only need
 # to be created once

@@ -311,7 +311,9 @@ int main ()
         (&es, "ev_flush_one", CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(DummyClass2<uint64_t>, &dummyObj2, flushOne, uint32_t));
 
 #ifdef PIPEOUT_GEN
+    EXPECT_FALSE(examplePipeline1.isCollected());
     examplePipeline1.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
+    EXPECT_FALSE(examplePipeline1.isCollected());
     examplePipeline2.enableCollection<sparta::SchedulingPhase::Update>(&rtn);
     examplePipeline3.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
     examplePipeline4.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
@@ -667,7 +669,9 @@ int main ()
     sched.finalize();
 
 #ifdef PIPEOUT_GEN
+    EXPECT_FALSE(examplePipeline1.isCollected());
     pc.startCollection(&rtn);
+    EXPECT_TRUE(examplePipeline1.isCollected());
 #endif
 
 

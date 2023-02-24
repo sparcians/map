@@ -40,7 +40,7 @@ endif ()
 
 # Find Boost
 set (Boost_USE_STATIC_LIBS OFF)
-find_package (Boost 1.76.0 REQUIRED COMPONENTS ${_BOOST_COMPONENTS})
+find_package (Boost 1.74.0 REQUIRED COMPONENTS ${_BOOST_COMPONENTS})
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 message (STATUS "Using BOOST ${Boost_VERSION_STRING}")
 
@@ -73,7 +73,7 @@ message (STATUS "Using HDF5 ${HDF5_VERSION}")
 
 # Populate the Sparta_LIBS variable with the required libraries for
 # basic Sparta linking
-set (Sparta_LIBS sparta simdb ${HDF5_LIBRARIES} sqlite3 yaml-cpp ZLIB::ZLIB pthread
+set (Sparta_LIBS sparta simdb HDF5::HDF5 sqlite3 yaml-cpp ZLIB::ZLIB pthread
   Boost::date_time Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
 
 # On Linux we need to link against rt as well

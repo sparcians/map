@@ -4,9 +4,9 @@
 from typing import Dict, Optional, Tuple, Union
 import wx
 
-from gui.layout_canvas import Layout_Canvas
-from model.element import Element
-from model.extension_manager import ExtensionManager
+from ..gui.layout_canvas import Layout_Canvas
+from ..model.element import Element
+from ..model.extension_manager import ExtensionManager
 
 EXPR_NAMESPACE: dict
 debug: function

@@ -12,19 +12,19 @@ from .input_decoder import Input_Decoder
 from .hover_preview import HoverPreview
 from functools import partial
 from . import autocoloring
-import model.highlighting_utils as highlighting_utils
-from gui.font_utils import GetMonospaceFont, GetDefaultFont
+from ..model import highlighting_utils
+from .font_utils import GetMonospaceFont, GetDefaultFont
 
 if TYPE_CHECKING:
-    from gui.dialogs.element_propsdlg import Element_PropsDlg
-    from gui.layout_frame import Layout_Frame
-    from model.element import Element
-    from model.element_value import Element_Value
-    from model.layout_context import Layout_Context
-    from model.settings import ArgosSettings
+    from .dialogs.element_propsdlg import Element_PropsDlg
+    from .layout_frame import Layout_Frame
+    from ..model.element import Element
+    from ..model.element_value import Element_Value
+    from ..model.layout_context import Layout_Context
+    from ..model.settings import ArgosSettings
 
 try:
-    import core
+    from .. import core
 except ImportError as e:
     print('Argos failed to import module: "core". Argos requires Make',
           file=sys.stderr)
@@ -570,8 +570,8 @@ class Layout_Canvas(wx.ScrolledWindow):
     def __CalcCanvasSize(self) -> bool:
 
         l, t, r, b = self.__context.GetElementExtents()
-        r = int(r * self.__canvas_scale * self.__font_scale[0])
-        b = int(b * self.__canvas_scale * self.__font_scale[1])
+        r = int(r * self.__canvas_scale)
+        b = int(b * self.__canvas_scale)
 
         width = max(self.MIN_WIDTH, r + self.__AUTO_CANVAS_SIZE_MARGIN)
         height = max(self.MIN_HEIGHT, b + self.__AUTO_CANVAS_SIZE_MARGIN)
@@ -590,7 +590,9 @@ class Layout_Canvas(wx.ScrolledWindow):
     # Update the scrollbars based on a new canvas size
     #  Restores prior scroll offsets
     #  Uses instance attributes __SCROLL_RATE, __WIDTH, __HEIGHT
-    def __UpdateScrollbars(self) -> None:
+    def __UpdateScrollbars(self,
+                           force_x: Optional[int] = None,
+                           force_y: Optional[int] = None) -> None:
         sr = self.scrollrate
 
         w_pix, h_pix = self.GetClientSize()
@@ -603,12 +605,22 @@ class Layout_Canvas(wx.ScrolledWindow):
         if percent_bar_y > 1:
             percent_bar_y = 1
 
+        if force_x is not None:
+            x_scroll = force_x
+        else:
+            x_scroll = int(x * x_bound * (1 - percent_bar_x))
+
+        if force_y is not None:
+            y_scroll = force_y
+        else:
+            y_scroll = int(y * y_bound * (1 - percent_bar_y))
+
         self.SetScrollbars(sr,
                            sr,
                            int(x_bound),
                            int(y_bound),
-                           int(x * x_bound * (1 - percent_bar_x)),
-                           int(y * y_bound * (1 - percent_bar_y)),
+                           x_scroll,
+                           y_scroll,
                            True)
 
     # Regenerates the gridlines based on __WIDTH and __HEIGHT
@@ -635,6 +647,7 @@ class Layout_Canvas(wx.ScrolledWindow):
                              cur_font_h / default_font_h)
         for e in self.__context.GetElementPairs():
             e.GetElement().SetProperty('scale_factor', self.__font_scale)
+        self.__context.UpdateElementExtents()
 
     def UpdateFontSize(self) -> None:
         old_font = self.__fnt_layout
@@ -645,5 +658,6 @@ class Layout_Canvas(wx.ScrolledWindow):
             self.__set_renderer_font = False
             self.__UpdateFontScaling()
             self.__CalcCanvasSize()
+            self.__UpdateScrollbars(force_x=0, force_y=0)
             self.__context.FullRedraw()
             self.FullUpdate()

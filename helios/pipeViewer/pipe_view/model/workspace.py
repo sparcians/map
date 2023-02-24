@@ -11,13 +11,13 @@ from typing import Any, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
 
 from . import group
 from .layout import Layout
-from model.layout_context import Layout_Context
-from gui.layout_frame import Layout_Frame
-import gui.autocoloring
+from .layout_context import Layout_Context
+from ..gui.layout_frame import Layout_Frame
+from ..gui import autocoloring
 
 if TYPE_CHECKING:
-    from model.database import Database
-    from model.settings import ArgosSettings
+    from .database import Database
+    from .settings import ArgosSettings
 
 
 # Responsible for managing Databases, LayoutContexts & and
@@ -123,7 +123,7 @@ class Workspace:
         self.__settings.palette = palette
         # The autocoloring module is global, so we can set the mode once and
         # then update all of the canvas brushes
-        gui.autocoloring.SetPalettes(palette)
+        autocoloring.SetPalettes(palette)
         for f in self.__frames:
             frame = f()
             if frame is not None:
@@ -134,7 +134,7 @@ class Workspace:
         self.__settings.palette_shuffle = state
         # The autocoloring module is global, so we can set the mode once and
         # then update all of the canvas brushes
-        gui.autocoloring.SetShuffleModes(state)
+        autocoloring.SetShuffleModes(state)
         for f in self.__frames:
             frame = f()
             if frame is not None:

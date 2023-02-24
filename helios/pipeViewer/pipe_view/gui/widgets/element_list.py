@@ -1,11 +1,11 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 import wx
-from gui.font_utils import GetMonospaceFont
+from ..font_utils import GetMonospaceFont
 
 if TYPE_CHECKING:
-    from gui.layout_canvas import Layout_Canvas
-    from model.element import Element
+    from ..layout_canvas import Layout_Canvas
+    from ...model.element import Element
 
 
 # This class is a GUI list control element that shows elements and allows

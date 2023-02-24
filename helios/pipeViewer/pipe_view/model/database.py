@@ -2,8 +2,6 @@
 #  @brief Consumes argos database files based on prefix
 
 from __future__ import annotations
-import os
-import sys
 import logging
 from logging import info, error
 from types import ModuleType
@@ -12,36 +10,11 @@ from typing import Any, Dict, Optional
 from .location_manager import LocationManager
 from .clock_manager import ClockManager
 
-# Import Argos transaction database module from SPARTA
-__MODULE_ENV_VAR_NAME = 'TRANSACTIONDB_MODULE_DIR'
-env_var = os.environ.get(__MODULE_ENV_VAR_NAME)
-if env_var is None:
-    # Try to find the transaction module in the Helios release dir
-    added_path = os.path.dirname(__file__) + \
-        "/../../../../release/helios/pipeViewer/transactiondb/lib"
-    added_path = os.path.abspath(added_path)
-    if not os.path.isdir(added_path):
-        error('Argos cannot find the transactiondb directory: %s', added_path)
-        sys.exit(1)
-else:
-    added_path = os.environ.get(__MODULE_ENV_VAR_NAME, os.getcwd())
-
-sys.path.insert(0, added_path)  # Add temporary search path
 try:
-    import transactiondb
-
+    from .. import transactiondb
 except ImportError as e:
     error('Argos failed to import module: "transactiondb"')
-    error(f'The search paths (sys.path) were: {", ".join(sys.path)}')
-    error('Please export the environment variable %s to contain the absolute '
-          'path of the directory wherein the SPARTA transactiondb module can '
-          'be found. Currently is "%s"',
-          __MODULE_ENV_VAR_NAME,
-          added_path)
-    error('Exception: %s', e)
-    sys.exit(1)
-finally:
-    sys.path.remove(added_path)  # Remove temporary path
+    raise e
 
 # Inform users which transactiondb interface they are getting
 info('Using transactiondb at "%s"', transactiondb.__file__)
