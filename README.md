@@ -23,12 +23,10 @@ MAP is broken into two parts:
 
 ## Building MAP
 
-Building MAP can be done in two ways:
+Building MAP is done in two parts
 
-1. Here at the top level of the repository, which builds everything
-   * Argos, the transaction viewer in Helios
-   * Sparta, the modeling framework
-1. Down in Sparta, which only builds Sparta
+1. Sparta, the modeling framework: build sparta only in the sparta folder
+2. Argos, the transaction viewer in Helios in the helios folder. Note that to build and use helios, you will need sparta built and installed somwehere on your system.
 
 The MAP repository has numerous dependencies, which are listed in a
 [conda recipe](https://github.com/sparcians/map/blob/master/conda.recipe/meta.yaml),
@@ -55,9 +53,29 @@ installed and would like to build everything (not just sparta).
    * `conda activate sparta`
 1. To build MAP and it's components
    * `conda activate sparta`
-   * `cd map; mkdir release; cd release`
+   * `cd map/sparta; mkdir release; cd release`
    * `cmake -DCMAKE_BUILD_TYPE=Release ..`
    * `make`
+   * `make install` (optionally)
+1. To build Helios/Argos transaction viewer:
+   * `conda activate sparta`
+   * `cd map/helios; mkdir release; cd release`
+   * `cmake -DCMAKE_BUILD_TYPE=Release -DSPARTA_SEARCH_DIR=<SPARTA_INSTALLED_LOCATION> ..`
+   * `make`
+   * `make install` (optionally)
+
+A few interesting cmake options to help resolve dependencies are:
+
+For both Sparta and Helios:
+
+* `-DBOOST_ROOT=<BOOST_LOCATION>`: Custom Boost location
+* `-DCMAKE_INSTALL_PREFIX=`: Install prefix, defaults to a system wide location normally so you can use this for a local install in a home folder for example.
+
+Helios only:
+
+* `-DSPARTA_SEARCH_DIR=<SPARTA_INSTALLED_LOCATION>`: Use this to ensure helios finds Sparta, when you installed it in a non-default location  Not providing this will try and find sparta in the map source tree, but this might fail, if you did not build in a folder named `release`
+* `-DPython3_ROOT_DIR=<PYTHON_LOCATION>`: Not often needed but useful to point to the right python if you are not in a conda env)
+
 
 ## Updating Regression/Build Environments for CI
 

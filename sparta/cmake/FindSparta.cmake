@@ -9,8 +9,6 @@ if(NOT SPARTA_FOUND)
     find_package(RapidJSON REQUIRED)
     find_package(Threads REQUIRED)
 
-    #set(CMAKE_FIND_DEBUG_MODE TRUE)
-
     find_path(SPARTA_INCLUDE_DIRS sparta/sparta.hpp
         HINTS ${SPARTA_INCLUDE_DIR} ${SPARTA_SEARCH_DIR}
         HINTS ENV CPATH
@@ -71,11 +69,11 @@ if(NOT SPARTA_FOUND)
                 ZLIB::ZLIB yaml-cpp Threads::Threads)
 		set_property(TARGET SPARTA::sparta
 			PROPERTY INTERFACE_COMPILE_FEATURES cxx_std_17)
+      include(${CMAKE_CURRENT_LIST_DIR}/SpartaTestingMacros.cmake)
+      include(${CMAKE_CURRENT_LIST_DIR}/SimdbTestingMacros.cmake)
+      set(SPARTA_FOUND TRUE)
     endif()
 
-    include(${CMAKE_CURRENT_LIST_DIR}/SpartaTestingMacros.cmake)
-    include(${CMAKE_CURRENT_LIST_DIR}/SimdbTestingMacros.cmake)
     mark_as_advanced(SPARTA_INCLUDE_DIRS SPARTA_LIBRARIES)
 
-    #set(CMAKE_FIND_DEBUG_MODE FALSE)
 endif()

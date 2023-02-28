@@ -1,7 +1,22 @@
 cmake_minimum_required(VERSION 3.15)
 project (PipeViewer)
 
-include(${CMAKE_SOURCE_DIR}/sparta/cmake/sparta-config.cmake)
+# Set up Sparta
+if(IS_DIRECTORY ${SPARTA_SEARCH_DIR}) 
+  set(CMAKE_MODULE_PATH "${SPARTA_SEARCH_DIR}/lib/cmake/sparta" ${CMAKE_MODULE_PATH})
+  find_package(Sparta REQUIRED)
+else()
+  set(SPARTA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../sparta)
+  message (STATUS "Looking for a built version of sparta in the source tree at ${SPARTA_DIR}")
+  set(CMAKE_MODULE_PATH "${SPARTA_DIR}/cmake" ${CMAKE_MODULE_PATH})
+  set(SPARTA_INCLUDE_DIR ${SPARTA_DIR} ${SPARTA_DIR}/simdb)
+  set(SPARTA_LIBRARY ${SPARTA_DIR}/release ${SPARTA_DIR}/release/simdb)
+  include(${SPARTA_DIR}/cmake/FindSparta.cmake)
+endif()
+
+if(NOT SPARTA_FOUND)
+  message (FATAL_ERROR "Could not find Sparta. (${SPARTA_FOUND}) If needed, please provide the location where sparta is installed: -DSPARTA_SEARCH_DIR=<directory>")
+endif()
 
 # If we are in virtualenv or conda, that takes prio over any system python there might be
 set(Python3_FIND_VIRTUALENV FIRST)
@@ -24,7 +39,7 @@ execute_process(
 if(NOT WXCHECK_RESULT EQUAL "0")
   message(FATAL_ERROR "Could not find wxPython: ${WXCHECK_LOG}")
 endif()
-list(APPEND _INC_DIRS "$<TARGET_PROPERTY:sparta,INCLUDE_DIRECTORIES>" ${WX_PYTHON_INC} ${wxWidgets_INCLUDE_DIRS})
+list(APPEND _INC_DIRS "$<TARGET_PROPERTY:SPARTA::sparta,INTERFACE_INCLUDE_DIRECTORIES>" ${WX_PYTHON_INC} ${wxWidgets_INCLUDE_DIRS})
 
 # Populate list of library dirs:
 # Set up the include and link dirs for python's setuptools using setup.cfg file
@@ -35,7 +50,10 @@ foreach(lib IN LISTS HDF5_LIBRARIES)
 endforeach()
 list(REMOVE_DUPLICATES _LIB_DIRS)
 # And we add sparta and simdb location
-list(APPEND _LIB_DIRS "$<TARGET_FILE_DIR:sparta>" "$<TARGET_FILE_DIR:simdb>" ${wxWidgets_LIBRARY_DIRS})
+# they are in the same folder so we look at libsparta only to find the right location
+get_property(_SPARTA_LIB TARGET SPARTA::libsparta PROPERTY IMPORTED_LOCATION) 
+get_filename_component(SPARTA_LIBDIR ${_SPARTA_LIB} DIRECTORY)
+list(APPEND _LIB_DIRS ${SPARTA_LIBDIR}  ${wxWidgets_LIBRARY_DIRS})
 
 # Those get pushed to setup.cfg file
 file(GENERATE
@@ -74,7 +92,6 @@ add_custom_command(
       ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/transactiondb/src/helpers.hpp
       ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/transactiondb/src/common.pxd
       ${CMAKE_CURRENT_SOURCE_DIR}/pipe_view/transactiondb/src/transactiondb.pyx
-      sparta simdb
     ${CMAKE_CURRENT_SOURCE_DIR}/setup.cfg
   COMMENT "Building pipeViwer and its dependencies"
 )
