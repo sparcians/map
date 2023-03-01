@@ -18,7 +18,7 @@ transaction_db = setuptools.Extension(
     'pipe_view.transactiondb',
     language='c++',
     sources=['pipe_view/transactiondb/src/transactiondb.pyx'],
-    libraries=["sparta", "simdb", "hdf5", "sqlite3"],
+    libraries=["sparta", "simdb", "hdf5", "sqlite3", "rt"],
     pyrex_gdb = True,
     extra_compile_args = compile_args,
 )
