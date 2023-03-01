@@ -89,5 +89,10 @@ the generation of the CI-specific control files:
 
 To update versions of OSes, edit the following file:
 https://github.com/sparcians/map/blob/master/conda.recipe/conda_build_config.yaml
-and then run `conda smithy rerender`.  (Ensure `conda install
-conda-smithy` into your conda installation for that command to exist).
+and then run `conda smithy rerender`.
+
+Install `conda smithy` instructions:
+```
+conda install -n root -c conda-forge conda-smithy
+conda install -n root -c conda-forge conda-package-handling
+```
