@@ -9,6 +9,11 @@ if(NOT SPARTA_FOUND)
     find_package(RapidJSON REQUIRED)
     find_package(Threads REQUIRED)
 
+    # On Linux we need to link against rt as well
+    if (NOT APPLE)
+      find_library(LIBRT rt)
+    endif()
+
     find_path(SPARTA_INCLUDE_DIRS sparta/sparta.hpp
         HINTS ${SPARTA_INCLUDE_DIR} ${SPARTA_SEARCH_DIR}
         HINTS ENV CPATH
@@ -62,16 +67,21 @@ if(NOT SPARTA_FOUND)
 
         add_library(SPARTA::sparta INTERFACE IMPORTED)
         set_property(TARGET SPARTA::sparta
-            PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${SPARTA_INCLUDE_DIRS} ${RAPIDJSON_INCLUDE_DIR} ${RapidJSON_INCLUDE_DIR})
+          PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${SPARTA_INCLUDE_DIRS} ${RAPIDJSON_INCLUDE_DIR} ${RapidJSON_INCLUDE_DIR})
         set_property(TARGET SPARTA::sparta
-            PROPERTY INTERFACE_LINK_LIBRARIES SPARTA::libsparta SPARTA::libsimdb hdf5::hdf5 SQLite::SQLite3
-                Boost::filesystem Boost::serialization Boost::timer Boost::program_options
-                ZLIB::ZLIB yaml-cpp Threads::Threads)
+          PROPERTY INTERFACE_LINK_LIBRARIES SPARTA::libsparta SPARTA::libsimdb hdf5::hdf5 SQLite::SQLite3
+          Boost::filesystem Boost::serialization Boost::timer Boost::program_options
+          ZLIB::ZLIB yaml-cpp Threads::Threads)
+
+        if(LIBRT)
+          set_property(TARGET SPARTA::sparta APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${LIBRT})
+        endif ()
+
 		set_property(TARGET SPARTA::sparta
-			PROPERTY INTERFACE_COMPILE_FEATURES cxx_std_17)
-      include(${CMAKE_CURRENT_LIST_DIR}/SpartaTestingMacros.cmake)
-      include(${CMAKE_CURRENT_LIST_DIR}/SimdbTestingMacros.cmake)
-      set(SPARTA_FOUND TRUE)
+		  PROPERTY INTERFACE_COMPILE_FEATURES cxx_std_17)
+        include(${CMAKE_CURRENT_LIST_DIR}/SpartaTestingMacros.cmake)
+        include(${CMAKE_CURRENT_LIST_DIR}/SimdbTestingMacros.cmake)
+        set(SPARTA_FOUND TRUE)
     endif()
 
     mark_as_advanced(SPARTA_INCLUDE_DIRS SPARTA_LIBRARIES)

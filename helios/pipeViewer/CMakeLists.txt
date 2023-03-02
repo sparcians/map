@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 project (PipeViewer)
 
 # Set up Sparta
-if(IS_DIRECTORY ${SPARTA_SEARCH_DIR}) 
+if(IS_DIRECTORY ${SPARTA_SEARCH_DIR})
   set(CMAKE_MODULE_PATH "${SPARTA_SEARCH_DIR}/lib/cmake/sparta" ${CMAKE_MODULE_PATH})
   find_package(Sparta REQUIRED)
 else()
@@ -51,7 +51,7 @@ endforeach()
 list(REMOVE_DUPLICATES _LIB_DIRS)
 # And we add sparta and simdb location
 # they are in the same folder so we look at libsparta only to find the right location
-get_property(_SPARTA_LIB TARGET SPARTA::libsparta PROPERTY IMPORTED_LOCATION) 
+get_property(_SPARTA_LIB TARGET SPARTA::libsparta PROPERTY IMPORTED_LOCATION)
 get_filename_component(SPARTA_LIBDIR ${_SPARTA_LIB} DIRECTORY)
 list(APPEND _LIB_DIRS ${SPARTA_LIBDIR}  ${wxWidgets_LIBRARY_DIRS})
 
