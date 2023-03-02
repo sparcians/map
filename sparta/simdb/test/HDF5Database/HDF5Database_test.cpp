@@ -91,9 +91,9 @@ struct CompoundPOD {
 CompoundPOD createRandomCompoundPOD()
 {
     CompoundPOD comp;
-    comp.ch  = chooseRand<char>();
-    comp.i1  = chooseRand<int8_t>();
-    comp.ui1 = chooseRand<uint8_t>();
+    comp.ch  = (char)   chooseRand<uint16_t>();
+    comp.i1  = (int8_t) chooseRand<int16_t>();
+    comp.ui1 = (uint8_t)chooseRand<uint16_t>();
     comp.i2  = chooseRand<int16_t>();
     comp.ui2 = chooseRand<uint16_t>();
     comp.i4  = chooseRand<int32_t>();
