@@ -65,9 +65,8 @@ find_package(ZLIB REQUIRED)
 include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 message (STATUS "Using zlib ${ZLIB_VERSION_STRING}")
 
-# Find HDF5. Need to enable C language for HDF5 testing
-enable_language (C)
-find_package (HDF5 1.10 REQUIRED)
+# Find HDF5.
+find_package (HDF5 1.10 REQUIRED COMPONENTS CXX)
 include_directories (SYSTEM ${HDF5_INCLUDE_DIRS})
 message (STATUS "Using HDF5 ${HDF5_VERSION}")
 
