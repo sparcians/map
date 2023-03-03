@@ -2,7 +2,7 @@ include(FindPackageHandleStandardArgs)
 
 if(NOT SPARTA_FOUND)
     find_package(Boost REQUIRED COMPONENTS timer filesystem serialization program_options)
-    find_package(HDF5 REQUIRED)
+    find_package(HDF5 REQUIRED COMPONENTS CXX)
     find_package(SQLite3 REQUIRED)
     find_package(ZLIB REQUIRED)
     find_package(yaml-cpp REQUIRED)
@@ -61,15 +61,15 @@ if(NOT SPARTA_FOUND)
 
     if(NOT CMAKE_VERSION VERSION_LESS 3.0 AND SPARTA_FOUND)
         add_library(SPARTA::libsparta STATIC IMPORTED)
-		set_property(TARGET SPARTA::libsparta PROPERTY IMPORTED_LOCATION "${SPARTA_sparta_LIBRARY}")
+        set_property(TARGET SPARTA::libsparta PROPERTY IMPORTED_LOCATION "${SPARTA_sparta_LIBRARY}")
         add_library(SPARTA::libsimdb STATIC IMPORTED)
-		set_property(TARGET SPARTA::libsimdb PROPERTY IMPORTED_LOCATION "${SPARTA_simdb_LIBRARY}")
+        set_property(TARGET SPARTA::libsimdb PROPERTY IMPORTED_LOCATION "${SPARTA_simdb_LIBRARY}")
 
         add_library(SPARTA::sparta INTERFACE IMPORTED)
         set_property(TARGET SPARTA::sparta
           PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${SPARTA_INCLUDE_DIRS} ${RAPIDJSON_INCLUDE_DIR} ${RapidJSON_INCLUDE_DIR})
         set_property(TARGET SPARTA::sparta
-          PROPERTY INTERFACE_LINK_LIBRARIES SPARTA::libsparta SPARTA::libsimdb hdf5::hdf5 SQLite::SQLite3
+          PROPERTY INTERFACE_LINK_LIBRARIES SPARTA::libsparta SPARTA::libsimdb HDF5::HDF5 SQLite::SQLite3
           Boost::filesystem Boost::serialization Boost::timer Boost::program_options
           ZLIB::ZLIB yaml-cpp Threads::Threads)
 
@@ -77,8 +77,8 @@ if(NOT SPARTA_FOUND)
           set_property(TARGET SPARTA::sparta APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${LIBRT})
         endif ()
 
-		set_property(TARGET SPARTA::sparta
-		  PROPERTY INTERFACE_COMPILE_FEATURES cxx_std_17)
+        set_property(TARGET SPARTA::sparta
+          PROPERTY INTERFACE_COMPILE_FEATURES cxx_std_17)
         include(${CMAKE_CURRENT_LIST_DIR}/SpartaTestingMacros.cmake)
         include(${CMAKE_CURRENT_LIST_DIR}/SimdbTestingMacros.cmake)
         set(SPARTA_FOUND TRUE)
