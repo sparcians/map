@@ -2285,17 +2285,22 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
 void CommandLineSimulator::runSimulator(Simulation* sim)
 {
+    runSimulator(sim, run_time_ticks_);
+}
+
+void CommandLineSimulator::runSimulator(Simulation* sim, uint64_t ticks)
+{
     std::cout << "Preparing to run..." << std::endl;
 
     try{
-        runSimulator_(sim);
+        runSimulator_(sim, ticks);
     }catch(...){
         sim->dumpDebugContentIfAllowed(std::current_exception());
         throw;
     }
 }
 
-void CommandLineSimulator::runSimulator_(Simulation* sim)
+void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
 {
     if(!sim){
         throw SpartaException("Attempted to populate CommandLineSimulator with null simulator");
@@ -2323,9 +2328,9 @@ void CommandLineSimulator::runSimulator_(Simulation* sim)
         sim->getRoot()->dumpTypeMix(std::cout);
     }
 
-    if(run_time_ticks_ > 0 || use_pyshell_){
+    if((ticks > 0) || use_pyshell_){
         try{
-            sim->run(run_time_ticks_);
+            sim->run(ticks);
         }catch(...){
             if(pipeline_collection_triggerable_) {
                 pipeline_collection_triggerable_->stop();

@@ -214,9 +214,14 @@ public:
     void populateSimulation(Simulation* sim);
 
     /*!
-     * \brief Run the simulator for the specified number of cycles
+     * \brief Run the simulator
      */
     void runSimulator(Simulation* sim);
+
+    /*!
+     * \brief Run the simulator for the specified number of ticks
+     */
+    void runSimulator(Simulation* sim, uint64_t ticks);
 
     /*!
      * \brief Post-process the results of the simulation if applicable
@@ -259,7 +264,7 @@ protected:
     /*!
      * \brief Implements runSimulator
      */
-    void runSimulator_(Simulation* sim);
+    void runSimulator_(Simulation* sim, uint64_t ticks);
 
     /*!
      * \brief Implements postProcess
