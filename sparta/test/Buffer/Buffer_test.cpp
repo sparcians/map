@@ -258,8 +258,15 @@ void generalTest()
 
         // Test erase method.
         buf_inf_iter = buf_inf.begin();
+        const auto buf_inf_iter_nx4 = std::next(buf_inf_iter, 4);
+	const auto expected_result = *buf_inf_iter_nx4;
         // Erase zeroeth element.
         EXPECT_NOTHROW(buf_inf.erase(buf_inf_iter));
+	// iterator isn't invalidated by removing older elements
+	EXPECT_EQUAL(buf_inf.read(3), expected_result);
+        buf_inf_iter = buf_inf.begin();
+        const auto buf_inf_iter_nx3 = std::next(buf_inf_iter, 3);
+	EXPECT_TRUE(buf_inf_iter_nx3 == buf_inf_iter_nx4);
 
         buf_inf_iter = buf_inf.begin();
         buf_inf_iter_nx = std::next(buf_inf_iter, 4);
