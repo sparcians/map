@@ -79,10 +79,10 @@ To build your own copy, after cloning the repo, ensure Doxygen and dot (part of 
 The tested dependencies are maintained in the `conda.recipe/` directory at the toplevel of the repository.  To install packages using that same tested recipe:
 1. If you already have `conda` or `mamba` installed and in your `PATH`, skip to step 3.
 1. Download and install the latest [miniforge installer](https://github.com/conda-forge/miniforge#miniforge3)
-  * Linux running on x86_64 `wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh && bash ./Miniforge3-Linux-x86_64.sh`
-  * Macos running on x86_64 `wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-x86_64.sh && bash ./Miniforge3-MacOSX-x86_64.sh`
-  * Macos running on arm64 `wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh && bash ./Miniforge3-MacOSX-arm64.sh`
-  * Make sure to `activate` or start a new shell as directed by the installer
+   * Linux running on x86_64 `wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh && bash ./Miniforge3-Linux-x86_64.sh`
+   * Macos running on x86_64 `wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-x86_64.sh && bash ./Miniforge3-MacOSX-x86_64.sh`
+   * Macos running on arm64 `wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh && bash ./Miniforge3-MacOSX-arm64.sh`
+   * Make sure to `activate` or start a new shell as directed by the installer
 1. `conda install yq` it is not a dependency of Sparta unless you are using the script to create an environment.  The script will tell you to install it if you don't have it in your path.
 1. From withing the `map` top level directory, run `./scripts/create_conda_env.sh <environment_name> dev` using whatever name you would like in place of `<environment_name>`to create a named [conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) containing all of the dependencies needed to **dev**elop Sparta.   Be patient, this takes a few minutes.
 1. `conda activate <environment_name>` using the `<environment_name>` you created above.
