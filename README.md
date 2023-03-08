@@ -56,13 +56,13 @@ installed and would like to build everything (not just sparta).
    * `cd map/sparta; mkdir release; cd release`
    * `cmake -DCMAKE_BUILD_TYPE=Release ..`
    * `make`
-   * `make install` (optionally)
+   * `cmake --install . --prefix $CONDA_PREFIX`
 1. To build Helios/Argos transaction viewer:
    * `conda activate sparta`
    * `cd map/helios; mkdir release; cd release`
    * `cmake -DCMAKE_BUILD_TYPE=Release -DSPARTA_SEARCH_DIR=<SPARTA_INSTALLED_LOCATION> ..`
    * `make`
-   * `make install` (optionally)
+   * `cmake --install . --prefix $CONDA_PREFIX`
 
 A few interesting cmake options to help resolve dependencies are:
 
