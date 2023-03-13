@@ -1,7 +1,7 @@
 project(Counter_test)
 
-sparta_add_test_executable(Counter_test Counter_test.cpp)
+include(${SPARTA_CMAKE_MACRO_PATH}/SpartaTestingMacros.cmake)
 
-include(../TestingMacros.cmake)
+sparta_add_test_executable(Counter_test Counter_test.cpp)
 
 sparta_test(Counter_test Counter_test_RUN)

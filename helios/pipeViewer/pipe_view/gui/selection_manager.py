@@ -17,14 +17,14 @@ from typing import (Any,
 
 import wx
 
-from model.element import Element
-from model.layout_delta import Checkpoint
+from ..model.element import Element
+from ..model.layout_delta import Checkpoint
 
 if TYPE_CHECKING:
-    from model.element_value import Element_Value
-    from model.layout import Layout
-    from gui.dialogs.element_propsdlg import Element_PropsDlg
-    from gui.layout_canvas import Layout_Canvas
+    from ..model.element_value import Element_Value
+    from ..model.layout import Layout
+    from .dialogs.element_propsdlg import Element_PropsDlg
+    from .layout_canvas import Layout_Canvas
 
 
 # This class is responsible for keeping track of which Elements have been

@@ -1,8 +1,8 @@
 project(CommandLineSimulator_test)
 
-sparta_add_test_executable(CommandLineSimulator_test CommandLineSimulator_test.cpp)
+include(${SPARTA_CMAKE_MACRO_PATH}/SpartaTestingMacros.cmake)
 
-include(../TestingMacros.cmake)
+sparta_add_test_executable(CommandLineSimulator_test CommandLineSimulator_test.cpp)
 
 add_subdirectory(Args)
 

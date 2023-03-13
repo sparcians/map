@@ -41,12 +41,13 @@ env | sort
 
 ################################################################################
 #
-#  BUILD & TEST MAP
+#  BUILD & TEST MAP/SPARTA
 #
 ################################################################################
 
 df -h /
 
+pushd sparta
 mkdir -p release
 pushd release
 cmake -DCMAKE_BUILD_TYPE=Release \
@@ -67,16 +68,31 @@ df -h /
 # by cd'ing into the example subdir and running ctest
 # because not all of the subdirs of example create their
 # own <subdir>_regress target like the core example.
-(cd sparta/example && CTEST_OUTPUT_ON_FAILURE=1 ctest -j "$CPU_COUNT" --test-action test)
+(cd example && CTEST_OUTPUT_ON_FAILURE=1 ctest -j "$CPU_COUNT" --test-action test)
 df -h /
 
 # if we want to create individual packages this should move into a separate install script for only SPARTA
 # and we might want to create separate install targets for the headers and the libs and the doc
 cmake --build . --target install
 df -h /
-
+popd
 popd
 
+################################################################################
+#
+#  BUILD MAP/HELIOS
+#
+################################################################################
+pushd helios
+mkdir -p release
+pushd release
+cmake -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX:PATH="$PREFIX" \
+      "${CMAKE_PLATFORM_FLAGS[@]}" \
+      ..
+cmake --build . -j "$CPU_COUNT" || cmake --build . -v
+popd
+popd
 
 ################################################################################
 #

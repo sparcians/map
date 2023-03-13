@@ -10,26 +10,6 @@ set (GEN_DEBUG_INFO ON CACHE BOOL "Genearate debug info in compile & link -g")
 set (SPARTA_BASE ${CMAKE_CURRENT_SOURCE_DIR})
 include (${SPARTA_BASE}/cmake/sparta-config.cmake)
 
-# Add a custom CMake Modules directory
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
-
-# Add RapidJSON
-include_directories (SYSTEM ${RAPIDJSON_INCLUDE_DIRS})
-
-# Add YAML CPP
-include_directories (SYSTEM ${YAML_CPP_INCLUDE_DIR})
-
-# Add local includes
-include_directories ("./")
-include_directories ("simdb/include")
-
-# Add Boost (not typical system install)
-include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
-
-# Add HDF5 (not typical system install)
-include_directories (SYSTEM ${HDF5_C_INCLUDE_DIRS})
-include_directories (SYSTEM ${HDF5_INCLUDE_DIRS})
-
 # Add the source for libsparta.a
 list (APPEND SourceCppFiles
             src/ArgosOutputter.cpp
@@ -214,6 +194,8 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif ()
 
 # CppCheck Support
+# Add a custom CMake Modules directory
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 set (CPPCHECK_XML_OUTPUT "${PROJECT_BINARY_DIR}/analysis/cppcheck/cppcheck_analysis.xml")
 set (CPPCHECK_EXCLUDES
   ${MAP_BINARY_DIR}
@@ -222,7 +204,13 @@ set (CPPCHECK_EXCLUDES
 find_package (Cppcheck)
 
 add_library (sparta ${SourceCppFiles})
+
+# Add local includes
+target_include_directories (sparta PUBLIC "./")
+target_include_directories (sparta PUBLIC "simdb/include")
+
 set (SPARTA_STATIC_LIBS ${PROJECT_BINARY_DIR}/libsparta.a)
+set (SPARTA_CMAKE_MACRO_PATH ${SPARTA_BASE}/cmake)
 
 # Build the SimDB library
 add_subdirectory (simdb)
@@ -233,9 +221,10 @@ add_subdirectory (simdb)
 add_subdirectory (test EXCLUDE_FROM_ALL)
 add_subdirectory (example EXCLUDE_FROM_ALL)
 
-
 #
 # Installation
 #
 install(DIRECTORY sparta/ DESTINATION include/sparta)
+install(DIRECTORY cache/ DESTINATION include/cache)
 install(FILES ${SPARTA_STATIC_LIBS} DESTINATION lib)
+install(DIRECTORY cmake/ DESTINATION lib/cmake/sparta)

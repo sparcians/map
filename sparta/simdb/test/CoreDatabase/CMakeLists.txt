@@ -1,8 +1,7 @@
 project(SIMDB_CoreDatabase_test)
 
 add_executable(SIMDB_CoreDatabase_test CoreDatabase_test.cpp)
-
-include(../TestingMacros.cmake)
+include(${SPARTA_CMAKE_MACRO_PATH}/SimdbTestingMacros.cmake)
 
 simdb_recursive_copy(SIMDB_CoreDatabase_test test_dbs)
 

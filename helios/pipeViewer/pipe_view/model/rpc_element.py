@@ -11,7 +11,7 @@ from typing import Any, Callable, List, Optional, Tuple, cast, TYPE_CHECKING
 if TYPE_CHECKING:
     from .element_value import Element_Value
     from .extension_manager import ExtensionManager
-    from gui.layout_canvas import Layout_Canvas
+    from ..gui.layout_canvas import Layout_Canvas
     from .element import PropertyValue, ValidatedPropertyDict
 
 

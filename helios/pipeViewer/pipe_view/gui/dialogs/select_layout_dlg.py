@@ -6,7 +6,7 @@ import os
 import wx
 from typing import Optional
 
-from model.layout import Layout
+from ...model.layout import Layout
 
 
 # Dialog for selecting an Argos layout file.

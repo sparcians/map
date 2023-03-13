@@ -5,12 +5,12 @@ import logging
 import time
 from typing import Any, Optional, Tuple, Union, TYPE_CHECKING
 
-from model.clock_manager import ClockManager
-from gui.font_utils import ScaleFont
+from ...model.clock_manager import ClockManager
+from ..font_utils import ScaleFont
 
 if TYPE_CHECKING:
-    from gui.layout_frame import Layout_Frame
-    from model.settings import ArgosSettings
+    from ..layout_frame import Layout_Frame
+    from ...model.settings import ArgosSettings
 
 # @package frame_playback_bar.py
 #  @brief Contains FramePlaybackBar which holds all playback controls for a

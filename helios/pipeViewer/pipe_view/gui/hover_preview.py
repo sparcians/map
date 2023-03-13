@@ -5,17 +5,17 @@ import textwrap
 import wx
 import wx.lib.newevent
 
-from gui.dialogs.watchlist_dialog import WatchListDlg
-from gui.font_utils import GetMonospaceFont
+from .dialogs.watchlist_dialog import WatchListDlg
+from .font_utils import GetMonospaceFont
 
 from typing import Any, List, Optional, Tuple, cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from model.element import Element
-    from model.element_value import Element_Value
-    from model.layout_context import Layout_Context
-    from gui.argos_menu import Argos_Menu
-    from gui.layout_canvas import Layout_Canvas
+    from ..model.element import Element
+    from ..model.element_value import Element_Value
+    from ..model.layout_context import Layout_Context
+    from .argos_menu import Argos_Menu
+    from .layout_canvas import Layout_Canvas
 
 # @brief This new event triggers the canvas to just redraw the mouse-over text.
 # No update of the underlying view is executed on this event.

@@ -3,7 +3,7 @@ from typing import Any, List, Optional
 
 import wx
 
-from model.location_manager import LocationTree
+from ...model.location_manager import LocationTree
 
 
 # An Auto-suggesting Box for Entry of Location Strings

@@ -3,7 +3,7 @@ import logging
 from typing import List, Optional
 import weakref
 
-from model.layout_context import Layout_Context
+from .layout_context import Layout_Context
 
 
 class Group:

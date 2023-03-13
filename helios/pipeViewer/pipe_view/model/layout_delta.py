@@ -4,10 +4,10 @@ from __future__ import annotations
 import sys
 from typing import List, Tuple, cast, TYPE_CHECKING
 
-from model.element import Element, MultiElement
+from .element import Element, MultiElement
 
 if TYPE_CHECKING:
-    from model.layout import Layout
+    from .layout import Layout
 
 
 # Represents a checkpoint between two layouts.

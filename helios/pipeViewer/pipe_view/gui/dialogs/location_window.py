@@ -1,17 +1,17 @@
 from __future__ import annotations
 import fnmatch
-from gui.dialogs.element_propsdlg import ElementTypeSelectionDialog
+from ..dialogs.element_propsdlg import ElementTypeSelectionDialog
 import logging
 import wx
 import wx.lib.gizmos
 from typing import Optional, Tuple, cast, TYPE_CHECKING
 
-from gui.font_utils import ScaleFont
+from ..font_utils import ScaleFont
 
 if TYPE_CHECKING:
-    from gui.dialogs.element_propsdlg import Element_PropsDlg
-    from gui.layout_frame import Layout_Frame
-    from model.location_manager import LocationTree
+    from ..dialogs.element_propsdlg import Element_PropsDlg
+    from ..layout_frame import Layout_Frame
+    from ...model.location_manager import LocationTree
 
 
 class LocationWindow(wx.Frame):

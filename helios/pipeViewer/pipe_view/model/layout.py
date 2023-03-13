@@ -8,12 +8,12 @@ import logging
 import pickle
 from typing import Any, Dict, List, Optional, TextIO, cast, TYPE_CHECKING
 
-import model.element_types as etypes
+from .import element_types as etypes
 
 if TYPE_CHECKING:
-    from model.element import Element, MultiElement, PropertyDict
-    from model.layout_context import Layout_Context
-    from model.workspace import Workspace
+    from .element import Element, MultiElement, PropertyDict
+    from .layout_context import Layout_Context
+    from .workspace import Workspace
 
 
 # The reason this application exists, Layouts allow users to group together

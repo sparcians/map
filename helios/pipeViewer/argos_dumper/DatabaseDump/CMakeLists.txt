@@ -1,6 +1,11 @@
 project(Argosdumper)
-add_executable(ArgosDumper Database_dumper.cpp)
 
-target_link_libraries (ArgosDumper ${Sparta_LIBS})
+set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_test (NAME ArgosDumperSmokeTestingDB COMMAND ArgosDumper db_pipeout/pipeout)
+add_executable(DBDumper Database_dumper.cpp)
+
+target_include_directories(DBDumper PRIVATE ${CMAKE_SOURCE_DIR}/pipeViewer/pipe_view)
+target_link_libraries (DBDumper SPARTA::sparta)
+
+add_test (NAME DBDumperSmokeTestingDB COMMAND DBDumper db_pipeout/pipeout)

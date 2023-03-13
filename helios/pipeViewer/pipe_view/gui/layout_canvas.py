@@ -12,19 +12,19 @@ from .input_decoder import Input_Decoder
 from .hover_preview import HoverPreview
 from functools import partial
 from . import autocoloring
-import model.highlighting_utils as highlighting_utils
-from gui.font_utils import GetMonospaceFont, GetDefaultFont
+from ..model import highlighting_utils
+from .font_utils import GetMonospaceFont, GetDefaultFont
 
 if TYPE_CHECKING:
-    from gui.dialogs.element_propsdlg import Element_PropsDlg
-    from gui.layout_frame import Layout_Frame
-    from model.element import Element
-    from model.element_value import Element_Value
-    from model.layout_context import Layout_Context
-    from model.settings import ArgosSettings
+    from .dialogs.element_propsdlg import Element_PropsDlg
+    from .layout_frame import Layout_Frame
+    from ..model.element import Element
+    from ..model.element_value import Element_Value
+    from ..model.layout_context import Layout_Context
+    from ..model.settings import ArgosSettings
 
 try:
-    import core
+    from .. import core
 except ImportError as e:
     print('Argos failed to import module: "core". Argos requires Make',
           file=sys.stderr)

@@ -20,18 +20,18 @@ from .database_handle import DatabaseHandle
 from .search_handle import SearchHandle
 from .element import Element, FakeElement
 from .extension_manager import ExtensionManager
-from model.location_manager import LocationManager, LocationType
-import model.content_options as content
-import model.highlighting_utils as highlighting_utils
+from .location_manager import LocationManager, LocationType
+from . import content_options as content
+from . import highlighting_utils as highlighting_utils
 
 
 if TYPE_CHECKING:
-    from gui.layout_frame import Layout_Frame
-    from gui.dialogs.search_dlg import SearchResult
-    from model.database import Database, TransactionDatabase
-    from model.element_value import Element_Value
-    from model.group import Group
-    from model.schedule_element import ScheduleLineElement, ScheduleElement
+    from ..gui.layout_frame import Layout_Frame
+    from ..gui.dialogs.search_dlg import SearchResult
+    from .database import Database, TransactionDatabase
+    from .element_value import Element_Value
+    from .group import Group
+    from .schedule_element import ScheduleLineElement, ScheduleElement
 
 
 class Layout_Context:

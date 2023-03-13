@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 import wx
-from gui.widgets.element_list import ElementList
+from ..widgets.element_list import ElementList
 from typing import Dict, List, Optional, Set, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from gui.layout_frame import Layout_Frame
+    from ..layout_frame import Layout_Frame
 
 
 # FindElementDialog is a window that enables the user to enter a string,
