@@ -1044,7 +1044,7 @@ namespace sparta
         num_entries_(num_entries),
         data_pool_size_(num_entries* 2)
     {
-        if(statset)
+        if((num_entries > 0) && statset)
         {
             utilization_.reset(new CycleHistogramStandalone(statset, clk_,
                                                             name_ + "_utilization",
