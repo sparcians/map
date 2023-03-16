@@ -451,7 +451,7 @@ namespace sparta
             collector_(nullptr)
         {
 
-            if(statset)
+            if((num_entries > 0) && statset)
             {
                 utilization_.reset(new CycleHistogramStandalone(statset, clk,
                                                                 name + "_utilization",
