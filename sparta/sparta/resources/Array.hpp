@@ -973,7 +973,7 @@ namespace sparta
         // to work as the underlying implementation structures of our array.
         array_.reset(static_cast<ArrayPosition *>(malloc(sizeof(ArrayPosition) * num_entries_)));
 
-        if(statset)
+        if((num_entries > 0) && statset)
         {
             utilization_.reset(new CycleHistogramStandalone(statset, clk,
                                                             name + "_utilization",
