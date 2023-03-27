@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.19)
 project (PipeViewer)
 
 include(${CMAKE_SOURCE_DIR}/sparta/cmake/sparta-config.cmake)
