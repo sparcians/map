@@ -635,7 +635,7 @@ namespace sparta::pipeViewer {
                         const auto unique_id = loc_map_.at(transaction.location_ID);
 
                         // We are now going to use the In-memory data structure we built
-                        //during the Reader construction.
+                        // during the Reader construction.
                         // This Data Structure contains information about the name strings
                         // and their sizeof data
                         // for every different type of pair we have collected.
@@ -677,7 +677,7 @@ namespace sparta::pipeViewer {
                                 // exists in the In-memory String Map. If yes, we grab the value
                                 // and place it in the enum vector.
                                 if(const auto it = stringMap_.find(std::make_tuple(pairt.valueVector[0].first,
-                                                                                   i,
+                                                                                   i-1, // string map doesn't include the UID field, so index 0 == field index 1
                                                                                    pairt.valueVector[i].first));
                                    it != stringMap_.end()) {
                                     pairt.stringVector.emplace_back(it->second);
