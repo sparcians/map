@@ -12,6 +12,10 @@ jobs:
         CONFIG: osx_64_
         UPLOAD_PACKAGES: 'False'
         SHORT_CONFIG: osx_64_
+      osx_arm64_:
+        CONFIG: osx_arm64_
+        UPLOAD_PACKAGES: 'False'
+        SHORT_CONFIG: osx_arm64_
   timeoutInMinutes: 360
 
   steps:
