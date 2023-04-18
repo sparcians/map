@@ -151,10 +151,16 @@ namespace sparta
             // Allow the creation of a const iterator from non-const
             friend ArrayIterator<false>;
         public:
-            /// Empty, invalid iterator
+
+            /**
+             * \brief Default constructor
+             */
             ArrayIterator() = default;
 
-            /// copy construction is fair game from non-const to const
+            /**
+             * \brief a copy constructor that allows for implicit conversion from a
+             * regular iterator to a const_iterator.
+             */
             ArrayIterator(const ArrayIterator<false> & other) :
                 index_(other.index_),
                 array_(other.array_),
@@ -163,6 +169,21 @@ namespace sparta
                 is_aged_walk_(other.is_aged_walk_)
             {}
 
+            /**
+             * \brief a copy constructor that allows for implicit conversion from a
+             * const_iterator to a regular iterator.
+             */
+            ArrayIterator(const ArrayIterator<true> & other) :
+                index_(other.index_),
+                array_(other.array_),
+                is_aged_(other.is_aged_),
+                is_circular_(other.is_circular_),
+                is_aged_walk_(other.is_aged_walk_)
+            {}
+
+            /**
+             * \brief Assignment operator
+             */
             ArrayIterator& operator=(const ArrayIterator& other) = default;
 
             /// Reset the iterator to an invalid value
@@ -242,12 +263,7 @@ namespace sparta
                 return isYounger(rhs);
             }
 
-            bool operator==(const ArrayIterator<true>& rhs) const
-            {
-                return (rhs.index_ == index_) && (rhs.array_ == array_);
-            }
-
-            bool operator==(const ArrayIterator<false> & rhs)
+            bool operator==(const ArrayIterator& rhs) const
             {
                 return (rhs.index_ == index_) && (rhs.array_ == array_);
             }
