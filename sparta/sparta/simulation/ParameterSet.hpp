@@ -726,7 +726,7 @@ namespace sparta
  * \param name Name of the parameter. This will be a member variable of the
  * ParameterSet subclass in which this macro is used as well as a string in a
  * table of parameters held by that class.
- * \parap def Default value. Must be a valid construction of \a type which can
+ * \param def Default value. Must be a valid construction of \a type which can
  * be used to copy-construct an instance of \a type or assigned to an instance
  * of \a type.
  * \param doc Description of this Parameter. It should include the semantics
