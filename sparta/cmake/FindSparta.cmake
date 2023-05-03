@@ -66,8 +66,10 @@ if(NOT SPARTA_FOUND)
         set_property(TARGET SPARTA::libsimdb PROPERTY IMPORTED_LOCATION "${SPARTA_simdb_LIBRARY}")
 
         add_library(SPARTA::sparta INTERFACE IMPORTED)
+        # Workaround as per https://github.com/jbeder/yaml-cpp/issues/774#issuecomment-927357017
+        get_target_property(YAML_CPP_INCLUDE_DIR yaml-cpp INTERFACE_INCLUDE_DIRECTORIES)
         set_property(TARGET SPARTA::sparta
-          PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${SPARTA_INCLUDE_DIRS} ${RAPIDJSON_INCLUDE_DIR} ${RapidJSON_INCLUDE_DIR})
+          PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${SPARTA_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${SQLite3_INCLUDE_DIRS} ${HDF5_CXX_INCLUDE_DIRS} ${RAPIDJSON_INCLUDE_DIR} ${RapidJSON_INCLUDE_DIR} ${YAML_CPP_INCLUDE_DIR})
         set_property(TARGET SPARTA::sparta
           PROPERTY INTERFACE_LINK_LIBRARIES SPARTA::libsparta SPARTA::libsimdb HDF5::HDF5 SQLite::SQLite3
           Boost::filesystem Boost::serialization Boost::timer Boost::program_options
