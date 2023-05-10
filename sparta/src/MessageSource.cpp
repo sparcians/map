@@ -37,6 +37,7 @@ void MessageSource::emit_(const std::string& content) const {
                 0,                                                 // Thread ID - simulator-defined (TBD)
                 seq_num_                                           // Thread-local member
             },
+            print_header_,                                         // Print header in the message?
             content
         };
     ++seq_num_;

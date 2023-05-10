@@ -46,19 +46,25 @@ namespace sparta
 
             MessageSource(TreeNode* parent,
                           const std::string& category,
-                          const std::string& desc) :
-                MessageSource(parent, StringManager::getStringManager().internString(category), desc)
+                          const std::string& desc,
+                          bool print_header=true) :
+                MessageSource(parent,
+                              StringManager::getStringManager().internString(category),
+                              desc,
+                              print_header)
             { }
 
             // MessageSource with category_id interned in StringManager
             MessageSource(TreeNode* parent,
                           const std::string* category_id,
-                          const std::string& desc) :
+                          const std::string& desc,
+                          bool print_header=true) :
                 NotificationSource(parent,
                                    GROUP_NAME_MSG_SOURCE,
                                    notNull(parent)->getGroupIndexMax(GROUP_NAME_MSG_SOURCE) + 1,
                                    desc,
-                                   category_id)
+                                   category_id),
+                print_header_(print_header)
             { }
 
             /*!
@@ -266,6 +272,9 @@ namespace sparta
 
             //! \todo This needs to be thread-specific and come from threads
             static seq_num_type seq_num_;
+
+            //! \brief Prints header in message ahead of content
+            const bool print_header_;
         };
 
     } // namespace log

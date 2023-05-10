@@ -51,26 +51,29 @@ void DefaultFormatter::write(const sparta::log::Message& msg)
 {
     std::ios::fmtflags f = stream_.flags();
 
-    stream_ << '{';
+    if(msg.print_info)
+    {
+        stream_ << '{';
 
-    stream_ << std::setfill('0') << std::dec; // Applies to the following numbers
+        stream_ << std::setfill('0') << std::dec; // Applies to the following numbers
 
-    // sim time
-    stream_ << "" << std::setw(10) << std::right << msg.info.sim_time << INFO_DELIMITER;
+        // sim time
+        stream_ << "" << std::setw(10) << std::right << msg.info.sim_time << INFO_DELIMITER;
 
-    // clock time
-    const Clock* clk = msg.info.origin.getClock();
-    if(clk){
-        stream_ << std::setw(8) << std::right << clk->currentCycle() << INFO_DELIMITER;
-    }else{
-        stream_ << "--------" << INFO_DELIMITER;
+        // clock time
+        const Clock* clk = msg.info.origin.getClock();
+        if(clk){
+            stream_ << std::setw(8) << std::right << clk->currentCycle() << INFO_DELIMITER;
+        }else{
+            stream_ << "--------" << INFO_DELIMITER;
+        }
+
+        // origin
+        stream_ << msg.info.origin.getLocation() << INFO_DELIMITER;
+
+        // category
+        stream_ << *msg.info.category << "} ";
     }
-
-    // origin
-    stream_ << msg.info.origin.getLocation() << INFO_DELIMITER;
-
-    // category
-    stream_ << *msg.info.category << "} ";
 
     stream_ << copyWithReplace(msg.content, '\n', "") << std::endl;
 

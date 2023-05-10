@@ -17,6 +17,7 @@ namespace sparta
         struct Message
         {
             MessageInfo info;
+            bool print_info; // Print the header?
             const std::string& content;
         };
 
