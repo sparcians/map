@@ -32,6 +32,7 @@ namespace pevents{
     class PeventCollector
         : public PairCollector<CollectedEntityType>, public PeventCollectorTreeNode
     {
+    protected:
         using PairCollector<CollectedEntityType>::getPEventLogVector;
         using PairCollector<CollectedEntityType>::turnOn_;
         using PairCollector<CollectedEntityType>::turnOff_;
@@ -180,14 +181,14 @@ namespace pevents{
          * \brief Override the generateCollectionString_() of the bases PairCollector,
          * In this method, we use the pair_cache owned by PairCache.
          */
-        virtual void generateCollectionString_() override final
+        virtual void generateCollectionString_() override
         {
             // Write the pevent to the log.
             std::stringstream ss;
             // Write the event name.
             ss << "ev=" << "\"" << event_name_ << "\" ";
 
-            // Now write the chached key values.
+            // Now write the cached key values.
             for(const auto & pair : getPEventLogVector())
             {
                 ss << pair.first << "=" << "\"" << pair.second << "\" ";
@@ -199,7 +200,7 @@ namespace pevents{
             ss << ";";
             message_src_ << ss.str();
         }
-    private:
+
         const std::string event_name_;
         // We are going to use sparta's logger to output our pevents for ease.
         log::MessageSource message_src_;
