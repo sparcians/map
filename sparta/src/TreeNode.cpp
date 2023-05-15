@@ -1350,7 +1350,7 @@ std::string TreeNode::getDisplayLocation() const {
 
 std::string TreeNode::renderSubtree(int32_t max_depth,
                                     bool show_builtins,
-                                    bool names_only,
+                                    uint32_t enabled_contents,
                                     bool hide_hidden,
                                     bool(*leaf_filt_fxn)(const TreeNode*)) const {
     std::stringstream ss;
@@ -1358,7 +1358,7 @@ std::string TreeNode::renderSubtree(int32_t max_depth,
                    0,
                    max_depth,
                    show_builtins,
-                   names_only,
+                   enabled_contents,
                    hide_hidden,
                    leaf_filt_fxn);
     return ss.str();
@@ -1883,7 +1883,7 @@ uint32_t TreeNode::renderSubtree_(std::stringstream& ss,
                                   uint32_t indent,
                                   int32_t max_depth,
                                   bool show_builtins,
-                                  bool names_only,
+                                  uint32_t enabled_contents,
                                   bool hide_hidden,
                                   bool(*leaf_filt_fxn)(const TreeNode*)) const {
     if(isBuiltin() && !show_builtins){
@@ -1906,7 +1906,7 @@ uint32_t TreeNode::renderSubtree_(std::stringstream& ss,
                                       indent + RENDER_SUBTREE_INDENT,
                                       max_depth-1,
                                       show_builtins,
-                                      names_only,
+                                      enabled_contents,
                                       hide_hidden,
                                       leaf_filt_fxn);
         }
@@ -1956,8 +1956,11 @@ uint32_t TreeNode::renderSubtree_(std::stringstream& ss,
     // Restore to normal coloring for rest of line
     ss << SPARTA_CURRENT_COLOR_NORMAL;
 
-    if(!names_only){
-        ss << " : " << stringize();
+    if(enabled_contents){
+        if(enabled_contents & (1U << CONTENTS_FOR_OUTPUT::DESCRIPTION))
+            ss << " : " << getDesc();
+        if(enabled_contents & (1U << CONTENTS_FOR_OUTPUT::STRINGIZATION))
+            ss << " : " << stringize();
     }
 
     if(isBuiltin()){

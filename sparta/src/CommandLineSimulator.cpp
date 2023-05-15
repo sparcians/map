@@ -237,6 +237,13 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "Sets --no-run and shows the pevents types in the model after finalization. "
          )
 
+        ("describe-counters",
+         "Sets --no-run and shows the device tree Counters, Statistics, and other instrumentation "
+         "after finalization. Shown in a separate tree printout from all other --show-* parameters")
+
+        ("name-counters",
+         "Sets --no-run and shows the device tree Counters, Statistics, and other instrumentation "
+         "after finalization. Shown in a separate tree printout from all other --show-* parameters")
 
         // Validation & Debug
         ("validate-post-run",
@@ -1763,7 +1770,7 @@ bool CommandLineSimulator::parse(int argc,
     show_tree_ = vm_.count("show-tree") > 0;
     show_parameters_ = vm_.count("show-parameters") > 0;
     show_ports_ = vm_.count("show-ports") > 0;
-    show_counters_ = vm_.count("show-counters") > 0 || vm_.count("show-stats");
+    show_counters_ = (vm_.count("show-counters") > 0 || vm_.count("show-stats")) << TreeNode::CONTENTS_FOR_OUTPUT::STRINGIZATION;
     show_clocks_ = vm_.count("show-clocks") > 0;
     show_notifications_ = vm_.count("show-notifications") > 0;
     show_loggers_ = vm_.count("show-loggers") > 0;
@@ -1777,7 +1784,7 @@ bool CommandLineSimulator::parse(int argc,
     show_ports_ |= vm_.count("help-ports") > 0;
     no_run_mode_ |= vm_.count("help-ports") > 0;
     // help-counters
-    show_counters_ |= vm_.count("help-counters") > 0 || vm_.count("help-stats");
+    show_counters_ |= (vm_.count("help-counters") > 0 || vm_.count("help-stats")) << TreeNode::CONTENTS_FOR_OUTPUT::STRINGIZATION;
     no_run_mode_ |= vm_.count("help-counters") > 0;
     // help-notifications
     show_notifications_ |= vm_.count("help-notifications") > 0;
@@ -1791,6 +1798,13 @@ bool CommandLineSimulator::parse(int argc,
     // help-pevents
     show_pevents_ |= vm_.count("help-pevents") > 0;
     no_run_mode_ |= vm_.count("help-pevents") > 0;
+    // describe-counters
+    show_counters_ |= (vm_.count("describe-counters") > 0 || vm_.count("describe-stats")) << TreeNode::CONTENTS_FOR_OUTPUT::DESCRIPTION;
+    no_run_mode_ |= vm_.count("describe-counters") > 0;
+    // name-counters
+    show_counters_ |= (vm_.count("name-counters") > 0 || vm_.count("name-stats")) << TreeNode::CONTENTS_FOR_OUTPUT::NAME;
+    no_run_mode_ |= vm_.count("name-counters") > 0;
+
 
     show_hidden_ = vm_.count("show-hidden") > 0;
     if(show_hidden_){
@@ -2208,7 +2222,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             std::cout << "\nCounters (After Finalization):" << std::endl;
             std::cout << sim->getRoot()->getSearchScope()->renderSubtree(-1,
                                                                          true,
-                                                                         false,
+                                                                         show_counters_,
                                                                          !show_hidden_,
                                                                          filter_counters);
         }

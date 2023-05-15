@@ -404,7 +404,7 @@ protected:
      * \brief Display all counters and stats in the device tree after
      * finalization
      */
-    bool show_counters_ = false;
+    uint32_t show_counters_ = 0;
 
     /*!
      * \brief Display all the clocks in the tree

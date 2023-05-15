@@ -411,6 +411,17 @@ namespace sparta
          */
         static const std::vector<std::pair<const char*, std::function<void (std::string&)>>> TREE_NODE_PATTERN_SUBS;
 
+	    /*!
+	    * \brief 
+	     *
+	     */
+	    enum CONTENTS_FOR_OUTPUT
+	    {
+            NAME,
+            STRINGIZATION,
+            DESCRIPTION,
+	    };
+
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
@@ -1829,7 +1840,7 @@ namespace sparta
          */
         std::string renderSubtree(int32_t max_depth=-1,
                                   bool show_builtins=false,
-                                  bool names_only=false,
+                                  uint32_t enabled_contents=0,
                                   bool hide_hidden=false,
                                   bool(*leaf_filt_fxn)(const TreeNode*) = nullptr) const;
 
@@ -2419,7 +2430,7 @@ namespace sparta
                                 uint32_t indent,
                                 int32_t max_depth,
                                 bool show_builtins,
-                                bool names_only,
+                                uint32_t enabled_contents,
                                 bool hide_hidden,
                                 bool(*leaf_filt_fxn)(const TreeNode*)) const;
 
