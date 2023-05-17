@@ -10,9 +10,12 @@ skip_render:
 provider:
   linux_64: circle
   osx_64: azure
+  osx_arm64: azure
   win: None
   linux_ppc64le: None
   linux_aarch64: None
+build_platform:
+  osx_arm64: osx_arm64
 azure:
   force: False
   upload_packages: False
