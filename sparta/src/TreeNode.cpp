@@ -1957,9 +1957,9 @@ uint32_t TreeNode::renderSubtree_(std::stringstream& ss,
     ss << SPARTA_CURRENT_COLOR_NORMAL;
 
     if(enabled_contents){
-        if(enabled_contents & (1U << CONTENTS_FOR_OUTPUT::DESCRIPTION))
+        if(enabled_contents & (1U << CONTENTS_TO_OUTPUT::DESCRIPTION))
             ss << " : " << getDesc();
-        if(enabled_contents & (1U << CONTENTS_FOR_OUTPUT::STRINGIZATION))
+        if(enabled_contents & (1U << CONTENTS_TO_OUTPUT::STRINGIZATION))
             ss << " : " << stringize();
     }
 

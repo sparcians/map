@@ -412,10 +412,10 @@ namespace sparta
         static const std::vector<std::pair<const char*, std::function<void (std::string&)>>> TREE_NODE_PATTERN_SUBS;
 
 	    /*!
-	    * \brief 
+	     * \brief 
 	     *
 	     */
-	    enum CONTENTS_FOR_OUTPUT
+	    enum CONTENTS_TO_OUTPUT
 	    {
             NAME,
             STRINGIZATION,

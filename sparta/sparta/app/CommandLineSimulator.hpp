@@ -388,17 +388,17 @@ protected:
     /*!
      * \brief Display the device tree at every opportunity
      */
-    bool show_tree_ = false;
+    uint32_t show_tree_ = 0;
 
     /*!
      * \brief Display all parameters in the device tree after building
      */
-    bool show_parameters_ = false;
+    uint32_t show_parameters_ = 0;
 
     /*!
      * \brief Display all ports in the device tree after finalization
      */
-    bool show_ports_ = false;
+    uint32_t show_ports_ = 0;
 
     /*!
      * \brief Display all counters and stats in the device tree after
@@ -409,7 +409,7 @@ protected:
     /*!
      * \brief Display all the clocks in the tree
      */
-    bool show_clocks_ = false;
+    uint32_t show_clocks_ = 0;
 
     /*!
      * \brief Display all the pevent types in the tree.
@@ -419,13 +419,13 @@ protected:
      * \brief Display all notifications in the device tree after finalization
      * excluding log messages
      */
-    bool show_notifications_ = false;
+    uint32_t show_notifications_ = 0;
 
     /*!
      * \brief Display all notifications in the device tree after finalization
      * excluding log messages
      */
-    bool show_loggers_ = false;
+    uint32_t show_loggers_ = 0;
 
     /*!
      * \brief Show hidden treenodes when displaying the device tree

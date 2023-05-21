@@ -237,13 +237,27 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "Sets --no-run and shows the pevents types in the model after finalization. "
          )
 
+        ("describe-tree","")
+        ("describe-parameters","")
+        ("describe-ports","")
         ("describe-counters",
          "Sets --no-run and shows the device tree Counters, Statistics, and other instrumentation "
          "after finalization. Shown in a separate tree printout from all other --show-* parameters")
+        ("describe-stats","")
+        ("describe-notifications","")
+        ("describe-loggers","")
+        ("describe-clocks","")
 
+        ("name-tree","")
+        ("name-parameters","")
+        ("name-ports","")
         ("name-counters",
          "Sets --no-run and shows the device tree Counters, Statistics, and other instrumentation "
          "after finalization. Shown in a separate tree printout from all other --show-* parameters")
+        ("name-stats","")
+        ("name-notifications","")
+        ("name-loggers","")
+        ("name-clocks","")
 
         // Validation & Debug
         ("validate-post-run",
@@ -1767,43 +1781,81 @@ bool CommandLineSimulator::parse(int argc,
                     << "'. This should have been caught during parsing");
     }
 
-    show_tree_ = vm_.count("show-tree") > 0;
-    show_parameters_ = vm_.count("show-parameters") > 0;
-    show_ports_ = vm_.count("show-ports") > 0;
-    show_counters_ = (vm_.count("show-counters") > 0 || vm_.count("show-stats")) << TreeNode::CONTENTS_FOR_OUTPUT::STRINGIZATION;
-    show_clocks_ = vm_.count("show-clocks") > 0;
-    show_notifications_ = vm_.count("show-notifications") > 0;
-    show_loggers_ = vm_.count("show-loggers") > 0;
+    show_tree_ = (vm_.count("show-tree") > 0) << TreeNode::CONTENTS_TO_OUTPUT::STRINGIZATION;
+    show_parameters_ = (vm_.count("show-parameters") > 0) << TreeNode::CONTENTS_TO_OUTPUT::STRINGIZATION;
+    show_ports_ = (vm_.count("show-ports") > 0) << TreeNode::CONTENTS_TO_OUTPUT::STRINGIZATION;
+    show_counters_ = (vm_.count("show-counters") > 0 || vm_.count("show-stats")) << TreeNode::CONTENTS_TO_OUTPUT::STRINGIZATION;
+    show_clocks_ = (vm_.count("show-clocks") > 0) << TreeNode::CONTENTS_TO_OUTPUT::STRINGIZATION;
+    show_notifications_ = (vm_.count("show-notifications") > 0) << TreeNode::CONTENTS_TO_OUTPUT::STRINGIZATION;
+    show_loggers_ = (vm_.count("show-loggers") > 0) << TreeNode::CONTENTS_TO_OUTPUT::STRINGIZATION;
     // help-tree
-    show_tree_ |= vm_.count("help-tree") > 0;
+    show_tree_ |= (vm_.count("help-tree") > 0) << TreeNode::CONTENTS_TO_OUTPUT::STRINGIZATION;
     no_run_mode_ |= vm_.count("help-tree") > 0;
     // help-parameters
-    show_parameters_ |= vm_.count("help-parameters") > 0;
+    show_parameters_ |= (vm_.count("help-parameters") > 0) << TreeNode::CONTENTS_TO_OUTPUT::STRINGIZATION;
     no_run_mode_ |= vm_.count("help-parameters") > 0;
     // help-ports
-    show_ports_ |= vm_.count("help-ports") > 0;
+    show_ports_ |= (vm_.count("help-ports") > 0) << TreeNode::CONTENTS_TO_OUTPUT::STRINGIZATION;
     no_run_mode_ |= vm_.count("help-ports") > 0;
     // help-counters
-    show_counters_ |= (vm_.count("help-counters") > 0 || vm_.count("help-stats")) << TreeNode::CONTENTS_FOR_OUTPUT::STRINGIZATION;
+    show_counters_ |= (vm_.count("help-counters") > 0 || vm_.count("help-stats")) << TreeNode::CONTENTS_TO_OUTPUT::STRINGIZATION;
     no_run_mode_ |= vm_.count("help-counters") > 0;
     // help-notifications
-    show_notifications_ |= vm_.count("help-notifications") > 0;
+    show_notifications_ |= (vm_.count("help-notifications") > 0) << TreeNode::CONTENTS_TO_OUTPUT::STRINGIZATION;
     no_run_mode_ |= vm_.count("help-notifications") > 0;
     // help-loggers
-    show_loggers_ |= vm_.count("help-loggers") > 0;
+    show_loggers_ |= (vm_.count("help-loggers") > 0) << TreeNode::CONTENTS_TO_OUTPUT::STRINGIZATION;
     no_run_mode_ |= vm_.count("help-loggers") > 0;
     // help-clocks
-    show_clocks_ |= vm_.count("help-clocks") > 0;
+    show_clocks_ |= (vm_.count("help-clocks") > 0) << TreeNode::CONTENTS_TO_OUTPUT::STRINGIZATION;
     no_run_mode_ |= vm_.count("help-clocks") > 0;
     // help-pevents
     show_pevents_ |= vm_.count("help-pevents") > 0;
     no_run_mode_ |= vm_.count("help-pevents") > 0;
+
+    // describe-tree
+    show_tree_ |= (vm_.count("describe-tree") > 0) << TreeNode::CONTENTS_TO_OUTPUT::DESCRIPTION;
+    no_run_mode_ |= vm_.count("describe-tree") > 0;
+    // describe-parameters
+    show_parameters_ |= (vm_.count("describe-parameters") > 0) << TreeNode::CONTENTS_TO_OUTPUT::DESCRIPTION;
+    no_run_mode_ |= vm_.count("describe-parameters") > 0;
+    // describe-ports
+    show_ports_ |= (vm_.count("describe-ports") > 0) << TreeNode::CONTENTS_TO_OUTPUT::DESCRIPTION;
+    no_run_mode_ |= vm_.count("describe-ports") > 0;
     // describe-counters
-    show_counters_ |= (vm_.count("describe-counters") > 0 || vm_.count("describe-stats")) << TreeNode::CONTENTS_FOR_OUTPUT::DESCRIPTION;
+    show_counters_ |= (vm_.count("describe-counters") > 0 || vm_.count("describe-stats")) << TreeNode::CONTENTS_TO_OUTPUT::DESCRIPTION;
     no_run_mode_ |= vm_.count("describe-counters") > 0;
+    // describe-notifications
+    show_notifications_ |= (vm_.count("describe-notifications") > 0) << TreeNode::CONTENTS_TO_OUTPUT::DESCRIPTION;
+    no_run_mode_ |= vm_.count("describe-notifications") > 0;
+    // describe-loggers
+    show_loggers_ |= (vm_.count("describe-loggers") > 0) << TreeNode::CONTENTS_TO_OUTPUT::DESCRIPTION;
+    no_run_mode_ |= vm_.count("describe-loggers") > 0;
+    // describe-clocks
+    show_clocks_ |= (vm_.count("describe-clocks") > 0) << TreeNode::CONTENTS_TO_OUTPUT::DESCRIPTION;
+    no_run_mode_ |= vm_.count("describe-clocks") > 0;
+
+    // name-tree
+    show_tree_ |= (vm_.count("name-tree") > 0) << TreeNode::CONTENTS_TO_OUTPUT::NAME;
+    no_run_mode_ |= vm_.count("name-tree") > 0;
+    // name-parameters
+    show_parameters_ |= (vm_.count("name-parameters") > 0) << TreeNode::CONTENTS_TO_OUTPUT::NAME;
+    no_run_mode_ |= vm_.count("name-parameters") > 0;
+    // name-ports
+    show_ports_ |= (vm_.count("name-ports") > 0) << TreeNode::CONTENTS_TO_OUTPUT::NAME;
+    no_run_mode_ |= vm_.count("name-ports") > 0;
     // name-counters
-    show_counters_ |= (vm_.count("name-counters") > 0 || vm_.count("name-stats")) << TreeNode::CONTENTS_FOR_OUTPUT::NAME;
+    show_counters_ |= (vm_.count("name-counters") > 0 || vm_.count("name-stats")) << TreeNode::CONTENTS_TO_OUTPUT::NAME;
     no_run_mode_ |= vm_.count("name-counters") > 0;
+    // name-notifications
+    show_notifications_ |= (vm_.count("name-notifications") > 0) << TreeNode::CONTENTS_TO_OUTPUT::NAME;
+    no_run_mode_ |= vm_.count("name-notifications") > 0;
+    // name-loggers
+    show_loggers_ |= (vm_.count("name-loggers") > 0) << TreeNode::CONTENTS_TO_OUTPUT::NAME;
+    no_run_mode_ |= vm_.count("name-loggers") > 0;
+    // name-clocks
+    show_clocks_ |= (vm_.count("name-clocks") > 0) << TreeNode::CONTENTS_TO_OUTPUT::NAME;
+    no_run_mode_ |= vm_.count("name-clocks") > 0;
 
 
     show_hidden_ = vm_.count("show-hidden") > 0;
@@ -2018,7 +2070,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             std::cout << "\nBuilt Tree:" << std::endl;
             std::cout << sim->getRoot()->renderSubtree(-1,
                                                        true,
-                                                       false,
+                                                       show_tree_,
                                                        !show_hidden_);
         }
 
@@ -2027,7 +2079,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             std::cout << "\nConfigured Tree:" << std::endl;
             std::cout << sim->getRoot()->renderSubtree(-1,
                                                        true,
-                                                       false,
+                                                       show_tree_,
                                                        !show_hidden_);
         }
 
@@ -2038,7 +2090,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             std::cout << "\nParameters (After Configuration):" << std::endl;
             std::cout << sim->getRoot()->renderSubtree(-1,
                                                        true,
-                                                       false,
+                                                       show_parameters_,
                                                        !show_hidden_,
                                                        filter_parameters);
         }
@@ -2177,7 +2229,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             std::cout << "\nFinalized Tree" << std::endl;
             std::cout << sim->getRoot()->getSearchScope()->renderSubtree(-1,
                                                                          true,
-                                                                         false,
+                                                                         show_tree_,
                                                                          !show_hidden_);
         }
 
@@ -2208,7 +2260,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             std::cout << "\nPorts (After Finalization):" << std::endl;
             std::cout << sim->getRoot()->getSearchScope()->renderSubtree(-1,
                                                                          true,
-                                                                         false,
+                                                                         show_ports_,
                                                                          !show_hidden_,
                                                                          filter_ports);
         }
@@ -2234,7 +2286,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             std::cout << "\nClocks (After Finalization):" << std::endl;
             std::cout << sim->getRoot()->getSearchScope()->renderSubtree(-1,
                                                                          true,
-                                                                         false,
+                                                                         show_clocks_,
                                                                          !show_hidden_,
                                                                          filter_clocks);
         }
@@ -2252,7 +2304,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             std::cout << "\nNotifications (After Finalization):" << std::endl;
             std::cout << sim->getRoot()->getSearchScope()->renderSubtree(-1,
                                                                          true,
-                                                                         false,
+                                                                         show_notifications_,
                                                                          !show_hidden_,
                                                                          filter_notis);
         }
@@ -2265,7 +2317,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             std::cout << "\nLoggers (After Finalization):" << std::endl;
             std::cout << sim->getRoot()->getSearchScope()->renderSubtree(-1,
                                                                          true,
-                                                                         false,
+                                                                         show_loggers_,
                                                                          !show_hidden_,
                                                                          filter_loggers);
         }
@@ -2282,7 +2334,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                 << std::endl
                 << sim->getRoot()->getSearchScope()->renderSubtree(-1,
                                                                    true,
-                                                                   false,
+                                                                   show_tree_,
                                                                    !show_hidden_);
         }else{
             std::cerr << "\nTo display the device tree here, run with --show-tree" << std::endl;
@@ -2371,7 +2423,7 @@ void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
 
     if(show_tree_){
         std::cout << "\nTree After Running" << std::endl
-                  << sim->getRoot()->renderSubtree(-1, true, false, !show_hidden_)
+                  << sim->getRoot()->renderSubtree(-1, true, show_tree_, !show_hidden_)
                   << std::endl;
     }
 }
