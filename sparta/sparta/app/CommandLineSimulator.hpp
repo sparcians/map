@@ -386,44 +386,44 @@ protected:
     bool no_show_config_ = false;
 
     /*!
-     * \brief Display the device tree at every opportunity
+     * \brief Bit field for displaying the device tree at every opportunity
      */
     uint32_t show_tree_ = 0;
 
     /*!
-     * \brief Display all parameters in the device tree after building
+     * \brief Bit field for displaying all parameters in the device tree after building
      */
     uint32_t show_parameters_ = 0;
 
     /*!
-     * \brief Display all ports in the device tree after finalization
+     * \brief Bit field for displaying all ports in the device tree after finalization
      */
     uint32_t show_ports_ = 0;
 
     /*!
-     * \brief Display all counters and stats in the device tree after
+     * \brief Bit field for displaying all counters and stats in the device tree after
      * finalization
      */
     uint32_t show_counters_ = 0;
 
     /*!
-     * \brief Display all the clocks in the tree
+     * \brief Bit field for displaying all the clocks in the tree
      */
     uint32_t show_clocks_ = 0;
 
     /*!
-     * \brief Display all the pevent types in the tree.
+     * \brief Display all the pevent types in the tree
      */
     bool show_pevents_ = false;
     /*!
-     * \brief Display all notifications in the device tree after finalization
-     * excluding log messages
+     * \brief Bit field for displaying all notifications in the device tree after 
+     * finalization, excluding log messages
      */
     uint32_t show_notifications_ = 0;
 
     /*!
-     * \brief Display all notifications in the device tree after finalization
-     * excluding log messages
+     * \brief Bit field for displaying all notifications in the device tree after
+     * finalization, excluding log messages
      */
     uint32_t show_loggers_ = 0;
 

@@ -237,27 +237,23 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "Sets --no-run and shows the pevents types in the model after finalization. "
          )
 
-        ("describe-tree","")
-        ("describe-parameters","")
-        ("describe-ports","")
-        ("describe-counters",
-         "Sets --no-run and shows the device tree Counters, Statistics, and other instrumentation "
-         "after finalization. Shown in a separate tree printout from all other --show-* parameters")
-        ("describe-stats","")
-        ("describe-notifications","")
-        ("describe-loggers","")
-        ("describe-clocks","")
+        ("describe-tree","Same as --help-tree, but prints descriptions instead.")
+        ("describe-parameters","Same as --help-parameters, but prints descriptions instead.")
+        ("describe-ports","Same as --help-ports, but prints descriptions instead.")
+        ("describe-counters","Same as --help-counters, but prints descriptions instead.")
+        ("describe-stats","Same as --help-stats, but prints descriptions instead.")
+        ("describe-notifications","Same as --help-notifications, but prints descriptions instead.")
+        ("describe-loggers","Same as --help-loggers, but prints descriptions instead.")
+        ("describe-clocks","Same as --help-clocks, but prints descriptions instead.")
 
-        ("name-tree","")
-        ("name-parameters","")
-        ("name-ports","")
-        ("name-counters",
-         "Sets --no-run and shows the device tree Counters, Statistics, and other instrumentation "
-         "after finalization. Shown in a separate tree printout from all other --show-* parameters")
-        ("name-stats","")
-        ("name-notifications","")
-        ("name-loggers","")
-        ("name-clocks","")
+        ("name-tree","Same as --help-tree, but only prints names.")
+        ("name-parameters","Same as --help-parameters, but only prints names.")
+        ("name-ports","Same as --help-ports, but only prints names.")
+        ("name-counters","Same as --help-counters, but only prints names.")
+        ("name-stats","Same as --help-stats, but only prints names.")
+        ("name-notifications","Same as --help-notifications, but only prints names.")
+        ("name-loggers","Same as --help-loggers, but only prints names.")
+        ("name-clocks","Same as --help-clocks, but only prints names.")
 
         // Validation & Debug
         ("validate-post-run",
@@ -1911,14 +1907,14 @@ bool CommandLineSimulator::parse(int argc,
         std::cout << "  debug-sim:           " << std::boolalpha << sim_config_.debug_sim << std::endl;
         std::cout << "  report-on-error:     " << std::boolalpha << sim_config_.report_on_error << std::endl;
         std::cout << std::endl;
-        std::cout << "  show-tree:           " << std::boolalpha << show_tree_ << std::endl;
-        std::cout << "  show-parameters:     " << std::boolalpha << show_parameters_ << std::endl;
-        std::cout << "  show-ports:          " << std::boolalpha << show_ports_ << std::endl;
-        std::cout << "  show-counters/stats: " << std::boolalpha << show_counters_ << std::endl;
-        std::cout << "  show-clocks:         " << std::boolalpha << show_clocks_ << std::endl;
+        std::cout << "  show-tree:           " << std::boolalpha << static_cast<bool>(show_tree_) << std::endl;
+        std::cout << "  show-parameters:     " << std::boolalpha << static_cast<bool>(show_parameters_) << std::endl;
+        std::cout << "  show-ports:          " << std::boolalpha << static_cast<bool>(show_ports_) << std::endl;
+        std::cout << "  show-counters/stats: " << std::boolalpha << static_cast<bool>(show_counters_) << std::endl;
+        std::cout << "  show-clocks:         " << std::boolalpha << static_cast<bool>(show_clocks_) << std::endl;
         std::cout << "  show-pevents:        " << std::boolalpha << show_pevents_ << std::endl;
-        std::cout << "  show-notifications:  " << std::boolalpha << show_notifications_ << std::endl;
-        std::cout << "  show-loggers:        " << std::boolalpha << show_loggers_ << std::endl;
+        std::cout << "  show-notifications:  " << std::boolalpha << static_cast<bool>(show_notifications_) << std::endl;
+        std::cout << "  show-loggers:        " << std::boolalpha << static_cast<bool>(show_loggers_) << std::endl;
         std::cout << "  no-colors:           " << std::boolalpha << disable_colors_ << std::endl;
         if(show_hidden_ == true){
             std::cout << " (show-hidden on)";

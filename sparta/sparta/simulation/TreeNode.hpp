@@ -411,16 +411,16 @@ namespace sparta
          */
         static const std::vector<std::pair<const char*, std::function<void (std::string&)>>> TREE_NODE_PATTERN_SUBS;
 
-	    /*!
-	     * \brief 
-	     *
-	     */
-	    enum CONTENTS_TO_OUTPUT
-	    {
+        /*!
+         * \brief Enum for creating and manipulating bitmasks, which in turn
+         * control what type(s) of information gets outputted. 
+        */
+        enum CONTENTS_TO_OUTPUT
+        {
             NAME,
             STRINGIZATION,
             DESCRIPTION,
-	    };
+        };
 
         ////////////////////////////////////////////////////////////////////////
         //! @}
