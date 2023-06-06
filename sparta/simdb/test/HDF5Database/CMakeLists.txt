@@ -2,7 +2,7 @@ project(SIMDB_HDF5Database_test)
 
 add_executable(SIMDB_HDF5Database_test HDF5Database_test.cpp)
 
-include(../TestingMacros.cmake)
+include(${SPARTA_CMAKE_MACRO_PATH}/SimdbTestingMacros.cmake)
 
 simdb_recursive_copy(SIMDB_HDF5Database_test test_dbs)
 

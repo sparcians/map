@@ -20,7 +20,7 @@
  * \brief Test for StatisticSet, StatisticDef, and StatisticInstance
  */
 
-TEST_INIT;
+TEST_INIT
 
 using sparta::StatisticDef;
 using sparta::StatisticInstance;

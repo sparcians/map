@@ -7,8 +7,8 @@
 #include "sparta/statistics/dispatch/archives/ArchiveNode.hpp"
 
 #include <fstream>
+#include <filesystem>
 
-#include <boost/filesystem.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 
 namespace sparta {
@@ -50,7 +50,7 @@ public:
         const std::string source_full_path = source_path + "/" + source_subpath;
 
         const std::string source_tree_filename = source_full_path + "/archive_tree.bin";
-        if (!boost::filesystem::exists(source_tree_filename)) {
+        if (!std::filesystem::exists(source_tree_filename)) {
             throw SpartaException(
                 "Metadata file not available for read: ") << source_tree_filename;
         }
@@ -60,11 +60,11 @@ public:
         const std::string dest_full_path = dest_path + "/" + dest_subpath;
 
         const std::string dest_tree_filename = dest_full_path + "/archive_tree.bin";
-        if (boost::filesystem::exists(dest_tree_filename)) {
-            boost::filesystem::remove(dest_tree_filename);
+        if (std::filesystem::exists(dest_tree_filename)) {
+            std::filesystem::remove(dest_tree_filename);
         }
 
-        boost::filesystem::copy_file(source_tree_filename, dest_tree_filename);
+        std::filesystem::copy_file(source_tree_filename, dest_tree_filename);
     }
 
     //Put one vector of statistics data values into the binary file
@@ -87,15 +87,15 @@ private:
     void createArchiveDirectory_(const std::string & path,
                                  const std::string & subpath) const
     {
-        boost::filesystem::create_directories(path + "/" + subpath);
+        std::filesystem::create_directories(path + "/" + subpath);
     }
 
     void openBinaryArchiveFile_(const std::string & path,
                                 const std::string & subpath)
     {
         const std::string binary_filename = path + "/" + subpath + "/values.bin";
-        if (boost::filesystem::exists(binary_filename)) {
-            boost::filesystem::remove(binary_filename);
+        if (std::filesystem::exists(binary_filename)) {
+            std::filesystem::remove(binary_filename);
         }
 
         binary_fout_.open(binary_filename, std::ios::binary);
@@ -120,8 +120,8 @@ private:
                                const std::string & subpath) const
     {
         const std::string filename = path + "/" + subpath + "/archive_tree.bin";
-        if (boost::filesystem::exists(filename)) {
-            boost::filesystem::remove(filename);
+        if (std::filesystem::exists(filename)) {
+            std::filesystem::remove(filename);
         }
 
         std::ofstream fout(filename, std::ios::binary);
@@ -139,4 +139,3 @@ private:
 
 } // namespace statistics
 } // namespace sparta
-

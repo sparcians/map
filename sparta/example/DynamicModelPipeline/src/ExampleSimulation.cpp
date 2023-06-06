@@ -1192,8 +1192,3 @@ void ExampleSimulator::ExampleController::customSleepCallback_()
 {
     std::cout << "  [control] Controller CUSTOM method has been called ('sleep')" << std::endl;
 }
-
-// Since the FlushManager does not have a subsequent source file
-namespace core_example {
-    constexpr char FlushManager::name[];
-}

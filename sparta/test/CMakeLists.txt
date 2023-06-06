@@ -3,6 +3,9 @@ PROJECT (SPARTA_TESTS)
 # Enable testing and configures the test/DartConfiguration.tcl
 include (CTest)
 
+# Convenience macros and functions for tests
+include(${SPARTA_CMAKE_MACRO_PATH}/SpartaTestingMacros.cmake)
+
 # Setup options for valgrind testing.
 find_program (VALGRIND_TOOL valgrind)
 if (VALGRIND_TOOL)
@@ -86,6 +89,7 @@ add_subdirectory (ReportVerifier)
 add_subdirectory (ResourceAssert)
 add_subdirectory (SpartaException)
 add_subdirectory (Scheduler)
+add_subdirectory (Scoreboard)
 add_subdirectory (SharedData)
 add_subdirectory (SimDB)
 add_subdirectory (SmartLexCast)
@@ -118,3 +122,4 @@ add_subdirectory (StateResidencyTracker)
 add_subdirectory (MetaTypeList)
 add_subdirectory (LockedValue)
 add_subdirectory (EnumCycleHistogram)
+add_subdirectory (FastList)

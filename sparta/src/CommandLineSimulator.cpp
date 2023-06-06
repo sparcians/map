@@ -13,8 +13,6 @@
 #include <limits.h>
 #include <cstddef>
 #include <boost/algorithm/string/case_conv.hpp>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path_traits.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/lexical_cast/bad_lexical_cast.hpp>
 #include <boost/program_options/detail/parsers.hpp>
@@ -22,7 +20,6 @@
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/value_semantic.hpp>
 #include <boost/type_index/type_index_facade.hpp>
-#include <boost/filesystem/path.hpp>
 #include <iostream>
 #include <algorithm>
 #include <chrono>
@@ -31,6 +28,7 @@
 #include <ratio>
 #include <tuple>
 #include <utility>
+#include <filesystem>
 
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/utils/StringUtils.hpp"
@@ -73,7 +71,7 @@
 #include "sparta/utils/Printing.hpp"
 #include "sparta/utils/SmartLexicalCast.hpp"
 
-namespace bfs = boost::filesystem;
+namespace sfs = std::filesystem;
 
 namespace sparta {
     namespace app {
@@ -723,6 +721,9 @@ bool CommandLineSimulator::parse(int argc,
     std::vector<std::tuple<std::string, std::string, bool>> config_pattern_names;
     // --parameter / -p (pattern, value as a string)
     std::vector<std::tuple<std::string, std::string, bool>> individual_parameter_values;
+
+    // metadata arch value read from config files
+    utils::ValidValue<std::pair<std::string, std::string>> config_metadata_arch;
 
     // Parse options from command line
     try{
@@ -1395,10 +1396,10 @@ bool CommandLineSimulator::parse(int argc,
                 ++i;
             } else if(o.string_key == "simdb-dir") {
                 const std::string & db_dir = o.value[0];
-                auto p = bfs::path(db_dir);
-                if (!bfs::exists(p)) {
-                    bfs::create_directories(p);
-                } else if (!bfs::is_directory(p)) {
+                auto p = sfs::path(db_dir);
+                if (!sfs::exists(p)) {
+                    sfs::create_directories(p);
+                } else if (!sfs::is_directory(p)) {
                     throw SpartaException("Invalid 'simdb-dir' argument. Path ")
                         << "exists but is not a directory.";
                 }
@@ -1407,8 +1408,8 @@ bool CommandLineSimulator::parse(int argc,
             } else if(o.string_key == "simdb-enabled-components") {
                 std::vector<std::string> yaml_opts_files;
                 auto is_yaml_file = [](const std::string & opt) {
-                    auto p = bfs::path(opt);
-                    return (bfs::exists(p) && !bfs::is_directory(p));
+                    auto p = sfs::path(opt);
+                    return (sfs::exists(p) && !sfs::is_directory(p));
                 };
 
                 for (size_t idx = 0; idx < o.value.size(); ++idx) {
@@ -1423,10 +1424,10 @@ bool CommandLineSimulator::parse(int argc,
                 ++i;
             } else if(o.string_key == "collect-legacy-reports") {
                 const std::string & reports_root_dir = o.value[0];
-                auto p = bfs::path(reports_root_dir);
-                if (!bfs::exists(p)) {
-                    bfs::create_directories(p);
-                } else if (!bfs::is_directory(p)) {
+                auto p = sfs::path(reports_root_dir);
+                if (!sfs::exists(p)) {
+                    sfs::create_directories(p);
+                } else if (!sfs::is_directory(p)) {
                     throw SpartaException("Invalid 'collect-legacy-reports' argument. Path ")
                         << "exists but is not a directory.";
                 }
@@ -1597,9 +1598,44 @@ bool CommandLineSimulator::parse(int argc,
         sim_config_.omitStatsWithValueZeroForReportFormat("json_reduced");
     }
 
+    // Get metadata architecture param from config files
+    bool config_metadata_arch_final = false;
+    for (const auto & cfg : config_pattern_names) {
+        const std::string & filename = std::get<1>(cfg);
+        const bool is_final = std::get<2>(cfg);
+        if(config_metadata_arch_final && !is_final) { continue; }
+        TreeNode dummy("dummy", "dummy");
+        sparta::ConfigParser::YAML param_file(filename, sim_config_.getConfigSearchPath());
+        param_file.allowMissingNodes(true);
+        constexpr bool VERBOSE = false;
+        param_file.consumeParameters(&dummy, VERBOSE);
+
+        const auto ptree = param_file.getParameterTree();
+        if(ptree.hasValue("meta.params.architecture")) {
+            const std::string& arch = ptree.get("meta.params.architecture").getValue();
+            if(arch != "NONE") {
+                const std::string & pattern = std::get<0>(cfg);
+                config_metadata_arch = std::make_pair(pattern, arch);
+            }
+            if(is_final) {
+                config_metadata_arch_final = true;
+            }
+        }
+
+    }
+
     // Check for valid arch config if required by defaults
+    //
+    // Priority:
+    // 1. --arch
+    // 2. --read-final-config
+    // 3. --config-file / --node-config-file
+    // 4. Default (if required)
     if(arch_pattern_name.isValid()) {
         sim_config_.processArch(arch_pattern_name.getValue().first, arch_pattern_name.getValue().second);
+    }
+    else if(config_metadata_arch.isValid()) {
+        sim_config_.processArch(config_metadata_arch.getValue().first, config_metadata_arch.getValue().second);
     }
     else {
         if(!sim_config_.archFileProvided()) {
@@ -1776,7 +1812,7 @@ bool CommandLineSimulator::parse(int argc,
     sim_config_.reports                 = reports;
 
     //pevents
-    run_pevents_ = (vm_.count("pevents-at") > 0) | (vm_.count("pevents") > 0) | (vm_.count("verbose-pevents") > 0);
+    run_pevents_ = (vm_.count("pevents-at") > 0) || (vm_.count("pevents") > 0) || (vm_.count("verbose-pevents") > 0);
 
     bool show_options = vm_.count("show-options") > 0;
     if(show_options){
@@ -1993,8 +2029,21 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                                                        filter_parameters);
         }
 
-        // If we are reading a final config. Assert that we actually loaded a final config.
+        // Store the arch param
         std::vector<sparta::TreeNode*> children;
+        sim->getMetaParamRoot()->findChildren("params.architecture", children);
+        sparta_assert (children.size() > 0, "Sparta should have made a default meta.params.architecture.");
+        sparta::Parameter<std::string>* arch_p = dynamic_cast<sparta::Parameter<std::string>*>(children.at(0));
+        sparta_assert(arch_p);
+        const auto run_metadata = getSimulationConfiguration().getRunMetadata();
+        const auto run_metadata_it = std::find_if(run_metadata.begin(), run_metadata.end(),
+            [] (const auto md_param) { return md_param.first == "arch"; });
+        if(run_metadata_it != run_metadata.end()) {
+            arch_p->setValueFromString(run_metadata_it->second);
+        }
+
+        // If we are reading a final config. Assert that we actually loaded a final config.
+        children.clear();
         sim->getMetaParamRoot()->findChildren("params.is_final_config", children);
         sparta_assert (children.size() > 0, "Sparta should have made a default meta.params.is_final_config.");
         sparta::Parameter<bool>* is_final_p = dynamic_cast<sparta::Parameter<bool>*>(children.at(0));
@@ -2236,17 +2285,22 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
 void CommandLineSimulator::runSimulator(Simulation* sim)
 {
+    runSimulator(sim, run_time_ticks_);
+}
+
+void CommandLineSimulator::runSimulator(Simulation* sim, uint64_t ticks)
+{
     std::cout << "Preparing to run..." << std::endl;
 
     try{
-        runSimulator_(sim);
+        runSimulator_(sim, ticks);
     }catch(...){
         sim->dumpDebugContentIfAllowed(std::current_exception());
         throw;
     }
 }
 
-void CommandLineSimulator::runSimulator_(Simulation* sim)
+void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
 {
     if(!sim){
         throw SpartaException("Attempted to populate CommandLineSimulator with null simulator");
@@ -2274,9 +2328,9 @@ void CommandLineSimulator::runSimulator_(Simulation* sim)
         sim->getRoot()->dumpTypeMix(std::cout);
     }
 
-    if(run_time_ticks_ > 0 || use_pyshell_){
+    if((ticks > 0) || use_pyshell_){
         try{
-            sim->run(run_time_ticks_);
+            sim->run(ticks);
         }catch(...){
             if(pipeline_collection_triggerable_) {
                 pipeline_collection_triggerable_->stop();
@@ -2327,18 +2381,18 @@ void CommandLineSimulator::postProcess_(Simulation* sim)
         if (IsFeatureValueEnabled(feature_cfg, "simdb-verify")) {
             std::string simdb_fname = simdb->getDatabaseFile();
             const std::string simdb_src_fname = simdb_fname;
-            simdb_fname = bfs::path(simdb_fname).filename().string();
+            simdb_fname = sfs::path(simdb_fname).filename().string();
 
-            bfs::path cwd = bfs::current_path();
+            sfs::path cwd = sfs::current_path();
             const std::string simdb_dest_dir =
                 cwd.string() + "/" + db::ReportVerifier::getVerifResultsDir();
 
             const std::string simdb_dest_fname = simdb_dest_dir + "/" + simdb_fname;
-            boost::system::error_code err;
-            bfs::copy_file(simdb_src_fname, simdb_dest_fname, err);
+            std::error_code err;
+            sfs::copy_file(simdb_src_fname, simdb_dest_fname, err);
             if (err) {
                 std::cout << "  [simdb] Warning: The 'simdb-verify' post processing step "
-                          << "encountered and trapped a boost::filesystem error: \""
+                          << "encountered and trapped a std::filesystem error: \""
                           << err.message() << "\"" << std::endl;
             }
         }

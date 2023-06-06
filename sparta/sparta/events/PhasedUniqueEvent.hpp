@@ -49,7 +49,7 @@ namespace sparta
                           const SpartaHandler & consumer_event_handler,
                           Clock::Cycle delay = 0) :
             EventNode(event_set, name, sched_phase),
-            Scheduleable(CREATE_SPARTA_HANDLER(PhasedUniqueEvent, deliverEvent_), delay, sched_phase),
+            Scheduleable(CREATE_SPARTA_HANDLER(PhasedUniqueEvent, deliverEvent_), delay, sched_phase, true),
             pue_consumer_event_handler_(consumer_event_handler),
             fancy_name_(name + "[" + consumer_event_handler.getName() + "]")
         {
@@ -96,9 +96,7 @@ namespace sparta
                         << "' was already scheduled and fired this cycle."
                         "\t\nAre you missing a precedence rule?");
 
-            if(!scheduler->isScheduled(this, rel_tick)) {
-                Scheduleable::scheduleRelativeTick(rel_tick, scheduler);
-            }
+            Scheduleable::scheduleRelativeTick(rel_tick, scheduler);
         }
 
 #ifndef DO_NOT_DOCUMENT
@@ -141,5 +139,3 @@ namespace sparta
     };
 
 }
-
-

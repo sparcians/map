@@ -13,6 +13,10 @@
 #include <sstream>
 #include <math.h>
 #include <string>
+#include <filesystem>
+
+//SQLite-specific headers
+#include <zlib.h>
 
 #include "sparta/parsers/YAMLTreeEventHandler.hpp"
 #include "sparta/utils/Printing.hpp"
@@ -37,11 +41,6 @@
 #include "sparta/report/db/StatInstRowIterator.hpp"
 #include "sparta/report/db/StatInstValueLookup.hpp"
 #include "sparta/report/db/DatabaseContextCounter.hpp"
-
-//SQLite-specific headers
-#include "zlib.h"
-
-#include "boost/filesystem.hpp"
 
 namespace sparta
 {
@@ -540,9 +539,9 @@ class ReportFileParserYAML
                                      NavVector& device_trees) override {
             sparta_assert(report_stack_.size() > 0);
 
-            boost::filesystem::path filepath = filename;
-            if(false == boost::filesystem::is_regular_file(filepath.native())){
-                boost::filesystem::path curfile(getFilename());
+            std::filesystem::path filepath = filename;
+            if(false == std::filesystem::is_regular_file(filepath.native())){
+                std::filesystem::path curfile(getFilename());
                 filepath = curfile.parent_path() / filename;
                 verbose() << "Note: file \"" << filename << "\" does not exist. Attempting to "
                              "open \"" << filepath.native() << "\" instead" << std::endl;
@@ -912,7 +911,7 @@ class ReportFileParserYAML
             if(itr == next_uid_map_.end()){
                 // Inherit form parent, no entry in the map
                 verbose() << indent_() << "(getNextNodeID_) parent entry: " << *parent
-                          << " not found. in map. Inheriting parent uid " << parent->uid << std::endl;
+                          << " not found in map. Inheriting parent uid " << parent->uid << std::endl;
                 verbose() << indent_() << "(getNextNodeID_) next uid map (" << next_uid_map_.size()
                           << " entries):" << std::endl;
                 for(auto& e : next_uid_map_){
@@ -1159,20 +1158,6 @@ private:
     YP::Parser parser_;    //!< YP::Parser to which events will be written
     std::string filename_; //!< For recalling errors
 }; // class ReportFileParserYAML
-
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_REPORT[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_SUBREPORT[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_CONTENT[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_NAME[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTHOR[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE_ATTRIBUTES[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE_MAX_RECURSION_DEPTH[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE_MAX_REPORT_DEPTH[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_STYLE[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_TRIGGER[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_REPORT_IGNORE[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_REPORT_OPTIONAL[];
 
 void Report::addFile(const std::string& file_path, bool verbose)
 {

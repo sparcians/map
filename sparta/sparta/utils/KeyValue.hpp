@@ -60,7 +60,7 @@ namespace sparta
                       std::vector<int64_t>,
                       std::vector<uint64_t>,
                       std::vector<double>,
-                      std::vector<std::string>);
+                      std::vector<std::string>)
 
     //! \brief The type-to-type name map.  Not really necessary, but useful.
     typedef std::map<std::string, std::string> TypeToTypeNameMap;

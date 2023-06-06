@@ -66,7 +66,7 @@ public:
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("uid", &Level_1::getUid),
                         SPARTA_ADDPAIR("vaddr", &Level_1::getVaddr),
                         SPARTA_ADDPAIR("raddr", &Level_1::getRaddr),
-                        SPARTA_ADDPAIR("vector", &Level_1::getVec));
+                        SPARTA_ADDPAIR("vector", &Level_1::getVec))
 };
 
 inline std::ostream& operator << (std::ostream& os, const std::vector<uint16_t>& vec){
@@ -148,7 +148,7 @@ public:
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("latency", &Level_2::getLatency),
                         SPARTA_ADDPAIR("complete", &Level_2::getComplete),
                         SPARTA_FLATTEN(&Level_2::getNestedPtr),
-                        SPARTA_ADDPAIR("unit", &Level_2::getUnit));
+                        SPARTA_ADDPAIR("unit", &Level_2::getUnit))
 };
 
 /*
@@ -227,8 +227,8 @@ public:
         SPARTA_INVOKE_PAIRS(Level_3);
     }
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("mmu", &Level_3::getMMUState),
-                        SPARTA_FLATTEN(&Level_3::getNestedPtr),
-                        SPARTA_ADDPAIR("cache", &Level_3::getCacheState));
+                          SPARTA_FLATTEN(&Level_3::getNestedPtr),
+                          SPARTA_ADDPAIR("cache", &Level_3::getCacheState))
 };
 
 /*
@@ -325,8 +325,8 @@ public:
         SPARTA_INVOKE_PAIRS(Level_4);
     }
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("rank", &Level_4::getRank),
-                        SPARTA_FLATTEN(&Level_4::getNestedPtr),
-                        SPARTA_ADDPAIR("state", &Level_4::getState));
+                          SPARTA_FLATTEN(&Level_4::getNestedPtr),
+                          SPARTA_ADDPAIR("state", &Level_4::getState))
 };
 
 /*
@@ -395,7 +395,7 @@ public:
         SPARTA_INVOKE_PAIRS(Level_5);
     }
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("mnemonic", &Level_5::getMnemonic),
-                        SPARTA_FLATTEN(&Level_5::getNestedPtr));
+                          SPARTA_FLATTEN(&Level_5::getNestedPtr))
 };
 
 /*
@@ -425,7 +425,7 @@ public:
         SPARTA_INVOKE_PAIRS(Level_6);
     }
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("RandomValue", &Level_6::getRandomValue),
-                        SPARTA_FLATTEN(&Level_6::getNestedPtr));
+                          SPARTA_FLATTEN(&Level_6::getNestedPtr))
 };
 
 /*
@@ -459,9 +459,9 @@ public:
         SPARTA_INVOKE_PAIRS(Level_7);
     }
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("SomeValue", &Level_7::getRandomValue),
-                        SPARTA_FLATTEN(&Level_7::getNestedPtr),
-                        SPARTA_ADDPAIR("ran1", &Level_7::getPair),
-                        SPARTA_ADDPAIR("ran2", &Level_7::getPair));
+                          SPARTA_FLATTEN(&Level_7::getNestedPtr),
+                          SPARTA_ADDPAIR("ran1", &Level_7::getPair),
+                          SPARTA_ADDPAIR("ran2", &Level_7::getPair))
 };
 
 /*
@@ -495,9 +495,9 @@ public:
         SPARTA_INVOKE_PAIRS(Level_8);
     }
     SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("ArbitaryValue", &Level_8::getRandomValue),
-                        SPARTA_FLATTEN(&Level_8::getNestedPtr),
-                        SPARTA_ADDPAIR("val1", &Level_8::getPair),
-                        SPARTA_ADDPAIR("val2", &Level_8::getPair));
+                          SPARTA_FLATTEN(&Level_8::getNestedPtr),
+                          SPARTA_ADDPAIR("val1", &Level_8::getPair),
+                          SPARTA_ADDPAIR("val2", &Level_8::getPair))
 };
 
 int main()

@@ -277,7 +277,7 @@ class DataManager {
 
             if ('sources' in json) {
                 for (const src of json.sources) {
-                    if (src.dataId in this.datas == false) {
+                    if (this.datas[src.dataId] === undefined) {
                         this._add_source(src)
                     }
                 }

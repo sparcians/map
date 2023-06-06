@@ -8,7 +8,7 @@
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/simulation/RootTreeNode.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 class EventHandler
 {
@@ -55,11 +55,20 @@ int main()
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
-    const bool exacting_run = true;
-    const bool measure_run_time = false;
-    for(uint32_t i = 0; i < 10000000; ++i) {
-        pld_data_event.preparePayload(10)->schedule(1);
-        //pld_data_event.schedule(1);
+    constexpr bool exacting_run = true;
+    constexpr bool measure_run_time = false;
+    for(uint32_t i = 0; i < 10000000; ++i)
+    {
+        pld_data_event.preparePayload(i)->schedule();
+        pld_data_event.preparePayload(i+1)->schedule();
+        pld_data_event.preparePayload(i+2)->schedule();
+        pld_data_event.preparePayload(i+3)->schedule();
+        pld_data_event.preparePayload(i+4)->schedule();
+        pld_data_event.preparePayload(i+5)->schedule();
+        pld_data_event.preparePayload(i+6)->schedule();
+        pld_data_event.preparePayload(i+7)->schedule();
+        pld_data_event.preparePayload(i+8)->schedule();
+        pld_data_event.preparePayload(i+9)->schedule();
         scheduler.run(1, exacting_run, measure_run_time);
     }
 

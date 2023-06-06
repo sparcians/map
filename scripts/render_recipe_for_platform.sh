@@ -47,14 +47,21 @@ fi
 
 case "$(uname)" in
     Darwin)
-	conda_platform='osx_64'
+        case "$(uname -m)" in
+            x86_64)
+	            conda_platform='osx_64'
+                ;;
+            arm64)
+	            conda_platform='osx_arm64'
+                ;;
+        esac
 	;;
     Linux)
         conda_platform='linux_64'
 	;;
     *)
-	echo "::ERROR:: Unknown uname '$(uname)'"
-	exit 1
+	    echo "::ERROR:: Unknown uname '$(uname)'"
+	    exit 1
 	;;
 esac
 

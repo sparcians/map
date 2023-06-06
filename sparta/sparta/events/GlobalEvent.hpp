@@ -34,6 +34,7 @@ namespace sparta
     public:
         GlobalEventProxy() = default;
         GlobalEventProxy(const GlobalEventProxy&) = default;
+        GlobalEventProxy & operator=(const GlobalEventProxy&) = default;
 
         template<SchedulingPhase sched_phase_T = SchedulingPhase::Update>
         GlobalEventProxy(const utils::LifeTracker<SpartaHandler> & handler) :
@@ -57,9 +58,7 @@ namespace sparta
 
         const SchedulingPhase & getSchedulingPhase() const { return phase_; }
 
-        ~GlobalEventProxy() {
-            //std::cout << "Destroy GlobalEventProxy!\n";
-        }
+        ~GlobalEventProxy() = default;
 
     private:
         SchedulingPhase                                 phase_;
@@ -139,5 +138,3 @@ namespace sparta
     };
 
 }
-
-

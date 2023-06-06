@@ -1624,5 +1624,4 @@ inline std::ostream& operator<<(std::ostream& o, const sparta::Register::Field* 
 
 //! \brief Required in simulator source to define some globals.
 #define SPARTA_REGISTER_BODY                                              \
-    constexpr sparta::RegisterBase::group_num_type sparta::RegisterBase::GROUP_NUM_NONE; \
     const sparta::RegisterBase::Definition sparta::RegisterBase::DEFINITION_END{0, nullptr, 0, nullptr, 0, nullptr, 0, { }, { }, nullptr, 0, 0, 0, 0, 0};

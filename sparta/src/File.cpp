@@ -7,9 +7,7 @@
 #include <syscall.h>
 #endif
 #include <unistd.h>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/path_traits.hpp>
+#include <filesystem>
 #include <ostream>
 
 #include "sparta/utils/Utils.hpp"
@@ -18,7 +16,7 @@
 #include "sparta/utils/TimeManager.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 
-namespace bfs = boost::filesystem;
+namespace sfs = std::filesystem;
 
 namespace sparta
 {
@@ -73,30 +71,30 @@ namespace sparta
             for (const auto& search_dir : search_dirs)
             {
                 // Form starting canonical path
-                bfs::path p(search_dir);
-                if (bfs::exists(p))
+                sfs::path p(search_dir);
+                if (sfs::exists(p))
                 {
-                    p = bfs::canonical(p);
+                    p = sfs::canonical(p);
                     p /= name;
 
                     // Check for suffixed variations first.
                     const std::string YAML_SUFFIX = ".yaml";
                     if (false == std::equal(YAML_SUFFIX.rbegin(), YAML_SUFFIX.rend(), name.rbegin())) {
-                        bfs::path p_yaml = p.string() + ".yaml";
-                        if (bfs::exists(p_yaml)) {
+                        sfs::path p_yaml = p.string() + ".yaml";
+                        if (sfs::exists(p_yaml)) {
                             return p_yaml.string();
                         }
                     }
 
                     const std::string YML_SUFFIX = ".yml";
                     if (false == std::equal(YML_SUFFIX.rbegin(), YML_SUFFIX.rend(), name.rbegin())){
-                        bfs::path p_yml = p.string() + ".yml";
-                        if (bfs::exists(p_yml)) {
+                        sfs::path p_yml = p.string() + ".yml";
+                        if (sfs::exists(p_yml)) {
                             return p_yml.string();
                         }
                     }
 
-                    if (bfs::is_directory(p)) {
+                    if (sfs::is_directory(p)) {
                         try {
                             // Recrusively search for a file of the same name with .yaml within this directory.
                             return findArchitectureConfigFile({p.string()}, name);
@@ -108,14 +106,14 @@ namespace sparta
                                 "which is required if using a directory to represent an architecture. "
                                 << ARCH_OPTIONS_RESOLUTION_RULES;
                         }
-                    } else if (bfs::is_regular_file(p)) {
+                    } else if (sfs::is_regular_file(p)) {
                         // Found regular file with input name
                         return p.string();
-                    } else if (bfs::is_symlink(p)) {
-                        auto slp = bfs::read_symlink(p);
-                        if (slp == bfs::path()) {
+                    } else if (sfs::is_symlink(p)) {
+                        auto slp = sfs::read_symlink(p);
+                        if (slp == sfs::path()) {
                             // Empty path object means we could not read symlink
-                        } else if (bfs::is_directory(slp)) {
+                        } else if (sfs::is_directory(slp)) {
                             // Symlink was a dir
                             try {
                                 // Recrusively search for a file of the same name with .yaml within this directory.
@@ -128,7 +126,7 @@ namespace sparta
                                     "which is required if using a directory to represent an architecture. "
                                     << ARCH_OPTIONS_RESOLUTION_RULES;
                             }
-                        } else if (bfs::is_regular_file(slp)) {
+                        } else if (sfs::is_regular_file(slp)) {
                         // Symlink was regular file. Return the input path not the canonical
                             return p.string();
                         }

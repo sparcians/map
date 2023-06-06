@@ -11,9 +11,8 @@ set ( TransactionFile ${PROJECT_SOURCE_DIR}/data_test_0)
 # Build the TransactionDatabaseAPI test command
 ##################################################################
 add_custom_command(OUTPUT TransactionDatabaseAPI_test.sh
-                   COMMAND printf 'export TRANSACTION_MODULE_DIR="${PROJECT_BINARY_DIR}/../../python/transactiondb/lib/" &&  export TRANSACTION_FILE="${TransactionFile}" &&  python ${TransactionDatabase_scripts}/test.py &&  python ${TransactionDatabase_scripts}/test_transactiondb.py' > TransactionDatabaseAPI_test.sh && chmod +x TransactionDatabaseAPI_test.sh
+                   COMMAND printf 'export TRANSACTION_MODULE_DIR="${PROJECT_BINARY_DIR}/../../python/transactiondb/lib/" &&  export TRANSACTION_FILE="${TransactionFile}" &&  &&  python ${TransactionDatabase_scripts}/test_transactiondb.py' > TransactionDatabaseAPI_test.sh && chmod +x TransactionDatabaseAPI_test.sh
                    DEPENDS 
-                   ${TransactionDatabase_scripts}/test.py
                    ${TransactionDatabase_scripts}/test_transactiondb.py
                    COMMENT ${TransactionDatabaseAPI_test_cmd})
 

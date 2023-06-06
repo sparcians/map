@@ -1,6 +1,6 @@
 # This file was generated automatically from conda-smithy. To update this configuration,
 # update the conda-forge.yml and/or the recipe/meta.yaml.
-# -*- mode: yaml -*-
+# -*- mode: jinja-yaml -*-
 
 version: 2
 
@@ -8,11 +8,11 @@ jobs:
   build_linux_64_:
     working_directory: ~/test
     machine:
-      image: ubuntu-2004:current
+      - image: ubuntu-2004:current
     environment:
-      CONFIG: "linux_64_"
-      UPLOAD_PACKAGES: "False"
-      DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7-x86_64"
+      - CONFIG: "linux_64_"
+      - UPLOAD_PACKAGES: "False"
+        DOCKER_IMAGE: "quay.io/condaforge/linux-anvil-cos7-x86_64"
     steps:
       - checkout
       - run:
@@ -36,13 +36,4 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - build_linux_64_:
-        # Knute says he only wants it to build for PR's
-        # That is accomplished by turning on "build only on pull requests"
-        # on https://app.circleci.com/settings/project/github/sparcians/map/advanced
-        # which still will build commits on master but we also add filters to ignore
-        # all branches here as suggested in https://discuss.circleci.com/t/only-build-pull-requests-not-every-branch/200/8
-          filters:
-            branches:
-              ignore: master
-
+      - build_linux_64_

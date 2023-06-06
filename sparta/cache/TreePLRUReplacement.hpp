@@ -166,6 +166,6 @@ namespace sparta
 
         }; // class TreePLRUReplacment
 
-    }; // namespace cache
+    } // namespace cache
 
-}; // namespace sparta
+} // namespace sparta

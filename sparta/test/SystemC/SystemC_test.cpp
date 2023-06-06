@@ -10,7 +10,7 @@
 #include "sparta/utils/SpartaTester.hpp"
 #include "sparta/utils/SysCSpartaSchedulerAdapter.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 /*
  * Hammers on the scheduler
@@ -142,7 +142,7 @@ int sc_main(int, char *[])
     sparta::Scheduler sched;
     sparta::Clock clk("clock", &sched);
 
-    EXPECT_TRUE(sched.getCurrentTick() == 1);
+    EXPECT_TRUE(sched.getCurrentTick() == 0);
     EXPECT_TRUE(sched.isRunning() == 0);
 
     // Enable scheduler logging. Find the scheduler node and setup basic DEBUG message
@@ -172,7 +172,7 @@ int sc_main(int, char *[])
     sysc_sched_runner.run();
 
     // This is where Sparta left off...
-    EXPECT_EQUAL(sched.getCurrentTick(), 53);
+    EXPECT_EQUAL(sched.getCurrentTick(), 52);
 
     // SysC saturation -- end of time
     EXPECT_EQUAL(sc_core::sc_time_stamp().value(), 0x8000000000000000);

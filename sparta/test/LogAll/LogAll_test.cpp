@@ -14,7 +14,7 @@
  * \brief Test for Logging in a simple tree
  */
 
-TEST_INIT;
+TEST_INIT
 
 // Test for expected observation status
 #define EXPECT_NUM_OBSERVATION_POINTS(ms, num_pts_expected) {              \

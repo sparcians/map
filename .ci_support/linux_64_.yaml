@@ -1,11 +1,11 @@
 boost:
-- 1.74.0
+- 1.78.0
 boost_cpp:
-- 1.74.0
+- 1.78.0
 c_compiler:
 - gcc
 c_compiler_version:
-- '10'
+- '12'
 cdt_name:
 - cos6
 channel_sources:
@@ -15,15 +15,15 @@ channel_targets:
 cxx_compiler:
 - gxx
 cxx_compiler_version:
-- '10'
+- '12'
 docker_image:
 - quay.io/condaforge/linux-anvil-cos7-x86_64
 hdf5:
-- 1.10.6
+- 1.12.2
 linux_clang_version:
-- '13'
+- '15'
 numpy:
-- '1.19'
+- '1.21'
 pin_run_as_build:
   boost:
     max_pin: x.x.x
@@ -32,10 +32,8 @@ pin_run_as_build:
   python:
     min_pin: x.x
     max_pin: x.x
-  sqlite:
-    max_pin: x
 python:
-- 3.8.* *_cpython
+- 3.10.* *_cpython
 sqlite:
 - '3'
 target_platform:
@@ -45,3 +43,5 @@ zip_keys:
   - cxx_compiler_version
 - - python
   - numpy
+zlib:
+- '1.2'

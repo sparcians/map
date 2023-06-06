@@ -13,7 +13,7 @@ namespace facade {
 class ReportTriggers;
 
 //Utility to help with pretty print indentation
-auto indent = [](const size_t num_indents) {
+static auto indent = [](const size_t num_indents) {
     return std::string(num_indents, ' ');
 };
 
@@ -532,4 +532,3 @@ inline bool ReportTrigger::isEnabled() const
 
 } // namespace facade
 } // namespace sparta
-

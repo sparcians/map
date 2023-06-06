@@ -57,11 +57,5 @@ rm "$TMPFILE"
 (set -x; conda env create -f="$TMPENV" -n "$env_name")
 
 # cleanup TMPENV (intentionally leaving it in case something goes wrong with creating environment
-# user can manually rerun
-rm "$TMPENV"
-
-
-
-
-
-
+# user can manually rerun.  Also can be used to create an extended environment
+#rm "$TMPENV"

@@ -1,7 +1,5 @@
 project(Events_test)
 
-include(../TestingMacros.cmake)
-
 sparta_add_test_executable(Events_test Events.cpp)
 sparta_add_test_executable(AsyncEvent_test AsyncEvent.cpp)
 sparta_add_test_executable(GlobalEvent_test GlobalEvent_test.cpp)

@@ -1,0 +1,34 @@
+{% extends "plato/base.html" %}
+{% block head %}
+<link rel="stylesheet" href="http://{{ currentHost | safe }}:{{ assetPort | safe}}/css/login.css">
+<link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+{% endblock %}
+
+{% block content %}
+    <div id="signup" class="main">
+        <p class="sign" align="center">Sign Up</p>
+        <form class="form-horizontal" name="SignupForm" action="/plato/signup/" method="post" class="form1">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="control-group">
+                    {{ field.label_tag }}
+                    <div class="controls">
+                        {{ field }}
+                        {% if field.help_text %}
+                          <small style="color: grey">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                          <p style="color: red">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" align="center" class="submit">Sign Up</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

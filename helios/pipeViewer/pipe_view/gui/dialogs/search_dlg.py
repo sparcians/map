@@ -1,11 +1,24 @@
+from __future__ import annotations
 import sys
 import wx
 from functools import partial
-from gui.widgets.transaction_list import TransactionList
-from gui.widgets.location_entry import LocationEntry
+from ..widgets.transaction_list import TransactionList
+from ..widgets.location_entry import LocationEntry
+from typing import List, Optional, Tuple, TypedDict, TYPE_CHECKING
 
-## SearchDialog is a window that enables the user to enter a string, conduct a search and
-# jump to a location and transaction based on the result. It gets its data from search_handle.py
+if TYPE_CHECKING:
+    from ..layout_frame import Layout_Frame
+
+
+class SearchResult(TypedDict):
+    start: int
+    location: int
+    annotation: str
+
+
+# SearchDialog is a window that enables the user to enter a string, conduct a
+# search and jump to a location and transaction based on the result. It gets
+# its data from search_handle.py
 class SearchDialog(wx.Frame):
     START_COLUMN = 0
     LOCATION_COLUMN = 1
@@ -13,15 +26,23 @@ class SearchDialog(wx.Frame):
 
     INITIAL_SEARCH = 0
 
-    def __init__(self, parent):
+    def __init__(self, parent: Layout_Frame) -> None:
         self.__context = parent.GetContext()
         self.__canvas = parent.GetCanvas()
         self.__search_handle = self.__context.searchhandle
-        self.__full_results = []
-        self.__filters = []
+        self.__full_results: List[SearchResult] = []
+        self.__filters: List[SearchFilter] = []
         # initialize graphical part
-        wx.Frame.__init__(self, parent, -1, 'Search', size=(700,600),
-            style=wx.MAXIMIZE_BOX|wx.RESIZE_BORDER|wx.CAPTION|wx.CLOSE_BOX|wx.SYSTEM_MENU)
+        wx.Frame.__init__(self,
+                          parent,
+                          -1,
+                          'Search',
+                          size=(700, 600),
+                          style=(wx.MAXIMIZE_BOX |
+                                 wx.RESIZE_BORDER |
+                                 wx.CAPTION |
+                                 wx.CLOSE_BOX |
+                                 wx.SYSTEM_MENU))
 
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.__filter_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -37,28 +58,42 @@ class SearchDialog(wx.Frame):
         sizerbuttons.Add(search, 1)
         sizer.Add(sizerbuttons, 0, wx.EXPAND)
 
-        sizer.Add(wx.StaticText(self.__initial_search, wx.NewId(), 'Location:'))
+        sizer.Add(wx.StaticText(self.__initial_search,
+                                wx.NewId(),
+                                'Location:'))
 
-        location_tree = self.__context.dbhandle.database.location_manager.location_tree
+        location_tree = self.__context.dbhandle.database.location_manager.location_tree  # noqa: E501
 
-        self.__location_to_search = LocationEntry(self.__initial_search, 'top', location_tree)
+        self.__location_to_search = LocationEntry(self.__initial_search,
+                                                  'top',
+                                                  location_tree)
         sizer.Add(self.__location_to_search, 0, wx.EXPAND)
 
-        self.__use_regex = wx.CheckBox(self.__initial_search, wx.NewId(), 'Use Regex')
+        self.__use_regex = wx.CheckBox(self.__initial_search,
+                                       wx.NewId(),
+                                       'Use Regex')
         self.__use_regex.SetValue(False)
         sizer.Add(self.__use_regex)
 
-        self.__exclude_locations_not_shown = wx.CheckBox(self.__initial_search,
-                                                        wx.NewId(), 'Exclude Locations Not Shown')
+        self.__exclude_locations_not_shown = wx.CheckBox(
+            self.__initial_search,
+            wx.NewId(),
+            'Exclude Locations Not Shown'
+        )
         self.__exclude_locations_not_shown.SetValue(False)
         sizer.Add(self.__exclude_locations_not_shown)
 
-        self.__from_current_tick = wx.CheckBox(self.__initial_search, wx.NewId(), 'Search From Current Tick')
+        self.__from_current_tick = wx.CheckBox(self.__initial_search,
+                                               wx.NewId(),
+                                               'Search From Current Tick')
         self.__from_current_tick.SetValue(True)
         sizer.Add(self.__from_current_tick)
 
-        self.__colorize = wx.CheckBox(self.__initial_search,
-                                        wx.NewId(), 'Colorize Results (note: disregards color_basis)')
+        self.__colorize = wx.CheckBox(
+            self.__initial_search,
+            wx.NewId(),
+            'Colorize Results (note: disregards color_basis)'
+        )
         self.__colorize.SetValue(True)
         sizer.Add(self.__colorize)
         self.__filter_sizer.Add(self.__initial_search, 4, wx.EXPAND)
@@ -66,7 +101,9 @@ class SearchDialog(wx.Frame):
         # Filter editor
         filter_editor = wx.Panel(self, wx.NewId(), style=wx.BORDER_SUNKEN)
         filter_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        entry_text = wx.StaticText(filter_editor, wx.NewId(), 'Filter by (string): \n(annotation)')
+        entry_text = wx.StaticText(filter_editor,
+                                   wx.NewId(),
+                                   'Filter by (string): \n(annotation)')
         filter_sizer.Add(entry_text, 2, wx.ALIGN_LEFT)
         self.__new_filter_query = wx.TextCtrl(filter_editor, wx.NewId())
         filter_sizer.Add(self.__new_filter_query, 4, wx.ALIGN_LEFT)
@@ -79,9 +116,8 @@ class SearchDialog(wx.Frame):
 
         # Everything else
         self.__results_box = TransactionList(self,
-                    wx.NewId(),
-                    parent.GetCanvas(),
-                    name='listbox')
+                                             parent.GetCanvas(),
+                                             name='listbox')
 
         main_sizer.Add(self.__results_box, 1, wx.EXPAND)
         self.__initial_search.SetSizer(sizer)
@@ -91,47 +127,51 @@ class SearchDialog(wx.Frame):
         search.Bind(wx.EVT_BUTTON, self.OnSearch)
         add_filter.Bind(wx.EVT_BUTTON, self.__OnAddFilter)
         self.__input.Bind(wx.EVT_KEY_DOWN, self.OnKeyPress)
-        self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnClickTransaction, self.__results_box)
-        self.Bind(wx.EVT_CLOSE, lambda evt: self.Hide()) # Hide instead of closing
+        self.Bind(wx.EVT_LIST_ITEM_ACTIVATED,
+                  self.OnClickTransaction,
+                  self.__results_box)
+        # Hide instead of closing
+        self.Bind(wx.EVT_CLOSE, lambda evt: self.Hide())
 
-    ## defines how the dialog should pop up
-    def Show(self):
-        wx.Frame.Show(self)
+    # defines how the dialog should pop up
+    def Show(self, show: bool = True) -> bool:
+        res = wx.Frame.Show(self, show)
         self.Raise()
         self.FocusQueryBox()
+        return res
 
-    def FocusQueryBox(self):
+    def FocusQueryBox(self) -> None:
         self.__input.SetFocus()
 
-    ## Sets the location in the location box
-    #  @pre Requires there be no filters created because this means that the
-    #  original search (which defines location) cannot be replaced. Has no
-    #  effect if there are filters.
-    def SetSearchLocation(self, loc):
-        if len(self.__filters) == 0:
+    # Sets the location in the location box
+    # @pre Requires there be no filters created because this means that the
+    # original search (which defines location) cannot be replaced. Has no
+    # effect if there are filters.
+    def SetSearchLocation(self, loc: str) -> None:
+        if not self.__filters:
             self.__location_to_search.SetValue(loc)
 
-    ## callback that listens for enter being pressed to initiate search
-    def OnKeyPress(self, evt):
+    # callback that listens for enter being pressed to initiate search
+    def OnKeyPress(self, evt: wx.KeyEvent) -> None:
         if evt.GetKeyCode() == wx.WXK_RETURN:
             self.OnSearch(None)
         else:
             evt.Skip()
 
-    def __AddResult(self, entry):
+    def __AddResult(self, entry: SearchResult) -> None:
         self.__results_box.Add(entry)
         self.__context.AddSearchResult(entry)
 
-    def __ClearResults(self):
+    def __ClearResults(self) -> None:
         self.__results_box.Clear()
         self.__context.ClearSearchResults()
 
-    def __UpdateSearchHighlighting(self):
+    def __UpdateSearchHighlighting(self) -> None:
         self.__canvas.UpdateTransactionHighlighting()
         self.__context.RedrawHighlightedElements()
         self.__canvas.FullUpdate()
 
-    def ApplyFilters(self):
+    def ApplyFilters(self) -> None:
         # full N time complexity for any call because not doing incrementally
         # to speed up, keep track of currently already applied filters
         self.__results_box.Colorize(self.__colorize.GetValue())
@@ -147,17 +187,22 @@ class SearchDialog(wx.Frame):
 
         self.__UpdateSearchHighlighting()
 
-    def OnSearch(self, evt):
+    def OnSearch(self, evt: Optional[wx.CommandEvent]) -> None:
         wx.BeginBusyCursor()
         query = self.__input.GetValue()
-        dialog = wx.ProgressDialog('Progress',
-                                   'Searching Database...',
-                                   100, # Maximum
-                                   parent=self,
-                                   style=wx.PD_CAN_ABORT | wx.PD_REMAINING_TIME)
+        dialog = wx.ProgressDialog(
+            'Progress',
+            'Searching Database...',
+            100,  # Maximum
+            parent=self,
+            style=wx.PD_CAN_ABORT | wx.PD_REMAINING_TIME
+        )
 
-        ## Callback adapter to forward to wx.ProgressDialog.Update while ignoring some args
-        def progress_update(percent, num_results, info):
+        # Callback adapter to forward to wx.ProgressDialog.Update while
+        # ignoring some args
+        def progress_update(percent: int,
+                            num_results: int,
+                            info: str) -> Tuple[bool, bool]:
             return dialog.Update(percent, info)
 
         if self.__use_regex.GetValue():
@@ -168,23 +213,23 @@ class SearchDialog(wx.Frame):
         if self.__from_current_tick.GetValue():
             start_tick = self.__context.hc
         else:
-            start_tick = None # indicate to use db start
+            start_tick = None  # indicate to use db start
 
         try:
             results = self.__search_handle.Search(mode,
                                                   query,
                                                   start_tick,
-                                                  -1, # end_tick
-                                                  [], # locations
+                                                  -1,  # end_tick
+                                                  [],  # locations
                                                   progress_update)
-        except Exception as ex:
+        except Exception:
             raise
         finally:
             dialog.Close()
             dialog.Destroy()
 
         # Limit to search size
-        SEARCH_LIMIT = 10000 ## @todo Move this into Search function
+        SEARCH_LIMIT = 10000  # @todo Move this into Search function
 
         self.__results_box.Colorize(self.__colorize.GetValue())
         self.__ClearResults()
@@ -193,39 +238,38 @@ class SearchDialog(wx.Frame):
         self.__results_box.RefreshAll()
         visible_locations = self.__context.GetVisibleLocations()
 
-        #location_root_search = str(self.__location_to_search.GetValue()).translate({ord(c): None for c in '[]'})
         location_root_search = self.__location_to_search.GetValue()
         if location_root_search is None:
             location_root_search = "[]"
-        convert_id_to_str = self.__context.dbhandle.database.location_manager.getLocationString
         truncated = False
-        if self.__exclude_locations_not_shown.GetValue():
-            for start, end, loc_id, annotation in results:
-                loc = convert_id_to_str(loc_id)
-                loc = str(loc).translate({ord(c): None for c in '[]'})
-                if loc.startswith(location_root_search) and loc_id in visible_locations:
-                    entry = {'start':start, 'location':loc, 'annotation':annotation}
-                    self.__full_results.append(entry)
-                    self.__AddResult(entry)
-                    if len(self.__full_results) == SEARCH_LIMIT:
-                        truncated = True
-                        break
-        else:
-             for start, end, loc, annotation in results:
-                loc = convert_id_to_str(loc)
-                loc = str(loc).translate({ord(c): None for c in '[]'})
-                if loc.startswith(location_root_search):
-                    entry = {'start':start, 'location':loc, 'annotation':annotation}
-                    self.__full_results.append(entry)
-                    self.__AddResult(entry)
-                    if len(self.__full_results) == SEARCH_LIMIT:
-                        truncated = True
-                        break
+
+        def loc_str(loc_id: int) -> str:
+            loc = self.__context.dbhandle.database.location_manager.getLocationString(loc_id)  # noqa: E501
+            loc = str(loc).translate({ord(c): None for c in '[]'})
+            return loc
+
+        for start, end, loc_id, annotation in results:
+            if loc_str(loc_id).startswith(location_root_search) and \
+                    (not self.__exclude_locations_not_shown.GetValue() or
+                     loc_id in visible_locations):
+                entry: SearchResult = {
+                    'start': start,
+                    'location': loc_id,
+                    'annotation': annotation
+                }
+                self.__full_results.append(entry)
+                self.__AddResult(entry)
+                if len(self.__full_results) == SEARCH_LIMIT:
+                    truncated = True
+                    break
 
         self.__results_box.FitColumns()
         self.__filter_sizer.Hide(self.INITIAL_SEARCH)
-        self.__filter_sizer.Show(1) # current index of filter editor
-        self.__AddFilter(SearchFilter(query, True, location=location_root_search, num_results=len(self.__full_results)))
+        self.__filter_sizer.Show(1)  # current index of filter editor
+        self.__AddFilter(SearchFilter(query,
+                                      True,
+                                      location=location_root_search,
+                                      num_results=len(self.__full_results)))
         self.Layout()
 
         self.__UpdateSearchHighlighting()
@@ -233,45 +277,48 @@ class SearchDialog(wx.Frame):
         wx.EndBusyCursor()
 
         if truncated is True:
-            msg = 'Truncated search results to first {} results of {} total'.format(SEARCH_LIMIT, len(results))
+            msg = f'Truncated search results to first {SEARCH_LIMIT} ' \
+                  f'results of {len(results)} total'
             # Do not truncate here. This contains other locations.
             print(msg, file=sys.stderr)
             wx.MessageBox(msg)
 
-    ## deletes filter and updates results.
+    # deletes filter and updates results.
     # index is indexed on filters not sizers
     # e.g. (0 is first filter, not search)
-    def __OnRemoveFilter(self, evt, obj):
+    def __OnRemoveFilter(self,
+                         evt: wx.CommandEvent,
+                         obj: SearchFilter) -> None:
         index = self.__filters.index(obj)
         self.__RemoveFilter(index)
         self.ApplyFilters()
         self.Layout()
 
-    def __RemoveFilter(self, index):
+    def __RemoveFilter(self, index: int) -> None:
         filter_obj = self.__filters.pop(index)
         panel = filter_obj.GetPanel()
-        self.__filter_sizer.Detach(panel)
-        panel.Destroy()
-        # never use this filter object again
+        if panel is not None:
+            self.__filter_sizer.Detach(panel)
+            panel.Destroy()
+            # never use this filter object again
 
-    def OnClickTransaction(self, evt):
+    def OnClickTransaction(self, evt: wx.ListEvent) -> None:
         transaction = self.__results_box.GetTransaction(evt.GetIndex())
         start_loc = transaction.get('start')
         if start_loc:
             self.__context.GoToHC(start_loc)
 
-    def __OnResetSearch(self, evt):
-        while len(self.__filters):
+    def __OnResetSearch(self, evt: wx.CommandEvent) -> None:
+        while self.__filters:
             self.__RemoveFilter(0)
 
         self.__filter_sizer.Show(self.INITIAL_SEARCH, True)
         # hide filter addition textbox
         self.__filter_sizer.Hide(1)
         self.Layout()
-        # No need to clear. Wait until a new search is done... ##self.__results_box.Clear()
         self.FocusQueryBox()
 
-    def __AddFilter(self, filter_object):
+    def __AddFilter(self, filter_object: SearchFilter) -> None:
         panel, remove_button = filter_object.MakePanel(parent=self)
         index = len(self.__filters)
         self.__filter_sizer.Insert(index, panel, 0, wx.EXPAND)
@@ -280,9 +327,10 @@ class SearchDialog(wx.Frame):
         if filter_object.initial:
             panel.Bind(wx.EVT_BUTTON, self.__OnResetSearch)
         else:
-            panel.Bind(wx.EVT_BUTTON, partial(self.__OnRemoveFilter, obj=filter_object))
+            panel.Bind(wx.EVT_BUTTON, partial(self.__OnRemoveFilter,
+                                              obj=filter_object))
 
-    def __OnAddFilter(self, evt):
+    def __OnAddFilter(self, evt: wx.CommandEvent) -> None:
         query = self.__new_filter_query.GetValue()
         if query:
             self.__AddFilter(SearchFilter(query, False))
@@ -290,34 +338,38 @@ class SearchDialog(wx.Frame):
             self.Layout()
             self.__new_filter_query.Clear()
 
-## stores the settings for each filter applied
+
+# stores the settings for each filter applied
 class SearchFilter:
-    def __init__(self, query, initial=False, regex=False, location='', num_results=None):
+    def __init__(self,
+                 query: str,
+                 initial: bool = False,
+                 regex: bool = False,
+                 location: str = '',
+                 num_results: Optional[int] = None) -> None:
         # string used for search
         self.query = query
         self.initial = initial
         self.location = location
         self.num_results = num_results
-        self.__panel = None
-        self.__remove = None
-        # when we evntually get the python regex and boost regex consistent
-        # or have our program do filtering (feed results into std-in and get std-out results) (pipe output)
-        #self.regex = regex
+        self.__panel: Optional[wx.Panel] = None
+        self.__remove: Optional[wx.Button] = None
 
     # Get panel, none if no panel
-    def GetPanel(self):
+    def GetPanel(self) -> Optional[wx.Panel]:
         return self.__panel
 
-    ## make visual portion
-    def MakePanel(self, parent):
-        if not self.__panel:
+    # make visual portion
+    def MakePanel(self, parent: SearchDialog) -> Tuple[wx.Panel, wx.Button]:
+        if self.__panel is None:
             self.__panel = wx.Panel(parent, wx.NewId(), style=wx.BORDER_SUNKEN)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             if self.initial:
                 ratio = 2
-                string = 'Initial Query: {}\nLocation: {}'.format(self.query, self.location)
+                string = f'Initial Query: {self.query}\n' \
+                         f'Location: {self.location}'
                 if self.num_results is not None:
-                    string += '\nResults: {}'.format(self.num_results)
+                    string += f'\nResults: {self.num_results}'
                 button_string = 'Reset Search'
             else:
                 ratio = 1
@@ -328,5 +380,5 @@ class SearchFilter:
             self.__remove = wx.Button(self.__panel, wx.NewId(), button_string)
             sizer.Add(self.__remove, ratio, wx.ALIGN_RIGHT)
             self.__panel.SetSizer(sizer)
+        assert self.__remove is not None
         return self.__panel, self.__remove
-

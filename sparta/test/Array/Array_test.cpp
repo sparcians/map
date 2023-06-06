@@ -22,7 +22,7 @@
 
 #include <string>
 
-TEST_INIT;
+TEST_INIT
 
 #define PIPEOUT_GEN
 
@@ -56,7 +56,7 @@ namespace sparta {
         SchedulerAccess(const int val) : val(val) {}
         const int val;
     };
-};
+}
 
 void testStatsOutput()
 {

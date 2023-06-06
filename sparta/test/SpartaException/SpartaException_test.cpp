@@ -4,7 +4,7 @@
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 void throw_an_exception()
 {

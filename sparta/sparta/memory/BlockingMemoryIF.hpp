@@ -318,8 +318,8 @@ namespace sparta
 
 
         }; // class BlockingMemoryIF
-    }; // namespace memory
-}; // namespace sparta
+    } // namespace memory
+} // namespace sparta
 
 
 //! \brief BlockingMemoryIF stream operator
