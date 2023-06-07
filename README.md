@@ -51,7 +51,7 @@ installed and would like to build everything (not just sparta).
    * `./scripts/create_conda_env.sh sparta dev`
 1. Activate the environment
    * `conda activate sparta`
-1. To build MAP and it's components
+1. To build Sparta framework components:
    * `conda activate sparta`
    * `cd map/sparta; mkdir release; cd release`
    * `cmake -DCMAKE_BUILD_TYPE=Release ..`
@@ -60,7 +60,7 @@ installed and would like to build everything (not just sparta).
 1. To build Helios/Argos transaction viewer:
    * `conda activate sparta`
    * `cd map/helios; mkdir release; cd release`
-   * `cmake -DCMAKE_BUILD_TYPE=Release -DSPARTA_SEARCH_DIR=<SPARTA_INSTALLED_LOCATION> ..`
+   * `cmake -DCMAKE_BUILD_TYPE=Release ..`
    * `make`
    * `cmake --install . --prefix $CONDA_PREFIX`
 
