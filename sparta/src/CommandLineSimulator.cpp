@@ -362,6 +362,14 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "Example: \"--pipeline-collection data/test1_\"\n"
          "Note: Any directories in this path must already exist.\n",
          "Enable pipline collection to files with names prefixed with OUTPATH") // Brief
+        ("roi-pipeline-collection,Z",
+         named_value<std::vector<std::string>>("OUTPUTPATH", 1, 1)->multitoken(),
+         "Run pipeline collection for ROIs on this simulation, and dump the output files to OUTPUTPATH. "
+         "OUTPUTPATH can be a prefix such as myfiles_ for the pipeline files and may be a "
+         "directory\n"
+         "Example: \"--pipeline-collection data/test1_\"\n"
+         "Note: Any directories in this path must already exist.\n",
+         "Enable pipline collection to files with names prefixed with OUTPATH") // Brief
         ("collection-at,k",
          named_value<std::vector<std::string>>("TREENODE", 1, 1),
          "Specify a treenode to recursively turn on at and below for pipeline collection."
@@ -1130,7 +1138,7 @@ bool CommandLineSimulator::parse(int argc,
                 throw_report_deprecated = true;
                 ++i;
 
-            }else if (o.string_key == "pipeline-collection") {
+            }else if (o.string_key == "pipeline-collection" or o.string_key == "roi-pipeline-collection") {
                 //Enforce that we cannot set pipeline-collection options twice.
                 if(collection_parsed)
                 {
@@ -1160,9 +1168,10 @@ bool CommandLineSimulator::parse(int argc,
                     return false;
                 }
 
+                use_roi_pipeline_collection_ = o.string_key == "roi-pipeline-collection";
+
                 ++i;
                 collection_parsed = true;
-
             } else if (o.string_key.find("collection-at") != std::string::npos) {
                 if(!collection_parsed)
                 {
@@ -2081,11 +2090,21 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
         if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)
         {
-            pipeline_collection_triggerable_.reset(new PipelineTrigger(sim_config_.pipeline_collection_file_prefix,
-                                                                       pipeline_enabled_node_names_,
-                                                                       heartbeat,
-                                                                       sim->getRootClock(),
-                                                                       sim->getRoot()));
+            if(use_roi_pipeline_collection_) {
+                pipeline_collection_triggerable_.reset(new PipelineNotifSrcTrigger("roi_start_stop",
+                                                                                   sim_config_.pipeline_collection_file_prefix,
+                                                                                   pipeline_enabled_node_names_,
+                                                                                   heartbeat,
+                                                                                   sim->getRootClock(),
+                                                                                   sim->getRoot()));
+            }
+            else {
+                pipeline_collection_triggerable_.reset(new PipelineTrigger(sim_config_.pipeline_collection_file_prefix,
+                                                                           pipeline_enabled_node_names_,
+                                                                           heartbeat,
+                                                                           sim->getRootClock(),
+                                                                           sim->getRoot()));
+            }
 
             // If pipeline collection is turned on begin writing an info file
             // about the simulation.
@@ -2109,7 +2128,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             // Start pipeline collection now (if enabled).  This must
             // be enabled on the first cycle, not earlier to ensure
             // the tree is complete.
-            if(pipeline_collection_triggerable_) {
+            if(pipeline_collection_triggerable_ && !use_roi_pipeline_collection_) {
                 pipeline_trigger_.reset(new trigger::Trigger("turn_on_collection_now", sim->getRootClock()));
                 pipeline_trigger_->addTriggeredObject(pipeline_collection_triggerable_.get());
                 pipeline_trigger_->setTriggerStartAbsolute(sim->getRootClock(), 1);
@@ -2122,8 +2141,9 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                 debug_trigger_->addTriggeredObject(pevent_trigger_.get());
             }
 
-            // Pipeline trigger
-            if(pipeline_collection_triggerable_) {
+            // Pipeline trigger. ROI pipeline collection is triggered by
+            // NotificationSource, so don't register trigger for it here.
+            if(pipeline_collection_triggerable_ && !use_roi_pipeline_collection_) {
                 debug_trigger_->addTriggeredObject(pipeline_collection_triggerable_.get());
             }
 
