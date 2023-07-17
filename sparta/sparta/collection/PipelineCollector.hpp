@@ -121,7 +121,9 @@ namespace collection
 
             void enable(CollectableTreeNode * ctn) {
                 enabled_ctns_.insert(ctn);
-                ev_collect_->schedule(sparta::Clock::Cycle(0));
+                // Schedule collect event in the next cycle in case
+                // this is called in an unavailable pphase.
+                ev_collect_->schedule(sparta::Clock::Cycle(1));
             }
 
             void disable(CollectableTreeNode * ctn) {
