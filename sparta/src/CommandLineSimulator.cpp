@@ -68,6 +68,7 @@
 #include "sparta/pevents/PeventTrigger.hpp"
 #include "sparta/trigger/Trigger.hpp"
 #include "sparta/trigger/Triggerable.hpp"
+#include "sparta/trigger/RegionOfInterest.hpp"
 #include "sparta/utils/Printing.hpp"
 #include "sparta/utils/SmartLexicalCast.hpp"
 
@@ -2091,7 +2092,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
         if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)
         {
             if(use_roi_pipeline_collection_) {
-                pipeline_collection_triggerable_.reset(new PipelineNotifSrcTrigger("roi_start_stop",
+                pipeline_collection_triggerable_.reset(new PipelineNotifSrcTrigger(roi::NOTIFICATION_SRC_NAME,
                                                                                    sim_config_.pipeline_collection_file_prefix,
                                                                                    pipeline_enabled_node_names_,
                                                                                    heartbeat,
