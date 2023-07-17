@@ -33,14 +33,17 @@ public:
                     const std::set<std::string>& pipeline_enabled_node_names,
                     uint64_t pipeline_heartbeat,
                     sparta::Clock * clk, sparta::RootTreeNode * rtn) :
+        pipeline_collection_path_(pipeline_collection_path),
         pipeline_enabled_node_names_(pipeline_enabled_node_names),
+        pipeline_heartbeat_(pipeline_heartbeat),
+        clk_(clk),
         root_(rtn)
     {
         pipeline_collector_.
-            reset(new sparta::collection::PipelineCollector(pipeline_collection_path,
-                                                          pipeline_heartbeat,
-                                                          clk,
-                                                          rtn));
+            reset(new sparta::collection::PipelineCollector(pipeline_collection_path_,
+                                                            pipeline_heartbeat_,
+                                                            clk_,
+                                                            root_));
 
     }
 
@@ -97,14 +100,68 @@ public:
         triggered_ = false;
     }
 
-private:
+protected:
 
     std::unique_ptr<collection::PipelineCollector> pipeline_collector_;
+    const std::string pipeline_collection_path_;
     const std::set<std::string> pipeline_enabled_node_names_;
+    const uint64_t pipeline_heartbeat_;
+    sparta::Clock * clk_;
     sparta::RootTreeNode * root_;
     bool triggered_ = false;
 };
 
+class PipelineNotifSrcTrigger : public PipelineTrigger
+{
+public:
+    PipelineNotifSrcTrigger(const std::string& notif_src_name,
+                            const std::string& pipeline_collection_path,
+                            const std::set<std::string>& pipeline_enabled_node_names,
+                            uint64_t pipeline_heartbeat,
+                            sparta::Clock * clk, sparta::RootTreeNode * rtn) :
+        PipelineTrigger(pipeline_collection_path,
+                        pipeline_enabled_node_names,
+                        pipeline_heartbeat,
+                        clk, rtn)
+    {
+        pipeline_collector_.
+                reset(new sparta::collection::PipelineCollector(getCollectionPath_(),
+                                                                pipeline_heartbeat_,
+                                                                clk_,
+                                                                root_));
+        rtn->getRoot()->REGISTER_FOR_NOTIFICATION(onReportTriggered_, uint64_t, notif_src_name);
+    }
+
+private:
+
+    void onReportTriggered_(const uint64_t & trigger)
+    {
+        sparta_assert(triggered_ ^ trigger, "Trigger has to be different from the current state");
+
+        if(triggered_) {
+            std::cout << "#" << num_collections_ << " pipeline collection ended" << std::endl;
+            stop();
+            ++num_collections_;
+            pipeline_collector_->reactivate(getCollectionPath_());
+        }
+        else {
+            std::cout << "#" << num_collections_ << " pipeline collection started" << std::endl;
+            go();
+        }
+    }
+
+    std::string getCollectionPath_() const
+    {
+        if(pipeline_collection_path_.back() == '/') {
+            return pipeline_collection_path_ + std::to_string(num_collections_) + '_';
+        }
+        else {
+            return pipeline_collection_path_ + '_' + std::to_string(num_collections_) + '_';
+        }
+    }
+
+    uint32_t num_collections_ = 0;
+};
 
 /*!
  * \brief Trigger for strating logging given a number of tap descriptors
