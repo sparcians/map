@@ -83,7 +83,7 @@ const uint32_t OPTIONS_DOC_WIDTH = 140;
 
 const char INVALID_HELP_TOPIC[] = "<invalid help topic>";
 const char MULTI_INSTRUCTION_TRIGGER_ERROR_MSG[] = \
-    "Cannot use more than one of --debug-on, --debug-on-icount, and instruction based pevent "
+    "Cannot use more than one of --debug-on, --debug-on-icount, --debug-on-roi, and instruction based pevent "
     "triggering at the same time. This is not yet supported/tested";
 
 //! Prints logging help text
@@ -332,7 +332,7 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "This includes any user-configured pipeline collection or logging (builtin logging of "
          "warnings to stderr is always enabled). Note that this is just a "
          "delay; logging and pipeline collection must be explicitly enabled.\n"
-         "WARNING: Must not be specified with --debug-on-icount\n"
+         "WARNING: Must not be specified with --debug-on-icount, --debug-on-roi\n"
          "WARNING: The CYCLE may only be partly included. It is dependent upon when the "
          "scheduler activates the trigger. It is recommended to schedule a few ticks before your "
          "desired area.\n"
@@ -345,12 +345,16 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          named_value<std::vector<std::vector<std::string>>>("INSTRUCTIONS"),
          "\nDelay the recording of useful information starting until a specified number of "
          "instructions.\n"
-         "WARNING: Must not be specified with --debug-on\n"
+         "WARNING: Must not be specified with --debug-on, --debug-on-roi\n"
          "See also --debug-on.\n"
          "Examples: '--debug-on-icount 500 -z PREFIX_'\n"
          "Begins pipeline collection to PREFIX_ when instruction count from this simulator's "
          "counter with the CSEM_INSTRUCTIONS semantic is equal to 500",
          "Begin all debugging instrumentation at a specific instruction count") // Brief
+        ("debug-on-roi",
+         "\nDelay the recoding of useful information when simulator detects ROIs. Pipeline collection, "
+         "Pevents, and loggers will generate output file for every ROI.\n"
+         "WARNING: Must not be specified with --debug-on, --debug-on-icount\n") // Brief
         ;
 
     // Pipeline configuration
@@ -1139,7 +1143,7 @@ bool CommandLineSimulator::parse(int argc,
                 throw_report_deprecated = true;
                 ++i;
 
-            }else if (o.string_key == "pipeline-collection" or o.string_key == "roi-pipeline-collection") {
+            }else if (o.string_key == "pipeline-collection") {
                 //Enforce that we cannot set pipeline-collection options twice.
                 if(collection_parsed)
                 {
@@ -1168,8 +1172,6 @@ bool CommandLineSimulator::parse(int argc,
                     err_code = 1;
                     return false;
                 }
-
-                use_roi_pipeline_collection_ = o.string_key == "roi-pipeline-collection";
 
                 ++i;
                 collection_parsed = true;
@@ -1310,8 +1312,8 @@ bool CommandLineSimulator::parse(int argc,
                 }
                 delayed_start = true;
 
-                if(sim_config_.trigger_on_value != static_cast<uint64_t>(SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE)) {
-                    throw SpartaException("Cannot use both --debug-on and --debug-on-icount simultaneously");
+                if(sim_config_.trigger_on_type != SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE) {
+                    throw SpartaException("Cannot use either --debug-on, --debug-on-icount or --debug-on-roi simultaneously");
                 }
 
                 // Parse the debug trigger on cycle number
@@ -1356,8 +1358,8 @@ bool CommandLineSimulator::parse(int argc,
                 }
                 delayed_start = true;
 
-                if(sim_config_.trigger_on_value != static_cast<uint64_t>(SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE)){
-                    throw SpartaException("Cannot use both --debug-on and --debug-on-icount simultaneously");
+                if(sim_config_.trigger_on_type != SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE){
+                    throw SpartaException("Cannot use either --debug-on, --debug-on-icount or --debug-on-roi simultaneously");
                 }
 
                 // Parse the debug trigger on cycle number
@@ -1370,6 +1372,18 @@ bool CommandLineSimulator::parse(int argc,
                     throw SpartaException("debug-on-icount must take an integer value, not \"")
                         << o.value.at(0) << "\"";
                 }
+                ++i;
+            } else if(o.string_key == "debug-on-roi") {
+                if(delayed_start)
+                {
+                    std::cerr << MULTI_INSTRUCTION_TRIGGER_ERROR_MSG << std::endl;
+                }
+                delayed_start = true;
+
+                if(sim_config_.trigger_on_type != SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE){
+                    throw SpartaException("Cannot use either --debug-on, --debug-on-icount or --debug-on-roi simultaneously");
+                }
+                sim_config_.trigger_on_type = SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI;
                 ++i;
             } else if(o.string_key == "wall-timeout" || o.string_key == "cpu-timeout") {
 
@@ -2091,21 +2105,13 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
         if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)
         {
-            if(use_roi_pipeline_collection_) {
-                pipeline_collection_triggerable_.reset(new PipelineNotifSrcTrigger(roi::NOTIFICATION_SRC_NAME,
-                                                                                   sim_config_.pipeline_collection_file_prefix,
-                                                                                   pipeline_enabled_node_names_,
-                                                                                   heartbeat,
-                                                                                   sim->getRootClock(),
-                                                                                   sim->getRoot()));
-            }
-            else {
-                pipeline_collection_triggerable_.reset(new PipelineTrigger(sim_config_.pipeline_collection_file_prefix,
-                                                                           pipeline_enabled_node_names_,
-                                                                           heartbeat,
-                                                                           sim->getRootClock(),
-                                                                           sim->getRoot()));
-            }
+            const bool multiple_triggers = sim_config_.trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI;
+            pipeline_collection_triggerable_.reset(new PipelineTrigger(sim_config_.pipeline_collection_file_prefix,
+                                                                       pipeline_enabled_node_names_,
+                                                                       heartbeat,
+                                                                       multiple_triggers,
+                                                                       sim->getRootClock(),
+                                                                       sim->getRoot()));
 
             // If pipeline collection is turned on begin writing an info file
             // about the simulation.
@@ -2129,7 +2135,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             // Start pipeline collection now (if enabled).  This must
             // be enabled on the first cycle, not earlier to ensure
             // the tree is complete.
-            if(pipeline_collection_triggerable_ && !use_roi_pipeline_collection_) {
+            if(pipeline_collection_triggerable_) {
                 pipeline_trigger_.reset(new trigger::Trigger("turn_on_collection_now", sim->getRootClock()));
                 pipeline_trigger_->addTriggeredObject(pipeline_collection_triggerable_.get());
                 pipeline_trigger_->setTriggerStartAbsolute(sim->getRootClock(), 1);
@@ -2144,7 +2150,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
             // Pipeline trigger. ROI pipeline collection is triggered by
             // NotificationSource, so don't register trigger for it here.
-            if(pipeline_collection_triggerable_ && !use_roi_pipeline_collection_) {
+            if(pipeline_collection_triggerable_) {
                 debug_trigger_->addTriggeredObject(pipeline_collection_triggerable_.get());
             }
 

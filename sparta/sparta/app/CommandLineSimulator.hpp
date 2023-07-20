@@ -460,11 +460,6 @@ protected:
     std::unique_ptr<sparta::InformationWriter>    info_out_;
 
     /*!
-     * \brief Is pipeline collection enabled for ROIs?
-     */
-    bool use_roi_pipeline_collection_ = false;
-
-    /*!
      * \brief Heartbeat period of pipeline collection file (before lexical cast
      * or validation)
      */
