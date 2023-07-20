@@ -2148,8 +2148,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                 debug_trigger_->addTriggeredObject(pevent_trigger_.get());
             }
 
-            // Pipeline trigger. ROI pipeline collection is triggered by
-            // NotificationSource, so don't register trigger for it here.
+            // Pipeline trigger.
             if(pipeline_collection_triggerable_) {
                 debug_trigger_->addTriggeredObject(pipeline_collection_triggerable_.get());
             }
@@ -2179,6 +2178,9 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             case SimulationConfiguration::TriggerSource::TRIGGER_ON_INSTRUCTION:
                 debug_trigger_->setTriggerStartAbsolute(sim->findSemanticCounter(Simulation::CSEM_INSTRUCTIONS),
                                                         sim_config_.trigger_on_value);
+                break;
+            case SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI:
+                debug_trigger_->setTriggerNotificationDriven(sim->getRoot(), roi::NOTIFICATION_SRC_NAME);
                 break;
             default:
                 sparta_assert(!"Unknown tigger on type");
@@ -2360,7 +2362,9 @@ void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
             sim->run(ticks);
         }catch(...){
             if(pipeline_collection_triggerable_) {
-                pipeline_collection_triggerable_->stop();
+                if(pipeline_collection_triggerable_->isTriggered()) {
+                    pipeline_collection_triggerable_->stop();
+                }
                 info_out_->write("Simulation aborted at: ");
                 info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
             }
@@ -2373,7 +2377,9 @@ void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
 
     if(pipeline_collection_triggerable_)
     {
-        pipeline_collection_triggerable_->stop();
+        if(pipeline_collection_triggerable_->isTriggered()) {
+            pipeline_collection_triggerable_->stop();
+        }
 
          // Write the end time of the simulation.
         info_out_->write("Simulation ended at: ");

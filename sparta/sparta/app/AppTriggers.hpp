@@ -139,7 +139,6 @@ private:
     const bool multiple_triggers_;
     sparta::Clock * clk_;
     sparta::RootTreeNode * root_;
-    bool triggered_ = false;
     uint32_t num_collections_ = 0;
 };
 
