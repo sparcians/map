@@ -33,7 +33,7 @@ cdef extern from "TransactionDatabaseInterface.hpp" namespace "sparta::pipeViewe
                               uint64_t tick, \
                               const_interval_idx * content, \
                               c_TransactionInterval_uint64_const_t* transactions, \
-                              uint32_t content_len), \
+                              uint32_t content_len) except +, \
                    void* user_data, \
                    const bint modify_tracking) except +
 
