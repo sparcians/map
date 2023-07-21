@@ -82,7 +82,7 @@ namespace sparta
         std::stringstream ss;
         ss << str;
         ss >> tmp;
-        if(((void*)&ss) != nullptr){
+        if(ss.fail() == false) {
             return tmp;
         }
 

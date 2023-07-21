@@ -6,6 +6,7 @@
 #include <cinttypes>
 #include <limits>
 #include <random>
+#include <time.h>
 
 namespace simdb {
 namespace utils {
@@ -59,4 +60,3 @@ chooseRand()
 
 } // namespace utils
 } // namespace simdb
-
