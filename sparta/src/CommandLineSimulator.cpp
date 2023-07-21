@@ -1945,6 +1945,10 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
     // Pevent
     if(run_pevents_) {
         pevent_trigger_.reset(new sparta::trigger::PeventTrigger(sim->getRoot()));
+        // FIXME: Support debug-roi for pevent collection
+        if(sim_config_.trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI) {
+            throw SpartaException("debug-roi hasn't been supported for Pevent collection");
+        }
     }
 
     for (const auto & def_file : report_descriptor_def_files_) {
