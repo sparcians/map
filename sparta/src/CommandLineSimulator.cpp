@@ -367,14 +367,6 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "Example: \"--pipeline-collection data/test1_\"\n"
          "Note: Any directories in this path must already exist.\n",
          "Enable pipline collection to files with names prefixed with OUTPATH") // Brief
-        ("roi-pipeline-collection,Z",
-         named_value<std::vector<std::string>>("OUTPUTPATH", 1, 1)->multitoken(),
-         "Run pipeline collection for ROIs on this simulation, and dump the output files to OUTPUTPATH. "
-         "OUTPUTPATH can be a prefix such as myfiles_ for the pipeline files and may be a "
-         "directory\n"
-         "Example: \"--pipeline-collection data/test1_\"\n"
-         "Note: Any directories in this path must already exist.\n",
-         "Enable pipline collection to files with names prefixed with OUTPATH") // Brief
         ("collection-at,k",
          named_value<std::vector<std::string>>("TREENODE", 1, 1),
          "Specify a treenode to recursively turn on at and below for pipeline collection."
