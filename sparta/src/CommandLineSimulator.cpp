@@ -2144,7 +2144,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                 debug_trigger_->addTriggeredObject(pevent_trigger_.get());
             }
 
-            // Pipeline trigger.
+            // Pipeline trigger
             if(pipeline_collection_triggerable_) {
                 debug_trigger_->addTriggeredObject(pipeline_collection_triggerable_.get());
             }
@@ -2180,7 +2180,8 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                     try{
                         debug_trigger_->setTriggerNotificationDriven(sim->getRoot(), roi::NOTIFICATION_SRC_NAME);
                     }catch(SpartaException& ex) {
-                        std::cerr << "\nTo use debug-roi option, users have to register notification source for ROI" << std::endl;
+                        std::cerr << "\nTo use debug-roi option, users have to register notification source \""
+                                  << roi::NOTIFICATION_SRC_NAME << "\"" << std::endl;
                         std::cerr << "\n\n" SPARTA_CMDLINE_COLOR_ERROR "Rethrowing..." SPARTA_CMDLINE_COLOR_NORMAL << std::endl;
                         throw;
                     }
