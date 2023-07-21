@@ -39,7 +39,7 @@ public:
     bool isTriggered() const { return triggered_; }
 
 protected:
-    bool triggered_;
+    bool triggered_ = false;
 };
 
     }// namespace trigger
