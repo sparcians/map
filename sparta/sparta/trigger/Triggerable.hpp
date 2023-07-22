@@ -34,6 +34,12 @@ public:
 
     //! The method to call on periodic repeats of the trigger.
     virtual void repeat() {}
+
+    //! Has been triggered?
+    bool isTriggered() const { return triggered_; }
+
+protected:
+    bool triggered_ = false;
 };
 
     }// namespace trigger

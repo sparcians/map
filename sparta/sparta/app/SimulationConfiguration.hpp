@@ -532,7 +532,8 @@ public:
     enum class TriggerSource {
         TRIGGER_ON_NONE = 0,
         TRIGGER_ON_CYCLE,
-        TRIGGER_ON_INSTRUCTION
+        TRIGGER_ON_INSTRUCTION,
+        TRIGGER_ON_ROI
     };
 
     /*!

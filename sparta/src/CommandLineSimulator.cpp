@@ -68,6 +68,7 @@
 #include "sparta/pevents/PeventTrigger.hpp"
 #include "sparta/trigger/Trigger.hpp"
 #include "sparta/trigger/Triggerable.hpp"
+#include "sparta/trigger/RegionOfInterest.hpp"
 #include "sparta/utils/Printing.hpp"
 #include "sparta/utils/SmartLexicalCast.hpp"
 
@@ -82,7 +83,7 @@ const uint32_t OPTIONS_DOC_WIDTH = 140;
 
 const char INVALID_HELP_TOPIC[] = "<invalid help topic>";
 const char MULTI_INSTRUCTION_TRIGGER_ERROR_MSG[] = \
-    "Cannot use more than one of --debug-on, --debug-on-icount, and instruction based pevent "
+    "Cannot use more than one of --debug-on, --debug-on-icount, --debug-on-roi, and instruction based pevent "
     "triggering at the same time. This is not yet supported/tested";
 
 //! Prints logging help text
@@ -331,7 +332,7 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "This includes any user-configured pipeline collection or logging (builtin logging of "
          "warnings to stderr is always enabled). Note that this is just a "
          "delay; logging and pipeline collection must be explicitly enabled.\n"
-         "WARNING: Must not be specified with --debug-on-icount\n"
+         "WARNING: Must not be specified with --debug-on-icount, --debug-on-roi\n"
          "WARNING: The CYCLE may only be partly included. It is dependent upon when the "
          "scheduler activates the trigger. It is recommended to schedule a few ticks before your "
          "desired area.\n"
@@ -344,12 +345,16 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          named_value<std::vector<std::vector<std::string>>>("INSTRUCTIONS"),
          "\nDelay the recording of useful information starting until a specified number of "
          "instructions.\n"
-         "WARNING: Must not be specified with --debug-on\n"
+         "WARNING: Must not be specified with --debug-on, --debug-on-roi\n"
          "See also --debug-on.\n"
          "Examples: '--debug-on-icount 500 -z PREFIX_'\n"
          "Begins pipeline collection to PREFIX_ when instruction count from this simulator's "
          "counter with the CSEM_INSTRUCTIONS semantic is equal to 500",
          "Begin all debugging instrumentation at a specific instruction count") // Brief
+        ("debug-on-roi",
+         "\nDelay the recoding of useful information when simulator detects ROIs. Pipeline collection, "
+         "Pevents, and loggers will generate output file for every ROI.\n"
+         "WARNING: Must not be specified with --debug-on, --debug-on-icount\n") // Brief
         ;
 
     // Pipeline configuration
@@ -1162,7 +1167,6 @@ bool CommandLineSimulator::parse(int argc,
 
                 ++i;
                 collection_parsed = true;
-
             } else if (o.string_key.find("collection-at") != std::string::npos) {
                 if(!collection_parsed)
                 {
@@ -1300,8 +1304,8 @@ bool CommandLineSimulator::parse(int argc,
                 }
                 delayed_start = true;
 
-                if(sim_config_.trigger_on_value != static_cast<uint64_t>(SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE)) {
-                    throw SpartaException("Cannot use both --debug-on and --debug-on-icount simultaneously");
+                if(sim_config_.trigger_on_type != SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE) {
+                    throw SpartaException("Cannot use --debug-on, --debug-on-icount, and --debug-on-roi simultaneously");
                 }
 
                 // Parse the debug trigger on cycle number
@@ -1346,8 +1350,8 @@ bool CommandLineSimulator::parse(int argc,
                 }
                 delayed_start = true;
 
-                if(sim_config_.trigger_on_value != static_cast<uint64_t>(SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE)){
-                    throw SpartaException("Cannot use both --debug-on and --debug-on-icount simultaneously");
+                if(sim_config_.trigger_on_type != SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE){
+                    throw SpartaException("Cannot use --debug-on, --debug-on-icount, and --debug-on-roi simultaneously");
                 }
 
                 // Parse the debug trigger on cycle number
@@ -1360,6 +1364,18 @@ bool CommandLineSimulator::parse(int argc,
                     throw SpartaException("debug-on-icount must take an integer value, not \"")
                         << o.value.at(0) << "\"";
                 }
+                ++i;
+            } else if(o.string_key == "debug-on-roi") {
+                if(delayed_start)
+                {
+                    std::cerr << MULTI_INSTRUCTION_TRIGGER_ERROR_MSG << std::endl;
+                }
+                delayed_start = true;
+
+                if(sim_config_.trigger_on_type != SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE){
+                    throw SpartaException("Cannot use --debug-on, --debug-on-icount, and --debug-on-roi simultaneously");
+                }
+                sim_config_.trigger_on_type = SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI;
                 ++i;
             } else if(o.string_key == "wall-timeout" || o.string_key == "cpu-timeout") {
 
@@ -1929,6 +1945,10 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
     // Pevent
     if(run_pevents_) {
         pevent_trigger_.reset(new sparta::trigger::PeventTrigger(sim->getRoot()));
+        // FIXME: Support debug-roi for pevent collection
+        if(sim_config_.trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI) {
+            throw SpartaException("Pevent ennoblement is currently not supported with debug-roi. Use --debug or --debug-on-icount");
+        }
     }
 
     for (const auto & def_file : report_descriptor_def_files_) {
@@ -2081,9 +2101,11 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
         if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)
         {
+            const bool multiple_triggers = sim_config_.trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI;
             pipeline_collection_triggerable_.reset(new PipelineTrigger(sim_config_.pipeline_collection_file_prefix,
                                                                        pipeline_enabled_node_names_,
                                                                        heartbeat,
+                                                                       multiple_triggers,
                                                                        sim->getRootClock(),
                                                                        sim->getRoot()));
 
@@ -2152,6 +2174,18 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             case SimulationConfiguration::TriggerSource::TRIGGER_ON_INSTRUCTION:
                 debug_trigger_->setTriggerStartAbsolute(sim->findSemanticCounter(Simulation::CSEM_INSTRUCTIONS),
                                                         sim_config_.trigger_on_value);
+                break;
+            case SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI:
+                {
+                    try{
+                        debug_trigger_->setTriggerNotificationDriven(sim->getRoot(), roi::NOTIFICATION_SRC_NAME);
+                    }catch(SpartaException& ex) {
+                        std::cerr << "\nTo use debug-roi option, users have to register notification source \""
+                                  << roi::NOTIFICATION_SRC_NAME << "\"" << std::endl;
+                        std::cerr << "\n\n" SPARTA_CMDLINE_COLOR_ERROR "Rethrowing..." SPARTA_CMDLINE_COLOR_NORMAL << std::endl;
+                        throw;
+                    }
+                }
                 break;
             default:
                 sparta_assert(!"Unknown tigger on type");
@@ -2333,7 +2367,9 @@ void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
             sim->run(ticks);
         }catch(...){
             if(pipeline_collection_triggerable_) {
-                pipeline_collection_triggerable_->stop();
+                if(pipeline_collection_triggerable_->isTriggered()) {
+                    pipeline_collection_triggerable_->stop();
+                }
                 info_out_->write("Simulation aborted at: ");
                 info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
             }
@@ -2346,7 +2382,9 @@ void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
 
     if(pipeline_collection_triggerable_)
     {
-        pipeline_collection_triggerable_->stop();
+        if(pipeline_collection_triggerable_->isTriggered()) {
+            pipeline_collection_triggerable_->stop();
+        }
 
          // Write the end time of the simulation.
         info_out_->write("Simulation ended at: ");

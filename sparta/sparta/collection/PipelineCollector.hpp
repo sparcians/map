@@ -121,7 +121,9 @@ namespace collection
 
             void enable(CollectableTreeNode * ctn) {
                 enabled_ctns_.insert(ctn);
-                ev_collect_->schedule(sparta::Clock::Cycle(0));
+                // Schedule collect event in the next cycle in case
+                // this is called in an unavailable pphase.
+                ev_collect_->schedule(sparta::Clock::Cycle(1));
             }
 
             void disable(CollectableTreeNode * ctn) {
@@ -293,9 +295,9 @@ namespace collection
             // XXX This is a little goofy looking.  Should we make sparta_abort that takes conditional
             //    be sparta_abort_unless()?
             sparta_abort(collection_active_ != true,
-               "The PipelineCollector was not torn down properly. Before "
-               "tearing down the simulation tree, you must call "
-               "destroy() on the collector");
+                         "The PipelineCollector was not torn down properly. Before "
+                         "tearing down the simulation tree, you must call "
+                         "destroy() on the collector");
         }
 
         /*!
@@ -317,6 +319,13 @@ namespace collection
             registered_collectables_.clear();
             writer_.reset();
             collection_active_ = false;
+        }
+
+        void reactivate(const std::string& filepath)
+        {
+            sparta_assert(!collection_active_,
+                          "You can only reactivate the PipelineCollector after you destroy it");
+            filepath_ = filepath;
         }
 
         /**
