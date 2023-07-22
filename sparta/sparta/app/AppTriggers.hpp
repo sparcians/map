@@ -137,8 +137,8 @@ private:
     const std::set<std::string> pipeline_enabled_node_names_;
     const uint64_t pipeline_heartbeat_;
     const bool multiple_triggers_;
-    sparta::Clock * clk_;
-    sparta::RootTreeNode * root_;
+    sparta::Clock * clk_ = nullptr;
+    sparta::RootTreeNode * root_ = nullptr;
     uint32_t num_collections_ = 0;
 };
 

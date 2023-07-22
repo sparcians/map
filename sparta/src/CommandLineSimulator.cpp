@@ -1305,7 +1305,7 @@ bool CommandLineSimulator::parse(int argc,
                 delayed_start = true;
 
                 if(sim_config_.trigger_on_type != SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE) {
-                    throw SpartaException("Cannot use either --debug-on, --debug-on-icount or --debug-on-roi simultaneously");
+                    throw SpartaException("Cannot use --debug-on, --debug-on-icount, and --debug-on-roi simultaneously");
                 }
 
                 // Parse the debug trigger on cycle number
@@ -1351,7 +1351,7 @@ bool CommandLineSimulator::parse(int argc,
                 delayed_start = true;
 
                 if(sim_config_.trigger_on_type != SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE){
-                    throw SpartaException("Cannot use either --debug-on, --debug-on-icount or --debug-on-roi simultaneously");
+                    throw SpartaException("Cannot use --debug-on, --debug-on-icount, and --debug-on-roi simultaneously");
                 }
 
                 // Parse the debug trigger on cycle number
@@ -1373,7 +1373,7 @@ bool CommandLineSimulator::parse(int argc,
                 delayed_start = true;
 
                 if(sim_config_.trigger_on_type != SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE){
-                    throw SpartaException("Cannot use either --debug-on, --debug-on-icount or --debug-on-roi simultaneously");
+                    throw SpartaException("Cannot use --debug-on, --debug-on-icount, and --debug-on-roi simultaneously");
                 }
                 sim_config_.trigger_on_type = SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI;
                 ++i;
@@ -1947,7 +1947,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
         pevent_trigger_.reset(new sparta::trigger::PeventTrigger(sim->getRoot()));
         // FIXME: Support debug-roi for pevent collection
         if(sim_config_.trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI) {
-            throw SpartaException("debug-roi hasn't been supported for Pevent collection");
+            throw SpartaException("Pevent ennoblement is currently not supported with debug-roi. Use --debug or --debug-on-icount");
         }
     }
 

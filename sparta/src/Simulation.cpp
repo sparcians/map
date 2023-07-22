@@ -483,7 +483,7 @@ void Simulation::configure(const int argc,
     // FIXME: Support debug-roi for loggers
     if(sim_config_->trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI &&
        !sim_config_->getTaps().empty()) {
-        throw SpartaException("debug-roi hasn't been supported for loggers");
+        throw SpartaException("Logging ennoblement is currently not supported with debug-roi. Use --debug or --debug-on-icount");
     }
 
     // If there are nodes already existing in the tree (e.g. root or "") then
