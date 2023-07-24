@@ -10,11 +10,9 @@ namespace sparta
 {
     namespace roi
     {
-        enum Triggers : uint64_t {
-            STOP = 0,
-            START = 1
-        };
-
+        using Triggers = uint64_t;
+        static constexpr Triggers STOP = 0;
+        static constexpr Triggers START = 1;
         static const std::string NOTIFICATION_SRC_NAME = "roi_start_stop";
     }
 }
