@@ -1,9 +1,10 @@
-#include <string>
+#include <cassert>
+#include <cstdlib>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
-#include <assert.h>
 #include <limits>
-#include <stdlib.h>
+#include <string>
 
 /*!
  * \brief Helper for quickly scanning through a SPARTA log file based on
@@ -34,7 +35,7 @@ public:
 
     static const uint64_t BAD_LOCATION = std::numeric_limits<uint64_t>::max();
 
-    LogSearch(const std::string& filename)
+    explicit LogSearch(const std::string& filename)
         : in_(filename)
     {
         file_bytes_ = 0;

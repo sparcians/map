@@ -114,8 +114,8 @@ namespace pevents{
                 bool is_unique = true;
                 for(const auto& existing_tap : taps_)
                 {
-                    if(existing_tap->getDestination()->compareStrings(file) && (existing_tap->getCategoryName() == lowertype
-                                                                 || lowertype == "all"))
+                    if(existing_tap->getDestination()->compareStrings(file) &&
+                       (existing_tap->getCategoryName() == lowertype || lowertype == "all"))
                     {
                         is_unique = false;
                         break;

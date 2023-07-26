@@ -1,62 +1,31 @@
 
 /*!
-  \page building Building the Framework
+  \page building Building and Integrating the Framework
   See <a href="https://github.com/sparcians/map/blob/master/sparta/README.md">README.md</a> on GitHub for instructions on building.
 
-  Notes on to what's built...
+  Notes on what's built...
 
   Building sparta produces two main libraries:
   - \c libsparta.a containing the core sparta code
   - \c libsimdb.a  containing functionality to generate reports with SQLite3
 
+  \subsection cmake CMake Support
+
+  If Sparta was installed properly in a conda environment or natively
+  on the host machine, \c cmake can find Sparta and include it
+  automatically in any project using the packaging system:
+
+  \code
+  find_package(Sparta REQUIRED)
+
+  # Might be necessary if Sparta was NOT installed in standard place:
+  include_directories (SYSTEM ${SPARTA_INCLUDE_DIRS})
+  \endcode
+
   \subsection includes Sparta Header Files
 
-  All sparta header files can be found within the \c sparta directory of
-  the sparta project. All SimDB files can be found in the \c          simdb
-  directory of the sparta project.  At minimum, the following include
-  paths must be added to your project:
+  All sparta header files can be found within the \c sparta
+  directory. All SimDB files can be found in the \c simdb directory
+  installed alongside the Sparta libraries.
 
-  \code
-  # Where SPARTA_BASE=/path/to/map/sparta
-
-  # Standard make
-  -isystem $(SPARTA_BASE) -isystem $(SPARTA_BASE)/simdb/include
-
-  # Using CMake
-  include_directories (SYSTEM ${SPARTA_BASE})
-  include_directories (SYSTEM ${SPARTA_BASE}/simdb/include)
-
-  \endcode
-
-  \subsection linking Sparta Libraries
-
-  The Sparta project uses CMake.  If your project uses CMake as well,
-  simply include the cmake config file and add \c Sparta_LIBS to your \c
-  target_link_libraries call:
-
-  \code
-  include (${SPARTA_BASE}/cmake/sparta-config.cmake)
-  target_link_libraries(mysim ${Sparta_LIBS})
-  \endcode
-
-  For other build systems, the following libraries are required to link
-  against Sparta.  Note that this list may be out of date.  Please look
-  in \c sparta-config.cmake for the latest list of libraries.
-
-  \code
-
-  sparta
-  simdb
-  hdf5
-  sqlite3
-  yaml-cpp
-  z
-  pthread
-  Boost::date_time
-  Boost::iostreams
-  Boost::serialization
-  Boost::timer
-  Boost::program_options
-
-  \endcode
 */

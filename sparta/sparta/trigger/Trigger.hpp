@@ -8,6 +8,7 @@
 
 #include "sparta/trigger/Triggerable.hpp"
 #include "sparta/trigger/SingleTrigger.hpp"
+#include "sparta/trigger/RegionOfInterest.hpp"
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/events/Event.hpp"
 #include "sparta/utils/Colors.hpp"
@@ -185,6 +186,16 @@ public:
     }
 
     /**
+     * \brief set up the NotificationSource, instead of using triggers
+     * \param node TreeNode to set
+     * \param notif_src_name Notification source name to drive trigger
+     */
+    void setTriggerNotificationDriven(RootTreeNode * node, const std::string & notif_src_name)
+    {
+        node->REGISTER_FOR_NOTIFICATION(onNotificationPosted_, roi::Triggers, notif_src_name);
+    }
+
+    /**
      * \brief print out the details about this trigger.
      */
     void print(std::ostream& o) const
@@ -320,6 +331,24 @@ private:
         }
         //We deactivate any repeat triggers from accuring after this stop.
         triggers_[REPEAT]->deactivate();
+    }
+
+    void onNotificationPosted_(const roi::Triggers & trigger)
+    {
+        if(trigger == roi::START)
+        {
+            for(Triggerable* obj : triggered_objs_)
+            {
+                obj->go();
+            }
+        }
+        else if(trigger == roi::STOP)
+        {
+           for(Triggerable* obj : triggered_objs_)
+            {
+                obj->stop();
+            }
+        }
     }
 
     std::vector<Triggerable*> triggered_objs_;

@@ -77,6 +77,7 @@ namespace sparta
          * \param num_bytes The number of bytes to allocate
          */
         explicit RegisterBits(const uint64_t num_bytes) :
+            local_storage_(),
             local_data_(local_storage_.data()),
             remote_data_(local_data_),
             num_bytes_(num_bytes)
