@@ -364,7 +364,7 @@ namespace sparta::utils
         }
 
         /**
-         * \brief emplace and object at the back
+         * \brief emplace an object at the back
          * \param args The arguments to the T constructor
          * \return iterator of the emplaced item
          */
