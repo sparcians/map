@@ -120,6 +120,10 @@ else ()
   message (FATAL_ERROR "Unknown CMAKE_BUILD_TYPE.  See README.md OR type 'make' at the SPARTA root")
 endif ()
 
+Set(CMAKE_CXX_FLAGS_DEBUG          "-O0 -g")
+Set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
+set(CMAKE_CXX_FLAGS_PROFILE        "-O3 -pg -g")
+
 string (STRIP ${GIT_REPO_VERSION} GIT_REPO_VERSION)
 message (STATUS "Sparta Version: ${GIT_REPO_VERSION}")
 
@@ -152,8 +156,6 @@ if (ENABLE_SANITIZERS)
     add_compile_options(-fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined)
     set (CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
 endif ()
-
-set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg -g")
 if(DEFINED SPARTA_CXX_FLAGS_DEBUG AND SPARTA_CXX_FLAGS_DEBUG)
   set(CMAKE_CXX_FLAGS_DEBUG "${SPARTA_CXX_FLAGS_DEBUG}")
   message(STATUS "Using Sparta custom debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
