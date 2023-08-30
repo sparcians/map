@@ -26,55 +26,97 @@
  *  @{
 */
 
-/** Macro to simplify sending messages to the Unit debug logger
- *  @param msg The message to send to the debug logger
- */
-#ifndef DLOG
-#define DLOG(msg) \
-    if (SPARTA_EXPECT_FALSE(debug_logger_)) { \
-        debug_logger_ << __func__ <<  ": " << msg; \
+/** The main motivation for decomposition into *LOG_CODE_BLOCK and *LOG_OUTPUT
+ *  is to support something like the following:
+ *
+ *  DLOG_CODE_BLOCK(
+ *      std::ostringstream oss;
+ *      // Complex sequence of various outputs to the ostringstream
+ *      // ...
+ *      DLOG_OUTPUT(oss.str());
+ *  )
+ *
+ *  The preprocessor can then still completely eliminate a complex logging message like
+ *  this if SPARTA_DISABLE_MACRO_LOGGING is defined. It also allows a complex logging
+ *  message to have consistent format with all other logging messages.
+*/
+#ifndef SPARTA_LOG_CODE_BLOCK
+#ifdef SPARTA_DISABLE_MACRO_LOGGING
+#define SPARTA_LOG_CODE_BLOCK(logger, code)
+#else
+#define SPARTA_LOG_CODE_BLOCK(logger, code) \
+    if (SPARTA_EXPECT_FALSE(logger)) { \
+        code \
     }
+#endif
+#endif
+
+#ifndef DLOG_CODE_BLOCK
+#define DLOG_CODE_BLOCK(code) SPARTA_LOG_CODE_BLOCK(debug_logger_, code)
+#endif
+
+#ifndef ILOG_CODE_BLOCK
+#define ILOG_CODE_BLOCK(code) SPARTA_LOG_CODE_BLOCK( info_logger_, code)
+#endif
+
+#ifndef WLOG_CODE_BLOCK
+#define WLOG_CODE_BLOCK(code) SPARTA_LOG_CODE_BLOCK( warn_logger_, code)
+#endif
+
+#ifndef SPARTA_LOG_OUTPUT
+#define SPARTA_LOG_OUTPUT(logger, msg) logger << __func__ <<  ": " << msg;
+#endif
+
+#ifndef DLOG_OUTPUT
+#define DLOG_OUTPUT(msg) SPARTA_LOG_OUTPUT(debug_logger_, msg)
+#endif
+
+#ifndef ILOG_OUTPUT
+#define ILOG_OUTPUT(msg) SPARTA_LOG_OUTPUT( info_logger_, msg)
+#endif
+
+#ifndef WLOG_OUTPUT
+#define WLOG_OUTPUT(msg) SPARTA_LOG_OUTPUT( warn_logger_, msg)
+#endif
+
+/** Macro to simplify sending messages to the Unit logger
+ *  @param msg The message to send to the logger
+ */
+#ifndef SPARTA_LOG
+#define SPARTA_LOG(logger, msg) SPARTA_LOG_CODE_BLOCK(logger, SPARTA_LOG_OUTPUT(logger, msg))
+#endif
+
+#ifndef DLOG
+#define DLOG(msg) SPARTA_LOG(debug_logger_, msg)
+#endif
+
+#ifndef ILOG
+#define ILOG(msg) SPARTA_LOG( info_logger_, msg)
+#endif
+
+#ifndef WLOG
+#define WLOG(msg) SPARTA_LOG( warn_logger_, msg)
+#endif
+
+#ifndef SPARTA_LOG_IF
+#define SPARTA_LOG_IF(logger, condition, msg) \
+    SPARTA_LOG_CODE_BLOCK(logger, \
+        if (condition) { \
+            SPARTA_LOG_OUTPUT(logger, msg) \
+        } \
+    )
 #endif
 
 #ifndef DLOG_IF
-#define DLOG_IF(condition, msg) \
-    if (SPARTA_EXPECT_FALSE(condition && debug_logger_)) { \
-        debug_logger_ << __func__ <<  ": " << msg; \
-    }
-#endif
-
-/** Macro to simplify sending messages to the Unit info logger
- *  @param msg The message to send to the info logger
- */
-#ifndef ILOG
-#define ILOG(msg) \
-    if (SPARTA_EXPECT_FALSE(info_logger_)) { \
-        info_logger_ << __func__ <<  ": " << msg; \
-    }
+#define DLOG_IF(condition, msg) SPARTA_LOG_IF(debug_logger_, condition, msg)
 #endif
 
 #ifndef ILOG_IF
-#define ILOG_IF(condition, msg) \
-    if (SPARTA_EXPECT_FALSE(condition && info_logger_)) { \
-        info_logger_ << __func__ <<  ": " << msg; \
-    }
-#endif
-
-/** Macro to simplify sending messages to the Unit warn logger
- *  @param msg The message to send to the warn logger
- */
-#ifndef WLOG
-#define WLOG(msg) \
-    if (SPARTA_EXPECT_FALSE(warn_logger_)) { \
-        warn_logger_ << __func__ <<  ": " << msg; \
-    }
+#define ILOG_IF(condition, msg) SPARTA_LOG_IF( info_logger_, condition, msg)
 #endif
 
 #ifndef WLOG_IF
-#define WLOG_IF(condition, msg) \
-    if (SPARTA_EXPECT_FALSE(condition && warn_logger_)) { \
-        warn_logger_ << __func__ <<  ": " << msg; \
-    }
+#define WLOG_IF(condition, msg) SPARTA_LOG_IF( warn_logger_, condition, msg)
 #endif
 
 /** @} */
