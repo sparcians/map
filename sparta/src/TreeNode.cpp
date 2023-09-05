@@ -2853,6 +2853,9 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
 
                 get_extension_names_from_node(extension_node);
                 get_extension_names_from_node(arch_extension_node);
+                for(auto & ext : extensions_) {
+                    extension_names_.insert(ext.first);
+                }
                 return nullptr;
             } else {
                 return nullptr;
