@@ -51,15 +51,16 @@ add_custom_command(TARGET core_example_regress_valgrind POST_BUILD COMMAND ctest
 #
 sparta_copy(sparta_core_example *.yaml)
 sparta_copy(sparta_core_example gen_layouts.py)
+sparta_recursive_copy(sparta_core_example layouts)
 sparta_recursive_copy(sparta_core_example subdir_yamls*)
 sparta_recursive_copy(sparta_core_example test_configs)
 # build this guy as part of the regress
 sparta_regress(sparta_core_example)
 sparta_named_test(sparta_core_example_20000cycs sparta_core_example -r 200000)
 sparta_named_test(sparta_core_example_fetch_max_ipc sparta_core_example  -i 1M -p top.cpu.core0.fetch.params.fetch_max_ipc true)
-sparta_named_test(sparta_core_example_pipeout sparta_core_example -i 1000 -z pipeout -K cpu_layout.alf)
-sparta_named_test(sparta_core_example_pipeout_icount sparta_core_example -i 1000 --debug-on-icount 100 -z pipeout -K cpu_layout.alf)
-sparta_named_test(sparta_core_example_pipeout_cycle sparta_core_example -i 1000 --debug-on 100 -z pipeout -K cpu_layout.alf)
+sparta_named_test(sparta_core_example_pipeout sparta_core_example -i 1000 -z pipeout -K layouts/cpu_layout.alf)
+sparta_named_test(sparta_core_example_pipeout_icount sparta_core_example -i 1000 --debug-on-icount 100 -z pipeout -K layouts/cpu_layout.alf)
+sparta_named_test(sparta_core_example_pipeout_cycle sparta_core_example -i 1000 --debug-on 100 -z pipeout -K layouts/cpu_layout.alf)
 # Using a standard  YAML causes this test to fail.  Need to investigate Issue #4
 # sparta_named_test(sparta_core_example_preload sparta_core_example -i 1000 -p top.cpu.core0.preloader.params.preload_file sample_preload.yaml)
 sparta_named_test(sparta_core_example_multicore_yaml_opts_smoke_test sparta_core_example -i 10k --report top multicore_report_opts_basic.yaml out.txt --num-cores 2)
