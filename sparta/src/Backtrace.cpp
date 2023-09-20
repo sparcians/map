@@ -183,8 +183,6 @@ void dump_backtrace(FILE* f, void* caller_address = nullptr)
 //         array[1] = caller_address;
 //     }
 
-    return;
-
     messages = backtrace_symbols(array, size);
 
     // Skip first stack frame (points here)
@@ -258,7 +256,6 @@ BacktraceData get_backtrace(void* caller_address = nullptr)
 
 void BacktraceData::render(std::ostream& o, bool line_info) const
 {
-    return;
     char demangle_buf[4096];
 
     uint32_t i = 1; // Begin with frame 1.
