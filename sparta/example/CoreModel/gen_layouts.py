@@ -1,6 +1,18 @@
 import sys,os
+import pathlib
 
-sys.path.append('../../../../helios/pipeViewer/scripts')
+
+gen_dir = pathlib.PurePath(os.path.abspath(__file__))
+scripts_dir  =''
+alf_gen_path = '/helios/pipeViewer/scripts'
+for part in gen_dir.parts[1:]:
+    scripts_dir += '/' + part
+    if os.path.exists(scripts_dir + alf_gen_path):
+        scripts_dir += alf_gen_path
+        break
+assert scripts_dir != '', f"Can't find {alf_gen_path}"
+
+sys.path.append(scripts_dir)
 from alf_gen.ALFLayout import ALFLayout
 
 if os.path.isfile("pipeout/location.dat") == False:
@@ -10,15 +22,14 @@ if os.path.isfile("pipeout/location.dat") == False:
         ./sparta_core_example -i1 -z pipeout/
     ''')
     exit(255)
-
 try:
     os.mkdir('layouts')
 except:
     pass
 
-num_cycles = 55
+NUM_CYCLES = 55
 layout = ALFLayout(start_time  = -10,
-                   num_cycles  = num_cycles,
+                   num_cycles  = NUM_CYCLES,
                    clock_scale = 1,
                    location_file = "pipeout/location.dat",
                    alf_file    = "layouts/cpu_layout.alf")
