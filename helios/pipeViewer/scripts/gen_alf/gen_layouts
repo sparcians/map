@@ -1,3 +1,0 @@
-#!/bin/bash
-
-./gen_alf core.cmd > core.alf
