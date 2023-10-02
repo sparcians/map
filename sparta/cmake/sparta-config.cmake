@@ -45,10 +45,19 @@ include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 message (STATUS "Using BOOST ${Boost_VERSION_STRING}")
 
 # Find YAML CPP
-find_package (yaml-cpp 0.6 REQUIRED)
-get_property(YAML_CPP_INCLUDE_DIR TARGET yaml-cpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-include_directories (SYSTEM ${YAML_CPP_INCLUDE_DIR})
-message (STATUS "Using YAML CPP ${yaml-cpp_VERSION}")
+find_package (yaml-cpp 0.7 REQUIRED)
+if (yaml-cpp_FOUND)
+  if (yaml-cpp_VERSION_MINOR EQUAL 7)
+    get_property(YAML_CPP_INCLUDE_DIR TARGET yaml-cpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+  else ()
+    # To be used with yaml-cpp 0.8 or (assumed) higer
+    get_property(YAML_CPP_INCLUDE_DIR TARGET yaml-cpp::yaml-cpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+  endif ()
+  include_directories (SYSTEM ${YAML_CPP_INCLUDE_DIR})
+  message (STATUS "Using YAML CPP ${yaml-cpp_VERSION}")
+else ()
+  message(FATAL_ERROR "Could not find yaml-cpp on this system (must be 0.7 or higher)")
+endif ()
 
 # Find RapidJSON
 find_package (RapidJSON 1.1 REQUIRED)
