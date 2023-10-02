@@ -915,7 +915,8 @@ namespace sparta
             // oldest item.
             auto it = aged_list_.rbegin();
             uint32_t idx = invalid_entry_;
-            for(uint32_t i = 0; i < aged_list_.size(); ++i)
+            const uint32_t size = aged_list_.size();
+            for(uint32_t i = 0; i < size; ++i)
             {
                 idx = *it;
                 ++it;
