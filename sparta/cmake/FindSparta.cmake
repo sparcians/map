@@ -67,7 +67,12 @@ if(NOT SPARTA_FOUND)
 
         add_library(SPARTA::sparta INTERFACE IMPORTED)
         # Workaround as per https://github.com/jbeder/yaml-cpp/issues/774#issuecomment-927357017
-        get_target_property(YAML_CPP_INCLUDE_DIR yaml-cpp INTERFACE_INCLUDE_DIRECTORIES)
+        if (yaml-cpp_VERSION_MINOR EQUAL 7)
+          get_target_property(YAML_CPP_INCLUDE_DIR yaml-cpp INTERFACE_INCLUDE_DIRECTORIES)
+        else ()
+          # To be used with yaml-cpp 0.8 or (assumed) higer
+          get_target_property(YAML_CPP_INCLUDE_DIR yaml-cpp::yaml-cpp INTERFACE_INCLUDE_DIRECTORIES)
+        endif ()
         set_property(TARGET SPARTA::sparta
           PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${SPARTA_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${SQLite3_INCLUDE_DIRS} ${HDF5_CXX_INCLUDE_DIRS} ${RAPIDJSON_INCLUDE_DIR} ${RapidJSON_INCLUDE_DIR} ${YAML_CPP_INCLUDE_DIR})
         set_property(TARGET SPARTA::sparta
