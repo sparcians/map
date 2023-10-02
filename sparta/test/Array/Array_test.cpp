@@ -433,6 +433,27 @@ int main()
     EXPECT_EQUAL(test_index, 2);
     EXPECT_FALSE(aged_array_test.getNextOldestIndex(test_index));
 
+    // getAge Test 1
+    idxx = 0;
+    std::vector<uint32_t> age_vec_0 {3, 1, 4, 2, 0};
+    for(uint32_t i = 0; i < 5; ++i){
+        EXPECT_EQUAL(aged_array_test.getAge(i), age_vec_0[idxx++]);
+    }
+    // getAge Test 2
+    idxx = 0;
+    aged_array_test.write(0, 87); // The first entry becomes the youngest
+    std::vector<uint32_t> age_vec_1 {4, 1, 3, 2, 0};
+    for(uint32_t i = 0; i < 5; ++i){
+        EXPECT_EQUAL(aged_array_test.getAge(i), age_vec_1[idxx++]);
+    }
+    // getAge Test3
+    idxx = 0;
+    aged_array_test.erase(4); // Erase the last element (the oldest one)
+    std::vector<uint32_t> age_vec_2 {3, 0, 2, 1};
+    for(uint32_t i = 0; i < 4; ++i){
+        EXPECT_EQUAL(aged_array_test.getAge(i), age_vec_2[idxx++]);
+    }
+
 #ifdef PIPEOUT_GEN
     sched.run(1);
 #endif
