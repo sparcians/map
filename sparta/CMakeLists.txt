@@ -153,6 +153,7 @@ if (ENABLE_SANITIZERS)
 endif ()
 
 set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg -g")
+set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g3")
 
 #
 # If we're using CONDA, we might be using the one suggested for
