@@ -288,7 +288,7 @@ private:
     };
 
     //! The current time quantum
-    TickQuantum * current_tick_quantum_;
+    TickQuantum * current_tick_quantum_ = nullptr;
 
     //! The ObjectAllocator used to create time quantum structures
     ObjectAllocator<TickQuantum> tick_quantum_allocator_;
@@ -931,36 +931,36 @@ private:
     std::unique_ptr<DAG> dag_;
 
     //! The number of groups in the DAG after finalization.
-    uint32_t dag_group_count_;
+    uint32_t dag_group_count_ = 0;
 
     //! The number of firing groups (dag_group_count_ [+pre] [+post])
-    uint32_t firing_group_count_;
+    uint32_t firing_group_count_ = 0;
 
     //! Identifier for group zero -- index of the array that represents it
-    uint32_t group_zero_;
+    uint32_t group_zero_ = 0;
 
     //! A boolean for asserting whether or not the scheduler has
     //! called finalize on the dag
-    bool dag_finalized_;
+    bool dag_finalized_ = false;
 
     //! Are we at the very first tick?
     bool first_tick_ = true;
 
     //! The current time of the scheduler
-    Tick current_tick_;
+    Tick current_tick_ = 0; //init tick 0
 
     //! Elapsed ticks
-    Tick elapsed_ticks_;
+    Tick elapsed_ticks_ = 0;
 
     //! Previous tick that someone kicked the WDT
-    Tick prev_wdt_tick_;
+    Tick prev_wdt_tick_ = 0;
 
     //! Tickout period in ticks for the WDT; a value of 0 indicates
     //! WDT is disabled
-    Tick wdt_period_ticks_;
+    Tick wdt_period_ticks_ = 0;
 
     //! Is the scheduler running. True = yes
-    bool running_;
+    bool running_ = false;
 
     //! A callback delegate to stop running the scheduler
     std::unique_ptr<Scheduleable> stop_event_;
@@ -969,13 +969,9 @@ private:
     std::unique_ptr<Scheduleable> cancelled_event_;
     void cancelCallback_() {}
 
-    //! A count of the number of events fired since this scheduler's
-    //! creation
-    Tick events_fired_;
-
     //! A count of the number of non-continuing events scheduled since
     //! this scheduler's creation
-    bool is_finished_;
+    bool is_finished_ = false;
 
     //! A list of events that are zero priority to be fired
     std::vector<SpartaHandler> startup_events_;
@@ -985,10 +981,10 @@ private:
     std::vector<sparta::Clock*> registered_clocks_;
 
     //! The current dag group priority being fired.
-    uint32_t current_group_firing_;
+    uint32_t current_group_firing_ = 0;
 
     //! The current event being fired.
-    uint32_t current_event_firing_;
+    uint32_t current_event_firing_ = 0;
 
     //! The current SchedulingPhase
     SchedulingPhase current_scheduling_phase_ = SchedulingPhase::Trigger;
@@ -1003,7 +999,7 @@ private:
     std::ostringstream call_trace_stream_;
 
     //! Furthest continuing event in the future. Used to determine when to stop the simulation
-    Tick latest_continuing_event_;
+    Tick latest_continuing_event_ = 0;
 
     //! Set of counters & stats for the Scheduler
     StatisticSet sset_;
@@ -1051,6 +1047,11 @@ private:
 
     //! Timer used to calculate runtime
     boost::timer::cpu_timer timer_;
+
+    //! A count of the number of events fired since this scheduler's
+    //! creation
+    uint64_t        events_fired_ = 0;
+    ReadOnlyCounter events_fired_cnt_;
 
     //! User, System, and Wall clock counts
     uint64_t        user_time_ = 0;

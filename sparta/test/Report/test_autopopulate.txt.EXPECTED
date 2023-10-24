@@ -34,6 +34,7 @@ Report "Report Autopopulation Test" [0,61]
       host_machine_user_runtime_seconds = 0
       host_machine_system_runtime_seconds = 0
       host_machine_wall_runtime_seconds = 0
+      events_fired = 0
       host_user_time_count_ms = 0
       host_system_time_count_ms = 0
       host_wall_time_count_ms = 0
