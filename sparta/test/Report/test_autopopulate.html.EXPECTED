@@ -275,6 +275,13 @@ scheduler.stats.picoseconds' style='' >60</td>
 <td class='expression'>Simulation wall clock runtime in seconds as measured on the host machine</td>
 <tr>
 
+<td class='name' title='Scheduler events fired during simulation
+scheduler.stats.events_fired'>events_fired</td>
+<td class='value' title='Scheduler events fired during simulation
+scheduler.stats.events_fired' style='' >&nbsp;0</td>
+<td class='expression'>Scheduler events fired during simulation</td>
+<tr>
+
 <td class='name' title='User scheduler performance (not simulated time)
 scheduler.stats.host_user_time_count_ms'>host_user_time_count_ms</td>
 <td class='value' title='User scheduler performance (not simulated time)

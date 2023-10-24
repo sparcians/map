@@ -44,27 +44,13 @@ Scheduler::Scheduler() :
 
 Scheduler::Scheduler(const std::string& name, GlobalTreeNode* search_scope) :
     RootTreeNode(name, "DES Scheduler", search_scope),
-    current_tick_quantum_(nullptr),
-    dag_group_count_(1),
-    firing_group_count_(dag_group_count_ + 2),
-    dag_finalized_(false),
-    current_tick_(0), //init tick 0
-    elapsed_ticks_(0),
-    prev_wdt_tick_(0),
-    wdt_period_ticks_(0),
-    running_(false),
     stop_event_(new Scheduleable(CREATE_SPARTA_HANDLER(Scheduler, stopRunning), 0, SchedulingPhase::Trigger)),
     cancelled_event_(new Scheduleable(CREATE_SPARTA_HANDLER(Scheduler, cancelCallback_), 0, SchedulingPhase::Tick)),
-    events_fired_(0),
-    is_finished_(false),
-    current_group_firing_(0),
-    current_event_firing_(0),
     debug_(this,
            sparta::log::categories::DEBUG,
            "Scheduler debug messages including queue dump"),
     call_trace_logger_(this, (std::string)"calltrace",
                        "Scheduler Event Call Trace"),
-    latest_continuing_event_(0),
     sset_(this),
     scheduler_internal_clk_(new sparta::Clock("_internal_scheduler_clk", this)),
     ticks_roctr_(&sset_,
@@ -108,9 +94,10 @@ Scheduler::Scheduler(const std::string& name, GlobalTreeNode* search_scope) :
                        "Simulation wall clock runtime in seconds as measured on the host machine",
                        &sset_,
                        "host_wall_time_count_ms/1000.0"),
-    user_time_cnt_  (&sset_, "host_user_time_count_ms",   "User scheduler performance (not simulated time)",   Counter::COUNT_NORMAL, &user_time_),
-    system_time_cnt_(&sset_, "host_system_time_count_ms", "System scheduler performance (not simulated time)", Counter::COUNT_NORMAL, &system_time_),
-    wall_time_cnt_  (&sset_, "host_wall_time_count_ms",   "Wall scheduler performance (not simulated time)",   Counter::COUNT_NORMAL, &wall_time_),
+    events_fired_cnt_(&sset_, "events_fired",              "Scheduler events fired during simulation",          Counter::COUNT_NORMAL, &events_fired_),
+    user_time_cnt_   (&sset_, "host_user_time_count_ms",   "User scheduler performance (not simulated time)",   Counter::COUNT_NORMAL, &user_time_),
+    system_time_cnt_ (&sset_, "host_system_time_count_ms", "System scheduler performance (not simulated time)", Counter::COUNT_NORMAL, &system_time_),
+    wall_time_cnt_   (&sset_, "host_wall_time_count_ms",   "Wall scheduler performance (not simulated time)",   Counter::COUNT_NORMAL, &wall_time_),
     es_uptr_(new EventSet(this))
 #ifdef SYSTEMC_SUPPORT
     , item_scheduled_(this, "item_scheduled", "Broadcasted when something is scheduled", "item_scheduled")
