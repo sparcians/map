@@ -937,7 +937,7 @@ private:
     uint32_t firing_group_count_ = 0;
 
     //! Identifier for group zero -- index of the array that represents it
-    uint32_t group_zero_;
+    uint32_t group_zero_ = 0;
 
     //! A boolean for asserting whether or not the scheduler has
     //! called finalize on the dag
