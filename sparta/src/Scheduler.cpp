@@ -94,10 +94,17 @@ Scheduler::Scheduler(const std::string& name, GlobalTreeNode* search_scope) :
                        "Simulation wall clock runtime in seconds as measured on the host machine",
                        &sset_,
                        "host_wall_time_count_ms/1000.0"),
-    events_fired_cnt_(&sset_, "events_fired",              "Scheduler events fired during simulation",          Counter::COUNT_NORMAL, &events_fired_),
-    user_time_cnt_   (&sset_, "host_user_time_count_ms",   "User scheduler performance (not simulated time)",   Counter::COUNT_NORMAL, &user_time_),
-    system_time_cnt_ (&sset_, "host_system_time_count_ms", "System scheduler performance (not simulated time)", Counter::COUNT_NORMAL, &system_time_),
-    wall_time_cnt_   (&sset_, "host_wall_time_count_ms",   "Wall scheduler performance (not simulated time)",   Counter::COUNT_NORMAL, &wall_time_),
+    events_fired_cnt_(&sset_, "events_fired",              "Scheduler events fired during simulation",
+                      Counter::COUNT_NORMAL, &events_fired_),
+    user_time_cnt_   (&sset_, "host_user_time_count_ms",
+                      "User scheduler performance (not simulated time) in milliseconds",
+                      Counter::COUNT_NORMAL, &user_time_),
+    system_time_cnt_ (&sset_, "host_system_time_count_ms",
+                      "System scheduler performance (not simulated time) in milliseconds",
+                      Counter::COUNT_NORMAL, &system_time_),
+    wall_time_cnt_   (&sset_, "host_wall_time_count_ms",
+                      "Wall scheduler performance (not simulated time) in milliseconds",
+                      Counter::COUNT_NORMAL, &wall_time_),
     es_uptr_(new EventSet(this))
 #ifdef SYSTEMC_SUPPORT
     , item_scheduled_(this, "item_scheduled", "Broadcasted when something is scheduled", "item_scheduled")

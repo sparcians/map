@@ -931,10 +931,10 @@ private:
     std::unique_ptr<DAG> dag_;
 
     //! The number of groups in the DAG after finalization.
-    uint32_t dag_group_count_ = 1;
+    uint32_t dag_group_count_ = 0;
 
     //! The number of firing groups (dag_group_count_ [+pre] [+post])
-    uint32_t firing_group_count_ = {dag_group_count_ + 2};
+    uint32_t firing_group_count_ = 0;
 
     //! Identifier for group zero -- index of the array that represents it
     uint32_t group_zero_;
