@@ -10,21 +10,13 @@
 
 #include <list>
 #include <algorithm>
+#include <functional>
 
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/FastList.hpp"
 
 namespace sparta
 {
-
-    // A default sorting algorithm
-    template<class DataT>
-    struct DefaultSortingAlgorithm
-    {
-        bool operator()(const DataT & existing, const DataT & to_be_inserted) const {
-            return existing < to_be_inserted;
-        }
-    };
 
     /**
      * \class PriorityQueue
@@ -59,7 +51,7 @@ namespace sparta
      *
      */
     template <class DataT,
-              class SortingAlgorithmT = DefaultSortingAlgorithm<DataT>,
+              class SortingAlgorithmT = std::less<DataT>,
               size_t bounded_cnt=0>
     class PriorityQueue
     {
@@ -186,7 +178,6 @@ namespace sparta
     private:
 
         //! The internal queue
-        //PQueueType        priority_items_{bounded_cnt, DataT()};
         PQueueType        priority_items_;
 
         //! Copy of the sorting algorithm
