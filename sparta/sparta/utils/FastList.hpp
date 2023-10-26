@@ -16,7 +16,9 @@
 #include <iterator>
 #include <cinttypes>
 #include <cassert>
+#include <type_traits>
 
+#include "sparta/utils/IteratorTraits.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 
 namespace sparta::utils
@@ -89,7 +91,7 @@ namespace sparta::utils
          *
          */
         template<bool is_const = true>
-        class NodeIterator // : public std::iterator<std::intput_iterator_tag, Node>
+        class NodeIterator : public sparta::utils::IteratorTraits<std::forward_iterator_tag, value_type>
         {
             typedef std::conditional_t<is_const, const value_type &, value_type &> RefIteratorType;
             typedef std::conditional_t<is_const, const value_type *, value_type *> PtrIteratorType;
@@ -217,8 +219,15 @@ namespace sparta::utils
 
         //! Obtain an end iterator
         iterator       end()       { return iterator(this, -1); }
+
         //! Obtain an end const_iterator
         const_iterator end() const { return const_iterator(this, -1); }
+
+        //! Get the front of the fast list non-const
+        DataT & front() { return *begin(); }
+
+        //! Get the front of the fast list, const
+        const DataT & front() const { return *begin(); }
 
         //! \return Is this container empty?
         bool   empty()    const { return size_ == 0; }
@@ -382,6 +391,13 @@ namespace sparta::utils
 
             ++size_;
             return iterator(this, new_node.index);
+        }
+
+        //! Insert an element at a specific place in the list.  Really
+        //! just an alias for emplace
+        template<class ...ArgsT>
+        iterator insert(const const_iterator & pos, ArgsT&&...args) {
+            return emplace(pos, args...);
         }
 
         //! Pop the last element off of the list
