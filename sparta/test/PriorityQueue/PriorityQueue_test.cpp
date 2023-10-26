@@ -1,10 +1,13 @@
 
+#include "sparta/resources/PriorityQueue.hpp"
+
 #include <cinttypes>
 #include <iostream>
+#include <chrono>
 
-#include "sparta/resources/PriorityQueue.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
+constexpr bool TESTPERF = false;
 
 void test_defafult_pq()
 {
@@ -142,10 +145,65 @@ void test_custom_order_pq()
     // }
 }
 
+#define PERF_TEST 100000000
+template<class ListType>
+void testListPerf()
+{
+    ListType fl;
+    const int num_elems = 10;
+    for(int i = 0; i < PERF_TEST; ++i) {
+        for(size_t i = 0; i < num_elems; ++i) {
+            fl.insert(i);
+        }
+
+        const auto end = fl.end();
+        for(auto it = fl.begin(); it != end;) {
+            fl.erase(it++);
+        }
+    }
+}
+
+void test_fastlist_vs_list()
+{
+    // Uses sparta::FastList
+    sparta::PriorityQueue<int, std::less<int>, 10> bounded_pq;
+    for(auto i : {1,3,2,-7,6,4,-8,7,-3,8}) {
+        bounded_pq.insert(i);
+    }
+
+    EXPECT_EQUAL(bounded_pq.top(), -8);
+    bounded_pq.pop();
+    EXPECT_EQUAL(bounded_pq.top(), -7);
+
+    bounded_pq.insert(10);
+    EXPECT_EQUAL(bounded_pq.top(), -7);
+
+    // out of room
+    EXPECT_THROW(bounded_pq.insert(11));
+
+    if constexpr(TESTPERF)
+    {
+        auto start = std::chrono::system_clock::system_clock::now();
+        testListPerf<sparta::PriorityQueue<int, std::less<int>, 10>>();
+        auto end = std::chrono::system_clock::system_clock::now();
+        auto dur = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        std::cout << "Raw time (seconds) fast list : " << dur / 1000000.0 << std::endl;
+
+        start = std::chrono::system_clock::system_clock::now();
+        testListPerf<sparta::PriorityQueue<int>>();
+        end = std::chrono::system_clock::system_clock::now();
+        dur = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        std::cout << "Raw time (seconds) old list : " << dur / 1000000.0 << std::endl;
+    }
+}
+
+
 int main()
 {
     test_defafult_pq();
     test_custom_order_pq();
+
+    test_fastlist_vs_list();
 
     REPORT_ERROR;
     return ERROR_CODE;
