@@ -40,7 +40,7 @@ namespace sparta::utils
      *  - The API isn't as complete as typical STL container types
      *
      */
-    template <class T>
+    template <class DataT>
     class FastList
     {
         struct Node
@@ -60,7 +60,7 @@ namespace sparta::utils
             // Stores the memory for an instance of 'T'.
             // Use placement new to construct the object and
             // manually invoke its dtor as necessary.
-            std::aligned_storage_t<sizeof(T), alignof(T)> type_storage;
+            std::aligned_storage_t<sizeof(DataT), alignof(DataT)> type_storage;
 
             Node(NodeIdx _index) :
                 index(_index)
@@ -81,7 +81,7 @@ namespace sparta::utils
         }
 
     public:
-        using value_type = T; //!< Handy using
+        using value_type = DataT; //!< Handy using
 
         /**
          * \class NodeIterator
@@ -170,7 +170,7 @@ namespace sparta::utils
             NodeIterator& operator=(      NodeIterator &&rhs) = default;
 
         private:
-            friend class FastList<T>;
+            friend class FastList<DataT>;
 
             NodeIterator(FastListPtrType flist, typename Node::NodeIdx node_idx) :
                 flist_(flist),
@@ -246,7 +246,7 @@ namespace sparta::utils
         {
             const auto node_idx = entry.getIndex();
             auto & node_to_erase = nodes_[node_idx];
-            reinterpret_cast<T*>(&node_to_erase.type_storage)->~T();
+            reinterpret_cast<DataT*>(&node_to_erase.type_storage)->~DataT();
             int next_elem = -1;
 
             if(first_node_ == node_idx) {
@@ -295,7 +295,7 @@ namespace sparta::utils
 
             auto & new_node = nodes_[free_head_];
             free_head_ = new_node.next;
-            new (&new_node.type_storage) T(args...);
+            new (&new_node.type_storage) DataT(args...);
             // Update pointers.  Start with a clean slate
             new_node.next = -1;
             new_node.prev = -1;
@@ -332,7 +332,7 @@ namespace sparta::utils
 
             auto & new_node = nodes_[free_head_];
             free_head_ = new_node.next;
-            new (&new_node.type_storage) T(args...);
+            new (&new_node.type_storage) DataT(args...);
 
             // Update pointers.  Start with a clean slate
             new_node.next = -1;
@@ -364,7 +364,7 @@ namespace sparta::utils
 
             auto & new_node = nodes_[free_head_];
             free_head_ = new_node.next;
-            new (&new_node.type_storage) T(args...);
+            new (&new_node.type_storage) DataT(args...);
 
             // Update pointers.  Start with a clean slate
             new_node.next = -1;
@@ -401,7 +401,7 @@ namespace sparta::utils
     private:
 
         // Friendly printer
-        friend std::ostream & operator<<(std::ostream & os, const FastList<T> & fl)
+        friend std::ostream & operator<<(std::ostream & os, const FastList<DataT> & fl)
         {
             int next_node = fl.first_node_;
             if(next_node == -1) {
@@ -412,7 +412,7 @@ namespace sparta::utils
                 do
                 {
                     const auto & n = fl.nodes_[next_node];
-                    os << index << " elem="    << *reinterpret_cast<const T*>(&n.type_storage)
+                    os << index << " elem="    << *reinterpret_cast<const DataT*>(&n.type_storage)
                        << " n.next=" << n.next
                        << " n.prev=" << n.prev << std::endl;
                     next_node = n.next;
