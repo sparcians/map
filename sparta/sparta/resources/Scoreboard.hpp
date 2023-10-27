@@ -1,3 +1,10 @@
+// <Scoreboard.hpp> -*- C++ -*-
+
+/**
+ * \file   Scoreboard.hpp
+ * \brief  Class used to track operand dependencies (timed) between units
+ */
+
 #pragma once
 
 #include <vector>
@@ -17,17 +24,18 @@ namespace sparta
 
     /**
      * \class Scoreboard
+     * \brief Class used to track operand dependencies (timed) between units
      *
      * The Scoreboard of the model simply keeps track of the readiness
      * of phyiscal registers in the OOO core.  There are two parts to the SB:
      *
-     * # The Scoreboard or "master" for each register file type (GPU,
-     *   FPR, Vector, etc).  Typically a Rename block is responsible
-     *   for setting/clearing the SB readiness.
+     * -# The Scoreboard or "master" for each register file type (GPU,
+     *    FPR, Vector, etc).  Typically a Rename block is responsible
+     *    for setting/clearing the SB readiness.
      *
-     * # The ScoreboardView is created by a Scheduling/Execution block
-     *   and is used to determine if an instruction is ready for
-     *   execution (all operands ready)
+     * -# The ScoreboardView is created by a Scheduling/Execution block
+     *    and is used to determine if an instruction is ready for
+     *    execution (all operands ready)
      *
      */
     class Scoreboard : public sparta::Unit
