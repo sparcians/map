@@ -20,7 +20,7 @@ void test_defafult_pq()
     EXPECT_EQUAL(pqueue.size(), 8);
 
     EXPECT_EQUAL(pqueue.top(), 1);
-    pqueue.pop();
+    pqueue.pop(); // 1
 
     EXPECT_FALSE(pqueue.empty());
 
