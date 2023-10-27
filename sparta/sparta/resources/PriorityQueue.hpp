@@ -21,7 +21,7 @@ namespace sparta
     /**
      * \class PriorityQueue
      * \brief A data structure that allows pushing/emplacing into it
-     *        with a defined sorter
+     *        with a given sorter
      * \tparam DataT The data to be contained and sorted
      * \tparam SortingAlgorithmT The sorting algorithm to use
      * \tparam bounded_cnt The max number of elements in this PriorityQueue
@@ -153,8 +153,10 @@ namespace sparta
          *             front of the queue
          *
          * Push the data item to the front of the queue, bypassing the
-         * internal sorting algorithm.  This will mess up the sorting
-         * -- be warned.
+         * internal sorting algorithm.  This is handy if multiple
+         * items from multiple directions should be prioritized, but a
+         * last-minute item, which normally is a low-priority item,
+         * _must be handled_ immediately.
          */
         void forceFront(const DataT & data) {
             priority_items_.emplace_front(data);
