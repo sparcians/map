@@ -41,6 +41,22 @@
   sparta::UniqueEvent | \copybrief sparta::UniqueEvent &nbsp;
 
   ================================================================================
+  \subsection sparta_resources Sparta Resources (sparta/resources)
+
+  Class                       | Brief Description
+  --------------------------- | ------------------
+  sparta::Array               | \copybrief sparta::Array                &nbsp;
+  sparta::Buffer              | \copybrief sparta::Buffer               &nbsp;
+  sparta::CircularBuffer      | \copybrief sparta::CircularBuffer       &nbsp;
+  sparta::FrontArray          | \copybrief sparta::FrontArray           &nbsp;
+  sparta::Pipe                | \copybrief sparta::Pipe                 &nbsp;
+  sparta::Pipeline            | \copybrief sparta::Pipeline             &nbsp;
+  sparta::PriorityQueue       | \copybrief sparta::PriorityQueue        &nbsp;
+  sparta::Queue               | \copybrief sparta::Queue                &nbsp;
+  sparta::Scoreboard          | \copybrief sparta::Scoreboard           &nbsp;
+  sparta::SharedData          | \copybrief sparta::SharedData           &nbsp;
+
+  ================================================================================
   \subsection ports_overview Sparta Ports API (sparta/ports)
 
   Class                       | Brief Description

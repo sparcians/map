@@ -16,7 +16,9 @@
 #include <iterator>
 #include <cinttypes>
 #include <cassert>
+#include <type_traits>
 
+#include "sparta/utils/IteratorTraits.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 
 namespace sparta::utils
@@ -40,7 +42,7 @@ namespace sparta::utils
      *  - The API isn't as complete as typical STL container types
      *
      */
-    template <class T>
+    template <class DataT>
     class FastList
     {
         struct Node
@@ -60,7 +62,7 @@ namespace sparta::utils
             // Stores the memory for an instance of 'T'.
             // Use placement new to construct the object and
             // manually invoke its dtor as necessary.
-            std::aligned_storage_t<sizeof(T), alignof(T)> type_storage;
+            std::aligned_storage_t<sizeof(DataT), alignof(DataT)> type_storage;
 
             Node(NodeIdx _index) :
                 index(_index)
@@ -81,7 +83,7 @@ namespace sparta::utils
         }
 
     public:
-        using value_type = T; //!< Handy using
+        using value_type = DataT; //!< Handy using
 
         /**
          * \class NodeIterator
@@ -89,7 +91,7 @@ namespace sparta::utils
          *
          */
         template<bool is_const = true>
-        class NodeIterator // : public std::iterator<std::intput_iterator_tag, Node>
+        class NodeIterator : public sparta::utils::IteratorTraits<std::forward_iterator_tag, value_type>
         {
             typedef std::conditional_t<is_const, const value_type &, value_type &> RefIteratorType;
             typedef std::conditional_t<is_const, const value_type *, value_type *> PtrIteratorType;
@@ -170,7 +172,7 @@ namespace sparta::utils
             NodeIterator& operator=(      NodeIterator &&rhs) = default;
 
         private:
-            friend class FastList<T>;
+            friend class FastList<DataT>;
 
             NodeIterator(FastListPtrType flist, typename Node::NodeIdx node_idx) :
                 flist_(flist),
@@ -217,8 +219,15 @@ namespace sparta::utils
 
         //! Obtain an end iterator
         iterator       end()       { return iterator(this, -1); }
+
         //! Obtain an end const_iterator
         const_iterator end() const { return const_iterator(this, -1); }
+
+        //! Get the front of the fast list non-const
+        DataT & front() { return *begin(); }
+
+        //! Get the front of the fast list, const
+        const DataT & front() const { return *begin(); }
 
         //! \return Is this container empty?
         bool   empty()    const { return size_ == 0; }
@@ -246,7 +255,7 @@ namespace sparta::utils
         {
             const auto node_idx = entry.getIndex();
             auto & node_to_erase = nodes_[node_idx];
-            reinterpret_cast<T*>(&node_to_erase.type_storage)->~T();
+            reinterpret_cast<DataT*>(&node_to_erase.type_storage)->~DataT();
             int next_elem = -1;
 
             if(first_node_ == node_idx) {
@@ -295,7 +304,7 @@ namespace sparta::utils
 
             auto & new_node = nodes_[free_head_];
             free_head_ = new_node.next;
-            new (&new_node.type_storage) T(args...);
+            new (&new_node.type_storage) DataT(args...);
             // Update pointers.  Start with a clean slate
             new_node.next = -1;
             new_node.prev = -1;
@@ -332,7 +341,7 @@ namespace sparta::utils
 
             auto & new_node = nodes_[free_head_];
             free_head_ = new_node.next;
-            new (&new_node.type_storage) T(args...);
+            new (&new_node.type_storage) DataT(args...);
 
             // Update pointers.  Start with a clean slate
             new_node.next = -1;
@@ -364,7 +373,7 @@ namespace sparta::utils
 
             auto & new_node = nodes_[free_head_];
             free_head_ = new_node.next;
-            new (&new_node.type_storage) T(args...);
+            new (&new_node.type_storage) DataT(args...);
 
             // Update pointers.  Start with a clean slate
             new_node.next = -1;
@@ -384,6 +393,13 @@ namespace sparta::utils
             return iterator(this, new_node.index);
         }
 
+        //! Insert an element at a specific place in the list.  Really
+        //! just an alias for emplace
+        template<class ...ArgsT>
+        iterator insert(const const_iterator & pos, ArgsT&&...args) {
+            return emplace(pos, args...);
+        }
+
         //! Pop the last element off of the list
         void pop_back() {
             sparta_assert(last_node_ != -1,
@@ -401,7 +417,7 @@ namespace sparta::utils
     private:
 
         // Friendly printer
-        friend std::ostream & operator<<(std::ostream & os, const FastList<T> & fl)
+        friend std::ostream & operator<<(std::ostream & os, const FastList<DataT> & fl)
         {
             int next_node = fl.first_node_;
             if(next_node == -1) {
@@ -412,7 +428,7 @@ namespace sparta::utils
                 do
                 {
                     const auto & n = fl.nodes_[next_node];
-                    os << index << " elem="    << *reinterpret_cast<const T*>(&n.type_storage)
+                    os << index << " elem="    << *reinterpret_cast<const DataT*>(&n.type_storage)
                        << " n.next=" << n.next
                        << " n.prev=" << n.prev << std::endl;
                     next_node = n.next;

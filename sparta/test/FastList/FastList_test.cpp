@@ -13,6 +13,7 @@ public:
     explicit MyObj(uint32_t v) : v_(v) {}
 
     MyObj(const MyObj &) = delete;
+    MyObj(MyObj &&) = default;
 
     ~MyObj() { ++my_obj_deletions; }
 
@@ -200,6 +201,26 @@ void testFastList()
     }
     EXPECT_EQUAL(my_obj_deletions, 10);
 
+    ////////////////////////////////////////////////////////////
+    // insert (which should be the same as emplace())
+    fl.clear();
+    EXPECT_EQUAL(fl.size(), 0);
+    for(size_t i = 0; i < 5; ++i) {
+        fl.emplace_back(i);
+    }
+    auto insert_it = fl.begin();
+    std::advance(insert_it, 3);
+    EXPECT_TRUE(*insert_it == 3);
+
+    insert_it = fl.erase(insert_it);
+    insert_it = fl.insert(insert_it, 3);
+
+    EXPECT_TRUE(*insert_it == 3);
+    size_t expected_num = 0;
+    for(auto & num : fl) {
+        EXPECT_EQUAL(num.getV(), expected_num);
+        ++expected_num;
+    }
 }
 
 #define PERF_TEST 100000000
@@ -220,7 +241,7 @@ void testListPerf()
     }
 }
 
-int main()
+int main(int argc, char **)
 {
     std::locale::global(std::locale(""));
     std::cout.imbue(std::locale());
@@ -228,17 +249,21 @@ int main()
 
     testFastList();
 
-    auto start = std::chrono::system_clock::system_clock::now();
-    testListPerf<sparta::utils::FastList<int>>();
-    auto end = std::chrono::system_clock::system_clock::now();
-    auto dur = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-    std::cout << "Raw time (seconds) fast list : " << dur / 1000000.0 << std::endl;
+    // If any argument is given, bypass the perf test (NOT in regular
+    // testing)
+    if (1 == argc) {
+        auto start = std::chrono::system_clock::system_clock::now();
+        testListPerf<sparta::utils::FastList<int>>();
+        auto end = std::chrono::system_clock::system_clock::now();
+        auto dur = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        std::cout << "Raw time (seconds) fast list : " << dur / 1000000.0 << std::endl;
 
-    start = std::chrono::system_clock::system_clock::now();
-    testListPerf<std::list<int>>();
-    end = std::chrono::system_clock::system_clock::now();
-    dur = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-    std::cout << "Raw time (seconds) old list : " << dur / 1000000.0 << std::endl;
+        start = std::chrono::system_clock::system_clock::now();
+        testListPerf<std::list<int>>();
+        end = std::chrono::system_clock::system_clock::now();
+        dur = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        std::cout << "Raw time (seconds) old list : " << dur / 1000000.0 << std::endl;
+    }
 
     // Done
     REPORT_ERROR;
