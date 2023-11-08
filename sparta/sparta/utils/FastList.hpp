@@ -189,6 +189,8 @@ namespace sparta::utils
          */
         FastList(size_t size)
         {
+            sparta_assert(size != 0,
+                          "Cannot create a sparta::utils::FastList of size 0");
             int node_idx = 0;
             nodes_.reserve(size);
             for(size_t i = 0; i < size; ++i) {
