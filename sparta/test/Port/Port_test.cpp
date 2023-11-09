@@ -105,6 +105,11 @@ int main ()
     signal_out.bind(signal_in);
     delay1_out_non_continuing.bind(delay1_in_non_continuing);
 
+    EXPECT_EQUAL(delay0_out.getNumBoundPorts(), 1);
+    EXPECT_EQUAL(delay0_in.getNumBoundPorts(), 1);
+    EXPECT_EQUAL(signal_out.getNumBoundPorts(), 1);
+    EXPECT_EQUAL(signal_in.getNumBoundPorts(), 1);
+
     // Try some binding rules
     sparta::SignalInPort  signal_bind_in(&ps, "signal_bind_in");
     sparta::SignalOutPort signal_bind_out(&ps, "signal_bind_out");

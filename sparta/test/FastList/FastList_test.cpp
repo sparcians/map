@@ -42,6 +42,9 @@ std::ostream & operator<<(std::ostream & os, const MyObj & obj) {
 
 void testFastList()
 {
+
+    EXPECT_THROW(sparta::utils::FastList<MyObj> zero_fl(0));
+
     sparta::utils::FastList<MyObj> fl(10);
     std::cout << fl;
 
