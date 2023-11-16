@@ -544,7 +544,10 @@ content:
             name: Self Referring
             content:
                 core0.stats:
+                      c1 : ""
+                      c2 : ""
                       "c1 + c2": c1_plus_c2
+                      c1_plus_c2 : ""
                       "c1_plus_c2 + cycles": c1_plus_c2_plus_cycles
         )";
 
@@ -607,6 +610,10 @@ content:
 
 
         // Write report to a few files
+
+        // Write the self-referring SI test
+        sparta::report::format::Text txt_10(&r10);
+        txt_10.writeTo("test_self_referring.txt");
 
         // dumb "dump" of report directly (no formatter)
         std::ofstream("test_report_out", std::ios::out) << r;

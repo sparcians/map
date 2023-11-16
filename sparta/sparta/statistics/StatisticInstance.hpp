@@ -29,6 +29,7 @@ namespace sparta
     //Forward declarations related to SimDB
     class StatInstValueLookup;
     class StatInstRowIterator;
+    using statistics::expression::Expression;
 
     /*!
      * \brief Exception indicating that the range of a StatisticInstance
@@ -453,6 +454,14 @@ namespace sparta
         }
         const StatisticDef* getStatisticDef() const {
             return sdef_;
+        }
+
+        /*!
+         * \brief Get the underlying expression representing this SI
+         * \return Expression
+         */
+        const Expression & getStatisticExpression() const {
+            return stat_expr_;
         }
 
         /*!

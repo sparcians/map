@@ -228,7 +228,7 @@ public:
                                                                          return (si_pair.first == a1);
                                                                      });
         if(it != report_si_.end()) {
-            return Expression(it->second);
+            return it->second.getStatisticExpression();
         }
 
         if(n == nullptr) {
