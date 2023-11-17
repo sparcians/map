@@ -14,7 +14,7 @@ Expression::Expression(const std::string& expression,
                        TreeNode* context)
 {
     std::vector<const TreeNode*> already_used;
-    const std::vector<stat_pair_t> report_si;
+    const StatisticPairs report_si;
     parse_(expression, context, already_used, report_si);
 }
 
@@ -22,13 +22,13 @@ Expression::Expression(const std::string& expression,
                        TreeNode* context,
                        std::vector<const TreeNode*>& already_used)
 {
-    const std::vector<stat_pair_t> report_si;
+    const StatisticPairs report_si;
     parse_(expression, context, already_used, report_si);
 
 }
 Expression::Expression(const std::string& expression,
                        TreeNode* context,
-                       const std::vector<stat_pair_t>&report_si)
+                       const StatisticPairs&report_si)
 {
     std::vector<const TreeNode*> already_used;
     parse_(expression, context, already_used, report_si);
@@ -47,7 +47,7 @@ Expression::~Expression() {
 void Expression::parse_(const std::string& expression,
                         TreeNode* context,
                         std::vector<const TreeNode*>& already_used,
-                        const std::vector<stat_pair_t> &report_si)
+                        const StatisticPairs &report_si)
 {
     sparta_assert(context, "cannot parse an expression \"" << expression
                                << "\" without a null context");

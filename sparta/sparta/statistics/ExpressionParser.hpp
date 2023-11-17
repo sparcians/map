@@ -50,7 +50,7 @@ public:
      */
     ExpressionParser(TreeNode* n,
                      std::vector<const TreeNode*>& already_used,
-                     const std::vector<statistics::stat_pair_t> &report_si) :
+                     const StatisticPairs &report_si) :
         grammar_(n, already_used, report_si)
     { }
 

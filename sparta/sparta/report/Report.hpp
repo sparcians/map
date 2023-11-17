@@ -222,7 +222,7 @@ namespace sparta
 
             // Copy StatisticInstances
             for(const statistics::stat_pair_t& sp : rhp.stats_){
-                add(sp.second, sp.first);
+                add(*sp.second, sp.first);
             }
         }
 
@@ -278,7 +278,7 @@ namespace sparta
 
             // Copy StatisticInstances
             for(const statistics::stat_pair_t& sp : rhp.stats_){
-                add(sp.second, sp.first);
+                add(*sp.second, sp.first);
             }
             start_tick_ = rhp.start_tick_;
             end_tick_ = rhp.end_tick_;
@@ -613,7 +613,7 @@ namespace sparta
                 subreps_.back().setParent_(this);
             }
             for(const statistics::stat_pair_t& sp : r.stats_){
-                add(sp.second, sp.first);
+                add(*sp.second, sp.first);
             }
         }
 
@@ -764,7 +764,7 @@ namespace sparta
          * \throw SpartaException if idx is out of bounds
          */
         StatisticInstance& getStatistic(size_t idx) {
-            return stats_.at(idx).second;
+            return *(stats_.at(idx).second);
         }
 
         /*!
@@ -788,7 +788,7 @@ namespace sparta
                                         return name == p.first;
                                     });
             sparta_assert(itr != stats_.end());
-            return (*itr).second;
+            return *(*itr).second;
         }
 
         /*!
@@ -839,7 +839,7 @@ namespace sparta
          * \brief Gets the set of statistic instances immediately contained in
          * this Report
          */
-        const std::vector<statistics::stat_pair_t>& getStatistics() const {
+        const statistics::StatisticPairs& getStatistics() const {
             return stats_;
         }
 
@@ -963,7 +963,7 @@ namespace sparta
 
             // Start all contents
             for(auto& s : stats_){
-                s.second.start();
+                s.second->start();
             }
             for(auto& r : subreps_){
                 r.start();
@@ -988,7 +988,7 @@ namespace sparta
             // End all contents
             // Start all contents
             for(auto& s : stats_){
-                s.second.end();
+                s.second->end();
             }
             for(auto& r : subreps_){
                 r.end();
@@ -1209,11 +1209,11 @@ namespace sparta
                     o << si.first;
                 }else{
                     // Print "stat_location = value"
-                    o << si.second.getLocation();
+                    o << si.second->getLocation();
                 }
                 o << " = ";
 
-                double val = si.second.getValue();
+                double val = si.second->getValue();
                 o << formatNumber(val);
 
                 // Could print the expression after the value
@@ -1261,8 +1261,8 @@ namespace sparta
         template <typename T>
         void addField_(const std::string& name, T si_arg) {
             try{
-                stats_.emplace_back(name, StatisticInstance(si_arg));
-                stats_.back().second.setContext(scheduler_);
+                stats_.emplace_back(name, new StatisticInstance(si_arg));
+                stats_.back().second->setContext(scheduler_);
             }catch(SpartaException& ex){
                 ex << " StatisticInstance would have been named \"" << name << "\"";
                 throw;
@@ -1286,7 +1286,7 @@ namespace sparta
                 //Update mapping from statistic definition to substatistic instance
                 const StatisticDef * stat_def = parent_stat->getStatisticDef();
                 if (stat_def != nullptr) {
-                    sub_statistics_[stat_def].emplace_back(&stats_.back().second);
+                    sub_statistics_[stat_def].emplace_back(stats_.back().second.get());
                 }
             }
         }
@@ -1469,7 +1469,7 @@ namespace sparta
          * \note Anything removed from this list needs to be removed from
          * stat_names_ as well.
          */
-        std::vector<statistics::stat_pair_t> stats_;
+        statistics::StatisticPairs stats_;
 
         /*!
          * \brief Map of string identifiers to statistics in the stats_ vector

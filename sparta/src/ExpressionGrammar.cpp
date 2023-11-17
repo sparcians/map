@@ -173,7 +173,7 @@ class lazy_gen_var_
 {
     TreeNode* n_; //!< Context node
     std::vector<const TreeNode*>& used_; //!< Disallowed nodes
-    const std::vector<stat_pair_t> & report_si_; //!< existing SI instances in the report
+    const StatisticPairs & report_si_; //!< existing SI instances in the report
 
 public:
 
@@ -185,7 +185,7 @@ public:
      * \param report_si Exising report statistic instances
      */
     lazy_gen_var_(TreeNode* n, std::vector<const TreeNode*>& used,
-                  const std::vector<stat_pair_t> & report_si) :
+                  const StatisticPairs & report_si) :
         n_(n),
         used_(used),
         report_si_(report_si)
@@ -228,7 +228,7 @@ public:
                                                                          return (si_pair.first == a1);
                                                                      });
         if(it != report_si_.end()) {
-            return it->second.getStatisticExpression();
+            return it->second->getStatisticExpression();
         }
 
         if(n == nullptr) {
@@ -395,7 +395,7 @@ ExpressionGrammar::builtin_vars_::builtin_vars_(TreeNode* n,
 
 ExpressionGrammar::variable_::variable_(sparta::TreeNode* n,
                                         std::vector<const TreeNode*>& used,
-                                        const std::vector<stat_pair_t> & report_si) :
+                                        const StatisticPairs & report_si) :
     variable_::base_type(start)
 {
     sparta_assert(nullptr != n,
@@ -550,7 +550,7 @@ ExpressionGrammar::tfunc_::tfunc_(const std::vector<const TreeNode*>& used)
 
 ExpressionGrammar::ExpressionGrammar(sparta::TreeNode* root,
                                      std::vector<const TreeNode*>& used,
-                                     const std::vector<stat_pair_t> & report_si) :
+                                     const StatisticPairs & report_si) :
     ExpressionGrammar::base_type(expression),
     builtin_vars(root, used),
     ufunc(used),

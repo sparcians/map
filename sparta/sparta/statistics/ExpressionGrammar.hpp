@@ -78,7 +78,7 @@ class ExpressionGrammar :
          */
         variable_(sparta::TreeNode* n,
                   std::vector<const TreeNode*>& used,
-                  const std::vector<stat_pair_t> & report_si);
+                  const StatisticPairs & report_si);
 
         qi::rule<std::string::const_iterator,
                  Expression(),
@@ -214,7 +214,7 @@ public:
      */
     ExpressionGrammar(sparta::TreeNode* root,
                       std::vector<const TreeNode*>& already_used,
-                      const std::vector<statistics::stat_pair_t> &report_si);
+                      const StatisticPairs &report_si);
 
 
 }; // struct grammar

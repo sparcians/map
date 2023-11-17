@@ -103,7 +103,7 @@ protected:
             if (si.first != "") {
                out << " " << si.first;
             }
-            out << " (" << si.second.getLocation() << ")" << std::endl;
+            out << " (" << si.second->getLocation() << ")" << std::endl;
         }
 
         for (const Report& sr : r->getSubreports()) {
@@ -119,7 +119,7 @@ protected:
     void writeData_(std::ostream& out, const Report* r) const
     {
         for (const statistics::stat_pair_t& si : r->getStatistics()) {
-            out << si.second.getValue() << " ";
+            out << si.second->getValue() << " ";
         }
 
         for (const Report& sr : r->getSubreports()) {

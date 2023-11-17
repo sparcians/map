@@ -195,7 +195,7 @@ protected:
                     out << prefix + si.first;
                 }else{
                     // Print location = value
-                    out << prefix + si.second.getLocation();
+                    out << prefix + si.second->getLocation();
                 }
 
                 wrote_value = true;
@@ -271,7 +271,7 @@ protected:
 
                 // Print the value
                 const statistics::stat_pair_t& si = *itr;
-                out << Report::formatNumber(si.second.getValue());
+                out << Report::formatNumber(si.second->getValue());
 
                 wrote_value = true; // 1 or more values written here
 

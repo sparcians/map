@@ -115,9 +115,9 @@ void extractStatisticsJsonFull(rapidjson::Document & doc,
 
     for (const statistics::stat_pair_t & si : r->getStatistics())
     {
-        const std::string stat_name = !si.first.empty() ? si.first : si.second.getLocation();
+        const std::string stat_name = !si.first.empty() ? si.first : si.second->getLocation();
         if (!stat_name.empty()) {
-            const StatisticInstance * stat_inst = &si.second;
+            const StatisticInstance * stat_inst = si.second.get();
             const StatisticDef * def = stat_inst->getStatisticDef();
             const CounterBase * ctr = stat_inst->getCounter();
             const ParameterBase * prm = stat_inst->getParameter();
@@ -171,17 +171,17 @@ void extractStatisticsJsonFull(rapidjson::Document & doc,
             rapidjson::Value stats_json;
             stats_json.SetObject();
 
-            std::string desc = si.second.getDesc(false);
+            std::string desc = si.second->getDesc(false);
             boost::replace_all(desc, "\"", "\\\"");
             statistics_descs_.emplace_back(desc);
             const std::string & desc_ref = statistics_descs_.back();
 
             stats_json.AddMember("desc", rapidjson::StringRef(desc_ref.c_str()),
                                  doc.GetAllocator());
-            stats_json.AddMember("vis", rapidjson::Value(si.second.getVisibility()),
+            stats_json.AddMember("vis", rapidjson::Value(si.second->getVisibility()),
                                  doc.GetAllocator());
 
-            const double val = si.second.getValue();
+            const double val = si.second->getValue();
             if (isnan(val)) {
                 stats_json.AddMember("val", rapidjson::Value("nan"), doc.GetAllocator());
             } else if (isinf(val)) {
@@ -397,9 +397,9 @@ void extractStatisticsJsonReduced(rapidjson::Document & doc,
     std::set<const void*> db_dont_print_these;
 
     for (const statistics::stat_pair_t & si : r->getStatistics()) {
-        const std::string stat_name = !si.first.empty() ? si.first : si.second.getLocation();
+        const std::string stat_name = !si.first.empty() ? si.first : si.second->getLocation();
         if (!stat_name.empty()) {
-            const StatisticInstance * stat_inst = &si.second;
+            const StatisticInstance * stat_inst = si.second.get();
             const StatisticDef * def = stat_inst->getStatisticDef();
             const CounterBase * ctr = stat_inst->getCounter();
             const ParameterBase * prm = stat_inst->getParameter();
@@ -450,7 +450,7 @@ void extractStatisticsJsonReduced(rapidjson::Document & doc,
             }
             db_dont_print_these.clear();
 
-            const double val = si.second.getValue();
+            const double val = si.second->getValue();
             if (omit_zero_values && val == 0) {
                 continue;
             }
