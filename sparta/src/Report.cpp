@@ -325,13 +325,26 @@ class ReportFileParserYAML
             }
         }
 
-        bool handleLeafScalarUnknownKey_(TreeNode* n,
+        bool handleLeafScalarUnknownKey_(TreeNode* node_context,
                                          const std::string& value,
                                          const std::string& assoc_key,
-                                         const NavNode& scope) override {
-            sparta_assert(n);
+                                         const NavNode& scope) override
+        {
+            sparta_assert(node_context);
             bool in_content = in_content_stack_.top();
-            //Report* const r = report_stack_.top();
+
+            auto add_expression = [this, &node_context, &value, &scope] (Expression & expr)
+                                  {
+                                      // Build the StatisticInstance responsible for evaluating.
+                                      StatisticInstance si(std::move(expr));
+                                      si.setContext(node_context);
+                                      std::string full_name = value;
+                                      auto& captures = scope.second;
+                                      Report* const r = report_map_.at(scope.uid);
+                                      if(this->getSubstituteForStatName(full_name, node_context, captures)){
+                                          r->add(si, full_name);
+                                      }
+                                  };
 
             if(in_content){
                 if(current_autopop_block_.size() > 0){
@@ -381,7 +394,7 @@ class ReportFileParserYAML
 
                                 // Get child node from path string.
                                 const auto child_node =
-                                    path_in_report.empty() ? n : n->getChild(path_in_report);
+                                    path_in_report.empty() ? node_context : node_context->getChild(path_in_report);
 
                                 // Attempt to cast to cycle_histogram node.
                                 const auto cycle_histogram_node = dynamic_cast<sparta::CycleHistogramTreeNode*>(child_node);
@@ -403,15 +416,8 @@ class ReportFileParserYAML
                                         value, bound_fcn,
                                         statistics::expression::Expression(0.0));
 
-                                    // Build the StatisticInstance responsible for evaluating.
-                                    StatisticInstance si(std::move(expr));
-                                    si.setContext(n);
-                                    std::string full_name = value;
-                                    auto& captures = scope.second;
-                                    Report* const r = report_map_.at(scope.uid);
-                                    if(getSubstituteForStatName(full_name, n, captures)){
-                                        r->add(si, full_name);
-                                    }
+                                    // Add the expresssion
+                                    add_expression(expr);
                                 }
                                 else{
                                     // Attempt to cast to histogram node.
@@ -432,45 +438,30 @@ class ReportFileParserYAML
                                             value, bound_fcn,
                                             statistics::expression::Expression(0.0));
 
-                                        // Build the StatisticInstance responsible for evaluating.
-                                        StatisticInstance si(std::move(expr));
-                                        si.setContext(n);
-                                        std::string full_name = value;
-                                        auto& captures = scope.second;
-                                        Report* const r = report_map_.at(scope.uid);
-                                        if(getSubstituteForStatName(full_name, n, captures)){
-                                            r->add(si, full_name);
-                                        }
+                                        // Add the expresssion
+                                        add_expression(expr);
                                     }
                                 }
                             }
                             else{
                                 Report* const r = report_map_.at(scope.uid);
-                                statistics::expression::Expression expr(assoc_key, n, r->getStatistics());
-                                StatisticInstance si(std::move(expr));
-                                si.setContext(n);
-                                std::string full_name = value;
-                                auto& captures = scope.second;
-                                if(getSubstituteForStatName(full_name, n, captures)){
-                                    r->add(si, full_name);
-                                }
+                                statistics::expression::Expression expr(assoc_key, node_context, r->getStatistics());
+
+                                // Add the expresssion
+                                add_expression(expr);
                             }
                         }
                         else{
                             Report* const r = report_map_.at(scope.uid);
-                            statistics::expression::Expression expr(assoc_key, n, r->getStatistics());
-                            StatisticInstance si(std::move(expr));
-                            si.setContext(n);
-                            std::string full_name = value;
-                            auto& captures = scope.second;
-                            if(getSubstituteForStatName(full_name, n, captures)){
-                                r->add(si, full_name);
-                            }
+                            statistics::expression::Expression expr(assoc_key, node_context, r->getStatistics());
+
+                            // Add the expresssion
+                            add_expression(expr);
                         }
                     }catch(SpartaException& ex){
                         std::stringstream ss;
                         ss << "Unable to parse expression: \"" << assoc_key << "\" within context: "
-                            << n->getLocation() << " in report file \"" <<  getFilename()
+                            << node_context->getLocation() << " in report file \"" <<  getFilename()
                             << "\" for the following reason: " << ex.what();
                         if(in_optional_) {
                             // Possibly in an optional block where the
@@ -1252,21 +1243,6 @@ Report::StatAdder Report::add(TreeNode* n, const std::string& name) {
     return Report::StatAdder(*this);
 }
 
-Report::StatAdder Report::addSubStats(StatisticDef * n, const std::string & name_prefix) {
-    sparta_assert(auto_expand_context_counter_stats_,
-                  "Call to Report::addSubStats(StatisticDef*, name_prefix) is not "
-                  "allowed since ContextCounter auto-expansion is disabled. Enable "
-                  "this by calling Report::enableContextCounterAutoExpansion()");
-    for (const auto & sub_stat : n->getSubStatistics()) {
-        TreeNode * sub_stat_node = const_cast<TreeNode*>(sub_stat.getNode());
-        const std::string prefix =
-            !name_prefix.empty() ? name_prefix : sub_stat_node->getLocation();
-        const std::string sub_stat_name = prefix + "." + sub_stat.getName();
-        add(sub_stat_node, sub_stat_name);
-    }
-    return Report::StatAdder(*this);
-}
-
 Report::StatAdder Report::add(const std::string& expression, const std::string& name) {
     if(name != "" && stat_names_.find(name) != stat_names_.end()){
         throw SpartaException("There is already a statistic instance in this Report (")
@@ -1297,6 +1273,21 @@ Report::StatAdder Report::add(const std::string& expression, const std::string& 
 Report::StatAdder Report::add(const std::vector<TreeNode*>& nv) {
     for(TreeNode* n : nv){
         add(n);
+    }
+    return Report::StatAdder(*this);
+}
+
+Report::StatAdder Report::addSubStats(StatisticDef * n, const std::string & name_prefix) {
+    sparta_assert(auto_expand_context_counter_stats_,
+                  "Call to Report::addSubStats(StatisticDef*, name_prefix) is not "
+                  "allowed since ContextCounter auto-expansion is disabled. Enable "
+                  "this by calling Report::enableContextCounterAutoExpansion()");
+    for (const auto & sub_stat : n->getSubStatistics()) {
+        TreeNode * sub_stat_node = const_cast<TreeNode*>(sub_stat.getNode());
+        const std::string prefix =
+            !name_prefix.empty() ? name_prefix : sub_stat_node->getLocation();
+        const std::string sub_stat_name = prefix + "." + sub_stat.getName();
+        add(sub_stat_node, sub_stat_name);
     }
     return Report::StatAdder(*this);
 }

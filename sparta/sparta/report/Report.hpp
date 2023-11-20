@@ -438,13 +438,6 @@ namespace sparta
         StatAdder add(TreeNode* n, const std::string& name="");
 
         /*!
-         * \brief Add sub statisitc
-         * \param n The sub statistic to add
-         * \param name The name of the stat for the report
-         */
-        StatAdder addSubStats(StatisticDef * n, const std::string & name_prefix);
-
-        /*!
          * \brief Add a single Expression parsed at the current context for this
          * Report. If the expression resolves to a single TreeNode, adds an
          * entry for that TreeNode. This matches the way Report leaves are
@@ -471,6 +464,13 @@ namespace sparta
          * pattern. There is no rollback of partial completion
          */
         StatAdder add(const std::vector<TreeNode*>& nv);
+
+        /*!
+         * \brief Add sub statisitc
+         * \param n The sub statistic to add
+         * \param name The name of the stat for the report
+         */
+        StatAdder addSubStats(StatisticDef * n, const std::string & name_prefix);
 
         /*!
          * \brief By default, statistics reset their internal offsets whenever

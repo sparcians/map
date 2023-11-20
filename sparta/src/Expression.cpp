@@ -14,7 +14,7 @@ Expression::Expression(const std::string& expression,
                        TreeNode* context)
 {
     std::vector<const TreeNode*> already_used;
-    const StatisticPairs report_si;
+    static const StatisticPairs report_si;
     parse_(expression, context, already_used, report_si);
 }
 
@@ -22,7 +22,7 @@ Expression::Expression(const std::string& expression,
                        TreeNode* context,
                        std::vector<const TreeNode*>& already_used)
 {
-    const StatisticPairs report_si;
+    static const StatisticPairs report_si;
     parse_(expression, context, already_used, report_si);
 
 }

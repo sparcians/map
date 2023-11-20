@@ -195,7 +195,7 @@ public:
     struct result { typedef Expression type; };
 
     template <typename A1>
-    Expression operator()(A1 a1) const
+    Expression operator()(const A1 & a1) const
     {
         if(n_ == nullptr){
             // Must construct with non-null to actually use
@@ -224,10 +224,13 @@ public:
                 n = calculator->getNode();
             }
         }
-        auto it = std::find_if(report_si_.begin(), report_si_.end(), [a1] (const auto & si_pair) {
-                                                                         return (si_pair.first == a1);
-                                                                     });
-        if(it != report_si_.end()) {
+
+        if(auto it = std::find_if(report_si_.begin(),
+                                  report_si_.end(),
+                                  [&a1] (const auto & si_pair) {
+                                      return (si_pair.first == a1);
+                                  }); it != report_si_.end())
+        {
             return it->second->getStatisticExpression();
         }
 

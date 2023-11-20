@@ -209,24 +209,26 @@ namespace sparta
                                          const StatisticDef::ValueSemantic value_semantic,
                                          const InstrumentationNode::visibility_t visibility,
                                          const InstrumentationNode::class_t cls,
-                                         const std::vector<std::pair<std::string, std::string>> & metadata)
-    {
-        provided_location_ = location;
-        provided_description_ = description;
-        provided_expr_string_ = expression_str;
-        provided_value_semantic_ = value_semantic;
-        provided_visibility_ = visibility;
-        provided_class_ = cls;
-        provided_metadata_ = metadata;
-    }
+                                         const std::vector<std::pair<std::string, std::string>> & metadata) :
+        provided_location_(location),
+        provided_description_(description),
+        provided_expr_string_(expression_str),
+        provided_value_semantic_(value_semantic),
+        provided_visibility_(visibility),
+        provided_class_(cls),
+        provided_metadata_(metadata)
+    {}
 
-    StatisticInstance::StatisticInstance(
-        const std::string & location,
-        const std::string & description,
-        const std::shared_ptr<StatInstCalculator> & calculator,
-        const InstrumentationNode::visibility_t visibility,
-        const InstrumentationNode::class_t cls,
-        const std::vector<std::pair<std::string, std::string>> & metadata)
+    StatisticInstance::StatisticInstance(const std::string & location,
+                                         const std::string & description,
+                                         const std::shared_ptr<StatInstCalculator> & calculator,
+                                         const InstrumentationNode::visibility_t visibility,
+                                         const InstrumentationNode::class_t cls,
+                                         const std::vector<std::pair<std::string, std::string>> & metadata) :
+        user_calculated_si_value_(calculator),
+        provided_visibility_(visibility),
+        provided_class_(cls),
+        provided_metadata_(metadata)
     {
         if (!location.empty()) {
             provided_location_ = location;
@@ -234,10 +236,6 @@ namespace sparta
         if (!description.empty()) {
             provided_description_ = description;
         }
-        user_calculated_si_value_ = calculator;
-        provided_visibility_ = visibility;
-        provided_class_ = cls;
-        provided_metadata_ = metadata;
     }
 
     StatisticInstance& StatisticInstance::operator=(const StatisticInstance& rhp) {
@@ -340,11 +338,11 @@ namespace sparta
             return computeValue_();
         }
 
-        if(end_tick_ < start_tick_){
+        if(SPARTA_EXPECT_FALSE(end_tick_ < start_tick_)) {
             throw ReversedStatisticRange("Range is reversed. End < start");
         }
 
-        if(start_tick_ > getScheduler_()->getElapsedTicks()){
+        if(SPARTA_EXPECT_FALSE(start_tick_ > getScheduler_()->getElapsedTicks())) {
             throw FutureStatisticRange("Range starts in the future at ") << start_tick_;
         }
 
@@ -354,7 +352,7 @@ namespace sparta
             value = computeValue_();
         }
 
-        else if(end_tick_ > getScheduler_()->getElapsedTicks()){
+        else if(SPARTA_EXPECT_FALSE(end_tick_ > getScheduler_()->getElapsedTicks())) {
             // Rang ends in the future - probable because of a checkpoint
             throw FutureStatisticRange("Range ends in the future at ") << end_tick_;
         }
