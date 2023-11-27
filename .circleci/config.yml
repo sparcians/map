@@ -24,6 +24,9 @@ jobs:
           # Run, test and (if we have a BINSTAR_TOKEN) upload the distributions.
           command: |
             export CI=circle
+            export flow_run_id="circle_$CIRCLE_WORKFLOW_ID"
+            export remote_url="$CIRCLE_REPOSITORY_URL"
+            export sha="$CIRCLE_SHA1"
             export FEEDSTOCK_NAME=$(basename ${CIRCLE_PROJECT_REPONAME})
             if [[ "${CIRCLE_PR_NUMBER:-}" == "" ]]; then
               export IS_PR_BUILD="False"

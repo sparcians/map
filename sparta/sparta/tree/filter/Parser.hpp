@@ -72,5 +72,3 @@ public:
         } // namespace filter
     } // namespace tree
 } // namespace sparta
-
-#pragma once

@@ -13,6 +13,7 @@
 #include <iomanip>
 #include <sstream>
 #include <unordered_map>
+#include <vector>
 #include <cmath>
 
 #include "sparta/statistics/StatisticInstance.hpp"
@@ -53,11 +54,6 @@ namespace sparta
     class Report
     {
     public:
-
-        /*!
-         * \brief Type for storing each stat added
-         */
-        typedef std::pair<std::string, StatisticInstance*> stat_pair_t;
 
         /*!
          * \brief Function pointer for deciding whether to make a subreport
@@ -225,7 +221,7 @@ namespace sparta
             }
 
             // Copy StatisticInstances
-            for(const stat_pair_t& sp : rhp.stats_){
+            for(const statistics::stat_pair_t& sp : rhp.stats_){
                 add(*sp.second, sp.first);
             }
         }
@@ -258,17 +254,6 @@ namespace sparta
             }
         }
 
-        /*!
-         * \brief Virtual Destructor
-         */
-        virtual ~Report()
-        {
-            // Delete all StatisticInstances
-            for(auto& sp : stats_){
-                delete sp.second;
-            }
-        }
-
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
@@ -289,14 +274,10 @@ namespace sparta
                 sr.setParent_(this);
             }
 
-            // Clear StatisticInstancesx
-            for(auto& sp : stats_){
-                delete sp.second;
-            }
             stats_.clear(); // Clear local stats
 
             // Copy StatisticInstances
-            for(const stat_pair_t& sp : rhp.stats_){
+            for(const statistics::stat_pair_t& sp : rhp.stats_){
                 add(*sp.second, sp.first);
             }
             start_tick_ = rhp.start_tick_;
@@ -420,26 +401,7 @@ namespace sparta
          * by another item immediately in this report (not the name of a
          * subreport or item in a subreport)
          */
-        StatAdder add(const StatisticInstance& si, const std::string& name="") {
-            if(name != "" && stat_names_.find(name) != stat_names_.end()){
-                throw SpartaException("There is already a statistic instance in this Report (")
-                                    << getName() << ") named \"" << name << "\" pointing to "
-                                    << stat_names_.find(name)->second->getLocation()
-                                    << " and the new stat would be pointing to a StatisticInstance "
-                                    << si.getExpressionString();
-            }
-
-            // Track a new stat with helpful exception wrapping
-            addField_(name, si);
-
-            if(name != ""){
-                stat_names_[name] = stats_.back().second;
-            }
-
-            addSubStatistics_(&si);
-
-            return StatAdder(*this);
-        }
+        StatAdder add(const StatisticInstance& si, const std::string& name="");
 
         /*!
          * \brief Moves an existing statistic instance into this Report
@@ -452,102 +414,28 @@ namespace sparta
          * by another item immediately in this report (not the name of a
          * subreport or item in a subreport)
          */
-        StatAdder add(StatisticInstance&& si, const std::string& name="") {
-            if(name != "" && stat_names_.find(name) != stat_names_.end()){
-                throw SpartaException("There is already a statistic instance in this Report (")
-                                    << getName() << ") named \"" << name << "\" pointing to "
-                                    << stat_names_.find(name)->second->getLocation()
-                                    << " and the new stat would be pointing to a StatisticInstance "
-                                    << si.getExpressionString();
-            }
+        StatAdder add(StatisticInstance&& si, const std::string& name="");
 
-            // Track a new stat with helpful exception wrapping
-            addField_(name, si);
+        /*!
+         * \brief Add a StatisticDef to the report
+         * \param sd Pointer to the StatisticDef
+         * \param name Name of this stat
+         */
+        StatAdder add(StatisticDef* sd, const std::string& name="");
 
-            if(name != ""){
-                stat_names_[name] = stats_.back().second;
-            }
+        /*!
+         * \brief Add a Counter type to the report
+         * \param ctr The counter to add
+         * \param name The name of the counter
+         */
+        StatAdder add(CounterBase* ctr, const std::string& name="");
 
-            addSubStatistics_(&si);
-
-            return StatAdder(*this);
-        }
-
-        StatAdder add(StatisticDef* sd, const std::string& name="") {
-            sparta_assert(sd);
-            if(name != "" && stat_names_.find(name) != stat_names_.end()){
-                throw SpartaException("There is already a statistic instance in this Report (")
-                                    << getName() << ") named \"" << name << "\" pointing to "
-                                    << stat_names_.find(name)->second->getLocation()
-                                    << " and the new stat would be the the statistic def at "
-                                    << sd->getLocation() << " with the expression \""
-                                    << sd->getExpression() << "\"";
-            }
-
-            // Track a new stat with helpful exception wrapping
-            addField_(name, sd);
-
-            if(name != ""){
-                stat_names_[name] = stats_.back().second;
-            }
-
-            return StatAdder(*this);
-        }
-
-        StatAdder add(CounterBase* ctr, const std::string& name="") {
-            sparta_assert(ctr);
-            if(name != "" && stat_names_.find(name) != stat_names_.end()){
-                throw SpartaException("There is already a statistic instance in this Report (")
-                                    << getName() << ") named \"" << name << "\" pointing to "
-                                    << stat_names_.find(name)->second->getLocation()
-                                    << " and the new stat would be the counter to "
-                                    << ctr->getLocation();
-            }
-
-            // Track a new stat with helpful exception wrapping
-            addField_(name, ctr);
-
-            if(name != ""){
-                stat_names_[name] = stats_.back().second;
-            }
-
-            return StatAdder(*this);
-        }
-
-        StatAdder add(TreeNode* n, const std::string& name="") {
-            sparta_assert(n);
-            if(name != "" && stat_names_.find(name) != stat_names_.end()){
-                throw SpartaException("There is already a statistic instance in this Report (")
-                                    << getName() << ") named \"" << name << "\" pointing to "
-                                    << stat_names_.find(name)->second->getLocation()
-                                    << " and the new stat would be the node to "
-                                    << n->getLocation();
-            }
-
-            // Track a new stat with helpful exception wrapping
-            addField_(name, n);
-
-            if(name != ""){
-                stat_names_[name] = stats_.back().second;
-            }
-
-            return StatAdder(*this);
-        }
-
-        StatAdder addSubStats(StatisticDef * n, const std::string & name_prefix) {
-            sparta_assert(auto_expand_context_counter_stats_,
-                        "Call to Report::addSubStats(StatisticDef*, name_prefix) is not "
-                        "allowed since ContextCounter auto-expansion is disabled. Enable "
-                        "this by calling Report::enableContextCounterAutoExpansion()");
-            for (const auto & sub_stat : n->getSubStatistics()) {
-                TreeNode * sub_stat_node = const_cast<TreeNode*>(sub_stat.getNode());
-                const std::string prefix =
-                    !name_prefix.empty() ? name_prefix : sub_stat_node->getLocation();
-                const std::string sub_stat_name = prefix + "." + sub_stat.getName();
-                add(sub_stat_node, sub_stat_name);
-            }
-            return StatAdder(*this);
-        }
+        /*!
+         * \brief Add a TreeNode type that represents a counter/stat derivative
+         * \param n The TreeNode to add
+         * \param name The name of the item in the report
+         */
+        StatAdder add(TreeNode* n, const std::string& name="");
 
         /*!
          * \brief Add a single Expression parsed at the current context for this
@@ -561,32 +449,7 @@ namespace sparta
          * \throw SpartaException if this Report currently has no context node
          * (see getContext). Throws if the expression could not be evaluated
          */
-        StatAdder add(const std::string& expression, const std::string& name="") {
-            if(name != "" && stat_names_.find(name) != stat_names_.end()){
-                throw SpartaException("There is already a statistic instance in this Report (")
-                                    << getName() << ") named \"" << name << "\" pointing to "
-                                    << stat_names_.find(name)->second->getLocation()
-                                    << " and the new stat would be the expression \""
-                                    << expression << "\"";
-            }
-            if(nullptr == context_){
-                throw SpartaException("This report currently has no context. To add an item by "
-                                    "expression \"")
-                    << expression << "\", specify a context TreeNode using setContext as the "
-                    "context from which TreeNodes can be searched for";
-            }
-
-            if(TreeNodePrivateAttorney::hasChild(context_, expression)){
-                // Add as a TreeNode statistic
-                add(TreeNodePrivateAttorney::getChild(context_, expression), name);
-            }else{
-                statistics::expression::Expression expr(expression, context_);
-                StatisticInstance si(std::move(expr));
-                add(std::move(si), name);
-            }
-
-            return StatAdder(*this);
-        }
+        StatAdder add(const std::string& expression, const std::string& name="");
 
         /*!
          * \brief Adds any number of TreeNode items to this Report. Type of node
@@ -600,12 +463,14 @@ namespace sparta
          * \warning If this method throws, only some items specified by the
          * pattern. There is no rollback of partial completion
          */
-        StatAdder add(const std::vector<TreeNode*>& nv) {
-            for(TreeNode* n : nv){
-                add(n);
-            }
-            return StatAdder(*this);
-        }
+        StatAdder add(const std::vector<TreeNode*>& nv);
+
+        /*!
+         * \brief Add sub statisitc
+         * \param n The sub statistic to add
+         * \param name The name of the stat for the report
+         */
+        StatAdder addSubStats(StatisticDef * n, const std::string & name_prefix);
 
         /*!
          * \brief By default, statistics reset their internal offsets whenever
@@ -614,14 +479,7 @@ namespace sparta
          * update, and instead always substract the statistic value that was
          * present at the time of report start.
          */
-        void accumulateStats() const {
-            for (const auto & stat : stats_) {
-                stat.second->accumulateStatistic();
-            }
-            for (const auto & sr : getSubreports()) {
-                sr.accumulateStats();
-            }
-        }
+        void accumulateStats() const;
 
         /*!
          * \brief Tell this report if ContextCounter stats should be auto-
@@ -754,7 +612,7 @@ namespace sparta
                 subreps_.push_back(sr); // Copies
                 subreps_.back().setParent_(this);
             }
-            for(const stat_pair_t& sp : r.stats_){
+            for(const statistics::stat_pair_t& sp : r.stats_){
                 add(*sp.second, sp.first);
             }
         }
@@ -906,7 +764,7 @@ namespace sparta
          * \throw SpartaException if idx is out of bounds
          */
         StatisticInstance& getStatistic(size_t idx) {
-            return *stats_.at(idx).second;
+            return *(stats_.at(idx).second);
         }
 
         /*!
@@ -919,14 +777,25 @@ namespace sparta
          * \see hasStatistic
          */
         StatisticInstance& getStatistic(const std::string& name) {
-            auto itr = stat_names_.find(name);
-            if(itr == stat_names_.end()){
+            auto name_itr = stat_names_.find(name);
+            if(name_itr == stat_names_.end()){
                 throw SpartaException("Could not find statistic named \"") << name
                     << "\" in report \"" << getName() << "\"";
             }
-            return *(itr->second);
+            // Get the statistic from the vector pair
+            auto itr = std::find_if(stats_.begin(), stats_.end(),
+                                    [name] (const auto & p) -> bool {
+                                        return name == p.first;
+                                    });
+            sparta_assert(itr != stats_.end());
+            return *(*itr).second;
         }
 
+        /*!
+         * \brief Return true if this report has the given stat name
+         * \param name The name of the stat to look for
+         * \return true has stat, false otherwise
+         */
         bool hasStatistic(const std::string& name) const {
             auto itr = stat_names_.find(name);
             return (itr != stat_names_.end());
@@ -970,7 +839,7 @@ namespace sparta
          * \brief Gets the set of statistic instances immediately contained in
          * this Report
          */
-        const std::vector<stat_pair_t>& getStatistics() const {
+        const statistics::StatisticPairs& getStatistics() const {
             return stats_;
         }
 
@@ -1333,7 +1202,7 @@ namespace sparta
 
             indent << INDENT_STR;
 
-            for(const stat_pair_t& si : stats_){
+            for(const statistics::stat_pair_t& si : stats_){
                 o << indent.str();
                 if(si.first != ""){
                     // Print "custom_name = value"
@@ -1348,7 +1217,7 @@ namespace sparta
                 o << formatNumber(val);
 
                 // Could print the expression after the value
-                //o << "  # " << si.second->getExpressionString();
+                //o << "  # " << si.second.getExpressionString();
 
                 o << std::endl;
             }
@@ -1392,9 +1261,8 @@ namespace sparta
         template <typename T>
         void addField_(const std::string& name, T si_arg) {
             try{
-                StatisticInstance * si;
-                stats_.emplace_back(name, si = new StatisticInstance(si_arg));
-                si->setContext(scheduler_);
+                stats_.emplace_back(name, new StatisticInstance(si_arg));
+                stats_.back().second->setContext(scheduler_);
             }catch(SpartaException& ex){
                 ex << " StatisticInstance would have been named \"" << name << "\"";
                 throw;
@@ -1418,7 +1286,7 @@ namespace sparta
                 //Update mapping from statistic definition to substatistic instance
                 const StatisticDef * stat_def = parent_stat->getStatisticDef();
                 if (stat_def != nullptr) {
-                    sub_statistics_[stat_def].emplace_back(stats_.back().second);
+                    sub_statistics_[stat_def].emplace_back(stats_.back().second.get());
                 }
             }
         }
@@ -1601,12 +1469,12 @@ namespace sparta
          * \note Anything removed from this list needs to be removed from
          * stat_names_ as well.
          */
-        std::vector<stat_pair_t> stats_;
+        statistics::StatisticPairs stats_;
 
         /*!
          * \brief Map of string identifiers to statistics in the stats_ vector
          */
-        std::map<std::string, StatisticInstance*> stat_names_;
+        std::set<std::string> stat_names_;
 
         /*!
          * \brief Tick on which this statistic started (exclusive)
