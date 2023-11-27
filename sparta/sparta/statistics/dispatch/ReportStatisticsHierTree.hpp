@@ -94,10 +94,10 @@ private:
                 }
                 boost::replace_all(name, ".", "_");
 
-                std::shared_ptr<LeafNodeT> si_node(new LeafNodeT(name, stat.second));
+                std::shared_ptr<LeafNodeT> si_node(new LeafNodeT(name, stat.second.get()));
                 si_node->setParent(report_node);
                 children.emplace_back(si_node);
-                flattened_leaves.emplace_back(std::make_pair(si_node.get(), stat.second));
+                flattened_leaves.emplace_back(std::make_pair(si_node.get(), stat.second.get()));
             }
         }
 
@@ -124,4 +124,3 @@ private:
 
 } // namespace statistics
 } // namespace sparta
-

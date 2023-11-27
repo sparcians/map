@@ -659,5 +659,3 @@ private:
         } // namespace expression
     } // namespace statistics
 } // namespace sparta
-
-#pragma once

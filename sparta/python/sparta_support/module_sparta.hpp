@@ -865,5 +865,3 @@ public:
         return inport;
     }
 };
-
-#pragma once

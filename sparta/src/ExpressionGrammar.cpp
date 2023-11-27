@@ -173,6 +173,7 @@ class lazy_gen_var_
 {
     TreeNode* n_; //!< Context node
     std::vector<const TreeNode*>& used_; //!< Disallowed nodes
+    const StatisticPairs & report_si_; //!< existing SI instances in the report
 
 public:
 
@@ -181,17 +182,20 @@ public:
      * \param n Context node in which to search for children
      * \param used Children already used in a parent expression. These nodes
      * must be rejected as they would create cycles if encountered
+     * \param report_si Exising report statistic instances
      */
-    lazy_gen_var_(TreeNode* n, std::vector<const TreeNode*>& used) :
+    lazy_gen_var_(TreeNode* n, std::vector<const TreeNode*>& used,
+                  const StatisticPairs & report_si) :
         n_(n),
-        used_(used)
+        used_(used),
+        report_si_(report_si)
     { }
 
     template <typename A1>
     struct result { typedef Expression type; };
 
     template <typename A1>
-    Expression operator()(A1 a1) const
+    Expression operator()(const A1 & a1) const
     {
         if(n_ == nullptr){
             // Must construct with non-null to actually use
@@ -221,6 +225,15 @@ public:
             }
         }
 
+        if(auto it = std::find_if(report_si_.begin(),
+                                  report_si_.end(),
+                                  [&a1] (const auto & si_pair) {
+                                      return (si_pair.first == a1);
+                                  }); it != report_si_.end())
+        {
+            return it->second->getStatisticExpression();
+        }
+
         if(n == nullptr) {
             sparta_assert(calculator == nullptr);
             SpartaException ex("While parsing the expression or term of expression: '");
@@ -236,10 +249,8 @@ public:
         } else {
             sv = new StatVariable(calculator, used_);
         }
-
         used_.pop_back(); // Remove the stat so it can be used higher up or by
-                          // other sibling expressions in the expression
-
+        // other sibling expressions in the expression
         return Expression(sv);
     }
 }; // class lazy_gen_var_
@@ -301,7 +312,7 @@ ExpressionGrammar::builtin_vars_::builtin_vars_(TreeNode* n,
                                                 std::vector<const TreeNode*>& used)
 {
     sparta_assert(nullptr != n,
-                      "cannot construct ExpressionGrammar::builtin_vars_ with a null context");
+                  "cannot construct ExpressionGrammar::builtin_vars_ with a null context");
 
     static auto get_clock_from_node = [](TreeNode* n) -> const Clock & {
         //If we are tied to a clock object directly, return it.
@@ -386,17 +397,18 @@ ExpressionGrammar::builtin_vars_::builtin_vars_(TreeNode* n,
 }
 
 ExpressionGrammar::variable_::variable_(sparta::TreeNode* n,
-                                        std::vector<const TreeNode*>& used) :
+                                        std::vector<const TreeNode*>& used,
+                                        const StatisticPairs & report_si) :
     variable_::base_type(start)
 {
     sparta_assert(nullptr != n,
-                      "cannot construct ExpressionGrammar::variable_ with a null context");
+                  "cannot construct ExpressionGrammar::variable_ with a null context");
 
     using qi::ascii::char_;
     using qi::_val;
 
     // Variable factory
-    helpers::lazy_gen_var_ lgv(n, used);
+    helpers::lazy_gen_var_ lgv(n, used, report_si);
     phoenix::function<helpers::lazy_gen_var_> lazy_gen_var(lgv);
 
     start = str [_val = lazy_gen_var(qi::_1)];
@@ -540,18 +552,19 @@ ExpressionGrammar::tfunc_::tfunc_(const std::vector<const TreeNode*>& used)
 }
 
 ExpressionGrammar::ExpressionGrammar(sparta::TreeNode* root,
-                                     std::vector<const TreeNode*>& used) :
+                                     std::vector<const TreeNode*>& used,
+                                     const StatisticPairs & report_si) :
     ExpressionGrammar::base_type(expression),
     builtin_vars(root, used),
     ufunc(used),
     bfunc(used),
     tfunc(used),
-    var(root, used),
+    var(root, used, report_si),
     root_(root)
 {
     (void) root_;
     sparta_assert(nullptr != root,
-                      "cannot construct ExpressionGrammar with a null context");
+                  "cannot construct ExpressionGrammar with a null context");
 
     namespace qi = qi;
     using qi::real_parser;
