@@ -57,7 +57,6 @@ installed and would like to build everything (not just sparta).
    * `make`
    * `cmake --install . --prefix $CONDA_PREFIX`
 1. To build Helios/Argos transaction viewer:
-   * `conda activate sparta`
    * `cd helios && mkdir release && cd release`
    * `cmake -DCMAKE_BUILD_TYPE=Release ..`
    * `make`
