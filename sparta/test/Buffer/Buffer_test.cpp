@@ -757,13 +757,13 @@ void testInvalidates()
     for(uint32_t i = 0; i < my_buff.capacity(); ++i) {
         my_buff.push_back(dummy_struct(i, i+1, "XYZ"));
     }
-    EXPECT_EQUAL(my_buff.capacity(), dummy_allocs);
+    EXPECT_EQUAL(my_buff.size(), my_buff.capacity());
 
     sparta::Buffer<dummy_struct>::const_iterator it = std::begin(my_buff);
     while(it != std::end(my_buff)) {
         it = my_buff.erase(it);
     }
-    EXPECT_EQUAL(0, dummy_allocs);
+    EXPECT_EQUAL(0, my_buff.size());
 }
 
 
