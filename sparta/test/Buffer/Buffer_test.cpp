@@ -497,7 +497,8 @@ void generalTest()
 
 
     itr = buf10.end();
-    EXPECT_THROW_MSG_CONTAINS(++itr, "Incrementing the iterator to entry that is not valid");
+    EXPECT_THROW_MSG_CONTAINS(++itr,
+                              "Incrementing an iterator that is not valid");
 
     itr = buf10.end();
     --itr;
@@ -564,7 +565,8 @@ void generalTest()
     buf10.push_back(1234.5);
 
     ritr = buf10.rbegin();
-    EXPECT_THROW_MSG_CONTAINS(--ritr, "Incrementing the iterator to entry that is not valid");
+    EXPECT_THROW_MSG_CONTAINS(--ritr,
+                              "Incrementing an iterator that is not valid");
 
     ritr = buf10.rbegin();
     ++ritr;
@@ -750,6 +752,18 @@ void testInvalidates()
     EXPECT_EQUAL(SimpleStruct::simple_allocs, 1);
     my_simple_struct.erase(my_simple_struct.begin());
     EXPECT_EQUAL(SimpleStruct::simple_allocs, 0);
+
+    dummy_allocs = 0;
+    for(uint32_t i = 0; i < my_buff.capacity(); ++i) {
+        my_buff.push_back(dummy_struct(i, i+1, "XYZ"));
+    }
+    EXPECT_EQUAL(my_buff.capacity(), dummy_allocs);
+
+    sparta::Buffer<dummy_struct>::const_iterator it = std::begin(my_buff);
+    while(it != std::end(my_buff)) {
+        it = my_buff.erase(it);
+    }
+    EXPECT_EQUAL(0, dummy_allocs);
 }
 
 

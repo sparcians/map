@@ -170,4 +170,4 @@ class RootTreeNode;
     }; // class ClockManager
 
     std::ostream &operator<<(std::ostream &os, const ClockManager &m);
-};
+}

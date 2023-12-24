@@ -208,28 +208,32 @@ namespace sparta
             /// override the comparison operator.
             bool operator<(const BufferIterator& rhs) const
             {
-                sparta_assert(attached_buffer_ == rhs.attached_buffer_, "Cannot compare BufferIterators created by different buffers.");
+                sparta_assert(attached_buffer_ == rhs.attached_buffer_,
+                              "Cannot compare BufferIterators created by different buffers.");
                 return getIndex_() < rhs.getIndex_();
             }
 
             /// override the comparison operator.
             bool operator>(const BufferIterator& rhs) const
             {
-                sparta_assert(attached_buffer_ == rhs.attached_buffer_, "Cannot compare BufferIterators created by different buffers.");
+                sparta_assert(attached_buffer_ == rhs.attached_buffer_,
+                              "Cannot compare BufferIterators created by different buffers.");
                 return getIndex_() > rhs.getIndex_();
             }
 
             /// override the comparison operator.
             bool operator==(const BufferIterator& rhs) const
             {
-                sparta_assert(attached_buffer_ == rhs.attached_buffer_, "Cannot compare BufferIterators created by different buffers.");
+                sparta_assert(attached_buffer_ == rhs.attached_buffer_,
+                              "Cannot compare BufferIterators created by different buffers.");
                 return (buffer_entry_ == rhs.buffer_entry_);
             }
 
             /// override the not equal operator.
             bool operator!=(const BufferIterator& rhs) const
             {
-                sparta_assert(attached_buffer_ == rhs.attached_buffer_, "Cannot compare BufferIterators created by different buffers.");
+                sparta_assert(attached_buffer_ == rhs.attached_buffer_,
+                              "Cannot compare BufferIterators created by different buffers.");
                 return !operator==(rhs);
             }
 
@@ -245,20 +249,23 @@ namespace sparta
 
             /// override the dereferencing operator
             DataReferenceType operator* () const {
-                sparta_assert(attached_buffer_, "The iterator is not attached to a buffer. Was it initialized?");
+                sparta_assert(attached_buffer_,
+                              "The iterator is not attached to a buffer. Was it initialized?");
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");
                 return *(buffer_entry_->data);
             }
 
             //! Overload the class-member-access operator.
             value_type * operator -> () {
-                sparta_assert(attached_buffer_, "The iterator is not attached to a buffer. Was it initialized?");
+                sparta_assert(attached_buffer_,
+                              "The iterator is not attached to a buffer. Was it initialized?");
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");
                 return buffer_entry_->data;
             }
 
             value_type const * operator -> () const {
-                sparta_assert(attached_buffer_, "The iterator is not attached to a buffer. Was it initialized?");
+                sparta_assert(attached_buffer_,
+                              "The iterator is not attached to a buffer. Was it initialized?");
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");
                 return buffer_entry_->data;
             }
@@ -266,7 +273,8 @@ namespace sparta
             /** brief Move the iterator forward to point to next element in queue ; PREFIX
              */
             BufferIterator & operator++() {
-                sparta_assert(attached_buffer_, "The iterator is not attached to a buffer. Was it initialized?");
+                sparta_assert(attached_buffer_,
+                              "The iterator is not attached to a buffer. Was it initialized?");
                 if(isValid()) {
                     uint32_t idx = buffer_entry_->physical_idx;
                     ++idx;
@@ -277,7 +285,8 @@ namespace sparta
                         buffer_entry_ = nullptr;
                     }
                 } else {
-                    sparta_assert(attached_buffer_->numFree() > 0, "Incrementing the iterator to entry that is not valid");
+                    sparta_assert(attached_buffer_->numFree() > 0,
+                                  "Incrementing an iterator that is not valid");
                 }
                 return *this;
             }
@@ -619,7 +628,8 @@ namespace sparta
         void erase(const uint32_t& idx)
         {
             // Make sure we are invalidating an already valid object.
-            sparta_assert(idx < size(), "Cannot erase an index that is not already valid");
+            sparta_assert(idx < size(),
+                          "Cannot erase an index that is not already valid");
 
             // Do the invalidation immediately
             // 1. Move the free space pointer to the erased position.
@@ -664,22 +674,30 @@ namespace sparta
          * \brief erase the index at which the entry exists in the Buffer.
          * \param entry a reference to the entry to be erased.
          */
-        void erase(const const_iterator& entry)
+        const_iterator erase(const const_iterator& entry)
         {
-            sparta_assert(entry.attached_buffer_ == this, "Cannot erase an entry created by another Buffer");
+            sparta_assert(entry.attached_buffer_ == this,
+                          "Cannot erase an entry created by another Buffer");
+            const_iterator next_it = entry;
+            ++next_it;
             // erase the index in the actual buffer.
             erase(entry.getIndex_());
+            return next_it;
         }
 
         /**
          * \brief erase the index at which the entry exists in the Buffer.
          * \param entry a reference to the entry to be erased.
          */
-        void erase(const const_reverse_iterator& entry)
+        const_reverse_iterator erase(const const_reverse_iterator& entry)
         {
-            sparta_assert(entry.base().attached_buffer_ == this, "Cannot erase an entry created by another Buffer");
+            sparta_assert(entry.base().attached_buffer_ == this,
+                          "Cannot erase an entry created by another Buffer");
+            const_reverse_iterator next_it = entry;
+            ++next_it;
             // erase the index in the actual buffer.
             erase(entry.base().getIndex_());
+            return next_it;
         }
 
         /**
