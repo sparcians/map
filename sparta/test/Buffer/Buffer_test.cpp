@@ -709,6 +709,104 @@ void testPointerTypes()
     EXPECT_TRUE(ptr != nullptr);
 }
 
+template<typename IterType, typename BuffType>
+void testEraseSupport()
+{
+    BuffType int_buff("simple int buff", 10, nullptr);
+
+    for(uint32_t i = 0; i < int_buff.capacity(); ++i) {
+        int_buff.push_back(i + 100);
+    }
+    EXPECT_EQUAL(int_buff.size(), int_buff.capacity());
+
+    IterType it;
+    IterType eit;
+    if constexpr(std::is_same_v<IterType, typename BuffType::reverse_iterator>) {
+        it = int_buff.rbegin();
+        eit = int_buff.rend();
+    }
+    else {
+        it = int_buff.begin();
+        eit = int_buff.end();
+    }
+
+    while(it != eit) {
+        it = int_buff.erase(it);
+    }
+    EXPECT_EQUAL(0, int_buff.size());
+
+    // Pure fill, partial erase
+    for(uint32_t i = 0; i < int_buff.capacity(); ++i) {
+        int_buff.push_back(i + 100);
+    }
+
+    if constexpr(std::is_same_v<IterType, typename BuffType::reverse_iterator>) {
+        it = int_buff.rbegin();
+        eit = int_buff.rend();
+    }
+    else {
+        it = int_buff.begin();
+        eit = int_buff.end();
+    }
+    while(it != eit) {
+        if(*it % 2 == 0) {
+            it = int_buff.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+    EXPECT_EQUAL(5, int_buff.size());
+    int_buff.clear();
+
+    // Pure fill, erase 1, add 1 erase, another add another
+    for(uint32_t i = 0; i < int_buff.capacity(); ++i) {
+        int_buff.push_back(i + 100);
+    }
+
+    // Pattern: 100 -> 109
+
+    // Erase 105
+    if constexpr(std::is_same_v<IterType, typename BuffType::reverse_iterator>) {
+        it = int_buff.rbegin();
+        eit = int_buff.rend();
+    }
+    else {
+        it = int_buff.begin();
+        eit = int_buff.end();
+    }
+    while(it != eit) {
+        if(*it == 105) {
+            it = int_buff.erase(it);
+            EXPECT_EQUAL(*it, 106);
+            break;
+        }
+        ++it;
+    }
+
+    // Put in 200
+    int_buff.push_back(200);
+    EXPECT_EQUAL(int_buff.accessBack(), 200);
+
+    std::array<int, 10> vals = {100, 101, 102, 103, 104, 106, 107, 108, 109, 200};
+
+    uint32_t idx = 0;
+    if constexpr(std::is_same_v<IterType, typename BuffType::reverse_iterator>) {
+        it = int_buff.rbegin();
+        eit = int_buff.rend();
+    }
+    else {
+        it = int_buff.begin();
+        eit = int_buff.end();
+    }
+    while(it != eit) {
+        EXPECT_EQUAL(vals[idx++], *it);
+        it = int_buff.erase(it);
+    }
+
+    EXPECT_EQUAL(0, int_buff.size());
+}
+
 void testInvalidates()
 {
     EXPECT_EQUAL(dummy_allocs, 0);
@@ -753,17 +851,11 @@ void testInvalidates()
     my_simple_struct.erase(my_simple_struct.begin());
     EXPECT_EQUAL(SimpleStruct::simple_allocs, 0);
 
-    dummy_allocs = 0;
-    for(uint32_t i = 0; i < my_buff.capacity(); ++i) {
-        my_buff.push_back(dummy_struct(i, i+1, "XYZ"));
-    }
-    EXPECT_EQUAL(my_buff.size(), my_buff.capacity());
-
-    sparta::Buffer<dummy_struct>::const_iterator it = std::begin(my_buff);
-    while(it != std::end(my_buff)) {
-        it = my_buff.erase(it);
-    }
-    EXPECT_EQUAL(0, my_buff.size());
+    // Pure fill, pure erase
+    testEraseSupport<sparta::Buffer<int>::iterator,               sparta::Buffer<int>>();
+    testEraseSupport<sparta::Buffer<int>::const_iterator,         sparta::Buffer<int>>();
+    //testEraseSupport<sparta::Buffer<int>::reverse_iterator,       sparta::Buffer<int>>();
+    // testEraseSupport<sparta::Buffer<int>::const_reverse_iterator, sparta::Buffer<int>>();
 }
 
 

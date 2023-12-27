@@ -275,18 +275,13 @@ namespace sparta
             BufferIterator & operator++() {
                 sparta_assert(attached_buffer_,
                               "The iterator is not attached to a buffer. Was it initialized?");
-                if(isValid()) {
-                    uint32_t idx = buffer_entry_->physical_idx;
-                    ++idx;
-                    if(attached_buffer_->isValid(idx)) {
-                        buffer_entry_ = attached_buffer_->buffer_map_[idx];
-                    }
-                    else {
-                        buffer_entry_ = nullptr;
-                    }
-                } else {
-                    sparta_assert(attached_buffer_->numFree() > 0,
-                                  "Incrementing an iterator that is not valid");
+                sparta_assert(isValid(), "Incrementing an iterator that is not valid");
+                const uint32_t idx = buffer_entry_->physical_idx + 1;
+                if(attached_buffer_->isValid(idx)) {
+                    buffer_entry_ = attached_buffer_->buffer_map_[idx];
+                }
+                else {
+                    buffer_entry_ = nullptr;
                 }
                 return *this;
             }
@@ -625,7 +620,7 @@ namespace sparta
          *          a BufferIterator has been created, the
          *          erase(BufferIterator&) should be used.
          */
-        void erase(const uint32_t& idx)
+        void erase(uint32_t idx)
         {
             // Make sure we are invalidating an already valid object.
             sparta_assert(idx < size(),
@@ -644,19 +639,18 @@ namespace sparta
             validator_->detachDataPointer(free_position_);
 
             // Shift all the positions above the invalidation in the map one space down.
-            uint32_t i = idx;
             sparta_assert(num_valid_ > 0);
             const uint32_t top_idx_of_buffer = num_valid_ - 1;
-            while(i < top_idx_of_buffer)
+            while(idx < top_idx_of_buffer)
             {
                 // assert that we are not going to do an invalid read.
-                sparta_assert(i + 1 < num_entries_);
-                buffer_map_[i] = buffer_map_[i + 1];
-                buffer_map_[i]->physical_idx = i;
+                sparta_assert(idx + 1 < num_entries_);
+                buffer_map_[idx] = buffer_map_[idx + 1];
+                buffer_map_[idx]->physical_idx = idx;
 
                 // Shift the indexes in the address map.
-                address_map_[i] = address_map_[i + 1];
-                ++i;
+                address_map_[idx] = address_map_[idx + 1];
+                ++idx;
             }
 
             // the entry at the old num_valid_ in the map now points to nullptr
@@ -674,30 +668,26 @@ namespace sparta
          * \brief erase the index at which the entry exists in the Buffer.
          * \param entry a reference to the entry to be erased.
          */
-        const_iterator erase(const const_iterator& entry)
+        iterator erase(const const_iterator& entry)
         {
             sparta_assert(entry.attached_buffer_ == this,
                           "Cannot erase an entry created by another Buffer");
-            const_iterator next_it = entry;
-            ++next_it;
             // erase the index in the actual buffer.
             erase(entry.getIndex_());
-            return next_it;
+            return {this, buffer_map_[entry.getIndex_()]};
         }
 
         /**
          * \brief erase the index at which the entry exists in the Buffer.
          * \param entry a reference to the entry to be erased.
          */
-        const_reverse_iterator erase(const const_reverse_iterator& entry)
+        reverse_iterator erase(const const_reverse_iterator& entry)
         {
             sparta_assert(entry.base().attached_buffer_ == this,
                           "Cannot erase an entry created by another Buffer");
-            const_reverse_iterator next_it = entry;
-            ++next_it;
             // erase the index in the actual buffer.
             erase(entry.base().getIndex_());
-            return next_it;
+            return reverse_iterator{iterator(this, buffer_map_[entry.base().getIndex_()])};
         }
 
         /**
@@ -889,7 +879,8 @@ namespace sparta
         void resizeInternalContainers_() {
 
             // Assert that the Buffer class is in Infinite-Mode.
-            sparta_assert(is_infinite_mode_, "The Buffer class must be in Infinite-Mode in order to resize itself.");
+            sparta_assert(is_infinite_mode_,
+                          "The Buffer class must be in Infinite-Mode in order to resize itself.");
 
             // We do not resize if there are available slots in buffer.
             if(numFree() != 0) {
@@ -1016,14 +1007,15 @@ namespace sparta
 
         std::string name_;
         const Clock * clk_ = nullptr;
-        size_type num_entries_;       /*!< The number of entries this buffer can hold */
-        PointerList buffer_map_; /*!< A vector list of pointers to all the items active in the buffer */
-        size_type data_pool_size_;    /*!< The number of elements our data_pool_ can hold*/
-        DataPool data_pool_; /*!< A vector twice the size of our Buffer size limit that is filled with pointers for our data.*/
+        size_type   num_entries_ = 0;    /*!< The number of entries this buffer can hold */
+        PointerList buffer_map_;         /*!< A vector list of pointers to all the items active in the buffer */
+        size_type   data_pool_size_ = 0; /*!< The number of elements our data_pool_ can hold*/
+        DataPool    data_pool_;          /*!< A vector twice the size of our Buffer size limit
+                                              that is filled with pointers for our data.*/
 
-        DataPointer*  free_position_  = 0;  /*!< A pointer to a free position in our data_pool_ */
-        DataPointer*  first_position_  = 0; /*!< A pointer to a first position in our data_pool_; used for lower bound check */
-        size_type     num_valid_      = 0;  /*!< A tally of valid items */
+        DataPointer*  free_position_  = nullptr; /*!< A pointer to a free position in our data_pool_ */
+        DataPointer*  first_position_ = nullptr; /*!< A pointer to a first position in our data_pool_; used for lower bound check */
+        size_type     num_valid_      = 0;       /*!< A tally of valid items */
         std::unique_ptr<DataPointerValidator> validator_;    /*!< Checks the validity of DataPointer */
 
         //////////////////////////////////////////////////////////////////////
