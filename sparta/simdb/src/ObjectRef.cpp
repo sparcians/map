@@ -96,7 +96,8 @@ PropertyDataT LOCAL_getScalarProperty(const std::string & table_name,
 //! without using ObjectQuery.
 template <typename PropertyDataT>
 typename std::enable_if<
-    std::is_pod<PropertyDataT>::value,
+    std::is_trivial<PropertyDataT>::value &&
+    std::is_standard_layout<PropertyDataT>::value,
 PropertyDataT>::type
 LOCAL_getScalarPropertyNoObjectQuery(
     const std::string & table_name,

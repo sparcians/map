@@ -103,7 +103,7 @@ namespace sparta {
                 const std::weak_ptr<StatePool<T>> & weak_pool) :
                 weak_pool_ptr_(weak_pool) {}
 
-            StateTrackerDeleter<T>() : valid_(false) {}
+            StateTrackerDeleter() : valid_(false) {}
 
             inline void operator()(StateTrackerUnit<T> * ptr) const {
                 if(!valid_ || !ptr) {
@@ -178,7 +178,7 @@ namespace sparta {
 
             //! The Default Ctor is deleted because StatePool cannot be created
             //  without a valid state tracking filename.
-            StatePool<T>() = delete;
+            StatePool() = delete;
 
             //! A file name is a must when constructing StatePool.
             explicit StatePool<T>(const std::string & tracking_filename) :

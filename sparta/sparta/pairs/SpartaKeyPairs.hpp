@@ -1691,7 +1691,8 @@ namespace sparta {
         template<typename T>
         MetaStruct::enable_if_t<
             std::is_integral<MetaStruct::decay_t<T>>::value &&
-            std::is_pod<MetaStruct::decay_t<T>>::value &&
+            std::is_trivial<MetaStruct::decay_t<T>>::value &&
+            std::is_standard_layout<MetaStruct::decay_t<T>>::value &&
             !MetaStruct::is_bool<MetaStruct::decay_t<T>>::value, void>
 
         updateValueInCache_(
