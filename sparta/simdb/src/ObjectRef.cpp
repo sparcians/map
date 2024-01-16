@@ -4,6 +4,7 @@
 #include "simdb/utils/ObjectQuery.hpp"
 #include "simdb/TableRef.hpp"
 #include "simdb/DbConnProxy.hpp"
+#include "simdb/utils/CompatUtils.hpp"
 
 //SQLite-specific headers
 #include "simdb/impl/sqlite/TransactionUtils.hpp"
@@ -96,8 +97,7 @@ PropertyDataT LOCAL_getScalarProperty(const std::string & table_name,
 //! without using ObjectQuery.
 template <typename PropertyDataT>
 typename std::enable_if<
-    std::is_trivial<PropertyDataT>::value &&
-    std::is_standard_layout<PropertyDataT>::value,
+    utils::is_pod<PropertyDataT>::value,
 PropertyDataT>::type
 LOCAL_getScalarPropertyNoObjectQuery(
     const std::string & table_name,
