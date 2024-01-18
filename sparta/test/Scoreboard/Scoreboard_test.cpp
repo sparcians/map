@@ -559,6 +559,41 @@ void testScoreboardClearing()
     rtn.enterTeardown();
 }
 
+void testScoreboardNonCore()
+{
+    // testing scoreboard view is able to find scoreboards when there is not a "core" node
+    sparta::RootTreeNode rtn;
+    sparta::Scheduler    sched;
+    sparta::ClockManager cm(&sched);
+    sparta::Clock::Handle root_clk;
+    root_clk = cm.makeRoot(&rtn, "root_clk");
+    cm.normalize();
+    rtn.setClock(root_clk.get());
+
+    sparta::TreeNode cpu(&rtn, "custom", "Dummy CPU");
+
+    sparta::ResourceFactory<sparta::Scoreboard,
+                            sparta::Scoreboard::ScoreboardParameters> fact;
+
+    sparta::ResourceTreeNode sbtn(&cpu,
+                                  SB_NAMES[0],
+                                  sparta::TreeNode::GROUP_NAME_NONE,
+                                  sparta::TreeNode::GROUP_IDX_NONE,
+                                  "Test scoreboard",
+                                  &fact);
+
+    sparta::Scoreboard::ScoreboardParameters * params =
+        dynamic_cast<sparta::Scoreboard::ScoreboardParameters *>(sbtn.getParameterSet());
+    params->latency_matrix = GPR_FORWARDING_MATRIX;
+
+    rtn.enterConfiguring();
+    rtn.enterFinalized();
+    sparta::ScoreboardView view(UNIT_NAMES[0], SB_NAMES[0], &sbtn);
+
+    auto is_set = view.isSet({0b1000});
+    EXPECT_TRUE(is_set);
+    rtn.enterTeardown();
+}
 void testPrintBits()
 {
     sparta::Scoreboard::RegisterBitMask some_bits(0b011000110011);
@@ -576,6 +611,8 @@ int main ()
     testScoreboardUnitCreation();
 
     testScoreboardClearing();
+
+    testScoreboardNonCore();
 
     testPrintBits();
 
