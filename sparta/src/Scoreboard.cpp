@@ -313,11 +313,9 @@ namespace sparta
         // Go as high as the CPU node in this Tree.  If we go higher,
         // we could bind to a Scoreboard in another CPU!  That'd be
         // bad.
-        auto cpu_node = parent->findAncestorByName("core*");
-        // if a core node is not available, search from the root
-        if(cpu_node == nullptr){
-            cpu_node = parent->getRoot();
-        }
+
+        // Search from the root
+        auto cpu_node = parent->getRoot();
         sparta_assert(cpu_node != nullptr, "Could not find the core nodes in this simulation");
 
         std::function<Scoreboard*(sparta::TreeNode *)> findScoreboard =
