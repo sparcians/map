@@ -152,7 +152,7 @@ public:
         my_scoreboard_view_.reset
             (new sparta::ScoreboardView(getContainer()->getName(), // ALU0, ALU1, LSU, FPU, etc
                                         sb_unit_type_,             // integer, fp, vector
-                                        getContainer()));          // Used to find the Scoreboard
+                                        getContainer()->getRoot()));          // Used to find the Scoreboard
         advance_->schedule();
     }
 
@@ -316,7 +316,7 @@ void testScoreboardRegistration()
     sched.finalize();
 
     // view from ALU0, integer
-    sparta::ScoreboardView view(UNIT_NAMES[0], SB_NAMES[0], &sbtn);
+    sparta::ScoreboardView view(UNIT_NAMES[0], SB_NAMES[0], &cpu);
     bool ready = false;
     auto ready_callback = [&ready](const sparta::Scoreboard::RegisterBitMask &) { ready = true; };
 
@@ -523,7 +523,7 @@ void testScoreboardClearing()
     rtn.enterConfiguring();
     rtn.enterFinalized();
     sparta::Scoreboard * master_sb = sbtn.getResourceAs<sparta::Scoreboard>();
-    sparta::ScoreboardView view(UNIT_NAMES[0], SB_NAMES[0], &sbtn);
+    sparta::ScoreboardView view(UNIT_NAMES[0], SB_NAMES[0], &cpu);
 
     auto is_set = view.isSet({0b1000});
     EXPECT_TRUE(is_set);
@@ -561,7 +561,7 @@ void testScoreboardClearing()
 
 void testScoreboardNonCore()
 {
-    // testing scoreboard view is able to find scoreboards when there is not a "core" node
+    // testing scoreboard view is able to find scoreboards when there is a non core.*
     sparta::RootTreeNode rtn;
     sparta::Scheduler    sched;
     sparta::ClockManager cm(&sched);
@@ -588,7 +588,7 @@ void testScoreboardNonCore()
 
     rtn.enterConfiguring();
     rtn.enterFinalized();
-    sparta::ScoreboardView view(UNIT_NAMES[0], SB_NAMES[0], &sbtn);
+    sparta::ScoreboardView view(UNIT_NAMES[0], SB_NAMES[0], &cpu);
 
     auto is_set = view.isSet({0b1000});
     EXPECT_TRUE(is_set);
