@@ -309,14 +309,8 @@ namespace sparta
 
         // Try to find the master scoreboard, if it's available (has
         // been created by the Sparta framework)
-
-        // Go as high as the CPU node in this Tree.  If we go higher,
-        // we could bind to a Scoreboard in another CPU!  That'd be
-        // bad.
-
-        // Search from the root
-        auto cpu_node = parent->getRoot();
-        sparta_assert(cpu_node != nullptr, "Could not find the core nodes in this simulation");
+        
+        // Search for scoreboards from parent
 
         std::function<Scoreboard*(sparta::TreeNode *)> findScoreboard =
             [&] (sparta::TreeNode * node) -> Scoreboard * {
@@ -350,7 +344,7 @@ namespace sparta
                 return scoreboard;
             };
 
-        Scoreboard * master_sb = findScoreboard(cpu_node);
+        Scoreboard * master_sb = findScoreboard(parent);
 
         // Gotta be more than 0
         sparta_assert(master_sb != nullptr,
