@@ -11,6 +11,7 @@
 #include "simdb/schema/ColumnTypedefs.hpp"
 #include "simdb/schema/DatabaseTypedefs.hpp"
 #include "simdb/Errors.hpp"
+#include "simdb/utils/CompatUtils.hpp"
 
 #include <string>
 #include <type_traits>
@@ -30,7 +31,7 @@ struct column_info<int8_t> {
         return ColumnDataType::int8_t;
     }
     using value_type = int8_t;
-    static constexpr bool is_fixed_size = std::is_pod<int8_t>::value;
+    static constexpr bool is_fixed_size = utils::is_pod<int8_t>::value;
 };
 
 //! uint8_t
@@ -40,7 +41,7 @@ struct column_info<uint8_t> {
         return ColumnDataType::uint8_t;
     }
     using value_type = uint8_t;
-    static constexpr bool is_fixed_size = std::is_pod<uint8_t>::value;
+    static constexpr bool is_fixed_size = utils::is_pod<uint8_t>::value;
 };
 
 //! int16_t
@@ -50,7 +51,7 @@ struct column_info<int16_t> {
         return ColumnDataType::int16_t;
     }
     using value_type = int16_t;
-    static constexpr bool is_fixed_size = std::is_pod<int16_t>::value;
+    static constexpr bool is_fixed_size = utils::is_pod<int16_t>::value;
 };
 
 //! uint16_t
@@ -60,7 +61,7 @@ struct column_info<uint16_t> {
         return ColumnDataType::uint16_t;
     }
     using value_type = uint16_t;
-    static constexpr bool is_fixed_size = std::is_pod<uint16_t>::value;
+    static constexpr bool is_fixed_size = utils::is_pod<uint16_t>::value;
 };
 
 //! int32_t
@@ -70,7 +71,7 @@ struct column_info<int32_t> {
         return ColumnDataType::int32_t;
     }
     using value_type = int32_t;
-    static constexpr bool is_fixed_size = std::is_pod<int32_t>::value;
+    static constexpr bool is_fixed_size = utils::is_pod<int32_t>::value;
 };
 
 //! uint32_t
@@ -80,7 +81,7 @@ struct column_info<uint32_t> {
         return ColumnDataType::uint32_t;
     }
     using value_type = uint32_t;
-    static constexpr bool is_fixed_size = std::is_pod<uint32_t>::value;
+    static constexpr bool is_fixed_size = utils::is_pod<uint32_t>::value;
 };
 
 //! int64_t
@@ -90,7 +91,7 @@ struct column_info<int64_t> {
         return ColumnDataType::int64_t;
     }
     using value_type = int64_t;
-    static constexpr bool is_fixed_size = std::is_pod<int64_t>::value;
+    static constexpr bool is_fixed_size = utils::is_pod<int64_t>::value;
 };
 
 //! uint64_t
@@ -100,7 +101,7 @@ struct column_info<uint64_t> {
         return ColumnDataType::uint64_t;
     }
     using value_type = uint64_t;
-    static constexpr bool is_fixed_size = std::is_pod<uint64_t>::value;
+    static constexpr bool is_fixed_size = utils::is_pod<uint64_t>::value;
 };
 
 //! float
@@ -110,7 +111,7 @@ struct column_info<float> {
         return ColumnDataType::float_t;
     }
     using value_type = float;
-    static constexpr bool is_fixed_size = std::is_pod<float>::value;
+    static constexpr bool is_fixed_size = utils::is_pod<float>::value;
 };
 
 //! double
@@ -120,7 +121,7 @@ struct column_info<double> {
         return ColumnDataType::double_t;
     }
     using value_type = double;
-    static constexpr bool is_fixed_size = std::is_pod<double>::value;
+    static constexpr bool is_fixed_size = utils::is_pod<double>::value;
 };
 
 //! string
@@ -133,7 +134,7 @@ struct column_info<ColumnT, typename std::enable_if<
         return ColumnDataType::string_t;
     }
     using value_type = ColumnT;
-    static constexpr bool is_fixed_size = std::is_pod<std::string>::value;
+    static constexpr bool is_fixed_size = utils::is_pod<std::string>::value;
 };
 
 //! char
@@ -143,7 +144,7 @@ struct column_info<char> {
         return ColumnDataType::char_t;
     }
     using value_type = char;
-    static constexpr bool is_fixed_size = std::is_pod<char>::value;
+    static constexpr bool is_fixed_size = utils::is_pod<char>::value;
 };
 
 //! Vectors of raw bytes are stored as blobs (void* / opaque)
@@ -155,7 +156,7 @@ struct column_info<ColumnT, typename std::enable_if<
         return ColumnDataType::blob_t;
     }
     using value_type = typename is_container<ColumnT>::value_type;
-    static constexpr bool is_fixed_size = std::is_pod<ColumnT>::value;
+    static constexpr bool is_fixed_size = utils::is_pod<ColumnT>::value;
 };
 
 //! Blob descriptor
@@ -167,11 +168,11 @@ struct column_info<ColumnT, typename std::enable_if<
         return ColumnDataType::blob_t;
     }
     using value_type = Blob;
-    static constexpr bool is_fixed_size = std::is_pod<ColumnT>::value;
+    static constexpr bool is_fixed_size = utils::is_pod<ColumnT>::value;
 };
 
 //! See if the given column data type has a fixed number
-//! of bytes, as determined by std::is_pod<T>
+//! of bytes, as determined by utils::is_pod<T>
 inline bool getColumnIsFixedSize(const ColumnDataType dtype)
 {
     using dt = ColumnDataType;
