@@ -19,14 +19,42 @@
 namespace sparta{
 namespace pevents{
 
-
-
     /**
      * \class PeventCollector
-     * \brief a class that is capable of recording pevents as key value pairs,
-     * where a PairDefinition has been defined with the key values, and function
-     * pointers to where to get the data for the pairs.
+     * \brief Class that is capable of recording pevents as key value
+     *        pairs, where a PairDefinition has been defined with the
+     *        key values, and function pointers to where to get the
+     *        data for the pairs.
      * \tparam the Type of PairDefinition that we want to capture a pevent from.
+     *
+     * Example usage:
+     * \code
+     *
+     *    class MyUnit : sparta::Unit
+     *    {
+     *    public:
+     *        // ...
+     *        uint32_t getValue() const { ... };
+     *        // ...
+     *    private:
+     *        class MyEventPairs : public sparta::PairDefinition<MyUnit>
+     *        {
+     *        public:
+     *            using TypeCollected = Inst;
+     *            MyEventPairs() : sparta::PairDefinition<MyUnit>()
+     *            {
+     *                addPEventsPair("value", &MyUnit::getValue);
+     *            }
+     *        };
+     *
+     *        // Assumes this event is being constructed inside a sparta::Unit derived type
+     *        sparta::pevents::PeventCollector<MyEventPairs> my_pevent_{"MYEVENT", getContainer(), getClock()};
+     *    };
+     *
+     *
+     *    // Collection:
+     *    my_event_.collect(my_unit_);
+     * \endcode
      */
     template <class CollectedEntityType>
     class PeventCollector
@@ -218,4 +246,3 @@ namespace pevents{
 
 } // namespace pevents
 } // namespace sparta
-
