@@ -61,10 +61,6 @@ private:
     // Producer's producer handler
     void produceData_();
 
-    // Event to drive data, phase Tick, 1 cycle delay
-    sparta::UniqueEvent<> ev_producing_event_{&unit_event_set_, "ev_producing_event",
-            CREATE_SPARTA_HANDLER(Producer, produceData_), 1 /* delay */};
-
     // Internal count
     const uint32_t max_ints_to_send_;
     uint32_t current_ints_count_ = 0;
