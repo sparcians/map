@@ -380,8 +380,11 @@ public:
     void pause() override
     {
         if (thread_spawned_){
-            paused_ = true;
-            pthread_mutex_lock(&pause_mutex_);
+            if(!paused_)
+            {
+                paused_ = true;
+                pthread_mutex_lock(&pause_mutex_);
+            }
         }
     }
 
