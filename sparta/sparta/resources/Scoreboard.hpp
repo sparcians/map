@@ -258,6 +258,14 @@ namespace sparta
             return scoreboard_type_;
         }
 
+        /**
+         * \brief Get the name of this view
+         * \return Name of the view
+         */
+        std::string getName() const {
+            return unit_name_;
+        }
+
     private:
 
         // Make the Scoreboard a friend to clear bits in the view
@@ -309,7 +317,8 @@ namespace sparta
         using ReadinessCallbacks = std::list<CallbackData>;
         ReadinessCallbacks ready_callbacks_;
 
-        const sparta::Clock * clock_;
+        const sparta::Clock    * clock_;
+        const std::string        unit_name_;
         const Scoreboard::UnitID unit_id_;
         const std::string scoreboard_type_;
     };

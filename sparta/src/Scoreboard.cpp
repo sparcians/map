@@ -157,6 +157,7 @@ namespace sparta
                 sbv->receiveScoreboardUpdate_(bits, INVALID_UNIT_ID);
             }
         }
+        global_reg_ready_mask_ |= bits;
     }
 
     void Scoreboard::set(const Scoreboard::RegisterBitMask & bits, Scoreboard::UnitID producer)
@@ -173,6 +174,7 @@ namespace sparta
                 sbv->receiveScoreboardUpdate_(bits, producer);
             }
         }
+        global_reg_ready_mask_ |= bits;
     }
 
     void Scoreboard::clearBits(const Scoreboard::RegisterBitMask & bits)
@@ -232,6 +234,7 @@ namespace sparta
                                    const std::string & scoreboard_type,
                                    sparta::TreeNode * parent) :
         clock_(parent->getClock()),
+        unit_name_(unit_name),
         unit_id_(findMasterScoreboard_(unit_name, scoreboard_type, parent)),
         scoreboard_type_(scoreboard_type)
     {
@@ -251,7 +254,7 @@ namespace sparta
                                                   const Scoreboard::UnitID producer)
     {
         sparta_assert(bits.any(),
-                      "Update should only be generated for non-empty vector");
+                      "Update should only be generated for non-empty vector: " << unit_name_);
 
         // Setting local ready bits
         local_ready_mask_ |= bits;
@@ -309,7 +312,7 @@ namespace sparta
 
         // Try to find the master scoreboard, if it's available (has
         // been created by the Sparta framework)
-        
+
         // Search for scoreboards from parent
 
         std::function<Scoreboard*(sparta::TreeNode *)> findScoreboard =
