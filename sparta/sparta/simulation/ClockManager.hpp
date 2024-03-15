@@ -19,7 +19,7 @@
 #include "sparta/utils/SpartaAssert.hpp"
 
 namespace sparta {
-class RootTreeNode;
+    class RootTreeNode;
 
     /**
      * \class ClockManager
@@ -170,4 +170,4 @@ class RootTreeNode;
     }; // class ClockManager
 
     std::ostream &operator<<(std::ostream &os, const ClockManager &m);
-};
+}
