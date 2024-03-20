@@ -1,0 +1,43 @@
+<map id="core_example::CPUFactories" name="core_example::CPUFactories">
+<area shape="rect" id="Node000001" title=" " alt="" coords="662,558,852,583"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="252,5,513,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="527,64,589,96,617,118,640,144,675,198,702,258,723,320,737,380,754,488,758,557,753,557,748,488,732,381,718,321,697,260,670,201,636,147,613,122,586,101,525,69"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ResourceFactoryBase.html" title="Factory which can create Resources as well as the Parameter sets that can be modified before actually..." alt="" coords="5,558,197,583"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="99,542,103,452,109,392,121,326,139,258,165,190,199,127,244,71,258,59,262,64,248,75,204,130,169,192,144,259,126,327,115,393,108,453,104,542"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="246,85,519,141"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="101,542,109,465,131,359,149,303,173,247,205,195,244,150,258,139,261,143,248,154,209,199,178,250,154,305,136,361,114,465,106,543"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="300,165,466,235"/>
+<area shape="poly" id="edge6_Node000005_Node000003" title=" " alt="" coords="104,542,118,481,144,401,163,359,185,318,212,279,244,244,270,227,298,214,300,219,272,231,248,249,217,282,190,320,168,361,149,403,124,482,110,543"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="298,259,468,330"/>
+<area shape="poly" id="edge8_Node000006_Node000003" title=" " alt="" coords="110,542,129,498,158,444,196,388,244,339,269,323,296,311,298,316,272,328,248,343,200,391,162,447,134,501,115,544"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="296,354,469,425"/>
+<area shape="poly" id="edge10_Node000007_Node000003" title=" " alt="" coords="121,544,174,489,208,459,245,434,294,410,297,415,247,438,211,464,177,493,125,547"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="299,449,467,519"/>
+<area shape="poly" id="edge12_Node000008_Node000003" title=" " alt="" coords="159,550,298,507,299,512,161,555"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="266,543,499,598"/>
+<area shape="poly" id="edge14_Node000009_Node000003" title=" " alt="" coords="212,568,265,568,265,573,212,573"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="289,622,476,693"/>
+<area shape="poly" id="edge16_Node000010_Node000003" title=" " alt="" coords="161,586,289,626,288,631,159,591"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="270,716,495,772"/>
+<area shape="poly" id="edge18_Node000011_Node000003" title=" " alt="" coords="124,593,177,648,211,677,247,702,271,713,268,718,245,706,207,681,173,652,120,597"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="264,796,501,852"/>
+<area shape="poly" id="edge20_Node000012_Node000003" title=" " alt="" coords="116,597,135,638,164,688,202,739,248,782,266,793,264,798,244,786,198,742,160,691,131,640,111,599"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="265,876,500,932"/>
+<area shape="poly" id="edge22_Node000013_Node000003" title=" " alt="" coords="111,598,126,654,153,725,193,799,218,832,248,862,266,875,263,879,244,866,214,836,188,802,148,727,121,656,106,600"/>
+<area shape="rect" id="Node000014" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="281,955,485,1026"/>
+<area shape="poly" id="edge24_Node000014_Node000003" title=" " alt="" coords="108,599,119,668,143,760,161,809,185,857,213,902,248,942,281,965,278,969,244,946,209,905,180,860,157,811,138,761,114,669,103,599"/>
+<area shape="rect" id="Node000015" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="294,1050,471,1121"/>
+<area shape="poly" id="edge26_Node000015_Node000003" title=" " alt="" coords="105,599,111,683,119,739,131,800,149,864,174,926,207,985,248,1037,269,1054,295,1066,292,1071,267,1058,244,1040,202,988,169,928,144,865,126,802,114,740,106,684,100,599"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="511,145,521,149,588,185,613,207,640,240,668,282,691,328,725,421,746,502,756,557,751,558,741,503,720,422,686,330,663,285,636,243,610,211,585,190,518,154,509,150"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="481,226,521,244,586,282,612,303,640,334,682,395,715,459,754,556,749,558,711,461,678,397,636,337,608,307,583,286,518,249,479,231"/>
+<area shape="poly" id="edge7_Node000001_Node000006" title=" " alt="" coords="484,322,521,339,584,378,640,427,704,498,748,556,744,559,700,501,636,431,581,382,518,344,481,327"/>
+<area shape="poly" id="edge9_Node000001_Node000007" title=" " alt="" coords="485,419,520,433,584,465,645,499,737,555,734,559,642,503,582,469,518,438,483,424"/>
+<area shape="poly" id="edge11_Node000001_Node000008" title=" " alt="" coords="483,504,699,554,697,560,482,509"/>
+<area shape="poly" id="edge13_Node000001_Node000009" title=" " alt="" coords="514,568,662,568,662,573,514,573"/>
+<area shape="poly" id="edge15_Node000001_Node000010" title=" " alt="" coords="491,630,698,581,699,587,492,635"/>
+<area shape="poly" id="edge17_Node000001_Node000011" title=" " alt="" coords="502,708,518,701,582,672,644,638,735,581,738,586,646,643,585,676,520,706,504,713"/>
+<area shape="poly" id="edge19_Node000001_Node000012" title=" " alt="" coords="503,788,518,781,581,752,637,711,671,678,702,642,745,582,749,585,706,645,675,682,640,716,584,757,520,786,505,793"/>
+<area shape="poly" id="edge21_Node000001_Node000013" title=" " alt="" coords="514,868,579,837,610,817,636,793,679,738,712,677,735,622,749,583,754,585,740,624,717,680,683,741,640,797,613,821,582,842,516,873"/>
+<area shape="poly" id="edge23_Node000001_Node000014" title=" " alt="" coords="499,961,536,946,572,928,607,905,636,877,664,840,687,799,722,713,742,636,751,583,757,584,747,637,727,715,692,801,669,843,640,881,610,909,575,933,538,951,500,966"/>
+<area shape="poly" id="edge25_Node000001_Node000015" title=" " alt="" coords="485,1059,526,1043,567,1023,605,996,636,964,668,914,694,860,714,803,729,747,746,648,752,584,758,584,752,649,734,749,719,805,699,862,673,917,640,967,608,1001,569,1027,528,1048,487,1064"/>
+</map>
