@@ -91,7 +91,8 @@ echo "Rendering recipe in $PWD/conda.recipe"
 # from 'conda render'
 export SYSTEM_DEFAULTWORKINGDIRECTORY="$PWD"
 
-
+# Make sure to have conda-forge channel to resolve dependencies
+conda config --add channels conda-forge
 # Render the recipe into a fully-resolved yaml file
 (set -x; conda render -m "$variant_file" --file "$rendered_output" conda.recipe)
 
