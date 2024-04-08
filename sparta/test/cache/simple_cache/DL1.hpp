@@ -2,6 +2,7 @@
 
 #include "cache/SimpleCache.hpp"
 #include "cache/TreePLRUReplacement.hpp"
+#include "cache/LRUReplacement.hpp"
 #include "cache/LineData.hpp"
 #include "cache/BlockingMemoryIF.hpp"
 
