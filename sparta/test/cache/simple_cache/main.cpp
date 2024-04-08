@@ -15,7 +15,7 @@ dl1_(32,  // 32KB in size
      LINE_SIZE,  // line size
      LINE_SIZE,  // stride
      sparta::cache::LineData(LINE_SIZE), // line_size
-     sparta::cache::TreePLRUReplacement(8) );   // num_ways
+     sparta::cache::LRUReplacement(8) );   // num_ways
 
 sparta::cache::SimpleCache<sparta::cache::LineData>
 l2_(512, // 512KB
@@ -31,7 +31,7 @@ btb_a_(4, // 4kb
     LINE_SIZE, // line size
     LINE_SIZE, // stride
     sparta::cache::LineData(LINE_SIZE),  // default line copied for initialization
-    sparta::cache::TreePLRUReplacement(4) );  // num_ways
+    sparta::cache::LRUReplacement(4) );  // num_ways
 
 sparta::cache::SimpleCache2<sparta::cache::LineData>
 btb_b_(4096, // 4kb
