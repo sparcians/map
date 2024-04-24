@@ -7,9 +7,6 @@ import math
 import colorsys
 from logging import debug, error, info
 
-# Color expression namespace
-EXPR_NAMESPACE = {'re':re, 'colorsys':colorsys, 'math':math, 'extract':extract_value}
-
 from common cimport *
 from libc.stdlib cimport strtoul
 from libcpp.unordered_map cimport unordered_map
@@ -202,6 +199,9 @@ cdef wxFont* getFont(font):
 
 cdef wxBrush* getBrush(brush):
     return getBrush_wrapped(<PyObject*>brush)
+
+# Color expression namespace
+EXPR_NAMESPACE = {'re':re, 'colorsys':colorsys, 'math':math, 'extract':extract_value}
 
 cdef class Renderer:
 
@@ -406,7 +406,8 @@ cdef class Renderer:
         return string_to_display, wx.TheBrushList.FindOrCreateBrush(wx.WHITE, wx.SOLID)
 
     def setFontFromDC(self, dc):
-        self.c_font = getFont(dc.GetFont())[0]
+        py_font = dc.GetFont()
+        self.c_font = getFont(py_font)[0]
         self.c_bold_font = wxFont(self.c_font)
         self.c_bold_font.MakeBold()
 
