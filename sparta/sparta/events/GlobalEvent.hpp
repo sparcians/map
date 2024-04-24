@@ -106,6 +106,43 @@ namespace sparta
             ev_sched_ptr_(clk->getScheduler()->getGlobalPhasedPayloadEventPtr<sched_phase_T>())
         {}
 
+        GlobalEvent(const GlobalEvent& rhs) :
+            local_clk_(rhs.local_clk_),
+            event_handler_(rhs.event_handler_),
+            ev_handler_lifetime_(&event_handler_),
+            ev_sched_ptr_(rhs.ev_sched_ptr_)
+        {
+        }
+
+        GlobalEvent(GlobalEvent&& rhs) :
+            local_clk_(rhs.local_clk_),
+            event_handler_(std::move(rhs.event_handler_)),
+            ev_handler_lifetime_(&event_handler_),
+            ev_sched_ptr_(rhs.ev_sched_ptr_)
+        {
+            rhs.ev_handler_lifetime_.reset();
+        }
+
+        GlobalEvent& operator=(const GlobalEvent& rhs) {
+            local_clk_ = rhs.local_clk_;
+            event_handler_ = rhs.event_handler_;
+            ev_handler_lifetime_ = utils::LifeTracker<SpartaHandler>(&event_handler_);
+            ev_sched_ptr_ = rhs.ev_sched_ptr_;
+
+            return *this;
+        }
+
+        GlobalEvent& operator=(GlobalEvent&& rhs) {
+            local_clk_ = rhs.local_clk_;
+            event_handler_ = std::move(rhs.event_handler_);
+            ev_handler_lifetime_ = utils::LifeTracker<SpartaHandler>(&event_handler_);
+            ev_sched_ptr_ = rhs.ev_sched_ptr_;
+
+            rhs.ev_handler_lifetime_.reset();
+
+            return *this;
+        }
+
         void schedule(const Clock::Cycle & delay, const Clock * clk) {
             sparta_assert(ev_sched_ptr_ != nullptr);
             sparta_assert(ev_sched_ptr_->getSchedulingPhase() == sched_phase_T);
