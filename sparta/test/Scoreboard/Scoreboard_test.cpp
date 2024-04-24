@@ -535,16 +535,19 @@ void testScoreboardClearing()
     master_sb->set({0b1000});
     is_set = view.isSet({0b1000});
     EXPECT_TRUE(is_set);
+    EXPECT_TRUE(master_sb->isSet({0b1000}));
 
     master_sb->set({0b1100});
     master_sb->set({0b1000});
     is_set = view.isSet({0b1100});
     EXPECT_TRUE(is_set);
+    EXPECT_TRUE(master_sb->isSet({0b1100}));
 
     master_sb->set({0b11});
     master_sb->set({0b1000});
     is_set = view.isSet({0b1111});
     EXPECT_TRUE(is_set);
+    EXPECT_TRUE(master_sb->isSet({0b1111}));
 
     master_sb->clearBits({0b0100});
     master_sb->set({0b1000});

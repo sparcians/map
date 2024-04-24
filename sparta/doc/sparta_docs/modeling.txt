@@ -140,6 +140,13 @@
   sparta::memory::TranslationIFNode    | \copybrief sparta::memory::TranslationIFNode &nbsp;
 
   ================================================================================
+  \subsection pevents_overview Sparta PEvents (Performance Events) (sparta/pevents)
+  Class                       | Brief Description
+  --------------------------- | ------------------
+  sparta::pevents::PeventCollector | \copybrief sparta::pevents::PeventCollector &nbsp;
+
+
+  ================================================================================
   \subsection utils_overview Sparta Utilities/Tools APIs (sparta/utils)
 
   Utility                     | Brief Description
