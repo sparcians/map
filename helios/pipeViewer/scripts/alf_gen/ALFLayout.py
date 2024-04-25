@@ -266,6 +266,7 @@ class ALFLayout:
                      spacing,
                      margins,
                      include_detail_column : bool,
+                     content_width : int,
                      time_offset  : int):
             self._num_cycles   = num_cycles
             self._locations    = locations
@@ -285,6 +286,7 @@ class ALFLayout:
             self._line_pos    = self._pos.copy()
             self._caption_pos = [self._margins.left, self._pos[1]]
             self._detail_column = include_detail_column
+            self._content_width = content_width
 
         def addScheduleLine(self,
                             location_name : str,
@@ -333,6 +335,8 @@ class ALFLayout:
             if 'reverse' in kwargs:
                 reverse = kwargs['reverse']
 
+            content_width = self._content_width
+
             # Create the mini layout
             if mini_cnt != 0:
                 melement_height_total = 0
@@ -351,7 +355,7 @@ class ALFLayout:
                         # Add the mini layout to the right
                         self._detailed_schedule_lines.append (Content(content='auto_color_anno_notext',
                                                                                 loc=loc, color=color,
-                                                                                dimensions=[self._spacing.caption_width,
+                                                                                dimensions=[content_width,
                                                                                             self._spacing.melem_height],
                                                                                 position = [
                                                                                     self._line_pos[0] +
@@ -417,7 +421,7 @@ class ALFLayout:
                     self._detailed_schedule_lines.append (Content(content=content,
                                                                   loc=loc,
                                                                   color=color,
-                                                                  dimensions=[self._spacing.caption_width,
+                                                                  dimensions=[content_width,
                                                                               self._spacing.height],
                                                                   position = [
                                                                       self._line_pos[0] +
@@ -633,7 +637,7 @@ class ALFLayout:
             uniq_names.add(re.sub(regexp, r'\1', match))
         return len(uniq_names)
 
-    def createScheduleLineGroup(self, default_color, include_detail_column, margins):
+    def createScheduleLineGroup(self, default_color, include_detail_column, content_width, margins):
         '''Create a ScheduleLineGroup that ScheduleLines can be added.  See
         ScheduleLineGroup for more documentation.
         '''
@@ -644,6 +648,7 @@ class ALFLayout:
                                                      spacing     = self._spacing,
                                                      margins     = margins,
                                                      include_detail_column = include_detail_column,
+                                                     content_width = content_width,
                                                      time_offset = self._start_time)
         return self._schedule_line
 
