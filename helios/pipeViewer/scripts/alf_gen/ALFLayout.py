@@ -266,8 +266,8 @@ class ALFLayout:
                      spacing,
                      margins,
                      include_detail_column : bool,
-                     content_width : int,
-                     time_offset  : int):
+                     time_offset  : int,
+                     content_width : int):
             self._num_cycles   = num_cycles
             self._locations    = locations
             self._def_color    = def_color
@@ -648,8 +648,8 @@ class ALFLayout:
                                                      spacing     = self._spacing,
                                                      margins     = margins,
                                                      include_detail_column = include_detail_column,
-                                                     content_width = content_width,
-                                                     time_offset = self._start_time)
+                                                     time_offset = self._start_time,
+                                                     content_width = content_width)
         return self._schedule_line
 
     def createColumnView(self, margins, content_width, default_color=[192,192,192]):
@@ -659,7 +659,7 @@ class ALFLayout:
         self._column_view = self.ColumnView(locations = self._loc_strs,
                                             spacing   = self._spacing,
                                             margins   = margins,
-                                            content_width = content_width,
                                             def_color     = default_color,
-                                            time_offset=0)
+                                            time_offset=0,
+                                            content_width = content_width)
         return self._column_view
