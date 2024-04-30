@@ -196,6 +196,15 @@ void RootArchiveNode::saveTo(const std::string & dir)
     archive_controller_->saveTo(dir);
 }
 
+ArchiveNode::ArchiveNode(const std::string & name) :
+    name_(name)
+{
+}
+
+ArchiveNode::~ArchiveNode()
+{
+}
+
 //Lazily walk up to the top of the tree to get the root node
 RootArchiveNode * ArchiveNode::getRoot()
 {
