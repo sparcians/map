@@ -401,7 +401,7 @@ namespace sparta
          * by another item immediately in this report (not the name of a
          * subreport or item in a subreport)
          */
-        StatAdder add(const StatisticInstance& si, const std::string& name="");
+        StatAdder add(const StatisticInstance& si, const std::string& name="", const bool recurse=true);
 
         /*!
          * \brief Moves an existing statistic instance into this Report
@@ -414,7 +414,7 @@ namespace sparta
          * by another item immediately in this report (not the name of a
          * subreport or item in a subreport)
          */
-        StatAdder add(StatisticInstance&& si, const std::string& name="");
+        StatAdder add(StatisticInstance&& si, const std::string& name="", const bool recurse=true);
 
         /*!
          * \brief Add a StatisticDef to the report

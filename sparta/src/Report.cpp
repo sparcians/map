@@ -1150,7 +1150,7 @@ private:
     std::string filename_; //!< For recalling errors
 }; // class ReportFileParserYAML
 
-Report::StatAdder Report::add(const StatisticInstance& si, const std::string& name) {
+Report::StatAdder Report::add(const StatisticInstance& si, const std::string& name, const bool recurse) {
     if(name != "" && stat_names_.find(name) != stat_names_.end()){
         throw SpartaException("There is already a statistic instance in this Report (")
             << getName() << ") named \"" << name << "\" pointing to "
@@ -1164,12 +1164,14 @@ Report::StatAdder Report::add(const StatisticInstance& si, const std::string& na
 
     if(name != ""){ stat_names_.insert(name); }
 
-    addSubStatistics_(&si);
+    if(recurse) {
+        addSubStatistics_(&si);
+    }
 
     return Report::StatAdder(*this);
 }
 
-Report::StatAdder Report::add(StatisticInstance&& si, const std::string& name) {
+Report::StatAdder Report::add(StatisticInstance&& si, const std::string& name, const bool recurse) {
     if(name != "" && stat_names_.find(name) != stat_names_.end()){
         throw SpartaException("There is already a statistic instance in this Report (")
             << getName() << ") named \"" << name << "\" pointing to "
@@ -1183,7 +1185,9 @@ Report::StatAdder Report::add(StatisticInstance&& si, const std::string& name) {
 
     if(name != ""){ stat_names_.insert(name); }
 
-    addSubStatistics_(&si);
+    if(recurse) {
+        addSubStatistics_(&si);
+    }
 
     return Report::StatAdder(*this);
 }
@@ -1416,7 +1420,7 @@ void Report::recursAddSubtree_(const TreeNode* n,
             //for(auto& s : stats_){
             //    std::cerr << "  Stat " << s.second->stringize() << " " << s.second->getLocation() << std::endl;
             //}
-            add(n, child_stat_prefix + n->getName());
+            add(n, child_stat_prefix + n->getName(), false);
         }
     }
 
