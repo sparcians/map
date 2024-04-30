@@ -395,6 +395,7 @@ namespace sparta
          * \param si const Reference to existing StatisticInstance to copy
          * \param name Name to give this instance within this Report.
          * If "" (default) does not give this instance a name.
+         * \param recurse If true (default), also recursively add any children of si
          * \return StatAdder so that multiple calls can be chained following
          * an add.
          * \throw SpartaException if the given name is not "" and is already used
@@ -408,6 +409,7 @@ namespace sparta
          * \param si rvalue reference to existing StatisticInstance to move
          * \param name Name to give this instance within this Report.
          * If "" (default) does not give this instance a name.
+         * \param recurse If true (default), also recursively add any children of si
          * \return StatAdder so that multiple calls can be chained following
          * an add.
          * \throw SpartaException if the given name is not "" and is already used
