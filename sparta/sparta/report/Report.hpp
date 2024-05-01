@@ -395,28 +395,26 @@ namespace sparta
          * \param si const Reference to existing StatisticInstance to copy
          * \param name Name to give this instance within this Report.
          * If "" (default) does not give this instance a name.
-         * \param recurse If true (default), also recursively add any children of si
          * \return StatAdder so that multiple calls can be chained following
          * an add.
          * \throw SpartaException if the given name is not "" and is already used
          * by another item immediately in this report (not the name of a
          * subreport or item in a subreport)
          */
-        StatAdder add(const StatisticInstance& si, const std::string& name="", const bool recurse=true);
+        StatAdder add(const StatisticInstance& si, const std::string& name="");
 
         /*!
          * \brief Moves an existing statistic instance into this Report
          * \param si rvalue reference to existing StatisticInstance to move
          * \param name Name to give this instance within this Report.
          * If "" (default) does not give this instance a name.
-         * \param recurse If true (default), also recursively add any children of si
          * \return StatAdder so that multiple calls can be chained following
          * an add.
          * \throw SpartaException if the given name is not "" and is already used
          * by another item immediately in this report (not the name of a
          * subreport or item in a subreport)
          */
-        StatAdder add(StatisticInstance&& si, const std::string& name="", const bool recurse=true);
+        StatAdder add(StatisticInstance&& si, const std::string& name="");
 
         /*!
          * \brief Add a StatisticDef to the report
@@ -437,7 +435,7 @@ namespace sparta
          * \param n The TreeNode to add
          * \param name The name of the item in the report
          */
-        StatAdder add(TreeNode* n, const std::string& name="");
+        StatAdder add(const TreeNode* n, const std::string& name="");
 
         /*!
          * \brief Add a single Expression parsed at the current context for this

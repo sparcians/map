@@ -1150,7 +1150,7 @@ private:
     std::string filename_; //!< For recalling errors
 }; // class ReportFileParserYAML
 
-Report::StatAdder Report::add(const StatisticInstance& si, const std::string& name, const bool recurse) {
+Report::StatAdder Report::add(const StatisticInstance& si, const std::string& name) {
     if(name != "" && stat_names_.find(name) != stat_names_.end()){
         throw SpartaException("There is already a statistic instance in this Report (")
             << getName() << ") named \"" << name << "\" pointing to "
@@ -1164,14 +1164,12 @@ Report::StatAdder Report::add(const StatisticInstance& si, const std::string& na
 
     if(name != ""){ stat_names_.insert(name); }
 
-    if(recurse) {
-        addSubStatistics_(&si);
-    }
+    addSubStatistics_(&si);
 
     return Report::StatAdder(*this);
 }
 
-Report::StatAdder Report::add(StatisticInstance&& si, const std::string& name, const bool recurse) {
+Report::StatAdder Report::add(StatisticInstance&& si, const std::string& name) {
     if(name != "" && stat_names_.find(name) != stat_names_.end()){
         throw SpartaException("There is already a statistic instance in this Report (")
             << getName() << ") named \"" << name << "\" pointing to "
@@ -1185,9 +1183,7 @@ Report::StatAdder Report::add(StatisticInstance&& si, const std::string& name, c
 
     if(name != ""){ stat_names_.insert(name); }
 
-    if(recurse) {
-        addSubStatistics_(&si);
-    }
+    addSubStatistics_(&si);
 
     return Report::StatAdder(*this);
 }
@@ -1229,7 +1225,7 @@ Report::StatAdder Report::add(CounterBase* ctr, const std::string& name) {
     return Report::StatAdder(*this);
 }
 
-Report::StatAdder Report::add(TreeNode* n, const std::string& name) {
+Report::StatAdder Report::add(const TreeNode* n, const std::string& name) {
     sparta_assert(n);
     if(name != "" && stat_names_.find(name) != stat_names_.end()){
         throw SpartaException("There is already a statistic instance in this Report (")
@@ -1420,7 +1416,7 @@ void Report::recursAddSubtree_(const TreeNode* n,
             //for(auto& s : stats_){
             //    std::cerr << "  Stat " << s.second->stringize() << " " << s.second->getLocation() << std::endl;
             //}
-            add(n, child_stat_prefix + n->getName(), false);
+            add(n, child_stat_prefix + n->getName());
         }
     }
 
