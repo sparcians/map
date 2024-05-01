@@ -27,56 +27,56 @@
 /*!
  * \brief Custom literal for uint64
  */
-constexpr inline uint64_t operator "" _u64(unsigned long long i) {
+constexpr inline uint64_t operator ""_u64(unsigned long long i) {
     return i;
 }
 
 /*!
  * \brief Custom literal for uint32
  */
-constexpr inline uint32_t operator "" _u32(unsigned long long i) {
+constexpr inline uint32_t operator ""_u32(unsigned long long i) {
     return i;
 }
 
 /*!
  * \brief Custom literal for uint16
  */
-constexpr inline uint16_t operator "" _u16(unsigned long long i) {
+constexpr inline uint16_t operator ""_u16(unsigned long long i) {
     return i;
 }
 
 /*!
  * \brief Custom literal for uint8
  */
-constexpr inline uint8_t operator "" _u8(unsigned long long i) {
+constexpr inline uint8_t operator ""_u8(unsigned long long i) {
     return i;
 }
 
 /*!
  * \brief Custom literal for int64
  */
-constexpr inline int64_t operator "" _64(unsigned long long i) {
+constexpr inline int64_t operator ""_64(unsigned long long i) {
     return i;
 }
 
 /*!
  * \brief Custom literal for int32
  */
-constexpr inline int32_t operator "" _32(unsigned long long i) {
+constexpr inline int32_t operator ""_32(unsigned long long i) {
     return i;
 }
 
 /*!
  * \brief Custom literal for int16
  */
-constexpr inline int16_t operator "" _16(unsigned long long i) {
+constexpr inline int16_t operator ""_16(unsigned long long i) {
     return i;
 }
 
 /*!
  * \brief Custom literal for int8
  */
-constexpr inline int8_t operator "" _8(unsigned long long i) {
+constexpr inline int8_t operator ""_8(unsigned long long i) {
     return i;
 }
 
