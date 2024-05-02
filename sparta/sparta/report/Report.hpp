@@ -379,7 +379,7 @@ namespace sparta
                 r_.add(ctr, name);
                 return *this;
             }
-            StatAdder& operator()(TreeNode* n,
+            StatAdder& operator()(const TreeNode* n,
                                   const std::string& name="") {
                 r_.add(n, name);
                 return *this;
