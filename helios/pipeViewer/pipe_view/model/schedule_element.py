@@ -16,7 +16,9 @@ from .element import (Element,
                       PropertyValue,
                       ValidatedPropertyDict)
 from . import element_propsvalid as valid
-from .element_value import Element_Value, FakeElementValue
+
+if TYPE_CHECKING:
+    from .element_value import Element_Value, FakeElementValue
 
 if TYPE_CHECKING:
     from .clock_manager import ClockManager
@@ -387,6 +389,8 @@ class ScheduleLineElement(LocationallyKeyedElement):
     def DetectCollision(self,
                         pt: Union[Tuple[int, int], wx.Point],
                         pair: Element_Value) -> FakeElementValue:
+        from .element_value import FakeElementValue
+
         mx, my = pt
 
         period = pair.GetClockPeriod()
