@@ -379,7 +379,7 @@ namespace sparta
                 r_.add(ctr, name);
                 return *this;
             }
-            StatAdder& operator()(TreeNode* n,
+            StatAdder& operator()(const TreeNode* n,
                                   const std::string& name="") {
                 r_.add(n, name);
                 return *this;
@@ -435,7 +435,7 @@ namespace sparta
          * \param n The TreeNode to add
          * \param name The name of the item in the report
          */
-        StatAdder add(TreeNode* n, const std::string& name="");
+        StatAdder add(const TreeNode* n, const std::string& name="");
 
         /*!
          * \brief Add a single Expression parsed at the current context for this

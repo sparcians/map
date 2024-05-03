@@ -1225,7 +1225,7 @@ Report::StatAdder Report::add(CounterBase* ctr, const std::string& name) {
     return Report::StatAdder(*this);
 }
 
-Report::StatAdder Report::add(TreeNode* n, const std::string& name) {
+Report::StatAdder Report::add(const TreeNode* n, const std::string& name) {
     sparta_assert(n);
     if(name != "" && stat_names_.find(name) != stat_names_.end()){
         throw SpartaException("There is already a statistic instance in this Report (")
