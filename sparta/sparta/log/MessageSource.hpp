@@ -149,7 +149,7 @@ namespace sparta
                 //! Move constructor
                 LogObject(LogObject&& rhp) :
                     src_(rhp.src_),
-                    s_(std::move(rhp.s_.str())) // May unfortunately involve a copy
+                    s_(rhp.s_.str()) // May unfortunately involve a copy
                 { }
 
                 //! \brief Not Copy-constructable
