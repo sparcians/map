@@ -1,0 +1,9 @@
+name: "Summary Performance Report"
+style:
+  decimal_places: 2
+content:
+  cycles : Total cycles consumed
+simple-arch-content:
+  cpu.core*.rob.stats.total_number_retired : Total Instructions Retired
+other-arch-content:
+  cpu.core*.rob.stats.ipc : IPC
