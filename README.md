@@ -41,6 +41,7 @@ installed and would like to build everything (not just sparta).
 1. If conda is not installed, install it
    * Get miniconda and install: https://docs.conda.io/en/latest/miniconda.html
    * You can install miniconda anywhere
+   * These directions were tested with conda version 24.7.1
 1. Activate conda `conda activate`
 1. Go to the root of MAP
    * `cd map`
