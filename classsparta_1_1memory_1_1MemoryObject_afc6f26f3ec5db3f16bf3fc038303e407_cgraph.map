@@ -1,0 +1,32 @@
+<map id="sparta::memory::MemoryObject::read" name="sparta::memory::MemoryObject::read">
+<area shape="rect" id="Node000001" title="Reads memory." alt="" coords="5,185,205,226"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData.html#ab97efbcf3061d9cb8649f5875397f061" title="Determines if an access of size &#39;bytes&#39; can be performed at the given offset based only on the size o..." alt="" coords="262,5,443,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="119,183,173,121,210,86,251,55,259,51,262,56,254,60,214,90,177,124,124,187"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ArchData.html#aa0a283171cbcf7d38df0e940bced107b" title="Fill a buffer with a fill pattern." alt="" coords="268,70,437,96"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="130,183,184,144,252,106,271,98,273,103,254,111,187,148,133,187"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1memory_1_1MemoryObject.html#aef9982cc3c775886419ff0aa043f24c3" title="Get the fill pattern. Fewer than 8 bytes may be used. See getFillPatternSize." alt="" coords="253,120,452,161"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="184,182,257,163,259,168,185,187"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1memory_1_1MemoryObject.html#ae9ec4447696bc3d179149c70fe5f9a05" title="Get the number of bytes in the fill pattern." alt="" coords="253,185,452,226"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="205,203,237,203,237,208,205,208"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1ArchData_1_1Line.html#aa4be1659c3bd363e291962cfb812ffff" title="Offset into the owning ArchData." alt="" coords="278,251,427,291"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="185,224,264,245,262,250,184,229"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1ArchData_1_1Line.html#a36d8116926a69451707506f97d0beb02" title="Read from this line, reordering bytes based on byte order if required." alt="" coords="278,316,427,357"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="135,224,188,262,254,301,269,307,267,312,251,305,185,267,132,229"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1ArchData.html#ac62ef67de89b46509608f404a40889d8" title="Gets the line associated with this offset only if it already exists." alt="" coords="261,381,444,407"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="121,225,173,295,211,333,254,366,266,372,263,377,251,371,207,337,169,298,117,228"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ArchData.html#aaed65a11540e5f04a01fc3256b61ae49" title="Determines whether the access defined by offset and size spans multiple ArchData Lines." alt="" coords="502,35,671,75"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="443,34,487,40,486,45,443,40"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="720,151,887,191"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="627,73,751,140,749,145,625,78"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ArchData.html#a212c297cb552081412bd8d2ae2664f37" title="Gets the value used to initialize unwritten memory." alt="" coords="500,128,672,153"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="452,138,484,138,484,143,452,143"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1ArchData.html#a4abae2618afe5c0f02a32dc54d6850f8" title="Gets the size of the initial value." alt="" coords="500,185,672,226"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="452,203,484,203,484,208,452,208"/>
+<area shape="poly" id="edge15_Node000012_Node000004" title=" " alt="" coords="420,378,451,366,475,349,499,330,611,267,746,197,749,201,614,272,501,335,478,354,453,371,421,383"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1ArchData.html#a07e41ac141e36036cffedb4afad07197" title="Determines if this ArchData contains a byte for the specified address." alt="" coords="500,344,672,385"/>
+<area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="444,380,484,374,485,380,445,385"/>
+<area shape="rect" id="Node000014" href="$classsparta_1_1TieredMap.html#a8a87b132e5d7c6126454765d8966e3ed" title="Finds a mapping for key k if one exists in this map." alt="" coords="511,409,661,435"/>
+<area shape="poly" id="edge13_Node000012_Node000014" title=" " alt="" coords="445,402,496,408,495,413,444,407"/>
+<area shape="rect" id="Node000015" href="$classsparta_1_1TieredMap.html#ad157505881efdd0d3f14695b05bc5dec" title="Attempts to get a pair_t associated with the key k without modifying the data structure." alt="" coords="738,401,869,442"/>
+<area shape="poly" id="edge14_Node000014_Node000015" title=" " alt="" coords="662,419,723,419,723,424,662,424"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="sparta::log::Tap::Tap" name="sparta::log::Tap::Tap">
+<area shape="rect" id="Node000001" title="Constructor." alt="" coords="5,42,142,68"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1log_1_1DestinationManager.html#adcb100122c84178da8dce23834295316" title="Requests an existing Destination* from the manager and allocates a new one if it does not yet have a ..." alt="" coords="190,5,350,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="142,42,174,37,174,43,142,47"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1log_1_1Tap.html#a05b008e7c537304a011d96def6f8650d" title="Detach the tap from the current node (if any) and re&#45;attach to a new node. Destination and category o..." alt="" coords="198,70,342,96"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="142,62,184,68,183,73,142,67"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1log_1_1DestinationManager.html#a0fd89f54fc6ffae77fbebed4c8c8b5a9" title="createDestination overload for handling const char[] strings" alt="" coords="406,5,584,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="350,23,390,23,390,28,350,28"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1log_1_1Tap.html#a5d187cc5647b6d4707b0281c0189a66f" title="Detach the tap from a node without destructing. Node can later be reattached to the same or another n..." alt="" coords="419,70,572,96"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="342,80,403,80,403,86,342,86"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1TreeNode.html#a9cb544ebd5bc75612acc891758d49ecc" title="Gets a weak pointer to this TreeNode. This weak pointer is guaranteed to expire when this TreeNode is..." alt="" coords="398,120,592,145"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="333,94,419,113,418,118,331,99"/>
+</map>

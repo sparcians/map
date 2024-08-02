@@ -1,0 +1,5 @@
+<map id="sparta::Pipe::shiftAppend" name="sparta::Pipe::shiftAppend">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,170,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Pipe.html#a169d5cdade6109fcc8b888cb9fcfb366" title="Append data to the specified stage. Will clobber what&#39;s there." alt="" coords="218,5,359,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="170,16,202,16,202,21,170,21"/>
+</map>
