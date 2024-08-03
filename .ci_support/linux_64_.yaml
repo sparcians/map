@@ -1,3 +1,5 @@
+boost:
+- '1.78'
 c_compiler:
 - gcc
 c_compiler_version:
