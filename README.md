@@ -50,6 +50,9 @@ installed and would like to build everything (not just sparta).
    * `conda install -c conda-forge yq`
 1. Create a sparta conda development environment
    * `./scripts/create_conda_env.sh sparta dev`
+   * If the rendering fails (such as an unexpected error), try with
+     the safe enviroment: `conda env create -f
+     scripts/rendered_safe_environment.yaml`
 1. Activate the environment
    * `conda activate sparta`
 1. To build Sparta framework components:
