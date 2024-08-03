@@ -5,7 +5,7 @@
 jobs:
 - job: osx
   pool:
-    vmImage: macOS-11
+    vmImage: macOS-12
   strategy:
     matrix:
       osx_64_:
@@ -17,6 +17,7 @@ jobs:
         UPLOAD_PACKAGES: 'False'
         SHORT_CONFIG: osx_arm64_
   timeoutInMinutes: 360
+  variables: {}
 
   steps:
   # TODO: Fast finish on azure pipelines?

@@ -112,9 +112,8 @@ TreeNode::TreeNode(TreeNode* parent,
 {
     // Try and catch a class of mis-matched compiler definition bugs between
     // clang and stdc++ built with gcc. This is just sanity checking
-    sparta_assert(self_ptr_.use_count() > 0);
+    sparta_assert(self_ptr_.use_count() == 1);
     sparta_assert(self_ptr_);
-    sparta_assert(self_ptr_.unique());
 
     // Store expected parent until construction args are validated
     // This is here so that error printouts can show the expected parent
