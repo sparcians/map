@@ -99,7 +99,7 @@ namespace sparta {
 
             //! Construct the internal weak_ptr from a shared_ptr
             //  reference.
-            explicit StateTrackerDeleter<T>(
+            explicit StateTrackerDeleter(
                 const std::weak_ptr<StatePool<T>> & weak_pool) :
                 weak_pool_ptr_(weak_pool) {}
 
@@ -181,7 +181,7 @@ namespace sparta {
             StatePool() = delete;
 
             //! A file name is a must when constructing StatePool.
-            explicit StatePool<T>(const std::string & tracking_filename) :
+            explicit StatePool(const std::string & tracking_filename) :
 
                 //! We initialize instance count to 0 during construction.
                 instance_count_(0),
