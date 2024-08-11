@@ -49,18 +49,6 @@ namespace sparta
             {
             }
 
-            // assignment operator
-            BasicCacheSet<CacheItemT> &operator=(const BasicCacheSet<CacheItemT> &rhs)
-            {
-                if ( this != &rhs ) {
-                    num_ways_ = rhs.num_ways_;
-                    replacement_policy_ = rhs.replacement_policy_->clone();
-                    ways_ = rhs.ways_;
-                }
-
-                return *this;
-            }
-
             ~BasicCacheSet()
             {
                 delete replacement_policy_;
