@@ -16,8 +16,8 @@ namespace sparta
      * \class RegisterBits
      *
      * This class is used in conjuntion with sparta::RegisterBase to
-     * quickly write masked registers. This class replaces the use of
-     * BitArray.
+     * quickly write masked registers of sizes between 1 and 512
+     * bytes.  This class replaces the use of BitArray.
      *
      * The class works by assuming register data is handed to it via a
      * char array.  The class will "view" into this data until it's
@@ -77,7 +77,7 @@ namespace sparta
          * \param num_bytes The number of bytes to allocate
          */
         explicit RegisterBits(const uint64_t num_bytes) :
-            local_storage_(num_bytes),
+            local_storage_(),
             local_data_(local_storage_.data()),
             remote_data_(local_data_),
             num_bytes_(num_bytes)
@@ -96,7 +96,7 @@ namespace sparta
          */
         template<class DataT>
         RegisterBits(const uint64_t num_bytes, const DataT & data) :
-            local_storage_(num_bytes),
+            local_storage_(),
             local_data_(local_storage_.data()),
             remote_data_(local_data_),
             num_bytes_(num_bytes)
@@ -115,7 +115,6 @@ namespace sparta
          * No data is copied
          */
         RegisterBits(uint8_t * data_ptr, const size_t num_bytes) :
-            local_storage_(num_bytes),
             local_data_(data_ptr),
             remote_data_(local_data_),
             num_bytes_(num_bytes)
@@ -132,7 +131,6 @@ namespace sparta
          * No data is copied
          */
         RegisterBits(const uint8_t * data, const size_t num_bytes) :
-            local_storage_(num_bytes),
             remote_data_(data),
             num_bytes_(num_bytes)
         {
@@ -632,9 +630,7 @@ namespace sparta
          */
         void fill(const uint8_t fill_data) {
             convert_();
-            std::fill(std::begin(local_storage_),
-                      std::end(local_storage_),
-                      fill_data);
+            local_storage_.fill(fill_data);
         }
 
         /**
@@ -701,7 +697,7 @@ namespace sparta
 
     private:
 
-        std::vector<uint8_t>    local_storage_; //!< Local storage
+        std::array<uint8_t, 64> local_storage_; //!< Local storage
         uint8_t               * local_data_  = nullptr; //!< Points to null if using remote data
         const uint8_t         * remote_data_ = nullptr; //!< Remove data; points to local_data_ if no remote
         const uint64_t          num_bytes_ = 0; //!< Number of bytse
