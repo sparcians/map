@@ -16,8 +16,8 @@ namespace sparta
      * \class RegisterBits
      *
      * This class is used in conjuntion with sparta::RegisterBase to
-     * quickly write masked registers of sizes between 1 and 512
-     * bytes.  This class replaces the use of BitArray.
+     * quickly write masked registers.  This class replaces the use
+     * of BitArray.
      *
      * The class works by assuming register data is handed to it via a
      * char array.  The class will "view" into this data until it's
@@ -63,9 +63,16 @@ namespace sparta
 
         // Copy the remote register data locally.
         void convert_() {
-            if(nullptr == local_data_) {
-                local_data_ = local_storage_.data();
-                ::memset(local_data_, 0, local_storage_.size());
+            if(nullptr == local_data_)
+            {
+                if(num_bytes_ <= local_storage_.size()) {
+                    local_data_ = local_storage_.data();
+                }
+                else {
+                    local_storage_alt_.reset(new uint8_t[num_bytes_]);
+                    local_data_ = local_storage_alt_.get();
+                }
+                ::memset(local_data_, 0, num_bytes_);
                 ::memcpy(local_data_, remote_data_, num_bytes_);
                 remote_data_ = local_data_;
             }
@@ -82,9 +89,12 @@ namespace sparta
             remote_data_(local_data_),
             num_bytes_(num_bytes)
         {
-            ::memset(local_data_, 0, local_storage_.size());
-            sparta_assert(num_bytes <= local_storage_.size(),
-                          "RegisterBits size is locked to 64 bytes. num_bytes requested: " << num_bytes);
+            if(num_bytes > local_storage_.size()) {
+                local_storage_alt_.reset(new uint8_t[num_bytes]);
+                local_data_ = local_storage_alt_.get();
+                remote_data_ = local_data_;
+            }
+            ::memset(local_data_, 0, num_bytes_);
         }
 
         /**
@@ -101,8 +111,11 @@ namespace sparta
             remote_data_(local_data_),
             num_bytes_(num_bytes)
         {
-            sparta_assert(num_bytes <= local_storage_.size(),
-                          "RegisterBits size is locked to 64 bytes. num_bytes requested: " << num_bytes);
+            if(num_bytes > local_storage_.size()) {
+                local_storage_alt_.reset(new uint8_t[num_bytes]);
+                local_data_ = local_storage_alt_.get();
+                remote_data_ = local_data_;
+            }
             sparta_assert(sizeof(DataT) <= num_bytes);
             set(data);
         }
@@ -118,10 +131,7 @@ namespace sparta
             local_data_(data_ptr),
             remote_data_(local_data_),
             num_bytes_(num_bytes)
-        {
-            sparta_assert(num_bytes <= local_storage_.size(),
-                          "RegisterBits size is locked to 64 bytes. num_bytes requested: " << num_bytes);
-        }
+        {}
 
         /**
          * \brief Create a class pointing into the given data constantly, of the given size
@@ -133,10 +143,7 @@ namespace sparta
         RegisterBits(const uint8_t * data, const size_t num_bytes) :
             remote_data_(data),
             num_bytes_(num_bytes)
-        {
-            sparta_assert(num_bytes <= local_storage_.size(),
-                          "RegisterBits size is locked to 64 bytes. num_bytes requested: " << num_bytes);
-        }
+        {}
 
         /**
          * \brief Create a nullptr version of the data.  This would be an invalid class
@@ -150,10 +157,22 @@ namespace sparta
          * If the original is pointing to its own memory, that will be copied
          */
         RegisterBits(const RegisterBits & orig) :
-            local_storage_(orig.local_storage_),
-            local_data_(orig.local_data_ == nullptr ? nullptr : local_storage_.data()),
-            remote_data_(orig.local_data_ == orig.remote_data_ ? local_data_ : orig.remote_data_)
-        {}
+            num_bytes_(orig.num_bytes_)
+        {
+            if(num_bytes_ <= local_storage_.size()) {
+                local_storage_ = orig.local_storage_;
+                local_data_ = orig.local_data_ == nullptr ? nullptr : local_storage_.data();
+            }
+            else if (orig.local_data_ == nullptr) {
+                local_data_ = nullptr;
+            }
+            else {
+                local_storage_alt_.reset(new uint8_t[orig.getSize()]);
+                local_data_ = local_storage_alt_.get();
+                ::memcpy(local_data_, orig.local_data_, num_bytes_);
+            }
+            remote_data_ = orig.local_data_ == orig.remote_data_ ? local_data_ : orig.remote_data_;
+        }
 
         /**
          * \brief Move
@@ -163,10 +182,19 @@ namespace sparta
          * will be moved.  The original is nullified.
          */
         RegisterBits(RegisterBits && orig) :
-            local_storage_(std::move(orig.local_storage_)),
             num_bytes_(orig.num_bytes_)
         {
-            local_data_  = (orig.local_data_ == nullptr ? nullptr : local_storage_.data());
+            if(num_bytes_ <= local_storage_.size()) {
+                local_storage_ = std::move(orig.local_storage_);
+                local_data_  = (orig.local_data_ == nullptr ? nullptr : local_storage_.data());
+            }
+            else if (orig.local_data_ == nullptr) {
+                local_data_ = nullptr;
+            }
+            else {
+                local_storage_alt_ = std::move(orig.local_storage_alt_);
+                local_data_ = local_storage_alt_.get();
+            }
             remote_data_ = (orig.local_data_ == orig.remote_data_ ? local_data_ : orig.remote_data_);
             orig.local_data_ = nullptr;
             orig.remote_data_ = nullptr;
@@ -191,7 +219,7 @@ namespace sparta
                 // 64-bit chunks
                 for(uint32_t idx = 0; idx < num_bytes_; idx += 8)
                 {
-                    *reinterpret_cast<uint64_t*>(final_value.local_storage_.data() + idx) =
+                    *reinterpret_cast<uint64_t*>(final_value.local_data_ + idx) =
                         *reinterpret_cast<const uint64_t*>(remote_data_ + idx) |
                         *reinterpret_cast<const uint64_t*>(rh_bits.remote_data_ + idx);
                 }
@@ -227,7 +255,7 @@ namespace sparta
                 // 64-bit chunks
                 for(uint32_t idx = 0; idx < num_bytes_; idx += 8)
                 {
-                    *reinterpret_cast<uint64_t*>(final_value.local_storage_.data() + idx) =
+                    *reinterpret_cast<uint64_t*>(final_value.local_data_ + idx) =
                         *reinterpret_cast<const uint64_t*>(remote_data_ + idx) &
                         *reinterpret_cast<const uint64_t*>(rh_bits.remote_data_ + idx);
                 }
@@ -262,7 +290,7 @@ namespace sparta
                 // 64-bit compares
                 for(uint32_t idx = 0; idx < num_bytes_; idx += 8)
                 {
-                    *reinterpret_cast<uint64_t*>(final_value.local_storage_.data() + idx) =
+                    *reinterpret_cast<uint64_t*>(final_value.local_data_ + idx) =
                         ~*reinterpret_cast<const uint64_t*>(remote_data_ + idx);
                 }
                 return final_value;
@@ -293,7 +321,7 @@ namespace sparta
             {
                 RegisterBits final_value(num_bytes_);
                 const uint64_t * src_data = reinterpret_cast<const uint64_t*>(remote_data_);
-                uint64_t *     final_data = reinterpret_cast<uint64_t*>(final_value.local_storage_.data());
+                uint64_t *     final_data = reinterpret_cast<uint64_t*>(final_value.local_data_);
                 const uint32_t num_dbl_words = num_bytes_ / 8;
 
                 // Determine the number of double words that will be shifted
@@ -385,7 +413,7 @@ namespace sparta
             {
                 RegisterBits final_value(num_bytes_);
                 const uint64_t * src_data = reinterpret_cast<const uint64_t*>(remote_data_);
-                uint64_t *     final_data = reinterpret_cast<uint64_t*>(final_value.local_storage_.data());
+                uint64_t *     final_data = reinterpret_cast<uint64_t*>(final_value.local_data_);
                 const uint32_t num_dbl_words = num_bytes_ / 8;
 
                 // Determine the number of double words that will be shifted
@@ -630,7 +658,7 @@ namespace sparta
          */
         void fill(const uint8_t fill_data) {
             convert_();
-            local_storage_.fill(fill_data);
+            ::memset(local_data_, fill_data, num_bytes_);
         }
 
         /**
@@ -697,9 +725,10 @@ namespace sparta
 
     private:
 
-        std::array<uint8_t, 64> local_storage_; //!< Local storage
-        uint8_t               * local_data_  = nullptr; //!< Points to null if using remote data
-        const uint8_t         * remote_data_ = nullptr; //!< Remove data; points to local_data_ if no remote
-        const uint64_t          num_bytes_ = 0; //!< Number of bytse
+        std::array<uint8_t, 64>  local_storage_; //!< Local storage
+        std::unique_ptr<uint8_t> local_storage_alt_; //!< Alternative local storage when register size > 64B
+        uint8_t                * local_data_  = nullptr; //!< Points to null if using remote data
+        const uint8_t          * remote_data_ = nullptr; //!< Remove data; points to local_data_ if no remote
+        const uint64_t           num_bytes_ = 0; //!< Number of bytse
     };
 }
