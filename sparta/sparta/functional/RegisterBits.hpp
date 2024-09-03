@@ -725,7 +725,7 @@ namespace sparta
 
     private:
 
-        std::array<uint8_t, 64>  local_storage_; //!< Local storage
+        std::array<uint8_t, 8>   local_storage_; //!< Local storage
         std::unique_ptr<uint8_t> local_storage_alt_; //!< Alternative local storage when register size > 64B
         uint8_t                * local_data_  = nullptr; //!< Points to null if using remote data
         const uint8_t          * remote_data_ = nullptr; //!< Remove data; points to local_data_ if no remote
