@@ -116,6 +116,7 @@ namespace sparta
                 local_data_ = local_storage_alt_.get();
                 remote_data_ = local_data_;
             }
+            ::memset(local_data_, 0, num_bytes_);
             sparta_assert(sizeof(DataT) <= num_bytes);
             set(data);
         }
