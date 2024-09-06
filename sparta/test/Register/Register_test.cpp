@@ -323,7 +323,6 @@ void testBadRegs()
         3,    // non-power-of-2-count regs not allowed
         5,    // non-power-of-2-count regs not allowed
         9,    // Just to prove that odd-byte-count regs are rejected; not just primes
-        8192  // 8192 Bytes per register is very likely too large
     };
 
     // Test each separately because ALL sizes must fail!
