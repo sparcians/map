@@ -1332,6 +1332,12 @@ protected:
 private:
     RegisterBits computeWriteMask_(const Definition *def) const
     {
+        // Non-power-of-2 size may cause illegal access,
+        // an exception will be thrown in the constructor.
+        if(!isPowerOf2(def->bytes)) {
+            return RegisterBits(nullptr);
+        }
+
         const auto mask_size = def->bytes;
         RegisterBits write_mask(mask_size);
         RegisterBits partial_mask(mask_size);
