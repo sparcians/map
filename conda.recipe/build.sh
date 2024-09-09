@@ -89,17 +89,17 @@ popd
 #  BUILD MAP/HELIOS
 #
 ################################################################################
-pushd helios
-mkdir -p release
-pushd release
-cmake -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_INSTALL_PREFIX:PATH="$PREFIX" \
-      "${CMAKE_PLATFORM_FLAGS[@]}" \
-      ..
-cmake --build . -j "$CPU_COUNT" || cmake --build . -v
-popd
-popd
-
+#pushd helios
+#mkdir -p release
+#pushd release
+#cmake -DCMAKE_BUILD_TYPE=Release \
+#      -DCMAKE_INSTALL_PREFIX:PATH="$PREFIX" \
+#      "${CMAKE_PLATFORM_FLAGS[@]}" \
+#      ..
+#cmake --build . -j "$CPU_COUNT" || cmake --build . -v
+#popd
+#popd
+#
 ################################################################################
 #
 # Preserve build-phase test results so that we can track them individually

@@ -98,3 +98,7 @@ Install `conda smithy` instructions:
 conda install -n root -c conda-forge conda-smithy
 conda install -n root -c conda-forge conda-package-handling
 ```
+If `conda smithy` complains about being out of date:
+```
+conda update -n root conda-smithy
+```
