@@ -1332,6 +1332,12 @@ protected:
 private:
     RegisterBits computeWriteMask_(const Definition *def) const
     {
+        if(!isPowerOf2(def->bytes)) {
+            throw SpartaException("Register \"")
+                << getName() << "\" size in bytes must be a power of 2 larger than 0, is "
+                << def->bytes;
+        }
+
         const auto mask_size = def->bytes;
         RegisterBits write_mask(mask_size);
         RegisterBits partial_mask(mask_size);
