@@ -4,7 +4,7 @@
  * \file Report.cpp
  * \brief Part of the metrics and statistics system.
  * Contains a Report class which refers to a number of StatisticInstance
- * instances of other Reports to present a set of associated simuation metrics
+ * instances of other Reports to present a set of associated simulation metrics
  */
 
 #include "sparta/report/Report.hpp"
