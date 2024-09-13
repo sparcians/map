@@ -240,41 +240,6 @@ class GenRegisterJSON():
                 "initial_value": 0,
                 "enabled":       True}))
 
-        #Include PC, Athena expects the PC to always be 64-bits
-        num += 1
-        self.reg_defs.append(self.__CreateRegDict({
-            "name":          "pc",
-            "num":           num,
-            "desc":          "Program counter",
-            "size":          8,
-            "aliases":       [],
-            "fields":        {},
-            "initial_value": 0,
-            "enabled":       True}))
-
-        # Load reservation for LR/SC
-        num += 1
-        self.reg_defs.append(self.__CreateRegDict({
-            "name":          "resv_addr",
-            "num":           num,
-            "desc":          "Load reservation address",
-            "size":          8,
-            "aliases":       [],
-            "fields":        {},
-            "initial_value": 0,
-            "enabled":       True}))
-
-        num += 1
-        self.reg_defs.append(self.__CreateRegDict({
-            "name":          "resv_valid",
-            "num":           num,
-            "desc":          "Load reservation valid",
-            "size":          8,
-            "aliases":       [],
-            "fields":        {},
-            "initial_value": 0,
-            "enabled":       True}))
-
     def get_fp_reg_name(self, num):
         """Returns fp register name from register number"""
         return "f"+str(num)
