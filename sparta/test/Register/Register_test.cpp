@@ -829,7 +829,6 @@ int main()
     root.bindTreeLate();
 
     // Construct some good and bad regs to test out size constraints
-    //testRegisterSetFromJSON();
     testFieldRegisterWrite();      // Create registers directly
     testFieldRegisterWrite(true);  // Create registers from JSON
     testGoodRegs();                // Create registers directly
