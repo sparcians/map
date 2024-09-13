@@ -8,34 +8,6 @@
 namespace sparta
 {
 
-struct RegisterDefn
-{
-    struct FieldDefn
-    {
-        std::string name;
-        std::string desc;
-        RegisterBase::size_type low_bit;
-        RegisterBase::size_type high_bit;
-        bool readonly;
-    };
-
-    RegisterBase::ident_type id;
-    std::string name;
-    RegisterBase::group_num_type group_num;
-    std::string group;
-    RegisterBase::group_idx_type group_idx;
-    std::string desc;
-    RegisterBase::size_type bytes;
-    std::vector<FieldDefn> fields;
-    std::vector<RegisterBase::bank_idx_type> bank_membership;
-    std::vector<std::string> aliases;
-    RegisterBase::ident_type subset_of = RegisterBase::INVALID_ID;
-    RegisterBase::size_type subset_offset = RegisterBase::INVALID_ID;
-    uint64_t initial_value = 0;
-    RegisterBase::Definition::HintsT hints = 0;
-    RegisterBase::Definition::RegDomainT regdomain = 0;
-};
-
 class RegisterDefnsFromJSON
 {
 public:
