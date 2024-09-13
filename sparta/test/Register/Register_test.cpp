@@ -344,8 +344,6 @@ void testFieldRegisterWrite(bool use_json = false)
     EXPECT_EQUAL(regs->getRegister("fp_reg")->getField("sp")->read(), 0xffffffff);
     EXPECT_EQUAL(regs->getRegister("fp_reg")->getField("dp")->read(), 0xffffffffffffffff);
 
-    std::cout << regs->getRegister("fp_reg")->getGroupName() << std::endl;
-
     root.enterTeardown();
 }
 
