@@ -14,9 +14,3 @@ RV64_CONSTS = {
     "PMP_MIN_GRANULARITY": [4, "The minimum PMP granularity"],
     "PMP_MIN_GRANULARITY_SHIFT": [2, "The minimum PMP granularity (in shift values)"],
 }
-
-ATHENA_INTERNAL_REGISTERS = {
-    "ATHENA_INTERNAL_PC": [0x20, "Athena internal register to hold the program counter"],
-    "ATHENA_INTERNAL_RESV_ADDR": [0x21, "Athena internal register to hold the load reservation address"],
-    "ATHENA_INTERNAL_RESV_VALID": [0x22, "Athena internal register to hold whether the load reservation is valid"],
-}
