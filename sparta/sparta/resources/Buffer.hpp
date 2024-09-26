@@ -442,7 +442,7 @@ namespace sparta
          */
         const value_type & read(const const_reverse_iterator & entry) const
         {
-            return read(entry.base().getIndex_());
+            return read(std::prev(entry.base()));
         }
 
         /**
@@ -469,7 +469,7 @@ namespace sparta
          * \param entry the BufferIterator to read from.
          */
         value_type & access(const const_reverse_iterator & entry) {
-            return access(entry.base().getIndex_());
+            return access(std::prev(entry.base()));
         }
 
         /**
@@ -683,11 +683,7 @@ namespace sparta
          */
         reverse_iterator erase(const const_reverse_iterator& entry)
         {
-            sparta_assert(entry.base().attached_buffer_ == this,
-                          "Cannot erase an entry created by another Buffer");
-            // erase the index in the actual buffer.
-            erase(entry.base().getIndex_());
-            return reverse_iterator{iterator(this, buffer_map_[entry.base().getIndex_()])};
+            return reverse_iterator{erase(std::prev(entry.base()))};
         }
 
         /**
