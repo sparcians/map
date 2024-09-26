@@ -41,6 +41,7 @@ installed and would like to build everything (not just sparta).
 1. If conda is not installed, install it
    * Get miniconda and install: https://docs.conda.io/en/latest/miniconda.html
    * You can install miniconda anywhere
+   * These directions were tested with conda version 24.7.1
 1. Activate conda `conda activate`
 1. Go to the root of MAP
    * `cd map`
@@ -49,6 +50,9 @@ installed and would like to build everything (not just sparta).
    * `conda install -c conda-forge yq`
 1. Create a sparta conda development environment
    * `./scripts/create_conda_env.sh sparta dev`
+   * If the rendering fails (such as an unexpected error), try with
+     the safe enviroment: `conda env create -f
+     scripts/rendered_safe_environment.yaml`
 1. Activate the environment
    * `conda activate sparta`
 1. To build Sparta framework components:
@@ -93,4 +97,8 @@ Install `conda smithy` instructions:
 ```
 conda install -n root -c conda-forge conda-smithy
 conda install -n root -c conda-forge conda-package-handling
+```
+If `conda smithy` complains about being out of date:
+```
+conda update -n root conda-smithy
 ```

@@ -4,13 +4,11 @@
 # [Element, val].
 from __future__ import annotations
 from bisect import bisect, bisect_left
-from typing import Any, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Tuple, Union
 from . import content_options as content
 from . import highlighting_utils
 from .element import Element, FakeElement, PropertyValue
-
-if TYPE_CHECKING:
-    from .schedule_element import ScheduleLineElement
+from .schedule_element import ScheduleLineElement
 
 
 TimedVal = Tuple[Optional[Union[int, str]], Tuple[int, int]]

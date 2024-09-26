@@ -10,8 +10,8 @@
 namespace sparta{
 namespace pevents{
 
-    //!A typedef for defining formatters for custom attributes.
-    typedef std::ios_base::fmtflags FormatFlags;
+//!A typedef for defining formatters for custom attributes.
+typedef std::ios_base::fmtflags FormatFlags;
 
 //we'll want a way to force that certain keys are not used else where.
 namespace PEventProtection
@@ -29,7 +29,7 @@ namespace PEventProtection
      * be appending the quotes automatically.
      */
     template<typename T>
-     bool CheckNoQuotes(const T&, const std::string&, const std::string&)
+    bool CheckNoQuotes(const T&, const std::string&, const std::string&)
     {
         return true;
     }
@@ -40,7 +40,7 @@ namespace PEventProtection
      * string type attribute.
      */
     template<typename T>
-     void AppendQuote(std::stringstream&)
+    void AppendQuote(std::stringstream&)
     {/*do nothing*/}
 
 
@@ -76,8 +76,13 @@ namespace PEventProtection
 
 }
 
-
-
+/*!
+ * \class PEvent
+ * \brief Defines the class base type for PEvents
+ *
+ * Do not use this class directly.  Instead, use a
+ * sparta::pevents::PeventCollector object instead.
+ */
 template<typename ...CustomAttrs>
 class PEvent
 {
@@ -354,6 +359,3 @@ public:
 
 }//namespace pevents
 }//namespace sparta
-
-
-

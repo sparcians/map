@@ -117,6 +117,14 @@ class ReportFileParserYAML
          */
         std::stack<bool> in_content_stack_;
 
+        /*!
+         * \brief Are we accepting the stats inside the current content block?
+         * An example of when we do not accept stats is when we are parsing
+         * a content block for an arch that does not match the --arch at the
+         * command line.
+         */
+        bool skip_content_leaves_ = false;
+
         // Did we find an 'ignore' block?
         bool in_ignore_ = false;
 
@@ -302,6 +310,12 @@ class ReportFileParserYAML
                           << "\" and key \"" << assoc_key << "\" in report " << *r << std::endl;
 
                 if(in_content){
+                    if(skip_content_leaves_){
+                        verbose() << indent_() << "Skipping content due to arch mismatch ("
+                                  << assoc_key << " : " << value << ")" << std::endl;
+                        return;
+                    }
+
                     std::string full_name = value;
                     if(getSubstituteForStatName(full_name, n, captures)){
                         r->add(n, full_name);
@@ -577,6 +591,10 @@ class ReportFileParserYAML
         }
 
         bool isReservedKey_(const std::string& key) const override {
+            if (key.find("-arch-content") != std::string::npos) {
+                return true;
+            }
+
             return (key == KEY_REPORT
                     || key == KEY_SUBREPORT
                     || key == KEY_CONTENT
@@ -600,6 +618,7 @@ class ReportFileParserYAML
 
         bool handleEnterMap_(const std::string& key,
                              NavVector& context) override {
+
             bool in_content = in_content_stack_.top();
             //Report* const r = report_stack_.top();
             sparta_assert(report_stack_.size() > 0);
@@ -731,6 +750,52 @@ class ReportFileParserYAML
                     in_content_stack_.push(false);
                     return false;
                 }else{
+                    const auto idx = key.find("-arch-content");
+                    if (idx != std::string::npos) {
+                        app::Simulation *sim = nullptr;
+                        if (base_report_) {
+                            if (auto ctx = base_report_->getContext()) {
+                                sim = ctx->getSimulation();
+                            }
+                        }
+
+                        if (!sim) {
+                            throw SpartaException("Could not get the app::Simulation to parse key: ") << key;
+                        }
+
+                        if (auto sim_config = sim->getSimulationConfiguration()) {
+                            skip_content_leaves_ = true;
+                            bool dash_arch_given = false;
+                            for (const auto &kvp : sim_config->getRunMetadata()) {
+                                if (kvp.first == "arch") {
+                                    dash_arch_given = true;
+                                    if (kvp.second + "-arch-content" == key) {
+                                        skip_content_leaves_ = false;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (!dash_arch_given) {
+                                skip_content_leaves_ = false;
+                                verbose() << indent_() << "WARNING: You should consider using --arch at "
+                                          << "the command line together with the *-arch-content blocks "
+                                          << "in your report definition YAML file. This content block "
+                                          << "will be treated as normal (not filtered for --arch)."
+                                          << std::endl;
+                            }
+
+                            if (skip_content_leaves_) {
+                                verbose() << indent_() << "Skipping '" << key << "' block since it does "
+                                          << "not match the --arch given at the command line.";
+                            }
+
+                            in_content_stack_.push(true);
+                            return false;
+                        } else {
+                            throw SpartaException("Could not get the app::SimulationConfiguration to parse key: ") << key;
+                        }
+                    }
 
                     //std::stringstream ss;
                     //ss << "Unexpected map start (key = \"" << key << "\") outside of a \"content\" section";
@@ -878,6 +943,12 @@ class ReportFileParserYAML
                         }
                     }
                     trigger_defn_.reset();
+                }else{
+                    const auto idx = key.find("-arch-content");
+                    if (idx != std::string::npos) {
+                        skip_content_leaves_ = false;
+                        return false;
+                    }
                 }
             }
 
@@ -1225,7 +1296,7 @@ Report::StatAdder Report::add(CounterBase* ctr, const std::string& name) {
     return Report::StatAdder(*this);
 }
 
-Report::StatAdder Report::add(TreeNode* n, const std::string& name) {
+Report::StatAdder Report::add(const TreeNode* n, const std::string& name) {
     sparta_assert(n);
     if(name != "" && stat_names_.find(name) != stat_names_.end()){
         throw SpartaException("There is already a statistic instance in this Report (")

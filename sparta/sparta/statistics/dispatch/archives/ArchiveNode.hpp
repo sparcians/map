@@ -37,9 +37,7 @@ public:
     ArchiveNode() = default;
 
     //! Construct a named node
-    ArchiveNode(const std::string & name) :
-        name_(name)
-    {}
+    ArchiveNode(const std::string & name);
 
     //! Archive trees are built with the help of the
     //! ReportStatisticsHierTree class. That class is
@@ -61,7 +59,7 @@ public:
         ArchiveNode(name)
     {}
 
-    virtual ~ArchiveNode() {}
+    virtual ~ArchiveNode();
 
     //! Return the name that this node was originally created with
     const std::string & getName() const {

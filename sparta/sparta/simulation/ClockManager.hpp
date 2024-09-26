@@ -19,7 +19,7 @@
 #include "sparta/utils/SpartaAssert.hpp"
 
 namespace sparta {
-class RootTreeNode;
+    class RootTreeNode;
 
     /**
      * \class ClockManager

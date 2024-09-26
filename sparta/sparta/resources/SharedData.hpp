@@ -49,6 +49,11 @@ namespace sparta
             return current_state_;
         }
 
+        void resetHandler_()
+        {
+            ev_update_.resetHandler(CREATE_SPARTA_HANDLER(SharedData, update_));
+        }
+
     public:
         /**
          * \brief Construct a SharedData item
@@ -63,6 +68,44 @@ namespace sparta
             ev_update_(clk, CREATE_SPARTA_HANDLER(SharedData, update_))
         {
             writePS(std::forward<U>(init_val));
+        }
+
+        SharedData(const SharedData& rhs) :
+            ev_update_(rhs.ev_update_),
+            current_state_(rhs.current_state_),
+            data_(rhs.data_)
+        {
+            resetHandler_();
+        }
+
+        SharedData(SharedData&& rhs) :
+            ev_update_(std::move(rhs.ev_update_)),
+            current_state_(std::move(rhs.current_state_)),
+            data_(std::move(rhs.data_))
+        {
+            resetHandler_();
+        }
+
+        SharedData& operator=(const SharedData& rhs)
+        {
+            ev_update_ = rhs.ev_update_;
+            resetHandler_();
+
+            current_state_ = rhs.current_state_;
+            data_ = rhs.data_;
+
+            return *this;
+        }
+
+        SharedData& operator=(SharedData&& rhs)
+        {
+            ev_update_ = std::move(rhs.ev_update_);
+            resetHandler_();
+
+            current_state_ = std::move(rhs.current_state_);
+            data_ = std::move(rhs.data_);
+
+            return *this;
         }
 
         /**

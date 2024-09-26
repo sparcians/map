@@ -44,7 +44,7 @@ namespace sparta
          * \note Stream insertion operator can be used to add more text to the
          * reason.
          */
-        ReversedStatisticRange(const std::string & reason) :
+        explicit ReversedStatisticRange(const std::string & reason) :
             SpartaException(reason)
         { }
 
@@ -67,7 +67,7 @@ namespace sparta
          * \note Stream insertion operator can be used to add more text to the
          * reason.
          */
-        FutureStatisticRange(const std::string & reason) :
+        explicit FutureStatisticRange(const std::string & reason) :
             SpartaException(reason)
         { }
 
@@ -128,7 +128,7 @@ namespace sparta
          * \note You *must* set the context (setContext) after this
          *       call.  The Expression might or might not know the context for the Scheduler
          */
-        StatisticInstance(statistics::expression::Expression&& expr) :
+        explicit StatisticInstance(statistics::expression::Expression&& expr) :
             stat_expr_(expr)
         { }
 
@@ -136,7 +136,7 @@ namespace sparta
          * \brief Construct with a StatisticDef or Counter as a TreeNode*
          * \param node Must be an interface to a StatisticDef or a Counter
          */
-        StatisticInstance(const TreeNode* node) :
+        explicit StatisticInstance(const TreeNode* node) :
             StatisticInstance(nullptr, nullptr, nullptr, node, nullptr)
         { }
 

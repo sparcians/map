@@ -95,7 +95,7 @@ namespace sparta
          */
         struct DataPointer {
         private:
-            typename std::aligned_storage<sizeof(value_type), alignof(value_type)>::type object_memory_;
+            alignas(value_type) std::byte object_memory_[sizeof(value_type)];
 
         public:
             DataPointer() { }

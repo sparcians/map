@@ -187,7 +187,7 @@ namespace sparta::pipeViewer
                     if(!dat.stringVector[i].empty()){
                         // We check if we have seen this exact pair, field and value before or not.
                         if(const auto& [val, str] = std::tie(dat.valueVector[i].first, dat.stringVector[i]);
-                           stringMap.try_emplace(std::make_tuple(dat.pairId, i, val), str).second) {
+                           stringMap.emplace(std::piecewise_construct, std::forward_as_tuple(dat.pairId, i, val), std::forward_as_tuple(str)).second) {
                             // We add this mapping into out String Map file which we will
                             // use when reading back from the database.
                             string_file_ << dat.pairId
@@ -238,7 +238,7 @@ namespace sparta::pipeViewer
                     if(!dat.stringVector[i].empty()){
                         // We check if we have seen this exact pair, field and value before or not.
                         if(const auto& [val, str] = std::tie(dat.valueVector[i].first, dat.stringVector[i]);
-                           stringMap.try_emplace(std::make_tuple(dat.pairId, i, val), str).second) {
+                           stringMap.emplace(std::piecewise_construct, std::forward_as_tuple(dat.pairId, i, val), std::forward_as_tuple(str)).second) {
                             // We add this mapping into out String Map file which we will
                             // use when reading back from the database.
                             string_file_ << dat.pairId

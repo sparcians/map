@@ -157,6 +157,7 @@ namespace sparta
                 sbv->receiveScoreboardUpdate_(bits, INVALID_UNIT_ID);
             }
         }
+        global_reg_ready_mask_ |= bits;
     }
 
     void Scoreboard::set(const Scoreboard::RegisterBitMask & bits, Scoreboard::UnitID producer)
@@ -173,6 +174,7 @@ namespace sparta
                 sbv->receiveScoreboardUpdate_(bits, producer);
             }
         }
+        global_reg_ready_mask_ |= bits;
     }
 
     void Scoreboard::clearBits(const Scoreboard::RegisterBitMask & bits)
@@ -232,6 +234,7 @@ namespace sparta
                                    const std::string & scoreboard_type,
                                    sparta::TreeNode * parent) :
         clock_(parent->getClock()),
+        unit_name_(unit_name),
         unit_id_(findMasterScoreboard_(unit_name, scoreboard_type, parent)),
         scoreboard_type_(scoreboard_type)
     {
@@ -251,7 +254,7 @@ namespace sparta
                                                   const Scoreboard::UnitID producer)
     {
         sparta_assert(bits.any(),
-                      "Update should only be generated for non-empty vector");
+                      "Update should only be generated for non-empty vector: " << unit_name_);
 
         // Setting local ready bits
         local_ready_mask_ |= bits;
@@ -310,11 +313,7 @@ namespace sparta
         // Try to find the master scoreboard, if it's available (has
         // been created by the Sparta framework)
 
-        // Go as high as the CPU node in this Tree.  If we go higher,
-        // we could bind to a Scoreboard in another CPU!  That'd be
-        // bad.
-        auto cpu_node = parent->findAncestorByName("core*");
-        sparta_assert(cpu_node != nullptr, "Could not find the core nodes in this simulation");
+        // Search for scoreboards from parent
 
         std::function<Scoreboard*(sparta::TreeNode *)> findScoreboard =
             [&] (sparta::TreeNode * node) -> Scoreboard * {
@@ -348,7 +347,7 @@ namespace sparta
                 return scoreboard;
             };
 
-        Scoreboard * master_sb = findScoreboard(cpu_node);
+        Scoreboard * master_sb = findScoreboard(parent);
 
         // Gotta be more than 0
         sparta_assert(master_sb != nullptr,
