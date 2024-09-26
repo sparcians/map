@@ -43,7 +43,7 @@ CSR32_DEFS = {
         "hasresethaltreq" : { "high_bit" :  5, "low_bit" :  5, "readonly" : True,  "desc" : "If set, this Debug Module supports halt-on-reset" },
         "confstrptrvalid" : { "high_bit" :  4, "low_bit" :  4, "readonly" : True,  "desc" : "If set, confstrptr0-confstrptr3 hold the address of the configuration string" },
         "version"         : { "high_bit" :  3, "low_bit" :  0, "readonly" : True,  "desc" : "Version of Debug Module spec supported" },
-    }, 143],
+    }, 0],
 
     # User Trap Setup
     0x040: ["uscratch", "Scratch register for user trap handlers.", {}, 0],
@@ -212,7 +212,7 @@ CSR32_DEFS = {
         "Bank"   : { "high_bit" : 31, "low_bit" : 7, "readonly" : False, "desc" : "The number of one-byte continuation codes" },
         "Offset" : { "high_bit" : 6,  "low_bit" : 0, "readonly" : True, "desc" : "Encodes the final byte" },
     }, 0],
-    0xf12: ["marchid", "Architecture ID.", {}, 5],
+    0xf12: ["marchid", "Architecture ID.", {}, 0],
     0xf13: ["mimpid", "Implementation ID.", {}, 0],
     0xf14: ["mhartid", "Hardware thread ID.", {}, 0],
     0xf15: ["mconfigptr", "Pointer to configuration data structure", {}, 0],
@@ -271,7 +271,7 @@ CSR32_DEFS = {
         "X" : { 'high_bit' : 23, 'low_bit' : 23,  'readonly' : True,  "desc" : "Non-standard extensions" },
         "Y" : { 'high_bit' : 24, 'low_bit' : 24,  'readonly' : True,  "desc" : "Reserved" },
         "Z" : { 'high_bit' : 25, 'low_bit' : 25,  'readonly' : True,  "desc" : "Reserved" },
-    }, 1075056941],
+    }, 0],
     0x302: ["medeleg",    "Machine exception delegation register.", {
        "WPRI"   : { "high_bit" : 31,  "low_bit" : 24, "readonly" : True, "desc" : "reserved" },
        "MECALL" : { "high_bit" : 11,  "low_bit" : 11, "readonly" : True, "desc" : "Machine-mode environment call" },
