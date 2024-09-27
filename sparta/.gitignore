@@ -11,3 +11,4 @@ build*
 [Ff]ast[Dd]ebug*
 cmake-build-*
 *~
+compile_commands.json
