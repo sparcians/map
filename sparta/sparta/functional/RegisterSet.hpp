@@ -14,7 +14,6 @@
 
 #include "sparta/functional/Register.hpp"
 #include "sparta/functional/RegisterBankTable.hpp"
-#include "sparta/functional/RegisterDefnsJSON.hpp"
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
@@ -537,26 +536,6 @@ public:
         // Handled in delegated consturctor
     }
 
-    template <typename RegisterT>
-    RegisterSet(TreeNode *parent,
-                std::unique_ptr<RegisterDefnsFromJSON> defns,
-                const RegisterProxyBase::Definition *proxy_defs,
-                CurrentBankFunction cbfxn,
-                RegisterTypeTag<RegisterT> tag)
-        : RegisterSet(parent, defns->getAllDefns(), proxy_defs, cbfxn, tag)
-    {
-        defs_from_json_ = std::move(defns);
-    }
-
-    template <typename RegisterT>
-    RegisterSet(TreeNode *parent,
-                std::unique_ptr<RegisterDefnsFromJSON> defns,
-                RegisterTypeTag<RegisterT> tag)
-        : RegisterSet(parent, defns->getAllDefns(), nullptr, nullptr, tag)
-    {
-        defs_from_json_ = std::move(defns);
-    }
-
     template <typename RegisterT = Register>
     static std::unique_ptr<RegisterSet>
     create(TreeNode *parent,
@@ -574,52 +553,6 @@ public:
     {
         return std::unique_ptr<RegisterSet>(new RegisterSet(
             parent, defs, RegisterTypeTag<RegisterT>()));
-    }
-
-    template <typename RegisterT = Register>
-    static std::unique_ptr<RegisterSet>
-    create(TreeNode *parent,
-           const std::string& register_defns_json,
-           const RegisterProxyBase::Definition *proxy_defs,
-           CurrentBankFunction cbfxn)
-    {
-        auto defns = std::make_unique<sparta::RegisterDefnsFromJSON>(register_defns_json);
-
-        return std::unique_ptr<RegisterSet>(new RegisterSet(
-            parent, std::move(defns), proxy_defs, cbfxn, RegisterTypeTag<RegisterT>()));
-    }
-
-    template <typename RegisterT = Register>
-    static std::unique_ptr<RegisterSet>
-    create(TreeNode *parent, const std::string& register_defns_json)
-    {
-        auto defns = std::make_unique<sparta::RegisterDefnsFromJSON>(register_defns_json);
-
-        return std::unique_ptr<RegisterSet>(new RegisterSet(
-            parent, std::move(defns), RegisterTypeTag<RegisterT>()));
-    }
-
-    template <typename RegisterT = Register>
-    static std::unique_ptr<RegisterSet>
-    create(TreeNode *parent,
-           const std::vector<std::string>& register_defns_jsons,
-           const RegisterProxyBase::Definition *proxy_defs,
-           CurrentBankFunction cbfxn)
-    {
-        auto defns = std::make_unique<sparta::RegisterDefnsFromJSON>(register_defns_jsons);
-
-        return std::unique_ptr<RegisterSet>(new RegisterSet(
-            parent, std::move(defns), proxy_defs, cbfxn, RegisterTypeTag<RegisterT>()));
-    }
-
-    template <typename RegisterT = Register>
-    static std::unique_ptr<RegisterSet>
-    create(TreeNode *parent, const std::vector<std::string>& register_defns_jsons)
-    {
-        auto defns = std::make_unique<sparta::RegisterDefnsFromJSON>(register_defns_jsons);
-
-        return std::unique_ptr<RegisterSet>(new RegisterSet(
-            parent, std::move(defns), RegisterTypeTag<RegisterT>()));
     }
 
     /*!
@@ -1098,14 +1031,6 @@ private:
      * \brief Function for querying the current effective bank from a simulator
      */
     CurrentBankFunction cur_bank_fxn_;
-
-    /*!
-     * \brief Register definitions parsed from JSON file(s). We have to hold onto
-     * this to keep the definitions alive, specifically the various strings that
-     * are held by the register/field definitions as a const char* (e.g. group
-     * name, field name, etc.)
-     */
-    std::unique_ptr<RegisterDefnsFromJSON> defs_from_json_;
 
 }; // class RegisterSet
 

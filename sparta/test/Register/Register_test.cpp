@@ -254,66 +254,8 @@ public:
     }
 };
 
-void dumpRegisterDefnsToJSON(const std::string& filename, Register::Definition* defs)
-{
-    std::ofstream json_file(filename);
-    if (!json_file.is_open()) {
-        throw SpartaException("Failed to open file for writing: ") << filename;
-    }
-
-    json_file << "[\n";
-    for (RegisterBase::Definition* def = defs; def->name != nullptr; ++def) {
-        json_file << "  {\n";
-        json_file << "    \"name\": \"" << def->name << "\",\n";
-        json_file << "    \"num\": " << def->id << ",\n";
-        json_file << "    \"desc\": \"" << def->desc << "\",\n";
-        json_file << "    \"size\": " << def->bytes << ",\n";
-
-        json_file << "    \"aliases\": [";
-        if (def->aliases == nullptr) {
-            json_file << "],\n";
-        } else {
-            json_file << "\n";
-            for (auto alias = def->aliases; alias != nullptr; ++alias) {
-                json_file << "      \"" << *alias << "\"";
-                if (*(alias + 1) != nullptr) {
-                    json_file << ",";
-                }
-                json_file << "\n";
-            }
-            json_file << "    ],\n";
-        }
-
-        json_file << "    \"fields\": {\n";
-        for (const auto& field : def->fields) {
-            json_file << "      \"" << field.name << "\": {\n";
-            json_file << "        \"desc\": \"" << field.desc << "\",\n";
-            json_file << "        \"low_bit\": " << field.low_bit << ",\n";
-            json_file << "        \"high_bit\": " << field.high_bit << ",\n";
-            json_file << "        \"readonly\": " << std::boolalpha << field.read_only << "\n";
-            json_file << "      }";
-            if (&field != &def->fields.back()) {
-                json_file << ",";
-            }
-            json_file << "\n";
-        }
-        json_file << "    },\n";
-
-        json_file << "    \"group_name\": \"" << def->group << "\",\n";
-        json_file << "    \"group_num\": " << def->group_num << "\n";
-
-        json_file << "  }";
-        if ((def + 1)->name != nullptr) {
-            json_file << ",";
-        }
-        json_file << "\n";
-    }
-
-    json_file << "]\n";
-}
-
 //! Issue 89, test field register writes to large fields
-void testFieldRegisterWrite(bool use_json = false)
+void testFieldRegisterWrite()
 {
     Register::ident_type new_regid = 1000; // Start counting at some unique ID
 
@@ -325,13 +267,7 @@ void testFieldRegisterWrite(bool use_json = false)
     };
     RootTreeNode root;
     DummyDevice good_dummy(&root);
-    std::unique_ptr<RegisterSet> regs;
-    if (!use_json) {
-        regs = RegisterSet::create(&good_dummy, good_reg_defs);
-    } else {
-        dumpRegisterDefnsToJSON("reg_defs.json", good_reg_defs);
-        regs = RegisterSet::create(&good_dummy, "reg_defs.json");
-    }
+    std::unique_ptr<RegisterSet> regs = RegisterSet::create(&good_dummy, good_reg_defs);
     regs->getRegister("fp_reg")->getField("sp")->write(1);
     regs->getRegister("fp_reg")->getField("dp")->write(1);
 
@@ -349,7 +285,7 @@ void testFieldRegisterWrite(bool use_json = false)
 
 
 //! Load up some good regs from a table
-void testGoodRegs(bool use_json = false)
+void testGoodRegs()
 {
 
     Register::ident_type new_regid = 1000; // Start counting at some unique ID
@@ -368,13 +304,7 @@ void testGoodRegs(bool use_json = false)
 
     RootTreeNode root;
     DummyDevice good_dummy(&root);
-    std::unique_ptr<RegisterSet> good_regs;
-    if (!use_json) {
-        good_regs = RegisterSet::create(&good_dummy, good_reg_defs);
-    } else {
-        dumpRegisterDefnsToJSON("reg_defs.json", good_reg_defs);
-        good_regs = RegisterSet::create(&good_dummy, "reg_defs.json");
-    }
+    std::unique_ptr<RegisterSet> good_regs = RegisterSet::create(&good_dummy, good_reg_defs);
 #ifndef REGISTER_SET_GET_ARCH_DATA_REMOVED
     EXPECT_TRUE(good_regs->getArchData().isLaidOut());
     std::cout << "Layout of good dummy regs:" << std::endl;
@@ -830,9 +760,7 @@ int main()
 
     // Construct some good and bad regs to test out size constraints
     testFieldRegisterWrite();      // Create registers directly
-    testFieldRegisterWrite(true);  // Create registers from JSON
     testGoodRegs();                // Create registers directly
-    testGoodRegs(true);            // Create registers from JSON
     testBadRegs();
 
 
