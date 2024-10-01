@@ -1,0 +1,9 @@
+<map id="sparta::statistics::SIValuesBuffer::getBufferedSIValues" name="sparta::statistics::SIValuesBuffer::getBufferedSIValues">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,85,192,141"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1statistics_1_1SIValuesBuffer.html#aa7eb38ce95d1573aeff1d6a932bdc56d" title="Ask if this buffer is completely empty." alt="" coords="240,5,419,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="180,82,232,64,233,69,182,87"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1statistics_1_1SIValuesBuffer.html#aa682f28bb9ab7bee35c00bfe568845c6" title=" " alt="" coords="240,85,419,141"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="192,111,224,111,224,116,192,116"/>
+<area shape="rect" id="Node000004" href="$namespacesparta_1_1statistics.html#a8e36d86be62029d92c35f12fc1e0920a" title="Utility to set all elements of a vector to NaN." alt="" coords="271,165,388,206"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="191,139,257,160,256,165,189,144"/>
+</map>

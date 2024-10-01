@@ -1,0 +1,9 @@
+<map id="sparta::ArchData::checkSegment" name="sparta::ArchData::checkSegment">
+<area shape="rect" id="Node000001" title="Checks that a segment is valid within this archdata by its given offset and size." alt="" coords="5,35,216,60"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData.html#afde21b4a684f915cb56e8daba53e9d99" title="Checks to see that the size of the data is a valid access size." alt="" coords="264,5,474,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="216,33,248,29,248,35,216,38"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ArchData.html#aaed65a11540e5f04a01fc3256b61ae49" title="Determines whether the access defined by offset and size spans multiple ArchData Lines." alt="" coords="284,55,454,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="216,56,269,62,269,67,216,62"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="522,55,688,96"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="454,73,506,73,506,78,454,78"/>
+</map>
