@@ -267,7 +267,7 @@ void testFieldRegisterWrite()
     };
     RootTreeNode root;
     DummyDevice good_dummy(&root);
-    std::unique_ptr<RegisterSet> regs(RegisterSet::create(&good_dummy, good_reg_defs));
+    std::unique_ptr<RegisterSet> regs = RegisterSet::create(&good_dummy, good_reg_defs);
     regs->getRegister("fp_reg")->getField("sp")->write(1);
     regs->getRegister("fp_reg")->getField("dp")->write(1);
 
@@ -304,7 +304,7 @@ void testGoodRegs()
 
     RootTreeNode root;
     DummyDevice good_dummy(&root);
-    std::unique_ptr<RegisterSet> good_regs(RegisterSet::create(&good_dummy, good_reg_defs));
+    std::unique_ptr<RegisterSet> good_regs = RegisterSet::create(&good_dummy, good_reg_defs);
 #ifndef REGISTER_SET_GET_ARCH_DATA_REMOVED
     EXPECT_TRUE(good_regs->getArchData().isLaidOut());
     std::cout << "Layout of good dummy regs:" << std::endl;
@@ -759,8 +759,8 @@ int main()
     root.bindTreeLate();
 
     // Construct some good and bad regs to test out size constraints
-    testFieldRegisterWrite();
-    testGoodRegs();
+    testFieldRegisterWrite();      // Create registers directly
+    testGoodRegs();                // Create registers directly
     testBadRegs();
 
 

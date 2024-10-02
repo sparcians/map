@@ -138,6 +138,8 @@ void generalTest()
         EXPECT_TRUE(dummy_3.s_field.size() == 0);
         EXPECT_TRUE(buf_dummy.read(0).s_field == "GHI");
         auto ritr = buf_dummy.rbegin();
+        EXPECT_TRUE(ritr->s_field == "ABC");
+        EXPECT_TRUE(buf_dummy.read(ritr).s_field == "ABC");
         buf_dummy.insert(++ritr, std::move(dummy_4));
         EXPECT_TRUE(dummy_4.s_field.size() == 0);
         EXPECT_TRUE(buf_dummy.read(2).s_field == "JKL");
@@ -497,7 +499,8 @@ void generalTest()
 
 
     itr = buf10.end();
-    EXPECT_THROW_MSG_CONTAINS(++itr, "Incrementing the iterator to entry that is not valid");
+    EXPECT_THROW_MSG_CONTAINS(++itr,
+                              "Incrementing an iterator that is not valid");
 
     itr = buf10.end();
     --itr;
@@ -517,6 +520,7 @@ void generalTest()
     // REVERSE_ITERATOR tests
 
     buf10.clear();
+    EXPECT_TRUE(buf10.rbegin() == buf10.rend());
     EXPECT_EQUAL(buf10.size(), 0);
     for(uint32_t i = 0; i < 9; ++i) {
         buf10.push_back(20.5 + i);
@@ -525,33 +529,34 @@ void generalTest()
 
     // Check for correct response when using the increment operator
     auto ritr = buf10.rbegin();
-    ++ritr;
     EXPECT_EQUAL(buf10.read(ritr), 1234.5);
+    ++ritr;
+    EXPECT_EQUAL(buf10.read(ritr), 28.5);
 
     ritr = buf10.rend();
     EXPECT_THROW_MSG_CONTAINS(++ritr, "Decrementing the iterator results in buffer underrun");
 
     ritr = buf10.rend();
     --ritr;
-    EXPECT_EQUAL(buf10.read(ritr), 21.5);
-    ++ritr;
     EXPECT_EQUAL(buf10.read(ritr), 20.5);
+    ++ritr;
+    EXPECT_THROW_MSG_CONTAINS(buf10.read(ritr), "Decrementing the iterator results in buffer underrun");
 
     ritr = buf10.rbegin();
     EXPECT_EQUAL(*ritr, 1234.5);
     ++ritr;
-    // This looks wrong...
-    EXPECT_EQUAL(buf10.access(ritr), 1234.5);
-    EXPECT_EQUAL(buf10.read(ritr), 1234.5);
+    EXPECT_EQUAL(buf10.access(ritr), 28.5);
+    EXPECT_EQUAL(buf10.read(ritr), 28.5);
 
     buf10.erase(9);
     buf10.erase(8);
     buf10.erase(7);
     EXPECT_EQUAL(buf10.size(), 7);
-    EXPECT_THROW_MSG_SHORT(buf10.read(ritr),"isValid(idx)");
-    ++ritr; // should point to 6
     EXPECT_EQUAL(buf10.read(ritr), 26.5);
+    ++ritr; // should point to 5
+    EXPECT_EQUAL(buf10.read(ritr), 25.5);
     --ritr; // What should this do?
+    EXPECT_TRUE(ritr == buf10.rbegin());
 
     sched.run(1);
 
@@ -564,12 +569,14 @@ void generalTest()
     buf10.push_back(1234.5);
 
     ritr = buf10.rbegin();
-    EXPECT_THROW_MSG_CONTAINS(--ritr, "Incrementing the iterator to entry that is not valid");
+    EXPECT_THROW_MSG_CONTAINS(--ritr,
+                              "Incrementing an iterator that is not valid");
 
     ritr = buf10.rbegin();
     ++ritr;
-    EXPECT_EQUAL(buf10.read(ritr), 1234.5);
+    EXPECT_EQUAL(buf10.read(ritr), 28.5);
     --ritr;
+    EXPECT_EQUAL(buf10.read(ritr), 1234.5);
 
     sched.run(5);
 
@@ -707,6 +714,104 @@ void testPointerTypes()
     EXPECT_TRUE(ptr != nullptr);
 }
 
+template<typename IterType, typename BuffType>
+void testEraseSupport()
+{
+    BuffType int_buff("simple int buff", 10, nullptr);
+
+    for(uint32_t i = 0; i < int_buff.capacity(); ++i) {
+        int_buff.push_back(i + 100);
+    }
+    EXPECT_EQUAL(int_buff.size(), int_buff.capacity());
+
+    IterType it;
+    IterType eit;
+    if constexpr(std::is_same_v<IterType, typename BuffType::reverse_iterator>) {
+        it = int_buff.rbegin();
+        eit = int_buff.rend();
+    }
+    else {
+        it = int_buff.begin();
+        eit = int_buff.end();
+    }
+
+    while(it != eit) {
+        it = int_buff.erase(it);
+    }
+    EXPECT_EQUAL(0, int_buff.size());
+
+    // Pure fill, partial erase
+    for(uint32_t i = 0; i < int_buff.capacity(); ++i) {
+        int_buff.push_back(i + 100);
+    }
+
+    if constexpr(std::is_same_v<IterType, typename BuffType::reverse_iterator>) {
+        it = int_buff.rbegin();
+        eit = int_buff.rend();
+    }
+    else {
+        it = int_buff.begin();
+        eit = int_buff.end();
+    }
+    while(it != eit) {
+        if(*it % 2 == 0) {
+            it = int_buff.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+    EXPECT_EQUAL(5, int_buff.size());
+    int_buff.clear();
+
+    // Pure fill, erase 1, add 1 erase, another add another
+    for(uint32_t i = 0; i < int_buff.capacity(); ++i) {
+        int_buff.push_back(i + 100);
+    }
+
+    // Pattern: 100 -> 109
+
+    // Erase 105
+    if constexpr(std::is_same_v<IterType, typename BuffType::reverse_iterator>) {
+        it = int_buff.rbegin();
+        eit = int_buff.rend();
+    }
+    else {
+        it = int_buff.begin();
+        eit = int_buff.end();
+    }
+    while(it != eit) {
+        if(*it == 105) {
+            it = int_buff.erase(it);
+            EXPECT_EQUAL(*it, 106);
+            break;
+        }
+        ++it;
+    }
+
+    // Put in 200
+    int_buff.push_back(200);
+    EXPECT_EQUAL(int_buff.accessBack(), 200);
+
+    std::array<int, 10> vals = {100, 101, 102, 103, 104, 106, 107, 108, 109, 200};
+
+    uint32_t idx = 0;
+    if constexpr(std::is_same_v<IterType, typename BuffType::reverse_iterator>) {
+        it = int_buff.rbegin();
+        eit = int_buff.rend();
+    }
+    else {
+        it = int_buff.begin();
+        eit = int_buff.end();
+    }
+    while(it != eit) {
+        EXPECT_EQUAL(vals[idx++], *it);
+        it = int_buff.erase(it);
+    }
+
+    EXPECT_EQUAL(0, int_buff.size());
+}
+
 void testInvalidates()
 {
     EXPECT_EQUAL(dummy_allocs, 0);
@@ -750,6 +855,12 @@ void testInvalidates()
     EXPECT_EQUAL(SimpleStruct::simple_allocs, 1);
     my_simple_struct.erase(my_simple_struct.begin());
     EXPECT_EQUAL(SimpleStruct::simple_allocs, 0);
+
+    // Pure fill, pure erase
+    testEraseSupport<sparta::Buffer<int>::iterator,               sparta::Buffer<int>>();
+    testEraseSupport<sparta::Buffer<int>::const_iterator,         sparta::Buffer<int>>();
+    //testEraseSupport<sparta::Buffer<int>::reverse_iterator,       sparta::Buffer<int>>();
+    // testEraseSupport<sparta::Buffer<int>::const_reverse_iterator, sparta::Buffer<int>>();
 }
 
 
