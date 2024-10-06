@@ -53,6 +53,7 @@ namespace sparta
             BasicCacheSet<CacheItemT> &operator=(const BasicCacheSet<CacheItemT> &rhs)
             {
                 if ( this != &rhs ) {
+                    set_idx_  = rhs.set_idx_;
                     num_ways_ = rhs.num_ways_;
                     replacement_policy_ = rhs.replacement_policy_->clone();
                     ways_ = rhs.ways_;
@@ -228,13 +229,12 @@ namespace sparta
             const_iterator begin() const { return ways_.begin(); }
             const_iterator end()   const { return ways_.end(); }
         protected:
-            const uint32_t          set_idx_;
-            const uint32_t          num_ways_;
-            ReplacementIF          *replacement_policy_;
+            uint32_t          set_idx_;
+            uint32_t          num_ways_;
+            ReplacementIF    *replacement_policy_;
             std::vector<CacheItemT> ways_;
         }; // class Cache
 
-    }; // namespace cache
+    } // namespace cache
 
-}; // namespace sparta
-
+} // namespace sparta

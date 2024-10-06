@@ -8,8 +8,6 @@
 
 namespace core_example
 {
-    constexpr char Decode::name[];
-
     Decode::Decode(sparta::TreeNode * node,
                    const DecodeParameterSet * p) :
         sparta::Unit(node),

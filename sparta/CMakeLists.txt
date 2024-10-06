@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.15)
+cmake_minimum_required (VERSION 3.19)
 
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -9,23 +9,6 @@ set (GEN_DEBUG_INFO ON CACHE BOOL "Genearate debug info in compile & link -g")
 
 set (SPARTA_BASE ${CMAKE_CURRENT_SOURCE_DIR})
 include (${SPARTA_BASE}/cmake/sparta-config.cmake)
-
-# Add RapidJSON
-include_directories (SYSTEM ${RAPIDJSON_INCLUDE_DIRS})
-
-# Add YAML CPP
-include_directories (SYSTEM ${YAML_CPP_INCLUDE_DIR})
-
-# Add local includes
-include_directories ("./")
-include_directories ("simdb/include")
-
-# Add Boost (not typical system install)
-include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
-
-# Add HDF5 (not typical system install)
-include_directories (SYSTEM ${HDF5_C_INCLUDE_DIRS})
-include_directories (SYSTEM ${HDF5_INCLUDE_DIRS})
 
 # Add the source for libsparta.a
 list (APPEND SourceCppFiles
@@ -71,12 +54,14 @@ list (APPEND SourceCppFiles
             src/RootTreeNode.cpp
             src/Scheduler.cpp
             src/Scheduleable.cpp
+            src/Scoreboard.cpp
             src/Simulation.cpp
             src/SimulationConfiguration.cpp
             src/SimulationInfo.cpp
             src/SingleUpdateReport.cpp
             src/SINodeHierarchy.cpp
             src/StatisticDef.cpp
+            src/StatisticInstance.cpp
             src/StatisticsArchives.cpp
             src/StatisticsStreams.cpp
             src/StatsMapping.cpp
@@ -129,6 +114,8 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   message (STATUS "Building Sparta in Release With Debug Info mode")
 elseif (CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
   message (STATUS "Building Sparta in Release Minimal Size mode")
+elseif (CMAKE_BUILD_TYPE STREQUAL "Profile")
+  message (STATUS "Building Sparta with Profile support")
 else ()
   message (FATAL_ERROR "Unknown CMAKE_BUILD_TYPE.  See README.md OR type 'make' at the SPARTA root")
 endif ()
@@ -145,7 +132,7 @@ endif ()
 
 # -Wpedantic
 add_definitions(-DSPARTA_VERSION=\"${GIT_REPO_VERSION}\" -DRAPIDJSON_NOMEMBERITERATORCLASS)
-add_compile_options(-Werror -fPIC
+add_compile_options(-Werror -fPIC -Wdeprecated -pedantic -Wextra
   -Wall -Wextra -Winline -Winit-self -Wno-unused-function
   -Wuninitialized -Wno-sequence-point -Wno-inline -Wno-unknown-pragmas
   -Woverloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers)
@@ -165,6 +152,9 @@ if (ENABLE_SANITIZERS)
     add_compile_options(-fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined)
     set (CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
 endif ()
+
+set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg -g")
+set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g3")
 
 #
 # If we're using CONDA, we might be using the one suggested for
@@ -191,6 +181,8 @@ if (USING_CONDA)
   endif()
 endif()
 
+message(STATUS "Using Compiler ${CMAKE_CXX_COMPILER_ID}, Version: ${CMAKE_CXX_COMPILER_VERSION}")
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # using Clang
   # -stdlib=libc++
@@ -203,10 +195,9 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # using Visual Studio C++
 endif ()
 
-# Add a custom CMake Modules directory
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
-
 # CppCheck Support
+# Add a custom CMake Modules directory
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 set (CPPCHECK_XML_OUTPUT "${PROJECT_BINARY_DIR}/analysis/cppcheck/cppcheck_analysis.xml")
 set (CPPCHECK_EXCLUDES
   ${MAP_BINARY_DIR}
@@ -215,7 +206,13 @@ set (CPPCHECK_EXCLUDES
 find_package (Cppcheck)
 
 add_library (sparta ${SourceCppFiles})
+
+# Add local includes
+target_include_directories (sparta PUBLIC "./")
+target_include_directories (sparta PUBLIC "simdb/include")
+
 set (SPARTA_STATIC_LIBS ${PROJECT_BINARY_DIR}/libsparta.a)
+set (SPARTA_CMAKE_MACRO_PATH ${SPARTA_BASE}/cmake)
 
 # Build the SimDB library
 add_subdirectory (simdb)
@@ -226,9 +223,10 @@ add_subdirectory (simdb)
 add_subdirectory (test EXCLUDE_FROM_ALL)
 add_subdirectory (example EXCLUDE_FROM_ALL)
 
-
 #
 # Installation
 #
 install(DIRECTORY sparta/ DESTINATION include/sparta)
+install(DIRECTORY cache/ DESTINATION include/cache)
 install(FILES ${SPARTA_STATIC_LIBS} DESTINATION lib)
+install(DIRECTORY cmake/ DESTINATION lib/cmake/sparta)

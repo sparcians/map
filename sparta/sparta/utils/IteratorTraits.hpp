@@ -10,7 +10,7 @@
 namespace sparta::utils
 {
     // C++17 deprecates the `std::iterator` in lieu of developers
-    // being explicit on thier trait types for defining their own
+    // being explicit on their trait types for defining their own
     // iterators. For Sparta, we'll put 'em back.
     template<class category, class T>
     struct IteratorTraits {
@@ -20,4 +20,5 @@ namespace sparta::utils
         using reference       = const T&;
         using iterator_category = category;
     };
+
 }

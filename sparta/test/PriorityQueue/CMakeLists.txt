@@ -1,0 +1,5 @@
+project(PriorityQueue_test)
+
+sparta_add_test_executable(PriorityQueue_test PriorityQueue_test.cpp)
+
+sparta_test(PriorityQueue_test)

@@ -108,7 +108,7 @@ protected:
         out << "\"" << leaf_name << "\"" << ": {" ;
 
         int elements_=0;
-        for (const Report::stat_pair_t& si : r->getStatistics()) {
+        for (const statistics::stat_pair_t& si : r->getStatistics()) {
             if(si.first != ""){
                 if(elements_ > 0){
                     out << ", ";

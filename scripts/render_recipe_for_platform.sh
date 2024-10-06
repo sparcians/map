@@ -47,14 +47,21 @@ fi
 
 case "$(uname)" in
     Darwin)
-	conda_platform='osx_64'
+        case "$(uname -m)" in
+            x86_64)
+	            conda_platform='osx_64'
+                ;;
+            arm64)
+	            conda_platform='osx_arm64'
+                ;;
+        esac
 	;;
     Linux)
         conda_platform='linux_64'
 	;;
     *)
-	echo "::ERROR:: Unknown uname '$(uname)'"
-	exit 1
+	    echo "::ERROR:: Unknown uname '$(uname)'"
+	    exit 1
 	;;
 esac
 
@@ -84,7 +91,8 @@ echo "Rendering recipe in $PWD/conda.recipe"
 # from 'conda render'
 export SYSTEM_DEFAULTWORKINGDIRECTORY="$PWD"
 
-
+# Make sure to have conda-forge channel to resolve dependencies
+conda config --add channels conda-forge
 # Render the recipe into a fully-resolved yaml file
 (set -x; conda render -m "$variant_file" --file "$rendered_output" conda.recipe)
 

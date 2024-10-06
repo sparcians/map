@@ -13,6 +13,10 @@
 #include <sstream>
 #include <math.h>
 #include <string>
+#include <filesystem>
+
+//SQLite-specific headers
+#include <zlib.h>
 
 #include "sparta/parsers/YAMLTreeEventHandler.hpp"
 #include "sparta/utils/Printing.hpp"
@@ -37,11 +41,6 @@
 #include "sparta/report/db/StatInstRowIterator.hpp"
 #include "sparta/report/db/StatInstValueLookup.hpp"
 #include "sparta/report/db/DatabaseContextCounter.hpp"
-
-//SQLite-specific headers
-#include "zlib.h"
-
-#include "boost/filesystem.hpp"
 
 namespace sparta
 {
@@ -117,6 +116,14 @@ class ReportFileParserYAML
          * allowed
          */
         std::stack<bool> in_content_stack_;
+
+        /*!
+         * \brief Are we accepting the stats inside the current content block?
+         * An example of when we do not accept stats is when we are parsing
+         * a content block for an arch that does not match the --arch at the
+         * command line.
+         */
+        bool skip_content_leaves_ = false;
 
         // Did we find an 'ignore' block?
         bool in_ignore_ = false;
@@ -303,6 +310,12 @@ class ReportFileParserYAML
                           << "\" and key \"" << assoc_key << "\" in report " << *r << std::endl;
 
                 if(in_content){
+                    if(skip_content_leaves_){
+                        verbose() << indent_() << "Skipping content due to arch mismatch ("
+                                  << assoc_key << " : " << value << ")" << std::endl;
+                        return;
+                    }
+
                     std::string full_name = value;
                     if(getSubstituteForStatName(full_name, n, captures)){
                         r->add(n, full_name);
@@ -326,13 +339,26 @@ class ReportFileParserYAML
             }
         }
 
-        bool handleLeafScalarUnknownKey_(TreeNode* n,
+        bool handleLeafScalarUnknownKey_(TreeNode* node_context,
                                          const std::string& value,
                                          const std::string& assoc_key,
-                                         const NavNode& scope) override {
-            sparta_assert(n);
+                                         const NavNode& scope) override
+        {
+            sparta_assert(node_context);
             bool in_content = in_content_stack_.top();
-            //Report* const r = report_stack_.top();
+
+            auto add_expression = [this, &node_context, &value, &scope] (Expression & expr)
+                                  {
+                                      // Build the StatisticInstance responsible for evaluating.
+                                      StatisticInstance si(std::move(expr));
+                                      si.setContext(node_context);
+                                      std::string full_name = value;
+                                      auto& captures = scope.second;
+                                      Report* const r = report_map_.at(scope.uid);
+                                      if(this->getSubstituteForStatName(full_name, node_context, captures)){
+                                          r->add(si, full_name);
+                                      }
+                                  };
 
             if(in_content){
                 if(current_autopop_block_.size() > 0){
@@ -382,7 +408,7 @@ class ReportFileParserYAML
 
                                 // Get child node from path string.
                                 const auto child_node =
-                                    path_in_report.empty() ? n : n->getChild(path_in_report);
+                                    path_in_report.empty() ? node_context : node_context->getChild(path_in_report);
 
                                 // Attempt to cast to cycle_histogram node.
                                 const auto cycle_histogram_node = dynamic_cast<sparta::CycleHistogramTreeNode*>(child_node);
@@ -404,15 +430,8 @@ class ReportFileParserYAML
                                         value, bound_fcn,
                                         statistics::expression::Expression(0.0));
 
-                                    // Build the StatisticInstance responsible for evaluating.
-                                    StatisticInstance si(std::move(expr));
-                                    si.setContext(n);
-                                    std::string full_name = value;
-                                    auto& captures = scope.second;
-                                    Report* const r = report_map_.at(scope.uid);
-                                    if(getSubstituteForStatName(full_name, n, captures)){
-                                        r->add(si, full_name);
-                                    }
+                                    // Add the expresssion
+                                    add_expression(expr);
                                 }
                                 else{
                                     // Attempt to cast to histogram node.
@@ -433,45 +452,30 @@ class ReportFileParserYAML
                                             value, bound_fcn,
                                             statistics::expression::Expression(0.0));
 
-                                        // Build the StatisticInstance responsible for evaluating.
-                                        StatisticInstance si(std::move(expr));
-                                        si.setContext(n);
-                                        std::string full_name = value;
-                                        auto& captures = scope.second;
-                                        Report* const r = report_map_.at(scope.uid);
-                                        if(getSubstituteForStatName(full_name, n, captures)){
-                                            r->add(si, full_name);
-                                        }
+                                        // Add the expresssion
+                                        add_expression(expr);
                                     }
                                 }
                             }
                             else{
-                                statistics::expression::Expression expr(assoc_key, n);
-                                StatisticInstance si(std::move(expr));
-                                si.setContext(n);
-                                std::string full_name = value;
-                                auto& captures = scope.second;
                                 Report* const r = report_map_.at(scope.uid);
-                                if(getSubstituteForStatName(full_name, n, captures)){
-                                    r->add(si, full_name);
-                                }
+                                statistics::expression::Expression expr(assoc_key, node_context, r->getStatistics());
+
+                                // Add the expresssion
+                                add_expression(expr);
                             }
                         }
                         else{
-                            statistics::expression::Expression expr(assoc_key, n);
-                            StatisticInstance si(std::move(expr));
-                            si.setContext(n);
-                            std::string full_name = value;
-                            auto& captures = scope.second;
                             Report* const r = report_map_.at(scope.uid);
-                            if(getSubstituteForStatName(full_name, n, captures)){
-                                r->add(si, full_name);
-                            }
+                            statistics::expression::Expression expr(assoc_key, node_context, r->getStatistics());
+
+                            // Add the expresssion
+                            add_expression(expr);
                         }
                     }catch(SpartaException& ex){
                         std::stringstream ss;
                         ss << "Unable to parse expression: \"" << assoc_key << "\" within context: "
-                            << n->getLocation() << " in report file \"" <<  getFilename()
+                            << node_context->getLocation() << " in report file \"" <<  getFilename()
                             << "\" for the following reason: " << ex.what();
                         if(in_optional_) {
                             // Possibly in an optional block where the
@@ -540,9 +544,9 @@ class ReportFileParserYAML
                                      NavVector& device_trees) override {
             sparta_assert(report_stack_.size() > 0);
 
-            boost::filesystem::path filepath = filename;
-            if(false == boost::filesystem::is_regular_file(filepath.native())){
-                boost::filesystem::path curfile(getFilename());
+            std::filesystem::path filepath = filename;
+            if(false == std::filesystem::is_regular_file(filepath.native())){
+                std::filesystem::path curfile(getFilename());
                 filepath = curfile.parent_path() / filename;
                 verbose() << "Note: file \"" << filename << "\" does not exist. Attempting to "
                              "open \"" << filepath.native() << "\" instead" << std::endl;
@@ -587,6 +591,10 @@ class ReportFileParserYAML
         }
 
         bool isReservedKey_(const std::string& key) const override {
+            if (key.find("-arch-content") != std::string::npos) {
+                return true;
+            }
+
             return (key == KEY_REPORT
                     || key == KEY_SUBREPORT
                     || key == KEY_CONTENT
@@ -610,6 +618,7 @@ class ReportFileParserYAML
 
         bool handleEnterMap_(const std::string& key,
                              NavVector& context) override {
+
             bool in_content = in_content_stack_.top();
             //Report* const r = report_stack_.top();
             sparta_assert(report_stack_.size() > 0);
@@ -741,6 +750,52 @@ class ReportFileParserYAML
                     in_content_stack_.push(false);
                     return false;
                 }else{
+                    const auto idx = key.find("-arch-content");
+                    if (idx != std::string::npos) {
+                        app::Simulation *sim = nullptr;
+                        if (base_report_) {
+                            if (auto ctx = base_report_->getContext()) {
+                                sim = ctx->getSimulation();
+                            }
+                        }
+
+                        if (!sim) {
+                            throw SpartaException("Could not get the app::Simulation to parse key: ") << key;
+                        }
+
+                        if (auto sim_config = sim->getSimulationConfiguration()) {
+                            skip_content_leaves_ = true;
+                            bool dash_arch_given = false;
+                            for (const auto &kvp : sim_config->getRunMetadata()) {
+                                if (kvp.first == "arch") {
+                                    dash_arch_given = true;
+                                    if (kvp.second + "-arch-content" == key) {
+                                        skip_content_leaves_ = false;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (!dash_arch_given) {
+                                skip_content_leaves_ = false;
+                                verbose() << indent_() << "WARNING: You should consider using --arch at "
+                                          << "the command line together with the *-arch-content blocks "
+                                          << "in your report definition YAML file. This content block "
+                                          << "will be treated as normal (not filtered for --arch)."
+                                          << std::endl;
+                            }
+
+                            if (skip_content_leaves_) {
+                                verbose() << indent_() << "Skipping '" << key << "' block since it does "
+                                          << "not match the --arch given at the command line.";
+                            }
+
+                            in_content_stack_.push(true);
+                            return false;
+                        } else {
+                            throw SpartaException("Could not get the app::SimulationConfiguration to parse key: ") << key;
+                        }
+                    }
 
                     //std::stringstream ss;
                     //ss << "Unexpected map start (key = \"" << key << "\") outside of a \"content\" section";
@@ -888,6 +943,12 @@ class ReportFileParserYAML
                         }
                     }
                     trigger_defn_.reset();
+                }else{
+                    const auto idx = key.find("-arch-content");
+                    if (idx != std::string::npos) {
+                        skip_content_leaves_ = false;
+                        return false;
+                    }
                 }
             }
 
@@ -912,7 +973,7 @@ class ReportFileParserYAML
             if(itr == next_uid_map_.end()){
                 // Inherit form parent, no entry in the map
                 verbose() << indent_() << "(getNextNodeID_) parent entry: " << *parent
-                          << " not found. in map. Inheriting parent uid " << parent->uid << std::endl;
+                          << " not found in map. Inheriting parent uid " << parent->uid << std::endl;
                 verbose() << indent_() << "(getNextNodeID_) next uid map (" << next_uid_map_.size()
                           << " entries):" << std::endl;
                 for(auto& e : next_uid_map_){
@@ -1160,19 +1221,156 @@ private:
     std::string filename_; //!< For recalling errors
 }; // class ReportFileParserYAML
 
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_REPORT[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_SUBREPORT[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_CONTENT[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_NAME[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTHOR[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE_ATTRIBUTES[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE_MAX_RECURSION_DEPTH[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_AUTOPOPULATE_MAX_REPORT_DEPTH[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_STYLE[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_TRIGGER[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_REPORT_IGNORE[];
-constexpr char ReportFileParserYAML::ReportFileEventHandlerYAML::KEY_REPORT_OPTIONAL[];
+Report::StatAdder Report::add(const StatisticInstance& si, const std::string& name) {
+    if(name != "" && stat_names_.find(name) != stat_names_.end()){
+        throw SpartaException("There is already a statistic instance in this Report (")
+            << getName() << ") named \"" << name << "\" pointing to "
+            << getStatistic(name).getLocation()
+            << " and the new stat would be pointing to a StatisticInstance "
+            << si.getExpressionString();
+    }
+
+    // Track a new stat with helpful exception wrapping
+    addField_(name, si);
+
+    if(name != ""){ stat_names_.insert(name); }
+
+    addSubStatistics_(&si);
+
+    return Report::StatAdder(*this);
+}
+
+Report::StatAdder Report::add(StatisticInstance&& si, const std::string& name) {
+    if(name != "" && stat_names_.find(name) != stat_names_.end()){
+        throw SpartaException("There is already a statistic instance in this Report (")
+            << getName() << ") named \"" << name << "\" pointing to "
+            << getStatistic(name).getLocation()
+            << " and the new stat would be pointing to a StatisticInstance "
+            << si.getExpressionString();
+    }
+
+    // Track a new stat with helpful exception wrapping
+    addField_(name, si);
+
+    if(name != ""){ stat_names_.insert(name); }
+
+    addSubStatistics_(&si);
+
+    return Report::StatAdder(*this);
+}
+
+Report::StatAdder Report::add(StatisticDef* sd, const std::string& name) {
+    sparta_assert(sd);
+    if(name != "" && stat_names_.find(name) != stat_names_.end()){
+        throw SpartaException("There is already a statistic instance in this Report (")
+            << getName() << ") named \"" << name << "\" pointing to "
+            << getStatistic(name).getLocation()
+            << " and the new stat would be the the statistic def at "
+            << sd->getLocation() << " with the expression \""
+            << sd->getExpression() << "\"";
+    }
+
+    // Track a new stat with helpful exception wrapping
+    addField_(name, sd);
+
+    if(name != ""){ stat_names_.insert(name); }
+
+    return Report::StatAdder(*this);
+}
+
+Report::StatAdder Report::add(CounterBase* ctr, const std::string& name) {
+    sparta_assert(ctr);
+    if(name != "" && stat_names_.find(name) != stat_names_.end()){
+        throw SpartaException("There is already a statistic instance in this Report (")
+            << getName() << ") named \"" << name << "\" pointing to "
+            << getStatistic(name).getLocation()
+            << " and the new stat would be the counter to "
+            << ctr->getLocation();
+    }
+
+    // Track a new stat with helpful exception wrapping
+    addField_(name, ctr);
+
+    if(name != ""){ stat_names_.insert(name); }
+
+    return Report::StatAdder(*this);
+}
+
+Report::StatAdder Report::add(const TreeNode* n, const std::string& name) {
+    sparta_assert(n);
+    if(name != "" && stat_names_.find(name) != stat_names_.end()){
+        throw SpartaException("There is already a statistic instance in this Report (")
+            << getName() << ") named \"" << name << "\" pointing to "
+            << getStatistic(name).getLocation()
+            << " and the new stat would be the node to "
+            << n->getLocation();
+    }
+
+    // Track a new stat with helpful exception wrapping
+    addField_(name, n);
+
+    if(name != ""){ stat_names_.insert(name); }
+
+    return Report::StatAdder(*this);
+}
+
+Report::StatAdder Report::add(const std::string& expression, const std::string& name) {
+    if(name != "" && stat_names_.find(name) != stat_names_.end()){
+        throw SpartaException("There is already a statistic instance in this Report (")
+            << getName() << ") named \"" << name << "\" pointing to "
+            << getStatistic(name).getLocation()
+            << " and the new stat would be the expression \""
+            << expression << "\"";
+    }
+    if(nullptr == context_){
+        throw SpartaException("This report currently has no context. To add an item by "
+                              "expression \"")
+            << expression << "\", specify a context TreeNode using setContext as the "
+            "context from which TreeNodes can be searched for";
+    }
+
+    if(TreeNodePrivateAttorney::hasChild(context_, expression)){
+        // Add as a TreeNode statistic
+        add(TreeNodePrivateAttorney::getChild(context_, expression), name);
+    }else{
+        statistics::expression::Expression expr(expression, context_);
+        StatisticInstance si(std::move(expr));
+        add(std::move(si), name);
+    }
+
+    return Report::StatAdder(*this);
+}
+
+Report::StatAdder Report::add(const std::vector<TreeNode*>& nv) {
+    for(TreeNode* n : nv){
+        add(n);
+    }
+    return Report::StatAdder(*this);
+}
+
+Report::StatAdder Report::addSubStats(StatisticDef * n, const std::string & name_prefix) {
+    sparta_assert(auto_expand_context_counter_stats_,
+                  "Call to Report::addSubStats(StatisticDef*, name_prefix) is not "
+                  "allowed since ContextCounter auto-expansion is disabled. Enable "
+                  "this by calling Report::enableContextCounterAutoExpansion()");
+    for (const auto & sub_stat : n->getSubStatistics()) {
+        TreeNode * sub_stat_node = const_cast<TreeNode*>(sub_stat.getNode());
+        const std::string prefix =
+            !name_prefix.empty() ? name_prefix : sub_stat_node->getLocation();
+        const std::string sub_stat_name = prefix + "." + sub_stat.getName();
+        add(sub_stat_node, sub_stat_name);
+    }
+    return Report::StatAdder(*this);
+}
+
+void Report::accumulateStats() const {
+    for (const auto & stat : stats_) {
+        stat.second->accumulateStatistic();
+    }
+    for (const auto & sr : getSubreports()) {
+        sr.accumulateStats();
+    }
+}
 
 void Report::addFile(const std::string& file_path, bool verbose)
 {
@@ -1662,87 +1860,6 @@ std::unique_ptr<StatisticInstance> createSIFromSimDB(
 }
 
 /*!
- * \brief This method lets SimDB-recreated Report objects
- * set placeholders this SI will soon use to get
- * SI data values directly from a SimDB blob (not
- * from an actual simulation).
- */
-void StatisticInstance::setSIValueDirectLookupPlaceholder(
-    const std::shared_ptr<sparta::StatInstValueLookup> & direct_lookup)
-{
-    direct_lookup_si_value_ = direct_lookup;
-}
-
-/*!
- * \brief Our StatInstValueLookup *placeholder* object
- * needs to bind itself to a StatInstRowIterator object,
- * since these two classes go hand in hand. Now that we're
- * being given the row iterator, we can use it to "realize"
- * our "SI direct value lookup" object now.
- */
-void StatisticInstance::realizeSIValueDirectLookup(
-    const StatInstRowIterator & si_row_iterator)
-{
-    if (direct_lookup_si_value_ != nullptr) {
-        auto realized_lookup = direct_lookup_si_value_->
-            realizePlaceholder(si_row_iterator.getRowAccessor());
-
-        sparta_assert(realized_lookup != nullptr);
-        direct_lookup_si_value_.reset(realized_lookup);
-    }
-}
-
-/*!
- * \brief If this SI is using a StatInstValueLookup object
- * to get its SI values, ask if this direct-lookup object
- * can be used to get the current SI value.
- */
-bool StatisticInstance::isSIValueDirectLookupValid() const
-{
-    if (direct_lookup_si_value_ == nullptr) {
-        return false;
-    }
-
-    //The following function call throws if this direct
-    //lookup object is a placeholders::StatInstValueLookup
-    //which has not yet been realized.
-    try {
-        return direct_lookup_si_value_->isIndexValidForCurrentRow();
-    } catch (...) {
-    }
-
-    return false;
-}
-
-/*!
- * \brief Ask the StatInstValueLookup object for our current
- * SI value. Throws an exception if the direct-value object
- * is not being used.
- */
-double StatisticInstance::getCurrentValueFromDirectLookup_() const
-{
-    if (direct_lookup_si_value_ == nullptr) {
-        throw SpartaException("StatisticInstance asked for its SI ")
-            << "value from a null direct-lookup object";
-    }
-
-    sparta_assert(getInitial() == 0,
-                "Unexpectedly encountered a StatisticInstance that "
-                "was created from a SimDB record, but whose SI offset "
-                "value (SI::getInitial()) was not zero. This is a bug.");
-
-    //The following function call throws if this direct
-    //lookup object is a placeholders::StatInstValueLookup
-    //which has not yet been realized.
-    try {
-        return direct_lookup_si_value_->getCurrentValue();
-    } catch (...) {
-    }
-
-    return NAN;
-}
-
-/*!
  * \brief Starting with the given report node database ID,
  * find its root report node ID in the provided database.
  */
@@ -2227,7 +2344,7 @@ void Report::recursGetReportAndSINodeDatabaseIDs_(
 
     sparta_assert(stats_.size() == si_node_ids_.size());
     for (size_t idx = 0; idx < stats_.size(); ++idx) {
-        si_nodes_by_id[si_node_ids_[idx]] = stats_[idx].second;
+        si_nodes_by_id[si_node_ids_[idx]] = stats_[idx].second.get();
     }
 
     for (auto & sr : subreps_) {

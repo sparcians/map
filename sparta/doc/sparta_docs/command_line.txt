@@ -32,7 +32,7 @@
   simulated tree to stderr (2)<br/>
   <i>Note that this assumes nodes called core0 and core1 as children of the 'top' root node</i>.<br />
   \verbatim
-  $ ./sim -l top.core0 "" cores.log -l top warning 2
+  $ ./sim -l top.core0 "" 1 -l top warning 2
   \endverbatim
 
   <br/>Note that the logging system is smart about routing multiple overlapping trees to the same output

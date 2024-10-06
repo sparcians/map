@@ -338,7 +338,6 @@ namespace sparta
 
 
 
-    }; // namespace cache
+    } // namespace cache
 
-}; // namespace sparta
-
+} // namespace sparta

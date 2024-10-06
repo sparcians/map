@@ -379,6 +379,7 @@ public:
     //! Force the sleeper thread to pause. Should be called before the Scheduler exits running
     void pause() override
     {
+        if(paused_) { return; }
         if (thread_spawned_){
             paused_ = true;
             pthread_mutex_lock(&pause_mutex_);

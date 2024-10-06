@@ -5,7 +5,7 @@
 #include "sparta/utils/Enum.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 using sparta::utils::Enum;
 using namespace std;

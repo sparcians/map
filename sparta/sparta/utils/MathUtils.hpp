@@ -15,29 +15,9 @@ namespace sparta {
     namespace utils {
 
         inline double log2 (double x) {
-            double y = std::log(x) / std::log(2.0);
-            return y;
-        }
-
-        inline uint64_t floor_log2 (uint64_t x)
-        {
-            // floor_log2(x) is the index of the most-significant 1 bit of x.
-            uint64_t y = 0;
-            while (x >>= 1) {
-                y++;
-            }
-            return y;
-        }
-
-        inline uint64_t ceil_log2 (uint64_t x)
-        {
-            // If x is a power of 2 then ceil_log2(x) is floor_log2(x).
-            // Otherwise ceil_log2(x) is floor_log2(x) + 1.
-            uint64_t y = floor_log2(x);
-            if ((static_cast<uint64_t>(1) << y) != x) {
-                y++;
-            }
-            return y;
+            // double y = std::log(x) / std::log(2.0);
+            // return y;
+            return std::log2(x);
         }
 
         template <class T>
@@ -88,6 +68,94 @@ namespace sparta {
             static const uint64_t debruijn64 = 0x07EDD5E59A4E28C2ull;
 
             return index64[((x & -x) * debruijn64) >> 58];
+        }
+
+        template <class T>
+        inline uint64_t floor_log2(T x)
+        {
+            // floor_log2(x) is the index of the most-significant 1 bit of x.
+            // (This is the old iterative version)
+            // NOTE: This function returns 0 for log2(0), but mathematically, it should be undefined
+            // throw SpartaException("floor_log2(0) is undefined");
+            uint64_t y = 0;
+            while (x >>= 1) {
+                y++;
+            }
+            return y;
+        }
+
+        template<>
+        inline uint64_t floor_log2<double>(double x)
+        {
+            return std::floor(log2(x));
+        }
+
+        template <>
+        inline uint64_t floor_log2<uint32_t>(uint32_t x)
+        {
+            if (x == 0) {
+                // NOTE: This function returns 0 for log2(0) for compatibility with the old version,
+                // but mathematically, it should be undefined
+                // throw SpartaException("floor_log2(0) is undefined");
+                return 0;
+            }
+
+            // This is a fast floor(log2(x)) based on DeBrujin's algorithm
+            // (based on generally available and numerous sources)
+            static const uint64_t lut[] = {
+                0,  9,  1, 10, 13, 21,  2, 29,
+                11, 14, 16, 18, 22, 25,  3, 30,
+                8, 12, 20, 28, 15, 17, 24,  7,
+                19, 27, 23,  6, 26,  5,  4, 31};
+
+            x |= x >> 1;
+            x |= x >> 2;
+            x |= x >> 4;
+            x |= x >> 8;
+            x |= x >> 16;
+            return lut[(uint32_t)(x * 0x07C4ACDDul) >> 27];
+        }
+
+        template <>
+        inline uint64_t floor_log2<uint64_t>(uint64_t x)
+        {
+            if (x == 0) {
+                // NOTE: This function returns 0 for log2(0) for compatibility with the old version,
+                // but mathematically, it should be undefined
+                // throw SpartaException("floor_log2(0) is undefined");
+                return 0;
+            }
+
+            // This is a fast floor(log2(x)) based on DeBrujin's algorithm
+            // (based on generally available and numerous sources)
+            static const uint64_t lut[] = {
+                    63,  0, 58,  1, 59, 47, 53,  2,
+                    60, 39, 48, 27, 54, 33, 42,  3,
+                    61, 51, 37, 40, 49, 18, 28, 20,
+                    55, 30, 34, 11, 43, 14, 22,  4,
+                    62, 57, 46, 52, 38, 26, 32, 41,
+                    50, 36, 17, 19, 29, 10, 13, 21,
+                    56, 45, 25, 31, 35, 16,  9, 12,
+                    44, 24, 15,  8, 23,  7,  6,  5};
+
+            x |= x >> 1;
+            x |= x >> 2;
+            x |= x >> 4;
+            x |= x >> 8;
+            x |= x >> 16;
+            x |= x >> 32;
+            return lut[((uint64_t)((x - (x >> 1)) * 0x07EDD5E59A4E28C2ull)) >> 58];
+        }
+
+        inline uint64_t ceil_log2 (uint64_t x)
+        {
+            // If x is a power of 2 then ceil_log2(x) is floor_log2(x).
+            // Otherwise ceil_log2(x) is floor_log2(x) + 1.
+            uint64_t y = floor_log2(x);
+            if ((static_cast<uint64_t>(1) << y) != x) {
+                y++;
+            }
+            return y;
         }
 
         inline uint64_t pow2 (uint64_t x) {

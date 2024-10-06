@@ -15,7 +15,7 @@
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/app/Simulation.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 // Test result constants
 const uint32_t EXPECTED_NUM_PARAMS = 59;

@@ -11,7 +11,7 @@
 #include "sparta/ports/SignalPort.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 using namespace std;
 

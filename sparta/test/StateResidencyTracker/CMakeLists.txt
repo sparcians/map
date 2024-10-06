@@ -1,5 +1,4 @@
 project(StateResidencyTracker_test)
 sparta_add_test_executable(StateResidencyTracker_test StateResidencyTracker_test.cpp)
-include(../TestingMacros.cmake)
 sparta_test(StateResidencyTracker_test StateResidencyTracker_test_RUN)
 

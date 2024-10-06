@@ -5,19 +5,27 @@
 jobs:
 - job: osx
   pool:
-    vmImage: macOS-10.15
+    vmImage: macOS-12
   strategy:
     matrix:
       osx_64_:
         CONFIG: osx_64_
         UPLOAD_PACKAGES: 'False'
         SHORT_CONFIG: osx_64_
+      osx_arm64_:
+        CONFIG: osx_arm64_
+        UPLOAD_PACKAGES: 'False'
+        SHORT_CONFIG: osx_arm64_
   timeoutInMinutes: 360
+  variables: {}
 
   steps:
   # TODO: Fast finish on azure pipelines?
   - script: |
       export CI=azure
+      export flow_run_id=azure_$(Build.BuildNumber).$(System.JobAttempt)
+      export remote_url=$(Build.Repository.Uri)
+      export sha=$(Build.SourceVersion)
       export OSX_FORCE_SDK_DOWNLOAD="1"
       export GIT_BRANCH=$BUILD_SOURCEBRANCHNAME
       export FEEDSTOCK_NAME=$(basename ${BUILD_REPOSITORY_NAME})
@@ -46,15 +54,6 @@ jobs:
       ./.scripts/create_conda_build_artifacts.sh
     displayName: Prepare conda build artifacts
     condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    condition: succeededOrFailed()
-    inputs:
-        testResultsFormat: 'cTest'
-        testResultsFiles: '**/Test.xml'
-        mergeTestResults: false # Unclear on impact of setting this true
-        failTaskOnFailedTests: true
-        publishRunAttachments: true # uploads xml files for possible inspection
 
   - task: PublishPipelineArtifact@1
     displayName: Store conda build artifacts

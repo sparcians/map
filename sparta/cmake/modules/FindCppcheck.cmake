@@ -117,7 +117,7 @@ endif ()
 # handle the QUIETLY and REQUIRED arguments and set YAMLCPP_FOUND to TRUE if all listed variables are TRUE
 include (FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS (
-  CPPCHECK
+  Cppcheck
   DEFAULT_MSG
   CPPCHECK_BIN)
 

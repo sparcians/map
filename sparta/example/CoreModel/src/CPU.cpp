@@ -3,9 +3,6 @@
 
 #include "CPU.hpp"
 
-//! \brief Name of this resource. Required by sparta::UnitFactory
-constexpr char core_example::CPU::name[];
-
 //! \brief Constructor of this CPU Unit
 core_example::CPU::CPU(sparta::TreeNode* node, const core_example::CPU::CPUParameterSet* params) :
     sparta::Unit{node},

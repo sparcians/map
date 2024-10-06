@@ -1,5 +1,5 @@
 
-#include "RegisterBits.hpp"
+#include "sparta/functional/Register.hpp"
 #include <iostream>
 #include <iomanip>
 

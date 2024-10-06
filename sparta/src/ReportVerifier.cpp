@@ -2,13 +2,11 @@
 
 #include "sparta/report/db/ReportVerifier.hpp"
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/path_traits.hpp>
 #include <map>
 #include <utility>
 #include <iostream>
 #include <iterator>
+#include <filesystem>
 
 #include "simdb/ObjectManager.hpp"
 #include "simdb/ObjectRef.hpp"
@@ -331,15 +329,15 @@ public:
         }
 
         //Trim away any leading '/' characters. They trip up
-        //the boost::filesystem::copy_file() calls.
+        //the std::filesystem::copy_file() calls.
         std::map<std::string, std::string> trimmed_fnames;
         for (auto & simdb_to_yaml : simdb_to_yaml_dest_files) {
-            namespace bfs = boost::filesystem;
-            bfs::path p(simdb_to_yaml.second);
+            namespace sfs = std::filesystem;
+            sfs::path p(simdb_to_yaml.second);
             std::string to;
 
             auto parent_path = p.parent_path();
-            if (!bfs::is_directory(parent_path)) {
+            if (!sfs::is_directory(parent_path)) {
                 auto not_slash = simdb_to_yaml.second.find_first_not_of("/");
                 if (not_slash != std::string::npos) {
                     to = simdb_to_yaml.second.substr(not_slash);

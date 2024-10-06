@@ -45,7 +45,7 @@
  * \endverbatim
  */
 
-TEST_INIT;
+TEST_INIT
 
 class BaseCore;
 class XCore;

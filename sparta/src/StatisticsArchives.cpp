@@ -11,7 +11,6 @@
 #include <boost/date_time/posix_time/posix_time_config.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/filesystem/operations.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_traits.hpp>
 #include <boost/type_index/type_index_facade.hpp>
@@ -21,6 +20,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <filesystem>
 
 #include "sparta/statistics/dispatch/archives/ReportStatisticsArchive.hpp"
 #include "sparta/statistics/dispatch/archives/StatisticsArchives.hpp"
@@ -196,6 +196,15 @@ void RootArchiveNode::saveTo(const std::string & dir)
     archive_controller_->saveTo(dir);
 }
 
+ArchiveNode::ArchiveNode(const std::string & name) :
+    name_(name)
+{
+}
+
+ArchiveNode::~ArchiveNode()
+{
+}
+
 //Lazily walk up to the top of the tree to get the root node
 RootArchiveNode * ArchiveNode::getRoot()
 {
@@ -268,12 +277,12 @@ void OfflineArchiveController::saveTo(const std::string & dir)
     //in the destination directory.
 
     const std::string binary_filename = source_archive_dir_ + "/values.bin";
-    if (!boost::filesystem::exists(binary_filename)) {
+    if (!std::filesystem::exists(binary_filename)) {
         throw SpartaException("Archive file does not exist: ") << binary_filename;
     }
 
     const std::string archive_tree_filename = source_archive_dir_ + "/archive_tree.bin";
-    if (!boost::filesystem::exists(archive_tree_filename)) {
+    if (!std::filesystem::exists(archive_tree_filename)) {
         throw SpartaException("Archive file does not exist: ") << archive_tree_filename;
     }
 
@@ -296,19 +305,19 @@ void OfflineArchiveController::saveTo(const std::string & dir)
     const std::string dest_archive_dir = oss.str();
 
     const std::string new_binary_filename = dest_archive_dir + "/values.bin";
-    if (boost::filesystem::exists(new_binary_filename)) {
-        boost::filesystem::remove(new_binary_filename);
+    if (std::filesystem::exists(new_binary_filename)) {
+        std::filesystem::remove(new_binary_filename);
     }
 
     const std::string new_archive_tree_filename = dest_archive_dir + "/archive_tree.bin";
-    if (boost::filesystem::exists(new_archive_tree_filename)) {
-        boost::filesystem::remove(new_archive_tree_filename);
+    if (std::filesystem::exists(new_archive_tree_filename)) {
+        std::filesystem::remove(new_archive_tree_filename);
     }
 
     //Create the directories and copy the files over
-    boost::filesystem::create_directories(dest_archive_dir);
-    boost::filesystem::copy_file(binary_filename, new_binary_filename);
-    boost::filesystem::copy_file(archive_tree_filename, new_archive_tree_filename);
+    std::filesystem::create_directories(dest_archive_dir);
+    std::filesystem::copy_file(binary_filename, new_binary_filename);
+    std::filesystem::copy_file(archive_tree_filename, new_archive_tree_filename);
 }
 
 } // namespace statistics

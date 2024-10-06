@@ -49,18 +49,18 @@ add_custom_command(TARGET core_example_regress_valgrind POST_BUILD COMMAND ctest
 #
 # Testing
 #
-include (../../test/TestingMacros.cmake)
 sparta_copy(sparta_core_example *.yaml)
-sparta_copy(sparta_core_example cpu_layout.alf)
+sparta_copy(sparta_core_example gen_layouts.py)
+sparta_recursive_copy(sparta_core_example layouts)
 sparta_recursive_copy(sparta_core_example subdir_yamls*)
 sparta_recursive_copy(sparta_core_example test_configs)
 # build this guy as part of the regress
 sparta_regress(sparta_core_example)
 sparta_named_test(sparta_core_example_20000cycs sparta_core_example -r 200000)
 sparta_named_test(sparta_core_example_fetch_max_ipc sparta_core_example  -i 1M -p top.cpu.core0.fetch.params.fetch_max_ipc true)
-sparta_named_test(sparta_core_example_pipeout sparta_core_example -i 1000 -z pipeout -K cpu_layout.alf)
-sparta_named_test(sparta_core_example_pipeout_icount sparta_core_example -i 1000 --debug-on-icount 100 -z pipeout -K cpu_layout.alf)
-sparta_named_test(sparta_core_example_pipeout_cycle sparta_core_example -i 1000 --debug-on 100 -z pipeout -K cpu_layout.alf)
+sparta_named_test(sparta_core_example_pipeout sparta_core_example -i 1000 -z pipeout -K layouts/cpu_layout.alf)
+sparta_named_test(sparta_core_example_pipeout_icount sparta_core_example -i 1000 --debug-on-icount 100 -z pipeout -K layouts/cpu_layout.alf)
+sparta_named_test(sparta_core_example_pipeout_cycle sparta_core_example -i 1000 --debug-on 100 -z pipeout -K layouts/cpu_layout.alf)
 # Using a standard  YAML causes this test to fail.  Need to investigate Issue #4
 # sparta_named_test(sparta_core_example_preload sparta_core_example -i 1000 -p top.cpu.core0.preloader.params.preload_file sample_preload.yaml)
 sparta_named_test(sparta_core_example_multicore_yaml_opts_smoke_test sparta_core_example -i 10k --report top multicore_report_opts_basic.yaml out.txt --num-cores 2)
@@ -154,6 +154,8 @@ sparta_named_test_no_valgrind(sparta_core_example_simdb_configure_opts6_wildcard
 sparta_named_test_no_valgrind(sparta_core_example_simdb_perf_async_task_controller sparta_core_example -i 50k --feature simdb-perf-async-ctrl 1)
 sparta_named_test(sparta_core_example_collect_legacy_reports sparta_core_example -i 10k --report all_json_formats.yaml --collect-legacy-reports collection/dir)
 sparta_named_test(sparta_core_example_collect_legacy_reports_specific_format sparta_core_example -i 10k --report all_json_formats.yaml --collect-legacy-reports collection/dir json json_reduced)
+sparta_named_test(sparta_core_example_arch_report_simple sparta_core_example -i 10k --arch simple --arch-search-dir . --report top arch_report.yaml 1)
+sparta_named_test(sparta_core_example_arch_report_default sparta_core_example -i 10k --report top arch_report.yaml 1)
 
 # get_target_property(OUT sparta_core_example LINK_LIBRARIES)
 # message(STATUS "THIS OUT: ${OUT}")

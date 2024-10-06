@@ -986,8 +986,8 @@ namespace sparta
             addr_t block_offset_mask_;
 
         }; // class SimpleMemoryMap
-    }; // namespace memory
-}; // namespace sparta
+    } // namespace memory
+} // namespace sparta
 
 
 //! \brief SimpleMemoryMap stream operator

@@ -11,7 +11,7 @@
 #include <boost/timer/timer.hpp>
 #include "sparta/kernel/SleeperThread.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 class CycleValidator
 {

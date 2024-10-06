@@ -285,16 +285,20 @@ namespace sparta
         friend SpartaSharedPointer<PtrT>
         allocate_sparta_shared_pointer(SpartaSharedPointerAllocator<PtrT> &, Args&&...args);
 
+        template<typename T>
+        struct AlignedStorage
+        {
+            alignas(T) std::byte buf[sizeof(T)];
+        };
+
         // Internal MemoryBlock
         struct MemBlock : public BaseAllocator::MemBlockBase
         {
             using RefCountType = typename SpartaSharedPointer<PointerT>::RefCount;
 
-            using RefCountAlignedStorage =
-                typename std::aligned_storage<sizeof(RefCountType), alignof(RefCountType)>::type;
+            using RefCountAlignedStorage = AlignedStorage<RefCountType>;
 
-            using PointerTAlignedStorage =
-                typename std::aligned_storage<sizeof(PointerT), alignof(PointerT)>::type;
+            using PointerTAlignedStorage = AlignedStorage<PointerT>;
 
             template<typename ...ObjArgs>
             MemBlock(SpartaSharedPointerAllocator * alloc_in, ObjArgs&&...obj_args) :
@@ -323,8 +327,7 @@ namespace sparta
         class MemBlockVector
         {
             // Align the storage for the MemBlock
-            using MemBlockAlignedStorage =
-                typename std::aligned_storage<sizeof(MemBlock), alignof(MemBlock)>::type;
+            using MemBlockAlignedStorage = AlignedStorage<MemBlock>;
 
             std::vector<MemBlockAlignedStorage> data_;
             std::size_t size_ = 0;

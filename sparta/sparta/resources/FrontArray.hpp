@@ -21,7 +21,7 @@ namespace sparta{
      *        array.
      *
      * \tparam DataT the data type to store in the array.
-     * \tpaam ArrayT the type of array, Aged vs Normal (default Aged)
+     * \tparam ArrayT the type of array, Aged vs Normal (default Aged)
      * \tparam CollectionT the type of pipeline collection to run
      *                     on the Array.
      */

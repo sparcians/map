@@ -26,7 +26,6 @@ sparta_application(dynamic_model_pipeline)
 #
 # Testing
 #
-include (../../test/TestingMacros.cmake)
 sparta_copy(dynamic_model_pipeline *.yaml)
 sparta_copy(dynamic_model_pipeline cpu_layout.alf)
 sparta_recursive_copy(dynamic_model_pipeline subdir_yamls*)

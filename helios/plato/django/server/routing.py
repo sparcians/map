@@ -15,10 +15,10 @@ websocket_urlpatterns = [
     # url(r'^ws/polls/(?<data>[^/]+)/$', dataConsumer.DataConsumer),
     # path(r'ws/polls/<uri>/', dataConsumer.DataConsumer),
     # path(r'ws/branchPredictor/<uri>', bpEndpoint.bpEndpoint),
-    re_path(r'ws/sources', bpEndpoint),
-    re_path(r'ws/getData', bpEndpoint),
+    re_path(r'ws/sources', bpEndpoint.as_asgi()),
+    re_path(r'ws/getData', bpEndpoint.as_asgi()),
     # will handle ws/sources, ws/*
-    re_path(r'ws/utility', utilityEndpoint)
+    re_path(r'ws/utility', utilityEndpoint.as_asgi())
     # path(r'ws/<uri>', bpEndpoint.bpEndpoint)
 ]
 

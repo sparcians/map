@@ -6,10 +6,6 @@
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/any.hpp>
-#include <boost/filesystem/convenience.hpp>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path_traits.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_traits.hpp>
 #include <boost/range/adaptor/reversed.hpp>
@@ -18,6 +14,7 @@
 #include <cstdint>
 #include <ctime>
 #include <exception>
+#include <filesystem>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -27,6 +24,7 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <filesystem>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -239,7 +237,7 @@ public:
         parser_(),
         def_file_(def_file)
     {
-        sparta_assert(boost::filesystem::exists(def_file_),
+        sparta_assert(std::filesystem::exists(def_file_),
                     ("File '" + def_file + "' cannot be found"));
         fin_.open(def_file.c_str(), std::ios::in);
         sparta_assert(fin_.is_open());
@@ -277,15 +275,6 @@ private:
     std::unique_ptr<SimControlFileEventHandlerYAML> evt_handler_;
 };
 
-constexpr char SimControlFileParserYAML::
-    SimControlFileEventHandlerYAML::KEY_CONTENT[];
-constexpr char SimControlFileParserYAML::
-    SimControlFileEventHandlerYAML::KEY_PAUSE[];
-constexpr char SimControlFileParserYAML::
-    SimControlFileEventHandlerYAML::KEY_RESUME[];
-constexpr char SimControlFileParserYAML::
-    SimControlFileEventHandlerYAML::KEY_TERM[];
-
 }
 }
 
@@ -302,7 +291,7 @@ void printSchedulerPerformanceInfo(std::ostream& o, const boost::timer::cpu_time
     //const double MILLION = 1000000;
 
     if(elapsed_user_seconds != 0) {
-        o << "  Simulation Performace      : " << timer.format(4, "wall(%w), system(%s), user(%u)") << std::endl;
+        o << "  Simulation Performance      : " << timer.format(4, "wall(%w), system(%s), user(%u)") << std::endl;
         o << "  Scheduler Tick Rate  (KTPS): "
           << scheduler->getCurrentTick()/elapsed_user_seconds/THOUSAND
           << "  (1k ticks per second)" << std::endl;
@@ -491,6 +480,12 @@ void Simulation::configure(const int argc,
                                                sim_config_->warnings_file));
     }
 
+    // FIXME: Support debug-roi for loggers
+    if(sim_config_->trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI &&
+       !sim_config_->getTaps().empty()) {
+        throw SpartaException("Logging ennoblement is currently not supported with debug-roi. Use --debug or --debug-on-icount");
+    }
+
     // If there are nodes already existing in the tree (e.g. root or "") then
     // there are no notifications for these TreeNodes since they already exist.
     // Install taps immediately instead of through rootDescendantAdded_
@@ -527,7 +522,7 @@ void Simulation::inspectFeatureValues_()
         if (!db_root_) {
             std::string db_dir = sim_config_->getSimulationDatabaseLocation();
             if (db_dir.empty()) {
-                auto tempdir = boost::filesystem::temp_directory_path();
+                auto tempdir = std::filesystem::temp_directory_path();
                 db_dir = tempdir.string();
             }
 
@@ -1183,7 +1178,7 @@ void Simulation::saveReports()
                 verification_summary->serializeSummary(*stats_db_);
             }
 
-            namespace bfs = boost::filesystem;
+            namespace sfs = std::filesystem;
             std::map<std::string, std::string> final_dest_files =
                 verification_summary->getFinalDestFiles();
 
@@ -1200,12 +1195,12 @@ void Simulation::saveReports()
             for (const auto & to_copy : final_dest_files) {
                 const std::string & simdb_dest_file = to_copy.first;
                 const std::string & orig_yaml_dest_file = to_copy.second;
-                if (bfs::exists(simdb_dest_file)) {
+                if (sfs::exists(simdb_dest_file)) {
                     try {
-                        if (bfs::exists(orig_yaml_dest_file)) {
-                            bfs::remove(orig_yaml_dest_file);
+                        if (sfs::exists(orig_yaml_dest_file)) {
+                            sfs::remove(orig_yaml_dest_file);
                         }
-                        bfs::copy_file(simdb_dest_file, orig_yaml_dest_file);
+                        sfs::copy_file(simdb_dest_file, orig_yaml_dest_file);
                     } catch (const std::exception & ex) {
                         std::cout << "  [simdb] Unable to copy report file '"
                                   << simdb_dest_file << "' to '"
@@ -1270,13 +1265,13 @@ void Simulation::postProcessingLastCall()
         for (const auto & rd : rep_descs_) {
             if (rd.isEnabled()) {
                 std::string orig_dest_file = rd.getDescriptorOrigDestFile();
-                if (!boost::filesystem::exists(orig_dest_file)) {
+                if (!std::filesystem::exists(orig_dest_file)) {
                     auto not_slash = orig_dest_file.find_first_not_of("/");
                     if (not_slash != std::string::npos) {
                         orig_dest_file = orig_dest_file.substr(not_slash);
                     }
 
-                    if (!boost::filesystem::exists(orig_dest_file)) {
+                    if (!std::filesystem::exists(orig_dest_file)) {
                         oss << "A report descriptor's dest_file was not "
                             << "found at the end of a SimDB verification-enabled simulation "
                             << "('" << orig_dest_file << "')\n";
@@ -1292,11 +1287,11 @@ void Simulation::postProcessingLastCall()
     }
 
     if (sim_config_ && stats_db_) {
-        namespace bfs = boost::filesystem;
+        namespace sfs = std::filesystem;
         const std::string dest_path_str1 = sim_config_->getLegacyReportsCopyDir();
         if (!dest_path_str1.empty()) {
             const std::string dest_path_str2 =
-                bfs::path(stats_db_->getDatabaseFile()).stem().string();
+                sfs::path(stats_db_->getDatabaseFile()).stem().string();
 
             const std::set<std::string> & collected_formats =
                 sim_config_->getLegacyReportsCollectedFormats();
@@ -1321,13 +1316,13 @@ void Simulation::postProcessingLastCall()
                         continue;
                     }
 
-                    bfs::path dest_path = bfs::path(dest_path_str1 + "/" +
+                    sfs::path dest_path = sfs::path(dest_path_str1 + "/" +
                                                     dest_path_str2 + "/" +
                                                     dest_path_str3);
 
-                    if (!bfs::exists(dest_path)) {
+                    if (!sfs::exists(dest_path)) {
                         try {
-                            bfs::create_directories(dest_path);
+                            sfs::create_directories(dest_path);
                         } catch (const std::exception & ex) {
                             std::cout << "  [simdb] Error occurred while collecting "
                                       << "legacy reports: '" << ex.what() << "'"
@@ -1335,13 +1330,13 @@ void Simulation::postProcessingLastCall()
                             continue;
                         } catch (...) {
                         }
-                    } else if (!bfs::is_directory(dest_path)) {
+                    } else if (!sfs::is_directory(dest_path)) {
                         throw SpartaException("Path exists, but is not a directory: '")
                             << dest_path.string() << "'";
                     }
 
                     std::string orig_dest_file = rd.getDescriptorOrigDestFile();
-                    if (!bfs::exists(orig_dest_file)) {
+                    if (!sfs::exists(orig_dest_file)) {
                         auto not_slash = orig_dest_file.find_first_not_of("/");
                         if (not_slash != std::string::npos) {
                             orig_dest_file = orig_dest_file.substr(not_slash);
@@ -1352,7 +1347,7 @@ void Simulation::postProcessingLastCall()
                         continue;
                     }
 
-                    if (bfs::exists(orig_dest_file)) {
+                    if (sfs::exists(orig_dest_file)) {
                         const std::string src_file = orig_dest_file;
                         const std::string dest_file =
                             dest_path_str1 + "/" +
@@ -1361,7 +1356,7 @@ void Simulation::postProcessingLastCall()
                             orig_dest_file;
 
                         try {
-                            bfs::copy_file(src_file, dest_file);
+                            sfs::copy_file(src_file, dest_file);
                         } catch (const std::exception & ex) {
                             std::cout << "  [simdb] Error occurred while collecting "
                                       << "legacy reports: '" << ex.what() << "'"
@@ -1765,13 +1760,13 @@ void Simulation::setupReports_()
     //to generate a temporary subfolder we can put our report files
     //in. We'll move those files to their original intended location
     //at the end of simulation, after we have performed the validation.
-    namespace bfs = boost::filesystem;
+    namespace sfs = std::filesystem;
     std::string dest_file_subfolder;
     if (isReportValidationEnabled_()) {
         dest_file_subfolder = db::ReportVerifier::getVerifResultsDir();
         dest_file_subfolder += "/";
 
-        bfs::path path = stats_db_->getDatabaseFile();
+        sfs::path path = stats_db_->getDatabaseFile();
         dest_file_subfolder += path.filename().string();
 
         auto dot = dest_file_subfolder.find_last_of(".");
@@ -1835,7 +1830,7 @@ void Simulation::setupReports_()
             const std::string rd_dest_dir = rd.dest_file.substr(0, last_slash);
 
             try {
-                bfs::create_directories(rd_dest_dir);
+                sfs::create_directories(rd_dest_dir);
             } catch (const std::exception & ex) {
                 std::cout << "  [simdb] An exception was encountered when "
                           << "attempting to create a report verification "
@@ -1968,10 +1963,9 @@ ReportDescVec Simulation::expandReportDescriptor_(const ReportDescriptor & rd) c
             expanded.format = fmt;
             auto underscore_idx = fmt.find("_");
             if (underscore_idx != std::string::npos) {
-                boost::filesystem::path dest_file_path(expanded.dest_file);
                 auto dot_idx = expanded.dest_file.find(".");
                 const std::string stem = expanded.dest_file.substr(0, dot_idx);
-                const std::string ext = boost::filesystem::extension(dest_file_path);
+                const std::string ext = std::filesystem::path(expanded.dest_file).extension();
                 expanded.dest_file = stem + fmt.substr(underscore_idx) + ext;
             }
             rds_out.emplace_back(expanded);
@@ -2164,14 +2158,14 @@ void Simulation::attachReportTo_(sparta::ReportRepository::DirectoryHandle direc
         std::vector<std::string> search_paths = sim_config_->getReportDefnSearchPaths();
         std::string definition_file = def_file;
 
-        while (!boost::filesystem::exists(definition_file) && !search_paths.empty()) {
-            boost::filesystem::path p(search_paths.back());
+        while (!std::filesystem::exists(definition_file) && !search_paths.empty()) {
+            std::filesystem::path p(search_paths.back());
             search_paths.pop_back();
             p /= def_file;
             definition_file = p.string();
         }
 
-        if (!boost::filesystem::exists(definition_file) && search_paths.empty()) {
+        if (!std::filesystem::exists(definition_file) && search_paths.empty()) {
             const std::vector<std::string> & command_line_search_paths =
                 sim_config_->getReportDefnSearchPaths();
 

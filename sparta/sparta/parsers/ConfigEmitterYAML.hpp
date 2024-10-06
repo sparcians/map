@@ -404,7 +404,7 @@ private:
 
 }; // class YAML
 
-    }; // namespace ConfigEmitter
-}; // namespace sparta
+} // namespace ConfigEmitter
+} // namespace sparta
 
 // __CONFIG_EMITTER_YAML__

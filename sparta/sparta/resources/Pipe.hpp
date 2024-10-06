@@ -154,6 +154,7 @@ public:
         bool operator!=(const PipeIterator & it) const {
             return !operator==(it);
         }
+
         /// Checks validity of iterator
         bool isValid() const {
             return pipe_->isValid(index_);
@@ -514,6 +515,13 @@ public:
     void enableCollection(TreeNode * parent) {
         collector_.reset (new collection::IterableCollector<Pipe<DataT>, phase, true>
                           (parent, name_, this, capacity()));
+    }
+
+    /**
+     * \brief Check if pipe is collecting
+     */
+    bool isCollected() const {
+        return collector_ && collector_->isCollected();
     }
 
 private:

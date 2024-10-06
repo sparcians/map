@@ -433,5 +433,3 @@ inline std::ostream& operator<<(std::ostream& out, const Expression& e){
         } // namespace filter
     } // namespace tree
 } // namespace sparta
-
-#pragma once

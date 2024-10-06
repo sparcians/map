@@ -41,12 +41,13 @@ env | sort
 
 ################################################################################
 #
-#  BUILD & TEST MAP
+#  BUILD & TEST MAP/SPARTA
 #
 ################################################################################
 
 df -h /
 
+pushd sparta
 mkdir -p release
 pushd release
 cmake -DCMAKE_BUILD_TYPE=Release \
@@ -57,27 +58,48 @@ cmake -DCMAKE_BUILD_TYPE=Release \
 df -h /
 cmake --build . -j "$CPU_COUNT" || cmake --build . -v
 df -h /
-cmake --build . -j "$CPU_COUNT" --target regress
-df -h /
-cmake --build . -j "$CPU_COUNT" --target simdb_regress
-df -h /
 
-# The example tests are built as a part of the toplevel 'regress'
-# target but they aren't run.  We have to explicitly run
-# by cd'ing into the example subdir and running ctest
-# because not all of the subdirs of example create their
-# own <subdir>_regress target like the core example.
-(cd sparta/example && CTEST_OUTPUT_ON_FAILURE=1 ctest -j "$CPU_COUNT" --test-action test)
-df -h /
+if [[ "$OSX_ARCH" != "arm64" ]]; then
+    # skip running tests on osx_arm64 because CI is cross-compiling and the
+    # tests don't have support for cross-executing on arm64
+
+    cmake --build . -j "$CPU_COUNT" --target regress
+    df -h /
+    cmake --build . -j "$CPU_COUNT" --target simdb_regress
+    df -h /
+
+    # The example tests are built as a part of the toplevel 'regress'
+    # target but they aren't run.  We have to explicitly run
+    # by cd'ing into the example subdir and running ctest
+    # because not all of the subdirs of example create their
+    # own <subdir>_regress target like the core example.
+    (cd example && CTEST_OUTPUT_ON_FAILURE=1 ctest -j "$CPU_COUNT" --test-action test)
+    df -h /
+fi
 
 # if we want to create individual packages this should move into a separate install script for only SPARTA
 # and we might want to create separate install targets for the headers and the libs and the doc
 cmake --build . --target install
 df -h /
-
+popd
 popd
 
-
+################################################################################
+#
+#  BUILD MAP/HELIOS
+#
+################################################################################
+#pushd helios
+#mkdir -p release
+#pushd release
+#cmake -DCMAKE_BUILD_TYPE=Release \
+#      -DCMAKE_INSTALL_PREFIX:PATH="$PREFIX" \
+#      "${CMAKE_PLATFORM_FLAGS[@]}" \
+#      ..
+#cmake --build . -j "$CPU_COUNT" || cmake --build . -v
+#popd
+#popd
+#
 ################################################################################
 #
 # Preserve build-phase test results so that we can track them individually

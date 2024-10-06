@@ -13,7 +13,7 @@
 ################################################################################
 
 # Find Boost
-set (_BOOST_COMPONENTS filesystem date_time iostreams serialization timer program_options)
+set (_BOOST_COMPONENTS date_time iostreams serialization timer program_options)
 if (COMPILE_WITH_PYTHON)
   list (APPEND _BOOST_COMPONENTS python)
   find_package (Python COMPONENTS Interpreter Development)
@@ -24,13 +24,6 @@ if (Sparta_VERBOSE)
     set (Boost_VERBOSE ON) # There's also Boost_DEBUG if you need more
     set (CMAKE_FIND_DEBUG_MODE ON) # verbosity for find_package
 endif()
-
-set (Boost_USE_STATIC_LIBS OFF)
-
-# BOOST_CMAKE logic for in versions before 1.72 to ask for the shared libraries is broken, you can only force it to use
-# them if you're building shared libs?  wtf?
-set (existing_build_shared ${BUILD_SHARED_LIBS})
-set (BUILD_SHARED_LIBS ON)
 
 execute_process (COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE CXX_VERSION_STRING RESULT_VARIABLE rc)
 if (NOT rc EQUAL "0")
@@ -45,39 +38,51 @@ else ()
     set (USING_CONDA OFF)
 endif ()
 
-
-if (APPLE AND NOT USING_CONDA)
-  set (Boost_NO_BOOST_CMAKE ON)
-  set (CMAKE_CXX_COMPILER_VERSION 10.0)
-  find_package (Boost 1.65.0 REQUIRED HINTS /usr/local/Cellar/boost/* COMPONENTS ${_BOOST_COMPONENTS})
-else ()
-  find_package (Boost 1.65.0 REQUIRED COMPONENTS ${_BOOST_COMPONENTS})
-endif ()
-
-set (BUILD_SHARED_LIBS ${existing_build_shared})
+# Find Boost
+set (Boost_USE_STATIC_LIBS OFF)
+find_package (Boost 1.74.0 REQUIRED COMPONENTS ${_BOOST_COMPONENTS})
+include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 message (STATUS "Using BOOST ${Boost_VERSION_STRING}")
 
 # Find YAML CPP
-find_package (yaml-cpp 0.6 REQUIRED)
-message (STATUS "Using YAML CPP ${yaml-cpp_VERSION}")
-get_property(YAML_CPP_INCLUDE_DIR TARGET yaml-cpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+find_package (yaml-cpp 0.7 REQUIRED)
+if (yaml-cpp_FOUND)
+  if (yaml-cpp_VERSION_MINOR EQUAL 7)
+    get_property(YAML_CPP_INCLUDE_DIR TARGET yaml-cpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+  else ()
+    # To be used with yaml-cpp 0.8 or (assumed) higer
+    get_property(YAML_CPP_INCLUDE_DIR TARGET yaml-cpp::yaml-cpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+  endif ()
+  include_directories (SYSTEM ${YAML_CPP_INCLUDE_DIR})
+  message (STATUS "Using YAML CPP ${yaml-cpp_VERSION}")
+else ()
+  message(FATAL_ERROR "Could not find yaml-cpp on this system (must be 0.7 or higher)")
+endif ()
 
 # Find RapidJSON
 find_package (RapidJSON 1.1 REQUIRED)
+include_directories (SYSTEM ${RapidJSON_INCLUDE_DIRS})
 message (STATUS "Using RapidJSON CPP ${RapidJSON_VERSION}")
 
 # Find SQLite3
 find_package (SQLite3 3.19 REQUIRED)
+include_directories (SYSTEM ${SQLite3_INCLUDE_DIRS})
 message (STATUS "Using SQLite3 ${SQLite3_VERSION}")
 
-# Find HDF5. Need to enable C language for HDF5 testing
-enable_language (C)
-find_package (HDF5 1.10 REQUIRED)
+# Find zlib
+find_package(ZLIB REQUIRED)
+include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
+message (STATUS "Using zlib ${ZLIB_VERSION_STRING}")
+
+# Find HDF5.
+find_package (HDF5 1.10 REQUIRED COMPONENTS CXX)
+include_directories (SYSTEM ${HDF5_INCLUDE_DIRS})
+message (STATUS "Using HDF5 ${HDF5_VERSION}")
 
 # Populate the Sparta_LIBS variable with the required libraries for
 # basic Sparta linking
-set (Sparta_LIBS sparta simdb ${HDF5_LIBRARIES} sqlite3 yaml-cpp z pthread
-  Boost::date_time Boost::filesystem Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
+set (Sparta_LIBS sparta simdb HDF5::HDF5 sqlite3 yaml-cpp ZLIB::ZLIB pthread
+  Boost::date_time Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
 
 # On Linux we need to link against rt as well
 if (NOT APPLE)

@@ -5,7 +5,6 @@ add_subdirectory(CatchLoop)
 add_subdirectory(Timeout)
 
 sparta_add_test_executable(Scheduler_test Scheduler_test.cpp)
-include(../TestingMacros.cmake)
 
 sparta_test(Scheduler_test Scheduler_test_RUN)
 

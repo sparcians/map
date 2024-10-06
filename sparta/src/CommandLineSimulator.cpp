@@ -13,8 +13,6 @@
 #include <limits.h>
 #include <cstddef>
 #include <boost/algorithm/string/case_conv.hpp>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path_traits.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/lexical_cast/bad_lexical_cast.hpp>
 #include <boost/program_options/detail/parsers.hpp>
@@ -22,7 +20,6 @@
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/value_semantic.hpp>
 #include <boost/type_index/type_index_facade.hpp>
-#include <boost/filesystem/path.hpp>
 #include <iostream>
 #include <algorithm>
 #include <chrono>
@@ -31,6 +28,7 @@
 #include <ratio>
 #include <tuple>
 #include <utility>
+#include <filesystem>
 
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/utils/StringUtils.hpp"
@@ -70,10 +68,11 @@
 #include "sparta/pevents/PeventTrigger.hpp"
 #include "sparta/trigger/Trigger.hpp"
 #include "sparta/trigger/Triggerable.hpp"
+#include "sparta/trigger/RegionOfInterest.hpp"
 #include "sparta/utils/Printing.hpp"
 #include "sparta/utils/SmartLexicalCast.hpp"
 
-namespace bfs = boost::filesystem;
+namespace sfs = std::filesystem;
 
 namespace sparta {
     namespace app {
@@ -84,7 +83,7 @@ const uint32_t OPTIONS_DOC_WIDTH = 140;
 
 const char INVALID_HELP_TOPIC[] = "<invalid help topic>";
 const char MULTI_INSTRUCTION_TRIGGER_ERROR_MSG[] = \
-    "Cannot use more than one of --debug-on, --debug-on-icount, and instruction based pevent "
+    "Cannot use more than one of --debug-on, --debug-on-icount, --debug-on-roi, and instruction based pevent "
     "triggering at the same time. This is not yet supported/tested";
 
 //! Prints logging help text
@@ -333,7 +332,7 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "This includes any user-configured pipeline collection or logging (builtin logging of "
          "warnings to stderr is always enabled). Note that this is just a "
          "delay; logging and pipeline collection must be explicitly enabled.\n"
-         "WARNING: Must not be specified with --debug-on-icount\n"
+         "WARNING: Must not be specified with --debug-on-icount, --debug-on-roi\n"
          "WARNING: The CYCLE may only be partly included. It is dependent upon when the "
          "scheduler activates the trigger. It is recommended to schedule a few ticks before your "
          "desired area.\n"
@@ -346,12 +345,16 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          named_value<std::vector<std::vector<std::string>>>("INSTRUCTIONS"),
          "\nDelay the recording of useful information starting until a specified number of "
          "instructions.\n"
-         "WARNING: Must not be specified with --debug-on\n"
+         "WARNING: Must not be specified with --debug-on, --debug-on-roi\n"
          "See also --debug-on.\n"
          "Examples: '--debug-on-icount 500 -z PREFIX_'\n"
          "Begins pipeline collection to PREFIX_ when instruction count from this simulator's "
          "counter with the CSEM_INSTRUCTIONS semantic is equal to 500",
          "Begin all debugging instrumentation at a specific instruction count") // Brief
+        ("debug-on-roi",
+         "\nDelay the recoding of useful information when simulator detects ROIs. Pipeline collection, "
+         "Pevents, and loggers will generate output file for every ROI.\n"
+         "WARNING: Must not be specified with --debug-on, --debug-on-icount\n") // Brief
         ;
 
     // Pipeline configuration
@@ -723,6 +726,9 @@ bool CommandLineSimulator::parse(int argc,
     std::vector<std::tuple<std::string, std::string, bool>> config_pattern_names;
     // --parameter / -p (pattern, value as a string)
     std::vector<std::tuple<std::string, std::string, bool>> individual_parameter_values;
+
+    // metadata arch value read from config files
+    utils::ValidValue<std::pair<std::string, std::string>> config_metadata_arch;
 
     // Parse options from command line
     try{
@@ -1161,7 +1167,6 @@ bool CommandLineSimulator::parse(int argc,
 
                 ++i;
                 collection_parsed = true;
-
             } else if (o.string_key.find("collection-at") != std::string::npos) {
                 if(!collection_parsed)
                 {
@@ -1299,8 +1304,8 @@ bool CommandLineSimulator::parse(int argc,
                 }
                 delayed_start = true;
 
-                if(sim_config_.trigger_on_value != static_cast<uint64_t>(SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE)) {
-                    throw SpartaException("Cannot use both --debug-on and --debug-on-icount simultaneously");
+                if(sim_config_.trigger_on_type != SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE) {
+                    throw SpartaException("Cannot use --debug-on, --debug-on-icount, and --debug-on-roi simultaneously");
                 }
 
                 // Parse the debug trigger on cycle number
@@ -1345,8 +1350,8 @@ bool CommandLineSimulator::parse(int argc,
                 }
                 delayed_start = true;
 
-                if(sim_config_.trigger_on_value != static_cast<uint64_t>(SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE)){
-                    throw SpartaException("Cannot use both --debug-on and --debug-on-icount simultaneously");
+                if(sim_config_.trigger_on_type != SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE){
+                    throw SpartaException("Cannot use --debug-on, --debug-on-icount, and --debug-on-roi simultaneously");
                 }
 
                 // Parse the debug trigger on cycle number
@@ -1359,6 +1364,18 @@ bool CommandLineSimulator::parse(int argc,
                     throw SpartaException("debug-on-icount must take an integer value, not \"")
                         << o.value.at(0) << "\"";
                 }
+                ++i;
+            } else if(o.string_key == "debug-on-roi") {
+                if(delayed_start)
+                {
+                    std::cerr << MULTI_INSTRUCTION_TRIGGER_ERROR_MSG << std::endl;
+                }
+                delayed_start = true;
+
+                if(sim_config_.trigger_on_type != SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE){
+                    throw SpartaException("Cannot use --debug-on, --debug-on-icount, and --debug-on-roi simultaneously");
+                }
+                sim_config_.trigger_on_type = SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI;
                 ++i;
             } else if(o.string_key == "wall-timeout" || o.string_key == "cpu-timeout") {
 
@@ -1395,10 +1412,10 @@ bool CommandLineSimulator::parse(int argc,
                 ++i;
             } else if(o.string_key == "simdb-dir") {
                 const std::string & db_dir = o.value[0];
-                auto p = bfs::path(db_dir);
-                if (!bfs::exists(p)) {
-                    bfs::create_directories(p);
-                } else if (!bfs::is_directory(p)) {
+                auto p = sfs::path(db_dir);
+                if (!sfs::exists(p)) {
+                    sfs::create_directories(p);
+                } else if (!sfs::is_directory(p)) {
                     throw SpartaException("Invalid 'simdb-dir' argument. Path ")
                         << "exists but is not a directory.";
                 }
@@ -1407,8 +1424,8 @@ bool CommandLineSimulator::parse(int argc,
             } else if(o.string_key == "simdb-enabled-components") {
                 std::vector<std::string> yaml_opts_files;
                 auto is_yaml_file = [](const std::string & opt) {
-                    auto p = bfs::path(opt);
-                    return (bfs::exists(p) && !bfs::is_directory(p));
+                    auto p = sfs::path(opt);
+                    return (sfs::exists(p) && !sfs::is_directory(p));
                 };
 
                 for (size_t idx = 0; idx < o.value.size(); ++idx) {
@@ -1423,10 +1440,10 @@ bool CommandLineSimulator::parse(int argc,
                 ++i;
             } else if(o.string_key == "collect-legacy-reports") {
                 const std::string & reports_root_dir = o.value[0];
-                auto p = bfs::path(reports_root_dir);
-                if (!bfs::exists(p)) {
-                    bfs::create_directories(p);
-                } else if (!bfs::is_directory(p)) {
+                auto p = sfs::path(reports_root_dir);
+                if (!sfs::exists(p)) {
+                    sfs::create_directories(p);
+                } else if (!sfs::is_directory(p)) {
                     throw SpartaException("Invalid 'collect-legacy-reports' argument. Path ")
                         << "exists but is not a directory.";
                 }
@@ -1597,9 +1614,44 @@ bool CommandLineSimulator::parse(int argc,
         sim_config_.omitStatsWithValueZeroForReportFormat("json_reduced");
     }
 
+    // Get metadata architecture param from config files
+    bool config_metadata_arch_final = false;
+    for (const auto & cfg : config_pattern_names) {
+        const std::string & filename = std::get<1>(cfg);
+        const bool is_final = std::get<2>(cfg);
+        if(config_metadata_arch_final && !is_final) { continue; }
+        TreeNode dummy("dummy", "dummy");
+        sparta::ConfigParser::YAML param_file(filename, sim_config_.getConfigSearchPath());
+        param_file.allowMissingNodes(true);
+        constexpr bool VERBOSE = false;
+        param_file.consumeParameters(&dummy, VERBOSE);
+
+        const auto ptree = param_file.getParameterTree();
+        if(ptree.hasValue("meta.params.architecture")) {
+            const std::string& arch = ptree.get("meta.params.architecture").getValue();
+            if(arch != "NONE") {
+                const std::string & pattern = std::get<0>(cfg);
+                config_metadata_arch = std::make_pair(pattern, arch);
+            }
+            if(is_final) {
+                config_metadata_arch_final = true;
+            }
+        }
+
+    }
+
     // Check for valid arch config if required by defaults
+    //
+    // Priority:
+    // 1. --arch
+    // 2. --read-final-config
+    // 3. --config-file / --node-config-file
+    // 4. Default (if required)
     if(arch_pattern_name.isValid()) {
         sim_config_.processArch(arch_pattern_name.getValue().first, arch_pattern_name.getValue().second);
+    }
+    else if(config_metadata_arch.isValid()) {
+        sim_config_.processArch(config_metadata_arch.getValue().first, config_metadata_arch.getValue().second);
     }
     else {
         if(!sim_config_.archFileProvided()) {
@@ -1776,7 +1828,7 @@ bool CommandLineSimulator::parse(int argc,
     sim_config_.reports                 = reports;
 
     //pevents
-    run_pevents_ = (vm_.count("pevents-at") > 0) | (vm_.count("pevents") > 0) | (vm_.count("verbose-pevents") > 0);
+    run_pevents_ = (vm_.count("pevents-at") > 0) || (vm_.count("pevents") > 0) || (vm_.count("verbose-pevents") > 0);
 
     bool show_options = vm_.count("show-options") > 0;
     if(show_options){
@@ -1893,6 +1945,10 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
     // Pevent
     if(run_pevents_) {
         pevent_trigger_.reset(new sparta::trigger::PeventTrigger(sim->getRoot()));
+        // FIXME: Support debug-roi for pevent collection
+        if(sim_config_.trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI) {
+            throw SpartaException("Pevent ennoblement is currently not supported with debug-roi. Use --debug or --debug-on-icount");
+        }
     }
 
     for (const auto & def_file : report_descriptor_def_files_) {
@@ -1993,8 +2049,21 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                                                        filter_parameters);
         }
 
-        // If we are reading a final config. Assert that we actually loaded a final config.
+        // Store the arch param
         std::vector<sparta::TreeNode*> children;
+        sim->getMetaParamRoot()->findChildren("params.architecture", children);
+        sparta_assert (children.size() > 0, "Sparta should have made a default meta.params.architecture.");
+        sparta::Parameter<std::string>* arch_p = dynamic_cast<sparta::Parameter<std::string>*>(children.at(0));
+        sparta_assert(arch_p);
+        const auto run_metadata = getSimulationConfiguration().getRunMetadata();
+        const auto run_metadata_it = std::find_if(run_metadata.begin(), run_metadata.end(),
+            [] (const auto md_param) { return md_param.first == "arch"; });
+        if(run_metadata_it != run_metadata.end()) {
+            arch_p->setValueFromString(run_metadata_it->second);
+        }
+
+        // If we are reading a final config. Assert that we actually loaded a final config.
+        children.clear();
         sim->getMetaParamRoot()->findChildren("params.is_final_config", children);
         sparta_assert (children.size() > 0, "Sparta should have made a default meta.params.is_final_config.");
         sparta::Parameter<bool>* is_final_p = dynamic_cast<sparta::Parameter<bool>*>(children.at(0));
@@ -2032,9 +2101,11 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
         if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)
         {
+            const bool multiple_triggers = sim_config_.trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI;
             pipeline_collection_triggerable_.reset(new PipelineTrigger(sim_config_.pipeline_collection_file_prefix,
                                                                        pipeline_enabled_node_names_,
                                                                        heartbeat,
+                                                                       multiple_triggers,
                                                                        sim->getRootClock(),
                                                                        sim->getRoot()));
 
@@ -2103,6 +2174,18 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             case SimulationConfiguration::TriggerSource::TRIGGER_ON_INSTRUCTION:
                 debug_trigger_->setTriggerStartAbsolute(sim->findSemanticCounter(Simulation::CSEM_INSTRUCTIONS),
                                                         sim_config_.trigger_on_value);
+                break;
+            case SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI:
+                {
+                    try{
+                        debug_trigger_->setTriggerNotificationDriven(sim->getRoot(), roi::NOTIFICATION_SRC_NAME);
+                    }catch(SpartaException& ex) {
+                        std::cerr << "\nTo use debug-roi option, users have to register notification source \""
+                                  << roi::NOTIFICATION_SRC_NAME << "\"" << std::endl;
+                        std::cerr << "\n\n" SPARTA_CMDLINE_COLOR_ERROR "Rethrowing..." SPARTA_CMDLINE_COLOR_NORMAL << std::endl;
+                        throw;
+                    }
+                }
                 break;
             default:
                 sparta_assert(!"Unknown tigger on type");
@@ -2236,17 +2319,22 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
 void CommandLineSimulator::runSimulator(Simulation* sim)
 {
+    runSimulator(sim, run_time_ticks_);
+}
+
+void CommandLineSimulator::runSimulator(Simulation* sim, uint64_t ticks)
+{
     std::cout << "Preparing to run..." << std::endl;
 
     try{
-        runSimulator_(sim);
+        runSimulator_(sim, ticks);
     }catch(...){
         sim->dumpDebugContentIfAllowed(std::current_exception());
         throw;
     }
 }
 
-void CommandLineSimulator::runSimulator_(Simulation* sim)
+void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
 {
     if(!sim){
         throw SpartaException("Attempted to populate CommandLineSimulator with null simulator");
@@ -2274,12 +2362,14 @@ void CommandLineSimulator::runSimulator_(Simulation* sim)
         sim->getRoot()->dumpTypeMix(std::cout);
     }
 
-    if(run_time_ticks_ > 0 || use_pyshell_){
+    if((ticks > 0) || use_pyshell_){
         try{
-            sim->run(run_time_ticks_);
+            sim->run(ticks);
         }catch(...){
             if(pipeline_collection_triggerable_) {
-                pipeline_collection_triggerable_->stop();
+                if(pipeline_collection_triggerable_->isTriggered()) {
+                    pipeline_collection_triggerable_->stop();
+                }
                 info_out_->write("Simulation aborted at: ");
                 info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
             }
@@ -2292,7 +2382,9 @@ void CommandLineSimulator::runSimulator_(Simulation* sim)
 
     if(pipeline_collection_triggerable_)
     {
-        pipeline_collection_triggerable_->stop();
+        if(pipeline_collection_triggerable_->isTriggered()) {
+            pipeline_collection_triggerable_->stop();
+        }
 
          // Write the end time of the simulation.
         info_out_->write("Simulation ended at: ");
@@ -2327,18 +2419,18 @@ void CommandLineSimulator::postProcess_(Simulation* sim)
         if (IsFeatureValueEnabled(feature_cfg, "simdb-verify")) {
             std::string simdb_fname = simdb->getDatabaseFile();
             const std::string simdb_src_fname = simdb_fname;
-            simdb_fname = bfs::path(simdb_fname).filename().string();
+            simdb_fname = sfs::path(simdb_fname).filename().string();
 
-            bfs::path cwd = bfs::current_path();
+            sfs::path cwd = sfs::current_path();
             const std::string simdb_dest_dir =
                 cwd.string() + "/" + db::ReportVerifier::getVerifResultsDir();
 
             const std::string simdb_dest_fname = simdb_dest_dir + "/" + simdb_fname;
-            boost::system::error_code err;
-            bfs::copy_file(simdb_src_fname, simdb_dest_fname, err);
+            std::error_code err;
+            sfs::copy_file(simdb_src_fname, simdb_dest_fname, err);
             if (err) {
                 std::cout << "  [simdb] Warning: The 'simdb-verify' post processing step "
-                          << "encountered and trapped a boost::filesystem error: \""
+                          << "encountered and trapped a std::filesystem error: \""
                           << err.message() << "\"" << std::endl;
             }
         }

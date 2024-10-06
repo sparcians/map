@@ -112,9 +112,8 @@ TreeNode::TreeNode(TreeNode* parent,
 {
     // Try and catch a class of mis-matched compiler definition bugs between
     // clang and stdc++ built with gcc. This is just sanity checking
-    sparta_assert(self_ptr_.use_count() > 0);
+    sparta_assert(self_ptr_.use_count() == 1);
     sparta_assert(self_ptr_);
-    sparta_assert(self_ptr_.unique());
 
     // Store expected parent until construction args are validated
     // This is here so that error printouts can show the expected parent
@@ -1669,7 +1668,7 @@ void TreeNode::incrementGetChildCount_(const std::string& name) const {
                   << "regularly while the simulator is running because this is "
                   << "slow" << std::endl;
     }
-};
+}
 
 // Private Tree-Building Helpers
 
@@ -2853,6 +2852,9 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
 
                 get_extension_names_from_node(extension_node);
                 get_extension_names_from_node(arch_extension_node);
+                for(auto & ext : extensions_) {
+                    extension_names_.insert(ext.first);
+                }
                 return nullptr;
             } else {
                 return nullptr;

@@ -205,7 +205,6 @@ namespace sparta
 
         }; // class Cache
 
-    }; // namespace cache
+    } // namespace cache
 
-}; // namespace sparta
-
+} // namespace sparta

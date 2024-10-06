@@ -90,7 +90,7 @@ namespace collection
          * \brief Determine whether or not this node has collection
          * turned on or off.
          */
-        bool isCollected() { return is_collected_; }
+        bool isCollected() const { return is_collected_; }
 
         //! Pure virtual method used by deriving classes to be
         //! notified when they can perform their collection

@@ -19,19 +19,48 @@
 namespace sparta{
 namespace pevents{
 
-
-
     /**
      * \class PeventCollector
-     * \brief a class that is capable of recording pevents as key value pairs,
-     * where a PairDefinition has been defined with the key values, and function
-     * pointers to where to get the data for the pairs.
+     * \brief Class that is capable of recording pevents as key value
+     *        pairs, where a PairDefinition has been defined with the
+     *        key values, and function pointers to where to get the
+     *        data for the pairs.
      * \tparam the Type of PairDefinition that we want to capture a pevent from.
+     *
+     * Example usage:
+     * \code
+     *
+     *    class MyUnit : sparta::Unit
+     *    {
+     *    public:
+     *        // ...
+     *        uint32_t getValue() const { ... };
+     *        // ...
+     *    private:
+     *        class MyEventPairs : public sparta::PairDefinition<MyUnit>
+     *        {
+     *        public:
+     *            using TypeCollected = Inst;
+     *            MyEventPairs() : sparta::PairDefinition<MyUnit>()
+     *            {
+     *                addPEventsPair("value", &MyUnit::getValue);
+     *            }
+     *        };
+     *
+     *        // Assumes this event is being constructed inside a sparta::Unit derived type
+     *        sparta::pevents::PeventCollector<MyEventPairs> my_pevent_{"MYEVENT", getContainer(), getClock()};
+     *    };
+     *
+     *
+     *    // Collection:
+     *    my_event_.collect(my_unit_);
+     * \endcode
      */
     template <class CollectedEntityType>
     class PeventCollector
         : public PairCollector<CollectedEntityType>, public PeventCollectorTreeNode
     {
+    protected:
         using PairCollector<CollectedEntityType>::getPEventLogVector;
         using PairCollector<CollectedEntityType>::turnOn_;
         using PairCollector<CollectedEntityType>::turnOff_;
@@ -113,8 +142,8 @@ namespace pevents{
                 bool is_unique = true;
                 for(const auto& existing_tap : taps_)
                 {
-                    if(existing_tap->getDestination()->compareStrings(file) && (existing_tap->getCategoryName() == lowertype
-                                                                 || lowertype == "all"))
+                    if(existing_tap->getDestination()->compareStrings(file) &&
+                       (existing_tap->getCategoryName() == lowertype || lowertype == "all"))
                     {
                         is_unique = false;
                         break;
@@ -180,14 +209,14 @@ namespace pevents{
          * \brief Override the generateCollectionString_() of the bases PairCollector,
          * In this method, we use the pair_cache owned by PairCache.
          */
-        virtual void generateCollectionString_() override final
+        virtual void generateCollectionString_() override
         {
             // Write the pevent to the log.
             std::stringstream ss;
             // Write the event name.
             ss << "ev=" << "\"" << event_name_ << "\" ";
 
-            // Now write the chached key values.
+            // Now write the cached key values.
             for(const auto & pair : getPEventLogVector())
             {
                 ss << pair.first << "=" << "\"" << pair.second << "\" ";
@@ -199,7 +228,7 @@ namespace pevents{
             ss << ";";
             message_src_ << ss.str();
         }
-    private:
+
         const std::string event_name_;
         // We are going to use sparta's logger to output our pevents for ease.
         log::MessageSource message_src_;
@@ -217,4 +246,3 @@ namespace pevents{
 
 } // namespace pevents
 } // namespace sparta
-

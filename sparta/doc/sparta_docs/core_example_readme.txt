@@ -10,9 +10,13 @@
   The CoreExample is an example Sparta simulator that uses the Sparta
   framework to mimic a very rudimentary model of a simple out-of-order
   core.  The model does not have dependency checking nor actually
-  renames any instructions.  The "ISA" is uses is a few random
+  renames any instructions.  The "ISA" used is a few random
   instructions pulled from the PowerPC ISA listed in a table in
   Fetch.cpp.
+
+  For a more concrete core performance model, check out the RISC-V
+  Performance Model based on Sparta:
+     https://github.com/riscv-software-src/riscv-perf-model
 
   The example touches on Sparta command line simulation, construction
   phasing, unit creation, port creation and binding, event creation,

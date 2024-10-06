@@ -2,8 +2,6 @@ project(Log_test)
 
 sparta_add_test_executable(Log_test Log_test.cpp)
 
-include(../TestingMacros.cmake)
-
 sparta_test(Log_test Log_test_RUN)
 sparta_copy(Log_test *.EXPECTED)
 #sparta_copy(Log_test all.log.basic.EXPECTED)

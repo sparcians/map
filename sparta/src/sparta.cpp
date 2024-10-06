@@ -84,9 +84,6 @@ namespace sparta {
 
     namespace log {
         // Category Strings
-        constexpr char categories::WARN_STR[];
-        constexpr char categories::DEBUG_STR[];
-        constexpr char categories::PARAMETERS_STR[];
         const std::string* const categories::WARN  = StringManager::getStringManager().internString(WARN_STR);
         const std::string* const categories::DEBUG = StringManager::getStringManager().internString(DEBUG_STR);
         const std::string* const categories::PARAMETERS = StringManager::getStringManager().internString(PARAMETERS_STR);
@@ -110,23 +107,18 @@ namespace sparta {
     }
 }
 
-SPARTA_PARAMETER_BODY;
-SPARTA_CLOCK_BODY;
-SPARTA_TAG_BODY;
-SPARTA_KVPAIR_BODY;
-SPARTA_REGISTER_BODY;
+SPARTA_CLOCK_BODY
+SPARTA_TAG_BODY
+SPARTA_KVPAIR_BODY
+SPARTA_REGISTER_BODY
 
 namespace sparta {
     // ArchData
-    constexpr char sparta::ArchData::Line::QUICK_CHECKPOINT_PREFIX[];
     std::vector<const sparta::ArchData*>* sparta::ArchData::all_archdatas_ = nullptr;
 }
 
-SPARTA_DATAVIEW_BODY;
-SPARTA_GLOBAL_TREENODE_BODY;
-SPARTA_CHECKPOINT_BODY;
-
-SPARTA_UNIT_BODY;
+SPARTA_DATAVIEW_BODY
+SPARTA_CHECKPOINT_BODY
 
 namespace sparta {
     // TreeNode
@@ -137,13 +129,6 @@ namespace sparta {
     TreeNode::TagsMap TreeNode::global_tags_map_;
     uint32_t TreeNode::teardown_errors_ = 0;
     const TreeNode::node_uid_type TreeNode::MAX_NODE_UID = 0xffffffffffff;
-    constexpr char TreeNode::GROUP_NAME_BUILTIN[];
-    constexpr char TreeNode::GROUP_NAME_NONE[];
-    constexpr char TreeNode::NODE_NAME_VIRTUAL_GLOBAL[];
-    constexpr char TreeNode::LOCATION_NODE_SEPARATOR_ATTACHED;
-    constexpr char TreeNode::LOCATION_NODE_SEPARATOR_EXPECTING;
-    constexpr char TreeNode::LOCATION_NODE_SEPARATOR_UNATTACHED;
-    constexpr char TreeNode::NODE_NAME_NONE[];
     const std::string TreeNode::DEBUG_DUMP_SECTION_DIVIDER = \
         "================================================================================\n";
     const std::vector<std::pair<const char*, std::function<void (std::string&)>>> TreeNode::TREE_NODE_PATTERN_SUBS =
@@ -166,12 +151,8 @@ namespace sparta {
         //{"[!", [](std::string& s){replaceSubstring(patexp, "[!", "[^")
     };
 
-    constexpr char Scheduler::NODE_NAME[];
     const Scheduler::Tick Scheduler::INDEFINITE = 0xFFFFFFFFFFFFFFFFull;
     std::unique_ptr<sparta::SleeperThreadBase> SleeperThread::sleeper_thread_;
-
-    // KeyPairs
-    constexpr char sparta::PairCollectorTreeNode::COLLECTABLE_DESCRIPTION[];
 
     namespace pevents {
         //pevents
@@ -184,10 +165,6 @@ namespace sparta {
             // Text
             const char Text::DEFAULT_REPORT_PREFIX[] = "Report ";
         }
-    }
-
-    namespace ConfigParser {
-        constexpr char ConfigParser::OPTIONAL_PARAMETER_KEYWORD[];
     }
 
 }

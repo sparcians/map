@@ -58,7 +58,6 @@ namespace sparta
             uint32_t tag_shift_;        // Amount to shift right for tag
         }; // class AddrDecoderIF
 
-    }; // namespace cache
+    } // namespace cache
 
-}; // namespace sparta
-
+} // namespace sparta

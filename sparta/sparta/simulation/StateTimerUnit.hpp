@@ -773,5 +773,5 @@ inline StateTimerUnit::StateTimerUnit(TreeNode * parent,
                                  lower, upper, bin_size));
 }
 
-}; // namespace sparta
+} // namespace sparta
 

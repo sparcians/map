@@ -19,14 +19,12 @@ namespace sparta
         class BasicCacheItem
         {
         public:
-            BasicCacheItem() :
-                set_idx_(INVALID_VALUE_),
-                way_num_(INVALID_VALUE_),
-                addr_(0),
-                tag_(0),
-                addr_decoder_(nullptr)
-            { }
-            virtual ~BasicCacheItem() {}
+            BasicCacheItem() = default;
+            BasicCacheItem(const BasicCacheItem &) = default;
+            BasicCacheItem& operator=(const BasicCacheItem &) = default;
+
+            // Required virtual constructor (rule of 3)
+            virtual ~BasicCacheItem() = default;
 
             // The way in the cache set this item belongs
             // This method should be called only once when the
@@ -61,16 +59,16 @@ namespace sparta
             uint64_t getTag()  const  { return tag_; }
 
         protected:
-            uint32_t       set_idx_;
-            uint32_t       way_num_;
-            uint64_t       addr_;
-            uint64_t       tag_;
-            const AddrDecoderIF *addr_decoder_;
+            uint32_t       set_idx_ = INVALID_VALUE_;
+            uint32_t       way_num_ = INVALID_VALUE_;
+            uint64_t       addr_ = 0;
+            uint64_t       tag_  = 0;
+            const AddrDecoderIF *addr_decoder_ = nullptr;
         private:
             static const uint32_t INVALID_VALUE_ = 0xFFFFFFFF;
 
         }; // class BasicCacheItem
 
-    }; // namespace cache
+    } // namespace cache
 
-}; // namespace sparta
+} // namespace sparta
