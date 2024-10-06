@@ -523,6 +523,5 @@ inline double smartLexicalCast(const std::string& s,
     return dbl_value.getValue();
 }
 
-    }; // namespace utils
+} // namespace utils
 } // namespace sparta
-

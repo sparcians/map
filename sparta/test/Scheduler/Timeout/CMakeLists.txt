@@ -2,6 +2,4 @@ project(SchedulerTimeout_test)
 
 sparta_add_test_executable(SchedulerTimeout_test Timeout_test.cpp)
 
-include(../../TestingMacros.cmake)
-
 sparta_named_test_no_valgrind(SchedulerTimeout_test SchedulerTimeout_test)

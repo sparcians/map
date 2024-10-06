@@ -7,7 +7,7 @@
 #include "sparta/SubjectState.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 using namespace sparta;
 

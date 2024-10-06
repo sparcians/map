@@ -18,6 +18,8 @@
 namespace sparta{
     namespace trigger{
 
+    using Counters = std::vector<const CounterBase*>;
+
 /**
  * \class TriggerEvent
  */
@@ -341,6 +343,14 @@ public:
     }
 
     /*!
+     * \brief Return if this trigger supports multiple counters
+     */
+    virtual bool supportsMultipleCounters() const
+    {
+        return false;
+    }
+
+    /*!
      * \brief Return the counter associated with this trigger. Will not be nullptr
      */
     virtual const CounterBase* getCounter() const
@@ -349,6 +359,15 @@ public:
                     "Cannot getCounter on a CounterTrigger because the referenced counter "
                     "has expired");
         return counter_;
+    }
+
+    /*!
+     * \brief Return the counters associated with this trigger
+     */
+    virtual const Counters& getCounters() const
+    {
+        throw SpartaException("SingleTrigger does not support multiple counters. "
+                              "Use \"getCounter()\" instead");
     }
 
     /*!

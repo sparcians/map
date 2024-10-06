@@ -1332,6 +1332,12 @@ protected:
 private:
     RegisterBits computeWriteMask_(const Definition *def) const
     {
+        if(!isPowerOf2(def->bytes)) {
+            throw SpartaException("Register \"")
+                << getName() << "\" size in bytes must be a power of 2 larger than 0, is "
+                << def->bytes;
+        }
+
         const auto mask_size = def->bytes;
         RegisterBits write_mask(mask_size);
         RegisterBits partial_mask(mask_size);
@@ -1624,5 +1630,4 @@ inline std::ostream& operator<<(std::ostream& o, const sparta::Register::Field* 
 
 //! \brief Required in simulator source to define some globals.
 #define SPARTA_REGISTER_BODY                                              \
-    constexpr sparta::RegisterBase::group_num_type sparta::RegisterBase::GROUP_NUM_NONE; \
     const sparta::RegisterBase::Definition sparta::RegisterBase::DEFINITION_END{0, nullptr, 0, nullptr, 0, nullptr, 0, { }, { }, nullptr, 0, 0, 0, 0, 0};

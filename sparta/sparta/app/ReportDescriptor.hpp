@@ -80,6 +80,7 @@ namespace sparta {
 
         typedef std::unordered_map<std::string, boost::any> NamedExtensions;
         typedef std::unordered_map<std::string, std::string> TriggerKeyValues;
+        typedef std::unordered_map<std::string, std::string> MetaDataKeyValues;
 
         /*!
          * \brief Describes one or more report to instantiate
@@ -270,6 +271,11 @@ namespace sparta {
              * configurations to descriptors.
              */
             NamedExtensions extensions_;
+
+            /*!
+             * \brief Metadata to include in report headers
+             */
+            MetaDataKeyValues header_metadata_;
 
             /*!
              * \brief Calling this method causes the simulation to skip this

@@ -5,6 +5,8 @@
 #include <iostream>
 #include <sstream>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
@@ -14,21 +16,31 @@
 
 namespace sparta {
 
-    class StatisticInstance;
-    class Clock;
+class StatisticInstance;
+class Clock;
 
-    /*!
-     * \brief Namespace containing methods for computing and generating
-     * statistical information using instrumentation extracted from sparta
-     * structures such as Counters
-     */
-    namespace statistics {
+/*!
+ * \brief Namespace containing methods for computing and generating
+ * statistical information using instrumentation extracted from sparta
+ * structures such as Counters
+ */
+namespace statistics {
 
-        /*!
-         * \brief Namespace containing methods for parsing, building, and
-         * evaluating statistical expressions in sparta
-         */
-        namespace expression {
+/*!
+ * \brief Type for storing each stat added
+ */
+typedef std::pair<std::string, std::unique_ptr<StatisticInstance>> stat_pair_t;
+
+/*!
+ * \brief Type for storing a list of stat_pair_t
+ */
+typedef std::vector<stat_pair_t> StatisticPairs;
+
+/*!
+ * \brief Namespace containing methods for parsing, building, and
+ * evaluating statistical expressions in sparta
+ */
+namespace expression {
 
 /*!
  * \brief Expression container/builder. Contains a single ExpressionNode
@@ -66,10 +78,7 @@ public:
     /*!
      * \brief Constructs an expression containing no content
      */
-    Expression()
-    {
-        //std::cout << "Construction " << this << std::endl;
-    }
+    Expression() = default;
 
     /*!
      * \brief Copy Constructor
@@ -100,6 +109,16 @@ public:
      */
     Expression(const std::string& expression,
                TreeNode* context);
+
+    /*!
+     * \brief Construct with string expression
+     * \param expr String containing an arithmetic expression
+     * \param context TreeNode from which variables in the expression
+     * \param report_si Previously defined StatisticInstances in the report
+     */
+    Expression(const std::string& expression,
+               TreeNode* context,
+               const StatisticPairs&report_si);
 
     /*!
      * \brief Construct with string expression
@@ -546,7 +565,8 @@ private:
      */
     void parse_(const std::string& expression,
                 TreeNode* context,
-                std::vector<const TreeNode*>& already_used);
+                std::vector<const TreeNode*>& already_used,
+                const StatisticPairs&report_si);
 };
 
 inline Expression::Expression(double d) :
@@ -778,5 +798,3 @@ inline std::ostream& operator<<(std::ostream& o, const sparta::statistics::expre
         } // namespace expression
     } // namespace statistics
 } // namespace sparta
-
-#pragma once

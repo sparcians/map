@@ -7,13 +7,15 @@
  */
 #pragma once
 
+#include <cinttypes>
 #include <vector>
-#include <map>
-#include <set>
+#include <string>
+#include <memory>
 
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/statistics/CycleHistogram.hpp"
 #include "sparta/collection/IterableCollector.hpp"
+#include "sparta/utils/IteratorTraits.hpp"
 
 namespace sparta
 {
@@ -69,7 +71,8 @@ namespace sparta
             bool to_validate;
             DataT data;
             std::list<uint32_t>::iterator list_pointer;
-            uint64_t age_id = 0;
+            uint64_t age_abs_id = 0; // Absolute ID of all allocations
+            uint32_t age_rel_id = 0; // Relative ID of current allocations
         };
 
         //! Typedef for the underlaying vector used as the basis of the Array
@@ -104,7 +107,7 @@ namespace sparta
          * index for which they point.
          */
         template<bool is_const_iterator = true>
-        struct ArrayIterator : public std::iterator<std::forward_iterator_tag, value_type>
+        struct ArrayIterator : public utils::IteratorTraits<std::forward_iterator_tag, value_type>
         {
         private:
 
@@ -149,10 +152,16 @@ namespace sparta
             // Allow the creation of a const iterator from non-const
             friend ArrayIterator<false>;
         public:
-            /// Empty, invalid iterator
+
+            /**
+             * \brief Default constructor
+             */
             ArrayIterator() = default;
 
-            /// copy construction is fair game from non-const to const
+            /**
+             * \brief a copy constructor that allows for implicit conversion from a
+             * regular iterator to a const_iterator.
+             */
             ArrayIterator(const ArrayIterator<false> & other) :
                 index_(other.index_),
                 array_(other.array_),
@@ -161,6 +170,21 @@ namespace sparta
                 is_aged_walk_(other.is_aged_walk_)
             {}
 
+            /**
+             * \brief a copy constructor that allows for implicit conversion from a
+             * const_iterator to a regular iterator.
+             */
+            ArrayIterator(const ArrayIterator<true> & other) :
+                index_(other.index_),
+                array_(other.array_),
+                is_aged_(other.is_aged_),
+                is_circular_(other.is_circular_),
+                is_aged_walk_(other.is_aged_walk_)
+            {}
+
+            /**
+             * \brief Assignment operator
+             */
             ArrayIterator& operator=(const ArrayIterator& other) = default;
 
             /// Reset the iterator to an invalid value
@@ -240,12 +264,7 @@ namespace sparta
                 return isYounger(rhs);
             }
 
-            bool operator==(const ArrayIterator<true>& rhs) const
-            {
-                return (rhs.index_ == index_) && (rhs.array_ == array_);
-            }
-
-            bool operator==(const ArrayIterator<false> & rhs)
+            bool operator==(const ArrayIterator& rhs) const
             {
                 return (rhs.index_ == index_) && (rhs.array_ == array_);
             }
@@ -597,10 +616,10 @@ namespace sparta
         const_iterator getYoungestIndex(const uint32_t nth=0) const
         {
             sparta_assert(ArrayT == ArrayType::AGED,
-                        "Only AgedArray types provide access to public member"
-                        " function getYoungestIndex");
+                          "Only AgedArray types provide access to public member"
+                          " function getYoungestIndex");
             sparta_assert(nth < num_valid_,
-                        "The array does not have enough elements to find the nth youngest index");
+                          "The array does not have enough elements to find the nth youngest index");
             constexpr bool is_aged = true;
             constexpr bool is_circular = false;
             constexpr bool is_aged_walk = true;
@@ -631,6 +650,17 @@ namespace sparta
             --it;
             prev_idx = *it;
             return true;
+        }
+
+        /**
+         * \brief Provide the age information of the given entry index.
+         * \return The age of the index. The less, the older.
+         */
+        uint32_t getAge(const uint32_t idx) const {
+            sparta_assert(ArrayT == ArrayType::AGED,
+                          "Only AgedArray types provides age information");
+            sparta_assert(isValid(idx));
+            return array_[idx].age_rel_id;
         }
 
         /**
@@ -694,10 +724,13 @@ namespace sparta
             // Just set the data to invalid.
             array_[idx].valid = false;
             --num_valid_;
-            // Remove the index from our aged list.
-            if(ArrayT == ArrayType::AGED)
+
+            if constexpr (ArrayT == ArrayType::AGED)
             {
+                // Remove the index from our aged list.
                 aged_list_.erase(array_[idx].list_pointer);
+                // Update the relative age IDs
+                updateRelativeAge_();
             }
 
             // Update occupancy counter.
@@ -730,6 +763,9 @@ namespace sparta
          * \brief Write data to the array.
          * \param idx The index to write at
          * \param dat The data to write at that index.
+         *
+         * This will write to the location at \a idx, whether
+         * the position is valid or not.
          */
         void write(const uint32_t idx, const DataT& dat)
         {
@@ -740,6 +776,9 @@ namespace sparta
          * \brief Write data to the array.
          * \param idx The index to write at
          * \param dat The data to write at that index.
+         *
+         * This will write to the location at \a idx, whether
+         * the position is valid or not.
          */
         void write(const uint32_t idx, DataT&& dat)
         {
@@ -784,7 +823,7 @@ namespace sparta
             sparta_assert(lhs != rhs);
             sparta_assert(lhs < num_entries_ && rhs < num_entries_,
                           "Cannot compare age on an index outside the bounds of the array");
-            return array_[lhs].age_id > array_[rhs].age_id;
+            return array_[lhs].age_abs_id > array_[rhs].age_abs_id;
         }
 
         /**
@@ -799,7 +838,7 @@ namespace sparta
             sparta_assert(lhs != rhs);
             sparta_assert(lhs < num_entries_ && rhs < num_entries_,
                           "Cannot compare age on an index outside the bounds of the array");
-            return  array_[lhs].age_id < array_[rhs].age_id;
+            return  array_[lhs].age_abs_id < array_[rhs].age_abs_id;
         }
 
         /**
@@ -815,7 +854,7 @@ namespace sparta
                                                         SchedulingPhase::Collection, true>
                       (parent, name_, this, capacity()));
 
-            if(ArrayT == ArrayType::AGED) {
+            if constexpr (ArrayT == ArrayType::AGED) {
                 age_collector_.reset(new collection::IterableCollector<AgedArrayCollectorProxy>
                                      (parent, name_ + "_age_ordered",
                                       &aged_array_col_, capacity()));
@@ -860,13 +899,48 @@ namespace sparta
             return aged_list_;
         }
 
+        /**
+         * \brief Update the relative age information for each entry. This is useful
+         * for the users to know the age of an entry. Age information has to be
+         * updated for all entries at once. But only needs to be updated when any
+         * entry is deallocated.
+         */
+        void updateRelativeAge_()
+        {
+            sparta_assert(ArrayT == ArrayType::AGED);
+
+            // Since our data_list_ always adds new items to the
+            // front.  The oldest data is actually kept at the end of
+            // the list.  We can iterate from the end to find the nth
+            // oldest item.
+            auto it = aged_list_.rbegin();
+            uint32_t idx = invalid_entry_;
+            const uint32_t size = aged_list_.size();
+            for(uint32_t i = 0; i < size; ++i)
+            {
+                idx = *it;
+                ++it;
+                // Double check that it's a valid index.
+                sparta_assert(isValid(idx));
+                // Upate the relaive age ID
+                array_[idx].age_rel_id = i;
+            }
+        }
+
         template<typename U>
         void writeImpl_(const uint32_t idx, U&& dat)
         {
             sparta_assert(idx < num_entries_,
                         "Cannot write to an index outside the bounds of the array.");
-            sparta_assert(valid_index_set_.find(idx) == valid_index_set_.end(),
-                        "It is illegal write over an already valid index.");
+
+            // We're overwriting an entry, clear valid and age information.
+            if(SPARTA_EXPECT_FALSE(isValid(idx)))
+            {
+                --num_valid_;
+                if constexpr (ArrayT == ArrayType::AGED) {
+                    aged_list_.erase(array_[idx].list_pointer);
+                }
+            }
 
             // Since we are not timed. Write the data and validate it,
             // then do pipeline collection.
@@ -874,19 +948,22 @@ namespace sparta
             valid_index_set_.insert(idx);
 
             // Timestamp the entry in the array, for fast age comparison between two indexes.
-            array_[idx].age_id = next_age_id_;
-            ++next_age_id_;
+            array_[idx].age_abs_id = next_age_abs_id_;
+            ++next_age_abs_id_;
 
+            // Validate the entry and increase valids
             array_[idx].valid = true;
             ++num_valid_;
 
             // Maintain our age order if we are an aged array.
-            if(ArrayT == ArrayType::AGED)
+            if constexpr (ArrayT == ArrayType::AGED)
             {
                 // To maintain aged items, add the index to the front
                 // of a list.
                 aged_list_.push_front(idx);
                 array_[idx].list_pointer = aged_list_.begin();
+                // Update the relative age IDs
+                updateRelativeAge_();
             }
 
             // Update occupancy counter.
@@ -925,7 +1002,7 @@ namespace sparta
         // A counter used to assign a unique age id to every newly
         // written valid entry to the array for fast age comparisons
         // between indexes.
-        uint64_t next_age_id_;
+        uint64_t next_age_abs_id_;
 
         //////////////////////////////////////////////////////////////////////
         // Counters
@@ -951,13 +1028,13 @@ namespace sparta
         name_(name),
         num_entries_(num_entries),
         num_valid_(0),
-        next_age_id_(0)
+        next_age_abs_id_(0)
     {
         // Set up some vector's of a default size
         // to work as the underlying implementation structures of our array.
         array_.reset(static_cast<ArrayPosition *>(malloc(sizeof(ArrayPosition) * num_entries_)));
 
-        if(statset)
+        if((num_entries > 0) && statset)
         {
             utilization_.reset(new CycleHistogramStandalone(statset, clk,
                                                             name + "_utilization",

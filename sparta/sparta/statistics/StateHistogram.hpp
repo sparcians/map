@@ -237,4 +237,4 @@ private:
     uint32_t curr_value_ = 0; //!< Last value updated
 }; // class StateHistogram
 
-}; // namespace sparta
+} // namespace sparta

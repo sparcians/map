@@ -10,7 +10,7 @@
  * \brief Test for sparta smart lexical casting
  */
 
-TEST_INIT;
+TEST_INIT
 
 //! \brief Macro for comparing smart lexical cast result with another value
 #define SLC_U_EQUAL(x,y) EXPECT_EQUAL(sparta::utils::smartLexicalCast<uint64_t>((x), end_pos), (y));

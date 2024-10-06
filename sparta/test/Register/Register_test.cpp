@@ -25,7 +25,7 @@
  * to register sizes and layouts may be omitted from this test.
  */
 
-TEST_INIT;
+TEST_INIT
 
 using namespace sparta;
 
@@ -267,7 +267,7 @@ void testFieldRegisterWrite()
     };
     RootTreeNode root;
     DummyDevice good_dummy(&root);
-    std::unique_ptr<RegisterSet> regs(RegisterSet::create(&good_dummy, good_reg_defs));
+    std::unique_ptr<RegisterSet> regs = RegisterSet::create(&good_dummy, good_reg_defs);
     regs->getRegister("fp_reg")->getField("sp")->write(1);
     regs->getRegister("fp_reg")->getField("dp")->write(1);
 
@@ -304,7 +304,7 @@ void testGoodRegs()
 
     RootTreeNode root;
     DummyDevice good_dummy(&root);
-    std::unique_ptr<RegisterSet> good_regs(RegisterSet::create(&good_dummy, good_reg_defs));
+    std::unique_ptr<RegisterSet> good_regs = RegisterSet::create(&good_dummy, good_reg_defs);
 #ifndef REGISTER_SET_GET_ARCH_DATA_REMOVED
     EXPECT_TRUE(good_regs->getArchData().isLaidOut());
     std::cout << "Layout of good dummy regs:" << std::endl;
@@ -323,7 +323,6 @@ void testBadRegs()
         3,    // non-power-of-2-count regs not allowed
         5,    // non-power-of-2-count regs not allowed
         9,    // Just to prove that odd-byte-count regs are rejected; not just primes
-        8192  // 8192 Bytes per register is very likely too large
     };
 
     // Test each separately because ALL sizes must fail!
@@ -760,8 +759,8 @@ int main()
     root.bindTreeLate();
 
     // Construct some good and bad regs to test out size constraints
-    testFieldRegisterWrite();
-    testGoodRegs();
+    testFieldRegisterWrite();      // Create registers directly
+    testGoodRegs();                // Create registers directly
     testBadRegs();
 
 

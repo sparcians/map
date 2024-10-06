@@ -18,21 +18,8 @@
 //! Expand FLATTEN macro to inject forwarding follwed by argument
 #define SPARTA_FLATTEN(p_1) flattenNestedPairs(std::forward<Args>(args)..., p_1)
 
-//! Macro to inject last argument and close parenthesis
-#define _RESOLVED_1(p_1) p_1)
-
-//! Macro to inject both arguments and close parenthesis
-#define _RESOLVED_2(p_1, p_2) p_1, p_2)
-
-//! Helper macro expanding to _RESOLVED_2 when two arguments passsed,
-//  expanding to _RESOLVED_1 when one argument is passed
-#define GET_ARGS(_1, _2, FCN_NAME, ...) FCN_NAME
-
-//! Select one of the two overloads depending on number of remaining arguments
-#define _ADDPAIR_RESOLVE(...) GET_ARGS(__VA_ARGS__, _RESOLVED_2, _RESOLVED_1)(__VA_ARGS__)
-
 //! Helper macro to inject forwarding after first argument
-#define _ADDPAIR_UTIL(p_1, ...) addPair(p_1, std::forward<Args>(args)..., _ADDPAIR_RESOLVE(__VA_ARGS__)
+#define _ADDPAIR_UTIL(p_1, ...) addPair(p_1, std::forward<Args>(args)..., __VA_ARGS__)
 
 //! Expand ADDPAIR macro to inject forwarding after first argument
 #define SPARTA_ADDPAIR(...) _ADDPAIR_UTIL(__VA_ARGS__)
@@ -40,7 +27,7 @@
 // Each macro in this series of macros from 1 to 32
 // handles a special case where the number of arguments
 // passed are from 1 to 32
-#define _REGISTER_PAIRS_1(x, ...)                                                                            \
+#define _REGISTER_PAIRS_1(x)                                                                                 \
     ptr->x;
 
 #define _REGISTER_PAIRS_2(x, ...)                                                                            \
@@ -231,4 +218,3 @@
     _FUNCTION_START                                                                                          \
     _REGISTER_PAIRS_UTIL(COUNT_NARG(__VA_ARGS__), __VA_ARGS__)                                               \
     _FUNCTION_STOP
-

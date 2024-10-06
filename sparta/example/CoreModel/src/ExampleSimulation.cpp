@@ -25,6 +25,7 @@
 #include "simdb/impl/sqlite/SQLiteConnProxy.hpp"
 #include "simdb/impl/hdf5/HDF5ConnProxy.hpp"
 #include "simdb/utils/uuids.hpp"
+#include "simdb/utils/ObjectQuery.hpp"
 
 #include "Fetch.hpp"
 #include "Decode.hpp"
@@ -1198,6 +1199,7 @@ void ExampleSimulator::ExampleController::terminate_(const sparta::app::Simulati
 {
     std::cout << "  [control] Controller TERMINATE method has been called for simulation '"
               << sim->getSimName() << "'" << std::endl;
+    const_cast<sparta::Scheduler*>(sim->getScheduler())->stopRunning();
 }
 
 void ExampleSimulator::ExampleController::customEatCallback_()
@@ -1208,9 +1210,4 @@ void ExampleSimulator::ExampleController::customEatCallback_()
 void ExampleSimulator::ExampleController::customSleepCallback_()
 {
     std::cout << "  [control] Controller CUSTOM method has been called ('sleep')" << std::endl;
-}
-
-// Since the FlushManager does not have a subsequent source file
-namespace core_example {
-    constexpr char FlushManager::name[];
 }

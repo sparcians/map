@@ -11,6 +11,10 @@
 #include <Python.h>
 
 #include "wxPython/sip.h"
+
+#ifdef HAVE_SSIZE_T
+    #undef HAVE_SSIZE_T
+#endif
 #include "wxPython/wxpy_api.h"
 
 #include "wx/dcgraph.h"

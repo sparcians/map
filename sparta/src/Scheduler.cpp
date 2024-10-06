@@ -44,27 +44,13 @@ Scheduler::Scheduler() :
 
 Scheduler::Scheduler(const std::string& name, GlobalTreeNode* search_scope) :
     RootTreeNode(name, "DES Scheduler", search_scope),
-    current_tick_quantum_(nullptr),
-    dag_group_count_(1),
-    firing_group_count_(dag_group_count_ + 2),
-    dag_finalized_(false),
-    current_tick_(0), //init tick 0
-    elapsed_ticks_(0),
-    prev_wdt_tick_(0),
-    wdt_period_ticks_(0),
-    running_(false),
     stop_event_(new Scheduleable(CREATE_SPARTA_HANDLER(Scheduler, stopRunning), 0, SchedulingPhase::Trigger)),
     cancelled_event_(new Scheduleable(CREATE_SPARTA_HANDLER(Scheduler, cancelCallback_), 0, SchedulingPhase::Tick)),
-    events_fired_(0),
-    is_finished_(false),
-    current_group_firing_(0),
-    current_event_firing_(0),
     debug_(this,
            sparta::log::categories::DEBUG,
            "Scheduler debug messages including queue dump"),
     call_trace_logger_(this, (std::string)"calltrace",
                        "Scheduler Event Call Trace"),
-    latest_continuing_event_(0),
     sset_(this),
     scheduler_internal_clk_(new sparta::Clock("_internal_scheduler_clk", this)),
     ticks_roctr_(&sset_,
@@ -108,9 +94,17 @@ Scheduler::Scheduler(const std::string& name, GlobalTreeNode* search_scope) :
                        "Simulation wall clock runtime in seconds as measured on the host machine",
                        &sset_,
                        "host_wall_time_count_ms/1000.0"),
-    user_time_cnt_  (&sset_, "host_user_time_count_ms",   "User scheduler performance (not simulated time)",   Counter::COUNT_NORMAL, &user_time_),
-    system_time_cnt_(&sset_, "host_system_time_count_ms", "System scheduler performance (not simulated time)", Counter::COUNT_NORMAL, &system_time_),
-    wall_time_cnt_  (&sset_, "host_wall_time_count_ms",   "Wall scheduler performance (not simulated time)",   Counter::COUNT_NORMAL, &wall_time_),
+    events_fired_cnt_(&sset_, "events_fired",              "Scheduler events fired during simulation",
+                      Counter::COUNT_NORMAL, &events_fired_),
+    user_time_cnt_   (&sset_, "host_user_time_count_ms",
+                      "User scheduler performance (not simulated time) in milliseconds",
+                      Counter::COUNT_NORMAL, &user_time_),
+    system_time_cnt_ (&sset_, "host_system_time_count_ms",
+                      "System scheduler performance (not simulated time) in milliseconds",
+                      Counter::COUNT_NORMAL, &system_time_),
+    wall_time_cnt_   (&sset_, "host_wall_time_count_ms",
+                      "Wall scheduler performance (not simulated time) in milliseconds",
+                      Counter::COUNT_NORMAL, &wall_time_),
     es_uptr_(new EventSet(this))
 #ifdef SYSTEMC_SUPPORT
     , item_scheduled_(this, "item_scheduled", "Broadcasted when something is scheduled", "item_scheduled")
@@ -297,10 +291,70 @@ void Scheduler::restartAt(Tick t)
     }
 }
 
+Scheduler::TickQuantum* Scheduler::determineTickQuantum_(Tick rel_time)
+{
+    const Tick index_time = calcIndexTime(rel_time);
+
+    // This might look inefficient, but 99.9% of the time the
+    // event being scheduled is either on the current time
+    // quantum or the next.  A straight walk of two elements
+    // is faster than a map lookup.
+    TickQuantum * rit = current_tick_quantum_;
+    TickQuantum * last_tq = nullptr;
+    while(rit != nullptr) {
+        if(rit->tick == index_time) {
+            // This is the time quantum to add the event to
+            break;
+        }
+        else if(rit->tick > index_time) {
+            // We're past the tick quantum.  Insert before rit
+            rit = tick_quantum_allocator_.create(firing_group_count_);
+            rit->tick = index_time;
+
+            // rit could have pointed to the
+            // current_tick_quantum_.  If so, move the
+            // current_tick_quantum_ back.
+            if(SPARTA_EXPECT_FALSE(last_tq == nullptr)) {
+                rit->next = current_tick_quantum_;
+                current_tick_quantum_ = rit;
+            }
+            else {
+                rit->next = last_tq->next;
+                last_tq->next = rit;
+            }
+            break;
+        }
+        last_tq = rit;
+        rit = rit->next;
+    }
+    // If we reached the end of our search in the time quantums,
+    // we need to append this event to the end of the list
+    //if(SPARTA_EXPECT_FALSE(rit == nullptr))
+    if(rit == nullptr)
+    {
+        rit = tick_quantum_allocator_.create(firing_group_count_);
+        rit->tick = index_time;
+        if(SPARTA_EXPECT_TRUE(last_tq != nullptr)) {
+            last_tq->next = rit;
+        }
+        else {
+            // If the last_tq was null, there is a good change the
+            // current_tick_quantum_ is null as well
+            if(current_tick_quantum_ == nullptr) {
+                current_tick_quantum_ = rit;
+            }
+        }
+    }
+
+    return rit;
+}
+
+
 void Scheduler::scheduleEvent(Scheduleable * scheduleable,
                               Tick rel_time,
                               uint32_t dag_group,
-                              bool continuing)
+                              bool continuing,
+                              bool add_if_not_scheduled)
 {
     sparta_assert(dag_finalized_ == true,
                 "Cannot schedule an event before the DAG has been finalized.  The Scheduleable: "
@@ -346,7 +400,12 @@ void Scheduler::scheduleEvent(Scheduleable * scheduleable,
 
     auto rit = determineTickQuantum_(rel_time);
 
-    rit->addEvent(firing_group, scheduleable);
+    if (false == add_if_not_scheduled) {
+        rit->addEvent(firing_group, scheduleable);
+    }
+    else {
+        rit->addEventIfNotScheduled(firing_group, scheduleable);
+    }
 
     if(continuing){
         // We're not done.
@@ -361,7 +420,6 @@ void Scheduler::scheduleEvent(Scheduleable * scheduleable,
 #endif
     }
 }
-
 
 void Scheduler::scheduleAsyncEvent(Scheduleable *scheduleable,
                                    Scheduler::Tick rel_tick)
@@ -380,6 +438,13 @@ void Scheduler::run(Tick num_ticks,
     sparta_assert(dag_finalized_ == true, "Cannot run the scheduler before the scheduler is finalized");
     sparta_assert(running_ == false, "Cannot run the scheduler because it is already running. "
                 "This is either a recursive run() call or an even more severe problem");
+
+    if(SPARTA_EXPECT_FALSE(debug_)) {
+        debug_ << SPARTA_CURRENT_COLOR_GREEN
+               << "=== SCHEDULER: Run called num_ticks: " << num_ticks
+               << " exacting_run: " << exacting_run
+               << SPARTA_CURRENT_COLOR_NORMAL;
+    }
 
     // This does happen sometimes, in the SysC environment.
     if(SPARTA_EXPECT_FALSE(num_ticks == 0)) {
@@ -517,7 +582,7 @@ void Scheduler::run(Tick num_ticks,
         const uint32_t grp_cnt = firing_group_count_;
         while(current_group_firing_ < grp_cnt)
         {
-            TickQuantum::Scheduleables & events = quantum->groups[current_group_firing_];
+            TickQuantum::ScheduleableGroup & events = quantum->groups[current_group_firing_];
 
             // The design of this for loop is important to keep as is.
             // The events array can grow in size after firing the
@@ -615,22 +680,20 @@ void Scheduler::run(Tick num_ticks,
 
 bool Scheduler::isScheduled(const Scheduleable * scheduleable, Tick rel_time) const
 {
-    uint32_t dag_group = scheduleable->getGroupID();
+    const uint32_t dag_group =
+        (scheduleable->getGroupID() != 0 ? scheduleable->getGroupID() + 1 : group_zero_);
     const Tick index_time = calcIndexTime(rel_time);
     const TickQuantum * rit = current_tick_quantum_;
-    while(rit != nullptr) {
+    while(rit != nullptr)
+    {
         if(rit->tick == index_time)
         {
-            if(SPARTA_EXPECT_FALSE(dag_group == 0)) {
-                dag_group = group_zero_;
-            } else {
-                dag_group += 1;
-            }
-
             // This is the time quantum requested
-            for(const Scheduleable * scheduled : rit->groups[dag_group])
+            const auto events = rit->groups[dag_group];
+            const auto grp_size = events.size();
+            for(size_t idx = 0; idx < grp_size; ++idx)
             {
-                if(scheduled == scheduleable) {
+                if(events[idx] == scheduleable) {
                     return true;
                 }
             }
@@ -647,19 +710,17 @@ bool Scheduler::isScheduled(const Scheduleable * scheduleable, Tick rel_time) co
 
 bool Scheduler::isScheduled(const Scheduleable * scheduleable) const
 {
-    uint32_t dag_group = scheduleable->getGroupID();
-    if(SPARTA_EXPECT_FALSE(dag_group == 0)) {
-        dag_group = group_zero_;
-    } else {
-        dag_group += 1;
-    }
+    const uint32_t dag_group =
+        (scheduleable->getGroupID() != 0 ? scheduleable->getGroupID() + 1 : group_zero_);
 
     const TickQuantum * rit = current_tick_quantum_;
     while(rit != nullptr)
     {
-        for(const Scheduleable * scheduled : rit->groups[dag_group])
+        const auto events = rit->groups[dag_group];
+        const auto grp_size = events.size();
+        for(size_t idx = 0; idx < grp_size; ++idx)
         {
-            if(scheduled == scheduleable) {
+            if(events[idx] == scheduleable) {
                 return true;
             }
         }
@@ -680,7 +741,7 @@ void Scheduler::cancelEvent(const Scheduleable * scheduleable)
     TickQuantum * rit = current_tick_quantum_;
     while(rit != nullptr)
     {
-        TickQuantum::Scheduleables & scheduleables = rit->groups[dag_group];
+        TickQuantum::ScheduleableGroup & scheduleables = rit->groups[dag_group];
         for(uint32_t i = 0; i < scheduleables.size(); ++i)
         {
             if(scheduleables[i] == scheduleable) {
@@ -713,7 +774,7 @@ void Scheduler::cancelEvent(const Scheduleable * scheduleable, Tick rel_time)
     {
         if(rit->tick == index_time)
         {
-            TickQuantum::Scheduleables & scheduleables = rit->groups[dag_group];
+            TickQuantum::ScheduleableGroup & scheduleables = rit->groups[dag_group];
             for(uint32_t i = 0; i < scheduleables.size(); ++i)
             {
                 if(scheduleables[i] == scheduleable) {

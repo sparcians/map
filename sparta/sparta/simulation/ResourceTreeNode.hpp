@@ -79,11 +79,11 @@ namespace sparta
                     << getLocation() << " cannot be null";
             }
 
-            initConfigurables_();
-
             if(parent != nullptr){
                 parent->addChild(this); // Do not inherit parent state
             }
+
+            initConfigurables_();
         }
 
         //! \brief Alternate Constructor

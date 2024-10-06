@@ -1,56 +1,99 @@
 #!/usr/bin/env bash
 
-set -x
+# -*- mode: jinja-shell -*-
 
-echo -e "\n\nInstalling a fresh version of Miniforge."
-if [[ ${CI} == "travis" ]]; then
-  echo -en 'travis_fold:start:install_miniforge\\r'
-fi
+source .scripts/logging_utils.sh
+
+set -xe
+
+MINIFORGE_HOME=${MINIFORGE_HOME:-${HOME}/miniforge3}
+
+( startgroup "Installing a fresh version of Miniforge" ) 2> /dev/null
+
 MINIFORGE_URL="https://github.com/conda-forge/miniforge/releases/latest/download"
-MINIFORGE_FILE="Miniforge3-MacOSX-x86_64.sh"
+MINIFORGE_FILE="Miniforge3-MacOSX-$(uname -m).sh"
 curl -L -O "${MINIFORGE_URL}/${MINIFORGE_FILE}"
-bash $MINIFORGE_FILE -b
-if [[ ${CI} == "travis" ]]; then
-  echo -en 'travis_fold:end:install_miniforge\\r'
-fi
+rm -rf ${MINIFORGE_HOME}
+bash $MINIFORGE_FILE -b -p ${MINIFORGE_HOME}
 
-echo -e "\n\nConfiguring conda."
-if [[ ${CI} == "travis" ]]; then
-  echo -en 'travis_fold:start:configure_conda\\r'
-fi
+( endgroup "Installing a fresh version of Miniforge" ) 2> /dev/null
 
-source ${HOME}/miniforge3/etc/profile.d/conda.sh
+( startgroup "Configuring conda" ) 2> /dev/null
+
+source ${MINIFORGE_HOME}/etc/profile.d/conda.sh
 conda activate base
+export CONDA_SOLVER="libmamba"
+export CONDA_LIBMAMBA_SOLVER_NO_CHANNELS_FROM_INSTALLED=1
 
-echo -e "\n\nInstalling conda-forge-ci-setup=3 and conda-build."
-conda install -n base --quiet --yes conda-forge-ci-setup=3 conda-build pip
+mamba install --update-specs --quiet --yes --channel conda-forge --strict-channel-priority \
+    pip mamba conda-build conda-forge-ci-setup=4 "conda-build>=24.1"
+mamba update --update-specs --yes --quiet --channel conda-forge --strict-channel-priority \
+    pip mamba conda-build conda-forge-ci-setup=4 "conda-build>=24.1"
 
 
 
 echo -e "\n\nSetting up the condarc and mangling the compiler."
 setup_conda_rc ./ ./conda.recipe ./.ci_support/${CONFIG}.yaml
-mangle_compiler ./ ./conda.recipe .ci_support/${CONFIG}.yaml
 
-echo -e "\n\nMangling homebrew in the CI to avoid conflicts."
-/usr/bin/sudo mangle_homebrew
-/usr/bin/sudo -k
+if [[ "${CI:-}" != "" ]]; then
+  mangle_compiler ./ ./conda.recipe .ci_support/${CONFIG}.yaml
+fi
+
+if [[ "${CI:-}" != "" ]]; then
+  echo -e "\n\nMangling homebrew in the CI to avoid conflicts."
+  /usr/bin/sudo mangle_homebrew
+  /usr/bin/sudo -k
+else
+  echo -e "\n\nNot mangling homebrew as we are not running in CI"
+fi
+
+if [[ "${sha:-}" == "" ]]; then
+  sha=$(git rev-parse HEAD)
+fi
 
 echo -e "\n\nRunning the build setup script."
 source run_conda_forge_build_setup
 
 
-if [[ ${CI} == "travis" ]]; then
-  echo -en 'travis_fold:end:configure_conda\\r'
-fi
 
-set -e
+( endgroup "Configuring conda" ) 2> /dev/null
 
-echo -e "\n\nMaking the build clobber file and running the build."
+echo -e "\n\nMaking the build clobber file"
 make_build_number ./ ./conda.recipe ./.ci_support/${CONFIG}.yaml
 
-conda build ./conda.recipe -m ./.ci_support/${CONFIG}.yaml --suppress-variables --clobber-file ./.ci_support/clobber_${CONFIG}.yaml ${EXTRA_CB_OPTIONS:-}
+if [[ -f LICENSE.txt ]]; then
+  cp LICENSE.txt "conda.recipe/recipe-scripts-license.txt"
+fi
 
-if [[ "${UPLOAD_PACKAGES}" != "False" ]]; then
-  echo -e "\n\nUploading the packages."
-  upload_package  ./ ./conda.recipe ./.ci_support/${CONFIG}.yaml
+if [[ "${BUILD_WITH_CONDA_DEBUG:-0}" == 1 ]]; then
+    if [[ "x${BUILD_OUTPUT_ID:-}" != "x" ]]; then
+        EXTRA_CB_OPTIONS="${EXTRA_CB_OPTIONS:-} --output-id ${BUILD_OUTPUT_ID}"
+    fi
+    conda debug ./conda.recipe -m ./.ci_support/${CONFIG}.yaml \
+        ${EXTRA_CB_OPTIONS:-} \
+        --clobber-file ./.ci_support/clobber_${CONFIG}.yaml
+
+    # Drop into an interactive shell
+    /bin/bash
+else
+
+    conda-build ./conda.recipe -m ./.ci_support/${CONFIG}.yaml \
+        --suppress-variables ${EXTRA_CB_OPTIONS:-} \
+        --clobber-file ./.ci_support/clobber_${CONFIG}.yaml \
+        --extra-meta flow_run_id="$flow_run_id" remote_url="$remote_url" sha="$sha"
+
+    ( startgroup "Inspecting artifacts" ) 2> /dev/null
+
+    # inspect_artifacts was only added in conda-forge-ci-setup 4.6.0
+    command -v inspect_artifacts >/dev/null 2>&1 && inspect_artifacts || echo "inspect_artifacts needs conda-forge-ci-setup >=4.6.0"
+
+    ( endgroup "Inspecting artifacts" ) 2> /dev/null
+
+    ( startgroup "Uploading packages" ) 2> /dev/null
+
+    if [[ "${UPLOAD_PACKAGES}" != "False" ]] && [[ "${IS_PR_BUILD}" == "False" ]]; then
+      upload_package  ./ ./conda.recipe ./.ci_support/${CONFIG}.yaml
+    fi
+
+    ( endgroup "Uploading packages" ) 2> /dev/null
 fi

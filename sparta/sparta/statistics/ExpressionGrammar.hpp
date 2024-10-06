@@ -6,11 +6,6 @@
 
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/spirit/include/phoenix_fusion.hpp>
-#include <boost/spirit/include/phoenix_stl.hpp>
-#include <boost/spirit/include/phoenix_object.hpp>
 
 #include "sparta/statistics/Expression.hpp"
 #include "sparta/simulation/TreeNode.hpp"
@@ -18,8 +13,6 @@
 #include <string>
 
 // Alias deep boost namespaces
-namespace fusion = boost::fusion;
-namespace phoenix = boost::phoenix;
 namespace qi = boost::spirit::qi;
 namespace ascii = boost::spirit::ascii;
 
@@ -37,7 +30,7 @@ namespace sparta {
 class ExpressionGrammar :
     public qi::grammar<std::string::const_iterator,
                        Expression(),
-                       boost::spirit::ascii::space_type>
+                       ascii::space_type>
 {
     /*!
      * \brief Symbol table for constant
@@ -62,7 +55,7 @@ class ExpressionGrammar :
          * \brief Constructor
          * \param n TreeNode context for evaluating builtin variables
          * \param used TreeNodes which cannot be variables because they have
-         * already been used by an expression containing this one
+         *             already been used by an expression containing this one
          */
         builtin_vars_(sparta::TreeNode* n,
                       std::vector<const TreeNode*>& used);
@@ -74,23 +67,25 @@ class ExpressionGrammar :
      */
     struct variable_ : qi::grammar<std::string::const_iterator,
                                    Expression(),
-                                   boost::spirit::ascii::space_type>
+                                   ascii::space_type>
     {
         /*!
          * \brief Constructor
          * \param n TreeNode context for evaluating dynamic variables
          * \param used TreeNodes which cannot be variables because they have
-         * already been used by an expression containing this one
+         *             already been used by an expression containing this one
+         * \param report_si Exising report statistic instances
          */
         variable_(sparta::TreeNode* n,
-                  std::vector<const TreeNode*>& used);
+                  std::vector<const TreeNode*>& used,
+                  const StatisticPairs & report_si);
 
         qi::rule<std::string::const_iterator,
                  Expression(),
-                 boost::spirit::ascii::space_type> start;
+                 ascii::space_type> start;
         qi::rule<std::string::const_iterator,
                  std::string(),
-                 boost::spirit::ascii::space_type> str;
+                 ascii::space_type> str;
     }; // struct variable_
 
     /*!
@@ -198,7 +193,7 @@ class ExpressionGrammar :
 
     typedef qi::rule<std::string::const_iterator,
                      Expression(),
-                     boost::spirit::ascii::space_type> ExpressionRule;
+                     ascii::space_type> ExpressionRule;
 
     ExpressionRule expression,
                    term,
@@ -214,9 +209,12 @@ public:
      * \param already_used Nodes which have been used by an expression
      * containing this. These Nodes are off-limits for parsing here and should
      * throw an Exception if encountered
+     * \param report_si StatisticInstance objects already created from
+     *                   previous expressions that now live in the report
      */
     ExpressionGrammar(sparta::TreeNode* root,
-                      std::vector<const TreeNode*>& already_used);
+                      std::vector<const TreeNode*>& already_used,
+                      const StatisticPairs &report_si);
 
 
 }; // struct grammar
@@ -225,5 +223,3 @@ public:
         } // namespace expression
     } // namespace statistics
 } // namespace sparta
-
-#pragma once

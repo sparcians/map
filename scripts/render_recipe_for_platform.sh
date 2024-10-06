@@ -47,18 +47,23 @@ fi
 
 case "$(uname)" in
     Darwin)
-	conda_platform='osx_64'
+        case "$(uname -m)" in
+            x86_64)
+	            conda_platform='osx_64'
+                ;;
+            arm64)
+	            conda_platform='osx_arm64'
+                ;;
+        esac
 	;;
     Linux)
         conda_platform='linux_64'
 	;;
     *)
-	echo "::ERROR:: Unknown uname '$(uname)'"
-	exit 1
+	    echo "::ERROR:: Unknown uname '$(uname)'"
+	    exit 1
 	;;
 esac
-
-pyver="3.7"
 
 # script must run from root of the repo
 script_bin=$(dirname $0)
@@ -66,7 +71,7 @@ cd "$script_bin/.."
 
 
 # variant file names are subject to change when we rerender the CI
-variant_file=".ci_support/${conda_platform}_python${pyver}.____cpython.yaml"
+variant_file=".ci_support/${conda_platform}_.yaml"
 if [[ ! -e "$variant_file" ]]; then
     echo "::ERROR:: variant file '$PWD/$variant_file' does not exist. Giving up."
     exit 1
@@ -86,7 +91,8 @@ echo "Rendering recipe in $PWD/conda.recipe"
 # from 'conda render'
 export SYSTEM_DEFAULTWORKINGDIRECTORY="$PWD"
 
-
+# Make sure to have conda-forge channel to resolve dependencies
+conda config --add channels conda-forge
 # Render the recipe into a fully-resolved yaml file
 (set -x; conda render -m "$variant_file" --file "$rendered_output" conda.recipe)
 

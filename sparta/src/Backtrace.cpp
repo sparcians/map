@@ -195,7 +195,7 @@ void dump_backtrace(FILE* f, void* caller_address = nullptr)
         if(prog != ""){
             // Extract line information from addr2line. Fails silently if not present
             char syscom[256];
-            sprintf(syscom, "addr2line %p -e %s", array[i], prog.c_str()); //last parameter is the name of this app
+            snprintf(syscom, sizeof(syscom), "addr2line %p -e %s", array[i], prog.c_str()); //last parameter is the name of this app
             FILE* fp = popen(syscom, "r");
             if(fp){
                 fprintf(f, "     ");
@@ -273,7 +273,7 @@ void BacktraceData::render(std::ostream& o, bool line_info) const
             if(prog != ""){
                 // Extract line information from addr2line. Fails silently if not present
                 char syscom[256];
-                sprintf(syscom, "addr2line %p -e %s", addr, prog.c_str()); //last parameter is the name of this app
+                snprintf(syscom, sizeof(syscom), "addr2line %p -e %s", addr, prog.c_str()); //last parameter is the name of this app
                 FILE* fp = popen(syscom, "r");
                 if(fp){
                     o << "      ";

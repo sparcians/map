@@ -12,8 +12,6 @@ class TreeNode;
 
 namespace rdp = sparta::dynamic_pipeline;
 
-constexpr char rdp::GenericUnit::name[];
-
 rdp::GenericUnit::GenericUnit(sparta::TreeNode* node,
                               const rdp::GenericUnit::GenericUnitParameterSet*) :
     sparta::Unit{node}{}

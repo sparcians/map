@@ -13,7 +13,6 @@ sparta_application(sparta_skeleton)
 #
 # Testing
 #
-include (../../test/TestingMacros.cmake)
 sparta_copy(sparta_skeleton "test_final_cfg.sh")
 sparta_copy(sparta_skeleton "test_arch_with_override.sh")
 

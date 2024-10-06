@@ -7,7 +7,7 @@
 #include <iostream>
 #include <string>
 
-TEST_INIT;
+TEST_INIT
 
 class Foo
 {

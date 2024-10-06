@@ -3,15 +3,14 @@
 #include "sparta/report/db/SingleUpdateReport.hpp"
 
 #include <cassert>
-#include <zconf.h>
 #include <utility>
+#include <zlib.h>
 
 #include "simdb/ObjectManager.hpp"
 #include "simdb/ObjectRef.hpp"
 #include "simdb/TableRef.hpp"
 #include "simdb/utils/ObjectQuery.hpp"
 #include "sparta/utils/SpartaException.hpp"
-#include "zlib.h"
 #include "simdb/Constraints.hpp"
 #include "simdb/schema/ColumnTypedefs.hpp"
 

@@ -102,8 +102,3 @@ namespace sparta
     };
 
 } // namespace sparta
-
-//! \brief Required in simulator source to define some globals.
-#define SPARTA_GLOBAL_TREENODE_BODY                               \
-    constexpr char sparta::GlobalTreeNode::GLOBAL_NODE_NAME[];
-

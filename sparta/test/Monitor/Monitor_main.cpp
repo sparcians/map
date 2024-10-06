@@ -12,7 +12,7 @@
 #include "sparta/utils/Enum.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 using namespace std;
 using namespace sparta;

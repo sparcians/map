@@ -6,22 +6,23 @@ skip_render:
   - .gitignore
   - LICENSE
   - build-locally.py
-  - .github/CONTRIBUTING.md
-  - .github/ISSUE_TEMPLATE.md
-  - .github/PULL_REQUEST_TEMPLATE.md
-  - .circleci/config.yml
-  - .github/workflows/main.yml
-  - .github/workflows/webservices.yml
-  - .github/workflows/automerge.yml
+  - .github
 provider:
-  linux: travis
-  osx: azure
+  linux_64: circle
+  osx_64: azure
+  osx_arm64: azure
   win: None
   linux_ppc64le: None
   linux_aarch64: None
+build_platform:
+  osx_arm64: osx_arm64
 azure:
   force: False
+  upload_packages: False
+  store_build_artifacts: True
+circle:
   upload_packages: False
 github:
   user_or_org: sparcians
   repo_name: map
+upload_on_branch: never_upload_packages

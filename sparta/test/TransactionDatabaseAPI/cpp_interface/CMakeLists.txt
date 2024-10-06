@@ -2,6 +2,4 @@ project(Transactiondatabaseapi_cpp_test_cpp_interface)
 
 sparta_add_test_executable(TransactionDatabaseAPI_cpp_test TransactionDatabaseAPI_main.cpp)
 
-include(../TestingMacros.cmake)
-
 sparta_test(TransactionDatabaseAPI_cpp_test)

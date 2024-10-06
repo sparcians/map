@@ -18,7 +18,7 @@
  * \brief Test for TreeNode, parameters, and simple parsing of configuration files
  */
 
-TEST_INIT;
+TEST_INIT
 
 //! Simple device which defines its own parameter set object.
 class SimpleDevice : public sparta::Resource

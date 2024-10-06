@@ -1,25 +1,22 @@
 
 /*!
-  \page formats Sparta File formats
+  \page formats Sparta File Formats
 
   -# \ref param_format
   -# \ref report_def_format
   -# \ref report_out_format
-  -# \ref pipeout_format
   -# \ref checkpoint_format
   -# \ref log_out_format
 
   \page param_format Parameter/Configuration Format (.cfg,.yaml)
   This page describes the grammar and usage of a sparta parameter file.
 
-  \todo Complete this page
-
   Configuration files are a subset of YAML (<a href="http://www.yaml.org/spec/1.2/spec.html">spec v1.2</a>)
-  used to assign values to parameters in a Sparta device Tree
-  (\ref trees). The format is simple: a typical YAML file consists of nested YAML maps which describe
+  used to assign values to parameters in a Sparta TreeNode hierarchy
+  (\ref sparta::TreeNode). The format is simple: a typical YAML file consists of nested YAML maps which describe
   how the device tree is traversed to assign parameters. Each key within these maps represents a
-  relative path in the device tree. Each value can be another map (implying descent depeer into the
-  tree) or a value to assign to the location indicated by the key. These leav values are either a
+  relative path in the device tree. Each value can be another map (implying descent deeper into the
+  tree) or a value to assign to the location indicated by the key. These leaf values are either a
   scalar (e.g. string, integer) or a sequence (of strings, integers, other vectors, etc.)
 
   Configuration files are typically applied at the global namespace in the device tree (above the
@@ -32,13 +29,13 @@
   # YAML comment. Lost during interpretation
   top:
      a:
-      params:
-      param1: 1
-      param2: foo
+       params:
+          param1: 1
+          param2: foo
   \endcode
 
-  This tree assigns values "1" and "foo" to the sparta::Parameter nodes located at "top.a.params.param1"
-  and "top.a.params.param2" respectively. It is up to the sparta::Parameter objets to interpret the as
+  This tree assigns values `1` and `foo` to the sparta::Parameter nodes located at `top.a.params.param1`
+  and `top.a.params.param2` respectively. It is up to the sparta::Parameter objets to interpret the value as
   a native type instead of a string (if necessary).
 
   Note that multiple levels in the tree can be specified in one mapping key. The previous
@@ -55,8 +52,8 @@
 
   \code
   top.a.params:
-  one_dimension_vec_param: [1,2,3,4,5]  # This can be read by a 1-dimensional vector parameter
-  two_dimension_vec_param: [[1],[2,3,4]]  # This can be read by a 2-dimensional vector parameter
+     one_dimension_vec_param: [1,2,3,4,5]  # This can be read by a 1-dimensional vector parameter
+     two_dimension_vec_param: [[1],[2,3,4]]  # This can be read by a 2-dimensional vector parameter
   \endcode
 
   It is also important that YAML keys and values cannot begin with '*' or '?' and must not contain
@@ -65,7 +62,7 @@
   \section param_format_nesting Nesting
 
   It is often useful to nest configuration files. For example if a simualtor contains repeating
-  hierarchies, one configuration file can be used for each level. Using the reserved "<b>include</b>"
+  hierarchies, one configuration file can be used for each level. Using the reserved <b>include</b>
   key allows a configuration file to specify that another configuration file should be applied at that
   context. At this time, the second configuration file is expected to be a relative path to the
   currently-parsed config file.
@@ -78,7 +75,7 @@
         a_param_1: 1
         a_param_2: 2
      b:
-  include: b.yaml # Applies b.yaml configuration in this context (top.b)
+        include: b.yaml # Applies b.yaml configuration in this context (top.b)
   \endcode
 
   \code
@@ -98,7 +95,7 @@
   dictate how those parameters values are applied.
 
   Following normal configuration file syntax, parameter-assignment attributes can be attached to a
-  parameter using a value "<ATTRIBUTE>" (where ATTRIUTE is some meaningful attribute name) as if it
+  parameter using a value "<ATTRIBUTE>" (where ATTRIBUTE is some meaningful attribute name) as if it
   were a typical value being assigned to a parameter. These attribute names are <b>case-sensitive</b>.
   \code
   top.foo.params:
@@ -133,8 +130,8 @@
   top:
      core*:
         version_1_component:
-        params:
-        "*": <OPTIONAL>
+           params:
+              "*": <OPTIONAL>
   \endcode
 
   This can also be used to generalize parameter files by assigning values using overly-broad paths
@@ -151,13 +148,14 @@
      a:
        params:
        param1: 12
+
   top.a:
     "b":
      {
         "params.param1": 56,
-         "params": {
-         "#include" : "test_other.yaml"
-         }
+        "params": {
+             "#include" : "test_other.yaml"
+        }
      }
      params:
        "param5":   [1.0, 1.1, 2, 3, 5.5]
@@ -167,7 +165,8 @@
 
        # This is a comment that will be lost
   "top.a.params.param2": 34
-  "top.a.params.param3": [5,6,7,8]
+  "top.a.params.param3": |
+      [5,6,7,8]
   top.a.params.param9 : string with spaces
   "// block comment":
   {
@@ -213,9 +212,6 @@
   In this way, the same report definition can be used to generate text, csv, python, json, and html
   output.
 
-  \section report_def Implementation
-  This is implemented in \ref Report.cpp, specifically in the \ref sparta::ReportFileParserYAML class
-
   \section report_def_structure Structure
   The report definition is a YAML file consisting of nested dictionaries which specify scope in the
   Sparta device tree on which the report is being constructed.
@@ -260,11 +256,11 @@
   Field names within a report must be unique. However, \ref report_def_subreports can be used to get
   around this restriction. \ref report_def_field_name_variables help accomplish this.
 
-  <em>The code in \ref sparta::Report refers to it's report fields as "statistics" because it makes sense
+  <em>The code in sparta::Report refers to it's report fields as "statistics" because it makes sense
   within the scope of that code. Fom an end-user perspective, it is less confusing toe call them
   fields.</em>
 
-  Report fields can be added using a report definition using either \ref report_def_field_declaration
+  Report fields can be added using a report definition using either \ref report_def_field_declarations
   or \ref report_def_autopop.
 
   \subsection report_def_example Example Report Definition
@@ -316,10 +312,12 @@
   The report above would be called "Example Report" and every field in every subreport would be
   formatted to 2 decimal places (see \ref report_def_style).
 
-  Note the "top:" line just within the highest content section. This is a scope qualifier (see
-  \ref report_def_scope_qual) which tells the report parser that any node names or node name patterns
-  nested within the dictionaries associated with that "top:" section will be resolved within the scope
-  of "top". For example, "core0.foo" would resolve to "top.core0.foo" within that block.
+  Note the "top:" line just within the highest content section. This
+  is a scope qualifier which tells the report parser that any node
+  names or node name patterns nested within the dictionaries
+  associated with that "top:" section will be resolved within the
+  scope of "top". For example, "core0.foo" would resolve to
+  "top.core0.foo" within that block.
 
   A subreport called "Automatic Summary" would be created and would be populated by all counters/stats
   below the top-level "top" node which were created with "SUMMARY"
@@ -375,11 +373,11 @@
   The wildcard in the node location indicates that when resolving this location to an actual node
   within the current scope ("top" in this case), proceed with any child having that name. In this
   example, "core*" could be substituted with "core0" and "core1". This is a very primitive glob-like
-  pattern matching language
+  pattern matching language.
 
   Since both "core0" and "core1" will be matched, this line will result in the addition of a field for
   "top.core0.foo.stats.bin" as well as "top.core1.foo.stats.bin". See \ref report_def_scope_wildcards
-  for more detail on these wildcards
+  for more detail on these wildcards.
 
   The substitutions made when pattern matching "core*" to "core0" and "core1" are available to the
   field name on the right of the ':'. "%1" refers to the first (most recent) subsitution on the
@@ -394,10 +392,11 @@
      foo.stats:
         buz : "BUZ 0"
   \endverbatim
+
   "core0" just changes the current scope for anything in the nested dictionary associated with it.
   Since the scope enclosing this node is "top", the scope inside this section is "top.core0". The
   following line changes the scope to "top.core0.foo.stats". The third line is a field definition line
-  which simply creates a field named "BUZ 0: which points to the node "top.core0.foo.stats.buz".
+  which simply creates a field named "BUZ 0:" which points to the node "top.core0.foo.stats.buz".
 
   It should be obvious from these lines that the current scope is a stack, and when the dictionary
   associated with each of these lines ends, the scope is set back to what it was before the dictionary
@@ -405,6 +404,7 @@
   of "top" because they are not within the "core0" scope qualifier's associated dictionary.
 
   The final report contents after parsing this entire report definition are:
+
   \verbatim
   Report "Example Report"
   Subreport "Autmatic Summary"
@@ -440,13 +440,13 @@
   thrown.
 
   <em>field_name</em> names the field. If the left side of a field declaration or any enclosing scope
-  node (see \ref report_def_scope_qual) contains wildcards, then this name should contain a variable
+  node contains wildcards, then this name should contain a variable
   as explained in \ref report_def_field_name_variables.
 
   See \ref report_def_example for some example usages
 
   \subsection report_def_field_name_variables Field Name Variables
-  The wildcards contained in \ref report_def_scope_qual and \ref report_def_field_declarations node
+  The wildcards contained in report scope qualifiers and \ref report_def_field_declarations node
   paths allow a number of nodes having similar paths matching a given pattern to be added to a report
   in a single line in the report definition. However, this functionality can often cause report field
   name collisions. For example, the following line will always cause a report field name collision
@@ -479,7 +479,7 @@
   top:
       core*.stats:
           foo* : "My Core%1 Foo%2 Stat"
-  # OR: foo* : "My Core%-2 Foo%-1 Stat"
+    #     foo* : "My Core%-2 Foo%-1 Stat"  # Alternative
   \endverbatim
 
   In this example, we see wildcards in a <b>scope qualifier</b> line ("core*.stats") and in a
@@ -532,10 +532,20 @@
   \subsection report_def_subreports Subreports
   A single report can contain multiple subreports to better organize its content.
 
-  \subsection report_def_reserved_nodes Reserved Nodes
+  \code
+  # report.yaml
+  content:
+      top:
+          autopopulate:
+              attributes: "!=vis:hidden"  # generate a report with all stats that are not hidden
 
-  \subsection report_def_scope_qual Node Scope Qualifiers
-  \subsection report_def_scope_wildcards scope Wildcards
+      subreport:
+          name: "Another Section in the same report"
+          content:
+              "core0.stats.my_counter1 + core0.stats.my_counter2" : "counter1_plus_counter2"
+  \endcode
+
+  \subsection report_def_scope_wildcards Scope Wildcards
 
   Wildcards can be inserted into Node Scope qualifiers to simultaneously descend subtrees within the
   sparta device tree. This is useful when there are mutliple instantiations of a simular component (e.g.
@@ -660,7 +670,17 @@
   See sparta::statistics::expression::grammar::ExpressionGrammar for implementation of this expression grammar
 
   \subsection report_def_includes Include Directives
-  \todo Write this section
+
+  As in the support for parameter/configuration format \ref param_format, the report YAML representation allows for `include` keywords:
+
+  \code
+  name: "Include example"
+  author: "knute"
+  content:
+      top:
+          core0:
+              "#include" : core_stats.yaml
+  \endcode
 
   \subsection report_def_style Style section
   The style section of a report is a dictionary associated with a 'style' keyword <b>outside the
@@ -695,16 +715,22 @@
   autopopulate: "!=vis:hidden && !=vis:summary"
   \endcode
 
-  The more verbose usage
+\code
+  content:
+  # other content
+  # ...
+  autopopulate: true # Anything and everything
+  \endcode
+
+  The more verbose usage:
   \code
   content:
   # other content
   # ...
   autopopulate:
-  attributes: vis:summary
-  max_report_depth: 0  # Stops making subreports at depth N. 0 means no subreports
-  max_recursion_depth: -1 # Never stop recursion of the sparta tree
-
+      attributes: vis:summary
+         max_report_depth: 0  # Stops making subreports at depth N. 0 means no subreports
+         max_recursion_depth: -1 # Never stop recursion of the sparta tree
   \endcode
 
   <h4>Tree Filtering Expressions</h4>
@@ -840,7 +866,7 @@
 
   <h4>Parentheses are, of course, supported.</h4>
 
-  The grammar is fully defined and implemented \ref sparta::tree::filter::grammar::Grammar
+  The grammar is fully defined and implemented sparta::tree::filter::grammar::Grammar
 
   <em>Often, these expressions contain characters not accepted by YAML and must be written in quotes.</em>
 
@@ -908,20 +934,34 @@
   \li Does not allow depth-first traversal of report context specifiers (i.e. cannot visit all children of one substitution of a report context qualifier with a wildcard before moving on to the next substitution for that wildcard)
   \li Cannot always resolve ambiguity between node names and variables in statistic expressions
 
-  \todo Complete This Page
-
   \page report_out_format Report Output Formats
   This page describes the various output formats of a sparta report
 
-  <em>For an up-to-date list, run a Sparta simulation with the flag:</em><b><pre>"--help-topic reporting"</pre></b>
+  For an up-to-date list, run a Sparta simulator with the flag: `--help-topic reporting`
 
-  \todo Complete this page
+  The report output format is typically controlled in one of two ways:
+  directly on the command line or within a report definition \ref report_def_format.
+
+   Generate a report in text form using the command line:
+  \code
+  ./my_sparta_sim --report "" report_def.yaml my_report.text text
+  \endcode
+
+  Use the report definition file to define the format:
+  \code
+  # my_report_definition.yaml
+  content:
+      report:
+          def_file: core_stats.yaml
+          dest_file: my_report.text
+          format: text
+  \endcode
+
   \section report_out_format_plaintext Plaintext (.txt, .text)
   sparta::report::format::Text<br/>
 
   Writes report output as plain-text output. This is human readable and regex-parsable.<br/>
 
-  <em>See formatter class implementation for more details.</em>
   \section report_out_format_csv CSV (.csv)
   sparta::report::format::CSV<br/>
 
@@ -930,20 +970,17 @@
 
   Consider plotting with sparta/tools/plot_csv_report.py
 
-  <em>See formatter class implementation for more details.</em>
   \section report_out_format_basichtml BasicHTML (.html, .htm)
   sparta::report::format::BasicHTML<br/>
 
   Writes report output a hierarchical HTML page with nested tables. This format
   respects many report style options.<br/>
 
-  <em>See formatter class implementation for more details.</em>
   \section report_out_format_gnuplot Gnuplot (.gnuplot, .gplt)
   sparta::report::format::Gnuplot<br/>
 
   Writes report output in a format suitable for gnuplot<br/>
 
-  <em>See formatter class implementation for more details.</em>
   \section report_out_format_pythondict PythonDict (.python, .python)
   sparta::report::format::PythonDict<br/>
 
@@ -951,17 +988,11 @@
   which can be read as a multi-line string from the file and "eval"ed to load. Alternatively, it can
   be copied into python code.<br/>
 
-  <em>See formatter class implementation for more details.</em>
   \section report_out_format_json JavascriptObject (.json)
   sparta::report::format::JavascriptObject<br/>
 
   Writes report output in the JSON format which can be read by a number of libraries.<br/>
 
-  <em>See formatter class implementation for more details.</em>
-
-  \page pipeout_format Pipeline Collection Format (index.bin, location.dat, record.bin, simulation.info, clock.dat)
-  This page describes the various file formats of pipeline collection databases
-  \todo Write this page
   \page log_out_format Logging Output formats (.log, .log.raw, .log.basic, log.verbose)
   This page describes the various file formats with which log files can be written
   \todo Write this page

@@ -19,6 +19,7 @@
 #include "sparta/utils/MathUtils.hpp"
 #include "sparta/collection/IterableCollector.hpp"
 #include "sparta/utils/ValidValue.hpp"
+#include "sparta/utils/IteratorTraits.hpp"
 
 namespace sparta
 {
@@ -75,7 +76,7 @@ public:
     typedef uint32_t size_type;
 
     template <bool is_const_iterator = true>
-    class PipeIterator : public std::iterator<std::forward_iterator_tag, value_type>
+    class PipeIterator : public utils::IteratorTraits<std::forward_iterator_tag, value_type>
     {
         typedef typename std::conditional<is_const_iterator,
                                           const value_type &,
@@ -153,6 +154,7 @@ public:
         bool operator!=(const PipeIterator & it) const {
             return !operator==(it);
         }
+
         /// Checks validity of iterator
         bool isValid() const {
             return pipe_->isValid(index_);
@@ -515,6 +517,13 @@ public:
                           (parent, name_, this, capacity()));
     }
 
+    /**
+     * \brief Check if pipe is collecting
+     */
+    bool isCollected() const {
+        return collector_ && collector_->isCollected();
+    }
+
 private:
 
     size_type num_entries_   = 0; //!< The number of entries in the pipe
@@ -589,4 +598,3 @@ private:
 };
 
 }
-

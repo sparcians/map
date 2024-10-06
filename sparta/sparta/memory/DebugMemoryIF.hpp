@@ -633,5 +633,5 @@ namespace sparta
                                   const uint8_t *buf) = 0;
 
         }; // class DebugMemoryIF
-    }; // namespace memory
-}; // namespace sparta
+    } // namespace memory
+} // namespace sparta

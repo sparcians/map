@@ -7,7 +7,7 @@
 #include "sparta/utils/BoundedValue.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 int main()
 {

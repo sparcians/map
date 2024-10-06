@@ -10,8 +10,7 @@
 #include <map>
 #include <set>
 #include <stack>
-
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 namespace sparta {
 
@@ -218,7 +217,7 @@ public:
         parser_(),
         def_file_(def_file)
     {
-        sparta_assert(boost::filesystem::exists(def_file_),
+        sparta_assert(std::filesystem::exists(def_file_),
                    ("File '" + def_file + "' cannot be found"));
         fin_.open(def_file.c_str(), std::ios::in);
         sparta_assert(fin_.is_open());
@@ -340,7 +339,7 @@ private:
             sim_(sim)
         {
             if (!dest_file_.empty() && dest_file_ != "1" &&
-                boost::filesystem::extension(dest_file_) != ".csv") {
+                std::filesystem::extension(dest_file_) != ".csv") {
                 throw SpartaException("Memory statistics must be saved to a *.csv file, "
                                     "not '") << dest_file_ << "' (bad file extension)";
             }

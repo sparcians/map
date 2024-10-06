@@ -1,11 +1,9 @@
 
 #include "sparta/app/CommandLineSimulator.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <inttypes.h>
 #include <iostream>
-
-#include <boost/filesystem.hpp>
 
 #include "sparta/sparta.hpp"
 #include "sparta/simulation/TreeNode.hpp"
@@ -18,7 +16,7 @@
  * \brief Test for CommandLineSimulator app infrastructure
  */
 
-TEST_INIT;
+TEST_INIT
 
 #define PRINT_ENTER_TEST \
   std::cout << std::endl; \
@@ -165,9 +163,9 @@ int main(int argc, char **argv)
     // Defaults for command line simulator
     sparta::app::DefaultValues DEFAULTS;
 #ifndef __APPLE__
-    boost::filesystem::path binary_dir = boost::filesystem::canonical("/proc/self/exe" );
-    boost::filesystem::path cmd_dir = binary_dir.parent_path().parent_path();
-    auto default_arch_dir = (cmd_dir / boost::filesystem::path("parameters/arch")).string();
+    std::filesystem::path binary_dir = std::filesystem::canonical("/proc/self/exe" );
+    std::filesystem::path cmd_dir = binary_dir.parent_path().parent_path();
+    auto default_arch_dir = (cmd_dir / std::filesystem::path("parameters/arch")).string();
 #else
     // BROKEN!
     auto default_arch_dir = "parameters/arch";

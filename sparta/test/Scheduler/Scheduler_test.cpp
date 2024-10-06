@@ -24,7 +24,7 @@
 #include <boost/timer/timer.hpp>
 #include "sparta/kernel/SleeperThread.hpp"
 
-TEST_INIT;
+TEST_INIT
 
 sparta::SchedulingPhase global_phase = sparta::SchedulingPhase::Trigger;
 

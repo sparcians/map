@@ -128,6 +128,14 @@ namespace sparta
         }
 
         /**
+         * \brief How many ports are bound to this port?
+         * \return The number of bound ports
+         */
+        size_t getNumBoundPorts() const {
+            return bound_ports_.size();
+        }
+
+        /**
          * \brief The direction of the port
          * \return In or out
          */
@@ -583,7 +591,7 @@ namespace sparta
 
             InPort * inp = nullptr;
             if((inp = dynamic_cast<InPort *>(in)) == 0) {
-                throw SpartaException("ERROR: Could not case '" +
+                throw SpartaException("ERROR: Could not cast '" +
                                     in->getName() + "' to an InPort for some reason...");
             }
 

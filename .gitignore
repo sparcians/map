@@ -7,3 +7,6 @@ build_artifacts
 [Rr]elease*
 [Dd]ebug*
 rendered_recipe*
+.cache*
+.ccls-cache*
+*.gch

@@ -312,8 +312,10 @@ public:
                             "ASC_DEFER. required=" << (int)required << " default="
                             << (int)default_success_cond_ << ". This is likely a bug in "
                             "sparta::app unless other code is creating ParameterApplicators");
+                break;
             default:
                 sparta_assert(0, "Unknown ApplySuccessCondition value: " << (int)required);
+                break;
             };
             return;
         }
