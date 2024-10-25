@@ -74,15 +74,9 @@ namespace sparta
         ////////////////////////////////////////////////////////////
 
         // DAG Nabbit
-        DAG(sparta::Scheduler * scheduler, const bool& check_cycles = false);
+        DAG(sparta::Scheduler * scheduler);
 
         DAG() =delete;
-
-        //! Turn on early cycle detection -- as items are linked in
-        //! the DAG, it will look for a cycle.
-        void enableEarlyCycleDetect() {
-            early_cycle_detect_ = true;
-        }
 
         //! \brief Initialize the DAG
         //! Creates new vertices from the VertexFactory
@@ -217,10 +211,13 @@ namespace sparta
 
         std::vector<Vertex*>                    alloc_vertices_;
         uint32_t                                num_groups_ = 1;
-        bool                                    early_cycle_detect_;
         VertexMap                               gops_;
         bool                                    finalized_ = false;
         sparta::Scheduler*                      my_scheduler_ = nullptr;
+
+        //! Debug log message source
+        const log::MessageSource                debug_logger_;
+        const bool                              early_cycle_detect_;
     };//End class DAG
 
 
