@@ -125,6 +125,12 @@ namespace sparta {
 
             for(auto & event_node : unit_event_set_.getEvents(sparta::SchedulingPhase::Tick))
             {
+                // This EventNode does not participate auto precedence
+                // between InPorts and OutPorts.
+                if(!event_node->doesParticipateInAutoPrecedence()) {
+                    continue;
+                }
+
                 // Go through all of the registered InPorts and set these
                 // ports to precede any events that are on the Tick phase.
                 // This is for 0-cycle precedence only.

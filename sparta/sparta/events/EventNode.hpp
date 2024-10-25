@@ -97,6 +97,32 @@ namespace sparta
         //! Get the scheduleable associated with this event node
         virtual Scheduleable & getScheduleable() = 0;
 
+        /**
+         * \brief Turn on/off auto precedence for this EvendNode
+         * \param participate Set to true [default] if the EventNode is to
+         *                    participate in auto precedence establishment
+         *                    in sparta::Unit
+         *
+         * In sparta::Unit, registered sparta::Event types and Ports will
+         * have auto precedence established between them if the user
+         * of sparta::Unit allows it to do so.  However, this might not
+         * be desired for some Events that are created by the modeler
+         * and internally bound before the sparta::Unit performs this
+         * setup.  Calling this method with participate set to false,
+         * will prevent the assertion that the EventNode is be being
+         * registered after port binding.
+         */
+        virtual void participateInAutoPrecedence(bool participate) {
+            participate_in_auto_precedence_ = participate;
+        }
+
+        //! \brief Does this EventNode participate in auto-precedence
+        //!        establishment by sparta::Unit?
+        //! \return true if so, false otherwise
+        virtual bool doesParticipateInAutoPrecedence() const {
+            return participate_in_auto_precedence_;
+        }
+
     private:
 
         //! Make sure the parent is an EventNodeSet
@@ -104,6 +130,9 @@ namespace sparta
 
         //! Scheduling phase of this node
         const sparta::SchedulingPhase sched_phase_;
+
+        //! Does this EventNode participate in auto precedence?
+        bool participate_in_auto_precedence_ = true;
     };
 }
 
