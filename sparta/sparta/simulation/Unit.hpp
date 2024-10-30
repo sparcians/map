@@ -125,8 +125,7 @@ namespace sparta {
 
             for(auto & event_node : unit_event_set_.getEvents(sparta::SchedulingPhase::Tick))
             {
-                // This EventNode does not participate auto precedence
-                // between InPorts and OutPorts.
+                // This event does not participate in auto precedence.
                 if(!event_node->doesParticipateInAutoPrecedence()) {
                     continue;
                 }
