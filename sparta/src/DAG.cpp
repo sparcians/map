@@ -122,10 +122,17 @@ namespace sparta
         num_groups_(1),
         early_cycle_detect_(check_cycles),
         gops_(),
-        my_scheduler_(scheduler)
+        my_scheduler_(scheduler),
+        debug_logger_(scheduler,
+                      sparta::log::categories::DEBUG,
+                      "Scheduler's constructing DAG debug messages")
     {
         initializeDAG_();
-
+        // Enable early cycle detection when the debug logger is
+        // enabled for the convenience of debugging ...
+        if(debug_logger_.observed()){
+            early_cycle_detect_ = true;
+        }
     }
 
     void DAG::initializeDAG_()
@@ -171,20 +178,20 @@ namespace sparta
             dest_vertex->setInDAG(true);
         }
 
-        // TODO: REMOVE DEBUGGING STATEMENTS
-        //std::cout << "DAG::link()" << std::endl;
-        //std::cout << "\t" << std::string(*source_vertex) << " -> " << std::string(*dest_vertex) << std::endl;
+        if(SPARTA_EXPECT_FALSE(debug_logger_)){
+            debug_logger_ << SPARTA_CURRENT_COLOR_GREEN
+                          << "=== SCHEDULER: Add DAG link for "
+                          << reason << ": "
+                          << SPARTA_CURRENT_COLOR_NORMAL
+                          << std::string(*source_vertex) << " -> "
+                          << std::string(*dest_vertex);
+        }
 
         if (source_vertex->link(e_factory_, dest_vertex, reason)) {
             if (early_cycle_detect_ && detectCycle()) {
                 throw CycleException(getCycles_());
             }
         }
-
-        // TODO: DEBUGGING - remove this
-        //if (detectCycle()) {
-            //throw CycleException(getCycles_());
-        //}
     }
 
 
