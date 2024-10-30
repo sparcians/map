@@ -1,0 +1,5 @@
+<map id="sparta::log::DestinationInstance&lt; std::string &gt;::DestinationInstance" name="sparta::log::DestinationInstance&lt; std::string &gt;::DestinationInstance">
+<area shape="rect" id="Node000001" title="Constructs the destination with the given filename. Data will be written in a format based on the ext..." alt="" coords="5,5,159,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1SimulationInfo.html#ac6ebe93269ca3c61dff4fad987d480ad" title="Gets the SimulationInfo singleton instance." alt="" coords="207,13,353,54"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="159,31,191,31,191,36,159,36"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="sparta::log::DestinationManager::getDestination" name="sparta::log::DestinationManager::getDestination">
+<area shape="rect" id="Node000001" title="Requests an existing Destination* from the manager and allocates a new one if it does not yet have a ..." alt="" coords="5,5,166,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1log_1_1DestinationManager.html#a0fd89f54fc6ffae77fbebed4c8c8b5a9" title="createDestination overload for handling const char[] strings" alt="" coords="214,5,392,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="166,23,198,23,198,28,166,28"/>
+</map>

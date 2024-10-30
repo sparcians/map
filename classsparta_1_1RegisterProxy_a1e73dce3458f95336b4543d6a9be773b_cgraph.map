@@ -1,0 +1,9 @@
+<map id="sparta::RegisterProxy::tryGetCurrentRegister" name="sparta::RegisterProxy::tryGetCurrentRegister">
+<area shape="rect" id="Node000001" title="Attempt to get the current register being pointed to by this proxy based on simulation state." alt="" coords="5,71,158,111"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1RegisterSet.html#a7b1ec08e39881dc0b7f3a95c9574b35a" title="Determines if a register exists with the given group number and index." alt="" coords="206,5,345,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,68,198,49,199,54,145,73"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1RegisterSet.html#a4039f6c216473cdca511b9eba2cf3a5b" title="Determine the current bank for this register set based on the context of time simulator." alt="" coords="210,71,341,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="158,88,194,88,194,94,158,94"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1RegisterSet.html#ac6ba319a187a7fcfaa8212c59d6b85be" title="Quickly looks up a register by its number and index with bounds checking." alt="" coords="210,136,341,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="145,109,199,128,198,133,143,114"/>
+</map>
