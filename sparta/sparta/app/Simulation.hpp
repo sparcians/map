@@ -92,8 +92,9 @@ public:
      *        must be made before building/configuring/finalizing.
      * \param sim_name Name of the simulator
      * \param scheduler Pointer to the Scheduler that this Simulation operates with
+     * \param en_backtrace Enable backtrace on error (including SIGSEGV, SIGFPE, SIGILL, SIGABRT, SIGBUS), default is true
      */
-    Simulation(const std::string& sim_name, Scheduler * scheduler);
+    Simulation(const std::string& sim_name, Scheduler * scheduler, bool en_backtrace=true);
 
     /*!
      * \brief Virtual destructor
