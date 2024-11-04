@@ -318,7 +318,8 @@ const DatabaseAccessor * Simulation::getSimulationDatabaseAccessor() const
 }
 
 Simulation::Simulation(const std::string& sim_name,
-                       Scheduler * scheduler) :
+                       Scheduler * scheduler,
+                       bool en_backtrace) :
     clk_manager_(scheduler),
     sim_name_(sim_name),
     scheduler_(scheduler),
@@ -335,13 +336,15 @@ Simulation::Simulation(const std::string& sim_name,
     // Watch for created nodes to which we will apply taps
     root_.getNodeAttachedNotification().REGISTER_FOR_THIS(rootDescendantAdded_);
 
-    // Handle illegal signals.
-    // Note: Update documentation if these signals are modified
-    backtrace_.setAsHandler(SIGSEGV);
-    backtrace_.setAsHandler(SIGFPE);
-    backtrace_.setAsHandler(SIGILL);
-    backtrace_.setAsHandler(SIGABRT);
-    backtrace_.setAsHandler(SIGBUS);
+    if (en_backtrace) {
+        // Handle illegal signals.
+        // Note: Update documentation if these signals are modified
+        backtrace_.setAsHandler(SIGSEGV);
+        backtrace_.setAsHandler(SIGFPE);
+        backtrace_.setAsHandler(SIGILL);
+        backtrace_.setAsHandler(SIGABRT);
+        backtrace_.setAsHandler(SIGBUS);
+    }
 
     report_repository_.reset(new sparta::ReportRepository(this));
 
