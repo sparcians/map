@@ -154,7 +154,13 @@ if (ENABLE_SANITIZERS)
 endif ()
 
 set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg -g")
-set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g3")
+if(DEFINED SPARTA_CXX_FLAGS_DEBUG AND SPARTA_CXX_FLAGS_DEBUG)
+  set(CMAKE_CXX_FLAGS_DEBUG "${SPARTA_CXX_FLAGS_DEBUG}")
+  message(STATUS "Using Sparta custom debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
+else()
+  set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3")
+  message(STATUS "Using Sparta default debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
+endif()
 
 #
 # If we're using CONDA, we might be using the one suggested for
