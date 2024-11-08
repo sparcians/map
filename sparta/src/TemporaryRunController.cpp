@@ -17,7 +17,6 @@
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/trigger/SingleTrigger.hpp"
 #include "sparta/statistics/dispatch/streams/StreamController.hpp"
-#include "simdb/async/AsyncTaskEval.hpp"
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/statistics/CounterBase.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
@@ -56,10 +55,7 @@ void TemporaryRunControl::runIcountEnd_() {
     if (stream_controller_) {
         stream_controller_->processStreams();
     }
-    if (db_task_thread_) {
-        db_task_thread_->emitPreFlushNotification();
-        db_task_thread_->flushQueue();
-    }
+
     //! \todo This stopRunning may need to skip or allow scheduler to finish up it's trigger
     //! stuff for this cycle. This may not have an ideal implementation
     sched_->stopRunning();
@@ -97,12 +93,6 @@ std::shared_ptr<statistics::StreamController> &
     TemporaryRunControl::getStreamController()
 {
     return stream_controller_;
-}
-
-void TemporaryRunControl::setDatabaseTaskThread(
-    simdb::AsyncTaskEval * db_thread)
-{
-    db_task_thread_ = db_thread;
 }
 
 uint64_t TemporaryRunControl::getCurrentCycle(const std::string& clk_name) const {

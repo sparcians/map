@@ -571,18 +571,6 @@ private:
     MultiDetailOptions report_opts_;
 
     /*!
-     * \brief Builtin sparta command line options for SimDB
-     */
-    MultiDetailOptions simdb_opts_;
-
-    /*!
-     * \brief Builtin sparta command line options for SimDB
-     * (internal / developer use only - not visible to
-     * command line help printout)
-     */
-    MultiDetailOptions simdb_internal_opts_;
-
-    /*!
      * \brief Application-specific options
      * \see getApplicationOptions
      */

@@ -29,15 +29,9 @@
 #include "sparta/utils/Utils.hpp"
 #include "sparta/report/format/BaseFormatter.hpp"
 #include "sparta/app/FeatureConfiguration.hpp"
-#include "simdb_fwd.hpp"
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/ValidValue.hpp"
-
-namespace simdb {
-    class AsyncTaskEval;
-    class ObjectManager;
-}  // namespace simdb
 
 namespace sparta::app {
     class SimulationConfiguration;
@@ -64,14 +58,6 @@ namespace sparta {
     namespace statistics {
         class ReportStatisticsArchive;
         class StreamNode;
-    }
-
-    namespace async {
-        class AsyncTimeseriesReport;
-        class AsyncNonTimeseriesReport;
-    }
-    namespace db {
-        class ReportHeader;
     }
 
     namespace app {
@@ -202,37 +188,6 @@ namespace sparta {
              */
             std::string orig_dest_file_;
 
-            /*!
-             * \brief Timeseries object which sends this report's metadata
-             * and SI data values to a database.
-             *
-             * Use of this database is featured off by default for now.
-             */
-            std::shared_ptr<async::AsyncTimeseriesReport> db_timeseries_;
-
-            /*!
-             * \brief Wrapper which writes non-timeseries SI data values
-             * into a database.
-             *
-             * Use of this database is featured off by default for now.
-             */
-            std::shared_ptr<async::AsyncNonTimeseriesReport> db_non_timeseries_;
-
-            /*!
-             * \brief The "simdb" feature has a number of modes it can run:
-             *
-             *     1. SI compression disabled, row-major SI ordering
-             *     2. SI compression disabled, column-major SI ordering
-             *     3. SI compression enabled, row-major SI ordering
-             *     4. SI compression enabled, column-major SI ordering
-             *
-             * If the feature is enabled, feature options may be given
-             * at the command line. These are optional however, so we
-             * will default to compressed, row-major SI blobs in the
-             * absence of any such options.
-             */
-            const FeatureConfiguration::FeatureOptions * simdb_feature_opts_ = nullptr;
-
             friend class ReportDescriptorCollection;
 
         public:
@@ -293,76 +248,6 @@ namespace sparta {
             bool isEnabled() const {
                 return enabled_;
             }
-
-            /*!
-             * \brief Check if this descriptor holds only one report
-             * instantiation, and that it is a timeseries report (.csv)
-             */
-            bool isSingleTimeseriesReport() const;
-
-            /*!
-             * \brief Check if this descriptor holds only one report
-             * instantiation, and that it is *not* a timeseries report.
-             * For example, .html, .json, .txt, and so on.
-             */
-            bool isSingleNonTimeseriesReport() const;
-
-            /*!
-             * \brief Switch this descriptor's timeseries report generation
-             * from synchronous .csv generation to asynchronous database
-             * persistence.
-             *
-             * The task queue object passed in is the worker thread object,
-             * which is shared among all report descriptors in the simulation.
-             *
-             * The simulation database passed in is the object with the
-             * actual connection to the physical database. This object
-             * is shared with the Simulation class and other descriptors.
-             *
-             * The Scheduler passed in is the one our simulation is running on,
-             * and the Clock passed in is the simulation's root clock. Both
-             * of these objects are used in order to get the "current time"
-             * value at each report update (current cycle, simulated time,
-             * etc.)
-             */
-            void configureAsyncTimeseriesReport(
-                simdb::AsyncTaskEval * task_queue,
-                simdb::ObjectManager * sim_db,
-                const Clock & root_clk);
-
-            /*!
-             * \brief Switch this descriptor's report generation from
-             * synchronous to asynchronous database persistence. This
-             * method is intended only for descriptors that have just
-             * one *non-timeseries* report format.
-             *
-             * Call "isSingleNonTimeseriesReport()" first before calling
-             * this method to be sure, otherwise this method may throw.
-             */
-            void configureAsyncNonTimeseriesReport(
-                simdb::AsyncTaskEval * task_queue,
-                simdb::ObjectManager * sim_db);
-
-            /*!
-             * \brief Give access to the database timeseries header. This
-             * will return null when this descriptor is used for any non-
-             * timeseries report format (json, json_reduced, txt, etc.)
-             * or when the "simdb" feature has been disabled.
-             */
-            db::ReportHeader * getTimeseriesDatabaseHeader();
-
-            /*!
-             * \brief Do any post-simulation post processing steps needed.
-             * This is typically used for final wrap-up this descriptor
-             * needs to do in the simulation database, so the two inputs
-             * are the SimDB and the AsyncTaskEval objects that belong
-             * to the app::Simulation and sparta::ReportRepository objects,
-             * but other non-database work may need to be completed post-
-             * simulation as well.
-             */
-            void doPostProcessing(
-                simdb::AsyncTaskEval * task_queue,
-                simdb::ObjectManager * sim_db);
 
             /*!
              * \brief Provide access to the formatters we have been using
@@ -441,9 +326,8 @@ namespace sparta {
                 return format;
             }
 
-            //! \brief When SimDB has automatic report verification enabled,
-            //! this descriptor may have had its dest_file changed when the
-            //! Simulation::setupReports() method was called. The report file
+            //! \brief This descriptor may have had its dest_file changed when the
+            //! the Simulation::setupReports() method was called. The report file
             //! will still end up in the dest_file that you gave the descriptor,
             //! but this getter is added if you need to ask this descriptor
             //! what its immutable dest_file was from the beginning.

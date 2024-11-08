@@ -10,9 +10,6 @@ namespace sparta {
     class Baz;
     class ParameterSet;
 }
-namespace sparta_simdb {
-    class DatabaseTester;
-}
 
 namespace sparta { namespace trigger { class ExpressionTrigger; } }
 namespace core_example{ class CPUFactory; }
@@ -116,16 +113,6 @@ private:
     void postToToggleTrigger_();
 
     /*!
-     * \brief Trigger which adds a table to the 'Stats' database namespace
-     * during simulation, and a TableProxy object referring to that table
-     * which is cached before the table actually exists in the schema.
-     */
-    sparta::trigger::ExpiringExpressionTrigger lazy_table_create_trigger_;
-    simdb::TableProxy * lazy_table_proxy_ = nullptr;
-    void addToStatsSchema_();
-    void addToLazySchemaTable_();
-
-    /*!
      * \brief Notification source and dedicated warmup listeners used to mimic
      * legacy report start events.
      */
@@ -155,19 +142,4 @@ private:
      * \brief Optional flag to print registered factories to console
      */
     bool show_factories_;
-
-    /* \brief Flag which enables SimDB-related code to run for
-     * interactive performance benchmarks / comparison. False
-     * by default so that we don't impact unit testing / smoke
-     * testing times for all regression test runs.
-     */
-    bool simdb_perf_async_ctrl_enabled_ = false;
-
-    /*!
-     * \brief Tester class which holds onto data structures that
-     * are randomly generated and written to SimDB during the
-     * simulation, verifying the contents at the end of the
-     * simulation for accuracy. Defined in this class' CPP file.
-     */
-    std::shared_ptr<sparta_simdb::DatabaseTester> simdb_tester_;
 };

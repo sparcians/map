@@ -118,6 +118,14 @@ namespace MetaStruct {
                                      all_are_integral<Tail...>::value};
     };
 
+    /**
+     * \brief Check for POD types.
+     */
+    template <typename T>
+    struct is_pod {
+        static constexpr bool value  = std::is_pod<T>::value;
+    };
+
     /** \brief Alias Template for std::enable_if.
     */
     template<bool B, typename T = void>
@@ -394,6 +402,11 @@ namespace MetaStruct {
     struct is_stl {
         static constexpr bool value =
             is_stl_container<typename std::decay<T>::type>::value;
+    };
+
+    template <typename T>
+    struct is_pod {
+        static constexpr bool value = std::is_trivial<T>::value && std::is_standard_layout<T>::value;
     };
 
     /**
