@@ -86,7 +86,6 @@ public:
     {
         sparta_assert(emitter_ == nullptr);
         sparta_assert(device_tree);
-        sparta_assert(extensions_ptree);
 
         if(verbose){
             std::cout << "Writing parameters to \"" << filename_ << "\"" << std::endl;
@@ -108,22 +107,24 @@ public:
 
         handleNode_(device_tree, verbose);
 
-        // Note we use the ParameterTree to get the tree node extensions instead
-        // of the device tree since using the device tree might serialize an extension
-        // defn of:
-        //
-        //   top.cpu.core*.extension.core_extensions:
-        //       name: value
-        //       name: value
-        //
-        // As:
-        //
-        //   top.cpu.core0.extension.core_extensions:
-        //       name: value
-        //       name: value
-        //
-        // But the ParameterTree retains the wildcards in the path.
-        handleNode_(extensions_ptree->getRoot());
+        if (extensions_ptree) {
+            // Note we use the ParameterTree to get the tree node extensions instead
+            // of the device tree since using the device tree might serialize an extension
+            // defn of:
+            //
+            //   top.cpu.core*.extension.core_extensions:
+            //       name: value
+            //       name: value
+            //
+            // As:
+            //
+            //   top.cpu.core0.extension.core_extensions:
+            //       name: value
+            //       name: value
+            //
+            // But the ParameterTree retains the wildcards in the path.
+            handleNode_(extensions_ptree->getRoot());
+        }
 
         *emitter_ << YP::EndDoc;
         sparta_assert(emitter_->good());
