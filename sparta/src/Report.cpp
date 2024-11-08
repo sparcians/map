@@ -457,12 +457,15 @@ class ReportFileParserYAML
                                     }
                                 }
                             }
-                            else{
+                            else if (!skip_content_leaves_){
                                 Report* const r = report_map_.at(scope.uid);
                                 statistics::expression::Expression expr(assoc_key, node_context, r->getStatistics());
 
                                 // Add the expresssion
                                 add_expression(expr);
+                            }
+                            else {
+                                return true;
                             }
                         }
                         else{
