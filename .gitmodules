@@ -1,3 +1,0 @@
-[submodule "sparta/simdb"]
-	path = sparta/simdb
-	url = git@github.com:colbynyce-mips/simdb.git
