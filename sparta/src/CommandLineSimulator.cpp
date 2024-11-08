@@ -2110,13 +2110,15 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
         if(final_config_file_ != ""){
             sparta::ConfigEmitter::YAML param_out(final_config_file_,
                                                   false); // Hide descriptions
-            param_out.addParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg);
+            const auto& ptree = sim->getSimulationConfiguration()->getExtensionsUnboundParameterTree();
+            param_out.addParameters(sim->getRoot()->getSearchScope(), &ptree, sim_config_.verbose_cfg);
         }
 
         if(final_config_file_verbose_ != ""){
             sparta::ConfigEmitter::YAML param_out(final_config_file_verbose_,
                                                   true); // Show descriptions
-            param_out.addParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg);
+            const auto& ptree = sim->getSimulationConfiguration()->getExtensionsUnboundParameterTree();
+            param_out.addParameters(sim->getRoot()->getSearchScope(), &ptree, sim_config_.verbose_cfg);
         }
 
         if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)
