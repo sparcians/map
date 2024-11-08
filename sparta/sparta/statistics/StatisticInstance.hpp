@@ -26,9 +26,6 @@
 
 namespace sparta
 {
-    //Forward declarations related to SimDB
-    class StatInstValueLookup;
-    class StatInstRowIterator;
     using statistics::expression::Expression;
 
     /*!
@@ -273,38 +270,6 @@ namespace sparta
         }
 
         /*!
-         * \brief During SimDB->report generation, there is
-         * a notion of "placeholder" objects which get set
-         * on StatisticInstance/Report objects temporarily.
-         * These placeholders can be cloned into "realized"
-         * versions of themselves later on.
-         *
-         * This method lets SimDB-recreated Report objects
-         * set placeholders this SI will soon use to get
-         * SI data values directly from a SimDB blob (not
-         * from an actual simulation).
-         */
-        void setSIValueDirectLookupPlaceholder(
-            const std::shared_ptr<sparta::StatInstValueLookup> & direct_lookup);
-
-        /*!
-         * \brief Our StatInstValueLookup *placeholder* object
-         * needs to bind itself to a StatInstRowIterator object,
-         * since these two classes go hand in hand. Now that we're
-         * being given the row iterator, we can use it to "realize"
-         * our "SI direct value lookup" object now.
-         */
-        void realizeSIValueDirectLookup(
-            const StatInstRowIterator & si_row_iterator);
-
-        /*!
-         * \brief If this SI is using a StatInstValueLookup object
-         * to get its SI values, ask if this direct-lookup object
-         * can be used to get the current SI value.
-         */
-        bool isSIValueDirectLookupValid() const;
-
-        /*!
          * \brief Returns the value computed for this statistic instance at the
          * current time
          * \return Computed value (current if instance has not been ended and
@@ -438,15 +403,6 @@ namespace sparta
         InstrumentationNode::class_t getClass() const;
 
         /*!
-         * \brief Give the reporting infrastructure access to all metadata
-         * that has been set. The database report writers need this metadata,
-         * and others may need it as well.
-         */
-        const std::vector<std::pair<std::string, std::string>> & getMetadata() const {
-            return provided_metadata_;
-        }
-
-        /*!
          * \brief Returns the StatisticDef used to compute this statistic
          */
         const StatisticDef* getStatisticDef() {
@@ -526,19 +482,6 @@ namespace sparta
          * \pre Referenced StatisticDef or Counter must not have been destroyed
          */
         double computeValue_() const;
-
-        /*!
-         * \brief Ask the StatInstValueLookup object for our current
-         * SI value. Throws an exception if the direct-value object
-         * is not being used.
-         *
-         * This does not apply to normal, in-simulation SI's. This
-         * supports post-simulation SimDB workflows only. This
-         * method is not implemented inline in this header so that
-         * SimDB headers aren't included in downstream builds that
-         * don't care about it.
-         */
-        double getCurrentValueFromDirectLookup_() const;
 
         /*!
          * \brief Append one pending substatistic for future creation (and addition to the
@@ -677,40 +620,10 @@ namespace sparta
          */
         mutable std::vector<StatisticDef::PendingSubStatCreationInfo> sub_statistics_;
 
-        /*!
+         /*!
          * \brief User-provided callback which generates the stat value
          */
         std::shared_ptr<StatInstCalculator> user_calculated_si_value_;
-
-        /*!
-         * \brief SimDB-recreated StatisticInstance's do not get their
-         * SI values from CounterBase/ParameterBase/StatisticDef objects
-         * like live-simulation SI's do. Those SI's which are created
-         * from SimDB records are bound to their SI value blobs using
-         * StatInstValueLookup objects. These are lightweight wrappers
-         * around a shared vector<double>, who know their individual
-         * element index/offsets into that vector.
-         */
-        std::shared_ptr<sparta::StatInstValueLookup> direct_lookup_si_value_;
-
-        /*!
-         * \brief Typically, SI's will defer to their underlying counter/
-         * parameter/StatDef for properties like location and description.
-         * But some SI's may not have these internal pieces (counters and
-         * such) because they are being created outside of a simulation,
-         * and outside of a device tree.
-         *
-         * These member variables are prefixed with "provided_" to mean
-         * that they were *provided* these values directly during SI
-         * construction.
-         */
-        utils::ValidValue<std::string> provided_location_;
-        utils::ValidValue<std::string> provided_description_;
-        utils::ValidValue<std::string> provided_expr_string_;
-        utils::ValidValue<StatisticDef::ValueSemantic> provided_value_semantic_;
-        utils::ValidValue<InstrumentationNode::visibility_t> provided_visibility_;
-        utils::ValidValue<InstrumentationNode::class_t> provided_class_;
-        std::vector<std::pair<std::string, std::string>> provided_metadata_;
 
     }; // class StatisticInstance
 
