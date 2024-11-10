@@ -45,6 +45,10 @@
 
 namespace sparta {
 class GlobalTreeNode;
+
+namespace collection {
+    class PipelineCollectorV3;
+}
 }  // namespace sparta
 
 
@@ -1120,6 +1124,9 @@ private:
 #ifdef SYSTEMC_SUPPORT
     sparta::NotificationSource<Tick> item_scheduled_;
 #endif
+
+    //! Friend needed to access current_tick_ for SimDB v3 collection
+    friend class collection::PipelineCollectorV3;
 };
 
 

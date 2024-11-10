@@ -23,6 +23,8 @@
 #include "FlushManager.hpp"
 #include "SimpleTLB.hpp"
 #include "SimpleDL1.hpp"
+#include "MemAccessInfo.hpp"
+#include "LoadStoreInstInfo.hpp"
 
 namespace core_example
 {
@@ -86,12 +88,9 @@ namespace core_example
         // Type Name/Alias Declaration
         ////////////////////////////////////////////////////////////////////////////////
 
+        // allocator for this object type
+        sparta::SpartaSharedPointerAllocator<MemoryAccessInfo> memory_access_allocator;
 
-        class LoadStoreInstInfo;
-        class MemoryAccessInfo;
-
-        using LoadStoreInstInfoPtr = sparta::SpartaSharedPointer<LoadStoreInstInfo>;
-        using MemoryAccessInfoPtr = sparta::SpartaSharedPointer<MemoryAccessInfo>;
         using FlushCriteria = FlushManager::FlushingCriteria;
 
         enum class PipelineStage
@@ -102,234 +101,7 @@ namespace core_example
             NUM_STAGES
         };
 
-        // Forward declaration of the Pair Definition class is must as we are friending it.
-        class MemoryAccessInfoPairDef;
-        // Keep record of memory access information in LSU
-        class MemoryAccessInfo {
-        public:
-
-            // The modeler needs to alias a type called "SpartaPairDefinitionType" to the Pair Definition class of itself
-            using SpartaPairDefinitionType = MemoryAccessInfoPairDef;
-
-            enum class MMUState : std::uint32_t {
-                NO_ACCESS = 0,
-                __FIRST = NO_ACCESS,
-                MISS,
-                HIT,
-                NUM_STATES,
-                __LAST = NUM_STATES
-            };
-
-            enum class CacheState : std::uint64_t {
-                NO_ACCESS = 0,
-                __FIRST = NO_ACCESS,
-                MISS,
-                HIT,
-                NUM_STATES,
-                __LAST = NUM_STATES
-            };
-
-            MemoryAccessInfo() = delete;
-
-            MemoryAccessInfo(const ExampleInstPtr & inst_ptr) :
-                ldst_inst_ptr_(inst_ptr),
-                phyAddrIsReady_(false),
-                mmu_access_state_(MMUState::NO_ACCESS),
-
-                // Construct the State object here
-                cache_access_state_(CacheState::NO_ACCESS) {}
-
-            virtual ~MemoryAccessInfo() {}
-
-            // This ExampleInst pointer will act as our portal to the ExampleInst class
-            // and we will use this pointer to query values from functions of ExampleInst class
-            const ExampleInstPtr & getInstPtr() const { return ldst_inst_ptr_; }
-
-            // This is a function which will be added in the SPARTA_ADDPAIRs API.
-            uint64_t getInstUniqueID() const {
-                const ExampleInstPtr &inst_ptr = getInstPtr();
-
-                return inst_ptr == nullptr ? 0 : inst_ptr->getUniqueID();
-            }
-
-            void setPhyAddrStatus(bool isReady) { phyAddrIsReady_ = isReady; }
-            bool getPhyAddrStatus() const { return phyAddrIsReady_; }
-
-            const MMUState & getMMUState() const {
-                return mmu_access_state_.getEnumValue();
-            }
-
-            void setMMUState(const MMUState & state) {
-                mmu_access_state_.setValue(state);
-            }
-
-            const CacheState & getCacheState() const {
-                return cache_access_state_.getEnumValue();
-            }
-            void setCacheState(const CacheState & state) {
-                cache_access_state_.setValue(state);
-            }
-
-            // This is a function which will be added in the addArgs API.
-            bool getPhyAddrIsReady() const{
-                return phyAddrIsReady_;
-            }
-
-
-        private:
-            // load/store instruction pointer
-            ExampleInstPtr ldst_inst_ptr_;
-
-            // Indicate MMU address translation status
-            bool phyAddrIsReady_;
-
-            // MMU access status
-            sparta::State<MMUState> mmu_access_state_;
-
-            // Cache access status
-            sparta::State<CacheState> cache_access_state_;
-
-        };  // class MemoryAccessInfo
-
-        // allocator for this object type
-        sparta::SpartaSharedPointerAllocator<MemoryAccessInfo> memory_access_allocator;
-
-        /*!
-        * \class MemoryAccessInfoPairDef
-        * \brief Pair Definition class of the Memory Access Information that flows through the example/CoreModel
-        */
-
-        // This is the definition of the PairDefinition class of MemoryAccessInfo.
-        // This PairDefinition class could be named anything but it needs to inherit
-        // publicly from sparta::PairDefinition templatized on the actual class MemoryAcccessInfo.
-        class MemoryAccessInfoPairDef : public sparta::PairDefinition<MemoryAccessInfo>{
-        public:
-
-            // The SPARTA_ADDPAIRs APIs must be called during the construction of the PairDefinition class
-            MemoryAccessInfoPairDef() : PairDefinition<MemoryAccessInfo>(){
-                SPARTA_INVOKE_PAIRS(MemoryAccessInfo);
-            }
-            SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("DID",   &MemoryAccessInfo::getInstUniqueID),
-                                  SPARTA_ADDPAIR("valid", &MemoryAccessInfo::getPhyAddrIsReady),
-                                  SPARTA_ADDPAIR("mmu",   &MemoryAccessInfo::getMMUState),
-                                  SPARTA_ADDPAIR("cache", &MemoryAccessInfo::getCacheState),
-                                  SPARTA_FLATTEN(         &MemoryAccessInfo::getInstPtr))
-        };
-
-        // Forward declaration of the Pair Definition class is must as we are friending it.
-        class LoadStoreInstInfoPairDef;
-        // Keep record of instruction issue information
-        class LoadStoreInstInfo
-        {
-        public:
-            // The modeler needs to alias a type called "SpartaPairDefinitionType" to the Pair Definition class  of itself
-            using SpartaPairDefinitionType = LoadStoreInstInfoPairDef;
-            enum class IssuePriority : std::uint16_t
-            {
-                HIGHEST = 0,
-                __FIRST = HIGHEST,
-                CACHE_RELOAD,   // Receive mss ack, waiting for cache re-access
-                CACHE_PENDING,  // Wait for another outstanding miss finish
-                MMU_RELOAD,     // Receive for mss ack, waiting for mmu re-access
-                MMU_PENDING,    // Wait for another outstanding miss finish
-                NEW_DISP,       // Wait for new issue
-                LOWEST,
-                NUM_OF_PRIORITIES,
-                __LAST = NUM_OF_PRIORITIES
-            };
-
-            enum class IssueState : std::uint32_t
-            {
-                READY = 0,          // Ready to be issued
-                __FIRST = READY,
-                ISSUED,         // On the flight somewhere inside Load/Store Pipe
-                NOT_READY,      // Not ready to be issued
-                NUM_STATES,
-                __LAST = NUM_STATES
-            };
-
-            LoadStoreInstInfo() = delete;
-            LoadStoreInstInfo(const MemoryAccessInfoPtr & info_ptr) :
-                mem_access_info_ptr_(info_ptr),
-                rank_(IssuePriority::LOWEST),
-                state_(IssueState::NOT_READY) {}
-
-            // This ExampleInst pointer will act as one of the two portals to the ExampleInst class
-            // and we will use this pointer to query values from functions of ExampleInst class
-            const ExampleInstPtr & getInstPtr() const {
-                return mem_access_info_ptr_->getInstPtr();
-            }
-
-            // This MemoryAccessInfo pointer will act as one of the two portals to the MemoryAccesInfo class
-            // and we will use this pointer to query values from functions of MemoryAccessInfo class
-            const MemoryAccessInfoPtr & getMemoryAccessInfoPtr() const {
-                return mem_access_info_ptr_;
-            }
-
-            // This is a function which will be added in the SPARTA_ADDPAIRs API.
-            uint64_t getInstUniqueID() const {
-                const MemoryAccessInfoPtr &mem_access_info_ptr = getMemoryAccessInfoPtr();
-
-                return mem_access_info_ptr == nullptr ? 0 : mem_access_info_ptr->getInstUniqueID();
-            }
-
-            void setPriority(const IssuePriority & rank) {
-                rank_.setValue(rank);
-            }
-
-            const IssuePriority & getPriority() const {
-                return rank_.getEnumValue();
-            }
-
-            void setState(const IssueState & state) {
-                state_.setValue(state);
-             }
-
-            const IssueState & getState() const {
-                return state_.getEnumValue();
-            }
-
-
-            bool isReady() const { return (getState() == IssueState::READY); }
-
-            bool winArb(const LoadStoreInstInfoPtr & that) const
-            {
-                if (that == nullptr) {
-                    return true;
-                }
-
-                return (static_cast<uint32_t>(this->getPriority())
-                    < static_cast<uint32_t>(that->getPriority()));
-            }
-
-        private:
-            MemoryAccessInfoPtr mem_access_info_ptr_;
-            sparta::State<IssuePriority> rank_;
-            sparta::State<IssueState> state_;
-
-        };  // class LoadStoreInstInfo
-
         sparta::SpartaSharedPointerAllocator<LoadStoreInstInfo> load_store_info_allocator;
-
-        /*!
-        * \class LoadStoreInstInfoPairDef
-        * \brief Pair Definition class of the load store instruction that flows through the example/CoreModel
-        */
-        // This is the definition of the PairDefinition class of LoadStoreInstInfo.
-        // This PairDefinition class could be named anything but it needs to inherit
-        // publicly from sparta::PairDefinition templatized on the actual class LoadStoreInstInfo.
-        class LoadStoreInstInfoPairDef : public sparta::PairDefinition<LoadStoreInstInfo>{
-        public:
-
-            // The SPARTA_ADDPAIRs APIs must be called during the construction of the PairDefinition class
-            LoadStoreInstInfoPairDef() : PairDefinition<LoadStoreInstInfo>(){
-                SPARTA_INVOKE_PAIRS(LoadStoreInstInfo);
-            }
-            SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("DID",   &LoadStoreInstInfo::getInstUniqueID),
-                                  SPARTA_ADDPAIR("rank",  &LoadStoreInstInfo::getPriority),
-                                  SPARTA_ADDPAIR("state", &LoadStoreInstInfo::getState),
-                                  SPARTA_FLATTEN(         &LoadStoreInstInfo::getMemoryAccessInfoPtr))
-        };
 
         void setTLB(SimpleTLB& tlb)
         {
@@ -522,86 +294,50 @@ namespace core_example
         void flushLSPipeline_(const Comp &);
     };
 
-    inline std::ostream & operator<<(std::ostream & os,
-        const core_example::LSU::MemoryAccessInfo::MMUState & mmu_access_state){
-        switch(mmu_access_state){
-            case LSU::MemoryAccessInfo::MMUState::NO_ACCESS:
-                os << "no_access";
-                break;
-            case LSU::MemoryAccessInfo::MMUState::MISS:
-                os << "miss";
-                break;
-            case LSU::MemoryAccessInfo::MMUState::HIT:
-                os << "hit";
-                break;
-            case LSU::MemoryAccessInfo::MMUState::NUM_STATES:
-                throw sparta::SpartaException("NUM_STATES cannot be a valid enum state.");
-        }
-        return os;
-    }
-
-    inline std::ostream & operator<<(std::ostream & os,
-        const core_example::LSU::MemoryAccessInfo::CacheState & cache_access_state){
-        switch(cache_access_state){
-            case LSU::MemoryAccessInfo::CacheState::NO_ACCESS:
-                os << "no_access";
-                break;
-            case LSU::MemoryAccessInfo::CacheState::MISS:
-                os << "miss";
-                break;
-            case LSU::MemoryAccessInfo::CacheState::HIT:
-                os << "hit";
-                break;
-            case LSU::MemoryAccessInfo::CacheState::NUM_STATES:
-                throw sparta::SpartaException("NUM_STATES cannot be a valid enum state.");
-        }
-        return os;
-    }
-
     inline std::ostream& operator<<(std::ostream& os,
-        const core_example::LSU::LoadStoreInstInfo::IssuePriority& rank){
+        const core_example::LoadStoreInstInfo::IssuePriority& rank){
         switch(rank){
-            case LSU::LoadStoreInstInfo::IssuePriority::HIGHEST:
+            case LoadStoreInstInfo::IssuePriority::HIGHEST:
                 os << "(highest)";
                 break;
-            case LSU::LoadStoreInstInfo::IssuePriority::CACHE_RELOAD:
+            case LoadStoreInstInfo::IssuePriority::CACHE_RELOAD:
                 os << "($_reload)";
                 break;
-            case LSU::LoadStoreInstInfo::IssuePriority::CACHE_PENDING:
+            case LoadStoreInstInfo::IssuePriority::CACHE_PENDING:
                 os << "($_pending)";
                 break;
-            case LSU::LoadStoreInstInfo::IssuePriority::MMU_RELOAD:
+            case LoadStoreInstInfo::IssuePriority::MMU_RELOAD:
                 os << "(mmu_reload)";
                 break;
-            case LSU::LoadStoreInstInfo::IssuePriority::MMU_PENDING:
+            case LoadStoreInstInfo::IssuePriority::MMU_PENDING:
                 os << "(mmu_pending)";
                 break;
-            case LSU::LoadStoreInstInfo::IssuePriority::NEW_DISP:
+            case LoadStoreInstInfo::IssuePriority::NEW_DISP:
                 os << "(new_disp)";
                 break;
-            case LSU::LoadStoreInstInfo::IssuePriority::LOWEST:
+            case LoadStoreInstInfo::IssuePriority::LOWEST:
                 os << "(lowest)";
                 break;
-            case LSU::LoadStoreInstInfo::IssuePriority::NUM_OF_PRIORITIES:
+            case LoadStoreInstInfo::IssuePriority::NUM_OF_PRIORITIES:
                 throw sparta::SpartaException("NUM_OF_PRIORITIES cannot be a valid enum state.");
         }
         return os;
     }
 
     inline std::ostream& operator<<(std::ostream& os,
-        const core_example::LSU::LoadStoreInstInfo::IssueState& state){
+        const core_example::LoadStoreInstInfo::IssueState& state){
         // Print instruction issue state
         switch(state){
-            case LSU::LoadStoreInstInfo::IssueState::READY:
+            case LoadStoreInstInfo::IssueState::READY:
                 os << "(ready)";
                 break;
-            case LSU::LoadStoreInstInfo::IssueState::ISSUED:
+            case LoadStoreInstInfo::IssueState::ISSUED:
                 os << "(issued)";
                 break;
-            case LSU::LoadStoreInstInfo::IssueState::NOT_READY:
+            case LoadStoreInstInfo::IssueState::NOT_READY:
                 os << "(not_ready)";
                 break;
-            case LSU::LoadStoreInstInfo::IssueState::NUM_STATES:
+            case LoadStoreInstInfo::IssueState::NUM_STATES:
                 throw sparta::SpartaException("NUM_STATES cannot be a valid enum state.");
         }
         return os;
