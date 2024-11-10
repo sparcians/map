@@ -79,7 +79,6 @@ namespace sparta {
 
   private:
       std::unique_ptr<IntParameterSet> baz_;
-      bool stop_checking_db_access_ = false;
   };
 
 }
