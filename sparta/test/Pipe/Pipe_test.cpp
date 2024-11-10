@@ -12,7 +12,7 @@
 #include "sparta/events/PayloadEvent.hpp"
 
 TEST_INIT
-#define PIPEOUT_GEN
+#define PIPEOUT_GEN 0
 
 /*
  * This test creates a producer and a consumer for two staged pipes.
@@ -68,7 +68,7 @@ int main ()
      // sparta::log::Tap scheduler_debug(sparta::TreeNode::getVirtualGlobalNode(),
      //                                sparta::log::categories::DEBUG, std::cout);
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     pipe1.enableCollection(&rtn);
     pipe2.enableCollection<sparta::SchedulingPhase::PostTick>(&rtn);
 #endif
@@ -79,13 +79,13 @@ int main ()
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     sparta::collection::PipelineCollector pc("testPipe", 1000000,
                                            root_clk.get(), &rtn);
 #endif
     sched.finalize();
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     EXPECT_THROW(pipe2.resize(5));
     EXPECT_EQUAL(pipe2.capacity(), 10); // Make sure it really didn't get resized
     pc.startCollection(&rtn);
@@ -320,7 +320,7 @@ int main ()
     EXPECT_EQUAL(pipe2.size(), 0);
 
     rtn.enterTeardown();
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     pc.destroy();
 #endif
 

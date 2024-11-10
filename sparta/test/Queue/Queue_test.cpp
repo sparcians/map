@@ -19,7 +19,7 @@
 #include "sparta/utils/SpartaSharedPointerAllocator.hpp"
 TEST_INIT
 
-#define PIPEOUT_GEN
+#define PIPEOUT_GEN 0
 
 void testIteratorValidity();
 void testIteratorValidity2();
@@ -64,20 +64,20 @@ int main()
 
     rtn.setClock(root_clk.get());
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     queue10_untimed.enableCollection(&rtn);
 #endif
 
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     sparta::collection::PipelineCollector pc("testPipe", 1000000, root_clk.get(), &rtn);
 #endif
 
     sched.finalize();
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     pc.startCollection(&rtn);
 #endif
 
@@ -389,7 +389,7 @@ int main()
     testPopBack();
 
     rtn.enterTeardown();
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     pc.destroy();
 #endif
 

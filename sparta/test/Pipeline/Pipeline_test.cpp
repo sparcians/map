@@ -12,9 +12,10 @@
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/simulation/ClockManager.hpp"
 #include "sparta/utils/SpartaTester.hpp"
+#include "sparta/events/PayloadEvent.hpp"
 
 TEST_INIT
-#define PIPEOUT_GEN
+#define PIPEOUT_GEN 0
 
 #define TEST_MANUAL_UPDATE
 
@@ -310,7 +311,7 @@ int main ()
     sparta::PayloadEvent<uint32_t, sparta::SchedulingPhase::Flush> ev_flush_one
         (&es, "ev_flush_one", CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(DummyClass2<uint64_t>, &dummyObj2, flushOne, uint32_t));
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     EXPECT_FALSE(examplePipeline1.isCollected());
     examplePipeline1.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
     EXPECT_FALSE(examplePipeline1.isCollected());
@@ -541,7 +542,7 @@ int main ()
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     sparta::collection::PipelineCollector pc("examplePipeline1", 1000000, root_clk.get(), &rtn);
 #endif
 
@@ -668,7 +669,7 @@ int main ()
 
     sched.finalize();
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     EXPECT_FALSE(examplePipeline1.isCollected());
     pc.startCollection(&rtn);
     EXPECT_TRUE(examplePipeline1.isCollected());
@@ -1628,7 +1629,7 @@ int main ()
 
     rtn.enterTeardown();
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     pc.destroy();
 #endif
 

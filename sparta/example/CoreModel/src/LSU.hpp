@@ -9,7 +9,6 @@
 #include "sparta/simulation/Unit.hpp"
 #include "sparta/simulation/ParameterSet.hpp"
 #include "sparta/simulation/TreeNode.hpp"
-#include "sparta/collection/Collectable.hpp"
 #include "sparta/events/StartupEvent.hpp"
 #include "sparta/resources/Pipeline.hpp"
 #include "sparta/resources/Buffer.hpp"
@@ -393,9 +392,6 @@ namespace core_example
         bool cache_pending_inst_flushed_ = false;
         // Keep track of the instruction that causes current outstanding cache miss
         ExampleInstPtr cache_pending_inst_ptr_ = nullptr;
-
-        sparta::collection::Collectable<bool> cache_busy_collectable_{
-            getContainer(), "dcache_busy", &cache_busy_};
 
         // NOTE:
         // Depending on which kind of cache (e.g. blocking vs. non-blocking) is being used

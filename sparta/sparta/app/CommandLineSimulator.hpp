@@ -455,7 +455,6 @@ protected:
     /*!
      * \brief Instance of the pipeline collector if collection enabled
      */
-    std::unique_ptr<sparta::trigger::Triggerable> pipeline_collection_triggerable_;
     std::unique_ptr<sparta::trigger::Trigger>     pipeline_trigger_;
     std::unique_ptr<sparta::InformationWriter>    info_out_;
 

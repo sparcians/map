@@ -18,13 +18,11 @@
 #include "sparta/resources/FrontArray.hpp"
 #include "sparta/simulation/ClockManager.hpp"
 
-#include "sparta/collection/PipelineCollector.hpp"
-
 #include <string>
 
 TEST_INIT
 
-#define PIPEOUT_GEN
+#define PIPEOUT_GEN 0
 
 struct dummy_struct
 {
@@ -137,13 +135,13 @@ int main()
     root_node.enterConfiguring();
     root_node.enterFinalized();
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     sparta::collection::PipelineCollector pc("test_collection_", 1000, &clk, &root);
 #endif
 
     sched.finalize();
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     pc.startCollection(&root_node);
 #endif
 
@@ -467,7 +465,7 @@ int main()
         EXPECT_EQUAL(aged_array_test.getAge(i), age_vec_0[idxx++]);
     }
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     sched.run(1);
 #endif
 
@@ -475,7 +473,7 @@ int main()
     aged_collected_array.erase(1); //+8 records.
     aged_collected_array.write(0, 0);
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     sched.run(1);
 #endif
 
@@ -516,7 +514,7 @@ int main()
     }
     EXPECT_EQUAL(cnt, 7);
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     sched.run(1);
 #endif
 
@@ -524,7 +522,7 @@ int main()
     aged_array.write(2, 2);
     aged_array.write(1, 1);
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     sched.run(1);
 #endif
 
@@ -539,7 +537,7 @@ int main()
     EXPECT_EQUAL(*dat, 9);
     aged_array.erase(it);
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     sched.run(1);
 #endif
 
@@ -552,7 +550,7 @@ int main()
     ns_array.write(1, 1);
     ns_array.write(2, 2);
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     sched.run(1);
 #endif
 
@@ -568,7 +566,7 @@ int main()
     EXPECT_EQUAL(ns_array.numValid(), 1);
     EXPECT_EQUAL(ns_array.capacity(), 10);
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     sched.run(1);
 #endif
 
@@ -577,7 +575,7 @@ int main()
     ns_array.write(3, 3);
     ns_array.write(0, 0);
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     sched.run(1);
 #endif
 
@@ -595,7 +593,7 @@ int main()
         ++i;
     }
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     sched.run(1);
 #endif
     iter = ns_array.begin();
@@ -703,7 +701,7 @@ int main()
 //         std::cout << "valid: " << iter.isValid() << std::endl;
 //     }
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     sched.run(10);
     pc.destroy();
 #endif

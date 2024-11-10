@@ -17,9 +17,10 @@
 #include "sparta/ports/Port.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/MathUtils.hpp"
-#include "sparta/collection/IterableCollector.hpp"
 #include "sparta/utils/ValidValue.hpp"
 #include "sparta/utils/IteratorTraits.hpp"
+#include "sparta/events/UniqueEvent.hpp"
+#include "sparta/events/EventSet.hpp"
 
 namespace sparta
 {
@@ -221,7 +222,6 @@ public:
      *       finialization nor after enabling pipeline collection.
      */
     void resize(uint32_t new_size) {
-        sparta_assert(collector_ == nullptr);
         //sparta_assert(!getClock()->isFinalized());
         initPipe_(new_size);
     }
@@ -513,15 +513,14 @@ public:
      */
     template<sparta::SchedulingPhase phase = SchedulingPhase::Collection>
     void enableCollection(TreeNode * parent) {
-        collector_.reset (new collection::IterableCollector<Pipe<DataT>, phase, true>
-                          (parent, name_, this, capacity()));
+        (void) parent;
     }
 
     /**
      * \brief Check if pipe is collecting
      */
     bool isCollected() const {
-        return collector_ && collector_->isCollected();
+        return false;
     }
 
 private:
@@ -590,10 +589,6 @@ private:
             ev_update_.schedule();
         }
     }
-
-    //////////////////////////////////////////////////////////////////////
-    // Collectors
-    std::unique_ptr<collection::CollectableTreeNode> collector_;
 
 };
 
