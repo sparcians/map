@@ -2025,25 +2025,6 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             param_out.addParameters(sim->getRoot()->getSearchScope(), &ptree, sim_config_.verbose_cfg);
         }
 
-        if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)
-        {
-            const bool multiple_triggers = sim_config_.trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI;
-            pipeline_collection_triggerable_.reset(new PipelineTrigger(sim_config_.pipeline_collection_file_prefix,
-                                                                       pipeline_enabled_node_names_,
-                                                                       heartbeat,
-                                                                       multiple_triggers,
-                                                                       sim->getRootClock(),
-                                                                       sim->getRoot()));
-
-            // If pipeline collection is turned on begin writing an info file
-            // about the simulation.
-            info_out_.reset(new sparta::InformationWriter(sim_config_.pipeline_collection_file_prefix+"simulation.info"));
-            info_out_->write("Pipeline Collection files generated from simulator ");
-            info_out_->write(sim->getSimName());
-            info_out_->write("\n\nSimulation started at: ");
-            info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
-        }
-
         // Finalize the pevent controller now that the tree is built.
         pevent_controller_.finalize(sim->getRoot());
         if(sim_config_.trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE)
@@ -2053,26 +2034,12 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             if(run_pevents_) {
                 pevent_trigger_->go();
             }
-
-            // Start pipeline collection now (if enabled).  This must
-            // be enabled on the first cycle, not earlier to ensure
-            // the tree is complete.
-            if(pipeline_collection_triggerable_) {
-                pipeline_trigger_.reset(new trigger::Trigger("turn_on_collection_now", sim->getRootClock()));
-                pipeline_trigger_->addTriggeredObject(pipeline_collection_triggerable_.get());
-                pipeline_trigger_->setTriggerStartAbsolute(sim->getRootClock(), 1);
-            }
         }
-        else if(run_pevents_ || pipeline_collection_triggerable_)
+        else if(run_pevents_)
         {
             debug_trigger_.reset(new trigger::Trigger("debug_on_trigger", sim->getRootClock()));
             if(run_pevents_) {
                 debug_trigger_->addTriggeredObject(pevent_trigger_.get());
-            }
-
-            // Pipeline trigger
-            if(pipeline_collection_triggerable_) {
-                debug_trigger_->addTriggeredObject(pipeline_collection_triggerable_.get());
             }
 
             // Enable the trigger
@@ -2292,32 +2259,11 @@ void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
         try{
             sim->run(ticks);
         }catch(...){
-            if(pipeline_collection_triggerable_) {
-                if(pipeline_collection_triggerable_->isTriggered()) {
-                    pipeline_collection_triggerable_->stop();
-                }
-                info_out_->write("Simulation aborted at: ");
-                info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
-            }
-
             // In interactive simulation, we would try and enter a "debug mode" and
             // allow user to wander without running anything.
             throw;
         }
     } // if(run_time_ > 0)
-
-    if(pipeline_collection_triggerable_)
-    {
-        if(pipeline_collection_triggerable_->isTriggered()) {
-            pipeline_collection_triggerable_->stop();
-        }
-
-         // Write the end time of the simulation.
-        info_out_->write("Simulation ended at: ");
-        info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
-        sparta::InformationWriter& outputter = *(info_out_.get());
-        outputter << "Heartbeat interval: " << pipeline_heartbeat_ << " ticks" << "\n";
-    }
 
     if(show_tree_){
         std::cout << "\nTree After Running" << std::endl

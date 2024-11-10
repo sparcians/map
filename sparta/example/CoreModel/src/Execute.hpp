@@ -20,7 +20,6 @@
 #include "sparta/simulation/ParameterSet.hpp"
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/ports/Port.hpp"
-#include "sparta/collection/Collectable.hpp"
 #include "sparta/events/StartupEvent.hpp"
 
 #include "CoreTypes.hpp"
@@ -82,9 +81,6 @@ namespace core_example
         const uint32_t execute_time_;
         const uint32_t scheduler_size_;
         const bool in_order_issue_;
-        sparta::collection::IterableCollector<std::list<ExampleInstPtr>>
-        ready_queue_collector_ {getContainer(), "scheduler_queue",
-                &ready_queue_, scheduler_size_};
 
         // Events used to issue and complete the instruction
         sparta::UniqueEvent<> issue_inst_{&unit_event_set_, getName() + "_issue_inst",
@@ -92,9 +88,6 @@ namespace core_example
         sparta::PayloadEvent<ExampleInstPtr> complete_inst_{
             &unit_event_set_, getName() + "_complete_inst",
                 CREATE_SPARTA_HANDLER_WITH_DATA(Execute, completeInst_, ExampleInstPtr)};
-
-        // A pipeline collector
-        sparta::collection::Collectable<ExampleInstPtr> collected_inst_;
 
         // Counter
         sparta::Counter total_insts_issued_{

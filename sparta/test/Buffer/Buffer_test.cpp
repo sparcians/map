@@ -19,7 +19,7 @@
 
 TEST_INIT
 
-#define PIPEOUT_GEN
+#define PIPEOUT_GEN 0
 
 #define QUICK_PRINT(x) \
     std::cout << x << std::endl
@@ -96,7 +96,7 @@ void generalTest()
                                            &buf10_stats);
 
     rtn.setClock(root_clk.get());
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     buf10.enableCollection(&rtn);
 #endif
 
@@ -106,14 +106,14 @@ void generalTest()
     // Get info messages from the scheduler node and send them to this file
     sparta::log::Tap t2(root_clk.get()->getScheduler(), "debug", "scheduler.log.debug");
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     sparta::collection::PipelineCollector pc("testBuffer", 1000000,
                                            root_clk.get(), &rtn);
 #endif
 
     sched.finalize();
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     pc.startCollection(&rtn);
 #endif
 
@@ -581,7 +581,7 @@ void generalTest()
     sched.run(5);
 
     rtn.enterTeardown();
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     pc.destroy();
 #endif
 }

@@ -13,8 +13,7 @@ namespace core_example
         ignore_inst_execute_time_(p->ignore_inst_execute_time),
         execute_time_(p->execute_time),
         scheduler_size_(p->scheduler_size),
-        in_order_issue_(p->in_order_issue),
-        collected_inst_(node, node->getName())
+        in_order_issue_(p->in_order_issue)
     {
         in_execute_inst_.
             registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Execute, getInstsFromDispatch_,
@@ -85,7 +84,6 @@ namespace core_example
         ex_inst.setStatus(ExampleInst::Status::SCHEDULED);
         const uint32_t exe_time =
             ignore_inst_execute_time_ ? execute_time_ : ex_inst.getExecuteTime();
-        collected_inst_.collectWithDuration(ex_inst, exe_time);
         if(SPARTA_EXPECT_FALSE(info_logger_)) {
             info_logger_ << "Executing: " << ex_inst << " for "
                          << exe_time + getClock()->currentCycle();
@@ -153,7 +151,6 @@ namespace core_example
 
         if(complete_inst_.getNumOutstandingEvents() == 0) {
             unit_busy_ = false;
-            collected_inst_.closeRecord();
         }
     }
 

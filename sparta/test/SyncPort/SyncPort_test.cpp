@@ -21,7 +21,7 @@
 TEST_INIT
 
 // Pipeout generation does not work with this test
-#define PIPEOUT_GEN
+#define PIPEOUT_GEN 0
 
 // Be verbose -- very verbose
 // #define MAKE_NOISE
@@ -163,7 +163,6 @@ private:
 
     std::unique_ptr<sparta::ResourceTreeNode> master_tn;
     std::unique_ptr<sparta::ResourceTreeNode> slave_tn;
-    std::unique_ptr<sparta::collection::PipelineCollector> pc;
 
 };
 
@@ -179,7 +178,7 @@ Unit::Unit(sparta::TreeNode* node, const Unit::ParameterSet*) :
     ev_set(node),
     ev_do_work(&ev_set, "unit_do_work_event", CREATE_SPARTA_HANDLER(Unit, doWork))
 {
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     out_cmd.enableCollection(node);
     in_cmd.enableCollection(node);
 #endif
@@ -394,7 +393,7 @@ TestSystem::TestSystem(double master_frequency_mhz, double slave_frequency_mhz)
     slave_unit->in_cmd.precedes(slave_unit->in_data);
     master_unit->in_cmd.precedes(master_unit->in_data);
 
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     pc.reset(new sparta::collection::PipelineCollector("testPipe", 1000000, root_clk.get(), &rtn));
 #endif
 
@@ -404,7 +403,7 @@ TestSystem::TestSystem(double master_frequency_mhz, double slave_frequency_mhz)
     while(!(master_clk->isPosedge() && slave_clk->isPosedge())) {
         sched.run(1, true, false); // exacting_run = true, measure time = false
     }
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     pc->startCollection(&rtn);
 #endif
     //sparta::log::Tap scheduler_tap(sparta::Scheduler::getScheduler(), "debug", "sched_cmds.out");
@@ -418,7 +417,7 @@ TestSystem::TestSystem(double master_frequency_mhz, double slave_frequency_mhz)
 
 TestSystem::~TestSystem()
 {
-#ifdef PIPEOUT_GEN
+#if PIPEOUT_GEN
     pc->destroy();
 #endif
     rtn.enterTeardown();
