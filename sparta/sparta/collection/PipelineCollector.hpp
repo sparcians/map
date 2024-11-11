@@ -32,6 +32,7 @@ namespace collection
     {
     public:
         PipelineCollector(const std::string& simdb_filename,
+                          const std::set<std::string>& enabled_nodes,
                           const size_t heartbeat,
                           sparta::RootTreeNode * rtn,
                           const sparta::CounterBase * insts_retired_counter)
@@ -58,7 +59,7 @@ namespace collection
             }
 
             db_mgr_.getCollectionMgr()->setHeartbeat(heartbeat);
-            createCollections_();
+            createCollections_(enabled_nodes);
         }
 
         //! \return the pipeout file path
@@ -83,13 +84,13 @@ namespace collection
             return scheduler_->getCurrentTick() - 1;
         }
 
-        void createCollections_() {
+        void createCollections_(const std::set<std::string>& enabled_nodes) {
             CollectionPoints collectables;
-            recurseAddCollectables_(root_, collectables);
+            recurseAddCollectables_(root_, collectables, enabled_nodes);
             collectables.createCollections(db_mgr_.getCollectionMgr());
             db_mgr_.finalizeCollections();
 
-            recurseFindFastestCollectableClock_(root_, fastest_clk_);
+            recurseFindFastestCollectableClock_(root_, fastest_clk_, enabled_nodes);
 
             ev_collect_.reset(new sparta::UniqueEvent<SchedulingPhase::Collection>
                 (&ev_set_, sparta::notNull(fastest_clk_)->getName() + "_auto_collection_event_collection",
@@ -101,20 +102,27 @@ namespace collection
         }
 
         void recurseAddCollectables_(sparta::TreeNode * node,
-                                     CollectionPoints & collectables)
+                                     CollectionPoints & collectables,
+                                     const std::set<std::string>& enabled_nodes)
         {
             if (auto c = dynamic_cast<CollectableTreeNode*>(node)) {
-                c->addCollectionPoint(collectables);
+                if (enabled_nodes.empty() || enabled_nodes.count(c->getLocation())) {
+                    c->addCollectionPoint(collectables);
+                }
             }
             for (auto & child : node->getChildren()) {
-                recurseAddCollectables_(child, collectables);
+                recurseAddCollectables_(child, collectables, enabled_nodes);
             }
         }
 
         void recurseFindFastestCollectableClock_(const sparta::TreeNode * node,
-                                                 const Clock *& fastest_clk)
+                                                 const Clock *& fastest_clk,
+                                                 const std::set<std::string>& enabled_nodes)
         {
             if (auto c = dynamic_cast<const CollectableTreeNode*>(node)) {
+                if (!enabled_nodes.empty() && !enabled_nodes.count(c->getLocation())) {
+                    return;
+                }
                 if (c->getClock() != nullptr) {
                     if (fastest_clk == nullptr) {
                         fastest_clk = c->getClock();
@@ -127,7 +135,7 @@ namespace collection
             }
 
             for (auto & child : node->getChildren()) {
-                recurseFindFastestCollectableClock_(child, fastest_clk);
+                recurseFindFastestCollectableClock_(child, fastest_clk, enabled_nodes);
             }
         }
 

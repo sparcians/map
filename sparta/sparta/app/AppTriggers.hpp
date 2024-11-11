@@ -30,11 +30,12 @@ class PipelineTrigger : public trigger::Triggerable
 {
 public:
     PipelineTrigger(const std::string& simdb_filename,
-                      const size_t heartbeat,
-                      sparta::RootTreeNode * rtn,
-                      const sparta::CounterBase * insts_retired_counter)
+                    const std::set<std::string>& enabled_nodes,
+                    const size_t heartbeat,
+                    sparta::RootTreeNode * rtn,
+                    const sparta::CounterBase * insts_retired_counter)
     {
-        pipeline_collector_.reset(new sparta::collection::PipelineCollector(simdb_filename, heartbeat, rtn, insts_retired_counter));
+        pipeline_collector_.reset(new sparta::collection::PipelineCollector(simdb_filename, enabled_nodes, heartbeat, rtn, insts_retired_counter));
     }
 
     void go() override
