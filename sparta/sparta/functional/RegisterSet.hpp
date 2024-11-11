@@ -480,8 +480,9 @@ public:
                 const RegisterBase::Definition *defs,
                 const RegisterProxyBase::Definition *proxy_defs,
                 CurrentBankFunction cbfxn,
-                RegisterTypeTag<RegisterT> tag)
-    : TreeNode("regs",
+                RegisterTypeTag<RegisterT> tag,
+                const std::string& name = "regs")
+    : TreeNode(name,
                TreeNode::GROUP_NAME_BUILTIN,
                TreeNode::GROUP_IDX_NONE,
                "Register set")
@@ -530,8 +531,9 @@ public:
     template <typename RegisterT>
     RegisterSet(TreeNode *parent,
                 const RegisterBase::Definition *defs,
-                RegisterTypeTag<RegisterT> tag)
-    : RegisterSet(parent, defs, nullptr, nullptr, tag)
+                RegisterTypeTag<RegisterT> tag,
+                const std::string& name = "regs")
+    : RegisterSet(parent, defs, nullptr, nullptr, tag, name)
     {
         // Handled in delegated consturctor
     }
@@ -541,18 +543,19 @@ public:
     create(TreeNode *parent,
            const RegisterBase::Definition *defs,
            const RegisterProxyBase::Definition *proxy_defs,
-           CurrentBankFunction cbfxn)
+           CurrentBankFunction cbfxn,
+           const std::string& name = "regs")
     {
         return std::unique_ptr<RegisterSet>(new RegisterSet(
-            parent, defs, proxy_defs, cbfxn, RegisterTypeTag<RegisterT>()));
+            parent, defs, proxy_defs, cbfxn, RegisterTypeTag<RegisterT>(), name));
     }
 
     template <typename RegisterT = Register>
     static std::unique_ptr<RegisterSet>
-    create(TreeNode *parent, const RegisterBase::Definition *defs)
+    create(TreeNode *parent, const RegisterBase::Definition *defs, const std::string& name = "regs")
     {
         return std::unique_ptr<RegisterSet>(new RegisterSet(
-            parent, defs, RegisterTypeTag<RegisterT>()));
+            parent, defs, RegisterTypeTag<RegisterT>(), name));
     }
 
     /*!
