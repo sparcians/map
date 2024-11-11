@@ -19,6 +19,7 @@
 #include "sparta/statistics/StatisticSet.hpp"
 #include "sparta/statistics/InstrumentationNode.hpp"
 #include "sparta/utils/IteratorTraits.hpp"
+#include "sparta/collection/CollectableTreeNode.hpp"
 
 namespace sparta
 {
@@ -599,7 +600,7 @@ namespace sparta
          *       instatiation of the PipelineCollector
          */
         void enableCollection(TreeNode * parent) {
-            (void) parent;
+            collector_ = std::make_unique<IterableCollectorType>(parent, name_, this, capacity());
         }
 
         /**
@@ -820,6 +821,11 @@ namespace sparta
         //////////////////////////////////////////////////////////////////////
         // Counters
         std::unique_ptr<sparta::CycleHistogramStandalone> utilization_;
+
+        //////////////////////////////////////////////////////////////////////
+        // Collectors
+        using IterableCollectorType = sparta::collection::IterableCollector<Queue<value_type>>;
+        std::unique_ptr<IterableCollectorType> collector_;
 
         // Notice that our list for storing data is a dynamic array.
         // This is used instead of a stl vector to promote debug

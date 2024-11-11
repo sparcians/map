@@ -110,6 +110,8 @@ namespace sparta
     template<class DataT>
     class SyncOutPort final : public OutPort
     {
+        //TODO cnyce: typedef collection::DelayedCollectable<DataT> CollectorType;
+
     public:
         //! A typedef for the type of data this port passes.
         typedef DataT DataType;
@@ -379,6 +381,9 @@ namespace sparta
         /// The in-port all data will be sent to
         SyncInPort<DataT> * sync_in_port_ = nullptr;
 
+        /// Pipeline collection
+        /// TODO cnyce: std::unique_ptr<CollectorType> collector_;
+
         /// Last cycle any data was sent
         Clock::Cycle PREV_DATA_SEND_CYCLE_INIT = 0xffffffffffffffff; //init tick 0
         Clock::Cycle prev_data_send_cycle_ = PREV_DATA_SEND_CYCLE_INIT; //init tick 0
@@ -399,6 +404,8 @@ namespace sparta
     template<class DataT>
     class SyncInPort final : public InPort, public DataContainer<DataT>
     {
+        //! TODO cnyce: typedef collection::Collectable<DataT> CollectorType;
+
     public:
         //! Expected typedef for DataT
         typedef DataT DataType;
@@ -1040,6 +1047,9 @@ namespace sparta
         //! Last cycle that someone called setReady.  Class ensures that we
         //! only call setReady() once per cycle.
         Scheduler::Tick set_ready_tick_ = 0;
+
+        //! Pipeline collection
+        //! TODO cnyce: std::unique_ptr<CollectorType> collector_;
 
         /// loggers
         sparta::log::MessageSource info_logger_;

@@ -15,6 +15,7 @@
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/statistics/CycleHistogram.hpp"
 #include "sparta/utils/IteratorTraits.hpp"
+#include "sparta/collection/CollectableTreeNode.hpp"
 
 namespace sparta
 {
@@ -846,7 +847,11 @@ namespace sparta
          */
         void enableCollection(TreeNode* parent)
         {
-            (void) parent;
+            collector_ = std::make_unique<collection::IterableCollector<FullArrayType, true>>(parent, name_, this, capacity());
+
+            if constexpr (ArrayT == ArrayType::AGED) {
+                age_collector_ = std::make_unique<collection::IterableCollector<AgedArrayCollectorProxy>>(parent, name_ + "_age_ordered", &aged_array_col_, capacity());
+            }
         }
 
     private:
@@ -856,6 +861,9 @@ namespace sparta
         public:
             //! Typedef for size_type
             typedef uint32_t size_type;
+
+            //! Typedef for value_type
+            typedef Array<DataT, ArrayType::AGED> value_type;
 
             AgedArrayCollectorProxy(FullArrayType * array) : array_(array) { }
 
@@ -995,6 +1003,11 @@ namespace sparta
         //////////////////////////////////////////////////////////////////////
         // Counters
         std::unique_ptr<sparta::CycleHistogramStandalone> utilization_;
+
+        ////////////////////////////////////////////////////////////
+        // Collectors
+        std::unique_ptr<collection::IterableCollector<FullArrayType, true>> collector_;
+        std::unique_ptr<collection::IterableCollector<AgedArrayCollectorProxy>> age_collector_;
     };
 
     template<class DataT, ArrayType ArrayT>

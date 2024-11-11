@@ -47,7 +47,7 @@ namespace sparta {
 class GlobalTreeNode;
 
 namespace collection {
-    class PipelineCollectorV3;
+    class PipelineCollector;
 }
 }  // namespace sparta
 
@@ -1126,7 +1126,7 @@ private:
 #endif
 
     //! Friend needed to access current_tick_ for SimDB v3 collection
-    friend class collection::PipelineCollectorV3;
+    friend class collection::PipelineCollector;
 };
 
 
