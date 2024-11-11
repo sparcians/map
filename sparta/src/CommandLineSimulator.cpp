@@ -2036,10 +2036,6 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                 throw SpartaException("TODO cnyce: Pipeline collection with multiple triggers is not yet supported in SPARTA v3");
             }
 
-            if (!pipeline_enabled_node_names_.empty()) {
-                throw SpartaException("TODO cnyce: Pipeline collection with enabled nodes (--collection-at, -k) is not yet supported in SPARTA v3");
-            }
-
             size_t heartbeat = 10;
             std::stringstream ss;
             ss << pipeline_heartbeat_;
@@ -2047,6 +2043,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
             pipeline_collection_triggerable_.reset(new PipelineTrigger(
                 sim_config_.pipeline_collection_file_prefix,
+                pipeline_enabled_node_names_,
                 heartbeat,
                 sim->getRoot(),
                 sim->findSemanticCounter(Simulation::CSEM_INSTRUCTIONS)));
