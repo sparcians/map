@@ -166,7 +166,7 @@ namespace core_example
         ExampleInstPtr cache_pending_inst_ptr_ = nullptr;
 
         // Collection
-        // TODO cnyce: Collectable<bool> cache_busy_collectable_;
+        sparta::collection::Collectable<bool> cache_busy_collectable_;
 
         // NOTE:
         // Depending on which kind of cache (e.g. blocking vs. non-blocking) is being used

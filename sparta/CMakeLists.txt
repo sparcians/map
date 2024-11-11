@@ -206,6 +206,7 @@ add_library (sparta ${SourceCppFiles})
 
 # Add local includes
 target_include_directories (sparta PUBLIC "./")
+target_include_directories (sparta PUBLIC "./simdb/include")
 
 set (SPARTA_STATIC_LIBS ${PROJECT_BINARY_DIR}/libsparta.a)
 set (SPARTA_CMAKE_MACRO_PATH ${SPARTA_BASE}/cmake)

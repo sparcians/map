@@ -53,6 +53,33 @@ private:
     const CollectableT* collectable_;
 };
 
+template <>
+class Collectable<bool> : public CollectableTreeNode
+{
+public:
+    using value_type = bool;
+
+    Collectable(TreeNode* parent, const std::string& name, const bool* collectable, const std::string& desc = "Collectable <no desc>")
+        : CollectableTreeNode(parent, name, desc)
+        , collectable_(collectable)
+    {
+    }
+
+    void addCollectionPoint(CollectionPoints & collection_points) override
+    {
+        std::function<int32_t()> get_bool_as_int = [this]() { return getBoolAsInt_(); };
+        collection_points.addStat(getLocation(), getClock(), get_bool_as_int);
+    }
+
+private:
+    int32_t getBoolAsInt_() const
+    {
+        return *collectable_ ? 1 : 0;
+    }
+
+    const bool* collectable_;
+};
+
 template <typename ContainerT, bool Sparse=false>
 class IterableCollector : public CollectableTreeNode
 {

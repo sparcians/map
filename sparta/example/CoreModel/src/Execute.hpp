@@ -88,7 +88,8 @@ namespace core_example
         // Collection
         IterableCollectorType ready_queue_collector_{
             getContainer(), "scheduler_queue", &ready_queue_, scheduler_size_};
-        // TODO cnyce:
+
+        // TODO cnyce
         // sparta::collection::Collectable<ExampleInstPtr> collected_inst_{
         //     getContainer(), "collected_inst", getClock(), nullptr};
 

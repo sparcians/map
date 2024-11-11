@@ -2033,20 +2033,10 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
         if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)
         {
-            const bool multiple_triggers = sim_config_.trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI;
-            if (multiple_triggers) {
-                throw SpartaException("TODO cnyce: Pipeline collection with multiple triggers is not yet supported in SPARTA v3");
-            }
-
-            size_t heartbeat = 10;
-            std::stringstream ss;
-            ss << pipeline_heartbeat_;
-            ss >> heartbeat;
-
             pipeline_collection_triggerable_.reset(new PipelineTrigger(
                 sim_config_.pipeline_collection_file_prefix,
                 pipeline_enabled_node_names_,
-                heartbeat,
+                std::atoi(pipeline_heartbeat_.c_str()),
                 sim->getRoot(),
                 sim->findSemanticCounter(Simulation::CSEM_INSTRUCTIONS)));
         }

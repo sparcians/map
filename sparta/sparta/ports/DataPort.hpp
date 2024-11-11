@@ -287,7 +287,8 @@ namespace sparta
     class DataInPort final : public InPort, public DataContainer<DataT>
     {
         // Pipeline collection type
-        // TODO cnyce: typedef collection::Collectable<DataT> CollectorType;
+        // TODO cnyce
+        // typedef collection::Collectable<DataT> CollectorType;
 
     public:
 
@@ -529,7 +530,8 @@ namespace sparta
         const Clock * receiver_clock_ = nullptr;
 
         //! Pipeline collection
-        //! TODO cnyce: std::unique_ptr<CollectorType> collector_;
+        //! TODO cnyce
+        //! std::unique_ptr<CollectorType> collector_;
 
         //! Data receiving point
         void receivePortData_(const DataT & dat)
