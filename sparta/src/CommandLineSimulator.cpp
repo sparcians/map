@@ -1767,6 +1767,18 @@ bool CommandLineSimulator::parse(int argc,
     sim_config_.report_on_error         = vm_.count("report-on-error") > 0;
     sim_config_.reports                 = reports;
 
+    if (sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr) {
+        auto& simdb_filename = sim_config_.pipeline_collection_file_prefix;
+        auto fs_path = std::filesystem::path(simdb_filename);
+        if (!fs_path.has_extension() || fs_path.extension() != ".db") {
+            simdb_filename += ".db";
+        }
+
+        if (pipeline_heartbeat_ == DefaultHeartbeat) {
+            pipeline_heartbeat_ = "10";
+        }
+    }
+
     //pevents
     run_pevents_ = (vm_.count("pevents-at") > 0) || (vm_.count("pevents") > 0) || (vm_.count("verbose-pevents") > 0);
 
@@ -1830,7 +1842,7 @@ bool CommandLineSimulator::parse(int argc,
         //print out some stuff about the pipeline collections run status.
         std::cout << "  pipeline-collection: " << std::boolalpha << collecting << std::endl;
         if(collecting){
-            std::cout << "  output dir:          " << sim_config_.pipeline_collection_file_prefix << std::endl;
+            std::cout << "  simdb file:          " << sim_config_.pipeline_collection_file_prefix << std::endl;
             std::cout << "  pipeline heartbeat:  " << pipeline_heartbeat_ << std::endl;
         }
     }
@@ -1868,18 +1880,12 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
     }
 
     // Convert heartbeat command line string to int
-    uint32_t heartbeat;
     try{
         size_t end_pos;
-        heartbeat = utils::smartLexicalCast<uint32_t>(pipeline_heartbeat_, end_pos);
+        utils::smartLexicalCast<uint32_t>(pipeline_heartbeat_, end_pos);
     }catch (SpartaException const&){
-        throw SpartaException("HEARTBEAT for pipeline collection must be an integer value and a multiple of 100 > 0, not \"")
+        throw SpartaException("HEARTBEAT for pipeline collection must be an integer value > 0, not \"")
             << pipeline_heartbeat_ << "\"";
-    }
-
-    if(heartbeat != 0 && heartbeat % 100 != 0){
-        throw SpartaException("HEARTBEAT for pipeline collection must be a multiple of 100 > 0, not \"")
-            << heartbeat << "\"";
     }
 
     // Pevent
@@ -2025,6 +2031,29 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             param_out.addParameters(sim->getRoot()->getSearchScope(), &ptree, sim_config_.verbose_cfg);
         }
 
+        if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)
+        {
+            const bool multiple_triggers = sim_config_.trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI;
+            if (multiple_triggers) {
+                throw SpartaException("TODO cnyce: Pipeline collection with multiple triggers is not yet supported in SPARTA v3");
+            }
+
+            if (!pipeline_enabled_node_names_.empty()) {
+                throw SpartaException("TODO cnyce: Pipeline collection with enabled nodes (--collection-at, -k) is not yet supported in SPARTA v3");
+            }
+
+            size_t heartbeat = 10;
+            std::stringstream ss;
+            ss << pipeline_heartbeat_;
+            ss >> heartbeat;
+
+            pipeline_collection_triggerable_.reset(new PipelineTrigger(
+                sim_config_.pipeline_collection_file_prefix,
+                heartbeat,
+                sim->getRoot(),
+                sim->findSemanticCounter(Simulation::CSEM_INSTRUCTIONS)));
+        }
+
         // Finalize the pevent controller now that the tree is built.
         pevent_controller_.finalize(sim->getRoot());
         if(sim_config_.trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_NONE)
@@ -2034,12 +2063,26 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             if(run_pevents_) {
                 pevent_trigger_->go();
             }
+
+            // Start pipeline collection now (if enabled).  This must
+            // be enabled on the first cycle, not earlier to ensure
+            // the tree is complete.
+            if(pipeline_collection_triggerable_) {
+                pipeline_trigger_.reset(new trigger::Trigger("turn_on_collection_now", sim->getRootClock()));
+                pipeline_trigger_->addTriggeredObject(pipeline_collection_triggerable_.get());
+                pipeline_trigger_->setTriggerStartAbsolute(sim->getRootClock(), 1);
+            }
         }
-        else if(run_pevents_)
+        else if(run_pevents_ || pipeline_collection_triggerable_)
         {
             debug_trigger_.reset(new trigger::Trigger("debug_on_trigger", sim->getRootClock()));
             if(run_pevents_) {
                 debug_trigger_->addTriggeredObject(pevent_trigger_.get());
+            }
+
+            // Pipeline trigger
+            if(pipeline_collection_triggerable_) {
+                debug_trigger_->addTriggeredObject(pipeline_collection_triggerable_.get());
             }
 
             // Enable the trigger
@@ -2259,11 +2302,24 @@ void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
         try{
             sim->run(ticks);
         }catch(...){
+            if(pipeline_collection_triggerable_) {
+                if(pipeline_collection_triggerable_->isTriggered()) {
+                    pipeline_collection_triggerable_->stop();
+                }
+            }
+
             // In interactive simulation, we would try and enter a "debug mode" and
             // allow user to wander without running anything.
             throw;
         }
     } // if(run_time_ > 0)
+
+    if(pipeline_collection_triggerable_)
+    {
+        if(pipeline_collection_triggerable_->isTriggered()) {
+            pipeline_collection_triggerable_->stop();
+        }
+    }
 
     if(show_tree_){
         std::cout << "\nTree After Running" << std::endl

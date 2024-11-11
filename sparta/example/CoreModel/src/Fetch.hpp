@@ -101,6 +101,10 @@ namespace core_example
         // instructions or a perfect IPC set
         std::unique_ptr<sparta::SingleCycleUniqueEvent<>> fetch_inst_event_;
 
+        // Collection
+        sparta::collection::Collectable<uint64_t> next_pc_{
+            getContainer(), "next_pc", &vaddr_, "Next PC to fetch"};
+
         ////////////////////////////////////////////////////////////////////////////////
         // Callbacks
 

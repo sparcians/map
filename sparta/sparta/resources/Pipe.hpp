@@ -21,6 +21,7 @@
 #include "sparta/utils/IteratorTraits.hpp"
 #include "sparta/events/UniqueEvent.hpp"
 #include "sparta/events/EventSet.hpp"
+#include "sparta/collection/CollectableTreeNode.hpp"
 
 namespace sparta
 {
@@ -513,7 +514,10 @@ public:
      */
     template<sparta::SchedulingPhase phase = SchedulingPhase::Collection>
     void enableCollection(TreeNode * parent) {
-        (void) parent;
+        static_assert(phase == SchedulingPhase::Collection,
+                      "TODO cnyce: Only Collection phase is supported for Pipe");
+
+        collector_ = std::make_unique<CollectorType>(parent, name_, this, capacity());
     }
 
     /**
@@ -590,6 +594,10 @@ private:
         }
     }
 
+    //////////////////////////////////////////////////////////////////////
+    // Collectors
+    using CollectorType = collection::IterableCollector<Pipe<DataT>, true>;
+    std::unique_ptr<CollectorType> collector_;
 };
 
 }

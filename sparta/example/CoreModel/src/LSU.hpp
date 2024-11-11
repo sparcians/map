@@ -165,6 +165,9 @@ namespace core_example
         // Keep track of the instruction that causes current outstanding cache miss
         ExampleInstPtr cache_pending_inst_ptr_ = nullptr;
 
+        // Collection
+        // TODO cnyce: Collectable<bool> cache_busy_collectable_;
+
         // NOTE:
         // Depending on which kind of cache (e.g. blocking vs. non-blocking) is being used
         // This single slot could potentially be extended to a cache pending miss queue

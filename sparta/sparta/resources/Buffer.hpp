@@ -21,6 +21,7 @@
 #include "sparta/statistics/StatisticDef.hpp"
 #include "sparta/statistics/Counter.hpp"
 #include "sparta/utils/IteratorTraits.hpp"
+#include "sparta/collection/CollectableTreeNode.hpp"
 
 namespace sparta
 {
@@ -730,7 +731,7 @@ namespace sparta
          *       instatiation of the PipelineCollector
          */
         void enableCollection(TreeNode * parent) {
-            (void) parent;
+            collector_ = std::make_unique<IterableCollectorType>(parent, name_, this, capacity());
         }
 
         /**
@@ -1014,6 +1015,11 @@ namespace sparta
         //////////////////////////////////////////////////////////////////////
         // Counters
         std::unique_ptr<sparta::CycleHistogramStandalone> utilization_;
+
+        //////////////////////////////////////////////////////////////////////
+        // Collectors
+        using IterableCollectorType = sparta::collection::IterableCollector<Buffer<value_type>>;
+        std::unique_ptr<IterableCollectorType> collector_;
 
         //! Flag which tells various methods if infinite_mode is turned on or not.
         //  The behaviour of these methods change accordingly.
