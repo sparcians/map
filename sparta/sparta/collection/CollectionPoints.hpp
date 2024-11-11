@@ -5,6 +5,7 @@
 #include "simdb/collection/Scalars.hpp"
 #include "simdb/collection/Structs.hpp"
 #include "simdb/collection/IterableStructs.hpp"
+#include "simdb/collection/TimeseriesCollector.hpp"
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/utils/MetaStructs.hpp"
 
@@ -39,7 +40,7 @@ class CollectionPoints
 public:
     template <typename StatT>
     typename std::enable_if<std::is_trivial<StatT>::value && std::is_standard_layout<StatT>::value, void>::type
-    addStat(const std::string& location, const Clock* clk, const StatT* stat)
+    addStat(const std::string& location, const Clock* clk, const StatT* back_ptr, const simdb::Format format = simdb::Format::none)
     {
         auto demangled = demangled_type<StatT>();
         auto& instantiator = instantiators_[demangled];
@@ -47,25 +48,20 @@ public:
             instantiator.reset(new StatInstantiator<StatT>());
         }
 
-        dynamic_cast<StatInstantiator<StatT>*>(instantiator.get())->addStat(location, clk, stat);
+        dynamic_cast<StatInstantiator<StatT>*>(instantiator.get())->addStat(location, clk, back_ptr, format);
     }
 
     template <typename StatT>
-    typename std::enable_if<!std::is_trivial<StatT>::value || !std::is_standard_layout<StatT>::value, void>::type
-    addStat(const std::string& location, const Clock* clk, const StatT* stat)
+    typename std::enable_if<std::is_trivial<StatT>::value && std::is_standard_layout<StatT>::value, void>::type
+    addStat(const std::string& location, const Clock* clk, std::function<StatT()> func_ptr, const simdb::Format format = simdb::Format::none)
     {
-        (void)location;
-        (void)clk;
-        (void)stat;
-    }
+        auto demangled = demangled_type<StatT>();
+        auto& instantiator = instantiators_[demangled];
+        if (!instantiator) {
+            instantiator.reset(new StatInstantiator<StatT>());
+        }
 
-    template <typename StatT>
-    typename std::enable_if<std::is_pointer<StatT>::value, void>::type
-    addStat(const std::string& location, const Clock* clk, const StatT stat)
-    {
-        (void)location;
-        (void)clk;
-        (void)stat;
+        dynamic_cast<StatInstantiator<StatT>*>(instantiator.get())->addStat(location, clk, func_ptr, format);
     }
 
     template <typename ContainerT, bool Sparse>
@@ -135,8 +131,17 @@ private:
     class StatInstantiator : public CollectableInstantiator
     {
     public:
-        void addStat(const std::string& location, const Clock* clk, const StatT* stat)
+        void addStat(const std::string& location, const Clock* clk, const StatT* back_ptr, simdb::Format format = simdb::Format::none)
         {
+            simdb::ScalarValueReader<StatT> reader(back_ptr);
+            simdb::Stat<StatT> stat(location, reader, format);
+            stats_.emplace_back(location, clk, stat);
+        }
+
+        void addStat(const std::string& location, const Clock* clk, std::function<StatT()> func_ptr, simdb::Format format = simdb::Format::none)
+        {
+            simdb::ScalarValueReader<StatT> reader(func_ptr);
+            simdb::Stat<StatT> stat(location, reader, format);
             stats_.emplace_back(location, clk, stat);
         }
 
@@ -164,8 +169,8 @@ private:
             std::unique_ptr<CollectionT> collection(new CollectionT(collection_name));
 
             for (const auto& tup : stats_) {
-                const auto& location = std::get<0>(tup);
-                auto stat = std::get<2>(tup);
+                const std::string& location = std::get<0>(tup);
+                const simdb::Stat<StatT>& stat = std::get<2>(tup);
                 collection->addStat(location, stat);
             }
 
@@ -173,7 +178,7 @@ private:
         }
 
     private:
-        std::vector<std::tuple<std::string, const Clock*, const StatT*>> stats_;
+        std::vector<std::tuple<std::string, const Clock*, simdb::Stat<StatT>>> stats_;
     };
 
     template <typename ContainerT, bool Sparse>

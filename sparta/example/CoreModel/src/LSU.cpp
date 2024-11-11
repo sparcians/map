@@ -20,6 +20,8 @@ namespace core_example
         tlb_always_hit_(p->tlb_always_hit),
         dl1_always_hit_(p->dl1_always_hit),
 
+        cache_busy_collectable_(getContainer(), "dcache_busy", &cache_busy_),
+
         issue_latency_(p->issue_latency),
         mmu_latency_(p->mmu_latency),
         cache_latency_(p->cache_latency),
