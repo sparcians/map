@@ -169,9 +169,9 @@ private:
             std::unique_ptr<CollectionT> collection(new CollectionT(collection_name));
 
             for (const auto& tup : stats_) {
-                const std::string& location = std::get<0>(tup);
+                const Clock* clk = std::get<1>(tup);
                 const simdb::Stat<StatT>& stat = std::get<2>(tup);
-                collection->addStat(location, stat);
+                collection->addStat(stat, clk->getName());
             }
 
             collections->addCollection(std::move(collection));

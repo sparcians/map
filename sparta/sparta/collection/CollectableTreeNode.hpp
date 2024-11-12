@@ -57,7 +57,7 @@ template <>
 class Collectable<bool> : public CollectableTreeNode
 {
 public:
-    using value_type = bool;
+    using value_type = int32_t;
 
     Collectable(TreeNode* parent, const std::string& name, const bool* collectable, const std::string& desc = "Collectable <no desc>")
         : CollectableTreeNode(parent, name, desc)
@@ -67,12 +67,12 @@ public:
 
     void addCollectionPoint(CollectionPoints & collection_points) override
     {
-        std::function<int32_t()> get_bool_as_int = [this]() { return getBoolAsInt_(); };
-        collection_points.addStat(getLocation(), getClock(), get_bool_as_int);
+        std::function<value_type()> get_bool_as_int = [this]() { return getBoolAsInt_(); };
+        collection_points.addStat(getLocation(), getClock(), get_bool_as_int, simdb::Format::boolalpha);
     }
 
 private:
-    int32_t getBoolAsInt_() const
+    value_type getBoolAsInt_() const
     {
         return *collectable_ ? 1 : 0;
     }
