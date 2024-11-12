@@ -1103,7 +1103,7 @@ int main()
         sparta::ConfigEmitter::YAML param_out(filename_orig,
                                             true); // verbose
 
-        EXPECT_NOTHROW(param_out.addParameters(&top, true)); // verbose
+        EXPECT_NOTHROW(param_out.addParameters(&top, nullptr, true)); // verbose
 
         // Ensure taht the read count on this crazy parameter has not changed
         // when emitting the YAML
@@ -1128,7 +1128,7 @@ int main()
             // Store Parameter Tree
             sparta::ConfigEmitter::YAML param_out(filename_new,
                                                 false); // Terse
-            EXPECT_NOTHROW(param_out.addParameters(&top, false));
+            EXPECT_NOTHROW(param_out.addParameters(&top, nullptr, false));
 
             // Reset read counts to write them again
             recurs_reset(&top);
@@ -1144,7 +1144,7 @@ int main()
             // Store Parameter Tree
             sparta::ConfigEmitter::YAML param_out(filename_new,
                                                 true); // Verbose
-            EXPECT_NOTHROW(param_out.addParameters(&top, false));
+            EXPECT_NOTHROW(param_out.addParameters(&top, nullptr, false));
 
             // Reset read counts to write them again
             recurs_reset(&top);
