@@ -66,7 +66,7 @@ public:
 
     template <typename ContainerT, bool Sparse>
     typename std::enable_if<MetaStruct::is_any_pointer<typename ContainerT::value_type>::value, void>::type
-    addContainer(const std::string& location, const Clock* clk, const ContainerT* container, const size_t capacity, simdb::ManuallyCollected* manually_collected = nullptr)
+    addContainer(const std::string& location, const Clock* clk, const ContainerT* container, const size_t capacity)
     {
         auto demangled = demangled_type<ContainerT>() + (Sparse ? "Sparse" : "Contig");
         auto& instantiator = instantiators_[demangled];
@@ -74,18 +74,17 @@ public:
             instantiator.reset(new IterStructInstantiator<ContainerT, Sparse>());
         }
 
-        dynamic_cast<IterStructInstantiator<ContainerT, Sparse>*>(instantiator.get())->addContainer(location, clk, container, capacity, manually_collected);
+        dynamic_cast<IterStructInstantiator<ContainerT, Sparse>*>(instantiator.get())->addContainer(location, clk, container, capacity);
     }
 
     template <typename ContainerT, bool Sparse>
     typename std::enable_if<!MetaStruct::is_any_pointer<typename ContainerT::value_type>::value, void>::type
-    addContainer(const std::string& location, const Clock* clk, const ContainerT* container, const size_t capacity, simdb::ManuallyCollected* manually_collected = nullptr)
+    addContainer(const std::string& location, const Clock* clk, const ContainerT* container, const size_t capacity)
     {
         (void)location;
         (void)clk;
         (void)container;
         (void)capacity;
-        (void)manually_collected;
     }
 
     void createCollections(simdb::Collections* collections)
@@ -186,9 +185,9 @@ private:
     class IterStructInstantiator : public CollectableInstantiator
     {
     public:
-        void addContainer(const std::string& location, const Clock* clk, const ContainerT* obj, const size_t capacity, simdb::ManuallyCollected* manually_collected = nullptr)
+        void addContainer(const std::string& location, const Clock* clk, const ContainerT* obj, const size_t capacity)
         {
-            containers_.emplace_back(location, clk, obj, capacity, manually_collected);
+            containers_.emplace_back(location, clk, obj, capacity);
         }
 
         void getClockPeriods(std::unordered_map<std::string, uint32_t>& clk_periods) const override
@@ -216,12 +215,11 @@ private:
                 const std::string &location = std::get<0>(containers_[idx]);
                 const ContainerT *obj = std::get<2>(containers_[idx]);
                 const size_t capacity = std::get<3>(containers_[idx]);
-                simdb::ManuallyCollected *manually_collected = std::get<4>(containers_[idx]);
 
                 const auto collection_name = collection_prefix + "_" + demangled_type<ContainerT>() + "_" + std::to_string(idx);
                 std::unique_ptr<CollectionT> collection(new CollectionT(collection_name));
 
-                collection->addContainer(location, obj, capacity, manually_collected);
+                collection->addContainer(location, obj, capacity);
                 collections->addCollection(std::move(collection));
             }
         }
