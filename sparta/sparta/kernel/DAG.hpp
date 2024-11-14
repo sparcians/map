@@ -221,6 +221,7 @@ namespace sparta
         VertexMap                               gops_;
         bool                                    finalized_ = false;
         sparta::Scheduler*                      my_scheduler_ = nullptr;
+        const log::MessageSource                debug_logger_;
     };//End class DAG
 
 

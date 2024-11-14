@@ -165,8 +165,8 @@ void Scheduler::reset()
     enterTeardown(); // On RootTreeNode
     clearEvents();
 
-    dag_.reset(new DAG(this, false));
     dag_finalized_ = false;
+    dag_.reset(new DAG(this, false));
 
     tick_quantum_allocator_.clear();
 }

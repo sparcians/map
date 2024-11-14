@@ -14,6 +14,7 @@
 #include "sparta/simulation/Parameter.hpp"
 #include "sparta/app/SimulationInfo.hpp"
 #include "sparta/simulation/TreeNodePrivateAttorney.hpp"
+#include "sparta/simulation/ParameterTree.hpp"
 
 namespace YP = YAML; // Prevent collision with YAML class in ConfigEmitter namespace.
 
@@ -80,6 +81,7 @@ public:
      * \post emitter_ will be nullptr
      */
     void addParameters(TreeNode* device_tree,
+                       const ParameterTree* extensions_ptree,
                        bool verbose=false)
     {
         sparta_assert(emitter_ == nullptr);
@@ -102,52 +104,26 @@ public:
 
         *emitter_ << YP::BeginDoc;
         sparta_assert(emitter_->good());
-        handleNode_(device_tree, verbose); // Recurse
 
-        if (!tree_node_extensions_.empty()) {
-            for (auto & ext_info : tree_node_extensions_) {
-                TreeNode * tn = ext_info.first;
-                std::vector<std::pair<std::string, TreeNode::ExtensionsBase*>> & node_extensions =
-                    ext_info.second;
+        handleNode_(device_tree, verbose);
 
-                *emitter_ << YP::BeginMap;
-                *emitter_ << YP::Key << tn->getLocation();
-                *emitter_ << YP::Value;
-                *emitter_ << YP::BeginMap;
-
-                for (auto & node_extension : node_extensions) {
-                    *emitter_ << YP::Key << ("extension." + node_extension.first);
-                    *emitter_ << YP::Value;
-                    *emitter_ << YP::BeginMap;
-
-                    TreeNode::ExtensionsBase * ext_base = node_extension.second;
-                    ParameterSet * params = ext_base->getYamlOnlyParameters();
-                    auto param_names = params->getNames();
-                    for (const auto & param_name : param_names) {
-                        *emitter_ << YP::Key << param_name;
-                        *emitter_ << YP::Value //  << YP::PadToColumn(50)
-                                  << params->getParameter(param_name)->getValueAsString();
-                        std::stringstream tags;
-                        params->getParameter(param_name)->stringizeTags(tags);
-                        *emitter_ << YP::Comment(tags.str());
-                    }
-
-                    params = ext_base->getParameters();
-                    param_names = params->getNames();
-                    for (const auto & param_name : param_names) {
-                        *emitter_ << YP::Key << param_name;
-                        *emitter_ << YP::Value //  << YP::PadToColumn(50)
-                                  << params->getParameter(param_name)->getValueAsString();
-                        std::stringstream tags;
-                        params->getParameter(param_name)->stringizeTags(tags);
-                        *emitter_ << YP::Comment(tags.str());
-                    }
-
-                    *emitter_ << YP::EndMap;
-                }
-                *emitter_ << YP::EndMap;
-                *emitter_ << YP::EndMap;
-            }
+        if (extensions_ptree) {
+            // Note we use the ParameterTree to get the tree node extensions instead
+            // of the device tree since using the device tree might serialize an extension
+            // defn of:
+            //
+            //   top.cpu.core*.extension.core_extensions:
+            //       name: value
+            //       name: value
+            //
+            // As:
+            //
+            //   top.cpu.core0.extension.core_extensions:
+            //       name: value
+            //       name: value
+            //
+            // But the ParameterTree retains the wildcards in the path.
+            handleNode_(extensions_ptree->getRoot());
         }
 
         *emitter_ << YP::EndDoc;
@@ -172,6 +148,41 @@ public:
 
 
 private:
+    /*!
+     * \brief Recursively write the TreeNode extensions defns to YAML
+     */
+    void handleNode_(const ParameterTree::Node* subtree)
+    {
+        sparta_assert(subtree);
+        sparta_assert(emitter_ != nullptr);
+
+        if (subtree->getName() == "extension") {
+            auto location_key = subtree->getParent()->getPath();
+            *emitter_ << YP::BeginMap;
+            *emitter_ << YP::Key << location_key;
+            *emitter_ << YP::Value;
+            *emitter_ << YP::BeginMap;
+
+            for (const auto child : subtree->getChildren()) {
+                auto extension_name = child->getName();
+                *emitter_ << YP::Key << ("extension." + extension_name);
+                *emitter_ << YP::Value;
+                *emitter_ << YP::BeginMap;
+                for (const auto param : child->getChildren()) {
+                    *emitter_ << YP::Key << param->getName();
+                    *emitter_ << YP::Value << param->getValue();
+                }
+                *emitter_ << YP::EndMap;
+            }
+
+            *emitter_ << YP::EndMap;
+            *emitter_ << YP::EndMap;
+        } else {
+            for (const auto child : subtree->getChildren()) {
+                handleNode_(child);
+            }
+        }
+    }
 
     /*!
      * \brief Render the content of this node as a sequence of YAML
@@ -185,15 +196,6 @@ private:
     {
         sparta_assert(subtree);
         sparta_assert(emitter_ != nullptr);
-
-        const auto & extension_names = subtree->getAllExtensionNames();
-        for (const auto & ext_name : extension_names) {
-            auto extension = subtree->getExtension(ext_name);
-            if (extension) {
-                tree_node_extensions_[subtree].emplace_back(
-                    std::make_pair(ext_name, subtree->getExtension(ext_name)));
-            }
-        }
 
         // Print parameter value if this node is a parameter
         const ParameterBase* pb = dynamic_cast<const ParameterBase*>(subtree);
@@ -395,12 +397,6 @@ private:
      * \brief Should the the parameter descriptions be shown (as comments)
      */
     const bool show_param_descs_;
-
-    /*!
-     * \brief Mapping from tree nodes to their named extensions, if any
-     */
-    std::unordered_map<TreeNode*,
-        std::vector<std::pair<std::string, TreeNode::ExtensionsBase*>>> tree_node_extensions_;
 
 }; // class YAML
 

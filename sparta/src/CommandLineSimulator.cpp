@@ -320,7 +320,9 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "Examples:\n'--cpu-timeout 5 clean'\n"
          "'--cpu-timeout 5 error'\n"
          "The only exit types are \"clean\" and \"error\". error throws an exception, clean will stop simulation nicely.") // Brief
-
+        ("inf-loop-timeout",
+         named_value<std::vector<std::vector<std::string>>>("SECONDS"),
+         "The time length that the simulator uses to check whether the scheduler makes the forward progress.") // Brief
         ;
 
     debug_opts_.add_options()
@@ -1402,13 +1404,31 @@ bool CommandLineSimulator::parse(int argc,
 
                 bool use_wall_clock;
                 if(o.string_key == "cpu-timeout")
+                {
                     use_wall_clock = false;
+                }
                 else if (o.string_key == "wall-timeout")
+                {
                     use_wall_clock = true;
-                else
+                }
+                else{
                     sparta_assert(false); // one can only hope that we can't get here logically.
+                }
                 std::cout << " set timeout to " << hours << " hours" << std::endl;
                 SleeperThread::getInstance()->setTimeout(duration, clean_exit, use_wall_clock);
+                ++i;
+            } else if(o.string_key == "inf-loop-timeout") {
+                size_t end_pos;
+                size_t seconds;
+                try {
+                    seconds = utils::smartLexicalCast<size_t>(o.value.at(0), end_pos);
+                }
+                catch(...){
+                    throw SpartaException("inf-loop-timeout must take an integer value, not \"")
+                        << o.value.at(0) << "\"";
+                }
+                std::cout << " set infinite loop protection timeout to " << seconds << " seconds" << std::endl;
+                SleeperThread::getInstance()->setInfLoopSleepInterval(std::chrono::seconds(seconds));
                 ++i;
             } else if(o.string_key == "simdb-dir") {
                 const std::string & db_dir = o.value[0];
@@ -2090,13 +2110,15 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
         if(final_config_file_ != ""){
             sparta::ConfigEmitter::YAML param_out(final_config_file_,
                                                   false); // Hide descriptions
-            param_out.addParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg);
+            const auto& ptree = sim->getSimulationConfiguration()->getExtensionsUnboundParameterTree();
+            param_out.addParameters(sim->getRoot()->getSearchScope(), &ptree, sim_config_.verbose_cfg);
         }
 
         if(final_config_file_verbose_ != ""){
             sparta::ConfigEmitter::YAML param_out(final_config_file_verbose_,
                                                   true); // Show descriptions
-            param_out.addParameters(sim->getRoot()->getSearchScope(), sim_config_.verbose_cfg);
+            const auto& ptree = sim->getSimulationConfiguration()->getExtensionsUnboundParameterTree();
+            param_out.addParameters(sim->getRoot()->getSearchScope(), &ptree, sim_config_.verbose_cfg);
         }
 
         if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)
