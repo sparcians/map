@@ -1,0 +1,39 @@
+= Introduction
+
+Sparta is a modeling framework and toolkit for performance
+architecture engineers to build CPU, GPU, and platform models for the
+purpose of performance analysis of hardware design.
+
+Sparta is _pure framework_ much like STL or Boost in that it doesn't
+do anything on its own, but rather provides structure/organization as
+well as numerous helper classes and interfaces to allow modelers to
+build fast functional and performance simulators,
+
+Sparta is built on the principles of a
+https://en.wikipedia.org/wiki/Software_framework[software-framework
+design] using
+https://en.wikipedia.org/wiki/Object-oriented_programming[Object-Oriented
+Programming] and https://en.wikipedia.org/wiki/Design_Patterns[design
+patterns].  The framework is written in C++ (C++17/23) as well as python.
+
+Sparta was built from the ground up to be a modeler's solution,
+enabling as many dynamic, run-time features as possible. These include
+topology definitions, multiple formats report generation, notification
+mechanisms. event ordering, modular unit definitions, data collection
+at any level at any moment in time, error handling (and resolutions),
+pipeline crawling, etc.
+
+== Sparta vs SystemC/Gem5
+
+The communication/scheduling concepts of Sparta are similar to SystemC
+and Gem5, but takes a much more abstract and more extensible approach
+to modeling.
+
+
+== Types of Simulation
+
+=== Cycle Base Simulation
+
+=== Reverse Execution Simulation
+
+=== Event Driven

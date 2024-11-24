@@ -1,0 +1,210 @@
+= Simulation Construction
+
+Building a Sparta Model starts with establishing a simulation
+hierarchy or component relationships.
+This heirarchy will represent all of the components instantiated by
+Sparta as well as those components created by the modeler.
+Sparta uses these defined relationships in almost all facets of simulation.
+
+== Getting Started
+As an example of a simulation heirarchy, take a generic CPU design
+which consists of multiple cores and a memory subsytem (mss).  Each
+core has direct relationships to subnodes that represent a functional
+unit of the core.
+
+****
+Note that in Sparta, the heirarchy will begin with a
+https://sparcians.github.io/map/classsparta_1_1RootTreeNode.html[sparta::RootTreenode]
+called `top`.  This `top` node is created automatically when a simulation is instantiated.
+****
+[plantuml,align="center"]
+....
+(top) --> (cpu)
+(top) --> (mss)
+(cpu) --> (core0)
+(cpu) --> (core1)
+(core0) --> (fetch)
+(core0) --> (decode)
+(core0) --> (rename)
+(core0) --> (dispatch)
+(core0) --> (exe)
+(core0) --> (lsu)
+(core0) --> (retire)
+(core1) --> (...)
+....
+
+Each node of the heirarchy represents a
+https://sparcians.github.io/map/classsparta_1_1TreeNode.html[sparta::TreeNode]
+which is the main "container" of the node.
+
+The modeler is responsible for creating these nodes, establishing the
+relationships between them, and eventually destroying them.  This
+relationship is built on top of the {url-composite}[Composite
+Pattern] from Design Patterns.
+
+[#Composite Pattern,link="https://en.wikipedia.org/wiki/Composite_pattern#/media/File:W3sDesign_Composite_Design_Pattern_UML.jpg"]
+image::../images/W3sDesign_Composite_Design_Pattern_UML.jpg[The Composite Pattern,align=center]
+
+This heirarchy and component relationship is what will be represented
+in simulation and is at the heart of the Sparta Simulation Framework.
+Everything in simulation refers to these constructed artifacts and
+their relationships.
+
+Note that these nodes and the modeler's _actual_ modeled components
+are not related to each other at this point.  What is being
+established is the _containment_ of those modeled components.
+Instantiation of the modeler's actual code/unit comes later...
+
+=== Sparta TreeNode
+
+As mentioned above, Sparta requires a modeler to build a simulation
+heirarchy to represent those components in simulation.  Each of those
+nodes is, or a derivative of, a `sparta::TreeNode`.
+
+Referring back to the Composite Pattern, `sparta::TreeNode` _is-a_
+Component, a Leaf, and a Composite.  When the modeler creates the
+tree, that modeler is actually creating `sparta::TreeNode` instances
+to reside in the tree and then establishes parent-child relationships between them.
+
+In practice, the modeler will most likely construct a:
+https://sparcians.github.io/map/classsparta_1_1ResourceTreeNode.html[`sparta::ResourceTreeNode`]
+derived type.  This class allows a modeler to build model-specific
+units and components used in simulation.
+
+=== Sparta ResourceTreeNode
+
+The
+https://sparcians.github.io/map/classsparta_1_1ResourceTreeNode.html[`sparta::ResourceTreeNode`]
+is a derivative class of `sparta::TreeNode` and is aware of modeling
+resources that need to be instantiated.
+
+To instantiate the modeler's modeling components the
+`sparta::ResourceTreeNode` requires the modeler to provide an instance
+of a
+https://sparcians.github.io/map/classsparta_1_1ResourceFactoryBase.html[sparta::ResourceFactorBase].
+
+For convenience, Sparta provides a generic derived factory called
+https://sparcians.github.io/map/classsparta_1_1ResourceFactory.html[sparta::ResourceFactory]
+if the modeler has no special construction requirements.
+
+
+=== Creating a Simulator
+
+A Sparta-base simualtor starts with the modeler providing a derivated
+instantiated instance of
+https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html[sparta::app::Simulation].
+[source,cpp]
+----
+#include "sparta/app/Simulation.hpp"
+
+namespace my_simulator
+{
+    class MySimulator : public sparta::app::Simulation
+    {
+        // ... user defined simulation behaviors
+    };
+}
+----
+Typical usecase is the modeler provides 1 instance of this object _per
+simulation_, but there's nothing in the framework that restricts this.
+The modeler is responsible for creating and destroying that object.
+
+****
+A rule of thumb when using the Sparta Modeling Framework: if *you* call `new` *you*
+must call `delete`.  The framework will never require the modeler to
+delete anything that it has created nor will it delete anything for you.
+****
+
+The `sparta::app::Simulation` requires at minimum two arguments: the
+simulation name and scheduler to use.
+
+[source,cpp]
+----
+#include "sparta/kernel/Scheduler.hpp"
+
+namespace my_simulator
+{
+    class MySimulator : public sparta::app::Simulation
+    {
+    public:
+        MySimulator() :
+            sparta::app::Simulation("my_simulator", &scheduler_)
+        {}
+    private:
+        sparta::Scheduler scheduler_{"my_scheduler"};
+    }
+}
+----
+
+This class is used to guide the modeler through the following phases of simulation:
+
+- *Build* – Define the user-defined modeling components in simulation
+   and their initial relationships.  This builds the composite tree.
+- *Configure* – Allow the user to present or override configurations
+   before the simulation is instantiated.  This allows changes in
+   topology or behaviors.
+- *Instantiate* – (Internal) Construct user-defined modeling
+   components registered during Build and configured during Configure.
+   The composite tree is now locked.
+- *Bind* – (Internal) Connect all the user-defined modeling components
+   together to establish final communication flow
+
+==== Build Phase
+
+The Build phase is the first phase were the modeler is expected to
+create nodes and establish relationshsips between those nodes.
+This is _pure_ Sparta componentry and modeler units/classes will not
+be created in this phase.
+
+To create the CPU heirarchy above, the modeler must override the
+protected `virtual` method `void buildTree_()`.  In this method, the
+modeler will create the heirarchy of `sparta::ResourceTreeNode` objects that
+represent, or contain, each unit to be instantiated in simulation.
+
+[source,cpp]
+----
+
+#include <vector>
+#include <memory>
+
+namespace sparta { class TreeNode; }
+
+// MySimulator.hpp
+class MySimulator : public sparta::app::Simulation
+{
+public:
+    // ... public methods
+
+private:
+    void buildTree_() override final;
+
+    std::vector<std::unique_ptr<sparta::TreeNode>> tns_to_delete_;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+// MySimulator.cpp
+
+#include "MySimulator.hpp"
+
+#include "sparta/simulation/ResourceTreeNode.hpp"
+
+namespace my_simulator
+{
+    void MySimulator::buildTree_()
+    {
+        auto root_tn = getRoot();  // get the RootTreeNode "top"
+    }
+}
+
+----
+
+==== Configure Phase
+==== Instantiate Phase
+
+
+
+== Factories
+
+== Commandline Simulation
