@@ -59,7 +59,14 @@ class FeatureConfiguration;
 
 /*!
  * \class Simulation
- * \brief Simulator which builds a sparta DeviceTree
+ * \brief Class that is the "top level" or starting point for simulation.
+ *
+ * The first part of this class is to aid in the construction of the
+ * model providing the phases of simulation: build, configure,
+ * and finalize (instantiate and bind).
+ *
+ * The second part of this class runs the simulation after full
+ * realization.
  */
 class Simulation
 {
