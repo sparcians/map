@@ -1,4 +1,7 @@
 = Simulation Construction
+:url-composite: https://en.wikipedia.org/wiki/Composite_pattern
+:imagesdir:../images
+:data-uri:
 
 Building a Sparta Model starts with establishing a simulation
 hierarchy or component relationships.
@@ -85,8 +88,9 @@ https://sparcians.github.io/map/classsparta_1_1ResourceFactoryBase.html[sparta::
 
 For convenience, Sparta provides a generic derived factory called
 https://sparcians.github.io/map/classsparta_1_1ResourceFactory.html[sparta::ResourceFactory]
-if the modeler has no special construction requirements.
-
+if the modeler has no special construction requirements.  See
+<<Factories>> for how to make a custom factory to build specialized simulation tree
+structures.
 
 === Creating a Simulator
 
@@ -178,6 +182,7 @@ public:
 private:
     void buildTree_() override final;
 
+    sparta::
     std::vector<std::unique_ptr<sparta::TreeNode>> tns_to_delete_;
 };
 
@@ -189,6 +194,7 @@ private:
 #include "MySimulator.hpp"
 
 #include "sparta/simulation/ResourceTreeNode.hpp"
+#include "sparta/simulation/Factory.hpp"
 
 namespace my_simulator
 {
@@ -205,6 +211,6 @@ namespace my_simulator
 
 
 
-== Factories
+== Factories [[factories]]
 
 == Commandline Simulation
