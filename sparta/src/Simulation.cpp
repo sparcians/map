@@ -478,7 +478,7 @@ void Simulation::configure(const int argc,
         throw SpartaException("Logging ennoblement is currently not supported with debug-roi. Use --debug or --debug-on-icount");
     }
 
-    if (SignalMode::ENABLE_BACKTRACE_SIGNALS == signal_mode) {
+    if (SimulationConfiguration::SignalMode::ENABLE_BACKTRACE_SIGNALS == sim_config_->signal_mode) {
         // Handle illegal signals.
         // Note: Update documentation if these signals are modified
         backtrace_.setAsHandler(SIGSEGV);
