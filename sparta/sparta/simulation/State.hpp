@@ -113,7 +113,7 @@ namespace sparta
      * only value at a time.
      *
      * State classes take two template parameters: the Enum type (enum
-     * class or just standard enum) and the anticapted maximum number
+     * class or just standard enum) and the anticipated maximum number
      * of markers that will be requested -- default is 13.  Because
      * the State class is in the critical path for most performance
      * modeling applications, use of STL types is discouraged.
