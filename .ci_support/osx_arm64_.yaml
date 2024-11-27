@@ -1,13 +1,13 @@
 MACOSX_DEPLOYMENT_TARGET:
-- '11.1'
+- '13'
 MACOSX_SDK_VERSION:
-- '11.1'
+- '13'
 boost:
 - '1.78'
 c_compiler:
 - clang
 c_compiler_version:
-- '17'
+- '18'
 channel_sources:
 - conda-forge
 channel_targets:
@@ -15,7 +15,7 @@ channel_targets:
 cxx_compiler:
 - clangxx
 cxx_compiler_version:
-- '17'
+- '18'
 hdf5:
 - 1.14.3
 macos_machine:
