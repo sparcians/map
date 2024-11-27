@@ -84,7 +84,7 @@ resources that need to be instantiated.
 To instantiate the modeler's modeling components the
 `sparta::ResourceTreeNode` requires the modeler to provide an instance
 of a
-https://sparcians.github.io/map/classsparta_1_1ResourceFactoryBase.html[sparta::ResourceFactorBase].
+https://sparcians.github.io/map/classsparta_1_1ResourceFactoryBase.html[sparta::ResourceFactoryBase].
 
 For convenience, Sparta provides a generic derived factory called
 https://sparcians.github.io/map/classsparta_1_1ResourceFactory.html[sparta::ResourceFactory]
@@ -99,13 +99,18 @@ instantiated instance of
 https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html[sparta::app::Simulation].
 [source,cpp]
 ----
+////////////////////////////////////////////////////////////////////////////////
+// MySimulator.hpp
+
+#pragma once
+
 #include "sparta/app/Simulation.hpp"
 
 namespace my_simulator
 {
     class MySimulator : public sparta::app::Simulation
     {
-        // ... user defined simulation behaviors
+    // User defined simulation behaviors as well as overrides
     };
 }
 ----
@@ -119,11 +124,17 @@ must call `delete`.  The framework will never require the modeler to
 delete anything that it has created nor will it delete anything for you.
 ****
 
-The `sparta::app::Simulation` requires at minimum two arguments: the
-simulation name and scheduler to use.
+The `sparta::app::Simulation` constructor requires at minimum two
+arguments: the simulation name and scheduler to use.
 
 [source,cpp]
 ----
+////////////////////////////////////////////////////////////////////////////////
+// MySimulator.hpp
+
+#pragma once
+
+#include "sparta/app/Simulation.hpp"
 #include "sparta/kernel/Scheduler.hpp"
 
 namespace my_simulator
@@ -131,11 +142,29 @@ namespace my_simulator
     class MySimulator : public sparta::app::Simulation
     {
     public:
-        MySimulator() :
-            sparta::app::Simulation("my_simulator", &scheduler_)
-        {}
+        MySimulator();
+
     private:
         sparta::Scheduler scheduler_{"my_scheduler"};
+    }
+}
+----
+[source,cpp]
+----
+////////////////////////////////////////////////////////////////////////////////
+// MySimulator.cpp
+
+#include "MySimulator.hpp"
+
+#include "sparta/simulation/ResourceTreeNode.hpp"
+#include "sparta/simulation/Factory.hpp"
+
+namespace my_simulator
+{
+    MySimulator::MySimulator() :
+        sparta::app::Simulation("my_simulator", &scheduler_)
+    {
+       // User defined operations + resource factory registration
     }
 }
 ----
@@ -156,21 +185,27 @@ This class is used to guide the modeler through the following phases of simulati
 ==== Build Phase
 
 The Build phase is the first phase were the modeler is expected to
-create nodes and establish relationshsips between those nodes.
-This is _pure_ Sparta componentry and modeler units/classes will not
+create nodes and establish relationshsips between those nodes.  This
+is _pure_ Sparta componentry and the modeler's units/classes will not
 be created in this phase.
 
 To create the CPU heirarchy above, the modeler must override the
 protected `virtual` method `void buildTree_()`.  In this method, the
-modeler will create the heirarchy of `sparta::ResourceTreeNode` objects that
-represent, or contain, each unit to be instantiated in simulation.
+modeler will create the heirarchy of `sparta::ResourceTreeNode`
+objects that represent, or contain, each of the modeler's units to be
+instantiated in simulation.
 
 [source,cpp]
 ----
+#pragma once
 
 #include <vector>
 #include <memory>
 
+#include "sparta/app/Simulation.hpp"
+#include "sparta/kernel/Scheduler.hpp"
+
+// Forward declare
 namespace sparta { class TreeNode; }
 
 // MySimulator.hpp
@@ -182,33 +217,172 @@ public:
 private:
     void buildTree_() override final;
 
-    sparta::
     std::vector<std::unique_ptr<sparta::TreeNode>> tns_to_delete_;
 };
 
+----
 
+In the source file, implement the `buildTree_` method and create the
+node heirarchy.  Still realize that **none** of the modeler's components
+have been instantiated at end of this phase.
+
+[source,cpp]
+----
 ////////////////////////////////////////////////////////////////////////////////
-
 // MySimulator.cpp
+
+#include <cinttypes>
+#include <string>
 
 #include "MySimulator.hpp"
 
+// Modeler's components
+#include "CPU.hpp"
+#include "Core.hpp"
+#include "MSS.hpp"
+
+// Sparta Components
 #include "sparta/simulation/ResourceTreeNode.hpp"
 #include "sparta/simulation/Factory.hpp"
 
 namespace my_simulator
 {
+    MySimulator::MySimulator() :
+        sparta::app::Simulation("my_simulator", &scheduler_)
+    {
+       // User defined operations + resource factory registration
+
+       // Register resource factories with the Simulation class that
+       // tell Sparta how to instantiate both the modeler's classes and
+       // its parameters.
+       getResourceSet()->
+           addResourceFactory<sparta::ResourceFactory<CPU, CPU::CPUParameters>>();
+       getResourceSet()->
+           addResourceFactory<sparta::ResourceFactory<Core, Core::CoreParameters>>();
+       getResourceSet()->
+           addResourceFactory<sparta::ResourceFactory<MSS, MSS::MSSParameters>>();
+    }
+
     void MySimulator::buildTree_()
     {
         auto root_tn = getRoot();  // get the RootTreeNode "top"
+
+        // Create the CPU node, a child of the root tree node
+        sparta::ResourceTreeNode* cpu_tn =
+            new sparta::ResourceTreeNode(root_tn,
+                                         CPU::name,
+                                         // Only allow 1 CPU object
+                                         sparta::TreeNode::GROUP_NAME_NONE,
+                                         sparta::TreeNode::GROUP_IDX_NONE,
+                                         "My CPU instance",
+                                         getResourceSet()->getResourceFactory(CPU::name));
+
+        // _We_ created the ResourceTreeNode, so _we_ must delete it
+        tns_to_delete_.emplace_back(cpu_tn);
+
+        // Create the CPU nodes, children of the CPU TreeNode.  For
+        // sake of brevity, assume a simulation of just 2 cores.  This
+        // can be parameterized either on the command line (shown later)
+        // or via parameters.
+        constexpr uint32_t num_cores = 2;
+        for (uint32_t core_num; core_num < num_cores; ++core_num)
+        {
+            sparta::ResourceTreeNode* core_tn =
+                new sparta::ResourceTreeNode(cpu_tn,
+                                             // The name _must_ be unique
+                                             Core::name + std::to_string(core_num),
+                                             "core",
+                                             core_num,
+                                             "My core" + std::to_string(core_num) + " instance",
+                                             getResourceSet()->getResourceFactory(Core::name));
+
+            // _We_ created the ResourceTreeNode, so _we_ must delete it
+            tns_to_delete_.emplace_back(core_tn);
+        }
+
+        // Create the MSS node, a child of the root tree node
+        sparta::ResourceTreeNode* mss_tn =
+            new sparta::ResourceTreeNode(root_tn,
+                                         MSS::name,
+                                         // Only allow 1 CPU object
+                                         sparta::TreeNode::GROUP_NAME_NONE,
+                                         sparta::TreeNode::GROUP_IDX_NONE,
+                                         "My MSS instance",
+                                         getResourceSet()->getResourceFactory(MSS::name));
+
+        // _We_ created the ResourceTreeNode, so _we_ must delete it
+        tns_to_delete_.emplace_back(mss_tn);
     }
 }
-
 ----
+===== Notes on the Above Code
+
+[.underline]
+Constructor Additions
+
+For Sparta to instantiate the modeler's specific code, the modeler
+must provide a factory that the `ResourceTreeNode` will use to
+create it.
+
+This can be done in the constructor of the `sparta::app::Simulation`
+instance (as above) or explicitly in the private section of the
+Simulation derivative:
+
+[source,cpp]
+----
+class MySimulator ...
+{
+private:
+    // A static instance of the CPU factory
+    sparta::ResourceFactory<CPU, CPU::CPUParameters> cpu_factory_;
+
+    std::vector<std::unique_ptr<sparta::TreeNode>> tns_to_delete_;
+};
+----
+and then pass a pointer to that factory to the constructor of the ResourceTreeNode:
+[source,cpp]
+----
+sparta::ResourceTreeNode* cpu_tn =
+    new sparta::ResourceTreeNode(root_tn,
+                                 CPU::name,
+                                 // Only allow 1 CPU object
+                                 sparta::TreeNode::GROUP_NAME_NONE,
+                                 sparta::TreeNode::GROUP_IDX_NONE,
+                                 "My CPU instance",
+                                 &cpu_factory_);
+----
+This is useful if the modeler has a collection of pre-mode factories
+to be reused.  However, there is one important caveat in MAP v1 and v2
+if the modeler chooses to do this:
+
+[.text-center]
+[.red]**The factory must outlive the ResourceTreeNode it's associated with**
+
+In other words, the factory must be destroyed _after_ the
+ResourceTreeNode is destroyed.  The factory is used to destruct the
+ResourceTreeNode's internal components.
+
+[.underline]
+`buildTree_` Implementation Notes
+
+Each `ResourceTreeNode` that is constructed takes the following:
+
+- It's parent tree node
+- A unique name for that node.  Rules do apply to this name.  The name
+  must be python compatible meaning only alpha-numeric characters.
+- The group name if there is more than 1 node of the same name.  For
+  example, in the code above, there are 2 cores: `core0` and `core1`.
+  The group name is `core`
+- The group index is the number being instantiated.  For the `core`
+  example, this is 0 then 1.
+- The description
+- The factory used to instantiate the modeler's component during the <<instantiate>>
+
 
 ==== Configure Phase
-==== Instantiate Phase
+==== Instantiate Phase [[instantiate]]
 
+==== Running the Simulation
 
 
 == Factories [[factories]]
