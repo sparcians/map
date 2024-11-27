@@ -25,7 +25,7 @@
 macos_machine:                 # [osx]
   - arm64-apple-darwin20.0.0   # [osx and arm64]
 MACOSX_DEPLOYMENT_TARGET:      # [osx]
-  - 11.1                       # [osx]
+  - 13                         # [osx]
 
 # linux_clang_version is not a part of zip_keys
 # from conda-forge, if you want to, you can
