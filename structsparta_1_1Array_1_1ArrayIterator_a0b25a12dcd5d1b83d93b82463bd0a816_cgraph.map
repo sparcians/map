@@ -1,0 +1,14 @@
+<map id="sparta::Array::ArrayIterator::operator++" name="sparta::Array::ArrayIterator::operator++">
+<area shape="rect" id="Node000001" title="pre&#45;increment operator." alt="" coords="5,89,176,129"/>
+<area shape="poly" id="edge6_Node000001_Node000001" title=" " alt="" coords="48,88,46,79,53,69,68,64,91,62,115,64,129,70,127,75,113,69,90,67,69,69,56,74,51,80,53,87"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Array.html#a907a7790d84849692fd3b90bf4f41a59" title="STL&#45;like begin operation, starts at index 0 (ignores valid bit)." alt="" coords="250,5,380,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="128,86,223,41,245,33,246,38,225,46,130,90"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Array.html#a2b458c2ca7766f2f6414241bcf4505fe" title="Sets the input argument to the index containing the location of the next oldest item after input argu..." alt="" coords="224,55,406,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="176,93,208,89,208,94,177,99"/>
+<area shape="rect" id="Node000004" href="$structsparta_1_1Array_1_1ArrayIterator.html#a559cd56f34e40b70c7fc55e98b4dc53f" title="Determine whether this array entry pointed to by this iterator is valid." alt="" coords="230,121,400,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="177,118,215,124,214,129,176,124"/>
+<area shape="rect" id="Node000005" href="$namespacesparta.html#a57bc9340188818892abcbd141b40fa50" title="Ensures that a pointer is not null." alt="" coords="263,185,367,211"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="131,127,225,170,248,179,247,184,223,175,129,132"/>
+<area shape="rect" id="Node000006" href="$namespacesparta.html#ac0a2df7a7ca53b2fc0384476286b95ec" title="Demangles a C++ symbol." alt="" coords="454,185,573,211"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="367,196,438,196,438,201,367,201"/>
+</map>

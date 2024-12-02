@@ -1,0 +1,5 @@
+<map id="sparta::DataView::writeUnsafe" name="sparta::DataView::writeUnsafe">
+<area shape="rect" id="Node000001" title="Same behavior as write but without checking access bounds." alt="" coords="5,13,201,39"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData_1_1Line.html#a296a2c331517833318db3a7b4499b855" title="Write to this line, reordering bytes based on byte order if required." alt="" coords="249,5,397,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="201,23,233,23,233,28,201,28"/>
+</map>

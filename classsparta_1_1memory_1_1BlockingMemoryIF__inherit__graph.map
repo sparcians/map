@@ -1,0 +1,13 @@
+<map id="sparta::memory::BlockingMemoryIF" name="sparta::memory::BlockingMemoryIF">
+<area shape="rect" id="Node000001" title="Pure&#45;virtual memory interface which represents a simple, immediately accessible (blocking) address&#45;sp..." alt="" coords="209,79,375,120"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1memory_1_1BlockingMemoryIFNode.html" title="Pure&#45;virtual memory interface that builds on the BlockingMemoryIF, acting as a TreeNode in the SPARTA..." alt="" coords="109,168,275,208"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="260,132,216,169,213,165,256,128"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1memory_1_1DMIBlockingMemoryIF.html" title="Class that provides a BlockingMemoryIF over a raw pointer." alt="" coords="299,168,488,208"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="328,128,372,165,369,169,325,132"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1DebugMemoryIF.html" title="Memory interface which represents a simple, immediately accessible (blocking) address&#45;space with supp..." alt="" coords="187,5,397,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="295,46,295,79,289,79,289,46"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1memory_1_1BlockingMemoryObjectIFNode.html" title="BlockingMemoryIFNode implementation with binding to a MemoryObject instantiated separately and specif..." alt="" coords="5,256,171,297"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="159,220,113,258,110,254,155,216"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1memory_1_1SimpleMemoryMapNode.html" title="Memory mapping object which implements BlockingMemoryIFNode. Supports a simple mapping of incoming ad..." alt="" coords="195,256,397,297"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="229,216,274,254,271,258,225,220"/>
+</map>
