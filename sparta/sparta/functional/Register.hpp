@@ -1507,6 +1507,48 @@ public:
         return ss.str();
     }
 
+    /*!
+     * \brief Index of read/write access within register
+     */
+    typedef RegisterBase::index_type index_type;
+
+    /*!
+     * \brief Read value directly from the Register's backing store
+     * \note  This is intentionally hiding the dmiRead() from the base
+     * class so we don't have to go through the dmiRead_() virtual method.
+     */
+    template <typename T>
+    inline T dmiRead(index_type idx = 0) const
+    {
+        T res;
+        dmiReadImpl_(&res, sizeof(res), sizeof(res) * idx);
+        return res;
+    }
+
+    /*!
+     * \brief Write a value directly to this Register's backing store
+     * \note  No masking, boundary checkor or notification is performed
+     * \note  This is intentionally hiding the dmiWrite() from the base
+     * class so we don't have to go through the dmiWrite_() virtual method.
+     */
+    template <typename T>
+    inline void dmiWrite(T val, index_type idx = 0)
+    {
+        dmiWriteImpl_(&val, sizeof(val), sizeof(val) * idx);
+    }
+
+    /*!
+     * \brief   Write a value into this register without it being affected by the write-mask
+     * \warning This ignores read-only fields
+     * \note    This is intentionally hiding the writeUnmasked() from the base
+     *          class so we don't have to go through the dmiWriteImpl_() virtual method.
+     */
+    template <typename T>
+    inline void writeUnmasked(T val, index_type idx = 0)
+    {
+        dmiWriteImpl_(&val, sizeof(T), idx);
+    }
+
 private:
     /*!
      * \brief Discover and store the raw location of this Register's data
@@ -1536,7 +1578,7 @@ private:
 
     void dmiRead_(void *buf, size_t size, size_t offset = 0) const override final
     {
-        memcpy(buf, raw_data_ptr_ + offset, size);
+        dmiReadImpl_(buf, size, offset);
     }
 
     void write_(const void *buf, size_t size, size_t offset=0) override final
@@ -1559,6 +1601,16 @@ private:
     }
 
     void dmiWrite_(const void *buf, size_t size, size_t offset = 0) override final
+    {
+        dmiWriteImpl_(buf, size, offset);
+    }
+
+    inline void dmiReadImpl_(void *buf, size_t size, size_t offset = 0) const
+    {
+        memcpy(buf, raw_data_ptr_ + offset, size);
+    }
+
+    inline void dmiWriteImpl_(const void *buf, size_t size, size_t offset = 0)
     {
         memcpy(raw_data_ptr_ + offset, buf, size);
         dview_.getLine()->flagDirty();
