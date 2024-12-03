@@ -97,6 +97,7 @@ int main() {
     trigger.go();
     A a(1000, 78, 52, 0.01, "test0");
     pair_pevent.collect(a);
+    EXPECT_THROW(pair_event.collect(a, "unexpected positional pair arg"));
     pair_verbose_pevent.collect(a);
     decode_pevent.collect(a);
     my_pevent.collect(a, 32);
