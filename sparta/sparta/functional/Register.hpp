@@ -1081,7 +1081,9 @@ public:
     template <typename T>
     void dmiWrite(T val, index_type idx = 0)
     {
-        dmiWrite_(&val, sizeof(val), sizeof(val) * idx);
+        if (getID() || getGroupNum()) {
+            dmiWrite_(&val, sizeof(val), sizeof(val) * idx);
+        }
     }
 
     /*!
@@ -1534,7 +1536,9 @@ public:
     template <typename T>
     inline void dmiWrite(T val, index_type idx = 0)
     {
-        dmiWriteImpl_(&val, sizeof(val), sizeof(val) * idx);
+        if (getID() || getGroupNum()) {
+            dmiWriteImpl_(&val, sizeof(val), sizeof(val) * idx);
+        }
     }
 
     /*!
