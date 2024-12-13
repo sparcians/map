@@ -1,0 +1,111 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,1946,104,1972"/>
+<area shape="rect" id="Node000001" href="$structMetaStruct_1_1is__any__pointer_3_01T_01_5_01_4.html" title=" " alt="" coords="174,5,303,46"/>
+<area shape="poly" id="edge302_Node000000_Node000001" title=" " alt="" coords="54,1931,63,1552,82,938,95,625,111,352,129,152,139,90,149,58,172,38,175,43,154,60,144,91,134,153,116,353,100,625,87,938,68,1552,59,1931"/>
+<area shape="rect" id="Node000002" href="$structMetaStruct_1_1is__any__pointer_3_01T_01_5const_01_4.html" title=" " alt="" coords="170,71,307,111"/>
+<area shape="poly" id="edge303_Node000000_Node000002" title=" " alt="" coords="54,1931,63,1564,83,971,96,670,112,407,129,214,139,154,149,123,167,107,171,110,154,126,144,155,135,215,117,407,101,670,88,971,68,1564,59,1931"/>
+<area shape="rect" id="Node000003" href="$structMetaStruct_1_1is__any__pointer_3_01const_01T_01_5_01_4.html" title=" " alt="" coords="168,136,309,177"/>
+<area shape="poly" id="edge304_Node000000_Node000003" title=" " alt="" coords="53,1931,52,1588,60,1034,71,748,89,493,101,386,114,297,131,230,149,188,166,173,169,177,154,191,136,232,120,298,106,387,94,494,77,748,66,1034,57,1588,58,1931"/>
+<area shape="rect" id="Node000004" href="$structMetaStruct_1_1is__any__pointer_3_01const_01T_01_5const_01_4.html" title=" " alt="" coords="152,201,325,242"/>
+<area shape="poly" id="edge305_Node000000_Node000004" title=" " alt="" coords="53,1930,53,1599,62,1065,73,790,90,545,102,442,115,357,131,292,149,252,161,241,164,245,154,255,136,294,120,358,107,443,95,545,78,790,67,1065,58,1599,58,1930"/>
+<area shape="rect" id="Node000005" href="$structMetaStruct_1_1is__any__pointer_3_01std_1_1shared__ptr_3_01T_01_4_01_6_01_4.html" title=" " alt="" coords="168,266,309,322"/>
+<area shape="poly" id="edge306_Node000000_Node000005" title=" " alt="" coords="53,1930,55,1614,66,1106,78,845,95,612,106,514,118,433,133,371,149,332,165,316,169,320,154,335,138,373,123,434,111,515,100,612,83,845,71,1107,60,1614,58,1931"/>
+<area shape="rect" id="Node000006" href="$structMetaStruct_1_1is__any__pointer_3_01std_1_1shared__ptr_3_01T_01_4_01_4.html" title=" " alt="" coords="168,346,309,402"/>
+<area shape="poly" id="edge307_Node000000_Node000006" title=" " alt="" coords="53,1931,56,1628,68,1146,80,898,97,677,120,508,133,449,149,412,165,396,169,400,154,415,139,451,125,509,102,678,85,899,73,1146,61,1628,59,1931"/>
+<area shape="rect" id="Node000007" href="$structMetaStruct_1_1is__any__pointer_3_01std_1_1shared__ptr_3_01T_01_4_01const_01_6_01_4.html" title=" " alt="" coords="168,426,309,482"/>
+<area shape="poly" id="edge308_Node000000_Node000007" title=" " alt="" coords="53,1931,57,1642,70,1186,82,952,99,743,121,582,134,527,149,492,165,476,169,480,154,495,139,529,126,583,104,743,87,952,75,1186,62,1643,59,1931"/>
+<area shape="rect" id="Node000008" href="$structMetaStruct_1_1is__any__pointer_3_01std_1_1shared__ptr_3_01T_01_4_01const_01_4.html" title=" " alt="" coords="168,506,309,562"/>
+<area shape="poly" id="edge309_Node000000_Node000008" title=" " alt="" coords="53,1931,58,1656,72,1226,84,1005,101,808,122,657,135,605,149,572,165,556,169,560,154,575,140,607,127,658,106,809,90,1005,77,1226,63,1656,59,1931"/>
+<area shape="rect" id="Node000009" href="$structMetaStruct_1_1is__any__pointer_3_01std_1_1unique__ptr_3_01T_01_4_01_6_01_4.html" title=" " alt="" coords="168,586,309,642"/>
+<area shape="poly" id="edge310_Node000000_Node000009" title=" " alt="" coords="54,1931,59,1670,74,1265,87,1058,103,873,124,732,136,683,149,652,166,636,169,640,154,655,141,685,129,733,108,874,92,1058,80,1265,64,1670,59,1931"/>
+<area shape="rect" id="Node000010" href="$structMetaStruct_1_1is__any__pointer_3_01std_1_1unique__ptr_3_01T_01_4_01_4.html" title=" " alt="" coords="168,666,309,722"/>
+<area shape="poly" id="edge311_Node000000_Node000010" title=" " alt="" coords="54,1930,60,1684,76,1304,89,1111,105,939,125,807,137,761,149,732,166,716,169,720,154,735,142,763,130,808,110,939,94,1111,82,1305,66,1684,59,1930"/>
+<area shape="rect" id="Node000011" href="$structMetaStruct_1_1is__any__pointer_3_01std_1_1unique__ptr_3_01T_01_4_01const_01_6_01_4.html" title=" " alt="" coords="168,746,309,802"/>
+<area shape="poly" id="edge312_Node000000_Node000011" title=" " alt="" coords="54,1931,61,1699,78,1345,91,1164,107,1004,126,881,137,839,149,812,166,796,170,800,154,815,142,841,131,882,112,1005,96,1165,84,1345,67,1699,59,1931"/>
+<area shape="rect" id="Node000012" href="$structMetaStruct_1_1is__any__pointer_3_01std_1_1unique__ptr_3_01T_01_4_01const_01_4.html" title=" " alt="" coords="168,826,309,882"/>
+<area shape="poly" id="edge313_Node000000_Node000012" title=" " alt="" coords="54,1931,62,1713,81,1385,93,1218,109,1070,128,956,138,917,149,892,166,876,170,880,154,895,143,919,133,957,114,1070,99,1218,86,1385,68,1713,59,1931"/>
+<area shape="rect" id="Node000013" href="$structMetaStruct_1_1is__any__pointer_3_01std_1_1weak__ptr_3_01T_01_4_01_6_01_4.html" title=" " alt="" coords="172,906,305,962"/>
+<area shape="poly" id="edge314_Node000000_Node000013" title=" " alt="" coords="54,1930,64,1727,83,1424,96,1271,111,1135,129,1031,139,995,150,972,170,953,173,957,154,975,144,997,134,1032,116,1136,101,1272,88,1425,69,1728,60,1931"/>
+<area shape="rect" id="Node000014" href="$structMetaStruct_1_1is__any__pointer_3_01std_1_1weak__ptr_3_01T_01_4_01_4.html" title=" " alt="" coords="172,986,305,1042"/>
+<area shape="poly" id="edge315_Node000000_Node000014" title=" " alt="" coords="55,1930,65,1742,85,1465,98,1325,113,1201,130,1106,140,1073,150,1052,169,1034,173,1038,154,1055,145,1075,136,1107,119,1201,103,1325,90,1465,70,1743,60,1931"/>
+<area shape="rect" id="Node000015" href="$structMetaStruct_1_1is__any__pointer_3_01std_1_1weak__ptr_3_01T_01_4_01const_01_6_01_4.html" title=" " alt="" coords="172,1066,305,1122"/>
+<area shape="poly" id="edge316_Node000000_Node000015" title=" " alt="" coords="53,1931,54,1770,65,1533,77,1409,94,1295,118,1200,133,1162,150,1132,169,1114,173,1118,154,1135,137,1164,123,1201,99,1296,82,1410,70,1533,60,1770,58,1931"/>
+<area shape="rect" id="Node000016" href="$structMetaStruct_1_1is__any__pointer_3_01std_1_1weak__ptr_3_01T_01_4_01const_01_4.html" title=" " alt="" coords="172,1146,305,1202"/>
+<area shape="poly" id="edge317_Node000000_Node000016" title=" " alt="" coords="53,1930,57,1783,69,1570,81,1460,98,1358,120,1272,134,1239,150,1212,169,1194,173,1198,154,1215,139,1241,126,1274,103,1359,87,1460,75,1571,62,1784,59,1931"/>
+<area shape="rect" id="Node000017" href="$structMetaStruct_1_1is__bool_3_01bool_01_6_01_4.html" title=" " alt="" coords="172,1225,305,1266"/>
+<area shape="poly" id="edge318_Node000000_Node000017" title=" " alt="" coords="53,1930,58,1794,71,1600,83,1500,100,1408,122,1331,135,1301,150,1277,170,1260,174,1264,154,1281,139,1303,127,1333,105,1409,89,1500,77,1600,63,1794,59,1930"/>
+<area shape="rect" id="Node000018" href="$structMetaStruct_1_1is__bool_3_01bool_01_4.html" title=" " alt="" coords="172,1291,305,1331"/>
+<area shape="poly" id="edge319_Node000000_Node000018" title=" " alt="" coords="54,1931,60,1806,75,1631,87,1542,103,1459,124,1391,136,1364,150,1343,170,1326,174,1330,154,1346,141,1366,129,1393,109,1460,93,1542,80,1632,65,1807,59,1931"/>
+<area shape="rect" id="Node000019" href="$structMetaStruct_1_1is__bool_3_01bool_01const_01_6_01_4.html" title=" " alt="" coords="172,1356,305,1397"/>
+<area shape="poly" id="edge320_Node000000_Node000019" title=" " alt="" coords="55,1931,62,1818,79,1663,91,1583,107,1511,126,1450,150,1408,170,1391,173,1395,154,1411,131,1452,112,1512,97,1584,84,1664,67,1819,60,1931"/>
+<area shape="rect" id="Node000020" href="$structMetaStruct_1_1is__bool_3_01bool_01const_01_4.html" title=" " alt="" coords="172,1421,305,1462"/>
+<area shape="poly" id="edge321_Node000000_Node000020" title=" " alt="" coords="55,1930,65,1830,83,1694,95,1625,111,1562,129,1510,150,1473,170,1457,173,1461,154,1477,133,1512,116,1564,101,1626,88,1695,70,1831,61,1931"/>
+<area shape="rect" id="Node000021" href="$structMetaStruct_1_1is__char__pointer_3_01char_01_5_01_4.html" title=" " alt="" coords="172,1487,305,1527"/>
+<area shape="poly" id="edge322_Node000000_Node000021" title=" " alt="" coords="56,1930,67,1842,87,1726,114,1614,131,1570,150,1539,169,1523,173,1527,154,1542,136,1572,119,1615,92,1727,73,1843,61,1931"/>
+<area shape="rect" id="Node000022" href="$structMetaStruct_1_1is__char__pointer_3_01char_01_5const_01_4.html" title=" " alt="" coords="161,1552,316,1593"/>
+<area shape="poly" id="edge323_Node000000_Node000022" title=" " alt="" coords="53,1931,56,1865,69,1779,81,1732,98,1686,121,1643,150,1604,165,1591,168,1595,154,1607,125,1646,103,1689,86,1734,74,1780,61,1866,58,1931"/>
+<area shape="rect" id="Node000023" href="$structMetaStruct_1_1is__char__pointer_3_01const_01char_01_5_01_4.html" title=" " alt="" coords="160,1617,317,1658"/>
+<area shape="poly" id="edge324_Node000000_Node000023" title=" " alt="" coords="55,1931,61,1876,77,1806,105,1733,125,1698,150,1668,164,1657,167,1661,154,1672,129,1702,110,1735,82,1808,67,1877,60,1931"/>
+<area shape="rect" id="Node000024" href="$structMetaStruct_1_1is__char__pointer_3_01const_01char_01_5const_01_4.html" title=" " alt="" coords="169,1682,308,1738"/>
+<area shape="poly" id="edge325_Node000000_Node000024" title=" " alt="" coords="59,1931,71,1891,89,1843,115,1793,150,1748,167,1734,170,1738,154,1752,120,1795,94,1845,76,1893,65,1932"/>
+<area shape="rect" id="Node000025" href="$structMetaStruct_1_1is__pair_3_01std_1_1pair_3_01T_00_01U_01_4_01_6_01_4.html" title=" " alt="" coords="165,1761,312,1802"/>
+<area shape="poly" id="edge326_Node000000_Node000025" title=" " alt="" coords="65,1931,98,1872,122,1841,150,1813,169,1800,172,1805,153,1817,126,1844,103,1875,70,1933"/>
+<area shape="rect" id="Node000026" href="$structMetaStruct_1_1is__pair_3_01std_1_1pair_3_01T_00_01U_01_4_01_4.html" title=" " alt="" coords="171,1827,306,1867"/>
+<area shape="poly" id="edge327_Node000000_Node000026" title=" " alt="" coords="77,1934,111,1905,150,1877,173,1866,175,1870,153,1881,114,1909,81,1938"/>
+<area shape="rect" id="Node000027" href="$structMetaStruct_1_1is__pair_3_01std_1_1pair_3_01T_00_01U_01_4_01const_01_6_01_4.html" title=" " alt="" coords="174,1891,303,1947"/>
+<area shape="poly" id="edge328_Node000000_Node000027" title=" " alt="" coords="118,1943,173,1930,174,1936,119,1948"/>
+<area shape="rect" id="Node000028" href="$structMetaStruct_1_1is__pair_3_01std_1_1pair_3_01T_00_01U_01_4_01const_01_4.html" title=" " alt="" coords="174,1971,303,2027"/>
+<area shape="poly" id="edge329_Node000000_Node000028" title=" " alt="" coords="119,1970,174,1982,173,1988,118,1975"/>
+<area shape="rect" id="Node000029" href="$structMetaStruct_1_1is__sparta__enum_3_01sparta_1_1utils_1_1Enum_3_01T_01_4_01_4.html" title="Detect whether template parameter is sparta::utils::Enum type. Case when it is a sparta::utils::Enum ..." alt="" coords="166,2051,311,2107"/>
+<area shape="poly" id="edge330_Node000000_Node000029" title=" " alt="" coords="82,1980,115,2009,153,2037,173,2048,170,2053,150,2041,111,2013,78,1984"/>
+<area shape="rect" id="Node000030" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1array_3_01T_00_01N_01_4_01_4.html" title=" " alt="" coords="166,2131,311,2187"/>
+<area shape="poly" id="edge331_Node000000_Node000030" title=" " alt="" coords="69,1985,101,2050,125,2086,153,2117,169,2129,166,2133,150,2121,121,2089,96,2053,64,1988"/>
+<area shape="rect" id="Node000031" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1deque_3_01Args_8_8_8_01_4_01_4.html" title=" " alt="" coords="163,2211,314,2267"/>
+<area shape="poly" id="edge332_Node000000_Node000031" title=" " alt="" coords="63,1987,73,2032,90,2087,116,2146,134,2173,154,2197,167,2209,163,2213,150,2201,129,2176,112,2148,85,2089,67,2033,58,1988"/>
+<area shape="rect" id="Node000032" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1forward__list_3_01Args_8_8_8_01_4_01_4.html" title=" " alt="" coords="159,2291,318,2347"/>
+<area shape="poly" id="edge333_Node000000_Node000032" title=" " alt="" coords="59,1987,65,2046,80,2123,92,2164,108,2204,128,2243,154,2277,166,2289,163,2293,150,2281,124,2245,103,2206,87,2165,75,2124,60,2047,54,1988"/>
+<area shape="rect" id="Node000033" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1list_3_01Args_8_8_8_01_4_01_4.html" title=" " alt="" coords="172,2371,305,2427"/>
+<area shape="poly" id="edge334_Node000000_Node000033" title=" " alt="" coords="57,1987,59,2059,71,2157,83,2210,100,2262,123,2312,154,2357,173,2374,169,2378,150,2361,119,2315,95,2264,78,2211,65,2158,54,2059,52,1987"/>
+<area shape="rect" id="Node000034" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1map_3_01Args_8_8_8_01_4_01_4.html" title=" " alt="" coords="168,2451,309,2507"/>
+<area shape="poly" id="edge335_Node000000_Node000034" title=" " alt="" coords="61,1987,71,2086,90,2220,117,2350,134,2402,154,2437,169,2452,165,2455,150,2441,129,2404,112,2352,84,2221,66,2087,56,1988"/>
+<area shape="rect" id="Node000035" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1multimap_3_01Args_8_8_8_01_4_01_4.html" title=" " alt="" coords="154,2531,323,2587"/>
+<area shape="poly" id="edge336_Node000000_Node000035" title=" " alt="" coords="60,1987,68,2101,85,2259,97,2340,113,2414,132,2475,154,2517,165,2529,161,2532,150,2521,127,2477,108,2415,92,2341,80,2260,63,2102,55,1988"/>
+<area shape="rect" id="Node000036" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1multiset_3_01Args_8_8_8_01_4_01_4.html" title=" " alt="" coords="157,2611,320,2667"/>
+<area shape="poly" id="edge337_Node000000_Node000036" title=" " alt="" coords="59,1987,65,2115,80,2297,93,2391,109,2476,129,2548,141,2576,154,2597,165,2609,161,2613,150,2601,136,2578,124,2550,104,2478,87,2391,75,2298,60,2116,54,1987"/>
+<area shape="rect" id="Node000037" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1priority__queue_3_01Args_8_8_8_01_4_01_4.html" title=" " alt="" coords="161,2691,316,2747"/>
+<area shape="poly" id="edge338_Node000000_Node000037" title=" " alt="" coords="59,1987,63,2129,76,2335,88,2441,105,2539,126,2621,139,2653,154,2677,165,2689,161,2693,150,2681,135,2655,121,2623,99,2541,83,2442,71,2336,57,2130,53,1987"/>
+<area shape="rect" id="Node000038" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1queue_3_01Args_8_8_8_01_4_01_4.html" title=" " alt="" coords="163,2771,314,2827"/>
+<area shape="poly" id="edge339_Node000000_Node000038" title=" " alt="" coords="58,1987,60,2144,72,2373,84,2492,101,2602,124,2694,138,2730,154,2757,165,2769,161,2773,150,2761,133,2732,119,2695,95,2603,78,2493,66,2374,55,2144,53,1988"/>
+<area shape="rect" id="Node000039" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1set_3_01Args_8_8_8_01_4_01_4.html" title=" " alt="" coords="171,2851,306,2907"/>
+<area shape="poly" id="edge340_Node000000_Node000039" title=" " alt="" coords="58,1987,58,2157,68,2411,79,2543,96,2665,121,2767,136,2807,154,2837,172,2855,169,2859,150,2841,132,2809,116,2768,91,2666,74,2543,62,2411,53,2157,53,1987"/>
+<area shape="rect" id="Node000040" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1stack_3_01Args_8_8_8_01_4_01_4.html" title=" " alt="" coords="164,2931,313,2987"/>
+<area shape="poly" id="edge341_Node000000_Node000040" title=" " alt="" coords="60,1988,69,2186,89,2481,102,2630,117,2761,135,2862,144,2896,154,2918,166,2930,162,2934,149,2920,139,2898,129,2863,112,2762,97,2630,83,2481,64,2186,54,1988"/>
+<area shape="rect" id="Node000041" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1unordered__map_3_01Args_8_8_8_01_4_01_4.html" title=" " alt="" coords="152,3011,325,3067"/>
+<area shape="poly" id="edge342_Node000000_Node000041" title=" " alt="" coords="59,1987,68,2200,87,2521,99,2683,115,2827,133,2937,143,2974,154,2998,164,3009,160,3012,149,3000,138,2976,128,2938,110,2828,94,2684,81,2521,63,2201,54,1988"/>
+<area shape="rect" id="Node000042" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1unordered__multimap_3_01Args_8_8_8_01_4_01_4.html" title=" " alt="" coords="152,3091,325,3147"/>
+<area shape="poly" id="edge343_Node000000_Node000042" title=" " alt="" coords="59,1987,67,2214,84,2560,97,2736,113,2892,132,3012,143,3052,154,3078,164,3089,160,3092,149,3080,138,3054,127,3013,108,2893,92,2737,79,2560,62,2214,54,1987"/>
+<area shape="rect" id="Node000043" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1unordered__multiset_3_01Args_8_8_8_01_4_01_4.html" title=" " alt="" coords="152,3171,325,3227"/>
+<area shape="poly" id="edge344_Node000000_Node000043" title=" " alt="" coords="59,1987,66,2229,82,2601,95,2790,111,2958,131,3087,142,3130,154,3158,164,3169,160,3172,149,3160,137,3132,125,3088,106,2959,90,2790,77,2601,61,2230,54,1988"/>
+<area shape="rect" id="Node000044" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1unordered__set_3_01Args_8_8_8_01_4_01_4.html" title=" " alt="" coords="152,3251,325,3307"/>
+<area shape="poly" id="edge345_Node000000_Node000044" title=" " alt="" coords="59,1988,65,2244,80,2641,93,2844,109,3024,129,3162,141,3209,154,3238,164,3249,160,3252,149,3240,136,3210,124,3163,104,3024,87,2844,75,2641,59,2244,54,1988"/>
+<area shape="rect" id="Node000045" href="$structMetaStruct_1_1is__stl__container_3_01std_1_1vector_3_01Args_8_8_8_01_4_01_4.html" title=" " alt="" coords="162,3331,315,3387"/>
+<area shape="poly" id="edge346_Node000000_Node000045" title=" " alt="" coords="59,1988,64,2258,78,2681,90,2897,107,3089,128,3236,140,3287,154,3318,164,3329,160,3332,149,3320,135,3288,123,3237,102,3090,85,2897,73,2681,58,2259,53,1988"/>
+<area shape="rect" id="Node000046" href="$structMetaStruct_1_1is__string_3_01std_1_1string_01_6_01_4.html" title=" " alt="" coords="168,3411,309,3451"/>
+<area shape="poly" id="edge347_Node000000_Node000046" title=" " alt="" coords="59,1987,62,2272,74,2721,86,2951,103,3155,125,3312,139,3365,154,3397,169,3412,166,3415,150,3401,134,3367,120,3313,97,3156,81,2951,69,2721,56,2272,53,1987"/>
+<area shape="rect" id="Node000047" href="$structMetaStruct_1_1is__string_3_01std_1_1string_01_4.html" title=" " alt="" coords="168,3476,309,3517"/>
+<area shape="poly" id="edge348_Node000000_Node000047" title=" " alt="" coords="59,1987,61,2283,73,2752,84,2993,101,3208,124,3372,138,3427,154,3461,169,3476,166,3480,150,3465,133,3429,119,3373,96,3208,79,2994,67,2752,56,2283,53,1987"/>
+<area shape="rect" id="Node000048" href="$structMetaStruct_1_1is__string_3_01std_1_1string_01const_01_6_01_4.html" title=" " alt="" coords="165,3541,312,3582"/>
+<area shape="poly" id="edge349_Node000000_Node000048" title=" " alt="" coords="58,1987,60,2295,71,2784,82,3037,100,3261,110,3355,123,3433,138,3491,154,3527,167,3539,163,3543,149,3530,133,3493,118,3434,105,3356,94,3261,77,3037,66,2785,55,2295,53,1987"/>
+<area shape="rect" id="Node000049" href="$structMetaStruct_1_1is__string_3_01std_1_1string_01const_01_4.html" title=" " alt="" coords="168,3607,309,3647"/>
+<area shape="poly" id="edge350_Node000000_Node000049" title=" " alt="" coords="58,1987,59,2306,69,2817,81,3080,98,3314,109,3412,122,3494,137,3555,154,3592,169,3607,166,3610,150,3595,132,3556,117,3495,104,3413,92,3315,75,3080,64,2817,54,2306,53,1987"/>
+<area shape="rect" id="Node000050" href="$structMetaStruct_1_1matches__any_3_01T_01_4.html" title="This templated struct takes a target type and another parameter pack of types and returns a nested bo..." alt="" coords="168,3672,309,3713"/>
+<area shape="poly" id="edge351_Node000000_Node000050" title=" " alt="" coords="58,1988,58,2318,67,2850,79,3124,96,3368,107,3470,121,3555,136,3618,154,3657,169,3672,165,3675,149,3661,131,3620,116,3556,102,3471,91,3368,73,3124,62,2850,53,2318,53,1988"/>
+<area shape="rect" id="Node000051" href="$classMetaTypeList_1_1is__empty_3_01type__list_3_4_01_4.html" title="Class Template is_empty Specialization." alt="" coords="159,3737,318,3778"/>
+<area shape="poly" id="edge352_Node000000_Node000051" title=" " alt="" coords="58,1987,58,2329,66,2882,77,3167,94,3421,106,3528,120,3616,136,3682,154,3723,166,3735,162,3739,149,3726,131,3684,114,3617,101,3528,89,3422,71,3167,60,2882,52,2329,53,1987"/>
+<area shape="rect" id="Node000052" href="$structMetaTypeList_1_1is__meta__typelist_3_01MetaTypeList_1_1type__list_3_01Args_8_8_8_01_4_01_4.html" title="Template Specialization when the type indeed is a type_list." alt="" coords="159,3802,318,3858"/>
+<area shape="poly" id="edge353_Node000000_Node000052" title=" " alt="" coords="58,1988,58,2340,66,2913,77,3209,95,3473,106,3584,120,3676,136,3745,154,3788,164,3800,160,3803,149,3791,131,3747,115,3677,101,3585,90,3474,72,3209,61,2913,52,2340,53,1988"/>
+<area shape="rect" id="Node000053" href="$structsparta_1_1is__sparta__enum_3_01sparta_1_1utils_1_1Enum_3_01T_01_4_01_4.html" title="Detect whether template parameter is sparta::utils::Enum type." alt="" coords="161,3882,316,3938"/>
+<area shape="poly" id="edge354_Node000000_Node000053" title=" " alt="" coords="59,1987,68,2368,88,2985,101,3299,117,3573,135,3775,144,3837,154,3868,164,3880,160,3883,149,3871,139,3838,129,3775,112,3574,96,3299,83,2985,63,2368,54,1988"/>
+<area shape="rect" id="Node000054" href="$structsparta_1_1utils_1_1is__vector_3_01std_1_1vector_3_01T_00_01A_01_4_01_4.html" title=" " alt="" coords="164,3961,313,4002"/>
+<area shape="poly" id="edge355_Node000000_Node000054" title=" " alt="" coords="59,1987,67,2382,85,3026,99,3354,114,3641,133,3851,143,3916,154,3948,165,3959,161,3963,149,3951,138,3917,128,3852,109,3641,93,3355,80,3026,62,2382,54,1987"/>
+</map>

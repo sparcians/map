@@ -1,0 +1,13 @@
+<map id="sparta::statistics::SIValuesBuffer::bufferCurrentSIValues" name="sparta::statistics::SIValuesBuffer::bufferCurrentSIValues">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,71,200,126"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1statistics_1_1SIValuesBuffer.html#aa7eb38ce95d1573aeff1d6a932bdc56d" title="Ask if this buffer is completely empty." alt="" coords="248,5,427,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="200,69,232,60,233,65,201,74"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Clock.html#a00acfc088c2e51817af21129b1bbc970" title="Get the current cycle (uses current tick from the Scheduler)" alt="" coords="250,86,425,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="200,96,235,96,235,101,200,101"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1Scheduler.html#afe856f86b15acaa3479dda80ce338d3b" title=" " alt="" coords="250,136,425,176"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="201,120,237,129,235,134,200,125"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Scheduler.html#a34dcaf99252d9e9e0511d69d2aa84ff8" title="The current tick the Scheduler is working on or just finished." alt="" coords="488,49,615,90"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="425,84,472,77,472,83,426,89"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1Clock.html#ae80357c4ccec5470a15ed098af03c63d" title="Given the tick, convert to a Clock::Cycle." alt="" coords="475,114,627,139"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="426,107,460,112,459,117,425,113"/>
+</map>

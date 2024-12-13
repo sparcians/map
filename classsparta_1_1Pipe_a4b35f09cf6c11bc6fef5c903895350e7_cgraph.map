@@ -1,0 +1,5 @@
+<map id="sparta::Pipe::readLast" name="sparta::Pipe::readLast">
+<area shape="rect" id="Node000001" title="Read the last entry." alt="" coords="5,5,152,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Pipe.html#a90e1ef3038d69e0e1c26d2cc3053dc20" title="Read the entry at the given stage." alt="" coords="200,5,320,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,16,184,16,184,21,152,21"/>
+</map>

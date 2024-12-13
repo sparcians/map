@@ -1,0 +1,15 @@
+<map id="sparta::serialization::checkpoint::Checkpoint::~Checkpoint" name="sparta::serialization::checkpoint::Checkpoint::~Checkpoint">
+<area shape="rect" id="Node000001" title="Destructor." alt="" coords="5,67,167,123"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a788f67bca036d27e0632cd7d9c4034f5" title="Adds another next checkpoint following *this." alt="" coords="215,187,376,243"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="132,121,216,173,224,177,221,182,213,178,129,126"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a099fdcf88200fbcb8a2b1ac47b7df0f7" title="Returns the previous checkpoint. If this checkpoint is a snapshot, it has no previous checkpoint." alt="" coords="424,27,585,83"/>
+<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="119,65,162,36,214,13,264,4,315,4,365,10,410,20,409,26,364,15,314,9,264,9,215,18,165,40,122,69"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a181f5bd1247c81ce6b4988e2ffeb32c1" title="Returns next checkpoint following *this. May be an empty vector if there are no later checkpoints fol..." alt="" coords="215,107,376,163"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="168,108,200,114,199,120,167,113"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#ac11b8e37f9904ac68ade03a51e679064" title="Removes a checkpoint following *this because it was deleted." alt="" coords="215,27,376,83"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="167,77,199,71,200,76,168,82"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="356,185,374,173,424,133,466,93,469,96,427,137,378,177,359,189"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a41b94da230184ddc69fa469a109ee44f" title="Returns the tick number at which this checkpoint was taken." alt="" coords="424,187,585,243"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="377,213,409,213,409,218,377,218"/>
+<area shape="poly" id="edge7_Node000006_Node000003" title=" " alt="" coords="377,53,409,53,409,58,377,58"/>
+</map>
