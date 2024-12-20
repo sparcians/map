@@ -335,14 +335,6 @@ Simulation::Simulation(const std::string& sim_name,
     // Watch for created nodes to which we will apply taps
     root_.getNodeAttachedNotification().REGISTER_FOR_THIS(rootDescendantAdded_);
 
-    // Handle illegal signals.
-    // Note: Update documentation if these signals are modified
-    backtrace_.setAsHandler(SIGSEGV);
-    backtrace_.setAsHandler(SIGFPE);
-    backtrace_.setAsHandler(SIGILL);
-    backtrace_.setAsHandler(SIGABRT);
-    backtrace_.setAsHandler(SIGBUS);
-
     report_repository_.reset(new sparta::ReportRepository(this));
 
     // Sanity check - simulations cannot exist without a scheduler
@@ -484,6 +476,16 @@ void Simulation::configure(const int argc,
     if(sim_config_->trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI &&
        !sim_config_->getTaps().empty()) {
         throw SpartaException("Logging ennoblement is currently not supported with debug-roi. Use --debug or --debug-on-icount");
+    }
+
+    if (SimulationConfiguration::SignalMode::ENABLE_BACKTRACE_SIGNALS == sim_config_->signal_mode) {
+        // Handle illegal signals.
+        // Note: Update documentation if these signals are modified
+        backtrace_.setAsHandler(SIGSEGV);
+        backtrace_.setAsHandler(SIGFPE);
+        backtrace_.setAsHandler(SIGILL);
+        backtrace_.setAsHandler(SIGABRT);
+        backtrace_.setAsHandler(SIGBUS);
     }
 
     // If there are nodes already existing in the tree (e.g. root or "") then
