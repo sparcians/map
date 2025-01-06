@@ -727,6 +727,10 @@ class ReportFileParserYAML
                     std::stringstream ss;
                     ss << "Unexpected key \"content\" within a \"content\" section";
                     addError_(ss.str());
+                }else{
+                    if (!tryHandleArchContent_(key)) {
+                        return false;
+                    }
                 }
                 return true; // Handle normally
             }else{
@@ -753,51 +757,8 @@ class ReportFileParserYAML
                     in_content_stack_.push(false);
                     return false;
                 }else{
-                    const auto idx = key.find("-arch-content");
-                    if (idx != std::string::npos) {
-                        app::Simulation *sim = nullptr;
-                        if (base_report_) {
-                            if (auto ctx = base_report_->getContext()) {
-                                sim = ctx->getSimulation();
-                            }
-                        }
-
-                        if (!sim) {
-                            throw SpartaException("Could not get the app::Simulation to parse key: ") << key;
-                        }
-
-                        if (auto sim_config = sim->getSimulationConfiguration()) {
-                            skip_content_leaves_ = true;
-                            bool dash_arch_given = false;
-                            for (const auto &kvp : sim_config->getRunMetadata()) {
-                                if (kvp.first == "arch") {
-                                    dash_arch_given = true;
-                                    if (kvp.second + "-arch-content" == key) {
-                                        skip_content_leaves_ = false;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (!dash_arch_given) {
-                                skip_content_leaves_ = false;
-                                verbose() << indent_() << "WARNING: You should consider using --arch at "
-                                          << "the command line together with the *-arch-content blocks "
-                                          << "in your report definition YAML file. This content block "
-                                          << "will be treated as normal (not filtered for --arch)."
-                                          << std::endl;
-                            }
-
-                            if (skip_content_leaves_) {
-                                verbose() << indent_() << "Skipping '" << key << "' block since it does "
-                                          << "not match the --arch given at the command line.";
-                            }
-
-                            in_content_stack_.push(true);
-                            return false;
-                        } else {
-                            throw SpartaException("Could not get the app::SimulationConfiguration to parse key: ") << key;
-                        }
+                    if (!tryHandleArchContent_(key)) {
+                        return false;
                     }
 
                     //std::stringstream ss;
@@ -956,6 +917,57 @@ class ReportFileParserYAML
             }
 
             return true; // Handle normally
+        }
+
+        bool tryHandleArchContent_(const std::string& key) {
+            const auto idx = key.find("-arch-content");
+            if (idx != std::string::npos) {
+                app::Simulation *sim = nullptr;
+                if (base_report_) {
+                    if (auto ctx = base_report_->getContext()) {
+                        sim = ctx->getSimulation();
+                    }
+                }
+
+                if (!sim) {
+                    throw SpartaException("Could not get the app::Simulation to parse key: ") << key;
+                }
+
+                if (auto sim_config = sim->getSimulationConfiguration()) {
+                    skip_content_leaves_ = true;
+                    bool dash_arch_given = false;
+                    for (const auto &kvp : sim_config->getRunMetadata()) {
+                        if (kvp.first == "arch") {
+                            dash_arch_given = true;
+                            if (kvp.second + "-arch-content" == key) {
+                                skip_content_leaves_ = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!dash_arch_given) {
+                        skip_content_leaves_ = false;
+                        verbose() << indent_() << "WARNING: You should consider using --arch at "
+                                  << "the command line together with the *-arch-content blocks "
+                                  << "in your report definition YAML file. This content block "
+                                  << "will be treated as normal (not filtered for --arch)."
+                                  << std::endl;
+                    }
+
+                    if (skip_content_leaves_) {
+                        verbose() << indent_() << "Skipping '" << key << "' block since it does "
+                                  << "not match the --arch given at the command line.";
+                    }
+
+                    in_content_stack_.push(true);
+                    return false;
+                } else {
+                    throw SpartaException("Could not get the app::SimulationConfiguration to parse key: ") << key;
+                }
+            }
+
+            return true;
         }
 
         /*!
