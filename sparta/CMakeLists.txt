@@ -163,7 +163,6 @@ else()
   set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3")
   message(STATUS "Using Sparta default debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 endif()
-
 #
 # If we're using CONDA, we might be using the one suggested for
 # Sparta.  Need to use the llvm-ar found in the conda package to
