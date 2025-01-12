@@ -11,11 +11,11 @@ few rules...
   Documentation fixes obviously don't require this...
 
 * Rule2: Adhere to [Sparta's Coding
-  Style](sparta's-coding-style). Look at the existing code and mimic
+  Style](sparta-coding-style). Look at the existing code and mimic
   it.  Don't mix another preferred style with Sparta's.  Stick with
   Sparta's.
 
-## Sparta's Coding Style
+## Sparta Coding Style
 
 * There are simple style rules:
      1. Class names are `CamelCase` with the Camel's head up: `class SpartaHandler`
