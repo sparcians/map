@@ -32,6 +32,25 @@ The MAP repository has numerous dependencies, which are listed in a
 [conda recipe](https://github.com/sparcians/map/blob/master/conda.recipe/meta.yaml),
 and the versions of these libraries continuously change.
 
+There are few ways to setup a developmenet environemt for developing
+using Sparta: Simple apt install and Conda.
+
+## Simple
+
+The following packages are needed to build Sparta:
+
+- (cmake) cmake v3.22
+- (libboost-all-dev) boost 1.74.0
+- (yaml-cpp-dev) YAML CPP 0.7.0
+- (rapidjson-dev) RapidJSON CPP 1.1.0
+- (libsqlite3-dev) SQLite3 3.37.2
+- (libhdf5-dev) HDF5 1.10.7
+- (clang) Clang, Version: 14.0.0
+
+These pakages were tested with Ubuntu 22.02 (as well as WSL).  Use `apt` or `yum` to install.
+
+## Conda
+
 However, with the use of the conda recipe, users can set up a conda
 environment that will build and run the tools found in this repository.
 
