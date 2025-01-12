@@ -33,11 +33,12 @@ The MAP repository has numerous dependencies, which are listed in a
 and the versions of these libraries continuously change.
 
 There are few ways to setup a developmenet environemt for developing
-using Sparta: Simple apt install and Conda.
+using Sparta: Simple (just install packages) or creating a Conda
+environment with the recipe found in sparta.
 
 ## Simple
 
-The following packages are needed to build Sparta:
+The following packages are needed to build Sparta (not the Helios tools):
 
 - (cmake) cmake v3.22
 - (libboost-all-dev) boost 1.74.0
@@ -51,8 +52,8 @@ These pakages were tested with Ubuntu 22.02 (as well as WSL).  Use `apt` or `yum
 
 ## Conda
 
-However, with the use of the conda recipe, users can set up a conda
-environment that will build and run the tools found in this repository.
+Users can set up a conda environment that will build and run the tools
+found in this repository using a predefined recipe.
 
 This guide assumes the user is not familiar with conda nor has it
 installed and would like to build everything (not just sparta).
