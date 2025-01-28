@@ -5,7 +5,7 @@ c_compiler:
 c_compiler_version:
 - '13'
 cdt_name:
-- cos7
+- conda
 channel_sources:
 - conda-forge
 channel_targets:
@@ -15,7 +15,7 @@ cxx_compiler:
 cxx_compiler_version:
 - '13'
 docker_image:
-- quay.io/condaforge/linux-anvil-cos7-x86_64
+- quay.io/condaforge/linux-anvil-x86_64:alma9
 hdf5:
 - 1.14.3
 linux_clang_version:
