@@ -32,7 +32,7 @@ The MAP repository has numerous dependencies, which are listed in a
 [conda recipe](https://github.com/sparcians/map/blob/master/conda.recipe/meta.yaml),
 and the versions of these libraries continuously change.
 
-There are few ways to setup a developmenet environemt for developing
+There are few ways to setup a development environment for developing
 using Sparta: Simple (just install packages) or creating a Conda
 environment with the recipe found in sparta.
 
