@@ -1,0 +1,29 @@
+<map id="sparta::InstrumentationNode" name="sparta::InstrumentationNode">
+<area shape="rect" id="Node000001" title="Base class requiring." alt="" coords="588,133,773,159"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1CounterBase.html" title="The base class for all Counters." alt="" coords="821,80,959,106"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="748,126,836,104,837,109,749,131"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1StatisticDef.html" title="Contains a statistic definition (some useful information which can be computed)" alt="" coords="824,161,956,187"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="788,158,824,163,823,168,788,163"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="420,133,540,159"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="556,144,588,144,588,149,556,149"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="199,108,372,134"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="388,131,420,136,419,141,387,137"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,108,151,134"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="166,118,198,118,198,124,166,124"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="199,157,372,183"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="387,155,419,151,420,156,388,160"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1Counter.html" title="Represents a counter of type counter_type (uint64_t). 2 and greater than 0 with a ceiling specified...." alt="" coords="1035,5,1143,31"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="932,71,1006,40,1038,29,1040,34,1008,45,934,76"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1CycleCounter.html" title="Represents a cycle counter." alt="" coords="1019,55,1159,80"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="974,79,1018,74,1019,79,975,85"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1ReadOnlyCounter.html" title="Represents a non&#45;writable and non&#45;observable counter with a very similar interface to sparta::Counter..." alt="" coords="1007,104,1171,130"/>
+<area shape="poly" id="edge8_Node000006_Node000009" title=" " alt="" coords="975,100,1007,104,1006,110,974,106"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1ContextCounter.html" title=" " alt="" coords="1013,154,1165,194"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="971,172,1012,172,1012,177,971,177"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1ContextCounter.html" title="A container type that allows a modeler to build, store, and charge counts to a specific context." alt="" coords="1013,219,1165,260"/>
+<area shape="poly" id="edge12_Node000010_Node000013" title=" " alt="" coords="947,190,1026,216,1024,221,945,195"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1WeightedContextCounter.html" title=" " alt="" coords="1219,154,1426,194"/>
+<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="1181,172,1219,172,1219,177,1181,177"/>
+<area shape="rect" id="Node000014" href="$classsparta_1_1WeightedContextCounter.html" title="This is an example context counter subclass used to show how users may supply their own &quot;aggregated v..." alt="" coords="1219,219,1426,260"/>
+<area shape="poly" id="edge13_Node000013_Node000014" title=" " alt="" coords="1181,237,1219,237,1219,242,1181,242"/>
+</map>

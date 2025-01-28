@@ -1,0 +1,18 @@
+<map id="sparta::serialization::checkpoint::DeltaCheckpoint::traceValue" name="sparta::serialization::checkpoint::DeltaCheckpoint::traceValue">
+<area shape="rect" id="Node000001" title="Implement trace of a value across the restore chain as described in Checkpointer::traceValue." alt="" coords="5,199,197,254"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a3abaf1475d8bbcbf6e92d6dd5859edd3" title="Gets the representation of this deleted checkpoint as part of a checkpoint chain (if that checkpointe..." alt="" coords="245,87,436,142"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="161,196,264,147,266,152,163,201"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a268de807a306329336ed825c40e25fc4" title="Returns a stack of checkpoints from this checkpoint as far back as possible until no previous link is..." alt="" coords="245,199,436,254"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="197,224,229,224,229,229,197,229"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a298af42f2d8f655088a1a61ff91d776b" title="Is this checkpoint a snapshot (contains ALL simulator state)" alt="" coords="245,279,436,334"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="187,252,241,271,240,276,186,257"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a051b7ba282cb3affd3dcc21d38cc176d" title="Return the ID had by this checkpoint before it was deleted If this checkpoint has not been flagged fo..." alt="" coords="484,5,675,61"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="424,84,480,64,482,69,425,89"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a1ab50505bd631547981015601a4f40e8" title="Returns the ID of this checkpoint." alt="" coords="723,104,885,160"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="437,114,675,121,708,123,707,128,675,126,437,119"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a34a8164584635a65bf411dead281837b" title="Indicates whether this checkpoint has been flagged deleted." alt="" coords="484,136,675,192"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="437,132,469,138,468,144,436,137"/>
+<area shape="poly" id="edge5_Node000005_Node000004" title=" " alt="" coords="675,148,708,143,708,148,676,153"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a099fdcf88200fbcb8a2b1ac47b7df0f7" title="Returns the previous checkpoint. If this checkpoint is a snapshot, it has no previous checkpoint." alt="" coords="499,216,660,272"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="437,231,484,234,483,240,436,236"/>
+</map>

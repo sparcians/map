@@ -1,0 +1,5 @@
+<map id="sparta::ExportedPort::getDirection" name="sparta::ExportedPort::getDirection">
+<area shape="rect" id="Node000001" title="Get the direction of the port." alt="" coords="5,5,143,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Port.html#afb0fd7ccb38114dd5aaaf4dc69f03e39" title="The direction of the port." alt="" coords="191,13,353,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,23,175,23,175,28,143,28"/>
+</map>

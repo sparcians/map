@@ -1,0 +1,9 @@
+<map id="core_example::SimpleTLB" name="core_example::SimpleTLB">
+<area shape="rect" id="Node000001" title=" " alt="" coords="93,168,266,193"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,194,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="132,129,169,165,165,169,128,133"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Unit.html" title="The is the base class for user defined blocks in simulation." alt="" coords="217,86,304,112"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="239,125,194,169,190,165,236,121"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Resource.html" title="The is the base class for all types of resources used by the SPARTA framework." alt="" coords="202,5,320,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="264,47,264,86,258,86,258,47"/>
+</map>

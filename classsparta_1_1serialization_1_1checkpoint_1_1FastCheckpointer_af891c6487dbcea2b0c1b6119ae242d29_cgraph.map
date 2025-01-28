@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::FastCheckpointer::checkpointExists" name="sparta::serialization::checkpoint::FastCheckpointer::checkpointExists">
+<area shape="rect" id="Node000001" title="Queries a specific checkpoint by ID." alt="" coords="5,5,204,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#ac148071f4baed77d65246f9a9fb6da12" title="Attempts to find a checkpoint within this checkpointer by ID." alt="" coords="252,5,450,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="204,30,236,30,236,36,204,36"/>
+</map>
