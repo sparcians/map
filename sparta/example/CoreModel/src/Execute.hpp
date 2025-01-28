@@ -89,9 +89,8 @@ namespace core_example
         IterableCollectorType ready_queue_collector_{
             getContainer(), "scheduler_queue", &ready_queue_, scheduler_size_};
 
-        // TODO cnyce
-        // sparta::collection::Collectable<ExampleInstPtr> collected_inst_{
-        //     getContainer(), "collected_inst", getClock(), nullptr};
+        sparta::collection::Collectable<ExampleInst> collected_inst_{
+            getContainer(), "collected_inst", nullptr};
 
         // Events used to issue and complete the instruction
         sparta::UniqueEvent<> issue_inst_{&unit_event_set_, getName() + "_issue_inst",

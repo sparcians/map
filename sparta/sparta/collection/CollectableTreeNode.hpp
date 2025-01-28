@@ -41,13 +41,15 @@ public:
 private:
     void addCollectionPoint_(CollectionPoints & collection_points, std::true_type)
     {
-        collection_points.addStat(getLocation(), getClock(), collectable_);
+        if (collectable_) {
+            collection_points.addStat(getLocation(), getClock(), collectable_);
+        }
     }
 
     void addCollectionPoint_(CollectionPoints & collection_points, std::false_type)
     {
-        // TODO cnyce
-        (void)collection_points;
+        sparta_assert(!collectable_);
+        collection_points.add
     }
 
     const CollectableT* collectable_;
