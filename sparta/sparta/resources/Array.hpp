@@ -14,8 +14,8 @@
 
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/statistics/CycleHistogram.hpp"
-#include "sparta/collection/IterableCollector.hpp"
 #include "sparta/utils/IteratorTraits.hpp"
+#include "sparta/collection/CollectableTreeNode.hpp"
 
 namespace sparta
 {
@@ -847,17 +847,10 @@ namespace sparta
          */
         void enableCollection(TreeNode* parent)
         {
-            // Create the collector instance of the appropriate type.
-            sparta_assert(parent != nullptr);
-            collector_.
-                reset(new collection::IterableCollector<FullArrayType,
-                                                        SchedulingPhase::Collection, true>
-                      (parent, name_, this, capacity()));
+            collector_ = std::make_unique<collection::IterableCollector<FullArrayType, true>>(parent, name_, this, capacity());
 
             if constexpr (ArrayT == ArrayType::AGED) {
-                age_collector_.reset(new collection::IterableCollector<AgedArrayCollectorProxy>
-                                     (parent, name_ + "_age_ordered",
-                                      &aged_array_col_, capacity()));
+                age_collector_ = std::make_unique<collection::IterableCollector<AgedArrayCollectorProxy>>(parent, name_ + "_age_ordered", &aged_array_col_, capacity());
             }
         }
 
@@ -868,6 +861,9 @@ namespace sparta
         public:
             //! Typedef for size_type
             typedef uint32_t size_type;
+
+            //! Typedef for value_type
+            typedef Array<DataT, ArrayType::AGED> value_type;
 
             AgedArrayCollectorProxy(FullArrayType * array) : array_(array) { }
 
@@ -1010,10 +1006,8 @@ namespace sparta
 
         ////////////////////////////////////////////////////////////
         // Collectors
-        std::unique_ptr<collection::IterableCollector<FullArrayType,
-                                                      SchedulingPhase::Collection,
-                                                      true>> collector_;
-        std::unique_ptr<collection::IterableCollector<AgedArrayCollectorProxy> > age_collector_;
+        std::unique_ptr<collection::IterableCollector<FullArrayType, true>> collector_;
+        std::unique_ptr<collection::IterableCollector<AgedArrayCollectorProxy>> age_collector_;
     };
 
     template<class DataT, ArrayType ArrayT>

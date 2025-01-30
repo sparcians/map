@@ -19,9 +19,9 @@
 #include "sparta/statistics/CycleHistogram.hpp"
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/statistics/StatisticDef.hpp"
-#include "sparta/collection/IterableCollector.hpp"
 #include "sparta/statistics/Counter.hpp"
 #include "sparta/utils/IteratorTraits.hpp"
+#include "sparta/collection/CollectableTreeNode.hpp"
 
 namespace sparta
 {
@@ -731,9 +731,7 @@ namespace sparta
          *       instatiation of the PipelineCollector
          */
         void enableCollection(TreeNode * parent) {
-            collector_.
-                reset(new collection::IterableCollector<Buffer<DataT> >(parent, getName(),
-                                                                        this, capacity()));
+            collector_ = std::make_unique<IterableCollectorType>(parent, name_, this, capacity());
         }
 
         /**
@@ -1020,7 +1018,8 @@ namespace sparta
 
         //////////////////////////////////////////////////////////////////////
         // Collectors
-        std::unique_ptr<collection::IterableCollector<Buffer<value_type> > > collector_;
+        using IterableCollectorType = sparta::collection::IterableCollector<Buffer<value_type>>;
+        std::unique_ptr<IterableCollectorType> collector_;
 
         //! Flag which tells various methods if infinite_mode is turned on or not.
         //  The behaviour of these methods change accordingly.
@@ -1084,7 +1083,6 @@ namespace sparta
         num_valid_(rval.num_valid_),
         validator_(new DataPointerValidator(*this)),
         utilization_(std::move(rval.utilization_)),
-        collector_(std::move(rval.collector_)),
         is_infinite_mode_(rval.is_infinite_mode_),
         resize_delta_(std::move(rval.resize_delta_)),
         address_map_(std::move(rval.address_map_)){
@@ -1095,10 +1093,6 @@ namespace sparta
         rval.first_position_ = nullptr;
         rval.num_valid_ = 0;
         rval.utilization_ = nullptr;
-        rval.collector_ = nullptr;
         validator_->validator_ = std::move(rval.validator_->validator_);
-        if(collector_) {
-            collector_->reattach(this);
-        }
     }
 }

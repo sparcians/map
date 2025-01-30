@@ -45,6 +45,10 @@
 
 namespace sparta {
 class GlobalTreeNode;
+
+namespace collection {
+    class PipelineCollector;
+}
 }  // namespace sparta
 
 

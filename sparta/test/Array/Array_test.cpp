@@ -17,14 +17,11 @@
 #include "sparta/resources/Array.hpp"
 #include "sparta/resources/FrontArray.hpp"
 #include "sparta/simulation/ClockManager.hpp"
-
 #include "sparta/collection/PipelineCollector.hpp"
 
 #include <string>
 
 TEST_INIT
-
-#define PIPEOUT_GEN
 
 struct dummy_struct
 {
@@ -137,15 +134,9 @@ int main()
     root_node.enterConfiguring();
     root_node.enterFinalized();
 
-#ifdef PIPEOUT_GEN
-    sparta::collection::PipelineCollector pc("test_collection_", 1000, &clk, &root);
-#endif
-
+    sparta::collection::PipelineCollector pc("test_collection_", {}, 10, &root_node, nullptr);
     sched.finalize();
-
-#ifdef PIPEOUT_GEN
-    pc.startCollection(&root_node);
-#endif
+    pc.startCollecting();
 
     // Test perfect forwarding arrays move
     {
@@ -467,17 +458,13 @@ int main()
         EXPECT_EQUAL(aged_array_test.getAge(i), age_vec_0[idxx++]);
     }
 
-#ifdef PIPEOUT_GEN
     sched.run(1);
-#endif
 
     aged_collected_array.erase(0); //+9 records.
     aged_collected_array.erase(1); //+8 records.
     aged_collected_array.write(0, 0);
 
-#ifdef PIPEOUT_GEN
     sched.run(1);
-#endif
 
     EXPECT_EQUAL(aged_array.abegin().getIndex(), aged_array.getOldestIndex().getIndex());
     bit = aged_array.abegin();
@@ -516,17 +503,13 @@ int main()
     }
     EXPECT_EQUAL(cnt, 7);
 
-#ifdef PIPEOUT_GEN
     sched.run(1);
-#endif
 
     aged_array.write(4, 4);
     aged_array.write(2, 2);
     aged_array.write(1, 1);
 
-#ifdef PIPEOUT_GEN
     sched.run(1);
-#endif
 
     AgedArray::iterator it = aged_array.getCircularIterator();
     while(it != aged_array.getCircularIterator(aged_array.capacity() - 1))
@@ -539,9 +522,7 @@ int main()
     EXPECT_EQUAL(*dat, 9);
     aged_array.erase(it);
 
-#ifdef PIPEOUT_GEN
     sched.run(1);
-#endif
 
     //set up the pipeline collection.
 
@@ -552,9 +533,7 @@ int main()
     ns_array.write(1, 1);
     ns_array.write(2, 2);
 
-#ifdef PIPEOUT_GEN
     sched.run(1);
-#endif
 
     //ns_array.getOldestIndex(0); THROWS a static assert message since
     //ns_array is not aged.
@@ -568,18 +547,13 @@ int main()
     EXPECT_EQUAL(ns_array.numValid(), 1);
     EXPECT_EQUAL(ns_array.capacity(), 10);
 
-#ifdef PIPEOUT_GEN
     sched.run(1);
-#endif
-
 
     ns_array.write(5, 5);
     ns_array.write(3, 3);
     ns_array.write(0, 0);
 
-#ifdef PIPEOUT_GEN
     sched.run(1);
-#endif
 
     MyArray::iterator iter = ns_array.begin();
     uint32_t i = 0;
@@ -595,9 +569,8 @@ int main()
         ++i;
     }
 
-#ifdef PIPEOUT_GEN
     sched.run(1);
-#endif
+
     iter = ns_array.begin();
     std::advance(iter, 3);
 
@@ -703,10 +676,8 @@ int main()
 //         std::cout << "valid: " << iter.isValid() << std::endl;
 //     }
 
-#ifdef PIPEOUT_GEN
     sched.run(10);
-    pc.destroy();
-#endif
+    pc.stopCollecting();
 
     //it's now safe to tear down our dummy tree
     root_node.enterTeardown();

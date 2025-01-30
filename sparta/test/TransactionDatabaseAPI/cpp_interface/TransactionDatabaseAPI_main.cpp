@@ -16,8 +16,6 @@
 #include "sparta/utils/SpartaTester.hpp"
 #include "sparta/utils/Utils.hpp"
 
-#include "sparta/pipeViewer/TransactionDatabaseInterface.hpp"
-
 /*!
  * \file TransactionDatabaseAPI_main.cpp
  * \brief Test for reading from pipeout transaction database

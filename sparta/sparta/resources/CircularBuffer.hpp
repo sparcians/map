@@ -19,9 +19,9 @@
 #include "sparta/statistics/CycleCounter.hpp"
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/statistics/StatisticDef.hpp"
-#include "sparta/collection/IterableCollector.hpp"
 #include "sparta/statistics/Counter.hpp"
 #include "sparta/utils/IteratorTraits.hpp"
+#include "sparta/collection/CollectableTreeNode.hpp"
 
 namespace sparta
 {
@@ -442,9 +442,7 @@ namespace sparta
          *       instatiation of the PipelineCollector
          */
         void enableCollection(TreeNode * parent) {
-            collector_.
-                reset(new collection::IterableCollector<CircularBuffer<DataT> >(parent, getName(),
-                                                                                this, capacity()));
+            collector_ = std::make_unique<IterableCollectorType>(parent, name_, this, capacity());
         }
 
         //! Get this CircularBuffer's name
@@ -788,7 +786,8 @@ namespace sparta
 
         //////////////////////////////////////////////////////////////////////
         // Collectors
-        std::unique_ptr<collection::IterableCollector<CircularBuffer<value_type> > > collector_;
+        using IterableCollectorType = sparta::collection::IterableCollector<CircularBuffer<value_type>>;
+        std::unique_ptr<IterableCollectorType> collector_;
     };
 
     ////////////////////////////////////////////////////////////////////////////////

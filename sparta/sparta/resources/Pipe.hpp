@@ -17,9 +17,11 @@
 #include "sparta/ports/Port.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/MathUtils.hpp"
-#include "sparta/collection/IterableCollector.hpp"
 #include "sparta/utils/ValidValue.hpp"
 #include "sparta/utils/IteratorTraits.hpp"
+#include "sparta/events/UniqueEvent.hpp"
+#include "sparta/events/EventSet.hpp"
+#include "sparta/collection/CollectableTreeNode.hpp"
 
 namespace sparta
 {
@@ -221,7 +223,6 @@ public:
      *       finialization nor after enabling pipeline collection.
      */
     void resize(uint32_t new_size) {
-        sparta_assert(collector_ == nullptr);
         //sparta_assert(!getClock()->isFinalized());
         initPipe_(new_size);
     }
@@ -513,15 +514,17 @@ public:
      */
     template<sparta::SchedulingPhase phase = SchedulingPhase::Collection>
     void enableCollection(TreeNode * parent) {
-        collector_.reset (new collection::IterableCollector<Pipe<DataT>, phase, true>
-                          (parent, name_, this, capacity()));
+        static_assert(phase == SchedulingPhase::Collection,
+                      "TODO cnyce: Only Collection phase is supported for Pipe");
+
+        collector_ = std::make_unique<CollectorType>(parent, name_, this, capacity());
     }
 
     /**
      * \brief Check if pipe is collecting
      */
     bool isCollected() const {
-        return collector_ && collector_->isCollected();
+        return false;
     }
 
 private:
@@ -593,8 +596,8 @@ private:
 
     //////////////////////////////////////////////////////////////////////
     // Collectors
-    std::unique_ptr<collection::CollectableTreeNode> collector_;
-
+    using CollectorType = collection::IterableCollector<Pipe<DataT>, true>;
+    std::unique_ptr<CollectorType> collector_;
 };
 
 }

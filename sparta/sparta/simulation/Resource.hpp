@@ -19,7 +19,6 @@
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/utils/Utils.hpp"
-#include "simdb/Errors.hpp"
 
 namespace sparta {
 

@@ -9,6 +9,7 @@
 #include "sparta/app/CommandLineSimulator.hpp"
 #include "sparta/app/MultiDetailOptions.hpp"
 #include "sparta/sparta.hpp"
+#include "sparta/utils/SpartaTester.hpp"
 
 // User-friendly usage that correspond with sparta::app::CommandLineSimulator
 // options
@@ -91,9 +92,11 @@ int main(int argc, char **argv)
 
         cls.postProcess(&sim);
 
-    }catch(...){
-        // Could still handle or log the exception here
-        throw;
+    }catch(const std::exception& ex){
+        TEST_INIT
+        EXPECT_EQUAL(std::string(ex.what()), "");
+        REPORT_ERROR;
+        return ERROR_CODE;
     }
     return 0;
 }

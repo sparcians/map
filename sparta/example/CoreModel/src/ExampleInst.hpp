@@ -10,6 +10,7 @@
 #include "sparta/simulation/State.hpp"
 #include "sparta/utils/SpartaSharedPointer.hpp"
 #include "sparta/utils/SpartaSharedPointerAllocator.hpp"
+#include "simdb/collection/Structs.hpp"
 
 #include <cstdlib>
 #include <ostream>
@@ -250,3 +251,52 @@ namespace core_example
                               SPARTA_ADDPAIR("vaddr",    &ExampleInst::getVAdr, std::ios::hex))
     };
 }
+
+namespace simdb
+{
+
+template <>
+inline void defineEnumMap<core_example::ExampleInst::TargetUnit>(std::string& enum_name, std::map<std::string, uint16_t>& map)
+{
+    using TargetUnit = core_example::ExampleInst::TargetUnit;
+
+    enum_name = "TargetUnit";
+    map["ALU0"] = static_cast<int32_t>(TargetUnit::ALU0);
+    map["ALU1"] = static_cast<int32_t>(TargetUnit::ALU1);
+    map["FPU"]  = static_cast<int32_t>(TargetUnit::FPU);
+    map["BR"]   = static_cast<int32_t>(TargetUnit::BR);
+    map["LSU"]  = static_cast<int32_t>(TargetUnit::LSU);
+    map["ROB"]  = static_cast<int32_t>(TargetUnit::ROB);
+}
+
+template <>
+inline void defineStructSchema<core_example::ExampleInst>(StructSchema& schema)
+{
+    using TargetUnit = core_example::ExampleInst::TargetUnit;
+
+    schema.setStructName("ExampleInst");
+    schema.addField<uint64_t>("DID");
+    schema.addField<uint64_t>("uid");
+    schema.addField<std::string>("mnemonic");
+    schema.addBoolField("complete");
+    schema.addField<TargetUnit>("unit");
+    schema.addField<uint32_t>("latency");
+    schema.addHexField<uint64_t>("raddr");
+    schema.addHexField<uint64_t>("vaddr");
+    schema.setAutoColorizeColumn("DID");
+}
+
+template <>
+inline void writeStructFields<core_example::ExampleInst>(const core_example::ExampleInst* inst, StructFieldSerializer<core_example::ExampleInst>* serializer)
+{
+    serializer->writeField<uint64_t>(inst->getUniqueID());
+    serializer->writeField<uint64_t>(inst->getUniqueID());
+    serializer->writeField(inst->getMnemonic());
+    serializer->writeField<int32_t>(inst->getCompletedStatus());
+    serializer->writeField<core_example::ExampleInst::TargetUnit>(inst->getUnit());
+    serializer->writeField<uint32_t>(inst->getExecuteTime());
+    serializer->writeField<uint64_t>(inst->getRAdr());
+    serializer->writeField<uint64_t>(inst->getVAdr());
+}
+
+} // namespace simdb

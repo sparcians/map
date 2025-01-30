@@ -9,7 +9,6 @@
 #include "sparta/simulation/Unit.hpp"
 #include "sparta/simulation/ParameterSet.hpp"
 #include "sparta/simulation/TreeNode.hpp"
-#include "sparta/collection/Collectable.hpp"
 #include "sparta/events/StartupEvent.hpp"
 
 #include "CoreTypes.hpp"

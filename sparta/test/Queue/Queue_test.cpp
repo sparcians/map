@@ -17,9 +17,9 @@
 #include "sparta/statistics/CycleCounter.hpp"
 #include "sparta/utils/SpartaSharedPointer.hpp"
 #include "sparta/utils/SpartaSharedPointerAllocator.hpp"
-TEST_INIT
+#include "sparta/collection/PipelineCollector.hpp"
 
-#define PIPEOUT_GEN
+TEST_INIT
 
 void testIteratorValidity();
 void testIteratorValidity2();
@@ -63,23 +63,15 @@ int main()
     sparta::Queue<dummy_struct_ptr> dummy_struct_queue_alloc("dummy_struct_queue_alloc", 5, root_clk.get(), &queue10_stats);
 
     rtn.setClock(root_clk.get());
-
-#ifdef PIPEOUT_GEN
     queue10_untimed.enableCollection(&rtn);
-#endif
 
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
-#ifdef PIPEOUT_GEN
-    sparta::collection::PipelineCollector pc("testPipe", 1000000, root_clk.get(), &rtn);
-#endif
-
+    sparta::collection::PipelineCollector pc("testPipe", {}, 10, &rtn, nullptr);
     sched.finalize();
 
-#ifdef PIPEOUT_GEN
-    pc.startCollection(&rtn);
-#endif
+    pc.startCollecting();
 
     ////////////////////////////////////////////////////////////
     sched.run(1);
@@ -389,9 +381,7 @@ int main()
     testPopBack();
 
     rtn.enterTeardown();
-#ifdef PIPEOUT_GEN
-    pc.destroy();
-#endif
+    pc.stopCollecting();
 
     REPORT_ERROR;
     return ERROR_CODE;

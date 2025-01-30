@@ -72,7 +72,6 @@
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/utils/DataContainer.hpp"
-#include "sparta/collection/DelayedCollectable.hpp"
 #include "sparta/ports/Port.hpp"
 #include "sparta/events/Precedence.hpp"
 #include "sparta/events/EventSet.hpp"
@@ -111,7 +110,8 @@ namespace sparta
     template<class DataT>
     class SyncOutPort final : public OutPort
     {
-        typedef collection::DelayedCollectable<DataT> CollectorType;
+        // TODO cnyce
+        // typedef collection::DelayedCollectable<DataT> CollectorType;
 
     public:
         //! A typedef for the type of data this port passes.
@@ -303,10 +303,6 @@ namespace sparta
             uint64_t sched_delay_ticks = sync_in_port_->send_(dat, clk_, send_delay_cycles,
                                                               allow_slide, is_fwd_progress);
 
-            if(SPARTA_EXPECT_FALSE(collector_ != nullptr)) {
-                collector_->collectWithDuration(dat, send_delay_cycles, 1);
-            }
-
             sparta_assert(send_cycle > prev_data_send_cycle_ || prev_data_send_cycle_ == PREV_DATA_SEND_CYCLE_INIT, //init tick 0
                           getLocation()
                           << ": trying to send at cycle "
@@ -375,8 +371,7 @@ namespace sparta
 
         //! Enable pipeline collection
         void enableCollection(TreeNode* node) override {
-            collector_.reset(new CollectorType(node, Port::name_, 0,
-                                               "Data being sent out on this SyncOutPort"));
+            (void) node;
         }
 
     private:
@@ -387,8 +382,9 @@ namespace sparta
         /// The in-port all data will be sent to
         SyncInPort<DataT> * sync_in_port_ = nullptr;
 
-        /// Pipeline collection: TODO - figure out how this works w/ sync ports
-        std::unique_ptr<CollectorType> collector_;
+        /// Pipeline collection
+        /// TODO cnyce
+        /// std::unique_ptr<CollectorType> collector_;
 
         /// Last cycle any data was sent
         Clock::Cycle PREV_DATA_SEND_CYCLE_INIT = 0xffffffffffffffff; //init tick 0
@@ -410,7 +406,9 @@ namespace sparta
     template<class DataT>
     class SyncInPort final : public InPort, public DataContainer<DataT>
     {
-        typedef collection::Collectable<DataT> CollectorType;
+        //! TODO cnyce
+        //! typedef collection::Collectable<DataT> CollectorType;
+
     public:
         //! Expected typedef for DataT
         typedef DataT DataType;
@@ -593,8 +591,7 @@ namespace sparta
         //! Enable pipeline collection
         void enableCollection(TreeNode* node) override
         {
-            collector_.reset(new CollectorType(node, Port::name_, 0,
-                                               "Data being recirculated on this SyncInPort"));
+            (void) node;
         }
 
         //! Set the ready state for the port before simulation begins
@@ -807,12 +804,6 @@ namespace sparta
                 // listeners.
                 if(SPARTA_EXPECT_TRUE(explicit_consumer_handler_)) {
                     explicit_consumer_handler_((const void*)&dat);
-                }
-
-                // Show the data that has arrived on this OutPort that
-                // the receiver now sees
-                if(SPARTA_EXPECT_FALSE(collector_ != nullptr)) {
-                    collector_->collectWithDuration(dat, 1);
                 }
 
                 if (SPARTA_EXPECT_FALSE(info_logger_)) {
@@ -1060,8 +1051,9 @@ namespace sparta
         //! only call setReady() once per cycle.
         Scheduler::Tick set_ready_tick_ = 0;
 
-        //! Pipeline collection.  TODO: See if this works for syncports
-        std::unique_ptr<CollectorType> collector_;
+        //! Pipeline collection
+        //! TODO cnyce
+        //! std::unique_ptr<CollectorType> collector_;
 
         /// loggers
         sparta::log::MessageSource info_logger_;

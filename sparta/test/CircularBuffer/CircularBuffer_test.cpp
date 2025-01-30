@@ -14,7 +14,6 @@
 
 TEST_INIT
 
-//#define PIPEOUT_GEN
 struct dummy_struct
 {
     uint16_t int16_field;
@@ -462,9 +461,6 @@ void testCollection()
 
     rtn.enterConfiguring();
     rtn.enterFinalized();
-
-    sparta::collection::PipelineCollector pc("testCircBuffer", 1000000,
-                                             root_clk.get(), &rtn);
 
     sched.finalize();
 
