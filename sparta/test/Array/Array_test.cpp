@@ -134,7 +134,7 @@ int main()
     root_node.enterConfiguring();
     root_node.enterFinalized();
 
-    sparta::collection::PipelineCollector pc("test_collection_", {}, 10, &root_node, nullptr);
+    sparta::collection::PipelineCollector pc("test_collection_", &root_node);
     sched.finalize();
     pc.startCollecting();
 

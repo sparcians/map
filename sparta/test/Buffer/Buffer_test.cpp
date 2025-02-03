@@ -103,7 +103,7 @@ void generalTest()
     // Get info messages from the scheduler node and send them to this file
     sparta::log::Tap t2(root_clk.get()->getScheduler(), "debug", "scheduler.log.debug");
 
-    sparta::collection::PipelineCollector pc("testBuffer", {}, 10, &rtn, nullptr);
+    sparta::collection::PipelineCollector pc("testBuffer", &rtn);
     sched.finalize();
     pc.startCollecting();
 

@@ -555,7 +555,7 @@ int main ()
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
-    sparta::collection::PipelineCollector pc("examplePipeline1", {}, 10, &rtn, nullptr);
+    sparta::collection::PipelineCollector pc("examplePipeline1", &rtn);
 
     ////////////////////////////////////////////////////////////////////////////////
     // Pipeline stage handling event precedence setup

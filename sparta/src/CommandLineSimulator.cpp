@@ -2035,9 +2035,9 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
         {
             pipeline_collection_triggerable_.reset(new PipelineTrigger(
                 sim_config_.pipeline_collection_file_prefix,
-                pipeline_enabled_node_names_,
-                std::atoi(pipeline_heartbeat_.c_str()),
                 sim->getRoot(),
+                std::atoi(pipeline_heartbeat_.c_str()),
+                pipeline_enabled_node_names_,
                 sim->findSemanticCounter(Simulation::CSEM_INSTRUCTIONS)));
         }
 
@@ -2439,3 +2439,4 @@ bool CommandLineSimulator::openALFAndFindPipelineNodes_(const std::string & alf_
 
     } // namespace app
 } // namespace sparta
+

@@ -389,7 +389,7 @@ TestSystem::TestSystem(double master_frequency_mhz, double slave_frequency_mhz)
     slave_unit->in_cmd.precedes(slave_unit->in_data);
     master_unit->in_cmd.precedes(master_unit->in_data);
 
-    pc.reset(new sparta::collection::PipelineCollector("testPipe", {}, 10, &rtn, nullptr));
+    pc.reset(new sparta::collection::PipelineCollector("testPipe", &rtn));
     sched.finalize();
 
     // Align the scheduler to the rising edge of both clocks

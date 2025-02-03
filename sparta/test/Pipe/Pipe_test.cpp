@@ -78,7 +78,7 @@ int main ()
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
-    sparta::collection::PipelineCollector pc("testPipe", {}, 10, &rtn, nullptr);
+    sparta::collection::PipelineCollector pc("testPipe", &rtn);
     sched.finalize();
 
     EXPECT_THROW(pipe2.resize(5));

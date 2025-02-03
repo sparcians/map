@@ -32,10 +32,10 @@ namespace collection
     {
     public:
         PipelineCollector(const std::string& simdb_filename,
-                          const std::set<std::string>& enabled_nodes,
-                          const size_t heartbeat,
                           sparta::RootTreeNode * rtn,
-                          const sparta::CounterBase * insts_retired_counter)
+                          const size_t heartbeat = 10,
+                          const std::set<std::string>& enabled_nodes = {},
+                          const sparta::CounterBase * insts_retired_counter = nullptr)
             : db_mgr_(simdb_filename, true)
             , filename_(simdb_filename)
             , root_(rtn)

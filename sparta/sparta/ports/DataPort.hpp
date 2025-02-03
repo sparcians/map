@@ -18,6 +18,7 @@
 #include "sparta/events/PayloadEvent.hpp"
 #include "sparta/events/Precedence.hpp"
 #include "sparta/events/Scheduleable.hpp"
+#include "sparta/collection/CollectableTreeNode.hpp"
 
 namespace sparta
 {
@@ -287,8 +288,7 @@ namespace sparta
     class DataInPort final : public InPort, public DataContainer<DataT>
     {
         // Pipeline collection type
-        // TODO cnyce
-        // typedef collection::Collectable<DataT> CollectorType;
+        typedef collection::ManualCollectable<DataT> CollectorType;
 
     public:
 
@@ -445,7 +445,7 @@ namespace sparta
          * \param node The TreeNode to add the collector
          */
         void enableCollection(TreeNode* node) override {
-            (void) node;
+            collector_ = std::make_unique<CollectorType>(node, getName() + "_collector");
         }
 
     private:
@@ -530,8 +530,7 @@ namespace sparta
         const Clock * receiver_clock_ = nullptr;
 
         //! Pipeline collection
-        //! TODO cnyce
-        //! std::unique_ptr<CollectorType> collector_;
+        std::unique_ptr<CollectorType> collector_;
 
         //! Data receiving point
         void receivePortData_(const DataT & dat)
@@ -539,6 +538,11 @@ namespace sparta
             DataContainer<DataT>::setData_(dat);
             if(SPARTA_EXPECT_TRUE(explicit_consumer_handler_)) {
                 explicit_consumer_handler_((const void*)&dat);
+            }
+            if(SPARTA_EXPECT_FALSE(collector_ != nullptr)) {
+                if(SPARTA_EXPECT_FALSE(collector_->isCollected())) {
+                    collector_->collect(dat);
+                }
             }
         }
 

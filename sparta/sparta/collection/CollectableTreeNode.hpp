@@ -18,68 +18,98 @@ public:
     }
 
     virtual void addCollectionPoint(CollectionPoints & collection_points) = 0;
+
+    bool isCollected() const { return false; }
 };
 
-template <typename CollectableT>
-class Collectable : public CollectableTreeNode
+template <typename CollectedT>
+class ManualCollectable : public CollectableTreeNode
 {
 public:
-    using value_type = typename MetaStruct::remove_any_pointer<CollectableT>::type;
-
-    Collectable(TreeNode* parent, const std::string& name, const CollectableT* collectable, const std::string& desc = "Collectable <no desc>")
+    ManualCollectable(TreeNode* parent, const std::string& name, const std::string& desc = "ManualCollectable <no desc>")
         : CollectableTreeNode(parent, name, desc)
-        , collectable_(collectable)
     {
     }
 
     void addCollectionPoint(CollectionPoints & collection_points) override
     {
-        auto is_pod = std::integral_constant<bool, MetaStruct::is_pod<value_type>::value>();
-        addCollectionPoint_(collection_points, is_pod);
+        (void)collection_points;
+    }
+
+    void collect(const CollectedT & dat)
+    {
+        (void)dat;
+    }
+
+    void collectWithDuration(const CollectedT & dat, size_t dur)
+    {
+        (void)dat;
+        (void)dur;
+    }
+
+private:
+};
+
+template <typename CollectedT>
+class DelayedCollectable : public CollectableTreeNode
+{
+public:
+    DelayedCollectable(TreeNode* parent, const std::string& name, const std::string& desc = "DelayedCollectable <no desc>")
+        : CollectableTreeNode(parent, name, desc)
+    {
+    }
+
+    void addCollectionPoint(CollectionPoints & collection_points) override
+    {
+        (void)collection_points;
+    }
+
+    void collect(const CollectedT & dat, uint64_t delay)
+    {
+        (void)dat;
+        (void)delay;
+    }
+
+    void collectWithDuration(const CollectedT & dat, uint64_t delay, size_t dur)
+    {
+        (void)dat;
+        (void)delay;
+        (void)dur;
+    }
+
+private:
+};
+
+template <typename CollectedT>
+class AutoCollectable : public CollectableTreeNode
+{
+public:
+    AutoCollectable(TreeNode* parent, const std::string& name, const CollectedT* back_ptr, const std::string& desc = "AutoCollectable <no desc>")
+        : CollectableTreeNode(parent, name, desc)
+        , back_ptr_(back_ptr)
+    {
+    }
+
+    void addCollectionPoint(CollectionPoints & collection_points) override
+    {
+        auto flag = std::integral_constant<bool, std::is_same<CollectedT, bool>::value>{};
+        addCollectionPoint_(collection_points, flag);
     }
 
 private:
     void addCollectionPoint_(CollectionPoints & collection_points, std::true_type)
     {
-        if (collectable_) {
-            collection_points.addStat(getLocation(), getClock(), collectable_);
-        }
+        using value_type = int32_t;
+        auto getter = std::function<value_type()>([this]() { return *back_ptr_ ? 1 : 0; });
+        collection_points.addStat(getLocation(), getClock(), getter);
     }
 
     void addCollectionPoint_(CollectionPoints & collection_points, std::false_type)
     {
-        sparta_assert(!collectable_);
-        //TODO cnyce collection_points.add
+        collection_points.addStat(getLocation(), getClock(), back_ptr_);
     }
 
-    const CollectableT* collectable_;
-};
-
-template <>
-class Collectable<bool> : public CollectableTreeNode
-{
-public:
-    using value_type = int32_t;
-
-    Collectable(TreeNode* parent, const std::string& name, const bool* collectable, const std::string& desc = "Collectable <no desc>")
-        : CollectableTreeNode(parent, name, desc)
-        , collectable_(collectable)
-    {
-    }
-
-    void addCollectionPoint(CollectionPoints & collection_points) override
-    {
-        std::function<value_type()> get_bool_as_int = [this]() { return getBoolAsInt_(); };
-        collection_points.addStat(getLocation(), getClock(), get_bool_as_int, simdb::Format::boolalpha);
-    }
-
-private:
-    value_type getBoolAsInt_() const
-    {
-        return *collectable_ ? 1 : 0;
-    }
-
-    const bool* collectable_;
+    const CollectedT* back_ptr_;
 };
 
 template <typename ContainerT, bool Sparse=false>
