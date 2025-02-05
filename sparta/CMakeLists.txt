@@ -151,7 +151,7 @@ if(DEFINED SPARTA_CXX_FLAGS_DEBUG AND SPARTA_CXX_FLAGS_DEBUG)
   set(CMAKE_CXX_FLAGS_DEBUG "${SPARTA_CXX_FLAGS_DEBUG}")
   message(STATUS "Using Sparta custom debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 else()
-  set(CMAKE_CXX_FLAGS_DEBUG   "-U_FORTIFY_SOURCE -O0 -g3")
+  set(CMAKE_CXX_FLAGS_DEBUG "-U_FORTIFY_SOURCE -O0 -g3")
   message(STATUS "Using Sparta default debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 endif()
 #
@@ -207,7 +207,7 @@ add_library (sparta ${SourceCppFiles})
 
 # Add local includes
 target_include_directories (sparta PUBLIC "./")
-target_include_directories (sparta PUBLIC "./simdb/include")
+target_include_directories (sparta PUBLIC "simdb/include")
 
 set (SPARTA_STATIC_LIBS ${PROJECT_BINARY_DIR}/libsparta.a)
 set (SPARTA_CMAKE_MACRO_PATH ${SPARTA_BASE}/cmake)

@@ -16,8 +16,8 @@
 #include "sparta/trigger/Triggerable.hpp"
 #include "sparta/pevents/PeventTrigger.hpp"
 #include "sparta/pevents/PeventController.hpp"
-#include "sparta/log/Tap.hpp"
 #include "sparta/collection/PipelineCollector.hpp"
+#include "sparta/log/Tap.hpp"
 
 namespace sparta {
     namespace app {

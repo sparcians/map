@@ -1083,6 +1083,7 @@ namespace sparta
         num_valid_(rval.num_valid_),
         validator_(new DataPointerValidator(*this)),
         utilization_(std::move(rval.utilization_)),
+        collector_(std::move(rval.collector_)),
         is_infinite_mode_(rval.is_infinite_mode_),
         resize_delta_(std::move(rval.resize_delta_)),
         address_map_(std::move(rval.address_map_)){
@@ -1093,6 +1094,7 @@ namespace sparta
         rval.first_position_ = nullptr;
         rval.num_valid_ = 0;
         rval.utilization_ = nullptr;
+        rval.collector_ = nullptr;
         validator_->validator_ = std::move(rval.validator_->validator_);
     }
 }

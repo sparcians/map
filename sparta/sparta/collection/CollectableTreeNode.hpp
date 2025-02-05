@@ -7,8 +7,6 @@
 namespace sparta {
 namespace collection {
 
-inline void colbydebug() {}
-
 class CollectionPoints;
 
 // Base class for all collectable classes.
@@ -57,7 +55,6 @@ public:
     void collect(const CollectedT & dat)
     {
         if (isCollected()) {
-            colbydebug();
             collector_->collect(dat);
         }
     }
@@ -65,7 +62,6 @@ public:
     void collectWithDuration(const CollectedT & dat, const Clock::Cycle dur)
     {
         if (isCollected()) {
-            colbydebug();
             const auto ticks = getClock()->getTick(dur);
             collector_->collectWithDuration(dat, ticks);
         }
@@ -108,10 +104,10 @@ public:
     void collect(const CollectedT & dat, uint64_t delay)
     {
         if (isCollected()) {
-            colbydebug();
             if (delay == 0) {
                 ManualCollectable<CollectedT>::collect(dat);
             } else {
+                sparta_assert(false);
                 ev_collect_.schedule(dat, delay);
             }
         }
@@ -120,7 +116,6 @@ public:
     void collectWithDuration(const CollectedT & dat, uint64_t delay, const Clock::Cycle dur)
     {
         if (isCollected()) {
-            colbydebug();
             if (delay == 0) {
                 ManualCollectable<CollectedT>::collectWithDuration(dat, dur);
             } else {
@@ -135,7 +130,6 @@ private:
     // duration.
     void collectWithDuration_(const DurationData & dur_dat)
     {
-        colbydebug();
         ManualCollectable<CollectedT>::collectWithDuration(dur_dat.data, dur_dat.duration);
     }
 
