@@ -130,7 +130,8 @@ namespace sparta
         SyncOutPort(TreeNode * portset, const std::string & name, const Clock * clk,
                     bool presume_zero_delay = true) :
             OutPort(portset, name, presume_zero_delay),
-            clk_(clk), info_logger_(this, "pinfo", getLocation() + "_info")
+            clk_(clk), info_logger_(this, "pinfo", getLocation() + "_info"),
+            sync_port_events_(this)
         {
             sparta_assert(name.length() != 0, "You cannot have an unnamed port.");
             sparta_assert(clk_ != 0, "Clock ptr cannot be null in port: " << name);
@@ -374,8 +375,9 @@ namespace sparta
         SyncOutPort & operator=(const SyncOutPort &) = delete;
 
         //! Enable pipeline collection
-        void enableCollection(TreeNode* node) override {
-            collector_ = std::make_unique<CollectorType>(node, getName() + "_collector");
+        void enableCollection(TreeNode* node) override
+        {
+            collector_ = std::make_unique<CollectorType>(node, Port::name_, &sync_port_events_, "Data being sent out on this SyncOutPort");
         }
 
     private:
@@ -398,6 +400,9 @@ namespace sparta
 
         //! The bound SyncIn ports
         std::vector <SyncInPort<DataT>*> bound_in_ports_;
+
+        //! Event Set for this port
+        sparta::EventSet sync_port_events_;
     };
 
 
@@ -593,7 +598,7 @@ namespace sparta
         //! Enable pipeline collection
         void enableCollection(TreeNode* node) override
         {
-            collector_ = std::make_unique<CollectorType>(node, getName() + "_collector");
+            collector_ = std::make_unique<CollectorType>(node, Port::name_, "Data being recirculated on this SyncInPort");
         }
 
         //! Set the ready state for the port before simulation begins
@@ -806,6 +811,12 @@ namespace sparta
                 // listeners.
                 if(SPARTA_EXPECT_TRUE(explicit_consumer_handler_)) {
                     explicit_consumer_handler_((const void*)&dat);
+                }
+
+                // Show the data that has arrived on this OutPort that
+                // the receiver now sees
+                if(SPARTA_EXPECT_FALSE(collector_ != nullptr)) {
+                    collector_->collectWithDuration(dat, 1);
                 }
 
                 if (SPARTA_EXPECT_FALSE(info_logger_)) {

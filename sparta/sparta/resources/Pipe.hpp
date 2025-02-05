@@ -223,6 +223,7 @@ public:
      *       finialization nor after enabling pipeline collection.
      */
     void resize(uint32_t new_size) {
+        sparta_assert(collector_ == nullptr);
         //sparta_assert(!getClock()->isFinalized());
         initPipe_(new_size);
     }
@@ -524,7 +525,7 @@ public:
      * \brief Check if pipe is collecting
      */
     bool isCollected() const {
-        return false;
+        return collector_ && collector_->isCollected();
     }
 
 private:

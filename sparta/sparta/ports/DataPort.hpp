@@ -445,7 +445,7 @@ namespace sparta
          * \param node The TreeNode to add the collector
          */
         void enableCollection(TreeNode* node) override {
-            collector_ = std::make_unique<CollectorType>(node, getName() + "_collector");
+            collector_ = std::make_unique<CollectorType>(node, Port::name_, "Data being received on this DataInPort");
         }
 
     private:

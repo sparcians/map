@@ -6,6 +6,7 @@
 #include "simdb/collection/Structs.hpp"
 #include "simdb/collection/IterableStructs.hpp"
 #include "simdb/collection/TimeseriesCollector.hpp"
+#include "simdb/collection/Any.hpp"
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/utils/MetaStructs.hpp"
 
@@ -81,17 +82,24 @@ public:
     typename std::enable_if<!MetaStruct::is_any_pointer<typename ContainerT::value_type>::value, void>::type
     addContainer(const std::string& location, const Clock* clk, const ContainerT* container, const size_t capacity)
     {
-        (void)location;
+        // TODO cnyce (only affects unit tests e.g. Array, Buffer, etc.)
+        std::cout << "Container type " << demangled_type<ContainerT>() << " is not a pointer type. Skipping collection. "
+                  << "This occurred at " << location << std::endl;
+
         (void)clk;
         (void)container;
         (void)capacity;
+    }
 
-        // TODO cnyce
-        //  1 - Array_test (Subprocess aborted)
-        //  7 - Buffer_test (Subprocess aborted)
-        // 99 - Pipe_test (Subprocess aborted)
-        //103 - Pipeline_test (Subprocess aborted)
-        //107 - Queue_test (Subprocess aborted)
+    template <typename AnyT>
+    simdb::AnyCollection<AnyT>* addManualCollectable(const std::string& location, const Clock* clk)
+    {
+        auto& instantiator = instantiators_["ManualCollectable"];
+        if (!instantiator) {
+            instantiator.reset(new ManualCollectableInstantiator());
+        }
+
+        return dynamic_cast<ManualCollectableInstantiator*>(instantiator.get())->addManualCollectable<AnyT>(location, clk);
     }
 
     void createCollections(simdb::Collections* collections)
@@ -132,6 +140,50 @@ private:
         virtual void getClockPeriods(std::unordered_map<std::string, uint32_t>& clk_periods) const = 0;
         virtual void getClockNamesByLocation(std::unordered_map<std::string, std::string>& clk_names_by_location) const = 0;
         virtual void createCollections(simdb::Collections* collections, const std::string& collection_prefix) = 0;
+    };
+
+    class ManualCollectableInstantiator : public CollectableInstantiator
+    {
+    public:
+        template <typename AnyT>
+        simdb::AnyCollection<AnyT>* addManualCollectable(const std::string& location, const Clock* clk)
+        {
+            clocks_.emplace_back(location, clk);
+
+            using CollectionT = simdb::AnyCollection<AnyT>;
+            std::unique_ptr<CollectionT> collection(new CollectionT(location));
+            auto ret = collection.get();
+            collections_.emplace_back(std::move(collection));
+            return ret;
+        }
+
+    private:
+        void getClockPeriods(std::unordered_map<std::string, uint32_t>& clk_periods) const override
+        {
+            for (const auto& tup : clocks_) {
+                const auto clk = std::get<1>(tup);
+                clk_periods[clk->getName()] = clk->getPeriod();
+            }
+        }
+
+        void getClockNamesByLocation(std::unordered_map<std::string, std::string>& clk_names_by_location) const override
+        {
+            for (const auto& tup : clocks_) {
+                const auto location = std::get<0>(tup);
+                const auto clk = std::get<1>(tup);
+                clk_names_by_location[location] = clk->getName();
+            }
+        }
+
+        void createCollections(simdb::Collections* collections, const std::string& collection_prefix) override
+        {
+            for (auto& collection : collections_) {
+                collections->addCollection(std::move(collection));
+            }
+        }
+
+        std::vector<std::pair<std::string, const Clock*>> clocks_;
+        std::vector<std::unique_ptr<simdb::CollectionBase>> collections_;
     };
 
     template <typename StatT>

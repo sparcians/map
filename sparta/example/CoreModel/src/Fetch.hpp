@@ -14,6 +14,7 @@
 #include "sparta/simulation/Unit.hpp"
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/simulation/ParameterSet.hpp"
+#include "sparta/collection/CollectableTreeNode.hpp"
 
 #include "CoreTypes.hpp"
 
@@ -100,6 +101,10 @@ namespace core_example
         // from decode.  The callback set is either to fetch random
         // instructions or a perfect IPC set
         std::unique_ptr<sparta::SingleCycleUniqueEvent<>> fetch_inst_event_;
+
+        // A pipeline collector
+        sparta::collection::AutoCollectable<uint64_t> next_pc_{
+            getContainer(), "next_pc", &vaddr_};
 
         ////////////////////////////////////////////////////////////////////////////////
         // Callbacks

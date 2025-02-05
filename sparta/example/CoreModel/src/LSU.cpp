@@ -16,10 +16,8 @@ namespace core_example
         load_store_info_allocator(50, 30),
         ldst_inst_queue_("lsu_inst_queue", p->ldst_inst_queue_size, getClock()),
         ldst_inst_queue_size_(p->ldst_inst_queue_size),
-
         tlb_always_hit_(p->tlb_always_hit),
         dl1_always_hit_(p->dl1_always_hit),
-        cache_busy_collectable_(getContainer(), "dcache_busy", &cache_busy_),
         issue_latency_(p->issue_latency),
         mmu_latency_(p->mmu_latency),
         cache_latency_(p->cache_latency),

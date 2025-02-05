@@ -212,7 +212,6 @@ inline void defineStructSchema<core_example::LoadStoreInstInfo>(StructSchema& sc
     schema.addField<core_example::LoadStoreInstInfo::IssuePriority>("rank");
     schema.addField<core_example::LoadStoreInstInfo::IssueState>("state");
     schema.setAutoColorizeColumn("DID");
-    //schema.addFlattenField<core_example::MemoryAccessInfo>("mem_access_info_ptr");
 }
 
 template <>

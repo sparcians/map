@@ -70,6 +70,10 @@ namespace collection
         }
 
         void startCollecting() {
+            for (auto c : collectables_) {
+                c->enable();
+            }
+
             // Schedule collect event in the next cycle in case
             // this is called in an unavailable phase.
             ev_collect_->schedule(sparta::Clock::Cycle(1));
@@ -113,6 +117,7 @@ namespace collection
             if (auto c = dynamic_cast<CollectableTreeNode*>(node)) {
                 if (enabled_nodes.empty() || enabled_nodes.count(c->getLocation())) {
                     c->addCollectionPoint(collectables);
+                    collectables_.push_back(c);
                 }
             }
             for (auto & child : node->getChildren()) {
@@ -180,6 +185,9 @@ namespace collection
 
         //! Fastest clock across all collectable tree nodes
         const Clock * fastest_clk_ = nullptr;
+
+        //! All collectables.
+        std::vector<CollectableTreeNode*> collectables_;
     };
 
 }// namespace collection

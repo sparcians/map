@@ -2,12 +2,16 @@
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/collection/CollectionPoints.hpp"
+#include "sparta/events/PayloadEvent.hpp"
 
 namespace sparta {
 namespace collection {
 
+inline void colbydebug() {}
+
 class CollectionPoints;
 
+// Base class for all collectable classes.
 class CollectableTreeNode : public TreeNode
 {
 public:
@@ -19,9 +23,20 @@ public:
 
     virtual void addCollectionPoint(CollectionPoints & collection_points) = 0;
 
-    bool isCollected() const { return false; }
+    bool isCollected() const { return collected_; }
+
+    void enable() { collected_ = true; }
+
+    // Note there is no way to disable collection on a per-collectable basis. You can
+    // only call PipelineCollector::stopCollecting() to stop all collection for all
+    // collectables.
+
+private:
+    bool collected_ = false;
 };
 
+// Manually-collected means that the user must explicitly call collect() or collectWithDuration()
+// and cannot give a backpointer to this class' constructor for automatic every-cycle collection.
 template <typename CollectedT>
 class ManualCollectable : public CollectableTreeNode
 {
@@ -29,57 +44,114 @@ public:
     ManualCollectable(TreeNode* parent, const std::string& name, const std::string& desc = "ManualCollectable <no desc>")
         : CollectableTreeNode(parent, name, desc)
     {
+        sparta_assert(getClock());
     }
 
     void addCollectionPoint(CollectionPoints & collection_points) override
     {
-        (void)collection_points;
+        collector_ = collection_points.addManualCollectable<CollectedT>(getLocation(), getClock());
     }
+
+    using CollectableTreeNode::isCollected;
 
     void collect(const CollectedT & dat)
     {
-        (void)dat;
+        if (isCollected()) {
+            colbydebug();
+            collector_->collect(dat);
+        }
     }
 
-    void collectWithDuration(const CollectedT & dat, size_t dur)
+    void collectWithDuration(const CollectedT & dat, const Clock::Cycle dur)
     {
-        (void)dat;
-        (void)dur;
+        if (isCollected()) {
+            colbydebug();
+            const auto ticks = getClock()->getTick(dur);
+            collector_->collectWithDuration(dat, ticks);
+        }
     }
 
 private:
+    simdb::AnyCollection<CollectedT>* collector_ = nullptr;
 };
 
+// Similar to the ManualCollectable class, you cannot use a DelayedCollectable
+// for any kind of automatic collection. You must explicitly call collect() or
+// collectWithDuration() to collect data.
 template <typename CollectedT>
-class DelayedCollectable : public CollectableTreeNode
+class DelayedCollectable : public ManualCollectable<CollectedT>
 {
+    struct DurationData
+    {
+        DurationData() = default;
+
+        DurationData(const CollectedT & dat,
+                     sparta::Clock::Cycle duration)
+            : data(dat)
+            , duration(duration)
+        {}
+
+        CollectedT data;
+        sparta::Clock::Cycle duration;
+    };
+
 public:
-    DelayedCollectable(TreeNode* parent, const std::string& name, const std::string& desc = "DelayedCollectable <no desc>")
-        : CollectableTreeNode(parent, name, desc)
+    DelayedCollectable(TreeNode* parent, const std::string& name, sparta::EventSet* ev_set, const std::string& desc = "DelayedCollectable <no desc>")
+        : ManualCollectable<CollectedT>(parent, name, desc)
+        , ev_collect_(ev_set, name + "_event", CREATE_SPARTA_HANDLER_WITH_DATA(ManualCollectable<CollectedT>, collect, CollectedT))
+        , ev_collect_duration_(ev_set, name + "_duration_event", CREATE_SPARTA_HANDLER_WITH_DATA(DelayedCollectable<CollectedT>, collectWithDuration_, DurationData))
     {
     }
 
-    void addCollectionPoint(CollectionPoints & collection_points) override
-    {
-        (void)collection_points;
-    }
+    using ManualCollectable<CollectedT>::isCollected;
 
     void collect(const CollectedT & dat, uint64_t delay)
     {
-        (void)dat;
-        (void)delay;
+        if (isCollected()) {
+            colbydebug();
+            if (delay == 0) {
+                ManualCollectable<CollectedT>::collect(dat);
+            } else {
+                ev_collect_.schedule(dat, delay);
+            }
+        }
     }
 
-    void collectWithDuration(const CollectedT & dat, uint64_t delay, size_t dur)
+    void collectWithDuration(const CollectedT & dat, uint64_t delay, const Clock::Cycle dur)
     {
-        (void)dat;
-        (void)delay;
-        (void)dur;
+        if (isCollected()) {
+            colbydebug();
+            if (delay == 0) {
+                ManualCollectable<CollectedT>::collectWithDuration(dat, dur);
+            } else {
+                ev_collect_duration_.preparePayload({dat, dur})->schedule(delay);
+            }
+        }
     }
 
 private:
+    // Called from collectWithDuration where the data needs to be
+    // delivered at a given delayed time, but only for a short
+    // duration.
+    void collectWithDuration_(const DurationData & dur_dat)
+    {
+        colbydebug();
+        ManualCollectable<CollectedT>::collectWithDuration(dur_dat.data, dur_dat.duration);
+    }
+
+    // For those folks that want collection to appear in the future
+    sparta::PayloadEvent<CollectedT, SchedulingPhase::Collection> ev_collect_;
+
+    // For those folks that want collection to appear in the future with a duration
+    sparta::PayloadEvent<DurationData, SchedulingPhase::Collection> ev_collect_duration_;
 };
 
+// Auto-collectable means that the user can give a backpointer to this class' constructor
+// and we will collect your data every cycle automatically. There is no way to automatically
+// collect at any other time than "every cycle".
+//
+// This class is to be used for non-iterable types like uint64_t, struct, bool, etc.
+// You should use the IterableCollector class for iterable types like std::vector, sparta::Array, etc.
 template <typename CollectedT>
 class AutoCollectable : public CollectableTreeNode
 {
@@ -88,27 +160,22 @@ public:
         : CollectableTreeNode(parent, name, desc)
         , back_ptr_(back_ptr)
     {
+        static_assert(std::is_integral<CollectedT>::value || std::is_floating_point<CollectedT>::value,
+                      "AutoCollectable only supports integral and floating-point types!");
     }
 
     void addCollectionPoint(CollectionPoints & collection_points) override
     {
-        auto flag = std::integral_constant<bool, std::is_same<CollectedT, bool>::value>{};
-        addCollectionPoint_(collection_points, flag);
+        if constexpr (std::is_same<CollectedT, bool>::value) {
+            using value_type = int32_t;
+            auto getter = std::function<value_type()>([this]() { return *back_ptr_ ? 1 : 0; });
+            collection_points.addStat(getLocation(), getClock(), getter);
+        } else {
+            collection_points.addStat(getLocation(), getClock(), back_ptr_);
+        }
     }
 
 private:
-    void addCollectionPoint_(CollectionPoints & collection_points, std::true_type)
-    {
-        using value_type = int32_t;
-        auto getter = std::function<value_type()>([this]() { return *back_ptr_ ? 1 : 0; });
-        collection_points.addStat(getLocation(), getClock(), getter);
-    }
-
-    void addCollectionPoint_(CollectionPoints & collection_points, std::false_type)
-    {
-        collection_points.addStat(getLocation(), getClock(), back_ptr_);
-    }
-
     const CollectedT* back_ptr_;
 };
 
