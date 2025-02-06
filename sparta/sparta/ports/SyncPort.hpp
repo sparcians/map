@@ -598,7 +598,7 @@ namespace sparta
         //! Enable pipeline collection
         void enableCollection(TreeNode* node) override
         {
-            collector_ = std::make_unique<CollectorType>(node, Port::name_, "Data being recirculated on this SyncInPort");
+            collector_ = std::make_unique<CollectorType>(node, Port::name_, &sync_port_events_, "Data being recirculated on this SyncInPort");
         }
 
         //! Set the ready state for the port before simulation begins

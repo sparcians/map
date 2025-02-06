@@ -3,6 +3,8 @@
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/collection/CollectionPoints.hpp"
 #include "sparta/events/PayloadEvent.hpp"
+#include "sparta/events/PhasedUniqueEvent.hpp"
+#include "sparta/events/EventSet.hpp"
 
 namespace sparta {
 namespace collection {
@@ -39,8 +41,9 @@ template <typename CollectedT>
 class ManualCollectable : public CollectableTreeNode
 {
 public:
-    ManualCollectable(TreeNode* parent, const std::string& name, const std::string& desc = "ManualCollectable <no desc>")
+    ManualCollectable(TreeNode* parent, const std::string& name, sparta::EventSet* ev_set, const std::string& desc = "ManualCollectable <no desc>")
         : CollectableTreeNode(parent, name, desc)
+        , ev_end_duration_(getEventSet_(parent, ev_set), name + "_end_duration_event", SchedulingPhase::Collection, CREATE_SPARTA_HANDLER(ManualCollectable, endDuration_))
     {
         sparta_assert(getClock());
     }
@@ -55,20 +58,39 @@ public:
     void collect(const CollectedT & dat)
     {
         if (isCollected()) {
-            collector_->collect(dat);
+            collector_->collectOnce(dat);
         }
     }
 
     void collectWithDuration(const CollectedT & dat, const Clock::Cycle dur)
     {
         if (isCollected()) {
-            const auto ticks = getClock()->getTick(dur);
-            collector_->collectWithDuration(dat, ticks);
+            collector_->beginZOH(dat);
+            ev_end_duration_.schedule(getClock()->getTick(dur));
         }
     }
 
 private:
+    EventSet* getEventSet_(TreeNode* parent, EventSet* ev_set)
+    {
+        if (ev_set) {
+            return ev_set;
+        } else {
+            ev_set_.reset(new EventSet(parent));
+            return ev_set_.get();
+        }
+    }
+
+    void endDuration_()
+    {
+        if (isCollected()) {
+            collector_->endZOH();
+        }
+    }
+
     simdb::AnyCollection<CollectedT>* collector_ = nullptr;
+    sparta::PhasedUniqueEvent ev_end_duration_;
+    std::unique_ptr<EventSet> ev_set_;
 };
 
 // Similar to the ManualCollectable class, you cannot use a DelayedCollectable
@@ -93,7 +115,7 @@ class DelayedCollectable : public ManualCollectable<CollectedT>
 
 public:
     DelayedCollectable(TreeNode* parent, const std::string& name, sparta::EventSet* ev_set, const std::string& desc = "DelayedCollectable <no desc>")
-        : ManualCollectable<CollectedT>(parent, name, desc)
+        : ManualCollectable<CollectedT>(parent, name, ev_set, desc)
         , ev_collect_(ev_set, name + "_event", CREATE_SPARTA_HANDLER_WITH_DATA(ManualCollectable<CollectedT>, collect, CollectedT))
         , ev_collect_duration_(ev_set, name + "_duration_event", CREATE_SPARTA_HANDLER_WITH_DATA(DelayedCollectable<CollectedT>, collectWithDuration_, DurationData))
     {
@@ -107,7 +129,6 @@ public:
             if (delay == 0) {
                 ManualCollectable<CollectedT>::collect(dat);
             } else {
-                sparta_assert(false);
                 ev_collect_.schedule(dat, delay);
             }
         }
