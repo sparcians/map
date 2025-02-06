@@ -66,8 +66,7 @@ public:
     }
 
     template <typename ContainerT, bool Sparse>
-    typename std::enable_if<MetaStruct::is_any_pointer<typename ContainerT::value_type>::value, void>::type
-    addContainer(const std::string& location, const Clock* clk, const ContainerT* container, const size_t capacity)
+    void addContainer(const std::string& location, const Clock* clk, const ContainerT* container, const size_t capacity)
     {
         auto demangled = demangled_type<ContainerT>() + (Sparse ? "Sparse" : "Contig");
         auto& instantiator = instantiators_[demangled];
@@ -76,19 +75,6 @@ public:
         }
 
         dynamic_cast<IterStructInstantiator<ContainerT, Sparse>*>(instantiator.get())->addContainer(location, clk, container, capacity);
-    }
-
-    template <typename ContainerT, bool Sparse>
-    typename std::enable_if<!MetaStruct::is_any_pointer<typename ContainerT::value_type>::value, void>::type
-    addContainer(const std::string& location, const Clock* clk, const ContainerT* container, const size_t capacity)
-    {
-        // TODO cnyce (only affects unit tests e.g. Array, Buffer, etc.)
-        std::cout << "Container type " << demangled_type<ContainerT>() << " is not a pointer type. Skipping collection. "
-                  << "This occurred at " << location << std::endl;
-
-        (void)clk;
-        (void)container;
-        (void)capacity;
     }
 
     template <typename AnyT>

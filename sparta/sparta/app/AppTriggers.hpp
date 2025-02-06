@@ -32,16 +32,19 @@ public:
     PipelineTrigger(const std::string& simdb_filename,
                     sparta::RootTreeNode * rtn,
                     const size_t heartbeat = 10,
-                    const std::set<std::string>& enabled_nodes = {},
-                    const sparta::CounterBase * insts_retired_counter = nullptr)
+                    const std::set<std::string>& enabled_nodes = {})
     {
-        pipeline_collector_.reset(new sparta::collection::PipelineCollector(simdb_filename, rtn, heartbeat, enabled_nodes, insts_retired_counter));
+        pipeline_collector_.reset(new sparta::collection::PipelineCollector(simdb_filename, rtn, heartbeat, enabled_nodes));
     }
 
     void go() override
     {
         sparta_assert(!triggered_, "Why has pipeline trigger been triggered?");
         triggered_ = true;
+
+        std::cout << "Pipeline collection started, output to database file '"
+                  << pipeline_collector_->getFilePath() << "'" << std::endl;
+
         pipeline_collector_->startCollecting();
     }
 

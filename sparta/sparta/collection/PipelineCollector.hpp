@@ -34,13 +34,11 @@ namespace collection
         PipelineCollector(const std::string& simdb_filename,
                           sparta::RootTreeNode * rtn,
                           const size_t heartbeat = 10,
-                          const std::set<std::string>& enabled_nodes = {},
-                          const sparta::CounterBase * insts_retired_counter = nullptr)
+                          const std::set<std::string>& enabled_nodes = {})
             : db_mgr_(simdb_filename, true)
             , filename_(simdb_filename)
             , root_(rtn)
             , ev_set_(nullptr)
-            , insts_retired_counter_(insts_retired_counter)
         {
             // Note that we only care about the collection data and have
             // no need for any other tables, aside from the tables that the
@@ -50,12 +48,6 @@ namespace collection
 
             std::function<uint64_t()> func_ptr = std::bind(&PipelineCollector::getCollectionTick_, this);
             db_mgr_.getCollectionMgr()->useTimestampsFrom(func_ptr);
-
-            if (insts_retired_counter_) {
-                std::function<double()> ipc_func = std::bind(&PipelineCollector::getIPC_, this);
-                db_mgr_.getCollectionMgr()->enableArgosIPC(ipc_func);
-            }
-
             db_mgr_.getCollectionMgr()->setHeartbeat(heartbeat);
             createCollections_(enabled_nodes);
         }
@@ -154,14 +146,6 @@ namespace collection
             ev_collect_->schedule();
         }
 
-        double getIPC_() const
-        {
-            auto tick = scheduler_->getCurrentTick();
-            auto cycle = fastest_clk_->getCycle(tick);
-            auto num_retired = insts_retired_counter_->get();
-            return static_cast<double>(num_retired) / static_cast<double>(cycle);
-        }
-
         //! The SimDB database
         simdb::DatabaseManager db_mgr_;
 
@@ -179,9 +163,6 @@ namespace collection
 
         //! The simulation scheduler
         const sparta::Scheduler * scheduler_;
-
-        //! The "total instruction retired" counter
-        const sparta::CounterBase * insts_retired_counter_;
 
         //! Fastest clock across all collectable tree nodes
         const Clock * fastest_clk_ = nullptr;

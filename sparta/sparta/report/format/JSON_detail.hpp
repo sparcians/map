@@ -211,8 +211,6 @@ protected:
             local_name = p_name + "." + flattenReportName(r->getName());
         }
 
-        // TODO cnyce
-
         // Go through all subreports
         for (const Report& sr : r->getSubreports()) {
             collectDictContents_(&sr, idx+1, local_name);

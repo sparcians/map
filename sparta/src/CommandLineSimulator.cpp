@@ -2037,8 +2037,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                 sim_config_.pipeline_collection_file_prefix,
                 sim->getRoot(),
                 std::atoi(pipeline_heartbeat_.c_str()),
-                pipeline_enabled_node_names_,
-                sim->findSemanticCounter(Simulation::CSEM_INSTRUCTIONS)));
+                pipeline_enabled_node_names_));
         }
 
         // Finalize the pevent controller now that the tree is built.
