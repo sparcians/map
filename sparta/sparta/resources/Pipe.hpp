@@ -515,10 +515,12 @@ public:
      */
     template<sparta::SchedulingPhase phase = SchedulingPhase::Collection>
     void enableCollection(TreeNode * parent) {
-        static_assert(phase == SchedulingPhase::Collection,
-                      "TODO cnyce: Only Collection phase is supported for Pipe");
-
-        collector_ = std::make_unique<CollectorType>(parent, name_, this, capacity());
+        if constexpr (phase == SchedulingPhase::Collection) {
+            collector_ = std::make_unique<CollectorType>(parent, name_, this, capacity());
+        } else {
+            std::cout << "ERROR: sparta::Pipe '" << (parent->getLocation() + "." + name_ + "' ")
+                      << "only supports collection in SchedulingPhase::Collection" << std::endl;
+        }
     }
 
     /**

@@ -311,7 +311,6 @@ int main ()
     sparta::PayloadEvent<uint32_t, sparta::SchedulingPhase::Flush> ev_flush_one
         (&es, "ev_flush_one", CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(DummyClass2<uint64_t>, &dummyObj2, flushOne, uint32_t));
 
-#if 0 // TODO cnyce
     EXPECT_FALSE(examplePipeline1.isCollected());
     examplePipeline1.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
     EXPECT_FALSE(examplePipeline1.isCollected());
@@ -324,20 +323,6 @@ int main ()
     examplePipeline8.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
     examplePipeline9.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
     stwr_pipe.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
-#else
-    EXPECT_FALSE(examplePipeline1.isCollected());
-    examplePipeline1.enableCollection(&rtn);
-    EXPECT_FALSE(examplePipeline1.isCollected());
-    examplePipeline2.enableCollection(&rtn);
-    examplePipeline3.enableCollection(&rtn);
-    examplePipeline4.enableCollection(&rtn);
-    examplePipeline5.enableCollection(&rtn);
-    examplePipeline6.enableCollection(&rtn);
-    examplePipeline7.enableCollection(&rtn);
-    examplePipeline8.enableCollection(&rtn);
-    examplePipeline9.enableCollection(&rtn);
-    stwr_pipe.enableCollection(&rtn);
-#endif
 
     ////////////////////////////////////////////////////////////////////////////////
     // Pipeline stage handler registration

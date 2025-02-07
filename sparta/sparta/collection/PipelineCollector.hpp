@@ -32,13 +32,9 @@ namespace collection
     {
     public:
         PipelineCollector(const std::string& simdb_filename,
-                          sparta::RootTreeNode * rtn,
-                          const size_t heartbeat = 10,
-                          const std::set<std::string>& enabled_nodes = {})
+                          const size_t heartbeat = 10)
             : db_mgr_(simdb_filename, true)
             , filename_(simdb_filename)
-            , root_(rtn)
-            , ev_set_(nullptr)
         {
             // Note that we only care about the collection data and have
             // no need for any other tables, aside from the tables that the
@@ -49,7 +45,6 @@ namespace collection
             std::function<uint64_t()> func_ptr = std::bind(&PipelineCollector::getCollectionTick_, this);
             db_mgr_.getCollectionMgr()->useTimestampsFrom(func_ptr);
             db_mgr_.getCollectionMgr()->setHeartbeat(heartbeat);
-            createCollections_(enabled_nodes);
         }
 
         ~PipelineCollector() {
@@ -61,90 +56,106 @@ namespace collection
             return filename_;
         }
 
-        void startCollecting() {
-            for (auto c : collectables_) {
-                c->enable();
+        void enableCollection(TreeNode* starting_node) {
+            for (auto c : getCollectablesFrom_(starting_node)) {
+                if (!scheduler_) {
+                    scheduler_ = c->getScheduler();
+                }
+                auto &collectables = collectables_by_clk_[c->getClock()];
+                if (!collectables) {
+                    collectables.reset(new CollectablesByClock(c->getClock(), db_mgr_));
+                }
+                collectables->addToAutoCollection(c);
             }
-
-            // Schedule collect event in the next cycle in case
-            // this is called in an unavailable phase.
-            ev_collect_->schedule(sparta::Clock::Cycle(1));
         }
 
-        void stopCollecting() {
+        void finalizeCollector(RootTreeNode* rtn) {
+            createCollections_(rtn);
+        }
+
+        void disableCollection() {
             db_mgr_.onPipelineCollectorClosing();
             db_mgr_.getConnection()->getTaskQueue()->stopThread();
             db_mgr_.closeDatabase();
         }
 
     private:
+        std::vector<CollectableTreeNode*> getCollectablesFrom_(TreeNode* starting_node) const
+        {
+            std::vector<CollectableTreeNode*> collectables;
+            std::function<void(TreeNode*)> recursiveFindCollectables;
+            recursiveFindCollectables = [&recursiveFindCollectables, &collectables](TreeNode* node) {
+                if (auto c = dynamic_cast<CollectableTreeNode*>(node)) {
+                    collectables.push_back(c);
+                }
+                for (auto & child : node->getChildren()) {
+                    recursiveFindCollectables(child);
+                }
+            };
+            recursiveFindCollectables(starting_node);
+            return collectables;
+        }
+
         uint64_t getCollectionTick_() const {
             return scheduler_->getCurrentTick() - 1;
         }
 
-        void createCollections_(const std::set<std::string>& enabled_nodes) {
+        void createCollections_(RootTreeNode* root) {
             CollectionPoints collectables;
-            recurseAddCollectables_(root_, collectables, enabled_nodes);
+            recurseAddCollectables_(root, collectables);
             collectables.createCollections(db_mgr_.getCollectionMgr());
             db_mgr_.finalizeCollections();
-
-            recurseFindFastestCollectableClock_(root_, fastest_clk_, enabled_nodes);
-            sparta_assert(fastest_clk_, "No clock found! Are there any collectables?");
-
-            ev_collect_.reset(new sparta::UniqueEvent<SchedulingPhase::Collection>
-                (&ev_set_, sparta::notNull(fastest_clk_)->getName() + "_auto_collection_event_collection",
-                CREATE_SPARTA_HANDLER(PipelineCollector, performCollection_), 1));
-
-            ev_collect_->setScheduleableClock(fastest_clk_);
-            ev_collect_->setScheduler(fastest_clk_->getScheduler());
-            ev_collect_->setContinuing(false);
-            scheduler_ = fastest_clk_->getScheduler();
-            sparta_assert(scheduler_, "Cannot run pipeline collection without a scheduler");
         }
 
         void recurseAddCollectables_(sparta::TreeNode * node,
-                                     CollectionPoints & collectables,
-                                     const std::set<std::string>& enabled_nodes)
+                                     CollectionPoints & collectables)
         {
             if (auto c = dynamic_cast<CollectableTreeNode*>(node)) {
-                if (enabled_nodes.empty() || enabled_nodes.count(c->getLocation())) {
+                if (c->isCollected()) {
                     c->addCollectionPoint(collectables);
-                    collectables_.push_back(c);
                 }
             }
             for (auto & child : node->getChildren()) {
-                recurseAddCollectables_(child, collectables, enabled_nodes);
+                recurseAddCollectables_(child, collectables);
             }
         }
 
-        void recurseFindFastestCollectableClock_(const sparta::TreeNode * node,
-                                                 const Clock *& fastest_clk,
-                                                 const std::set<std::string>& enabled_nodes)
+        class CollectablesByClock
         {
-            if (auto c = dynamic_cast<const CollectableTreeNode*>(node)) {
-                if (!enabled_nodes.empty() && !enabled_nodes.count(c->getLocation())) {
-                    return;
-                }
-                if (c->getClock() != nullptr) {
-                    if (fastest_clk == nullptr) {
-                        fastest_clk = c->getClock();
-                    } else {
-                        if (c->getClock()->getPeriod() < fastest_clk->getPeriod()) {
-                            fastest_clk = c->getClock();
-                        }
-                    }
-                }
+        public:
+            CollectablesByClock(const Clock* clk, simdb::DatabaseManager &db_mgr)
+                : db_mgr_(db_mgr)
+                , ev_set_(nullptr)
+            {
+                ev_collect_.reset(new sparta::UniqueEvent<SchedulingPhase::Collection>
+                                  (&ev_set_, sparta::notNull(clk)->getName() + "_auto_collection_event_collection",
+                                   CREATE_SPARTA_HANDLER(CollectablesByClock, performCollection_), 1));
+                ev_collect_->setScheduleableClock(clk);
+                ev_collect_->setScheduler(clk->getScheduler());
+                ev_collect_->setContinuing(false);
             }
 
-            for (auto & child : node->getChildren()) {
-                recurseFindFastestCollectableClock_(child, fastest_clk, enabled_nodes);
-            }
-        }
+            void addToAutoCollection(CollectableTreeNode* ctn) {
+                ctn->enable();
+                sparta_assert(clk_domain_ == ctn->getClock()->getName() || clk_domain_.empty());
+                clk_domain_ = ctn->getClock()->getName();
 
-        void performCollection_() {
-            db_mgr_.getCollectionMgr()->collectAll();
-            ev_collect_->schedule();
-        }
+                // Schedule collect event in the next cycle in case
+                // this is called in an unavailable phase.
+                ev_collect_->schedule(sparta::Clock::Cycle(1));
+            }
+
+        private:
+            void performCollection_() {
+                db_mgr_.getCollectionMgr()->collectDomain(clk_domain_);
+                ev_collect_->schedule();
+            }
+
+            simdb::DatabaseManager &db_mgr_;
+            sparta::EventSet ev_set_;
+            std::unique_ptr<sparta::UniqueEvent<SchedulingPhase::Collection>> ev_collect_;
+            std::string clk_domain_;
+        };
 
         //! The SimDB database
         simdb::DatabaseManager db_mgr_;
@@ -152,23 +163,11 @@ namespace collection
         //! The SimDB filename e.g. "pipeline.db"
         std::string filename_;
 
-        //! The root tree node
-        sparta::RootTreeNode * root_ = nullptr;
+        //! Scheduler
+        sparta::Scheduler * scheduler_ = nullptr;
 
-        //! The event set for the performCollection_() callback event 
-        EventSet ev_set_;
-
-        //! The unique event for the performCollection_() callback
-        std::unique_ptr<sparta::Scheduleable> ev_collect_;
-
-        //! The simulation scheduler
-        const sparta::Scheduler * scheduler_;
-
-        //! Fastest clock across all collectable tree nodes
-        const Clock * fastest_clk_ = nullptr;
-
-        //! All collectables.
-        std::vector<CollectableTreeNode*> collectables_;
+        //! Collectables by clock
+        std::unordered_map<const Clock*, std::unique_ptr<CollectablesByClock>> collectables_by_clk_;
     };
 
 }// namespace collection

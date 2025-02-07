@@ -69,7 +69,7 @@ int main ()
      //                                sparta::log::categories::DEBUG, std::cout);
 
     pipe1.enableCollection(&rtn);
-    // TODO cnyce: pipe2.enableCollection<sparta::SchedulingPhase::PostTick>(&rtn);
+    pipe2.enableCollection<sparta::SchedulingPhase::PostTick>(&rtn);
 
     sparta::PayloadEvent<uint32_t>
         ev(&es, "dummy_ev",

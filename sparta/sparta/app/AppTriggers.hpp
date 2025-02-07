@@ -33,8 +33,10 @@ public:
                     sparta::RootTreeNode * rtn,
                     const size_t heartbeat = 10,
                     const std::set<std::string>& enabled_nodes = {})
+        : rtn_(rtn)
+        , enabled_nodes_(enabled_nodes)
     {
-        pipeline_collector_.reset(new sparta::collection::PipelineCollector(simdb_filename, rtn, heartbeat, enabled_nodes));
+        pipeline_collector_.reset(new sparta::collection::PipelineCollector(simdb_filename, heartbeat));
     }
 
     void go() override
@@ -45,18 +47,51 @@ public:
         std::cout << "Pipeline collection started, output to database file '"
                   << pipeline_collector_->getFilePath() << "'" << std::endl;
 
-        pipeline_collector_->startCollecting();
+        startCollection_();
     }
 
     void stop() override
     {
         sparta_assert(triggered_, "Why stop an inactivated trigger?");
         triggered_ = false;
-        pipeline_collector_->stopCollecting();
+        stopCollection_();
     }
 
 private:
+    void startCollection_()
+    {
+        if (enabled_nodes_.empty()) {
+            pipeline_collector_->enableCollection(rtn_);
+        } else {
+            for (const auto & node_name : enabled_nodes_) {
+                std::vector<TreeNode*> results;
+                rtn_->getSearchScope()->findChildren(node_name, results);
+                if (results.empty()) {
+                    std::cerr << SPARTA_CURRENT_COLOR_RED
+                              << "WARNING (Pipeline collection): Could not find node named: '"
+                              << node_name
+                              <<"' Collection will not occur on that node!"
+                              << SPARTA_CURRENT_COLOR_NORMAL
+                              << std::endl;
+                }
+                for (auto & tn : results) {
+                    std::cout << "Collection enabled on node: '" << tn->getLocation() << "'" << std::endl;
+                    pipeline_collector_->enableCollection(tn);
+                }
+            }
+        }
+
+        pipeline_collector_->finalizeCollector(rtn_);
+    }
+
+    void stopCollection_()
+    {
+        pipeline_collector_->disableCollection();
+    }
+
     std::unique_ptr<collection::PipelineCollector> pipeline_collector_;
+    sparta::RootTreeNode * rtn_;
+    std::set<std::string> enabled_nodes_;
 };
 
 /*!
