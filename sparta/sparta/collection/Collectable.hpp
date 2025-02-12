@@ -240,16 +240,23 @@ namespace sparta{
 
             //! \brief Get a reference to the internal event set
             //! \return Reference to event set -- used by DelayedCollectable
-            EventSet & getEventSet_() {
+            inline EventSet & getEventSet_() {
                 return event_set_;
             }
 
         private:
+            //! Return true if the record was written; false otherwise
             bool writeRecord_(bool simulation_ending = false)
             {
                 //TODO cnyce
                 (void)simulation_ending;
                 return true;
+            }
+
+            //! Start a new record
+            void startNewRecord_()
+            {
+                //TODO cnyce
             }
 
             void setCollecting_(bool collect, PipelineCollector * collector, simdb::DatabaseManager*) override final

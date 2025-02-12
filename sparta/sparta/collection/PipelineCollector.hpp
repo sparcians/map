@@ -15,7 +15,6 @@
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/collection/CollectableTreeNode.hpp"
-#include "sparta/collection/CollectionPoints.hpp"
 #include "sparta/events/EventSet.hpp"
 #include "sparta/events/UniqueEvent.hpp"
 #include "sparta/events/GlobalOrderingPoint.hpp"

@@ -109,7 +109,6 @@ private:
                 std::vector<TreeNode*> results;
                 root_->getSearchScope()->findChildren(node_name, results);
                 for(auto & tn : results) {
-                    (void)tn;
                     pipeline_collector_->stopCollection(tn);
                 }
             }
