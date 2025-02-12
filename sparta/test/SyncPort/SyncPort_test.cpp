@@ -13,13 +13,15 @@
 #include "sparta/simulation/ParameterSet.hpp"
 #include "sparta/events/Event.hpp"
 #include "sparta/log/Tap.hpp"
-#include "sparta/collection/PipelineCollector.hpp"
 
 #include <memory>
 #include <cinttypes>
 #include <iostream>
 
 TEST_INIT
+
+// Pipeout generation does not work with this test
+#define PIPEOUT_GEN
 
 // Be verbose -- very verbose
 // #define MAKE_NOISE
@@ -162,6 +164,7 @@ private:
     std::unique_ptr<sparta::ResourceTreeNode> master_tn;
     std::unique_ptr<sparta::ResourceTreeNode> slave_tn;
     std::unique_ptr<sparta::collection::PipelineCollector> pc;
+
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -176,8 +179,10 @@ Unit::Unit(sparta::TreeNode* node, const Unit::ParameterSet*) :
     ev_set(node),
     ev_do_work(&ev_set, "unit_do_work_event", CREATE_SPARTA_HANDLER(Unit, doWork))
 {
+#ifdef PIPEOUT_GEN
     out_cmd.enableCollection(node);
     in_cmd.enableCollection(node);
+#endif
 
     in_cmd.registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Unit, cmd_callback, DataType));
     in_data.registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Unit, data_callback, char));
@@ -350,6 +355,8 @@ TestSystem::TestSystem(double master_frequency_mhz, double slave_frequency_mhz)
     master_clk = cm.makeClock("master_clk", root_clk, master_frequency_mhz);
     slave_clk  = cm.makeClock("slave_clk", root_clk, slave_frequency_mhz);
 
+    rtn.setClock(root_clk.get());
+
     master_tn.reset(new sparta::ResourceTreeNode(&rtn, "master", "master", &rfact));
     master_tn->setClock(master_clk.get());
 
@@ -389,14 +396,19 @@ TestSystem::TestSystem(double master_frequency_mhz, double slave_frequency_mhz)
     slave_unit->in_cmd.precedes(slave_unit->in_data);
     master_unit->in_cmd.precedes(master_unit->in_data);
 
-    pc.reset(new sparta::collection::PipelineCollector("testPipe", &rtn));
+#ifdef PIPEOUT_GEN
+    pc.reset(new sparta::collection::PipelineCollector("testPipe", 1000000, &rtn));
+#endif
+
     sched.finalize();
 
     // Align the scheduler to the rising edge of both clocks
     while(!(master_clk->isPosedge() && slave_clk->isPosedge())) {
         sched.run(1, true, false); // exacting_run = true, measure time = false
     }
-    pc->startCollecting();
+#ifdef PIPEOUT_GEN
+    pc->startCollection(&rtn);
+#endif
     //sparta::log::Tap scheduler_tap(sparta::Scheduler::getScheduler(), "debug", "sched_cmds.out");
 
     master_unit->schedule_commands(slave_frequency_mhz);
@@ -408,7 +420,9 @@ TestSystem::TestSystem(double master_frequency_mhz, double slave_frequency_mhz)
 
 TestSystem::~TestSystem()
 {
-    pc->stopCollecting();
+#ifdef PIPEOUT_GEN
+    pc->destroy();
+#endif
     rtn.enterTeardown();
     sched.restartAt(0);
 }

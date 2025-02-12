@@ -148,13 +148,13 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
 {
     static std::stringstream heartbeat_doc;
     heartbeat_doc << \
-        "The interval in ticks at which index pointers will be written to file during pipeline "
-        "collection. The heartbeat also represents the longest life duration of lingering "
-        "transactions. Transactions with a life span longer than the heartbeat will be finalized "
-        "and then restarted with a new start time. Must be a multiple of 100 for efficient reading "
-        "by pipeViewer. Large values will reduce responsiveness of pipeViewer when jumping to different "
-        "areas of the file and loading.\nDefault = "
-        << DefaultHeartbeat << " ticks.\n";
+        "The maximum number of 'carry-overs' allowed during SimDB collection when encountering "
+        "unchanged collectable values. For example, if a collectable has the same value 5 for "
+        "100 cycles in a row, how often should we force a write to the database? This value is "
+        "used to determine how 'wide' of a SQLite query we have to cast to ensure we know the actual "
+        "collectable value. Lower values result in a larger database but with a more responsive UI. "
+        "Higher values gives higher compression, but some UI operations might take extra time. "
+        "The heartbeat value must be between 1 and 25, and defaults to 10.";
 
     sparta_opts_.add_options()
         ("help,h",
@@ -375,7 +375,7 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "Example: \"--pipeViewer-collection-at layouts/exe40.alf\" "
          "This option can be specified none or many times.") // Brief
         ("heartbeat",
-         named_value<std::string>("HEARTBEAT", &pipeline_heartbeat_)->default_value(pipeline_heartbeat_),
+         named_value<uint64_t>("HEARTBEAT", &pipeline_heartbeat_)->default_value(pipeline_heartbeat_),
          heartbeat_doc.str().c_str())
         ;
 
@@ -1773,10 +1773,6 @@ bool CommandLineSimulator::parse(int argc,
         if (!fs_path.has_extension() || fs_path.extension() != ".db") {
             simdb_filename += ".db";
         }
-
-        if (pipeline_heartbeat_ == DefaultHeartbeat) {
-            pipeline_heartbeat_ = "10";
-        }
     }
 
     //pevents
@@ -1879,13 +1875,11 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
         throw SpartaException("Cannot setup the simulation more than once");
     }
 
-    // Convert heartbeat command line string to int
-    try{
-        size_t end_pos;
-        utils::smartLexicalCast<uint32_t>(pipeline_heartbeat_, end_pos);
-    }catch (SpartaException const&){
-        throw SpartaException("HEARTBEAT for pipeline collection must be an integer value > 0, not \"")
-            << pipeline_heartbeat_ << "\"";
+    if(pipeline_heartbeat_ == 0) {
+        throw SpartaException("HEARTBEAT for pipeline collection must be an integer value > 0");
+    }
+    if(pipeline_heartbeat_ > 25) {
+        throw SpartaException("HEARTBEAT for pipeline collection must be an integer value <= 25");
     }
 
     // Pevent
@@ -2033,11 +2027,12 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
         if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)
         {
-            pipeline_collection_triggerable_.reset(new PipelineTrigger(
-                sim_config_.pipeline_collection_file_prefix,
-                sim->getRoot(),
-                std::atoi(pipeline_heartbeat_.c_str()),
-                pipeline_enabled_node_names_));
+            const bool multiple_triggers = sim_config_.trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI;
+            pipeline_collection_triggerable_.reset(new PipelineTrigger(sim_config_.pipeline_collection_file_prefix,
+                                                                       pipeline_enabled_node_names_,
+                                                                       pipeline_heartbeat_,
+                                                                       multiple_triggers,
+                                                                       sim->getRoot()));
         }
 
         // Finalize the pevent controller now that the tree is built.

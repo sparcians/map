@@ -55,8 +55,6 @@ class InformationWriter;
 
 namespace app {
 
-const constexpr char DefaultHeartbeat[]        = "0";
-
 
 /*!
  * \class CommandLineSimulator
@@ -460,10 +458,9 @@ protected:
     std::unique_ptr<sparta::InformationWriter>    info_out_;
 
     /*!
-     * \brief Heartbeat period of pipeline collection file (before lexical cast
-     * or validation)
+     * \brief Heartbeat period of pipeline collection file.
      */
-    std::string pipeline_heartbeat_ = DefaultHeartbeat;
+    uint64_t pipeline_heartbeat_ = 10;
 
     //! The names of the nodes to be enabled
     std::set<std::string> pipeline_enabled_node_names_;

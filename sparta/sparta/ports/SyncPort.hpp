@@ -72,10 +72,10 @@
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/utils/DataContainer.hpp"
+#include "sparta/collection/DelayedCollectable.hpp"
 #include "sparta/ports/Port.hpp"
 #include "sparta/events/Precedence.hpp"
 #include "sparta/events/EventSet.hpp"
-#include "sparta/collection/CollectableTreeNode.hpp"
 
 namespace sparta
 {
@@ -130,8 +130,7 @@ namespace sparta
         SyncOutPort(TreeNode * portset, const std::string & name, const Clock * clk,
                     bool presume_zero_delay = true) :
             OutPort(portset, name, presume_zero_delay),
-            clk_(clk), info_logger_(this, "pinfo", getLocation() + "_info"),
-            sync_port_events_(this)
+            clk_(clk), info_logger_(this, "pinfo", getLocation() + "_info")
         {
             sparta_assert(name.length() != 0, "You cannot have an unnamed port.");
             sparta_assert(clk_ != 0, "Clock ptr cannot be null in port: " << name);
@@ -375,9 +374,9 @@ namespace sparta
         SyncOutPort & operator=(const SyncOutPort &) = delete;
 
         //! Enable pipeline collection
-        void enableCollection(TreeNode* node) override
-        {
-            collector_ = std::make_unique<CollectorType>(node, Port::name_, &sync_port_events_, "Data being sent out on this SyncOutPort");
+        void enableCollection(TreeNode* node) override {
+            collector_.reset(new CollectorType(node, Port::name_, 0,
+                                               "Data being sent out on this SyncOutPort"));
         }
 
     private:
@@ -388,7 +387,7 @@ namespace sparta
         /// The in-port all data will be sent to
         SyncInPort<DataT> * sync_in_port_ = nullptr;
 
-        /// Pipeline collection
+        /// Pipeline collection: TODO - figure out how this works w/ sync ports
         std::unique_ptr<CollectorType> collector_;
 
         /// Last cycle any data was sent
@@ -400,9 +399,6 @@ namespace sparta
 
         //! The bound SyncIn ports
         std::vector <SyncInPort<DataT>*> bound_in_ports_;
-
-        //! Event Set for this port
-        sparta::EventSet sync_port_events_;
     };
 
 
@@ -414,8 +410,7 @@ namespace sparta
     template<class DataT>
     class SyncInPort final : public InPort, public DataContainer<DataT>
     {
-        typedef collection::ManualCollectable<DataT> CollectorType;
-
+        typedef collection::Collectable<DataT> CollectorType;
     public:
         //! Expected typedef for DataT
         typedef DataT DataType;
@@ -598,7 +593,8 @@ namespace sparta
         //! Enable pipeline collection
         void enableCollection(TreeNode* node) override
         {
-            collector_ = std::make_unique<CollectorType>(node, Port::name_, &sync_port_events_, "Data being recirculated on this SyncInPort");
+            collector_.reset(new CollectorType(node, Port::name_, 0,
+                                               "Data being recirculated on this SyncInPort"));
         }
 
         //! Set the ready state for the port before simulation begins
@@ -1064,7 +1060,7 @@ namespace sparta
         //! only call setReady() once per cycle.
         Scheduler::Tick set_ready_tick_ = 0;
 
-        //! Pipeline collection
+        //! Pipeline collection.  TODO: See if this works for syncports
         std::unique_ptr<CollectorType> collector_;
 
         /// loggers

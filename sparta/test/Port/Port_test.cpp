@@ -123,6 +123,8 @@ int main ()
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
+    sparta::collection::PipelineCollector pc("testPipe", 1000000, &rtn);
+
     sched.finalize();
 
 #ifdef TEST_PIPEOUT_COLLECTION

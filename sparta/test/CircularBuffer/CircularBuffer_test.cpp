@@ -11,10 +11,10 @@
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 #include "sparta/report/Report.hpp"
-#include "sparta/collection/PipelineCollector.hpp"
 
 TEST_INIT
 
+//#define PIPEOUT_GEN
 struct dummy_struct
 {
     uint16_t int16_field;
@@ -463,7 +463,8 @@ void testCollection()
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
-    sparta::collection::PipelineCollector pc("testCircBuffer",  &rtn);
+    sparta::collection::PipelineCollector pc("testCircBuffer", 1000000, &rtn);
+
     sched.finalize();
 
     for(uint32_t i = 0; i < BUF_SIZE/2; ++i) {

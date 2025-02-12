@@ -104,7 +104,8 @@ namespace core_example
     Fetch::Fetch(sparta::TreeNode * node,
                  const FetchParameterSet * p) :
         sparta::Unit(node),
-        num_insts_to_fetch_(p->num_to_fetch)
+        num_insts_to_fetch_(p->num_to_fetch),
+        next_pc_(node, "next_pc", &vaddr_)
     {
         in_fetch_queue_credits_.
             registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Fetch, receiveFetchQueueCredits_, uint32_t));

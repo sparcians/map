@@ -19,9 +19,9 @@
 #include "sparta/statistics/CycleCounter.hpp"
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/statistics/StatisticDef.hpp"
+#include "sparta/collection/IterableCollector.hpp"
 #include "sparta/statistics/Counter.hpp"
 #include "sparta/utils/IteratorTraits.hpp"
-#include "sparta/collection/CollectableTreeNode.hpp"
 
 namespace sparta
 {

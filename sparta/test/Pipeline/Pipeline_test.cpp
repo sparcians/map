@@ -12,10 +12,9 @@
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/simulation/ClockManager.hpp"
 #include "sparta/utils/SpartaTester.hpp"
-#include "sparta/events/PayloadEvent.hpp"
-#include "sparta/collection/PipelineCollector.hpp"
 
 TEST_INIT
+#define PIPEOUT_GEN
 
 #define TEST_MANUAL_UPDATE
 
@@ -311,6 +310,7 @@ int main ()
     sparta::PayloadEvent<uint32_t, sparta::SchedulingPhase::Flush> ev_flush_one
         (&es, "ev_flush_one", CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(DummyClass2<uint64_t>, &dummyObj2, flushOne, uint32_t));
 
+#ifdef PIPEOUT_GEN
     EXPECT_FALSE(examplePipeline1.isCollected());
     examplePipeline1.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
     EXPECT_FALSE(examplePipeline1.isCollected());
@@ -323,6 +323,7 @@ int main ()
     examplePipeline8.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
     examplePipeline9.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
     stwr_pipe.enableCollection<sparta::SchedulingPhase::Collection>(&rtn);
+#endif
 
     ////////////////////////////////////////////////////////////////////////////////
     // Pipeline stage handler registration
@@ -540,7 +541,10 @@ int main ()
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
-    sparta::collection::PipelineCollector pc("examplePipeline1", &rtn);
+#ifdef PIPEOUT_GEN
+    sparta::collection::PipelineCollector pc("examplePipeline1", 1000000, &rtn);
+#endif
+
 
     ////////////////////////////////////////////////////////////////////////////////
     // Pipeline stage handling event precedence setup
@@ -664,9 +668,12 @@ int main ()
 
     sched.finalize();
 
+#ifdef PIPEOUT_GEN
     EXPECT_FALSE(examplePipeline1.isCollected());
-    pc.startCollecting();
+    pc.startCollection(&rtn);
     EXPECT_TRUE(examplePipeline1.isCollected());
+#endif
+
 
     ////////////////////////////////////////////////////////////////////////////////
     // Pipeline Forward Progression Test
@@ -1620,7 +1627,10 @@ int main ()
     std::cout << "[FINISH] Pipeline Data Event Handling Test\n";
 
     rtn.enterTeardown();
-    pc.stopCollecting();
+
+#ifdef PIPEOUT_GEN
+    pc.destroy();
+#endif
 
     // Returns error if one
     REPORT_ERROR;

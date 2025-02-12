@@ -13,7 +13,8 @@ namespace core_example
         ignore_inst_execute_time_(p->ignore_inst_execute_time),
         execute_time_(p->execute_time),
         scheduler_size_(p->scheduler_size),
-        in_order_issue_(p->in_order_issue)
+        in_order_issue_(p->in_order_issue),
+        collected_inst_(node, node->getName())
     {
         in_execute_inst_.
             registerConsumerHandler(CREATE_SPARTA_HANDLER_WITH_DATA(Execute, getInstsFromDispatch_,
@@ -152,6 +153,7 @@ namespace core_example
 
         if(complete_inst_.getNumOutstandingEvents() == 0) {
             unit_busy_ = false;
+            collected_inst_.closeRecord();
         }
     }
 

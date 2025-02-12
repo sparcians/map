@@ -16,9 +16,10 @@
 
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/statistics/CycleCounter.hpp"
-#include "sparta/collection/PipelineCollector.hpp"
 
 TEST_INIT
+
+#define PIPEOUT_GEN
 
 #define QUICK_PRINT(x) \
     std::cout << x << std::endl
@@ -95,7 +96,9 @@ void generalTest()
                                            &buf10_stats);
 
     rtn.setClock(root_clk.get());
+#ifdef PIPEOUT_GEN
     buf10.enableCollection(&rtn);
+#endif
 
     rtn.enterConfiguring();
     rtn.enterFinalized();
@@ -103,9 +106,15 @@ void generalTest()
     // Get info messages from the scheduler node and send them to this file
     sparta::log::Tap t2(root_clk.get()->getScheduler(), "debug", "scheduler.log.debug");
 
-    sparta::collection::PipelineCollector pc("testBuffer", &rtn);
+#ifdef PIPEOUT_GEN
+    sparta::collection::PipelineCollector pc("testBuffer", 1000000, &rtn);
+#endif
+
     sched.finalize();
-    pc.startCollecting();
+
+#ifdef PIPEOUT_GEN
+    pc.startCollection(&rtn);
+#endif
 
     ////////////////////////////////////////////////////////////
     sched.run(1);
@@ -571,7 +580,9 @@ void generalTest()
     sched.run(5);
 
     rtn.enterTeardown();
-    pc.stopCollecting();
+#ifdef PIPEOUT_GEN
+    pc.destroy();
+#endif
 }
 
 struct B {

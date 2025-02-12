@@ -17,9 +17,9 @@
 #include "sparta/ports/Port.hpp"
 #include "sparta/statistics/CycleHistogram.hpp"
 #include "sparta/statistics/StatisticSet.hpp"
+#include "sparta/collection/IterableCollector.hpp"
 #include "sparta/statistics/InstrumentationNode.hpp"
 #include "sparta/utils/IteratorTraits.hpp"
-#include "sparta/collection/CollectableTreeNode.hpp"
 
 namespace sparta
 {
@@ -447,7 +447,8 @@ namespace sparta
               InstrumentationNode::visibility_t stat_vis_avg     = InstrumentationNode::AUTO_VISIBILITY) :
             num_entries_(num_entries),
             vector_size_(nextPowerOfTwo_(num_entries*2)),
-            name_(name)
+            name_(name),
+            collector_(nullptr)
         {
 
             if((num_entries > 0) && statset)
@@ -600,7 +601,8 @@ namespace sparta
          *       instatiation of the PipelineCollector
          */
         void enableCollection(TreeNode * parent) {
-            collector_ = std::make_unique<IterableCollectorType>(parent, name_, this, capacity());
+            collector_.reset(new collection::IterableCollector<Queue<value_type> >
+                             (parent, name_, this, capacity()));
         }
 
         /**
@@ -824,8 +826,7 @@ namespace sparta
 
         //////////////////////////////////////////////////////////////////////
         // Collectors
-        using IterableCollectorType = sparta::collection::IterableCollector<Queue<value_type>>;
-        std::unique_ptr<IterableCollectorType> collector_;
+        std::unique_ptr<collection::IterableCollector<Queue<value_type> > > collector_;
 
         // Notice that our list for storing data is a dynamic array.
         // This is used instead of a stl vector to promote debug

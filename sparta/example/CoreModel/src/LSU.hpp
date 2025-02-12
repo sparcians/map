@@ -166,7 +166,7 @@ namespace core_example
         ExampleInstPtr cache_pending_inst_ptr_ = nullptr;
 
         // Collection
-        sparta::collection::AutoCollectable<bool> cache_busy_collectable_{
+        sparta::collection::Collectable<bool> cache_busy_collectable_{
             getContainer(), "dcache_busy", &cache_busy_};
 
         // NOTE:

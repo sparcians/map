@@ -17,11 +17,9 @@
 #include "sparta/ports/Port.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/MathUtils.hpp"
+#include "sparta/collection/IterableCollector.hpp"
 #include "sparta/utils/ValidValue.hpp"
 #include "sparta/utils/IteratorTraits.hpp"
-#include "sparta/events/UniqueEvent.hpp"
-#include "sparta/events/EventSet.hpp"
-#include "sparta/collection/CollectableTreeNode.hpp"
 
 namespace sparta
 {
@@ -515,12 +513,8 @@ public:
      */
     template<sparta::SchedulingPhase phase = SchedulingPhase::Collection>
     void enableCollection(TreeNode * parent) {
-        if constexpr (phase == SchedulingPhase::Collection) {
-            collector_ = std::make_unique<CollectorType>(parent, name_, this, capacity());
-        } else {
-            std::cout << "ERROR: sparta::Pipe '" << (parent->getLocation() + "." + name_ + "' ")
-                      << "only supports collection in SchedulingPhase::Collection" << std::endl;
-        }
+        collector_.reset (new collection::IterableCollector<Pipe<DataT>, phase, true>
+                          (parent, name_, this, capacity()));
     }
 
     /**
@@ -599,8 +593,8 @@ private:
 
     //////////////////////////////////////////////////////////////////////
     // Collectors
-    using CollectorType = collection::IterableCollector<Pipe<DataT>, true>;
-    std::unique_ptr<CollectorType> collector_;
+    std::unique_ptr<collection::CollectableTreeNode> collector_;
+
 };
 
 }

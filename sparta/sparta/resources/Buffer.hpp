@@ -19,9 +19,9 @@
 #include "sparta/statistics/CycleHistogram.hpp"
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/statistics/StatisticDef.hpp"
+#include "sparta/collection/IterableCollector.hpp"
 #include "sparta/statistics/Counter.hpp"
 #include "sparta/utils/IteratorTraits.hpp"
-#include "sparta/collection/CollectableTreeNode.hpp"
 
 namespace sparta
 {
@@ -731,7 +731,9 @@ namespace sparta
          *       instatiation of the PipelineCollector
          */
         void enableCollection(TreeNode * parent) {
-            collector_ = std::make_unique<IterableCollectorType>(parent, name_, this, capacity());
+            collector_.
+                reset(new collection::IterableCollector<Buffer<DataT> >(parent, getName(),
+                                                                        this, capacity()));
         }
 
         /**
@@ -1018,8 +1020,7 @@ namespace sparta
 
         //////////////////////////////////////////////////////////////////////
         // Collectors
-        using IterableCollectorType = sparta::collection::IterableCollector<Buffer<value_type>>;
-        std::unique_ptr<IterableCollectorType> collector_;
+        std::unique_ptr<collection::IterableCollector<Buffer<value_type> > > collector_;
 
         //! Flag which tells various methods if infinite_mode is turned on or not.
         //  The behaviour of these methods change accordingly.
@@ -1096,5 +1097,8 @@ namespace sparta
         rval.utilization_ = nullptr;
         rval.collector_ = nullptr;
         validator_->validator_ = std::move(rval.validator_->validator_);
+        if(collector_) {
+            collector_->reattach(this);
+        }
     }
 }

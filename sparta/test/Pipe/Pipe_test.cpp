@@ -10,9 +10,9 @@
 #include "sparta/sparta.hpp"
 #include "sparta/events/EventSet.hpp"
 #include "sparta/events/PayloadEvent.hpp"
-#include "sparta/collection/PipelineCollector.hpp"
 
 TEST_INIT
+#define PIPEOUT_GEN
 
 /*
  * This test creates a producer and a consumer for two staged pipes.
@@ -68,9 +68,10 @@ int main ()
      // sparta::log::Tap scheduler_debug(sparta::TreeNode::getVirtualGlobalNode(),
      //                                sparta::log::categories::DEBUG, std::cout);
 
+#ifdef PIPEOUT_GEN
     pipe1.enableCollection(&rtn);
     pipe2.enableCollection<sparta::SchedulingPhase::PostTick>(&rtn);
-
+#endif
     sparta::PayloadEvent<uint32_t>
         ev(&es, "dummy_ev",
            CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(sparta::Pipe<uint32_t>, &pipe1, push_front, uint32_t));
@@ -78,13 +79,16 @@ int main ()
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
-    sparta::collection::PipelineCollector pc("testPipe", &rtn);
+#ifdef PIPEOUT_GEN
+    sparta::collection::PipelineCollector pc("testPipe", 1000000, &rtn);
+#endif
     sched.finalize();
 
-    //TODO cnyce: when pipe2.enableCollection() is fixed, put back these two checks.
-    //EXPECT_THROW(pipe2.resize(5));
-    //EXPECT_EQUAL(pipe2.capacity(), 10); // Make sure it really didn't get resized
-    pc.startCollecting();
+#ifdef PIPEOUT_GEN
+    EXPECT_THROW(pipe2.resize(5));
+    EXPECT_EQUAL(pipe2.capacity(), 10); // Make sure it really didn't get resized
+    pc.startCollection(&rtn);
+#endif
 
     // Check initials
     EXPECT_EQUAL(pipe1.capacity(), 10);
@@ -315,7 +319,9 @@ int main ()
     EXPECT_EQUAL(pipe2.size(), 0);
 
     rtn.enterTeardown();
-    pc.stopCollecting();
+#ifdef PIPEOUT_GEN
+    pc.destroy();
+#endif
 
     // Returns error if one
     REPORT_ERROR;
