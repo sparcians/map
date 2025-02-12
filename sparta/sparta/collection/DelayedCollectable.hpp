@@ -111,7 +111,7 @@ namespace collection
          */
         void collect(const DataT & val, sparta::Clock::Cycle delay)
         {
-            if(SPARTA_EXPECT_FALSE(isCollected()))
+            if(SPARTA_EXPECT_TRUE(isCollected()))
             {
                 if(delay != 0) {
                     ev_collect_.schedule(val, delay);
@@ -136,7 +136,7 @@ namespace collection
                                  sparta::Clock::Cycle delay,
                                  sparta::Clock::Cycle duration)
         {
-            if(SPARTA_EXPECT_FALSE(isCollected()))
+            if(SPARTA_EXPECT_TRUE(isCollected()))
             {
                 if(delay != 0) {
                     ev_collect_duration_.preparePayload({val, duration})->schedule(delay);

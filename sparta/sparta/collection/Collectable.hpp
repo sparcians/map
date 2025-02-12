@@ -114,7 +114,7 @@ namespace sparta{
                 //TODO cnyce
                 (void)val;
 
-                if(SPARTA_EXPECT_FALSE(isCollected()))
+                if(SPARTA_EXPECT_TRUE(isCollected()))
                 {
                     //std::ostringstream ss;
                     //ss << val;
@@ -161,7 +161,7 @@ namespace sparta{
             template<typename T>
             MetaStruct::enable_if_t<!MetaStruct::is_any_pointer<T>::value, void>
             collectWithDuration(const T & val, sparta::Clock::Cycle duration){
-                if(SPARTA_EXPECT_FALSE(isCollected()))
+                if(SPARTA_EXPECT_TRUE(isCollected()))
                 {
                     if(duration != 0) {
                         ev_close_record_.preparePayload(false)->schedule(duration);
@@ -220,7 +220,7 @@ namespace sparta{
             //! Force close a record.
             void closeRecord(const bool & simulation_ending = false) override final
             {
-                if(SPARTA_EXPECT_FALSE(isCollected()))
+                if(SPARTA_EXPECT_TRUE(isCollected()))
                 {
                     if(!record_closed_) {
                         writeRecord_(simulation_ending);

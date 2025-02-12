@@ -21,6 +21,31 @@
 namespace sparta {
 namespace collection {
 
+/**
+ * \class IterableCollector
+ * \brief A collector of any iterable type (std::vector, std::list, sparta::Buffer, etc)
+ *
+ * \tname IterableType     The type of the collected object
+ * \tname collection_phase The phase collection will occur.
+ *                         Collection happens automatically in this
+ *                         phase, unless it is disabled by a call to
+ *                         setManualCollection()
+ * \tname sparse_array_type Set to true if the iterable type is
+ *                          sparse, meaning iteration will occur on
+ *                          the entire iterable object, but each
+ *                          iterator might not be valid to
+ *                          de-reference.  When this is true, it is
+ *                          expected that the iterator returned from
+ *                          the IterableType can be queried for
+ *                          validity (by a call to itr->isValid()).
+ *
+ * This collector will iterable over an std::array type, std::list
+ * type, std::vector type, sparta::Buffer, sparta::Queue, sparta::Array, or
+ * even a simple C-array type.  The class needs to constructed with an
+ * expected capacity of the container, and the container should never
+ * grow beyond this expected capacity.  If so, during collection, the
+ * class will output a warning message (only once).
+ */
 template <typename IterableType, SchedulingPhase collection_phase = SchedulingPhase::Collection, bool sparse_array_type = false>
 class IterableCollector : public CollectableTreeNode
 {
@@ -155,7 +180,7 @@ public:
         if(nullptr == iterable_object) {
             closeRecord();
         }
-        else if (SPARTA_EXPECT_FALSE(isCollected()))
+        else if (SPARTA_EXPECT_TRUE(isCollected()))
         {
             if(SPARTA_EXPECT_FALSE(iterable_object->size() > expected_capacity_))
             {
@@ -191,7 +216,7 @@ public:
 
     //! Schedule event to close all records for this iterable type.
     void scheduleCloseRecord(sparta::Clock::Cycle cycle) {
-        if(SPARTA_EXPECT_FALSE(isCollected())) {
+        if(SPARTA_EXPECT_TRUE(isCollected())) {
             ev_close_record_.preparePayload(false)->schedule(cycle);
         }
     }
@@ -205,7 +230,7 @@ public:
     //! \brief Perform a collection, then close the records in the future
     //! \param duration The time to close the records, 0 is not allowed
     void collectWithDuration(sparta::Clock::Cycle duration) {
-        if(SPARTA_EXPECT_FALSE(isCollected())) {
+        if(SPARTA_EXPECT_TRUE(isCollected())) {
             collect();
             if(duration != 0) {
                 ev_close_record_.preparePayload(false)->schedule(duration);
