@@ -195,7 +195,7 @@ namespace collection
             if(collection_active_) {
                 for(auto & ctn : registered_collectables_) {
                     if(ctn->isCollected()) {
-                        ctn->closeRecord(true);
+                        ctn->closeRecord(true); // set true for simulation termination
                     }
                 }
             }
@@ -205,7 +205,9 @@ namespace collection
 
         void reactivate(const std::string& simdb_filename)
         {
-            (void)simdb_filename;
+            sparta_assert(simdb_filename.find(".db") != std::string::npos,
+                          "Database filename must end in .db");
+
             sparta_assert(false, "TODO cnyce: Not implemented");
 
             if (db_mgr_) {

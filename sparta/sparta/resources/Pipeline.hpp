@@ -18,6 +18,7 @@
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/MathUtils.hpp"
+#include "sparta/collection/IterableCollector.hpp"
 
 #include "sparta/resources/Pipe.hpp"
 #include "sparta/events/Scheduleable.hpp"

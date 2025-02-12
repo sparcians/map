@@ -442,7 +442,9 @@ namespace sparta
          *       instatiation of the PipelineCollector
          */
         void enableCollection(TreeNode * parent) {
-            collector_ = std::make_unique<IterableCollectorType>(parent, name_, this, capacity());
+            collector_.
+                reset(new collection::IterableCollector<CircularBuffer<DataT> >(parent, getName(),
+                                                                                this, capacity()));
         }
 
         //! Get this CircularBuffer's name
@@ -786,8 +788,7 @@ namespace sparta
 
         //////////////////////////////////////////////////////////////////////
         // Collectors
-        using IterableCollectorType = sparta::collection::IterableCollector<CircularBuffer<value_type>>;
-        std::unique_ptr<IterableCollectorType> collector_;
+        std::unique_ptr<collection::IterableCollector<CircularBuffer<value_type> > > collector_;
     };
 
     ////////////////////////////////////////////////////////////////////////////////
