@@ -7,14 +7,10 @@ namespace core_example
     class LoadStoreInstInfo;
     using LoadStoreInstInfoPtr = sparta::SpartaSharedPointer<LoadStoreInstInfo>;
 
-    // Forward declaration of the Pair Definition class is must as we are friending it.
-    class LoadStoreInstInfoPairDef;
     // Keep record of instruction issue information
     class LoadStoreInstInfo
     {
     public:
-        // The modeler needs to alias a type called "SpartaPairDefinitionType" to the Pair Definition class  of itself
-        using SpartaPairDefinitionType = LoadStoreInstInfoPairDef;
         enum class IssuePriority : std::uint16_t
         {
             HIGHEST = 0,
@@ -99,26 +95,6 @@ namespace core_example
         sparta::State<IssueState> state_;
 
     };  // class LoadStoreInstInfo
-
-    /*!
-    * \class LoadStoreInstInfoPairDef
-    * \brief Pair Definition class of the load store instruction that flows through the example/CoreModel
-    */
-    // This is the definition of the PairDefinition class of LoadStoreInstInfo.
-    // This PairDefinition class could be named anything but it needs to inherit
-    // publicly from sparta::PairDefinition templatized on the actual class LoadStoreInstInfo.
-    class LoadStoreInstInfoPairDef : public sparta::PairDefinition<LoadStoreInstInfo>{
-    public:
-
-        // The SPARTA_ADDPAIRs APIs must be called during the construction of the PairDefinition class
-        LoadStoreInstInfoPairDef() : PairDefinition<LoadStoreInstInfo>(){
-            SPARTA_INVOKE_PAIRS(LoadStoreInstInfo);
-        }
-        SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("DID",   &LoadStoreInstInfo::getInstUniqueID),
-                                SPARTA_ADDPAIR("rank",  &LoadStoreInstInfo::getPriority),
-                                SPARTA_ADDPAIR("state", &LoadStoreInstInfo::getState),
-                                SPARTA_FLATTEN(         &LoadStoreInstInfo::getMemoryAccessInfoPtr))
-    };
 } // namespace core_example
 
 namespace simdb
