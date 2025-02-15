@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MemAccessInfo.hpp"
+#include "simdb/serialize/Serialize.hpp"
 
 namespace core_example
 {

@@ -9,7 +9,7 @@
 #include "sparta/simulation/State.hpp"
 #include "sparta/utils/SpartaSharedPointer.hpp"
 #include "sparta/utils/SpartaSharedPointerAllocator.hpp"
-#include "simdb/collection/Structs.hpp"
+#include "simdb/serialize/Serialize.hpp"
 
 #include <cstdlib>
 #include <ostream>

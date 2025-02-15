@@ -21,6 +21,7 @@
 #include "sparta/events/SchedulingPhases.hpp"
 #include "sparta/utils/Utils.hpp"
 #include "sparta/utils/MetaStructs.hpp"
+#include "simdb/sqlite/DatabaseManager.hpp"
 
 namespace sparta{
     namespace collection
@@ -82,8 +83,6 @@ namespace sparta{
                             desc)
             {
                 collected_object_ = collected_object;
-
-                //TODO cnyce: prev_annot_ / initialize()
             }
 
             /**
@@ -111,26 +110,9 @@ namespace sparta{
             MetaStruct::enable_if_t<!MetaStruct::is_any_pointer<T>::value, void>
             collect(const T & val)
             {
-                //TODO cnyce
-                (void)val;
-
                 if(SPARTA_EXPECT_TRUE(isCollected()))
                 {
-                    //std::ostringstream ss;
-                    //ss << val;
-                    //if((ss.str() != prev_annot_) && !record_closed_)
-                    //{
-                    //    // Close the old record (if there is one)
-                    //    closeRecord();
-                    //}
-
-                    // Remember the new string for a new record and start
-                    // a new record if not empty.
-                    //prev_annot_ = ss.str();
-                    //if(!prev_annot_.empty() && record_closed_) {
-                    //    startNewRecord_();
-                    //    record_closed_ = false;
-                    //}
+                    simdb_collectable_->activate(val);
                 }
             }
 
@@ -200,7 +182,7 @@ namespace sparta{
                     closeRecord();
                     return;
                 }
-                collect(*collected_object_);
+                simdb_collectable_->activate(collected_object_);
             }
 
             /*!
@@ -223,7 +205,7 @@ namespace sparta{
                 if(SPARTA_EXPECT_TRUE(isCollected()))
                 {
                     if(!record_closed_) {
-                        writeRecord_(simulation_ending);
+                        simdb_collectable_->deactivate();
                         record_closed_ = true;
                     }
                 }
@@ -236,6 +218,15 @@ namespace sparta{
                 auto_collect_ = false;
             }
 
+            /*!
+             * \brief The pipeline collector will call this method on all nodes
+             * as soon as the collector is created.
+             */
+            void configCollectable(simdb::CollectionMgr *mgr) override final {
+                using value_type = MetaStruct::remove_any_pointer_t<DataT>;
+                simdb_collectable_ = mgr->createCollectable<value_type>(getLocation(), getClock()->getName());
+            }
+
         protected:
 
             //! \brief Get a reference to the internal event set
@@ -245,20 +236,6 @@ namespace sparta{
             }
 
         private:
-            //! Return true if the record was written; false otherwise
-            bool writeRecord_(bool simulation_ending = false)
-            {
-                //TODO cnyce
-                (void)simulation_ending;
-                return true;
-            }
-
-            //! Start a new record
-            void startNewRecord_()
-            {
-                //TODO cnyce
-            }
-
             void setCollecting_(bool collect, PipelineCollector * collector, simdb::DatabaseManager*) override final
             {
                 // If the collected object is null, this Collectable
@@ -274,6 +251,21 @@ namespace sparta{
                         // PipelineCollector's list of objects requiring
                         // collection
                         collector->removeFromAutoCollection(this);
+                    }
+                } else {
+                    if(collect) {
+                        // If we are manually collecting, we still need to tell the collector
+                        // to run the sweep() method every cycle on our clock.
+                        //
+                        // Note that addToAutoCollection() implicitly calls addToAutoSweep().
+                        collector->addToAutoSweep(this);
+                    }
+                    else {
+                        // If we are no longer collecting, remove this Collectable from the
+                        // once-a-cycle sweep() method.
+                        //
+                        // Note that removeFromAutoCollection() implicitly calls removeFromAutoSweep().
+                        collector->removeFromAutoSweep(this);
                     }
                 }
 
@@ -296,7 +288,12 @@ namespace sparta{
 
             // Should we auto-collect?
             bool auto_collect_ = true;
-        };
 
-}//namespace collection
-}//namespace sparta
+            // The simdb collectable object. We will "activate" and
+            // "deactivate" this object when we want to collect data.
+            // While it is activated, the SimDB collection system will
+            // collect our data along with everyone else's.
+            std::shared_ptr<simdb::CollectionPoint> simdb_collectable_;
+        };
+    } // namespace collection
+} // namespace sparta

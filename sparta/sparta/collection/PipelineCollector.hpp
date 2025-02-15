@@ -20,8 +20,6 @@
 #include "sparta/events/GlobalOrderingPoint.hpp"
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/simulation/TreeNodePrivateAttorney.hpp"
-
-#include "simdb/collection/Scalars.hpp"
 #include "simdb/sqlite/DatabaseManager.hpp"
 
 namespace sparta {
@@ -102,6 +100,13 @@ namespace collection
             void performCollection() {
                 for(auto & ctn : enabled_ctns_) {
                     if(ctn->isCollected()) {
+                        //This is happening on a specific clock and a specific phase.
+                        //We need to honor the collectable value at this very time,
+                        //even though the actual sweep() does not occur until PostTick.
+                        //
+                        //This only has an effect for automatically collected types.
+                        //Manually collected types always ignore the phase and collect
+                        //immediately.
                         ctn->collect();
                     }
                 }
@@ -128,7 +133,7 @@ namespace collection
     public:
         PipelineCollector(const std::string& simdb_filename,
                           const size_t heartbeat,
-                          const sparta::TreeNode * root)
+                          sparta::TreeNode * root)
             : db_mgr_(std::make_unique<simdb::DatabaseManager>(simdb_filename, true))
         {
             sparta_assert(root->isFinalized() == true,
@@ -147,16 +152,14 @@ namespace collection
             // DatabaseManager adds automatically to support this feature.
             simdb::Schema schema;
             db_mgr_->createDatabaseFromSchema(schema);
-
-            std::function<uint64_t()> func_ptr = std::bind(&PipelineCollector::getCollectionTick_, this);
-            db_mgr_->getCollectionMgr()->useTimestampsFrom(func_ptr);
-            db_mgr_->getCollectionMgr()->setHeartbeat(heartbeat);
+            db_mgr_->enableCollection(heartbeat);
 
             // Initialize the clock/collectable map
             std::function<void (const sparta::Clock*)> addClks;
             addClks = [&addClks, this] (const sparta::Clock* clk)
                 {
                     if(clk != nullptr){
+                        db_mgr_->getCollectionMgr()->addClock(clk->getName(), clk->getPeriod());
                         auto & u_p = clock_ctn_map_[clk];
                         for(uint32_t i = 0; i < NUM_SCHEDULING_PHASES; ++i) {
                             u_p[i].reset(new CollectablesByClock(clk, static_cast<SchedulingPhase>(i)));
@@ -171,6 +174,24 @@ namespace collection
                 };
 
             addClks(root->getClock());
+
+            std::queue<sparta::TreeNode*> q;
+            std::unordered_set<sparta::TreeNode*> visited;
+            q.push(root);
+
+            while (!q.empty()) {
+                auto node = q.front();
+                q.pop();
+
+                if (!visited.insert(node).second) {
+                    continue;
+                }
+
+                node->configCollectable(db_mgr_->getCollectionMgr());
+                for (auto child : sparta::TreeNodePrivateAttorney::getAllChildren(node)) {
+                    q.push(child);
+                }
+            }
         }
 
         ~PipelineCollector() {
@@ -310,6 +331,7 @@ namespace collection
             auto ccm_pair = clock_ctn_map_.find(ctn->getClock());
             sparta_assert(ccm_pair != clock_ctn_map_.end());
             ccm_pair->second[static_cast<uint32_t>(collection_phase)]->enable(ctn);
+            addToAutoSweep(ctn);
         }
 
         /**
@@ -330,6 +352,26 @@ namespace collection
             for(auto & u_p : ccm_pair->second) {
                 u_p->disable(ctn);
             }
+            removeFromAutoSweep(ctn);
+        }
+
+        void addToAutoSweep(CollectableTreeNode * ctn)
+        {
+            auto& sweep = sweepers_[ctn->getClock()];
+            if (!sweep) {
+                sweep.reset(new ClockDomainSweeper(db_mgr_->getCollectionMgr(), ctn->getClock()));
+            }
+            sweep->enable(ctn);
+        }
+
+        void removeFromAutoSweep(CollectableTreeNode * ctn)
+        {
+            auto iter = sweepers_.find(ctn->getClock());
+            if (iter == sweepers_.end()) {
+                return;
+            }
+
+            iter->second->disable(ctn);
         }
 
         //! \return the pipeout file path
@@ -344,10 +386,47 @@ namespace collection
         }
 
     private:
-        uint64_t getCollectionTick_() const
+        class ClockDomainSweeper
         {
-            return scheduler_->getCurrentTick() - 1;
-        }
+        public:
+            ClockDomainSweeper(simdb::CollectionMgr* mgr, const Clock* clk)
+                : clk_(clk)
+                , collection_mgr_(mgr)
+                , ev_set_(nullptr)
+                , ev_sweep_(&ev_set_, clk->getName() + "_sweep_event",
+                            CREATE_SPARTA_HANDLER(ClockDomainSweeper, performSweep_), 1)
+            {
+                ev_sweep_.setScheduleableClock(clk);
+                ev_sweep_.setScheduler(clk->getScheduler());
+                ev_sweep_.setContinuing(false);
+            }
+
+            void enable(CollectableTreeNode* ctn) {
+                sweepables_.insert(ctn);
+                ev_sweep_.schedule();
+            }
+
+            void disable(CollectableTreeNode* ctn) {
+                sweepables_.erase(ctn);
+            }
+
+        private:
+            void performSweep_() {
+                auto tick = clk_->getScheduler()->getCurrentTick();
+                collection_mgr_->sweep(clk_->getName(), tick);
+
+                if (!sweepables_.empty()) {
+                    ev_sweep_.schedule();
+                }
+            }
+
+            const Clock* clk_;
+            simdb::CollectionMgr* collection_mgr_;
+            std::unordered_set<CollectableTreeNode*> sweepables_;
+
+            EventSet ev_set_;
+            sparta::UniqueEvent<SchedulingPhase::PostTick> ev_sweep_;
+        };
 
         //! The SimDB database
         std::unique_ptr<simdb::DatabaseManager> db_mgr_;
@@ -357,6 +436,9 @@ namespace collection
 
         //! Is collection enabled on at least one node?
         bool collection_active_ = false;
+
+        //! Actively auto-sweeping nodes
+        std::unordered_map<const Clock*, std::unique_ptr<ClockDomainSweeper>> sweepers_;
     };
 
 }// namespace collection

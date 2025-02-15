@@ -71,11 +71,11 @@ public:
                        const size_type expected_capacity) :
         CollectableTreeNode(parent, name, group, index, desc),
         iterable_object_(iterable),
-        expected_capacity_(expected_capacity),
-        event_set_(this),
-        ev_close_record_(&event_set_, name + "_pipeline_collectable_close_event",
-                         CREATE_SPARTA_HANDLER_WITH_DATA(IterableCollector, closeRecord, bool))
+        expected_capacity_(expected_capacity)
     {
+        sparta_assert(iterable_object_ != nullptr,
+                      "IterableCollector " << getLocation() << " cannot be constructed with a nullptr iterable object");
+
         for (size_type i = 0; i < expected_capacity_; ++i)
         {
             std::stringstream name_str;
@@ -170,71 +170,10 @@ public:
         // Delegated constructor
     }
 
-    //! Collect the contents of the iterable object.  This function
-    //! will walk starting from index 0 -> expected_capacity, clearing
-    //! out any records where the iterable object does not contain
-    //! data.
-    void collect(const IterableType * iterable_object)
-    {
-        // If pointer has become nullified, close the records
-        if(nullptr == iterable_object) {
-            closeRecord();
-        }
-        else if (SPARTA_EXPECT_TRUE(isCollected()))
-        {
-            if(SPARTA_EXPECT_FALSE(iterable_object->size() > expected_capacity_))
-            {
-                if(SPARTA_EXPECT_FALSE(warn_on_size_))
-                {
-                    sparta::log::MessageSource::getGlobalWarn()
-                        << "WARNING! The collected object '"
-                        << getLocation() << "' has grown beyond the "
-                        << "expected capacity (given at construction) for collection. "
-                        << "Expected " << expected_capacity_ << " but grew to "
-                        << iterable_object->size()
-                        << " This is your first and last warning.";
-                    warn_on_size_ = false;
-                }
-            }
-            collectImpl_(iterable_object, std::integral_constant<bool, sparse_array_type>());
-        }
-    }
-
     //! Collect the contents of the associated iterable object
     void collect() override {
-        collect(iterable_object_);
-    }
-
-    //! Force close all records for this iterable type.  This will
-    //! close the record immediately and clear the field for the next
-    //! cycle
-    void closeRecord(const bool & simulation_ending = false) override {
-        for (size_type i = 0; i < positions_.size(); ++i) {
-            positions_[i]->closeRecord(simulation_ending);
-        }
-    }
-
-    //! Schedule event to close all records for this iterable type.
-    void scheduleCloseRecord(sparta::Clock::Cycle cycle) {
         if(SPARTA_EXPECT_TRUE(isCollected())) {
-            ev_close_record_.preparePayload(false)->schedule(cycle);
-        }
-    }
-
-    //! \brief Do not perform any automatic collection
-    //! The SchedulingPhase is ignored
-    void setManualCollection() {
-        auto_collect_ = false;
-    }
-
-    //! \brief Perform a collection, then close the records in the future
-    //! \param duration The time to close the records, 0 is not allowed
-    void collectWithDuration(sparta::Clock::Cycle duration) {
-        if(SPARTA_EXPECT_TRUE(isCollected())) {
-            collect();
-            if(duration != 0) {
-                ev_close_record_.preparePayload(false)->schedule(duration);
-            }
+            simdb_collectable_->activate(iterable_object_);
         }
     }
 
@@ -243,55 +182,33 @@ public:
         iterable_object_ = obj;
     }
 
-private:
-    typedef Collectable<typename std::iterator_traits<typename IterableType::iterator>::value_type> CollectableT;
-    // Standard walk of iterable types
-    void collectImpl_(const IterableType * iterable_object, std::false_type)
-    {
-        sparta_assert(nullptr != iterable_object,
-            "Can't collect iterable_object because it's a nullptr! How did we get here?");
-        auto itr = iterable_object->begin();
-        auto eitr = iterable_object->end();
-        for (uint32_t i = 0; i < expected_capacity_; ++i)
-        {
-            if (itr != eitr) {
-                positions_[i]->collect(*itr);
-                ++itr;
-            } else {
-                positions_[i]->closeRecord();
-            }
-        }
+    /*!
+     * \brief The pipeline collector will call this method on all nodes
+     * as soon as the collector is created.
+     */
+    void configCollectable(simdb::CollectionMgr *mgr) override final {
+        simdb_collectable_ = mgr->createIterableCollector<IterableType, sparse_array_type>(
+            getLocation(),
+            getClock()->getName(),
+            expected_capacity_);
     }
 
-    // Full iteration walk, checking validity of the iterator.  This
-    // is used for Pipe and Array where the iterator points to valid
-    // and not valid entries in the component
-    void collectImpl_(const IterableType * iterable_object, std::true_type)
-    {
-        sparta_assert(nullptr != iterable_object,
-            "Can't collect iterable_object because it's a nullptr! How did we get here?");
-        uint32_t s = 0;
-        auto itr = iterable_object->begin();
-        for (uint32_t i = 0; i < expected_capacity_; ++i, ++s)
-        {
-            if (itr.isValid()) {
-                positions_[i]->collect(*itr);
-            } else {
-                positions_[i]->closeRecord();
-            }
-            ++itr;
-        }
-    }
+private:
+    typedef Collectable<typename std::iterator_traits<typename IterableType::iterator>::value_type> CollectableT;
 
     //! Virtual method called by CollectableTreeNode when collection
     //! is enabled on the TreeNode
     void setCollecting_(bool collect, PipelineCollector* collector, simdb::DatabaseManager* db_mgr) override {
-        if(collect && auto_collect_) {
+        if (collect) {
             // Add this Collectable to the PipelineCollector's
             // list of objects requiring collection
             collector->addToAutoCollection(this, collection_phase);
-        }
-        else {
+        } else {
+            // If we are no longer collecting, remove this Collectable from the
+            // once-a-cycle sweep() method.
+            //
+            // Note that removeFromAutoCollection() implicitly calls removeFromAutoSweep().
+            collector->removeFromAutoSweep(this);
             closeRecord();
         }
     }
@@ -299,14 +216,7 @@ private:
     const IterableType * iterable_object_;
     std::vector<std::unique_ptr<CollectableT>> positions_;
     const size_type expected_capacity_ = 0;
-    bool auto_collect_ = true;
-    bool warn_on_size_ = true;
-
-    // For those folks that want a value to automatically
-    // disappear in the future
-    sparta::EventSet event_set_;
-    sparta::PayloadEvent<bool, sparta::SchedulingPhase::Trigger> ev_close_record_;
-
+    std::shared_ptr<simdb::IterableCollectionPoint<sparse_array_type>> simdb_collectable_;
 };
 } // namespace collection
 } // namespace sparta

@@ -40,6 +40,10 @@ namespace sparta {
 class PostRunValidationInfo;
 }  // namespace sparta
 
+namespace simdb {
+class CollectionMgr;
+} // namespace simdb
+
 #ifndef TREENODE_LIFETIME_TRACE
 /*!
  * \brief Enables tracing of TreeNode lifetimes in a set of output txt files.
@@ -2168,6 +2172,12 @@ namespace sparta
          * being shadowed.
          */
         virtual void activateLink(const std::string &label);
+
+        /*!
+         * \brief The pipeline collector will call this method on all nodes
+         * as soon as the collector is created.
+         */
+        virtual void configCollectable(simdb::CollectionMgr *) {}
 
         /*!
          * \brief Compute a regex pattern for a node child path containing any

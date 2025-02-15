@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ExampleInst.hpp"
-#include "simdb/collection/Structs.hpp"
+#include "simdb/serialize/Serialize.hpp"
 
 namespace core_example
 {
