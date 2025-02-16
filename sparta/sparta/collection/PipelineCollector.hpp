@@ -179,19 +179,24 @@ namespace collection
             std::unordered_set<sparta::TreeNode*> visited;
             q.push(root);
 
-            while (!q.empty()) {
-                auto node = q.front();
-                q.pop();
+            db_mgr_->safeTransaction([&](){
+                while (!q.empty()) {
+                    auto node = q.front();
+                    q.pop();
 
-                if (!visited.insert(node).second) {
-                    continue;
+                    if (!visited.insert(node).second) {
+                        continue;
+                    }
+
+                    node->configCollectable(db_mgr_->getCollectionMgr());
+                    for (auto child : sparta::TreeNodePrivateAttorney::getAllChildren(node)) {
+                        q.push(child);
+                    }
                 }
 
-                node->configCollectable(db_mgr_->getCollectionMgr());
-                for (auto child : sparta::TreeNodePrivateAttorney::getAllChildren(node)) {
-                    q.push(child);
-                }
-            }
+                db_mgr_->finalizeCollections();
+                return true;
+            });
         }
 
         ~PipelineCollector() {

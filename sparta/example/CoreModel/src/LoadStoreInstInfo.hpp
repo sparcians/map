@@ -182,9 +182,8 @@ namespace simdb
 {
 
 template <>
-inline void defineStructSchema<core_example::LoadStoreInstInfo>(StructSchema& schema)
+inline void defineStructSchema<core_example::LoadStoreInstInfo>(StructSchema<core_example::LoadStoreInstInfo>& schema)
 {
-    schema.setStructName("LSInstInfo");
     schema.addField<uint64_t>("DID");
     schema.addField<core_example::LoadStoreInstInfo::IssuePriority>("rank");
     schema.addField<core_example::LoadStoreInstInfo::IssueState>("state");

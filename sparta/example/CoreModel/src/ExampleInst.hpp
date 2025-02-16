@@ -239,11 +239,10 @@ inline void defineEnumMap<core_example::ExampleInst::TargetUnit>(std::string& en
 }
 
 template <>
-inline void defineStructSchema<core_example::ExampleInst>(StructSchema& schema)
+inline void defineStructSchema<core_example::ExampleInst>(StructSchema<core_example::ExampleInst>& schema)
 {
     using TargetUnit = core_example::ExampleInst::TargetUnit;
 
-    schema.setStructName("ExampleInst");
     schema.addField<uint64_t>("DID");
     schema.addField<uint64_t>("uid");
     schema.addField<std::string>("mnemonic");

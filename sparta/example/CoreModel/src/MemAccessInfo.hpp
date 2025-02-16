@@ -155,9 +155,8 @@ inline void defineEnumMap<core_example::MemoryAccessInfo::CacheState>(std::strin
 }
 
 template <>
-inline void defineStructSchema<core_example::MemoryAccessInfo>(StructSchema& schema)
+inline void defineStructSchema<core_example::MemoryAccessInfo>(StructSchema<core_example::MemoryAccessInfo>& schema)
 {
-    schema.setStructName("MemoryAccessInfo");
     schema.addField<uint64_t>("DID");
     schema.addBoolField("valid");
     schema.addField<core_example::MemoryAccessInfo::MMUState>("mmu");
