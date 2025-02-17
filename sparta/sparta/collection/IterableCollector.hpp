@@ -216,7 +216,12 @@ private:
     const IterableType * iterable_object_;
     std::vector<std::unique_ptr<CollectableT>> positions_;
     const size_type expected_capacity_ = 0;
-    std::shared_ptr<simdb::IterableCollectionPoint<sparse_array_type>> simdb_collectable_;
+
+    using simdb_collectable_type = std::conditional_t<sparse_array_type,
+                                                      simdb::SparseIterableCollectionPoint,
+                                                      simdb::ContigIterableCollectionPoint>;
+                                          
+    std::shared_ptr<simdb_collectable_type> simdb_collectable_;
 };
 } // namespace collection
 } // namespace sparta

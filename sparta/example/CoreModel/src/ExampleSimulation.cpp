@@ -369,14 +369,13 @@ void ExampleSimulator::configureTree_()
     // To get better coverage of the pipeline collector, we will use different clock
     // domains for each core when collection is enabled.
     auto pc = getSimulationConfiguration()->pipeline_collection_file_prefix != sparta::app::NoPipelineCollectionStr;
-    if (pc) {
+    if (pc && num_cores_ > 1) {
         auto root_clk = getClockManager().getRoot();
         for (uint32_t core_idx = 1; core_idx < num_cores_; ++core_idx) {
             const std::string clk_name = "core" + std::to_string(core_idx) + "_clk";
-            const auto numer = 1;
-            const auto denom = core_idx + 1;
-            auto core_clk = getClockManager().makeClock("core1_clk", root_clk, numer, denom);
+            auto core_clk = getClockManager().makeClock(clk_name, root_clk);
             auto core = getRoot()->getChild("cpu.core" + std::to_string(core_idx));
+            core_clk->setPeriod(root_clk->getPeriod() * (core_idx + 1));
             core->setClock(core_clk.get());
         }
     }
