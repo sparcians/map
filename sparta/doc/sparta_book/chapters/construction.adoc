@@ -3,25 +3,20 @@
 :imagesdir:../images
 :data-uri:
 
-Building a Sparta Model starts with establishing a simulation
-hierarchy or component relationships.
-This heirarchy will represent all of the components instantiated by
-Sparta as well as those components created by the modeler.
-Sparta uses these defined relationships in almost all facets of simulation.
+Building a Sparta Model requires establishing component hierarchies
+and relationships that will be used during similation.  This
+establishment is used to represent all of the components instantiated
+by Sparta as well as those components created by the modeler to build,
+connect, run, observe, and destroy the simulation.
 
 == Getting Started
-As an example of a simulation heirarchy, take a generic CPU design
-which consists of multiple cores and a memory subsytem (mss).  Each
-core has direct relationships to subnodes that represent a functional
-unit of the core.
 
-****
-Note that in Sparta, the heirarchy will begin with a
-https://sparcians.github.io/map/classsparta_1_1RootTreeNode.html[sparta::RootTreenode]
-called `top`.  This `top` node is created automatically when a simulation is instantiated.
-****
+As an example of a simulation heirarchy, take a generic SoC design
+which consists of multiple cores and a memory subsytem (`mss`).  Each
+core consists of subcomponents (`fetch`, `decode`, `rename`, etc).
 [plantuml,align="center"]
 ....
+@startuml
 (top) --> (cpu)
 (top) --> (mss)
 (cpu) --> (core0)
@@ -33,12 +28,29 @@ called `top`.  This `top` node is created automatically when a simulation is ins
 (core0) --> (exe)
 (core0) --> (lsu)
 (core0) --> (retire)
-(core1) --> (...)
+(core1) --> (...repeats)
+@enduml
 ....
+
+The `top` level node is, by default, named `top` and is the root of all components in the example SoC.
+
+****
+Note that in Sparta, a "root" tree node is always of type
+https://sparcians.github.io/map/classsparta_1_1RootTreeNode.html[sparta::RootTreenode]
+called `top` if constructed without a name.  This `top` node is
+created automatically when a
+https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html[sparta::app::Simulation]
+object is instantiated (https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a50d046cc0b13d2776fb51813bfa7b0c5[sparta::app::Simulation::getRoot()])..
+****
 
 Each node of the heirarchy represents a
 https://sparcians.github.io/map/classsparta_1_1TreeNode.html[sparta::TreeNode]
-which is the main "container" of the node.
+which is the main "node container".  This container will hold
+everything related to that component like the component's
+https://sparcians.github.io/map/classsparta_1_1ParameterSet.html[ParameterSet],
+https://sparcians.github.io/map/classsparta_1_1PortSet.html[PortSet],
+https://sparcians.github.io/map/classsparta_1_1StatisticSet.html[StatisticSet], and the modeler's specific
+https://sparcians.github.io/map/classsparta_1_1Unit.html[Unit].
 
 The modeler is responsible for creating these nodes, establishing the
 relationships between them, and eventually destroying them.  This
@@ -53,10 +65,91 @@ in simulation and is at the heart of the Sparta Simulation Framework.
 Everything in simulation refers to these constructed artifacts and
 their relationships.
 
-Note that these nodes and the modeler's _actual_ modeled components
-are not related to each other at this point.  What is being
-established is the _containment_ of those modeled components.
-Instantiation of the modeler's actual code/unit comes later...
+After component relationship is established, the diagram will consist
+of the following classes/relationships:
+[plantuml,align="center"]
+....
+@startuml
+class sparta::TreeNode {
+ -children_[] : sparta::TreeNode
+ -parent_ *  : sparta::TreeNode
+}
+class sparta::RootTreeNode
+class sparta::ResourceTreeNode {
+ -resource_ : sparta::Resource
+}
+
+sparta::TreeNode <|-- sparta::RootTreeNode
+sparta::RootTreeNode --> sparta::TreeNode
+sparta::TreeNode <|-- sparta::ResourceTreeNode
+sparta::ResourceTreeNode --> sparta::TreeNode
+
+class sparta::Unit {
+ #port_set_ : sparta::PortSet
+ #statistic_set_ : sparta::StatisticSet
+}
+
+class sparta::Resource {
+ +getContainer() : sparta::TreeNode
+}
+sparta::Resource --> sparta::TreeNode
+sparta::Resource <|-- sparta::Unit
+
+sparta::ResourceTreeNode *- sparta::Resource : owns/creates
+
+class my_model::Core
+class my_model::Fetch
+class my_model::Decode
+class my_model::Rename
+class my_model::etc
+
+sparta::Unit <|-- my_model::Core
+sparta::Unit <|-- my_model::Fetch
+sparta::Unit <|-- my_model::Decode
+sparta::Unit <|-- my_model::Rename
+sparta::Unit <|-- my_model::etc
+
+@enduml
+....
+Note that `sparta::RootTreeNode` and `sparta::ResourceTreeNode` being
+of type `sparta::TreeNode` contain a list of children `sparta::TreeNode` objects as well as 1
+parent.  A `sparta::TreeNode` cannot have more than 1 parent.
+
+After the building of the simulation environment, from the modeler's
+point of view, relationships will look like the following.
+
+[plantuml,align="center"]
+....
+@startuml
+
+
+class sparta::top
+
+class my_model::Core
+class my_model::MSS
+class my_model::Fetch
+class my_model::Decode
+class my_model::Rename
+
+sparta::top -> my_model::Core
+sparta::top -> my_model::MSS
+my_model::Core --> my_model::Fetch
+my_model::Core --> my_model::Decode
+my_model::Core --> my_model::Rename
+my_model::Core --> my_model::etc
+
+@enduml
+....
+
+However, accessing one component (`Core` -> `Fetch` as an example) is
+not direct, but rather through the containers in which they reside:
+```
+   my_core->getContainer()->getChildren ... etc
+```
+
+This is highly discouraged, however, as resources should not be
+accessing each other directly. Instead, resources should communicate
+through Ports.
 
 === Sparta TreeNode
 
@@ -70,27 +163,41 @@ tree, that modeler is actually creating `sparta::TreeNode` instances
 to reside in the tree and then establishes parent-child relationships between them.
 
 In practice, the modeler will most likely construct a:
-https://sparcians.github.io/map/classsparta_1_1ResourceTreeNode.html[`sparta::ResourceTreeNode`]
-derived type.  This class allows a modeler to build model-specific
-units and components used in simulation.
+https://sparcians.github.io/map/classsparta_1_1ResourceTreeNode.html[sparta::ResourceTreeNode]
+derived type.  This class is a special type of `sparta::TreeNode` that
+allows Sparta to instantiate and maintain model-specific units and
+components used in simulation.
 
 === Sparta ResourceTreeNode
 
 The
-https://sparcians.github.io/map/classsparta_1_1ResourceTreeNode.html[`sparta::ResourceTreeNode`]
+https://sparcians.github.io/map/classsparta_1_1ResourceTreeNode.html[sparta::ResourceTreeNode]
 is a derivative class of `sparta::TreeNode` and is aware of modeling
-resources that need to be instantiated.
+resources that need to be instantiated including the modeler's
+specific derivative of the `sparta::Unit` or `sparta::Resource`.
 
 To instantiate the modeler's modeling components the
 `sparta::ResourceTreeNode` requires the modeler to provide an instance
 of a
 https://sparcians.github.io/map/classsparta_1_1ResourceFactoryBase.html[sparta::ResourceFactoryBase].
 
+https://en.wikipedia.org/wiki/Factory_method_pattern[Factories] are a common practice in software development, allowing a
+framework to remain type-agnostic, but giving an opportunity for the
+user to instantiate their own instance of a class.
+
+[#Factory Pattern,link="https://upload.wikimedia.org/wikipedia/commons/4/43/W3sDesign_Factory_Method_Design_Pattern_UML.jpg"]
+image::../images/W3sDesign_Factory_Method_Design_Pattern_UML.jpg[The Factory Design Pattern,align=center]
+
+
 For convenience, Sparta provides a generic derived factory called
 https://sparcians.github.io/map/classsparta_1_1ResourceFactory.html[sparta::ResourceFactory]
-if the modeler has no special construction requirements.  See
-<<Factories>> for how to make a custom factory to build specialized simulation tree
-structures.
+if the modeler has no special construction requirements.  See the
+<<Factories>> section to learn how to create a custom factory to build
+specialized simulation tree structures.
+
+During finalization of the framework (documented in the next section),
+the `sparta::ResourceTreeNode` will use the given factory to
+instantiate the user defined modeling component.
 
 === Creating a Simulator
 
