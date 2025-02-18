@@ -188,9 +188,12 @@ namespace collection
                         continue;
                     }
 
-                    node->configCollectable(db_mgr_->getCollectionMgr());
-                    for (auto child : sparta::TreeNodePrivateAttorney::getAllChildren(node)) {
-                        q.push(child);
+                    if (auto ctn = dynamic_cast<CollectableTreeNode*>(node)) {
+                        ctn->configCollectable(db_mgr_->getCollectionMgr());
+                    } else {
+                        for (auto child : sparta::TreeNodePrivateAttorney::getAllChildren(node)) {
+                            q.push(child);
+                        }
                     }
                 }
 
@@ -417,8 +420,11 @@ namespace collection
 
         private:
             void performSweep_() {
+                // Note that we subtract one from the current tick
+                // since this sweep runs in the very last phase
+                // when the tick has already advanced.
                 auto tick = clk_->getScheduler()->getCurrentTick();
-                collection_mgr_->sweep(clk_->getName(), tick);
+                collection_mgr_->sweep(clk_->getName(), tick - 1);
 
                 if (!sweepables_.empty()) {
                     ev_sweep_.schedule();

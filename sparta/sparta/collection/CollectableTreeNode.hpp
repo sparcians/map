@@ -62,6 +62,14 @@ namespace collection
         virtual ~CollectableTreeNode()
         {}
 
+        /*!
+         * \brief The pipeline collector will call this method on all nodes
+         * as soon as the collector is created.
+         * 
+         * \return true if we should recurse, false otherwise
+         */
+        virtual void configCollectable(simdb::CollectionMgr *) = 0;
+
         /**
          * \brief Method that tells this treenode that is now running
          *        collection.

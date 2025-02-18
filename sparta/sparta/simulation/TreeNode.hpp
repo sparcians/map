@@ -2174,12 +2174,6 @@ namespace sparta
         virtual void activateLink(const std::string &label);
 
         /*!
-         * \brief The pipeline collector will call this method on all nodes
-         * as soon as the collector is created.
-         */
-        virtual void configCollectable(simdb::CollectionMgr *) {}
-
-        /*!
          * \brief Compute a regex pattern for a node child path containing any
          * number of wildcard characters (not a dot-separated location) which
          * can be used to test against child node names.
