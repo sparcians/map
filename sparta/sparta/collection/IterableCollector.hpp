@@ -80,7 +80,7 @@ public:
         {
             std::stringstream name_str;
             name_str << name << i;
-            positions_.emplace_back(new CollectableT(this, name_str.str(), group, i));
+            positions_.emplace_back(new IterableCollectorBin(this, name_str.str(), group, i));
         }
     }
 
@@ -194,7 +194,26 @@ public:
     }
 
 private:
-    typedef Collectable<typename std::iterator_traits<typename IterableType::iterator>::value_type> CollectableT;
+    class IterableCollectorBin : public CollectableTreeNode
+    {
+    public:
+        IterableCollectorBin(TreeNode* parent,
+                            const std::string& name,
+                            const std::string& group,
+                            const uint32_t bin_idx)
+            : CollectableTreeNode(parent, name, group, bin_idx, "IterableCollectorBin <no desc>")
+        {}
+
+        void configCollectable(simdb::CollectionMgr *) override final
+        {
+            // Nothing to do here
+        }
+
+        void collect() override final
+        {
+            // Nothing to do here
+        }
+    };
 
     //! Virtual method called by CollectableTreeNode when collection
     //! is enabled on the TreeNode
@@ -214,7 +233,7 @@ private:
     }
 
     const IterableType * iterable_object_;
-    std::vector<std::unique_ptr<CollectableT>> positions_;
+    std::vector<std::unique_ptr<IterableCollectorBin>> positions_;
     const size_type expected_capacity_ = 0;
 
     using simdb_collectable_type = std::conditional_t<sparse_array_type,
@@ -223,5 +242,6 @@ private:
                                           
     std::shared_ptr<simdb_collectable_type> simdb_collectable_;
 };
+
 } // namespace collection
 } // namespace sparta

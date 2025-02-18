@@ -869,6 +869,9 @@ namespace sparta
             //! Typedef for size_type
             typedef uint32_t size_type;
 
+            //! Typedef for value_type
+            typedef DataT value_type;
+
             AgedArrayCollectorProxy(FullArrayType * array) : array_(array) { }
 
             typedef FullArrayType::iterator iterator;
