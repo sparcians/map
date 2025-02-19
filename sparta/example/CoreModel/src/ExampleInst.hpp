@@ -235,8 +235,8 @@ namespace core_example
     // This PairDefinition class could be named anything but it needs to
     // inherit publicly from sparta::PairDefinition templatized on the actual class ExampleInst.
     class ExampleInstPairDef : public sparta::PairDefinition<ExampleInst>{
-        public:
-            // The SPARTA_ADDPAIRs APIs must be called during the construction of the PairDefinition class
+    public:
+        // The SPARTA_ADDPAIRs APIs must be called during the construction of the PairDefinition class
         ExampleInstPairDef() : PairDefinition<ExampleInst>(){
             SPARTA_INVOKE_PAIRS(ExampleInst);
         }
