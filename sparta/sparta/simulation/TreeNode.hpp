@@ -40,10 +40,6 @@ namespace sparta {
 class PostRunValidationInfo;
 }  // namespace sparta
 
-namespace simdb {
-class CollectionMgr;
-} // namespace simdb
-
 #ifndef TREENODE_LIFETIME_TRACE
 /*!
  * \brief Enables tracing of TreeNode lifetimes in a set of output txt files.

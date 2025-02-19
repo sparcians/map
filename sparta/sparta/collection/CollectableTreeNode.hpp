@@ -14,6 +14,7 @@
 
 namespace simdb {
     class DatabaseManager;
+    class CollectionMgr;
 }
 
 namespace sparta{
