@@ -6,6 +6,7 @@
 #include "sparta/decode/DecoderBase.hpp"
 #include "sparta/memory/AddressTypes.hpp"
 #include "sparta/resources/SharedData.hpp"
+#include "sparta/pairs/SpartaKeyPairs.hpp"
 #include "sparta/simulation/State.hpp"
 #include "sparta/utils/SpartaSharedPointer.hpp"
 #include "sparta/utils/SpartaSharedPointerAllocator.hpp"
@@ -22,8 +23,14 @@ namespace core_example
     * \brief Example instruction that flows through the example/CoreModel
     */
 
+    // Forward declaration of the Pair Definition class is must as we are friending it.
+    class ExampleInstPairDef;
+
     class ExampleInst {
     public:
+
+        // The modeler needs to alias a type called "SpartaPairDefinitionType" to the Pair Definition class  of itself
+        using SpartaPairDefinitionType = ExampleInstPairDef;
 
         enum class Status : std::uint16_t{
             FETCHED = 0,
@@ -219,6 +226,29 @@ namespace core_example
         }
         return os;
     }
+
+    /*!
+    * \class ExampleInstPairDef
+    * \brief Pair Definition class of the Example instruction that flows through the example/CoreModel
+    */
+    // This is the definition of the PairDefinition class of ExampleInst.
+    // This PairDefinition class could be named anything but it needs to
+    // inherit publicly from sparta::PairDefinition templatized on the actual class ExampleInst.
+    class ExampleInstPairDef : public sparta::PairDefinition<ExampleInst>{
+        public:
+            // The SPARTA_ADDPAIRs APIs must be called during the construction of the PairDefinition class
+        ExampleInstPairDef() : PairDefinition<ExampleInst>(){
+            SPARTA_INVOKE_PAIRS(ExampleInst);
+        }
+        SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("DID",      &ExampleInst::getUniqueID),
+                              SPARTA_ADDPAIR("uid",      &ExampleInst::getUniqueID),
+                              SPARTA_ADDPAIR("mnemonic", &ExampleInst::getMnemonic),
+                              SPARTA_ADDPAIR("complete", &ExampleInst::getCompletedStatus),
+                              SPARTA_ADDPAIR("unit",     &ExampleInst::getUnit),
+                              SPARTA_ADDPAIR("latency",  &ExampleInst::getExecuteTime),
+                              SPARTA_ADDPAIR("raddr",    &ExampleInst::getRAdr, std::ios::hex),
+                              SPARTA_ADDPAIR("vaddr",    &ExampleInst::getVAdr, std::ios::hex))
+    };
 }
 
 namespace simdb
