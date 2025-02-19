@@ -74,9 +74,14 @@ find_package(ZLIB REQUIRED)
 include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 message (STATUS "Using zlib ${ZLIB_VERSION_STRING}")
 
+# Find HDF5.
+find_package (HDF5 1.10 REQUIRED COMPONENTS CXX)
+include_directories (SYSTEM ${HDF5_INCLUDE_DIRS})
+message (STATUS "Using HDF5 ${HDF5_VERSION}")
+
 # Populate the Sparta_LIBS variable with the required libraries for
 # basic Sparta linking
-set (Sparta_LIBS sparta sqlite3 yaml-cpp ZLIB::ZLIB pthread
+set (Sparta_LIBS sparta HDF5::HDF5 sqlite3 yaml-cpp ZLIB::ZLIB pthread
   Boost::date_time Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
 
 # On Linux we need to link against rt as well

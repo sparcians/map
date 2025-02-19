@@ -2,6 +2,7 @@ include(FindPackageHandleStandardArgs)
 
 if(NOT SPARTA_FOUND)
     find_package(Boost REQUIRED COMPONENTS timer filesystem serialization program_options)
+    find_package(HDF5 REQUIRED COMPONENTS CXX)
     find_package(SQLite3 REQUIRED)
     find_package(ZLIB REQUIRED)
     find_package(yaml-cpp REQUIRED)
@@ -64,9 +65,9 @@ if(NOT SPARTA_FOUND)
           get_target_property(YAML_CPP_INCLUDE_DIR yaml-cpp::yaml-cpp INTERFACE_INCLUDE_DIRECTORIES)
         endif ()
         set_property(TARGET SPARTA::sparta
-          PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${SPARTA_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${SQLite3_INCLUDE_DIRS} ${RAPIDJSON_INCLUDE_DIR} ${RapidJSON_INCLUDE_DIR} ${YAML_CPP_INCLUDE_DIR})
+          PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${SPARTA_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${SQLite3_INCLUDE_DIRS} ${HDF5_CXX_INCLUDE_DIRS} ${RAPIDJSON_INCLUDE_DIR} ${RapidJSON_INCLUDE_DIR} ${YAML_CPP_INCLUDE_DIR})
         set_property(TARGET SPARTA::sparta
-          PROPERTY INTERFACE_LINK_LIBRARIES SPARTA::libsparta SQLite::SQLite3
+          PROPERTY INTERFACE_LINK_LIBRARIES SPARTA::libsparta HDF5::HDF5 SQLite::SQLite3
           Boost::filesystem Boost::serialization Boost::timer Boost::program_options
           ZLIB::ZLIB yaml-cpp Threads::Threads)
 
