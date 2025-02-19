@@ -21,6 +21,8 @@ namespace sparta{
 namespace collection
 {
 
+    class PipelineCollector;
+
     /**
      * \class CollectableTreeNode
      * \brief An abstract type of TreeNode that
