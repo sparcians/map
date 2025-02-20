@@ -221,6 +221,8 @@ namespace collection
          */
         void destroy()
         {
+            db_mgr_->postSim();
+
             if(collection_active_) {
                 for(auto & ctn : registered_collectables_) {
                     if(ctn->isCollected()) {
@@ -228,6 +230,7 @@ namespace collection
                     }
                 }
             }
+
             registered_collectables_.clear();
             collection_active_ = false;
         }
