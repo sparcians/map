@@ -103,7 +103,7 @@ namespace sparta
             /*
              * \brief Get the cache set for the given index
              */
-            CacheSetT &peekCacheSetAtIndex(uint set_idx) const
+            const CacheSetT &peekCacheSetAtIndex(uint set_idx) const
             {
                 assert(set_idx < num_sets_);
                 return sets_[set_idx];
