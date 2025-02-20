@@ -45,9 +45,9 @@ namespace sparta
             virtual uint64_t calcBlockAddr(uint64_t addr) const { return (addr & blk_addr_mask_); }
             virtual uint64_t calcBlockOffset(uint64_t addr) const { return (addr & blk_offset_mask_); }
 
-            uint64_t getIndexMask() { return index_mask_;}
-            uint64_t getIndexShift() { return index_shift_;}
-            uint64_t getBlockOffsetMask() {return blk_offset_mask_;}
+            uint64_t getIndexMask() const { return index_mask_;}
+            uint64_t getIndexShift() const { return index_shift_;}
+            uint64_t getBlockOffsetMask() const { return blk_offset_mask_; }
 
         private:
             uint64_t line_size_;
