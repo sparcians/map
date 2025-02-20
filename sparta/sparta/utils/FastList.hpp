@@ -16,6 +16,7 @@
 #include <iterator>
 #include <cinttypes>
 #include <cassert>
+#include <cstddef>
 #include <type_traits>
 
 #include "sparta/utils/IteratorTraits.hpp"
@@ -62,7 +63,7 @@ namespace sparta::utils
             // Stores the memory for an instance of 'T'.
             // Use placement new to construct the object and
             // manually invoke its dtor as necessary.
-            std::aligned_storage_t<sizeof(DataT), alignof(DataT)> type_storage;
+            alignas(DataT) std::byte type_storage[sizeof(DataT)];
 
             Node(NodeIdx _index) :
                 index(_index)
