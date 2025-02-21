@@ -170,6 +170,44 @@ public:
         // Delegated constructor
     }
 
+    /**
+     * \brief constructor with no iterable object associated
+     * \param parent the parent treenode for the collector
+     * \param name the name of the collector
+     * \param expected_capacity The maximum size this item should grow to
+     */
+    IterableCollector (TreeNode * parent,
+                       const std::string & name,
+                       const size_type expected_capacity) :
+        IterableCollector (parent, name, name + " Iterable Collector",
+                          nullptr, expected_capacity)
+    {
+        // Can't auto collect without setting iterable_object_
+        setManualCollection();
+    }
+
+    //! \brief Do not perform any automatic collection
+    //! The SchedulingPhase is ignored
+    void setManualCollection() {
+        auto_collect_ = false;
+    }
+
+    //! Collect the contents of the iterable object.  This function
+    //! will walk starting from index 0 -> expected_capacity, clearing
+    //! out any records where the iterable object does not contain
+    //! data.
+    void collect(const IterableType * iterable_object)
+    {
+        // If pointer has become nullified, close the records
+        if(nullptr == iterable_object) {
+            closeRecord();
+        }
+        else if (SPARTA_EXPECT_TRUE(isCollected()))
+        {
+            simdb_collectable_->activate(iterable_object);
+        }
+    }
+
     //! Collect the contents of the associated iterable object
     void collect() override {
         if(SPARTA_EXPECT_TRUE(isCollected())) {
@@ -218,7 +256,7 @@ private:
     //! Virtual method called by CollectableTreeNode when collection
     //! is enabled on the TreeNode
     void setCollecting_(bool collect, PipelineCollector* collector, simdb::DatabaseManager* db_mgr) override {
-        if (collect) {
+        if (collect && auto_collect_) {
             // Add this Collectable to the PipelineCollector's
             // list of objects requiring collection
             collector->addToAutoCollection(this, collection_phase);
@@ -227,7 +265,7 @@ private:
             // once-a-cycle sweep() method.
             //
             // Note that removeFromAutoCollection() implicitly calls removeFromAutoSweep().
-            collector->removeFromAutoSweep(this);
+            collector->removeFromAutoCollection(this);
             closeRecord();
         }
     }
@@ -235,6 +273,7 @@ private:
     const IterableType * iterable_object_;
     std::vector<std::unique_ptr<IterableCollectorBin>> positions_;
     const size_type expected_capacity_ = 0;
+    bool auto_collect_ = false;
 
     using simdb_collectable_type = std::conditional_t<sparse_array_type,
                                                       simdb::SparseIterableCollectionPoint,
