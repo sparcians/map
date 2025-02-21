@@ -1,0 +1,9 @@
+<map id="sparta::serialization::checkpoint::FastCheckpointer::findLatestCheckpointAtOrBefore" name="sparta::serialization::checkpoint::FastCheckpointer::findLatestCheckpointAtOrBefore">
+<area shape="rect" id="Node000001" title="Finds the latest checkpoint at or before the given tick starting at the from checkpoint and working b..." alt="" coords="5,85,220,141"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#ac148071f4baed77d65246f9a9fb6da12" title="Attempts to find a checkpoint within this checkpointer by ID." alt="" coords="268,5,466,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="202,82,261,64,262,69,204,87"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a099fdcf88200fbcb8a2b1ac47b7df0f7" title="Returns the previous checkpoint. If this checkpoint is a snapshot, it has no previous checkpoint." alt="" coords="286,85,448,141"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="220,110,271,110,271,116,220,116"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a41b94da230184ddc69fa469a109ee44f" title="Returns the tick number at which this checkpoint was taken." alt="" coords="286,165,448,221"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="204,139,272,161,270,166,202,144"/>
+</map>
