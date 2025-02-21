@@ -3,9 +3,6 @@
 #include <limits>
 #include <map>
 
-#include "sparta/pipeViewer/Outputter.hpp"
-#include "sparta/pipeViewer/transaction_structures.hpp"
-
 class SimpleAnnotationOutputter {
     private:
         static constexpr uint64_t ROOT_CLOCK_ID = 1;

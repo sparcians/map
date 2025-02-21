@@ -58,7 +58,6 @@
 #include "sparta/app/AppTriggers.hpp"
 #include "sparta/app/MetaTreeNode.hpp"
 #include "sparta/app/Simulation.hpp"
-#include "sparta/pipeViewer/InformationWriter.hpp"
 #include "sparta/log/Destination.hpp"
 #include "sparta/log/MessageSource.hpp"
 #include "sparta/log/Tap.hpp"
