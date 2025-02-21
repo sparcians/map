@@ -76,9 +76,6 @@ public:
         iterable_object_(iterable),
         expected_capacity_(expected_capacity)
     {
-        sparta_assert(iterable_object_ != nullptr,
-                      "IterableCollector " << getLocation() << " cannot be constructed with a nullptr iterable object");
-
         for (size_type i = 0; i < expected_capacity_; ++i)
         {
             std::stringstream name_str;
