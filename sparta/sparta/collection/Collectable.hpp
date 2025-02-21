@@ -112,7 +112,8 @@ namespace sparta{
             {
                 if(SPARTA_EXPECT_TRUE(isCollected()))
                 {
-                    simdb_collectable_->activate(val);
+                    const bool once = !auto_collect_;
+                    simdb_collectable_->activate(val, once);
                 }
             }
 

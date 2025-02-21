@@ -70,6 +70,9 @@ public:
                        const IterableType * iterable,
                        const size_type expected_capacity) :
         CollectableTreeNode(parent, name, group, index, desc),
+        event_set_(this),
+        ev_close_record_(&event_set_, name + "_pipeline_collectable_close_event",
+                         CREATE_SPARTA_HANDLER_WITH_DATA(IterableCollector, closeRecord, bool)),
         iterable_object_(iterable),
         expected_capacity_(expected_capacity)
     {
@@ -102,7 +105,9 @@ public:
                        const IterableType & iterable,
                        const size_type expected_capacity) :
         IterableCollector(parent, name, group, index, desc, &iterable, expected_capacity)
-    {}
+    {
+        // Delegated constructor
+    }
 
     /**
      * \brief constructor
@@ -118,7 +123,9 @@ public:
                        const IterableType * iterable,
                        const size_type expected_capacity) :
         IterableCollector(parent, name, name, 0, desc, iterable, expected_capacity)
-    {}
+    {
+        // Delegated constructor
+    }
 
     /**
      * \brief constructor
@@ -134,7 +141,9 @@ public:
                        const IterableType & iterable,
                        const size_type expected_capacity) :
         IterableCollector(parent, name, name, 0, desc, &iterable, expected_capacity)
-    {}
+    {
+        // Delegated constructor
+    }
 
     /**
      * \brief constructor with no description
@@ -192,6 +201,17 @@ public:
         auto_collect_ = false;
     }
 
+    //! \brief Perform a collection, then close the records in the future
+    //! \param duration The time to close the records, 0 is not allowed
+    void collectWithDuration(sparta::Clock::Cycle duration) {
+        if(SPARTA_EXPECT_FALSE(isCollected())) {
+            collect();
+            if(duration != 0) {
+                ev_close_record_.preparePayload(false)->schedule(duration);
+            }
+        }
+    }
+
     //! Collect the contents of the iterable object.  This function
     //! will walk starting from index 0 -> expected_capacity, clearing
     //! out any records where the iterable object does not contain
@@ -204,7 +224,8 @@ public:
         }
         else if (SPARTA_EXPECT_TRUE(isCollected()))
         {
-            simdb_collectable_->activate(iterable_object);
+            const bool once = !auto_collect_;
+            simdb_collectable_->activate(iterable_object, once);
         }
     }
 
@@ -218,6 +239,13 @@ public:
     //! Reattach to a new iterable object (used for moves)
     void reattach(const IterableType * obj) {
         iterable_object_ = obj;
+    }
+
+    //! Force close all records for this iterable type.  This will
+    //! close the record immediately and clear the field for the next
+    //! cycle
+    void closeRecord(const bool & simulation_ending = false) override {
+        simdb_collectable_->deactivate();
     }
 
     /*!
@@ -256,19 +284,41 @@ private:
     //! Virtual method called by CollectableTreeNode when collection
     //! is enabled on the TreeNode
     void setCollecting_(bool collect, PipelineCollector* collector, simdb::DatabaseManager* db_mgr) override {
-        if (collect && auto_collect_) {
-            // Add this Collectable to the PipelineCollector's
-            // list of objects requiring collection
-            collector->addToAutoCollection(this, collection_phase);
+        if (iterable_object_ && auto_collect_) {
+            if (collect) {
+                // Add this Collectable to the PipelineCollector's
+                // list of objects requiring collection
+                collector->addToAutoCollection(this, collection_phase);
+            } else {
+                // If we are no longer collecting, remove this Collectable from the
+                // once-a-cycle sweep() method.
+                //
+                // Note that removeFromAutoCollection() implicitly calls removeFromAutoSweep().
+                collector->removeFromAutoCollection(this);
+                closeRecord();
+            }
         } else {
-            // If we are no longer collecting, remove this Collectable from the
-            // once-a-cycle sweep() method.
-            //
-            // Note that removeFromAutoCollection() implicitly calls removeFromAutoSweep().
-            collector->removeFromAutoCollection(this);
-            closeRecord();
+            if (collect) {
+                // If we are manually collecting, we still need to tell the collector
+                // to run the sweep() method every cycle on our clock.
+                //
+                // Note that addToAutoCollection() implicitly calls addToAutoSweep().
+                collector->addToAutoSweep(this);
+            } else {
+                // If we are no longer collecting, remove this Collectable from the
+                // once-a-cycle sweep() method.
+                //
+                // Note that removeFromAutoCollection() implicitly calls removeFromAutoSweep().
+                collector->removeFromAutoSweep(this);
+                closeRecord();
+            }
         }
     }
+
+    // For those folks that want a value to automatically
+    // disappear in the future
+    sparta::EventSet event_set_;
+    sparta::PayloadEvent<bool, sparta::SchedulingPhase::Trigger> ev_close_record_;
 
     const IterableType * iterable_object_;
     std::vector<std::unique_ptr<IterableCollectorBin>> positions_;
