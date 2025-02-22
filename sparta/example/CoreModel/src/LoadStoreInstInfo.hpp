@@ -212,8 +212,8 @@ template <>
 inline void defineStructSchema<core_example::LoadStoreInstInfo>(StructSchema<core_example::LoadStoreInstInfo>& schema)
 {
     schema.addField<uint64_t>("DID");
-    schema.addField<core_example::LoadStoreInstInfo::IssuePriority>("rank");
-    schema.addField<core_example::LoadStoreInstInfo::IssueState>("state");
+    schema.addEnum<core_example::LoadStoreInstInfo::IssuePriority>("rank");
+    schema.addEnum<core_example::LoadStoreInstInfo::IssueState>("state");
     schema.setAutoColorizeColumn("DID");
 }
 

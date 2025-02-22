@@ -186,9 +186,9 @@ template <>
 inline void defineStructSchema<core_example::MemoryAccessInfo>(StructSchema<core_example::MemoryAccessInfo>& schema)
 {
     schema.addField<uint64_t>("DID");
-    schema.addBoolField("valid");
-    schema.addField<core_example::MemoryAccessInfo::MMUState>("mmu");
-    schema.addField<core_example::MemoryAccessInfo::CacheState>("cache");
+    schema.addBool("valid");
+    schema.addEnum<core_example::MemoryAccessInfo::MMUState>("mmu");
+    schema.addEnum<core_example::MemoryAccessInfo::CacheState>("cache");
     schema.setAutoColorizeColumn("DID");
 }
 

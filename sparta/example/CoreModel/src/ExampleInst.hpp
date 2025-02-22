@@ -275,12 +275,12 @@ inline void defineStructSchema<core_example::ExampleInst>(StructSchema<core_exam
 
     schema.addField<uint64_t>("DID");
     schema.addField<uint64_t>("uid");
-    schema.addField<std::string>("mnemonic");
-    schema.addBoolField("complete");
-    schema.addField<TargetUnit>("unit");
+    schema.addString("mnemonic");
+    schema.addBool("complete");
+    schema.addEnum<TargetUnit>("unit");
     schema.addField<uint32_t>("latency");
-    schema.addHexField<uint64_t>("raddr");
-    schema.addHexField<uint64_t>("vaddr");
+    schema.addHex<uint64_t>("raddr");
+    schema.addHex<uint64_t>("vaddr");
     schema.setAutoColorizeColumn("DID");
 }
 
