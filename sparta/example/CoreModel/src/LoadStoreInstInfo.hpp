@@ -223,9 +223,9 @@ inline void writeStructFields<core_example::LoadStoreInstInfo>(
     const core_example::LoadStoreInstInfo* inst,
     StructFieldSerializer<core_example::LoadStoreInstInfo>* serializer)
 {
-    serializer->writeField<uint64_t>(inst->getInstUniqueID());
-    serializer->writeField<core_example::LoadStoreInstInfo::IssuePriority>(inst->getPriority());
-    serializer->writeField<core_example::LoadStoreInstInfo::IssueState>(inst->getState());
+    serializer->writeField(inst->getInstUniqueID());
+    serializer->writeField(inst->getPriority());
+    serializer->writeField(inst->getState());
 }
 
 } // namespace simdb

@@ -198,10 +198,10 @@ inline void writeStructFields<core_example::MemoryAccessInfo>(
     const core_example::MemoryAccessInfo* inst,
     StructFieldSerializer<core_example::MemoryAccessInfo>* serializer)
 {
-    serializer->writeField<uint64_t>(inst->getInstUniqueID());
-    serializer->writeField<int32_t>(inst->getPhyAddrIsReady());
-    serializer->writeField<core_example::MemoryAccessInfo::MMUState>(inst->getMMUState());
-    serializer->writeField<core_example::MemoryAccessInfo::CacheState>(inst->getCacheState());
+    serializer->writeField(inst->getInstUniqueID());
+    serializer->writeField(inst->getPhyAddrIsReady());
+    serializer->writeField(inst->getMMUState());
+    serializer->writeField(inst->getCacheState());
 }
 
 } // namespace simdb

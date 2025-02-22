@@ -287,14 +287,14 @@ inline void defineStructSchema<core_example::ExampleInst>(StructSchema<core_exam
 template <>
 inline void writeStructFields<core_example::ExampleInst>(const core_example::ExampleInst* inst, StructFieldSerializer<core_example::ExampleInst>* serializer)
 {
-    serializer->writeField<uint64_t>(inst->getUniqueID());
-    serializer->writeField<uint64_t>(inst->getUniqueID());
+    serializer->writeField(inst->getUniqueID());
+    serializer->writeField(inst->getUniqueID());
     serializer->writeField(inst->getMnemonic());
-    serializer->writeField<int32_t>(inst->getCompletedStatus());
-    serializer->writeField<core_example::ExampleInst::TargetUnit>(inst->getUnit());
-    serializer->writeField<uint32_t>(inst->getExecuteTime());
-    serializer->writeField<uint64_t>(inst->getRAdr());
-    serializer->writeField<uint64_t>(inst->getVAdr());
+    serializer->writeField(inst->getCompletedStatus());
+    serializer->writeField(inst->getUnit());
+    serializer->writeField(inst->getExecuteTime());
+    serializer->writeField(inst->getRAdr());
+    serializer->writeField(inst->getVAdr());
 }
 
 } // namespace simdb
