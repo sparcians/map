@@ -83,6 +83,7 @@ namespace sparta{
                             desc)
             {
                 collected_object_ = collected_object;
+                auto_collect_ = collected_object_ != nullptr;
             }
 
             /**

@@ -82,6 +82,10 @@ public:
             name_str << name << i;
             positions_.emplace_back(new IterableCollectorBin(this, name_str.str(), group, i));
         }
+
+        if (iterable_object_) {
+            auto_collect_ = true;
+        }
     }
 
     /**
