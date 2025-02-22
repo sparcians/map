@@ -281,7 +281,6 @@ inline void defineStructSchema<core_example::ExampleInst>(StructSchema<core_exam
     schema.addField<uint32_t>("latency");
     schema.addHex<uint64_t>("raddr");
     schema.addHex<uint64_t>("vaddr");
-    schema.setAutoColorizeColumn("DID");
 }
 
 template <>
