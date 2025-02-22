@@ -258,14 +258,15 @@ template <>
 inline void defineEnumMap<core_example::ExampleInst::TargetUnit>(std::string& enum_name, std::map<std::string, uint16_t>& map)
 {
     using TargetUnit = core_example::ExampleInst::TargetUnit;
+    using etype = std::underlying_type<TargetUnit>::type;
 
     enum_name = "TargetUnit";
-    map["ALU0"] = static_cast<int32_t>(TargetUnit::ALU0);
-    map["ALU1"] = static_cast<int32_t>(TargetUnit::ALU1);
-    map["FPU"]  = static_cast<int32_t>(TargetUnit::FPU);
-    map["BR"]   = static_cast<int32_t>(TargetUnit::BR);
-    map["LSU"]  = static_cast<int32_t>(TargetUnit::LSU);
-    map["ROB"]  = static_cast<int32_t>(TargetUnit::ROB);
+    map["ALU0"] = static_cast<etype>(TargetUnit::ALU0);
+    map["ALU1"] = static_cast<etype>(TargetUnit::ALU1);
+    map["FPU"]  = static_cast<etype>(TargetUnit::FPU);
+    map["BR"]   = static_cast<etype>(TargetUnit::BR);
+    map["LSU"]  = static_cast<etype>(TargetUnit::LSU);
+    map["ROB"]  = static_cast<etype>(TargetUnit::ROB);
 }
 
 template <>

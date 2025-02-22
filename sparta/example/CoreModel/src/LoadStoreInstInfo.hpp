@@ -132,26 +132,28 @@ template <>
 inline void defineEnumMap<core_example::LoadStoreInstInfo::IssuePriority>(std::string& enum_name, std::map<std::string, uint16_t>& map)
 {
     using IssuePriority = core_example::LoadStoreInstInfo::IssuePriority;
+    using etype = std::underlying_type<IssuePriority>::type;
 
     enum_name = "IssuePriority";
-    map["HIGHEST"] = static_cast<int32_t>(IssuePriority::HIGHEST);
-    map["CACHE_RELOAD"] = static_cast<int32_t>(IssuePriority::CACHE_RELOAD);
-    map["CACHE_PENDING"] = static_cast<int32_t>(IssuePriority::CACHE_PENDING);
-    map["MMU_RELOAD"] = static_cast<int32_t>(IssuePriority::MMU_RELOAD);
-    map["MMU_PENDING"] = static_cast<int32_t>(IssuePriority::MMU_PENDING);
-    map["NEW_DISP"] = static_cast<int32_t>(IssuePriority::NEW_DISP);
-    map["LOWEST"] = static_cast<int32_t>(IssuePriority::LOWEST);
+    map["HIGHEST"]       = static_cast<etype>(IssuePriority::HIGHEST);
+    map["CACHE_RELOAD"]  = static_cast<etype>(IssuePriority::CACHE_RELOAD);
+    map["CACHE_PENDING"] = static_cast<etype>(IssuePriority::CACHE_PENDING);
+    map["MMU_RELOAD"]    = static_cast<etype>(IssuePriority::MMU_RELOAD);
+    map["MMU_PENDING"]   = static_cast<etype>(IssuePriority::MMU_PENDING);
+    map["NEW_DISP"]      = static_cast<etype>(IssuePriority::NEW_DISP);
+    map["LOWEST"]        = static_cast<etype>(IssuePriority::LOWEST);
 }
 
 template <>
 inline void defineEnumMap<core_example::LoadStoreInstInfo::IssueState>(std::string& enum_name, std::map<std::string, uint32_t>& map)
 {
     using IssueState = core_example::LoadStoreInstInfo::IssueState;
+    using etype = std::underlying_type<IssueState>::type;
 
     enum_name = "IssueState";
-    map["READY"] = static_cast<int32_t>(IssueState::READY);
-    map["ISSUED"] = static_cast<int32_t>(IssueState::ISSUED);
-    map["NOT_READY"] = static_cast<int32_t>(IssueState::NOT_READY);
+    map["READY"]     = static_cast<etype>(IssueState::READY);
+    map["ISSUED"]    = static_cast<etype>(IssueState::ISSUED);
+    map["NOT_READY"] = static_cast<etype>(IssueState::NOT_READY);
 }
 
 } // namespace simdb

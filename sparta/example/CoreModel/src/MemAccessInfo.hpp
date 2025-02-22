@@ -164,22 +164,24 @@ template <>
 inline void defineEnumMap<core_example::MemoryAccessInfo::MMUState>(std::string& enum_name, std::map<std::string, uint32_t>& map)
 {
     using MMUState = core_example::MemoryAccessInfo::MMUState;
+    using etype = std::underlying_type<MMUState>::type;
 
     enum_name = "MMUState";
-    map["NoAccess"] = static_cast<int32_t>(MMUState::NO_ACCESS);
-    map["Miss"] = static_cast<int32_t>(MMUState::MISS);
-    map["Hit"]  = static_cast<int32_t>(MMUState::HIT);
+    map["NoAccess"] = static_cast<etype>(MMUState::NO_ACCESS);
+    map["Miss"]     = static_cast<etype>(MMUState::MISS);
+    map["Hit"]      = static_cast<etype>(MMUState::HIT);
 }
 
 template <>
 inline void defineEnumMap<core_example::MemoryAccessInfo::CacheState>(std::string& enum_name, std::map<std::string, uint64_t>& map)
 {
     using CacheState = core_example::MemoryAccessInfo::CacheState;
+    using etype = std::underlying_type<CacheState>::type;
 
     enum_name = "CacheState";
-    map["NoAccess"] = static_cast<int32_t>(CacheState::NO_ACCESS);
-    map["Miss"] = static_cast<int32_t>(CacheState::MISS);
-    map["Hit"]  = static_cast<int32_t>(CacheState::HIT);
+    map["NoAccess"] = static_cast<etype>(CacheState::NO_ACCESS);
+    map["Miss"]     = static_cast<etype>(CacheState::MISS);
+    map["Hit"]      = static_cast<etype>(CacheState::HIT);
 }
 
 template <>
