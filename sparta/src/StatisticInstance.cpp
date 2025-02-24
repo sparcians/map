@@ -99,22 +99,6 @@ namespace sparta
         sparta_assert(false == node_ref_.expired());
     }
 
-    //! \brief Copy Constructor
-    StatisticInstance::StatisticInstance(const StatisticInstance& rhp) :
-        node_ref_(rhp.node_ref_),
-        sdef_(rhp.sdef_),
-        ctr_(rhp.ctr_),
-        par_(rhp.par_),
-        stat_expr_(rhp.stat_expr_),
-        start_tick_(rhp.start_tick_),
-        end_tick_(rhp.end_tick_),
-        scheduler_(rhp.scheduler_),
-        initial_(rhp.initial_),
-        result_(rhp.result_),
-        sub_statistics_(rhp.sub_statistics_)
-    {
-    }
-
     StatisticInstance::StatisticInstance(std::shared_ptr<StatInstCalculator> & calculator,
                                          std::vector<const TreeNode*>& used) :
         StatisticInstance(nullptr, nullptr, nullptr, calculator->getNode(), &used)
@@ -129,6 +113,22 @@ namespace sparta
         sparta_assert(ctr_ == nullptr);
         sparta_assert(par_ == nullptr);
         user_calculated_si_value_ = calculator;
+    }
+
+    //! \brief Copy Constructor
+    StatisticInstance::StatisticInstance(const StatisticInstance& rhp) :
+        node_ref_(rhp.node_ref_),
+        sdef_(rhp.sdef_),
+        ctr_(rhp.ctr_),
+        par_(rhp.par_),
+        stat_expr_(rhp.stat_expr_),
+        start_tick_(rhp.start_tick_),
+        end_tick_(rhp.end_tick_),
+        scheduler_(rhp.scheduler_),
+        initial_(rhp.initial_),
+        result_(rhp.result_),
+        sub_statistics_(rhp.sub_statistics_)
+    {
     }
 
     //! \brief Move Constructor

@@ -70,11 +70,11 @@ public:
                        const IterableType * iterable,
                        const size_type expected_capacity) :
         CollectableTreeNode(parent, name, group, index, desc),
+        iterable_object_(iterable),
+        expected_capacity_(expected_capacity),
         event_set_(this),
         ev_close_record_(&event_set_, name + "_pipeline_collectable_close_event",
-                         CREATE_SPARTA_HANDLER_WITH_DATA(IterableCollector, closeRecord, bool)),
-        iterable_object_(iterable),
-        expected_capacity_(expected_capacity)
+                         CREATE_SPARTA_HANDLER_WITH_DATA(IterableCollector, closeRecord, bool))
     {
         for (size_type i = 0; i < expected_capacity_; ++i)
         {
@@ -316,15 +316,15 @@ private:
         }
     }
 
+    const IterableType * iterable_object_;
+    std::vector<std::unique_ptr<IterableCollectorBin>> positions_;
+    const size_type expected_capacity_;
+    bool auto_collect_ = false;
+
     // For those folks that want a value to automatically
     // disappear in the future
     sparta::EventSet event_set_;
     sparta::PayloadEvent<bool, sparta::SchedulingPhase::Trigger> ev_close_record_;
-
-    const IterableType * iterable_object_;
-    std::vector<std::unique_ptr<IterableCollectorBin>> positions_;
-    const size_type expected_capacity_ = 0;
-    bool auto_collect_ = false;
 
     using simdb_collectable_type = std::conditional_t<sparse_array_type,
                                                       simdb::SparseIterableCollectionPoint,
@@ -332,6 +332,5 @@ private:
                                           
     std::shared_ptr<simdb_collectable_type> simdb_collectable_;
 };
-
 } // namespace collection
 } // namespace sparta

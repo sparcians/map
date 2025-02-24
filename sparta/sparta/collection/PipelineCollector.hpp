@@ -423,9 +423,9 @@ namespace collection
 
         private:
             void performSweep_() {
-                // Note that we subtract one from the current tick
-                // since this sweep runs in the very last phase
-                // when the tick has already advanced.
+                // "Current tick" has been changed to reflect that the Scheduler
+                // has moved on and is now on the "next" tick.  Elapsed time
+                // should reflect current tick - 1
                 auto tick = clk_->getScheduler()->getCurrentTick();
                 collection_mgr_->sweep(clk_->getName(), tick - 1);
 
