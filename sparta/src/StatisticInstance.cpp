@@ -127,7 +127,8 @@ namespace sparta
         scheduler_(rhp.scheduler_),
         initial_(rhp.initial_),
         result_(rhp.result_),
-        sub_statistics_(rhp.sub_statistics_)
+        sub_statistics_(rhp.sub_statistics_),
+        user_calculated_si_value_(rhp.user_calculated_si_value_)
     {
     }
 
@@ -142,7 +143,8 @@ namespace sparta
         end_tick_(rhp.end_tick_),
         scheduler_(rhp.scheduler_),
         initial_(rhp.initial_),
-        result_(rhp.result_)
+        result_(rhp.result_),
+        user_calculated_si_value_(std::move(rhp.user_calculated_si_value_))
     {
         rhp.sdef_ = nullptr;
         rhp.ctr_ = nullptr;

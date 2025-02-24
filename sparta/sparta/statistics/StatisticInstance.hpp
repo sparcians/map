@@ -1,3 +1,4 @@
+
 // <StatisticInstance.hpp> -*- C++ -*-
 
 /*!
@@ -160,33 +161,6 @@ namespace sparta
 
         //! \brief Move Constructor
         StatisticInstance(StatisticInstance&& rhp);
-
-        /*!
-         * \brief Construct a StatisticInstance with its metadata
-         * values set directly, as opposed to this SI asking its
-         * underlying counter/parameter/etc. for these values.
-         */
-        StatisticInstance(const std::string & location,
-                          const std::string & description,
-                          const std::string & expression_str,
-                          const StatisticDef::ValueSemantic value_semantic,
-                          const InstrumentationNode::visibility_t visibility,
-                          const InstrumentationNode::class_t cls,
-                          const std::vector<std::pair<std::string, std::string>> & metadata = {});
-
-        /*!
-         * \brief Construct a StatisticInstance with its location and
-         * description set directly, along with a StatInstCalculator
-         * which can retrieve the SI value on demand from another
-         * source (such as a database file).
-         */
-        StatisticInstance(
-            const std::string & location,
-            const std::string & description,
-            const std::shared_ptr<StatInstCalculator> & calculator,
-            const InstrumentationNode::visibility_t visibility = InstrumentationNode::DEFAULT_VISIBILITY,
-            const InstrumentationNode::class_t cls = InstrumentationNode::DEFAULT_CLASS,
-            const std::vector<std::pair<std::string, std::string>> & metadata = {});
 
         /*!
          * \brief Non-Virtual destructor
