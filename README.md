@@ -21,12 +21,19 @@ MAP is broken into two parts:
 [![MacOS Build Status](https://dev.azure.com/sparcians/map/_apis/build/status/sparcians.map?branchName=master&label=MacOS)](https://dev.azure.com/sparcians/map/_build/latest?definitionId=1&branchName=master)
 [![Documentation](https://github.com/sparcians/map/workflows/Documentation/badge.svg)](https://sparcians.github.io/map/)
 
+## Cloning MAP
+
+MAP uses git submodules, so you should either check out MAP with the --recursive option:
+
+- `git clone git@github.com:sparcians/map.git --recursive`
+
+Or you can get the submodules manually:
+
+- `git clone git@github.com:sparcians/map.git`
+- `cd map`
+- `git submodule update --init --recursive`
+
 ## Building MAP
-
-Building MAP is done in two parts
-
-1. Sparta, the modeling framework: build sparta only in the sparta folder
-2. Argos, the transaction viewer in Helios in the helios folder. Note that to build and use helios, you will need sparta built and installed somwehere on your system.
 
 The MAP repository has numerous dependencies, which are listed in a
 [conda recipe](https://github.com/sparcians/map/blob/master/conda.recipe/meta.yaml),
@@ -77,11 +84,6 @@ installed and would like to build everything (not just sparta).
    * `conda activate sparta`
 1. To build Sparta framework components:
    * `cd sparta && mkdir release && cd release`
-   * `cmake -DCMAKE_BUILD_TYPE=Release ..`
-   * `make`
-   * `cmake --install . --prefix $CONDA_PREFIX`
-1. To build Helios/Argos transaction viewer:
-   * `cd helios && mkdir release && cd release`
    * `cmake -DCMAKE_BUILD_TYPE=Release ..`
    * `make`
    * `cmake --install . --prefix $CONDA_PREFIX`
