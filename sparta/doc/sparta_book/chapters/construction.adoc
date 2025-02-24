@@ -9,7 +9,12 @@ establishment is used to represent all of the components instantiated
 by Sparta as well as those components created by the modeler to build,
 connect, run, observe, and destroy the simulation.
 
-== Getting Started
+This chapter will go over the class structures used to build a running
+simulator.  The chapter will first introduce the modeler to the base
+classes used to make up a simulation environment then will show how to
+use those classes to form the final simulation.
+
+== Sparta Classes for Simulation
 
 As an example of a simulation heirarchy, take a generic SoC design
 which consists of multiple cores and a memory subsytem (`mss`).  Each
@@ -149,7 +154,7 @@ not direct, but rather through the containers in which they reside:
 
 This is highly discouraged, however, as resources should not be
 accessing each other directly. Instead, resources should communicate
-through Ports.
+through https://sparcians.github.io/map/communication.html#comm_ports[`sparta::Ports`].
 
 === Sparta TreeNode
 
@@ -171,15 +176,17 @@ components used in simulation.
 === Sparta ResourceTreeNode
 
 The
-https://sparcians.github.io/map/classsparta_1_1ResourceTreeNode.html[sparta::ResourceTreeNode]
+https://sparcians.github.io/map/classsparta_1_1ResourceTreeNode.html[`sparta::ResourceTreeNode`]
 is a derivative class of `sparta::TreeNode` and is aware of modeling
 resources that need to be instantiated including the modeler's
 specific derivative of the `sparta::Unit` or `sparta::Resource`.
 
-To instantiate the modeler's modeling components the
-`sparta::ResourceTreeNode` requires the modeler to provide an instance
-of a
-https://sparcians.github.io/map/classsparta_1_1ResourceFactoryBase.html[sparta::ResourceFactoryBase].
+By itself, the `sparta::ResourceTreeNode` does not know how to to
+instantiate the modeler's modeling components.  To instantiate those
+components, `sparta::ResourceTreeNode` requires the modeler to provide
+an instance of a
+https://sparcians.github.io/map/classsparta_1_1ResourceFactory.html[`sparta::ResourceFactory`] or a derivative of
+https://sparcians.github.io/map/classsparta_1_1ResourceFactoryBase.html[`sparta::ResourceFactoryBase`]
 
 https://en.wikipedia.org/wiki/Factory_method_pattern[Factories] are a common practice in software development, allowing a
 framework to remain type-agnostic, but giving an opportunity for the
@@ -188,9 +195,8 @@ user to instantiate their own instance of a class.
 [#Factory Pattern,link="https://upload.wikimedia.org/wikipedia/commons/4/43/W3sDesign_Factory_Method_Design_Pattern_UML.jpg"]
 image::../images/W3sDesign_Factory_Method_Design_Pattern_UML.jpg[The Factory Design Pattern,align=center]
 
-
-For convenience, Sparta provides a generic derived factory called
-https://sparcians.github.io/map/classsparta_1_1ResourceFactory.html[sparta::ResourceFactory]
+For convenience, Sparta provides the generic derived factory
+https://sparcians.github.io/map/classsparta_1_1ResourceFactory.html[`sparta::ResourceFactory`]
 if the modeler has no special construction requirements.  See the
 <<Factories>> section to learn how to create a custom factory to build
 specialized simulation tree structures.
@@ -199,40 +205,30 @@ During finalization of the framework (documented in the next section),
 the `sparta::ResourceTreeNode` will use the given factory to
 instantiate the user defined modeling component.
 
-=== Creating a Simulator
+== Building the Simulation Heirarchy
 
-A Sparta-base simualtor starts with the modeler providing a derivated
+The simulation heirarchy can be built anywhere, including a simple
+application that just contains `main()` and starts with a
+`sparta::RootTreeNode`.  However, to take advantage of Sparta's
+built-in command line parsing, automatic phase construction, automatic
+report generation, and other powerful components, using Sparta's
+`sparta::app::Simulation` class is a cleaner choice.
+
+=== Sparta Simulation
+
+A Sparta-based simulator starts with the modeler providing a derivated
 instantiated instance of
-https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html[sparta::app::Simulation].
-[source,cpp]
-----
-////////////////////////////////////////////////////////////////////////////////
-// MySimulator.hpp
+https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html[`sparta::app::Simulation`].
 
-#pragma once
+This class provides a default `sparta::RootTreeNode` that can be used
+immediately.  When this class is coupled with
+`sparta::app::CommandLine`, Sparta is now more "entrenched" in the
+modeler's simulator.
 
-#include "sparta/app/Simulation.hpp"
-
-namespace my_simulator
-{
-    class MySimulator : public sparta::app::Simulation
-    {
-    // User defined simulation behaviors as well as overrides
-    };
-}
-----
-Typical usecase is the modeler provides 1 instance of this object _per
-simulation_, but there's nothing in the framework that restricts this.
-The modeler is responsible for creating and destroying that object.
-
-****
-A rule of thumb when using the Sparta Modeling Framework: if *you* call `new` *you*
-must call `delete`.  The framework will never require the modeler to
-delete anything that it has created nor will it delete anything for you.
-****
-
-The `sparta::app::Simulation` constructor requires at minimum two
-arguments: the simulation name and scheduler to use.
+To start a new simulation, provide a derivative of
+`sparta::app::Simulation`.  Initialize the Simulation with the name of
+the simulator (user defined) and an instance of the
+`sparta::Scheduler` (more on that later).
 
 [source,cpp]
 ----
@@ -242,39 +238,39 @@ arguments: the simulation name and scheduler to use.
 #pragma once
 
 #include "sparta/app/Simulation.hpp"
-#include "sparta/kernel/Scheduler.hpp"
+#include "sparta/kernek/Scheduler.hpp"
 
 namespace my_simulator
 {
     class MySimulator : public sparta::app::Simulation
     {
     public:
-        MySimulator();
+        // User defined simulation behaviors as well as overrides
+        MySimulator(/* custom args */) :
+            sparta::app::Simulation("my_simulator", &scheduler_)
+        { // user defined setups  }
 
     private:
         sparta::Scheduler scheduler_{"my_scheduler"};
-    }
+    };
 }
-----
-[source,cpp]
-----
-////////////////////////////////////////////////////////////////////////////////
-// MySimulator.cpp
 
-#include "MySimulator.hpp"
 
-#include "sparta/simulation/ResourceTreeNode.hpp"
-#include "sparta/simulation/Factory.hpp"
-
-namespace my_simulator
+int main()
 {
-    MySimulator::MySimulator() :
-        sparta::app::Simulation("my_simulator", &scheduler_)
-    {
-       // User defined operations + resource factory registration
-    }
+    MySimulator my_sim;
+    (void) my_sim;
+    return 0;
 }
+
 ----
+Typical usecase is the modeler provides 1 instance of this object _per
+simulation_, but there's nothing in the framework that restricts this.
+
+At this point, the modeler has created the _beginnings_ of a simulator,
+but it does not contain any heirarchy nor instantiated modeling components yet.
+
+
 
 This class is used to guide the modeler through the following phases of simulation:
 
@@ -301,6 +297,14 @@ protected `virtual` method `void buildTree_()`.  In this method, the
 modeler will create the heirarchy of `sparta::ResourceTreeNode`
 objects that represent, or contain, each of the modeler's units to be
 instantiated in simulation.
+
+The modeler is responsible for creating and destroying that object.
+
+****
+A rule of thumb when using the Sparta Modeling Framework: if *you* call `new` *you*
+must call `delete`.  The framework will never require the modeler to
+delete anything that it has created nor will it delete anything for you.
+****
 
 [source,cpp]
 ----
