@@ -202,6 +202,9 @@ inline void writeStructFields<core_example::MemoryAccessInfo>(
     serializer->writeField(inst->getPhyAddrIsReady());
     serializer->writeField(inst->getMMUState());
     serializer->writeField(inst->getCacheState());
+
+    core_example::ExampleInst* ex_inst = inst->getInstPtr().get();
+    StructSerializer<core_example::ExampleInst>::getInstance()->writeStruct(ex_inst, serializer->getBuffer());
 }
 
 } // namespace simdb
