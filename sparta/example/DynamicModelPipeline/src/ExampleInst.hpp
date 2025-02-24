@@ -28,7 +28,7 @@ namespace core_example
 
     class ExampleInst {
     public:
-
+        
         // The modeler needs to alias a type called "type" to the Pair Definition class  of itself
         using type = ExampleInstPairDef;
 
