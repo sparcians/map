@@ -142,6 +142,11 @@ namespace sparta
                 return line;
             }
 
+            const CacheItemT &peekItemAtWay(uint32_t way_idx) const
+            {
+                assert(way_idx < num_ways_);
+                return ways_[way_idx];
+            }
 
             CacheItemT &getItemAtWay(uint32_t way_idx)
             {
