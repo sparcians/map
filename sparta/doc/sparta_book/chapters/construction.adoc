@@ -343,19 +343,22 @@ delete anything that it has created nor will it delete anything for you.
 // Forward declare
 namespace sparta { class TreeNode; }
 
-// MySimulator.hpp
-class MySimulator : public sparta::app::Simulation
+namespace my_simulator
 {
-    // ... construction code
+    // MySimulator.hpp
+    class MySimulator : public sparta::app::Simulation
+    {
+        // ... construction code
 
-private:
+    private:
 
-    // Override sparta::app::Simulation's method
-    void buildTree_() override final;
-    std::vector<std::unique_ptr<sparta::TreeNode>> tns_to_delete_;
+        // Override sparta::app::Simulation's method
+        void buildTree_() override final;
+        std::vector<std::unique_ptr<sparta::TreeNode>> tns_to_delete_;
 
-    // Other user defined private member variables/methods...
-};
+        // Other user defined private member variables/methods...
+    };
+}
 ----
 
 In the source file, implement the `buildTree_` method and create the
@@ -501,14 +504,17 @@ factories in the private section of the Simulation instance:
 
 [source,cpp]
 ----
-class MySimulator ...
+namespace my_simulator
 {
-private:
-    // An instance of the CPU factory, used locally
-    sparta::ResourceFactory<CPU, CPU::CPUParameters> cpu_factory_;
+    class MySimulator ...
+    {
+    private:
+        // An instance of the CPU factory, used locally
+        sparta::ResourceFactory<CPU, CPU::CPUParameters> cpu_factory_;
 
-    std::vector<std::unique_ptr<sparta::TreeNode>> tns_to_delete_;
-};
+        std::vector<std::unique_ptr<sparta::TreeNode>> tns_to_delete_;
+    };
+}
 ----
 and then pass a pointer to that factory to the constructor of the ResourceTreeNode:
 [source,cpp]
@@ -550,6 +556,52 @@ int main()
 }
 ----
 
+Most modelers will not perform any explicit configurations at this
+point, but at this point in simulation construction, the modeler can
+grab the parameters that are associated with _any_ of the modeled
+components to make adjustments, check for errors, etc.
+
+[source,cpp]
+----
+#pragma once
+
+#include <vector>
+#include <memory>
+
+#include "sparta/app/Simulation.hpp"
+#include "sparta/kernel/Scheduler.hpp"
+
+// Forward declare
+namespace sparta { class TreeNode; }
+
+namespace my_simulator
+{
+    // MySimulator.hpp
+    class MySimulator : public sparta::app::Simulation
+    {
+        // ... construction code
+
+    private:
+
+        // Override sparta::app::Simulation's method
+        void buildTree_() override final;
+        std::vector<std::unique_ptr<sparta::TreeNode>> tns_to_delete_;
+
+        // Other user defined private member variables/methods...
+    };
+}
+----
+
+
+[source,cpp]
+----
+namespace my_simulator
+{
+    void MySimulator::configureTree_()
+    {
+    }
+}
+----
 
 ==== Instantiate Phase [[instantiate]]
 
