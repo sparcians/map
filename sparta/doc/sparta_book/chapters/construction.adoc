@@ -181,11 +181,19 @@ is a derivative class of `sparta::TreeNode` and is aware of modeling
 resources that need to be instantiated including the modeler's
 specific derivative of the `sparta::Unit` or `sparta::Resource`.
 
-By itself, the `sparta::ResourceTreeNode` does not know how to to
-instantiate the modeler's modeling components.  To instantiate those
-components, `sparta::ResourceTreeNode` requires the modeler to provide
-an instance of a
-https://sparcians.github.io/map/classsparta_1_1ResourceFactory.html[`sparta::ResourceFactory`] or a derivative of
+Specifically, the `sparta::ResourceTreeNode` is the main container for the following components:
+
+1. `sparta::Unit` -- The base class that the modeler will create his/her component from
+1. `sparta::ParameterSet` -- The parameters used by the modeler's `sparta::Unit` to configure
+
+The `sparta::ResourceTreeNode` will instantiate the modeler's unit as
+well as the parameters it uses.  However, by itself, the
+`sparta::ResourceTreeNode` does not know how to to instantiate the
+modeler's modeling components.  To instantiate those components,
+`sparta::ResourceTreeNode` requires the modeler to provide an instance
+of a
+https://sparcians.github.io/map/classsparta_1_1ResourceFactory.html[`sparta::ResourceFactory`]
+or a derivative of
 https://sparcians.github.io/map/classsparta_1_1ResourceFactoryBase.html[`sparta::ResourceFactoryBase`]
 
 https://en.wikipedia.org/wiki/Factory_method_pattern[Factories] are a common practice in software development, allowing a
@@ -281,18 +289,18 @@ These stages are done automatically for the modeler via the
 `sparta::app::Simulation` class.  The class will guide the
 modeler through these phases:
 
-- *Build* – Define the user-defined modeling components in simulation
+- <<build>>Define the user-defined modeling components in simulation
    and their initial relationships.  This builds the composite tree.
-- *Configure* – Allow the user to present or override configurations
+-  <<configure>>Allow the user to present or override configurations
    before the simulation is instantiated.  This allows changes in
    topology or behaviors.
-- *Instantiate* – (Internal) Construct user-defined modeling
+- <<instantiate>> – (Internal) Construct user-defined modeling
    components registered during Build and configured during Configure.
    The composite tree is now locked.
-- *Bind* – (Internal) Connect all the user-defined modeling components
+- <<bind>> – (Internal) Connect all the user-defined modeling components
    together to establish final communication flow
 
-==== Build Phase
+==== Build Phase [[build]]
 
 The virtual method
 https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#aecc889666b5da1b6891a6f1ed337fbc8[`sparta::app::Simulation::buildTree_()] will be called via
@@ -304,7 +312,7 @@ in the plubic API:
 int main()
 {
     MySimulator my_sim;
-    my_sim.buildTree();
+    my_sim.buildTree(); // Build the TreeNode hierarchy
     return 0;
 }
 ----
@@ -540,7 +548,7 @@ In other words, the factory must be destroyed _after_ the
 ResourceTreeNode is destroyed.  The factory is used to destruct the
 ResourceTreeNode's internal components properly.
 
-==== Configure Phase
+==== Configure Phase [[configure]]
 
 The virtual method
 https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a9d83dfcb8bf3490bff0e26b08f84c4bf[sparta::app::Simulation::configureTree_()] will be called from the public API call https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a54a0e00d7f5998fec76bb62061a475ed[sparta::app::configureTree()].
@@ -550,16 +558,20 @@ https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a9d83dfcb8
 int main()
 {
     MySimulator my_sim;
-    my_sim.buildTree();
-    my_sim.configureTree();
+    my_sim.buildTree();     // Build the TreeNode hierarchy
+    my_sim.configureTree(); // Configure/adjust parameters before instantiation
     return 0;
 }
 ----
 
-Most modelers will not perform any explicit configurations at this
-point, but at this point in simulation construction, the modeler can
-grab the parameters that are associated with _any_ of the modeled
-components to make adjustments, check for errors, etc.
+Most modelers will not perform any explicit configurations, but at
+this point in simulation construction, the modeler can grab the
+`sparta::ParameterSet` instances from `sparta::ResourceTreeNode` that
+are associated with _any_ of the modeled components to make
+adjustments, check for errors, etc.
+
+The `sparta::ParameterSet` objects are created by the
+`sparta::ResourceTreeNode` found in the tree node heirarchy.
 
 [source,cpp]
 ----
@@ -585,6 +597,8 @@ namespace my_simulator
 
         // Override sparta::app::Simulation's method
         void buildTree_() override final;
+        void configureTree_() override final;
+
         std::vector<std::unique_ptr<sparta::TreeNode>> tns_to_delete_;
 
         // Other user defined private member variables/methods...
@@ -599,11 +613,52 @@ namespace my_simulator
 {
     void MySimulator::configureTree_()
     {
+
+        // The modeler can now grab sparta::ParameterSets and specific
+        // Parameters to check for sanity, etc.  This can be either const or non-const
+        const auto core_rtn = getRoot()->getChildAs<sparta::ResourceTreeNode>(CPU::name);
+        const sparta::ParameterSet * core_parameters = core_rtn->getParameterSet();
+        const sparta::Parameter<uint32_t> & num_branch_units =
+            core_parameters->getParameterAs<uint32_t>("num_branch_units");
+         sparta_assert(num_branch_units == 1, "This core design only suppoerts 1 branch unit");
     }
 }
 ----
 
 ==== Instantiate Phase [[instantiate]]
+
+Instantiating the components of simulation is a sparta-internal
+effort, but the phase is stil started by the user by calling
+https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a200bdd31a21e24a242770fcb8e7fff5f(`sparta::app::Simulation::finalizeTree()`)
+
+[source,cpp]
+----
+int main()
+{
+    MySimulator my_sim;
+    my_sim.buildTree();     // Build the TreeNode hierarchy
+    my_sim.configureTree(); // Configure/adjust parameters before instantiation
+    my_sim.finalizeTree();  // Finialize and lock in parameters; instantiate the model
+    return 0;
+}
+----
+
+During this phase, the `sparta::ParameterSet` classes are locked to
+disallow parameter changes, but the tree is still malleable meaning is
+can be extended with even more subcomponents in the modeler's
+constructor.  See <<advanced_features>> for examples.
+
+Also during the call to `finalizeTree`, the framework will traverse
+the tree built in <<build>>, look for `sparta::ResourceTreeNode`
+objects, and instruct them to instantiate the modeler's specific
+implementation of a `sparta::Unit`.
+
+After the modeler's components (instances of `sparta::Unit`) are
+created, the framework will automatically turn to binding those
+components and enters the <<bind>>.
+
+==== Bind Phase [[bind]]
+
 
 ==== Running the Simulation
 
