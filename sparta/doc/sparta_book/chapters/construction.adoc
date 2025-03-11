@@ -629,7 +629,7 @@ namespace my_simulator
 
 Instantiating the components of simulation is a sparta-internal
 effort, but the phase is stil started by the user by calling
-https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a200bdd31a21e24a242770fcb8e7fff5f(`sparta::app::Simulation::finalizeTree()`)
+https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a200bdd31a21e24a242770fcb8e7fff5f[`sparta::app::Simulation::finalizeTree()`]
 
 [source,cpp]
 ----
@@ -661,6 +661,27 @@ components and enters the <<bind>>.
 
 
 ==== Running the Simulation
+
+The last part of simulation configuration is to tell the Sparta
+framework it can now "lock" the simulation environment and expect no
+more topological changes.  This is done through the call to
+https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a18ede64ec543df1bb56a71618fe82757[`sparta::app::Simulation::finalizeFramework()`]
+
+[source,cpp]
+----
+int main()
+{
+    MySimulator my_sim;
+    my_sim.buildTree();     // Build the TreeNode hierarchy
+    my_sim.configureTree(); // Configure/adjust parameters before instantiation
+    my_sim.finalizeTree();  // Finialize and lock in parameters; instantiate the model
+    my_sim.finalizeFramework(); // Tell Sparta that simulation is ready to run
+    return 0;
+}
+----
+
+
+
 
 == Factories [[factories]]
 
