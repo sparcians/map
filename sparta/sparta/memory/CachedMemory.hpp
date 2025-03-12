@@ -118,14 +118,25 @@ namespace sparta::memory
      * \brief Memory that can be used as a cache for core models
      * \tparam MemoryWriteType Type supplied by the modeler to track the outstanding writes
      *
-     * CachedMemory is used by a functional model to "cache"
-     * outstanding writes and provide those values back to the core
-     * when asked.  It is implemented as full memory model, with its
-     * memory always representing the latest stored value that is not
-     * committed.
+     * CachedMemory is used by a functional/performance model to
+     * "cache" outstanding writes and provide those values back to the
+     * core when asked.  It is implemented as full memory model, with
+     * its memory always representing the latest stored value that is
+     * not committed.
      *
      * When the write is committed by a functional model (like in a
      * cosimulation environment), the data is pushed downstream.
+     *
+     * If the memory is _not_ to be pushed out (flushing for example),
+     * the modeler can "drop" that memory update and CachedMemory will
+     * restore the previous value.
+     *
+     * Use case: data-driven performance modeling where there are
+     * speculative stores (storing to a local store commit buffer) and
+     * there dependent loads on that data.  If the store is no longer
+     * speculative, the store is officially committed.  If it's
+     * flushed, old data can be restored and downstream memory (main
+     * memory/IO devices, etc) will never see the data.
      *
      * System memory is responsible for updating other CachedMemory
      * instances in the case of multicore.
