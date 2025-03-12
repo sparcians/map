@@ -120,10 +120,6 @@ else ()
   message (FATAL_ERROR "Unknown CMAKE_BUILD_TYPE.  See README.md OR type 'make' at the SPARTA root")
 endif ()
 
-Set(CMAKE_CXX_FLAGS_DEBUG          "-O0 -g")
-Set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
-set(CMAKE_CXX_FLAGS_PROFILE        "-O3 -pg -g")
-
 string (STRIP ${GIT_REPO_VERSION} GIT_REPO_VERSION)
 message (STATUS "Sparta Version: ${GIT_REPO_VERSION}")
 
@@ -201,6 +197,10 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # using Visual Studio C++
 endif ()
+
+Set(CMAKE_CXX_FLAGS_DEBUG          "-O0 -g -U_FORTIFY_SOURCE")
+Set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
+set(CMAKE_CXX_FLAGS_PROFILE        "-O3 -pg -g")
 
 # CppCheck Support
 # Add a custom CMake Modules directory
