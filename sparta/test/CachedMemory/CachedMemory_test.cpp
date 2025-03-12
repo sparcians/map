@@ -204,7 +204,7 @@ void test_requirements()
     EXPECT_EQUAL(mem_accesses.size(), 1);
     EXPECT_EQUAL(mem_accesses[0].getPAddr(), paddr_0x2000);
     EXPECT_EQUAL(mem_accesses[0].getSize(), sizeof(aaaaaaaa_data.data));
-    EXPECT_EQUAL(::memcmp(mem_accesses[0].getStashDataPtr(),
+    EXPECT_EQUAL(::memcmp(mem_accesses[0].getStoreDataPtr(),
                           aaaaaaaa_data.data_ptr.data(),
                           sizeof(aaaaaaaa_data.data)), 0);
     EXPECT_EQUAL(::memcmp(mem_accesses[0].getPrevDataPtr(),
@@ -262,13 +262,13 @@ void test_requirements()
     const auto writes = test_system.cached_mem_core0.getOutstandingWritesForAddr(paddr_0x1000);
     sparta_assert(writes.size() == 3);
     EXPECT_EQUAL(writes[0].getPAddr(), paddr_0x1000);
-    EXPECT_EQUAL(::memcmp(writes[0].getStashDataPtr()     , aaaaaaaa_data.data_ptr.data(), sizeof(aaaaaaaa_data.data)), 0);
+    EXPECT_EQUAL(::memcmp(writes[0].getStoreDataPtr()     , aaaaaaaa_data.data_ptr.data(), sizeof(aaaaaaaa_data.data)), 0);
     EXPECT_EQUAL(::memcmp(writes[0].getPrevDataPtr(), deadbeef_data.data_ptr.data(), sizeof(aaaaaaaa_data.data)), 0);
     EXPECT_EQUAL(writes[1].getPAddr(), paddr_0x1000);
-    EXPECT_EQUAL(::memcmp(writes[1].getStashDataPtr()     , bbbbbbbb_data.data_ptr.data(), sizeof(bbbbbbbb_data.data)), 0);
+    EXPECT_EQUAL(::memcmp(writes[1].getStoreDataPtr()     , bbbbbbbb_data.data_ptr.data(), sizeof(bbbbbbbb_data.data)), 0);
     EXPECT_EQUAL(::memcmp(writes[1].getPrevDataPtr(), aaaaaaaa_data.data_ptr.data(), sizeof(aaaaaaaa_data.data)), 0);
     EXPECT_EQUAL(writes[2].getPAddr(), paddr_0x1000);
-    EXPECT_EQUAL(::memcmp(writes[2].getStashDataPtr()     , cccccccc_data.data_ptr.data(), sizeof(cccccccc_data.data)), 0);
+    EXPECT_EQUAL(::memcmp(writes[2].getStoreDataPtr()     , cccccccc_data.data_ptr.data(), sizeof(cccccccc_data.data)), 0);
     EXPECT_EQUAL(::memcmp(writes[2].getPrevDataPtr(), bbbbbbbb_data.data_ptr.data(), sizeof(bbbbbbbb_data.data)), 0);
 
     test_system.cached_mem_core0.read(paddr_0x1000, sizeof(read_test_data.data), read_test_data.data_ptr.data());
