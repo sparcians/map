@@ -67,14 +67,14 @@ namespace sparta::memory
             write_id_(write_id),
             paddr_(paddr),
             size_(size),
-            storeed_value_(size),
+            stored_value_(size),
             prev_value_(size)
         {
             (void) in_supplement;
             (void) out_supplement;
 
             // Cache the memory being written to eventually be committed
-            ::memcpy(storeed_value_.data(), data, size);
+            ::memcpy(stored_value_.data(), data, size);
         }
 
         //! Get the write ID, unique to each write performed
@@ -87,13 +87,13 @@ namespace sparta::memory
         size_t   getSize()    const { return size_;  }
 
         //! Get the stored data
-        uint8_t * getStoreDataPtr() { return storeed_value_.data(); }
+        uint8_t * getStoreDataPtr() { return stored_value_.data(); }
 
         //! Get the previous data at the address (for restore)
         uint8_t * getPrevDataPtr()  { return prev_value_.data(); }
 
         //! Const methods of above methods
-        const uint8_t * getStoreDataPtr() const { return storeed_value_.data(); }
+        const uint8_t * getStoreDataPtr() const { return stored_value_.data(); }
 
         //! Const methods of above methods
         const uint8_t * getPrevDataPtr()  const { return prev_value_.data(); }
@@ -102,14 +102,14 @@ namespace sparta::memory
         const uint64_t       write_id_; //!< Unique ID for the write
         const addr_t         paddr_;  //!< Physical address
         const size_t         size_;   //!< doubleword=8, word=4, halfword=2, byte=1
-        std::vector<uint8_t> storeed_value_;
+        std::vector<uint8_t> stored_value_;
         std::vector<uint8_t> prev_value_;
     };
 
     inline std::ostream & operator<<(std::ostream & os, const StoreData & mstore)
     {
         os << std::hex << "wid:" << mstore.getWriteID() << " pa:" << mstore.getPAddr()
-           << " size:" << mstore.getSize() << std::dec;
+           << std::dec << " size:" << mstore.getSize();
         return os;
     }
 
@@ -133,8 +133,8 @@ namespace sparta::memory
      *
      * Use case: data-driven performance modeling where there are
      * speculative stores (storing to a local store commit buffer) and
-     * there dependent loads on that data.  If the store is no longer
-     * speculative, the store is officially committed.  If it's
+     * there are dependent loads on that data.  If the store is no
+     * longer speculative, the store is officially committed.  If it's
      * flushed, old data can be restored and downstream memory (main
      * memory/IO devices, etc) will never see the data.
      *
