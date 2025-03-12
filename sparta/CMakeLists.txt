@@ -198,8 +198,8 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # using Visual Studio C++
 endif ()
 
-Set(CMAKE_CXX_FLAGS_DEBUG          "-O0 -g -U_FORTIFY_SOURCE")
-Set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
+set(CMAKE_CXX_FLAGS_DEBUG          "-O0 -g -U_FORTIFY_SOURCE")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
 set(CMAKE_CXX_FLAGS_PROFILE        "-O3 -pg -g")
 
 # CppCheck Support
