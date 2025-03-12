@@ -1,0 +1,5 @@
+project(CachedMemory_test)
+include(${SPARTA_CMAKE_MACRO_PATH}/SpartaTestingMacros.cmake)
+
+sparta_add_test_executable(CachedMemory_test CachedMemory_test.cpp)
+sparta_test(CachedMemory_test CachedMemory_test_RUN)
