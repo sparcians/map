@@ -1,0 +1,24 @@
+<map id="sparta::serialization::checkpoint::FastCheckpointer::traceValue" name="sparta::serialization::checkpoint::FastCheckpointer::traceValue">
+<area shape="rect" id="Node000001" title="Forwards debug/trace info onto checkpoint by ID." alt="" coords="5,119,204,174"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#ac148071f4baed77d65246f9a9fb6da12" title="Attempts to find a checkpoint within this checkpointer by ID." alt="" coords="252,39,450,94"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="192,116,248,97,249,102,193,121"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a21e139d37ad60c48a22ffb58359f83fb" title="Returns ArchDatas enumerated by this Checkpointer for iteration when saving or loading checkpoint dat..." alt="" coords="265,119,437,174"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="204,144,249,144,249,149,204,149"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a88cd24eb4a0d9498e295f5c4eda63e48" title="Implement trace of a value across the restore chain as described in Checkpointer::traceValue." alt="" coords="255,199,446,254"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="193,172,249,191,248,196,192,177"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a3abaf1475d8bbcbf6e92d6dd5859edd3" title="Gets the representation of this deleted checkpoint as part of a checkpoint chain (if that checkpointe..." alt="" coords="498,87,689,142"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="422,196,449,184,524,147,526,152,451,189,425,201"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a268de807a306329336ed825c40e25fc4" title="Returns a stack of checkpoints from this checkpoint as far back as possible until no previous link is..." alt="" coords="498,199,689,254"/>
+<area shape="poly" id="edge9_Node000004_Node000009" title=" " alt="" coords="447,224,483,224,483,229,447,229"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a298af42f2d8f655088a1a61ff91d776b" title="Is this checkpoint a snapshot (contains ALL simulator state)" alt="" coords="498,279,689,334"/>
+<area shape="poly" id="edge11_Node000004_Node000011" title=" " alt="" coords="438,252,493,271,492,276,437,257"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a051b7ba282cb3affd3dcc21d38cc176d" title="Return the ID had by this checkpoint before it was deleted If this checkpoint has not been flagged fo..." alt="" coords="737,5,929,61"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="677,84,734,64,736,69,679,89"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a1ab50505bd631547981015601a4f40e8" title="Returns the ID of this checkpoint." alt="" coords="977,104,1138,160"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="690,114,929,121,961,123,961,128,929,126,690,119"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a34a8164584635a65bf411dead281837b" title="Indicates whether this checkpoint has been flagged deleted." alt="" coords="737,136,929,192"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="690,132,722,138,721,144,689,137"/>
+<area shape="poly" id="edge8_Node000008_Node000007" title=" " alt="" coords="929,148,961,143,962,148,929,153"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a099fdcf88200fbcb8a2b1ac47b7df0f7" title="Returns the previous checkpoint. If this checkpoint is a snapshot, it has no previous checkpoint." alt="" coords="752,216,914,272"/>
+<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="690,231,737,234,737,240,690,236"/>
+</map>

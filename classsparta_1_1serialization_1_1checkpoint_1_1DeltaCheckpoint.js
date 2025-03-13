@@ -1,0 +1,26 @@
+var classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint =
+[
+    [ "DeltaCheckpoint", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a2210ac85b5b699db6b5e5a4790558847", null ],
+    [ "DeltaCheckpoint", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#ab984024a78807d84d6a74f4159e2c2dd", null ],
+    [ "~DeltaCheckpoint", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a49ba577fb4a4c6a95fa7dd7beb48192a", null ],
+    [ "canDelete", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a6fe13ab23b23f4f787328f038e33833c", null ],
+    [ "dumpData", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a1116e7b61aba519861b44ad09b6db3bb", null ],
+    [ "dumpRestoreChain", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#afff0c8d1f92ca89f9aba93e18b7b9bea", null ],
+    [ "flagDeleted", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a9a1eea3e14aca200057b1a5e601b2fbd", null ],
+    [ "getContentMemoryUse", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#ac81e696adf31e92766ed9b0c67dfa41f", null ],
+    [ "getDeletedID", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a051b7ba282cb3affd3dcc21d38cc176d", null ],
+    [ "getDeletedRepr", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a3abaf1475d8bbcbf6e92d6dd5859edd3", null ],
+    [ "getDistanceToPrevSnapshot", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#aff3957cc8b71ab0466f0172280dd06c4", null ],
+    [ "getHistoryChain", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a268de807a306329336ed825c40e25fc4", null ],
+    [ "getRestoreChain", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a4a21aef72a972e589a730f45901915d9", null ],
+    [ "getRestoreChain", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a30ad25c272346acdfd1ac7a41eb2e060", null ],
+    [ "getTotalMemoryUse", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#aee5512c284b0118c4a3dfa39f7576369", null ],
+    [ "isFlaggedDeleted", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a34a8164584635a65bf411dead281837b", null ],
+    [ "isSnapshot", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a298af42f2d8f655088a1a61ff91d776b", null ],
+    [ "load", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a6ebfe7e8f67bc296801c839d4b9fca1d", null ],
+    [ "loadState", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#aabc0a1c84c2b16e7a9743c84eb01e114", null ],
+    [ "operator=", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#aa3a5ac4f9af6eb49f9514cfaad79024a", null ],
+    [ "stringize", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#af850268babf5e36968d78e160c652319", null ],
+    [ "traceValue", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a88cd24eb4a0d9498e295f5c4eda63e48", null ],
+    [ "FastCheckpointer", "classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a960edf107ec8a2ffc7163b728d4f4994", null ]
+];

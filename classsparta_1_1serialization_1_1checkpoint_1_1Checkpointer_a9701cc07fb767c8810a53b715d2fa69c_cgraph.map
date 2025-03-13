@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::Checkpointer::getCurrentID" name="sparta::serialization::checkpoint::Checkpointer::getCurrentID">
+<area shape="rect" id="Node000001" title="Returns the current checkpoint ID. This is mainly a debugging utility as the current ID changes when ..." alt="" coords="5,5,178,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a1ab50505bd631547981015601a4f40e8" title="Returns the ID of this checkpoint." alt="" coords="226,5,387,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="178,30,210,30,210,36,178,36"/>
+</map>
