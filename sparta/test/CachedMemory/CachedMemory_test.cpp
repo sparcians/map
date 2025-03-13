@@ -220,7 +220,7 @@ void test_requirements()
     const sparta::memory::StoreData bad_write(0, paddr_0x1000, 8,
                                               ffffffff_data.data_ptr.data(),
                                               nullptr, nullptr);
-    EXPECT_THROW  (test_system.cached_mem_core0.dropWrite(bad_write));
+    EXPECT_THROW(test_system.cached_mem_core0.dropWrite(bad_write));
     EXPECT_NOTHROW(test_system.cached_mem_core0.dropWrite(mem_accesses[0]));
     EXPECT_TRUE(test_system.cached_mem_core0.getOutstandingWritesForAddr(paddr_0x1000).size() == 0);
     EXPECT_TRUE(test_system.cached_mem_core0.getOutstandingWritesForAddr(paddr_0x2000).size() == 0);
