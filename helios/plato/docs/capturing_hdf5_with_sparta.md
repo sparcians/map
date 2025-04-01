@@ -84,10 +84,10 @@ public:
         // Define our schema in a function.
         // If this is called a second time (or more), simdb is supposed to create the union of the tables found in each
         // schema. If any tables with identical names are found in both schemas but the table structure differs, it is
-        // an error! This functionality is untested.  
+        // an error! This functionality is untested.
         REGISTER_SIMDB_SCHEMA_BUILDER(branchpredictor, [](simdb::Schema & schema) {
             using dt = simdb::ColumnDataType;
-            
+
             // Branch training event. A row is written each time shp is trained on a new branch. This is typically
             // followed by rows in "weight_updates" row for each table access associated with this training event.
             schema.addTable("training_events")
@@ -115,7 +115,7 @@ public:
             // Weight update events. A row will be written each time a weight cell in the shp table is updated.
             schema.addTable("weight_updates")
                     .addColumn("wup_idx",       dt::uint32_t) // Index of this event
-                    .addColumn("table",         dt::int32_t) // table affected by this update 
+                    .addColumn("table",         dt::int32_t) // table affected by this update
                     .addColumn("row",           dt::int32_t) // row affected by this update
                     .addColumn("bank",          dt::int32_t) // bank affected by this update
                     .addColumn("lookup_weight", dt::int16_t)
@@ -173,7 +173,7 @@ public:
                   int32_t theta_at_train, // theta at training-time
                   int16_t bias_at_train, // bias at training-time
                   int8_t shpq_weights_found, // Were weights found in SHPQ
-                  fiat::BranchState dynamic_state,
+                  BranchState dynamic_state,
                   int8_t indirect,
                   int8_t uncond,
                   uint64_t instructions) // instruction number

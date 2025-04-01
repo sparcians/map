@@ -152,8 +152,6 @@ if (ENABLE_SANITIZERS)
     add_compile_options(-fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined)
     set (CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
 endif ()
-
-set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg -g")
 if(DEFINED SPARTA_CXX_FLAGS_DEBUG AND SPARTA_CXX_FLAGS_DEBUG)
   set(CMAKE_CXX_FLAGS_DEBUG "${SPARTA_CXX_FLAGS_DEBUG}")
   message(STATUS "Using Sparta custom debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
@@ -161,7 +159,6 @@ else()
   set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3")
   message(STATUS "Using Sparta default debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 endif()
-
 #
 # If we're using CONDA, we might be using the one suggested for
 # Sparta.  Need to use the llvm-ar found in the conda package to
@@ -200,6 +197,10 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # using Visual Studio C++
 endif ()
+
+set(CMAKE_CXX_FLAGS_DEBUG          "-O0 -g -U_FORTIFY_SOURCE")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
+set(CMAKE_CXX_FLAGS_PROFILE        "-O3 -pg -g")
 
 # CppCheck Support
 # Add a custom CMake Modules directory

@@ -47,23 +47,31 @@ namespace sparta
 
             /*!
              * \brief Construct a Memory object with sparse storage
-             * \param owner_node Node owning this ArchData. Can be nullptr if
-             * checkpointing support is not needed, Should typically have a
-             * node. This is the only means by which memory objects are
-             * associated with a TreeNode in order to be found by a
-             * sparta::serialization::checkpoint::Checkpointer support. Multiple
-             * memory objects can be associated with the same node.
-             * \param block_size Size of an individual block in this object.
-             * Must be a power of 2.
-             * \param total_size Size of the memory object. Must be a multiple
-             * of block_size. Address 0 refers to first byte. Any address
-             * offsetting must be performed externally this functionality is
-             * omitted for performance)
+
+             * \param owner_node Node owning this ArchData. Can be
+             *                   nullptr if checkpointing support is
+             *                   not needed, Should typically have a
+             *                   node. This is the only means by which
+             *                   memory objects are associated with a
+             *                   TreeNode in order to be found by a
+             *                   sparta::serialization::checkpoint::Checkpointer
+             *                   support. Multiple memory objects can
+             *                   be associated with the same node.
+             * \param block_size Size of an individual block in this
+             *                   object.  Must be a power of 2.
+             * \param total_size Size of the memory object. Must be a
+             *                   multiple of block_size. Address 0
+             *                   refers to first byte. Any address
+             *                   offsetting must be performed
+             *                   externally this functionality is
+             *                   omitted for performance)
              * \param fill Value with which to populate newly-accessed
-             * memory. Bytes beyond \a fill_val_size must be 0
-             * \param fill_val_size Number of bytes from Value to use for
-             * repeating fill. This must be a power of 2 between 1 and 8
-             * inclusive.
+             *             memory. Bytes beyond \a fill_val_size must
+             *             be 0
+             * \param fill_val_size Number of bytes from Value to use
+             *                      for repeating fill. This must be a
+             *                      power of 2 between 1 and 8
+             *                      inclusive.
              */
             MemoryObject(TreeNode* owner_node,
                          addr_t block_size,
