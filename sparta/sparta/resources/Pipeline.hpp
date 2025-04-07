@@ -734,6 +734,19 @@ namespace sparta
         }
 
         /*!
+         * \brief Clear the stall of the pipeline
+         */
+        void clearStall()
+        {
+            sparta_assert(isStalledOrStalling(),
+                          "Try to clear a stall but pipeline is not stalled!");
+
+            stall_cycles_ = 0;
+            restart_(stall_stage_id_);
+            stall_stage_id_ = std::numeric_limits<uint32_t>::max();
+        }
+
+        /*!
          * \brief Flush a specific stage of the pipeline using stage id
          * \param stage_id The stage number
          * \note All the pipeline stage handling events (after SchedulingPhase::Flush) will be cancelled.
