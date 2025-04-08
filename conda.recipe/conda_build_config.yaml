@@ -40,7 +40,7 @@ linux_clang_version:           # [linux]
 # since numpy and python_impl are zipped with it, we
 # must also override those to a single value
 numpy:
-    - 1.21
+    - 1.22
 python:
     - 3.10.* *_cpython
 python_impl:
