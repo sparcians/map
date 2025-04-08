@@ -36,6 +36,9 @@ linux_clang_version:           # [linux]
   - 15                         # [linux]
 #  - 11                         # [linux]
 
+cmake:
+  - 3.31
+
 # limit ourselves to a single python version
 # since numpy and python_impl are zipped with it, we
 # must also override those to a single value
