@@ -170,8 +170,6 @@ def SetShuffleModes(mode: str) -> None:
 
 # call after wx.App init
 def BuildBrushes(colorblindness_mode: str, shuffle_mode: str) -> None:
-    global BACKGROUND_BRUSHES
-    global REASON_BRUSHES
     # Map of background colors based on annotation content
     # The first pass used pretty saturated colors, which was too dark, and
     # hard to read on some monitors.  I've altered it to use three different
