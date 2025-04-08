@@ -1,0 +1,14 @@
+<map id="sparta::serialization::checkpoint::FastCheckpointer::recursForwardFindAlive_" name="sparta::serialization::checkpoint::FastCheckpointer::recursForwardFindAlive_">
+<area shape="rect" id="Node000001" title="Look forward to see if any future checkpoints depend on d." alt="" coords="5,125,204,181"/>
+<area shape="poly" id="edge6_Node000001_Node000001" title=" " alt="" coords="57,125,58,115,66,106,82,101,105,99,130,101,146,108,143,113,129,106,104,104,83,106,69,111,63,117,62,125"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a86356e818a79b82a9db871f231dc45d5" title="Gets the current checkpointer pointer. Returns nullptr if there is no current checkpoint object." alt="" coords="261,5,434,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="153,123,250,71,262,65,264,70,253,76,156,127"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a181f5bd1247c81ce6b4988e2ffeb32c1" title="Returns next checkpoint following *this. May be an empty vector if there are no later checkpoints fol..." alt="" coords="267,85,428,141"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="204,134,251,126,251,132,205,139"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a34a8164584635a65bf411dead281837b" title="Indicates whether this checkpoint has been flagged deleted." alt="" coords="252,165,443,221"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="205,167,237,172,236,178,204,172"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a298af42f2d8f655088a1a61ff91d776b" title="Is this checkpoint a snapshot (contains ALL simulator state)" alt="" coords="252,245,443,301"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="156,179,253,231,264,236,262,241,250,236,153,184"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a1ab50505bd631547981015601a4f40e8" title="Returns the ID of this checkpoint." alt="" coords="491,165,652,221"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="443,190,475,190,475,196,443,196"/>
+</map>

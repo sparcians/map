@@ -1,0 +1,19 @@
+<map id="sparta::RegisterBase::RegisterBase" name="sparta::RegisterBase::RegisterBase">
+<area shape="rect" id="Node000001" title="Register constructor." alt="" coords="5,162,147,202"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a4f2b4d2e10e2e64ecdf35f4d040f1117" title="Add a single alias for this node." alt="" coords="205,5,382,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="87,160,128,100,158,67,193,40,202,35,204,40,196,44,162,71,132,103,91,163"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a7b6ca285ffd1077f9622662c167315e9" title="Adds a TreeNode to this node as a child." alt="" coords="205,55,382,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="97,159,140,124,193,90,210,83,212,88,196,95,143,128,101,164"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1RegisterBase.html#a37248c044d086c3029704ba12db0e02d" title="Create a new field in this Register based on the given Field::Definition." alt="" coords="223,104,364,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="146,161,207,145,209,150,148,166"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="196,169,390,195"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="147,180,181,180,181,185,147,185"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="204,219,383,244"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="148,196,219,212,218,217,146,201"/>
+<area shape="rect" id="Node000008" href="$namespacesparta.html#aed83fab41761c39068128f061bd02007" title="Determines if input is 0 or a power of 2." alt="" coords="228,268,359,294"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="106,201,147,229,196,254,214,261,212,266,194,259,144,233,103,205"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1TreeNode.html#aeefcb776a4574cd8075f92caaeb4676d" title="Tracks a node as an expected parent without actually adding this node as a child. This is used almost..." alt="" coords="195,318,392,358"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="94,201,136,252,165,280,196,304,204,308,201,313,193,308,161,284,132,256,90,204"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PhasedObject.html#aba4b14b23643204798dbc994f3cca77e" title="Is this node (and thus the entire tree above it) &quot;built&quot;. Checks that getPhase has passed TREE_BUILDI..." alt="" coords="440,104,585,145"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="364,122,424,122,424,128,364,128"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="sparta::Queue::numFree" name="sparta::Queue::numFree">
+<area shape="rect" id="Node000001" title="Return the number of free entries." alt="" coords="5,5,164,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Queue.html#a7031c894df6656d9643043bc0081f7e3" title="Return the fixed size of this queue." alt="" coords="212,5,367,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,16,196,16,196,21,164,21"/>
+</map>

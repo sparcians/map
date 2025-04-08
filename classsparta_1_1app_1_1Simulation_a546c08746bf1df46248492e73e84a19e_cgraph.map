@@ -1,0 +1,9 @@
+<map id="sparta::app::Simulation::findSemanticCounter" name="sparta::app::Simulation::findSemanticCounter">
+<area shape="rect" id="Node000001" title="Get a counter by its semantic (if such a counter exists)." alt="" coords="5,71,157,111"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1app_1_1Simulation.html#afae5d59bc8b52de1042ffc08024c8362" title="Implements findSemanticCounter." alt="" coords="205,5,359,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="145,68,202,49,203,54,146,73"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="209,71,354,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="157,88,194,88,194,94,157,94"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedObject.html#a8555fc19699141ca78722846bd2e2dc3" title="Is this node (and thus the entire tree above it) in the &quot;teardown&quot; phase." alt="" coords="209,136,354,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="146,109,203,128,202,133,145,114"/>
+</map>
