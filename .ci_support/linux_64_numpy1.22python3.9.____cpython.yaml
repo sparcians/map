@@ -1,0 +1,41 @@
+boost:
+- '1.78'
+c_compiler:
+- gcc
+c_compiler_version:
+- '13'
+cdt_name:
+- conda
+channel_sources:
+- conda-forge
+channel_targets:
+- conda-forge main
+cxx_compiler:
+- gxx
+cxx_compiler_version:
+- '13'
+docker_image:
+- quay.io/condaforge/linux-anvil-x86_64:alma9
+hdf5:
+- 1.14.3
+linux_clang_version:
+- '15'
+numpy:
+- '1.22'
+pin_run_as_build:
+  python:
+    min_pin: x.x
+    max_pin: x.x
+python:
+- 3.9.* *_cpython
+sqlite:
+- '3'
+target_platform:
+- linux-64
+zip_keys:
+- - c_compiler_version
+  - cxx_compiler_version
+- - python
+  - numpy
+zlib:
+- '1'
