@@ -734,6 +734,34 @@ namespace sparta
         }
 
         /*!
+         * \brief Clear the stall of the pipeline
+         * \note Whether or not events are scheduled the same cycle the stall is cleared or the next
+         *       cycle depends on when this function is called and how pipeline updating is
+         *       configured.
+         *       - If the pipeline is set to perform its own updates: clearStall() might or might
+         *         not be called before the pipeline updates. If clearStall() is called in the
+         *         Update phase before ev_pipeline_update_ fires, pipeline events for the previously
+         *         stalled stages will be scheduled for this cycle. If clearStall() is called after
+         *         ev_pipeline_update_ fires, pipeline events for the previously stalled stages will
+         *         be scheduled for next cycle.
+         *       - If the pipeline is set to be updated manually:
+         *         - If the user wants events for the previously stalled stages to be scheduled for
+         *           this cycle, clearStall() should be called before update().
+         *         - If the user wants events for the previously stalled stages to be scheduled for
+         *           next cycle, update() should be called before clearStall().
+         * \sa performOwnUpdates(), update()
+         */
+        void clearStall()
+        {
+            sparta_assert(isStalledOrStalling(),
+                          "Try to clear a stall but pipeline is not stalled!");
+
+            stall_cycles_ = 0;
+            restart_(stall_stage_id_);
+            stall_stage_id_ = std::numeric_limits<uint32_t>::max();
+        }
+
+        /*!
          * \brief Flush a specific stage of the pipeline using stage id
          * \param stage_id The stage number
          * \note All the pipeline stage handling events (after SchedulingPhase::Flush) will be cancelled.
