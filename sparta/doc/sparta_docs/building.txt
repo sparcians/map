@@ -5,9 +5,8 @@
 
   Notes on what's built...
 
-  Building sparta produces two main libraries:
+  Building sparta produces one library:
   - \c libsparta.a containing the core sparta code
-  - \c libsimdb.a  containing functionality to generate reports with SQLite3
 
   \subsection cmake CMake Support
 
