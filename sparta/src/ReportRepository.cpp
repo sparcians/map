@@ -26,13 +26,7 @@
 #include "sparta/statistics/dispatch/archives/ReportStatisticsArchive.hpp"
 #include "sparta/statistics/dispatch/archives/StatisticsArchives.hpp"
 #include "sparta/statistics/dispatch/streams/StatisticsStreams.hpp"
-#include "simdb/async/AsyncTaskEval.hpp"
-#include "simdb/ObjectManager.hpp"
-#include "sparta/report/db/ReportHeader.hpp"
 #include "sparta/app/FeatureConfiguration.hpp"
-#include "sparta/report/DatabaseInterface.hpp"
-#include "simdb/ObjectRef.hpp"
-#include "simdb/schema/DatabaseRoot.hpp"
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/statistics/CounterBase.hpp"
 #include "sparta/simulation/GlobalTreeNode.hpp"
@@ -128,13 +122,6 @@ public:
         const std::shared_ptr<sparta::NotificationSource<std::string>> & on_triggered_notifier)
     {
         on_triggered_notifier_ = on_triggered_notifier;
-    }
-
-    void doPostProcessing(
-        simdb::AsyncTaskEval * task_queue,
-        simdb::ObjectManager * sim_db)
-    {
-        desc_.doPostProcessing(task_queue, sim_db);
     }
 
     std::vector<std::unique_ptr<Report>> saveReports(size_t & num_written)
@@ -335,7 +322,6 @@ private:
                     referenced_directories_[referenced_directory_key_] = this;
                 }
                 start_expression_ = start_expression;
-                needs_header_overwrite_ = true;
             }
         };
 
@@ -509,21 +495,6 @@ private:
         }
 
         this->initializeReportInstantiations_();
-
-        if (needs_header_overwrite_) {
-            db::ReportHeader * db_header = desc_.getTimeseriesDatabaseHeader();
-            if (db_header != nullptr) {
-                sparta_assert(reports_.size() == 1);
-                if (reports_[0]->hasHeader()) {
-                    auto & header = reports_[0]->getHeader();
-                    const std::map<std::string, std::string> stringified = header.getAllStringified();
-                    for (const auto & meta : stringified) {
-                        db_header->setStringMetadata(meta.first, meta.second);
-                    }
-                }
-            }
-            needs_header_overwrite_ = false;
-        }
 
         if (is_cumulative_) {
             for (auto & r : reports_) {
@@ -886,7 +857,6 @@ private:
     bool update_reports_when_enabled_ = false;
     bool reports_have_started_ = false;
     bool update_descriptor_when_asked_ = true;
-    bool needs_header_overwrite_ = false;
     bool is_cumulative_ = false;
 
     utils::ValidValue<uint64_t> update_delta_;
@@ -1008,22 +978,6 @@ public:
         }
     }
 
-    void inspectSimulatorFeatureValues(
-        const app::FeatureConfiguration * feature_config)
-    {
-        for (auto & dir : directories_) {
-            auto & rd = dir.second->getDescriptor();
-            if (!rd.isEnabled()) {
-                continue;
-            }
-            rd.inspectSimulatorFeatureValues(feature_config);
-        }
-
-        if (IsFeatureValueEnabled(feature_config, "simdb")) {
-            configureAsyncReportStreams_();
-        }
-    }
-
     statistics::StatisticsArchives * getStatsArchives()
     {
         if (stats_archives_ == nullptr) {
@@ -1079,24 +1033,6 @@ public:
         return stats_streams_.get();
     }
 
-    std::map<std::string, std::shared_ptr<report::format::BaseFormatter>>
-        getFormattersByFilename() const
-    {
-        std::map<std::string, std::shared_ptr<report::format::BaseFormatter>> formatters;
-        for (const auto & dir : directories_) {
-            const app::ReportDescriptor & rd = dir.second->getDescriptor();
-            if (!rd.isEnabled()) {
-                continue;
-            }
-
-            const auto rd_formatters = rd.getFormattersByFilename();
-            for (const auto & rd_formatter : rd_formatters) {
-                formatters[rd_formatter.first] = rd_formatter.second;
-            }
-        }
-        return formatters;
-    }
-
     std::vector<std::unique_ptr<Report>> saveReports()
     {
         std::vector<std::unique_ptr<Report>> saved_reports;
@@ -1118,7 +1054,6 @@ public:
             for (auto & report : reports) {
                 saved_reports.emplace_back(report.release());
             }
-            doPostProcessing_(directories_[handle].get());
         }
 
         //Do not print anything if we didn't have any reports
@@ -1130,31 +1065,7 @@ public:
                       << std::endl << std::endl;
         }
 
-        //Before deleting the directories and ReportDescriptor's,
-        //flush the async database engine. This is done like this
-        //so that any objects using the engine do not have to rely
-        //on their destructors for important last-minute work to do.
-        simdb::AsyncTaskController * task_controller = nullptr;
-        if (sim_) {   // %%% See note below about nulling out sim_
-            if (auto db_root = sim_->getDatabaseRoot()) {
-                task_controller = db_root->getTaskController();
-            }
-        }
-
-        if (task_controller != nullptr) {
-            task_controller->emitPreFlushNotification();
-            task_controller->flushQueue();
-        }
-
         directories_.clear();
-
-        //In the cases where a report trigger was disabled at the
-        //time of the report write/update(s), the descriptor's
-        //destructor may have put one last item in the task queue.
-        if (task_controller != nullptr) {
-            task_controller->emitPreFlushNotification();
-            task_controller->flushQueue();
-        }
 
         // %%% ... if(sim_) { ... %%%
         //   This same method can get called again from our own
@@ -1175,120 +1086,6 @@ private:
     {
     }
 
-    //! One-time setup of asynchronous report streams / worker threads
-    void configureAsyncReportStreams_()
-    {
-
-        if(!sim_) {
-            return;
-        }
-
-        //The async timeseries object needs a few things from us:
-        //   - the app::Simulation's scheduler and root clock
-        //   - the app::Simulation's shared database object
-        const Scheduler * scheduler = nullptr;
-        const Clock * root_clk = nullptr;
-
-        auto obj_db = GET_DB_FOR_COMPONENT(stats, sim_);
-        auto sim_db = obj_db ? obj_db->getObjectManager() : nullptr;
-        sparta_assert(sim_db != nullptr);
-
-        simdb::AsyncTaskController * task_controller = nullptr;
-
-        if (auto db_root = sim_->getDatabaseRoot()) {
-            task_controller = db_root->getTaskController();
-        }
-
-        //As well as:
-        //   - a shared worker thread (simdb::AsyncTaskEval)
-        //     (we'll create one for all of our descriptors, and
-        //      everyone will get a shared_ptr)
-        for (auto & dir : directories_) {
-            auto & rd = dir.second->getDescriptor();
-            if (!rd.isEnabled()) {
-                continue;
-            }
-
-            //Report formats such as JSON do not add much overhead
-            //to the simulation since they only have one data point
-            //across their SI's, and some metadata. There isn't that
-            //much metadata to warrant making them asynchronous (yet!).
-            //For now, we will just put timeseries reports on a worker
-            //thread since they support update/interval triggers, and
-            //can produce arbitrarily large amounts of SI data values.
-            if (rd.isSingleTimeseriesReport()) {
-
-                if (scheduler == nullptr) {
-                    sparta_assert(sim_);
-                    scheduler = sim_->getScheduler();
-                }
-
-                if (root_clk == nullptr) {
-                    sparta_assert(sim_);
-                    root_clk = sim_->getRootClock();
-                }
-
-                sim_db->addToTaskController(task_controller);
-                auto task_queue = sim_db->getTaskQueue();
-                task_queues_by_dir_[dir.second.get()] = task_queue;
-
-                //We have one consumer thread per simulation, and one
-                //report descriptor per report. Ask the report descriptor
-                //to create its own async timeseries report object, which
-                //will forward report metadata DB writes and SI blob writes
-                //to the one shared worker object that we just created.
-                rd.configureAsyncTimeseriesReport(
-                    task_queue,
-                    sim_db,
-                    *root_clk);
-
-                //Write any report trigger metadata into the header object
-                auto db_header = rd.getTimeseriesDatabaseHeader();
-                if (db_header) {
-                    //Simulation name is written as hidden metadata by
-                    //by prefixing the name with "__"
-                    db_header->setStringMetadata(
-                        "__simulationName", sim_->getSimName());
-                }
-            } else if (rd.isSingleNonTimeseriesReport()) {
-                sim_db->addToTaskController(task_controller);
-                auto task_queue = sim_db->getTaskQueue();
-                task_queues_by_dir_[dir.second.get()] = task_queue;
-
-                rd.configureAsyncNonTimeseriesReport(
-                    task_queue,
-                    sim_db);
-            }
-        }
-    }
-
-    void doPostProcessing_(Directory * dir) {
-        if (directories_.empty()) {
-            return;
-        }
-
-        auto obj_db = GET_DB_FOR_COMPONENT(stats, sim_);
-        simdb::ObjectManager * sim_db =
-            obj_db ? obj_db->getObjectManager() : nullptr;
-
-        auto post_processing = [&]() {
-            auto task_queue_iter = task_queues_by_dir_.find(dir);
-            auto task_queue =
-                task_queue_iter != task_queues_by_dir_.end() ?
-                task_queue_iter->second :
-                 nullptr;
-            dir->doPostProcessing(task_queue, sim_db);
-        };
-
-        if (sim_db != nullptr) {
-            sim_db->safeTransaction([&]() {
-                post_processing();
-            });
-        } else {
-            post_processing();
-        }
-    }
-
     app::Simulation * sim_ = nullptr;
     TreeNode *const context_;
     std::shared_ptr<SubContainer> sub_container_;
@@ -1301,10 +1098,6 @@ private:
     std::shared_ptr<sparta::NotificationSource<std::string>> on_triggered_notifier_;
     std::unique_ptr<statistics::StatisticsArchives> stats_archives_;
     std::unique_ptr<statistics::StatisticsStreams> stats_streams_;
-    std::unordered_map<
-        Directory*,
-        simdb::AsyncTaskEval*
-      > task_queues_by_dir_;
 };
 
 ReportRepository::ReportRepository(app::Simulation * sim) :
@@ -1340,12 +1133,6 @@ void ReportRepository::finalize()
     impl_->finalize();
 }
 
-void ReportRepository::inspectSimulatorFeatureValues(
-    const app::FeatureConfiguration * feature_config)
-{
-    impl_->inspectSimulatorFeatureValues(feature_config);
-}
-
 statistics::StatisticsArchives * ReportRepository::getStatsArchives()
 {
     return impl_->getStatsArchives();
@@ -1354,12 +1141,6 @@ statistics::StatisticsArchives * ReportRepository::getStatsArchives()
 statistics::StatisticsStreams * ReportRepository::getStatsStreams()
 {
     return impl_->getStatsStreams();
-}
-
-std::map<std::string, std::shared_ptr<report::format::BaseFormatter>>
-    ReportRepository::getFormattersByFilename() const
-{
-    return impl_->getFormattersByFilename();
 }
 
 std::vector<std::unique_ptr<Report>> ReportRepository::saveReports()

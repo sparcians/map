@@ -121,13 +121,5 @@ private:
      * \brief If present, test tree node extensions
      */
     void validateTreeNodeExtensions_();
-
-    /*!
-     * \brief Flag which enables SimDB-related code to run for
-     * interactive performance benchmarks / comparison. False
-     * by default so that we don't impact unit testing / smoke
-     * testing times for all regression test runs.
-     */
-    bool simdb_perf_async_ctrl_enabled_ = false;
 };
 

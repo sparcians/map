@@ -10,7 +10,6 @@
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/simulation/GlobalTreeNode.hpp"
 #include "sparta/simulation/RootTreeNode.hpp"
-#include "sparta/statistics/StatInstCalculator.hpp"
 
 namespace sparta {
 namespace trigger {
@@ -448,55 +447,35 @@ bool ExpressionCounterTrigger::tryParseContextCounterTrigger_(
         //done using the REGISTER_CONTEXT_COUNTER_AGGREGATE_FCN
         //macro.
         sparta_assert(trigger_context != nullptr);
-        std::shared_ptr<StatInstCalculator> calc =
-            ContextCounterTrigger::findRegisteredContextCounterAggregateFcn(
-                trigger_context, counter_path);
 
-        //If found, invoke the user's C++ code to get the
-        //current aggregated value of their ContextCounter.
-        //We will use that as the trigger point's offset.
-        if (calc) {
-            const double absolute_offset_dbl = calc->getCurrentValue();
-            const uint64_t truncated_absolute_offset = (uint64_t)absolute_offset_dbl;
-            if (absolute_offset_dbl != truncated_absolute_offset) {
-                std::cout << " * * * Warning: "
-                    "A ContextCounter trigger point is being truncated from "
-                     << absolute_offset_dbl << " to " << truncated_absolute_offset
-                     << std::endl;
+        //If there is no user-supplied aggregation function,
+        //we can still try to get the default aggregate value
+        //just by adding up the internal counters' current
+        //values.
+        utils::ValidValue<uint64_t> raw_sum;
+        for (const auto & sub_stat : stat_def->getSubStatistics()) {
+            //Get the sub-statistic as a CounterBase. If any of
+            //the sub-statistics are *not* CounterBase objects,
+            //then this is not a ContextCounter.
+            auto tn = dynamic_cast<const CounterBase*>(sub_stat.getNode());
+            if (tn == nullptr) {
+                raw_sum.clearValid();
+                break;
             }
-            absolute_offset = (uint64_t)absolute_offset_dbl;
+
+            //We got another CounterBase* sub-statistic. Add their
+            //value to the raw sum.
+            if (!raw_sum.isValid()) {
+                raw_sum = tn->get();
+            } else {
+                raw_sum += tn->get();
+            }
         }
 
-        else {
-            //If there is no user-supplied aggregation function,
-            //we can still try to get the default aggregate value
-            //just by adding up the internal counters' current
-            //values.
-            utils::ValidValue<uint64_t> raw_sum;
-            for (const auto & sub_stat : stat_def->getSubStatistics()) {
-                //Get the sub-statistic as a CounterBase. If any of
-                //the sub-statistics are *not* CounterBase objects,
-                //then this is not a ContextCounter.
-                auto tn = dynamic_cast<const CounterBase*>(sub_stat.getNode());
-                if (tn == nullptr) {
-                    raw_sum.clearValid();
-                    break;
-                }
-
-                //We got another CounterBase* sub-statistic. Add their
-                //value to the raw sum.
-                if (!raw_sum.isValid()) {
-                    raw_sum = tn->get();
-                } else {
-                    raw_sum += tn->get();
-                }
-            }
-
-            //If all sub-statistics were CounterBase*, we would have a valid
-            //raw sum value at this point.
-            if (raw_sum.isValid()) {
-                absolute_offset = raw_sum.getValue();
-            }
+        //If all sub-statistics were CounterBase*, we would have a valid
+        //raw sum value at this point.
+        if (raw_sum.isValid()) {
+            absolute_offset = raw_sum.getValue();
         }
     }
 
