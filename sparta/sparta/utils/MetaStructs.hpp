@@ -551,6 +551,14 @@ namespace MetaStruct {
     template<typename T>
     using return_type_t = typename return_type<T>::type;
 
+    /** \brief Replacement for std::is_pod (deprecated in C++20)
+    */
+    template<typename T>
+    struct is_pod : std::integral_constant<
+        bool,
+        std::is_trivial<T>::value && std::is_standard_layout<T>::value
+    > {};
+
     /**
     * \brief Templated struct for detecting Boolean Type.
     */

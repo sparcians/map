@@ -18,7 +18,7 @@
 #include <set>
 #include <boost/algorithm/string/predicate.hpp>
 #include "sparta/utils/Colors.hpp"
-#include "simdb/utils/MathUtils.hpp"
+#include "sparta/utils/MathUtils.hpp"
 
 namespace sparta
 {
@@ -223,7 +223,7 @@ namespace sparta
                 ++num_errors_;
                 ret = false;
             } else {
-                ret = simdb::utils::approximatelyEqual(v1, v2, tol);
+                ret = utils::approximatelyEqual(v1, v2, tol);
                 if (!ret) {
                     cerr_ << SPARTA_CURRENT_COLOR_BRIGHT_RED << "Test '"
                           << test_type << "' FAILED on line "

@@ -7,8 +7,6 @@
  */
 
 #include "sparta/statistics/StatisticInstance.hpp"
-#include "sparta/report/db/StatInstValueLookup.hpp"
-#include "sparta/report/db/StatInstRowIterator.hpp"
 
 namespace sparta
 {
@@ -130,28 +128,8 @@ namespace sparta
         initial_(rhp.initial_),
         result_(rhp.result_),
         sub_statistics_(rhp.sub_statistics_),
-        user_calculated_si_value_(rhp.user_calculated_si_value_),
-        direct_lookup_si_value_(rhp.direct_lookup_si_value_),
-        provided_metadata_(rhp.provided_metadata_)
+        user_calculated_si_value_(rhp.user_calculated_si_value_)
     {
-        if (rhp.provided_location_.isValid()) {
-            provided_location_ = rhp.provided_location_.getValue();
-        }
-        if (rhp.provided_description_.isValid()) {
-            provided_description_ = rhp.provided_description_.getValue();
-        }
-        if (rhp.provided_expr_string_.isValid()) {
-            provided_expr_string_ = rhp.provided_expr_string_.getValue();
-        }
-        if (rhp.provided_value_semantic_.isValid()) {
-            provided_value_semantic_ = rhp.provided_value_semantic_.getValue();
-        }
-        if (rhp.provided_visibility_.isValid()) {
-            provided_visibility_ = rhp.provided_visibility_.getValue();
-        }
-        if (rhp.provided_class_.isValid()) {
-            provided_class_ = rhp.provided_class_.getValue();
-        }
     }
 
     //! \brief Move Constructor
@@ -166,76 +144,12 @@ namespace sparta
         scheduler_(rhp.scheduler_),
         initial_(rhp.initial_),
         result_(rhp.result_),
-        sub_statistics_(std::move(rhp.sub_statistics_)),
-        user_calculated_si_value_(std::move(rhp.user_calculated_si_value_)),
-        direct_lookup_si_value_(std::move(rhp.direct_lookup_si_value_)),
-        provided_metadata_(std::move(rhp.provided_metadata_))
+        user_calculated_si_value_(std::move(rhp.user_calculated_si_value_))
     {
         rhp.sdef_ = nullptr;
         rhp.ctr_ = nullptr;
         rhp.par_ = nullptr;
         rhp.result_ = NAN;
-
-        if (rhp.provided_location_.isValid()) {
-            provided_location_ = rhp.provided_location_.getValue();
-        }
-        if (rhp.provided_description_.isValid()) {
-            provided_description_ = rhp.provided_description_.getValue();
-        }
-        if (rhp.provided_expr_string_.isValid()) {
-            provided_expr_string_ = rhp.provided_expr_string_.getValue();
-        }
-        if (rhp.provided_value_semantic_.isValid()) {
-            provided_value_semantic_ = rhp.provided_value_semantic_.getValue();
-        }
-        if (rhp.provided_visibility_.isValid()) {
-            provided_visibility_ = rhp.provided_visibility_.getValue();
-        }
-        if (rhp.provided_class_.isValid()) {
-            provided_class_ = rhp.provided_class_.getValue();
-        }
-
-        rhp.provided_location_.clearValid();
-        rhp.provided_description_.clearValid();
-        rhp.provided_expr_string_.clearValid();
-        rhp.provided_value_semantic_.clearValid();
-        rhp.provided_visibility_.clearValid();
-        rhp.provided_class_.clearValid();
-    }
-
-    StatisticInstance::StatisticInstance(const std::string & location,
-                                         const std::string & description,
-                                         const std::string & expression_str,
-                                         const StatisticDef::ValueSemantic value_semantic,
-                                         const InstrumentationNode::visibility_t visibility,
-                                         const InstrumentationNode::class_t cls,
-                                         const std::vector<std::pair<std::string, std::string>> & metadata) :
-        provided_location_(location),
-        provided_description_(description),
-        provided_expr_string_(expression_str),
-        provided_value_semantic_(value_semantic),
-        provided_visibility_(visibility),
-        provided_class_(cls),
-        provided_metadata_(metadata)
-    {}
-
-    StatisticInstance::StatisticInstance(const std::string & location,
-                                         const std::string & description,
-                                         const std::shared_ptr<StatInstCalculator> & calculator,
-                                         const InstrumentationNode::visibility_t visibility,
-                                         const InstrumentationNode::class_t cls,
-                                         const std::vector<std::pair<std::string, std::string>> & metadata) :
-        user_calculated_si_value_(calculator),
-        provided_visibility_(visibility),
-        provided_class_(cls),
-        provided_metadata_(metadata)
-    {
-        if (!location.empty()) {
-            provided_location_ = location;
-        }
-        if (!description.empty()) {
-            provided_description_ = description;
-        }
     }
 
     StatisticInstance& StatisticInstance::operator=(const StatisticInstance& rhp) {
@@ -252,26 +166,13 @@ namespace sparta
         result_ = rhp.result_;
 
         sub_statistics_ = rhp.sub_statistics_;
-        user_calculated_si_value_ = rhp.user_calculated_si_value_;
-        direct_lookup_si_value_ = rhp.direct_lookup_si_value_;
-        provided_metadata_ = rhp.provided_metadata_;
 
         return *this;
     }
 
     void StatisticInstance::start() {
-        sparta_assert(direct_lookup_si_value_ == nullptr,
-                      "You cannot call StatisticInstance::start() for an SI "
-                      "that was recreated from a SimDB record");
-
         start_tick_ = getScheduler_()->getElapsedTicks();
         end_tick_ = Scheduler::INDEFINITE;
-
-        if(user_calculated_si_value_){
-            initial_.resetValue(user_calculated_si_value_->getCurrentValue());
-            result_ = NAN;
-            return;
-        }
 
         if(sdef_ != nullptr){
             if(node_ref_.expired() == true){
@@ -301,10 +202,6 @@ namespace sparta
     }
 
     void StatisticInstance::end(){
-        sparta_assert(direct_lookup_si_value_ == nullptr,
-                      "You cannot call StatisticInstance::end() for an SI "
-                      "that was recreated from a SimDB record");
-
         end_tick_ = getScheduler_()->getElapsedTicks();
 
         if(sdef_ != nullptr){
@@ -334,10 +231,6 @@ namespace sparta
     }
 
     double StatisticInstance::getValue() const {
-        if (direct_lookup_si_value_ != nullptr) {
-            return computeValue_();
-        }
-
         if(SPARTA_EXPECT_FALSE(end_tick_ < start_tick_)) {
             throw ReversedStatisticRange("Range is reversed. End < start");
         }
@@ -396,9 +289,6 @@ namespace sparta
     }
 
     bool StatisticInstance::supportsCompression() const {
-        if (user_calculated_si_value_) {
-            return false;
-        }
         if (sdef_) {
             if (node_ref_.expired()) {
                 return false;
@@ -455,9 +345,6 @@ namespace sparta
 
     std::string StatisticInstance::getExpressionString(bool show_range,
                                                        bool resolve_subexprs) const {
-        if(provided_expr_string_.isValid()) {
-            return provided_expr_string_.getValue();
-        }
         if(sdef_){
             if(node_ref_.expired() == false){
                 // Print the fully rendered expression string instead of the
@@ -485,9 +372,6 @@ namespace sparta
     }
 
     std::string StatisticInstance::getDesc(bool show_stat_node_expressions) const {
-        if(provided_description_.isValid()) {
-            return provided_description_.getValue();
-        }
         if(sdef_){
             if(node_ref_.expired() == false){
                 std::string result = sdef_->getDesc();
@@ -545,9 +429,6 @@ namespace sparta
     }
 
     std::string StatisticInstance::getLocation() const {
-        if(provided_location_.isValid()) {
-            return provided_location_.getValue();
-        }
         if(sdef_){
             if(node_ref_.expired() == false){
                 return node_ref_.lock()->getLocation();
@@ -572,9 +453,6 @@ namespace sparta
     }
 
     StatisticDef::ValueSemantic StatisticInstance::getValueSemantic() const {
-        if(provided_value_semantic_.isValid()) {
-            return provided_value_semantic_.getValue();
-        }
         if(sdef_){
             if(node_ref_.expired() == false){
                 return sdef_->getValueSemantic();
@@ -591,9 +469,6 @@ namespace sparta
     }
 
     InstrumentationNode::visibility_t StatisticInstance::getVisibility() const {
-        if(provided_visibility_.isValid()) {
-            return provided_visibility_.getValue();
-        }
         if(node_ref_.expired()) {
             return InstrumentationNode::VIS_NORMAL;
         }
@@ -609,9 +484,6 @@ namespace sparta
     }
 
     InstrumentationNode::class_t StatisticInstance::getClass() const {
-        if(provided_class_.isValid()) {
-            return provided_class_.getValue();
-        }
         if(node_ref_.expired()) {
             return InstrumentationNode::DEFAULT_CLASS;
         }
@@ -649,48 +521,7 @@ namespace sparta
         }
     }
 
-    void StatisticInstance::setSIValueDirectLookupPlaceholder(
-        const std::shared_ptr<sparta::StatInstValueLookup> & direct_lookup)
-    {
-        direct_lookup_si_value_ = direct_lookup;
-    }
-
-    void StatisticInstance::realizeSIValueDirectLookup(
-        const StatInstRowIterator & si_row_iterator)
-    {
-        if (direct_lookup_si_value_ != nullptr) {
-            auto realized_lookup = direct_lookup_si_value_->
-                realizePlaceholder(si_row_iterator.getRowAccessor());
-
-            sparta_assert(realized_lookup != nullptr);
-            direct_lookup_si_value_.reset(realized_lookup);
-        }
-    }
-
-    bool StatisticInstance::isSIValueDirectLookupValid() const
-    {
-        if (direct_lookup_si_value_ == nullptr) {
-            return false;
-        }
-
-        //The following function call throws if this direct
-        //lookup object is a placeholders::StatInstValueLookup
-        //which has not yet been realized.
-        try {
-            return direct_lookup_si_value_->isIndexValidForCurrentRow();
-        } catch (...) {
-        }
-
-        return false;
-    }
-
     double StatisticInstance::computeValue_() const {
-        if(user_calculated_si_value_){
-            return user_calculated_si_value_->getCurrentValue() - getInitial();
-        }
-        if(direct_lookup_si_value_){
-            return getCurrentValueFromDirectLookup_();
-        }
         if(sdef_){
             if(node_ref_.expired() == true){
                 return NAN;
@@ -740,29 +571,6 @@ namespace sparta
         // Should always be able to fall back on singleton scheduler
         sparta_assert(nullptr != scheduler_);
         return scheduler_;
-    }
-
-    double StatisticInstance::getCurrentValueFromDirectLookup_() const
-    {
-        if (direct_lookup_si_value_ == nullptr) {
-            throw SpartaException("StatisticInstance asked for its SI ")
-                << "value from a null direct-lookup object";
-        }
-
-        sparta_assert(getInitial() == 0,
-                      "Unexpectedly encountered a StatisticInstance that "
-                      "was created from a SimDB record, but whose SI offset "
-                      "value (SI::getInitial()) was not zero. This is a bug.");
-
-        //The following function call throws if this direct
-        //lookup object is a placeholders::StatInstValueLookup
-        //which has not yet been realized.
-        try {
-            return direct_lookup_si_value_->getCurrentValue();
-        } catch (...) {
-        }
-
-        return NAN;
     }
 
 }

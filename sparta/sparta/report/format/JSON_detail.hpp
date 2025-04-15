@@ -15,7 +15,6 @@
 #include <boost/lexical_cast.hpp>
 
 #include "sparta/report/format/BaseOstreamFormatter.hpp"
-#include "sparta/report/db/DatabaseContextCounter.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 
@@ -210,83 +209,6 @@ protected:
             local_name = flattenReportName(r->getName());
         } else {
             local_name = p_name + "." + flattenReportName(r->getName());
-        }
-
-        auto extract_stat = [&local_name](const statistics::stat_pair_t & si) {
-            std::string full_name = local_name + "." + si.first;
-            std::string desc = si.second->getDesc(false);
-            boost::replace_all(desc, "\"", "\\\"");
-            struct info_data tmp;
-            tmp.name = full_name;
-            tmp.desc = desc;
-            tmp.vis = si.second->getVisibility();
-            tmp.n_class = si.second->getClass();
-            const StatisticDef * stat_defn = si.second->getStatisticDef();
-            if (stat_defn != nullptr) {
-                tmp.metadata = stat_defn->getMetadata();
-            } else {
-                tmp.metadata = si.second->getMetadata();
-            }
-            return tmp;
-        };
-
-        const Report::SubStaticticInstances & sub_stats = r->getSubStatistics();
-        const Report::DBSubStatisticInstances & db_sub_stats = r->getDBSubStatistics();
-
-        std::set<const void*> dont_print_these;
-        std::set<const void*> db_dont_print_these;
-        for (const statistics::stat_pair_t& si : r->getStatistics()) {
-            if(si.first != ""){
-                const StatisticInstance * stat_inst = si.second.get();
-                const StatisticDef * stat_defn = si.second->getStatisticDef();
-                const CounterBase * ctr = si.second->getCounter();
-                const ParameterBase * prm = si.second->getParameter();
-                sparta_assert(static_cast<const void*>(this) != static_cast<const void*>(ctr));
-                sparta_assert(static_cast<const void*>(this) != static_cast<const void*>(prm));
-
-                auto sub_stat_iter = sub_stats.find(stat_defn);
-                const bool valid_stat_def = (stat_defn != nullptr);
-                const bool has_valid_sub_stats =
-                    (valid_stat_def && sub_stat_iter != sub_stats.end());
-
-                auto db_sub_stat_iter = db_sub_stats.find(stat_inst);
-                const bool has_valid_db_sub_stats = (db_sub_stat_iter != db_sub_stats.end());
-
-                if (has_valid_sub_stats && stat_defn->groupedPrintingDetail(sub_stat_iter->second,
-                                                                            dont_print_these,
-                                                                            nullptr,
-                                                                            nullptr)) {
-                    detail_json_map[si.first].push_back(extract_stat(si));
-                    continue;
-                }
-                if (dont_print_these.count(ctr) > 0 || dont_print_these.count(prm) > 0) {
-                    continue;
-                }
-                dont_print_these.clear();
-
-                if (has_valid_db_sub_stats) {
-                    const std::shared_ptr<db::DatabaseContextCounter> & db_ctx_ctr =
-                        db_sub_stat_iter->second.first;
-
-                    const std::vector<const StatisticInstance*> & db_sub_sis =
-                        db_sub_stat_iter->second.second;
-
-                    if (db_ctx_ctr->groupedPrintingDetail(db_sub_sis,
-                                                          db_dont_print_these,
-                                                          nullptr,
-                                                          nullptr))
-                    {
-                        detail_json_map[si.first].push_back(extract_stat(si));
-                        continue;
-                    }
-                }
-                if (db_dont_print_these.count(stat_inst) > 0) {
-                    continue;
-                }
-                db_dont_print_these.clear();
-
-                detail_json_map[si.first].push_back(extract_stat(si));
-            }
         }
 
         // Go through all subreports
