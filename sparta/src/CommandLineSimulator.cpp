@@ -34,15 +34,12 @@
 #include "sparta/utils/StringUtils.hpp"
 #include "sparta/utils/ValidValue.hpp"
 #include "sparta/report/format/BaseFormatter.hpp"
-#include "sparta/report/db/ReportVerifier.hpp"
 #include "sparta/parsers/ConfigEmitterYAML.hpp"
-#include "sparta/report/DatabaseInterface.hpp"
 // // For filtered printouts
 #include "sparta/statistics/Counter.hpp"
 #include "sparta/ports/Port.hpp"
 #include "sparta/utils/File.hpp"
 #include "sparta/kernel/SleeperThread.hpp"
-#include "simdb/ObjectManager.hpp"
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/utils/Colors.hpp"
 #include "sparta/simulation/GlobalTreeNode.hpp"
@@ -145,8 +142,6 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
     pipeout_opts_("Pipeline-Collection Options", OPTIONS_DOC_WIDTH),
     log_opts_("Logging Options", OPTIONS_DOC_WIDTH),
     report_opts_("Report Options", OPTIONS_DOC_WIDTH),
-    simdb_opts_("SimDB Options", OPTIONS_DOC_WIDTH),
-    simdb_internal_opts_("SimDB Options (internal / developer use)", OPTIONS_DOC_WIDTH),
     app_opts_("Application-Specific Options", OPTIONS_DOC_WIDTH),
     feature_opts_("Feature Evaluation Options", OPTIONS_DOC_WIDTH),
     advanced_opts_("Advanced Options", OPTIONS_DOC_WIDTH)
@@ -585,10 +580,6 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "Disable pretty print / verbose print for all JSON statistics reports")
         ("omit-zero-value-stats-from-json_reduced",
          "Omit all statistics that have value 0 from json_reduced statistics reports")
-        ("report-verif-output-dir",
-         named_value<std::vector<std::string>>("DIR_NAME", 1, 1),
-         "When SimDB report verification is enabled, this option will send all verification "
-         "artifacts to the specified directory, relative to the current working directory.")
         ("report-warmup-icount",
          named_value<uint64_t>(""),
          "DEPRECATED")
@@ -614,29 +605,6 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "to exits caused by fatal signal such as SIGKILL/SIGSEGV/SIGABRT, etc.",
          "Writes all reports even when run exits with error.")
         ;
-
-    // SimDB Options
-    simdb_opts_.add_options()
-      ("simdb-dir",
-       named_value<std::vector<std::string>>("DIR", 1, 1),
-       "Specify the location where the simulation database will be written")
-      ("simdb-enabled-components",
-       named_value<std::vector<std::vector<std::string>>>("", 1, INT_MAX)->multitoken(),
-       "Specify which simulator components should be enabled for SimDB access.\n"
-       "Example: \"--simdb-enabled-components dbaccess.yaml\"")
-        ;
-
-    // SimDB Options (internal / developer use)
-    simdb_internal_opts_.add_options()
-      ("collect-legacy-reports",
-       named_value<std::vector<std::string>>("DIR", 1, INT_MAX)->multitoken(),
-       "Specify the root directory where all legacy report files will be written. "
-       "This directory will be created if needed. Optionally supply one or more "
-       "specific report format types that you *only* want to be collected, otherwise "
-       "all report formats will be collected by default.\n"
-       "Example: \"--collect-legacy-reports test/report/dir\"\n"
-       "Example: \"--collect-legacy-reports test/report/dir json_reduced csv_cumulative\"")
-      ;
 
     // Feature Options
     feature_opts_.add_options()
@@ -716,8 +684,6 @@ bool CommandLineSimulator::parse(int argc,
             .add(log_opts_.getVerboseOptions())
             .add(pipeout_opts_.getVerboseOptions())
             .add(report_opts_.getVerboseOptions())
-            .add(simdb_opts_.getVerboseOptions())
-            .add(simdb_internal_opts_.getVerboseOptions())
             .add(app_opts_.getVerboseOptions())
             .add(feature_opts_.getVerboseOptions())
             .add(advanced_opts_.getVerboseOptions());
@@ -1115,9 +1081,6 @@ bool CommandLineSimulator::parse(int argc,
                 }
                 sim_config_.setMemoryUsageDefFile(def_file);
                 opts.options.erase(opts.options.begin() + i);
-            }else if (o.string_key == "report-verif-output-dir") {
-                db::ReportVerifier::writeVerifResultsTo(o.value[0]);
-                opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "report-warmup-icount") {
                 throw_report_deprecated = true;
                 ++i;
@@ -1429,49 +1392,6 @@ bool CommandLineSimulator::parse(int argc,
                 }
                 std::cout << " set infinite loop protection timeout to " << seconds << " seconds" << std::endl;
                 SleeperThread::getInstance()->setInfLoopSleepInterval(std::chrono::seconds(seconds));
-                ++i;
-            } else if(o.string_key == "simdb-dir") {
-                const std::string & db_dir = o.value[0];
-                auto p = sfs::path(db_dir);
-                if (!sfs::exists(p)) {
-                    sfs::create_directories(p);
-                } else if (!sfs::is_directory(p)) {
-                    throw SpartaException("Invalid 'simdb-dir' argument. Path ")
-                        << "exists but is not a directory.";
-                }
-                sim_config_.setSimulationDatabaseLocation(db_dir);
-                ++i;
-            } else if(o.string_key == "simdb-enabled-components") {
-                std::vector<std::string> yaml_opts_files;
-                auto is_yaml_file = [](const std::string & opt) {
-                    auto p = sfs::path(opt);
-                    return (sfs::exists(p) && !sfs::is_directory(p));
-                };
-
-                for (size_t idx = 0; idx < o.value.size(); ++idx) {
-                    sparta_assert(is_yaml_file(o.value[idx]),
-                                "File not found: " << o.value[idx]);
-                    yaml_opts_files.emplace_back(o.value[idx]);
-                }
-
-                for (const auto & opt_file : yaml_opts_files) {
-                    sim_config_.addSimulationDatabaseAccessOptsYaml(opt_file);
-                }
-                ++i;
-            } else if(o.string_key == "collect-legacy-reports") {
-                const std::string & reports_root_dir = o.value[0];
-                auto p = sfs::path(reports_root_dir);
-                if (!sfs::exists(p)) {
-                    sfs::create_directories(p);
-                } else if (!sfs::is_directory(p)) {
-                    throw SpartaException("Invalid 'collect-legacy-reports' argument. Path ")
-                        << "exists but is not a directory.";
-                }
-                std::set<std::string> collected_formats;
-                for (size_t idx = 1; idx < o.value.size(); ++idx) {
-                    collected_formats.insert(o.value[idx]);
-                }
-                sim_config_.setLegacyReportsCopyDir(reports_root_dir, collected_formats);
                 ++i;
             } else if(o.string_key == "feature") {
                 const std::string & name = o.value[0];
@@ -2003,21 +1923,6 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
     sim_config_.copyTreeNodeExtensionsFromArchAndConfigPTrees();
 
-    //The simdb feature is enabled by default unless it was explicitly
-    //disabled at the command line. The reports will go to the pwd and
-    //to the database at the same time, and at the end of simulation
-    //the SimDB reports are exported to the filesystem, and the two
-    //formatted report files are compared.
-    //
-    //This slows down simulation overall since we're capturing twice
-    //the amount of report data / metadata, but this is to ensure the
-    //new database is working for all scenarios while the database
-    //backend gets some bake time. But we'll leave it here for a little
-    //while so downstream SPARTA clients can revert to legacy reporting
-    //infrastructure if they really need to.
-    if (!feature_config_.isFeatureValueSet("simdb")) {
-        feature_config_.setFeatureValue("simdb", 0);
-    }
     sim->setFeatureConfig(&feature_config_);
 
     // Configure the simulator itself (not its content)
@@ -2434,30 +2339,6 @@ void CommandLineSimulator::postProcess(Simulation* sim)
 
 void CommandLineSimulator::postProcess_(Simulation* sim)
 {
-    auto simdb = GET_DB_FOR_COMPONENT(Stats, sim);
-
-    if (simdb) {
-        auto feature_cfg = sim->getFeatureConfiguration();
-        if (IsFeatureValueEnabled(feature_cfg, "simdb-verify")) {
-            std::string simdb_fname = simdb->getDatabaseFile();
-            const std::string simdb_src_fname = simdb_fname;
-            simdb_fname = sfs::path(simdb_fname).filename().string();
-
-            sfs::path cwd = sfs::current_path();
-            const std::string simdb_dest_dir =
-                cwd.string() + "/" + db::ReportVerifier::getVerifResultsDir();
-
-            const std::string simdb_dest_fname = simdb_dest_dir + "/" + simdb_fname;
-            std::error_code err;
-            sfs::copy_file(simdb_src_fname, simdb_dest_fname, err);
-            if (err) {
-                std::cout << "  [simdb] Warning: The 'simdb-verify' post processing step "
-                          << "encountered and trapped a std::filesystem error: \""
-                          << err.message() << "\"" << std::endl;
-            }
-        }
-    }
-
     sim->postProcessingLastCall();
 }
 
@@ -2475,7 +2356,6 @@ void CommandLineSimulator::printOptionsHelp_(uint32_t level) const
               << pipeout_opts_.getOptionsLevelUpTo(level) << std::endl
               << debug_opts_.getOptionsLevelUpTo(level) << std::endl
               << report_opts_.getOptionsLevelUpTo(level) << std::endl
-              << simdb_opts_.getOptionsLevelUpTo(level) << std::endl
               << app_opts_.getOptionsLevelUpTo(level) << std::endl;
 
     if(0 == level){
