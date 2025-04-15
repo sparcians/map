@@ -63,15 +63,15 @@ void testFeatureConfig()
     PRINT_ENTER_TEST
 
     sparta::app::FeatureConfiguration features;
-    EXPECT_EQUAL(features.getFeatureValue("simdb"), 0);
+    EXPECT_EQUAL(features.getFeatureValue("map_v3"), 0);
 
-    features.setFeatureValue("simdb", 2);
-    EXPECT_EQUAL(features.getFeatureValue("simdb"), 2);
+    features.setFeatureValue("map_v3", 2);
+    EXPECT_EQUAL(features.getFeatureValue("map_v3"), 2);
 
-    EXPECT_NOTEQUAL(features.getFeatureOptions("simdb"), nullptr);
-    features.setFeatureOptionsFromFile("simdb", "sample_feat_opts.yaml");
+    EXPECT_NOTEQUAL(features.getFeatureOptions("map_v3"), nullptr);
+    features.setFeatureOptionsFromFile("map_v3", "sample_feat_opts.yaml");
 
-    auto opts = features.getFeatureOptions("simdb");
+    auto opts = features.getFeatureOptions("map_v3");
     EXPECT_NOTEQUAL(opts, nullptr);
 
     //The sample options yaml file we just applied has
@@ -124,35 +124,35 @@ void testFeatureConfig()
     //FeatureConfiguration pointers: raw, shared_ptr, unique_ptr
     {
         sparta::app::FeatureConfiguration * feature_cfg = nullptr;
-        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "simdb", 0));
+        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "map_v3", 0));
 
         feature_cfg = new sparta::app::FeatureConfiguration;
-        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "simdb", 0));
+        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "map_v3", 0));
 
-        feature_cfg->setFeatureValue("simdb", 5);
-        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "simdb", 5));
+        feature_cfg->setFeatureValue("map_v3", 5);
+        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "map_v3", 5));
 
         delete feature_cfg;
     }
     {
         std::shared_ptr<sparta::app::FeatureConfiguration> feature_cfg;
-        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "simdb", 0));
+        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "map_v3", 0));
 
         feature_cfg.reset(new sparta::app::FeatureConfiguration);
-        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "simdb", 0));
+        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "map_v3", 0));
 
-        feature_cfg->setFeatureValue("simdb", 5);
-        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "simdb", 5));
+        feature_cfg->setFeatureValue("map_v3", 5);
+        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "map_v3", 5));
     }
     {
         std::unique_ptr<sparta::app::FeatureConfiguration> feature_cfg;
-        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "simdb", 0));
+        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "map_v3", 0));
 
         feature_cfg.reset(new sparta::app::FeatureConfiguration);
-        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "simdb", 0));
+        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "map_v3", 0));
 
-        feature_cfg->setFeatureValue("simdb", 5);
-        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "simdb", 5));
+        feature_cfg->setFeatureValue("map_v3", 5);
+        EXPECT_TRUE(sparta::IsFeatureValueEqualTo(feature_cfg, "map_v3", 5));
     }
 }
 

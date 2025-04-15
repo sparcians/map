@@ -84,7 +84,7 @@ find_package(Threads REQUIRED)
 
 # Populate the Sparta_LIBS variable with the required libraries for
 # basic Sparta linking
-set (Sparta_LIBS sparta simdb HDF5::HDF5 sqlite3 yaml-cpp::yaml-cpp ZLIB::ZLIB Threads::Threads
+set (Sparta_LIBS sparta yaml-cpp::yaml-cpp ZLIB::ZLIB Threads::Threads
   Boost::date_time Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
 
 # If HDF5 is built with MPI support, we also need to add the MPI include dirs and link against the MPI library
