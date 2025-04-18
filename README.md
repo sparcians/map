@@ -21,6 +21,18 @@ MAP is broken into two parts:
 [![MacOS Build Status](https://dev.azure.com/sparcians/map/_apis/build/status/sparcians.map?branchName=master&label=MacOS)](https://dev.azure.com/sparcians/map/_build/latest?definitionId=1&branchName=master)
 [![Documentation](https://github.com/sparcians/map/workflows/Documentation/badge.svg)](https://sparcians.github.io/map/)
 
+## Cloning MAP
+
+MAP uses git submodules, so you should either check out MAP with the --recurse-submodules option:
+
+- `git clone --recurse-submodules git@github.com:sparcians/map.git`
+
+Or you can get the submodules manually:
+
+- `git clone git@github.com:sparcians/map.git`
+- `cd map`
+- `git submodule update --init --recursive`
+
 ## Building MAP
 
 Building MAP is done in two parts
