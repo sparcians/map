@@ -35,7 +35,8 @@ jobs:
       # Install missing packages to make everything build
       - name: Install packages needed for sparta
         run: |
-          sudo brew install boost yaml-cpp rapidjson hdf5
+          brew update
+          brew install boost yaml-cpp rapidjson hdf5
 
       # Setup CCache to cache builds
       - name: ccache
