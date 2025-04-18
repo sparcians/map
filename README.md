@@ -46,9 +46,30 @@ The following packages are needed to build Sparta (not the Helios tools):
 - (rapidjson-dev) RapidJSON CPP 1.1.0
 - (libsqlite3-dev) SQLite3 3.37.2
 - (libhdf5-dev) HDF5 1.10.7
-- (clang) Clang, Version: 14.0.0
+- (clang++) Clang, Version: 14.0.0 OR (g++) v13.0.0 or greater
 
-These pakages were tested with Ubuntu 22.02 (as well as WSL).  Use `apt` or `yum` to install.
+These pakages were tested with Ubuntu 22.02/24.04 (as well as WSL).
+Use `apt`, `yum` or `brew` to install.
+
+Clone sparta:
+```
+git clone --recursive git@github.com:sparcians/map
+```
+
+Build sparta:
+```
+cd map/sparta && mkdir release && cd release
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make
+```
+
+Install the libraries and headers:
+```
+sudo cmake --install . --prefix /usr/local
+```
+
+Build a simulator like Olympia from https://github.com/riscv-software-src/riscv-perf-model
+
 
 ## Conda
 
