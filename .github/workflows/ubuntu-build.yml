@@ -22,7 +22,8 @@ jobs:
     # Set up a global environment variable for build scripts
     env:
       SHINRO_BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
-      COMPILER:           ${{ matrix.COMPILER }}
+      COMPILER:          ${{ matrix.COMPILER }}
+      BUILD_TYPE:        ${{ matrix.BUILD_TYPE }}
 
     steps:
       # Get sparta
