@@ -16,7 +16,7 @@ CXX_COMPILER=${CXX_COMPILER/gcc/g++}
 #   Have other build types point to release
 #
 echo "Building Sparta Infra"
-cd ${GITHUB_WORKSPACE}
+cd ${GITHUB_WORKSPACE}/sparta
 mkdir -p ${BUILD_TYPE}
 cd ${BUILD_TYPE}
 CC=$COMPILER CXX=$CXX_COMPILER  cmake .. -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=/usr/local/
