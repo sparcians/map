@@ -1,0 +1,64 @@
+on:
+  pull_request:
+    branches:
+      - master
+
+env:
+  CACHE_VERSION: v1
+
+name: Regress sparta on MacOS
+jobs:
+  build_test_job:
+    strategy:
+      # Strategy is a matrix of debug and release builds/regression
+      matrix:
+        os: [macos-15]
+        BUILD_TYPE: [Release]
+        COMPILER: [clang]
+
+    name: macos-${{ matrix.BUILD_TYPE }}-${{matrix.COMPILER}}
+    runs-on: ${{ matrix.os }}
+
+    # Set up a global environment variable for build scripts
+    env:
+      SHINRO_BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+      COMPILER:          ${{ matrix.COMPILER }}
+      BUILD_TYPE:        ${{ matrix.BUILD_TYPE }}
+
+    steps:
+      # Get sparta
+      - name: Clone sparta
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Install missing packages to make everything build
+      - name: Install packages needed for sparta
+        run: |
+          sudo brew install boost yaml-cpp rapidjson hdf5
+
+      # Setup CCache to cache builds
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ matrix.os }}-${{ matrix.BUILD_TYPE }}-${{ matrix.COMPILER }}-ccache-${{ github.ref_name }}
+          restore-keys: |
+            ${{ matrix.os }}-${{ matrix.BUILD_TYPE }}-${{ matrix.COMPILER }}-ccache-master
+            ${{ matrix.os }}-${{ matrix.BUILD_TYPE }}-${{ matrix.COMPILER }}-ccache
+
+      # Build
+      - name: Build & Regress
+        run: ./.github/actions/entrypoint.sh
+
+      # Save error logs, etc
+      - name: Save artifacts
+        if: failure()
+        uses: actions/upload-artifact@main
+        with:
+          name: ErrorLogs-${{matrix.BUILD_TYPE}}-${{matrix.COMPILER}}
+          path: ${{matrix.BUILD_TYPE}}/test/
+
+      #- name: CTest
+      #  # Run CTests without Valgrind tests otherwise the runtime will be TOO long
+      #  if: ${{ env.DABBLE_BUILD_TYPE == 'release' }} && ${{ env.VALGRIND == 'false' }}
+      #  uses: ./.github/actions/ctest  # Uses an action.yml in directory
