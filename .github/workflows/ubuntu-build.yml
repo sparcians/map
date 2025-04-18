@@ -25,26 +25,11 @@ jobs:
       COMPILER:           ${{ matrix.COMPILER }}
 
     steps:
-      - name: Setup Keys
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.SSH_PRIVATE_KEY }}
-            ${{ secrets.STF_LIB_SSH_KEY }}
-
       # Get sparta
       - name: Clone sparta
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      # Get Sparta
-      - name: Checkout Sparta
-        uses: actions/checkout@v4
-        with:
-          repository: sparcians/map
-          path: map
-          ref: map_v2.0.22
 
       # Install missing packages to make everything build
       - name: Install packages needed for sparta
@@ -63,7 +48,7 @@ jobs:
 
       # Build
       - name: Build & Regress
-        run: ./.github/actions/build/entrypoint.sh
+        run: ./.github/actions/entrypoint.sh
 
       # Save error logs, etc
       - name: Save artifacts
