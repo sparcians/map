@@ -16,9 +16,9 @@ CXX_COMPILER=${CXX_COMPILER/gcc/g++}
 #   Have other build types point to release
 #
 echo "Building Sparta Infra"
-cd ${GITHUB_WORKSPACE}/map/sparta
-mkdir -p release
-cd release
+cd ${GITHUB_WORKSPACE}
+mkdir -p ${BUILD_TYPE}
+cd ${BUILD_TYPE}
 CC=$COMPILER CXX=$CXX_COMPILER  cmake .. -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=/usr/local/
 if [ $? -ne 0 ]; then
     echo "ERROR: CMake for Sparta framework failed"
