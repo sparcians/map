@@ -34,7 +34,7 @@ if [ ${BUILD_SPARTA} -ne 0 ]; then
 fi
 rm install.log
 
-if [ "${BUILD_TYPE}" = "Release"]; then
+if [ "${BUILD_TYPE}" = "Release" ]; then
     make -j$(nproc --all) regress
     if [ $? -ne 0 ]; then
         echo "ERROR: regress of sparta FAILED!!!"
