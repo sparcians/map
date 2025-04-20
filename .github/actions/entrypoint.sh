@@ -25,7 +25,9 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-sudo make -j$(nproc --all) install
+NUM_CORES=$(nproc 2>/dev/null || sysctl -n hw.logicalcpu)
+
+sudo make -j${NUM_CORES} install
 BUILD_SPARTA=$?
 if [ ${BUILD_SPARTA} -ne 0 ]; then
     echo "ERROR: build/install for sparta FAILED!!!"
@@ -35,19 +37,19 @@ fi
 rm install.log
 
 if [ "${BUILD_TYPE}" = "Release" ]; then
-    make -j$(nproc --all) regress
+    make -j${NUM_CORES} regress
     if [ $? -ne 0 ]; then
         echo "ERROR: regress of sparta FAILED!!!"
         exit 1
     fi
 
-    make -j$(nproc --all) example_regress
+    make -j${NUM_CORES} example_regress
     if [ $? -ne 0 ]; then
         echo "ERROR: example_regress of sparta FAILED!!!"
         exit 1
     fi
 
-    make -j$(nproc --all) core_example_regress
+    make -j${NUM_CORES} core_example_regress
     if [ $? -ne 0 ]; then
         echo "ERROR: example_regress of sparta FAILED!!!"
         exit 1
