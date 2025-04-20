@@ -36,7 +36,7 @@ jobs:
       - name: Install packages needed for sparta
         run: |
           brew update
-          brew install boost yaml-cpp@0.7.0 rapidjson hdf5
+          brew install boost yaml-cpp rapidjson hdf5
 
       # Setup CCache to cache builds
       - name: ccache
