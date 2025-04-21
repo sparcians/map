@@ -48,7 +48,7 @@ The following packages are needed to build Sparta (not the Helios tools):
 - (libhdf5-dev) HDF5 1.10.7
 - (clang++) Clang, Version: 14.0.0 OR (g++) v13.0.0 or greater
 
-These pakages were tested with Ubuntu 22.02/24.04 (as well as WSL).
+These packages were tested with Ubuntu 22.02/24.04 (as well as WSL).
 Use `apt`, `yum` or `brew` to install.
 
 Clone sparta:
@@ -63,7 +63,7 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
 
-Install the libraries and headers:
+Install the libraries and headers locally on your system:
 ```
 sudo cmake --install . --prefix /usr/local
 ```

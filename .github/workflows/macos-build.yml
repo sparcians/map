@@ -57,9 +57,4 @@ jobs:
         uses: actions/upload-artifact@main
         with:
           name: ErrorLogs-${{matrix.BUILD_TYPE}}-${{matrix.COMPILER}}
-          path: ${{matrix.BUILD_TYPE}}
-
-      #- name: CTest
-      #  # Run CTests without Valgrind tests otherwise the runtime will be TOO long
-      #  if: ${{ env.DABBLE_BUILD_TYPE == 'release' }} && ${{ env.VALGRIND == 'false' }}
-      #  uses: ./.github/actions/ctest  # Uses an action.yml in directory
+          path: ${{GITHUB_WORKSPACE}}

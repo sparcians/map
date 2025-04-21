@@ -51,7 +51,7 @@ if [ "${BUILD_TYPE}" = "Release" ]; then
 
     make -j${NUM_CORES} core_example_regress
     if [ $? -ne 0 ]; then
-        echo "ERROR: example_regress of sparta FAILED!!!"
+        echo "ERROR: core_example_regress of sparta FAILED!!!"
         exit 1
     fi
 fi
