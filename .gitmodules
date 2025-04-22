@@ -1,0 +1,3 @@
+[submodule "sparta/simdb"]
+	path = sparta/simdb
+	url = git@github.com:colby-nyce/simdb.git
