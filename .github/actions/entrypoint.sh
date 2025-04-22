@@ -8,6 +8,8 @@ echo "GITHUB_WORKSPACE:" $GITHUB_WORKSPACE
 echo "GITHUB_EVENT_PATH:" $GITHUB_EVENT_PATH
 echo "PWD:" `pwd`
 
+ls /opt/homebrew/lib/*yaml*
+
 CXX_COMPILER=${COMPILER/clang/clang++}
 CXX_COMPILER=${CXX_COMPILER/gcc/g++}
 
