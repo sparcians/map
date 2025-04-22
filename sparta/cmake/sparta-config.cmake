@@ -55,6 +55,7 @@ if (yaml-cpp_FOUND)
   endif ()
   include_directories (SYSTEM ${YAML_CPP_INCLUDE_DIR})
   message (STATUS "Using YAML CPP ${yaml-cpp_VERSION}")
+  message (STATUS "YAML CPP LIBS: ${YAML_CPP_LIBRARIES} ${YAML_CPP_LIBRARY_DIR}")
 else ()
   message(FATAL_ERROR "Could not find yaml-cpp on this system (must be 0.7 or higher)")
 endif ()
@@ -81,7 +82,7 @@ message (STATUS "Using HDF5 ${HDF5_VERSION}")
 
 # Populate the Sparta_LIBS variable with the required libraries for
 # basic Sparta linking
-set (Sparta_LIBS sparta HDF5::HDF5 sqlite3 yaml-cpp ZLIB::ZLIB pthread
+set (Sparta_LIBS sparta HDF5::HDF5 sqlite3 ${YAML_CPP_LIBRARIES} ZLIB::ZLIB pthread
   Boost::date_time Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
 
 # On Linux we need to link against rt as well
