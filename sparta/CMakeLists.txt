@@ -215,11 +215,12 @@ add_library (sparta ${SourceCppFiles})
 
 if (USING_SIMDB)
   message (STATUS "SimDB is enabled")
-  add_definitions (-DSIMDB_ENABLED=1)
+  target_compile_definitions (sparta PRIVATE -DSIMDB_ENABLED=1)
   target_include_directories (sparta PUBLIC "./simdb/include/")
+  install(DIRECTORY simdb/include/ DESTINATION include)
 else ()
   message (STATUS "SimDB is disabled")
-  add_definitions (-DSIMDB_ENABLED=0)
+  target_compile_definitions (sparta PRIVATE -DSIMDB_ENABLED=0)
 endif ()
 
 # Add local includes
@@ -241,8 +242,3 @@ install(DIRECTORY sparta/ DESTINATION include/sparta)
 install(DIRECTORY cache/ DESTINATION include/cache)
 install(FILES ${SPARTA_STATIC_LIBS} DESTINATION lib)
 install(DIRECTORY cmake/ DESTINATION lib/cmake/sparta)
-
-# Conditionally install SimDB (ON by default)
-if(USING_SIMDB)
-  install(DIRECTORY simdb/include/ DESTINATION include)
-endif()
