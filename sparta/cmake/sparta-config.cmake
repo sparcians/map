@@ -64,20 +64,10 @@ find_package (RapidJSON 1.1 REQUIRED)
 include_directories (SYSTEM ${RAPIDJSON_INCLUDE_DIRS} ${RapidJSON_INCLUDE_DIRS})
 message (STATUS "Using RapidJSON CPP ${RapidJSON_VERSION}")
 
-# Find SQLite3
-find_package (SQLite3 3.19 REQUIRED)
-include_directories (SYSTEM ${SQLite3_INCLUDE_DIRS})
-message (STATUS "Using SQLite3 ${SQLite3_VERSION}")
-
 # Find zlib
 find_package(ZLIB REQUIRED)
 include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 message (STATUS "Using zlib ${ZLIB_VERSION_STRING}")
-
-# Find HDF5.
-find_package (HDF5 1.10 REQUIRED COMPONENTS CXX)
-include_directories (SYSTEM ${HDF5_INCLUDE_DIRS})
-message (STATUS "Using HDF5 ${HDF5_VERSION}")
 
 # Find PThreads, etc
 find_package(Threads REQUIRED)
@@ -86,6 +76,21 @@ find_package(Threads REQUIRED)
 # basic Sparta linking
 set (Sparta_LIBS sparta yaml-cpp::yaml-cpp ZLIB::ZLIB Threads::Threads
   Boost::date_time Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
+
+# Link against sqlite3 and hdf5 if SimDB is enabled
+if (USING_SIMDB)
+  find_package (SQLite3 3.19 REQUIRED)
+  include_directories (SYSTEM ${SQLite3_INCLUDE_DIRS})
+  message (STATUS "Using SQLite3 ${SQLite3_VERSION}")
+
+  find_package (HDF5 1.10 REQUIRED COMPONENTS CXX)
+  include_directories (SYSTEM ${HDF5_INCLUDE_DIRS})
+  message (STATUS "Using HDF5 ${HDF5_VERSION}")
+
+  list (APPEND Sparta_LIBS HDF5::HDF5 sqlite3)
+else ()
+  message (STATUS "Skipping SQLite3 and HDF5 -- SimDB is disabled")
+endif ()
 
 # If HDF5 is built with MPI support, we also need to add the MPI include dirs and link against the MPI library
 if(HDF5_IS_PARALLEL)

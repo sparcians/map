@@ -7,6 +7,14 @@ project (sparta CXX)
 
 set (GEN_DEBUG_INFO ON CACHE BOOL "Genearate debug info in compile & link -g")
 
+# Note that all of SimDB is optional, though included by default.
+# If this option is OFF, then it is assumed that MAP was cloned
+# without the --recursive option, therefore the SimDB submodule
+# was not cloned. If OFF, we will not put SimDB on the include
+# path, nor build the SimDB test, nor install SimDB alongside
+# the Sparta headers.
+option (USING_SIMDB "Enable Sparta to be used with SimDB" ON)
+
 set (SPARTA_BASE ${CMAKE_CURRENT_SOURCE_DIR})
 include (${SPARTA_BASE}/cmake/sparta-config.cmake)
 
@@ -204,6 +212,16 @@ set (CPPCHECK_EXCLUDES
 find_package (Cppcheck)
 
 add_library (sparta ${SourceCppFiles})
+
+if (USING_SIMDB)
+  message (STATUS "SimDB is enabled")
+  target_compile_definitions (sparta PRIVATE -DSIMDB_ENABLED=1)
+  target_include_directories (sparta PUBLIC "./simdb/include/")
+  install(DIRECTORY simdb/include/ DESTINATION include)
+else ()
+  message (STATUS "SimDB is disabled")
+  target_compile_definitions (sparta PRIVATE -DSIMDB_ENABLED=0)
+endif ()
 
 # Add local includes
 target_include_directories (sparta PUBLIC "./")
