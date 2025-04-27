@@ -42,6 +42,10 @@
 #include "sparta/trigger/ExpressionTrigger.hpp"
 #include "sparta/utils/ValidValue.hpp"
 
+#if SIMDB_ENABLED
+#include "simdb/sqlite/DatabaseManager.hpp"
+#endif
+
 namespace sparta::report::format {
 class BaseFormatter;
 }  // namespace sparta::report::format
@@ -910,7 +914,7 @@ public:
             save_reports = sim_->simulationSuccessful();
             if(false == save_reports)
             {
-                // Check simluation configuration to see if we still need to report on error
+                // Check simulation configuration to see if we still need to report on error
                 save_reports = (sim_->getSimulationConfiguration() &&
                                 sim_->getSimulationConfiguration()->report_on_error);
             }
@@ -967,7 +971,7 @@ public:
         return success;
     }
 
-    void finalize()
+    void postBuildTree()
     {
         if (sim_ && on_triggered_notifier_ == nullptr) {
             on_triggered_notifier_.reset(new sparta::NotificationSource<std::string>(
@@ -976,6 +980,94 @@ public:
                 "Notification channel used to post named notifications when triggers hit",
                 "sparta_expression_trigger_fired"));
         }
+    }
+
+    void postFinalizeFramework()
+    {
+        bool any_enabled = false;
+        for (auto& kvp : directories_) {
+            auto& report_desc = kvp.second->getDescriptor();
+            if (report_desc.isEnabled() && !report_desc.getAllInstantiations().empty()) {
+                any_enabled = true;
+                break;
+            }
+        }
+
+        if (!any_enabled) {
+            return;
+        }
+
+    #if SIMDB_ENABLED
+        const auto& simdb_config = sim_->getSimulationConfiguration()->simdb_config;
+        if (simdb_config.simDBReportsEnabled()) {
+            simdb::Schema schema;
+            using dt = simdb::SqlDataType;
+
+            auto& report_desc_tbl = schema.addTable("ReportDescriptors");
+            report_desc_tbl.addColumn("LocPattern", dt::string_t);
+            report_desc_tbl.addColumn("DefFile", dt::string_t);
+            report_desc_tbl.addColumn("DestFile", dt::string_t);
+            report_desc_tbl.addColumn("Format", dt::string_t);
+
+            auto& run_meta_tbl = schema.addTable("ReportDescriptorMeta");
+            run_meta_tbl.addColumn("ReportDescID", dt::int32_t);
+            run_meta_tbl.addColumn("MetaName", dt::string_t);
+            run_meta_tbl.addColumn("MetaValue", dt::string_t);
+
+            auto& report_tbl = schema.addTable("Reports");
+            report_tbl.addColumn("ReportDescID", dt::int32_t);
+            report_tbl.addColumn("ParentReportID", dt::int32_t);
+            report_tbl.addColumn("Name", dt::string_t);
+            report_tbl.addColumn("StartTick", dt::int64_t);
+            report_tbl.addColumn("EndTick", dt::int64_t);
+            report_tbl.addColumn("InfoString", dt::string_t);
+
+            auto& report_meta_tbl = schema.addTable("ReportMetadata");
+            report_meta_tbl.addColumn("ReportDescID", dt::int32_t);
+            report_meta_tbl.addColumn("ReportID", dt::int32_t);
+            report_meta_tbl.addColumn("MetaName", dt::string_t);
+            report_meta_tbl.addColumn("MetaValue", dt::string_t);
+
+            auto& stat_insts_tbl = schema.addTable("StatisticInsts");
+            stat_insts_tbl.addColumn("ReportID", dt::int32_t);
+            stat_insts_tbl.addColumn("StatisticName", dt::string_t);
+            stat_insts_tbl.addColumn("StatisticLoc", dt::string_t);
+
+            const auto& simdb_file = simdb_config.getSimDBFile();
+            db_mgr_ = std::make_unique<simdb::DatabaseManager>(simdb_file);
+            db_mgr_->createDatabaseFromSchema(schema);
+
+            // Use a heartbeat of 1 so that SimDB does not try to optimize the
+            // database size by using a pseudo-RLE algo to compress the stats. This
+            // makes the python exporter faster and simpler.
+            //
+            // Note that the database records are still compressed, so the .db
+            // size should not be an issue (still a lot smaller than the legacy
+            // formatted reports).
+            constexpr auto heartbeat = 1;
+            db_mgr_->enableCollection(heartbeat);
+            auto collection_mgr = db_mgr_->getCollectionMgr();
+
+            // Since a single report can have StatisticInstance's from different
+            // clock domains, we will just tell the collector that all stats are
+            // on the "root" clock.
+            //
+            // Note that this doesn't have any real effect on the reports, and
+            // differentiating between clocks is more of a concern for Argos.
+            // We just happen to be reusing the SimDB collection system for
+            // StatisticInstance reports.
+            constexpr auto assumed_root_period = 1;
+            collection_mgr->addClock("root", assumed_root_period);
+
+            db_mgr_->safeTransaction([&]() {
+                for (auto& kvp : directories_) {
+                    kvp.second->getDescriptor().configSimDbReports(db_mgr_.get(), sim_->getRoot());
+                }
+                db_mgr_->finalizeCollections();
+                return true;
+            });
+        }
+    #endif // SIMDB_ENABLED
     }
 
     statistics::StatisticsArchives * getStatsArchives()
@@ -1065,6 +1157,14 @@ public:
                       << std::endl << std::endl;
         }
 
+    #if SIMDB_ENABLED
+        if (db_mgr_) {
+            db_mgr_->postSim();
+            db_mgr_->closeDatabase();
+            db_mgr_.reset();
+        }
+    #endif // SIMDB_ENABLED
+
         directories_.clear();
 
         // %%% ... if(sim_) { ... %%%
@@ -1098,6 +1198,7 @@ private:
     std::shared_ptr<sparta::NotificationSource<std::string>> on_triggered_notifier_;
     std::unique_ptr<statistics::StatisticsArchives> stats_archives_;
     std::unique_ptr<statistics::StatisticsStreams> stats_streams_;
+    std::unique_ptr<simdb::DatabaseManager> db_mgr_;
 };
 
 ReportRepository::ReportRepository(app::Simulation * sim) :
@@ -1128,9 +1229,14 @@ bool ReportRepository::commit(DirectoryHandle * handle)
     return impl_->commit(handle);
 }
 
-void ReportRepository::finalize()
+void ReportRepository::postBuildTree()
 {
-    impl_->finalize();
+    impl_->postBuildTree();
+}
+
+void ReportRepository::postFinalizeFramework()
+{
+    impl_->postFinalizeFramework();
 }
 
 statistics::StatisticsArchives * ReportRepository::getStatsArchives()

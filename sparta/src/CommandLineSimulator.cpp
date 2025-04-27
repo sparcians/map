@@ -128,6 +128,15 @@ void showReportsHelp()
     std::cout << std::endl;
 }
 
+void showSimDBHelp()
+{
+#if SIMDB_ENABLED
+    std::cout << "TODO: SimDB Help" << std::endl;
+#else
+    std::cout << "SimDB is not enabled in this build (-DUSING_SIMDB=ON)" << std::endl;
+#endif
+}
+
 CommandLineSimulator::CommandLineSimulator(const std::string& usage,
                                            const DefaultValues& defs) :
     sim_config_(defs),
@@ -142,6 +151,7 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
     pipeout_opts_("Pipeline-Collection Options", OPTIONS_DOC_WIDTH),
     log_opts_("Logging Options", OPTIONS_DOC_WIDTH),
     report_opts_("Report Options", OPTIONS_DOC_WIDTH),
+    simdb_opts_("Simulation Database Options", OPTIONS_DOC_WIDTH),
     app_opts_("Application-Specific Options", OPTIONS_DOC_WIDTH),
     feature_opts_("Feature Evaluation Options", OPTIONS_DOC_WIDTH),
     advanced_opts_("Advanced Options", OPTIONS_DOC_WIDTH)
@@ -606,6 +616,15 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "Writes all reports even when run exits with error.")
         ;
 
+    // Simulation Database Options
+    simdb_opts_.add_options()
+        ("simdb-file",
+         named_value<std::vector<std::string>>("FILENAME", 1, 1),
+         "Specify a simulation database file to hold reports and other sim artifacts. Use together with "
+         "--enable-simdb-* options to selectively add artifacts to the database.")
+        ("enable-simdb-reports",
+         "Enable the simulation database to hold reports.");
+
     // Feature Options
     feature_opts_.add_options()
         ("feature",
@@ -684,6 +703,9 @@ bool CommandLineSimulator::parse(int argc,
             .add(log_opts_.getVerboseOptions())
             .add(pipeout_opts_.getVerboseOptions())
             .add(report_opts_.getVerboseOptions())
+            #if SIMDB_ENABLED
+            .add(simdb_opts_.getVerboseOptions())
+            #endif
             .add(app_opts_.getVerboseOptions())
             .add(feature_opts_.getVerboseOptions())
             .add(advanced_opts_.getVerboseOptions());
@@ -1099,6 +1121,10 @@ bool CommandLineSimulator::parse(int argc,
             }else if (o.string_key == "report-update-icount") {
                 throw_report_deprecated = true;
                 ++i;
+            }else if (o.string_key == "simdb-file") {
+                const auto& simdb_file = o.value[0];
+                sim_config_.simdb_config.setSimDBFile(simdb_file);
+                opts.options.erase(opts.options.begin() + i);
 
             }else if (o.string_key == "pipeline-collection") {
                 //Enforce that we cannot set pipeline-collection options twice.
@@ -1508,6 +1534,9 @@ bool CommandLineSimulator::parse(int argc,
         }else if(help_topic_ == "reporting"){
             std::cout << report_opts_.getOptionsLevelUpTo(0) << std::endl;
             showReportsHelp();
+        }else if(help_topic_ == "simdb"){
+            std::cout << simdb_opts_.getOptionsLevelUpTo(0) << std::endl;
+            showSimDBHelp();
         }else if(help_topic_ == "pipeout"){
             std::cout << pipeout_opts_.getOptionsLevelUpTo(0) << std::endl;
         }else{
@@ -1766,6 +1795,12 @@ bool CommandLineSimulator::parse(int argc,
     sim_config_.debug_sim               = vm_.count("debug-sim") > 0;
     sim_config_.report_on_error         = vm_.count("report-on-error") > 0;
     sim_config_.reports                 = reports;
+
+    // The various --enable-simdb-* options will implicitly set the database file to sparta.db
+    // unless otherwise specified with --simdb-file (which has already been parsed above).
+    if (vm_.count("enable-simdb-reports") > 0) {
+        sim_config_.simdb_config.enableSimDBReports();
+    }
 
     //pevents
     run_pevents_ = (vm_.count("pevents-at") > 0) || (vm_.count("pevents") > 0) || (vm_.count("verbose-pevents") > 0);
@@ -2356,6 +2391,9 @@ void CommandLineSimulator::printOptionsHelp_(uint32_t level) const
               << pipeout_opts_.getOptionsLevelUpTo(level) << std::endl
               << debug_opts_.getOptionsLevelUpTo(level) << std::endl
               << report_opts_.getOptionsLevelUpTo(level) << std::endl
+              #if SIMDB_ENABLED
+              << simdb_opts_.getOptionsLevelUpTo(level) << std::endl
+              #endif
               << app_opts_.getOptionsLevelUpTo(level) << std::endl;
 
     if(0 == level){

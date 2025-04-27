@@ -41,6 +41,11 @@ namespace sparta::trigger {
     class SkippedAnnotatorBase;
 }  // namespace sparta::trigger
 
+namespace simdb {
+    class CollectionPoint;
+    class DatabaseManager;
+}  // namespace simdb
+
 namespace sparta {
 
     namespace report {
@@ -187,6 +192,57 @@ namespace sparta {
              * facing dest_file.
              */
             std::string orig_dest_file_;
+
+            /*!
+             * \brief SimDB instance. When enabled, this will be used to
+             * write unformatted reports to the database along with formatted
+             * reports to the file system (csv, json, etc.)
+             *
+             * In MAP v2, this "dual-reporting" behavior is the default in
+             * order to maximize bug finding in the SimDB export module.
+             *
+             * In MAP v3, we will only write to SimDB and not to the file system.
+             * This greatly reduces disk usage and has less overhead on simulation.
+             */
+            simdb::DatabaseManager* db_mgr_ = nullptr;
+
+            /*!
+             * \brief Cache the Scheduler so we know the current tick for every
+             * call to simdb::CollectionMgr::sweep().
+             */
+            const Scheduler* scheduler_ = nullptr;
+
+            /*!
+             * \brief Stats for each report (collected_stat_t) are stored as pairs
+             * of a StatisticInstance and a simdb::CollectionPoint. The data value
+             * is retrieved from the StatisticInstance and written to the SimDB
+             * CollectionPoint.
+             */
+            using collected_stat_t = std::pair<const StatisticInstance*, std::shared_ptr<simdb::CollectionPoint>>;
+            std::vector<collected_stat_t> simdb_stats_;
+
+            /*!
+             * \brief Initialize SimDB report(s) to go with the formatted reports
+             * e.g. CSV, JSON, etc. In MAP v2, we write to both and compare the
+             * resulting reports (formatted versus SimDB-exported). In MAP v3,
+             * we will only write to SimDB.
+             */
+            void configSimDbReport_(
+                const Report* r,
+                const int report_desc_id = 0,
+                const int parent_report_id = 0);
+
+            /*!
+             * \brief Go through the SimDB collection system and "activate" all of our
+             * statistics in the collection's "black box". Then immediately ask the
+             * collector to "sweep" these values into the compression->database pipeline
+             * to clear the black box for the next snapshot.
+             *
+             * Note that although the ReportDescriptor separates the writeOutput()
+             * and updateOutput() methods for e.g. json and timeseries reports, the
+             * SimDB reports always go through this one method.
+             */
+            void sweepSimDbStats_();
 
             friend class ReportDescriptorCollection;
 
@@ -342,6 +398,14 @@ namespace sparta {
              * layout of this descriptor's report.
              */
             std::shared_ptr<statistics::StreamNode> createRootStatisticsStream();
+
+            /*!
+             * \brief Initialize SimDB report(s) to go with the formatted reports
+             * e.g. CSV, JSON, etc. In MAP v2, we write to both and compare the
+             * resulting reports (formatted versus SimDB-exported). In MAP v3,
+             * we will only write to SimDB.
+             */
+            void configSimDbReports(simdb::DatabaseManager* db_mgr, RootTreeNode* root);
 
             //! \brief Report descriptors may be triggered to stop early - ensure no
             //! further updates are written to disk

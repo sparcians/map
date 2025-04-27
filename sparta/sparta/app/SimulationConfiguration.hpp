@@ -489,6 +489,36 @@ public:
     ReportDescVec reports;
 
     /*!
+     * SimDB configuration
+     */
+    class SimDBConfig
+    {
+    public:
+        void setSimDBFile(const std::string & filename) {
+            simdb_file_ = filename;
+        }
+
+        const std::string & getSimDBFile() const {
+            return simdb_file_;
+        }
+
+        void enableSimDBReports() {
+            reports_enabled_ = true;
+            if (simdb_file_.empty()) {
+                simdb_file_ = "sparta.db";
+            }
+        }
+
+        bool simDBReportsEnabled() const {
+            return reports_enabled_;
+        }
+
+    private:
+        std::string simdb_file_;
+        bool reports_enabled_ = false;
+    } simdb_config;
+
+    /*!
      * Scheduler control: When a user calls sparta::Simulation::run()
      * with an amount of time _other than_ the default, the Scheduler
      * can do one of two things:

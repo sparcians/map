@@ -41,6 +41,10 @@
 #include "sparta/report/format/BaseFormatter.hpp"
 #include "sparta/trigger/ExpressionTrigger.hpp"
 
+#if SIMDB_ENABLED
+#include "simdb/sqlite/DatabaseManager.hpp"
+#endif
+
 namespace YAML {
 class EventHandler;
 }  // namespace YAML
@@ -180,6 +184,133 @@ std::shared_ptr<statistics::StreamNode> ReportDescriptor::createRootStatisticsSt
               << std::endl;
 
     return nullptr;
+}
+
+void ReportDescriptor::configSimDbReports(simdb::DatabaseManager* db_mgr, RootTreeNode* root)
+{
+#if SIMDB_ENABLED
+    if (!isEnabled()) {
+        return;
+    }
+
+    const std::vector<Report*> reports = getAllInstantiations();
+    if (reports.empty()) {
+        return;
+    }
+
+    db_mgr_ = db_mgr;
+    scheduler_ = root->getClock()->getScheduler();
+
+    auto collection_mgr = db_mgr_->getCollectionMgr();
+    for (const auto r : reports) {
+        for (const auto& si_pair : r->getStatistics()) {
+            const auto loc = si_pair.second->getLocation();
+
+            std::shared_ptr<simdb::CollectionPoint> collectable =
+                collection_mgr->createCollectable<double>(loc, "root");
+
+            collected_stat_t collected_stat(si_pair.second.get(), collectable);
+            simdb_stats_.push_back(collected_stat);
+        }
+    }
+
+    const auto rd_record = db_mgr_->INSERT(
+        SQL_TABLE("ReportDescriptors"),
+        SQL_COLUMNS("LocPattern", "DefFile", "DestFile", "Format"),
+        SQL_VALUES(loc_pattern, def_file, dest_file, format));
+
+    const auto report_desc_id = rd_record->getId();
+
+    for (const auto& kvp : header_metadata_) {
+        const auto& meta_name = kvp.first;
+        const auto& meta_value = kvp.second;
+        db_mgr_->INSERT(
+            SQL_TABLE("ReportDescriptorMeta"),
+            SQL_COLUMNS("ReportDescID", "MetaName", "MetaValue"),
+            SQL_VALUES(report_desc_id, meta_name, meta_value));
+    }
+
+    for (const auto r : reports) {
+        configSimDbReport_(r, report_desc_id);
+    }
+#else
+    (void) db_mgr;
+    (void) root;
+#endif
+}
+
+void ReportDescriptor::configSimDbReport_(
+    const Report* r,
+    const int report_desc_id,
+    const int parent_report_id)
+{
+#if SIMDB_ENABLED
+    const auto report_name = r->getName();
+    const auto report_start_tick = r->getStart();
+    const auto report_end_tick = r->getEnd();
+    const auto report_info = r->getInfoString();
+
+    const auto report_record = db_mgr_->INSERT(
+        SQL_TABLE("Reports"),
+        SQL_COLUMNS("ReportDescID", "ParentReportID", "Name", "StartTick", "EndTick", "InfoString"),
+        SQL_VALUES(report_desc_id, parent_report_id, report_name, report_start_tick, report_end_tick, report_info));
+
+    const auto report_id = report_record->getId();
+
+    const auto& stats = r->getStatistics();
+    for (const auto& si : stats) {
+        const auto& si_name = si.first;
+        const auto si_loc = si.second->getLocation();
+        db_mgr_->INSERT(
+            SQL_TABLE("StatisticInsts"),
+            SQL_COLUMNS("ReportID", "StatisticName", "StatisticLoc"),
+            SQL_VALUES(report_id, si_name, si_loc));
+    }
+
+    for (const auto& pair : instantiations_) {
+        if (pair.first == r) {
+            const auto formatter = pair.second;
+            formatter->configSimDbReport(
+                db_mgr_,
+                report_desc_id,
+                report_id);
+
+            break;
+        }
+    }
+
+    for (const auto& sr : r->getSubreports()) {
+        configSimDbReport_(&sr, report_desc_id, report_id);
+    }
+#else
+    (void) r;
+    (void) report_desc_id;
+    (void) parent_report_id;
+#endif
+}
+
+void ReportDescriptor::sweepSimDbStats_()
+{
+#if SIMDB_ENABLED
+    if (db_mgr_ == nullptr) {
+        return;
+    }
+
+    for (const auto& collected_stat : simdb_stats_) {
+        const auto si = collected_stat.first;
+        const auto& collectable = collected_stat.second;
+
+        // Note that the "once" flag is set to true so that when we
+        // tell the collector to "sweep" all these values, they are
+        // automatically removed from the collector's "black box".
+        const double value = si->getValue();
+        constexpr bool once = true;
+        collectable->activate(value, once);
+    }
+
+    const auto tick = scheduler_->getCurrentTick();
+    db_mgr_->getCollectionMgr()->sweep("root", tick, dest_file);
+#endif
 }
 
 report::format::BaseFormatter* ReportDescriptor::addInstantiation(Report* r,
@@ -328,6 +459,9 @@ uint32_t ReportDescriptor::writeOutput(std::ostream* out)
         if (report_active && false == inst.second->supportsUpdate()) {
             //TODO: Deprecate "during simulation" formatters
             inst.second->write();
+            if (db_mgr_) {
+                sweepSimDbStats_();
+            }
             num_saved++;
 
             // User information
@@ -385,6 +519,9 @@ uint32_t ReportDescriptor::updateOutput(std::ostream* out)
             if (capture_update_values) {
                 //TODO: Deprecate "during simulation" formatters
                 inst.second->update();
+                if (db_mgr_) {
+                    sweepSimDbStats_();
+                }
             }
             num_updated++;
 
