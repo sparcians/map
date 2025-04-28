@@ -135,6 +135,10 @@ class ReportVerifier:
         print ('Running subprocess: ' + simcmd)
         subprocess.run(simargs)
 
+        # Switch the sim.cmd to point the DB file to "rerun.db"
+        simargs[-1] = "rerun.db"
+        simcmd = ' '.join(simargs)
+
         with open(yamlfile_path, 'r') as fin:
             yaml_str = fin.read()
             dest_files = re.findall(r'dest_file:\s*(\S+)', yaml_str)
@@ -170,6 +174,12 @@ class ReportVerifier:
 
         MakeExecutable(os.path.join(passing_dir, "sim.cmd"))
         MakeExecutable(os.path.join(failing_dir, "sim.cmd"))
+
+        # Copy <refs_dir/*.yaml> into the passing/failing directories
+        for ref_file in os.listdir(refs_dir):
+            if ref_file.endswith(".yaml"):
+                shutil.copy(os.path.join(refs_dir, ref_file), passing_dir)
+                shutil.copy(os.path.join(refs_dir, ref_file), failing_dir)
 
         # Remove the PASSING directory if all tests failed, and vice versa.
         num_failing = 0
