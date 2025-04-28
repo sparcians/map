@@ -3,6 +3,7 @@ import argparse
 import subprocess
 import shutil
 import re
+import stat
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 report_yaml_dir = os.path.join(script_dir, "report_yamls")
@@ -31,6 +32,12 @@ if os.path.exists(args.results_dir):
         sys.exit(1)
 
 os.makedirs(args.results_dir)
+
+# Helper to set the executable bit on a file (sim.cmd, export.cmd)
+def MakeExecutable(filename):
+    # Add user/group/other executable bits to the current permissions
+    current_permissions = os.stat(filename).st_mode
+    os.chmod(filename, current_permissions | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 # This class does the heavy lifting of running the sparta executable, exporting the reports
 # from SimDB to the results dir, and comparing the results to the baseline reports.
@@ -161,6 +168,9 @@ class ReportVerifier:
         with open(os.path.join(failing_dir, "sim.cmd"), 'w') as f:
             f.write(simcmd)
 
+        MakeExecutable(os.path.join(passing_dir, "sim.cmd"))
+        MakeExecutable(os.path.join(failing_dir, "sim.cmd"))
+
         # Remove the PASSING directory if all tests failed, and vice versa.
         num_failing = 0
         num_passing = 0
@@ -188,9 +198,13 @@ class ReportVerifier:
                 simdb_dest_file_out = os.path.join(failing_report_dir, simdb_dest_file)
                 shutil.copy(simdb_dest_file_in, simdb_dest_file_out)
 
-                # Write the export.cmd file 
+                # Write the export.cmd file, noting that it is intended to be run
+                # from the failing report directory (hence the use of relative paths)
                 with open(os.path.join(failing_report_dir, "export.cmd"), 'w') as fout:
+                    export_cmd = f"python3 {export_py} --db-file ../sparta.db --force --export-dir export_rerun --dest-file {dest_file}"
                     fout.write(export_cmd)
+
+                MakeExecutable(os.path.join(failing_report_dir, "export.cmd"))
 
                 # Copy the baseline report to the failing directory
                 shutil.copy(dest_file, failing_report_dir)
