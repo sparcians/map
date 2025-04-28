@@ -984,6 +984,7 @@ public:
 
     void postFinalizeFramework()
     {
+    #if SIMDB_ENABLED
         bool any_enabled = false;
         for (auto& kvp : directories_) {
             auto& report_desc = kvp.second->getDescriptor();
@@ -997,7 +998,6 @@ public:
             return;
         }
 
-    #if SIMDB_ENABLED
         const auto& simdb_config = sim_->getSimulationConfiguration()->simdb_config;
         if (simdb_config.simDBReportsEnabled()) {
             simdb::Schema schema;
@@ -1198,7 +1198,10 @@ private:
     std::shared_ptr<sparta::NotificationSource<std::string>> on_triggered_notifier_;
     std::unique_ptr<statistics::StatisticsArchives> stats_archives_;
     std::unique_ptr<statistics::StatisticsStreams> stats_streams_;
+
+    #if SIMDB_ENABLED
     std::unique_ptr<simdb::DatabaseManager> db_mgr_;
+    #endif
 };
 
 ReportRepository::ReportRepository(app::Simulation * sim) :

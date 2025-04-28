@@ -194,15 +194,7 @@ namespace sparta {
             std::string orig_dest_file_;
 
             /*!
-             * \brief SimDB instance. When enabled, this will be used to
-             * write unformatted reports to the database along with formatted
-             * reports to the file system (csv, json, etc.)
-             *
-             * In MAP v2, this "dual-reporting" behavior is the default in
-             * order to maximize bug finding in the SimDB export module.
-             *
-             * In MAP v3, we will only write to SimDB and not to the file system.
-             * This greatly reduces disk usage and has less overhead on simulation.
+             * \brief SimDB instance owned by ReportRepository.
              */
             simdb::DatabaseManager* db_mgr_ = nullptr;
 
@@ -222,10 +214,8 @@ namespace sparta {
             std::vector<collected_stat_t> simdb_stats_;
 
             /*!
-             * \brief Initialize SimDB report(s) to go with the formatted reports
-             * e.g. CSV, JSON, etc. In MAP v2, we write to both and compare the
-             * resulting reports (formatted versus SimDB-exported). In MAP v3,
-             * we will only write to SimDB.
+             * \brief Write all metadata about the given report (and its subreports
+             * and statistics) to SimDB.
              */
             void configSimDbReport_(
                 const Report* r,
@@ -237,10 +227,6 @@ namespace sparta {
              * statistics in the collection's "black box". Then immediately ask the
              * collector to "sweep" these values into the compression->database pipeline
              * to clear the black box for the next snapshot.
-             *
-             * Note that although the ReportDescriptor separates the writeOutput()
-             * and updateOutput() methods for e.g. json and timeseries reports, the
-             * SimDB reports always go through this one method.
              */
             void sweepSimDbStats_();
 
@@ -400,10 +386,8 @@ namespace sparta {
             std::shared_ptr<statistics::StreamNode> createRootStatisticsStream();
 
             /*!
-             * \brief Initialize SimDB report(s) to go with the formatted reports
-             * e.g. CSV, JSON, etc. In MAP v2, we write to both and compare the
-             * resulting reports (formatted versus SimDB-exported). In MAP v3,
-             * we will only write to SimDB.
+             * \brief Write all metadata about our report (and its subreports
+             * and statistics) to SimDB.
              */
             void configSimDbReports(simdb::DatabaseManager* db_mgr, RootTreeNode* root);
 
