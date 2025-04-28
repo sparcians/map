@@ -1,0 +1,212 @@
+import os, sys
+import argparse
+import subprocess
+import shutil
+import re
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+report_yaml_dir = os.path.join(script_dir, "report_yamls")
+refs_dir = os.path.join(script_dir, "refs")
+
+parser = argparse.ArgumentParser(description="Verify the SimDB report exporters for all report configurations.")
+parser.add_argument("--sim-exe-path", type=str, default="release/example/CoreModel/sparta_core_example",
+                    help="Path to the Sparta executable.")
+parser.add_argument("--report-yaml-dir", type=str, default=report_yaml_dir,
+                    help="Directory containing the report definition YAML files to verify.")
+parser.add_argument("--results-dir", type=str, default="simdb_verif_results",
+                    help="Directory to store the pass/fail results and all baseline/simdb reports.")
+parser.add_argument("--force", action="store_true", help="Force overwrite of the results directory if it exists.")
+
+args = parser.parse_args()
+if not os.path.exists(args.sim_exe_path):
+    print(f"Error: The specified Sparta executable path does not exist: {args.sim_exe_path}")
+    sys.exit(1)
+
+if os.path.exists(args.results_dir):
+    if args.force:
+        print(f"Warning: The results directory already exists and will be overwritten: {args.results_dir}")
+        shutil.rmtree(args.results_dir)
+    else:
+        print(f"Error: The results directory already exists. Use --force to overwrite: {args.results_dir}")
+        sys.exit(1)
+
+os.makedirs(args.results_dir)
+
+# This class does the heavy lifting of running the sparta executable, exporting the reports
+# from SimDB to the results dir, and comparing the results to the baseline reports.
+class ReportVerifier:
+    def __init__(self, sparta_exe_path, report_yaml_dir, results_dir):
+        self.sparta_exe_path = os.path.abspath(sparta_exe_path)
+        self.report_yaml_dir = os.path.abspath(report_yaml_dir)
+        self.results_dir = os.path.abspath(results_dir)
+
+    def RunAll(self):
+        # Get the list of report YAML files
+        report_yaml_files = [f for f in os.listdir(self.report_yaml_dir) if f.endswith(".yaml")]
+        if not report_yaml_files:
+            raise ValueError(f"No report YAML files found in the directory: {self.report_yaml_dir}")
+
+        # Say the report YAML directory contained:
+        #
+        #     report_yamls/
+        #         all_timeseries_formats.yaml
+        #             - basic.csv
+        #             - cumulative.csv
+        #         all_json_formats.yaml
+        #             - basic.json
+        #             - basic_triggered.json
+        #             - reduced.json
+        #
+        # Then the results directory might look like:
+        #
+        #     simdb_verif_results/
+        #         PASSING/
+        #             all_timeseries_formats/
+        #                 sparta.db
+        #                 sim.cmd
+        #                 basic/
+        #                     basic.csv
+        #             all_json_formats/
+        #                 sparta.db
+        #                 sim.cmd
+        #                 basic/
+        #                     basic.json
+        #                 basic_triggered/
+        #                     basic_triggered.json
+        #         FAILING/
+        #             all_timeseries_formats/
+        #                 sparta.db
+        #                 sim.cmd
+        #                 cumulative/
+        #                     cumulative.csv
+        #                     cumulative.simdb.csv
+        #                     export.cmd
+        #             all_json_formats/
+        #                 sparta.db
+        #                 sim.cmd
+        #                 reduced/
+        #                     reduced.json
+        #                     reduced.simdb.json
+        #                     export.cmd
+
+        num_failing = 0
+        num_passing = 0
+        for yamlfile in report_yaml_files:
+            yamlfile_path = os.path.join(self.report_yaml_dir, yamlfile)
+            fail_count, pass_count = self.__RunTest(yamlfile_path)
+            num_failing += fail_count
+            num_passing += pass_count
+
+        passing_dir = os.path.join(self.results_dir, "PASSING")
+        failing_dir = os.path.join(self.results_dir, "FAILING")
+
+        if num_failing == 0:
+            if os.path.exists(failing_dir):
+                shutil.rmtree(failing_dir)
+
+        if num_passing == 0:
+            if os.path.exists(passing_dir):
+                shutil.rmtree(passing_dir)
+
+    def __RunTest(self, yamlfile_path):
+        test_dir = os.path.join(self.results_dir, 'RUNNING')
+        if os.path.exists(test_dir):
+            shutil.rmtree(test_dir)
+        os.makedirs(test_dir)
+
+        db_file = os.path.join(test_dir, "sparta.db")
+        calling_dir = os.getcwd()
+        os.chdir(test_dir)
+
+        # Copy <refs_dir/*.yaml> into the test directory
+        for ref_file in os.listdir(refs_dir):
+            if ref_file.endswith(".yaml"):
+                shutil.copy(os.path.join(refs_dir, ref_file), test_dir)
+
+        simargs = [self.sparta_exe_path, '-i', '20k', '--report', yamlfile_path, '--enable-simdb-reports', '--simdb-file', db_file]
+        simcmd = ' '.join(simargs)
+        print ('Running subprocess: ' + simcmd)
+        subprocess.run(simargs)
+
+        with open(yamlfile_path, 'r') as fin:
+            yaml_str = fin.read()
+            dest_files = re.findall(r'dest_file:\s*(\S+)', yaml_str)
+
+        # Get "all_json_formats" from "/foo/bar/all_json_formats.yaml"
+        yaml_basename = os.path.basename(yamlfile_path)
+        yaml_basename = os.path.splitext(yaml_basename)[0]
+
+        num_failing, num_passing = self.__RunComparisons(db_file, simcmd, yaml_basename, dest_files)
+
+        os.chdir(calling_dir)
+        shutil.rmtree(test_dir)
+
+        return num_failing, num_passing
+
+    def __RunComparisons(self, db_file, simcmd, yaml_basename, dest_files):
+        # Create the directories for the PASSING and FAILING results
+        passing_dir = os.path.join(self.results_dir, "PASSING", yaml_basename)
+        failing_dir = os.path.join(self.results_dir, "FAILING", yaml_basename)
+
+        if not os.path.exists(passing_dir):
+            os.makedirs(passing_dir)
+        if not os.path.exists(failing_dir):
+            os.makedirs(failing_dir)
+
+        # Copy the database file and sim command to both directories
+        shutil.copy(db_file, passing_dir)
+        shutil.copy(db_file, failing_dir)
+        with open(os.path.join(passing_dir, "sim.cmd"), 'w') as f:
+            f.write(simcmd)
+        with open(os.path.join(failing_dir, "sim.cmd"), 'w') as f:
+            f.write(simcmd)
+
+        # Remove the PASSING directory if all tests failed, and vice versa.
+        num_failing = 0
+        num_passing = 0
+
+        # Export all reports from SimDB
+        export_py = os.path.join(script_dir, "simdb_export.py")
+        export_args = ['python3', export_py, '--db-file', db_file, '--force']
+        export_cmd = ' '.join(export_args)
+        print ('Running subprocess: ' + export_cmd)
+        subprocess.run(export_args)
+
+        # Compare the exported reports with the baseline reports one at a time
+        for dest_file in dest_files:
+            # TODO: Actually run the comparison
+            failed = True 
+            if failed:
+                num_failing += 1
+                failing_report_dir = os.path.join(failing_dir, os.path.splitext(dest_file)[0])
+                if not os.path.exists(failing_report_dir):
+                    os.makedirs(failing_report_dir)
+
+                simdb_dest_file_in = os.path.join('simdb_reports', dest_file)
+                dest_file_parts = dest_file.split('.')
+                simdb_dest_file = dest_file_parts[0] + '.simdb.' + dest_file_parts[1]
+                simdb_dest_file_out = os.path.join(failing_report_dir, simdb_dest_file)
+                shutil.copy(simdb_dest_file_in, simdb_dest_file_out)
+
+                # Write the export.cmd file 
+                with open(os.path.join(failing_report_dir, "export.cmd"), 'w') as fout:
+                    fout.write(export_cmd)
+
+                # Copy the baseline report to the failing directory
+                shutil.copy(dest_file, failing_report_dir)
+            else:
+                raise RuntimeError("TODO cnyce: NOT CODED YET")
+                num_passing += 1
+
+        # If there are zero failing tests, remove the FAILING directory
+        if num_failing == 0:
+            shutil.rmtree(failing_dir)
+        if num_passing == 0:
+            shutil.rmtree(passing_dir)
+
+        return num_failing, num_passing
+
+# Run report verification
+verifier = ReportVerifier(args.sim_exe_path, args.report_yaml_dir, args.results_dir)
+verifier.RunAll()
+print(f"Report verification completed. Results saved in '{args.results_dir}'.")

@@ -1,0 +1,3 @@
+content:
+  top.cpu.core*.rob:
+    autopopulate: true

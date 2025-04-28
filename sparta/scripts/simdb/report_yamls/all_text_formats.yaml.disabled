@@ -1,0 +1,11 @@
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: txt_format.txt
+    format:    txt
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: text_format.txt
+    format:    text

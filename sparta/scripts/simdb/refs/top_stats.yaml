@@ -1,0 +1,8 @@
+content:
+  cpu.core*:
+    subreport:
+      name: 'Core %-1 Statistics'
+      rob.stats:
+        autopopulate: true
+      fpu.stats:
+        autopopulate: true

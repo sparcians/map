@@ -1034,7 +1034,7 @@ public:
             stat_insts_tbl.addColumn("StatisticLoc", dt::string_t);
 
             const auto& simdb_file = simdb_config.getSimDBFile();
-            db_mgr_ = std::make_unique<simdb::DatabaseManager>(simdb_file);
+            db_mgr_ = std::make_unique<simdb::DatabaseManager>(simdb_file, true);
             db_mgr_->createDatabaseFromSchema(schema);
 
             // Use a heartbeat of 1 so that SimDB does not try to optimize the

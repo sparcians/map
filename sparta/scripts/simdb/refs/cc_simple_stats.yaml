@@ -1,0 +1,4 @@
+content:
+  top.cpu.core*.dispatch.stats:
+    count_insts_per_unit: dispatch_count_core%-1
+    context_count_alu0_insts: alu0_insts_core%-1
