@@ -4,6 +4,9 @@ class CSVReportExporter:
 
     def Export(self, dest_file, descriptor_id, db_conn):
         cursor = db_conn.cursor()
+
+        # Start with the CSV header, which looks something like this:
+        #   report="autopop_all.yaml on _SPARTA_global_node_",start=0,end=SIMULATION_END,report_format=csv
         cmd = f'SELECT Name,StartTick,EndTick FROM Reports WHERE ReportDescID={descriptor_id} AND ParentReportID=0'
         cursor.execute(cmd)
         report_name, start_tick, end_tick = cursor.fetchone()
