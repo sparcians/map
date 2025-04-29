@@ -96,12 +96,21 @@ class ReportVerifier:
         #                     reduced.json
         #                     reduced.simdb.json
         #                     export.cmd
-
         num_failing = 0
         num_passing = 0
+
+        # Maintain a pass/fail list of tests that we ran for the final
+        # birds-eye view of the report verification.
+        birds_eye = {'PASSING': {}, 'FAILING': {}}
+        for yamlfile in report_yaml_files:
+            yamlfile = os.path.basename(yamlfile)
+            yamlfile = os.path.splitext(yamlfile)[0]
+            birds_eye['PASSING'][yamlfile] = []
+            birds_eye['FAILING'][yamlfile] = []
+
         for yamlfile in report_yaml_files:
             yamlfile_path = os.path.join(self.report_yaml_dir, yamlfile)
-            fail_count, pass_count = self.__RunTest(yamlfile_path)
+            fail_count, pass_count = self.__RunTest(yamlfile_path, birds_eye)
             num_failing += fail_count
             num_passing += pass_count
 
@@ -116,7 +125,40 @@ class ReportVerifier:
             if os.path.exists(passing_dir):
                 shutil.rmtree(passing_dir)
 
-    def __RunTest(self, yamlfile_path):
+        # Print out the final report results:
+        #
+        #   PASSING:
+        #       all_timeseries_formats:
+        #           update_cycles.csv
+        #           update_time.csv
+        #       all_json_formats:
+        #           basic.json
+        #   FAILING:
+        #       all_timeseries_formats:
+        #           cumulative.csv
+        #           update_time.csv
+        print ('')
+        for key in ['PASSING', 'FAILING']:
+            if key in birds_eye:
+                yamlfiles = birds_eye[key]
+                yamlfiles = sorted(yamlfiles.keys())
+
+                if not yamlfiles:
+                    continue
+
+                print (key+":")
+                for yamlfile in yamlfiles:
+                    dest_files = birds_eye[key][yamlfile]
+                    dest_files = sorted(dest_files)
+
+                    if not dest_files:
+                        continue
+
+                    print (f"    {yamlfile}:")
+                    for report in dest_files:
+                        print (f"        {report}")
+
+    def __RunTest(self, yamlfile_path, birds_eye):
         test_dir = os.path.join(self.results_dir, 'RUNNING')
         if os.path.exists(test_dir):
             shutil.rmtree(test_dir)
@@ -148,14 +190,14 @@ class ReportVerifier:
         yaml_basename = os.path.basename(yamlfile_path)
         yaml_basename = os.path.splitext(yaml_basename)[0]
 
-        num_failing, num_passing = self.__RunComparisons(db_file, simcmd, yaml_basename, dest_files)
+        num_failing, num_passing = self.__RunComparisons(db_file, simcmd, yaml_basename, dest_files, birds_eye)
 
         os.chdir(calling_dir)
         shutil.rmtree(test_dir)
 
         return num_failing, num_passing
 
-    def __RunComparisons(self, db_file, simcmd, yaml_basename, dest_files):
+    def __RunComparisons(self, db_file, simcmd, yaml_basename, dest_files, birds_eye):
         # Create the directories for the PASSING and FAILING results
         passing_dir = os.path.join(self.results_dir, "PASSING", yaml_basename)
         failing_dir = os.path.join(self.results_dir, "FAILING", yaml_basename)
@@ -200,6 +242,7 @@ class ReportVerifier:
             comparator = GetComparator(dest_file)
 
             if not comparator.Compare(baseline_report, simdb_report):
+                birds_eye['FAILING'][yaml_basename].append(dest_file)
                 num_failing += 1
                 failing_report_dir = os.path.join(failing_dir, os.path.splitext(dest_file)[0])
                 if not os.path.exists(failing_report_dir):
@@ -222,6 +265,7 @@ class ReportVerifier:
                 # Copy the baseline report to the failing directory
                 shutil.copy(dest_file, failing_report_dir)
             else:
+                birds_eye['PASSING'][yaml_basename].append(dest_file)
                 num_passing += 1
 
         # If there are zero failing tests, remove the FAILING directory
