@@ -7,9 +7,9 @@ class CSVReportExporter:
 
         # Start with the CSV header, which looks something like this:
         #   report="autopop_all.yaml on _SPARTA_global_node_",start=0,end=SIMULATION_END,report_format=csv
-        cmd = f'SELECT Name,StartTick,EndTick FROM Reports WHERE ReportDescID={descriptor_id} AND ParentReportID=0'
+        cmd = f'SELECT Id,Name,StartTick,EndTick FROM Reports WHERE ReportDescID={descriptor_id} AND ParentReportID=0'
         cursor.execute(cmd)
-        report_name, start_tick, end_tick = cursor.fetchone()
+        base_report_id, report_name, start_tick, end_tick = cursor.fetchone()
 
         cmd = f'SELECT MetaName, MetaValue FROM ReportMetadata WHERE ReportDescID={descriptor_id} '
         cmd += 'AND MetaName NOT IN (\'OmitZeros\', \'PrettyPrint\')'
@@ -21,6 +21,17 @@ class CSVReportExporter:
 
         with open(dest_file, 'w') as fout:
             self.__WriteHeader(fout, report_name, start_tick, end_tick, meta_kvpairs)
+
+        # Now go through this descriptor's reports/subreports, and get an ordered list of
+        # the statistics that are in the report. This is line #2 of the CSV file (column
+        # headers).
+        stat_headers = []
+        self.__RecurseGetStatHeaders(cursor, base_report_id, '', stat_headers)
+
+        with open(dest_file, 'a') as fout:
+            # Write the header line.
+            fout.write(','.join(stat_headers))
+            fout.write('\n')
 
     def __WriteHeader(self, fout, report_name, start_tick, end_tick, meta_kvpairs):
         if end_tick == -1:
@@ -37,3 +48,19 @@ class CSVReportExporter:
         fout.write(',')
         fout.write(','.join(meta_kvpairs))
         fout.write('\n')
+
+    def __RecurseGetStatHeaders(self, cursor, report_id, prefix, stat_headers):
+        cmd = f'SELECT StatisticName, StatisticLoc FROM StatisticInsts WHERE ReportID={report_id}'
+        cursor.execute(cmd)
+
+        for stat_name, stat_loc in cursor.fetchall():
+            if stat_name:
+                stat_headers.append(prefix + stat_name)
+            else:
+                stat_headers.append(prefix + stat_loc)
+
+        # Now, get the subreports and recurse.
+        cmd = f'SELECT Id, Name FROM Reports WHERE ParentReportID={report_id}'
+        cursor.execute(cmd)
+        for subreport_id, subreport_name in cursor.fetchall():
+            self.__RecurseGetStatHeaders(cursor, subreport_id, subreport_name+'.', stat_headers)
