@@ -4,6 +4,7 @@ import subprocess
 import shutil
 import re
 import stat
+import csv, json
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 report_yaml_dir = os.path.join(script_dir, "report_yamls")
@@ -194,9 +195,11 @@ class ReportVerifier:
 
         # Compare the exported reports with the baseline reports one at a time
         for dest_file in dest_files:
-            # TODO: Actually run the comparison
-            failed = True 
-            if failed:
+            baseline_report = dest_file
+            simdb_report = os.path.join('simdb_reports', dest_file)
+            comparator = GetComparator(dest_file)
+
+            if not comparator.Compare(baseline_report, simdb_report):
                 num_failing += 1
                 failing_report_dir = os.path.join(failing_dir, os.path.splitext(dest_file)[0])
                 if not os.path.exists(failing_report_dir):
@@ -219,7 +222,7 @@ class ReportVerifier:
                 # Copy the baseline report to the failing directory
                 shutil.copy(dest_file, failing_report_dir)
             else:
-                raise RuntimeError("TODO cnyce: NOT CODED YET")
+                assert False, 'Not implemented!'
                 num_passing += 1
 
         # If there are zero failing tests, remove the FAILING directory
@@ -229,6 +232,96 @@ class ReportVerifier:
             shutil.rmtree(passing_dir)
 
         return num_failing, num_passing
+
+def GetComparator(dest_file):
+    extension = os.path.splitext(dest_file)[1]
+    if extension in ('.txt', '.text'):
+        return TextReportComparator()
+    if extension in ('.json'):
+        return JSONReportComparator()
+    if extension in ('.csv'):
+        return CSVReportComparator()
+
+    return UnsupportedComparator()
+
+class Comparator:
+    def __init__(self):
+        pass
+
+    def NormalizeText(self, text):
+        # Remove leading/trailing whitespace and replace all internal whitespace with a single space
+        return re.sub(r'\s+', ' ', text.strip())
+
+class TextReportComparator(Comparator):
+    def __init__(self):
+        Comparator.__init__(self)
+
+    def Compare(self, baseline_report, simdb_report):
+        with open(baseline_report, "r") as bf, open(simdb_report, "r") as ef:
+            baseline_text = self.NormalizeText(bf.read())
+            export_text = self.NormalizeText(ef.read())
+
+        return baseline_text == export_text
+
+class JSONReportComparator(Comparator):
+    def __init__(self):
+        Comparator.__init__(self)
+
+    def Compare(self, baseline_report, simdb_report):
+        with open(baseline_report, "r", encoding="utf-8") as bf, open(simdb_report, "r", encoding="utf-8") as ef:
+            try:
+                baseline_data = json.load(bf)
+            except json.JSONDecodeError as e:
+                return False
+
+            try:
+                export_data = json.load(ef)
+            except json.JSONDecodeError as e:
+                return False
+
+        return baseline_data == export_data
+
+class CSVReportComparator(Comparator):
+    def __init__(self):
+        Comparator.__init__(self)
+
+    def Compare(self, baseline_report, simdb_report):
+        with open(baseline_report, "r", encoding="utf-8") as bf, open(simdb_report, "r", encoding="utf-8") as ef:
+            baseline_reader = list(csv.reader(bf))
+            export_reader = list(csv.reader(ef))
+
+        if len(baseline_reader) != len(export_reader):
+            return False
+
+        for row, (baseline_text, export_text) in enumerate(zip(baseline_reader, export_reader)):
+            if len(baseline_text) != len(export_text):
+                return False
+
+            if row == 0:
+                # Header row: soft compare for column headers
+                norm1 = [self.NormalizeText(cell) for cell in baseline_text]
+                norm2 = [self.NormalizeText(cell) for cell in export_text]
+                if norm1 != norm2:
+                    return False
+            else:
+                # Data rows: strict float compare
+                try:
+                    floats1 = [float(cell) for cell in baseline_text]
+                    floats2 = [float(cell) for cell in export_text]
+                except ValueError as e:
+                    return False
+
+                if floats1 != floats2:
+                    return False
+
+        return True
+
+class UnsupportedComparator(Comparator):
+    def __init__(self):
+        Comparator.__init__(self)
+
+    def Compare(self, baseline_report, simdb_report):
+        return False
 
 # Run report verification
 verifier = ReportVerifier(args.sim_exe_path, args.report_yaml_dir, args.results_dir)
