@@ -101,13 +101,7 @@ class ReportVerifier:
 
         # Maintain a pass/fail list of tests that we ran for the final
         # birds-eye view of the report verification.
-        birds_eye = {'PASSING': {}, 'FAILING': {}}
-        for yamlfile in report_yaml_files:
-            yamlfile = os.path.basename(yamlfile)
-            yamlfile = os.path.splitext(yamlfile)[0]
-            birds_eye['PASSING'][yamlfile] = []
-            birds_eye['FAILING'][yamlfile] = []
-
+        birds_eye = {}
         for yamlfile in report_yaml_files:
             yamlfile_path = os.path.join(self.report_yaml_dir, yamlfile)
             fail_count, pass_count = self.__RunTest(yamlfile_path, birds_eye)
@@ -140,23 +134,17 @@ class ReportVerifier:
         print ('')
         for key in ['PASSING', 'FAILING']:
             if key in birds_eye:
+                print (key+":")
                 yamlfiles = birds_eye[key]
                 yamlfiles = sorted(yamlfiles.keys())
 
-                if not yamlfiles:
-                    continue
-
-                print (key+":")
                 for yamlfile in yamlfiles:
+                    print (f"    {yamlfile}:")
                     dest_files = birds_eye[key][yamlfile]
                     dest_files = sorted(dest_files)
 
-                    if not dest_files:
-                        continue
-
-                    print (f"    {yamlfile}:")
-                    for report in dest_files:
-                        print (f"        {report}")
+                    for dest_file in dest_files:
+                        print (f"        {dest_file}")
 
     def __RunTest(self, yamlfile_path, birds_eye):
         test_dir = os.path.join(self.results_dir, 'RUNNING')
@@ -242,6 +230,10 @@ class ReportVerifier:
             comparator = GetComparator(dest_file)
 
             if not comparator.Compare(baseline_report, simdb_report):
+                if 'FAILING' not in birds_eye:
+                    birds_eye['FAILING'] = {}
+                if yaml_basename not in birds_eye['FAILING']:
+                    birds_eye['FAILING'][yaml_basename] = []
                 birds_eye['FAILING'][yaml_basename].append(dest_file)
                 num_failing += 1
                 failing_report_dir = os.path.join(failing_dir, os.path.splitext(dest_file)[0])
@@ -265,6 +257,10 @@ class ReportVerifier:
                 # Copy the baseline report to the failing directory
                 shutil.copy(dest_file, failing_report_dir)
             else:
+                if 'PASSING' not in birds_eye:
+                    birds_eye['PASSING'] = {}
+                if yaml_basename not in birds_eye['PASSING']:
+                    birds_eye['PASSING'][yaml_basename] = []
                 birds_eye['PASSING'][yaml_basename].append(dest_file)
                 num_passing += 1
 
@@ -369,4 +365,4 @@ class UnsupportedComparator(Comparator):
 # Run report verification
 verifier = ReportVerifier(args.sim_exe_path, args.report_yaml_dir, args.results_dir)
 verifier.RunAll()
-print(f"Report verification completed. Results saved in '{args.results_dir}'.")
+print(f"\nReport verification completed. Results saved in '{args.results_dir}'.")
