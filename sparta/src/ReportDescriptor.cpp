@@ -285,6 +285,7 @@ void ReportDescriptor::configSimDbReport_(
     }
 #else
     (void) r;
+    (void) visited_stats;
     (void) report_desc_id;
     (void) parent_report_id;
 #endif

@@ -267,6 +267,8 @@ class ReportVerifier:
         # If there are zero failing tests, remove the FAILING directory
         if num_failing == 0:
             shutil.rmtree(failing_dir)
+
+        # If there are zero passing tests, remove the PASSING directory
         if num_passing == 0:
             shutil.rmtree(passing_dir)
 
