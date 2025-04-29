@@ -219,6 +219,7 @@ namespace sparta {
              */
             void configSimDbReport_(
                 const Report* r,
+                std::unordered_set<std::string> & visited_stats,
                 const int report_desc_id = 0,
                 const int parent_report_id = 0);
 
