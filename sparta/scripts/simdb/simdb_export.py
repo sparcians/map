@@ -3,6 +3,17 @@ import argparse
 import shutil
 import sqlite3
 
+from exporters.export_csv_report import CSVReportExporter
+from exporters.export_json_report import JSONReportExporter
+from exporters.export_json_report import JSONReducedReportExporter
+from exporters.export_json_report import JSONDetailReportExporter
+from exporters.export_text_report import TextReportExporter
+from exporters.export_html_report import HTMLReportExporter
+from exporters.export_js_report import JSReportExporter
+from exporters.export_py_report import PyReportExporter
+from exporters.export_gnuplot_report import GnuplotReportExporter
+from exporters.export_stats_mapping_report import StatsMappingReportExporter
+
 parser = argparse.ArgumentParser(description="Export SimDB records to formatted report files.")
 parser.add_argument("--db-file", type=str, required=True, help="Path to the SimDB database file.")
 parser.add_argument("--dest-file", type=str, help="Export only this one destination file (out.csv etc. from the defn yaml).")
@@ -25,15 +36,39 @@ os.makedirs(args.export_dir)
 conn = sqlite3.connect(args.db_file)
 cursor = conn.cursor()
 
-cmd = "SELECT LocPattern, DefFile, DestFile, Format FROM ReportDescriptors"
+# Get the appropriate exporter for the given report format.
+def GetExporter(format):
+    format = format.lower()
+    if format in ('txt', 'text'):
+        return TextReportExporter()
+    if format in ('html', 'htm'):
+        return HTMLReportExporter()
+    if format in ('csv', 'csv_cumulative'):
+        return CSVReportExporter()
+    if format in ('js_json', 'jsjson'):
+        return JSReportExporter()
+    if format in ('python', 'py'):
+        return PyReportExporter()
+    if format in ('json'):
+        return JSONReportExporter()
+    if format in ('json_reduced'):
+        return JSONReducedReportExporter()
+    if format in ('json_detail'):
+        return JSONDetailReportExporter()
+    if format in ('gnuplot', 'gplt'):
+        return GnuplotReportExporter()
+    if format in ('stats_mapping'):
+        return StatsMappingReportExporter()
+
+    print (f"Unknown report format '{format}'")
+    sys.exit(1)
+
+cmd = "SELECT Id, DestFile, Format FROM ReportDescriptors"
 if args.dest_file:
     cmd += f" WHERE DestFile = '{args.dest_file}'"
 cursor.execute(cmd)
 
-# For now, just "touch" each report file. The comparison script will naturally
-# fail which is okay for now.
-for _, _, dest_file, _ in cursor.fetchall():
+for id, dest_file, format in cursor.fetchall():
     dest_file = os.path.join(args.export_dir, dest_file)
-    with open(dest_file, "w") as fout:
-        print (f"Exporting {dest_file}...")
-        fout.write("# This is a placeholder file. The SimDB exporter is not implemented yet.\n")
+    exporter = GetExporter(format)
+    exporter.Export(dest_file, id, conn)
