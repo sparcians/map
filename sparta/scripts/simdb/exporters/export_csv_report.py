@@ -1,3 +1,6 @@
+import os, zlib, struct
+from .utils import FormatNumber
+
 class CSVReportExporter:
     def __init__(self):
         pass
@@ -32,6 +35,37 @@ class CSVReportExporter:
             # Write the header line.
             fout.write(','.join(stat_headers))
             fout.write('\n')
+
+        # Lastly, deserialize the raw values. Each record in this query corresponds to another
+        # row in the CSV report (one SQL record only holds the values for the same report descriptor).
+        with open(dest_file, 'a') as fout:
+            basename = os.path.basename(dest_file)
+            cmd = f'SELECT Data, IsCompressed FROM CollectionRecords WHERE Notes=\'{basename}\' ORDER BY Tick ASC'
+            cursor.execute(cmd)
+            for data, is_compressed in cursor.fetchall():
+                if is_compressed:
+                    data = zlib.decompress(data)
+
+                # The data values are stored as:
+                #   [elem_id(u16), value(double), elem_id(u16), value(double), ...]
+                #
+                # We only care about the values, not the element IDs. Everything in these records
+                # is already in the order we want, meaning that the values line up with the stat
+                # headers we already wrote out.
+                #
+                # We could assert that the encountered element IDs correspond to the headers,
+                # although that would be a bit of a performance hit. The SimDB verification
+                # tests would be failing if this was not the case, so we will skip that for now.
+                elem_id_size = 2
+                value_size = 8
+
+                row_values = []
+                for i in range(elem_id_size, len(data), elem_id_size + value_size):
+                    value = struct.unpack('d', data[i:i + value_size])[0]
+                    row_values.append(FormatNumber(value))
+
+                fout.write(','.join(row_values))
+                fout.write('\n')
 
     def __WriteHeader(self, fout, report_name, start_tick, end_tick, meta_kvpairs):
         if end_tick == -1:
