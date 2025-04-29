@@ -222,7 +222,6 @@ class ReportVerifier:
                 # Copy the baseline report to the failing directory
                 shutil.copy(dest_file, failing_report_dir)
             else:
-                assert False, 'Not implemented!'
                 num_passing += 1
 
         # If there are zero failing tests, remove the FAILING directory
@@ -297,8 +296,8 @@ class CSVReportComparator(Comparator):
             if len(baseline_text) != len(export_text):
                 return False
 
-            if row == 0:
-                # Header row: soft compare for column headers
+            if row <= 1:
+                # Metadata and stat locations headers: soft compare
                 norm1 = [self.NormalizeText(cell) for cell in baseline_text]
                 norm2 = [self.NormalizeText(cell) for cell in export_text]
                 if norm1 != norm2:
