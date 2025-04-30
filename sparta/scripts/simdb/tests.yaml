@@ -1,0 +1,15 @@
+- name: timeseries_basic
+  group: csv
+  args: --report $yamldir$/all_timeseries_formats.yaml
+  verif:
+  - core0_stats.csv
+  - top_stats.csv
+  - global_stats.csv
+  - autopop_update_count.csv
+  - autopop_update_cycles.csv
+  - autopop_rob_update_time.csv
+- name: timeseries_cumulative
+  group: csv
+  args: --report $yamldir$/all_timeseries_formats.yaml
+  verif:
+  - global_cumulative_stats.csv
