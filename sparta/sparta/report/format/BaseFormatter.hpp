@@ -27,6 +27,10 @@ namespace sparta {
     }
 }
 
+namespace simdb {
+    class DatabaseManager;
+}
+
 namespace sparta {
 class Scheduler;
 
@@ -268,6 +272,12 @@ public:
     bool statsWithValueZeroAreOmitted() const {
         return zero_si_values_omitted_;
     }
+
+    //! Write SimDB report metadata to the database.
+    void configSimDbReport(
+        simdb::DatabaseManager* db_mgr,
+        const int report_desc_id,
+        const int report_id);
 
     /*!
      * \brief Append the content of this report to some output. Has ios::app
@@ -549,6 +559,12 @@ protected:
     bool zero_si_values_omitted_ = false;
 
 private:
+    //! Allow subclasses to add any formatter-specific metadata
+    //! to the SimDB report
+    virtual std::map<std::string, std::string> getExtraSimDbMetadata_() const {
+        return {};
+    }
+
     //! \brief Header variables that were written out, in the order
     //! they were written out
     mutable std::vector<std::string> written_header_lines_;

@@ -105,7 +105,13 @@ public:
      * \brief Let the repository know that the tree has been built but not
      * yet completely finalized
      */
-    void finalize();
+    void postBuildTree();
+
+    /*!
+     * \brief Called on Simulation::finalizeFramework() after the reports
+     * have all been setup.
+     */
+    void postFinalizeFramework();
 
     /*!
      * \brief Get the statistics archives for all reports in this simulation

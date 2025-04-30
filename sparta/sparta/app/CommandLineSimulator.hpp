@@ -571,6 +571,11 @@ private:
     MultiDetailOptions report_opts_;
 
     /*!
+     * \brief Builtin sparta command line options
+     */
+    MultiDetailOptions simdb_opts_;
+
+    /*!
      * \brief Application-specific options
      * \see getApplicationOptions
      */
