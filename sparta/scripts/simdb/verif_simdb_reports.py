@@ -5,16 +5,17 @@ import shutil
 import re
 import stat
 import csv, json
+import yaml
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-report_yaml_dir = os.path.join(script_dir, "report_yamls")
-refs_dir = os.path.join(script_dir, "refs")
+sparta_dir = os.path.dirname(os.path.dirname(script_dir))
+report_yaml_dir = os.path.join(sparta_dir, "example", "CoreModel")
 
 parser = argparse.ArgumentParser(description="Verify the SimDB report exporters for all report configurations.")
 parser.add_argument("--sim-exe-path", type=str, default="release/example/CoreModel/sparta_core_example",
                     help="Path to the Sparta executable.")
 parser.add_argument("--report-yaml-dir", type=str, default=report_yaml_dir,
-                    help="Directory containing the report definition YAML files to verify.")
+                    help="Directory containing the report description/definition YAML files needed to run all tests.")
 parser.add_argument("--results-dir", type=str, default="simdb_verif_results",
                     help="Directory to store the pass/fail results and all baseline/simdb reports.")
 parser.add_argument("--force", action="store_true", help="Force overwrite of the results directory if it exists.")
@@ -40,239 +41,244 @@ def MakeExecutable(filename):
     current_permissions = os.stat(filename).st_mode
     os.chmod(filename, current_permissions | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
+# Helper class to log to a file and stdout
+class TestLog:
+    def __init__(self, filename):
+        self.log = open(filename, "w")
+
+    def write(self, message):
+        self.log.write(message)
+        self.log.flush()
+        print (message.rstrip())
+        sys.stdout.flush()
+
+    def close(self):
+        if self.log:
+            self.log.close()
+            self.log = None
+
+    def __del__(self):
+        self.close()
+
 # This class does the heavy lifting of running the sparta executable, exporting the reports
 # from SimDB to the results dir, and comparing the results to the baseline reports.
-class ReportVerifier:
+class TestCase:
+    def __init__(self, sim_cmd, test_name, test_group, test_reports):
+        self.sim_cmd = sim_cmd
+        self.test_name = test_name
+        self.test_group = test_group
+        self.test_reports = test_reports
+        self.test_artifacts = []
+        self.log = None
+
+    def RunTest(self):
+        self.log = TestLog("test.log")
+        self.test_artifacts.append("test.log")
+
+        # Run the simulation command
+        self.log.write(f"Running test '{self.test_name}' in group '{self.test_group}'...\n")
+        self.log.write(f"---Command: {self.sim_cmd}\n\n")
+        result = subprocess.run(self.sim_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+        stdout = result.stdout
+        if stdout:
+            self.log.write("Creating sim.stdout...\n")
+            with open("sim.stdout", "w") as fout:
+                fout.write(stdout)
+                self.test_artifacts.append("sim.stdout")
+
+        stderr = result.stderr
+        if stderr:
+            self.log.write("Creating sim.stderr...\n")
+            with open("sim.stderr", "w") as fout:
+                fout.write(stderr)
+                self.test_artifacts.append("sim.stderr")
+
+        # Create sim.cmd (executable)
+        self.log.write("Creating sim.cmd...\n")
+        with open("sim.cmd", "w") as fout:
+            fout.write(self.sim_cmd)
+        MakeExecutable("sim.cmd")
+        self.test_artifacts.append("sim.cmd")
+
+        # Create rerun.cmd (executable)
+        self.log.write("Creating rerun.cmd...\n")
+        with open("rerun.cmd", "w") as fout:
+            fout.write(self.sim_cmd + " --simdb-file rerun.db")
+        MakeExecutable("rerun.cmd")
+        self.test_artifacts.append("rerun.cmd")
+
+        # Verify that the baseline reports all exist, else this test is
+        # considered a failure.
+        failed = False
+        for report in self.test_reports:
+            if not os.path.exists(report):
+                self.log.write(f"Error: Baseline report '{report}' does not exist.\n")
+                failed = True
+
+        if os.path.exists("sparta.db"):
+            self.test_artifacts.append("sparta.db")
+        else:
+            # Cannot continue the test!
+            self.log.write("Error: sparta.db does not exist.\n")
+            failed = True
+
+        if failed:
+            self.log.write("Test cannot continue. See above errors.\n")
+            self.log.close()
+            return False
+
+        # Export all reports from SimDB into the 'simdb_reports' directory.
+        export_cmd = "python3 " + os.path.join(script_dir, "simdb_export.py")
+        export_cmd += " --db-file sparta.db"
+        export_cmd += " --export-dir simdb_reports"
+        export_cmd += " --force"
+        self.log.write(f"Running export command: {export_cmd}\n")
+        result = subprocess.run(export_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+        stdout = result.stdout
+        if stdout:
+            self.log.write("Creating export.stdout...\n")
+            with open("export.stdout", "w") as fout:
+                fout.write(stdout)
+                self.test_artifacts.append("export.stdout")
+
+        stderr = result.stderr
+        if stderr:
+            self.log.write("Creating export.stderr...\n")
+            with open("export.stderr", "w") as fout:
+                fout.write(stderr)
+                self.test_artifacts.append("export.stderr")
+
+        # Create export.cmd (executable)
+        self.log.write("Creating export.cmd...\n")
+        with open("export.cmd", "w") as fout:
+            fout.write(export_cmd)
+        MakeExecutable("export.cmd")
+        self.test_artifacts.append("export.cmd")
+
+        # For each baseline report e.g. "basic.csv", check if there is an equivalent
+        # report in the "simdb_reports" directory. If not, this test is considered a
+        # failure. If so, run the comparison and move the baseline report into the
+        # 'baseline_reports' directory.
+        os.makedirs("baseline_reports")
+
+        failed_comparison_reports = []
+        passed_comparison_reports = []
+        for report in self.test_reports:
+            shutil.copy(report, "baseline_reports")
+            self.test_artifacts.append(os.path.join("baseline_reports", os.path.basename(report)))
+            simdb_report = os.path.join("simdb_reports", os.path.basename(report))
+            if not os.path.exists(simdb_report):
+                self.log.write(f"Error: SimDB report '{simdb_report}' does not exist.\n")
+                failed = True
+            else:
+                self.log.write(f"Comparing report: {report}...\n")
+                self.test_artifacts.append(simdb_report)
+                comparator = GetComparator(report)
+                if not comparator.Compare(report, simdb_report):
+                    failed_comparison_reports.append(report)
+                    self.log.write(f"Error: Report comparison failed for '{report}'.\n")
+                    failed = True
+                else:
+                    passed_comparison_reports.append(report)
+                    self.log.write(f"Report comparison passed for '{report}'.\n")
+
+        # Create "passfail.txt" with the list of failed and passed reports.
+        with open("passfail.txt", "w") as fout:
+            if failed_comparison_reports:
+                fout.write("Failed reports:\n")
+                for report in failed_comparison_reports:
+                    fout.write('    ' + report + "\n")
+
+            if passed_comparison_reports:
+                fout.write("Passed reports:\n")
+                for report in passed_comparison_reports:
+                    fout.write('    ' + report + "\n")
+
+        self.test_artifacts.append("passfail.txt")
+
+        if failed:
+            self.log.write("Test FAILED. See above errors.\n")
+        else:
+            self.log.write("Test PASSED.\n")
+
+        self.log.close()
+        return not failed
+
+# This class runs all the tests defined in test.yaml and prints high-level results to stdout.
+class TestSuite:
     def __init__(self, sparta_exe_path, report_yaml_dir, results_dir):
         self.sparta_exe_path = os.path.abspath(sparta_exe_path)
         self.report_yaml_dir = os.path.abspath(report_yaml_dir)
         self.results_dir = os.path.abspath(results_dir)
 
     def RunAll(self):
-        # Get the list of report YAML files
-        report_yaml_files = [f for f in os.listdir(self.report_yaml_dir) if f.endswith(".yaml")]
-        if not report_yaml_files:
-            raise ValueError(f"No report YAML files found in the directory: {self.report_yaml_dir}")
+        test_cases = []
+        with open(os.path.join(script_dir, "tests.yaml"), 'r') as fin:
+            test_configs = yaml.safe_load(fin)
+            for config in test_configs:
+                test_name = config['name']
+                test_group = config['group']
+                test_args = config['args']
+                test_reports = config['verif']
 
-        # Say the report YAML directory contained:
-        #
-        #     report_yamls/
-        #         all_timeseries_formats.yaml
-        #             - basic.csv
-        #             - cumulative.csv
-        #         all_json_formats.yaml
-        #             - basic.json
-        #             - basic_triggered.json
-        #             - reduced.json
-        #
-        # Then the results directory might look like:
-        #
-        #     simdb_verif_results/
-        #         PASSING/
-        #             all_timeseries_formats/
-        #                 sparta.db
-        #                 sim.cmd
-        #                 basic/
-        #                     basic.csv
-        #             all_json_formats/
-        #                 sparta.db
-        #                 sim.cmd
-        #                 basic/
-        #                     basic.json
-        #                 basic_triggered/
-        #                     basic_triggered.json
-        #         FAILING/
-        #             all_timeseries_formats/
-        #                 sparta.db
-        #                 sim.cmd
-        #                 cumulative/
-        #                     cumulative.csv
-        #                     cumulative.simdb.csv
-        #                     export.cmd
-        #             all_json_formats/
-        #                 sparta.db
-        #                 sim.cmd
-        #                 reduced/
-        #                     reduced.json
-        #                     reduced.simdb.json
-        #                     export.cmd
-        num_failing = 0
-        num_passing = 0
+                # Replace this:
+                #   --report $yamldir$/all_timeseries.yaml
+                #
+                # With this:
+                #   --report <report_yaml_dir>/all_timeseries.yaml
+                test_args = test_args.replace('$yamldir$', self.report_yaml_dir)
 
-        # Maintain a pass/fail list of tests that we ran for the final
-        # birds-eye view of the report verification.
-        birds_eye = {}
-        for yamlfile in report_yaml_files:
-            yamlfile_path = os.path.join(self.report_yaml_dir, yamlfile)
-            fail_count, pass_count = self.__RunTest(yamlfile_path, birds_eye)
-            num_failing += fail_count
-            num_passing += pass_count
+                sim_cmd = self.sparta_exe_path + ' -i 20k ' + test_args
+                sim_cmd += ' --enable-simdb-reports'
+                sim_cmd += ' --report-search-dir ' + self.report_yaml_dir
 
-        passing_dir = os.path.join(self.results_dir, "PASSING")
-        failing_dir = os.path.join(self.results_dir, "FAILING")
+                test_case = TestCase(sim_cmd, test_name, test_group, test_reports)
+                test_cases.append(test_case)
 
-        if num_failing == 0:
-            if os.path.exists(failing_dir):
-                shutil.rmtree(failing_dir)
+        test_results_summary = {}
+        for test_case in test_cases:
+            running_dir = os.path.join(self.results_dir, 'RUNNING')
+            if os.path.exists(running_dir):
+                shutil.rmtree(running_dir)
+            os.makedirs(running_dir)
 
-        if num_passing == 0:
-            if os.path.exists(passing_dir):
-                shutil.rmtree(passing_dir)
+            calling_dir = os.getcwd()
+            os.chdir(running_dir)
+            success = test_case.RunTest()
+            subdir = 'PASSING' if success else 'FAILING'
 
-        # Print out the final report results:
-        #
-        #   PASSING:
-        #       all_timeseries_formats:
-        #           update_cycles.csv
-        #           update_time.csv
-        #       all_json_formats:
-        #           basic.json
-        #   FAILING:
-        #       all_timeseries_formats:
-        #           cumulative.csv
-        #           update_time.csv
-        print ('')
+            # Copy all artifacts to the subdir/group/test_name directory.
+            test_results_dir = os.path.join(self.results_dir, subdir, test_case.test_group, test_case.test_name)
+            if not os.path.exists(test_results_dir):
+                os.makedirs(test_results_dir)
+
+            if subdir not in test_results_summary:
+                test_results_summary[subdir] = {}
+            if test_case.test_group not in test_results_summary[subdir]:
+                test_results_summary[subdir][test_case.test_group] = []
+            test_results_summary[subdir][test_case.test_group].append(test_case.test_name)
+
+            for artifact in test_case.test_artifacts:
+                # The artifacts can be something like "basic.csv" or "simdb_reports/basic.csv" so
+                # we need to create the full path to the artifact if needed.
+                artifact_dir = os.path.join(test_results_dir, os.path.dirname(artifact))
+                os.makedirs(artifact_dir, exist_ok=True)
+                shutil.copy(artifact, artifact_dir)
+
+            os.chdir(calling_dir)
+            shutil.rmtree(running_dir)
+
+        # Print the summary of test results.
+        print ("")
         for key in ['PASSING', 'FAILING']:
-            if key in birds_eye:
-                print (key+":")
-                yamlfiles = birds_eye[key]
-                yamlfiles = sorted(yamlfiles.keys())
-
-                for yamlfile in yamlfiles:
-                    print (f"    {yamlfile}:")
-                    dest_files = birds_eye[key][yamlfile]
-                    dest_files = sorted(dest_files)
-
-                    for dest_file in dest_files:
-                        print (f"        {dest_file}")
-
-    def __RunTest(self, yamlfile_path, birds_eye):
-        test_dir = os.path.join(self.results_dir, 'RUNNING')
-        if os.path.exists(test_dir):
-            shutil.rmtree(test_dir)
-        os.makedirs(test_dir)
-
-        db_file = os.path.join(test_dir, "sparta.db")
-        calling_dir = os.getcwd()
-        os.chdir(test_dir)
-
-        # Copy <refs_dir/*.yaml> into the test directory
-        for ref_file in os.listdir(refs_dir):
-            if ref_file.endswith(".yaml"):
-                shutil.copy(os.path.join(refs_dir, ref_file), test_dir)
-
-        simargs = [self.sparta_exe_path, '-i', '20k', '--report', yamlfile_path, '--enable-simdb-reports', '--simdb-file', db_file]
-        simcmd = ' '.join(simargs)
-        print ('Running subprocess: ' + simcmd)
-        subprocess.run(simargs)
-
-        # Switch the sim.cmd to point the DB file to "rerun.db"
-        simargs[-1] = "rerun.db"
-        simcmd = ' '.join(simargs)
-
-        with open(yamlfile_path, 'r') as fin:
-            yaml_str = fin.read()
-            dest_files = re.findall(r'dest_file:\s*(\S+)', yaml_str)
-
-        # Get "all_json_formats" from "/foo/bar/all_json_formats.yaml"
-        yaml_basename = os.path.basename(yamlfile_path)
-        yaml_basename = os.path.splitext(yaml_basename)[0]
-
-        num_failing, num_passing = self.__RunComparisons(db_file, simcmd, yaml_basename, dest_files, birds_eye)
-
-        os.chdir(calling_dir)
-        shutil.rmtree(test_dir)
-
-        return num_failing, num_passing
-
-    def __RunComparisons(self, db_file, simcmd, yaml_basename, dest_files, birds_eye):
-        # Create the directories for the PASSING and FAILING results
-        passing_dir = os.path.join(self.results_dir, "PASSING", yaml_basename)
-        failing_dir = os.path.join(self.results_dir, "FAILING", yaml_basename)
-
-        if not os.path.exists(passing_dir):
-            os.makedirs(passing_dir)
-        if not os.path.exists(failing_dir):
-            os.makedirs(failing_dir)
-
-        # Copy the database file and sim command to both directories
-        shutil.copy(db_file, passing_dir)
-        shutil.copy(db_file, failing_dir)
-        with open(os.path.join(passing_dir, "sim.cmd"), 'w') as f:
-            f.write(simcmd)
-        with open(os.path.join(failing_dir, "sim.cmd"), 'w') as f:
-            f.write(simcmd)
-
-        MakeExecutable(os.path.join(passing_dir, "sim.cmd"))
-        MakeExecutable(os.path.join(failing_dir, "sim.cmd"))
-
-        # Copy <refs_dir/*.yaml> into the passing/failing directories
-        for ref_file in os.listdir(refs_dir):
-            if ref_file.endswith(".yaml"):
-                shutil.copy(os.path.join(refs_dir, ref_file), passing_dir)
-                shutil.copy(os.path.join(refs_dir, ref_file), failing_dir)
-
-        # Remove the PASSING directory if all tests failed, and vice versa.
-        num_failing = 0
-        num_passing = 0
-
-        # Export all reports from SimDB
-        export_py = os.path.join(script_dir, "simdb_export.py")
-        export_args = ['python3', export_py, '--db-file', db_file, '--force']
-        export_cmd = ' '.join(export_args)
-        print ('Running subprocess: ' + export_cmd)
-        subprocess.run(export_args)
-
-        # Compare the exported reports with the baseline reports one at a time
-        for dest_file in dest_files:
-            baseline_report = dest_file
-            simdb_report = os.path.join('simdb_reports', dest_file)
-            comparator = GetComparator(dest_file)
-
-            if not comparator.Compare(baseline_report, simdb_report):
-                if 'FAILING' not in birds_eye:
-                    birds_eye['FAILING'] = {}
-                if yaml_basename not in birds_eye['FAILING']:
-                    birds_eye['FAILING'][yaml_basename] = []
-                birds_eye['FAILING'][yaml_basename].append(dest_file)
-                num_failing += 1
-                failing_report_dir = os.path.join(failing_dir, os.path.splitext(dest_file)[0])
-                if not os.path.exists(failing_report_dir):
-                    os.makedirs(failing_report_dir)
-
-                simdb_dest_file_in = os.path.join('simdb_reports', dest_file)
-                dest_file_parts = dest_file.split('.')
-                simdb_dest_file = dest_file_parts[0] + '.simdb.' + dest_file_parts[1]
-                simdb_dest_file_out = os.path.join(failing_report_dir, simdb_dest_file)
-                shutil.copy(simdb_dest_file_in, simdb_dest_file_out)
-
-                # Write the export.cmd file, noting that it is intended to be run
-                # from the failing report directory (hence the use of relative paths)
-                with open(os.path.join(failing_report_dir, "export.cmd"), 'w') as fout:
-                    export_cmd = f"python3 {export_py} --db-file ../sparta.db --force --export-dir export_rerun --dest-file {dest_file}"
-                    fout.write(export_cmd)
-
-                MakeExecutable(os.path.join(failing_report_dir, "export.cmd"))
-
-                # Copy the baseline report to the failing directory
-                shutil.copy(dest_file, failing_report_dir)
-            else:
-                if 'PASSING' not in birds_eye:
-                    birds_eye['PASSING'] = {}
-                if yaml_basename not in birds_eye['PASSING']:
-                    birds_eye['PASSING'][yaml_basename] = []
-                birds_eye['PASSING'][yaml_basename].append(dest_file)
-                num_passing += 1
-
-        # If there are zero failing tests, remove the FAILING directory
-        if num_failing == 0:
-            shutil.rmtree(failing_dir)
-
-        # If there are zero passing tests, remove the PASSING directory
-        if num_passing == 0:
-            shutil.rmtree(passing_dir)
-
-        return num_failing, num_passing
+            if key in test_results_summary:
+                print (key + ":")
+                for group, tests in test_results_summary[key].items():
+                    print ("    " + group)
+                    for test in tests:
+                        print ("        " + test)
 
 def GetComparator(dest_file):
     extension = os.path.splitext(dest_file)[1]
@@ -365,6 +371,6 @@ class UnsupportedComparator(Comparator):
         return False
 
 # Run report verification
-verifier = ReportVerifier(args.sim_exe_path, args.report_yaml_dir, args.results_dir)
+verifier = TestSuite(args.sim_exe_path, args.report_yaml_dir, args.results_dir)
 verifier.RunAll()
 print(f"\nReport verification completed. Results saved in '{args.results_dir}'.")
