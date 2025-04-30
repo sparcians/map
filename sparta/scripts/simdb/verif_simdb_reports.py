@@ -101,12 +101,12 @@ class TestCase:
         MakeExecutable("sim.cmd")
         self.test_artifacts.append("sim.cmd")
 
-        # Create rerun.cmd (executable)
-        self.log.write("Creating rerun.cmd...\n")
-        with open("rerun.cmd", "w") as fout:
+        # Create sim.rerun.cmd (executable)
+        self.log.write("Creating sim.rerun.cmd...\n")
+        with open("sim.rerun.cmd", "w") as fout:
             fout.write(self.sim_cmd + " --simdb-file rerun.db")
-        MakeExecutable("rerun.cmd")
-        self.test_artifacts.append("rerun.cmd")
+        MakeExecutable("sim.rerun.cmd")
+        self.test_artifacts.append("sim.rerun.cmd")
 
         # Verify that the baseline reports all exist, else this test is
         # considered a failure.
@@ -272,6 +272,7 @@ class TestSuite:
 
         # Print the summary of test results.
         print ("")
+        print ("Test results summary:")
         for key in ['PASSING', 'FAILING']:
             if key in test_results_summary:
                 print (key + ":")
