@@ -546,7 +546,7 @@ void Simulation::buildTree()
         buildTree_();
     }
 
-    report_repository_->finalize();
+    report_repository_->postBuildTree();
 }
 
 void Simulation::configureTree()
@@ -721,6 +721,7 @@ void Simulation::finalizeFramework()
     this->setupReports_();
 
     framework_finalized_ = true;
+    report_repository_->postFinalizeFramework();
 }
 
 void Simulation::run(uint64_t run_time)
