@@ -617,6 +617,7 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
         ;
 
     // Simulation Database Options
+    #if SIMDB_ENABLED
     simdb_opts_.add_options()
         ("simdb-file",
          named_value<std::vector<std::string>>("FILENAME", 1, 1),
@@ -624,6 +625,7 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "--enable-simdb-* options to selectively add artifacts to the database.")
         ("enable-simdb-reports",
          "Enable the simulation database to hold reports.");
+    #endif
 
     // Feature Options
     feature_opts_.add_options()
