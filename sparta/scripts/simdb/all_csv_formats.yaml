@@ -1,0 +1,220 @@
+content:
+
+  # format: csv
+  # trigger(s): start and stop triggers (no update triggers)
+  # location: core0
+  report:
+    name:       'Core0 stats report'
+    pattern:    top.cpu.core0
+    def_file:   core_stats.yaml
+    dest_file:  core0_start_stop_triggered.csv
+    format:     csv
+    trigger:
+      start:    rob.stats.total_number_retired >= 3500
+      stop:     rob.stats.total_number_retired >= 5000  
+
+  # format: csv
+  # trigger(s): start and stop triggers (no update triggers)
+  # location: top
+  report:
+    name:       'Top stats report'
+    pattern:    top
+    def_file:   top_stats.yaml
+    dest_file:  top_start_stop_triggered.csv
+    format:     csv
+    trigger:
+      start:    cpu.core0.rob.stats.total_number_retired >= 3500
+      stop:     cpu.core0.rob.stats.total_number_retired >= 5000
+
+## format: csv
+## trigger(s): start and stop triggers (no update triggers)
+## location: global
+  report:
+    name:       'Global stats report'
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  global_start_stop_triggered.csv
+    format:     csv
+    trigger:
+      start:    top.cpu.core0.rob.stats.total_number_retired >= 3500
+      stop:     top.cpu.core0.rob.stats.total_number_retired >= 5000
+
+## format: csv
+## trigger(s): start trigger only (no update triggers)
+## location: core0
+  report:
+    name:       'Core0 stats report'
+    pattern:    top.cpu.core0
+    def_file:   core_stats.yaml
+    dest_file:  core0_start_triggered_only.csv
+    format:     csv
+    trigger:
+      start:    rob.stats.total_number_retired >= 3500
+
+## format: csv
+## trigger(s): start trigger only (no update triggers)
+## location: top
+  report:
+    name:       'Top stats report'
+    pattern:    top
+    def_file:   top_stats.yaml
+    dest_file:  top_start_triggered_only.csv
+    format:     csv
+    trigger:
+      start:    cpu.core0.rob.stats.total_number_retired >= 3500
+
+## format: csv
+## trigger(s): start trigger only (no update triggers)
+## location: global
+  report:
+    name:       'Global stats report'
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  global_start_triggered_only.csv
+    format:     csv
+    trigger:
+      start:    top.cpu.core0.rob.stats.total_number_retired >= 3500
+
+## format: csv
+## trigger(s): stop trigger only (no update triggers)
+## location: core0
+  report:
+    name:       'Core0 stats report'
+    pattern:    top.cpu.core0
+    def_file:   core_stats.yaml
+    dest_file:  core0_stop_triggered_only.csv
+    format:     csv
+    trigger:
+      stop:     rob.stats.total_number_retired >= 5000
+
+## format: csv
+## trigger(s): stop trigger only (no update triggers)
+## location: top
+  report:
+    name:       'Top stats report'
+    pattern:    top
+    def_file:   top_stats.yaml
+    dest_file:  top_stop_triggered_only.csv
+    format:     csv
+    trigger:
+      stop:     cpu.core0.rob.stats.total_number_retired >= 5000
+
+## format: csv
+## trigger(s): stop trigger only (no update triggers)
+## location: global
+  report:
+    name:       'Global stats report'
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  global_stop_triggered_only.csv
+    format:     csv
+    trigger:
+      stop:     top.cpu.core0.rob.stats.total_number_retired >= 5000
+
+## format: csv
+## trigger(s): update-count trigger only
+## location: core0
+  report:
+    name:       'Core0 stats report'
+    pattern:    top.cpu.core0
+    def_file:   core_stats.yaml
+    dest_file:  core0_update_count_triggered_only.csv
+    format:     csv
+    trigger:
+      update-count: rob.stats.total_number_retired 75
+
+## format: csv
+## trigger(s): update-count trigger only
+## location: top
+  report:
+    name:       'Top stats report'
+    pattern:    top
+    def_file:   top_stats.yaml
+    dest_file:  top_update_count_triggered_only.csv
+    format:     csv
+    trigger:
+      update-count: cpu.core0.rob.stats.total_number_retired 75
+
+## format: csv
+## trigger(s): update-count trigger only
+## location: global
+  report:
+    name:       'Global stats report'
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  global_update_count_triggered_only.csv
+    format:     csv
+    trigger:
+      update-count: top.cpu.core0.rob.stats.total_number_retired 75
+
+## format: csv
+## trigger(s): update-cycles trigger only
+## location: core0
+  report:
+    name:       'Core0 stats report'
+    pattern:    top.cpu.core0
+    def_file:   core_stats.yaml
+    dest_file:  core0_update_cycles_triggered_only.csv
+    format:     csv
+    trigger:
+      update-cycles: 500
+
+## format: csv
+## trigger(s): update-cycles trigger only
+## location: top
+  report:
+    name:       'Top stats report'
+    pattern:    top
+    def_file:   top_stats.yaml
+    dest_file:  top_update_cycles_triggered_only.csv
+    format:     csv
+    trigger:
+      update-cycles: 500
+
+## format: csv
+## trigger(s): update-cycles trigger only
+## location: global
+  report:
+    name:       'Global stats report'
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  global_update_cycles_triggered_only.csv
+    format:     csv
+    trigger:
+      update-cycles: 500
+
+## format: csv
+## trigger(s): update-time trigger only
+## location: core0
+  report:
+    name:       'Core0 stats report'
+    pattern:    top.cpu.core0
+    def_file:   core_stats.yaml
+    dest_file:  core0_update_time_triggered_only.csv
+    format:     csv
+    trigger:
+      update-time: 100 ps
+
+## format: csv
+## trigger(s): update-time trigger only
+## location: top
+  report:
+    name:       'Top stats report'
+    pattern:    top
+    def_file:   top_stats.yaml
+    dest_file:  top_update_time_triggered_only.csv
+    format:     csv
+    trigger:
+      update-time: 100 ps
+
+## format: csv
+## trigger(s): update-time trigger only
+## location: global
+  report:
+    name:       'Global stats report'
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  global_update_time_triggered_only.csv
+    format:     csv
+    trigger:
+      update-time: 100 ps

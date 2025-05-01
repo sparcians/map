@@ -6,6 +6,7 @@ import re
 import stat
 import csv, json
 import yaml
+import multiprocessing
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sparta_dir = os.path.dirname(os.path.dirname(script_dir))
@@ -16,6 +17,7 @@ parser.add_argument("--sim-exe-path", type=str, default="release/example/CoreMod
                     help="Path to the Sparta executable.")
 parser.add_argument("--report-yaml-dir", type=str, default=report_yaml_dir,
                     help="Directory containing the report description/definition YAML files needed to run all tests.")
+parser.add_argument("--group-regex", type=str, help="Regex to filter the test groups to run. Default is all groups.")
 parser.add_argument("--results-dir", type=str, default="simdb_verif_results",
                     help="Directory to store the pass/fail results and all baseline/simdb reports.")
 parser.add_argument("--force", action="store_true", help="Force overwrite of the results directory if it exists.")
@@ -41,25 +43,6 @@ def MakeExecutable(filename):
     current_permissions = os.stat(filename).st_mode
     os.chmod(filename, current_permissions | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
-# Helper class to log to a file and stdout
-class TestLog:
-    def __init__(self, filename):
-        self.log = open(filename, "w")
-
-    def write(self, message):
-        self.log.write(message)
-        self.log.flush()
-        print (message.rstrip())
-        sys.stdout.flush()
-
-    def close(self):
-        if self.log:
-            self.log.close()
-            self.log = None
-
-    def __del__(self):
-        self.close()
-
 # This class does the heavy lifting of running the sparta executable, exporting the reports
 # from SimDB to the results dir, and comparing the results to the baseline reports.
 class TestCase:
@@ -72,7 +55,7 @@ class TestCase:
         self.log = None
 
     def RunTest(self):
-        self.log = TestLog("test.log")
+        self.log = open("test.log", "w")
         self.test_artifacts.append("test.log")
 
         # Run the simulation command
@@ -223,12 +206,9 @@ class TestSuite:
                 test_args = config['args']
                 test_reports = config['verif']
 
-                # Replace this:
-                #   --report $yamldir$/all_timeseries.yaml
-                #
-                # With this:
-                #   --report <report_yaml_dir>/all_timeseries.yaml
-                test_args = test_args.replace('$yamldir$', self.report_yaml_dir)
+                if args.group_regex and not re.search(args.group_regex, test_group):
+                    print(f"Skipping test '{test_name}' in group '{test_group}' due to group regex filter.")
+                    continue
 
                 sim_cmd = self.sparta_exe_path + ' -i 20k ' + test_args
                 sim_cmd += ' --enable-simdb-reports'
@@ -237,20 +217,74 @@ class TestSuite:
                 test_case = TestCase(sim_cmd, test_name, test_group, test_reports)
                 test_cases.append(test_case)
 
+        num_passing_by_group = {}
+        num_tests_by_group = {}
+
+        for test_case in test_cases:
+            group = test_case.test_group.split('/')[0]
+            if group not in num_tests_by_group:
+                num_tests_by_group[group] = 0
+            num_tests_by_group[group] += 1
+            num_passing_by_group[group] = 0
+
+        result_queue = multiprocessing.Queue()
+        multiproc_test_info = []
+
         test_results_summary = {}
         for test_case in test_cases:
-            running_dir = os.path.join(self.results_dir, 'RUNNING')
-            if os.path.exists(running_dir):
-                shutil.rmtree(running_dir)
-            os.makedirs(running_dir)
+            test_dir = os.path.join(self.results_dir, 'RUNNING', test_case.test_group, test_case.test_name)
+            if os.path.exists(test_dir):
+                shutil.rmtree(test_dir)
+            os.makedirs(test_dir)
 
-            calling_dir = os.getcwd()
-            os.chdir(running_dir)
+            # Copy all .yaml files to the running directory (except tests.yaml)
+            for yaml_file in os.listdir(script_dir):
+                if yaml_file.endswith('.yaml') and yaml_file != 'tests.yaml':
+                    src = os.path.join(script_dir, yaml_file)
+                    dst = os.path.join(test_dir, yaml_file)
+                    shutil.copy(src, dst)
+
+            test_info = {
+                'sim_cmd': test_case.sim_cmd,
+                'test_name': test_case.test_name,
+                'test_group': test_case.test_group,
+                'test_reports': test_case.test_reports,
+                'test_dir': test_dir,
+                'result_queue': result_queue
+            }
+
+            multiproc_test_info.append(test_info)
+
+        def RunSubProcessTest(test_info):
+            test_case = TestCase(test_info['sim_cmd'], test_info['test_name'], test_info['test_group'], test_info['test_reports'])
+            os.chdir(test_info['test_dir'])
             success = test_case.RunTest()
-            subdir = 'PASSING' if success else 'FAILING'
+            result_queue = test_info['result_queue']
+            result_queue.put((success, test_case.test_group, test_case.test_name, test_case.test_artifacts, test_info['test_dir']))
+
+        # Run all tests in parallel
+        processes = []
+        for test_info in multiproc_test_info:
+            process = multiprocessing.Process(target=RunSubProcessTest, args=(test_info,))
+            process.start()
+            processes.append(process)
+
+        # Wait for all processes to finish
+        for process in processes:
+            process.join()
+
+        # Collect results from the queue
+        while not result_queue.empty():
+            success, test_group, test_name, test_artifacts, test_dir = result_queue.get()
+            if success:
+                group = test_group.split('/')[0]
+                num_passing_by_group[group] += 1
+                subdir = 'PASSING'
+            else:
+                subdir = 'FAILING'
 
             # Copy all artifacts to the subdir/group/test_name directory.
-            test_results_dir = os.path.join(self.results_dir, subdir, test_case.test_group, test_case.test_name)
+            test_results_dir = os.path.join(self.results_dir, subdir, test_group, test_name)
             if not os.path.exists(test_results_dir):
                 os.makedirs(test_results_dir)
 
@@ -260,15 +294,18 @@ class TestSuite:
                 test_results_summary[subdir][test_case.test_group] = []
             test_results_summary[subdir][test_case.test_group].append(test_case.test_name)
 
-            for artifact in test_case.test_artifacts:
+            for artifact in test_artifacts:
                 # The artifacts can be something like "basic.csv" or "simdb_reports/basic.csv" so
                 # we need to create the full path to the artifact if needed.
                 artifact_dir = os.path.join(test_results_dir, os.path.dirname(artifact))
+                artifact = os.path.join(test_dir, artifact)
                 os.makedirs(artifact_dir, exist_ok=True)
                 shutil.copy(artifact, artifact_dir)
 
-            os.chdir(calling_dir)
-            shutil.rmtree(running_dir)
+        # Remove the RUNNING directory
+        running_basedir = os.path.join(self.results_dir, 'RUNNING')
+        if os.path.exists(running_basedir):
+            shutil.rmtree(running_basedir)
 
         # Print the summary of test results.
         print ("")
@@ -280,6 +317,14 @@ class TestSuite:
                     print ("    " + group)
                     for test in tests:
                         print ("        " + test)
+
+        print ("")
+        print ("Pass rate by group:")
+        max_group_name_len = max(len(group) for group in num_tests_by_group.keys())
+        for group, num_tests in num_tests_by_group.items():
+            group_num_passing = num_passing_by_group[group]
+            group = group.ljust(max_group_name_len)
+            print (f"  {group} -- {group_num_passing}/{num_tests} tests passed.")
 
 def GetComparator(dest_file):
     extension = os.path.splitext(dest_file)[1]
