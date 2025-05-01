@@ -1,15 +1,215 @@
-- name: timeseries_basic
-  group: csv
-  args: --report $yamldir$/all_timeseries_formats.yaml
+## SimDB test group: start and stop triggers (no update triggers)
+## format: csv
+- name: core0_stats
+  group: csv/start_stop_triggered
+  args: --report all_csv_formats.yaml
   verif:
-  - core0_stats.csv
-  - top_stats.csv
-  - global_stats.csv
-  - autopop_update_count.csv
-  - autopop_update_cycles.csv
-  - autopop_rob_update_time.csv
-- name: timeseries_cumulative
-  group: csv
-  args: --report $yamldir$/all_timeseries_formats.yaml
+  - core0_start_stop_triggered.csv
+- name: top_stats
+  group: csv/start_stop_triggered
+  args: --report all_csv_formats.yaml
   verif:
-  - global_cumulative_stats.csv
+  - top_start_stop_triggered.csv
+- name: global_stats
+  group: csv/start_stop_triggered
+  args: --report all_csv_formats.yaml
+  verif:
+  - global_start_stop_triggered.csv
+
+## SimDB test group: start trigger only (no update triggers)
+## format: csv
+- name: core0_stats
+  group: csv/start_triggered_only
+  args: --report all_csv_formats.yaml
+  verif:
+  - core0_start_triggered_only.csv
+- name: top_stats
+  group: csv/start_triggered_only
+  args: --report all_csv_formats.yaml
+  verif:
+  - top_start_triggered_only.csv
+- name: global_stats
+  group: csv/start_triggered_only
+  args: --report all_csv_formats.yaml
+  verif:
+  - global_start_triggered_only.csv
+
+## SimDB test group: stop trigger only (no update triggers)
+## format: csv
+- name: core0_stats
+  group: csv/stop_triggered_only
+  args: --report all_csv_formats.yaml
+  verif:
+  - core0_stop_triggered_only.csv
+- name: top_stats
+  group: csv/stop_triggered_only
+  args: --report all_csv_formats.yaml
+  verif:
+  - top_stop_triggered_only.csv
+- name: global_stats
+  group: csv/stop_triggered_only
+  args: --report all_csv_formats.yaml
+  verif:
+  - global_stop_triggered_only.csv
+
+## SimDB test group: update-count trigger only
+## format: csv
+- name: core0_stats
+  group: csv/update_count_triggered_only
+  args: --report all_csv_formats.yaml
+  verif:
+  - core0_update_count_triggered_only.csv
+- name: top_stats
+  group: csv/update_count_triggered_only
+  args: --report all_csv_formats.yaml
+  verif:
+  - top_update_count_triggered_only.csv
+- name: global_stats
+  group: csv/update_count_triggered_only
+  args: --report all_csv_formats.yaml
+  verif:
+  - global_update_count_triggered_only.csv
+
+## SimDB test group: update-cycles trigger only
+## format: csv
+- name: core0_stats
+  group: csv/update_cycles_triggered_only
+  args: --report all_csv_formats.yaml
+  verif:
+  - core0_update_cycles_triggered_only.csv
+- name: top_stats
+  group: csv/update_cycles_triggered_only
+  args: --report all_csv_formats.yaml
+  verif:
+  - top_update_cycles_triggered_only.csv
+- name: global_stats
+  group: csv/update_cycles_triggered_only
+  args: --report all_csv_formats.yaml
+  verif:
+  - global_update_cycles_triggered_only.csv
+
+## SimDB test group: update-time trigger only
+## format: csv
+- name: core0_stats
+  group: csv/update_time_triggered_only
+  args: --report all_csv_formats.yaml
+  verif:
+  - core0_update_time_triggered_only.csv
+- name: top_stats
+  group: csv/update_time_triggered_only
+  args: --report all_csv_formats.yaml
+  verif:
+  - top_update_time_triggered_only.csv
+- name: global_stats
+  group: csv/update_time_triggered_only
+  args: --report all_csv_formats.yaml
+  verif:
+  - global_update_time_triggered_only.csv
+
+## SimDB test group: start and stop triggers (no update triggers)
+## format: csv_cumulative
+- name: core0_stats
+  group: csv_cumulative/start_stop_triggered
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - core0_start_stop_triggered_cumulative.csv
+- name: top_stats
+  group: csv_cumulative/start_stop_triggered
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - top_start_stop_triggered_cumulative.csv
+- name: global_stats
+  group: csv_cumulative/start_stop_triggered
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - global_start_stop_triggered_cumulative.csv
+
+## SimDB test group: start trigger only (no update triggers)
+## format: csv_cumulative
+- name: core0_stats
+  group: csv_cumulative/start_triggered_only
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - core0_start_triggered_only_cumulative.csv
+- name: top_stats
+  group: csv_cumulative/start_triggered_only
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - top_start_triggered_only_cumulative.csv
+- name: global_stats
+  group: csv_cumulative/start_triggered_only
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - global_start_triggered_only_cumulative.csv
+
+## SimDB test group: stop trigger only (no update triggers)
+## format: csv_cumulative
+- name: core0_stats
+  group: csv_cumulative/stop_triggered_only
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - core0_stop_triggered_only_cumulative.csv
+- name: top_stats
+  group: csv_cumulative/stop_triggered_only
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - top_stop_triggered_only_cumulative.csv
+- name: global_stats
+  group: csv_cumulative/stop_triggered_only
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - global_stop_triggered_only_cumulative.csv
+
+## SimDB test group: update-count trigger only
+## format: csv_cumulative
+- name: core0_stats
+  group: csv_cumulative/update_count_triggered_only
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - core0_update_count_triggered_only_cumulative.csv
+- name: top_stats
+  group: csv_cumulative/update_count_triggered_only
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - top_update_count_triggered_only_cumulative.csv
+- name: global_stats
+  group: csv_cumulative/update_count_triggered_only
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - global_update_count_triggered_only_cumulative.csv
+
+## SimDB test group: update-cycles trigger only
+## format: csv_cumulative
+- name: core0_stats
+  group: csv_cumulative/update_cycles_triggered_only
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - core0_update_cycles_triggered_only_cumulative.csv
+- name: top_stats
+  group: csv_cumulative/update_cycles_triggered_only
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - top_update_cycles_triggered_only_cumulative.csv
+- name: global_stats
+  group: csv_cumulative/update_cycles_triggered_only
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - global_update_cycles_triggered_only_cumulative.csv
+
+## SimDB test group: update-time trigger only
+## format: csv_cumulative
+- name: core0_stats
+  group: csv_cumulative/update_time_triggered_only
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - core0_update_time_triggered_only_cumulative.csv
+- name: top_stats
+  group: csv_cumulative/update_time_triggered_only
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - top_update_time_triggered_only_cumulative.csv
+- name: global_stats
+  group: csv_cumulative/update_time_triggered_only
+  args: --report all_csv_cumulative_formats.yaml
+  verif:
+  - global_update_time_triggered_only_cumulative.csv

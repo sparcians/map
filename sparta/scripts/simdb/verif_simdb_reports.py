@@ -16,6 +16,7 @@ parser.add_argument("--sim-exe-path", type=str, default="release/example/CoreMod
                     help="Path to the Sparta executable.")
 parser.add_argument("--report-yaml-dir", type=str, default=report_yaml_dir,
                     help="Directory containing the report description/definition YAML files needed to run all tests.")
+parser.add_argument("--group-regex", type=str, help="Regex to filter the test groups to run. Default is all groups.")
 parser.add_argument("--results-dir", type=str, default="simdb_verif_results",
                     help="Directory to store the pass/fail results and all baseline/simdb reports.")
 parser.add_argument("--force", action="store_true", help="Force overwrite of the results directory if it exists.")
@@ -223,12 +224,9 @@ class TestSuite:
                 test_args = config['args']
                 test_reports = config['verif']
 
-                # Replace this:
-                #   --report $yamldir$/all_timeseries.yaml
-                #
-                # With this:
-                #   --report <report_yaml_dir>/all_timeseries.yaml
-                test_args = test_args.replace('$yamldir$', self.report_yaml_dir)
+                if args.group_regex and not re.search(args.group_regex, test_group):
+                    print(f"Skipping test '{test_name}' in group '{test_group}' due to group regex filter.")
+                    continue
 
                 sim_cmd = self.sparta_exe_path + ' -i 20k ' + test_args
                 sim_cmd += ' --enable-simdb-reports'
@@ -237,6 +235,16 @@ class TestSuite:
                 test_case = TestCase(sim_cmd, test_name, test_group, test_reports)
                 test_cases.append(test_case)
 
+        num_passing_by_group = {}
+        num_tests_by_group = {}
+
+        for test_case in test_cases:
+            group = test_case.test_group.split('/')[0]
+            if group not in num_tests_by_group:
+                num_tests_by_group[group] = 0
+            num_tests_by_group[group] += 1
+            num_passing_by_group[group] = 0
+
         test_results_summary = {}
         for test_case in test_cases:
             running_dir = os.path.join(self.results_dir, 'RUNNING')
@@ -244,10 +252,20 @@ class TestSuite:
                 shutil.rmtree(running_dir)
             os.makedirs(running_dir)
 
+            # Copy all .yaml files to the running directory (except tests.yaml)
+            for yaml_file in os.listdir(script_dir):
+                if yaml_file.endswith('.yaml') and yaml_file != 'tests.yaml':
+                    src = os.path.join(script_dir, yaml_file)
+                    dst = os.path.join(running_dir, yaml_file)
+                    shutil.copy(src, dst)
+
             calling_dir = os.getcwd()
             os.chdir(running_dir)
             success = test_case.RunTest()
             subdir = 'PASSING' if success else 'FAILING'
+            if success:
+                group = test_case.test_group.split('/')[0]
+                num_passing_by_group[group] = num_passing_by_group[group] + 1
 
             # Copy all artifacts to the subdir/group/test_name directory.
             test_results_dir = os.path.join(self.results_dir, subdir, test_case.test_group, test_case.test_name)
@@ -280,6 +298,14 @@ class TestSuite:
                     print ("    " + group)
                     for test in tests:
                         print ("        " + test)
+
+        print ("")
+        print ("Pass rate by group:")
+        max_group_name_len = max(len(group) for group in num_tests_by_group.keys())
+        for group, num_tests in num_tests_by_group.items():
+            group_num_passing = num_passing_by_group[group]
+            group = group.ljust(max_group_name_len)
+            print (f"  {group} -- {group_num_passing}/{num_tests} tests passed.")
 
 def GetComparator(dest_file):
     extension = os.path.splitext(dest_file)[1]
