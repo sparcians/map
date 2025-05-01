@@ -6,6 +6,7 @@ import re
 import stat
 import csv, json
 import yaml
+import multiprocessing
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sparta_dir = os.path.dirname(os.path.dirname(script_dir))
@@ -42,25 +43,6 @@ def MakeExecutable(filename):
     current_permissions = os.stat(filename).st_mode
     os.chmod(filename, current_permissions | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
-# Helper class to log to a file and stdout
-class TestLog:
-    def __init__(self, filename):
-        self.log = open(filename, "w")
-
-    def write(self, message):
-        self.log.write(message)
-        self.log.flush()
-        print (message.rstrip())
-        sys.stdout.flush()
-
-    def close(self):
-        if self.log:
-            self.log.close()
-            self.log = None
-
-    def __del__(self):
-        self.close()
-
 # This class does the heavy lifting of running the sparta executable, exporting the reports
 # from SimDB to the results dir, and comparing the results to the baseline reports.
 class TestCase:
@@ -73,7 +55,7 @@ class TestCase:
         self.log = None
 
     def RunTest(self):
-        self.log = TestLog("test.log")
+        self.log = open("test.log", "w")
         self.test_artifacts.append("test.log")
 
         # Run the simulation command
@@ -245,30 +227,64 @@ class TestSuite:
             num_tests_by_group[group] += 1
             num_passing_by_group[group] = 0
 
+        result_queue = multiprocessing.Queue()
+        multiproc_test_info = []
+
         test_results_summary = {}
         for test_case in test_cases:
-            running_dir = os.path.join(self.results_dir, 'RUNNING')
-            if os.path.exists(running_dir):
-                shutil.rmtree(running_dir)
-            os.makedirs(running_dir)
+            test_dir = os.path.join(self.results_dir, 'RUNNING', test_case.test_group, test_case.test_name)
+            if os.path.exists(test_dir):
+                shutil.rmtree(test_dir)
+            os.makedirs(test_dir)
 
             # Copy all .yaml files to the running directory (except tests.yaml)
             for yaml_file in os.listdir(script_dir):
                 if yaml_file.endswith('.yaml') and yaml_file != 'tests.yaml':
                     src = os.path.join(script_dir, yaml_file)
-                    dst = os.path.join(running_dir, yaml_file)
+                    dst = os.path.join(test_dir, yaml_file)
                     shutil.copy(src, dst)
 
-            calling_dir = os.getcwd()
-            os.chdir(running_dir)
+            test_info = {
+                'sim_cmd': test_case.sim_cmd,
+                'test_name': test_case.test_name,
+                'test_group': test_case.test_group,
+                'test_reports': test_case.test_reports,
+                'test_dir': test_dir,
+                'result_queue': result_queue
+            }
+
+            multiproc_test_info.append(test_info)
+
+        def RunSubProcessTest(test_info):
+            test_case = TestCase(test_info['sim_cmd'], test_info['test_name'], test_info['test_group'], test_info['test_reports'])
+            os.chdir(test_info['test_dir'])
             success = test_case.RunTest()
-            subdir = 'PASSING' if success else 'FAILING'
+            result_queue = test_info['result_queue']
+            result_queue.put((success, test_case.test_group, test_case.test_name, test_case.test_artifacts, test_info['test_dir']))
+
+        # Run all tests in parallel
+        processes = []
+        for test_info in multiproc_test_info:
+            process = multiprocessing.Process(target=RunSubProcessTest, args=(test_info,))
+            process.start()
+            processes.append(process)
+
+        # Wait for all processes to finish
+        for process in processes:
+            process.join()
+
+        # Collect results from the queue
+        while not result_queue.empty():
+            success, test_group, test_name, test_artifacts, test_dir = result_queue.get()
             if success:
-                group = test_case.test_group.split('/')[0]
-                num_passing_by_group[group] = num_passing_by_group[group] + 1
+                group = test_group.split('/')[0]
+                num_passing_by_group[group] += 1
+                subdir = 'PASSING'
+            else:
+                subdir = 'FAILING'
 
             # Copy all artifacts to the subdir/group/test_name directory.
-            test_results_dir = os.path.join(self.results_dir, subdir, test_case.test_group, test_case.test_name)
+            test_results_dir = os.path.join(self.results_dir, subdir, test_group, test_name)
             if not os.path.exists(test_results_dir):
                 os.makedirs(test_results_dir)
 
@@ -278,15 +294,18 @@ class TestSuite:
                 test_results_summary[subdir][test_case.test_group] = []
             test_results_summary[subdir][test_case.test_group].append(test_case.test_name)
 
-            for artifact in test_case.test_artifacts:
+            for artifact in test_artifacts:
                 # The artifacts can be something like "basic.csv" or "simdb_reports/basic.csv" so
                 # we need to create the full path to the artifact if needed.
                 artifact_dir = os.path.join(test_results_dir, os.path.dirname(artifact))
+                artifact = os.path.join(test_dir, artifact)
                 os.makedirs(artifact_dir, exist_ok=True)
                 shutil.copy(artifact, artifact_dir)
 
-            os.chdir(calling_dir)
-            shutil.rmtree(running_dir)
+        # Remove the RUNNING directory
+        running_basedir = os.path.join(self.results_dir, 'RUNNING')
+        if os.path.exists(running_basedir):
+            shutil.rmtree(running_basedir)
 
         # Print the summary of test results.
         print ("")
