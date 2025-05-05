@@ -290,9 +290,9 @@ class TestSuite:
 
             if subdir not in test_results_summary:
                 test_results_summary[subdir] = {}
-            if test_case.test_group not in test_results_summary[subdir]:
-                test_results_summary[subdir][test_case.test_group] = []
-            test_results_summary[subdir][test_case.test_group].append(test_case.test_name)
+            if test_group not in test_results_summary[subdir]:
+                test_results_summary[subdir][test_group] = []
+            test_results_summary[subdir][test_group].append(test_name)
 
             for artifact in test_artifacts:
                 # The artifacts can be something like "basic.csv" or "simdb_reports/basic.csv" so

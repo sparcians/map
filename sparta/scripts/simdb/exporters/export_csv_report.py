@@ -16,6 +16,10 @@ class CSVReportExporter:
 
         cmd = f'SELECT MetaName, MetaValue FROM ReportMetadata WHERE ReportDescID={descriptor_id} '
         cmd += 'AND MetaName NOT IN (\'OmitZeros\', \'PrettyPrint\')'
+
+        # Sort alphabetically by name to match std::map<string, string> in C++.
+        cmd += ' ORDER BY MetaName ASC'
+
         cursor.execute(cmd)
 
         meta_kvpairs = []
