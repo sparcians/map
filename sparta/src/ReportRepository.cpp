@@ -529,6 +529,7 @@ private:
             domain_for_pending_update_trigger_.clearValid();
         }
 
+        const bool first = formatters_.empty();
         this->initializeReportInstantiations_();
 
         if (is_cumulative_) {
@@ -538,7 +539,7 @@ private:
         }
 
     #if SIMDB_ENABLED
-        if (db_mgr_ != nullptr && desc_simdb_id_ != 0) {
+        if (first && db_mgr_ != nullptr && desc_simdb_id_ != 0) {
             // Note that all of our reports (and their subreports) have
             // the same start tick.
             std::ostringstream cmd;
