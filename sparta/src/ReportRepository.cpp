@@ -110,6 +110,18 @@ public:
         reports_.emplace_back(report.release());
     }
 
+    /*!
+     * \brief Write all metadata about our report (and its subreports
+     * and statistics) to SimDB.
+     */
+    void configSimDbReports(simdb::DatabaseManager* db_mgr, RootTreeNode* root)
+    {
+    #if SIMDB_ENABLED
+        db_mgr_ = db_mgr;
+        desc_simdb_id_ = desc_.configSimDbReports(db_mgr, root);
+    #endif
+    }
+
     app::ReportDescriptor & getDescriptor()
     {
         return desc_;
@@ -505,6 +517,20 @@ private:
                 r->accumulateStats();
             }
         }
+
+        #if SIMDB_ENABLED
+            if (db_mgr_ != nullptr && desc_simdb_id_ != 0) {
+                // Note that all of our reports (and their subreports) have
+                // the same start tick.
+                std::ostringstream cmd;
+                cmd << "UPDATE Reports SET StartTick = "
+                    << reports_[0]->getStart()
+                    << " WHERE ReportDescID = " << desc_simdb_id_
+                    << " AND ParentReportID = 0";
+
+                db_mgr_->EXECUTE(cmd.str());
+            }
+        #endif
     }
 
     void stopReports_()
@@ -884,6 +910,9 @@ private:
     TreeNode * device_tree_location_ = nullptr;
     app::Simulation * sim_ = nullptr;
     std::shared_ptr<SubContainer> sub_container_;
+
+    simdb::DatabaseManager * db_mgr_ = nullptr;
+    int desc_simdb_id_ = 0;
 };
 
 std::map<std::string, Directory*> Directory::referenced_directories_;
@@ -1061,7 +1090,7 @@ public:
 
             db_mgr_->safeTransaction([&]() {
                 for (auto& kvp : directories_) {
-                    kvp.second->getDescriptor().configSimDbReports(db_mgr_.get(), sim_->getRoot());
+                    kvp.second->configSimDbReports(db_mgr_.get(), sim_->getRoot());
                 }
                 db_mgr_->finalizeCollections();
                 return true;

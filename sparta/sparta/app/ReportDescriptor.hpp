@@ -389,8 +389,14 @@ namespace sparta {
             /*!
              * \brief Write all metadata about our report (and its subreports
              * and statistics) to SimDB.
+             * 
+             * \return Returns the database ID of the report descriptor in the 
+             * ReportDescriptors table. Returns 0 if:
+             *    - SIMDB_ENABLED is false
+             *    - this descriptor is not enabled
+             *    - this descriptor has no reports
              */
-            void configSimDbReports(simdb::DatabaseManager* db_mgr, RootTreeNode* root);
+            int configSimDbReports(simdb::DatabaseManager* db_mgr, RootTreeNode* root);
 
             //! \brief Report descriptors may be triggered to stop early - ensure no
             //! further updates are written to disk
