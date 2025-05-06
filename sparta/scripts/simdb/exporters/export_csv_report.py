@@ -26,6 +26,19 @@ class CSVReportExporter:
         for meta_name, meta_value in cursor.fetchall():
             meta_kvpairs.append((meta_name, meta_value))
 
+        # Force the "report_format" metadata to be visible at the top of the CSV file.
+        has_report_format = False
+        for meta_name, meta_value in meta_kvpairs:
+            if meta_name == 'report_format':
+                has_report_format = True
+                break
+
+        if not has_report_format:
+            cmd = f'SELECT Format FROM ReportDescriptors WHERE Id={descriptor_id}'
+            cursor.execute(cmd)
+            format = cursor.fetchone()[0]
+            meta_kvpairs.append(('report_format', format))
+
         with open(dest_file, 'w') as fout:
             self.__WriteHeader(fout, report_name, start_tick, end_tick, meta_kvpairs)
 
