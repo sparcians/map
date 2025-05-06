@@ -727,6 +727,45 @@ private:
 
     void setHeaderInfoForReports_()
     {
+    #if SIMDB_ENABLED
+        std::string start_counter_loc;
+        std::string stop_counter_loc;
+        std::string update_counter_loc;
+
+        if (report_start_trigger_ != nullptr) {
+            auto ctr = report_start_trigger_->getCounter();
+            if (ctr != nullptr) {
+                start_counter_loc = ctr->getLocation();
+            }
+        }
+
+        if (report_stop_trigger_ != nullptr) {
+            auto ctr = report_stop_trigger_->getCounter();
+            if (ctr != nullptr) {
+                stop_counter_loc = ctr->getLocation();
+            }
+        }
+
+        if (report_update_trigger_ != nullptr) {
+            auto ctr = report_update_trigger_->getCounter();
+            if (ctr != nullptr) {
+                update_counter_loc = ctr->getLocation();
+            }
+        }
+
+        if (db_mgr_ != nullptr && desc_simdb_id_ != 0) {
+            std::ostringstream cmd;
+            cmd << "UPDATE Reports SET "
+                << "StartCounter = '" << start_counter_loc << "', "
+                << "StopCounter = '" << stop_counter_loc << "', "
+                << "UpdateCounter = '" << update_counter_loc << "'"
+                << " WHERE ReportDescID = " << desc_simdb_id_
+                << " AND ParentReportID = 0";
+
+            db_mgr_->EXECUTE(cmd.str());
+        }
+    #endif
+
         for (auto & r : reports_) {
             auto & header = r->getHeader();
 
@@ -1050,6 +1089,12 @@ public:
             report_tbl.addColumn("StartTick", dt::int64_t);
             report_tbl.addColumn("EndTick", dt::int64_t);
             report_tbl.addColumn("InfoString", dt::string_t);
+            report_tbl.addColumn("StartCounter", dt::string_t);
+            report_tbl.addColumn("StopCounter", dt::string_t);
+            report_tbl.addColumn("UpdateCounter", dt::string_t);
+            report_tbl.setColumnDefaultValue("StartCounter", std::string());
+            report_tbl.setColumnDefaultValue("StopCounter", std::string());
+            report_tbl.setColumnDefaultValue("UpdateCounter", std::string());
 
             auto& report_meta_tbl = schema.addTable("ReportMetadata");
             report_meta_tbl.addColumn("ReportDescID", dt::int32_t);

@@ -39,8 +39,22 @@ class CSVReportExporter:
             format = cursor.fetchone()[0]
             meta_kvpairs.append(('report_format', format))
 
+        # We write multi-line headers for start/stop/update counter locations.
+        trigger_locs = []
+        cmd = 'SELECT StartCounter, StopCounter, UpdateCounter FROM Reports WHERE '
+        cmd += f'ReportDescID={descriptor_id} AND ParentReportID=0'
+        cursor.execute(cmd)
+
+        start_counter_loc, stop_counter_loc, update_counter_loc = cursor.fetchone()
+        if start_counter_loc:
+            trigger_locs.append(('start_counter', start_counter_loc))
+        if stop_counter_loc:
+            trigger_locs.append(('stop_counter', stop_counter_loc))
+        if update_counter_loc:
+            trigger_locs.append(('update_counter', update_counter_loc))
+
         with open(dest_file, 'w') as fout:
-            self.__WriteHeader(fout, report_name, start_tick, end_tick, meta_kvpairs)
+            self.__WriteHeader(fout, report_name, start_tick, end_tick, meta_kvpairs, trigger_locs)
 
         # Now go through this descriptor's reports/subreports, and get an ordered list of
         # the statistics that are in the report. This is line #2 of the CSV file (column
@@ -84,7 +98,7 @@ class CSVReportExporter:
                 fout.write(','.join(row_values))
                 fout.write('\n')
 
-    def __WriteHeader(self, fout, report_name, start_tick, end_tick, meta_kvpairs):
+    def __WriteHeader(self, fout, report_name, start_tick, end_tick, meta_kvpairs, trigger_locs):
         if end_tick == -1:
             end_tick = 'SIMULATION_END'
         fout.write(f'# report="{report_name}",start={start_tick},end={end_tick}')
@@ -99,6 +113,9 @@ class CSVReportExporter:
         fout.write(',')
         fout.write(','.join(meta_kvpairs))
         fout.write('\n')
+
+        for trigger_name, trigger_loc in trigger_locs:
+            fout.write(f'# {trigger_name}={trigger_loc}\n')
 
     def __RecurseGetStatHeaders(self, cursor, report_id, prefix, stat_headers):
         cmd = f'SELECT StatisticName, StatisticLoc FROM StatisticInsts WHERE ReportID={report_id}'
