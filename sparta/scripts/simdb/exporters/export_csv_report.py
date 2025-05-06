@@ -71,9 +71,20 @@ class CSVReportExporter:
         # row in the CSV report (one SQL record only holds the values for the same report descriptor).
         with open(dest_file, 'a') as fout:
             basename = os.path.basename(dest_file)
-            cmd = f'SELECT Data, IsCompressed FROM CollectionRecords WHERE Notes=\'{basename}\' ORDER BY Tick ASC'
+            cmd = f'SELECT Data, IsCompressed, Notes FROM CollectionRecords WHERE Notes LIKE \'{basename}%\' ORDER BY Tick ASC'
             cursor.execute(cmd)
-            for data, is_compressed in cursor.fetchall():
+            for data, is_compressed, notes in cursor.fetchall():
+                # If the Notes column is something like "out.csv_skipped_anno#1033", that means we
+                # should write a row of empty values for this record to denote the number of times
+                # we skipped writing to the report.
+                if notes.find('skipped_anno') != -1:
+                    hash_idx = notes.find('#')
+                    anno = notes[hash_idx:]
+                    anno += ','*(len(stat_headers) - 1)
+                    fout.write(anno)
+                    fout.write('\n')
+                    continue
+
                 if is_compressed:
                     data = zlib.decompress(data)
 

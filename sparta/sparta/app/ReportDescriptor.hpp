@@ -231,6 +231,14 @@ namespace sparta {
              */
             void sweepSimDbStats_();
 
+            /*!
+             * \brief Add a row of empty values to the SimDB collection system. This
+             * is used to support toggle triggers for timeseries reports. The resulting
+             * CSV report will just have row(s) of empty values for the scheduler ticks
+             * that the report was not active.
+             */
+            void skipSimDbStats_();
+
             friend class ReportDescriptorCollection;
 
         public:

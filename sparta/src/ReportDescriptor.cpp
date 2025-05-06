@@ -318,6 +318,19 @@ void ReportDescriptor::sweepSimDbStats_()
 #endif
 }
 
+void ReportDescriptor::skipSimDbStats_()
+{
+#if SIMDB_ENABLED
+    if (db_mgr_ == nullptr || skipped_annotator_ == nullptr) {
+        return;
+    }
+
+    const std::string annotation = dest_file + "_skipped_anno_" + skipped_annotator_->currentAnnotation();
+    const auto tick = scheduler_->getCurrentTick();
+    db_mgr_->getCollectionMgr()->sweep("root", tick, annotation, true);
+#endif
+}
+
 report::format::BaseFormatter* ReportDescriptor::addInstantiation(Report* r,
                                                                   Simulation* sim,
                                                                   std::ostream* out)
@@ -518,6 +531,9 @@ uint32_t ReportDescriptor::updateOutput(std::ostream* out)
                     inst.second->skip(skipped_annotator_.get());
                     inst.first->start();
                     capture_update_values = false;
+                    if (db_mgr_) {
+                        skipSimDbStats_();
+                    }
                 }
                 skipped_annotator_->reset();
             }
