@@ -119,6 +119,25 @@ public:
     #if SIMDB_ENABLED
         db_mgr_ = db_mgr;
         desc_simdb_id_ = desc_.configSimDbReports(db_mgr, root);
+
+        if (desc_simdb_id_ == 0) {
+            return;
+        }
+
+        const auto& header = reports_[0]->getHeader();
+        const auto start_counter_loc = header.getStringified("start_counter");
+        const auto stop_counter_loc = header.getStringified("stop_counter");
+        const auto update_counter_loc = header.getStringified("update_counter");
+
+        std::ostringstream cmd;
+        cmd << "UPDATE Reports SET "
+            << "StartCounter = '" << start_counter_loc << "', "
+            << "StopCounter = '" << stop_counter_loc << "', "
+            << "UpdateCounter = '" << update_counter_loc << "'"
+            << " WHERE ReportDescID = " << desc_simdb_id_
+            << " AND ParentReportID = 0";
+
+        db_mgr_->EXECUTE(cmd.str());
     #endif
     }
 
@@ -518,19 +537,19 @@ private:
             }
         }
 
-        #if SIMDB_ENABLED
-            if (db_mgr_ != nullptr && desc_simdb_id_ != 0) {
-                // Note that all of our reports (and their subreports) have
-                // the same start tick.
-                std::ostringstream cmd;
-                cmd << "UPDATE Reports SET StartTick = "
-                    << reports_[0]->getStart()
-                    << " WHERE ReportDescID = " << desc_simdb_id_
-                    << " AND ParentReportID = 0";
+    #if SIMDB_ENABLED
+        if (db_mgr_ != nullptr && desc_simdb_id_ != 0) {
+            // Note that all of our reports (and their subreports) have
+            // the same start tick.
+            std::ostringstream cmd;
+            cmd << "UPDATE Reports SET StartTick = "
+                << reports_[0]->getStart()
+                << " WHERE ReportDescID = " << desc_simdb_id_
+                << " AND ParentReportID = 0";
 
-                db_mgr_->EXECUTE(cmd.str());
-            }
-        #endif
+            db_mgr_->EXECUTE(cmd.str());
+        }
+    #endif
     }
 
     void stopReports_()
@@ -727,69 +746,57 @@ private:
 
     void setHeaderInfoForReports_()
     {
-    #if SIMDB_ENABLED
-        std::string start_counter_loc;
-        std::string stop_counter_loc;
-        std::string update_counter_loc;
-
-        if (report_start_trigger_ != nullptr) {
-            auto ctr = report_start_trigger_->getCounter();
-            if (ctr != nullptr) {
-                start_counter_loc = ctr->getLocation();
-            }
-        }
-
-        if (report_stop_trigger_ != nullptr) {
-            auto ctr = report_stop_trigger_->getCounter();
-            if (ctr != nullptr) {
-                stop_counter_loc = ctr->getLocation();
-            }
-        }
-
-        if (report_update_trigger_ != nullptr) {
-            auto ctr = report_update_trigger_->getCounter();
-            if (ctr != nullptr) {
-                update_counter_loc = ctr->getLocation();
-            }
-        }
-
-        if (db_mgr_ != nullptr && desc_simdb_id_ != 0) {
-            std::ostringstream cmd;
-            cmd << "UPDATE Reports SET "
-                << "StartCounter = '" << start_counter_loc << "', "
-                << "StopCounter = '" << stop_counter_loc << "', "
-                << "UpdateCounter = '" << update_counter_loc << "'"
-                << " WHERE ReportDescID = " << desc_simdb_id_
-                << " AND ParentReportID = 0";
-
-            db_mgr_->EXECUTE(cmd.str());
-        }
-    #endif
-
         for (auto & r : reports_) {
             auto & header = r->getHeader();
 
             auto set_header_trigger_content =
                 [](report::format::ReportHeader & header,
                    const std::string key,
-                   const trigger::ExpiringExpressionTrigger & trigger) {
+                   const trigger::ExpiringExpressionTrigger & trigger) -> std::string {
                 if (trigger) {
                     const auto counter = trigger->getCounter();
                     if(counter) {
                         header.set(key, counter->getLocation());
+                        return counter->getLocation();
                     }
                 }
+
+                return "";
             };
 
-            set_header_trigger_content(header, "start_counter",  report_start_trigger_);
-            set_header_trigger_content(header, "stop_counter",   report_stop_trigger_);
-            set_header_trigger_content(header, "update_counter", report_update_trigger_);
+            auto ctr_loc = set_header_trigger_content(header, "start_counter",  report_start_trigger_);
+            updateSimDbReportMeta_("StartCounter", ctr_loc);
+
+            ctr_loc = set_header_trigger_content(header, "stop_counter",   report_stop_trigger_);
+            updateSimDbReportMeta_("StopCounter", ctr_loc);
+
+            ctr_loc = set_header_trigger_content(header, "update_counter", report_update_trigger_);
+            updateSimDbReportMeta_("UpdateCounter", ctr_loc);
 
             const auto header_metadata = getDescriptor().header_metadata_;
             for(auto [key, value] : header_metadata) {
                 header.set(key, value);
             }
         }
+    }
+
+    void updateSimDbReportMeta_(const std::string & key,
+                                const std::string & value)
+    {
+    #if SIMDB_ENABLED
+        if (key.empty() || value.empty()) {
+            return;
+        }
+
+        if (db_mgr_ != nullptr && desc_simdb_id_ != 0) {
+            std::ostringstream cmd;
+            cmd << "UPDATE Reports SET " << key << " = '" << value
+                << "' WHERE ReportDescID = " << desc_simdb_id_
+                << " AND ParentReportID = 0";
+
+            db_mgr_->EXECUTE(cmd.str());
+        }
+    #endif
     }
 
     void setDirectoryLocationInTree_(TreeNode * tree_location)
