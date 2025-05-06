@@ -114,8 +114,14 @@ class CSVReportExporter:
         fout.write(','.join(meta_kvpairs))
         fout.write('\n')
 
-        for trigger_name, trigger_loc in trigger_locs:
-            fout.write(f'# {trigger_name}={trigger_loc}\n')
+        # Write the trigger locations if provided
+        if trigger_locs:
+            fout.write('# ')
+            strs = []
+            for name, loc in trigger_locs:
+                strs.append(f'{name}={loc}')
+            fout.write(','.join(strs))
+            fout.write('\n')
 
     def __RecurseGetStatHeaders(self, cursor, report_id, prefix, stat_headers):
         cmd = f'SELECT StatisticName, StatisticLoc FROM StatisticInsts WHERE ReportID={report_id}'
