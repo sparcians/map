@@ -91,6 +91,14 @@ class TestCase:
         MakeExecutable("sim.rerun.cmd")
         self.test_artifacts.append("sim.rerun.cmd")
 
+        # Ensure the --report <file.yaml> is copied to the results directory,
+        # so that the sim.cmd and sim.rerun.cmd can be run as-is.
+        cmd_args = self.sim_cmd.split()
+        for i, arg in enumerate(cmd_args):
+            if cmd_args[i] == "--report" and i + 1 < len(cmd_args):
+                report_yaml = cmd_args[i + 1]
+                self.test_artifacts.append(report_yaml)
+
         # Verify that the baseline reports all exist, else this test is
         # considered a failure.
         failed = False
