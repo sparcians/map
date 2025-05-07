@@ -138,6 +138,9 @@ public:
             << " AND ParentReportID = 0";
 
         db_mgr_->EXECUTE(cmd.str());
+    #else
+        (void) db_mgr;
+        (void) root;
     #endif
     }
 
