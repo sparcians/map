@@ -26,9 +26,9 @@ content:
       start:    cpu.core0.rob.stats.total_number_retired >= 3500
       stop:     cpu.core0.rob.stats.total_number_retired >= 5000
 
-## format: csv
-## trigger(s): start and stop triggers (no update triggers)
-## location: global
+  ## format: csv
+  ## trigger(s): start and stop triggers (no update triggers)
+  ## location: global
   report:
     name:       'Global stats report'
     pattern:    _global
@@ -39,9 +39,9 @@ content:
       start:    top.cpu.core0.rob.stats.total_number_retired >= 3500
       stop:     top.cpu.core0.rob.stats.total_number_retired >= 5000
 
-## format: csv
-## trigger(s): start trigger only (no update triggers)
-## location: core0
+  ## format: csv
+  ## trigger(s): start trigger only (no update triggers)
+  ## location: core0
   report:
     name:       'Core0 stats report'
     pattern:    top.cpu.core0
@@ -51,9 +51,9 @@ content:
     trigger:
       start:    rob.stats.total_number_retired >= 3500
 
-## format: csv
-## trigger(s): start trigger only (no update triggers)
-## location: top
+  ## format: csv
+  ## trigger(s): start trigger only (no update triggers)
+  ## location: top
   report:
     name:       'Top stats report'
     pattern:    top
@@ -63,9 +63,9 @@ content:
     trigger:
       start:    cpu.core0.rob.stats.total_number_retired >= 3500
 
-## format: csv
-## trigger(s): start trigger only (no update triggers)
-## location: global
+  ## format: csv
+  ## trigger(s): start trigger only (no update triggers)
+  ## location: global
   report:
     name:       'Global stats report'
     pattern:    _global
@@ -75,9 +75,9 @@ content:
     trigger:
       start:    top.cpu.core0.rob.stats.total_number_retired >= 3500
 
-## format: csv
-## trigger(s): stop trigger only (no update triggers)
-## location: core0
+  ## format: csv
+  ## trigger(s): stop trigger only (no update triggers)
+  ## location: core0
   report:
     name:       'Core0 stats report'
     pattern:    top.cpu.core0
@@ -87,9 +87,9 @@ content:
     trigger:
       stop:     rob.stats.total_number_retired >= 5000
 
-## format: csv
-## trigger(s): stop trigger only (no update triggers)
-## location: top
+  ## format: csv
+  ## trigger(s): stop trigger only (no update triggers)
+  ## location: top
   report:
     name:       'Top stats report'
     pattern:    top
@@ -99,9 +99,9 @@ content:
     trigger:
       stop:     cpu.core0.rob.stats.total_number_retired >= 5000
 
-## format: csv
-## trigger(s): stop trigger only (no update triggers)
-## location: global
+  ## format: csv
+  ## trigger(s): stop trigger only (no update triggers)
+  ## location: global
   report:
     name:       'Global stats report'
     pattern:    _global
@@ -111,9 +111,9 @@ content:
     trigger:
       stop:     top.cpu.core0.rob.stats.total_number_retired >= 5000
 
-## format: csv
-## trigger(s): update-count trigger only
-## location: core0
+  ## format: csv
+  ## trigger(s): update-count trigger only
+  ## location: core0
   report:
     name:       'Core0 stats report'
     pattern:    top.cpu.core0
@@ -123,9 +123,9 @@ content:
     trigger:
       update-count: rob.stats.total_number_retired 75
 
-## format: csv
-## trigger(s): update-count trigger only
-## location: top
+  ## format: csv
+  ## trigger(s): update-count trigger only
+  ## location: top
   report:
     name:       'Top stats report'
     pattern:    top
@@ -135,9 +135,9 @@ content:
     trigger:
       update-count: cpu.core0.rob.stats.total_number_retired 75
 
-## format: csv
-## trigger(s): update-count trigger only
-## location: global
+  ## format: csv
+  ## trigger(s): update-count trigger only
+  ## location: global
   report:
     name:       'Global stats report'
     pattern:    _global
@@ -147,9 +147,9 @@ content:
     trigger:
       update-count: top.cpu.core0.rob.stats.total_number_retired 75
 
-## format: csv
-## trigger(s): update-cycles trigger only
-## location: core0
+  ## format: csv
+  ## trigger(s): update-cycles trigger only
+  ## location: core0
   report:
     name:       'Core0 stats report'
     pattern:    top.cpu.core0
@@ -159,9 +159,9 @@ content:
     trigger:
       update-cycles: 500
 
-## format: csv
-## trigger(s): update-cycles trigger only
-## location: top
+  ## format: csv
+  ## trigger(s): update-cycles trigger only
+  ## location: top
   report:
     name:       'Top stats report'
     pattern:    top
@@ -171,9 +171,9 @@ content:
     trigger:
       update-cycles: 500
 
-## format: csv
-## trigger(s): update-cycles trigger only
-## location: global
+  ## format: csv
+  ## trigger(s): update-cycles trigger only
+  ## location: global
   report:
     name:       'Global stats report'
     pattern:    _global
@@ -183,9 +183,9 @@ content:
     trigger:
       update-cycles: 500
 
-## format: csv
-## trigger(s): update-time trigger only
-## location: core0
+  ## format: csv
+  ## trigger(s): update-time trigger only
+  ## location: core0
   report:
     name:       'Core0 stats report'
     pattern:    top.cpu.core0
@@ -195,9 +195,9 @@ content:
     trigger:
       update-time: 100 ps
 
-## format: csv
-## trigger(s): update-time trigger only
-## location: top
+  ## format: csv
+  ## trigger(s): update-time trigger only
+  ## location: top
   report:
     name:       'Top stats report'
     pattern:    top
@@ -207,9 +207,9 @@ content:
     trigger:
       update-time: 100 ps
 
-## format: csv
-## trigger(s): update-time trigger only
-## location: global
+  ## format: csv
+  ## trigger(s): update-time trigger only
+  ## location: global
   report:
     name:       'Global stats report'
     pattern:    _global
@@ -218,3 +218,42 @@ content:
     format:     csv
     trigger:
       update-time: 100 ps
+
+  ## format: csv
+  ## trigger(s): start, update-count, and toggle triggers
+  ## location: global
+  report:
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  global_start_toggle_update_count.csv
+    format:     csv
+    trigger:
+     whenever: notif.stats_profiler == 1
+     update-count: top.cpu.core0.rob.stats.total_number_retired 100
+     start:    top.cpu.core0.rob.stats.total_number_retired >= 1000
+
+  ## format: csv
+  ## trigger(s): start, update-cycles, and toggle triggers
+  ## location: global
+  report:
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  global_start_toggle_update_cycles.csv
+    format:     csv
+    trigger:
+      whenever: notif.stats_profiler == 1
+      update-cycles: 175
+      start:    top.cpu.core0.rob.stats.total_number_retired >= 1000
+
+  ## format: csv
+  ## trigger(s): start, update-time, and toggle triggers
+  ## location: global
+  report:
+    pattern:    _global
+    def_file:   simple_stats.yaml
+    dest_file:  global_start_toggle_update_time.csv
+    format:     csv
+    trigger:
+      whenever: notif.stats_profiler == 1
+      update-time: 1 ns
+      start:    top.cpu.core0.rob.stats.total_number_retired >= 1000
