@@ -1,4 +1,4 @@
-import os, sys 
+import os
 import yaml 
 import argparse
 import re
