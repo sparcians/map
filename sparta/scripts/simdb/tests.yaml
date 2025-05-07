@@ -213,3 +213,21 @@
   args: --report all_csv_cumulative_formats.yaml
   verif:
   - global_update_time_triggered_only_cumulative.csv
+
+## SimDB test group: start, update, and toggle triggers
+## format: csv
+- name: toggled_with_update_count
+  group: csv/toggled
+  args: --report all_csv_formats.yaml
+  verif:
+  - global_start_toggle_update_count.csv
+- name: toggled_with_update_cycles
+  group: csv/toggled
+  args: --report all_csv_formats.yaml
+  verif:
+  - global_start_toggle_update_cycles.csv
+- name: toggled_with_update_time
+  group: csv/toggled
+  args: --report all_csv_formats.yaml
+  verif:
+  - global_start_toggle_update_time.csv

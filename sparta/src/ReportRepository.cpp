@@ -110,6 +110,40 @@ public:
         reports_.emplace_back(report.release());
     }
 
+    /*!
+     * \brief Write all metadata about our report (and its subreports
+     * and statistics) to SimDB.
+     */
+    void configSimDbReports(simdb::DatabaseManager* db_mgr, RootTreeNode* root)
+    {
+    #if SIMDB_ENABLED
+        db_mgr_ = db_mgr;
+        desc_simdb_id_ = desc_.configSimDbReports(db_mgr, root);
+
+        if (desc_simdb_id_ == 0) {
+            return;
+        }
+
+        const auto& header = reports_[0]->getHeader();
+        const auto start_counter_loc = header.getStringified("start_counter");
+        const auto stop_counter_loc = header.getStringified("stop_counter");
+        const auto update_counter_loc = header.getStringified("update_counter");
+
+        std::ostringstream cmd;
+        cmd << "UPDATE Reports SET "
+            << "StartCounter = '" << start_counter_loc << "', "
+            << "StopCounter = '" << stop_counter_loc << "', "
+            << "UpdateCounter = '" << update_counter_loc << "'"
+            << " WHERE ReportDescID = " << desc_simdb_id_
+            << " AND ParentReportID = 0";
+
+        db_mgr_->EXECUTE(cmd.str());
+    #else
+        (void) db_mgr;
+        (void) root;
+    #endif
+    }
+
     app::ReportDescriptor & getDescriptor()
     {
         return desc_;
@@ -498,6 +532,7 @@ private:
             domain_for_pending_update_trigger_.clearValid();
         }
 
+        const bool first = formatters_.empty();
         this->initializeReportInstantiations_();
 
         if (is_cumulative_) {
@@ -505,6 +540,20 @@ private:
                 r->accumulateStats();
             }
         }
+
+    #if SIMDB_ENABLED
+        if (first && db_mgr_ != nullptr && desc_simdb_id_ != 0) {
+            // Note that all of our reports (and their subreports) have
+            // the same start tick.
+            std::ostringstream cmd;
+            cmd << "UPDATE Reports SET StartTick = "
+                << reports_[0]->getStart()
+                << " WHERE ReportDescID = " << desc_simdb_id_
+                << " AND ParentReportID = 0";
+
+            db_mgr_->EXECUTE(cmd.str());
+        }
+    #endif
     }
 
     void stopReports_()
@@ -707,24 +756,51 @@ private:
             auto set_header_trigger_content =
                 [](report::format::ReportHeader & header,
                    const std::string key,
-                   const trigger::ExpiringExpressionTrigger & trigger) {
+                   const trigger::ExpiringExpressionTrigger & trigger) -> std::string {
                 if (trigger) {
                     const auto counter = trigger->getCounter();
                     if(counter) {
                         header.set(key, counter->getLocation());
+                        return counter->getLocation();
                     }
                 }
+
+                return "";
             };
 
-            set_header_trigger_content(header, "start_counter",  report_start_trigger_);
-            set_header_trigger_content(header, "stop_counter",   report_stop_trigger_);
-            set_header_trigger_content(header, "update_counter", report_update_trigger_);
+            auto ctr_loc = set_header_trigger_content(header, "start_counter",  report_start_trigger_);
+            updateSimDbReportMeta_("StartCounter", ctr_loc);
+
+            ctr_loc = set_header_trigger_content(header, "stop_counter",   report_stop_trigger_);
+            updateSimDbReportMeta_("StopCounter", ctr_loc);
+
+            ctr_loc = set_header_trigger_content(header, "update_counter", report_update_trigger_);
+            updateSimDbReportMeta_("UpdateCounter", ctr_loc);
 
             const auto header_metadata = getDescriptor().header_metadata_;
             for(auto [key, value] : header_metadata) {
                 header.set(key, value);
             }
         }
+    }
+
+    void updateSimDbReportMeta_(const std::string & key,
+                                const std::string & value)
+    {
+    #if SIMDB_ENABLED
+        if (key.empty() || value.empty()) {
+            return;
+        }
+
+        if (db_mgr_ != nullptr && desc_simdb_id_ != 0) {
+            std::ostringstream cmd;
+            cmd << "UPDATE Reports SET " << key << " = '" << value
+                << "' WHERE ReportDescID = " << desc_simdb_id_
+                << " AND ParentReportID = 0";
+
+            db_mgr_->EXECUTE(cmd.str());
+        }
+    #endif
     }
 
     void setDirectoryLocationInTree_(TreeNode * tree_location)
@@ -884,6 +960,9 @@ private:
     TreeNode * device_tree_location_ = nullptr;
     app::Simulation * sim_ = nullptr;
     std::shared_ptr<SubContainer> sub_container_;
+
+    simdb::DatabaseManager * db_mgr_ = nullptr;
+    int desc_simdb_id_ = 0;
 };
 
 std::map<std::string, Directory*> Directory::referenced_directories_;
@@ -1021,6 +1100,12 @@ public:
             report_tbl.addColumn("StartTick", dt::int64_t);
             report_tbl.addColumn("EndTick", dt::int64_t);
             report_tbl.addColumn("InfoString", dt::string_t);
+            report_tbl.addColumn("StartCounter", dt::string_t);
+            report_tbl.addColumn("StopCounter", dt::string_t);
+            report_tbl.addColumn("UpdateCounter", dt::string_t);
+            report_tbl.setColumnDefaultValue("StartCounter", std::string());
+            report_tbl.setColumnDefaultValue("StopCounter", std::string());
+            report_tbl.setColumnDefaultValue("UpdateCounter", std::string());
 
             auto& report_meta_tbl = schema.addTable("ReportMetadata");
             report_meta_tbl.addColumn("ReportDescID", dt::int32_t);
@@ -1061,7 +1146,7 @@ public:
 
             db_mgr_->safeTransaction([&]() {
                 for (auto& kvp : directories_) {
-                    kvp.second->getDescriptor().configSimDbReports(db_mgr_.get(), sim_->getRoot());
+                    kvp.second->configSimDbReports(db_mgr_.get(), sim_->getRoot());
                 }
                 db_mgr_->finalizeCollections();
                 return true;

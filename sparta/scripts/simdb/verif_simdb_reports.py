@@ -91,6 +91,14 @@ class TestCase:
         MakeExecutable("sim.rerun.cmd")
         self.test_artifacts.append("sim.rerun.cmd")
 
+        # Ensure the --report <file.yaml> is copied to the results directory,
+        # so that the sim.cmd and sim.rerun.cmd can be run as-is.
+        cmd_args = self.sim_cmd.split()
+        for i, arg in enumerate(cmd_args):
+            if cmd_args[i] == "--report" and i + 1 < len(cmd_args):
+                report_yaml = cmd_args[i + 1]
+                self.test_artifacts.append(report_yaml)
+
         # Verify that the baseline reports all exist, else this test is
         # considered a failure.
         failed = False
@@ -290,9 +298,9 @@ class TestSuite:
 
             if subdir not in test_results_summary:
                 test_results_summary[subdir] = {}
-            if test_case.test_group not in test_results_summary[subdir]:
-                test_results_summary[subdir][test_case.test_group] = []
-            test_results_summary[subdir][test_case.test_group].append(test_case.test_name)
+            if test_group not in test_results_summary[subdir]:
+                test_results_summary[subdir][test_group] = []
+            test_results_summary[subdir][test_group].append(test_name)
 
             for artifact in test_artifacts:
                 # The artifacts can be something like "basic.csv" or "simdb_reports/basic.csv" so
@@ -379,32 +387,18 @@ class CSVReportComparator(Comparator):
         Comparator.__init__(self)
 
     def Compare(self, baseline_report, simdb_report):
-        with open(baseline_report, "r", encoding="utf-8") as bf, open(simdb_report, "r", encoding="utf-8") as ef:
-            baseline_reader = list(csv.reader(bf))
-            export_reader = list(csv.reader(ef))
+        with open(baseline_report, "r") as bf, open(simdb_report, "r") as ef:
+            bf_lines = bf.readlines()
+            ef_lines = ef.readlines()
 
-        if len(baseline_reader) != len(export_reader):
-            return False
-
-        for row, (baseline_text, export_text) in enumerate(zip(baseline_reader, export_reader)):
-            if len(baseline_text) != len(export_text):
+            if len(bf_lines) != len(ef_lines):
                 return False
 
-            if row <= 1:
-                # Metadata and stat locations headers: soft compare
-                norm1 = [self.NormalizeText(cell) for cell in baseline_text]
-                norm2 = [self.NormalizeText(cell) for cell in export_text]
-                if norm1 != norm2:
-                    return False
-            else:
-                # Data rows: strict float compare
-                try:
-                    floats1 = [float(cell) for cell in baseline_text]
-                    floats2 = [float(cell) for cell in export_text]
-                except ValueError as e:
-                    return False
+            for i in range(len(bf_lines)):
+                bf_line = self.NormalizeText(bf_lines[i])
+                ef_line = self.NormalizeText(ef_lines[i])
 
-                if floats1 != floats2:
+                if bf_line != ef_line:
                     return False
 
         return True
