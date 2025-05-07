@@ -231,6 +231,14 @@ namespace sparta {
              */
             void sweepSimDbStats_();
 
+            /*!
+             * \brief Add a row of empty values to the SimDB collection system. This
+             * is used to support toggle triggers for timeseries reports. The resulting
+             * CSV report will just have row(s) of empty values for the scheduler ticks
+             * that the report was not active.
+             */
+            void skipSimDbStats_();
+
             friend class ReportDescriptorCollection;
 
         public:
@@ -389,8 +397,14 @@ namespace sparta {
             /*!
              * \brief Write all metadata about our report (and its subreports
              * and statistics) to SimDB.
+             * 
+             * \return Returns the database ID of the report descriptor in the 
+             * ReportDescriptors table. Returns 0 if:
+             *    - SIMDB_ENABLED is false
+             *    - this descriptor is not enabled
+             *    - this descriptor has no reports
              */
-            void configSimDbReports(simdb::DatabaseManager* db_mgr, RootTreeNode* root);
+            int configSimDbReports(simdb::DatabaseManager* db_mgr, RootTreeNode* root);
 
             //! \brief Report descriptors may be triggered to stop early - ensure no
             //! further updates are written to disk

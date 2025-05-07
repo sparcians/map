@@ -186,16 +186,16 @@ std::shared_ptr<statistics::StreamNode> ReportDescriptor::createRootStatisticsSt
     return nullptr;
 }
 
-void ReportDescriptor::configSimDbReports(simdb::DatabaseManager* db_mgr, RootTreeNode* root)
+int ReportDescriptor::configSimDbReports(simdb::DatabaseManager* db_mgr, RootTreeNode* root)
 {
 #if SIMDB_ENABLED
     if (!isEnabled()) {
-        return;
+        return 0;
     }
 
     const std::vector<Report*> reports = getAllInstantiations();
     if (reports.empty()) {
-        return;
+        return 0;
     }
 
     db_mgr_ = db_mgr;
@@ -221,9 +221,12 @@ void ReportDescriptor::configSimDbReports(simdb::DatabaseManager* db_mgr, RootTr
     for (const auto r : reports) {
         configSimDbReport_(r, visited_stats, report_desc_id);
     }
+
+    return report_desc_id;
 #else
     (void) db_mgr;
     (void) root;
+    return 0;
 #endif
 }
 
@@ -312,6 +315,19 @@ void ReportDescriptor::sweepSimDbStats_()
 
     const auto tick = scheduler_->getCurrentTick();
     db_mgr_->getCollectionMgr()->sweep("root", tick, dest_file);
+#endif
+}
+
+void ReportDescriptor::skipSimDbStats_()
+{
+#if SIMDB_ENABLED
+    if (db_mgr_ == nullptr || skipped_annotator_ == nullptr) {
+        return;
+    }
+
+    const std::string annotation = dest_file + "_skipped_anno_" + skipped_annotator_->currentAnnotation();
+    const auto tick = scheduler_->getCurrentTick();
+    db_mgr_->getCollectionMgr()->sweep("root", tick, annotation, true);
 #endif
 }
 
@@ -515,6 +531,9 @@ uint32_t ReportDescriptor::updateOutput(std::ostream* out)
                     inst.second->skip(skipped_annotator_.get());
                     inst.first->start();
                     capture_update_values = false;
+                    if (db_mgr_) {
+                        skipSimDbStats_();
+                    }
                 }
                 skipped_annotator_->reset();
             }
