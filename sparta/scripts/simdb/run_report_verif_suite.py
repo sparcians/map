@@ -143,7 +143,7 @@ class SpartaTest:
         self.__WriteToTestLog(f"Running sim command: {sim_cmd}")
         subprocess.run(sim_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-        # Note that the INCOMPLETE directory will be deleted if the test
+        # Note that the RUNNING directory will be deleted if the test
         # continues all the way to report comparison.
         if not os.path.exists("sparta.db"):
             self.__WriteToTestLog("sparta.db not found. Test cannot continue.")
@@ -241,10 +241,6 @@ class SpartaTest:
         subprocess.run(export_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # Compare the baseline reports to the SimDB reports.
-        # Go through them one at a time, and if they do not match
-        # then add the report to the FAIL file. If they do match,
-        # then delete that report from the simdb_reports and the
-        # baseline_reports directories.
         passing_reports = []
         failing_reports = []
         self.__WriteToTestLog("Comparing baseline reports to SimDB reports.")
