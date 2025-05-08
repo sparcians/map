@@ -34,7 +34,7 @@ if os.path.exists(args.results_dir):
 
 class SpartaTest:
     @classmethod
-    def CreateFromCMake(cls, cmake_text, cmake_dir, copy_files, copy_dirs):
+    def CreateFromCMake(cls, cmake_text, cmake_dir, copy_files, copy_dirs, unsupported_reports_queue):
         # Only create tests that include "--report" in the cmake_text,
         # and that start with "sparta_named_test".
         if not cmake_text.startswith("sparta_named_test("):
@@ -71,14 +71,15 @@ class SpartaTest:
         if not top_level_yamls:
             return None
 
-        return cls(test_name, sim_cmd, cmake_dir, copy_files, copy_dirs)
+        return cls(test_name, sim_cmd, cmake_dir, copy_files, copy_dirs, unsupported_reports_queue)
 
-    def __init__(self, test_name, sim_cmd, cmake_dir, copy_files, copy_dirs):
+    def __init__(self, test_name, sim_cmd, cmake_dir, copy_files, copy_dirs, unsupported_reports_queue):
         self.test_name = test_name
         self.sim_cmd = sim_cmd
         self.cmake_dir = cmake_dir
         self.copy_files = copy.deepcopy(copy_files)
         self.copy_dirs = copy.deepcopy(copy_dirs)
+        self.unsupported_reports_queue = unsupported_reports_queue
 
         # Each test runs in its own temporary directory.
         self.test_dir = tempfile.mkdtemp()
@@ -243,6 +244,8 @@ class SpartaTest:
         # Compare the baseline reports to the SimDB reports.
         passing_reports = []
         failing_reports = []
+        unsupported_reports = []
+
         self.__WriteToTestLog("Comparing baseline reports to SimDB reports.")
         for report in baseline_reports:
             baseline_report = os.path.join("baseline_reports", report)
@@ -255,6 +258,11 @@ class SpartaTest:
 
             # Compare the two reports.
             comparator = GetComparator(report)
+            if comparator is None:
+                self.__WriteToTestLog(f"Report {report} is not supported for comparison.")
+                unsupported_reports.append(report)
+                continue
+
             if not comparator.Compare(baseline_report, simdb_report):
                 self.__WriteToTestLog(f"Baseline report {report} does not match SimDB report. Test will fail.")
                 failing_reports.append(report)
@@ -266,6 +274,15 @@ class SpartaTest:
         total_comparisons = num_passed + len(failing_reports)
         msg = f"Report comparison complete: {num_passed} of {total_comparisons} reports passed."
         self.__WriteToTestLog(msg)
+
+        if unsupported_reports:
+            msg = "Unsupported reports:\n"
+            for report in unsupported_reports:
+                msg += f"  {report}\n"
+
+            self.__WriteToTestLog(msg)
+            for report in unsupported_reports:
+                self.unsupported_reports_queue.put(report)
 
         results = {
             "PASS": passing_reports,
@@ -311,7 +328,7 @@ def GetComparator(dest_file):
     if extension in ('.csv'):
         return CSVReportComparator()
 
-    return UnsupportedComparator()
+    return None
 
 class Comparator:
     def __init__(self):
@@ -371,13 +388,6 @@ class CSVReportComparator(Comparator):
 
         return True
 
-class UnsupportedComparator(Comparator):
-    def __init__(self):
-        Comparator.__init__(self)
-
-    def Compare(self, baseline_report, simdb_report):
-        return False
-
 # Parse all sparta_copy() files and all sparta_recursive_copy() dirs for each test.
 copy_files = []
 copy_dirs = []
@@ -400,11 +410,12 @@ with open(cmake_list_file, 'r') as f:
 
 # Go through the CMakeLists.txt file and find all the Sparta tests.
 sparta_tests = []
+unsupported_reports_queue = multiprocessing.Queue()
 with open(cmake_list_file, 'r') as f:
     cmake_dir = os.path.dirname(cmake_list_file)
     cmake_text = f.read()
     for line in cmake_text.splitlines():
-        test = SpartaTest.CreateFromCMake(line, cmake_dir, copy_files, copy_dirs)
+        test = SpartaTest.CreateFromCMake(line, cmake_dir, copy_files, copy_dirs, unsupported_reports_queue)
         if test:
             sparta_tests.append(test)
 
@@ -467,21 +478,32 @@ print("")
 
 num_passing_by_format = FindNumTestsByFormat("PASS")
 num_failing_by_format = FindNumTestsByFormat("FAIL")
-formats = set(num_passing_by_format.keys()).union(set(num_failing_by_format.keys()))
 
-# Format   Passed   Failed
-# -----------------------------
+num_unsupported_by_format = {}
+while not unsupported_reports_queue.empty():
+    report = unsupported_reports_queue.get()
+    extension = os.path.splitext(report)[1].lstrip('.')
+    if extension not in num_unsupported_by_format:
+        num_unsupported_by_format[extension] = 0
+    num_unsupported_by_format[extension] += 1
+
+formats = set(num_passing_by_format.keys()).union(set(num_failing_by_format.keys()))
+formats = formats.union(set(num_unsupported_by_format.keys()))
+
+# Format   Passed   Failed   NoCompare
+# -----------------------------------------
 # csv      10       2
 # json     5        0
-# gnuplot  0        1
+# html     0        6
 # ...
-print("Format   Passed   Failed")
-print("-----------------------------")
+print("Format   Passed   Failed   NoCompare")
+print("-----------------------------------------")
 
 for format in formats:
     num_passing = num_passing_by_format.get(format, 0)
     num_failing = num_failing_by_format.get(format, 0)
-    print(f"{format:<8} {num_passing:<8} {num_failing:<8}")
+    num_unsupported = num_unsupported_by_format.get(format, 0)
+    print(f"{format:<8} {num_passing:<8} {num_failing:<8} {num_unsupported:<8}")
 
 print("")
 if incomplete_tests:
