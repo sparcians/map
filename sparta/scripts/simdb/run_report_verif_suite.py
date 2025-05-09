@@ -8,6 +8,7 @@ import multiprocessing
 import tempfile
 import glob
 import json
+import threading
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sparta_dir = os.path.dirname(os.path.dirname(script_dir))
@@ -424,20 +425,59 @@ with open(cmake_list_file, 'r') as f:
 def RunTest(test):
     test.RunTest()
 
+# Progress report for parallel tests.
+abort_monitoring = False
+def MonitorProgress(test_procs):
+    test_names = list(test_procs.keys())
+    test_names.sort()
+    max_test_name_len = max(len(name) for name in test_names)
+
+    # Print a progress table to stdout:
+    #
+    #   Test                   Status
+    #   -------------------------------------------
+    #   test_foo               DONE
+    #   test_bar               RUNNING
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+    test_header = 'Test'.ljust(max_test_name_len)
+    print(f"\n{test_header} Status")
+    print("-" * (max_test_name_len + 8))
+
+    running = False
+    for test_name in test_names:
+        test_proc = test_procs[test_name]
+        if test_proc.is_alive() and not abort_monitoring:
+            status = "RUNNING"
+            running = True
+        else:
+            status = "DONE"
+
+        print(f"{test_name.ljust(max_test_name_len)} {status}")
+
+    if running and not abort_monitoring:
+        # Set up the next timer callback
+        threading.Timer(1.0, MonitorProgress, args=(test_procs,)).start()
+
 if not args.serial:
     # Run all the tests in parallel.
     processes = []
+    test_procs = {}
     for test in sparta_tests:
         process = multiprocessing.Process(target=RunTest, args=(test,))
         processes.append(process)
+        test_procs[test.test_name] = process
 
     print (f"Running {len(processes)} tests in parallel...")
     for process in processes:
         process.start()
 
     # Wait for all processes to finish.
+    MonitorProgress(test_procs)
     for process in processes:
         process.join()
+
+    abort_monitoring = True
 else:
     # Run all the tests serially.
     print (f"Running {len(sparta_tests)} tests serially...")
