@@ -299,10 +299,23 @@ class SpartaTest:
             for report in reports:
                 baseline_report = os.path.join("baseline_reports", report)
                 simdb_report = os.path.join("simdb_reports", report)
-                extension = os.path.splitext(report)[1]
+                extension = os.path.splitext(report)[1].lstrip('.')
+
+                # Refine "json" to either: "json", "json_reduced", or "json_detail"
+                if extension == "json":
+                    with open(baseline_report, "r", encoding="utf-8") as bf:
+                        try:
+                            baseline_data = json.load(bf)
+                            if "report_metadata" in baseline_data:
+                                report_metadata = baseline_data["report_metadata"]
+                                if "report_format" in report_metadata:
+                                    extension = report_metadata["report_format"]
+                        except json.JSONDecodeError as e:
+                            self.__WriteToTestLog(f"Failed to load JSON report {report}: {e}")
+                            continue
 
                 # Copy the passing reports to the results directory, along with the test.log file
-                report_dir = os.path.join(args.results_dir, passfail, extension.lstrip('.'), self.test_name, report)
+                report_dir = os.path.join(args.results_dir, passfail, extension, self.test_name, report)
                 os.makedirs(report_dir, exist_ok=True)
                 shutil.copy(baseline_report, os.path.join(report_dir, "baseline" + extension))
                 shutil.copy(simdb_report, os.path.join(report_dir, "simdb" + extension))
