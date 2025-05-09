@@ -6,7 +6,7 @@ def FormatNumber(val, float_scinot_allowed=True, decimal_places=-1, as_string=Tr
     elif math.isinf(val):
         return str(val) if as_string else val  # Python will format as 'inf' or '-inf'
     else:
-        fractional, integral = math.modf(val)
+        fractional, _ = math.modf(val)
         if fractional == 0:
             return str(int(val)) if as_string else int(val)  # Convert to int to avoid ".0" in output
         else:
