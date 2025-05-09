@@ -80,6 +80,24 @@ def GetVisibilities(cursor):
 
     return vis
 
+def GetReportStats(cursor, report_id):
+    cmd = f"SELECT StatisticName, StatisticLoc, StatisticDesc, StatisticVis FROM StatisticInsts WHERE ReportID = {report_id}"
+    cursor.execute(cmd)
+
+    stats = []
+    for stat_name, stat_loc, stat_desc, stat_vis in cursor.fetchall():
+        if not stat_name:
+            stat_name = stat_loc
+
+        stats.append({
+            "name": stat_name,
+            "loc": stat_loc,
+            "desc": stat_desc,
+            "vis": stat_vis
+        })
+
+    return stats
+
 class JSONReportExporter:
     def __init__(self):
         pass
@@ -112,7 +130,7 @@ class JSONReportExporter:
             flattened_name = name.split(".")[-1]
             ordered_dict[flattened_name] = OrderedDict()
 
-            report_stats = self.__GetReportStats(cursor, report_id)
+            report_stats = GetReportStats(cursor, report_id)
             ordered_keys = []
             for stat in report_stats:
                 stat_name = stat["name"]
@@ -133,24 +151,6 @@ class JSONReportExporter:
                 ordered_dict[flattened_name]["ordered_keys"] = ordered_keys
 
             self.__GetStatsNestedDict(cursor, descriptor_id, report_id, ordered_dict[flattened_name], stat_value_getter)
-
-    def __GetReportStats(self, cursor, report_id):
-        cmd = f"SELECT StatisticName, StatisticLoc, StatisticDesc, StatisticVis FROM StatisticInsts WHERE ReportID = {report_id}"
-        cursor.execute(cmd)
-
-        stats = []
-        for stat_name, stat_loc, stat_desc, stat_vis in cursor.fetchall():
-            if not stat_name:
-                stat_name = stat_loc
-
-            stats.append({
-                "name": stat_name,
-                "loc": stat_loc,
-                "desc": stat_desc,
-                "vis": stat_vis
-            })
-
-        return stats
 
 class JSONReducedReportExporter:
     def __init__(self):
