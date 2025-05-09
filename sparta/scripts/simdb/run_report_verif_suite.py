@@ -496,12 +496,14 @@ while not unsupported_reports_queue.empty():
 
 formats = set(num_passing_by_format.keys()).union(set(num_failing_by_format.keys()))
 formats = formats.union(set(num_unsupported_by_format.keys()))
+formats = list(formats)
+formats.sort()
 
 # Format   Passed   Failed   NoCompare
 # -----------------------------------------
-# csv      10       2
-# json     5        0
-# html     0        6
+# csv      10       2        0
+# json     5        0        0
+# html     0        0        6
 # ...
 print("Format   Passed   Failed   NoCompare")
 print("-----------------------------------------")
