@@ -4,6 +4,38 @@ from collections import OrderedDict
 import os, json, zlib, struct
 from .utils import FormatNumber
 
+class StatValueGetter:
+    def __init__(self, stats_values):
+        self.stats_values = stats_values
+        self.index = 0
+
+    def GetNext(self):
+        if self.index >= len(self.stats_values):
+            raise IndexError("No more values in stats blob")
+        value = self.stats_values[self.index]
+        self.index += 1
+        return value
+
+def GetStatsValuesGetter(cursor, dest_file):
+    dest_file_name = os.path.basename(dest_file)
+    cmd = f"SELECT Data, IsCompressed FROM CollectionRecords WHERE Notes='{dest_file_name}'"
+    cursor.execute(cmd)
+    stats_blob, is_compressed = cursor.fetchone()
+    if is_compressed:
+        stats_blob = zlib.decompress(stats_blob)
+
+    # Turn the stats blob (byte vector) into a vector of doubles.
+    assert len(stats_blob) % (2+8) == 0, "Invalid stats blob length"
+    stats_values = []
+    for i in range(0, len(stats_blob), 2+8):
+        # The first value is the collectable ID, the second is the value.
+        # We don't need the collectable ID here.
+        val = struct.unpack("d", stats_blob[i+2:i+10])[0]
+        val = FormatNumber(val, as_string=False)
+        stats_values.append(val)
+
+    return StatValueGetter(stats_values)
+
 def GetJsonReportMetadata(cursor, descriptor_id, json_format):
     cmd = f"SELECT MetaName, MetaValue FROM ReportMetadata WHERE ReportDescID = {descriptor_id}"
     cmd += " AND MetaName NOT IN ('OmitZeros', 'PrettyPrint')"
@@ -58,37 +90,8 @@ class JSONReportExporter:
         siminfo = GetSimInfo(cursor)
         vis = GetVisibilities(cursor)
 
-        dest_file_name = os.path.basename(dest_file)
-        cmd = f"SELECT Data, IsCompressed FROM CollectionRecords WHERE Notes='{dest_file_name}'"
-        cursor.execute(cmd)
-        stats_blob, is_compressed = cursor.fetchone()
-        if is_compressed:
-            stats_blob = zlib.decompress(stats_blob)
-
-        # Turn the stats blob (byte vector) into a vector of doubles.
-        assert len(stats_blob) % (2+8) == 0, "Invalid stats blob length"
-        stats_values = []
-        for i in range(0, len(stats_blob), 2+8):
-            # The first value is the collectable ID, the second is the value.
-            # We don't need the collectable ID here.
-            val = struct.unpack("d", stats_blob[i+2:i+10])[0]
-            val = FormatNumber(val, as_string=False)
-            stats_values.append(val)
-
-        class StatValueGetter:
-            def __init__(self, stats_values):
-                self.stats_values = stats_values
-                self.index = 0
-
-            def GetNext(self):
-                if self.index >= len(self.stats_values):
-                    raise IndexError("No more values in stats blob")
-                value = self.stats_values[self.index]
-                self.index += 1
-                return value
-
         statistics = OrderedDict()
-        stat_value_getter = StatValueGetter(stats_values)
+        stat_value_getter = GetStatsValuesGetter(cursor, dest_file)
         self.__GetStatsNestedDict(cursor, descriptor_id, 0, statistics, stat_value_getter)
 
         json_out = OrderedDict([
