@@ -22,6 +22,7 @@ parser.add_argument("--results-dir", type=str, default="simdb_verif_results",
                     help="Directory to store the pass/fail results and all baseline/simdb reports.")
 parser.add_argument("--force", action="store_true", help="Force overwrite of the results directory if it exists.")
 parser.add_argument("--serial", action="store_true", help="Run tests serially instead of in parallel.")
+parser.add_argument("--skip", nargs='+', default=[], help="Skip the specified tests.")
 args = parser.parse_args()
 
 # Overwrite the results directory since each test runs in its own tempdir.
@@ -57,6 +58,10 @@ class SpartaTest:
             test_name = match.group(1)
             sim_cmd = match.group(2)
         else:
+            return None
+
+        if test_name in args.skip:
+            print(f"Skipping test {test_name}")
             return None
 
         top_level_yamls = []
