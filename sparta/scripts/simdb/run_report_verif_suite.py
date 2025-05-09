@@ -441,7 +441,8 @@ if not args.serial:
 else:
     # Run all the tests serially.
     print (f"Running {len(sparta_tests)} tests serially...")
-    for test in sparta_tests:
+    for i, test in enumerate(sparta_tests):
+        print (f"Running test {i+1} of {len(sparta_tests)}: {test.test_name}")
         test.RunTest()
 
 # Delete the <results_dir>/RUNNING directory if there are no subdirs.
