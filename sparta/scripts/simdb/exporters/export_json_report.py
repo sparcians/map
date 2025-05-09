@@ -4,46 +4,59 @@ from collections import OrderedDict
 import os, json, zlib, struct
 from .utils import FormatNumber
 
+def GetJsonReportMetadata(cursor, descriptor_id, json_format):
+    cmd = f"SELECT MetaName, MetaValue FROM ReportMetadata WHERE ReportDescID = {descriptor_id}"
+    cmd += " AND MetaName NOT IN ('OmitZeros', 'PrettyPrint')"
+    cursor.execute(cmd)
+
+    report_metadata = OrderedDict([
+        ("report_format", json_format)
+    ])
+    for name, value in cursor.fetchall():
+        report_metadata[name] = value
+
+    return report_metadata
+
+def GetSimInfo(cursor):
+    cmd = "SELECT SimName, SimVersion, SpartaVersion, ReproInfo FROM SimulationInfo"
+    cursor.execute(cmd)
+
+    sim_name, sim_version, sparta_version, repro_info = cursor.fetchone()
+    json_version = "2.1"
+    siminfo = OrderedDict([
+        ("name", sim_name),
+        ("sim_version", sim_version),
+        ("sparta_version", sparta_version),
+        ("json_report_version", json_version),
+        ("reproduction", repro_info)
+    ])
+
+    return siminfo
+
+def GetVisibilities(cursor):
+    cmd = "SELECT Hidden, Support, Detail, Normal, Summary, Critical FROM Visibilities"
+    cursor.execute(cmd)
+    hidden, support, detail, normal, summary, critical = cursor.fetchone()
+    vis = OrderedDict([
+        ("hidden", hidden),
+        ("support", support),
+        ("detail", detail),
+        ("normal", normal),
+        ("summary", summary),
+        ("critical", critical)
+    ])
+
+    return vis
+
 class JSONReportExporter:
     def __init__(self):
         pass
 
     def Export(self, dest_file, descriptor_id, db_conn):
         cursor = db_conn.cursor()
-        cmd = f"SELECT MetaName, MetaValue FROM ReportMetadata WHERE ReportDescID = {descriptor_id}"
-        cmd += " AND MetaName NOT IN ('OmitZeros', 'PrettyPrint')"
-        cursor.execute(cmd)
-
-        report_metadata = OrderedDict([
-            ("report_format", "json")
-        ])
-        for name, value in cursor.fetchall():
-            report_metadata[name] = value
-
-        cmd = "SELECT SimName, SimVersion, SpartaVersion, ReproInfo FROM SimulationInfo"
-        cursor.execute(cmd)
-
-        sim_name, sim_version, sparta_version, repro_info = cursor.fetchone()
-        json_version = "2.1"
-        siminfo = OrderedDict([
-            ("name", sim_name),
-            ("sim_version", sim_version),
-            ("sparta_version", sparta_version),
-            ("json_report_version", json_version),
-            ("reproduction", repro_info)
-        ])
-
-        cmd = "SELECT Hidden, Support, Detail, Normal, Summary, Critical FROM Visibilities"
-        cursor.execute(cmd)
-        hidden, support, detail, normal, summary, critical = cursor.fetchone()
-        vis = OrderedDict([
-            ("hidden", hidden),
-            ("support", support),
-            ("detail", detail),
-            ("normal", normal),
-            ("summary", summary),
-            ("critical", critical)
-        ])
+        report_metadata = GetJsonReportMetadata(cursor, descriptor_id, "json")
+        siminfo = GetSimInfo(cursor)
+        vis = GetVisibilities(cursor)
 
         dest_file_name = os.path.basename(dest_file)
         cmd = f"SELECT Data, IsCompressed FROM CollectionRecords WHERE Notes='{dest_file_name}'"
