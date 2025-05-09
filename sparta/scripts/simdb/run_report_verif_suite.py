@@ -20,6 +20,7 @@ parser.add_argument("--sim-exe-path", type=str, default="release/example/CoreMod
 parser.add_argument("--results-dir", type=str, default="simdb_verif_results",
                     help="Directory to store the pass/fail results and all baseline/simdb reports.")
 parser.add_argument("--force", action="store_true", help="Force overwrite of the results directory if it exists.")
+parser.add_argument("--serial", action="store_true", help="Run tests serially instead of in parallel.")
 args = parser.parse_args()
 
 # Overwrite the results directory since each test runs in its own tempdir.
@@ -423,19 +424,25 @@ with open(cmake_list_file, 'r') as f:
 def RunTest(test):
     test.RunTest()
 
-# Run all the tests in parallel.
-processes = []
-for test in sparta_tests:
-    process = multiprocessing.Process(target=RunTest, args=(test,))
-    processes.append(process)
+if not args.serial:
+    # Run all the tests in parallel.
+    processes = []
+    for test in sparta_tests:
+        process = multiprocessing.Process(target=RunTest, args=(test,))
+        processes.append(process)
 
-print (f"Running {len(processes)} tests in parallel...")
-for process in processes:
-    process.start()
+    print (f"Running {len(processes)} tests in parallel...")
+    for process in processes:
+        process.start()
 
-# Wait for all processes to finish.
-for process in processes:
-    process.join()
+    # Wait for all processes to finish.
+    for process in processes:
+        process.join()
+else:
+    # Run all the tests serially.
+    print (f"Running {len(sparta_tests)} tests serially...")
+    for test in sparta_tests:
+        test.RunTest()
 
 # Delete the <results_dir>/RUNNING directory if there are no subdirs.
 running_dir = os.path.join(args.results_dir, "RUNNING")

@@ -1,19 +1,20 @@
 import math
 
-def FormatNumber(val, float_scinot_allowed=True, decimal_places=-1):
+def FormatNumber(val, float_scinot_allowed=True, decimal_places=-1, as_string=True):
     if math.isnan(val):
-        return "nan"
+        return "nan" if as_string else float('nan')
     elif math.isinf(val):
-        return str(val)  # Python will format as 'inf' or '-inf'
+        return str(val) if as_string else val  # Python will format as 'inf' or '-inf'
     else:
         fractional, integral = math.modf(val)
         if fractional == 0:
-            return str(int(val))  # Convert to int to avoid ".0" in output
+            return str(int(val)) if as_string else int(val)  # Convert to int to avoid ".0" in output
         else:
             if decimal_places >= 0:
                 format_spec = f".{decimal_places}f" if not float_scinot_allowed else f".{decimal_places}g"
-                return format(val, format_spec)
+                val = format(val, format_spec)
             else:
                 # Format to 6 significant digits
-                return format(val, ".6g")
+                val = format(val, ".6g")
 
+            return val if as_string else float(val)
