@@ -98,7 +98,7 @@ def GetReportStats(cursor, report_id):
 
     return stats
 
-def GetStatsNestedDict(cursor, descriptor_id, parent_report_id, stat_value_getter):
+def GetStatsNestedDict(cursor, descriptor_id, parent_report_id, stat_value_getter, format):
     def Impl(cursor, descriptor_id, parent_report_id, ordered_dict, stat_value_getter):
         cmd = f"SELECT Id, Name FROM Reports WHERE ReportDescID = {descriptor_id} AND ParentReportID = {parent_report_id}"
         cursor.execute(cmd)
@@ -111,18 +111,24 @@ def GetStatsNestedDict(cursor, descriptor_id, parent_report_id, stat_value_gette
             ordered_keys = []
             for stat in report_stats:
                 stat_name = stat["name"]
-                stat_desc = stat["desc"]
-                stat_vis = stat["vis"]
                 stat_val = stat_value_getter.GetNext()
 
-                stat_dict = OrderedDict([
-                    ("desc", stat_desc),
-                    ("vis", stat_vis),
-                    ("val", stat_val)
-                ])
+                if format == "json":
+                    stat_desc = stat["desc"]
+                    stat_vis = stat["vis"]
 
-                ordered_dict[flattened_name][stat_name] = stat_dict
-                ordered_keys.append(stat_name)
+                    stat_dict = OrderedDict([
+                        ("desc", stat_desc),
+                        ("vis", stat_vis),
+                        ("val", stat_val)
+                    ])
+
+                    ordered_dict[flattened_name][stat_name] = stat_dict
+                    ordered_keys.append(stat_name)
+                elif format == "json_reduced":
+                    ordered_dict[flattened_name][stat_name] = stat_val
+                else:
+                    raise ValueError(f"Unknown format: {format}")
 
             if ordered_keys:
                 ordered_dict[flattened_name]["ordered_keys"] = ordered_keys
@@ -144,7 +150,7 @@ class JSONReportExporter:
         vis = GetVisibilities(cursor)
 
         stat_value_getter = GetStatsValuesGetter(cursor, dest_file)
-        statistics = GetStatsNestedDict(cursor, descriptor_id, 0, stat_value_getter)
+        statistics = GetStatsNestedDict(cursor, descriptor_id, 0, stat_value_getter, "json")
 
         json_out = OrderedDict([
             ("Statistics", statistics),
@@ -161,11 +167,23 @@ class JSONReducedReportExporter:
         pass
 
     def Export(self, dest_file, descriptor_id, db_conn):
-        # For now, just "touch" each report file. The comparison script will naturally
-        # fail which is okay for now.
+        cursor = db_conn.cursor()
+        report_metadata = GetJsonReportMetadata(cursor, descriptor_id, "json")
+        siminfo = GetSimInfo(cursor)
+        vis = GetVisibilities(cursor)
+
+        stat_value_getter = GetStatsValuesGetter(cursor, dest_file)
+        statistics = GetStatsNestedDict(cursor, descriptor_id, 0, stat_value_getter, "json_reduced")
+
+        json_out = OrderedDict([
+            ("Statistics", statistics),
+            ("vis", vis),
+            ("siminfo", siminfo),
+            ("report_metadata", report_metadata)
+        ])
+
         with open(dest_file, "w") as fout:
-            print (f"Exporting {dest_file}...")
-            fout.write("# This is a placeholder file. The SimDB exporter is not implemented yet.\n")
+            json.dump(json_out, fout, indent=4)
 
 class JSONDetailReportExporter:
     def __init__(self):
