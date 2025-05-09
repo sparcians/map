@@ -8,7 +8,7 @@ import multiprocessing
 import tempfile
 import glob
 import json
-import threading
+import sys
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sparta_dir = os.path.dirname(os.path.dirname(script_dir))
@@ -443,40 +443,6 @@ with open(cmake_list_file, 'r') as f:
 def RunTest(test):
     test.RunTest()
 
-# Progress report for parallel tests.
-abort_monitoring = False
-def MonitorProgress(test_procs):
-    test_names = list(test_procs.keys())
-    test_names.sort()
-    max_test_name_len = max(len(name) for name in test_names)
-
-    # Print a progress table to stdout:
-    #
-    #   Test                   Status
-    #   -------------------------------------------
-    #   test_foo               DONE
-    #   test_bar               RUNNING
-    os.system('cls' if os.name == 'nt' else 'clear')
-
-    test_header = 'Test'.ljust(max_test_name_len)
-    print(f"\n{test_header} Status")
-    print("-" * (max_test_name_len + 8))
-
-    running = False
-    for test_name in test_names:
-        test_proc = test_procs[test_name]
-        if test_proc.is_alive() and not abort_monitoring:
-            status = "RUNNING"
-            running = True
-        else:
-            status = "DONE"
-
-        print(f"{test_name.ljust(max_test_name_len)} {status}")
-
-    if running and not abort_monitoring:
-        # Set up the next timer callback
-        threading.Timer(1.0, MonitorProgress, args=(test_procs,)).start()
-
 if not args.serial:
     # Run all the tests in parallel.
     processes = []
@@ -490,8 +456,19 @@ if not args.serial:
     for process in processes:
         process.start()
 
+    while True:
+        num_finished = 0
+        for process in processes:
+            if not process.is_alive():
+                num_finished += 1
+
+        if num_finished == len(processes):
+            break
+
+        print(f"--- Progress: {num_finished} of {len(processes)} tests complete.", end="\r")
+        sys.stdout.flush()
+
     # Wait for all processes to finish.
-    MonitorProgress(test_procs)
     for process in processes:
         process.join()
 
@@ -500,8 +477,10 @@ else:
     # Run all the tests serially.
     print (f"Running {len(sparta_tests)} tests serially...")
     for i, test in enumerate(sparta_tests):
-        print (f"Running test {i+1} of {len(sparta_tests)}: {test.test_name}")
         test.RunTest()
+        num_finished = i + 1
+        print(f"--- Progress: {num_finished} of {len(sparta_tests)} tests complete.", end="\r")
+        sys.stdout.flush()
 
 # Delete the <results_dir>/RUNNING directory if there are no subdirs.
 running_dir = os.path.join(args.results_dir, "RUNNING")
@@ -564,14 +543,15 @@ formats.sort()
 # json     5        0        0
 # html     0        0        6
 # ...
-print("Format   Passed   Failed   NoCompare")
+max_format_len = max([len(format) for format in formats])
+print(f"{'Format':<{max_format_len}} {'Passed':<8} {'Failed':<8} {'NoCompare':<8}")
 print("-----------------------------------------")
 
 for format in formats:
     num_passing = num_passing_by_format.get(format, 0)
     num_failing = num_failing_by_format.get(format, 0)
     num_unsupported = num_unsupported_by_format.get(format, 0)
-    print(f"{format:<8} {num_passing:<8} {num_failing:<8} {num_unsupported:<8}")
+    print(f"{format:<{max_format_len}} {num_passing:<8} {num_failing:<8} {num_unsupported:<8}")
 
 print("")
 if incomplete_tests:
