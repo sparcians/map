@@ -8,6 +8,7 @@ import multiprocessing
 import tempfile
 import glob
 import json
+import sys
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sparta_dir = os.path.dirname(os.path.dirname(script_dir))
@@ -20,6 +21,8 @@ parser.add_argument("--sim-exe-path", type=str, default="release/example/CoreMod
 parser.add_argument("--results-dir", type=str, default="simdb_verif_results",
                     help="Directory to store the pass/fail results and all baseline/simdb reports.")
 parser.add_argument("--force", action="store_true", help="Force overwrite of the results directory if it exists.")
+parser.add_argument("--serial", action="store_true", help="Run tests serially instead of in parallel.")
+parser.add_argument("--skip", nargs='+', default=[], help="Skip the specified tests.")
 args = parser.parse_args()
 
 # Overwrite the results directory since each test runs in its own tempdir.
@@ -55,6 +58,10 @@ class SpartaTest:
             test_name = match.group(1)
             sim_cmd = match.group(2)
         else:
+            return None
+
+        if test_name in args.skip:
+            print(f"Skipping test {test_name}")
             return None
 
         top_level_yamls = []
@@ -292,10 +299,23 @@ class SpartaTest:
             for report in reports:
                 baseline_report = os.path.join("baseline_reports", report)
                 simdb_report = os.path.join("simdb_reports", report)
-                extension = os.path.splitext(report)[1]
+                extension = os.path.splitext(report)[1].lstrip('.')
+
+                # Refine "json" to either: "json", "json_reduced", or "json_detail"
+                if extension == "json":
+                    with open(baseline_report, "r", encoding="utf-8") as bf:
+                        try:
+                            baseline_data = json.load(bf)
+                            if "report_metadata" in baseline_data:
+                                report_metadata = baseline_data["report_metadata"]
+                                if "report_format" in report_metadata:
+                                    extension = report_metadata["report_format"]
+                        except json.JSONDecodeError as e:
+                            self.__WriteToTestLog(f"Failed to load JSON report {report}: {e}")
+                            continue
 
                 # Copy the passing reports to the results directory, along with the test.log file
-                report_dir = os.path.join(args.results_dir, passfail, extension.lstrip('.'), self.test_name, report)
+                report_dir = os.path.join(args.results_dir, passfail, extension, self.test_name, report)
                 os.makedirs(report_dir, exist_ok=True)
                 shutil.copy(baseline_report, os.path.join(report_dir, "baseline" + extension))
                 shutil.copy(simdb_report, os.path.join(report_dir, "simdb" + extension))
@@ -423,19 +443,44 @@ with open(cmake_list_file, 'r') as f:
 def RunTest(test):
     test.RunTest()
 
-# Run all the tests in parallel.
-processes = []
-for test in sparta_tests:
-    process = multiprocessing.Process(target=RunTest, args=(test,))
-    processes.append(process)
+if not args.serial:
+    # Run all the tests in parallel.
+    processes = []
+    test_procs = {}
+    for test in sparta_tests:
+        process = multiprocessing.Process(target=RunTest, args=(test,))
+        processes.append(process)
+        test_procs[test.test_name] = process
 
-print (f"Running {len(processes)} tests in parallel...")
-for process in processes:
-    process.start()
+    print (f"Running {len(processes)} tests in parallel...")
+    for process in processes:
+        process.start()
 
-# Wait for all processes to finish.
-for process in processes:
-    process.join()
+    while True:
+        num_finished = 0
+        for process in processes:
+            if not process.is_alive():
+                num_finished += 1
+
+        if num_finished == len(processes):
+            break
+
+        print(f"--- Progress: {num_finished} of {len(processes)} tests complete.", end="\r")
+        sys.stdout.flush()
+
+    # Wait for all processes to finish.
+    for process in processes:
+        process.join()
+
+    abort_monitoring = True
+else:
+    # Run all the tests serially.
+    print (f"Running {len(sparta_tests)} tests serially...")
+    for i, test in enumerate(sparta_tests):
+        test.RunTest()
+        num_finished = i + 1
+        print(f"--- Progress: {num_finished} of {len(sparta_tests)} tests complete.", end="\r")
+        sys.stdout.flush()
 
 # Delete the <results_dir>/RUNNING directory if there are no subdirs.
 running_dir = os.path.join(args.results_dir, "RUNNING")
@@ -489,21 +534,24 @@ while not unsupported_reports_queue.empty():
 
 formats = set(num_passing_by_format.keys()).union(set(num_failing_by_format.keys()))
 formats = formats.union(set(num_unsupported_by_format.keys()))
+formats = list(formats)
+formats.sort()
 
 # Format   Passed   Failed   NoCompare
 # -----------------------------------------
-# csv      10       2
-# json     5        0
-# html     0        6
+# csv      10       2        0
+# json     5        0        0
+# html     0        0        6
 # ...
-print("Format   Passed   Failed   NoCompare")
+max_format_len = max([len(format) for format in formats])
+print(f"{'Format':<{max_format_len}} {'Passed':<8} {'Failed':<8} {'NoCompare':<8}")
 print("-----------------------------------------")
 
 for format in formats:
     num_passing = num_passing_by_format.get(format, 0)
     num_failing = num_failing_by_format.get(format, 0)
     num_unsupported = num_unsupported_by_format.get(format, 0)
-    print(f"{format:<8} {num_passing:<8} {num_failing:<8} {num_unsupported:<8}")
+    print(f"{format:<{max_format_len}} {num_passing:<8} {num_failing:<8} {num_unsupported:<8}")
 
 print("")
 if incomplete_tests:

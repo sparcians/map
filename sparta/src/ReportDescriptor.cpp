@@ -254,6 +254,8 @@ void ReportDescriptor::configSimDbReport_(
     for (const auto& si : stats) {
         const auto& si_name = si.first;
         const auto si_loc = si.second->getLocation();
+        const auto si_desc = si.second->getDesc(false);
+        const auto si_vis = static_cast<int>(si.second->getVisibility());
 
         if (!visited_stats.insert(si_loc).second) {
             continue;
@@ -261,8 +263,8 @@ void ReportDescriptor::configSimDbReport_(
 
         db_mgr_->INSERT(
             SQL_TABLE("StatisticInsts"),
-            SQL_COLUMNS("ReportID", "StatisticName", "StatisticLoc"),
-            SQL_VALUES(report_id, si_name, si_loc));
+            SQL_COLUMNS("ReportID", "StatisticName", "StatisticLoc", "StatisticDesc", "StatisticVis"),
+            SQL_VALUES(report_id, si_name, si_loc, si_desc, si_vis));
 
         std::shared_ptr<simdb::CollectionPoint> collectable =
             collection_mgr->createCollectable<double>(si_loc, "root");
