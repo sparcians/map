@@ -1,0 +1,7 @@
+<map id="sparta::BusSet::onAddingChild_" name="sparta::BusSet::onAddingChild_">
+<area shape="rect" id="Node000001" title="Hook for reacting to or rejecting new children. Invoked immediately before adding a child to this nod..." alt="" coords="5,23,172,64"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="220,5,414,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="172,32,204,28,204,33,172,37"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="227,55,406,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="172,50,212,54,211,59,172,55"/>
+</map>

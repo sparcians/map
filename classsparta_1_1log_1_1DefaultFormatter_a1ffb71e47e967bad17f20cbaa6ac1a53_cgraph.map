@@ -1,0 +1,11 @@
+<map id="sparta::log::DefaultFormatter::writeHeader" name="sparta::log::DefaultFormatter::writeHeader">
+<area shape="rect" id="Node000001" title="Write a header to a newly&#45;opened report." alt="" coords="5,39,189,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1SimulationInfo.html#ab6df1c6f149c18a0ddba301086ca1288" title="Write this information to an ostream." alt="" coords="237,39,383,79"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="189,56,221,56,221,62,189,62"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1SimulationInfo.html#aaaf9c8cf6dd90544da19ef002a47275c" title="Gets (name, value) pairs for each header entry." alt="" coords="431,39,577,79"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="384,56,416,56,416,62,384,62"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TimeManager.html#a6728b6d1e95b60a1c6f21321491b37e6" title="Gets the number of seconds elapsed since the instantiation of SPARTA static and global vars." alt="" coords="625,5,768,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="577,44,609,38,610,43,578,49"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TimeManager.html#af030bd86de09c6db4e481d66fe77afb7" title="Returns the TimeManager singleton." alt="" coords="625,71,768,111"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="578,69,610,74,610,79,577,74"/>
+</map>

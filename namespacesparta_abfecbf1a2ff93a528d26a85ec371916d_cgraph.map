@@ -1,0 +1,11 @@
+<map id="sparta::operator&lt;&lt;" name="sparta::operator&lt;&lt;">
+<area shape="rect" id="Node000001" title="ostream insertion operator for SimulationInfo" alt="" coords="5,46,132,72"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1SimulationInfo.html#ab6df1c6f149c18a0ddba301086ca1288" title="Write this information to an ostream." alt="" coords="180,39,326,79"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="132,56,164,56,164,62,132,62"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1SimulationInfo.html#aaaf9c8cf6dd90544da19ef002a47275c" title="Gets (name, value) pairs for each header entry." alt="" coords="374,39,520,79"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="327,56,359,56,359,62,327,62"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TimeManager.html#a6728b6d1e95b60a1c6f21321491b37e6" title="Gets the number of seconds elapsed since the instantiation of SPARTA static and global vars." alt="" coords="568,5,711,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="520,44,552,38,553,43,521,49"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TimeManager.html#af030bd86de09c6db4e481d66fe77afb7" title="Returns the TimeManager singleton." alt="" coords="568,71,711,111"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="521,69,553,74,553,79,520,74"/>
+</map>

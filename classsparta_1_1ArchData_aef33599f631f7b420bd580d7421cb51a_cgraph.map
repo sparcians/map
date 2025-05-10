@@ -1,0 +1,11 @@
+<map id="sparta::ArchData::save" name="sparta::ArchData::save">
+<area shape="rect" id="Node000001" title="Writes checkpointing data from this ArchData to a stream." alt="" coords="5,100,157,125"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData_1_1Line.html#aec7dc20d6989a7aebd6fe0d0fdd3bfbd" title="Index of this line (typically offset/line_size)" alt="" coords="236,5,384,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,97,204,55,222,49,223,54,206,60,111,101"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ArchData.html#a10382f08f1fdbfe14981713c80d51b81" title="Returns the owner TreeNode." alt="" coords="205,70,415,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="157,100,189,96,190,101,157,105"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ArchData_1_1Line.html#a72d2d41162c812acc370f1e150bf3897" title="Has this line been modified since the last save or restore. Immediately after construction,..." alt="" coords="236,120,384,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="157,119,220,127,220,132,157,124"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ArchData_1_1Line.html#a74607607f471a0cae0ec490d27e41dbd" title="Store data to output buffer." alt="" coords="236,185,384,226"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="108,123,206,170,226,177,224,182,204,175,106,128"/>
+</map>
