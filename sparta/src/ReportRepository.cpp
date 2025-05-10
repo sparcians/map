@@ -29,6 +29,7 @@
 #include "sparta/app/FeatureConfiguration.hpp"
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/statistics/CounterBase.hpp"
+#include "sparta/statistics/InstrumentationNode.hpp"
 #include "sparta/simulation/GlobalTreeNode.hpp"
 #include "sparta/log/NotificationSource.hpp"
 #include "sparta/simulation/RootTreeNode.hpp"
@@ -1117,6 +1118,22 @@ public:
             stat_insts_tbl.addColumn("ReportID", dt::int32_t);
             stat_insts_tbl.addColumn("StatisticName", dt::string_t);
             stat_insts_tbl.addColumn("StatisticLoc", dt::string_t);
+            stat_insts_tbl.addColumn("StatisticDesc", dt::string_t);
+            stat_insts_tbl.addColumn("StatisticVis", dt::int32_t);
+
+            auto& siminfo_tbl = schema.addTable("SimulationInfo");
+            siminfo_tbl.addColumn("SimName", dt::string_t);
+            siminfo_tbl.addColumn("SimVersion", dt::string_t);
+            siminfo_tbl.addColumn("SpartaVersion", dt::string_t);
+            siminfo_tbl.addColumn("ReproInfo", dt::string_t);
+
+            auto& vis_tbl = schema.addTable("Visibilities");
+            vis_tbl.addColumn("Hidden", dt::int32_t);
+            vis_tbl.addColumn("Support", dt::int32_t);
+            vis_tbl.addColumn("Detail", dt::int32_t);
+            vis_tbl.addColumn("Normal", dt::int32_t);
+            vis_tbl.addColumn("Summary", dt::int32_t);
+            vis_tbl.addColumn("Critical", dt::int32_t);
 
             const auto& simdb_file = simdb_config.getSimDBFile();
             db_mgr_ = std::make_unique<simdb::DatabaseManager>(simdb_file, true);
@@ -1145,6 +1162,24 @@ public:
             collection_mgr->addClock("root", assumed_root_period);
 
             db_mgr_->safeTransaction([&]() {
+                db_mgr_->INSERT(
+                    SQL_TABLE("SimulationInfo"),
+                    SQL_COLUMNS("SimName", "SimVersion", "SpartaVersion", "ReproInfo"),
+                    SQL_VALUES(SimulationInfo::getInstance().sim_name,
+                               SimulationInfo::getInstance().simulator_version,
+                               SimulationInfo::getInstance().getSpartaVersion(),
+                               SimulationInfo::getInstance().reproduction_info));
+
+                db_mgr_->INSERT(
+                    SQL_TABLE("Visibilities"),
+                    SQL_COLUMNS("Hidden", "Support", "Detail", "Normal", "Summary", "Critical"),
+                    SQL_VALUES(static_cast<int>(sparta::InstrumentationNode::VIS_HIDDEN),
+                               static_cast<int>(sparta::InstrumentationNode::VIS_SUPPORT),
+                               static_cast<int>(sparta::InstrumentationNode::VIS_DETAIL),
+                               static_cast<int>(sparta::InstrumentationNode::VIS_NORMAL),
+                               static_cast<int>(sparta::InstrumentationNode::VIS_SUMMARY),
+                               static_cast<int>(sparta::InstrumentationNode::VIS_CRITICAL)));
+
                 for (auto& kvp : directories_) {
                     kvp.second->configSimDbReports(db_mgr_.get(), sim_->getRoot());
                 }
