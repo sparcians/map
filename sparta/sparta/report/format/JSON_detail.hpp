@@ -16,7 +16,6 @@
 
 #include "sparta/report/format/BaseOstreamFormatter.hpp"
 #include "sparta/report/format/DetailInfoData.hpp"
-#include "sparta/report/db/DatabaseContextCounter.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 
