@@ -107,7 +107,6 @@ void extractStatisticsJsonFull(rapidjson::Document & doc,
 
     // Keep track of the order in which stats and subunits are written
     std::set<const void*> dont_print_these;
-    std::set<const void*> db_dont_print_these;
 
     for (const statistics::stat_pair_t & si : r->getStatistics())
     {
@@ -336,7 +335,6 @@ void extractStatisticsJsonReduced(rapidjson::Document & doc,
 
     // Keep track of the order in which stats and subunits are written
     std::set<const void*> dont_print_these;
-    std::set<const void*> db_dont_print_these;
 
     for (const statistics::stat_pair_t & si : r->getStatistics()) {
         const std::string stat_name = !si.first.empty() ? si.first : si.second->getLocation();
