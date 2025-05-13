@@ -256,15 +256,29 @@ void ReportDescriptor::configSimDbReport_(
         const auto si_loc = si.second->getLocation();
         const auto si_desc = si.second->getDesc(false);
         const auto si_vis = static_cast<int>(si.second->getVisibility());
+        const auto si_class = static_cast<int>(si.second->getClass());
 
         if (!visited_stats.insert(si_loc).second) {
             continue;
         }
 
-        db_mgr_->INSERT(
+        auto si_record = db_mgr_->INSERT(
             SQL_TABLE("StatisticInsts"),
-            SQL_COLUMNS("ReportID", "StatisticName", "StatisticLoc", "StatisticDesc", "StatisticVis"),
-            SQL_VALUES(report_id, si_name, si_loc, si_desc, si_vis));
+            SQL_COLUMNS("ReportID", "StatisticName", "StatisticLoc", "StatisticDesc", "StatisticVis", "StatisticClass"),
+            SQL_VALUES(report_id, si_name, si_loc, si_desc, si_vis, si_class));
+
+        if (auto stat_def = si.second->getStatisticDef()) {
+            const auto si_id = si_record->getId();
+            for (const auto& pair : stat_def->getMetadata()) {
+                const auto& meta_name = pair.first;
+                const auto& meta_value = pair.second;
+
+                db_mgr_->INSERT(
+                    SQL_TABLE("StatisticDefnMetadata"),
+                    SQL_COLUMNS("StatisticInstID", "MetaName", "MetaValue"),
+                    SQL_VALUES(si_id, meta_name, meta_value));
+            }
+        }
 
         std::shared_ptr<simdb::CollectionPoint> collectable =
             collection_mgr->createCollectable<double>(si_loc, "root");

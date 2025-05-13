@@ -1120,6 +1120,14 @@ public:
             stat_insts_tbl.addColumn("StatisticLoc", dt::string_t);
             stat_insts_tbl.addColumn("StatisticDesc", dt::string_t);
             stat_insts_tbl.addColumn("StatisticVis", dt::int32_t);
+            stat_insts_tbl.addColumn("StatisticClass", dt::int32_t);
+            stat_insts_tbl.createIndexOn("ReportID");
+
+            auto& stat_defn_meta_tbl = schema.addTable("StatisticDefnMetadata");
+            stat_defn_meta_tbl.addColumn("StatisticInstID", dt::int32_t);
+            stat_defn_meta_tbl.addColumn("MetaName", dt::string_t);
+            stat_defn_meta_tbl.addColumn("MetaValue", dt::string_t);
+            stat_defn_meta_tbl.createIndexOn("StatisticInstID");
 
             auto& siminfo_tbl = schema.addTable("SimulationInfo");
             siminfo_tbl.addColumn("SimName", dt::string_t);
