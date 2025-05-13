@@ -9,6 +9,7 @@ import tempfile
 import glob
 import json
 import sys
+import io
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sparta_dir = os.path.dirname(os.path.dirname(script_dir))
@@ -23,6 +24,7 @@ parser.add_argument("--results-dir", type=str, default="simdb_verif_results",
 parser.add_argument("--force", action="store_true", help="Force overwrite of the results directory if it exists.")
 parser.add_argument("--serial", action="store_true", help="Run tests serially instead of in parallel.")
 parser.add_argument("--skip", nargs='+', default=[], help="Skip the specified tests.")
+parser.add_argument("--test-only", nargs='+', default=[], help="Run only the specified test(s).")
 args = parser.parse_args()
 
 # Overwrite the results directory since each test runs in its own tempdir.
@@ -34,6 +36,19 @@ if os.path.exists(args.results_dir):
     else:
         print(f"ERROR: The results directory {args.results_dir} already exists. Use --force to overwrite.")
         exit(1)
+
+def SymlinkTree(src, dst):
+    os.makedirs(dst, exist_ok=True)
+    for root, dirs, files in os.walk(src):
+        rel_path = os.path.relpath(root, src)
+        dst_root = os.path.join(dst, rel_path)
+
+        for d in dirs:
+            os.makedirs(os.path.join(dst_root, d), exist_ok=True)
+        for f in files:
+            src_file = os.path.join(root, f)
+            dst_link = os.path.join(dst_root, f)
+            os.symlink(src_file, dst_link)
 
 class SpartaTest:
     @classmethod
@@ -64,6 +79,10 @@ class SpartaTest:
             print(f"Skipping test {test_name}")
             return None
 
+        if args.test_only and test_name not in args.test_only:
+            print(f"Skipping test {test_name} (not in --test-only list)")
+            return None
+
         top_level_yamls = []
         for i, arg in enumerate(sim_cmd.split()):
             if arg == "--report" and i + 1 < len(sim_cmd.split()):
@@ -87,6 +106,7 @@ class SpartaTest:
         self.copy_files = copy.deepcopy(copy_files)
         self.copy_dirs = copy.deepcopy(copy_dirs)
         self.unsupported_reports_queue = unsupported_reports_queue
+        self.logout = None
 
         # Each test runs in its own temporary directory.
         self.test_dir = tempfile.mkdtemp()
@@ -95,6 +115,10 @@ class SpartaTest:
         sim_exe = args.sim_exe_path
         self.copy_files.append(os.path.abspath(sim_exe))
         self.calling_dir = os.getcwd()
+        self.logout = io.StringIO()
+
+        running_test_dir = os.path.join(args.results_dir, "RUNNING", self.test_name)
+        os.makedirs(running_test_dir, exist_ok=True)
 
         # RAII to go into/out of the test directory.
         class ScopedTestDir:
@@ -117,7 +141,7 @@ class SpartaTest:
 
             for src in srcs:
                 dst = os.path.join(self.test_dir, os.path.basename(src))
-                shutil.copy(src, dst)
+                os.symlink(src, dst)
 
         for dir in self.copy_dirs:
             src = os.path.join(self.cmake_dir, dir)
@@ -128,7 +152,7 @@ class SpartaTest:
 
             for src in srcs:
                 dst = os.path.join(self.test_dir, os.path.basename(src))
-                shutil.copytree(src, dst)
+                SymlinkTree(src, dst)
 
         # Ensure '--simdb-file sparta.db' is present, or add it, or replace it.
         sim_args = self.sim_cmd.split()
@@ -317,8 +341,8 @@ class SpartaTest:
                 # Copy the passing reports to the results directory, along with the test.log file
                 report_dir = os.path.join(args.results_dir, passfail, extension, self.test_name, report)
                 os.makedirs(report_dir, exist_ok=True)
-                shutil.copy(baseline_report, os.path.join(report_dir, "baseline" + extension))
-                shutil.copy(simdb_report, os.path.join(report_dir, "simdb" + extension))
+                shutil.copy(baseline_report, os.path.join(report_dir, "baseline." + extension))
+                shutil.copy(simdb_report, os.path.join(report_dir, "simdb." + extension))
                 self.__CopyTestLog(report_dir)
 
         # Delete this test's RUNNING directory.
@@ -327,17 +351,11 @@ class SpartaTest:
             shutil.rmtree(running_test_dir)
 
     def __WriteToTestLog(self, text):
-        testlog = os.path.join(args.results_dir, "RUNNING", self.test_name, "test.log")
-        running_test_dir = os.path.dirname(testlog)
-        os.makedirs(running_test_dir, exist_ok=True)
-
-        with open(testlog, "a") as fout:
-            fout.write(text.rstrip() + "\n")
+        self.logout.write(text.rstrip() + "\n")
 
     def __CopyTestLog(self, report_dir):
-        testlog = os.path.join(args.results_dir, "RUNNING", self.test_name, "test.log")
-        if os.path.exists(testlog):
-            shutil.copy(testlog, os.path.join(report_dir, "test.log"))
+        with open(os.path.join(report_dir, "test.log"), "w") as fout:
+            fout.write(self.logout.getvalue())
 
 def GetComparator(dest_file):
     extension = os.path.splitext(dest_file)[1]
@@ -505,13 +523,12 @@ def FindNumTestsByFormat(passfail):
         for format in os.listdir("."):
             if os.path.isdir(format):
                 # The total number of tests in this format is equal to the number of
-                # subdirs with the name "<report>.<format>" (recursive).
+                # subdirs with the "test.log" file in them.
                 num_tests = 0
                 for root, dirs, files in os.walk(format):
-                    for d in dirs:
-                        if d.endswith("."+format):
-                            num_tests += 1
-                        elif format == "js_json" and d.endswith(".json"):
+                    # Check if the test.log file exists in this directory.
+                    for f in files:
+                        if os.path.basename(f) == "test.log":
                             num_tests += 1
 
                 num_tests_by_format[format] = num_tests

@@ -168,7 +168,7 @@ class JSONReducedReportExporter:
 
     def Export(self, dest_file, descriptor_id, db_conn):
         cursor = db_conn.cursor()
-        report_metadata = GetJsonReportMetadata(cursor, descriptor_id, "json")
+        report_metadata = GetJsonReportMetadata(cursor, descriptor_id, "json_reduced")
         siminfo = GetSimInfo(cursor)
         vis = GetVisibilities(cursor)
 
