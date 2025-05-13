@@ -1,7 +1,7 @@
 # Note the use of OrderedDict is to ensure we can match the rapidjson C++
 # legacy formatters exactly.
 from collections import OrderedDict
-import os, json, zlib, struct
+import os, json, zlib, struct, math
 from .utils import FormatNumber
 
 class StatValueGetter:
@@ -31,7 +31,10 @@ def GetStatsValuesGetter(cursor, dest_file):
         # The first value is the collectable ID, the second is the value.
         # We don't need the collectable ID here.
         val = struct.unpack("d", stats_blob[i+2:i+10])[0]
-        val = FormatNumber(val, as_string=False)
+        if math.isnan(val):
+            val = "nan"
+        else:
+            val = FormatNumber(val, as_string=False)
         stats_values.append(val)
 
     return StatValueGetter(stats_values)
