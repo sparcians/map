@@ -15,27 +15,12 @@
 #include <boost/lexical_cast.hpp>
 
 #include "sparta/report/format/BaseOstreamFormatter.hpp"
+#include "sparta/report/format/DetailInfoData.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 
-namespace sparta
+namespace sparta::report::format
 {
-    namespace report
-    {
-        namespace format
-        {
-
-using StringPair = std::pair<std::string, std::string>;
-/*!
- * \brief Struct to contain non value stat info
- */
-struct info_data {
-    std::string name;
-    std::string desc;
-    uint64_t vis;
-    uint64_t n_class;
-    std::vector<StringPair> metadata;
-};
 
 /*!
  * \brief Map to contain the stat information obtained from each report/subreport
@@ -138,8 +123,23 @@ protected:
 
         // Dump out the data from detail_json_map
         for (std::map<std::string, std::list<info_data> >::iterator it = detail_json_map.begin(); it != detail_json_map.end();) {
+            std::unordered_set<info_data> unique_info_data_set;
+            size_t num_unique_in_list = 0;
+            for (auto& lit : it->second) {
+                // Check if the info_data is already in the set
+                if (unique_info_data_set.insert(lit).second) {
+                    ++num_unique_in_list;
+                }
+            }
+            unique_info_data_set.clear();
+
+            size_t loop_idx = 0;
             out << std::string(4, ' ') << "\"" << it->first << "\": [\n";
             for (auto& lit : it->second) {
+                if (!unique_info_data_set.insert(lit).second) {
+                    continue; // Skip duplicates
+                }
+
                 out << std::string(6, ' ') << "{ \"name\": \"" << lit.name << "\",\n";
                 out << std::string(8, ' ') << "\"desc\": \"" << lit.desc << "\",\n";
                 out << std::string(8, ' ') << "\"vis\": \"" << lit.vis << "\",\n";
@@ -164,11 +164,12 @@ protected:
                     out << "\n";
                 }
                 out << std::string(6, ' ') << "}";
-                if (&lit != &(it->second).back()) {
+                if (loop_idx < num_unique_in_list - 1) {
                     out << ",\n";
                 } else {
                     out << "\n";
                 }
+                ++loop_idx;
             }
             out << std::string(4, ' ') << "]";
             if (++it != detail_json_map.end()){
@@ -211,6 +212,52 @@ protected:
             local_name = p_name + "." + flattenReportName(r->getName());
         }
 
+        auto extract_stat = [&local_name](const statistics::stat_pair_t & si) {
+            std::string full_name = local_name + "." + si.first;
+            std::string desc = si.second->getDesc(false);
+            boost::replace_all(desc, "\"", "\\\"");
+            struct info_data tmp;
+            tmp.name = full_name;
+            tmp.desc = desc;
+            tmp.vis = si.second->getVisibility();
+            tmp.n_class = si.second->getClass();
+            const StatisticDef * stat_defn = si.second->getStatisticDef();
+            if (stat_defn != nullptr) {
+                tmp.metadata = stat_defn->getMetadata();
+            }
+            return tmp;
+        };
+
+        const Report::SubStaticticInstances & sub_stats = r->getSubStatistics();
+
+        std::set<const void*> dont_print_these;
+        for (const statistics::stat_pair_t& si : r->getStatistics()) {
+            if(si.first != ""){
+                const StatisticDef * stat_defn = si.second->getStatisticDef();
+                const CounterBase * ctr = si.second->getCounter();
+                const ParameterBase * prm = si.second->getParameter();
+                sparta_assert(static_cast<const void*>(this) != static_cast<const void*>(ctr));
+                sparta_assert(static_cast<const void*>(this) != static_cast<const void*>(prm));
+
+                auto sub_stat_iter = sub_stats.find(stat_defn);
+                const bool valid_stat_def = (stat_defn != nullptr);
+                const bool has_valid_sub_stats =
+                    (valid_stat_def && sub_stat_iter != sub_stats.end());
+
+                if (has_valid_sub_stats && stat_defn->groupedPrintingDetail(sub_stat_iter->second,
+                                                                            dont_print_these,
+                                                                            nullptr,
+                                                                            nullptr)) {
+                    detail_json_map[si.first].push_back(extract_stat(si));
+                    continue;
+                }
+                if (dont_print_these.count(ctr) > 0 || dont_print_these.count(prm) > 0) {
+                    continue;
+                }
+                detail_json_map[si.first].push_back(extract_stat(si));
+            }
+        }
+
         // Go through all subreports
         for (const Report& sr : r->getSubreports()) {
             collectDictContents_(&sr, idx+1, local_name);
@@ -247,6 +294,4 @@ inline std::ostream& operator<< (std::ostream& out, JSON_detail & f) {
     return out;
 }
 
-        } // namespace format
-    } // namespace report
-} // namespace sparta
+} // namespace sparta::report::format

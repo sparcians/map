@@ -511,6 +511,8 @@ def FindNumTestsByFormat(passfail):
                     for d in dirs:
                         if d.endswith("."+format):
                             num_tests += 1
+                        elif format == "js_json" and d.endswith(".json"):
+                            num_tests += 1
 
                 num_tests_by_format[format] = num_tests
 
