@@ -46,9 +46,9 @@ def SymlinkTree(src, dst):
         for d in dirs:
             os.makedirs(os.path.join(dst_root, d), exist_ok=True)
         for f in files:
-            src_file = os.path.join(root, f)
-            dst_link = os.path.join(dst_root, f)
-            os.symlink(src_file, dst_link)
+            src = os.path.join(root, f)
+            dst = os.path.join(dst_root, f)
+            os.symlink(src, dst)
 
 class SpartaTest:
     @classmethod
