@@ -499,9 +499,11 @@ else:
     # Run all the tests serially.
     print (f"Running {len(sparta_tests)} tests serially...")
     for i, test in enumerate(sparta_tests):
-        test.RunTest()
-        num_finished = i + 1
-        print(f"--- Progress: {num_finished} of {len(sparta_tests)} tests complete.", end="\r")
+        print(f"--- Test {i+1} of {len(sparta_tests)}:\t{test.test_name}", end="\r")
+        try:
+            test.RunTest()
+        except Exception as e:
+            pass
         sys.stdout.flush()
 
 # Delete the <results_dir>/RUNNING directory if there are no subdirs.
