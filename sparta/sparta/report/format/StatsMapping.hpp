@@ -34,10 +34,8 @@ public:
     {}
 
 private:
-    bool supportsUpdate() const override final;
-    void writeHeaderToStream_(std::ostream & out) const override final;
+    void writeHeaderToStream_(std::ostream & out) const override final { (void)out; }
     void writeContentToStream_(std::ostream & out) const override final;
-    void updateToStream_(std::ostream &) const override final;
 };
 
 //! \brief StatsMapping stream operator

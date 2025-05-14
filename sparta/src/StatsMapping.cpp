@@ -20,7 +20,7 @@ namespace format {
 
 void createStatsMappingForReport(const Report * r,
                                  const std::string & prefix,
-                                 std::unordered_map<std::string, std::string> & mapping)
+                                 std::map<std::string, std::string> & mapping)
 {
     for (const auto & si : r->getStatistics()) {
         if (!si.first.empty()) {
@@ -35,14 +35,9 @@ void createStatsMappingForReport(const Report * r,
     }
 }
 
-bool StatsMapping::supportsUpdate() const
+void StatsMapping::writeContentToStream_(std::ostream & out) const
 {
-    return false;
-}
-
-void StatsMapping::writeHeaderToStream_(std::ostream & out) const
-{
-    std::unordered_map<std::string, std::string> mapping;
+    std::map<std::string, std::string> mapping;
     createStatsMappingForReport(report_, "", mapping);
 
     rapidjson::Document doc;
@@ -54,6 +49,7 @@ void StatsMapping::writeHeaderToStream_(std::ostream & out) const
     rapidjson::Value stats2headers;
     stats2headers.SetObject();
 
+    std::map<std::string, std::string> reverse_mapping;
     for (const auto & m : mapping) {
         const std::string & header = m.first;
         const std::string & stat_loc = m.second;
@@ -61,6 +57,13 @@ void StatsMapping::writeHeaderToStream_(std::ostream & out) const
         headers2stats.AddMember(rapidjson::StringRef(header.c_str()),
                                 rapidjson::StringRef(stat_loc.c_str()),
                                 doc.GetAllocator());
+
+        reverse_mapping[stat_loc] = header;
+    }
+
+    for (const auto & m : reverse_mapping) {
+        const std::string & stat_loc = m.first;
+        const std::string & header = m.second;
 
         stats2headers.AddMember(rapidjson::StringRef(stat_loc.c_str()),
                                 rapidjson::StringRef(header.c_str()),
@@ -70,18 +73,23 @@ void StatsMapping::writeHeaderToStream_(std::ostream & out) const
     doc.AddMember("Column-header-to-statistic", headers2stats, doc.GetAllocator());
     doc.AddMember("Statistic-to-column-header", stats2headers, doc.GetAllocator());
 
+    // For consistency with the other JSON formats:
+    //
+    // "report_metadata": {
+    //     "report_format": "stats_mapping"
+    // }
+    rapidjson::Value report_metadata_json;
+    report_metadata_json.SetObject();
+    report_metadata_json.AddMember("report_format",
+                                   rapidjson::StringRef("stats_mapping"),
+                                   doc.GetAllocator());
+
+    doc.AddMember("report_metadata", report_metadata_json, doc.GetAllocator());
+
     rapidjson::StringBuffer buffer;
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
     doc.Accept(writer);
     out << buffer.GetString();
-}
-
-void StatsMapping::writeContentToStream_(std::ostream &) const
-{
-}
-
-void StatsMapping::updateToStream_(std::ostream &) const
-{
 }
 
 } // namespace format
