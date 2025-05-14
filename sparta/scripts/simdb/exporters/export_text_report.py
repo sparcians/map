@@ -294,7 +294,7 @@ class TextReportExporter:
             for subrep_id in subrep_ids:
                 self.__Dump(db_conn, out, descriptor_id, subrep_id, depth + 1)
 
-            # // Print addtional newline after the subreports if any stats were
+            # // Print additional newline after the subreports if any stats were
             # // printed at this level
             # if(r->getSubreports().size() > 0){
             #     out << std::endl;
