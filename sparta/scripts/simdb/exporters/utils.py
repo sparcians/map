@@ -1,6 +1,10 @@
 import math
 
 def FormatNumber(val, float_scinot_allowed=True, decimal_places=-1, as_string=True):
+    #if isinstance(val, str):
+    #    if val.lower() == "nan":
+    #        return "nan" if as_string else float('nan')
+
     if math.isnan(val):
         return "nan" if as_string else float('nan')
     elif math.isinf(val):
