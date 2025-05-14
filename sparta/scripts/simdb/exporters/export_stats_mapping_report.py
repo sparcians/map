@@ -59,7 +59,7 @@ class StatsMappingReportExporter:
             else:
                 mapping[prefix + loc] = loc
 
-        # Recursive into subreports
+        # Recurse into subreports
         cmd = f"SELECT Id, Name FROM Reports WHERE ReportDescID = {descriptor_id} AND ParentReportID = {report_id}"
         cursor = db_conn.cursor()
         cursor.execute(cmd)
