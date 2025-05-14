@@ -581,8 +581,6 @@ private:
         #if SIMDB_ENABLED
             if (db_mgr_ != nullptr && desc_simdb_id_ != 0) {
                 if (reports_[0]->getEnd() != Scheduler::INDEFINITE) {
-                    // Note that all of our reports (and their subreports) have
-                    // the same start tick.
                     std::ostringstream cmd;
                     cmd << "UPDATE Reports SET EndTick = "
                         << reports_[0]->getEnd()
@@ -1135,6 +1133,7 @@ public:
             report_styles_tbl.addColumn("ReportID", dt::int32_t);
             report_styles_tbl.addColumn("StyleName", dt::string_t);
             report_styles_tbl.addColumn("StyleValue", dt::string_t);
+            report_styles_tbl.createCompoundIndexOn(SQL_COLUMNS("ReportDescID", "ReportID", "StyleName"));
 
             auto& stat_insts_tbl = schema.addTable("StatisticInsts");
             stat_insts_tbl.addColumn("ReportID", dt::int32_t);
