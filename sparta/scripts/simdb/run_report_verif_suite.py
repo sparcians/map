@@ -497,7 +497,7 @@ if not args.serial:
     abort_monitoring = True
 else:
     # Run all the tests serially.
-    print (f"Running {len(sparta_tests)} tests serially...")
+    print(f"Running {len(sparta_tests)} tests serially...")
     for i, test in enumerate(sparta_tests):
         print(f"--- Test {i+1} of {len(sparta_tests)}:\t{test.test_name}", end="\r")
         try:
