@@ -345,6 +345,10 @@ class SpartaTest:
                 shutil.copy(simdb_report, os.path.join(report_dir, "simdb." + extension))
                 self.__CopyTestLog(report_dir)
 
+                # Move sparta.db to the report directory (if failed)
+                if passfail == "FAIL":
+                    shutil.copy("sparta.db", os.path.join(report_dir, "sparta.db"))
+
         # Delete this test's RUNNING directory.
         running_test_dir = os.path.join(args.results_dir, "RUNNING", self.test_name)
         if os.path.exists(running_test_dir):
@@ -563,6 +567,7 @@ formats.sort()
 # html     0        0        6
 # ...
 max_format_len = max([len(format) for format in formats])
+max_format_len = max(max_format_len, len("Format"))
 print(f"{'Format':<{max_format_len}} {'Passed':<8} {'Failed':<8} {'NoCompare':<8}")
 print("-----------------------------------------")
 

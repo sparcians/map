@@ -577,6 +577,22 @@ private:
 
         desc_.updateOutput();
         desc_.ignoreFurtherUpdates();
+
+        #if SIMDB_ENABLED
+            if (db_mgr_ != nullptr && desc_simdb_id_ != 0) {
+                if (reports_[0]->getEnd() != Scheduler::INDEFINITE) {
+                    // Note that all of our reports (and their subreports) have
+                    // the same start tick.
+                    std::ostringstream cmd;
+                    cmd << "UPDATE Reports SET EndTick = "
+                        << reports_[0]->getEnd()
+                        << " WHERE ReportDescID = " << desc_simdb_id_
+                        << " AND ParentReportID = 0";
+
+                    db_mgr_->EXECUTE(cmd.str());
+                }
+            }
+        #endif
     }
 
     void updateReports_()
@@ -1114,6 +1130,12 @@ public:
             report_meta_tbl.addColumn("MetaName", dt::string_t);
             report_meta_tbl.addColumn("MetaValue", dt::string_t);
 
+            auto& report_styles_tbl = schema.addTable("ReportStyles");
+            report_styles_tbl.addColumn("ReportDescID", dt::int32_t);
+            report_styles_tbl.addColumn("ReportID", dt::int32_t);
+            report_styles_tbl.addColumn("StyleName", dt::string_t);
+            report_styles_tbl.addColumn("StyleValue", dt::string_t);
+
             auto& stat_insts_tbl = schema.addTable("StatisticInsts");
             stat_insts_tbl.addColumn("ReportID", dt::int32_t);
             stat_insts_tbl.addColumn("StatisticName", dt::string_t);
@@ -1134,6 +1156,12 @@ public:
             siminfo_tbl.addColumn("SimVersion", dt::string_t);
             siminfo_tbl.addColumn("SpartaVersion", dt::string_t);
             siminfo_tbl.addColumn("ReproInfo", dt::string_t);
+            siminfo_tbl.addColumn("SimEndTick", dt::int64_t);
+            siminfo_tbl.setColumnDefaultValue("SimEndTick", -1);
+
+            auto& siminfo_header_pairs_tbl = schema.addTable("SimulationInfoHeaderPairs");
+            siminfo_header_pairs_tbl.addColumn("HeaderName", dt::string_t);
+            siminfo_header_pairs_tbl.addColumn("HeaderValue", dt::string_t);
 
             auto& vis_tbl = schema.addTable("Visibilities");
             vis_tbl.addColumn("Hidden", dt::int32_t);
@@ -1255,6 +1283,7 @@ public:
 
     std::vector<std::unique_ptr<Report>> saveReports()
     {
+        SimulationInfo::getInstance().postSim();
         std::vector<std::unique_ptr<Report>> saved_reports;
         utils::ValidValue<size_t> num_written;
 
@@ -1287,6 +1316,22 @@ public:
 
     #if SIMDB_ENABLED
         if (db_mgr_) {
+            db_mgr_->safeTransaction([&](){
+                for (const auto& kvp : SimulationInfo::getInstance().getHeaderPairs()) {
+                    db_mgr_->INSERT(
+                        SQL_TABLE("SimulationInfoHeaderPairs"),
+                        SQL_COLUMNS("HeaderName", "HeaderValue"),
+                        SQL_VALUES(kvp.first, kvp.second));
+                }
+
+                std::ostringstream oss;
+                oss << "UPDATE SimulationInfo SET SimEndTick = "
+                    << sim_->getScheduler()->getCurrentTick();
+
+                db_mgr_->EXECUTE(oss.str());
+                return true;
+            });
+
             db_mgr_->postSim();
             db_mgr_->closeDatabase();
             db_mgr_.reset();

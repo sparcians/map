@@ -249,6 +249,13 @@ void ReportDescriptor::configSimDbReport_(
 
     const auto report_id = report_record->getId();
 
+    for (const auto& kvp : r->getAllStyles()) {
+        db_mgr_->INSERT(
+            SQL_TABLE("ReportStyles"),
+            SQL_COLUMNS("ReportDescID", "ReportID", "StyleName", "StyleValue"),
+            SQL_VALUES(report_desc_id, report_id, kvp.first, kvp.second));
+    }
+
     auto collection_mgr = db_mgr_->getCollectionMgr();
     const auto& stats = r->getStatistics();
     for (const auto& si : stats) {
