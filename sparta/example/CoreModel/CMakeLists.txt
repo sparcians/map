@@ -95,6 +95,7 @@ sparta_named_test(sparta_core_example_legacy_warmup_notification sparta_core_exa
 sparta_named_test(sparta_core_example_two_reports_json_full_format sparta_core_example -i 10k --report multireports_json_full.yaml)
 sparta_named_test(sparta_core_example_two_reports_json_detail_format sparta_core_example -i 10k --report multireports_json_detail.yaml)
 sparta_named_test(sparta_core_example_json_detail_decode sparta_core_example -i 10k --report json_detail_decode.yaml)
+sparta_named_test(sparta_core_example_simple_text sparta_core_example -i 10k --report simple_text_report.yaml)
 sparta_named_test(sparta_core_example_two_reports_json_reduced_format sparta_core_example -i 10k --report multireports_json_reduced.yaml)
 sparta_named_test(sparta_core_example_tree_node_extensions_written_to_final_config sparta_core_example -i 10k --arch-search-dir . --arch extensions_in_arch_file.yaml --config-file extensions_in_config_file.yaml --extension-file tree_node_extensions.yaml --write-final-config final_cfg_with_extensions.yaml)
 sparta_named_test(sparta_core_example_update_reports_on_demand sparta_core_example -i 10k --report update_report_on_demand.yaml)

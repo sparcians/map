@@ -413,25 +413,26 @@ public:
         result.emplace_back("Repro", reproduction_info);
         result.emplace_back("Start", start_time);
 
-        std::stringstream timestr;
-        timestr << TimeManager::getTimeManager().getSecondsElapsed() << 's';
-        result.emplace_back("Elapsed", timestr.str());
+        if (!sim_elapsed_time_.isValid()) {
+            std::stringstream timestr;
+            timestr << TimeManager::getTimeManager().getSecondsElapsed() << 's';
+            result.emplace_back("Elapsed", timestr.str());
+        } else {
+            result.emplace_back("Elapsed", std::to_string(sim_elapsed_time_.getValue()));
+        }
 
-        last_captured_elapsed_time_ = result.back().second;
         return result;
     }
 
     /*!
-     * \brief Return the very last 'Elapsed' time that this object
-     * got from the TimeManager. This is reset with each call to
-     * getHeaderPairs().
+     * \brief Called once after simulation in saveReports()
      */
-    const utils::ValidValue<std::string> & getLastCapturedElapsedTime() const {
-        return last_captured_elapsed_time_;
+    void postSim() {
+        sim_elapsed_time_ = TimeManager::getTimeManager().getSecondsElapsed();
     }
 
 private:
-    mutable utils::ValidValue<std::string> last_captured_elapsed_time_;
+    utils::ValidValue<double> sim_elapsed_time_;
 
 }; // class SimulationInfo
 
