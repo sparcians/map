@@ -1,7 +1,7 @@
 # Note the use of OrderedDict is to ensure we can match the rapidjson C++
 # legacy formatters exactly.
 from collections import OrderedDict
-import os, json, zlib, struct
+import os, json, zlib, struct, math
 from .utils import FormatNumber
 
 class StatValueGetter:
@@ -31,7 +31,10 @@ def GetStatsValuesGetter(cursor, dest_file):
         # The first value is the collectable ID, the second is the value.
         # We don't need the collectable ID here.
         val = struct.unpack("d", stats_blob[i+2:i+10])[0]
-        val = FormatNumber(val, as_string=False)
+        if math.isnan(val):
+            val = "nan"
+        else:
+            val = FormatNumber(val, as_string=False)
         stats_values.append(val)
 
     return StatValueGetter(stats_values)
@@ -99,7 +102,17 @@ def GetReportStats(cursor, report_id):
     return stats
 
 def GetStatsNestedDict(cursor, descriptor_id, parent_report_id, stat_value_getter, format):
-    def Impl(cursor, descriptor_id, parent_report_id, ordered_dict, stat_value_getter):
+    omit_zeros = False
+    if format == "json_reduced":
+        cmd = f"SELECT MetaValue FROM ReportMetadata WHERE ReportDescID = {descriptor_id}"
+        cmd += " AND MetaName == 'OmitZeros'"
+        cursor.execute(cmd)
+
+        row = cursor.fetchone()
+        if row:
+            omit_zeros = row[0].lower() == "true"
+
+    def Impl(cursor, descriptor_id, parent_report_id, ordered_dict, stat_value_getter, omit_zeros):
         cmd = f"SELECT Id, Name FROM Reports WHERE ReportDescID = {descriptor_id} AND ParentReportID = {parent_report_id}"
         cursor.execute(cmd)
 
@@ -112,6 +125,9 @@ def GetStatsNestedDict(cursor, descriptor_id, parent_report_id, stat_value_gette
             for stat in report_stats:
                 stat_name = stat["name"]
                 stat_val = stat_value_getter.GetNext()
+
+                if omit_zeros and stat_val == 0:
+                    continue
 
                 if format == "json":
                     stat_desc = stat["desc"]
@@ -133,10 +149,10 @@ def GetStatsNestedDict(cursor, descriptor_id, parent_report_id, stat_value_gette
             if ordered_keys:
                 ordered_dict[flattened_name]["ordered_keys"] = ordered_keys
 
-            Impl(cursor, descriptor_id, report_id, ordered_dict[flattened_name], stat_value_getter)
+            Impl(cursor, descriptor_id, report_id, ordered_dict[flattened_name], stat_value_getter, omit_zeros)
 
     nested_dict = OrderedDict()
-    Impl(cursor, descriptor_id, parent_report_id, nested_dict, stat_value_getter)
+    Impl(cursor, descriptor_id, parent_report_id, nested_dict, stat_value_getter, omit_zeros)
     return nested_dict
 
 class JSONReportExporter:
@@ -168,7 +184,7 @@ class JSONReducedReportExporter:
 
     def Export(self, dest_file, descriptor_id, db_conn):
         cursor = db_conn.cursor()
-        report_metadata = GetJsonReportMetadata(cursor, descriptor_id, "json")
+        report_metadata = GetJsonReportMetadata(cursor, descriptor_id, "json_reduced")
         siminfo = GetSimInfo(cursor)
         vis = GetVisibilities(cursor)
 
