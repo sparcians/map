@@ -1,7 +1,6 @@
 project(DYNAMIC_MODEL_PIPELINE)
 
 include(../ExamplesMacros.cmake)
-include(${SPARTA_BASE}/cmake/sparta-config.cmake)
 
 add_executable(dynamic_model_pipeline
     src/main.cpp

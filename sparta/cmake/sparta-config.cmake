@@ -49,6 +49,7 @@ find_package (yaml-cpp 0.7 REQUIRED)
 if (yaml-cpp_FOUND)
   if (yaml-cpp_VERSION_MINOR EQUAL 7)
     get_property(YAML_CPP_INCLUDE_DIR TARGET yaml-cpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+    add_library(yaml-cpp::yaml-cpp ALIAS yaml-cpp)
   else ()
     # To be used with yaml-cpp 0.8 or (assumed) higer
     get_property(YAML_CPP_INCLUDE_DIR TARGET yaml-cpp::yaml-cpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
