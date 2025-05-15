@@ -1,0 +1,11 @@
+<map id="sparta::serialization::checkpoint::FastCheckpointer::getCheckpointChain" name="sparta::serialization::checkpoint::FastCheckpointer::getCheckpointChain">
+<area shape="rect" id="Node000001" title="Debugging utility which gets a deque of checkpoints representing a chain starting at the checkpoint h..." alt="" coords="5,125,204,181"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#ac148071f4baed77d65246f9a9fb6da12" title="Attempts to find a checkpoint within this checkpointer by ID." alt="" coords="252,5,450,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="153,122,250,71,262,65,265,70,253,76,156,127"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#abb57971cc8744ee10f5538fca7c7209d" title="Returns the head checkpoint which is equivalent to the earliest checkpoint taken." alt="" coords="265,85,437,141"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="204,134,249,127,250,132,205,140"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a1ab50505bd631547981015601a4f40e8" title="Returns the ID of this checkpoint." alt="" coords="270,165,432,221"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="205,167,255,175,254,180,204,172"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a099fdcf88200fbcb8a2b1ac47b7df0f7" title="Returns the previous checkpoint. If this checkpoint is a snapshot, it has no previous checkpoint." alt="" coords="270,245,432,301"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="156,179,253,231,265,236,262,241,250,236,153,184"/>
+</map>

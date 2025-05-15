@@ -1,0 +1,9 @@
+<map id="sparta::Buffer::read" name="sparta::Buffer::read">
+<area shape="rect" id="Node000001" title="read the entry at the BufferIterator&#39;s location" alt="" coords="5,5,134,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Buffer.html#a905154d88dbaaa223d154ee1c2c859a2" title="Read and return the data at the given index, const reference." alt="" coords="182,5,310,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="134,16,166,16,166,21,134,21"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Buffer.html#ab4acbe31cd8041c3cf7818886a67d825" title="Determine if data at the index is valid." alt="" coords="358,5,500,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="310,16,342,16,342,21,310,21"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Buffer.html#a58e8b8181aae8c9427385d0d1015a579" title="Return the number of valid entries." alt="" coords="548,5,675,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="501,16,533,16,533,21,501,21"/>
+</map>

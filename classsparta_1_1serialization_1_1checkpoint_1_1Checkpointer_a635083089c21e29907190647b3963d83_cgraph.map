@@ -1,0 +1,17 @@
+<map id="sparta::serialization::checkpoint::Checkpointer::createCheckpoint" name="sparta::serialization::checkpoint::Checkpointer::createCheckpoint">
+<area shape="rect" id="Node000001" title="Creates a checkpoint at the given scheduler&#39;s current tick with a new checkpoint ID some point after ..." alt="" coords="5,117,178,173"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#ab555167eb11cd29ba3d0d55bfeba3d6c" title="Create a checkpoint." alt="" coords="226,41,398,97"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="173,114,214,100,216,105,175,119"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a182c99fa315f6596d2a7cee9d616014e" title="Creates a head without taking an identified checkpoint. Cannot already have a head." alt="" coords="226,157,398,213"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="179,158,211,164,210,169,178,163"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a1ab50505bd631547981015601a4f40e8" title="Returns the ID of this checkpoint." alt="" coords="462,5,624,61"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="398,53,447,45,448,51,399,58"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a8b1a87ef3baa56e2170129b0c5ed1c7c" title="Create a head node." alt="" coords="457,85,629,141"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="398,156,441,142,443,147,399,161"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1Scheduler.html#a34dcaf99252d9e9e0511d69d2aa84ff8" title="The current tick the Scheduler is working on or just finished." alt="" coords="480,165,607,206"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="398,182,464,182,464,188,398,188"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="446,230,640,255"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="399,204,474,223,473,228,398,209"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="470,280,616,320"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="354,211,398,239,447,265,460,271,458,276,445,270,396,244,352,216"/>
+</map>

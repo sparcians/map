@@ -1,0 +1,11 @@
+<map id="sparta::ArchData::tryGetLine" name="sparta::ArchData::tryGetLine">
+<area shape="rect" id="Node000001" title="Gets the line associated with this offset only if it already exists." alt="" coords="5,70,189,96"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData.html#a07e41ac141e36036cffedb4afad07197" title="Determines if this ArchData contains a byte for the specified address." alt="" coords="237,5,409,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="150,67,224,48,226,53,151,72"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TieredMap.html#a8a87b132e5d7c6126454765d8966e3ed" title="Finds a mapping for key k if one exists in this map." alt="" coords="248,70,398,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="189,80,232,80,232,86,189,86"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="240,120,406,161"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="151,94,226,113,224,118,150,99"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TieredMap.html#ad157505881efdd0d3f14695b05bc5dec" title="Attempts to get a pair_t associated with the key k without modifying the data structure." alt="" coords="457,63,587,103"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="399,80,442,80,442,86,399,86"/>
+</map>
