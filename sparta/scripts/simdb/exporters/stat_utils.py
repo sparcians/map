@@ -57,11 +57,23 @@ def GetStatsValuesGetter(cursor, dest_file, replace_nan_with_nanstring=False):
 
     return StatValueGetter(stats_values)
 
-def HasStatistics(cursor, report_id):
-    cmd = f"SELECT COUNT(*) FROM StatisticInsts WHERE ReportID = {report_id}"
-    cursor.execute(cmd)
-    count = cursor.fetchone()[0]
-    return count > 0
+def HasStatistics(cursor, report_id, recursive=False):
+    def Impl(cursor, report_id, recursive):
+        cmd = f"SELECT COUNT(*) FROM StatisticInsts WHERE ReportID = {report_id}"
+        cursor.execute(cmd)
+        count = cursor.fetchone()[0]
+        if count > 0:
+            return True
+        if not recursive:
+            return False
+
+        for subrep_id in GetSubreportIDs(cursor, report_id, report_id):
+            if Impl(cursor, subrep_id, recursive):
+                return True
+
+        return False
+
+    return Impl(cursor, report_id, recursive)
 
 def GetReportStatsDict(cursor, report_id):
     cmd = f"SELECT StatisticName, StatisticLoc, StatisticDesc, StatisticVis FROM StatisticInsts WHERE ReportID = {report_id}"
