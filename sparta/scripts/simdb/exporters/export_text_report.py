@@ -99,7 +99,7 @@ class TextReportExporter:
         additional_stat_indent = "  "
 
         # if(write_contentless_reports_ || hasStatistics_(r)){
-        if self.GetWriteContentlessReports() or self.__HasStatistics(db_conn, report_id):
+        if self.GetWriteContentlessReports() or HasStatistics(db_conn.cursor(), report_id):
             # std::stringstream indent;
             # if(indent_subreports_){
             #     for(uint32_t d=0; d<depth; ++d){
@@ -161,7 +161,7 @@ class TextReportExporter:
                 val_col_after_indent -= len(indent)
 
             # for(const statistics::stat_pair_t& si : r->getStatistics()){
-            report_stats = self.__GetReportStatistics(db_conn, report_id)
+            report_stats = GetReportStatInsts(db_conn.cursor(), report_id, self.stat_value_getter)
             for si in report_stats:
                 si_name = si.GetName()
                 if not si_name:
@@ -214,7 +214,7 @@ class TextReportExporter:
             # for(const Report& sr : r->getSubreports()){
             #     dump_(out, &sr, depth+1);
             # }
-            subrep_ids = self.__GetSubreports(db_conn, descriptor_id, report_id)
+            subrep_ids = GetSubreportIDs(db_conn.cursor(), descriptor_id, report_id)
             for subrep_id in subrep_ids:
                 self.__Dump(db_conn, out, descriptor_id, subrep_id, depth + 1)
 
@@ -225,32 +225,3 @@ class TextReportExporter:
             # }
             if len(subrep_ids) > 0:
                 out.write("\n")
-
-    def __HasStatistics(self, db_conn, report_id):
-        cursor = db_conn.cursor()
-        cmd = "SELECT COUNT(*) FROM StatisticInsts WHERE ReportID = ?"
-        cursor.execute(cmd, (report_id,))
-        count = cursor.fetchone()[0]
-        return count > 0
-
-    def __GetReportStatistics(self, db_conn, report_id):
-        cursor = db_conn.cursor()
-        cmd = "SELECT StatisticName, StatisticLoc, StatisticDesc FROM StatisticInsts WHERE ReportID = ?"
-        cursor.execute(cmd, (report_id,))
-
-        statistics = []
-        for name, loc, desc in cursor.fetchall():
-            statistics.append(StatisticInstance(name, loc, desc, self.stat_value_getter))
-
-        return statistics
-
-    def __GetSubreports(self, db_conn, descriptor_id, parent_report_id):
-        cmd = f"SELECT Id FROM Reports WHERE ReportDescID = {descriptor_id} AND ParentReportID = {parent_report_id}"
-        cursor = db_conn.cursor()
-        cursor.execute(cmd)
-
-        subrep_ids = []
-        for row in cursor.fetchall():
-            subrep_ids.append(row[0])
-
-        return subrep_ids

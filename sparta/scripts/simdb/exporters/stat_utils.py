@@ -57,7 +57,13 @@ def GetStatsValuesGetter(cursor, dest_file, replace_nan_with_nanstring=False):
 
     return StatValueGetter(stats_values)
 
-def GetReportStats(cursor, report_id):
+def HasStatistics(cursor, report_id):
+    cmd = f"SELECT COUNT(*) FROM StatisticInsts WHERE ReportID = {report_id}"
+    cursor.execute(cmd)
+    count = cursor.fetchone()[0]
+    return count > 0
+
+def GetReportStatsDict(cursor, report_id):
     cmd = f"SELECT StatisticName, StatisticLoc, StatisticDesc, StatisticVis FROM StatisticInsts WHERE ReportID = {report_id}"
     cursor.execute(cmd)
 
@@ -74,6 +80,26 @@ def GetReportStats(cursor, report_id):
         })
 
     return stats
+
+def GetReportStatInsts(cursor, report_id, stat_value_getter=None):
+    cmd = f"SELECT StatisticName, StatisticLoc, StatisticDesc FROM StatisticInsts WHERE ReportID = {report_id}"
+    cursor.execute(cmd)
+
+    statistics = []
+    for name, loc, desc in cursor.fetchall():
+        statistics.append(StatisticInstance(name, loc, desc, stat_value_getter))
+
+    return statistics
+
+def GetSubreportIDs(cursor, descriptor_id, parent_report_id):
+    cmd = f"SELECT Id FROM Reports WHERE ReportDescID = {descriptor_id} AND ParentReportID = {parent_report_id}"
+    cursor.execute(cmd)
+
+    subrep_ids = []
+    for row in cursor.fetchall():
+        subrep_ids.append(row[0])
+
+    return subrep_ids
 
 def GetStatsNestedDict(cursor, descriptor_id, parent_report_id, stat_value_getter, format):
     omit_zeros = False
@@ -94,7 +120,7 @@ def GetStatsNestedDict(cursor, descriptor_id, parent_report_id, stat_value_gette
             flattened_name = name.split(".")[-1]
             ordered_dict[flattened_name] = OrderedDict()
 
-            report_stats = GetReportStats(cursor, report_id)
+            report_stats = GetReportStatsDict(cursor, report_id)
             ordered_keys = []
             for stat in report_stats:
                 stat_name = stat["name"]
