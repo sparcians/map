@@ -30,7 +30,6 @@ class StatValueGetter:
     def __init__(self, stats_values, stat_values_by_loc):
         self.stats_values = stats_values
         self.stat_values_by_loc = stat_values_by_loc
-        self.index = 0
 
     def GetNext(self):
         if self.index >= len(self.stats_values):
@@ -149,6 +148,16 @@ def GetReportName(cursor, report_id):
 
     report_name = row[0]
     return report_name
+
+=======
+    cmd = f"SELECT StatisticName, StatisticLoc, StatisticDesc FROM StatisticInsts WHERE ReportID = {report_id}"
+    cursor.execute(cmd)
+
+    statistics = []
+    for name, loc, desc in cursor.fetchall():
+        statistics.append(StatisticInstance(name, loc, desc, stat_value_getter))
+
+    return statistics
 
 def GetSubreportIDs(cursor, descriptor_id, parent_report_id):
     cmd = f"SELECT Id FROM Reports WHERE ReportDescID = {descriptor_id} AND ParentReportID = {parent_report_id}"
