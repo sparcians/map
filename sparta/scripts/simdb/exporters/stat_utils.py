@@ -166,3 +166,10 @@ def GetStatsNestedDict(cursor, descriptor_id, parent_report_id, stat_value_gette
     nested_dict = OrderedDict()
     Impl(cursor, descriptor_id, parent_report_id, nested_dict, stat_value_getter, omit_zeros)
     return nested_dict
+
+def GetReportStyle(cursor, report_id, descriptor_id, style_name, style_default=None):
+    cmd = f"SELECT StyleValue FROM ReportStyles WHERE ReportDescID = {descriptor_id} AND ReportID = {report_id} AND StyleName = '{style_name}'"
+    cursor.execute(cmd)
+
+    style_value = cursor.fetchone()
+    return style_value[0] if style_value else style_default

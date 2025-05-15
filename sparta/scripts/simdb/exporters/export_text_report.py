@@ -82,15 +82,8 @@ class TextReportExporter:
 
         #const bool show_descs =
         #    (r->getStyle("show_descriptions", getShowDescriptions() ? "true" : "false") == "true");
-        cmd = f"SELECT StyleValue FROM ReportStyles WHERE ReportDescID = {descriptor_id} AND ReportID = {report_id} AND StyleName = 'show_descriptions'"
-        cursor.execute(cmd)
-
-        show_descs = cursor.fetchone()
-        if show_descs is None:
-            show_descs = self.GetShowDescriptions()
-        else:
-            assert show_descs[0].lower() in ("true", "false")
-            show_descs = show_descs[0].lower() == "true"
+        default_show_descs = "true" if self.GetShowDescriptions() else "false"
+        show_descs = GetReportStyle(cursor, report_id, descriptor_id, "show_descriptions", default_show_descs) == "true"
 
         # const std::string INDENT_STR = "  ";
         indent_str = "  "
@@ -197,7 +190,7 @@ class TextReportExporter:
 
                 # // Print description column
                 # TODO cnyce: Fill in this code!
-                assert self.GetShowDescriptions() == False, "Description column not implemented yet"
+                assert show_descs == False, "Description column not implemented yet"
 
                 # // Write line to the output
                 # out << name.str() << std::endl;
