@@ -499,6 +499,8 @@ else:
     # Run all the tests serially.
     print(f"Running {len(sparta_tests)} tests serially...")
     for i, test in enumerate(sparta_tests):
+        # Clear the bottom line of the terminal
+        sys.stdout.write('\033[2K\r')
         print(f"--- Test {i+1} of {len(sparta_tests)}:\t{test.test_name}", end="\r")
         try:
             test.RunTest()
