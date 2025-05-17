@@ -44,7 +44,7 @@ class StatValueGetter:
             raise KeyError(f"Location {loc} not found in stats blob")
         return self.stat_values_by_loc[loc]
 
-def GetStatsValuesGetter(cursor, dest_file, replace_nan_with_nanstring=False, replace_inf_with_infstring=False):
+def GetStatsValuesGetter(cursor, dest_file, replace_nan_with_nanstring=False, replace_inf_with_infstring=False, decimal_places=-1):
     dest_file_name = os.path.basename(dest_file)
     cmd = f"SELECT Data, IsCompressed FROM CollectionRecords WHERE Notes='{dest_file_name}'"
     cursor.execute(cmd)
@@ -63,7 +63,7 @@ def GetStatsValuesGetter(cursor, dest_file, replace_nan_with_nanstring=False, re
         elif replace_inf_with_infstring and math.isinf(val):
             val = "inf"
         else:
-            val = FormatNumber(val, as_string=False)
+            val = FormatNumber(val, as_string=False, decimal_places=decimal_places)
 
         stats_values.append(val)
         cid = struct.unpack("H", stats_blob[i:i+2])[0]
