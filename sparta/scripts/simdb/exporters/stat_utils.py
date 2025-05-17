@@ -3,10 +3,11 @@ import os, zlib, struct, math
 from .utils import FormatNumber
 
 class StatisticInstance:
-    def __init__(self, name, location, desc, stat_value_getter):
+    def __init__(self, name, location, desc, vis, stat_value_getter):
         self.name = name
         self.location = location
         self.desc = desc
+        self.vis = vis
         self.stat_value_getter = stat_value_getter
 
     def GetName(self):
@@ -19,12 +20,16 @@ class StatisticInstance:
         assert unused == False
         return self.desc
 
+    def GetVis(self):
+        return self.vis
+
     def GetValue(self):
-        return self.stat_value_getter.GetNext()
+        return self.stat_value_getter.GetValueByLocation(self.location)
 
 class StatValueGetter:
-    def __init__(self, stats_values):
+    def __init__(self, stats_values, stat_values_by_loc):
         self.stats_values = stats_values
+        self.stat_values_by_loc = stat_values_by_loc
         self.index = 0
 
     def GetNext(self):
@@ -34,7 +39,12 @@ class StatValueGetter:
         self.index += 1
         return value
 
-def GetStatsValuesGetter(cursor, dest_file, replace_nan_with_nanstring=False):
+    def GetValueByLocation(self, loc):
+        if loc not in self.stat_values_by_loc:
+            raise KeyError(f"Location {loc} not found in stats blob")
+        return self.stat_values_by_loc[loc]
+
+def GetStatsValuesGetter(cursor, dest_file, replace_nan_with_nanstring=False, replace_inf_with_infstring=False):
     dest_file_name = os.path.basename(dest_file)
     cmd = f"SELECT Data, IsCompressed FROM CollectionRecords WHERE Notes='{dest_file_name}'"
     cursor.execute(cmd)
@@ -45,17 +55,43 @@ def GetStatsValuesGetter(cursor, dest_file, replace_nan_with_nanstring=False):
     # Turn the stats blob (byte vector) into a vector of doubles.
     assert len(stats_blob) % (2+8) == 0, "Invalid stats blob length"
     stats_values = []
+    coll_ids = []
     for i in range(0, len(stats_blob), 2+8):
-        # The first value is the collectable ID, the second is the value.
-        # We don't need the collectable ID here.
         val = struct.unpack("d", stats_blob[i+2:i+10])[0]
         if replace_nan_with_nanstring and math.isnan(val):
             val = "nan"
+        elif replace_inf_with_infstring and math.isinf(val):
+            val = "inf"
         else:
             val = FormatNumber(val, as_string=False)
-        stats_values.append(val)
 
-    return StatValueGetter(stats_values)
+        stats_values.append(val)
+        cid = struct.unpack("H", stats_blob[i:i+2])[0]
+        coll_ids.append(cid)
+
+    # The above stats_values (linear list) is to be used when the entire stat
+    # collection is to be read one stat at a time using the GetNext() method.
+    # Some uses need to access stat values by location.
+    #
+    # We can use the collectable ID to get the location of the stat since
+    # the location/collectable ID pair is stored in the CollectableTreeNodes
+    # table.
+    stat_locs_by_coll_id = {}
+    cmd = "SELECT ElementTreeNodeID, Location FROM CollectableTreeNodes"
+    cursor.execute(cmd)
+    for coll_id, loc in cursor.fetchall():
+        stat_locs_by_coll_id[coll_id] = loc
+
+    stat_values_by_coll_id = {}
+    for cid, val in zip(coll_ids, stats_values):
+        stat_values_by_coll_id[cid] = val
+
+    stat_values_by_loc = {}
+    for cid, val in stat_values_by_coll_id.items():
+        loc = stat_locs_by_coll_id[cid]
+        stat_values_by_loc[loc] = val
+
+    return StatValueGetter(stats_values, stat_values_by_loc)
 
 def HasStatistics(cursor, report_id, recursive=False):
     def Impl(cursor, report_id, recursive):
@@ -75,7 +111,7 @@ def HasStatistics(cursor, report_id, recursive=False):
 
     return Impl(cursor, report_id, recursive)
 
-def GetReportStatsDict(cursor, report_id):
+def GetReportStatDicts(cursor, report_id):
     cmd = f"SELECT StatisticName, StatisticLoc, StatisticDesc, StatisticVis FROM StatisticInsts WHERE ReportID = {report_id}"
     cursor.execute(cmd)
 
@@ -94,14 +130,25 @@ def GetReportStatsDict(cursor, report_id):
     return stats
 
 def GetReportStatInsts(cursor, report_id, stat_value_getter=None):
-    cmd = f"SELECT StatisticName, StatisticLoc, StatisticDesc FROM StatisticInsts WHERE ReportID = {report_id}"
+    cmd = f"SELECT StatisticName, StatisticLoc, StatisticDesc, StatisticVis FROM StatisticInsts WHERE ReportID = {report_id}"
     cursor.execute(cmd)
 
     statistics = []
-    for name, loc, desc in cursor.fetchall():
-        statistics.append(StatisticInstance(name, loc, desc, stat_value_getter))
+    for name, loc, desc, vis in cursor.fetchall():
+        statistics.append(StatisticInstance(name, loc, desc, vis, stat_value_getter))
 
     return statistics
+
+def GetReportName(cursor, report_id):
+    cmd = f"SELECT Name FROM Reports WHERE Id = {report_id}"
+    cursor.execute(cmd)
+    row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    report_name = row[0]
+    return report_name
 
 def GetSubreportIDs(cursor, descriptor_id, parent_report_id):
     cmd = f"SELECT Id FROM Reports WHERE ReportDescID = {descriptor_id} AND ParentReportID = {parent_report_id}"
@@ -132,7 +179,7 @@ def GetStatsNestedDict(cursor, descriptor_id, parent_report_id, stat_value_gette
             flattened_name = name.split(".")[-1]
             ordered_dict[flattened_name] = OrderedDict()
 
-            report_stats = GetReportStatsDict(cursor, report_id)
+            report_stats = GetReportStatDicts(cursor, report_id)
             ordered_keys = []
             for stat in report_stats:
                 stat_name = stat["name"]
