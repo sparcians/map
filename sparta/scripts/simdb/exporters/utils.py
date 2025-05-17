@@ -1,6 +1,6 @@
 import math
 
-def FormatNumber(val, float_scinot_allowed=True, decimal_places=-1, as_string=True):
+def FormatNumber(val, decimal_places=-1, as_string=True):
     if math.isnan(val):
         return "nan" if as_string else float('nan')
     elif math.isinf(val):
@@ -11,8 +11,7 @@ def FormatNumber(val, float_scinot_allowed=True, decimal_places=-1, as_string=Tr
             return str(int(val)) if as_string else int(val)  # Convert to int to avoid ".0" in output
         else:
             if decimal_places >= 0:
-                format_spec = f".{decimal_places}f" if not float_scinot_allowed else f".{decimal_places}g"
-                val = format(val, format_spec)
+                val = round(val, decimal_places)
             else:
                 # Format to 6 significant digits
                 val = format(val, ".6g")

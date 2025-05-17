@@ -126,6 +126,7 @@ sparta_named_test(sparta_core_example_default_param_config_override sparta_core_
 sparta_named_test(sparta_core_example_report_yaml_replacements sparta_core_example -i 10k --report placeholders.yaml --report-yaml-replacements TRACENAME my_stats_report CORE0_WARMUP 1200)
 sparta_named_test(sparta_core_example_report_specific_yaml_replacements sparta_core_example -i 10k --report foo_descriptor.yaml foo.yaml --report bar_descriptor.yaml bar.yaml)
 sparta_named_test(sparta_core_example_omit_stats_with_value_zero sparta_core_example -i 10k --report all_json_formats.yaml --omit-zero-value-stats-from-json_reduced)
+sparta_named_test(sparta_core_example_js_json_reports sparta_core_example -i 10k --report js_json_reports.yaml)
 sparta_named_test(sparta_core_example_context_counter_update_triggers1 sparta_core_example -i 495 --report context_counter_update_triggers1.yaml --config-file context_weights.yaml -p top.cpu.core0.params.foo 680)
 sparta_named_test(sparta_core_example_context_counter_update_triggers2 sparta_core_example -i 550 --report context_counter_update_triggers2.yaml --config-file context_weights.yaml -p top.cpu.core0.params.foo 680)
 sparta_named_test(sparta_core_example_context_counter_update_triggers3 sparta_core_example -i 860 --report context_counter_update_triggers3.yaml --config-file context_weights.yaml -p top.cpu.core0.params.foo 680)
