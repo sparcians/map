@@ -15,6 +15,16 @@ class JSReportExporter:
         self.db_conn = db_conn
         self.cursor = db_conn.cursor()
 
+        cmd = "SELECT ReportName, IsParentOfLeafNodes FROM JsJsonLeafNodes"
+        cursor = db_conn.cursor()
+        cursor.execute(cmd)
+        for report_name, is_parent in cursor.fetchall():
+            assert is_parent in (0,1)
+            if is_parent == 1:
+                self.parents_of_leaf_nodes.add(report_name)
+            else:
+                self.leaf_nodes.add(report_name)
+
         # Get the root report ID
         cmd = f"SELECT Id FROM Reports WHERE ReportDescID = {descriptor_id} AND ParentReportID = 0"
         cursor = db_conn.cursor()
