@@ -23,6 +23,7 @@
 #include "sparta/trigger/SingleTrigger.hpp"
 #include "sparta/trigger/ExpiringExpressionTrigger.hpp"
 #include "sparta/report/format/ReportHeader.hpp"
+#include "sparta/report/format/JavascriptObject.hpp"
 #include "sparta/statistics/dispatch/archives/ReportStatisticsArchive.hpp"
 #include "sparta/statistics/dispatch/archives/StatisticsArchives.hpp"
 #include "sparta/statistics/dispatch/streams/StatisticsStreams.hpp"
@@ -1170,6 +1171,11 @@ public:
             vis_tbl.addColumn("Summary", dt::int32_t);
             vis_tbl.addColumn("Critical", dt::int32_t);
 
+            auto& js_json_leaf_nodes = schema.addTable("JsJsonLeafNodes");
+            js_json_leaf_nodes.addColumn("ReportName", dt::string_t);
+            js_json_leaf_nodes.addColumn("IsParentOfLeafNodes", dt::int32_t);
+            js_json_leaf_nodes.setColumnDefaultValue("IsParentOfLeafNodes", -1);
+
             const auto& simdb_file = simdb_config.getSimDBFile();
             db_mgr_ = std::make_unique<simdb::DatabaseManager>(simdb_file, true);
             db_mgr_->createDatabaseFromSchema(schema);
@@ -1214,6 +1220,8 @@ public:
                                static_cast<int>(sparta::InstrumentationNode::VIS_NORMAL),
                                static_cast<int>(sparta::InstrumentationNode::VIS_SUMMARY),
                                static_cast<int>(sparta::InstrumentationNode::VIS_CRITICAL)));
+
+                report::format::JavascriptObject::writeLeafNodeInfoToDB(db_mgr_.get());
 
                 for (auto& kvp : directories_) {
                     kvp.second->configSimDbReports(db_mgr_.get(), sim_->getRoot());

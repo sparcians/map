@@ -499,6 +499,8 @@ else:
     # Run all the tests serially.
     print(f"Running {len(sparta_tests)} tests serially...")
     for i, test in enumerate(sparta_tests):
+        # Clear the bottom line of the terminal
+        sys.stdout.write('\033[2K\r')
         print(f"--- Test {i+1} of {len(sparta_tests)}:\t{test.test_name}", end="\r")
         try:
             test.RunTest()
@@ -568,16 +570,17 @@ formats.sort()
 # json     5        0        0
 # html     0        0        6
 # ...
-max_format_len = max([len(format) for format in formats])
-max_format_len = max(max_format_len, len("Format"))
-print(f"{'Format':<{max_format_len}} {'Passed':<8} {'Failed':<8} {'NoCompare':<8}")
-print("-----------------------------------------")
+if formats:
+    max_format_len = max([len(format) for format in formats])
+    max_format_len = max(max_format_len, len("Format"))
+    print(f"{'Format':<{max_format_len}} {'Passed':<8} {'Failed':<8} {'NoCompare':<8}")
+    print("-----------------------------------------")
 
-for format in formats:
-    num_passing = num_passing_by_format.get(format, 0)
-    num_failing = num_failing_by_format.get(format, 0)
-    num_unsupported = num_unsupported_by_format.get(format, 0)
-    print(f"{format:<{max_format_len}} {num_passing:<8} {num_failing:<8} {num_unsupported:<8}")
+    for format in formats:
+        num_passing = num_passing_by_format.get(format, 0)
+        num_failing = num_failing_by_format.get(format, 0)
+        num_unsupported = num_unsupported_by_format.get(format, 0)
+        print(f"{format:<{max_format_len}} {num_passing:<8} {num_failing:<8} {num_unsupported:<8}")
 
 print("")
 if incomplete_tests:
