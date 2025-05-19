@@ -92,7 +92,7 @@ class TextReportExporter:
         additional_stat_indent = "  "
 
         # if(write_contentless_reports_ || hasStatistics_(r)){
-        if self.GetWriteContentlessReports() or HasStatistics(db_conn.cursor(), report_id):
+        if self.GetWriteContentlessReports() or HasStatistics(db_conn.cursor(), descriptor_id, report_id):
             # std::stringstream indent;
             # if(indent_subreports_){
             #     for(uint32_t d=0; d<depth; ++d){
