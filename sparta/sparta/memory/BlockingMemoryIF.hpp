@@ -235,7 +235,8 @@ namespace sparta
              * \param addr A guest physical address that is to be accessed via DMI
              * \param size The intended size of data to get.  Must be in the access window
              */
-            virtual DMIBlockingMemoryIF * getDMI(addr_t addr, addr_t size)
+            virtual DMIBlockingMemoryIF * getDMI([[maybe_unused]] addr_t addr,
+                                                 [[maybe_unused]] addr_t size)
             {
                 return nullptr;
             }
