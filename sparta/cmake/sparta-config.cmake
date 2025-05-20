@@ -79,9 +79,12 @@ find_package (HDF5 1.10 REQUIRED COMPONENTS CXX)
 include_directories (SYSTEM ${HDF5_INCLUDE_DIRS})
 message (STATUS "Using HDF5 ${HDF5_VERSION}")
 
+# Find PThreads, etc
+find_package(Threads REQUIRED)
+
 # Populate the Sparta_LIBS variable with the required libraries for
 # basic Sparta linking
-set (Sparta_LIBS sparta simdb HDF5::HDF5 sqlite3 yaml-cpp::yaml-cpp ZLIB::ZLIB pthread
+set (Sparta_LIBS sparta simdb HDF5::HDF5 sqlite3 yaml-cpp::yaml-cpp ZLIB::ZLIB Threads::Threads
   Boost::date_time Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
 
 # On Linux we need to link against rt as well
