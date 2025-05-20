@@ -1944,7 +1944,7 @@ namespace sparta
                                            uint32_t index_level,
                                            const std::string& str) {
             checkModificationPermission_();
-            assert(indices.size() == 0 || indices.size() - 1 == index_level);
+            sparta_assert(indices.size() == 0 || indices.size() - 1 == index_level);
 
             size_t end_pos;
             to_set = smartLexicalCast<typename bit_reference_to_bool<T>::type>(this, str, end_pos);
@@ -2156,7 +2156,7 @@ namespace sparta
                                            const std::vector<uint32_t>& indices,
                                            uint32_t index_level,
                                            bool peek) const {
-            assert(indices.size() == 0 || indices.size() - 1 == index_level);
+            sparta_assert(indices.size() == 0 || indices.size() - 1 == index_level);
 
             if(!peek){
                 incrementReadCount_();
@@ -2191,8 +2191,9 @@ namespace sparta
         getVectorSize_(const T& vec,
                        const std::vector<uint32_t>& indices,
                        uint32_t index_level,
-                       bool peek) const {
-            assert(indices.size() > 0);
+                       bool peek) const
+        {
+            sparta_assert(indices.size() > 0);
 
             uint32_t idx = indices.at(index_level);
             if(idx >= vec.size()){
@@ -2273,8 +2274,9 @@ namespace sparta
         getFinalVectorSize_(const T& to_get,
                             const std::vector<uint32_t>& indices,
                             uint32_t index_level,
-                            bool peek) const {
-            assert(indices.size() == 0 || indices.size() - 1 == index_level);
+                            bool peek) const
+        {
+            sparta_assert(indices.size() == 0 || indices.size() - 1 == index_level);
 
             if(!peek){
                 incrementReadCount_(); // This is considered a read because this information can be useful
