@@ -135,7 +135,8 @@ add_definitions(-DSPARTA_VERSION=\"${GIT_REPO_VERSION}\" -DRAPIDJSON_NOMEMBERITE
 add_compile_options(-Werror -fPIC -Wdeprecated -pedantic -Wextra
   -Wall -Wextra -Winline -Winit-self -Wno-unused-function
   -Wuninitialized -Wno-sequence-point -Wno-inline -Wno-unknown-pragmas
-  -Woverloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers)
+  -Woverloaded-virtual -Wno-unused-parameter -Wno-missing-field-initializers
+  -Wno-deprecated-literal-operator -Wno-deprecated-declarations)
 
 if (GEN_DEBUG_INFO)
   message (STATUS "Building with debug info -g")
