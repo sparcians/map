@@ -280,7 +280,7 @@ class ALFLayout:
             self._schedule_lines = []
             self._detailed_schedule_lines = []
             self._t_offset = time_offset
-            self._dimen = [self._spacing.onechar_width*self._num_cycles, 0]
+            self._dimen = [(self._spacing.onechar_width - 1) * (self._num_cycles + abs(time_offset)), 0]
             self._captions = []
             self._horz_lines = []
             self._line_pos    = self._pos.copy()
