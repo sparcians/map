@@ -624,7 +624,10 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "Specify a simulation database file to hold reports and other sim artifacts. Use together with "
          "--enable-simdb-* options to selectively add artifacts to the database.")
         ("enable-simdb-reports",
-         "Enable the simulation database to hold reports.");
+         "Enable the simulation database to hold reports.")
+        ("disable-legacy-reports",
+         "Do not produce legacy formatted reports on the filesystem. Only write the SimDB file. "
+         "This is to be used with --enable-simdb-reports.");
     #endif
 
     // Feature Options
@@ -1801,7 +1804,13 @@ bool CommandLineSimulator::parse(int argc,
     // The various --enable-simdb-* options will implicitly set the database file to sparta.db
     // unless otherwise specified with --simdb-file (which has already been parsed above).
     if (vm_.count("enable-simdb-reports") > 0) {
-        sim_config_.simdb_config.enableSimDBReports();
+        const bool disable_legacy_reports = vm_.count("disable-legacy-reports") > 0;
+        sim_config_.simdb_config.enableSimDBReports(disable_legacy_reports);
+    } else if (vm_.count("disable-legacy-reports") > 0) {
+        std::cerr << "Error: --disable-legacy-reports requires --enable-simdb-reports" << std::endl;
+        printUsageHelp_();
+        err_code = 1;
+        return false;
     }
 
     //pevents

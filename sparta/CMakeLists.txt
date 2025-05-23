@@ -242,3 +242,9 @@ install(DIRECTORY sparta/ DESTINATION include/sparta)
 install(DIRECTORY cache/ DESTINATION include/cache)
 install(FILES ${SPARTA_STATIC_LIBS} DESTINATION lib)
 install(DIRECTORY cmake/ DESTINATION lib/cmake/sparta)
+install(DIRECTORY scripts/simdb/exporters/ DESTINATION bin/exporters)
+install(PROGRAMS scripts/simdb/simdb_compare DESTINATION bin)
+install(PROGRAMS scripts/simdb/simdb_export DESTINATION bin)
+install(FILES scripts/simdb/simdb_export.py
+              scripts/simdb/simdb_compare.py
+              scripts/simdb/compare_utils.py DESTINATION bin)

@@ -502,8 +502,9 @@ public:
             return simdb_file_;
         }
 
-        void enableSimDBReports() {
+        void enableSimDBReports(const bool disable_legacy_reports = false) {
             reports_enabled_ = true;
+            disable_legacy_reports_ = disable_legacy_reports;
             if (simdb_file_.empty()) {
                 simdb_file_ = "sparta.db";
             }
@@ -513,9 +514,14 @@ public:
             return reports_enabled_;
         }
 
+        bool legacyReportsEnabled() const {
+            return !disable_legacy_reports_;
+        }
+
     private:
         std::string simdb_file_;
         bool reports_enabled_ = false;
+        bool disable_legacy_reports_ = false;
     } simdb_config;
 
     /*!
