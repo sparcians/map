@@ -182,8 +182,10 @@ public:
         num_written += desc_.writeOutput();
 
         bool print = true;
-        if (auto sim_cfg = sim_->getSimulationConfiguration()) {
-            print = sim_cfg->simdb_config.legacyReportsEnabled();
+        if (sim_) {
+            if (auto sim_cfg = sim_->getSimulationConfiguration()) {
+                print = sim_cfg->simdb_config.legacyReportsEnabled();
+            }
         }
 
         if (print) {
