@@ -199,6 +199,17 @@ namespace sparta {
             simdb::DatabaseManager* db_mgr_ = nullptr;
 
             /*!
+             * \brief Set to true only when the simulation was run with
+             * --disable-legacy-reports --enable-simdb-reports.
+             * Note that the intended use for writing both legacy and
+             * SimDB reports is to allow for a transition period
+             * where users can migrate to the new SimDB reports,
+             * using a provided comparison script to verify backwards
+             * compatibility.
+             */
+            bool legacy_reports_disabled_ = false;
+
+            /*!
              * \brief Cache the Scheduler so we know the current tick for every
              * call to simdb::CollectionMgr::sweep().
              */
@@ -487,6 +498,24 @@ namespace sparta {
                     all.insert(cur.first);
                 }
                 return std::vector<Report*>(all.begin(), all.end());
+            }
+
+            /*!
+             * \brief In MAP v2.1, we provide report systems for both legacy reports
+             * and SimDB-exported reports. We allow using both at the same time in
+             * order to validate the SimDB reports for backwards compatibility.
+             *
+             * This function is called when these two command line options are used:
+             *   --enable-simdb-reports --disable-legacy-reports
+             *
+             * Using "--disable-legacy-reports" in MAP v2.1 is akin to saying "I have
+             * verified that the SimDB reports are the same and I only want to use
+             * SimDB now".
+             *
+             * This method will be removed in a future release.
+             */
+            void disableLegacyReports() {
+                legacy_reports_disabled_ = true;
             }
 
             /*!

@@ -180,8 +180,16 @@ public:
 
         num_written += desc_.updateOutput();
         num_written += desc_.writeOutput();
-        std::cout << "  [out] Wrote Final Report " << desc_.stringize() << " (updated "
-                  << desc_.getNumUpdates() << " times):\n";
+
+        bool print = true;
+        if (auto sim_cfg = sim_->getSimulationConfiguration()) {
+            print = sim_cfg->simdb_config.legacyReportsEnabled();
+        }
+
+        if (print) {
+            std::cout << "  [out] Wrote Final Report " << desc_.stringize() << " (updated "
+                      << desc_.getNumUpdates() << " times):\n";
+        }
 
         return std::move(reports_);
     }
@@ -1095,6 +1103,47 @@ public:
 
         const auto& simdb_config = sim_->getSimulationConfiguration()->simdb_config;
         if (simdb_config.simDBReportsEnabled()) {
+            // Not all report formats are supported by SimDB exporters. Until
+            // all are supported, we should not allow --enable-simdb-reports
+            // if we will not be able to export all of this simulation's
+            // reports.
+            std::set<std::string> unsupported_dest_files;
+            for (auto& kvp : directories_) {
+                auto& report_desc = kvp.second->getDescriptor();
+                if (report_desc.isEnabled()) {
+                    static const std::unordered_set<std::string> unsupported_formats = {
+                        "html", "htm", "gnuplot", "gplt"
+                    };
+
+                    if (unsupported_formats.count(report_desc.format)) {
+                        unsupported_dest_files.insert(report_desc.dest_file);
+                    }
+                }
+            }
+
+            if (!unsupported_dest_files.empty()) {
+                std::ostringstream oss;
+                oss << "The following reports are not yet supported by SimDB and cannot be exported later:\n";
+                for (const auto& dest_file : unsupported_dest_files) {
+                    oss << "  " << dest_file << "\n";
+                }
+
+                if (simdb_config.legacyReportsEnabled()) {
+                    std::cout << oss.str();
+                } else {
+                    throw SpartaException(oss.str());
+                }
+            }
+
+            if (!simdb_config.legacyReportsEnabled()) {
+                for (auto& kvp : directories_) {
+                    auto& report_desc = kvp.second->getDescriptor();
+                    if (report_desc.isEnabled()) {
+                        report_desc.disableLegacyReports();
+                    }
+                }
+            }
+
             simdb::Schema schema;
             using dt = simdb::SqlDataType;
 
