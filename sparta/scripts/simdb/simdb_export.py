@@ -82,7 +82,7 @@ for _, dest_file, _ in rows:
             os.remove(dest_file)
 
 if existing_files:
-    print(f"Error: The following destination files already exist. Use --force to overwrite:")
+    print (f"Error: The following destination files already exist. Use --force to overwrite:")
     for file in existing_files:
         print(f"  {file}")
     sys.exit(1)
