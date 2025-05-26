@@ -9,6 +9,7 @@
 #include <math.h>
 #include <memory>
 #include <climits>
+#include <cassert>
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/functional/DataView.hpp"
@@ -1010,7 +1011,7 @@ public:
     template <typename T>
     void write(T val, index_type idx=0)
     {
-        if (!isWritable()) return;
+        assert(isWritable());
         write(&val, sizeof(val), idx * sizeof(val));
     }
 
@@ -1020,7 +1021,7 @@ public:
     template <typename T>
     bool writeWithCheck(T val)
     {
-        if (!isWritable()) return false;
+        assert(isWritable());
         if (hasWriteCB()) {
             static_assert((sizeof(T)==4) || (sizeof(T)==8),
                           "write callback only support for 4- and 8-byte registers");
@@ -1038,7 +1039,7 @@ public:
     template <typename T>
     void writeUnmasked(T val, index_type idx=0)
     {
-        if (!isWritable()) return;
+        assert(isWritable());
         writeUnmasked(&val, sizeof(val), idx * sizeof(val));
     }
 
@@ -1057,7 +1058,7 @@ public:
     template <typename T>
     void poke(T val, index_type idx=0)
     {
-        if (!isWritable()) return;
+        assert(isWritable());
         poke(&val, sizeof(val), idx * sizeof(val));
     }
 
@@ -1069,7 +1070,7 @@ public:
     template <typename T>
     void pokeUnmasked(T val, index_type idx=0)
     {
-        if (!isWritable()) return;
+        assert(isWritable());
         pokeUnmasked(&val, sizeof(val), idx * sizeof(val));
     }
 
@@ -1091,7 +1092,7 @@ public:
     template <typename T>
     void dmiWrite(T val, index_type idx = 0)
     {
-        if (!isWritable()) return;
+        assert(isWritable());
         dmiWrite_(&val, sizeof(val), sizeof(val) * idx);
     }
 
@@ -1214,7 +1215,7 @@ public:
 
     void write(const void *buf, size_t size, size_t offset)
     {
-        if (!isWritable()) return;
+        assert(isWritable());
         sparta_assert(offset + size <= getNumBytes(), "Access out of bounds");
         RegisterBits val(reinterpret_cast<const uint8_t *>(buf), size);
         RegisterBits mask = mask_ >> 8 * offset;
@@ -1224,14 +1225,14 @@ public:
 
     void writeUnmasked(const void *buf, size_t size, size_t offset)
     {
-        if (!isWritable()) return;
+        assert(isWritable());
         sparta_assert(offset + size <= getNumBytes(), "Access out of bounds");
         write_(buf, size, offset);
     }
 
     void poke(const void *buf, size_t size, size_t offset)
     {
-        if (!isWritable()) return;
+        assert(isWritable());
         sparta_assert(offset + size <= getNumBytes(), "Access out of bounds");
         RegisterBits val(reinterpret_cast<const uint8_t *>(buf), size);
         RegisterBits mask = mask_ >> 8 * offset;
@@ -1241,7 +1242,7 @@ public:
 
     void pokeUnmasked(const void *buf, size_t size, size_t offset)
     {
-        if (!isWritable()) return;
+        assert(isWritable());
         sparta_assert(offset + size <= getNumBytes(), "Access out of bounds");
         poke_(buf, size, offset);
     }
@@ -1556,7 +1557,7 @@ public:
     template <typename T>
     inline void dmiWrite(T val, index_type idx = 0)
     {
-        if (!isWritable()) return;
+        assert(isWritable());
         dmiWriteImpl_(&val, sizeof(val), sizeof(val) * idx);
     }
 
@@ -1569,7 +1570,7 @@ public:
     template <typename T>
     inline void writeUnmasked(T val, index_type idx = 0)
     {
-        if (!isWritable()) return;
+        assert(isWritable());
         dmiWriteImpl_(&val, sizeof(T), idx);
     }
 
@@ -1607,7 +1608,7 @@ private:
 
     void write_(const void *buf, size_t size, size_t offset=0) override final
     {
-        if (!isWritable()) return;
+        assert(isWritable());
         auto &post_write_noti = getPostWriteNotificationSource();
 
         if (SPARTA_EXPECT_FALSE(post_write_noti.observed())) {
@@ -1621,14 +1622,14 @@ private:
 
     void poke_(const void *buf, size_t size, size_t offset=0) override final
     {
-        if (!isWritable()) return;
+        assert(isWritable());
         dview_.getLine()->write(
             dview_.getOffset() + offset, size, static_cast<const uint8_t *>(buf));
     }
 
     void dmiWrite_(const void *buf, size_t size, size_t offset = 0) override final
     {
-        if (!isWritable()) return;
+        assert(isWritable());
         dmiWriteImpl_(buf, size, offset);
     }
 
@@ -1639,7 +1640,7 @@ private:
 
     inline void dmiWriteImpl_(const void *buf, size_t size, size_t offset = 0)
     {
-        if (!isWritable()) return;
+        assert(isWritable());
         memcpy(raw_data_ptr_ + offset, buf, size);
         dview_.getLine()->flagDirty();
     }

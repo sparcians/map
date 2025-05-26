@@ -30,9 +30,6 @@
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/SpartaException.hpp"
 
-#include "simdb/schema/DatabaseTypedefs.hpp"
-namespace simdb { class ObjectManager; }
-
 namespace sparta
 {
 
@@ -117,20 +114,6 @@ class SimulationInfo
     std::string sparta_version_;       //!< See sparta_version
     std::vector<std::string> other_; //!< See other
 
-    //! Variables which are populated from SimDB tables:
-    utils::ValidValue<std::string>  db_elapsed_time_;
-
-    //! The singleton SimulationInfo is the "real" object, but we
-    //! need to temporarily "swap in" other SimulationInfo objects
-    //! that were recreated from a SimDB. We'll use a stack of these
-    //! 'this' pointers to achieve this.
-    //!
-    //! The reason we do this is so we don't have to make
-    //! changes in all the report formatters that are already
-    //! calling SimulationInfo::getInstance() for their report
-    //! metadata.
-    static std::stack<SimulationInfo*> sim_inst_stack_;
-
     static SimulationInfo sim_inst_; //!< Static simulation information
 
 public:
@@ -189,20 +172,13 @@ public:
      * \brief Gets the SimulationInfo singleton instance
      */
     static SimulationInfo& getInstance() {
-        if (sim_inst_stack_.empty()) {
-            return sim_inst_;
-        }
-        return *sim_inst_stack_.top();
+        return sim_inst_;
     }
 
     /*!
      * \brief Destruction
      */
-    ~SimulationInfo() {
-        if (!sim_inst_stack_.empty()) {
-            sim_inst_stack_.pop();
-        }
-    }
+    ~SimulationInfo() = default;
 
     /*!
      * \brief Default Constructor
@@ -308,20 +284,6 @@ public:
     }
 
     /*!
-     * \brief Recreate a SimulationInfo object from the
-     * provided SimInfo record with the given ObjMgrID.
-     *
-     * \note While this SimDB-created SimulationInfo object
-     * is in scope, calls to SimulationInfo::getInstance()
-     * will *not* return the singleton. It will return
-     * the object that you recreated using this "SimDB
-     * constructor". It is not recommended to use this
-     * constructor during an actual SPARTA simulation!
-     */
-    SimulationInfo(const simdb::ObjectManager & sim_db,
-                   const simdb::DatabaseID obj_mgr_db_id,
-                   const simdb::DatabaseID report_node_id = 0);
-    /*!
      * \brief Instantiate a SimulationInfo object from a json, json_reduced,
      * json_detail, or js_json report file.
      *
@@ -335,9 +297,7 @@ public:
     /*!
      * \brief Get the SPARTA version string for this SimulationInfo object.
      * Most of the time, this will be SimulationInfo::sparta_version (const /
-     * global). But there are some SimDB/report workflows that need to
-     * create or recreate SimulationInfo objects with a different SPARTA
-     * version string.
+     * global).
      */
     std::string getSpartaVersion() const {
         if (sparta_version_.empty()) {
@@ -453,36 +413,26 @@ public:
         result.emplace_back("Repro", reproduction_info);
         result.emplace_back("Start", start_time);
 
-        //SimDB-recreated SimulationInfo objects have their
-        //elapsed time values stored in the database directly.
-        if (db_elapsed_time_.isValid()) {
-            result.emplace_back("Elapsed", db_elapsed_time_.getValue());
-        }
-
-        //Normal use of the SimulationInfo::getInstance() singleton,
-        //which is used during live SPARTA simulations, computes the
-        //elapsed time value via the TimeManager.
-        else {
+        if (!sim_elapsed_time_.isValid()) {
             std::stringstream timestr;
             timestr << TimeManager::getTimeManager().getSecondsElapsed() << 's';
             result.emplace_back("Elapsed", timestr.str());
+        } else {
+            result.emplace_back("Elapsed", std::to_string(sim_elapsed_time_.getValue()));
         }
 
-        last_captured_elapsed_time_ = result.back().second;
         return result;
     }
 
     /*!
-     * \brief Return the very last 'Elapsed' time that this object
-     * got from the TimeManager. This is reset with each call to
-     * getHeaderPairs().
+     * \brief Called once after simulation in saveReports()
      */
-    const utils::ValidValue<std::string> & getLastCapturedElapsedTime() const {
-        return last_captured_elapsed_time_;
+    void postSim() {
+        sim_elapsed_time_ = TimeManager::getTimeManager().getSecondsElapsed();
     }
 
 private:
-    mutable utils::ValidValue<std::string> last_captured_elapsed_time_;
+    utils::ValidValue<double> sim_elapsed_time_;
 
 }; // class SimulationInfo
 

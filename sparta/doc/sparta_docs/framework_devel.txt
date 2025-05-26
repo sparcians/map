@@ -33,9 +33,6 @@
 
   # Example regression
   make example_regress
-
-  # SimDB regression
-  make simdb_regress
   \endcode
 
   \section doxygen_convention Doxygen Convention

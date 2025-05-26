@@ -381,8 +381,7 @@ private:
 
     /*!
      * \brief Output stream this formatter writes header
-     * information into. Supports SimDB-regenerated timeseries
-     * reports.
+     * information into.
      */
     mutable std::ostringstream header_output_;
 

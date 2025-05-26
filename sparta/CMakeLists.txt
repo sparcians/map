@@ -7,14 +7,20 @@ project (sparta CXX)
 
 set (GEN_DEBUG_INFO ON CACHE BOOL "Genearate debug info in compile & link -g")
 
+# Note that all of SimDB is optional, though included by default.
+# If this option is OFF, then it is assumed that MAP was cloned
+# without the --recursive option, therefore the SimDB submodule
+# was not cloned. If OFF, we will not put SimDB on the include
+# path, nor build the SimDB test, nor install SimDB alongside
+# the Sparta headers.
+option (USING_SIMDB "Enable Sparta to be used with SimDB" ON)
+
 set (SPARTA_BASE ${CMAKE_CURRENT_SOURCE_DIR})
 include (${SPARTA_BASE}/cmake/sparta-config.cmake)
 
 # Add the source for libsparta.a
 list (APPEND SourceCppFiles
             src/ArgosOutputter.cpp
-            src/AsyncTimeseriesReport.cpp
-            src/AsyncNonTimeseriesReport.cpp
             src/Backtrace.cpp
             src/BaseFormatter.cpp
             src/Clock.cpp
@@ -26,8 +32,6 @@ list (APPEND SourceCppFiles
             src/CounterBase.cpp
             src/CsvFormatter.cpp
             src/DAG.cpp
-            src/DatabaseContextCounter.cpp
-            src/DatabaseSchema.cpp
             src/Destination.cpp
             src/EdgeFactory.cpp
             src/EventNode.cpp
@@ -45,10 +49,7 @@ list (APPEND SourceCppFiles
             src/RegisterSet.cpp
             src/Report.cpp
             src/ReportDescriptor.cpp
-            src/ReportHeader.cpp
             src/ReportRepository.cpp
-            src/ReportTimeseries.cpp
-            src/ReportVerifier.cpp
             src/Resource.cpp
             src/SpartaException.cpp
             src/RootTreeNode.cpp
@@ -58,8 +59,6 @@ list (APPEND SourceCppFiles
             src/Simulation.cpp
             src/SimulationConfiguration.cpp
             src/SimulationInfo.cpp
-            src/SingleUpdateReport.cpp
-            src/SINodeHierarchy.cpp
             src/StatisticDef.cpp
             src/StatisticInstance.cpp
             src/StatisticsArchives.cpp
@@ -119,10 +118,6 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Profile")
 else ()
   message (FATAL_ERROR "Unknown CMAKE_BUILD_TYPE.  See README.md OR type 'make' at the SPARTA root")
 endif ()
-
-Set(CMAKE_CXX_FLAGS_DEBUG          "-O0 -g")
-Set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
-set(CMAKE_CXX_FLAGS_PROFILE        "-O3 -pg -g")
 
 string (STRIP ${GIT_REPO_VERSION} GIT_REPO_VERSION)
 message (STATUS "Sparta Version: ${GIT_REPO_VERSION}")
@@ -202,6 +197,10 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # using Visual Studio C++
 endif ()
 
+set(CMAKE_CXX_FLAGS_DEBUG          "-O0 -g -U_FORTIFY_SOURCE")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
+set(CMAKE_CXX_FLAGS_PROFILE        "-O3 -pg -g")
+
 # CppCheck Support
 # Add a custom CMake Modules directory
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
@@ -214,15 +213,21 @@ find_package (Cppcheck)
 
 add_library (sparta ${SourceCppFiles})
 
+if (USING_SIMDB)
+  message (STATUS "SimDB is enabled")
+  target_compile_definitions (sparta PRIVATE -DSIMDB_ENABLED=1)
+  target_include_directories (sparta PUBLIC "./simdb/include/")
+  install(DIRECTORY simdb/include/ DESTINATION include)
+else ()
+  message (STATUS "SimDB is disabled")
+  target_compile_definitions (sparta PRIVATE -DSIMDB_ENABLED=0)
+endif ()
+
 # Add local includes
 target_include_directories (sparta PUBLIC "./")
-target_include_directories (sparta PUBLIC "simdb/include")
 
 set (SPARTA_STATIC_LIBS ${PROJECT_BINARY_DIR}/libsparta.a)
 set (SPARTA_CMAKE_MACRO_PATH ${SPARTA_BASE}/cmake)
-
-# Build the SimDB library
-add_subdirectory (simdb)
 
 #
 # Testing, examples, and tools

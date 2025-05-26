@@ -15,28 +15,12 @@
 #include <boost/lexical_cast.hpp>
 
 #include "sparta/report/format/BaseOstreamFormatter.hpp"
-#include "sparta/report/db/DatabaseContextCounter.hpp"
+#include "sparta/report/format/DetailInfoData.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 
-namespace sparta
+namespace sparta::report::format
 {
-    namespace report
-    {
-        namespace format
-        {
-
-using StringPair = std::pair<std::string, std::string>;
-/*!
- * \brief Struct to contain non value stat info
- */
-struct info_data {
-    std::string name;
-    std::string desc;
-    uint64_t vis;
-    uint64_t n_class;
-    std::vector<StringPair> metadata;
-};
 
 /*!
  * \brief Map to contain the stat information obtained from each report/subreport
@@ -139,8 +123,23 @@ protected:
 
         // Dump out the data from detail_json_map
         for (std::map<std::string, std::list<info_data> >::iterator it = detail_json_map.begin(); it != detail_json_map.end();) {
+            std::unordered_set<info_data> unique_info_data_set;
+            size_t num_unique_in_list = 0;
+            for (auto& lit : it->second) {
+                // Check if the info_data is already in the set
+                if (unique_info_data_set.insert(lit).second) {
+                    ++num_unique_in_list;
+                }
+            }
+            unique_info_data_set.clear();
+
+            size_t loop_idx = 0;
             out << std::string(4, ' ') << "\"" << it->first << "\": [\n";
             for (auto& lit : it->second) {
+                if (!unique_info_data_set.insert(lit).second) {
+                    continue; // Skip duplicates
+                }
+
                 out << std::string(6, ' ') << "{ \"name\": \"" << lit.name << "\",\n";
                 out << std::string(8, ' ') << "\"desc\": \"" << lit.desc << "\",\n";
                 out << std::string(8, ' ') << "\"vis\": \"" << lit.vis << "\",\n";
@@ -165,11 +164,12 @@ protected:
                     out << "\n";
                 }
                 out << std::string(6, ' ') << "}";
-                if (&lit != &(it->second).back()) {
+                if (loop_idx < num_unique_in_list - 1) {
                     out << ",\n";
                 } else {
                     out << "\n";
                 }
+                ++loop_idx;
             }
             out << std::string(4, ' ') << "]";
             if (++it != detail_json_map.end()){
@@ -224,20 +224,15 @@ protected:
             const StatisticDef * stat_defn = si.second->getStatisticDef();
             if (stat_defn != nullptr) {
                 tmp.metadata = stat_defn->getMetadata();
-            } else {
-                tmp.metadata = si.second->getMetadata();
             }
             return tmp;
         };
 
         const Report::SubStaticticInstances & sub_stats = r->getSubStatistics();
-        const Report::DBSubStatisticInstances & db_sub_stats = r->getDBSubStatistics();
 
         std::set<const void*> dont_print_these;
-        std::set<const void*> db_dont_print_these;
         for (const statistics::stat_pair_t& si : r->getStatistics()) {
             if(si.first != ""){
-                const StatisticInstance * stat_inst = si.second.get();
                 const StatisticDef * stat_defn = si.second->getStatisticDef();
                 const CounterBase * ctr = si.second->getCounter();
                 const ParameterBase * prm = si.second->getParameter();
@@ -249,9 +244,6 @@ protected:
                 const bool has_valid_sub_stats =
                     (valid_stat_def && sub_stat_iter != sub_stats.end());
 
-                auto db_sub_stat_iter = db_sub_stats.find(stat_inst);
-                const bool has_valid_db_sub_stats = (db_sub_stat_iter != db_sub_stats.end());
-
                 if (has_valid_sub_stats && stat_defn->groupedPrintingDetail(sub_stat_iter->second,
                                                                             dont_print_these,
                                                                             nullptr,
@@ -262,29 +254,6 @@ protected:
                 if (dont_print_these.count(ctr) > 0 || dont_print_these.count(prm) > 0) {
                     continue;
                 }
-                dont_print_these.clear();
-
-                if (has_valid_db_sub_stats) {
-                    const std::shared_ptr<db::DatabaseContextCounter> & db_ctx_ctr =
-                        db_sub_stat_iter->second.first;
-
-                    const std::vector<const StatisticInstance*> & db_sub_sis =
-                        db_sub_stat_iter->second.second;
-
-                    if (db_ctx_ctr->groupedPrintingDetail(db_sub_sis,
-                                                          db_dont_print_these,
-                                                          nullptr,
-                                                          nullptr))
-                    {
-                        detail_json_map[si.first].push_back(extract_stat(si));
-                        continue;
-                    }
-                }
-                if (db_dont_print_these.count(stat_inst) > 0) {
-                    continue;
-                }
-                db_dont_print_these.clear();
-
                 detail_json_map[si.first].push_back(extract_stat(si));
             }
         }
@@ -325,6 +294,4 @@ inline std::ostream& operator<< (std::ostream& out, JSON_detail & f) {
     return out;
 }
 
-        } // namespace format
-    } // namespace report
-} // namespace sparta
+} // namespace sparta::report::format

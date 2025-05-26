@@ -339,155 +339,6 @@ public:
     }
 
     /*!
-     * Set the location of the SimDB file produced during simulation
-     */
-    void setSimulationDatabaseLocation(const std::string & loc) {
-        simdb_location_ = loc;
-    }
-
-    /*!
-     * Add a YAML options file specifying which components are allowed
-     * to access the simulation database, and (optionally) when that
-     * access is to be granted or removed during simulation.
-     *
-     *     \code
-     *         stats:
-     *           components:
-     *             top.cpu.core0.rob
-     *             root.clocks
-     *         bpred:
-     *           start: notif.dbaccess == 1
-     *           stop:  notif.dbaccess == 0
-     *     \endcode
-     *
-     * In the above example, this would mean that for the "stats"
-     * database namespace, components "top.cpu.core0.rob" and
-     * "root.clocks" are the only ones that can access the database,
-     * and they can access it at any time.
-     *
-     * For the "bpred" namespace however, all components / device
-     * tree locations can access the database when the notification
-     * channel "dbaccess" has emitted a value of 1, but they are
-     * restricted from accessing the database when the same channel
-     * emits a value of 0.
-     *
-     * This YAML file could also list specific components that can
-     * access the database, as well as start/stop triggers for finer
-     * control over when the database is available for those components.
-     * For example:
-     *
-     *     \code
-     *         bpred:
-     *           components:
-     *             top.cpu.core0.rob
-     *           start: notif.dbaccess == 1
-     *           stop:  notif.dbaccess == 0 || notif.earlyterm == 1
-     *     \endcode
-     *
-     * The syntax for the "start" and "stop" database triggers
-     * is the same as report triggers found in YAML descriptor
-     * files (--report <file.yaml>)
-     *
-     * \note The expression parser for these YAML files does not
-     * support trigger tags. The following example YAML would
-     * fail to parse:
-     *
-     *     \code
-     *         stats:
-     *           start: top.core0.rob.stats.total_number_retired >= 1000
-     *           tag:   t0
-     *         bpred:
-     *           stop:  t0.start
-     *     \endcode
-     */
-    void addSimulationDatabaseAccessOptsYaml(
-        const std::string & opts_file)
-    {
-        simdb_enabled_components_opts_files_.emplace_back(opts_file);
-    }
-
-    /*!
-     * Set the root directory where all of this simulation's legacy
-     * reports should be copied to. Say the root directory was set
-     * to "/tmp" and the simulation was configured to produce the
-     * following report files:
-     *
-     *      Filename         Format
-     *     -------------    -----------
-     *      foo.csv          csv_cumulative
-     *      foo.json         json_reduced
-     *      bar.json         json_reduced
-     *      baz.json         json_detail
-     *
-     * If the SimDB file ended up being "abcd-1234.db", then the
-     * simulation would *copy* (not move) the four legacy reports
-     * listed above into a directory structure that looks like:
-     *
-     *     /tmp
-     *       /abcd-1234
-     *         /csv_cumulative
-     *           foo.csv
-     *         /json_reduced
-     *           foo.json
-     *           bar.json
-     *         /json_detail
-     *           baz.json
-     *
-     * \param reports_root_dir Root directory where the reports
-     * will be copied. Directory will be created if needed.
-     *
-     * \param collected_formats Specific report formats you want
-     * to collect. If left empty, all formats will be collected.
-     */
-    void setLegacyReportsCopyDir(const std::string & reports_root_dir,
-                                 const std::set<std::string> & collected_formats = {})
-    {
-        simdb_legacy_reports_copy_dir_ = reports_root_dir;
-        for (const auto & fmt : collected_formats) {
-            const utils::lowercase_string lower_fmt = fmt;
-            simdb_legacy_reports_collected_formats_.insert(lower_fmt.getString());
-        }
-    }
-
-    /*!
-     * Get the simulation database location configured for this
-     * simulation. This will return an empty string if a non-default
-     * location was never set at the command line.
-     */
-    const std::string & getSimulationDatabaseLocation() const {
-        return simdb_location_;
-    }
-
-    /*!
-     * Get the list of SimDB access YAML files that specify which
-     * components have been granted access to the simulation database,
-     * and (optionally) when they that access is to be enabled / disabled
-     * using trigger expressions.
-     */
-    const std::vector<std::string> & getDatabaseAccessOptsFiles() const {
-        return simdb_enabled_components_opts_files_;
-    }
-
-    /*!
-     * Get the root directory where all of this simulation's legacy
-     * reports were copied to.
-     * \note Intended for internal / developer use.
-     */
-    const std::string & getLegacyReportsCopyDir() const {
-        return simdb_legacy_reports_copy_dir_;
-    }
-
-    /*!
-     * Get the specific legacy report formats that are being collected.
-     * If empty, either all formats are being collected, or the report
-     * collection command line option is not being used.
-     * \note Intended for internal / developer use.
-     */
-    const std::set<std::string> & getLegacyReportsCollectedFormats() const {
-        return simdb_legacy_reports_collected_formats_;
-    }
-
-    /*!
      * \brief Controls installation of signal handlers.
      */
     enum class SignalMode
@@ -638,6 +489,36 @@ public:
     ReportDescVec reports;
 
     /*!
+     * SimDB configuration
+     */
+    class SimDBConfig
+    {
+    public:
+        void setSimDBFile(const std::string & filename) {
+            simdb_file_ = filename;
+        }
+
+        const std::string & getSimDBFile() const {
+            return simdb_file_;
+        }
+
+        void enableSimDBReports() {
+            reports_enabled_ = true;
+            if (simdb_file_.empty()) {
+                simdb_file_ = "sparta.db";
+            }
+        }
+
+        bool simDBReportsEnabled() const {
+            return reports_enabled_;
+        }
+
+    private:
+        std::string simdb_file_;
+        bool reports_enabled_ = false;
+    } simdb_config;
+
+    /*!
      * Scheduler control: When a user calls sparta::Simulation::run()
      * with an amount of time _other than_ the default, the Scheduler
      * can do one of two things:
@@ -746,29 +627,6 @@ private:
 
     //! The name of the State Tracking file.
     std::string state_tracking_file_;
-
-    //
-    ////////////////////////////////////////////////////////////////////////////////
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // Simulation database
-
-    //! Location of the SimDB file produced during simulation
-    std::string simdb_location_;
-
-    //! SimDB access options are given in YAML files containing
-    //! component locations, such as "top.cpu.core0.rob" or
-    //! "root.clocks", which can also specify trigger definitions
-    //! that say when a component is granted access to the database.
-    std::vector<std::string> simdb_enabled_components_opts_files_;
-
-    //! Root directory where legacy reports generated from this
-    //! simulation are copied to. For internal / developer use.
-    std::string simdb_legacy_reports_copy_dir_;
-
-    //! Specific formats of the legacy reports we are collecting,
-    //! if any. For internal / developer use.
-    std::set<std::string> simdb_legacy_reports_collected_formats_;
 
     //
     ////////////////////////////////////////////////////////////////////////////////

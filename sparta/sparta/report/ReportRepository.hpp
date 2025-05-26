@@ -105,15 +105,13 @@ public:
      * \brief Let the repository know that the tree has been built but not
      * yet completely finalized
      */
-    void finalize();
+    void postBuildTree();
 
     /*!
-     * \brief Give the repository a chance to see the --feature values
-     * that were set at the command line, if any. This is called just
-     * prior to the main simulation loop.
+     * \brief Called on Simulation::finalizeFramework() after the reports
+     * have all been setup.
      */
-    void inspectSimulatorFeatureValues(
-        const app::FeatureConfiguration * feature_config);
+    void postFinalizeFramework();
 
     /*!
      * \brief Get the statistics archives for all reports in this simulation
@@ -124,14 +122,6 @@ public:
      * \brief Get the statistics streams for all reports in this simulation
      */
     statistics::StatisticsStreams * getStatsStreams();
-
-    /*!
-     * \brief Share the descriptors' BaseFormatter's with the reporting
-     * infrastructure. These formatters need to coordinate with the SimDB
-     * serializers and the report verification post processing step.
-     */
-    std::map<std::string, std::shared_ptr<report::format::BaseFormatter>>
-        getFormattersByFilename() const;
 
     /*!
      * \brief Save reports and release them back to the simulation object that

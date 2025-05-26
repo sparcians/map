@@ -22,6 +22,11 @@
 #include "boost/algorithm/string.hpp"
 #include "sparta/report/Report.hpp"
 
+namespace simdb
+{
+    class DatabaseManager;
+}
+
 namespace sparta
 {
     namespace report
@@ -97,6 +102,8 @@ public:
         parents_of_leaf_nodes_.insert(node_name + ".");
     }
 
+    // Write the leaf node info to the database.
+    static void writeLeafNodeInfoToDB(simdb::DatabaseManager * db_mgr);
 
 protected:
 

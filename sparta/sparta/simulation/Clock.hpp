@@ -24,17 +24,10 @@
 #include "sparta/statistics/ReadOnlyCounter.hpp"
 #include "sparta/utils/Rational.hpp"
 #include "sparta/utils/MathUtils.hpp"
-#include "simdb_fwd.hpp"
-#include "simdb/schema/DatabaseTypedefs.hpp"
 #include "sparta/statistics/CounterBase.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/statistics/StatisticSet.hpp"
-
-namespace simdb {
-    class TableRef;
-    class ObjectManager;
-}  // namespace simdb
 
 namespace sparta
 {
@@ -284,12 +277,6 @@ namespace sparta
             os << std::endl;
         }
 
-        //! Persist clock hierarchy in the provided database,
-        //! treating 'this' sparta::Clock as the hierarchy root.
-        //! Returns the database ID of the clock node that was
-        //! put into this database.
-        simdb::DatabaseID serializeTo(const simdb::ObjectManager & sim_db) const;
-
         // Overload of TreeNode::stringize
         virtual std::string stringize(bool pretty=false) const override {
             (void) pretty;
@@ -356,17 +343,6 @@ namespace sparta
                 return clk_.currentCycle();
             }
         } cycles_roctr_ = {*this, &sset_};
-
-        // Persist clock hierarchy in the provided database,
-        // recursing down through child nodes as necessary.
-        // Output argument 'db_ids' tracks database record
-        // ID's for each sparta::Clock that was written to
-        // the clock hierarchy table. The map keys are
-        // sparta::Clock 'this' pointers.
-        void recursSerializeToTable_(
-            simdb::TableRef & clock_tbl,
-            const simdb::DatabaseID parent_clk_id,
-            std::map<const Clock*, simdb::DatabaseID> & db_ids) const;
     };
 
     inline std::ostream& operator<<(std::ostream& os, const sparta::Clock& clk)

@@ -41,20 +41,8 @@
 #include "src/State.tpp"
 #include "sparta/kernel/MemoryProfiler.hpp"
 #include "sparta/statistics/dispatch/streams/StatisticsStreams.hpp"
-#include "simdb/impl/sqlite/SQLiteConnProxy.hpp"
-#include "simdb/impl/hdf5/HDF5ConnProxy.hpp"
-#include "simdb/async/AsyncTaskEval.hpp"
-#include "simdb/ObjectManager.hpp"
-#include "simdb/schema/DatabaseRoot.hpp"
-#include "simdb/Errors.hpp"
-#include "sparta/report/db/Schema.hpp"
-#include "sparta/report/db/SimInfoSerializer.hpp"
-#include "sparta/report/db/ReportVerifier.hpp"
 #include "sparta/app/FeatureConfiguration.hpp"
 #include "sparta/kernel/PhasedObject.hpp"
-#include "sparta/report/DatabaseInterface.hpp"
-#include "simdb/schema/Schema.hpp"
-#include "simdb/schema/TableSummaries.hpp"
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/simulation/ClockManager.hpp"
 #include "sparta/utils/Colors.hpp"
@@ -307,16 +295,6 @@ void printSchedulerPerformanceInfo(std::ostream& o, const boost::timer::cpu_time
       << scheduler->getNumFired() << std::endl;
 }
 
-simdb::DatabaseRoot * Simulation::getDatabaseRoot() const
-{
-    return db_root_.get();
-}
-
-const DatabaseAccessor * Simulation::getSimulationDatabaseAccessor() const
-{
-    return sim_db_accessor_.get();
-}
-
 Simulation::Simulation(const std::string& sim_name,
                        Scheduler * scheduler) :
     clk_manager_(scheduler),
@@ -339,17 +317,6 @@ Simulation::Simulation(const std::string& sim_name,
 
     // Sanity check - simulations cannot exist without a scheduler
     sparta_assert(scheduler_, "All simulators must be given a non-null scheduler");
-
-    REGISTER_SIMDB_NAMESPACE(Stats, SQLite);
-    REGISTER_SIMDB_SCHEMA_BUILDER(Stats, db::buildSimulationDatabaseSchema);
-
-    REGISTER_SIMDB_PROXY_CREATE_FUNCTION(SQLite, []() {
-        return new simdb::SQLiteConnProxy;
-    });
-
-    REGISTER_SIMDB_PROXY_CREATE_FUNCTION(HDF5, []() {
-        return new simdb::HDF5ConnProxy;
-    });
 }
 
 Simulation::~Simulation()
@@ -390,26 +357,7 @@ Simulation::~Simulation()
     // Deregister
     root_.getNodeAttachedNotification().DEREGISTER_FOR_THIS(rootDescendantAdded_);
 
-    // ReportRepository's destructor may call back into
-    // SimDB objects, such as AsyncTaskController, to do
-    // any last-minute data flushes to the database. We
-    // should streamline these various classes that need
-    // to coordinate post-simulation / post-processing
-    // between themselves, and not have to worry about
-    // the calling order of their destructors.
-    //
-    // (Temporary: This is a quick fix for the v1.7.1 release)
-    //     - Bug found went like this:
-    //        1. Delete the DatabaseRoot
-    //        2. Delete the ReportRepository
-    //        3. ReportRepository::saveReports() gets implicitly
-    //           called from its own destructor
-    //        4. Code in RR::saveReports() got a *raw* pointer
-    //           to the Simulation's (this) DatabaseRoot, which
-    //           by that point had been deleted
-    //        5. Use of the dead DatabaseRoot seg faulted
     report_repository_.reset();
-    db_root_.reset();
 }
 
 void Simulation::configure(const int argc,
@@ -506,87 +454,6 @@ void Simulation::configure(const int argc,
 
     setupProfilers_();
     simulation_state_.configure();
-    inspectFeatureValues_();
-}
-
-// At the very end of the simulation's configure() method,
-// take a first look at the feature values we were given.
-void Simulation::inspectFeatureValues_()
-{
-    const bool db_featured_on = IsFeatureValueEnabled(feature_config_, "simdb");
-    const bool needs_db = !db_root_ || !stats_db_ || !sim_db_accessor_;
-
-    if (db_featured_on && needs_db) {
-        if (!sim_db_accessor_) {
-            sim_db_accessor_.reset(new DatabaseAccessor(&root_));
-        }
-
-        if (!db_root_) {
-            std::string db_dir = sim_config_->getSimulationDatabaseLocation();
-            if (db_dir.empty()) {
-                auto tempdir = std::filesystem::temp_directory_path();
-                db_dir = tempdir.string();
-            }
-
-            db_root_.reset(new simdb::DatabaseRoot(db_dir));
-        }
-
-        if (!stats_db_) {
-            auto db_root = getDatabaseRoot();
-            sparta_assert(db_root, "Could not find database root");
-
-            auto stats_namespace = db_root->getNamespace("Stats");
-            sparta_assert(stats_namespace, "Could not find Stats database namespace");
-
-            auto stats_db = stats_namespace->getDatabase();
-            sparta_assert(stats_db, "Could not find Stats database");
-
-            stats_db_ = stats_db->getObjectManager();
-            sparta_assert(stats_db_, "Could not get ObjectManager from the Stats database");
-        }
-
-        simdb::TableSummaries si_summaries;
-        db::configureDatabaseTableSummaries(si_summaries);
-
-        if (isReportValidationEnabled_()) {
-            si_summaries.excludeTables(
-                "ReportVerificationMetadata",
-                "ReportVerificationResults",
-                "ReportVerificationFailureSummaries",
-                "ReportVerificationDeepCopyFiles");
-        }
-
-        //TODO - Table summary configurations should be registered
-        //via a macro that looks like this:
-        //
-        //    REGISTER_SIMDB_SCHEMA_SUMMARY(Stats, [](simdb::Schema & schema) {
-        //        simdb::TableSummaries si_summaries;
-        //        db::configureDatabaseTableSummaries(si_summaries);
-        //        schema.setTableSummaryConfig(std::move(si_summaries));
-        //    });
-        //
-        //Or perhaps like this:
-        //
-        //    REGISTER_SIMDB_SCHEMA_SUMMARY(
-        //        Stats, db::configureDatabaseTableSummaries);
-        //
-        //Where the second argument is a std::function<void(simdb::TableSummaries&)>
-        auto & si_schema = stats_db_->getSchema();
-        si_schema.setTableSummaryConfig(std::move(si_summaries));
-    }
-}
-
-bool Simulation::isReportValidationEnabled_() const
-{
-    if (stats_db_ == nullptr) {
-        return false;
-    }
-
-    if (IsFeatureValueEnabled(feature_config_, "simdb-verify")) {
-        return true;
-    }
-
-    return false;
 }
 
 void Simulation::addReport(const ReportDescriptor & rep)
@@ -679,7 +546,7 @@ void Simulation::buildTree()
         buildTree_();
     }
 
-    report_repository_->finalize();
+    report_repository_->postBuildTree();
 }
 
 void Simulation::configureTree()
@@ -854,6 +721,7 @@ void Simulation::finalizeFramework()
     this->setupReports_();
 
     framework_finalized_ = true;
+    report_repository_->postFinalizeFramework();
 }
 
 void Simulation::run(uint64_t run_time)
@@ -869,9 +737,6 @@ void Simulation::run(uint64_t run_time)
         throw sparta::SpartaException("Cannot run the simulation until the framework is finalized. "
                                   "See Simulation::finalizeFramework");
     }
-
-    // Create any SimDB triggers the simulation was configured to use
-    this->setupDatabaseTriggers_();
 
     // Setup Pevent instruction warmup
     if (pevent_warmup_icount_ > 0) {
@@ -902,11 +767,6 @@ void Simulation::run(uint64_t run_time)
             // Actually run the simulation (or allow it to be controlled)
             PHASE_PROFILER(memory_profiler_, MemoryProfiler::Phase::Simulate);
             runRaw_(run_time);
-        } catch(const simdb::DatabaseInterrupt &) {
-            // Nothing to do. These are not "real" exceptions - nothing
-            // bad happened, there was just a request to stop database
-            // work from continuing. Don't add this exception info to
-            // the 'eptr' variable.
         } catch (...) {
             eptr = std::current_exception();
         }
@@ -1078,8 +938,6 @@ void Simulation::saveReports()
 {
     std::cout << "Saving reports..." << std::endl;
 
-    db::ReportVerifier formatted_reports_to_verify;
-
     // Print summary report when there is no exception
     if(auto_summary_report_){
         sparta::report::format::Text summary_fmt(auto_summary_report_.get());
@@ -1095,62 +953,6 @@ void Simulation::saveReports()
             summary_fmt.setShowDescriptions(true);
         }
         std::cout << summary_fmt << std::endl;;
-
-        if (stats_db_) {
-            std::cout << "  [simdb] Validation of database-generated "
-                         "auto summary is currently unavailable\n";
-        }
-    }
-
-    std::map<std::string, std::shared_ptr<report::format::BaseFormatter>> formatters_in_use;
-
-    auto save_reports = [&]() {
-        //Write out the SimulationInfo global data to the database.
-        //This table holds metadata that is common to all reports
-        //that came from this simulation.
-        if (stats_db_ != nullptr) {
-            formatters_in_use = report_repository_->getFormattersByFilename();
-            db::SimInfoSerializer serializer(SimulationInfo::getInstance());
-            serializer.serialize(*stats_db_);
-            std::cout << "SimDB file is: " << stats_db_->getDatabaseFile() << std::endl;
-        }
-
-        auto saved_reports = report_repository_->saveReports();
-        (void) saved_reports;
-    };
-
-    if (stats_db_ != nullptr) {
-        stats_db_->safeTransaction([&]() {
-            save_reports();
-            stats_db_->captureTableSummaries();
-        });
-    } else {
-        save_reports();
-    }
-
-    simdb::AsyncTaskEval * db_thread =
-        stats_db_ ? stats_db_->getTaskQueue() : nullptr;
-
-#ifdef SPARTA_PYTHON_SUPPORT
-    if (pyshell_) {
-        //Remove the DB worker variable from the Python namespace.
-        //This allows the last Python interaction to access the database
-        //as much as it wants without incurring useless synchronization
-        //and queue flushes.
-        if (db_thread) {
-            pyshell_->removePublishedObject(db_thread);
-        }
-
-        std::cout << "\n* * * Simulation is finished. Type 'quit' to exit "
-                     "the Python shell. * * *\n" << std::endl;
-        pyshell_->interact();
-    }
-#endif
-
-    //Reports have all been saved to disk / database / etc.
-    //Stop the database consumer thread and delete it now.
-    if (db_thread != nullptr) {
-        db_thread->stopThread();
     }
 
 #ifdef SPARTA_TCMALLOC_SUPPORT
@@ -1158,223 +960,10 @@ void Simulation::saveReports()
         memory_profiler_->saveReport();
     }
 #endif
-
-    if (isReportValidationEnabled_()) {
-        stats_db_->safeTransaction([&]() {
-            for (const auto & rd : rep_descs_) {
-                if (rd.isEnabled()) {
-                    formatted_reports_to_verify.addReportToVerify(rd);
-                }
-            }
-
-            for (const auto & formatter : formatters_in_use) {
-                formatted_reports_to_verify.addBaseFormatterForPreVerificationReset(
-                    formatter.first, formatter.second.get());
-            }
-
-            auto verification_summary =
-                formatted_reports_to_verify.verifyAll(*stats_db_,
-                                                      scheduler_);
-
-            if (verification_summary->hasSummary()) {
-                verification_summary->serializeSummary(*stats_db_);
-            }
-
-            namespace sfs = std::filesystem;
-            std::map<std::string, std::string> final_dest_files =
-                verification_summary->getFinalDestFiles();
-
-            //Store some basic info about any failures that occurred while
-            //checking these report files. We'll be given a chance to error
-            //out or produce a warning shortly.
-            report_verif_failed_fnames_ =
-                verification_summary->getFailingReportFilenames();
-
-            //Copy any report files that were renamed or moved somewhere
-            //inside the verification directory. The SPARTA simulator is
-            //still expecting the report files where their yaml file
-            //specified.
-            for (const auto & to_copy : final_dest_files) {
-                const std::string & simdb_dest_file = to_copy.first;
-                const std::string & orig_yaml_dest_file = to_copy.second;
-                if (sfs::exists(simdb_dest_file)) {
-                    try {
-                        if (sfs::exists(orig_yaml_dest_file)) {
-                            sfs::remove(orig_yaml_dest_file);
-                        }
-                        sfs::copy_file(simdb_dest_file, orig_yaml_dest_file);
-                    } catch (const std::exception & ex) {
-                        std::cout << "  [simdb] Unable to copy report file '"
-                                  << simdb_dest_file << "' to '"
-                                  << orig_yaml_dest_file << "'"
-                                  << std::endl;
-                    }
-                }
-            }
-        });
-    }
 }
 
 void Simulation::postProcessingLastCall()
 {
-    std::ostringstream oss;
-
-    if (!report_verif_failed_fnames_.empty()) {
-        //The report filename might have been something like:
-        //   AccuracyCheckedDBs/abcd-1234/out.json
-        //
-        //Let's turn these strings into something like this:
-        //   AccuracyCheckedDBs/abcd-1234.db/out.json
-        //
-        //Which is shorthand for "database file abcd-1234.db, found
-        //in the AccuracyCheckedDBs subfolder, failed to verify the
-        //contents of dest_file out.json"
-        auto make_err_string_from_report_fname = [](const std::string & fname) {
-            auto slash = fname.find_last_of("/");
-            if (slash == std::string::npos) {
-                return fname;
-            }
-
-            std::string err = "'" + fname.substr(0, slash);
-            err += ".db" + fname.substr(slash) + "'";
-            return err;
-        };
-
-        oss << "Simulation failed to verify reports: ";
-        if (report_verif_failed_fnames_.size() == 1) {
-            oss << make_err_string_from_report_fname(
-                       *report_verif_failed_fnames_.begin());
-        } else {
-            size_t idx = 0;
-            auto iter = report_verif_failed_fnames_.begin();
-            while (idx < report_verif_failed_fnames_.size() - 1) {
-                oss << make_err_string_from_report_fname(*iter) << ", ";
-                ++iter;
-                ++idx;
-            }
-            oss << make_err_string_from_report_fname(*iter);
-        }
-        oss << "\n";
-    }
-
-    //Make sure the ReportDescriptor report files all ended
-    //up in their *original* dest_file locations. We may have
-    //overwritten their dest_file values, but we should have
-    //put those report files back to where the outside world
-    //(production SPARTA simulators, sparta_core_example tests)
-    //expected to find them.
-    if (isReportValidationEnabled_()) {
-        for (const auto & rd : rep_descs_) {
-            if (rd.isEnabled()) {
-                std::string orig_dest_file = rd.getDescriptorOrigDestFile();
-                if (!std::filesystem::exists(orig_dest_file)) {
-                    auto not_slash = orig_dest_file.find_first_not_of("/");
-                    if (not_slash != std::string::npos) {
-                        orig_dest_file = orig_dest_file.substr(not_slash);
-                    }
-
-                    if (!std::filesystem::exists(orig_dest_file)) {
-                        oss << "A report descriptor's dest_file was not "
-                            << "found at the end of a SimDB verification-enabled simulation "
-                            << "('" << orig_dest_file << "')\n";
-                    }
-                }
-            }
-        }
-    }
-
-    const std::string last_call_exception_str = oss.str();
-    if (!last_call_exception_str.empty()) {
-        throw SpartaException(last_call_exception_str);
-    }
-
-    if (sim_config_ && stats_db_) {
-        namespace sfs = std::filesystem;
-        const std::string dest_path_str1 = sim_config_->getLegacyReportsCopyDir();
-        if (!dest_path_str1.empty()) {
-            const std::string dest_path_str2 =
-                sfs::path(stats_db_->getDatabaseFile()).stem().string();
-
-            const std::set<std::string> & collected_formats =
-                sim_config_->getLegacyReportsCollectedFormats();
-
-            if (!dest_path_str1.empty() && !dest_path_str2.empty()) {
-                for (const auto & rd : rep_descs_) {
-                    if (!rd.isEnabled()) {
-                        continue;
-                    }
-
-                    if (!collected_formats.empty()) {
-                        utils::lowercase_string lower_format = rd.format;
-                        if (collected_formats.find(lower_format.getString()) ==
-                            collected_formats.end())
-                        {
-                            continue;
-                        }
-                    }
-
-                    const std::string dest_path_str3 = rd.format;
-                    if (dest_path_str3.empty()) {
-                        continue;
-                    }
-
-                    sfs::path dest_path = sfs::path(dest_path_str1 + "/" +
-                                                    dest_path_str2 + "/" +
-                                                    dest_path_str3);
-
-                    if (!sfs::exists(dest_path)) {
-                        try {
-                            sfs::create_directories(dest_path);
-                        } catch (const std::exception & ex) {
-                            std::cout << "  [simdb] Error occurred while collecting "
-                                      << "legacy reports: '" << ex.what() << "'"
-                                      << std::endl;
-                            continue;
-                        } catch (...) {
-                        }
-                    } else if (!sfs::is_directory(dest_path)) {
-                        throw SpartaException("Path exists, but is not a directory: '")
-                            << dest_path.string() << "'";
-                    }
-
-                    std::string orig_dest_file = rd.getDescriptorOrigDestFile();
-                    if (!sfs::exists(orig_dest_file)) {
-                        auto not_slash = orig_dest_file.find_first_not_of("/");
-                        if (not_slash != std::string::npos) {
-                            orig_dest_file = orig_dest_file.substr(not_slash);
-                        }
-                    }
-
-                    if (orig_dest_file == "1") {
-                        continue;
-                    }
-
-                    if (sfs::exists(orig_dest_file)) {
-                        const std::string src_file = orig_dest_file;
-                        const std::string dest_file =
-                            dest_path_str1 + "/" +
-                            dest_path_str2 + "/" +
-                            dest_path_str3 + "/" +
-                            orig_dest_file;
-
-                        try {
-                            sfs::copy_file(src_file, dest_file);
-                        } catch (const std::exception & ex) {
-                            std::cout << "  [simdb] Error occurred while collecting "
-                                      << "legacy reports: '" << ex.what() << "'"
-                                      << std::endl;
-                            continue;
-                        } catch (...) {
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    if (stats_db_ && root_clk_) {
-        root_clk_->serializeTo(*stats_db_);
-    }
 }
 
 void Simulation::dumpMetaParameterTable(std::ostream& out) const
@@ -1757,26 +1346,6 @@ void Simulation::setupReports_()
 {
     validateReportDescriptors_(rep_descs_);
 
-    //If the SimDB report validation post-processing step is
-    //enabled, let's use this simulator's unique database filename
-    //to generate a temporary subfolder we can put our report files
-    //in. We'll move those files to their original intended location
-    //at the end of simulation, after we have performed the validation.
-    namespace sfs = std::filesystem;
-    std::string dest_file_subfolder;
-    if (isReportValidationEnabled_()) {
-        dest_file_subfolder = db::ReportVerifier::getVerifResultsDir();
-        dest_file_subfolder += "/";
-
-        sfs::path path = stats_db_->getDatabaseFile();
-        dest_file_subfolder += path.filename().string();
-
-        auto dot = dest_file_subfolder.find_last_of(".");
-        sparta_assert(dot != std::string::npos);
-        sparta_assert(dest_file_subfolder.substr(dot) == ".db");
-        dest_file_subfolder = dest_file_subfolder.substr(0, dot);
-    }
-
     // Set up reports now that the entire device tree is finalized
     for(auto& rd : rep_descs_){
         //Report descriptors may have been disabled from Python during
@@ -1793,54 +1362,6 @@ void Simulation::setupReports_()
             root_.getSearchScope()->findChildren(rd.loc_pattern,
                                                  roots,
                                                  replacements);
-        }
-
-        //When using SimDB, point the report files to a new subfolder
-        //under the verification subdirectory in the current pwd, so
-        //we get a directory structure like this:
-        //
-        //   ./<verif_dir>
-        //       abc-123/
-        //           foo.csv
-        //           bar.json
-        //       def-456/
-        //           foo.csv
-        //           bar.json
-        //           baz.txt
-        //
-        //This allows us to have deterministic post-simulation report
-        //verification by putting 'this' simulation's report dest_file's
-        //in a subfolder that does not clash with other concurrently
-        //running simulations.
-        if (rd.dest_file != "1" && isReportValidationEnabled_()) {
-            auto first_char = rd.dest_file.find_first_not_of("/");
-            if (first_char != std::string::npos) {
-                rd.dest_file = rd.dest_file.substr(first_char);
-            }
-            rd.dest_file =  dest_file_subfolder + "/" + rd.dest_file;
-
-            //A descriptor's dest_file can be given as something like:
-            //     def_file:  simple_stats.yaml
-            //     dest_file: /tmp/out.json
-            //     format:    json_reduced
-            //
-            //We need to create the subfolder /tmp inside the verif
-            //subfolder when this is the case, or std::ofstream
-            //will throw.
-            auto last_slash = rd.dest_file.find_last_of("/");
-            sparta_assert(last_slash != std::string::npos);
-            const std::string rd_dest_dir = rd.dest_file.substr(0, last_slash);
-
-            try {
-                sfs::create_directories(rd_dest_dir);
-            } catch (const std::exception & ex) {
-                std::cout << "  [simdb] An exception was encountered when "
-                          << "attempting to create a report verification "
-                          << "subfolder '" << rd_dest_dir << "'. The "
-                          << "exception message was '" << ex.what()
-                          << "'." << std::endl;
-                continue;
-            }
         }
 
         sparta::ReportRepository::DirectoryHandle directoryH =
@@ -1903,32 +1424,6 @@ void Simulation::setupReports_()
     //Report configuration is locked down. Attempts to add or remove
     //descriptors either from C++ or Python will throw an exception.
     report_config_->disallowChangesToDescriptors_();
-
-    //One-time inspection of the simulator's feature values (if any)
-    report_repository_->inspectSimulatorFeatureValues(feature_config_);
-
-#ifdef SPARTA_PYTHON_SUPPORT
-    //If we are using the Python shell and the "simdb" feature is
-    //featured on, publish our simulation database object to the
-    //Python namespace now. This lets users run queries against the
-    //database during simulation and access raw data (including .csv
-    //report generation if requested).
-    if (pyshell_ && stats_db_) {
-        pyshell_->publishSimulationDatabase(stats_db_);
-    }
-#endif
-}
-
-void Simulation::setupDatabaseTriggers_()
-{
-    if (!sim_config_ || !sim_db_accessor_) {
-        return;
-    }
-
-    const auto & access_opt_files = sim_config_->getDatabaseAccessOptsFiles();
-    for (const auto & opt_file : access_opt_files) {
-        sim_db_accessor_->setAccessOptsFromFile_(opt_file);
-    }
 }
 
 ReportDescVec Simulation::expandReportDescriptor_(const ReportDescriptor & rd) const

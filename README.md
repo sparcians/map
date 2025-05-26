@@ -21,6 +21,12 @@ MAP is broken into two parts:
 [![MacOS Build Status](https://dev.azure.com/sparcians/map/_apis/build/status/sparcians.map?branchName=master&label=MacOS)](https://dev.azure.com/sparcians/map/_build/latest?definitionId=1&branchName=master)
 [![Documentation](https://github.com/sparcians/map/workflows/Documentation/badge.svg)](https://sparcians.github.io/map/)
 
+## Cloning MAP
+
+Clone MAP with the --recursive option to also clone the git submodules:
+
+- `git clone git@github.com:sparcians/map.git --recursive`
+
 ## Building MAP
 
 Building MAP is done in two parts
@@ -46,9 +52,30 @@ The following packages are needed to build Sparta (not the Helios tools):
 - (rapidjson-dev) RapidJSON CPP 1.1.0
 - (libsqlite3-dev) SQLite3 3.37.2
 - (libhdf5-dev) HDF5 1.10.7
-- (clang) Clang, Version: 14.0.0
+- (clang++) Clang, Version: 14.0.0 OR (g++) v13.0.0 or greater
 
-These pakages were tested with Ubuntu 22.02 (as well as WSL).  Use `apt` or `yum` to install.
+These packages were tested with Ubuntu 22.02/24.04 (as well as WSL).
+Use `apt`, `yum` or `brew` to install.
+
+Clone sparta:
+```
+git clone --recursive git@github.com:sparcians/map
+```
+
+Build sparta:
+```
+cd map/sparta && mkdir release && cd release
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make
+```
+
+Install the libraries and headers locally on your system:
+```
+sudo cmake --install . --prefix /usr/local
+```
+
+Build a simulator like Olympia from https://github.com/riscv-software-src/riscv-perf-model
+
 
 ## Conda
 

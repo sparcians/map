@@ -23,18 +23,14 @@
 #include "sparta/trigger/SingleTrigger.hpp"
 #include "sparta/trigger/ExpiringExpressionTrigger.hpp"
 #include "sparta/report/format/ReportHeader.hpp"
+#include "sparta/report/format/JavascriptObject.hpp"
 #include "sparta/statistics/dispatch/archives/ReportStatisticsArchive.hpp"
 #include "sparta/statistics/dispatch/archives/StatisticsArchives.hpp"
 #include "sparta/statistics/dispatch/streams/StatisticsStreams.hpp"
-#include "simdb/async/AsyncTaskEval.hpp"
-#include "simdb/ObjectManager.hpp"
-#include "sparta/report/db/ReportHeader.hpp"
 #include "sparta/app/FeatureConfiguration.hpp"
-#include "sparta/report/DatabaseInterface.hpp"
-#include "simdb/ObjectRef.hpp"
-#include "simdb/schema/DatabaseRoot.hpp"
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/statistics/CounterBase.hpp"
+#include "sparta/statistics/InstrumentationNode.hpp"
 #include "sparta/simulation/GlobalTreeNode.hpp"
 #include "sparta/log/NotificationSource.hpp"
 #include "sparta/simulation/RootTreeNode.hpp"
@@ -47,6 +43,10 @@
 #include "sparta/app/SimulationConfiguration.hpp"
 #include "sparta/trigger/ExpressionTrigger.hpp"
 #include "sparta/utils/ValidValue.hpp"
+
+#if SIMDB_ENABLED
+#include "simdb/sqlite/DatabaseManager.hpp"
+#endif
 
 namespace sparta::report::format {
 class BaseFormatter;
@@ -112,6 +112,40 @@ public:
         reports_.emplace_back(report.release());
     }
 
+    /*!
+     * \brief Write all metadata about our report (and its subreports
+     * and statistics) to SimDB.
+     */
+    void configSimDbReports(simdb::DatabaseManager* db_mgr, RootTreeNode* root)
+    {
+    #if SIMDB_ENABLED
+        db_mgr_ = db_mgr;
+        desc_simdb_id_ = desc_.configSimDbReports(db_mgr, root);
+
+        if (desc_simdb_id_ == 0) {
+            return;
+        }
+
+        const auto& header = reports_[0]->getHeader();
+        const auto start_counter_loc = header.getStringified("start_counter");
+        const auto stop_counter_loc = header.getStringified("stop_counter");
+        const auto update_counter_loc = header.getStringified("update_counter");
+
+        std::ostringstream cmd;
+        cmd << "UPDATE Reports SET "
+            << "StartCounter = '" << start_counter_loc << "', "
+            << "StopCounter = '" << stop_counter_loc << "', "
+            << "UpdateCounter = '" << update_counter_loc << "'"
+            << " WHERE ReportDescID = " << desc_simdb_id_
+            << " AND ParentReportID = 0";
+
+        db_mgr_->EXECUTE(cmd.str());
+    #else
+        (void) db_mgr;
+        (void) root;
+    #endif
+    }
+
     app::ReportDescriptor & getDescriptor()
     {
         return desc_;
@@ -128,13 +162,6 @@ public:
         const std::shared_ptr<sparta::NotificationSource<std::string>> & on_triggered_notifier)
     {
         on_triggered_notifier_ = on_triggered_notifier;
-    }
-
-    void doPostProcessing(
-        simdb::AsyncTaskEval * task_queue,
-        simdb::ObjectManager * sim_db)
-    {
-        desc_.doPostProcessing(task_queue, sim_db);
     }
 
     std::vector<std::unique_ptr<Report>> saveReports(size_t & num_written)
@@ -335,7 +362,6 @@ private:
                     referenced_directories_[referenced_directory_key_] = this;
                 }
                 start_expression_ = start_expression;
-                needs_header_overwrite_ = true;
             }
         };
 
@@ -508,28 +534,28 @@ private:
             domain_for_pending_update_trigger_.clearValid();
         }
 
+        const bool first = formatters_.empty();
         this->initializeReportInstantiations_();
-
-        if (needs_header_overwrite_) {
-            db::ReportHeader * db_header = desc_.getTimeseriesDatabaseHeader();
-            if (db_header != nullptr) {
-                sparta_assert(reports_.size() == 1);
-                if (reports_[0]->hasHeader()) {
-                    auto & header = reports_[0]->getHeader();
-                    const std::map<std::string, std::string> stringified = header.getAllStringified();
-                    for (const auto & meta : stringified) {
-                        db_header->setStringMetadata(meta.first, meta.second);
-                    }
-                }
-            }
-            needs_header_overwrite_ = false;
-        }
 
         if (is_cumulative_) {
             for (auto & r : reports_) {
                 r->accumulateStats();
             }
         }
+
+    #if SIMDB_ENABLED
+        if (first && db_mgr_ != nullptr && desc_simdb_id_ != 0) {
+            // Note that all of our reports (and their subreports) have
+            // the same start tick.
+            std::ostringstream cmd;
+            cmd << "UPDATE Reports SET StartTick = "
+                << reports_[0]->getStart()
+                << " WHERE ReportDescID = " << desc_simdb_id_
+                << " AND ParentReportID = 0";
+
+            db_mgr_->EXECUTE(cmd.str());
+        }
+    #endif
     }
 
     void stopReports_()
@@ -552,6 +578,20 @@ private:
 
         desc_.updateOutput();
         desc_.ignoreFurtherUpdates();
+
+        #if SIMDB_ENABLED
+            if (db_mgr_ != nullptr && desc_simdb_id_ != 0) {
+                if (reports_[0]->getEnd() != Scheduler::INDEFINITE) {
+                    std::ostringstream cmd;
+                    cmd << "UPDATE Reports SET EndTick = "
+                        << reports_[0]->getEnd()
+                        << " WHERE ReportDescID = " << desc_simdb_id_
+                        << " AND ParentReportID = 0";
+
+                    db_mgr_->EXECUTE(cmd.str());
+                }
+            }
+        #endif
     }
 
     void updateReports_()
@@ -732,24 +772,51 @@ private:
             auto set_header_trigger_content =
                 [](report::format::ReportHeader & header,
                    const std::string key,
-                   const trigger::ExpiringExpressionTrigger & trigger) {
+                   const trigger::ExpiringExpressionTrigger & trigger) -> std::string {
                 if (trigger) {
                     const auto counter = trigger->getCounter();
                     if(counter) {
                         header.set(key, counter->getLocation());
+                        return counter->getLocation();
                     }
                 }
+
+                return "";
             };
 
-            set_header_trigger_content(header, "start_counter",  report_start_trigger_);
-            set_header_trigger_content(header, "stop_counter",   report_stop_trigger_);
-            set_header_trigger_content(header, "update_counter", report_update_trigger_);
+            auto ctr_loc = set_header_trigger_content(header, "start_counter",  report_start_trigger_);
+            updateSimDbReportMeta_("StartCounter", ctr_loc);
+
+            ctr_loc = set_header_trigger_content(header, "stop_counter",   report_stop_trigger_);
+            updateSimDbReportMeta_("StopCounter", ctr_loc);
+
+            ctr_loc = set_header_trigger_content(header, "update_counter", report_update_trigger_);
+            updateSimDbReportMeta_("UpdateCounter", ctr_loc);
 
             const auto header_metadata = getDescriptor().header_metadata_;
             for(auto [key, value] : header_metadata) {
                 header.set(key, value);
             }
         }
+    }
+
+    void updateSimDbReportMeta_(const std::string & key,
+                                const std::string & value)
+    {
+    #if SIMDB_ENABLED
+        if (key.empty() || value.empty()) {
+            return;
+        }
+
+        if (db_mgr_ != nullptr && desc_simdb_id_ != 0) {
+            std::ostringstream cmd;
+            cmd << "UPDATE Reports SET " << key << " = '" << value
+                << "' WHERE ReportDescID = " << desc_simdb_id_
+                << " AND ParentReportID = 0";
+
+            db_mgr_->EXECUTE(cmd.str());
+        }
+    #endif
     }
 
     void setDirectoryLocationInTree_(TreeNode * tree_location)
@@ -886,7 +953,6 @@ private:
     bool update_reports_when_enabled_ = false;
     bool reports_have_started_ = false;
     bool update_descriptor_when_asked_ = true;
-    bool needs_header_overwrite_ = false;
     bool is_cumulative_ = false;
 
     utils::ValidValue<uint64_t> update_delta_;
@@ -910,6 +976,9 @@ private:
     TreeNode * device_tree_location_ = nullptr;
     app::Simulation * sim_ = nullptr;
     std::shared_ptr<SubContainer> sub_container_;
+
+    simdb::DatabaseManager * db_mgr_ = nullptr;
+    int desc_simdb_id_ = 0;
 };
 
 std::map<std::string, Directory*> Directory::referenced_directories_;
@@ -940,7 +1009,7 @@ public:
             save_reports = sim_->simulationSuccessful();
             if(false == save_reports)
             {
-                // Check simluation configuration to see if we still need to report on error
+                // Check simulation configuration to see if we still need to report on error
                 save_reports = (sim_->getSimulationConfiguration() &&
                                 sim_->getSimulationConfiguration()->report_on_error);
             }
@@ -997,7 +1066,7 @@ public:
         return success;
     }
 
-    void finalize()
+    void postBuildTree()
     {
         if (sim_ && on_triggered_notifier_ == nullptr) {
             on_triggered_notifier_.reset(new sparta::NotificationSource<std::string>(
@@ -1008,20 +1077,160 @@ public:
         }
     }
 
-    void inspectSimulatorFeatureValues(
-        const app::FeatureConfiguration * feature_config)
+    void postFinalizeFramework()
     {
-        for (auto & dir : directories_) {
-            auto & rd = dir.second->getDescriptor();
-            if (!rd.isEnabled()) {
-                continue;
+    #if SIMDB_ENABLED
+        bool any_enabled = false;
+        for (auto& kvp : directories_) {
+            auto& report_desc = kvp.second->getDescriptor();
+            if (report_desc.isEnabled() && !report_desc.getAllInstantiations().empty()) {
+                any_enabled = true;
+                break;
             }
-            rd.inspectSimulatorFeatureValues(feature_config);
         }
 
-        if (IsFeatureValueEnabled(feature_config, "simdb")) {
-            configureAsyncReportStreams_();
+        if (!any_enabled) {
+            return;
         }
+
+        const auto& simdb_config = sim_->getSimulationConfiguration()->simdb_config;
+        if (simdb_config.simDBReportsEnabled()) {
+            simdb::Schema schema;
+            using dt = simdb::SqlDataType;
+
+            auto& report_desc_tbl = schema.addTable("ReportDescriptors");
+            report_desc_tbl.addColumn("LocPattern", dt::string_t);
+            report_desc_tbl.addColumn("DefFile", dt::string_t);
+            report_desc_tbl.addColumn("DestFile", dt::string_t);
+            report_desc_tbl.addColumn("Format", dt::string_t);
+
+            auto& run_meta_tbl = schema.addTable("ReportDescriptorMeta");
+            run_meta_tbl.addColumn("ReportDescID", dt::int32_t);
+            run_meta_tbl.addColumn("MetaName", dt::string_t);
+            run_meta_tbl.addColumn("MetaValue", dt::string_t);
+
+            auto& report_tbl = schema.addTable("Reports");
+            report_tbl.addColumn("ReportDescID", dt::int32_t);
+            report_tbl.addColumn("ParentReportID", dt::int32_t);
+            report_tbl.addColumn("Name", dt::string_t);
+            report_tbl.addColumn("StartTick", dt::int64_t);
+            report_tbl.addColumn("EndTick", dt::int64_t);
+            report_tbl.addColumn("InfoString", dt::string_t);
+            report_tbl.addColumn("StartCounter", dt::string_t);
+            report_tbl.addColumn("StopCounter", dt::string_t);
+            report_tbl.addColumn("UpdateCounter", dt::string_t);
+            report_tbl.setColumnDefaultValue("StartCounter", std::string());
+            report_tbl.setColumnDefaultValue("StopCounter", std::string());
+            report_tbl.setColumnDefaultValue("UpdateCounter", std::string());
+
+            auto& report_meta_tbl = schema.addTable("ReportMetadata");
+            report_meta_tbl.addColumn("ReportDescID", dt::int32_t);
+            report_meta_tbl.addColumn("ReportID", dt::int32_t);
+            report_meta_tbl.addColumn("MetaName", dt::string_t);
+            report_meta_tbl.addColumn("MetaValue", dt::string_t);
+
+            auto& report_styles_tbl = schema.addTable("ReportStyles");
+            report_styles_tbl.addColumn("ReportDescID", dt::int32_t);
+            report_styles_tbl.addColumn("ReportID", dt::int32_t);
+            report_styles_tbl.addColumn("StyleName", dt::string_t);
+            report_styles_tbl.addColumn("StyleValue", dt::string_t);
+            report_styles_tbl.createCompoundIndexOn(SQL_COLUMNS("ReportDescID", "ReportID", "StyleName"));
+
+            auto& stat_insts_tbl = schema.addTable("StatisticInsts");
+            stat_insts_tbl.addColumn("ReportID", dt::int32_t);
+            stat_insts_tbl.addColumn("StatisticName", dt::string_t);
+            stat_insts_tbl.addColumn("StatisticLoc", dt::string_t);
+            stat_insts_tbl.addColumn("StatisticDesc", dt::string_t);
+            stat_insts_tbl.addColumn("StatisticVis", dt::int32_t);
+            stat_insts_tbl.addColumn("StatisticClass", dt::int32_t);
+            stat_insts_tbl.createIndexOn("ReportID");
+
+            auto& stat_defn_meta_tbl = schema.addTable("StatisticDefnMetadata");
+            stat_defn_meta_tbl.addColumn("StatisticInstID", dt::int32_t);
+            stat_defn_meta_tbl.addColumn("MetaName", dt::string_t);
+            stat_defn_meta_tbl.addColumn("MetaValue", dt::string_t);
+            stat_defn_meta_tbl.createIndexOn("StatisticInstID");
+
+            auto& siminfo_tbl = schema.addTable("SimulationInfo");
+            siminfo_tbl.addColumn("SimName", dt::string_t);
+            siminfo_tbl.addColumn("SimVersion", dt::string_t);
+            siminfo_tbl.addColumn("SpartaVersion", dt::string_t);
+            siminfo_tbl.addColumn("ReproInfo", dt::string_t);
+            siminfo_tbl.addColumn("SimEndTick", dt::int64_t);
+            siminfo_tbl.setColumnDefaultValue("SimEndTick", -1);
+
+            auto& siminfo_header_pairs_tbl = schema.addTable("SimulationInfoHeaderPairs");
+            siminfo_header_pairs_tbl.addColumn("HeaderName", dt::string_t);
+            siminfo_header_pairs_tbl.addColumn("HeaderValue", dt::string_t);
+
+            auto& vis_tbl = schema.addTable("Visibilities");
+            vis_tbl.addColumn("Hidden", dt::int32_t);
+            vis_tbl.addColumn("Support", dt::int32_t);
+            vis_tbl.addColumn("Detail", dt::int32_t);
+            vis_tbl.addColumn("Normal", dt::int32_t);
+            vis_tbl.addColumn("Summary", dt::int32_t);
+            vis_tbl.addColumn("Critical", dt::int32_t);
+
+            auto& js_json_leaf_nodes = schema.addTable("JsJsonLeafNodes");
+            js_json_leaf_nodes.addColumn("ReportName", dt::string_t);
+            js_json_leaf_nodes.addColumn("IsParentOfLeafNodes", dt::int32_t);
+            js_json_leaf_nodes.setColumnDefaultValue("IsParentOfLeafNodes", -1);
+
+            const auto& simdb_file = simdb_config.getSimDBFile();
+            db_mgr_ = std::make_unique<simdb::DatabaseManager>(simdb_file, true);
+            db_mgr_->createDatabaseFromSchema(schema);
+
+            // Use a heartbeat of 1 so that SimDB does not try to optimize the
+            // database size by using a pseudo-RLE algo to compress the stats. This
+            // makes the python exporter faster and simpler.
+            //
+            // Note that the database records are still compressed, so the .db
+            // size should not be an issue (still a lot smaller than the legacy
+            // formatted reports).
+            constexpr auto heartbeat = 1;
+            db_mgr_->enableCollection(heartbeat);
+            auto collection_mgr = db_mgr_->getCollectionMgr();
+
+            // Since a single report can have StatisticInstance's from different
+            // clock domains, we will just tell the collector that all stats are
+            // on the "root" clock.
+            //
+            // Note that this doesn't have any real effect on the reports, and
+            // differentiating between clocks is more of a concern for Argos.
+            // We just happen to be reusing the SimDB collection system for
+            // StatisticInstance reports.
+            constexpr auto assumed_root_period = 1;
+            collection_mgr->addClock("root", assumed_root_period);
+
+            db_mgr_->safeTransaction([&]() {
+                db_mgr_->INSERT(
+                    SQL_TABLE("SimulationInfo"),
+                    SQL_COLUMNS("SimName", "SimVersion", "SpartaVersion", "ReproInfo"),
+                    SQL_VALUES(SimulationInfo::getInstance().sim_name,
+                               SimulationInfo::getInstance().simulator_version,
+                               SimulationInfo::getInstance().getSpartaVersion(),
+                               SimulationInfo::getInstance().reproduction_info));
+
+                db_mgr_->INSERT(
+                    SQL_TABLE("Visibilities"),
+                    SQL_COLUMNS("Hidden", "Support", "Detail", "Normal", "Summary", "Critical"),
+                    SQL_VALUES(static_cast<int>(sparta::InstrumentationNode::VIS_HIDDEN),
+                               static_cast<int>(sparta::InstrumentationNode::VIS_SUPPORT),
+                               static_cast<int>(sparta::InstrumentationNode::VIS_DETAIL),
+                               static_cast<int>(sparta::InstrumentationNode::VIS_NORMAL),
+                               static_cast<int>(sparta::InstrumentationNode::VIS_SUMMARY),
+                               static_cast<int>(sparta::InstrumentationNode::VIS_CRITICAL)));
+
+                report::format::JavascriptObject::writeLeafNodeInfoToDB(db_mgr_.get());
+
+                for (auto& kvp : directories_) {
+                    kvp.second->configSimDbReports(db_mgr_.get(), sim_->getRoot());
+                }
+                db_mgr_->finalizeCollections();
+                return true;
+            });
+        }
+    #endif // SIMDB_ENABLED
     }
 
     statistics::StatisticsArchives * getStatsArchives()
@@ -1079,26 +1288,9 @@ public:
         return stats_streams_.get();
     }
 
-    std::map<std::string, std::shared_ptr<report::format::BaseFormatter>>
-        getFormattersByFilename() const
-    {
-        std::map<std::string, std::shared_ptr<report::format::BaseFormatter>> formatters;
-        for (const auto & dir : directories_) {
-            const app::ReportDescriptor & rd = dir.second->getDescriptor();
-            if (!rd.isEnabled()) {
-                continue;
-            }
-
-            const auto rd_formatters = rd.getFormattersByFilename();
-            for (const auto & rd_formatter : rd_formatters) {
-                formatters[rd_formatter.first] = rd_formatter.second;
-            }
-        }
-        return formatters;
-    }
-
     std::vector<std::unique_ptr<Report>> saveReports()
     {
+        SimulationInfo::getInstance().postSim();
         std::vector<std::unique_ptr<Report>> saved_reports;
         utils::ValidValue<size_t> num_written;
 
@@ -1118,7 +1310,6 @@ public:
             for (auto & report : reports) {
                 saved_reports.emplace_back(report.release());
             }
-            doPostProcessing_(directories_[handle].get());
         }
 
         //Do not print anything if we didn't have any reports
@@ -1130,31 +1321,31 @@ public:
                       << std::endl << std::endl;
         }
 
-        //Before deleting the directories and ReportDescriptor's,
-        //flush the async database engine. This is done like this
-        //so that any objects using the engine do not have to rely
-        //on their destructors for important last-minute work to do.
-        simdb::AsyncTaskController * task_controller = nullptr;
-        if (sim_) {   // %%% See note below about nulling out sim_
-            if (auto db_root = sim_->getDatabaseRoot()) {
-                task_controller = db_root->getTaskController();
-            }
-        }
+    #if SIMDB_ENABLED
+        if (db_mgr_) {
+            db_mgr_->safeTransaction([&](){
+                for (const auto& kvp : SimulationInfo::getInstance().getHeaderPairs()) {
+                    db_mgr_->INSERT(
+                        SQL_TABLE("SimulationInfoHeaderPairs"),
+                        SQL_COLUMNS("HeaderName", "HeaderValue"),
+                        SQL_VALUES(kvp.first, kvp.second));
+                }
 
-        if (task_controller != nullptr) {
-            task_controller->emitPreFlushNotification();
-            task_controller->flushQueue();
+                std::ostringstream oss;
+                oss << "UPDATE SimulationInfo SET SimEndTick = "
+                    << sim_->getScheduler()->getCurrentTick();
+
+                db_mgr_->EXECUTE(oss.str());
+                return true;
+            });
+
+            db_mgr_->postSim();
+            db_mgr_->closeDatabase();
+            db_mgr_.reset();
         }
+    #endif // SIMDB_ENABLED
 
         directories_.clear();
-
-        //In the cases where a report trigger was disabled at the
-        //time of the report write/update(s), the descriptor's
-        //destructor may have put one last item in the task queue.
-        if (task_controller != nullptr) {
-            task_controller->emitPreFlushNotification();
-            task_controller->flushQueue();
-        }
 
         // %%% ... if(sim_) { ... %%%
         //   This same method can get called again from our own
@@ -1175,120 +1366,6 @@ private:
     {
     }
 
-    //! One-time setup of asynchronous report streams / worker threads
-    void configureAsyncReportStreams_()
-    {
-
-        if(!sim_) {
-            return;
-        }
-
-        //The async timeseries object needs a few things from us:
-        //   - the app::Simulation's scheduler and root clock
-        //   - the app::Simulation's shared database object
-        const Scheduler * scheduler = nullptr;
-        const Clock * root_clk = nullptr;
-
-        auto obj_db = GET_DB_FOR_COMPONENT(stats, sim_);
-        auto sim_db = obj_db ? obj_db->getObjectManager() : nullptr;
-        sparta_assert(sim_db != nullptr);
-
-        simdb::AsyncTaskController * task_controller = nullptr;
-
-        if (auto db_root = sim_->getDatabaseRoot()) {
-            task_controller = db_root->getTaskController();
-        }
-
-        //As well as:
-        //   - a shared worker thread (simdb::AsyncTaskEval)
-        //     (we'll create one for all of our descriptors, and
-        //      everyone will get a shared_ptr)
-        for (auto & dir : directories_) {
-            auto & rd = dir.second->getDescriptor();
-            if (!rd.isEnabled()) {
-                continue;
-            }
-
-            //Report formats such as JSON do not add much overhead
-            //to the simulation since they only have one data point
-            //across their SI's, and some metadata. There isn't that
-            //much metadata to warrant making them asynchronous (yet!).
-            //For now, we will just put timeseries reports on a worker
-            //thread since they support update/interval triggers, and
-            //can produce arbitrarily large amounts of SI data values.
-            if (rd.isSingleTimeseriesReport()) {
-
-                if (scheduler == nullptr) {
-                    sparta_assert(sim_);
-                    scheduler = sim_->getScheduler();
-                }
-
-                if (root_clk == nullptr) {
-                    sparta_assert(sim_);
-                    root_clk = sim_->getRootClock();
-                }
-
-                sim_db->addToTaskController(task_controller);
-                auto task_queue = sim_db->getTaskQueue();
-                task_queues_by_dir_[dir.second.get()] = task_queue;
-
-                //We have one consumer thread per simulation, and one
-                //report descriptor per report. Ask the report descriptor
-                //to create its own async timeseries report object, which
-                //will forward report metadata DB writes and SI blob writes
-                //to the one shared worker object that we just created.
-                rd.configureAsyncTimeseriesReport(
-                    task_queue,
-                    sim_db,
-                    *root_clk);
-
-                //Write any report trigger metadata into the header object
-                auto db_header = rd.getTimeseriesDatabaseHeader();
-                if (db_header) {
-                    //Simulation name is written as hidden metadata by
-                    //by prefixing the name with "__"
-                    db_header->setStringMetadata(
-                        "__simulationName", sim_->getSimName());
-                }
-            } else if (rd.isSingleNonTimeseriesReport()) {
-                sim_db->addToTaskController(task_controller);
-                auto task_queue = sim_db->getTaskQueue();
-                task_queues_by_dir_[dir.second.get()] = task_queue;
-
-                rd.configureAsyncNonTimeseriesReport(
-                    task_queue,
-                    sim_db);
-            }
-        }
-    }
-
-    void doPostProcessing_(Directory * dir) {
-        if (directories_.empty()) {
-            return;
-        }
-
-        auto obj_db = GET_DB_FOR_COMPONENT(stats, sim_);
-        simdb::ObjectManager * sim_db =
-            obj_db ? obj_db->getObjectManager() : nullptr;
-
-        auto post_processing = [&]() {
-            auto task_queue_iter = task_queues_by_dir_.find(dir);
-            auto task_queue =
-                task_queue_iter != task_queues_by_dir_.end() ?
-                task_queue_iter->second :
-                 nullptr;
-            dir->doPostProcessing(task_queue, sim_db);
-        };
-
-        if (sim_db != nullptr) {
-            sim_db->safeTransaction([&]() {
-                post_processing();
-            });
-        } else {
-            post_processing();
-        }
-    }
-
     app::Simulation * sim_ = nullptr;
     TreeNode *const context_;
     std::shared_ptr<SubContainer> sub_container_;
@@ -1301,10 +1378,10 @@ private:
     std::shared_ptr<sparta::NotificationSource<std::string>> on_triggered_notifier_;
     std::unique_ptr<statistics::StatisticsArchives> stats_archives_;
     std::unique_ptr<statistics::StatisticsStreams> stats_streams_;
-    std::unordered_map<
-        Directory*,
-        simdb::AsyncTaskEval*
-      > task_queues_by_dir_;
+
+    #if SIMDB_ENABLED
+    std::unique_ptr<simdb::DatabaseManager> db_mgr_;
+    #endif
 };
 
 ReportRepository::ReportRepository(app::Simulation * sim) :
@@ -1335,15 +1412,14 @@ bool ReportRepository::commit(DirectoryHandle * handle)
     return impl_->commit(handle);
 }
 
-void ReportRepository::finalize()
+void ReportRepository::postBuildTree()
 {
-    impl_->finalize();
+    impl_->postBuildTree();
 }
 
-void ReportRepository::inspectSimulatorFeatureValues(
-    const app::FeatureConfiguration * feature_config)
+void ReportRepository::postFinalizeFramework()
 {
-    impl_->inspectSimulatorFeatureValues(feature_config);
+    impl_->postFinalizeFramework();
 }
 
 statistics::StatisticsArchives * ReportRepository::getStatsArchives()
@@ -1354,12 +1430,6 @@ statistics::StatisticsArchives * ReportRepository::getStatsArchives()
 statistics::StatisticsStreams * ReportRepository::getStatsStreams()
 {
     return impl_->getStatsStreams();
-}
-
-std::map<std::string, std::shared_ptr<report::format::BaseFormatter>>
-    ReportRepository::getFormattersByFilename() const
-{
-    return impl_->getFormattersByFilename();
 }
 
 std::vector<std::unique_ptr<Report>> ReportRepository::saveReports()

@@ -712,13 +712,13 @@ int main()
         EXPECT_TRUE(a.getParent() == &top);
         EXPECT_TRUE(b.getParent() == &a);
         EXPECT_TRUE(top.hasImmediateChild(&a));
-        EXPECT_NOTHROW(top.getChildren().at(0));
-        EXPECT_NOTHROW(a.getChildren().at(0));
-        EXPECT_NOTHROW(a.getChildren().at(1));
-        EXPECT_NOTHROW(a.getChildren().at(2));
-        EXPECT_THROW(a.getChildren().at(3));
-        EXPECT_NOTHROW(b.getChildren().at(0));
-        EXPECT_THROW(b.getChildren().at(1)); // No dynamically created child YET
+        EXPECT_NOTHROW(std::ignore = top.getChildren().at(0));
+        EXPECT_NOTHROW(std::ignore = a.getChildren().at(0));
+        EXPECT_NOTHROW(std::ignore = a.getChildren().at(1));
+        EXPECT_NOTHROW(std::ignore = a.getChildren().at(2));
+        EXPECT_THROW(std::ignore = a.getChildren().at(3));
+        EXPECT_NOTHROW(std::ignore = b.getChildren().at(0));
+        EXPECT_THROW(std::ignore = b.getChildren().at(1)); // No dynamically created child YET
         std::vector<std::string> idents;
         a.getChildrenIdentifiers(idents);
         EXPECT_EQUAL(idents.size(), (size_t)7);

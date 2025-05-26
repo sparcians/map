@@ -298,11 +298,6 @@ protected:
             if(show_report_range_ && depth == 0){
                 out << " [" << r->getStart() << ",";
                 if(r->getEnd() == Scheduler::INDEFINITE){
-                    //Most reports will be associated with a Scheduler, but
-                    //reports that were recreated from SimDB database records
-                    //may not, as those report objects are typically recreated
-                    //outside of a simulation entirely (perhaps from the Python
-                    //shell to generate one of these text reports, for example).
                     const Scheduler * sched = getScheduler(false);
                     out << (sched ? sched->getCurrentTick() : r->getEnd());
                 }else{
