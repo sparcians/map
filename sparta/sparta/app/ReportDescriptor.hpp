@@ -199,7 +199,7 @@ namespace sparta {
             simdb::DatabaseManager* db_mgr_ = nullptr;
 
             /*!
-             * \brief Set to true only when the simulation was run with
+             * \brief Set to false only when the simulation was run with
              * --disable-legacy-reports --enable-simdb-reports.
              * Note that the intended use for writing both legacy and
              * SimDB reports is to allow for a transition period
@@ -207,7 +207,7 @@ namespace sparta {
              * using a provided comparison script to verify backwards
              * compatibility.
              */
-            bool legacy_reports_disabled_ = false;
+            bool legacy_reports_enabled_ = true;
 
             /*!
              * \brief Cache the Scheduler so we know the current tick for every
@@ -515,7 +515,7 @@ namespace sparta {
              * This method will be removed in a future release.
              */
             void disableLegacyReports() {
-                legacy_reports_disabled_ = true;
+                legacy_reports_enabled_ = false;
             }
 
             /*!
