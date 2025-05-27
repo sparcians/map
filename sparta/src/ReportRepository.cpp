@@ -1009,32 +1009,6 @@ public:
     {
     }
 
-    ~Impl()
-    {
-        // If we're not in the middle of an exception, we can save
-        // reports, unless report_on_error is defined
-        bool save_reports = true;
-        if(nullptr != sim_)
-        {
-            save_reports = sim_->simulationSuccessful();
-            if(false == save_reports)
-            {
-                // Check simulation configuration to see if we still need to report on error
-                save_reports = (sim_->getSimulationConfiguration() &&
-                                sim_->getSimulationConfiguration()->report_on_error);
-            }
-        }
-
-        if(save_reports)
-        {
-            try {
-                this->saveReports();
-            } catch (...) {
-                std::cerr << "WARNING: Error saving reports to file" << std::endl;
-            }
-        }
-    }
-
     ReportRepository::DirectoryHandle createDirectory(
         const app::ReportDescriptor & desc)
     {
@@ -1380,6 +1354,13 @@ public:
                         SQL_TABLE("SimulationInfoHeaderPairs"),
                         SQL_COLUMNS("HeaderName", "HeaderValue"),
                         SQL_VALUES(kvp.first, kvp.second));
+                }
+
+                for (const auto& other : SimulationInfo::getInstance().other) {
+                    db_mgr_->INSERT(
+                        SQL_TABLE("SimulationInfoHeaderPairs"),
+                        SQL_COLUMNS("HeaderName", "HeaderValue"),
+                        SQL_VALUES("Other", other));
                 }
 
                 std::ostringstream oss;
