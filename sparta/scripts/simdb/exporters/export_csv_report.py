@@ -1,5 +1,6 @@
 import os, zlib, struct
 from .utils import FormatNumber
+import numpy as np
 
 class CSVReportExporter:
     def __init__(self):
@@ -98,13 +99,10 @@ class CSVReportExporter:
                 # We could assert that the encountered element IDs correspond to the headers,
                 # although that would be a bit of a performance hit. The SimDB verification
                 # tests would be failing if this was not the case, so we will skip that for now.
-                elem_id_size = 2
-                value_size = 8
-
-                row_values = []
-                for i in range(elem_id_size, len(data), elem_id_size + value_size):
-                    value = struct.unpack('d', data[i:i + value_size])[0]
-                    row_values.append(FormatNumber(value))
+                dt = np.dtype([('id', '<u2'), ('value', '<f8')])  # u2 = uint16, f8 = float64
+                records = np.frombuffer(data, dtype=dt)
+                double_values = records['value']
+                row_values = [FormatNumber(value) for value in double_values]
 
                 fout.write(','.join(row_values))
                 fout.write('\n')

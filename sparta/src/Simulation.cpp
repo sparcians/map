@@ -356,8 +356,6 @@ Simulation::~Simulation()
 
     // Deregister
     root_.getNodeAttachedNotification().DEREGISTER_FOR_THIS(rootDescendantAdded_);
-
-    report_repository_.reset();
 }
 
 void Simulation::configure(const int argc,
@@ -954,6 +952,8 @@ void Simulation::saveReports()
         }
         std::cout << summary_fmt << std::endl;;
     }
+
+    report_repository_->saveReports();
 
 #ifdef SPARTA_TCMALLOC_SUPPORT
     if (memory_profiler_) {
