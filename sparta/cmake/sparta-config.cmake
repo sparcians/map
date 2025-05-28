@@ -69,9 +69,12 @@ find_package(ZLIB REQUIRED)
 include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 message (STATUS "Using zlib ${ZLIB_VERSION_STRING}")
 
+# Find PThreads, etc
+find_package(Threads REQUIRED)
+
 # Populate the Sparta_LIBS variable with the required libraries for
 # basic Sparta linking
-set (Sparta_LIBS sparta yaml-cpp::yaml-cpp ZLIB::ZLIB pthread
+set (Sparta_LIBS sparta yaml-cpp::yaml-cpp ZLIB::ZLIB Threads::Threads
   Boost::date_time Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
 
 # Link against sqlite3 and hdf5 if SimDB is enabled
