@@ -304,7 +304,7 @@ void ExampleSimulator::buildTree_()
             }, "Parameter 'edges_' should be '0'");
         }
 
-        // user-specified extension class
+        // User-specified extension class
         getExtension_<CircleExtensions>(getRoot()->getChild(fpu_loc), "circle")->doSomethingElse();
     }
 
@@ -604,7 +604,7 @@ void ExampleSimulator::validateTreeNodeExtensions_()
             }, "Parameter 'degrees_' should be 360.0");
     }
 
-    // user-specified extension class
+    // User-specified extension class
     getExtension_<CircleExtensions>(getRoot()->getChild("cpu.core0.fpu"), "circle")->doSomethingElse();
 
     // apple.color_
