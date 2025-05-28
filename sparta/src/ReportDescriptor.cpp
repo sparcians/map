@@ -467,6 +467,10 @@ ReportDescriptor::~ReportDescriptor()
             this->updateOutput(nullptr);
             this->writeOutput(nullptr);
         }
+
+        if (!legacy_reports_enabled_) {
+            std::filesystem::remove(dest_file);
+        }
     } catch (...) {
         //destructors should never throw
     }
@@ -499,7 +503,9 @@ uint32_t ReportDescriptor::writeOutput(std::ostream* out)
         const bool report_active = this->updateReportActiveState_(inst.first);
         if (report_active && false == inst.second->supportsUpdate()) {
             //TODO: Deprecate "during simulation" formatters
-            inst.second->write();
+            if (legacy_reports_enabled_) {
+                inst.second->write();
+            }
             if (db_mgr_) {
                 sweepSimDbStats_();
             }
@@ -551,7 +557,9 @@ uint32_t ReportDescriptor::updateOutput(std::ostream* out)
             if (skipped_annotator_ != nullptr) {
                 if (skipped_annotator_->currentSkipCount() > 0) {
                     //TODO: Deprecate "during simulation" formatters
-                    inst.second->skip(skipped_annotator_.get());
+                    if (legacy_reports_enabled_) {
+                        inst.second->skip(skipped_annotator_.get());
+                    }
                     inst.first->start();
                     capture_update_values = false;
                     if (db_mgr_) {
@@ -562,7 +570,9 @@ uint32_t ReportDescriptor::updateOutput(std::ostream* out)
             }
             if (capture_update_values) {
                 //TODO: Deprecate "during simulation" formatters
-                inst.second->update();
+                if (legacy_reports_enabled_) {
+                    inst.second->update();
+                }
                 if (db_mgr_) {
                     sweepSimDbStats_();
                 }

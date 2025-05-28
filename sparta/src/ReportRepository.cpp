@@ -180,8 +180,18 @@ public:
 
         num_written += desc_.updateOutput();
         num_written += desc_.writeOutput();
-        std::cout << "  [out] Wrote Final Report " << desc_.stringize() << " (updated "
-                  << desc_.getNumUpdates() << " times):\n";
+
+        bool print = true;
+        if (sim_) {
+            if (auto sim_cfg = sim_->getSimulationConfiguration()) {
+                print = sim_cfg->simdb_config.legacyReportsEnabled();
+            }
+        }
+
+        if (print) {
+            std::cout << "  [out] Wrote Final Report " << desc_.stringize() << " (updated "
+                      << desc_.getNumUpdates() << " times):\n";
+        }
 
         return std::move(reports_);
     }
@@ -999,32 +1009,6 @@ public:
     {
     }
 
-    ~Impl()
-    {
-        // If we're not in the middle of an exception, we can save
-        // reports, unless report_on_error is defined
-        bool save_reports = true;
-        if(nullptr != sim_)
-        {
-            save_reports = sim_->simulationSuccessful();
-            if(false == save_reports)
-            {
-                // Check simulation configuration to see if we still need to report on error
-                save_reports = (sim_->getSimulationConfiguration() &&
-                                sim_->getSimulationConfiguration()->report_on_error);
-            }
-        }
-
-        if(save_reports)
-        {
-            try {
-                this->saveReports();
-            } catch (...) {
-                std::cerr << "WARNING: Error saving reports to file" << std::endl;
-            }
-        }
-    }
-
     ReportRepository::DirectoryHandle createDirectory(
         const app::ReportDescriptor & desc)
     {
@@ -1095,6 +1079,47 @@ public:
 
         const auto& simdb_config = sim_->getSimulationConfiguration()->simdb_config;
         if (simdb_config.simDBReportsEnabled()) {
+            // Not all report formats are supported by SimDB exporters. Until
+            // all are supported, we should not allow --enable-simdb-reports
+            // if we will not be able to export all of this simulation's
+            // reports.
+            std::set<std::string> unsupported_dest_files;
+            for (auto& kvp : directories_) {
+                auto& report_desc = kvp.second->getDescriptor();
+                if (report_desc.isEnabled()) {
+                    static const std::unordered_set<std::string> unsupported_formats = {
+                        "html", "htm", "gnuplot", "gplt"
+                    };
+
+                    if (unsupported_formats.count(report_desc.format)) {
+                        unsupported_dest_files.insert(report_desc.dest_file);
+                    }
+                }
+            }
+
+            if (!unsupported_dest_files.empty()) {
+                std::ostringstream oss;
+                oss << "The following reports are not yet supported by SimDB and cannot be exported later:\n";
+                for (const auto& dest_file : unsupported_dest_files) {
+                    oss << "  " << dest_file << "\n";
+                }
+
+                if (simdb_config.legacyReportsEnabled()) {
+                    std::cout << oss.str();
+                } else {
+                    throw SpartaException(oss.str());
+                }
+            }
+
+            if (!simdb_config.legacyReportsEnabled()) {
+                for (auto& kvp : directories_) {
+                    auto& report_desc = kvp.second->getDescriptor();
+                    if (report_desc.isEnabled()) {
+                        report_desc.disableLegacyReports();
+                    }
+                }
+            }
+
             simdb::Schema schema;
             using dt = simdb::SqlDataType;
 
@@ -1329,6 +1354,13 @@ public:
                         SQL_TABLE("SimulationInfoHeaderPairs"),
                         SQL_COLUMNS("HeaderName", "HeaderValue"),
                         SQL_VALUES(kvp.first, kvp.second));
+                }
+
+                for (const auto& other : SimulationInfo::getInstance().other) {
+                    db_mgr_->INSERT(
+                        SQL_TABLE("SimulationInfoHeaderPairs"),
+                        SQL_COLUMNS("HeaderName", "HeaderValue"),
+                        SQL_VALUES("Other", other));
                 }
 
                 std::ostringstream oss;

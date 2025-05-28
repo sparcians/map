@@ -10,6 +10,7 @@ import glob
 import json
 import sys
 import io
+from compare_utils import *
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sparta_dir = os.path.dirname(os.path.dirname(script_dir))
@@ -265,46 +266,18 @@ class SpartaTest:
 
         # Export all reports from SimDB into the 'simdb_reports' directory.
         export_cmd = "python3 " + os.path.join(script_dir, "simdb_export.py")
-        export_cmd += " --db-file sparta.db"
         export_cmd += " --export-dir simdb_reports"
         export_cmd += " --force"
+        export_cmd += " sparta.db"
 
         self.__WriteToTestLog(f"Exporting SimDB reports with command: {export_cmd}")
         subprocess.run(export_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # Compare the baseline reports to the SimDB reports.
-        passing_reports = []
-        failing_reports = []
-        unsupported_reports = []
-
-        self.__WriteToTestLog("Comparing baseline reports to SimDB reports.")
-        for report in baseline_reports:
-            baseline_report = os.path.join("baseline_reports", report)
-            simdb_report = os.path.join("simdb_reports", report)
-
-            if not os.path.exists(simdb_report):
-                self.__WriteToTestLog(f"SimDB report {report} not found.")
-                failing_reports.append(report)
-                continue
-
-            # Compare the two reports.
-            comparator = GetComparator(report)
-            if comparator is None:
-                self.__WriteToTestLog(f"Report {report} is not supported for comparison.")
-                unsupported_reports.append(report)
-                continue
-
-            if not comparator.Compare(baseline_report, simdb_report):
-                self.__WriteToTestLog(f"Baseline report {report} does not match SimDB report. Test will fail.")
-                failing_reports.append(report)
-            else:
-                self.__WriteToTestLog(f"Baseline report {report} matches SimDB report.")
-                passing_reports.append(report)
-
-        num_passed = len(passing_reports)
-        total_comparisons = num_passed + len(failing_reports)
-        msg = f"Report comparison complete: {num_passed} of {total_comparisons} reports passed."
-        self.__WriteToTestLog(msg)
+        compare_results = RunComparison("baseline_reports", "simdb_reports", baseline_reports, self.logout)
+        passing_reports = compare_results["passing"]
+        failing_reports = compare_results["failing"]
+        unsupported_reports = compare_results["unsupported"]
 
         if unsupported_reports:
             msg = "Unsupported reports:\n"
@@ -360,75 +333,6 @@ class SpartaTest:
     def __CopyTestLog(self, report_dir):
         with open(os.path.join(report_dir, "test.log"), "w") as fout:
             fout.write(self.logout.getvalue())
-
-def GetComparator(dest_file):
-    extension = os.path.splitext(dest_file)[1]
-    if extension in ('.txt', '.text'):
-        return TextReportComparator()
-    if extension in ('.json'):
-        return JSONReportComparator()
-    if extension in ('.csv'):
-        return CSVReportComparator()
-
-    return None
-
-class Comparator:
-    def __init__(self):
-        pass
-
-    def NormalizeText(self, text):
-        # Remove leading/trailing whitespace and replace all internal whitespace with a single space
-        return re.sub(r'\s+', ' ', text.strip())
-
-class TextReportComparator(Comparator):
-    def __init__(self):
-        Comparator.__init__(self)
-
-    def Compare(self, baseline_report, simdb_report):
-        with open(baseline_report, "r") as bf, open(simdb_report, "r") as ef:
-            baseline_text = self.NormalizeText(bf.read())
-            export_text = self.NormalizeText(ef.read())
-
-        return baseline_text == export_text
-
-class JSONReportComparator(Comparator):
-    def __init__(self):
-        Comparator.__init__(self)
-
-    def Compare(self, baseline_report, simdb_report):
-        with open(baseline_report, "r", encoding="utf-8") as bf, open(simdb_report, "r", encoding="utf-8") as ef:
-            try:
-                baseline_data = json.load(bf)
-            except json.JSONDecodeError as e:
-                return False
-
-            try:
-                export_data = json.load(ef)
-            except json.JSONDecodeError as e:
-                return False
-
-        return baseline_data == export_data
-
-class CSVReportComparator(Comparator):
-    def __init__(self):
-        Comparator.__init__(self)
-
-    def Compare(self, baseline_report, simdb_report):
-        with open(baseline_report, "r") as bf, open(simdb_report, "r") as ef:
-            bf_lines = bf.readlines()
-            ef_lines = ef.readlines()
-
-            if len(bf_lines) != len(ef_lines):
-                return False
-
-            for i in range(len(bf_lines)):
-                bf_line = self.NormalizeText(bf_lines[i])
-                ef_line = self.NormalizeText(ef_lines[i])
-
-                if bf_line != ef_line:
-                    return False
-
-        return True
 
 # Parse all sparta_copy() files and all sparta_recursive_copy() dirs for each test.
 copy_files = []
