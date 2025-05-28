@@ -128,6 +128,23 @@ private:
     bool on_triggered_notifier_registered_ = false;
 
     /*!
+     * \brief Helper method to get a TreeNode extension's sparta::Parameter* (if it exists).
+     */
+    template <typename ParamT>
+    sparta::Parameter<ParamT>* getExtensionParameter_(
+        sparta::TreeNode* node,
+        const std::string& param_name,
+        const std::string& ext_name = "");
+
+    /*!
+     * \brief Helper to get a specific TreeNode extension that might be a user-defined class.
+     */
+    template <typename ExtensionT = sparta::TreeNode::ExtensionsBase>
+    ExtensionT* getExtension_(
+        sparta::TreeNode* node,
+        const std::string& ext_name = "");
+
+    /*!
      * \brief If present, test tree node extensions
      */
     void validateTreeNodeExtensions_();
