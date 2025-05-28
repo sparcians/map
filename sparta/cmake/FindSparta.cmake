@@ -69,7 +69,7 @@ if(NOT SPARTA_FOUND)
         set_property(TARGET SPARTA::sparta
           PROPERTY INTERFACE_LINK_LIBRARIES SPARTA::libsparta HDF5::HDF5 SQLite::SQLite3
           Boost::filesystem Boost::serialization Boost::timer Boost::program_options
-          ZLIB::ZLIB yaml-cpp Threads::Threads)
+          ZLIB::ZLIB yaml-cpp::yaml-cpp Threads::Threads)
 
         if(LIBRT)
           set_property(TARGET SPARTA::sparta APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${LIBRT})

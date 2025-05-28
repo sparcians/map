@@ -436,7 +436,7 @@ namespace sparta
         }
 
         // Default over allocation callback
-        static void overAllocationCallback_(const SpartaSharedPointerAllocator & allocator) {
+        static void overAllocationCallback_([[maybe_unused]]const SpartaSharedPointerAllocator & allocator) {
         }
 
         /**
