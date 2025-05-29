@@ -45,8 +45,27 @@ class StatValueGetter:
         return self.stat_values_by_loc[loc]
 
 def GetStatsValuesGetter(cursor, dest_file, replace_nan_with_nanstring=False, replace_inf_with_infstring=False, decimal_places=-1):
-    dest_file_name = os.path.basename(dest_file)
-    cmd = f"SELECT Data, IsCompressed FROM CollectionRecords WHERE Notes='{dest_file_name}'"
+    dest_file = os.path.basename(dest_file)
+    cmd = f"SELECT Id, Format FROM ReportDescriptors WHERE DestFile='{dest_file}'"
+    cursor.execute(cmd)
+    descriptor_id, descriptor_format = cursor.fetchone()
+
+    # TODO cnyce: Clean up this API or refactor so it is obvious that this method
+    # is NOT for timeseries reports.
+    if descriptor_format in ('csv', 'csv_cumulative'):
+        raise ValueError(f"Unsupported report format: {descriptor_format}")
+
+    cmd = f'SELECT COUNT(*), DatablobID FROM DescriptorRecords WHERE ReportDescID={descriptor_id}'
+    cursor.execute(cmd)
+    row_count, datablob_id = cursor.fetchone()
+
+    if row_count == 0:
+        return None
+
+    if row_count > 1:
+        raise ValueError(f"Multiple datablob IDs found for report '{dest_file}'")
+
+    cmd = f"SELECT Data, IsCompressed FROM CollectionRecords WHERE Id={datablob_id}"
     cursor.execute(cmd)
     stats_blob, is_compressed = cursor.fetchone()
     if is_compressed:

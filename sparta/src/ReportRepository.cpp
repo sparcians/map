@@ -1218,6 +1218,16 @@ public:
             desc_records_tbl.addColumn("Tick", dt::int64_t);
             desc_records_tbl.createCompoundIndexOn(SQL_COLUMNS("ReportDescID", "Tick"));
 
+            // For timeseries reports that use toggle triggers, we need to
+            // annotate the .csv files with a special annotation which tells
+            // the user how many ticks/cycles were skipped while the toggle
+            // trigger was "off".
+            auto& csv_skip_annotations_tbl = schema.addTable("CsvSkipAnnotations");
+            csv_skip_annotations_tbl.addColumn("ReportDescID", dt::int32_t);
+            csv_skip_annotations_tbl.addColumn("Tick", dt::int64_t);
+            csv_skip_annotations_tbl.addColumn("Annotation", dt::string_t);
+            csv_skip_annotations_tbl.createIndexOn("ReportDescID");
+
             const auto& simdb_file = simdb_config.getSimDBFile();
             db_mgr_ = std::make_unique<simdb::DatabaseManager>(simdb_file, true);
             db_mgr_->createDatabaseFromSchema(schema);
