@@ -290,6 +290,13 @@ void ReportDescriptor::configSimDbReport_(
         std::shared_ptr<simdb::CollectionPoint> collectable =
             collection_mgr->createCollectable<double>(si_loc, "root");
 
+        // To save disk space, we do not need to serialize the element IDs with every
+        // collected data point. Other formats may still need this information, and
+        // we are less concerned with disk space for final-value-only reports like JSON.
+        if (format == "csv" || format == "csv_cumulative") {
+            collectable->doNotWriteElemId();
+        }
+
         collected_stat_t collected_stat(si.second.get(), collectable);
         simdb_stats_.push_back(collected_stat);
     }

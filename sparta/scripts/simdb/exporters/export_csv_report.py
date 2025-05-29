@@ -89,17 +89,7 @@ class CSVReportExporter:
                 if is_compressed:
                     data = zlib.decompress(data)
 
-                # The data values are stored as:
-                #   [elem_id(u16), value(double), elem_id(u16), value(double), ...]
-                #
-                # We only care about the values, not the element IDs. Everything in these records
-                # is already in the order we want, meaning that the values line up with the stat
-                # headers we already wrote out.
-                #
-                # We could assert that the encountered element IDs correspond to the headers,
-                # although that would be a bit of a performance hit. The SimDB verification
-                # tests would be failing if this was not the case, so we will skip that for now.
-                dt = np.dtype([('id', '<u2'), ('value', '<f8')])  # u2 = uint16, f8 = float64
+                dt = np.dtype([('value', '<f8')])
                 records = np.frombuffer(data, dtype=dt)
                 double_values = records['value']
                 row_values = [FormatNumber(value) for value in double_values]
