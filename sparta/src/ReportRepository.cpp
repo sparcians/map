@@ -1208,6 +1208,16 @@ public:
             js_json_leaf_nodes.setColumnDefaultValue("IsParentOfLeafNodes", -1);
             js_json_leaf_nodes.disableAutoIncPrimaryKey();
 
+            // In the case of multiple reports, we will end up with more than
+            // one CollectionRecords rows with the same Tick value. We use this
+            // table in the python exporter to determine which records belong
+            // to which report.
+            auto& desc_records_tbl = schema.addTable("DescriptorRecords");
+            desc_records_tbl.addColumn("ReportDescID", dt::int32_t);
+            desc_records_tbl.addColumn("DatablobID", dt::int32_t);
+            desc_records_tbl.addColumn("Tick", dt::int64_t);
+            desc_records_tbl.createCompoundIndexOn(SQL_COLUMNS("ReportDescID", "Tick"));
+
             const auto& simdb_file = simdb_config.getSimDBFile();
             db_mgr_ = std::make_unique<simdb::DatabaseManager>(simdb_file, true);
             db_mgr_->createDatabaseFromSchema(schema);

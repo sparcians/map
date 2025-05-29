@@ -344,7 +344,7 @@ void ReportDescriptor::sweepSimDbStats_()
     }
 
     const auto tick = scheduler_->getCurrentTick();
-    db_mgr_->getCollectionMgr()->sweep("root", tick, dest_file);
+    db_mgr_->getCollectionMgr()->sweep("root", tick);
 #endif
 }
 
@@ -355,9 +355,9 @@ void ReportDescriptor::skipSimDbStats_()
         return;
     }
 
-    const std::string annotation = dest_file + "_skipped_anno_" + skipped_annotator_->currentAnnotation();
+    //const std::string annotation = dest_file + "_skipped_anno_" + skipped_annotator_->currentAnnotation();
     const auto tick = scheduler_->getCurrentTick();
-    db_mgr_->getCollectionMgr()->sweep("root", tick, annotation, true);
+    db_mgr_->getCollectionMgr()->sweep("root", tick, true);
 #endif
 }
 
