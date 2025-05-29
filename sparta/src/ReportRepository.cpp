@@ -1216,7 +1216,7 @@ public:
             desc_records_tbl.addColumn("ReportDescID", dt::int32_t);
             desc_records_tbl.addColumn("DatablobID", dt::int32_t);
             desc_records_tbl.addColumn("Tick", dt::int64_t);
-            desc_records_tbl.createCompoundIndexOn(SQL_COLUMNS("ReportDescID", "Tick"));
+            desc_records_tbl.createIndexOn("ReportDescID");
 
             // For timeseries reports that use toggle triggers, we need to
             // annotate the .csv files with a special annotation which tells
