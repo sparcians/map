@@ -1220,8 +1220,8 @@ public:
 
             // For timeseries reports that use toggle triggers, we need to
             // annotate the .csv files with a special annotation which tells
-            // the user how many ticks/cycles were skipped while the toggle
-            // trigger was "off".
+            // the user how many ticks/cycles/picoseconds were skipped while
+            // the report/trigger was inactive.
             auto& csv_skip_annotations_tbl = schema.addTable("CsvSkipAnnotations");
             csv_skip_annotations_tbl.addColumn("ReportDescID", dt::int32_t);
             csv_skip_annotations_tbl.addColumn("Tick", dt::int64_t);
