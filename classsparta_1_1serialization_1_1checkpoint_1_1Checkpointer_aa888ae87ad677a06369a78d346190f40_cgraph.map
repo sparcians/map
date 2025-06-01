@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::Checkpointer::getCurrentTick" name="sparta::serialization::checkpoint::Checkpointer::getCurrentTick">
+<area shape="rect" id="Node000001" title="Gets the tick number of the current checkpoint (see getCurrentID). This is the tick number of the lat..." alt="" coords="5,5,178,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a41b94da230184ddc69fa469a109ee44f" title="Returns the tick number at which this checkpoint was taken." alt="" coords="226,5,387,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="178,30,210,30,210,36,178,36"/>
+</map>

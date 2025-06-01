@@ -1,0 +1,9 @@
+<map id="sparta::log::DestinationInstance&lt; std::ostream &gt;::stringize" name="sparta::log::DestinationInstance&lt; std::ostream &gt;::stringize">
+<area shape="rect" id="Node000001" title="Create a string representation of this Destination." alt="" coords="5,63,159,119"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1log_1_1Destination.html#a1d3b6134ec8a184517bbe0b8b7d6d192" title="Gets the total number of times that a message has arrived at this destination after already having be..." alt="" coords="207,5,394,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,66,214,49,216,54,160,71"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1log_1_1Destination.html#a0fab7333efdd2b12fe9458947858a2d7" title="Get the total number of messages logged through this destination." alt="" coords="207,71,394,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="159,88,191,88,191,94,159,94"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1log_1_1Destination.html#ad80a9bef23ad3fb7fccc11160a0b2cf2" title="Gets the total number of messages received by this destination and then written to the actual output ..." alt="" coords="213,136,388,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="160,111,216,128,214,133,158,116"/>
+</map>
