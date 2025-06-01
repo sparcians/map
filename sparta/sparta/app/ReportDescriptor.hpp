@@ -199,6 +199,11 @@ namespace sparta {
             simdb::DatabaseManager* db_mgr_ = nullptr;
 
             /*!
+             * \brief SimDB primary key in the ReportDescriptors table.
+             */
+            int simdb_descriptor_id_ = 0;
+
+            /*!
              * \brief Set to false only when the simulation was run with
              * --disable-legacy-reports --enable-simdb-reports.
              * Note that the intended use for writing both legacy and
@@ -249,6 +254,21 @@ namespace sparta {
              * that the report was not active.
              */
             void skipSimDbStats_();
+
+            /*!
+             * \brief This method gets called for each CollectionRecords entry that is
+             * written to the database.
+             */
+            static void postProcessRecord_(const int datablob_db_id, const uint64_t tick, void* user_data)
+            {
+                static_cast<ReportDescriptor*>(user_data)->postProcessRecordImpl_(datablob_db_id, tick);
+            }
+
+            /*!
+             * \brief This method gets called for each CollectionRecords entry that is
+             * written to the database.
+             */
+            void postProcessRecordImpl_(const int datablob_db_id, const uint64_t tick);
 
             friend class ReportDescriptorCollection;
 
