@@ -206,7 +206,7 @@ int ReportDescriptor::configSimDbReports(simdb::DatabaseManager* db_mgr, RootTre
         SQL_COLUMNS("LocPattern", "DefFile", "DestFile", "Format"),
         SQL_VALUES(loc_pattern, def_file, dest_file, format));
 
-    const auto report_desc_id = rd_record->getId();
+    simdb_descriptor_id_ = rd_record->getId();
 
     for (const auto& kvp : header_metadata_) {
         const auto& meta_name = kvp.first;
@@ -214,15 +214,15 @@ int ReportDescriptor::configSimDbReports(simdb::DatabaseManager* db_mgr, RootTre
         db_mgr_->INSERT(
             SQL_TABLE("ReportDescriptorMeta"),
             SQL_COLUMNS("ReportDescID", "MetaName", "MetaValue"),
-            SQL_VALUES(report_desc_id, meta_name, meta_value));
+            SQL_VALUES(simdb_descriptor_id_, meta_name, meta_value));
     }
 
     std::unordered_set<std::string> visited_stats;
     for (const auto r : reports) {
-        configSimDbReport_(r, visited_stats, report_desc_id);
+        configSimDbReport_(r, visited_stats, simdb_descriptor_id_);
     }
 
-    return report_desc_id;
+    return simdb_descriptor_id_;
 #else
     (void) db_mgr;
     (void) root;
@@ -290,6 +290,13 @@ void ReportDescriptor::configSimDbReport_(
         std::shared_ptr<simdb::CollectionPoint> collectable =
             collection_mgr->createCollectable<double>(si_loc, "root");
 
+        // To save disk space, we do not need to serialize the element IDs with every
+        // collected data point. Other formats may still need this information, and
+        // we are less concerned with disk space for final-value-only reports like JSON.
+        if (format == "csv" || format == "csv_cumulative") {
+            collectable->doNotWriteElemId();
+        }
+
         collected_stat_t collected_stat(si.second.get(), collectable);
         simdb_stats_.push_back(collected_stat);
     }
@@ -337,7 +344,8 @@ void ReportDescriptor::sweepSimDbStats_()
     }
 
     const auto tick = scheduler_->getCurrentTick();
-    db_mgr_->getCollectionMgr()->sweep("root", tick, dest_file);
+    simdb::DatabaseEntryCallback post_process_cb = ReportDescriptor::postProcessRecord_;
+    db_mgr_->getCollectionMgr()->sweep("root", tick, post_process_cb, this);
 #endif
 }
 
@@ -348,10 +356,36 @@ void ReportDescriptor::skipSimDbStats_()
         return;
     }
 
-    const std::string annotation = dest_file + "_skipped_anno_" + skipped_annotator_->currentAnnotation();
+    const std::string annotation = skipped_annotator_->currentAnnotation();
     const auto tick = scheduler_->getCurrentTick();
-    db_mgr_->getCollectionMgr()->sweep("root", tick, annotation, true);
+
+    // This method is called on the main thread, and we do not want to do
+    // any database writes which will severely impact performance. SimDB
+    // provides the queueWork() method to invoke arbitrary code on the
+    // database thread to get around this.
+    //
+    // Doing the work on the database thread is much faster primarily
+    // due to the fact that SimDB will perform batch processing on all
+    // pending work in a single BEGIN/COMMIT transaction. This occurs
+    // periodically on a 100ms timer in the background.
+    auto work = [=](simdb::DatabaseManager* db_mgr) {
+        db_mgr->INSERT(
+            SQL_TABLE("CsvSkipAnnotations"),
+            SQL_COLUMNS("ReportDescID", "Tick", "Annotation"),
+            SQL_VALUES(simdb_descriptor_id_, tick, annotation));
+    };
+
+    db_mgr_->getCollectionMgr()->queueWork(work);
+
 #endif
+}
+
+void ReportDescriptor::postProcessRecordImpl_(const int datablob_db_id, const uint64_t tick)
+{
+    db_mgr_->INSERT(
+        SQL_TABLE("DescriptorRecords"),
+        SQL_COLUMNS("ReportDescID", "DatablobID", "Tick"),
+        SQL_VALUES(simdb_descriptor_id_, datablob_db_id, tick));
 }
 
 report::format::BaseFormatter* ReportDescriptor::addInstantiation(Report* r,

@@ -76,7 +76,7 @@ class TextReportExporter:
         report_name, report_start, report_end = row
 
         if report_end == -1:
-            cmd = "SELECT SimEndTick FROM SimulationInfo WHERE Id = 1"
+            cmd = "SELECT SimEndTick FROM SimulationInfo LIMIT 1"
             cursor.execute(cmd)
             report_end = cursor.fetchone()[0]
 

@@ -1153,6 +1153,7 @@ public:
             report_meta_tbl.addColumn("ReportID", dt::int32_t);
             report_meta_tbl.addColumn("MetaName", dt::string_t);
             report_meta_tbl.addColumn("MetaValue", dt::string_t);
+            report_meta_tbl.disableAutoIncPrimaryKey();
 
             auto& report_styles_tbl = schema.addTable("ReportStyles");
             report_styles_tbl.addColumn("ReportDescID", dt::int32_t);
@@ -1160,6 +1161,7 @@ public:
             report_styles_tbl.addColumn("StyleName", dt::string_t);
             report_styles_tbl.addColumn("StyleValue", dt::string_t);
             report_styles_tbl.createCompoundIndexOn(SQL_COLUMNS("ReportDescID", "ReportID", "StyleName"));
+            report_styles_tbl.disableAutoIncPrimaryKey();
 
             auto& stat_insts_tbl = schema.addTable("StatisticInsts");
             stat_insts_tbl.addColumn("ReportID", dt::int32_t);
@@ -1175,6 +1177,7 @@ public:
             stat_defn_meta_tbl.addColumn("MetaName", dt::string_t);
             stat_defn_meta_tbl.addColumn("MetaValue", dt::string_t);
             stat_defn_meta_tbl.createIndexOn("StatisticInstID");
+            stat_defn_meta_tbl.disableAutoIncPrimaryKey();
 
             auto& siminfo_tbl = schema.addTable("SimulationInfo");
             siminfo_tbl.addColumn("SimName", dt::string_t);
@@ -1183,10 +1186,12 @@ public:
             siminfo_tbl.addColumn("ReproInfo", dt::string_t);
             siminfo_tbl.addColumn("SimEndTick", dt::int64_t);
             siminfo_tbl.setColumnDefaultValue("SimEndTick", -1);
+            siminfo_tbl.disableAutoIncPrimaryKey();
 
             auto& siminfo_header_pairs_tbl = schema.addTable("SimulationInfoHeaderPairs");
             siminfo_header_pairs_tbl.addColumn("HeaderName", dt::string_t);
             siminfo_header_pairs_tbl.addColumn("HeaderValue", dt::string_t);
+            siminfo_header_pairs_tbl.disableAutoIncPrimaryKey();
 
             auto& vis_tbl = schema.addTable("Visibilities");
             vis_tbl.addColumn("Hidden", dt::int32_t);
@@ -1195,11 +1200,33 @@ public:
             vis_tbl.addColumn("Normal", dt::int32_t);
             vis_tbl.addColumn("Summary", dt::int32_t);
             vis_tbl.addColumn("Critical", dt::int32_t);
+            vis_tbl.disableAutoIncPrimaryKey();
 
             auto& js_json_leaf_nodes = schema.addTable("JsJsonLeafNodes");
             js_json_leaf_nodes.addColumn("ReportName", dt::string_t);
             js_json_leaf_nodes.addColumn("IsParentOfLeafNodes", dt::int32_t);
             js_json_leaf_nodes.setColumnDefaultValue("IsParentOfLeafNodes", -1);
+            js_json_leaf_nodes.disableAutoIncPrimaryKey();
+
+            // In the case of multiple reports, we will end up with more than
+            // one CollectionRecords rows with the same Tick value. We use this
+            // table in the python exporter to determine which records belong
+            // to which report.
+            auto& desc_records_tbl = schema.addTable("DescriptorRecords");
+            desc_records_tbl.addColumn("ReportDescID", dt::int32_t);
+            desc_records_tbl.addColumn("DatablobID", dt::int32_t);
+            desc_records_tbl.addColumn("Tick", dt::int64_t);
+            desc_records_tbl.createIndexOn("ReportDescID");
+
+            // For timeseries reports that use toggle triggers, we need to
+            // annotate the .csv files with a special annotation which tells
+            // the user how many ticks/cycles/picoseconds were skipped while
+            // the report/trigger was inactive.
+            auto& csv_skip_annotations_tbl = schema.addTable("CsvSkipAnnotations");
+            csv_skip_annotations_tbl.addColumn("ReportDescID", dt::int32_t);
+            csv_skip_annotations_tbl.addColumn("Tick", dt::int64_t);
+            csv_skip_annotations_tbl.addColumn("Annotation", dt::string_t);
+            csv_skip_annotations_tbl.createIndexOn("ReportDescID");
 
             const auto& simdb_file = simdb_config.getSimDBFile();
             db_mgr_ = std::make_unique<simdb::DatabaseManager>(simdb_file, true);
