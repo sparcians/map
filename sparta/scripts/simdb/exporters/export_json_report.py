@@ -50,6 +50,23 @@ class JSONReducedReportExporter:
         with open(dest_file, "w") as fout:
             json.dump(json_out, fout, indent=4)
 
+        cmd = f"SELECT MetaName, MetaValue FROM ReportMetadata WHERE ReportDescID = {descriptor_id}"
+        cmd += " AND MetaName = 'PrettyPrint'"
+        cursor.execute(cmd)
+
+        pretty_print = True
+        row = cursor.fetchone()
+        if row:
+            pretty_print = row[1].lower() == 'true'
+
+        if not pretty_print:
+            # If not pretty printing, we need to remove all leading/trailing whitespace
+            with open(dest_file, 'r') as fin:
+                reformatted_lines = [line.strip() for line in fin.readlines()]
+
+            with open(dest_file, 'w') as fout:
+                fout.write('\n'.join(reformatted_lines))
+
 class JSONDetailReportExporter:
     def __init__(self):
         pass
