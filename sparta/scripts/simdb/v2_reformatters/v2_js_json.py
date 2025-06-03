@@ -78,10 +78,10 @@ class v2JsJsonReformatter(v2JsonReformatterBase):
                 out.write('"vis" : ' + str(vis) + ', ')
                 out.write('"desc" : "' + desc + '"}\n')
             elif key == 'vis':
-                hidden = value['hidden']
+                hidden  = value['hidden']
                 support = value['support']
-                detail = value['detail']
-                normal = value['normal']
+                detail  = value['detail']
+                normal  = value['normal']
                 summary = value['summary']
 
                 out.write('{\n')
