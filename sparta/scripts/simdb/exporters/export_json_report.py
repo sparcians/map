@@ -4,11 +4,29 @@ from .sim_utils import *
 from collections import OrderedDict
 import json
 
+def HandlePrettyPrint(cursor, dest_file, descriptor_id):
+    cmd = f"SELECT MetaName, MetaValue FROM ReportMetadata WHERE ReportDescID = {descriptor_id}"
+    cmd += " AND MetaName = 'PrettyPrint'"
+    cursor.execute(cmd)
+
+    pretty_print = True
+    row = cursor.fetchone()
+    if row:
+        pretty_print = row[1].lower() == 'true'
+
+    if not pretty_print:
+        # If not pretty printing, we need to remove all leading/trailing whitespace
+        with open(dest_file, 'r') as fin:
+            reformatted_lines = [line.strip() for line in fin.readlines()]
+
+        with open(dest_file, 'w') as fout:
+            fout.write('\n'.join(reformatted_lines))
+
 class JSONReportExporter:
     def __init__(self):
         pass
 
-    def Export(self, dest_file, descriptor_id, db_conn):
+    def Export(self, dest_file, descriptor_id, db_conn, cmdline_args):
         cursor = db_conn.cursor()
         report_metadata = GetJsonReportMetadata(cursor, descriptor_id, "json")
         siminfo = GetSimInfo(cursor)
@@ -27,11 +45,13 @@ class JSONReportExporter:
         with open(dest_file, "w") as fout:
             json.dump(json_out, fout, indent=4)
 
+        HandlePrettyPrint(cursor, dest_file, descriptor_id)
+
 class JSONReducedReportExporter:
     def __init__(self):
         pass
 
-    def Export(self, dest_file, descriptor_id, db_conn):
+    def Export(self, dest_file, descriptor_id, db_conn, cmdline_args):
         cursor = db_conn.cursor()
         report_metadata = GetJsonReportMetadata(cursor, descriptor_id, "json_reduced")
         siminfo = GetSimInfo(cursor)
@@ -50,28 +70,13 @@ class JSONReducedReportExporter:
         with open(dest_file, "w") as fout:
             json.dump(json_out, fout, indent=4)
 
-        cmd = f"SELECT MetaName, MetaValue FROM ReportMetadata WHERE ReportDescID = {descriptor_id}"
-        cmd += " AND MetaName = 'PrettyPrint'"
-        cursor.execute(cmd)
-
-        pretty_print = True
-        row = cursor.fetchone()
-        if row:
-            pretty_print = row[1].lower() == 'true'
-
-        if not pretty_print:
-            # If not pretty printing, we need to remove all leading/trailing whitespace
-            with open(dest_file, 'r') as fin:
-                reformatted_lines = [line.strip() for line in fin.readlines()]
-
-            with open(dest_file, 'w') as fout:
-                fout.write('\n'.join(reformatted_lines))
+        HandlePrettyPrint(cursor, dest_file, descriptor_id)
 
 class JSONDetailReportExporter:
     def __init__(self):
         pass
 
-    def Export(self, dest_file, descriptor_id, db_conn):
+    def Export(self, dest_file, descriptor_id, db_conn, cmdline_args):
         report_paths_by_id = {}
         cursor = db_conn.cursor()
         self.__RecursivelyGetReportPaths(cursor, descriptor_id, 0, report_paths_by_id, "")

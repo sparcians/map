@@ -1,6 +1,7 @@
 from .sim_utils import *
 from .stat_utils import *
 from .json_utils import *
+from collections import OrderedDict
 import json
 
 class JSReportExporter:
@@ -11,7 +12,7 @@ class JSReportExporter:
         self.leaf_nodes = set()
         self.parents_of_leaf_nodes = set()
 
-    def Export(self, dest_file, descriptor_id, db_conn):
+    def Export(self, dest_file, descriptor_id, db_conn, cmdline_args):
         self.db_conn = db_conn
         self.cursor = db_conn.cursor()
 
@@ -36,12 +37,15 @@ class JSReportExporter:
         report_id = row[0]
 
         # decimal_places_ = strtoul(report_->getStyle("decimal_places", "2").c_str(), nullptr, 0);
-        decimal_places = int(GetReportStyle(cursor, report_id, descriptor_id, "decimal_places", "2"))
+        if cmdline_args.v2:
+            decimal_places = -1
+        else:
+            decimal_places = int(GetReportStyle(cursor, report_id, descriptor_id, "decimal_places", "2"))
         self.stat_values_getter = GetStatsValuesGetter(self.cursor, dest_file, True, True, decimal_places)
 
         # out << "{\n";
         # out << "  \"units\" : {\n";
-        out = {"units": {}}
+        out = OrderedDict([("units", OrderedDict())])
 
         # std::vector<std::string> all_key_names;
         # writeReport_(out, *report_, all_key_names);
@@ -126,7 +130,7 @@ class JSReportExporter:
             # std::vector<std::string> all_stat_names;
             # writeStats_(out, report, "", all_stat_names);
             unit_name = GetReportName(self.cursor, report_id)
-            out["units"][unit_name] = {}
+            out["units"][unit_name] = OrderedDict()
             all_unit_names.append(unit_name)
 
             all_stat_names = []
