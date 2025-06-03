@@ -5,7 +5,7 @@ class StatsMappingReportExporter:
     def __init__(self):
         pass
 
-    def Export(self, dest_file, descriptor_id, db_conn):
+    def Export(self, dest_file, descriptor_id, db_conn, cmdline_args):
         # Get the root report ID
         cmd = f"SELECT Id FROM Reports WHERE ReportDescID = {descriptor_id} AND ParentReportID = 0"
         cursor = db_conn.cursor()

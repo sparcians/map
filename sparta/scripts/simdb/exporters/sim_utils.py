@@ -36,8 +36,11 @@ class SimulationInfo:
         cursor = db_conn.cursor()
         cursor.execute(cmd)
 
-        for row in cursor.fetchall():
-            out.write(f"{line_start}Other:  {row[0]}{line_end}")
+        others = cursor.fetchall()
+        if others:
+            out.write(f"{line_start}Other:{line_end}")
+            for row in others:
+                out.write(f"{line_start}  {row[0]}{line_end}")
 
 def GetSimInfo(cursor):
     cmd = "SELECT SimName, SimVersion, SpartaVersion, ReproInfo FROM SimulationInfo"

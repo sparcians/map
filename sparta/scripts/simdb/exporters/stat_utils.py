@@ -239,3 +239,13 @@ def GetReportStyle(cursor, report_id, descriptor_id, style_name, style_default=N
 
     style_value = cursor.fetchone()
     return style_value[0] if style_value else style_default
+
+def GetReportStyleDict(cursor, report_id, descriptor_id):
+    cmd = f"SELECT StyleName, StyleValue FROM ReportStyles WHERE ReportDescID = {descriptor_id} AND ReportID = {report_id}"
+    cursor.execute(cmd)
+
+    style_dict = {}
+    for style_name, style_value in cursor.fetchall():
+        style_dict[style_name] = style_value
+
+    return style_dict
