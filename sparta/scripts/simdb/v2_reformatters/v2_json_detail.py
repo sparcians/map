@@ -26,7 +26,7 @@ class v2JsonDetailReformatter(v2JsonReformatterBase):
                 # See if the current line is of the form:
                 #   "name": "some.path.to.a.stat",
                 #
-                # Where the "name" is is exact, and the "some.path.to.a.stat" is any path.
+                # Where the "name" is exact, and the "some.path.to.a.stat" is any path.
                 match = re.match(r'^\s*"name":\s*"([^"]+)"\s*,\s*$', line)
 
                 # If it is, then we need to write the previous line + the current line.
