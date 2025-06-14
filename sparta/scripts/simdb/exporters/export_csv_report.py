@@ -82,7 +82,7 @@ class CSVReportExporter:
             cursor.execute(cmd)
             datablob_ids = {row[0] for row in cursor.fetchall()}
 
-            cmd = f'SELECT Id, Tick, Data, IsCompressed FROM CollectionRecords'
+            cmd = f'SELECT Id, Tick, DataBlob, IsCompressed FROM UnifiedCollectorBlobs'
             cursor.execute(cmd)
             for record_id, tick, data, is_compressed in cursor.fetchall():
                 # Not ours? Continue.

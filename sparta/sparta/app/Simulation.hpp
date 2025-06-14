@@ -28,6 +28,11 @@
 
 namespace YP = YAML; // Prevent collision with YAML class in ConfigParser namespace.
 
+namespace simdb {
+    class AppManager;
+    class DatabaseManager;
+}
+
 namespace sparta {
 
 class Clock;
@@ -157,6 +162,27 @@ public:
 
     //! \brief Returns the simulation's scheduler
     const sparta::Scheduler * getScheduler() const { return scheduler_; }
+
+    //! \brief Returns the SimDB application manager
+    simdb::AppManager * getAppManager() { return app_manager_.get(); }
+
+    //! \brief Returns all database files managed by this simulation
+    std::vector<std::string> getDatabaseFiles() const {
+        std::vector<std::string> db_files;
+        for (const auto& [db_file, db_mgr] : db_managers_) {
+            db_files.push_back(db_file);
+        }
+        return db_files;
+    }
+
+    //! \brief Returns the SimDB database manager for the given database file
+    simdb::DatabaseManager * getDatabaseManager(const std::string& db_file) {
+        auto it = db_managers_.find(db_file);
+        if (it != db_managers_.end()) {
+            return it->second.get();
+        }
+        return nullptr;
+    }
 
     /*!
      * \brief Returns whether or not the simulator was configured using a final
@@ -678,7 +704,7 @@ protected:
      * \brief Sets up all reports in this simulation. This can be called during
      * finalization or deferred until later.
      */
-    void setupReports_();
+    void setupReports_(ReportStatsCollector* collector);
 
     /*!
      * \brief In the case where a comma-separated list of file formats was
@@ -951,6 +977,23 @@ private:
      *\brief Run controller interface
      */
     std::unique_ptr<control::TemporaryRunControl> rc_;
+
+    /*!
+     * \brief Create enable SimDB apps during framework finalization.
+     */
+    void createSimDbApps_();
+    int argc_ = 0;
+    char** argv_ = nullptr;
+
+    /*!
+     * \brief SimDB app databases, keyed by the filename.
+     */
+    std::map<std::string, std::shared_ptr<simdb::DatabaseManager>> db_managers_;
+
+    /*!
+     * \brief Manager object to handle all SimDB app callbacks and lifetime.
+     */
+    std::shared_ptr<simdb::AppManager> app_manager_;
 };
 
 } // namespace app

@@ -155,15 +155,7 @@ class SpartaTest:
                 dst = os.path.join(self.test_dir, os.path.basename(src))
                 SymlinkTree(src, dst)
 
-        # Ensure '--simdb-file sparta.db' is present, or add it, or replace it.
         sim_args = self.sim_cmd.split()
-        if "--simdb-file" in sim_args:
-            simdb_index = sim_args.index("--simdb-file")
-            assert simdb_index + 1 < len(sim_args)
-            sim_args[simdb_index + 1] = "sparta.db"
-        else:
-            sim_args.append("--simdb-file")
-            sim_args.append("sparta.db")
 
         # Ensure '--enable-simdb-reports' is present.
         if "--enable-simdb-reports" not in sim_args:
@@ -321,6 +313,22 @@ class SpartaTest:
                 # Move sparta.db to the report directory (if failed)
                 if passfail == "FAIL":
                     shutil.copy("sparta.db", os.path.join(report_dir, "sparta.db"))
+
+                    if extension == "json":
+                        try:
+                            from deepdiff import DeepDiff
+                            # If DeepDiff is available, we can provide a more detailed diff.
+                            with open(baseline_report, "r", encoding="utf-8") as bf:
+                                with open(simdb_report, "r", encoding="utf-8") as sf:
+                                    baseline_data = json.load(bf)
+                                    simdb_data = json.load(sf)
+                                    diff = DeepDiff(baseline_data, simdb_data, ignore_order=True, ignore_type_in_groups=True)
+                                    if diff:
+                                        with open(os.path.join(report_dir, "diff.json"), "w") as df:
+                                            df.write(diff.to_json(indent=4))
+                        except ImportError:
+                            with open(os.path.join(report_dir, "diff.json"), "w") as df:
+                                df.write("DeepDiff not available. No detailed diff provided.\n")
 
         # Delete this test's RUNNING directory.
         running_test_dir = os.path.join(args.results_dir, "RUNNING", self.test_name)

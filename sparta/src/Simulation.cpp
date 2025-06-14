@@ -84,6 +84,11 @@
 #include "sparta/trigger/Trigger.hpp"
 #include "sparta/utils/StringUtils.hpp"
 
+#if SIMDB_ENABLED
+#include "sparta/app/simdb/ReportStatsCollector.hpp"
+#include "simdb/apps/AppManager.hpp"
+#endif
+
 namespace YAML {
 class EventHandler;
 }  // namespace YAML
@@ -356,6 +361,8 @@ Simulation::~Simulation()
 
     // Deregister
     root_.getNodeAttachedNotification().DEREGISTER_FOR_THIS(rootDescendantAdded_);
+
+    report_repository_.reset();
 }
 
 void Simulation::configure(const int argc,
@@ -363,8 +370,6 @@ void Simulation::configure(const int argc,
                            SimulationConfiguration * configuration,
                            const bool use_pyshell)
 {
-    (void) argc; // Used by Python shell
-    (void) argv; // Used by Python shell
     sparta_assert(configuration != nullptr,
                 "You must supply a persistent SimulationConfiguration object");
 
@@ -375,6 +380,8 @@ void Simulation::configure(const int argc,
 
     sim_config_ = configuration;
     print_dag_  = sim_config_->show_dag;
+    argc_ = argc;
+    argv_ = argv;
 
     ReportDescVec expanded_descriptors;
     for (const auto & rd : sim_config_->reports) {
@@ -452,6 +459,44 @@ void Simulation::configure(const int argc,
 
     setupProfilers_();
     simulation_state_.configure();
+}
+
+void Simulation::createSimDbApps_()
+{
+#if SIMDB_ENABLED
+    const auto & simdb_config = sim_config_->simdb_config;
+
+    const auto enabled_apps = simdb_config.getEnabledApps();
+    if (enabled_apps.empty()) {
+        return;
+    }
+
+    std::vector<std::string> db_files;
+    for (const auto& app_name : enabled_apps) {
+        const auto db_file = simdb_config.getAppDatabase(app_name);
+        db_files.push_back(db_file);
+    }
+
+    app_manager_ = std::make_shared<simdb::AppManager>();
+    auto& app_mgr = *app_manager_;
+    for (const auto & app_name : enabled_apps) {
+        app_mgr.enableApp(app_name);
+    }
+
+    for (const auto & db_file : db_files) {
+        db_managers_[db_file] = std::make_shared<simdb::DatabaseManager>(db_file, true);
+    }
+
+    for (const auto & db_file : db_files) {
+        auto db_mgr = db_managers_[db_file].get();
+        app_mgr.createEnabledApps(db_mgr);
+    }
+
+    for (const auto & db_file : db_files) {
+        auto db_mgr = db_managers_[db_file].get();
+        app_mgr.createSchemas(db_mgr);
+    }
+#endif
 }
 
 void Simulation::addReport(const ReportDescriptor & rep)
@@ -714,12 +759,51 @@ void Simulation::finalizeFramework()
 
     this->setupControllerTriggers_();
 
+    // Setup SimDB apps and their databases.
+    this->createSimDbApps_();
+
+    ReportStatsCollector* collector = nullptr;
+    simdb::DatabaseManager* db_mgr = nullptr;
+    bool reports_setup = false;
+#if SIMDB_ENABLED
+    if (app_manager_) {
+        for (const auto & db_file : getDatabaseFiles()) {
+            db_mgr = db_managers_[db_file].get();
+            if (auto app = app_manager_->getApp<ReportStatsCollector>(db_mgr, false)) {
+                sparta_assert(collector == nullptr,
+                              "Only one ReportStatsCollector app can be enabled at a time");
+                collector = app;
+            }
+        }
+
+        if (collector) {
+            collector->setScheduler(getScheduler());
+            collector->setDatabaseManager(db_mgr);
+            db_mgr->safeTransaction([&]() { setupReports_(collector); });
+            reports_setup = true;
+        }
+    }
+#endif
+
     // Set up reports.  This must happen after the DAG is finalized so
     // that the report startup trigger can be scheduled
-    this->setupReports_();
+    if (!reports_setup) {
+        setupReports_(nullptr);
+    }
 
     framework_finalized_ = true;
     report_repository_->postFinalizeFramework();
+
+#if SIMDB_ENABLED
+    if (app_manager_) {
+        sparta_assert(argc_);
+        sparta_assert(argv_);
+        for (const auto & db_file : getDatabaseFiles()) {
+            auto db_mgr = db_managers_[db_file].get();
+            app_manager_->postInit(db_mgr, argc_, argv_);
+        }
+    }
+#endif
 }
 
 void Simulation::run(uint64_t run_time)
@@ -822,6 +906,17 @@ void Simulation::run(uint64_t run_time)
     if(eptr == std::exception_ptr() || report_on_error){
         // Write reports
         saveReports();
+    }
+
+    if (app_manager_) {
+        for (const auto & kvp : db_managers_) {
+            auto db_mgr = kvp.second.get();
+            app_manager_->postSim(db_mgr);
+        }
+
+        app_manager_->teardown();
+        app_manager_->destroy();
+        app_manager_.reset();
     }
 
     if(eptr == std::exception_ptr()){
@@ -1342,7 +1437,7 @@ void Simulation::validateDescriptorCanBeAdded_(
     }
 }
 
-void Simulation::setupReports_()
+void Simulation::setupReports_(ReportStatsCollector* collector)
 {
     validateReportDescriptors_(rep_descs_);
 
@@ -1365,7 +1460,7 @@ void Simulation::setupReports_()
         }
 
         sparta::ReportRepository::DirectoryHandle directoryH =
-            report_repository_->createDirectory(rd);
+            report_repository_->createDirectory(rd, collector);
 
         size_t idx = 0;
         for(sparta::TreeNode* r : roots){
