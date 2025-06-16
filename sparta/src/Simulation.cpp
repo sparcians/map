@@ -783,10 +783,6 @@ void Simulation::finalizeFramework()
             reports_setup = true;
         }
     }
-#else
-    (void)collector;
-    (void)db_mgr;
-    (void)reports_setup;
 #endif
 
     // Set up reports.  This must happen after the DAG is finalized so
