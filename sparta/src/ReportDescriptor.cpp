@@ -322,7 +322,6 @@ report::format::BaseFormatter* ReportDescriptor::addInstantiation(Report* r,
     if(formatter->supportsUpdate()){
         //TODO: Deprecate "during simulation" formatters
         formatter->writeHeader();
-        //TODO cnyce: need to capture the report range right now and "fix" it in the collector
     }
 
     return formatter;

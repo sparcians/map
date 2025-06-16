@@ -1,103 +1,18 @@
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
-#include "simdb/apps/AppRegistration.hpp"
 #include "sparta/app/SimulationInfo.hpp"
+#include "sparta/app/ReportDescriptor.hpp"
 #include "sparta/statistics/InstrumentationNode.hpp"
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/report/format/JavascriptObject.hpp"
 #include "sparta/report/format/ReportHeader.hpp"
+#include "simdb/apps/AppRegistration.hpp"
+#include "simdb/utils/Compress.hpp"
 
 namespace sparta::app {
 
 REGISTER_SIMDB_APPLICATION(ReportStatsCollector);
 
-void ReportStatsCollector::configPipeline(simdb::PipelineConfig& config)
-{
-    config.asyncStage(1) >> CompressEntry;
-    config.asyncStage(2) >> CommitEntry;
-    config.asyncStage(2).observe(&stage_observer_);
-}
-
-void ReportStatsCollector::setScheduler(const Scheduler* scheduler)
-{
-    scheduler_ = scheduler;
-}
-
-void ReportStatsCollector::addDescriptor(const ReportDescriptor* desc)
-{
-    const auto& pattern = desc->loc_pattern;
-    const auto& def_file = desc->def_file;
-    const auto& dest_file = desc->dest_file;
-    const auto& format = desc->format;
-    descriptors_.emplace_back(desc, std::make_tuple(pattern, def_file, dest_file, format));
-
-    writeReportInfo_(desc);
-}
-
-int ReportStatsCollector::getDescriptorID(const ReportDescriptor* desc, bool must_exist) const
-{
-    auto it = descriptor_ids_.find(desc);
-    if (it != descriptor_ids_.end()) {
-        return it->second;
-    }
-
-    if (must_exist) {
-        throw SpartaException("ReportDescriptor not found");
-    }
-
-    return 0; // Invalid database ID
-}
-
-void ReportStatsCollector::setHeader(const ReportDescriptor* desc,
-                                     const report::format::ReportHeader& header)
-{
-    descriptor_headers_[desc] = &header;
-
-}
-
-void ReportStatsCollector::updateReportMetadata(
-    const ReportDescriptor* desc,
-    const std::string& key,
-    const std::string& value)
-{
-    report_metadata_[desc][key] = value;
-}
-
-void ReportStatsCollector::updateReportStartTime(const ReportDescriptor* desc)
-{
-    auto start_tick = desc->getAllInstantiations()[0]->getStart();
-    report_start_times_[desc] = start_tick;
-}
-
-void ReportStatsCollector::updateReportEndTime(const ReportDescriptor* desc)
-{
-    auto end_tick = desc->getAllInstantiations()[0]->getEnd();
-    if (end_tick == Scheduler::INDEFINITE) {
-        end_tick = scheduler_->getCurrentTick();
-    }
-    report_end_times_[desc] = end_tick;
-}
-
-void ReportStatsCollector::collect(const ReportDescriptor* desc)
-{
-    auto serializer = createVectorSerializer<double>();
-    for (const auto stat : simdb_stats_.at(desc)) {
-        serializer.push_back(stat->getValue());
-    }
-
-    simdb::PipelineEntry entry = prepareEntry(scheduler_->getCurrentTick(), std::move(serializer));
-    entry.setUserData(desc);
-    processEntry(std::move(entry));
-}
-
-void ReportStatsCollector::writeSkipAnnotation(
-    const ReportDescriptor* desc,
-    const std::string& annotation)
-{
-    auto tick = scheduler_->getCurrentTick();
-    report_skip_annotations_[desc].emplace_back(tick, annotation);
-}
-
-void ReportStatsCollector::extendSchema_(simdb::Schema& schema)
+bool ReportStatsCollector::defineSchema(simdb::Schema& schema)
 {
     using dt = simdb::SqlDataType;
 
@@ -203,8 +118,8 @@ void ReportStatsCollector::extendSchema_(simdb::Schema& schema)
     // to which report.
     auto& desc_records_tbl = schema.addTable("DescriptorRecords");
     desc_records_tbl.addColumn("ReportDescID", dt::int32_t);
-    desc_records_tbl.addColumn("DatablobID", dt::int32_t);
     desc_records_tbl.addColumn("Tick", dt::int64_t);
+    desc_records_tbl.addColumn("DataBlob", dt::blob_t);
     desc_records_tbl.createIndexOn("ReportDescID");
 
     // For timeseries reports that use toggle triggers, we need to
@@ -216,13 +131,150 @@ void ReportStatsCollector::extendSchema_(simdb::Schema& schema)
     csv_skip_annotations_tbl.addColumn("Tick", dt::int64_t);
     csv_skip_annotations_tbl.addColumn("Annotation", dt::string_t);
     csv_skip_annotations_tbl.createIndexOn("ReportDescID");
+
+    return true;
 }
 
-void ReportStatsCollector::postInit_(int argc, char** argv)
+std::vector<std::unique_ptr<simdb::PipelineStageBase>> ReportStatsCollector::configPipeline()
 {
-    auto db_mgr = getDatabaseManager();
+    // Stage 1:
+    //   - Function:          Compress statistics values
+    //   - Input type:        std::tuple<const ReportDescriptor*, uint64_t, std::vector<double>>
+    //   - Output type:       std::tuple<const ReportDescriptor*, uint64_t, std::vector<char>>
+    //   - Num transforms:    1
+    //   - Database access:   No
+    using CompressionIn = std::tuple<const ReportDescriptor*, uint64_t, std::vector<double>>;
+    using CompressionOut = std::tuple<const ReportDescriptor*, uint64_t, std::vector<char>>;
+    auto stage1 = std::make_unique<simdb::PipelineStage<CompressionIn, CompressionOut>>();
 
-    db_mgr->INSERT(
+    auto transform1 = std::make_unique<simdb::PipelineTransform<CompressionIn, CompressionOut>>(
+        [this](CompressionIn& in, simdb::ConcurrentQueue<CompressionOut>& out)
+        {
+            CompressionOut compressed;
+            std::get<0>(compressed) = std::get<0>(in);
+            std::get<1>(compressed) = std::get<1>(in);
+            const auto& uncompressed_bytes = std::get<2>(in);
+            auto& compressed_bytes = std::get<2>(compressed);
+            auto data_ptr = uncompressed_bytes.data();
+            auto num_bytes = uncompressed_bytes.size() * sizeof(double);
+            simdb::compressData(data_ptr, num_bytes, compressed_bytes);
+            out.emplace(std::move(compressed));
+        }
+    );
+
+    // Connect stage 1
+    stage1->last(std::move(transform1));
+
+    // Stage 2:
+    //   - Function:          Write to database
+    //   - Input type:        std::tuple<const ReportDescriptor*, uint64_t, std::vector<char>>
+    //   - Output type:       none
+    //   - Num transforms:    1
+    //   - Database access:   Yes
+    using DatabaseIn = CompressionOut;
+    using DatabaseOut = void;
+    auto stage2 = std::make_unique<simdb::PipelineStage<DatabaseIn, DatabaseOut>>(db_mgr_);
+
+    auto transform2 = std::make_unique<simdb::PipelineTransform<DatabaseIn, DatabaseOut>>(
+        [this](DatabaseIn& in)
+        {
+            const auto descriptor = std::get<0>(in);
+            const auto descriptor_id = getDescriptorID(descriptor);
+            const auto tick = std::get<1>(in);
+            const auto& bytes = std::get<2>(in);
+
+            db_mgr_->INSERT(
+                SQL_TABLE("DescriptorRecords"),
+                SQL_COLUMNS("ReportDescID", "Tick", "DataBlob"),
+                SQL_VALUES(descriptor_id, tick, bytes));
+        }
+    );
+
+    // Connect stage 2
+    stage2->last(std::move(transform2));
+
+    // Finalize
+    std::vector<std::unique_ptr<simdb::PipelineStageBase>> stages;
+    stages.emplace_back(std::move(stage1));
+    stages.emplace_back(std::move(stage2));
+    return stages;
+}
+
+void ReportStatsCollector::setPipelineInputQueue(simdb::TransformQueueBase* queue)
+{
+    if (auto q = dynamic_cast<simdb::TransformQueue<PipelineInT>*>(queue))
+    {
+        pipeline_queue_ = q->getQueue();
+    }
+    else
+    {
+        throw simdb::DBException("Invalid data type!");
+    }
+}
+
+void ReportStatsCollector::setScheduler(const Scheduler* scheduler)
+{
+    scheduler_ = scheduler;
+}
+
+void ReportStatsCollector::addDescriptor(const ReportDescriptor* desc)
+{
+    const auto& pattern = desc->loc_pattern;
+    const auto& def_file = desc->def_file;
+    const auto& dest_file = desc->dest_file;
+    const auto& format = desc->format;
+    descriptors_.emplace_back(desc, std::make_tuple(pattern, def_file, dest_file, format));
+
+    writeReportInfo_(desc);
+}
+
+int ReportStatsCollector::getDescriptorID(const ReportDescriptor* desc, bool must_exist) const
+{
+    auto it = descriptor_ids_.find(desc);
+    if (it != descriptor_ids_.end()) {
+        return it->second;
+    }
+
+    if (must_exist) {
+        throw SpartaException("ReportDescriptor not found");
+    }
+
+    return 0; // Invalid database ID
+}
+
+void ReportStatsCollector::setHeader(const ReportDescriptor* desc,
+                                     const report::format::ReportHeader& header)
+{
+    descriptor_headers_[desc] = &header;
+
+}
+
+void ReportStatsCollector::updateReportMetadata(
+    const ReportDescriptor* desc,
+    const std::string& key,
+    const std::string& value)
+{
+    report_metadata_[desc][key] = value;
+}
+
+void ReportStatsCollector::updateReportStartTime(const ReportDescriptor* desc)
+{
+    auto start_tick = desc->getAllInstantiations()[0]->getStart();
+    report_start_times_[desc] = start_tick;
+}
+
+void ReportStatsCollector::updateReportEndTime(const ReportDescriptor* desc)
+{
+    auto end_tick = desc->getAllInstantiations()[0]->getEnd();
+    if (end_tick == Scheduler::INDEFINITE) {
+        end_tick = scheduler_->getCurrentTick();
+    }
+    report_end_times_[desc] = end_tick;
+}
+
+void ReportStatsCollector::postInit(int argc, char** argv)
+{
+    db_mgr_->INSERT(
         SQL_TABLE("SimulationInfo"),
         SQL_COLUMNS("SimName", "SimVersion", "SpartaVersion", "ReproInfo"),
         SQL_VALUES(SimulationInfo::getInstance().sim_name,
@@ -230,7 +282,7 @@ void ReportStatsCollector::postInit_(int argc, char** argv)
                     SimulationInfo::getInstance().getSpartaVersion(),
                     SimulationInfo::getInstance().reproduction_info));
 
-    db_mgr->INSERT(
+    db_mgr_->INSERT(
         SQL_TABLE("Visibilities"),
         SQL_COLUMNS("Hidden", "Support", "Detail", "Normal", "Summary", "Critical"),
         SQL_VALUES(static_cast<int>(sparta::InstrumentationNode::VIS_HIDDEN),
@@ -240,12 +292,12 @@ void ReportStatsCollector::postInit_(int argc, char** argv)
                     static_cast<int>(sparta::InstrumentationNode::VIS_SUMMARY),
                     static_cast<int>(sparta::InstrumentationNode::VIS_CRITICAL)));
 
-    report::format::JavascriptObject::writeLeafNodeInfoToDB(db_mgr);
+    report::format::JavascriptObject::writeLeafNodeInfoToDB(db_mgr_);
 
     for (const auto& [desc, descriptor] : descriptors_) {
         const auto& [pattern, def_file, dest_file, format] = descriptor;
 
-        auto record = db_mgr->INSERT(
+        auto record = db_mgr_->INSERT(
             SQL_TABLE("ReportDescriptors"),
             SQL_COLUMNS("LocPattern", "DefFile", "DestFile", "Format"),
             SQL_VALUES(pattern, def_file, dest_file, format));
@@ -268,23 +320,41 @@ void ReportStatsCollector::postInit_(int argc, char** argv)
             << " WHERE ReportDescID = " << descriptor_id
             << " AND ParentReportID = 0";
 
-        getDatabaseManager()->EXECUTE(cmd.str());
+        db_mgr_->EXECUTE(cmd.str());
     }
 }
 
-void ReportStatsCollector::postSim_()
+void ReportStatsCollector::collect(const ReportDescriptor* desc)
 {
-    auto db_mgr = getDatabaseManager();
+    std::vector<double> stats;
+    stats.reserve(simdb_stats_.at(desc).size());
+    for (const auto stat : simdb_stats_[desc]) {
+        stats.push_back(stat->getValue());
+    }
 
+    PipelineInT in = std::make_tuple(desc, scheduler_->getCurrentTick(), std::move(stats));
+    pipeline_queue_->emplace(std::move(in));
+}
+
+void ReportStatsCollector::writeSkipAnnotation(
+    const ReportDescriptor* desc,
+    const std::string& annotation)
+{
+    auto tick = scheduler_->getCurrentTick();
+    report_skip_annotations_[desc].emplace_back(tick, annotation);
+}
+
+void ReportStatsCollector::postSim()
+{
     for (const auto& [name, value] : SimulationInfo::getInstance().getHeaderPairs()) {
-        db_mgr->INSERT(
+        db_mgr_->INSERT(
             SQL_TABLE("SimulationInfoHeaderPairs"),
             SQL_COLUMNS("HeaderName", "HeaderValue"),
             SQL_VALUES(name, value));
     }
 
     for (const auto& other : SimulationInfo::getInstance().other) {
-        db_mgr->INSERT(
+        db_mgr_->INSERT(
             SQL_TABLE("SimulationInfoHeaderPairs"),
             SQL_COLUMNS("HeaderName", "HeaderValue"),
             SQL_VALUES("Other", other));
@@ -294,27 +364,18 @@ void ReportStatsCollector::postSim_()
     oss << "UPDATE SimulationInfo SET SimEndTick = "
         << scheduler_->getCurrentTick();
 
-    db_mgr->EXECUTE(oss.str());
+    db_mgr_->EXECUTE(oss.str());
 }
 
-void ReportStatsCollector::onPreTeardown_()
+void ReportStatsCollector::teardown()
 {
-}
-
-void ReportStatsCollector::onPostTeardown_()
-{
-    // Now that simulation is over, we need to update a few tables with the actual
-    // report descriptor IDs that were not available at the start of simulation.
-
-    auto db_mgr = getDatabaseManager();
-
     for (const auto& [desc, db_ids] : descriptor_report_ids_) {
         const auto report_desc_id = getDescriptorID(desc);
         for (const auto& report_id : db_ids) {
             std::ostringstream cmd;
             cmd << "UPDATE Reports SET ReportDescID = " << report_desc_id
                 << " WHERE Id = " << report_id;
-            db_mgr->EXECUTE(cmd.str());
+            db_mgr_->EXECUTE(cmd.str());
         }
     }
 
@@ -324,7 +385,7 @@ void ReportStatsCollector::onPostTeardown_()
             std::ostringstream cmd;
             cmd << "UPDATE ReportStyles SET ReportDescID = " << report_desc_id
                 << " WHERE Id = " << style_id;
-            db_mgr->EXECUTE(cmd.str());
+            db_mgr_->EXECUTE(cmd.str());
         }
     }
 
@@ -334,7 +395,7 @@ void ReportStatsCollector::onPostTeardown_()
             std::ostringstream cmd;
             cmd << "UPDATE ReportMetadata SET ReportDescID = " << report_desc_id
                 << " WHERE Id = " << meta_id;
-            db_mgr->EXECUTE(cmd.str());
+            db_mgr_->EXECUTE(cmd.str());
         }
     }
 
@@ -345,7 +406,7 @@ void ReportStatsCollector::onPostTeardown_()
             cmd << "UPDATE Reports SET " << meta_name << " = '" << meta_value
                 << "' WHERE ReportDescID = " << report_desc_id
                 << " AND ParentReportID = 0";
-            db_mgr->EXECUTE(cmd.str());
+            db_mgr_->EXECUTE(cmd.str());
         }
     }
 
@@ -355,7 +416,7 @@ void ReportStatsCollector::onPostTeardown_()
         cmd << "UPDATE Reports SET StartTick = " << start_time
             << " WHERE ReportDescID = " << report_desc_id
             << " AND ParentReportID = 0";
-        db_mgr->EXECUTE(cmd.str());
+        db_mgr_->EXECUTE(cmd.str());
     }
 
     for (const auto& [desc, end_time] : report_end_times_) {
@@ -364,23 +425,18 @@ void ReportStatsCollector::onPostTeardown_()
         cmd << "UPDATE Reports SET EndTick = " << end_time
             << " WHERE ReportDescID = " << report_desc_id
             << " AND ParentReportID = 0";
-        db_mgr->EXECUTE(cmd.str());
+        db_mgr_->EXECUTE(cmd.str());
     }
 
     for (const auto& [desc, annotation_pairs] : report_skip_annotations_) {
         const auto report_desc_id = getDescriptorID(desc);
         for (const auto& [tick, annotation] : annotation_pairs) {
-            db_mgr->INSERT(
+            db_mgr_->INSERT(
                 SQL_TABLE("CsvSkipAnnotations"),
                 SQL_COLUMNS("ReportDescID", "Tick", "Annotation"),
                 SQL_VALUES(report_desc_id, tick, annotation));
         }
     }
-}
-
-std::string ReportStatsCollector::getByteLayoutYAML_() const
-{
-    return "NOT YET IMPLEMENTED";
 }
 
 void ReportStatsCollector::writeReportInfo_(const ReportDescriptor* desc)
@@ -401,14 +457,12 @@ void ReportStatsCollector::writeReportInfo_(
     std::unordered_set<std::string>& visited_stats,
     int parent_report_id)
 {
-    auto db_mgr = getDatabaseManager();
-
     const auto report_name = r->getName();
     const auto report_start_tick = r->getStart();
     const auto report_end_tick = r->getEnd();
     const auto report_info = r->getInfoString();
 
-    const auto report_record = db_mgr->INSERT(
+    const auto report_record = db_mgr_->INSERT(
         SQL_TABLE("Reports"),
         SQL_COLUMNS("ReportDescID", "ParentReportID", "Name", "StartTick", "EndTick", "InfoString"),
         SQL_VALUES(0, parent_report_id, report_name, report_start_tick, report_end_tick, report_info));
@@ -417,7 +471,7 @@ void ReportStatsCollector::writeReportInfo_(
     descriptor_report_ids_[desc].push_back(report_id);
 
     for (const auto& [name, value] : r->getAllStyles()) {
-        auto record = db_mgr->INSERT(
+        auto record = db_mgr_->INSERT(
             SQL_TABLE("ReportStyles"),
             SQL_COLUMNS("ReportDescID", "ReportID", "StyleName", "StyleValue"),
             SQL_VALUES(0, report_id, name, value));
@@ -437,7 +491,7 @@ void ReportStatsCollector::writeReportInfo_(
             continue;
         }
 
-        auto si_record = db_mgr->INSERT(
+        auto si_record = db_mgr_->INSERT(
             SQL_TABLE("StatisticInsts"),
             SQL_COLUMNS("ReportID", "StatisticName", "StatisticLoc", "StatisticDesc", "StatisticVis", "StatisticClass"),
             SQL_VALUES(report_id, si_name, si_loc, si_desc, si_vis, si_class));
@@ -448,7 +502,7 @@ void ReportStatsCollector::writeReportInfo_(
                 const auto& meta_name = pair.first;
                 const auto& meta_value = pair.second;
 
-                db_mgr->INSERT(
+                db_mgr_->INSERT(
                     SQL_TABLE("StatisticDefnMetadata"),
                     SQL_COLUMNS("StatisticInstID", "MetaName", "MetaValue"),
                     SQL_VALUES(si_id, meta_name, meta_value));
@@ -465,7 +519,7 @@ void ReportStatsCollector::writeReportInfo_(
             meta_kv_pairs["OmitZeros"] = formatter->statsWithValueZeroAreOmitted() ? "true" : "false";
 
             for (const auto& [meta_name, meta_value] : meta_kv_pairs) {
-                auto record = db_mgr->INSERT(
+                auto record = db_mgr_->INSERT(
                     SQL_TABLE("ReportMetadata"),
                     SQL_COLUMNS("ReportDescID", "ReportID", "MetaName", "MetaValue"),
                     SQL_VALUES(0, report_id, meta_name, meta_value));
@@ -480,34 +534,6 @@ void ReportStatsCollector::writeReportInfo_(
     for (const auto& sr : r->getSubreports()) {
         writeReportInfo_(desc, &sr, visited_stats, report_id);
     }
-}
-
-void ReportStatsCollector::StageObserver::onEnterStage(const simdb::PipelineEntry&, size_t)
-{
-}
-
-void ReportStatsCollector::StageObserver::onLeaveStage(const simdb::PipelineEntry& entry, size_t stage_idx)
-{
-    if (stage_idx == 1) {
-        return;
-    }
-    collector_->postCommit_(entry);
-}
-
-void ReportStatsCollector::postCommit_(const simdb::PipelineEntry& entry)
-{
-    auto record_id = entry.getCommittedDbID();
-    sparta_assert(record_id, "PipelineEntry was never committed!");
-
-    auto tick = entry.getTick();
-    auto desc = static_cast<const ReportDescriptor*>(entry.getUserData());
-    auto descriptor_id = getDescriptorID(desc);
-    auto db_mgr = getDatabaseManager();
-
-    db_mgr->INSERT(
-        SQL_TABLE("DescriptorRecords"),
-        SQL_COLUMNS("ReportDescID", "DatablobID", "Tick"),
-        SQL_VALUES(descriptor_id, record_id, tick));
 }
 
 } // namespace sparta::app

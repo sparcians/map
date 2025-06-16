@@ -1,9 +1,14 @@
 #pragma once
 
-#include "simdb/apps/UniformSerializer.hpp"
-#include "sparta/app/ReportDescriptor.hpp"
+#include "simdb/apps/App.hpp"
+#include "simdb/utils/ConcurrentQueue.hpp"
+
+#include <map>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace sparta {
+    class Report;
     class Scheduler;
     class StatisticInstance;
 }
@@ -14,6 +19,8 @@ namespace sparta::report::format {
 
 namespace sparta::app {
 
+class ReportDescriptor;
+
 /// This is a SimDB application that serializes all metadata about the
 /// report configuration(s), and collects data for report generation later
 /// on. A key feature of this app is that it allows for the simulation to
@@ -21,14 +28,20 @@ namespace sparta::app {
 /// different ways (HDF5 converter, CSV exporter, display in a web page,
 /// etc).
 
-class ReportStatsCollector : public simdb::UniformSerializer
+class ReportStatsCollector : public simdb::PipelineApp
 {
 public:
     static constexpr auto NAME = "simdb-reports";
 
-    ReportStatsCollector() = default;
+    ReportStatsCollector(simdb::DatabaseManager* db_mgr)
+        : db_mgr_(db_mgr)
+    {}
 
-    void configPipeline(simdb::PipelineConfig& config) override;
+    bool defineSchema(simdb::Schema&) override;
+
+    std::vector<std::unique_ptr<simdb::PipelineStageBase>> configPipeline() override;
+
+    void setPipelineInputQueue(simdb::TransformQueueBase*) override;
 
     void setScheduler(const Scheduler* scheduler);
 
@@ -48,43 +61,24 @@ public:
 
     void updateReportEndTime(const ReportDescriptor* desc);
 
+    void postInit(int argc, char** argv) override;
+
     void collect(const ReportDescriptor* desc);
 
     void writeSkipAnnotation(const ReportDescriptor* desc,
                              const std::string& annotation);
 
+    void postSim() override;
+
+    void teardown() override;
+
 private:
-    void extendSchema_(simdb::Schema&) override;
-
-    void postInit_(int argc, char** argv) override;
-
-    void postSim_() override;
-
-    void onPreTeardown_() override;
-
-    void onPostTeardown_() override;
-
-    std::string getByteLayoutYAML_() const override;
-
     void writeReportInfo_(const ReportDescriptor* desc);
 
     void writeReportInfo_(const ReportDescriptor* desc,
                           const Report* r,
                           std::unordered_set<std::string>& visited_stats,
                           int parent_report_id);
-
-    class StageObserver : public simdb::PipelineStageObserver
-    {
-    public:
-        StageObserver(ReportStatsCollector* collector) : collector_(collector) {}
-        void onEnterStage(const simdb::PipelineEntry& entry, size_t stage_idx) override;
-        void onLeaveStage(const simdb::PipelineEntry& entry, size_t stage_idx) override;
-    private:
-        ReportStatsCollector* collector_;
-    };
-
-    void postCommit_(const simdb::PipelineEntry& entry);
-    friend class StageObserver;
 
     using Descriptor = std::tuple<std::string, std::string, std::string, std::string>;
     std::vector<std::pair<const ReportDescriptor*, Descriptor>> descriptors_;
@@ -98,8 +92,11 @@ private:
     std::unordered_map<const ReportDescriptor*, uint64_t> report_end_times_;
     std::unordered_map<const ReportDescriptor*, std::map<std::string, std::string>> report_metadata_;
     std::unordered_map<const ReportDescriptor*, std::vector<std::pair<uint64_t, std::string>>> report_skip_annotations_;
-    StageObserver stage_observer_{this};
     const Scheduler* scheduler_ = nullptr;
+    simdb::DatabaseManager* db_mgr_ = nullptr;
+
+    using PipelineInT = std::tuple<const ReportDescriptor*, uint64_t, std::vector<double>>;
+    simdb::ConcurrentQueue<PipelineInT>* pipeline_queue_ = nullptr;
 };
 
 } // namespace sparta::app

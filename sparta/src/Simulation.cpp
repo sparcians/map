@@ -778,7 +778,6 @@ void Simulation::finalizeFramework()
 
         if (collector) {
             collector->setScheduler(getScheduler());
-            collector->setDatabaseManager(db_mgr);
             db_mgr->safeTransaction([&]() { setupReports_(collector); });
             reports_setup = true;
         }
@@ -914,7 +913,11 @@ void Simulation::run(uint64_t run_time)
             app_manager_->postSim(db_mgr);
         }
 
-        app_manager_->teardown();
+        for (const auto & kvp : db_managers_) {
+            auto db_mgr = kvp.second.get();
+            app_manager_->teardown(db_mgr);
+        }
+
         app_manager_->destroy();
         app_manager_.reset();
     }

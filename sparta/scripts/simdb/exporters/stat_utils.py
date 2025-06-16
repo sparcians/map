@@ -55,21 +55,11 @@ def GetStatsValuesGetter(cursor, dest_file, replace_nan_with_nanstring=False, re
     if descriptor_format in ('csv', 'csv_cumulative'):
         raise ValueError(f"Unsupported report format: {descriptor_format}")
 
-    cmd = f'SELECT COUNT(*), DatablobID FROM DescriptorRecords WHERE ReportDescID={descriptor_id}'
+
+    cmd = f'SELECT DataBlob FROM DescriptorRecords WHERE ReportDescID={descriptor_id}'
     cursor.execute(cmd)
-    row_count, datablob_id = cursor.fetchone()
-
-    if row_count == 0:
-        return None
-
-    if row_count > 1:
-        raise ValueError(f"Multiple datablob IDs found for report '{dest_file}'")
-
-    cmd = f"SELECT DataBlob, IsCompressed FROM UnifiedCollectorBlobs WHERE Id={datablob_id}"
-    cursor.execute(cmd)
-    stats_blob, is_compressed = cursor.fetchone()
-    if is_compressed:
-        stats_blob = zlib.decompress(stats_blob)
+    stats_blob = cursor.fetchone()[0]
+    stats_blob = zlib.decompress(stats_blob)
 
     # Turn the stats blob (byte vector) into a vector of doubles.
     assert len(stats_blob) % 8 == 0, "Invalid stats blob length"
