@@ -148,7 +148,7 @@ std::vector<std::unique_ptr<simdb::PipelineStageBase>> ReportStatsCollector::con
     auto stage1 = std::make_unique<simdb::PipelineStage<CompressionIn, CompressionOut>>();
 
     auto transform1 = std::make_unique<simdb::PipelineTransform<CompressionIn, CompressionOut>>(
-        [this](CompressionIn& in, simdb::ConcurrentQueue<CompressionOut>& out)
+        [](CompressionIn& in, simdb::ConcurrentQueue<CompressionOut>& out)
         {
             CompressionOut compressed;
             std::get<0>(compressed) = std::get<0>(in);
