@@ -133,7 +133,7 @@ void showSimDBHelp()
 #if SIMDB_ENABLED
     std::cout << "TODO: SimDB Help" << std::endl;
 #else
-     std::cout << "SimDB is not enabled in this build (-DUSING_SIMDB=ON)" << std::endl;
+    std::cout << "SimDB is not enabled in this build (-DUSING_SIMDB=ON)" << std::endl;
 #endif
 }
 

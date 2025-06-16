@@ -40,9 +40,9 @@
 #include "sparta/app/SimulationConfiguration.hpp"
 #include "sparta/report/format/BaseFormatter.hpp"
 #include "sparta/trigger/ExpressionTrigger.hpp"
-#include "simdb/sqlite/DatabaseManager.hpp"
 
 #if SIMDB_ENABLED
+#include "simdb/sqlite/DatabaseManager.hpp"
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
 #endif
 

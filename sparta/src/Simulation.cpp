@@ -762,10 +762,11 @@ void Simulation::finalizeFramework()
     // Setup SimDB apps and their databases.
     this->createSimDbApps_();
 
+    bool reports_setup = false;
+
+#if SIMDB_ENABLED
     ReportStatsCollector* collector = nullptr;
     simdb::DatabaseManager* db_mgr = nullptr;
-    bool reports_setup = false;
-#if SIMDB_ENABLED
     if (app_manager_) {
         for (const auto & db_file : getDatabaseFiles()) {
             db_mgr = db_managers_[db_file].get();
@@ -782,6 +783,10 @@ void Simulation::finalizeFramework()
             reports_setup = true;
         }
     }
+#else
+    (void)collector;
+    (void)db_mgr;
+    (void)reports_setup;
 #endif
 
     // Set up reports.  This must happen after the DAG is finalized so
@@ -907,6 +912,7 @@ void Simulation::run(uint64_t run_time)
         saveReports();
     }
 
+#if SIMDB_ENABLED
     if (app_manager_) {
         for (const auto & kvp : db_managers_) {
             auto db_mgr = kvp.second.get();
@@ -921,6 +927,7 @@ void Simulation::run(uint64_t run_time)
         app_manager_->destroy();
         app_manager_.reset();
     }
+#endif
 
     if(eptr == std::exception_ptr()){
         // Dump debug if there was no error and the policy is to always dump.
