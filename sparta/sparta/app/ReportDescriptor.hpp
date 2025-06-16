@@ -529,6 +529,11 @@ namespace sparta {
             void clearDestinationFiles(const Simulation& sim);
 
             /*!
+             * \brief Called when the ReportRepository is shutting down.
+             */
+            void teardown();
+
+            /*!
              * \brief Returns the usage count (incremented by addInstantiation)
              */
             uint32_t getUsageCount() const { return instantiations_.size(); }

@@ -165,6 +165,7 @@ public:
 
         num_written += desc_.updateOutput();
         num_written += desc_.writeOutput();
+        desc_.teardown();
 
     #if SIMDB_ENABLED
         if (collector_ && desc_.format != "csv" && desc_.format != "csv_cumulative") {

@@ -329,28 +329,6 @@ report::format::BaseFormatter* ReportDescriptor::addInstantiation(Report* r,
 
 ReportDescriptor::~ReportDescriptor()
 {
-    try {
-        if (!idle_reports_.empty()) {
-            std::vector<inst_t> to_flush;
-            for (auto & inst : instantiations_) {
-                if (idle_reports_.find(inst.first) != idle_reports_.end()) {
-                    to_flush.push_back(inst);
-                }
-            }
-
-            instantiations_.swap(to_flush);
-            triggered_reports_.clear();
-
-            this->updateOutput(nullptr);
-            this->writeOutput(nullptr);
-        }
-
-        if (!legacy_reports_enabled_) {
-            std::filesystem::remove(dest_file);
-        }
-    } catch (...) {
-        //destructors should never throw
-    }
 }
 
 bool ReportDescriptor::updateReportActiveState_(const Report * r)
@@ -527,6 +505,28 @@ void ReportDescriptor::clearDestinationFiles(const Simulation& sim)
             }
         }
         ++idx;
+    }
+}
+
+void ReportDescriptor::teardown()
+{
+    if (!idle_reports_.empty()) {
+        std::vector<inst_t> to_flush;
+        for (auto & inst : instantiations_) {
+            if (idle_reports_.find(inst.first) != idle_reports_.end()) {
+                to_flush.push_back(inst);
+            }
+        }
+
+        instantiations_.swap(to_flush);
+        triggered_reports_.clear();
+
+        this->updateOutput(nullptr);
+        this->writeOutput(nullptr);
+    }
+
+    if (!legacy_reports_enabled_) {
+        std::filesystem::remove(dest_file);
     }
 }
 
