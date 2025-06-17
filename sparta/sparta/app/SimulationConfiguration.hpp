@@ -494,34 +494,55 @@ public:
     class SimDBConfig
     {
     public:
-        void setSimDBFile(const std::string & filename) {
-            simdb_file_ = filename;
-        }
-
-        const std::string & getSimDBFile() const {
-            return simdb_file_;
-        }
-
-        void enableSimDBReports(const bool disable_legacy_reports = false) {
-            reports_enabled_ = true;
-            disable_legacy_reports_ = disable_legacy_reports;
-            if (simdb_file_.empty()) {
-                simdb_file_ = "sparta.db";
+        void disableLegacyReports()
+        {
+            if (!appEnabled("simdb-reports")) {
+                throw SpartaException()
+                    << "Cannot disable legacy reports when simdb-reports app is not enabled";
             }
+            legacy_reports_enabled_ = false;
         }
 
-        bool simDBReportsEnabled() const {
-            return reports_enabled_;
+        bool legacyReportsEnabled() const
+        {
+            return legacy_reports_enabled_;
         }
 
-        bool legacyReportsEnabled() const {
-            return !disable_legacy_reports_;
+        void enableApp(const std::string & app_name, const std::string & db_file)
+        {
+            enabled_apps_[db_file].insert(app_name);
+            app_db_files_[app_name] = db_file;
+        }
+
+        bool appEnabled(const std::string & app_name) const
+        {
+            return app_db_files_.count(app_name) > 0;
+        }
+
+        std::vector<std::string> getEnabledApps() const 
+        {
+            std::vector<std::string> apps;
+            for (const auto & kvp : app_db_files_) {
+                apps.push_back(kvp.first);
+            }
+            return apps;
+        }
+
+        std::string getAppDatabase(const std::string & app_name) const
+        {
+            auto it = app_db_files_.find(app_name);
+            if (it != app_db_files_.end()) {
+                return it->second;
+            } else {
+                return "";
+            }
         }
 
     private:
         std::string simdb_file_;
-        bool reports_enabled_ = false;
-        bool disable_legacy_reports_ = false;
+        std::map<std::string, std::set<std::string>> enabled_apps_;
+        std::map<std::string, std::string> app_db_files_;
+        bool legacy_reports_enabled_ = true;
     } simdb_config;
 
     /*!
