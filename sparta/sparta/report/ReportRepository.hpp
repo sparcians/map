@@ -46,6 +46,7 @@
 
 namespace sparta::app {
     class ReportDescriptor;
+    class ReportStatsCollector;
 } /* namespace sparta */
 
 namespace sparta::app {
@@ -83,7 +84,8 @@ public:
      * \return Handle to the newly created directory.
      */
     DirectoryHandle createDirectory(
-        const app::ReportDescriptor & desc);
+        const app::ReportDescriptor & desc,
+        app::ReportStatsCollector* collector = nullptr);
 
     /*!
      * \brief Add a report to the given directory.
@@ -108,8 +110,12 @@ public:
     void postBuildTree();
 
     /*!
-     * \brief Called on Simulation::finalizeFramework() after the reports
-     * have all been setup.
+     * \brief Called when the Simulation is setting up reports.
+     */
+    void configSimDbReports();
+
+    /*!
+     * \brief Called when the framework is finalized.
      */
     void postFinalizeFramework();
 

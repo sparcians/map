@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "sparta/simulation/TreeNode.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/Utils.hpp"

@@ -45,7 +45,8 @@
 #include "sparta/utils/ValidValue.hpp"
 
 #if SIMDB_ENABLED
-#include "simdb/sqlite/DatabaseManager.hpp"
+#include "sparta/app/simdb/ReportStatsCollector.hpp"
+#include "simdb/apps/AppManager.hpp"
 #endif
 
 namespace sparta::report::format {
@@ -68,8 +69,9 @@ namespace sparta {
 class Directory
 {
 public:
-    Directory(const app::ReportDescriptor & desc) :
-        desc_(desc)
+    Directory(const app::ReportDescriptor & desc, app::ReportStatsCollector* collector)
+        : desc_(desc)
+        , collector_(collector)
     {
         sparta_assert(desc_.getUsageCount() == 0);
         sparta_assert(!desc_.def_file.empty());
@@ -116,33 +118,15 @@ public:
      * \brief Write all metadata about our report (and its subreports
      * and statistics) to SimDB.
      */
-    void configSimDbReports(simdb::DatabaseManager* db_mgr, RootTreeNode* root)
+    void configSimDbReports()
     {
     #if SIMDB_ENABLED
-        db_mgr_ = db_mgr;
-        desc_simdb_id_ = desc_.configSimDbReports(db_mgr, root);
-
-        if (desc_simdb_id_ == 0) {
+        if (!desc_.configSimDbReports(collector_)) {
             return;
         }
 
         const auto& header = reports_[0]->getHeader();
-        const auto start_counter_loc = header.getStringified("start_counter");
-        const auto stop_counter_loc = header.getStringified("stop_counter");
-        const auto update_counter_loc = header.getStringified("update_counter");
-
-        std::ostringstream cmd;
-        cmd << "UPDATE Reports SET "
-            << "StartCounter = '" << start_counter_loc << "', "
-            << "StopCounter = '" << stop_counter_loc << "', "
-            << "UpdateCounter = '" << update_counter_loc << "'"
-            << " WHERE ReportDescID = " << desc_simdb_id_
-            << " AND ParentReportID = 0";
-
-        db_mgr_->EXECUTE(cmd.str());
-    #else
-        (void) db_mgr;
-        (void) root;
+        collector_->setHeader(&desc_, header);
     #endif
     }
 
@@ -155,6 +139,7 @@ public:
     {
         sim_ = sim;
         this->consumeDescriptorExtensions_(context);
+        this->configSimDbReports();
         return true;
     }
 
@@ -180,6 +165,13 @@ public:
 
         num_written += desc_.updateOutput();
         num_written += desc_.writeOutput();
+        desc_.teardown();
+
+    #if SIMDB_ENABLED
+        if (collector_ && desc_.format != "csv" && desc_.format != "csv_cumulative") {
+            collector_->updateReportEndTime(&desc_);
+        }
+    #endif
 
         bool print = true;
         if (sim_) {
@@ -553,19 +545,13 @@ private:
             }
         }
 
-    #if SIMDB_ENABLED
-        if (first && db_mgr_ != nullptr && desc_simdb_id_ != 0) {
-            // Note that all of our reports (and their subreports) have
-            // the same start tick.
-            std::ostringstream cmd;
-            cmd << "UPDATE Reports SET StartTick = "
-                << reports_[0]->getStart()
-                << " WHERE ReportDescID = " << desc_simdb_id_
-                << " AND ParentReportID = 0";
-
-            db_mgr_->EXECUTE(cmd.str());
-        }
-    #endif
+        #if SIMDB_ENABLED
+            if (first && collector_) {
+                collector_->updateReportStartTime(&desc_);
+            }
+        #else
+            (void)first;
+        #endif
     }
 
     void stopReports_()
@@ -590,16 +576,8 @@ private:
         desc_.ignoreFurtherUpdates();
 
         #if SIMDB_ENABLED
-            if (db_mgr_ != nullptr && desc_simdb_id_ != 0) {
-                if (reports_[0]->getEnd() != Scheduler::INDEFINITE) {
-                    std::ostringstream cmd;
-                    cmd << "UPDATE Reports SET EndTick = "
-                        << reports_[0]->getEnd()
-                        << " WHERE ReportDescID = " << desc_simdb_id_
-                        << " AND ParentReportID = 0";
-
-                    db_mgr_->EXECUTE(cmd.str());
-                }
+            if (collector_ && desc_.format != "csv" && desc_.format != "csv_cumulative") {
+                collector_->updateReportEndTime(&desc_);
             }
         #endif
     }
@@ -813,19 +791,12 @@ private:
     void updateSimDbReportMeta_(const std::string & key,
                                 const std::string & value)
     {
-    #if SIMDB_ENABLED
-        if (key.empty() || value.empty()) {
+        if (key.empty() || value.empty() || !collector_) {
             return;
         }
 
-        if (db_mgr_ != nullptr && desc_simdb_id_ != 0) {
-            std::ostringstream cmd;
-            cmd << "UPDATE Reports SET " << key << " = '" << value
-                << "' WHERE ReportDescID = " << desc_simdb_id_
-                << " AND ParentReportID = 0";
-
-            db_mgr_->EXECUTE(cmd.str());
-        }
+    #if SIMDB_ENABLED
+        collector_->updateReportMetadata(&desc_, key, value);
     #endif
     }
 
@@ -986,9 +957,7 @@ private:
     TreeNode * device_tree_location_ = nullptr;
     app::Simulation * sim_ = nullptr;
     std::shared_ptr<SubContainer> sub_container_;
-
-    simdb::DatabaseManager * db_mgr_ = nullptr;
-    int desc_simdb_id_ = 0;
+    app::ReportStatsCollector* collector_ = nullptr;
 };
 
 std::map<std::string, Directory*> Directory::referenced_directories_;
@@ -1010,9 +979,10 @@ public:
     }
 
     ReportRepository::DirectoryHandle createDirectory(
-        const app::ReportDescriptor & desc)
+        const app::ReportDescriptor & desc,
+        app::ReportStatsCollector* collector)
     {
-        std::unique_ptr<Directory> direc(new Directory(desc));
+        std::unique_ptr<Directory> direc(new Directory(desc, collector));
 
         direc->setReportSubContainer(sub_container_);
         ReportRepository::DirectoryHandle handle = direc.get();
@@ -1063,7 +1033,6 @@ public:
 
     void postFinalizeFramework()
     {
-    #if SIMDB_ENABLED
         bool any_enabled = false;
         for (auto& kvp : directories_) {
             auto& report_desc = kvp.second->getDescriptor();
@@ -1078,11 +1047,12 @@ public:
         }
 
         const auto& simdb_config = sim_->getSimulationConfiguration()->simdb_config;
-        if (simdb_config.simDBReportsEnabled()) {
+        const auto apps = simdb_config.getEnabledApps();
+        const bool simdb_enabled = std::find(apps.begin(), apps.end(), "simdb-reports") != apps.end();
+        if (simdb_enabled) {
             // Not all report formats are supported by SimDB exporters. Until
-            // all are supported, we should not allow --enable-simdb-reports
-            // if we will not be able to export all of this simulation's
-            // reports.
+            // all are supported, we should not allow this app to run if we
+            // will not be able to export all of this simulation's reports.
             std::set<std::string> unsupported_dest_files;
             for (auto& kvp : directories_) {
                 auto& report_desc = kvp.second->getDescriptor();
@@ -1119,170 +1089,7 @@ public:
                     }
                 }
             }
-
-            simdb::Schema schema;
-            using dt = simdb::SqlDataType;
-
-            auto& report_desc_tbl = schema.addTable("ReportDescriptors");
-            report_desc_tbl.addColumn("LocPattern", dt::string_t);
-            report_desc_tbl.addColumn("DefFile", dt::string_t);
-            report_desc_tbl.addColumn("DestFile", dt::string_t);
-            report_desc_tbl.addColumn("Format", dt::string_t);
-
-            auto& run_meta_tbl = schema.addTable("ReportDescriptorMeta");
-            run_meta_tbl.addColumn("ReportDescID", dt::int32_t);
-            run_meta_tbl.addColumn("MetaName", dt::string_t);
-            run_meta_tbl.addColumn("MetaValue", dt::string_t);
-
-            auto& report_tbl = schema.addTable("Reports");
-            report_tbl.addColumn("ReportDescID", dt::int32_t);
-            report_tbl.addColumn("ParentReportID", dt::int32_t);
-            report_tbl.addColumn("Name", dt::string_t);
-            report_tbl.addColumn("StartTick", dt::int64_t);
-            report_tbl.addColumn("EndTick", dt::int64_t);
-            report_tbl.addColumn("InfoString", dt::string_t);
-            report_tbl.addColumn("StartCounter", dt::string_t);
-            report_tbl.addColumn("StopCounter", dt::string_t);
-            report_tbl.addColumn("UpdateCounter", dt::string_t);
-            report_tbl.setColumnDefaultValue("StartCounter", std::string());
-            report_tbl.setColumnDefaultValue("StopCounter", std::string());
-            report_tbl.setColumnDefaultValue("UpdateCounter", std::string());
-
-            auto& report_meta_tbl = schema.addTable("ReportMetadata");
-            report_meta_tbl.addColumn("ReportDescID", dt::int32_t);
-            report_meta_tbl.addColumn("ReportID", dt::int32_t);
-            report_meta_tbl.addColumn("MetaName", dt::string_t);
-            report_meta_tbl.addColumn("MetaValue", dt::string_t);
-            report_meta_tbl.disableAutoIncPrimaryKey();
-
-            auto& report_styles_tbl = schema.addTable("ReportStyles");
-            report_styles_tbl.addColumn("ReportDescID", dt::int32_t);
-            report_styles_tbl.addColumn("ReportID", dt::int32_t);
-            report_styles_tbl.addColumn("StyleName", dt::string_t);
-            report_styles_tbl.addColumn("StyleValue", dt::string_t);
-            report_styles_tbl.createCompoundIndexOn(SQL_COLUMNS("ReportDescID", "ReportID", "StyleName"));
-            report_styles_tbl.disableAutoIncPrimaryKey();
-
-            auto& stat_insts_tbl = schema.addTable("StatisticInsts");
-            stat_insts_tbl.addColumn("ReportID", dt::int32_t);
-            stat_insts_tbl.addColumn("StatisticName", dt::string_t);
-            stat_insts_tbl.addColumn("StatisticLoc", dt::string_t);
-            stat_insts_tbl.addColumn("StatisticDesc", dt::string_t);
-            stat_insts_tbl.addColumn("StatisticVis", dt::int32_t);
-            stat_insts_tbl.addColumn("StatisticClass", dt::int32_t);
-            stat_insts_tbl.createIndexOn("ReportID");
-
-            auto& stat_defn_meta_tbl = schema.addTable("StatisticDefnMetadata");
-            stat_defn_meta_tbl.addColumn("StatisticInstID", dt::int32_t);
-            stat_defn_meta_tbl.addColumn("MetaName", dt::string_t);
-            stat_defn_meta_tbl.addColumn("MetaValue", dt::string_t);
-            stat_defn_meta_tbl.createIndexOn("StatisticInstID");
-            stat_defn_meta_tbl.disableAutoIncPrimaryKey();
-
-            auto& siminfo_tbl = schema.addTable("SimulationInfo");
-            siminfo_tbl.addColumn("SimName", dt::string_t);
-            siminfo_tbl.addColumn("SimVersion", dt::string_t);
-            siminfo_tbl.addColumn("SpartaVersion", dt::string_t);
-            siminfo_tbl.addColumn("ReproInfo", dt::string_t);
-            siminfo_tbl.addColumn("SimEndTick", dt::int64_t);
-            siminfo_tbl.setColumnDefaultValue("SimEndTick", -1);
-            siminfo_tbl.disableAutoIncPrimaryKey();
-
-            auto& siminfo_header_pairs_tbl = schema.addTable("SimulationInfoHeaderPairs");
-            siminfo_header_pairs_tbl.addColumn("HeaderName", dt::string_t);
-            siminfo_header_pairs_tbl.addColumn("HeaderValue", dt::string_t);
-            siminfo_header_pairs_tbl.disableAutoIncPrimaryKey();
-
-            auto& vis_tbl = schema.addTable("Visibilities");
-            vis_tbl.addColumn("Hidden", dt::int32_t);
-            vis_tbl.addColumn("Support", dt::int32_t);
-            vis_tbl.addColumn("Detail", dt::int32_t);
-            vis_tbl.addColumn("Normal", dt::int32_t);
-            vis_tbl.addColumn("Summary", dt::int32_t);
-            vis_tbl.addColumn("Critical", dt::int32_t);
-            vis_tbl.disableAutoIncPrimaryKey();
-
-            auto& js_json_leaf_nodes = schema.addTable("JsJsonLeafNodes");
-            js_json_leaf_nodes.addColumn("ReportName", dt::string_t);
-            js_json_leaf_nodes.addColumn("IsParentOfLeafNodes", dt::int32_t);
-            js_json_leaf_nodes.setColumnDefaultValue("IsParentOfLeafNodes", -1);
-            js_json_leaf_nodes.disableAutoIncPrimaryKey();
-
-            // In the case of multiple reports, we will end up with more than
-            // one CollectionRecords rows with the same Tick value. We use this
-            // table in the python exporter to determine which records belong
-            // to which report.
-            auto& desc_records_tbl = schema.addTable("DescriptorRecords");
-            desc_records_tbl.addColumn("ReportDescID", dt::int32_t);
-            desc_records_tbl.addColumn("DatablobID", dt::int32_t);
-            desc_records_tbl.addColumn("Tick", dt::int64_t);
-            desc_records_tbl.createIndexOn("ReportDescID");
-
-            // For timeseries reports that use toggle triggers, we need to
-            // annotate the .csv files with a special annotation which tells
-            // the user how many ticks/cycles/picoseconds were skipped while
-            // the report/trigger was inactive.
-            auto& csv_skip_annotations_tbl = schema.addTable("CsvSkipAnnotations");
-            csv_skip_annotations_tbl.addColumn("ReportDescID", dt::int32_t);
-            csv_skip_annotations_tbl.addColumn("Tick", dt::int64_t);
-            csv_skip_annotations_tbl.addColumn("Annotation", dt::string_t);
-            csv_skip_annotations_tbl.createIndexOn("ReportDescID");
-
-            const auto& simdb_file = simdb_config.getSimDBFile();
-            db_mgr_ = std::make_unique<simdb::DatabaseManager>(simdb_file, true);
-            db_mgr_->createDatabaseFromSchema(schema);
-
-            // Use a heartbeat of 1 so that SimDB does not try to optimize the
-            // database size by using a pseudo-RLE algo to compress the stats. This
-            // makes the python exporter faster and simpler.
-            //
-            // Note that the database records are still compressed, so the .db
-            // size should not be an issue (still a lot smaller than the legacy
-            // formatted reports).
-            constexpr auto heartbeat = 1;
-            db_mgr_->enableCollection(heartbeat);
-            auto collection_mgr = db_mgr_->getCollectionMgr();
-
-            // Since a single report can have StatisticInstance's from different
-            // clock domains, we will just tell the collector that all stats are
-            // on the "root" clock.
-            //
-            // Note that this doesn't have any real effect on the reports, and
-            // differentiating between clocks is more of a concern for Argos.
-            // We just happen to be reusing the SimDB collection system for
-            // StatisticInstance reports.
-            constexpr auto assumed_root_period = 1;
-            collection_mgr->addClock("root", assumed_root_period);
-
-            db_mgr_->safeTransaction([&]() {
-                db_mgr_->INSERT(
-                    SQL_TABLE("SimulationInfo"),
-                    SQL_COLUMNS("SimName", "SimVersion", "SpartaVersion", "ReproInfo"),
-                    SQL_VALUES(SimulationInfo::getInstance().sim_name,
-                               SimulationInfo::getInstance().simulator_version,
-                               SimulationInfo::getInstance().getSpartaVersion(),
-                               SimulationInfo::getInstance().reproduction_info));
-
-                db_mgr_->INSERT(
-                    SQL_TABLE("Visibilities"),
-                    SQL_COLUMNS("Hidden", "Support", "Detail", "Normal", "Summary", "Critical"),
-                    SQL_VALUES(static_cast<int>(sparta::InstrumentationNode::VIS_HIDDEN),
-                               static_cast<int>(sparta::InstrumentationNode::VIS_SUPPORT),
-                               static_cast<int>(sparta::InstrumentationNode::VIS_DETAIL),
-                               static_cast<int>(sparta::InstrumentationNode::VIS_NORMAL),
-                               static_cast<int>(sparta::InstrumentationNode::VIS_SUMMARY),
-                               static_cast<int>(sparta::InstrumentationNode::VIS_CRITICAL)));
-
-                report::format::JavascriptObject::writeLeafNodeInfoToDB(db_mgr_.get());
-
-                for (auto& kvp : directories_) {
-                    kvp.second->configSimDbReports(db_mgr_.get(), sim_->getRoot());
-                }
-                db_mgr_->finalizeCollections();
-                return true;
-            });
         }
-    #endif // SIMDB_ENABLED
     }
 
     statistics::StatisticsArchives * getStatsArchives()
@@ -1373,39 +1180,6 @@ public:
                       << std::endl << std::endl;
         }
 
-    #if SIMDB_ENABLED
-        if (db_mgr_) {
-            db_mgr_->safeTransaction([&](){
-                for (const auto& kvp : SimulationInfo::getInstance().getHeaderPairs()) {
-                    db_mgr_->INSERT(
-                        SQL_TABLE("SimulationInfoHeaderPairs"),
-                        SQL_COLUMNS("HeaderName", "HeaderValue"),
-                        SQL_VALUES(kvp.first, kvp.second));
-                }
-
-                for (const auto& other : SimulationInfo::getInstance().other) {
-                    db_mgr_->INSERT(
-                        SQL_TABLE("SimulationInfoHeaderPairs"),
-                        SQL_COLUMNS("HeaderName", "HeaderValue"),
-                        SQL_VALUES("Other", other));
-                }
-
-                std::ostringstream oss;
-                oss << "UPDATE SimulationInfo SET SimEndTick = "
-                    << sim_->getScheduler()->getCurrentTick();
-
-                db_mgr_->EXECUTE(oss.str());
-                return true;
-            });
-
-            db_mgr_->postSim();
-            db_mgr_->closeDatabase();
-            db_mgr_.reset();
-        }
-    #endif // SIMDB_ENABLED
-
-        directories_.clear();
-
         // %%% ... if(sim_) { ... %%%
         //   This same method can get called again from our own
         //   destructor, *after* the Simulation has already been
@@ -1437,10 +1211,6 @@ private:
     std::shared_ptr<sparta::NotificationSource<std::string>> on_triggered_notifier_;
     std::unique_ptr<statistics::StatisticsArchives> stats_archives_;
     std::unique_ptr<statistics::StatisticsStreams> stats_streams_;
-
-    #if SIMDB_ENABLED
-    std::unique_ptr<simdb::DatabaseManager> db_mgr_;
-    #endif
 };
 
 ReportRepository::ReportRepository(app::Simulation * sim) :
@@ -1454,9 +1224,10 @@ ReportRepository::ReportRepository(TreeNode * context) :
 }
 
 ReportRepository::DirectoryHandle ReportRepository::createDirectory(
-    const app::ReportDescriptor & desc)
+    const app::ReportDescriptor & desc,
+    app::ReportStatsCollector* collector)
 {
-    return impl_->createDirectory(desc);
+    return impl_->createDirectory(desc, collector);
 }
 
 void ReportRepository::addReport(

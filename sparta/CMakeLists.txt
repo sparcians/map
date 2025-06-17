@@ -80,6 +80,10 @@ list (APPEND SourceCppFiles
             src/GenericUnit.cpp
 )
 
+if (USING_SIMDB)
+  list (APPEND SourceCppFiles src/ReportStatsCollector.cpp)
+endif ()
+
 # Add python support
 if (COMPILE_WITH_PYTHON)
   list (APPEND SourceCppFiles

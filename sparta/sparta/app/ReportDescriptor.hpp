@@ -35,16 +35,12 @@
 
 namespace sparta::app {
     class SimulationConfiguration;
+    class ReportStatsCollector;
 }  // namespace sparta::app
 
 namespace sparta::trigger {
     class SkippedAnnotatorBase;
 }  // namespace sparta::trigger
-
-namespace simdb {
-    class CollectionPoint;
-    class DatabaseManager;
-}  // namespace simdb
 
 namespace sparta {
 
@@ -194,14 +190,9 @@ namespace sparta {
             std::string orig_dest_file_;
 
             /*!
-             * \brief SimDB instance owned by ReportRepository.
+             * \brief Report stats collector for SimDB.
              */
-            simdb::DatabaseManager* db_mgr_ = nullptr;
-
-            /*!
-             * \brief SimDB primary key in the ReportDescriptors table.
-             */
-            int simdb_descriptor_id_ = 0;
+            ReportStatsCollector* collector_ = nullptr;
 
             /*!
              * \brief Set to false only when the simulation was run with
@@ -213,31 +204,6 @@ namespace sparta {
              * compatibility.
              */
             bool legacy_reports_enabled_ = true;
-
-            /*!
-             * \brief Cache the Scheduler so we know the current tick for every
-             * call to simdb::CollectionMgr::sweep().
-             */
-            const Scheduler* scheduler_ = nullptr;
-
-            /*!
-             * \brief Stats for each report (collected_stat_t) are stored as pairs
-             * of a StatisticInstance and a simdb::CollectionPoint. The data value
-             * is retrieved from the StatisticInstance and written to the SimDB
-             * CollectionPoint.
-             */
-            using collected_stat_t = std::pair<const StatisticInstance*, std::shared_ptr<simdb::CollectionPoint>>;
-            std::vector<collected_stat_t> simdb_stats_;
-
-            /*!
-             * \brief Write all metadata about the given report (and its subreports
-             * and statistics) to SimDB.
-             */
-            void configSimDbReport_(
-                const Report* r,
-                std::unordered_set<std::string> & visited_stats,
-                const int report_desc_id = 0,
-                const int parent_report_id = 0);
 
             /*!
              * \brief Go through the SimDB collection system and "activate" all of our
@@ -254,21 +220,6 @@ namespace sparta {
              * that the report was not active.
              */
             void skipSimDbStats_();
-
-            /*!
-             * \brief This method gets called for each CollectionRecords entry that is
-             * written to the database.
-             */
-            static void postProcessRecord_(const int datablob_db_id, const uint64_t tick, void* user_data)
-            {
-                static_cast<ReportDescriptor*>(user_data)->postProcessRecordImpl_(datablob_db_id, tick);
-            }
-
-            /*!
-             * \brief This method gets called for each CollectionRecords entry that is
-             * written to the database.
-             */
-            void postProcessRecordImpl_(const int datablob_db_id, const uint64_t tick);
 
             friend class ReportDescriptorCollection;
 
@@ -426,16 +377,9 @@ namespace sparta {
             std::shared_ptr<statistics::StreamNode> createRootStatisticsStream();
 
             /*!
-             * \brief Write all metadata about our report (and its subreports
-             * and statistics) to SimDB.
-             * 
-             * \return Returns the database ID of the report descriptor in the 
-             * ReportDescriptors table. Returns 0 if:
-             *    - SIMDB_ENABLED is false
-             *    - this descriptor is not enabled
-             *    - this descriptor has no reports
+             * \brief Get ready for SimDB report collection.
              */
-            int configSimDbReports(simdb::DatabaseManager* db_mgr, RootTreeNode* root);
+            bool configSimDbReports(app::ReportStatsCollector* collector);
 
             //! \brief Report descriptors may be triggered to stop early - ensure no
             //! further updates are written to disk
@@ -579,6 +523,11 @@ namespace sparta {
              * written. After simulation, reports are appended to these files
              */
             void clearDestinationFiles(const Simulation& sim);
+
+            /*!
+             * \brief Called when the ReportRepository is shutting down.
+             */
+            void teardown();
 
             /*!
              * \brief Returns the usage count (incremented by addInstantiation)
