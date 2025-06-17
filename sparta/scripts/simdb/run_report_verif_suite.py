@@ -26,6 +26,7 @@ parser.add_argument("--force", action="store_true", help="Force overwrite of the
 parser.add_argument("--serial", action="store_true", help="Run tests serially instead of in parallel.")
 parser.add_argument("--skip", nargs='+', default=[], help="Skip the specified tests.")
 parser.add_argument("--test-only", nargs='+', default=[], help="Run only the specified test(s).")
+parser.add_argument("--v2-exact", action="store_true", help="Use exact comparison against MAP v2 for report contents (e.g. 0.00082 != 8.2e-4).")
 args = parser.parse_args()
 
 # Overwrite the results directory since each test runs in its own tempdir.
@@ -260,13 +261,15 @@ class SpartaTest:
         export_cmd = "python3 " + os.path.join(script_dir, "simdb_export.py")
         export_cmd += " --export-dir simdb_reports"
         export_cmd += " --force"
+        if args.v2_exact:
+            export_cmd += " --v2"
         export_cmd += " sparta.db"
 
         self.__WriteToTestLog(f"Exporting SimDB reports with command: {export_cmd}")
         subprocess.run(export_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # Compare the baseline reports to the SimDB reports.
-        compare_results = RunComparison("baseline_reports", "simdb_reports", baseline_reports, self.logout)
+        compare_results = RunComparison("baseline_reports", "simdb_reports", baseline_reports, self.logout, args.v2_exact)
         passing_reports = compare_results["passing"]
         failing_reports = compare_results["failing"]
         unsupported_reports = compare_results["unsupported"]

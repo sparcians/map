@@ -8,8 +8,6 @@ def GetComparator(dest_file):
         return JSONReportComparator()
     if extension in ('.csv'):
         return CSVReportComparator()
-    if extension in ('.html', '.htm'):
-        return HTMLReportComparator()
 
     return None
 
@@ -20,6 +18,32 @@ class Comparator:
     def NormalizeText(self, text):
         # Remove leading/trailing whitespace and replace all internal whitespace with a single space
         return re.sub(r'\s+', ' ', text.strip())
+
+class ExactComparator(Comparator):
+    def __init__(self):
+        Comparator.__init__(self)
+
+    def Compare(self, baseline_report, simdb_report):
+        with open(baseline_report, "r") as bf, open(simdb_report, "r") as ef:
+            baseline_lines = bf.readlines()
+            export_lines = ef.readlines()
+
+            # Trim all empty end-of-file lines for both.
+            while baseline_lines and baseline_lines[-1].strip() == '':
+                baseline_lines.pop()
+            while export_lines and export_lines[-1].strip() == '':
+                export_lines.pop()
+
+            # Trim the \n for the last line of each file.
+            if baseline_lines:
+                baseline_lines[-1] = baseline_lines[-1].rstrip('\n')
+            if export_lines:
+                export_lines[-1] = export_lines[-1].rstrip('\n')
+
+            baseline_text = ''.join(baseline_lines)
+            export_text = ''.join(export_lines)
+
+        return baseline_text == export_text
 
 class TextReportComparator(Comparator):
     def __init__(self):
@@ -71,10 +95,7 @@ class CSVReportComparator(Comparator):
 
         return True
 
-class HTMLReportComparator(TextReportComparator):
-    pass
-
-def RunComparison(legacy_reports_dir, simdb_reports_dir, baseline_reports, logger):
+def RunComparison(legacy_reports_dir, simdb_reports_dir, baseline_reports, logger, exact=False):
     def WriteToLogger(logger, msg):
         msg = msg.rstrip() + "\n"
         logger.write(msg)
@@ -100,6 +121,9 @@ def RunComparison(legacy_reports_dir, simdb_reports_dir, baseline_reports, logge
             WriteToLogger(logger, f"Report {report} is not supported for comparison.")
             unsupported_reports.append(report)
             continue
+
+        if exact:
+            comparator = ExactComparator()
 
         if not comparator.Compare(baseline_report, simdb_report):
             WriteToLogger(logger, f"Baseline report {report} does not match SimDB report. Test will fail.")

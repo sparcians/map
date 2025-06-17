@@ -6,7 +6,7 @@ class CSVReportExporter:
     def __init__(self):
         pass
 
-    def Export(self, dest_file, descriptor_id, db_conn):
+    def Export(self, dest_file, descriptor_id, db_conn, cmdline_args):
         cursor = db_conn.cursor()
 
         # Start with the CSV header, which looks something like this:
