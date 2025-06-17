@@ -17,7 +17,7 @@ class TextReportExporter:
         self.show_report_range = True
         self.val_col = 0
 
-    def Export(self, dest_file, descriptor_id, db_conn):
+    def Export(self, dest_file, descriptor_id, db_conn, cmdline_args):
         out = io.StringIO()
         if self.GetShowSimInfo():
             # out << sparta::SimulationInfo::getInstance().stringize("", "\n") << std::endl << std::endl;
