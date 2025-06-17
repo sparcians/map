@@ -23,9 +23,10 @@ MAP is broken into two parts:
 
 ## Cloning MAP
 
-Clone MAP with the --recursive option to also clone the git submodules:
+Clone MAP with the `--recursive` option to also clone the git submodules, and `--branch map_v2` to clone
+the latest stable v2.  `master` branch of Sparta should never be used (development).
 
-- `git clone git@github.com:sparcians/map.git --recursive`
+- `git clone git@github.com:sparcians/map.git --recursive --branch map_v2`
 
 ## Building MAP
 
