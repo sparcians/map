@@ -38,10 +38,6 @@ namespace sparta::app {
     class ReportStatsCollector;
 }  // namespace sparta::app
 
-namespace simdb {
-    class PipelineEntry;
-}
-
 namespace sparta::trigger {
     class SkippedAnnotatorBase;
 }  // namespace sparta::trigger

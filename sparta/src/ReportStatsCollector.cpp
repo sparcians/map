@@ -99,19 +99,6 @@ bool ReportStatsCollector::defineSchema(simdb::Schema& schema)
     js_json_leaf_nodes_tbl.setColumnDefaultValue("IsParentOfLeafNodes", -1);
     js_json_leaf_nodes_tbl.disableAutoIncPrimaryKey();
 
-    auto& elem_tree_nodes_tbl = schema.addTable("ElementTreeNodes");
-    elem_tree_nodes_tbl.addColumn("Name", dt::string_t);
-    elem_tree_nodes_tbl.addColumn("ParentID", dt::int32_t);
-
-    auto& collectable_tree_nodes_tbl = schema.addTable("CollectableTreeNodes");
-    collectable_tree_nodes_tbl.addColumn("ElementTreeNodeID", dt::int32_t);
-    collectable_tree_nodes_tbl.addColumn("ClockID", dt::int32_t);
-    collectable_tree_nodes_tbl.addColumn("DataType", dt::string_t);
-    collectable_tree_nodes_tbl.addColumn("Location", dt::string_t);
-    collectable_tree_nodes_tbl.addColumn("AutoCollected", dt::int32_t);
-    collectable_tree_nodes_tbl.setColumnDefaultValue("AutoCollected", 0);
-    collectable_tree_nodes_tbl.disableAutoIncPrimaryKey();
-
     // In the case of multiple reports, we will end up with more than
     // one CollectionRecords rows with the same Tick value. We use this
     // table in the python exporter to determine which records belong
@@ -246,7 +233,6 @@ void ReportStatsCollector::setHeader(const ReportDescriptor* desc,
                                      const report::format::ReportHeader& header)
 {
     descriptor_headers_[desc] = &header;
-
 }
 
 void ReportStatsCollector::updateReportMetadata(
@@ -278,19 +264,19 @@ void ReportStatsCollector::postInit(int argc, char** argv)
         SQL_TABLE("SimulationInfo"),
         SQL_COLUMNS("SimName", "SimVersion", "SpartaVersion", "ReproInfo"),
         SQL_VALUES(SimulationInfo::getInstance().sim_name,
-                    SimulationInfo::getInstance().simulator_version,
-                    SimulationInfo::getInstance().getSpartaVersion(),
-                    SimulationInfo::getInstance().reproduction_info));
+                   SimulationInfo::getInstance().simulator_version,
+                   SimulationInfo::getInstance().getSpartaVersion(),
+                   SimulationInfo::getInstance().reproduction_info));
 
     db_mgr_->INSERT(
         SQL_TABLE("Visibilities"),
         SQL_COLUMNS("Hidden", "Support", "Detail", "Normal", "Summary", "Critical"),
         SQL_VALUES(static_cast<int>(sparta::InstrumentationNode::VIS_HIDDEN),
-                    static_cast<int>(sparta::InstrumentationNode::VIS_SUPPORT),
-                    static_cast<int>(sparta::InstrumentationNode::VIS_DETAIL),
-                    static_cast<int>(sparta::InstrumentationNode::VIS_NORMAL),
-                    static_cast<int>(sparta::InstrumentationNode::VIS_SUMMARY),
-                    static_cast<int>(sparta::InstrumentationNode::VIS_CRITICAL)));
+                   static_cast<int>(sparta::InstrumentationNode::VIS_SUPPORT),
+                   static_cast<int>(sparta::InstrumentationNode::VIS_DETAIL),
+                   static_cast<int>(sparta::InstrumentationNode::VIS_NORMAL),
+                   static_cast<int>(sparta::InstrumentationNode::VIS_SUMMARY),
+                   static_cast<int>(sparta::InstrumentationNode::VIS_CRITICAL)));
 
     report::format::JavascriptObject::writeLeafNodeInfoToDB(db_mgr_);
 

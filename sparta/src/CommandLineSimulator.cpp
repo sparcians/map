@@ -620,9 +620,9 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
     #if SIMDB_ENABLED
     simdb_opts_.add_options()
         ("simdb-apps",
-         named_value<std::vector<std::string>>("filename.db app1 app2 ...", 2, -1)->multitoken(),
+         named_value<std::vector<std::string>>("DATABASE_FILE app1 app2 ...", 2, -1)->multitoken(),
          "Instantiate and run the provided SimDB applications and associate them with the "
-         "simulation database file SIMDB_FILE. You can use this option multiple times to "
+         "simulation database file DATABASE_FILE. You can use this option multiple times to "
          "create apps going to different databases.")
         ("enable-simdb-reports",
          named_value<std::vector<std::string>>("[DATABASE_FILE]", 0, 1),

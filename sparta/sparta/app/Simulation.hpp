@@ -979,7 +979,7 @@ private:
     std::unique_ptr<control::TemporaryRunControl> rc_;
 
     /*!
-     * \brief Create enable SimDB apps during framework finalization.
+     * \brief Create enabled SimDB apps during framework finalization.
      */
     void createSimDbApps_();
     int argc_ = 0;
