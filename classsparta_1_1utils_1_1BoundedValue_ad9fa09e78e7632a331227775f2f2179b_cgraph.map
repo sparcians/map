@@ -1,0 +1,9 @@
+<map id="sparta::utils::BoundedValue::BoundedValue" name="sparta::utils::BoundedValue::BoundedValue">
+<area shape="rect" id="Node000001" title="Copy Constructor from related signed integral BV to unsigned BV." alt="" coords="5,71,183,111"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1utils_1_1BoundedValue.html#a3c3a0671938d1a6905d4f11806c19f80" title="Return the lower bound value, const version." alt="" coords="231,5,408,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="166,68,231,48,233,54,167,73"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1utils_1_1BoundedValue.html#a04d003ee7f90e41c73e628c1979f950b" title="Return the upper bound value, const version." alt="" coords="231,71,408,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="183,88,215,88,215,94,183,94"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1utils_1_1BoundedValue.html#ad57b69f6bbed6ece7bccfdb2c114bae5" title="Get the value &#45; const version." alt="" coords="231,136,408,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="167,109,233,128,231,134,166,114"/>
+</map>

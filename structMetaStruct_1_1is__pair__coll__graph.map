@@ -1,0 +1,5 @@
+<map id="MetaStruct::is_pair&lt; typename &gt;" name="MetaStruct::is_pair&lt; typename &gt;">
+<area shape="rect" id="Node000001" title="This templated struct lets us know about whether the datatype is actually an std::pair object...." alt="" coords="5,79,135,120"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="18,5,122,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="73,46,73,79,67,79,67,46"/>
+</map>

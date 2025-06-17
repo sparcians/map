@@ -1,0 +1,5 @@
+<map id="core_example::LSU::MemoryAccessInfoPairDef" name="core_example::LSU::MemoryAccessInfoPairDef">
+<area shape="rect" id="Node000001" title="Pair Definition class of the Memory Access Information that flows through the example/CoreModel." alt="" coords="5,94,182,135"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="16,5,171,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="96,62,96,94,91,94,91,62"/>
+</map>

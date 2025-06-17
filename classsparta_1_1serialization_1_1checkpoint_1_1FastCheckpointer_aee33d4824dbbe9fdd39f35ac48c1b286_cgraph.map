@@ -1,0 +1,13 @@
+<map id="sparta::serialization::checkpoint::FastCheckpointer::~FastCheckpointer" name="sparta::serialization::checkpoint::FastCheckpointer::~FastCheckpointer">
+<area shape="rect" id="Node000001" title="Destructor." alt="" coords="5,69,204,125"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a9a1eea3e14aca200057b1a5e601b2fbd" title="Allows this checkpoint to be deleted if it is no longer a previous delta of some other delta (i...." alt="" coords="252,32,443,88"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="204,79,236,74,237,80,205,85"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a34a8164584635a65bf411dead281837b" title="Indicates whether this checkpoint has been flagged deleted." alt="" coords="491,108,682,164"/>
+<area shape="poly" id="edge6_Node000001_Node000004" title=" " alt="" coords="204,103,476,124,475,130,204,108"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a1ab50505bd631547981015601a4f40e8" title="Returns the ID of this checkpoint." alt="" coords="730,36,892,92"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="425,29,491,13,587,3,629,5,683,13,735,28,733,33,682,19,629,10,587,8,491,19,426,34"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="438,86,483,100,481,105,436,91"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a7d836d49d2c525b0ca82d8257712d4ef" title="Sets the checkpoint ID." alt="" coords="506,28,667,84"/>
+<area shape="poly" id="edge5_Node000002_Node000005" title=" " alt="" coords="444,56,490,55,490,60,444,61"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="675,105,715,92,716,97,676,110"/>
+</map>

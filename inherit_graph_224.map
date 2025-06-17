@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html" title="Checkpointer interface. Defines an ID&#45;based checkpointing API for tree of related checkpoints which c..." alt="" coords="5,13,178,54"/>
+<area shape="rect" id="Node000001" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html" title="Implements quick checkpointing through delta&#45;checkpoint trees which store state&#45;deltas in a compact f..." alt="" coords="226,13,424,54"/>
+<area shape="poly" id="edge245_Node000000_Node000001" title=" " alt="" coords="193,30,225,30,225,36,193,36"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1PersistentFastCheckpointer.html" title="Implements a Persistent FastCheckpointer, i.e. implements an interface to save checkpoints to disk." alt="" coords="472,5,653,61"/>
+<area shape="poly" id="edge246_Node000001_Node000002" title=" " alt="" coords="440,30,472,30,472,36,440,36"/>
+</map>
