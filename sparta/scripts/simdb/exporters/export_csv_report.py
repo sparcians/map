@@ -75,23 +75,10 @@ class CSVReportExporter:
             # and the CsvSkipAnnotations table before writing them to the CSV file.
             csv_row_text_by_tick = {}
 
-            # We cannot query the CollectionRecords table directly, because it may contain multiple
-            # records for the same tick (coming from different report descriptors). We have to query
-            # the DescriptorRecords table first to find out which CollectionRecords belong to us.
-            cmd = f'SELECT DatablobID FROM DescriptorRecords WHERE ReportDescID={descriptor_id}'
+            cmd = f'SELECT Tick, DataBlob FROM DescriptorRecords WHERE ReportDescID={descriptor_id}'
             cursor.execute(cmd)
-            datablob_ids = {row[0] for row in cursor.fetchall()}
-
-            cmd = f'SELECT Id, Tick, Data, IsCompressed FROM CollectionRecords'
-            cursor.execute(cmd)
-            for record_id, tick, data, is_compressed in cursor.fetchall():
-                # Not ours? Continue.
-                if record_id not in datablob_ids:
-                    continue
-
-                if is_compressed:
-                    data = zlib.decompress(data)
-
+            for tick, data in cursor.fetchall():
+                data = zlib.decompress(data)
                 dt = np.dtype([('value', '<f8')])
                 records = np.frombuffer(data, dtype=dt)
                 double_values = records['value']

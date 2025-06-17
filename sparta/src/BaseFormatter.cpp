@@ -30,10 +30,6 @@
 #include "sparta/report/format/StatsMapping.hpp"
 #include "sparta/report/format/BaseOstreamFormatter.hpp"
 
-#if SIMDB_ENABLED
-#include "simdb/sqlite/DatabaseManager.hpp"
-#endif
-
 namespace sparta {
     namespace report {
         namespace format {
@@ -185,43 +181,6 @@ bool BaseFormatter::isValidFormatName(const std::string& format)
         }
     }
     return false;
-}
-
-void BaseFormatter::configSimDbReport(
-    simdb::DatabaseManager* db_mgr,
-    const int report_desc_id,
-    const int report_id)
-{
-#if SIMDB_ENABLED
-    // Note that in order to keep the schema data types uniform,
-    // we write every bit of metadata as a string. The python
-    // export module will convert the data types to the correct
-    // types when it writes formatted reports after simulation.
-    auto meta_kv_pairs = metadata_kv_pairs_;
-
-    const std::string pretty_print = pretty_print_enabled_ ? "true" : "false";
-    meta_kv_pairs["PrettyPrint"] = pretty_print;
-
-    const std::string omit_zero = zero_si_values_omitted_ ? "true" : "false";
-    meta_kv_pairs["OmitZeros"] = omit_zero;
-
-    // Add any formatter-specific metadata
-    auto extra_meta_kv_pairs = getExtraSimDbMetadata_();
-    for (const auto& pair : extra_meta_kv_pairs) {
-        meta_kv_pairs[pair.first] = pair.second;
-    }
-
-    for (const auto& pair : meta_kv_pairs) {
-        db_mgr->INSERT(
-            SQL_TABLE("ReportMetadata"),
-            SQL_COLUMNS("ReportDescID", "ReportID", "MetaName", "MetaValue"),
-            SQL_VALUES(report_desc_id, report_id, pair.first, pair.second));
-    }
-#else
-    (void) db_mgr;
-    (void) report_desc_id;
-    (void) report_id;
-#endif
 }
 
 } // namespace format
