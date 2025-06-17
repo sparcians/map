@@ -32,7 +32,7 @@ void sparta::report::format::JavascriptObject::writeContentToStream_(std::ostrea
     std::vector<std::string> all_key_names;
     writeReport_(out, *report_, all_key_names);
 
-    out << "    \"ordered_keys\" : [    \n";
+    out << "    \"ordered_keys\": [\n";
     for (uint32_t idx = 0; idx < all_key_names.size(); idx++) {
         out << "      \"" << all_key_names[idx] << "\"";
         if (idx != (all_key_names.size() - 1)) {
@@ -73,7 +73,7 @@ void sparta::report::format::JavascriptObject::writeContentToStream_(std::ostrea
                 out << ",\n";
             }
         }
-        out << "  }\n";
+        out << "\n  }\n";
     }
 
     out << "}\n";

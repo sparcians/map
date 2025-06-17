@@ -10,6 +10,7 @@ parser.add_argument("--legacy-reports-dir", default=".", help="Directory contain
 parser.add_argument("--results-dir", default="simdb-comparison-results", help="Directory to save comparison results.")
 parser.add_argument("--force", action="store_true", help="Force overwrite results directory.")
 parser.add_argument("--quiet", action="store_true", help="Suppress output.")
+parser.add_argument("--exact", action="store_true", help="Use exact comparison for report contents (e.g. 0.00082 != 8.2e-4).")
 parser.add_argument("database", type=str, help="Path to the SimDB database file.")
 args = parser.parse_args()
 
@@ -63,7 +64,7 @@ os.system(export_cmd)
 
 # Run the comparisons and generate the final comparison report.
 logger = io.StringIO()
-results = RunComparison(legacy_reports_dir_out, simdb_reports_dir_out, baseline_reports, logger)
+results = RunComparison(legacy_reports_dir_out, simdb_reports_dir_out, baseline_reports, logger, args.exact)
 
 passing_reports = results["passing"]
 failing_reports = results["failing"]
