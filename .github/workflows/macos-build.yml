@@ -24,6 +24,7 @@ jobs:
       SHINRO_BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
       COMPILER:          ${{ matrix.COMPILER }}
       BUILD_TYPE:        ${{ matrix.BUILD_TYPE }}
+      CCACHE_DIR:        /Users/runner/.ccache
 
     steps:
       # Get sparta
@@ -46,6 +47,10 @@ jobs:
           restore-keys: |
             ${{ matrix.os }}-${{ matrix.BUILD_TYPE }}-${{ matrix.COMPILER }}-ccache-master
             ${{ matrix.os }}-${{ matrix.BUILD_TYPE }}-${{ matrix.COMPILER }}-ccache
+
+      # Setup fix CCache directory permissions
+      - name: ccache macOS permission fix
+        run: ./.github/actions/macos_perms.sh
 
       # Build
       - name: Build & Regress
