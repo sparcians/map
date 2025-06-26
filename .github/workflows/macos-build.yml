@@ -39,6 +39,10 @@ jobs:
           brew update
           brew install boost yaml-cpp rapidjson hdf5
 
+      # Setup CCache directories and permissions
+      - name: ccache macOS permission fix
+        run: ./.github/actions/macos_perms.sh
+
       # Setup CCache to cache builds
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
