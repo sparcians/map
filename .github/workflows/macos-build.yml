@@ -24,6 +24,7 @@ jobs:
       SHINRO_BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
       COMPILER:          ${{ matrix.COMPILER }}
       BUILD_TYPE:        ${{ matrix.BUILD_TYPE }}
+      CCACHE_DIR:        /Users/runner/.ccache
 
     steps:
       # Get sparta
