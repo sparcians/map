@@ -39,10 +39,6 @@ jobs:
           brew update
           brew install boost yaml-cpp rapidjson hdf5
 
-      # Setup CCache directories and permissions
-      - name: ccache macOS permission fix
-        run: ./.github/actions/macos_perms.sh
-
       # Setup CCache to cache builds
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -51,6 +47,10 @@ jobs:
           restore-keys: |
             ${{ matrix.os }}-${{ matrix.BUILD_TYPE }}-${{ matrix.COMPILER }}-ccache-master
             ${{ matrix.os }}-${{ matrix.BUILD_TYPE }}-${{ matrix.COMPILER }}-ccache
+
+      # Setup fix CCache directory permissions
+      - name: ccache macOS permission fix
+        run: ./.github/actions/macos_perms.sh
 
       # Build
       - name: Build & Regress
