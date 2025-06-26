@@ -1,0 +1,7 @@
+<map id="sparta::serialization::checkpoint::Checkpoint::addNext" name="sparta::serialization::checkpoint::Checkpoint::addNext">
+<area shape="rect" id="Node000001" title="Adds another next checkpoint following *this." alt="" coords="5,45,167,101"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a099fdcf88200fbcb8a2b1ac47b7df0f7" title="Returns the previous checkpoint. If this checkpoint is a snapshot, it has no previous checkpoint." alt="" coords="215,5,376,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="167,55,199,49,200,54,168,60"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a41b94da230184ddc69fa469a109ee44f" title="Returns the tick number at which this checkpoint was taken." alt="" coords="215,85,376,141"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="168,86,200,92,199,97,167,91"/>
+</map>

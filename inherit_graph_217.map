@@ -1,0 +1,35 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classsparta_1_1ResourceFactoryBase.html" title="Factory which can create Resources as well as the Parameter sets that can be modified before actually..." alt="" coords="5,622,197,648"/>
+<area shape="rect" id="Node000001" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="271,5,492,46"/>
+<area shape="poly" id="edge228_Node000000_Node000001" title=" " alt="" coords="103,607,118,488,147,322,166,238,188,161,214,99,228,74,243,56,269,38,272,42,246,60,232,77,219,101,193,163,171,240,152,324,124,489,108,607"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="251,70,512,126"/>
+<area shape="poly" id="edge230_Node000000_Node000003" title=" " alt="" coords="99,607,102,517,109,457,120,391,138,322,164,255,198,192,243,136,257,124,261,128,247,140,202,194,168,257,143,324,126,392,114,457,108,517,104,607"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="245,150,518,206"/>
+<area shape="poly" id="edge231_Node000000_Node000004" title=" " alt="" coords="101,607,108,529,130,424,148,367,172,312,204,260,243,214,256,204,260,208,247,218,208,263,177,314,153,369,135,425,114,530,106,607"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="298,229,464,300"/>
+<area shape="poly" id="edge232_Node000000_Node000005" title=" " alt="" coords="104,606,118,545,144,466,162,424,184,382,211,343,243,309,268,291,297,278,299,283,271,296,246,313,215,347,189,385,167,426,149,468,123,547,109,608"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="296,324,466,394"/>
+<area shape="poly" id="edge233_Node000000_Node000006" title=" " alt="" coords="110,607,128,563,157,508,195,452,218,426,243,404,268,388,295,376,297,381,270,392,246,408,222,430,199,456,162,511,133,565,115,609"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="295,418,468,489"/>
+<area shape="poly" id="edge234_Node000000_Node000007" title=" " alt="" coords="121,608,173,553,207,524,243,498,293,475,295,480,246,503,210,528,177,557,125,612"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="297,513,466,584"/>
+<area shape="poly" id="edge235_Node000000_Node000008" title=" " alt="" coords="159,615,296,572,298,577,160,620"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="265,607,498,663"/>
+<area shape="poly" id="edge236_Node000000_Node000009" title=" " alt="" coords="212,632,264,632,264,638,212,638"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="288,686,475,757"/>
+<area shape="poly" id="edge237_Node000000_Node000010" title=" " alt="" coords="160,650,288,690,286,695,159,655"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="269,780,494,836"/>
+<area shape="poly" id="edge238_Node000000_Node000011" title=" " alt="" coords="124,658,176,712,209,741,246,766,269,778,267,782,243,771,206,745,172,716,120,661"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="263,860,500,916"/>
+<area shape="poly" id="edge239_Node000000_Node000012" title=" " alt="" coords="116,661,135,702,163,752,201,803,246,846,265,858,262,862,243,850,197,807,159,755,130,705,111,664"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="264,940,499,996"/>
+<area shape="poly" id="edge240_Node000000_Node000013" title=" " alt="" coords="111,663,126,719,152,790,192,863,217,897,246,926,265,939,262,944,243,930,213,900,187,866,147,792,121,720,105,664"/>
+<area shape="rect" id="Node000014" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="279,1020,484,1090"/>
+<area shape="poly" id="edge241_Node000000_Node000014" title=" " alt="" coords="108,663,119,732,142,824,161,873,184,921,212,967,246,1006,280,1029,277,1033,243,1010,208,970,179,924,156,875,137,826,113,733,102,664"/>
+<area shape="rect" id="Node000015" href="$classsparta_1_1ResourceFactory.html" title=" " alt="" coords="293,1114,470,1185"/>
+<area shape="poly" id="edge242_Node000000_Node000015" title=" " alt="" coords="105,663,111,747,119,803,131,864,149,927,174,989,206,1048,247,1100,268,1117,293,1129,291,1134,265,1121,243,1104,201,1051,169,992,144,929,126,865,114,804,106,748,100,663"/>
+<area shape="rect" id="Node000016" href="$classsparta_1_1ResourceFactory.html" title="Templated ResourceFactoryBase implementation which can be used to trivially define Resource Factories..." alt="" coords="298,1209,464,1250"/>
+<area shape="poly" id="edge243_Node000000_Node000016" title=" " alt="" coords="108,662,124,778,153,938,172,1020,194,1094,219,1154,247,1194,270,1211,299,1221,297,1226,268,1216,243,1198,215,1157,189,1096,167,1021,148,940,119,779,103,663"/>
+<area shape="rect" id="Node000002" href="$classcore__example_1_1CPUFactory.html" title=" " alt="" coords="566,13,744,38"/>
+<area shape="poly" id="edge229_Node000001_Node000002" title=" " alt="" coords="507,23,566,23,566,28,507,28"/>
+</map>

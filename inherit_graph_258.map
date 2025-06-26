@@ -1,0 +1,13 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classsparta_1_1statistics_1_1ArchiveStream.html" title="Generic statistic stream base class for sources and sinks in the report archive system." alt="" coords="5,39,122,79"/>
+<area shape="rect" id="Node000001" href="$classsparta_1_1statistics_1_1ArchiveSink.html" title="Generic statistic sink base class for report archives." alt="" coords="170,5,286,46"/>
+<area shape="poly" id="edge250_Node000000_Node000001" title=" " alt="" coords="137,41,169,35,170,40,138,47"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1statistics_1_1ArchiveSource.html" title="Generic statistic source base class for report archives." alt="" coords="170,71,286,111"/>
+<area shape="poly" id="edge252_Node000000_Node000003" title=" " alt="" coords="138,71,170,77,169,82,137,76"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1statistics_1_1BinaryOArchive.html" title="Use a binary archive file as a destination for statistics values." alt="" coords="367,5,484,46"/>
+<area shape="poly" id="edge251_Node000001_Node000002" title=" " alt="" coords="301,23,367,23,367,28,301,28"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1statistics_1_1BinaryIArchive.html" title="Use a binary archive file as a source of statistics values." alt="" coords="368,71,484,111"/>
+<area shape="poly" id="edge253_Node000003_Node000004" title=" " alt="" coords="301,88,367,88,367,94,301,94"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1statistics_1_1ReportStatisticsAggregator.html" title="This class is a source of statistics values used by SPARTA simulators. It takes a sparta::Report obje..." alt="" coords="334,136,517,177"/>
+<area shape="poly" id="edge254_Node000003_Node000005" title=" " alt="" coords="301,112,363,133,361,138,300,117"/>
+</map>

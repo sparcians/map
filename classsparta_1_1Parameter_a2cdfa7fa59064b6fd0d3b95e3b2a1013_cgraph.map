@@ -1,0 +1,9 @@
+<map id="sparta::Parameter::operator const ValueType &amp;" name="sparta::Parameter::operator const ValueType &amp;">
+<area shape="rect" id="Node000001" title="Gets a the value currently held by this Parameter." alt="" coords="5,39,185,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Parameter.html#a4002f93df7129d4a1b9007fc626e2462" title="Gets the current value of this Parameter." alt="" coords="233,39,362,79"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="185,56,217,56,217,62,185,62"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Parameter.html#aa3ec20115fc09a5da95e1efe6de7712b" title="Iternal getValue_ wrapper which does not increment the read counter." alt="" coords="423,5,552,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="362,45,407,37,408,42,363,50"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ParameterBase.html#a0663f6e558287f2d89b8d573504d9eb9" title="Increment the number of reads that will be reported by getReadCount." alt="" coords="410,71,565,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="363,67,395,73,394,78,362,72"/>
+</map>
