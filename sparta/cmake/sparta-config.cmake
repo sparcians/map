@@ -61,7 +61,7 @@ endif ()
 
 # Find RapidJSON
 find_package (RapidJSON 1.1 REQUIRED)
-include_directories (SYSTEM ${RapidJSON_INCLUDE_DIRS})
+include_directories (SYSTEM ${RAPIDJSON_INCLUDE_DIRS} ${RapidJSON_INCLUDE_DIRS})
 message (STATUS "Using RapidJSON CPP ${RapidJSON_VERSION}")
 
 # Find SQLite3
@@ -86,6 +86,14 @@ find_package(Threads REQUIRED)
 # basic Sparta linking
 set (Sparta_LIBS sparta simdb HDF5::HDF5 sqlite3 yaml-cpp::yaml-cpp ZLIB::ZLIB Threads::Threads
   Boost::date_time Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
+
+# If HDF5 is built with MPI support, we also need to add the MPI include dirs and link against the MPI library
+if(HDF5_IS_PARALLEL)
+    find_package(MPI REQUIRED COMPONENTS CXX)
+    include_directories (SYSTEM ${MPI_CXX_INCLUDE_DIRS})
+    list(APPEND Sparta_LIBS MPI::MPI_CXX)
+    message (STATUS "Using MPI ${MPI_CXX_VERSION}")
+endif()
 
 # On Linux we need to link against rt as well
 if (NOT APPLE)
