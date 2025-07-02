@@ -5,7 +5,7 @@
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/report/format/JavascriptObject.hpp"
 #include "sparta/report/format/ReportHeader.hpp"
-#include "simdb/apps/AppManager.hpp"
+#include "simdb/pipeline/Pipeline.hpp"
 #include "simdb/apps/AppRegistration.hpp"
 #include "simdb/utils/Compress.hpp"
 
