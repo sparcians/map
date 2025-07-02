@@ -631,6 +631,9 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
         ("disable-legacy-reports",
          "Do not produce legacy formatted reports on the filesystem. Only write the SimDB file. "
          "This is to be used with --enable-simdb-reports.")
+        ("sqlite-safety",
+         named_value<std::vector<std::string>>("MODE", 1, 1),
+         "Journaling mode / synchronous settings for SQLite3: fastest|safest|balanced (default:safest)")
         ;
     #endif
 
@@ -1142,6 +1145,20 @@ bool CommandLineSimulator::parse(int argc,
                     simdb_file = o.value.at(0);
                 }
                 sim_config_.simdb_config.enableApp("simdb-reports", simdb_file);
+                opts.options.erase(opts.options.begin() + i);
+            }else if (o.string_key == "sqlite-safety") {
+                using JMode = SimulationConfiguration::SimDBConfig::JournalMode;
+                JMode journal_mode;
+                const std::string mode = o.value.at(0);
+                if (mode == "fastest") journal_mode = JMode::FASTEST;
+                else if (mode == "safest") journal_mode = JMode::SAFEST;
+                else if (mode == "balanced") journal_mode = JMode::BALANCED;
+                else {
+                    printUsageHelp_();
+                    err_code = 1;
+                    return false;
+                }
+                sim_config_.simdb_config.setJournalMode(journal_mode);
                 opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "pipeline-collection") {
                 //Enforce that we cannot set pipeline-collection options twice.

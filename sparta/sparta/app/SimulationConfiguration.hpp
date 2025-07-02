@@ -538,11 +538,38 @@ public:
             }
         }
 
+        //SQLite3 journaling options (default: BALANCED)
+        enum class JournalMode
+        {
+            //PRAGMA journal_mode = OFF
+            //PRAGMA synchronous = OFF
+            FASTEST,
+
+            //PRAGMA journal_mode = DELETE;
+            //PRAGMA synchronous = FULL;
+            SAFEST,
+
+            //PRAGMA journal_mode = WAL;
+            //PRAGMA synchronous = NORMAL;
+            BALANCED
+        };
+
+        void setJournalMode(JournalMode mode)
+        {
+            journal_mode_ = mode;
+        }
+
+        JournalMode getJournalMode() const
+        {
+            return journal_mode_;
+        }
+
     private:
         std::string simdb_file_;
         std::map<std::string, std::set<std::string>> enabled_apps_;
         std::map<std::string, std::string> app_db_files_;
         bool legacy_reports_enabled_ = true;
+        JournalMode journal_mode_ = JournalMode::BALANCED;
     } simdb_config;
 
     /*!
