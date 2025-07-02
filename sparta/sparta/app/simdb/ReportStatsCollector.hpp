@@ -28,7 +28,7 @@ class ReportDescriptor;
 /// different ways (HDF5 converter, CSV exporter, display in a web page,
 /// etc).
 
-class ReportStatsCollector : public simdb::PipelineApp
+class ReportStatsCollector : public simdb::App
 {
 public:
     static constexpr auto NAME = "simdb-reports";
@@ -39,9 +39,7 @@ public:
 
     bool defineSchema(simdb::Schema&) override;
 
-    std::vector<std::unique_ptr<simdb::PipelineStageBase>> configPipeline() override;
-
-    void setPipelineInputQueue(simdb::TransformQueueBase*) override;
+    std::unique_ptr<simdb::pipeline::Pipeline> createPipeline() override;
 
     void setScheduler(const Scheduler* scheduler);
 

@@ -42,8 +42,8 @@
 #include "sparta/trigger/ExpressionTrigger.hpp"
 
 #if SIMDB_ENABLED
-#include "simdb/sqlite/DatabaseManager.hpp"
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
+#include "simdb/apps/AppManager.hpp"
 #endif
 
 namespace YAML {

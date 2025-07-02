@@ -802,6 +802,7 @@ void Simulation::finalizeFramework()
             auto db_mgr = db_managers_[db_file].get();
             app_manager_->postInit(db_mgr, argc_, argv_);
         }
+        app_manager_->openPipelines();
     }
 #endif
 }
