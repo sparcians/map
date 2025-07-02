@@ -633,7 +633,7 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "This is to be used with --enable-simdb-reports.")
         ("sqlite-safety",
          named_value<std::vector<std::string>>("MODE", 1, 1),
-         "Journaling mode / synchronous settings for SQLite3: fastest|safest|balanced (default:safest)")
+         "Journaling mode / synchronous settings for SQLite3: fastest|safest|balanced (default:balanced)")
         ;
     #endif
 
