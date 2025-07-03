@@ -484,21 +484,12 @@ void Simulation::createSimDbApps_()
     }
 
     for (const auto & db_file : db_files) {
-        simdb::JournalMode journal_mode = simdb::JournalMode::BALANCED;
-        switch (sim_config_->simdb_config.getJournalMode())
+        simdb::PragmaPairs pragmas;
+        for (const auto& [name, val] : sim_config_->simdb_config.getPragmas())
         {
-            case SimulationConfiguration::SimDBConfig::JournalMode::FASTEST:
-                journal_mode = simdb::JournalMode::FASTEST;
-                break;
-            case SimulationConfiguration::SimDBConfig::JournalMode::SAFEST:
-                journal_mode = simdb::JournalMode::SAFEST;
-                break;
-            case SimulationConfiguration::SimDBConfig::JournalMode::BALANCED:
-                journal_mode = simdb::JournalMode::BALANCED;
-                break;
+            pragmas.emplace_back(name, val);
         }
-
-        db_managers_[db_file] = std::make_shared<simdb::DatabaseManager>(db_file, true, journal_mode);
+        db_managers_[db_file] = std::make_shared<simdb::DatabaseManager>(db_file, true, pragmas);
     }
 
     for (const auto & db_file : db_files) {

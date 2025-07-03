@@ -538,30 +538,16 @@ public:
             }
         }
 
-        //SQLite3 journaling options (default: BALANCED)
-        enum class JournalMode
+        //SQLite3 PRAGMA's to execute on database creation.
+        //  "PRAGMA <name> = <val>"
+        void addPragmaOnOpen(const std::string& name, const std::string& val)
         {
-            //PRAGMA journal_mode = OFF
-            //PRAGMA synchronous = OFF
-            FASTEST,
-
-            //PRAGMA journal_mode = DELETE;
-            //PRAGMA synchronous = FULL;
-            SAFEST,
-
-            //PRAGMA journal_mode = WAL;
-            //PRAGMA synchronous = NORMAL;
-            BALANCED
-        };
-
-        void setJournalMode(JournalMode mode)
-        {
-            journal_mode_ = mode;
+            dbmgr_pragmas_[name] = val;
         }
 
-        JournalMode getJournalMode() const
+        const auto& getPragmas() const
         {
-            return journal_mode_;
+            return dbmgr_pragmas_;
         }
 
     private:
@@ -569,7 +555,7 @@ public:
         std::map<std::string, std::set<std::string>> enabled_apps_;
         std::map<std::string, std::string> app_db_files_;
         bool legacy_reports_enabled_ = true;
-        JournalMode journal_mode_ = JournalMode::BALANCED;
+        std::map<std::string, std::string> dbmgr_pragmas_;
     } simdb_config;
 
     /*!

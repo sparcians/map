@@ -1147,18 +1147,21 @@ bool CommandLineSimulator::parse(int argc,
                 sim_config_.simdb_config.enableApp("simdb-reports", simdb_file);
                 opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "sqlite-safety") {
-                using JMode = SimulationConfiguration::SimDBConfig::JournalMode;
-                JMode journal_mode;
                 const std::string mode = o.value.at(0);
-                if (mode == "fastest") journal_mode = JMode::FASTEST;
-                else if (mode == "safest") journal_mode = JMode::SAFEST;
-                else if (mode == "balanced") journal_mode = JMode::BALANCED;
-                else {
+                if (mode == "fastest") {
+                    sim_config_.simdb_config.addPragmaOnOpen("journal_mode", "OFF");
+                    sim_config_.simdb_config.addPragmaOnOpen("synchronous", "OFF");
+                } else if (mode == "safest") {
+                    sim_config_.simdb_config.addPragmaOnOpen("journal_mode", "DELETE");
+                    sim_config_.simdb_config.addPragmaOnOpen("synchronous", "FULL");
+                } else if (mode == "balanced") {
+                    sim_config_.simdb_config.addPragmaOnOpen("journal_mode", "WAL");
+                    sim_config_.simdb_config.addPragmaOnOpen("synchronous", "NORMAL");
+                } else {
                     printUsageHelp_();
                     err_code = 1;
                     return false;
                 }
-                sim_config_.simdb_config.setJournalMode(journal_mode);
                 opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "pipeline-collection") {
                 //Enforce that we cannot set pipeline-collection options twice.
