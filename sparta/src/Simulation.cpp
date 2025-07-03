@@ -484,7 +484,12 @@ void Simulation::createSimDbApps_()
     }
 
     for (const auto & db_file : db_files) {
-        db_managers_[db_file] = std::make_shared<simdb::DatabaseManager>(db_file, true);
+        simdb::PragmaPairs pragmas;
+        for (const auto& [name, val] : sim_config_->simdb_config.getPragmas())
+        {
+            pragmas.emplace_back(name, val);
+        }
+        db_managers_[db_file] = std::make_shared<simdb::DatabaseManager>(db_file, true, pragmas);
     }
 
     for (const auto & db_file : db_files) {
@@ -802,6 +807,7 @@ void Simulation::finalizeFramework()
             auto db_mgr = db_managers_[db_file].get();
             app_manager_->postInit(db_mgr, argc_, argv_);
         }
+        app_manager_->openPipelines();
     }
 #endif
 }
