@@ -538,11 +538,24 @@ public:
             }
         }
 
+        //SQLite3 PRAGMA's to execute on database creation.
+        //  "PRAGMA <name> = <val>"
+        void addPragmaOnOpen(const std::string& name, const std::string& val)
+        {
+            dbmgr_pragmas_[name] = val;
+        }
+
+        const auto& getPragmas() const
+        {
+            return dbmgr_pragmas_;
+        }
+
     private:
         std::string simdb_file_;
         std::map<std::string, std::set<std::string>> enabled_apps_;
         std::map<std::string, std::string> app_db_files_;
         bool legacy_reports_enabled_ = true;
+        std::map<std::string, std::string> dbmgr_pragmas_;
     } simdb_config;
 
     /*!

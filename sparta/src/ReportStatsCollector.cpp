@@ -5,6 +5,7 @@
 #include "sparta/statistics/StatisticInstance.hpp"
 #include "sparta/report/format/JavascriptObject.hpp"
 #include "sparta/report/format/ReportHeader.hpp"
+#include "simdb/pipeline/Pipeline.hpp"
 #include "simdb/apps/AppRegistration.hpp"
 #include "simdb/utils/Compress.hpp"
 
@@ -122,7 +123,7 @@ bool ReportStatsCollector::defineSchema(simdb::Schema& schema)
     return true;
 }
 
-std::vector<std::unique_ptr<simdb::PipelineStageBase>> ReportStatsCollector::configPipeline()
+std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline()
 {
     // Stage 1:
     //   - Function:          Compress statistics values
@@ -132,10 +133,9 @@ std::vector<std::unique_ptr<simdb::PipelineStageBase>> ReportStatsCollector::con
     //   - Database access:   No
     using CompressionIn = std::tuple<const ReportDescriptor*, uint64_t, std::vector<double>>;
     using CompressionOut = std::tuple<const ReportDescriptor*, uint64_t, std::vector<char>>;
-    auto stage1 = std::make_unique<simdb::PipelineStage<CompressionIn, CompressionOut>>();
 
-    auto transform1 = std::make_unique<simdb::PipelineTransform<CompressionIn, CompressionOut>>(
-        [](CompressionIn& in, simdb::ConcurrentQueue<CompressionOut>& out)
+    auto zlib_task = simdb::pipeline::createTask<CompressionIn, CompressionOut>(
+        [](CompressionIn&& in, simdb::ConcurrentQueue<CompressionOut>& out)
         {
             CompressionOut compressed;
             std::get<0>(compressed) = std::get<0>(in);
@@ -149,9 +149,6 @@ std::vector<std::unique_ptr<simdb::PipelineStageBase>> ReportStatsCollector::con
         }
     );
 
-    // Connect stage 1
-    stage1->last(std::move(transform1));
-
     // Stage 2:
     //   - Function:          Write to database
     //   - Input type:        std::tuple<const ReportDescriptor*, uint64_t, std::vector<char>>
@@ -159,44 +156,33 @@ std::vector<std::unique_ptr<simdb::PipelineStageBase>> ReportStatsCollector::con
     //   - Num transforms:    1
     //   - Database access:   Yes
     using DatabaseIn = CompressionOut;
-    using DatabaseOut = void;
-    auto stage2 = std::make_unique<simdb::PipelineStage<DatabaseIn, DatabaseOut>>(db_mgr_);
 
-    auto transform2 = std::make_unique<simdb::PipelineTransform<DatabaseIn, DatabaseOut>>(
-        [this](DatabaseIn& in)
+    auto sqlite_task = simdb::pipeline::createTask<simdb::pipeline::DatabaseQueue<DatabaseIn>, void>(
+        [this](DatabaseIn&& in, simdb::DatabaseManager* db_mgr)
         {
             const auto descriptor = std::get<0>(in);
             const auto descriptor_id = getDescriptorID(descriptor);
             const auto tick = std::get<1>(in);
             const auto& bytes = std::get<2>(in);
 
-            db_mgr_->INSERT(
+            db_mgr->INSERT(
                 SQL_TABLE("DescriptorRecords"),
                 SQL_COLUMNS("ReportDescID", "Tick", "DataBlob"),
                 SQL_VALUES(descriptor_id, tick, bytes));
         }
     );
 
-    // Connect stage 2
-    stage2->last(std::move(transform2));
+    // Finalize pipeline
+    auto pipeline = std::make_unique<simdb::pipeline::Pipeline>(db_mgr_, NAME);
+    pipeline->addTask(std::move(zlib_task), "Compression");
+    pipeline->addTask(std::move(sqlite_task), "Database");
 
-    // Finalize
-    std::vector<std::unique_ptr<simdb::PipelineStageBase>> stages;
-    stages.emplace_back(std::move(stage1));
-    stages.emplace_back(std::move(stage2));
-    return stages;
-}
-
-void ReportStatsCollector::setPipelineInputQueue(simdb::TransformQueueBase* queue)
-{
-    if (auto q = dynamic_cast<simdb::TransformQueue<PipelineInT>*>(queue))
+    pipeline_queue_ = pipeline->getPipelineInput<PipelineInT>();
+    if (!pipeline_queue_)
     {
-        pipeline_queue_ = q->getQueue();
+        throw simdb::DBException("Pipeline failed to build");
     }
-    else
-    {
-        throw simdb::DBException("Invalid data type!");
-    }
+    return pipeline;
 }
 
 void ReportStatsCollector::setScheduler(const Scheduler* scheduler)
