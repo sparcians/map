@@ -1,0 +1,8 @@
+<map id="sparta::serialization::checkpoint::Checkpointer::dumpTree" name="sparta::serialization::checkpoint::Checkpointer::dumpTree">
+<area shape="rect" id="Node000001" title="Dumps this checkpointer&#39;s tree to an ostream with a line for each branch. Printout timescale is not r..." alt="" coords="5,29,178,85"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a8cad3235e58b52835ca5fd78be96460b" title="Recursively dumps one branch (and sub&#45;branches) to an ostream with a line for each branch." alt="" coords="226,29,398,85"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="178,54,210,54,210,60,178,60"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="270,29,270,19,278,10,292,5,312,3,335,5,348,12,346,17,333,10,312,8,293,10,281,15,275,21,275,29"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a181f5bd1247c81ce6b4988e2ffeb32c1" title="Returns next checkpoint following *this. May be an empty vector if there are no later checkpoints fol..." alt="" coords="446,29,607,85"/>
+<area shape="poly" id="edge3_Node000002_Node000003" title=" " alt="" coords="398,54,430,54,430,60,398,60"/>
+</map>

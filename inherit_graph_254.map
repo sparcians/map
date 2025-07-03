@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classsparta_1_1statistics_1_1ArchiveController.html" title="Base class used by the RootArchiveNode to have some control over its data source, whether it is a liv..." alt="" coords="5,39,132,79"/>
+<area shape="rect" id="Node000001" href="$classsparta_1_1statistics_1_1LiveSimulationArchiveController.html" title="Controller used when SPARTA simulations are directly feeding data into a tempdir archive." alt="" coords="180,5,392,46"/>
+<area shape="poly" id="edge247_Node000000_Node000001" title=" " alt="" coords="147,44,179,39,180,45,147,50"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1statistics_1_1OfflineArchiveController.html" title="Controller used when attaching to an archive outside of any live simulation." alt="" coords="205,71,367,111"/>
+<area shape="poly" id="edge248_Node000000_Node000002" title=" " alt="" coords="147,68,205,76,204,82,146,73"/>
+</map>

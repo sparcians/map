@@ -1,0 +1,9 @@
+<map id="sparta::TreeNode::getChildAs" name="sparta::TreeNode::getChildAs">
+<area shape="rect" id="Node000001" title="Retrieves a child that is castable to T with the given dotted path." alt="" coords="5,55,195,80"/>
+<area shape="rect" id="Node000002" href="$namespacesparta.html#ac0a2df7a7ca53b2fc0384476286b95ec" title="Demangles a C++ symbol." alt="" coords="280,5,400,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="166,51,265,31,266,36,167,57"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#ac598185049018290d5ea6cb674d10473" title="Retrieves a child with this dotted path name." alt="" coords="253,55,426,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="195,65,238,65,238,70,195,70"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="243,104,437,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="167,78,259,98,258,103,166,84"/>
+</map>

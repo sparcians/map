@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classsparta_1_1app_1_1Simulation.html" title="Simulator which builds a sparta DeviceTree." alt="" coords="5,31,157,56"/>
+<area shape="rect" id="Node000001" href="$classExampleSimulator.html" title="ExampleSimulator which builds the model and configures it." alt="" coords="206,5,331,31"/>
+<area shape="poly" id="edge20_Node000000_Node000001" title=" " alt="" coords="172,29,205,24,206,29,172,34"/>
+<area shape="rect" id="Node000002" href="$classSkeletonSimulator.html" title="SkeletonSimulator which builds the model and configures it." alt="" coords="205,55,332,80"/>
+<area shape="poly" id="edge21_Node000000_Node000002" title=" " alt="" coords="172,52,205,57,204,62,172,58"/>
+</map>

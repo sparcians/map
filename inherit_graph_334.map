@@ -1,0 +1,25 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,340,110,365"/>
+<area shape="rect" id="Node000001" href="$structMetaStruct_1_1is__any__pointer.html" title="This templated struct lets us know about whether the datatype is actually an ordinary object or point..." alt="" coords="178,5,323,46"/>
+<area shape="poly" id="edge291_Node000000_Node000001" title=" " alt="" coords="58,324,65,269,81,198,93,160,110,123,130,88,156,57,176,42,179,47,160,61,135,91,114,125,98,162,86,199,70,269,63,324"/>
+<area shape="rect" id="Node000002" href="$structMetaStruct_1_1is__bool.html" title="Templated struct for detecting Boolean Type." alt="" coords="184,71,316,111"/>
+<area shape="poly" id="edge292_Node000000_Node000002" title=" " alt="" coords="61,324,71,280,90,226,117,171,135,145,156,122,182,105,185,109,159,126,139,149,122,174,95,228,77,282,66,325"/>
+<area shape="rect" id="Node000003" href="$structMetaStruct_1_1is__char__pointer.html" title="Templated struct for detecting char pointer type." alt="" coords="178,136,323,177"/>
+<area shape="poly" id="edge293_Node000000_Node000003" title=" " alt="" coords="66,324,100,256,125,220,156,188,176,175,179,179,159,192,129,223,104,259,71,326"/>
+<area shape="rect" id="Node000004" href="$structMetaStruct_1_1is__pair.html" title="This templated struct lets us know about whether the datatype is actually an std::pair object...." alt="" coords="186,201,315,242"/>
+<area shape="poly" id="edge294_Node000000_Node000004" title=" " alt="" coords="77,325,112,288,156,253,184,238,187,243,159,257,115,292,81,329"/>
+<area shape="rect" id="Node000005" href="$structMetaStruct_1_1is__sparta__enum.html" title="Detect whether template parameter is sparta::utils::Enum type. Case when it is not a sparta::utils::E..." alt="" coords="178,267,322,307"/>
+<area shape="poly" id="edge295_Node000000_Node000005" title=" " alt="" coords="111,331,187,305,189,310,113,337"/>
+<area shape="rect" id="Node000006" href="$structMetaStruct_1_1is__stl__container.html" title="This templated struct takes a type and tells us whether that type is a STL container." alt="" coords="171,332,330,373"/>
+<area shape="poly" id="edge296_Node000000_Node000006" title=" " alt="" coords="126,350,170,350,170,355,126,355"/>
+<area shape="rect" id="Node000007" href="$structMetaStruct_1_1is__string.html" title="Templated struct for detecting String Type." alt="" coords="180,397,320,438"/>
+<area shape="poly" id="edge297_Node000000_Node000007" title=" " alt="" coords="113,368,189,394,187,399,111,373"/>
+<area shape="rect" id="Node000008" href="$classMetaTypeList_1_1is__empty.html" title="Class Template is_empty Generic case." alt="" coords="171,463,330,503"/>
+<area shape="poly" id="edge298_Node000000_Node000008" title=" " alt="" coords="81,376,115,412,159,447,183,460,180,465,156,452,112,416,77,379"/>
+<area shape="rect" id="Node000009" href="$structMetaTypeList_1_1is__meta__typelist.html" title="Variadic Class Template which takes a type and matches it if that is a type_list. Generic case result..." alt="" coords="174,528,326,569"/>
+<area shape="poly" id="edge299_Node000000_Node000009" title=" " alt="" coords="71,379,104,446,129,482,159,513,179,525,176,530,156,517,125,485,100,448,66,381"/>
+<area shape="rect" id="Node000010" href="$structsparta_1_1is__sparta__enum.html" title="Detect whether template parameter is sparta::utils::Enum type." alt="" coords="158,593,343,618"/>
+<area shape="poly" id="edge300_Node000000_Node000010" title=" " alt="" coords="66,380,75,424,93,477,120,532,138,557,159,578,178,590,175,595,156,582,134,560,116,535,88,479,70,425,60,381"/>
+<area shape="rect" id="Node000011" href="$structsparta_1_1utils_1_1is__vector.html" title=" " alt="" coords="162,642,338,668"/>
+<area shape="poly" id="edge301_Node000000_Node000011" title=" " alt="" coords="63,381,70,434,86,501,98,536,114,570,135,602,159,629,175,639,172,644,156,633,130,605,110,573,93,538,81,502,65,435,58,381"/>
+</map>
