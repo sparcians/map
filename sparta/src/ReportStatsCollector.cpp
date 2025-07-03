@@ -135,7 +135,6 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
     using CompressionOut = std::tuple<const ReportDescriptor*, uint64_t, std::vector<char>>;
 
     auto zlib_task = simdb::pipeline::createTask<CompressionIn, CompressionOut>(
-        "Compression",
         [](CompressionIn&& in, simdb::ConcurrentQueue<CompressionOut>& out)
         {
             CompressionOut compressed;
@@ -174,9 +173,9 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
     );
 
     // Finalize pipeline
-    auto pipeline = std::make_unique<simdb::pipeline::Pipeline>(db_mgr_);
-    pipeline->addTask(std::move(zlib_task));
-    pipeline->addTask(std::move(sqlite_task));
+    auto pipeline = std::make_unique<simdb::pipeline::Pipeline>(db_mgr_, NAME);
+    pipeline->addTask(std::move(zlib_task), "Compression");
+    pipeline->addTask(std::move(sqlite_task), "Database");
 
     pipeline_queue_ = pipeline->getPipelineInput<PipelineInT>();
     if (!pipeline_queue_)
