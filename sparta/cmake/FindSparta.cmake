@@ -65,11 +65,18 @@ if(NOT SPARTA_FOUND)
           get_target_property(YAML_CPP_INCLUDE_DIR yaml-cpp::yaml-cpp INTERFACE_INCLUDE_DIRECTORIES)
         endif ()
         set_property(TARGET SPARTA::sparta
-          PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${SPARTA_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${SQLite3_INCLUDE_DIRS} ${HDF5_CXX_INCLUDE_DIRS} ${RAPIDJSON_INCLUDE_DIR} ${RapidJSON_INCLUDE_DIR} ${YAML_CPP_INCLUDE_DIR})
+          PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${SPARTA_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${SQLite3_INCLUDE_DIRS} ${HDF5_CXX_INCLUDE_DIRS} ${RAPIDJSON_INCLUDE_DIRS} ${RapidJSON_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR})
         set_property(TARGET SPARTA::sparta
           PROPERTY INTERFACE_LINK_LIBRARIES SPARTA::libsparta HDF5::HDF5 SQLite::SQLite3
           Boost::filesystem Boost::serialization Boost::timer Boost::program_options
           ZLIB::ZLIB yaml-cpp::yaml-cpp Threads::Threads)
+
+        # If HDF5 is built with MPI support, we also need to add the MPI include dirs and link against the MPI library
+        if(HDF5_IS_PARALLEL)
+            find_package(MPI REQUIRED COMPONENTS CXX)
+            set_property(TARGET SPARTA::sparta APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MPI_CXX_INCLUDE_DIRS})
+            set_property(TARGET SPARTA::sparta APPEND PROPERTY INTERFACE_LINK_LIBRARIES MPI::MPI_CXX)
+        endif()
 
         if(LIBRT)
           set_property(TARGET SPARTA::sparta APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${LIBRT})
