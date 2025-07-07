@@ -1,0 +1,19 @@
+<map id="sparta::CounterBase" name="sparta::CounterBase">
+<area shape="rect" id="Node000001" title="The base class for all Counters." alt="" coords="138,300,277,326"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1Counter.html" title="Represents a counter of type counter_type (uint64_t). 2 and greater than 0 with a ceiling specified...." alt="" coords="5,374,114,399"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="170,335,86,375,84,371,167,330"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1CycleCounter.html" title="Represents a cycle counter." alt="" coords="137,374,278,399"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="210,341,210,373,205,373,205,341"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1ReadOnlyCounter.html" title="Represents a non&#45;writable and non&#45;observable counter with a very similar interface to sparta::Counter..." alt="" coords="301,374,466,399"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="252,329,354,371,352,376,250,334"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1InstrumentationNode.html" title="Base class requiring." alt="" coords="115,226,300,252"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="210,267,210,300,205,300,205,267"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="147,153,268,178"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="210,194,210,226,205,226,205,194"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="22,79,196,105"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="139,112,193,150,189,154,136,116"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="36,5,182,31"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="112,46,112,79,106,79,106,46"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="220,79,392,105"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="279,116,226,154,222,150,276,112"/>
+</map>

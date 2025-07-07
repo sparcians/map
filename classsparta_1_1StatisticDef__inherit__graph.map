@@ -1,0 +1,21 @@
+<map id="sparta::StatisticDef" name="sparta::StatisticDef">
+<area shape="rect" id="Node000001" title="Contains a statistic definition (some useful information which can be computed)" alt="" coords="821,46,952,72"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ContextCounter.html" title=" " alt="" coords="1000,5,1152,46"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="967,42,999,36,1000,42,968,47"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1ContextCounter.html" title="A container type that allows a modeler to build, store, and charge counts to a specific context." alt="" coords="1000,71,1152,111"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="968,70,1000,76,999,81,967,75"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1InstrumentationNode.html" title="Base class requiring." alt="" coords="588,46,773,72"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="789,56,820,56,820,62,789,62"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="420,46,540,72"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="556,56,588,56,588,62,556,62"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="199,21,372,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="388,44,420,49,419,54,387,50"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,21,151,46"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="166,31,198,31,198,36,166,36"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="199,70,372,96"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="387,68,419,64,420,69,388,73"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1WeightedContextCounter.html" title=" " alt="" coords="1200,5,1407,46"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="1168,23,1200,23,1200,28,1168,28"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1WeightedContextCounter.html" title="This is an example context counter subclass used to show how users may supply their own &quot;aggregated v..." alt="" coords="1200,71,1407,111"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="1168,88,1200,88,1200,94,1168,94"/>
+</map>

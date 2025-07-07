@@ -1,0 +1,32 @@
+<map id="core_example::SimpleTLB" name="core_example::SimpleTLB">
+<area shape="rect" id="Node000001" title=" " alt="" coords="1858,80,2030,106"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="1620,43,1808,84"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1824,75,1858,79,1857,84,1823,80"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Unit.html" title="The is the base class for user defined blocks in simulation." alt="" coords="1670,108,1758,134"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="1773,111,1857,101,1858,106,1774,116"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Resource.html" title="The is the base class for all types of resources used by the SPARTA framework." alt="" coords="1336,5,1454,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="1470,12,1535,21,1568,31,1598,48,1607,60,1611,72,1614,83,1622,93,1645,107,1671,114,1669,119,1643,111,1618,98,1609,85,1606,73,1603,62,1594,52,1566,36,1534,26,1469,17"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PortSet.html" title="A TreeNode that represents a set of ports used by a Resource." alt="" coords="828,59,935,84"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="951,70,1232,77,1414,87,1596,101,1671,111,1670,116,1596,106,1413,92,1232,83,951,75"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="423,141,543,167"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="514,130,566,105,635,87,706,76,827,69,827,74,707,82,636,93,568,110,517,135"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1EventSet.html" title="Set of Events that a unit (or sparta::TreeNode, sparta::Resource) contains and are visible through a ..." alt="" coords="1164,111,1281,136"/>
+<area shape="poly" id="edge10_Node000010_Node000006" title=" " alt="" coords="558,143,567,142,737,132,905,126,1164,121,1164,127,905,131,737,138,567,147,559,148"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1StatisticSet.html" title="Set of StatisticDef and CounterBase&#45;derived objects for visiblility through a sparta Tree." alt="" coords="816,168,947,194"/>
+<area shape="poly" id="edge12_Node000011_Node000006" title=" " alt="" coords="559,157,815,174,815,179,558,162"/>
+<area shape="rect" id="Node000014" href="$classsparta_1_1NotificationSourceBase.html" title="A TreeNode that generates a single specific type of notification which propagates up a tree of TreeNo..." alt="" coords="592,223,792,248"/>
+<area shape="poly" id="edge16_Node000014_Node000006" title=" " alt="" coords="521,172,568,196,639,220,637,225,566,201,518,177"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="200,108,373,134"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="382,134,423,141,422,147,381,140"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,108,151,134"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="166,118,199,118,199,124,166,124"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="200,157,373,183"/>
+<area shape="poly" id="edge8_Node000006_Node000009" title=" " alt="" coords="388,159,422,156,422,162,389,165"/>
+<area shape="poly" id="edge9_Node000003_Node000010" title=" " alt="" coords="1296,120,1670,118,1670,124,1296,126"/>
+<area shape="poly" id="edge11_Node000003_Node000011" title=" " alt="" coords="962,176,1280,161,1500,142,1670,123,1670,129,1500,147,1281,166,963,181"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1log_1_1MessageSource.html" title="Message source object associated with a sparta TreeNode through which messages can be sent." alt="" coords="1305,233,1485,259"/>
+<area shape="poly" id="edge13_Node000003_Node000012" title=" " alt="" coords="1484,258,1540,257,1568,252,1595,243,1632,220,1663,190,1687,158,1703,133,1708,135,1692,161,1667,193,1635,224,1597,248,1570,257,1541,263,1484,264"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1NotificationSource.html" title=" " alt="" coords="971,220,1140,261"/>
+<area shape="poly" id="edge14_Node000012_Node000013" title=" " alt="" coords="1156,240,1304,242,1304,247,1156,245"/>
+<area shape="poly" id="edge15_Node000013_Node000014" title=" " alt="" coords="807,235,971,237,970,242,807,240"/>
+</map>

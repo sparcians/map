@@ -1,0 +1,37 @@
+<map id="sparta::Unit" name="sparta::Unit">
+<area shape="rect" id="Node000001" title="The is the base class for user defined blocks in simulation." alt="" coords="172,376,259,402"/>
+<area shape="rect" id="Node000003" href="$classConsumer.html" title=" " alt="" coords="362,5,442,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="218,360,229,285,248,190,273,100,288,65,305,40,331,24,360,17,362,22,333,29,309,44,293,67,278,101,253,191,234,286,223,361"/>
+<area shape="rect" id="Node000004" href="$classProducer.html" title=" " alt="" coords="365,55,438,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="214,361,218,304,231,231,242,193,258,155,279,120,305,89,333,73,364,66,365,71,335,78,309,94,283,123,263,158,247,195,236,232,223,305,219,361"/>
+<area shape="rect" id="Node000005" href="$classcore__example_1_1BIU.html" title=" " alt="" coords="336,104,467,130"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="216,360,223,312,238,253,264,192,283,163,305,139,335,122,337,127,309,143,287,167,269,194,243,254,228,313,221,361"/>
+<area shape="rect" id="Node000006" href="$classcore__example_1_1CPU.html" title=" " alt="" coords="334,153,469,179"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="219,360,229,321,245,275,270,228,305,188,332,173,335,178,309,192,275,231,250,277,234,323,224,362"/>
+<area shape="rect" id="Node000007" href="$classcore__example_1_1Core.html" title=" " alt="" coords="334,203,469,228"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="223,360,253,298,276,265,305,237,333,223,335,228,309,242,280,269,258,301,228,363"/>
+<area shape="rect" id="Node000008" href="$classcore__example_1_1Decode.html" title=" " alt="" coords="326,252,477,278"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="231,362,262,323,283,303,306,287,329,276,331,281,308,291,286,307,266,326,235,365"/>
+<area shape="rect" id="Node000009" href="$classcore__example_1_1Dispatch.html" title=" " alt="" coords="322,301,481,327"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="249,365,306,336,338,325,340,330,308,341,251,370"/>
+<area shape="rect" id="Node000010" href="$classcore__example_1_1Execute.html" title=" " alt="" coords="325,351,478,376"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="274,378,324,371,325,377,274,384"/>
+<area shape="rect" id="Node000011" href="$classcore__example_1_1Fetch.html" title=" " alt="" coords="332,400,472,426"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="275,394,331,401,331,406,274,399"/>
+<area shape="rect" id="Node000012" href="$classcore__example_1_1FlushManager.html" title="Class used by performance models for signaling a flushing event across blocks." alt="" coords="307,449,496,475"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="252,407,308,436,340,446,338,451,306,441,249,412"/>
+<area shape="rect" id="Node000013" href="$classcore__example_1_1LSU.html" title=" " alt="" coords="334,499,469,524"/>
+<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="236,413,267,451,286,469,308,485,335,497,333,502,306,490,283,473,263,454,231,416"/>
+<area shape="rect" id="Node000014" href="$classcore__example_1_1MSS.html" title=" " alt="" coords="334,548,470,574"/>
+<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="228,415,258,476,281,508,309,535,334,548,332,553,305,539,277,511,253,479,224,418"/>
+<area shape="rect" id="Node000015" href="$classcore__example_1_1ROB.html" title=" " alt="" coords="334,597,469,623"/>
+<area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="224,417,234,455,250,500,275,546,309,584,335,598,332,603,305,588,270,549,245,502,229,456,219,418"/>
+<area shape="rect" id="Node000016" href="$classcore__example_1_1Rename.html" title=" " alt="" coords="324,647,479,672"/>
+<area shape="poly" id="edge15_Node000001_Node000016" title=" " alt="" coords="221,416,228,464,243,523,269,583,287,610,309,633,325,644,322,649,305,638,283,613,264,585,238,524,223,465,216,417"/>
+<area shape="rect" id="Node000017" href="$classcore__example_1_1SimpleTLB.html" title=" " alt="" coords="316,696,488,722"/>
+<area shape="poly" id="edge16_Node000001_Node000017" title=" " alt="" coords="219,417,223,473,236,545,248,583,263,619,283,653,309,683,323,693,320,698,305,687,279,656,258,622,243,584,231,546,218,474,214,417"/>
+<area shape="rect" id="Node000018" href="$classsparta_1_1Scoreboard.html" title="Class used to track operand dependencies (timed) between units." alt="" coords="337,745,466,771"/>
+<area shape="poly" id="edge17_Node000001_Node000018" title=" " alt="" coords="223,417,234,491,253,586,278,675,293,709,309,732,322,742,338,749,336,754,319,747,305,736,288,712,273,677,248,587,229,492,218,418"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Resource.html" title="The is the base class for all types of resources used by the SPARTA framework." alt="" coords="5,376,124,402"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="139,386,171,386,171,392,139,392"/>
+</map>

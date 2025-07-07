@@ -1,0 +1,5 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classsparta_1_1ArchData.html" title="Contains a set of contiguous line of architectural data which can be referred to by any architected o..." alt="" coords="5,5,123,31"/>
+<area shape="rect" id="Node000001" href="$classsparta_1_1memory_1_1MemoryObject.html" title="Memory object with sparse storage for large memory representations. Has direct read/write interface w..." alt="" coords="171,5,370,31"/>
+<area shape="poly" id="edge22_Node000000_Node000001" title=" " alt="" coords="138,16,170,16,170,21,138,21"/>
+</map>
