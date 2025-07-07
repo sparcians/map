@@ -6,6 +6,8 @@
 #include "sparta/report/format/JavascriptObject.hpp"
 #include "sparta/report/format/ReportHeader.hpp"
 #include "simdb/pipeline/Pipeline.hpp"
+#include "simdb/pipeline/elements/Function.hpp"
+#include "simdb/pipeline/elements/DatabaseQueue.hpp"
 #include "simdb/apps/AppRegistration.hpp"
 #include "simdb/utils/Compress.hpp"
 
@@ -125,16 +127,17 @@ bool ReportStatsCollector::defineSchema(simdb::Schema& schema)
 
 std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline()
 {
+    auto pipeline = std::make_unique<simdb::pipeline::Pipeline>(db_mgr_, NAME);
+
     // Stage 1:
     //   - Function:          Compress statistics values
     //   - Input type:        std::tuple<const ReportDescriptor*, uint64_t, std::vector<double>>
     //   - Output type:       std::tuple<const ReportDescriptor*, uint64_t, std::vector<char>>
-    //   - Num transforms:    1
-    //   - Database access:   No
     using CompressionIn = std::tuple<const ReportDescriptor*, uint64_t, std::vector<double>>;
     using CompressionOut = std::tuple<const ReportDescriptor*, uint64_t, std::vector<char>>;
+    using ZlibElement = simdb::pipeline::Function<CompressionIn, CompressionOut>;
 
-    auto zlib_task = simdb::pipeline::createTask<CompressionIn, CompressionOut>(
+    auto zlib_task = simdb::pipeline::createTask<ZlibElement>(
         [](CompressionIn&& in, simdb::ConcurrentQueue<CompressionOut>& out)
         {
             CompressionOut compressed;
@@ -153,11 +156,11 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
     //   - Function:          Write to database
     //   - Input type:        std::tuple<const ReportDescriptor*, uint64_t, std::vector<char>>
     //   - Output type:       none
-    //   - Num transforms:    1
-    //   - Database access:   Yes
     using DatabaseIn = CompressionOut;
+    using DatabaseOut = void;
+    using DatabaseElement = simdb::pipeline::DatabaseQueue<DatabaseIn, DatabaseOut>;
 
-    auto sqlite_task = simdb::pipeline::createTask<simdb::pipeline::DatabaseQueue<DatabaseIn>, void>(
+    auto sqlite_task = simdb::pipeline::createTask<DatabaseElement>(
         [this](DatabaseIn&& in, simdb::DatabaseManager* db_mgr)
         {
             const auto descriptor = std::get<0>(in);
@@ -172,11 +175,15 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
         }
     );
 
-    // Finalize pipeline
-    auto pipeline = std::make_unique<simdb::pipeline::Pipeline>(db_mgr_, NAME);
-    pipeline->addTask(std::move(zlib_task), "Compression");
-    pipeline->addTask(std::move(sqlite_task), "Database");
+    // Thread 1
+    pipeline->createTaskGroup("Compression")
+        ->addTask(std::move(zlib_task));
 
+    // Thread 2
+    pipeline->createTaskGroup("Database")
+        ->addTask(std::move(sqlite_task));
+
+    // Finalize
     pipeline_queue_ = pipeline->getPipelineInput<PipelineInT>();
     if (!pipeline_queue_)
     {
