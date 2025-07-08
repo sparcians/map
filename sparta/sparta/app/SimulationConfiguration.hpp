@@ -511,7 +511,7 @@ public:
         void enableApp(const std::string & app_name, const std::string & db_file)
         {
             enabled_apps_[db_file].insert(app_name);
-            app_db_files_[app_name] = db_file;
+            app_db_files_[app_name].insert(db_file);
         }
 
         bool appEnabled(const std::string & app_name) const
@@ -522,19 +522,20 @@ public:
         std::vector<std::string> getEnabledApps() const 
         {
             std::vector<std::string> apps;
-            for (const auto & kvp : app_db_files_) {
-                apps.push_back(kvp.first);
+            for (const auto& [app_name, db_files] : app_db_files_)
+            {
+                apps.emplace_back(app_name);
             }
             return apps;
         }
 
-        std::string getAppDatabase(const std::string & app_name) const
+        std::vector<std::string> getAppDatabases(const std::string & app_name) const
         {
             auto it = app_db_files_.find(app_name);
             if (it != app_db_files_.end()) {
-                return it->second;
+                return {it->second.begin(), it->second.end()};
             } else {
-                return "";
+                return {};
             }
         }
 
@@ -545,15 +546,20 @@ public:
             dbmgr_pragmas_[name] = val;
         }
 
-        const auto& getPragmas() const
+        std::vector<std::pair<std::string, std::string>> getPragmas() const
         {
-            return dbmgr_pragmas_;
+            std::vector<std::pair<std::string, std::string>> pragmas;
+            for (const auto & [name, val] : dbmgr_pragmas_)
+            {
+                pragmas.emplace_back(name, val);
+            }
+            return pragmas;
         }
 
     private:
         std::string simdb_file_;
         std::map<std::string, std::set<std::string>> enabled_apps_;
-        std::map<std::string, std::string> app_db_files_;
+        std::map<std::string, std::set<std::string>> app_db_files_;
         bool legacy_reports_enabled_ = true;
         std::map<std::string, std::string> dbmgr_pragmas_;
     } simdb_config;
