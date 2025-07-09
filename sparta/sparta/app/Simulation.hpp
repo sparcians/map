@@ -170,10 +170,10 @@ public:
     std::vector<simdb::DatabaseManager*> getDbManagers();
 
     //! \brief Get an app manager for a specific database file
-    simdb::AppManager* getAppManager(const std::string & db_file) const;
+    simdb::AppManager* getAppManager(const std::string & db_file = "sparta.db") const;
 
     //! \brief Get a database manager for a specific database file
-    simdb::DatabaseManager* getDbManager(const std::string & db_file) const;
+    simdb::DatabaseManager* getDbManager(const std::string & db_file = "sparta.db") const;
 
     //! \brief Returns all database files managed by this simulation
     std::vector<std::string> getDatabaseFiles() const;
