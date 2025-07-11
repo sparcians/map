@@ -133,7 +133,7 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
     //   - Function:          Compress statistics values
     //   - Input type:        std::tuple<const ReportDescriptor*, uint64_t, std::vector<double>>
     //   - Output type:       std::tuple<const ReportDescriptor*, uint64_t, std::vector<char>>
-    using CompressionIn = std::tuple<const ReportDescriptor*, uint64_t, std::vector<double>>;
+    using CompressionIn = PipelineInT;
     using CompressionOut = std::tuple<const ReportDescriptor*, uint64_t, std::vector<char>>;
     using ZlibElement = simdb::pipeline::Function<CompressionIn, CompressionOut>;
 
@@ -175,20 +175,21 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
         }
     );
 
-    // Thread 1
+    // Connect tasks -------------------------------------------------------------------
+    *zlib_task >> *sqlite_task;
+
+    // Get the pipeline input (head) ---------------------------------------------------
+    pipeline_queue_ = zlib_task->getTypedInputQueue<PipelineInT>();
+
+    // Assign threads (task groups) ----------------------------------------------------
+    // Thread 1:
     pipeline->createTaskGroup("Compression")
         ->addTask(std::move(zlib_task));
 
-    // Thread 2
+    // Thread 2:
     pipeline->createTaskGroup("Database")
         ->addTask(std::move(sqlite_task));
 
-    // Finalize
-    pipeline_queue_ = pipeline->getPipelineInput<PipelineInT>();
-    if (!pipeline_queue_)
-    {
-        throw simdb::DBException("Pipeline failed to build");
-    }
     return pipeline;
 }
 
