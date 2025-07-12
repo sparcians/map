@@ -163,26 +163,20 @@ public:
     //! \brief Returns the simulation's scheduler
     const sparta::Scheduler * getScheduler() const { return scheduler_; }
 
-    //! \brief Returns the SimDB application manager
-    simdb::AppManager * getAppManager() { return app_manager_.get(); }
+    //! \brief Returns all SimDB application managers
+    std::vector<simdb::AppManager*> getAppManagers();
+
+    //! \brief Returns all SimDB database managers
+    std::vector<simdb::DatabaseManager*> getDbManagers();
+
+    //! \brief Get an app manager for a specific database file
+    simdb::AppManager* getAppManager(const std::string & db_file = "sparta.db") const;
+
+    //! \brief Get a database manager for a specific database file
+    simdb::DatabaseManager* getDbManager(const std::string & db_file = "sparta.db") const;
 
     //! \brief Returns all database files managed by this simulation
-    std::vector<std::string> getDatabaseFiles() const {
-        std::vector<std::string> db_files;
-        for (const auto& [db_file, db_mgr] : db_managers_) {
-            db_files.push_back(db_file);
-        }
-        return db_files;
-    }
-
-    //! \brief Returns the SimDB database manager for the given database file
-    simdb::DatabaseManager * getDatabaseManager(const std::string& db_file) {
-        auto it = db_managers_.find(db_file);
-        if (it != db_managers_.end()) {
-            return it->second.get();
-        }
-        return nullptr;
-    }
+    std::vector<std::string> getDatabaseFiles() const;
 
     /*!
      * \brief Returns whether or not the simulator was configured using a final
@@ -986,14 +980,24 @@ private:
     char** argv_ = nullptr;
 
     /*!
-     * \brief SimDB app databases, keyed by the filename.
+     * \brief SimDB instances with the associated AppManager.
      */
-    std::map<std::string, std::shared_ptr<simdb::DatabaseManager>> db_managers_;
+    struct SimDbManagers
+    {
+        std::shared_ptr<simdb::DatabaseManager> db_mgr;
+        std::shared_ptr<simdb::AppManager> app_mgr;
+
+        SimDbManagers(std::shared_ptr<simdb::DatabaseManager> db_mgr,
+                      std::shared_ptr<simdb::AppManager> app_mgr)
+            : db_mgr(db_mgr)
+            , app_mgr(app_mgr)
+        {}
+    };
 
     /*!
-     * \brief Manager object to handle all SimDB app callbacks and lifetime.
+     * \brief Db/App managers, keyed by database filename.
      */
-    std::shared_ptr<simdb::AppManager> app_manager_;
+    std::map<std::string, std::shared_ptr<SimDbManagers>> simdb_managers_;
 };
 
 } // namespace app
