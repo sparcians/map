@@ -471,35 +471,30 @@ void Simulation::createSimDbApps_()
         return;
     }
 
-    std::vector<std::string> db_files;
-    for (const auto& app_name : enabled_apps) {
-        const auto db_file = simdb_config.getAppDatabase(app_name);
-        db_files.push_back(db_file);
-    }
-
-    app_manager_ = std::make_shared<simdb::AppManager>();
-    auto& app_mgr = *app_manager_;
-    for (const auto & app_name : enabled_apps) {
-        app_mgr.enableApp(app_name);
-    }
-
-    for (const auto & db_file : db_files) {
-        simdb::PragmaPairs pragmas;
-        for (const auto& [name, val] : sim_config_->simdb_config.getPragmas())
+    std::map<std::string, std::set<std::string>> apps_by_db_file;
+    for (const auto & app_name : enabled_apps)
+    {
+        for (const auto & db_file : simdb_config.getAppDatabases(app_name))
         {
-            pragmas.emplace_back(name, val);
+            apps_by_db_file[db_file].insert(app_name);
         }
-        db_managers_[db_file] = std::make_shared<simdb::DatabaseManager>(db_file, true, pragmas);
     }
 
-    for (const auto & db_file : db_files) {
-        auto db_mgr = db_managers_[db_file].get();
-        app_mgr.createEnabledApps(db_mgr);
-    }
+    for (const auto & [db_file, app_names] : apps_by_db_file)
+    {
+        const auto& pragmas = simdb_config.getPragmas();
+        constexpr auto new_file = true;
+        auto db_mgr = std::make_shared<simdb::DatabaseManager>(db_file, new_file, pragmas);
+        auto app_mgr = std::make_shared<simdb::AppManager>(db_mgr.get());
 
-    for (const auto & db_file : db_files) {
-        auto db_mgr = db_managers_[db_file].get();
-        app_mgr.createSchemas(db_mgr);
+        for (const auto & app_name : app_names)
+        {
+            app_mgr->enableApp(app_name);
+        }
+
+        app_mgr->createEnabledApps();
+        app_mgr->createSchemas();
+        simdb_managers_[db_file] = std::make_shared<SimDbManagers>(db_mgr, app_mgr);
     }
 #endif
 }
@@ -537,6 +532,58 @@ void Simulation::addReport(const ReportDescriptor & rep)
         // Simply append to list. Nothing to do until finalization (unlike taps)
         rep_descs_.push_back(rep);
     }
+}
+
+std::vector<simdb::AppManager*> Simulation::getAppManagers()
+{
+    std::vector<simdb::AppManager*> app_mgrs;
+    for (auto [db_file, mgrs] : simdb_managers_)
+    {
+        app_mgrs.push_back(mgrs->app_mgr.get());
+    }
+    return app_mgrs;
+}
+
+std::vector<simdb::DatabaseManager*> Simulation::getDbManagers()
+{
+    std::vector<simdb::DatabaseManager*> db_mgrs;
+    for (auto & [db_file, mgrs] : simdb_managers_)
+    {
+        db_mgrs.push_back(mgrs->db_mgr.get());
+    }
+    return db_mgrs;
+}
+
+simdb::AppManager* Simulation::getAppManager(const std::string & db_file) const
+{
+    auto it = simdb_managers_.find(db_file);
+    if (it == simdb_managers_.end())
+    {
+        return nullptr;
+    }
+
+    return it->second->app_mgr.get();
+}
+
+simdb::DatabaseManager* Simulation::getDbManager(const std::string & db_file) const
+{
+    auto it = simdb_managers_.find(db_file);
+    if (it == simdb_managers_.end())
+    {
+        return nullptr;
+    }
+
+    return it->second->db_mgr.get();
+}
+
+std::vector<std::string> Simulation::getDatabaseFiles() const
+{
+    std::vector<std::string> db_files;
+    for (const auto & [db_file, mgrs] : simdb_managers_)
+    {
+        db_files.push_back(db_file);
+    }
+    return db_files;
 }
 
 void Simulation::installTaps(const log::TapDescVec& taps)
@@ -770,21 +817,22 @@ void Simulation::finalizeFramework()
     bool reports_setup = false;
 
 #if SIMDB_ENABLED
-    ReportStatsCollector* collector = nullptr;
-    simdb::DatabaseManager* db_mgr = nullptr;
-    if (app_manager_) {
-        for (const auto & db_file : getDatabaseFiles()) {
-            db_mgr = db_managers_[db_file].get();
-            if (auto app = app_manager_->getApp<ReportStatsCollector>(db_mgr, false)) {
-                sparta_assert(collector == nullptr,
-                              "Only one ReportStatsCollector app can be enabled at a time");
-                collector = app;
-            }
-        }
+    std::vector<simdb::AppManager*> app_mgrs;
+    for (const auto & [db_file, simdb_mgrs] : simdb_managers_)
+    {
+        auto db_mgr = simdb_mgrs->db_mgr;
+        auto app_mgr = simdb_mgrs->app_mgr;
+        app_mgrs.push_back(app_mgr.get());
 
-        if (collector) {
-            collector->setScheduler(getScheduler());
-            db_mgr->safeTransaction([&]() { setupReports_(collector); });
+        if (auto app = app_mgr->getApp<ReportStatsCollector>(false))
+        {
+            if (reports_setup)
+            {
+                throw SpartaException("Stats reports cannot be sent to more than one database");
+            }
+
+            app->setScheduler(getScheduler());
+            db_mgr->safeTransaction([&]() { setupReports_(app); });
             reports_setup = true;
         }
     }
@@ -800,14 +848,10 @@ void Simulation::finalizeFramework()
     report_repository_->postFinalizeFramework();
 
 #if SIMDB_ENABLED
-    if (app_manager_) {
-        sparta_assert(argc_);
-        sparta_assert(argv_);
-        for (const auto & db_file : getDatabaseFiles()) {
-            auto db_mgr = db_managers_[db_file].get();
-            app_manager_->postInit(db_mgr, argc_, argv_);
-        }
-        app_manager_->openPipelines();
+    for (auto app_mgr : app_mgrs)
+    {
+        app_mgr->postInit(argc_, argv_);
+        app_mgr->openPipelines();
     }
 #endif
 }
@@ -915,19 +959,11 @@ void Simulation::run(uint64_t run_time)
     }
 
 #if SIMDB_ENABLED
-    if (app_manager_) {
-        for (const auto & kvp : db_managers_) {
-            auto db_mgr = kvp.second.get();
-            app_manager_->postSim(db_mgr);
-        }
-
-        for (const auto & kvp : db_managers_) {
-            auto db_mgr = kvp.second.get();
-            app_manager_->teardown(db_mgr);
-        }
-
-        app_manager_->destroy();
-        app_manager_.reset();
+    for (auto app_mgr : getAppManagers())
+    {
+        app_mgr->postSim();
+        app_mgr->teardown();
+        app_mgr->destroy();
     }
 #endif
 
