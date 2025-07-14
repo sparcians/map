@@ -161,17 +161,19 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
     using DatabaseElement = simdb::pipeline::DatabaseQueue<DatabaseIn, DatabaseOut>;
 
     auto sqlite_task = simdb::pipeline::createTask<DatabaseElement>(
-        [this](DatabaseIn&& in, simdb::DatabaseManager* db_mgr)
+        SQL_TABLE("DescriptorRecords"),
+        SQL_COLUMNS("ReportDescID", "Tick", "DataBlob"),
+        [this](DatabaseIn&& in, simdb::PreparedINSERT* inserter)
         {
             const auto descriptor = std::get<0>(in);
             const auto descriptor_id = getDescriptorID(descriptor);
             const auto tick = std::get<1>(in);
             const auto& bytes = std::get<2>(in);
 
-            db_mgr->INSERT(
-                SQL_TABLE("DescriptorRecords"),
-                SQL_COLUMNS("ReportDescID", "Tick", "DataBlob"),
-                SQL_VALUES(descriptor_id, tick, bytes));
+            inserter->setColumnValue(0, descriptor_id);
+            inserter->setColumnValue(1, tick);
+            inserter->setColumnValue(2, bytes);
+            inserter->createRecord();
         }
     );
 
