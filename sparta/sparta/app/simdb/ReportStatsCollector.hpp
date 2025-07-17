@@ -39,7 +39,8 @@ public:
 
     bool defineSchema(simdb::Schema&) override;
 
-    std::unique_ptr<simdb::pipeline::Pipeline> createPipeline() override;
+    std::unique_ptr<simdb::pipeline::Pipeline> createPipeline(
+        simdb::pipeline::AsyncDatabaseAccessor* db_accessor) override;
 
     void setScheduler(const Scheduler* scheduler);
 

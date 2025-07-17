@@ -7,7 +7,6 @@
 #include "sparta/report/format/ReportHeader.hpp"
 #include "simdb/pipeline/Pipeline.hpp"
 #include "simdb/pipeline/elements/Function.hpp"
-#include "simdb/pipeline/elements/DatabaseQueue.hpp"
 #include "simdb/apps/AppRegistration.hpp"
 #include "simdb/utils/Compress.hpp"
 
@@ -125,7 +124,8 @@ bool ReportStatsCollector::defineSchema(simdb::Schema& schema)
     return true;
 }
 
-std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline()
+std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
+    simdb::pipeline::AsyncDatabaseAccessor* db_accessor)
 {
     auto pipeline = std::make_unique<simdb::pipeline::Pipeline>(db_mgr_, NAME);
 
@@ -158,9 +158,8 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
     //   - Output type:       none
     using DatabaseIn = CompressionOut;
     using DatabaseOut = void;
-    using DatabaseElement = simdb::pipeline::DatabaseQueue<DatabaseIn, DatabaseOut>;
 
-    auto sqlite_task = simdb::pipeline::createTask<DatabaseElement>(
+    auto sqlite_task = db_accessor->createAsyncWriter<DatabaseIn, DatabaseOut>(
         SQL_TABLE("DescriptorRecords"),
         SQL_COLUMNS("ReportDescID", "Tick", "DataBlob"),
         [this](DatabaseIn&& in, simdb::PreparedINSERT* inserter)
@@ -184,13 +183,11 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
     pipeline_queue_ = zlib_task->getTypedInputQueue<PipelineInT>();
 
     // Assign threads (task groups) ----------------------------------------------------
-    // Thread 1:
     pipeline->createTaskGroup("Compression")
         ->addTask(std::move(zlib_task));
 
-    // Thread 2:
-    pipeline->createTaskGroup("Database")
-        ->addTask(std::move(sqlite_task));
+    // We only have to setup the non-DB processing tasks. All calls to createAsyncWriter()
+    // implicitly put those created tasks on the shared DB thread.
 
     return pipeline;
 }
