@@ -7,7 +7,6 @@
 #include "sparta/report/format/ReportHeader.hpp"
 #include "simdb/pipeline/Pipeline.hpp"
 #include "simdb/pipeline/elements/Function.hpp"
-#include "simdb/pipeline/elements/DatabaseQueue.hpp"
 #include "simdb/apps/AppRegistration.hpp"
 #include "simdb/utils/Compress.hpp"
 
@@ -125,7 +124,8 @@ bool ReportStatsCollector::defineSchema(simdb::Schema& schema)
     return true;
 }
 
-std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline()
+std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
+    simdb::pipeline::AsyncDatabaseAccessor* db_accessor)
 {
     auto pipeline = std::make_unique<simdb::pipeline::Pipeline>(db_mgr_, NAME);
 
@@ -158,9 +158,8 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
     //   - Output type:       none
     using DatabaseIn = CompressionOut;
     using DatabaseOut = void;
-    using DatabaseElement = simdb::pipeline::DatabaseQueue<DatabaseIn, DatabaseOut>;
 
-    auto sqlite_task = simdb::pipeline::createTask<DatabaseElement>(
+    auto sqlite_task = db_accessor->createAsyncWriter<DatabaseIn, DatabaseOut>(
         SQL_TABLE("DescriptorRecords"),
         SQL_COLUMNS("ReportDescID", "Tick", "DataBlob"),
         [this](DatabaseIn&& in, simdb::PreparedINSERT* inserter)
@@ -184,13 +183,11 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
     pipeline_queue_ = zlib_task->getTypedInputQueue<PipelineInT>();
 
     // Assign threads (task groups) ----------------------------------------------------
-    // Thread 1:
     pipeline->createTaskGroup("Compression")
         ->addTask(std::move(zlib_task));
 
-    // Thread 2:
-    pipeline->createTaskGroup("Database")
-        ->addTask(std::move(sqlite_task));
+    // We only have to setup the non-DB processing tasks. All calls to createAsyncWriter()
+    // implicitly put those created tasks on the shared DB thread.
 
     return pipeline;
 }
@@ -326,7 +323,7 @@ void ReportStatsCollector::writeSkipAnnotation(
     report_skip_annotations_[desc].emplace_back(tick, annotation);
 }
 
-void ReportStatsCollector::postSim()
+void ReportStatsCollector::postTeardown()
 {
     for (const auto& [name, value] : SimulationInfo::getInstance().getHeaderPairs()) {
         db_mgr_->INSERT(
@@ -347,10 +344,7 @@ void ReportStatsCollector::postSim()
         << scheduler_->getCurrentTick();
 
     db_mgr_->EXECUTE(oss.str());
-}
 
-void ReportStatsCollector::teardown()
-{
     for (const auto& [desc, db_ids] : descriptor_report_ids_) {
         const auto report_desc_id = getDescriptorID(desc);
         for (const auto& report_id : db_ids) {
