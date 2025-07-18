@@ -39,7 +39,8 @@ public:
 
     bool defineSchema(simdb::Schema&) override;
 
-    std::unique_ptr<simdb::pipeline::Pipeline> createPipeline() override;
+    std::unique_ptr<simdb::pipeline::Pipeline> createPipeline(
+        simdb::pipeline::AsyncDatabaseAccessor* db_accessor) override;
 
     void setScheduler(const Scheduler* scheduler);
 
@@ -66,9 +67,7 @@ public:
     void writeSkipAnnotation(const ReportDescriptor* desc,
                              const std::string& annotation);
 
-    void postSim() override;
-
-    void teardown() override;
+    void postTeardown() override;
 
 private:
     void writeReportInfo_(const ReportDescriptor* desc);

@@ -961,9 +961,7 @@ void Simulation::run(uint64_t run_time)
 #if SIMDB_ENABLED
     for (auto app_mgr : getAppManagers())
     {
-        app_mgr->postSim();
-        app_mgr->teardown();
-        app_mgr->destroy();
+        app_mgr->postSimLoopTeardown();
     }
 #endif
 
