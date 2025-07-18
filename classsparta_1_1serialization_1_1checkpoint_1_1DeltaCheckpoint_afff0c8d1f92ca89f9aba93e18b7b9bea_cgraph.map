@@ -1,0 +1,14 @@
+<map id="sparta::serialization::checkpoint::DeltaCheckpoint::dumpRestoreChain" name="sparta::serialization::checkpoint::DeltaCheckpoint::dumpRestoreChain">
+<area shape="rect" id="Node000001" title="Dumps the restore chain for this checkpoint." alt="" coords="5,125,197,181"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a051b7ba282cb3affd3dcc21d38cc176d" title="Return the ID had by this checkpoint before it was deleted If this checkpoint has not been flagged fo..." alt="" coords="245,5,436,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,122,243,71,255,65,257,70,246,76,151,127"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a1ab50505bd631547981015601a4f40e8" title="Returns the ID of this checkpoint." alt="" coords="260,85,421,141"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="197,134,244,126,245,132,198,140"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a4a21aef72a972e589a730f45901915d9" title="Returns a stack of checkpoints that must be restored from top&#45;to&#45;bottom to fully restore the state as..." alt="" coords="245,165,436,221"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="198,167,230,172,229,177,197,172"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a298af42f2d8f655088a1a61ff91d776b" title="Is this checkpoint a snapshot (contains ALL simulator state)" alt="" coords="484,231,675,286"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="143,179,191,208,246,231,301,244,359,253,469,259,468,265,359,258,300,249,244,236,188,212,141,184"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a099fdcf88200fbcb8a2b1ac47b7df0f7" title="Returns the previous checkpoint. If this checkpoint is a snapshot, it has no previous checkpoint." alt="" coords="499,151,660,206"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="436,185,483,182,484,187,437,190"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="437,217,470,226,468,231,436,222"/>
+</map>

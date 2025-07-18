@@ -1,0 +1,5 @@
+<map id="sparta::computeMaskShift" name="sparta::computeMaskShift">
+<area shape="rect" id="Node000001" title="Convenience wrapper around computeMask to get the shift value." alt="" coords="5,5,178,31"/>
+<area shape="rect" id="Node000002" href="$namespacesparta.html#ac5f60aeec01dacb8926a44e7b20203ab" title="Computes a maks and the lsb&#45;position given a block size. The mask generated can be AND&#45;ed with any nu..." alt="" coords="226,5,371,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="178,16,210,16,210,21,178,21"/>
+</map>

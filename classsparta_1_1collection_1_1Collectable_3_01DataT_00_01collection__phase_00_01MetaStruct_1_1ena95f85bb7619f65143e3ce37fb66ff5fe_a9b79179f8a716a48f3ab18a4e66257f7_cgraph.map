@@ -1,0 +1,16 @@
+<map id="sparta::collection::Collectable&lt; DataT, collection_phase, MetaStruct::enable_if_t&lt; std::is_base_of&lt; sparta::PairDefinition&lt; MetaStruct::remove_any_pointer_t&lt; DataT &gt; &gt;, typename MetaStruct::remove_any_pointer_t&lt; DataT &gt;::SpartaPairDefinitionType &gt;::value &gt; &gt;::collectWithDuration" name="sparta::collection::Collectable&lt; DataT, collection_phase, MetaStruct::enable_if_t&lt; std::is_base_of&lt; sparta::PairDefinition&lt; MetaStruct::remove_any_pointer_t&lt; DataT &gt; &gt;, typename MetaStruct::remove_any_pointer_t&lt; DataT &gt;::SpartaPairDefinitionType &gt;::value &gt; &gt;::collectWithDuration">
+<area shape="rect" id="Node000001" title="Explicitly collect a value for the given duration." alt="" coords="5,64,337,209"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1Collectable.html#a56d9cf5ee0cc7e0897413afc6b73c541" title=" " alt="" coords="410,29,546,70"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="337,87,394,70,396,75,338,92"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ac7d83237fc2aaa41c6b3809a4fb646e1" title="Determine whether or not this node has collection turned on or off." alt="" coords="836,51,985,107"/>
+<area shape="poly" id="edge5_Node000001_Node000004" title=" " alt="" coords="337,121,821,83,821,89,337,126"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PhasedPayloadEvent.html#a3f7835dce02b716a08b1c88e23733955" title="Prepare a Scheduleable Payload for scheduling either now or later." alt="" coords="385,144,571,185"/>
+<area shape="poly" id="edge6_Node000001_Node000005" title=" " alt="" coords="338,149,369,152,369,157,337,154"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1Scheduleable.html#a3bb381d1ef9ccb3c335613c5600d162b" title="Schedule this event with its pre&#45;set delay using the pre&#45;set Clock." alt="" coords="407,233,548,274"/>
+<area shape="poly" id="edge7_Node000001_Node000006" title=" " alt="" coords="338,197,409,225,407,230,336,202"/>
+<area shape="poly" id="edge4_Node000002_Node000002" title=" " alt="" coords="435,29,433,19,440,10,455,5,478,3,502,5,517,11,515,16,501,10,478,8,456,10,443,15,438,21,440,28"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1collection_1_1Collectable.html#a6506b3af9a7da969befd4d11536881dc" title=" " alt="" coords="619,29,788,70"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="546,47,603,47,603,52,546,52"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="789,59,821,64,820,69,788,64"/>
+<area shape="poly" id="edge8_Node000006_Node000006" title=" " alt="" coords="435,233,433,223,440,214,455,209,478,207,502,209,517,215,515,220,501,214,478,212,456,214,443,219,438,225,440,232"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="sparta::collection::Collectable&lt; DataT, collection_phase, MetaStruct::enable_if_t&lt; std::is_base_of&lt; sparta::PairDefinition&lt; MetaStruct::remove_any_pointer_t&lt; DataT &gt; &gt;, typename MetaStruct::remove_any_pointer_t&lt; DataT &gt;::SpartaPairDefinitionType &gt;::value &gt; &gt;::Collectable" name="sparta::collection::Collectable&lt; DataT, collection_phase, MetaStruct::enable_if_t&lt; std::is_base_of&lt; sparta::PairDefinition&lt; MetaStruct::remove_any_pointer_t&lt; DataT &gt; &gt;, typename MetaStruct::remove_any_pointer_t&lt; DataT &gt;::SpartaPairDefinitionType &gt;::value &gt; &gt;::Collectable">
+<area shape="rect" id="Node000001" title="Construct the Collectable." alt="" coords="5,5,337,151"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1Collectable.html#a91762641416a1c74d56bfbb35ddef889" title="For manual collection, provide an initial value." alt="" coords="385,58,528,98"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="337,76,369,76,369,81,337,81"/>
+</map>

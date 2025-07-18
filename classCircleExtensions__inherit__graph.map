@@ -1,0 +1,7 @@
+<map id="CircleExtensions" name="CircleExtensions">
+<area shape="rect" id="Node000001" title=" " alt="" coords="56,153,174,178"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ExtensionsParamsOnly.html" title="Helper class used to trivially extend TreeNode parameter sets (but not any additional functionality b..." alt="" coords="16,79,214,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="118,120,118,152,112,152,112,120"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode_1_1ExtensionsBase.html" title="Base class used to extend TreeNode parameter sets." alt="" coords="5,5,225,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="118,46,118,79,112,79,112,46"/>
+</map>
