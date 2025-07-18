@@ -67,9 +67,7 @@ public:
     void writeSkipAnnotation(const ReportDescriptor* desc,
                              const std::string& annotation);
 
-    void postSim() override;
-
-    void teardown() override;
+    void postTeardown() override;
 
 private:
     void writeReportInfo_(const ReportDescriptor* desc);

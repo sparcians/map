@@ -323,7 +323,7 @@ void ReportStatsCollector::writeSkipAnnotation(
     report_skip_annotations_[desc].emplace_back(tick, annotation);
 }
 
-void ReportStatsCollector::postSim()
+void ReportStatsCollector::postTeardown()
 {
     for (const auto& [name, value] : SimulationInfo::getInstance().getHeaderPairs()) {
         db_mgr_->INSERT(
@@ -344,10 +344,7 @@ void ReportStatsCollector::postSim()
         << scheduler_->getCurrentTick();
 
     db_mgr_->EXECUTE(oss.str());
-}
 
-void ReportStatsCollector::teardown()
-{
     for (const auto& [desc, db_ids] : descriptor_report_ids_) {
         const auto report_desc_id = getDescriptorID(desc);
         for (const auto& report_id : db_ids) {
