@@ -14,7 +14,7 @@ namespace sparta::app {
 
 REGISTER_SIMDB_APPLICATION(ReportStatsCollector);
 
-bool ReportStatsCollector::defineSchema(simdb::Schema& schema)
+void ReportStatsCollector::defineSchema(simdb::Schema& schema)
 {
     using dt = simdb::SqlDataType;
 
@@ -120,8 +120,6 @@ bool ReportStatsCollector::defineSchema(simdb::Schema& schema)
     csv_skip_annotations_tbl.addColumn("Tick", dt::int64_t);
     csv_skip_annotations_tbl.addColumn("Annotation", dt::string_t);
     csv_skip_annotations_tbl.createIndexOn("ReportDescID");
-
-    return true;
 }
 
 std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
@@ -129,46 +127,25 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
 {
     auto pipeline = std::make_unique<simdb::pipeline::Pipeline>(db_mgr_, NAME);
 
-    // Stage 1:
-    //   - Function:          Compress statistics values
-    //   - Input type:        std::tuple<const ReportDescriptor*, uint64_t, std::vector<double>>
-    //   - Output type:       std::tuple<const ReportDescriptor*, uint64_t, std::vector<char>>
-    using CompressionIn = PipelineInT;
-    using CompressionOut = std::tuple<const ReportDescriptor*, uint64_t, std::vector<char>>;
-    using ZlibElement = simdb::pipeline::Function<CompressionIn, CompressionOut>;
+    using ZlibFunction = simdb::pipeline::Function<ReportStatsAtTick, CompressedReportStatsAtTick>;
 
-    auto zlib_task = simdb::pipeline::createTask<ZlibElement>(
-        [](CompressionIn&& in, simdb::ConcurrentQueue<CompressionOut>& out)
+    auto zlib_task = simdb::pipeline::createTask<ZlibFunction>(
+        [](ReportStatsAtTick&& in, simdb::ConcurrentQueue<CompressedReportStatsAtTick>& out)
         {
-            CompressionOut compressed;
-            std::get<0>(compressed) = std::get<0>(in);
-            std::get<1>(compressed) = std::get<1>(in);
-            const auto& uncompressed_bytes = std::get<2>(in);
-            auto& compressed_bytes = std::get<2>(compressed);
-            auto data_ptr = uncompressed_bytes.data();
-            auto num_bytes = uncompressed_bytes.size() * sizeof(double);
-            simdb::compressData(data_ptr, num_bytes, compressed_bytes);
+            CompressedReportStatsAtTick compressed(std::move(in));
             out.emplace(std::move(compressed));
         }
     );
 
-    // Stage 2:
-    //   - Function:          Write to database
-    //   - Input type:        std::tuple<const ReportDescriptor*, uint64_t, std::vector<char>>
-    //   - Output type:       none
-    using DatabaseIn = CompressionOut;
-    using DatabaseOut = void;
-
-    auto sqlite_task = db_accessor->createAsyncWriter<DatabaseIn, DatabaseOut>(
-        SQL_TABLE("DescriptorRecords"),
-        SQL_COLUMNS("ReportDescID", "Tick", "DataBlob"),
-        [this](DatabaseIn&& in, simdb::PreparedINSERT* inserter)
+    auto sqlite_task = db_accessor->createAsyncWriter<ReportStatsCollector, CompressedReportStatsAtTick, void>(
+        [this](CompressedReportStatsAtTick&& in, simdb::pipeline::AppPreparedINSERTs* tables)
         {
-            const auto descriptor = std::get<0>(in);
+            const auto descriptor = in.getDescriptor();
             const auto descriptor_id = getDescriptorID(descriptor);
-            const auto tick = std::get<1>(in);
-            const auto& bytes = std::get<2>(in);
+            const auto tick = in.getTick();
+            const auto& bytes = in.getBytes();
 
+            auto inserter = tables->getPreparedINSERT("DescriptorRecords");
             inserter->setColumnValue(0, descriptor_id);
             inserter->setColumnValue(1, tick);
             inserter->setColumnValue(2, bytes);
@@ -180,7 +157,7 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
     *zlib_task >> *sqlite_task;
 
     // Get the pipeline input (head) ---------------------------------------------------
-    pipeline_queue_ = zlib_task->getTypedInputQueue<PipelineInT>();
+    pipeline_queue_ = zlib_task->getTypedInputQueue<ReportStatsAtTick>();
 
     // Assign threads (task groups) ----------------------------------------------------
     pipeline->createTaskGroup("Compression")
@@ -311,7 +288,7 @@ void ReportStatsCollector::collect(const ReportDescriptor* desc)
         stats.push_back(stat->getValue());
     }
 
-    PipelineInT in = std::make_tuple(desc, scheduler_->getCurrentTick(), std::move(stats));
+    ReportStatsAtTick in(desc, scheduler_->getCurrentTick(), std::move(stats));
     pipeline_queue_->emplace(std::move(in));
 }
 
@@ -510,6 +487,13 @@ void ReportStatsCollector::writeReportInfo_(
     for (const auto& sr : r->getSubreports()) {
         writeReportInfo_(desc, &sr, visited_stats, report_id);
     }
+}
+
+std::vector<char> ReportStatsCollector::ReportStatsAtTick::compress() const
+{
+    std::vector<char> bytes;
+    simdb::compressData(stats_, bytes);
+    return bytes;
 }
 
 } // namespace sparta::app
