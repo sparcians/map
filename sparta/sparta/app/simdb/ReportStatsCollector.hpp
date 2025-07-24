@@ -37,7 +37,7 @@ public:
         : db_mgr_(db_mgr)
     {}
 
-    bool defineSchema(simdb::Schema&) override;
+    static void defineSchema(simdb::Schema&);
 
     std::unique_ptr<simdb::pipeline::Pipeline> createPipeline(
         simdb::pipeline::AsyncDatabaseAccessor* db_accessor) override;
@@ -92,8 +92,72 @@ private:
     const Scheduler* scheduler_ = nullptr;
     simdb::DatabaseManager* db_mgr_ = nullptr;
 
-    using PipelineInT = std::tuple<const ReportDescriptor*, uint64_t, std::vector<double>>;
-    simdb::ConcurrentQueue<PipelineInT>* pipeline_queue_ = nullptr;
+    class ReportAtTick
+    {
+    public:
+        ReportAtTick(const ReportDescriptor* descriptor, uint64_t tick)
+            : descriptor_(descriptor)
+            , tick_(tick)
+        {}
+
+        // Default constructor needed to read these out of simdb::ConcurrentQueue's
+        ReportAtTick() = default;
+
+        const ReportDescriptor* getDescriptor() const
+        {
+            return descriptor_;
+        }
+
+        uint64_t getTick() const
+        {
+            return tick_;
+        }
+
+    private:
+        const ReportDescriptor* descriptor_ = nullptr;
+        uint64_t tick_ = 0;
+    };
+
+    class ReportStatsAtTick : public ReportAtTick
+    {
+    public:
+        ReportStatsAtTick(const ReportDescriptor* descriptor,
+                          uint64_t tick,
+                          std::vector<double>&& stats)
+            : ReportAtTick(descriptor, tick)
+            , stats_(std::move(stats))
+        {}
+
+        // Default constructor needed to read these out of simdb::ConcurrentQueue's
+        ReportStatsAtTick() = default;
+
+        std::vector<char> compress() const;
+
+    private:
+        std::vector<double> stats_;
+    };
+
+    class CompressedReportStatsAtTick : public ReportAtTick
+    {
+    public:
+        CompressedReportStatsAtTick(ReportStatsAtTick&& uncompressed)
+            : ReportAtTick(uncompressed.getDescriptor(), uncompressed.getTick())
+            , bytes_(uncompressed.compress())
+        {}
+
+        // Default constructor needed to read these out of simdb::ConcurrentQueue's
+        CompressedReportStatsAtTick() = default;
+
+        const std::vector<char>& getBytes() const
+        {
+            return bytes_;
+        }
+
+    private:
+        std::vector<char> bytes_;
+    };
+
+    simdb::ConcurrentQueue<ReportStatsAtTick>* pipeline_queue_ = nullptr;
 };
 
 } // namespace sparta::app
