@@ -1,0 +1,99 @@
+<map id="sparta::ArchDataContainer" name="sparta::ArchDataContainer">
+<area shape="rect" id="Node000001" title="Container class for any number of ArchData pointers owned externally." alt="" coords="5,793,178,819"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="226,793,346,819"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,804,225,804,225,809,193,809"/>
+<area shape="rect" id="Node000003" href="$classcore__example_1_1SimpleDL1.html" title=" " alt="" coords="414,5,586,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="284,778,287,625,300,404,313,290,332,185,358,99,374,66,392,40,413,25,416,30,396,44,378,69,363,101,337,187,318,291,305,405,292,626,290,778"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Baz.html" title=" " alt="" coords="458,55,543,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="285,778,288,635,303,428,316,322,335,225,360,145,375,113,392,90,406,78,422,71,457,64,458,69,424,76,409,83,396,93,379,116,365,146,340,226,321,323,308,429,294,635,290,778"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1Bus.html" title="Class that defines a Bus type." alt="" coords="457,104,543,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="285,778,290,643,306,451,320,353,338,263,362,190,376,161,392,139,406,128,422,120,456,113,457,119,424,125,409,132,396,143,381,164,367,192,343,265,325,354,311,452,296,643,290,778"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1BusSet.html" title="A TreeNode that represents a set of Buses." alt="" coords="447,153,553,179"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="285,778,292,652,309,475,323,385,341,302,364,235,377,208,392,188,417,172,446,164,447,169,419,176,396,192,382,211,369,237,346,304,328,386,314,476,297,652,291,778"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1Clock.html" title="A representation of simulated time." alt="" coords="452,203,548,228"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="286,778,294,661,312,499,326,417,344,342,365,280,378,256,392,238,420,220,451,213,452,218,422,225,396,241,383,259,370,282,349,343,331,418,318,500,299,662,291,778"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1CycleHistogramTreeNode.html" title="CycleHistogramTreeNode class for uint64_t values." alt="" coords="394,252,606,278"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="286,777,296,670,316,523,330,449,347,382,368,326,392,288,408,276,412,280,396,292,372,329,352,383,335,450,321,524,302,670,292,778"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1DynamicResourceTreeNode.html" title="TreeNode subclass representing a node in the device tree which creates and owns a resource...." alt="" coords="402,302,599,342"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="288,778,300,683,321,556,352,435,371,387,392,354,407,341,411,345,396,357,376,389,357,436,327,558,305,684,293,778"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1EnumCycleHistogram.html" title="EnumCycleHistogram class for C++ Enum values." alt="" coords="406,367,594,408"/>
+<area shape="poly" id="edge9_Node000002_Node000010" title=" " alt="" coords="284,778,287,706,301,611,314,559,333,509,359,461,392,419,408,406,411,410,396,423,363,464,338,511,319,561,306,612,292,707,289,778"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1EnumHistogram.html" title="EnumHistogram class for sparta::utils::Enum." alt="" coords="422,432,578,473"/>
+<area shape="poly" id="edge10_Node000002_Node000011" title=" " alt="" coords="286,778,292,717,309,638,322,596,340,555,363,517,392,483,420,465,423,469,396,487,368,520,345,558,327,598,314,639,297,718,291,778"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1EventNode.html" title="EventNode is the base class for all event types in SPARTA. Not to be used by the modeler...." alt="" coords="436,497,564,523"/>
+<area shape="poly" id="edge11_Node000002_Node000012" title=" " alt="" coords="287,777,296,725,314,658,327,624,345,590,366,559,392,532,413,519,435,512,437,517,415,524,396,536,370,563,349,593,332,626,319,660,301,726,292,778"/>
+<area shape="rect" id="Node000034" href="$classsparta_1_1EventSet.html" title="Set of Events that a unit (or sparta::TreeNode, sparta::Resource) contains and are visible through a ..." alt="" coords="442,547,558,572"/>
+<area shape="poly" id="edge22_Node000002_Node000034" title=" " alt="" coords="290,778,301,734,321,681,351,627,370,603,392,581,415,568,441,561,442,566,418,573,396,586,374,606,355,630,326,683,306,736,295,779"/>
+<area shape="rect" id="Node000035" href="$classsparta_1_1GlobalTreeNode.html" title="TreeNode which represents some &quot;global&quot; namespace of the device tree, containing only RootTreeNodes,..." alt="" coords="422,596,579,622"/>
+<area shape="poly" id="edge23_Node000002_Node000035" title=" " alt="" coords="294,778,308,744,329,704,357,664,392,631,420,617,423,621,396,635,361,668,334,706,313,746,299,780"/>
+<area shape="rect" id="Node000036" href="$classsparta_1_1HistogramTreeNode.html" title=" " alt="" coords="410,645,590,671"/>
+<area shape="poly" id="edge24_Node000002_Node000036" title=" " alt="" coords="300,778,338,728,363,702,393,680,416,669,418,674,395,684,367,706,342,731,305,782"/>
+<area shape="rect" id="Node000037" href="$classsparta_1_1InstrumentationNode.html" title="Base class requiring." alt="" coords="408,695,592,720"/>
+<area shape="poly" id="edge25_Node000002_Node000037" title=" " alt="" coords="312,781,349,754,393,729,423,718,425,723,395,734,352,758,315,785"/>
+<area shape="rect" id="Node000047" href="$classsparta_1_1NotificationSourceBase.html" title="A TreeNode that generates a single specific type of notification which propagates up a tree of TreeNo..." alt="" coords="400,744,600,770"/>
+<area shape="poly" id="edge28_Node000002_Node000047" title=" " alt="" coords="358,787,393,778,439,768,441,773,395,783,359,792"/>
+<area shape="rect" id="Node000055" href="$classsparta_1_1ParameterBase.html" title="Non&#45;templated base class for generic parameter access and iteration." alt="" coords="424,793,577,819"/>
+<area shape="poly" id="edge33_Node000002_Node000055" title=" " alt="" coords="361,804,423,804,423,809,361,809"/>
+<area shape="rect" id="Node000057" href="$classsparta_1_1ParameterSet.html" title="Generic container of Parameters." alt="" coords="428,843,572,868"/>
+<area shape="poly" id="edge34_Node000002_Node000057" title=" " alt="" coords="359,821,395,829,441,840,439,845,393,834,358,826"/>
+<area shape="rect" id="Node000076" href="$classsparta_1_1Port.html" title="The port interface used to bind port types together and defines a port behavior." alt="" coords="456,892,544,918"/>
+<area shape="poly" id="edge35_Node000002_Node000076" title=" " alt="" coords="315,827,352,854,395,878,426,889,457,896,456,902,424,894,393,883,349,859,312,831"/>
+<area shape="rect" id="Node000106" href="$classsparta_1_1PortSet.html" title="A TreeNode that represents a set of ports used by a Resource." alt="" coords="446,941,554,967"/>
+<area shape="poly" id="edge36_Node000002_Node000106" title=" " alt="" coords="305,831,342,881,367,907,395,928,420,939,447,946,446,951,419,944,393,932,363,911,338,885,300,834"/>
+<area shape="rect" id="Node000107" href="$classsparta_1_1RegisterBase.html" title="Base class to represents an architected register of any size that is a power of 2 and greater than 0 ..." alt="" coords="430,991,571,1016"/>
+<area shape="poly" id="edge37_Node000002_Node000107" title=" " alt="" coords="299,833,313,866,334,906,361,945,395,977,430,993,428,998,393,982,357,948,329,909,308,869,294,835"/>
+<area shape="rect" id="Node000109" href="$classsparta_1_1RegisterBase_1_1Field.html" title="Register Field with masked access to owning register." alt="" coords="430,1040,571,1081"/>
+<area shape="poly" id="edge38_Node000002_Node000109" title=" " alt="" coords="295,833,307,876,327,928,356,981,375,1006,396,1027,412,1038,430,1046,428,1051,409,1042,392,1031,371,1009,352,984,322,930,302,878,290,835"/>
+<area shape="rect" id="Node000110" href="$classsparta_1_1RegisterSet.html" title="Holds and can create a set of Register objects having various names and groups." alt="" coords="434,1105,566,1131"/>
+<area shape="poly" id="edge39_Node000002_Node000110" title=" " alt="" coords="292,834,300,889,317,959,331,995,348,1030,369,1063,396,1091,414,1103,435,1110,433,1115,412,1107,392,1095,365,1066,343,1033,326,997,312,960,294,890,287,835"/>
+<area shape="rect" id="Node000111" href="$classsparta_1_1ResourceTreeNode.html" title="TreeNode subclass representing a node in the device tree which contains a single ResourceFactory and ..." alt="" coords="412,1155,588,1180"/>
+<area shape="poly" id="edge40_Node000002_Node000111" title=" " alt="" coords="290,834,295,898,310,981,323,1025,342,1068,366,1107,396,1141,414,1153,411,1158,392,1146,361,1110,337,1070,318,1027,305,983,289,899,285,835"/>
+<area shape="rect" id="Node000112" href="$classsparta_1_1RootTreeNode.html" title="TreeNode which represents the root (&quot;top&quot;) of a device tree." alt="" coords="426,1204,574,1230"/>
+<area shape="poly" id="edge41_Node000002_Node000112" title=" " alt="" coords="294,834,307,916,330,1024,360,1126,377,1165,396,1191,410,1201,427,1208,425,1213,408,1206,392,1195,373,1168,355,1128,325,1025,302,917,289,835"/>
+<area shape="rect" id="Node000115" href="$classsparta_1_1StateHistogram.html" title="StateHistogram class for uint64_t values." alt="" coords="423,1254,577,1294"/>
+<area shape="poly" id="edge42_Node000002_Node000115" title=" " alt="" coords="293,834,306,926,328,1048,358,1165,376,1210,396,1240,424,1259,421,1263,392,1244,371,1212,353,1166,322,1049,301,927,288,835"/>
+<area shape="rect" id="Node000116" href="$classsparta_1_1StateTimerUnit.html" title="A high level wrapper contains the StateTimerPool and StateTimerHistogram." alt="" coords="424,1319,576,1344"/>
+<area shape="poly" id="edge43_Node000002_Node000116" title=" " alt="" coords="292,834,302,939,322,1080,336,1151,353,1216,373,1269,396,1304,409,1315,425,1322,423,1327,406,1319,392,1308,368,1271,348,1218,331,1153,317,1081,297,939,287,835"/>
+<area shape="rect" id="Node000117" href="$classsparta_1_1StatisticSet.html" title="Set of StatisticDef and CounterBase&#45;derived objects for visiblility through a sparta Tree." alt="" coords="434,1368,566,1394"/>
+<area shape="poly" id="edge44_Node000002_Node000117" title=" " alt="" coords="291,835,300,948,319,1105,333,1185,350,1257,371,1316,383,1338,396,1355,414,1368,435,1375,433,1380,411,1372,392,1359,379,1341,366,1318,345,1258,327,1186,313,1106,295,949,286,835"/>
+<area shape="rect" id="Node000118" href="$classsparta_1_1VirtualGlobalTreeNode.html" title="Virtual global node for all device trees in a single simulation. This node acts a potential notificat..." alt="" coords="403,1417,597,1443"/>
+<area shape="poly" id="edge45_Node000002_Node000118" title=" " alt="" coords="291,834,298,957,315,1129,329,1216,347,1296,369,1361,382,1386,396,1404,409,1415,406,1419,392,1408,377,1388,364,1363,342,1297,324,1217,310,1129,293,957,286,835"/>
+<area shape="rect" id="Node000119" href="$classsparta_1_1collection_1_1CollectableTreeNode.html" title="An abstract type of TreeNode that has virtual calls to start collection on this node,..." alt="" coords="426,1467,574,1508"/>
+<area shape="poly" id="edge46_Node000002_Node000119" title=" " alt="" coords="291,835,297,966,314,1152,328,1247,346,1334,368,1405,381,1433,396,1454,410,1466,427,1474,424,1479,407,1470,392,1457,377,1435,363,1407,340,1335,322,1248,309,1152,292,966,285,835"/>
+<area shape="rect" id="Node000128" href="$classsparta_1_1memory_1_1BlockingMemoryIFNode.html" title="Pure&#45;virtual memory interface that builds on the BlockingMemoryIF, acting as a TreeNode in the SPARTA..." alt="" coords="418,1532,583,1573"/>
+<area shape="poly" id="edge47_Node000002_Node000128" title=" " alt="" coords="290,834,295,977,310,1182,324,1287,342,1384,366,1464,380,1494,396,1518,419,1535,415,1539,392,1521,376,1497,361,1465,337,1385,319,1288,305,1182,290,977,285,835"/>
+<area shape="rect" id="Node000131" href="$classsparta_1_1memory_1_1TranslationIFNode.html" title="TranslationIF extension that builds on TranslastionIF, acting as a TreeNode in the SPARTA device tree..." alt="" coords="410,1598,590,1638"/>
+<area shape="poly" id="edge48_Node000002_Node000131" title=" " alt="" coords="290,834,293,988,307,1212,320,1329,338,1435,364,1523,379,1557,396,1583,412,1597,408,1601,392,1587,374,1560,359,1525,333,1436,314,1329,301,1213,288,988,284,834"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1Event.html" title=" " alt="" coords="671,46,843,86"/>
+<area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="578,501,592,493,604,483,622,459,634,436,641,412,644,389,640,342,630,294,619,246,614,198,616,173,623,148,635,123,652,98,669,83,673,87,656,101,639,126,628,150,622,174,619,198,624,246,635,293,646,341,650,389,647,413,639,438,627,462,608,487,595,498,580,505"/>
+<area shape="rect" id="Node000015" href="$classsparta_1_1PhasedPayloadEvent.html" title=" " alt="" coords="663,111,851,152"/>
+<area shape="poly" id="edge13_Node000012_Node000015" title=" " alt="" coords="578,500,592,493,604,483,620,464,630,444,639,405,637,366,629,327,621,287,619,246,627,205,637,184,652,163,667,150,670,154,656,167,642,187,632,207,624,246,627,286,635,326,642,366,644,406,635,446,624,466,608,487,595,498,580,505"/>
+<area shape="rect" id="Node000016" href="$classsparta_1_1PhasedPayloadEvent.html" title=" " alt="" coords="664,176,850,217"/>
+<area shape="poly" id="edge14_Node000012_Node000016" title=" " alt="" coords="577,500,592,493,604,483,626,452,634,422,634,391,629,359,624,327,623,294,631,262,652,228,667,216,671,220,656,232,636,264,629,295,629,327,634,358,639,390,639,422,630,455,608,487,595,497,580,505"/>
+<area shape="rect" id="Node000018" href="$classsparta_1_1PhasedPayloadEvent.html" title=" " alt="" coords="654,242,860,282"/>
+<area shape="poly" id="edge15_Node000012_Node000018" title=" " alt="" coords="577,500,605,483,621,461,629,438,630,415,629,391,627,367,628,343,635,318,652,294,668,281,672,285,656,297,640,321,633,344,632,367,634,391,636,415,634,439,626,463,608,487,580,504"/>
+<area shape="rect" id="Node000020" href="$classsparta_1_1PhasedPayloadEvent.html" title=" " alt="" coords="664,307,850,348"/>
+<area shape="poly" id="edge16_Node000012_Node000020" title=" " alt="" coords="577,498,605,483,617,469,624,454,628,423,632,391,640,375,652,359,670,346,673,350,656,363,644,378,638,393,634,424,629,456,622,471,608,487,580,503"/>
+<area shape="rect" id="Node000022" href="$classsparta_1_1PhasedPayloadEvent.html" title=" " alt="" coords="664,372,850,413"/>
+<area shape="poly" id="edge17_Node000012_Node000022" title=" " alt="" coords="577,495,605,483,620,469,628,455,637,439,653,424,675,411,678,416,656,428,641,442,633,457,624,472,608,487,580,500"/>
+<area shape="rect" id="Node000024" href="$classsparta_1_1Event.html" title="Event is a simple class for scheduling random events on the Scheduler." alt="" coords="686,438,828,478"/>
+<area shape="poly" id="edge18_Node000012_Node000024" title=" " alt="" coords="578,492,685,470,686,475,580,497"/>
+<area shape="rect" id="Node000025" href="$classsparta_1_1PhasedPayloadEvent.html" title="Class to schedule a Scheduleable in the future with a payload, but the class itself is not typed on t..." alt="" coords="664,503,850,544"/>
+<area shape="poly" id="edge19_Node000012_Node000025" title=" " alt="" coords="580,512,663,516,663,521,579,517"/>
+<area shape="rect" id="Node000028" href="$classsparta_1_1PhasedSingleCycleUniqueEvent.html" title="An event that can only be schedule one cycle into the future." alt="" coords="669,568,845,609"/>
+<area shape="poly" id="edge20_Node000012_Node000028" title=" " alt="" coords="580,524,607,532,655,553,690,565,688,570,653,558,605,537,578,529"/>
+<area shape="rect" id="Node000030" href="$classsparta_1_1PhasedUniqueEvent.html" title="A type of Event that uniquely schedules itself on the schedule within a single time quantum...." alt="" coords="666,633,848,659"/>
+<area shape="poly" id="edge21_Node000012_Node000030" title=" " alt="" coords="580,518,608,532,626,554,633,577,639,598,656,619,677,631,674,635,653,623,635,601,628,578,621,556,605,536,577,522"/>
+<area shape="rect" id="Node000038" href="$classsparta_1_1CounterBase.html" title="The base class for all Counters." alt="" coords="688,683,826,708"/>
+<area shape="poly" id="edge26_Node000037_Node000038" title=" " alt="" coords="608,700,687,696,688,701,608,705"/>
+<area shape="rect" id="Node000042" href="$classsparta_1_1StatisticDef.html" title="Contains a statistic definition (some useful information which can be computed)" alt="" coords="691,732,823,758"/>
+<area shape="poly" id="edge27_Node000037_Node000042" title=" " alt="" coords="608,720,691,733,691,738,608,726"/>
+<area shape="rect" id="Node000048" href="$classsparta_1_1NotificationSource.html" title=" " alt="" coords="672,782,842,822"/>
+<area shape="poly" id="edge29_Node000047_Node000048" title=" " alt="" coords="593,770,672,785,671,790,592,776"/>
+<area shape="rect" id="Node000050" href="$classsparta_1_1NotificationSource.html" title=" " alt="" coords="672,847,842,888"/>
+<area shape="poly" id="edge30_Node000047_Node000050" title=" " alt="" coords="598,774,608,779,624,792,633,806,641,819,656,832,679,844,677,849,653,836,637,822,628,808,620,795,605,783,596,778"/>
+<area shape="rect" id="Node000051" href="$classsparta_1_1NotificationSource.html" title=" " alt="" coords="672,912,842,953"/>
+<area shape="poly" id="edge31_Node000047_Node000051" title=" " alt="" coords="604,776,608,779,621,793,629,809,634,839,638,869,644,883,656,898,674,910,670,914,653,901,640,886,633,870,628,840,624,810,617,796,605,783,601,780"/>
+<area shape="rect" id="Node000052" href="$classsparta_1_1NotificationSource.html" title=" " alt="" coords="672,978,842,1018"/>
+<area shape="poly" id="edge32_Node000047_Node000052" title=" " alt="" coords="606,777,608,779,626,802,634,825,636,849,634,872,634,918,641,940,656,963,673,976,670,981,652,967,636,943,628,919,629,872,630,849,629,826,621,804,604,783,602,781"/>
+</map>

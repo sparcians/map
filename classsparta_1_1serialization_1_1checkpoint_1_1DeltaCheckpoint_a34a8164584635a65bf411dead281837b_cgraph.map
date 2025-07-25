@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::DeltaCheckpoint::isFlaggedDeleted" name="sparta::serialization::checkpoint::DeltaCheckpoint::isFlaggedDeleted">
+<area shape="rect" id="Node000001" title="Indicates whether this checkpoint has been flagged deleted." alt="" coords="5,5,197,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a1ab50505bd631547981015601a4f40e8" title="Returns the ID of this checkpoint." alt="" coords="245,5,406,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,30,229,30,229,36,197,36"/>
+</map>

@@ -1,0 +1,15 @@
+<map id="sparta::collection::Collectable&lt; DataT, collection_phase, MetaStruct::enable_if_t&lt; std::is_base_of&lt; sparta::PairDefinition&lt; MetaStruct::remove_any_pointer_t&lt; DataT &gt; &gt;, typename MetaStruct::remove_any_pointer_t&lt; DataT &gt;::SpartaPairDefinitionType &gt;::value &gt; &gt;" name="sparta::collection::Collectable&lt; DataT, collection_phase, MetaStruct::enable_if_t&lt; std::is_base_of&lt; sparta::PairDefinition&lt; MetaStruct::remove_any_pointer_t&lt; DataT &gt; &gt;, typename MetaStruct::remove_any_pointer_t&lt; DataT &gt;::SpartaPairDefinitionType &gt;::value &gt; &gt;">
+<area shape="rect" id="Node000001" title=" " alt="" coords="828,8,1159,154"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="588,5,780,76"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="796,52,827,57,827,62,795,58"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1collection_1_1CollectableTreeNode.html" title="An abstract type of TreeNode that has virtual calls to start collection on this node,..." alt="" coords="610,100,758,141"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="774,106,827,99,828,105,774,112"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="420,108,540,134"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="556,118,609,118,609,123,556,123"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="199,82,372,108"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="388,106,420,110,419,115,387,111"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,82,151,108"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="166,93,198,93,198,98,166,98"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="199,132,372,158"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="387,129,419,125,420,131,388,135"/>
+</map>

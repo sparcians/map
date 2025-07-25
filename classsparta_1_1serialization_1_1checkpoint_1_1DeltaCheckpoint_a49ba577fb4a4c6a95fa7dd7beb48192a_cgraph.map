@@ -1,0 +1,15 @@
+<map id="sparta::serialization::checkpoint::DeltaCheckpoint::~DeltaCheckpoint" name="sparta::serialization::checkpoint::DeltaCheckpoint::~DeltaCheckpoint">
+<area shape="rect" id="Node000001" title="Destructor." alt="" coords="5,199,197,254"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a6fe13ab23b23f4f787328f038e33833c" title="Can this checkpoint be deleted Cannot be deleted if:" alt="" coords="245,125,436,181"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,195,232,184,234,189,195,201"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a1ab50505bd631547981015601a4f40e8" title="Returns the ID of this checkpoint." alt="" coords="723,159,885,214"/>
+<area shape="poly" id="edge7_Node000001_Node000005" title=" " alt="" coords="197,236,297,244,417,249,546,245,675,231,724,217,725,223,676,236,547,251,417,254,296,249,197,241"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="293,125,294,115,303,106,318,101,340,99,365,101,381,108,379,113,364,106,340,104,319,106,305,111,299,117,299,125"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a181f5bd1247c81ce6b4988e2ffeb32c1" title="Returns next checkpoint following *this. May be an empty vector if there are no later checkpoints fol..." alt="" coords="499,5,660,61"/>
+<area shape="poly" id="edge3_Node000002_Node000003" title=" " alt="" coords="388,122,483,71,494,65,496,70,485,76,390,127"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a34a8164584635a65bf411dead281837b" title="Indicates whether this checkpoint has been flagged deleted." alt="" coords="484,85,675,141"/>
+<area shape="poly" id="edge4_Node000002_Node000004" title=" " alt="" coords="436,134,468,129,469,134,437,140"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a298af42f2d8f655088a1a61ff91d776b" title="Is this checkpoint a snapshot (contains ALL simulator state)" alt="" coords="484,165,675,221"/>
+<area shape="poly" id="edge6_Node000002_Node000006" title=" " alt="" coords="437,167,469,172,468,177,436,172"/>
+<area shape="poly" id="edge5_Node000004_Node000005" title=" " alt="" coords="668,139,709,153,708,158,666,144"/>
+</map>

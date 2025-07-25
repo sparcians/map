@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,31,133,56"/>
+<area shape="rect" id="Node000001" href="$classsparta_1_1app_1_1LoggingTrigger.html" title="Trigger for strating logging given a number of tap descriptors." alt="" coords="181,5,357,31"/>
+<area shape="poly" id="edge364_Node000000_Node000001" title=" " alt="" coords="148,31,180,27,180,32,149,36"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1app_1_1PipelineTrigger.html" title="Trigger used to enable/disable Pipeline colletion." alt="" coords="181,55,357,80"/>
+<area shape="poly" id="edge365_Node000000_Node000002" title=" " alt="" coords="149,50,180,54,180,59,148,56"/>
+</map>
