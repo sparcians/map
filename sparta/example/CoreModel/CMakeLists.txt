@@ -26,7 +26,7 @@ sparta_application(sparta_core_example)
 
 include (CTest)
 
-# Add the custom regress/regress_valgrind/simdb_report_suite targets.
+# Add the custom regress/regress_valgrind targets.
 add_custom_target (core_example_regress)
 add_custom_target (core_example_regress_valgrind)
 
