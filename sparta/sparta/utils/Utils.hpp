@@ -8,6 +8,10 @@
 #include <vector>
 #include <algorithm>
 
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/SpartaExpBackoff.hpp"
@@ -82,6 +86,13 @@ constexpr inline int8_t operator ""_8(unsigned long long i) {
 
 namespace sparta
 {
+
+inline std::string generateUUID()
+{
+    boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    std::string uuid_str = boost::uuids::to_string(uuid);
+    return uuid_str;
+}
 
 /*!
  * \brief Function to invert a maps or an unordered_map, or any type of

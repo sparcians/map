@@ -1,0 +1,6 @@
+content:
+  report:
+    pattern:   top.cpu.core*.decode
+    def_file:  simple_stats.yaml
+    dest_file: decode_detail.json
+    format:    json_detail

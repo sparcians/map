@@ -22,7 +22,6 @@
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/simulation/TreeNodePrivateAttorney.hpp"
 #include "sparta/trigger/ExpressionTrigger.hpp"
-#include "simdb_fwd.hpp"
 
 namespace sparta
 {
@@ -32,11 +31,6 @@ namespace sparta
         namespace format {
             class ReportHeader;
         }
-    }
-
-    class StatInstRowIterator;
-    namespace db {
-        class DatabaseContextCounter;
     }
 
     /*!
@@ -210,10 +204,7 @@ namespace sparta
             start_tick_(rhp.start_tick_),
             end_tick_(rhp.end_tick_),
             info_string_(rhp.info_string_),
-            sub_statistics_(rhp.sub_statistics_),
-            si_row_iterator_(rhp.si_row_iterator_),
-            report_node_id_(rhp.report_node_id_),
-            si_node_ids_(rhp.si_node_ids_)
+            sub_statistics_(rhp.sub_statistics_)
         {
             // Update parent pointers of all subreports
             for(auto& sr : subreps_){
@@ -242,12 +233,8 @@ namespace sparta
             start_tick_(rhp.start_tick_),
             end_tick_(rhp.end_tick_),
             info_string_(std::move(rhp.info_string_)),
-            sub_statistics_(std::move(rhp.sub_statistics_)),
-            si_row_iterator_(std::move(rhp.si_row_iterator_)),
-            report_node_id_(rhp.report_node_id_),
-            si_node_ids_(std::move(rhp.si_node_ids_))
+            sub_statistics_(std::move(rhp.sub_statistics_))
         {
-            rhp.report_node_id_ = 0;
             // Update parent pointers of all subreports
             for(auto& sr : subreps_){
                 sr.setParent_(this);
@@ -284,9 +271,6 @@ namespace sparta
             end_tick_ = rhp.end_tick_;
             info_string_ = rhp.info_string_;
             sub_statistics_ = rhp.sub_statistics_;
-            si_row_iterator_ = rhp.si_row_iterator_;
-            report_node_id_ = rhp.report_node_id_;
-            si_node_ids_ = rhp.si_node_ids_;
             return *this;
         }
 
@@ -896,49 +880,6 @@ namespace sparta
             return sub_statistics_;
         }
 
-        /*!
-         * \brief Mapping from StatisticInstance's to their sub-StatisticInstance's
-         * (supports ContextCounter pseudo-recreation from SimDB records after
-         * simulation, where we do not actually have StatisticDef's, or even
-         * TreeNode's of any kind).
-         *
-         * To illustrate what this data structure represents, say that we had
-         * the following hierarchy in the original SPARTA simulation:
-         *
-         *   Report
-         *     SI                       (wraps a ContextCounter)
-         *       internal_counters_[0]  (wraps a CounterBase)
-         *       internal_counters_[1]  (wraps a CounterBase)
-         *
-         * The equivalent hierarchy when recreating the same report *after*
-         * a simulation looks like this:
-         *
-         *   Report
-         *     SI                       (is the root node of a DatabaseContextCounter)
-         *       SI                     (is the first sub-statistic under it)
-         *       SI                     (is the second sub-statistic under it)
-         */
-        typedef
-            // ...the root node of a DatabaseContextCounter
-            std::unordered_map<const StatisticInstance*,
-                std::pair<
-                    // ...the DatabaseContextCounter itself
-                    std::shared_ptr<db::DatabaseContextCounter>,
-                    // ...the list of sub-statistics under it
-                    std::vector<const StatisticInstance*>>
-            > DBSubStatisticInstances;
-
-        /*!
-         * \brief Get a SimDB-recreated Report's mapping from SI's to sub-statistic
-         * instances, if any
-         */
-        const DBSubStatisticInstances & getDBSubStatistics() const {
-            if (report_node_id_ == 0) {
-                sparta_assert(db_sub_statistics_.empty());
-            }
-            return db_sub_statistics_;
-        }
-
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
@@ -1227,25 +1168,6 @@ namespace sparta
             }
         }
 
-        /*!
-         * \brief This utility can be used to generate a formatted
-         * report from a root-level ReportNodeHierarchy record in
-         * the provided database (ObjectManager).
-         *
-         * The given report_hier_node_id must have ParentNodeID=0
-         * in the ReportNodeHierarchy table, or this method will
-         * throw an exception.
-         */
-        static bool createFormattedReportFromDatabase(
-            const simdb::ObjectManager & obj_mgr,
-            const simdb::DatabaseID report_hier_node_id,
-            const std::string & filename,
-            const std::string & format,
-            const Scheduler * scheduler);
-
-        ////////////////////////////////////////////////////////////////////////
-        //! @}
-
     private:
 
         /*!
@@ -1335,83 +1257,6 @@ namespace sparta
          */
         void legacyDelayedStart_(const trigger::CounterTrigger * trigger);
         void legacyDelayedEnd_(const trigger::CounterTrigger * trigger);
-
-        /*!
-         * \brief Reconstruct a Report node from a database record ID in
-         * the provided SimDB. Throws if the given report hierarchy node
-         * ID is not found in this database.
-         *
-         * This private constructor is not meant to be invoked directly
-         * from the outside world. This would typically be called from
-         * from SimDB-related static sparta::Report methods.
-         */
-        Report(const simdb::DatabaseID report_hier_node_id,
-               const simdb::ObjectManager & obj_mgr,
-               const Scheduler * scheduler);
-
-        /*!
-         * \brief When we recreate a sparta::Report object from SimDB
-         * records, we need to put a few things in place which help
-         * us *directly* get our SI values from the database blob,
-         * since we are not even running an actual simulation. For
-         * the most part, SimDB-created SI's do not have any internals
-         * such as CounterBase/ParameterBase/StatisticDef pointers.
-         * They get their SI values from "StatInstValueLookup" objects,
-         * which are tied to "StatInstRowIterator" objects. The SI's
-         * own the value lookup objects, while the reports/subreports
-         * own the row iterator objects. Both of these objects work
-         * together like this:
-         *
-         *    1.  Advance the row iterator to the next row of SI values.
-         *
-         *    2a. Ask the value lookup for your specific SI value.
-         *        It knows your SI index, so it knows the element
-         *        offset into the SI double vector, and it gives
-         *        you the value.
-         *
-         *    2b. The value lookup objects are all bound to the row
-         *        iterator's vector<double>, which is itself bound
-         *        to an ObjectQuery against one of the SimDB tables...
-         *
-         *    3.  Call StatInstRowIterator::getNext() to advance the
-         *        row iterator one more row in the database. This
-         *        calls ObjectQuery::getNext(), which memcpy's the
-         *        next SI blob into the row iterator's vector<double>,
-         *        decompressing the blob if needed.
-         *
-         *    4.  All StatInstValueLookup objects that were bound to this
-         *        row iterator object will be "updated automatically", since
-         *        they are just using indirection to point somewhere else
-         *        which actually has the current values.
-         */
-        bool prepareForSIDatabaseIteration_(
-            const simdb::ObjectManager & obj_mgr);
-
-        /*!
-         * \brief Starting at 'this' report node, recursively get
-         * all mappings from Report/SI database node ID to the
-         * Report or SI that lives at each node.
-         */
-        void recursGetReportAndSINodeDatabaseIDs_(
-            std::unordered_map<simdb::DatabaseID, Report*> & report_nodes_by_id,
-            std::unordered_map<simdb::DatabaseID, const StatisticInstance*> & si_nodes_by_id);
-
-        /*!
-         * \brief Starting at 'this' report node, find the first
-         * StatInstRowIterator member variable we encounter while
-         * traversing in a depth-first fashion.
-         */
-        std::shared_ptr<sparta::StatInstRowIterator>
-            recursFindTopmostSIRowIteratorPlaceholder_();
-
-        /*!
-         * \brief Set/reset/unset the StatInstRowIterator that is
-         * given to us. Passing in a null row iterator is the same
-         * thing as resetting this report's row iterator; it will
-         * not reject a null iterator object.
-         */
-        void recursSetSIRowIterator_(
-            std::shared_ptr<sparta::StatInstRowIterator> & si_row_iterator);
 
         /*!
          * \brief Schedler associated with this report (for time-elapsed information)
@@ -1508,41 +1353,6 @@ namespace sparta
          * \brief Flag for enabling auto-expansion of ContextCounter stats (off by default)
          */
         bool auto_expand_context_counter_stats_ = false;
-
-        //! \name SimDB-related variables
-        //! @{
-        ////////////////////////////////////////////////////////////////////////
-
-        /*!
-         * \brief Mapping from DB-recreated StatisticInstance's to their
-         * sub-statistic instances, if any.
-         */
-        DBSubStatisticInstances db_sub_statistics_;
-
-        /*!
-         * \brief This row iterator object is a wrapper around an
-         * ObjectQuery. It is used to get report/SI data values
-         * out of a SimDB, and into a formatted report (json_detail,
-         * html, text, etc.)
-         */
-        std::shared_ptr<sparta::StatInstRowIterator> si_row_iterator_;
-
-        /*!
-         * \brief Cached database ID. Equals 0 for all Report objects
-         * created during simulation. Will be non-zero for Report objects
-         * recreated after a simulation from SimDB record(s).
-         */
-        simdb::DatabaseID report_node_id_ = 0;
-
-        /*!
-         * \brief Cached database ID(s) of SimDB-recreated StatisticInstance's
-         * that belong to this Report object. Will be empty for Report objects
-         * created during simulation.
-         */
-        std::vector<simdb::DatabaseID> si_node_ids_;
-
-        ////////////////////////////////////////////////////////////////////////
-        //! @}
     };
 
     //! \brief Report stream operator

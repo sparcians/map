@@ -18,14 +18,6 @@
 #include "sparta/statistics/Histogram.hpp"
 #include "sparta/statistics/HistogramFunctionManager.hpp"
 #include "sparta/utils/SpartaTester.hpp"
-#include "sparta/report/DatabaseInterface.hpp"
-#include "simdb/schema/Schema.hpp"
-#include "simdb/TableProxy.hpp"
-#include "simdb/async/AsyncTaskEval.hpp"
-#include "simdb/impl/sqlite/SQLiteConnProxy.hpp"
-#include "simdb/impl/hdf5/HDF5ConnProxy.hpp"
-#include "simdb/utils/uuids.hpp"
-#include "simdb/utils/ObjectQuery.hpp"
 
 #include "Fetch.hpp"
 #include "Decode.hpp"
@@ -41,270 +33,6 @@
 // UPDATE
 #include "BIU.hpp"
 #include "MSS.hpp"
-
-namespace {
-
-    // Struct for writing and verifying SQLite records.
-    // See buildSchemaA() below.
-    struct TestSQLiteSchemaA {
-        struct Numbers {
-            double First;
-            double Second;
-        };
-        Numbers numbers;
-
-        struct Metadata {
-            std::string Name;
-            double Value;
-        };
-        Metadata metadata;
-
-        static TestSQLiteSchemaA createRandom() {
-            TestSQLiteSchemaA s;
-            s.numbers.First = rand() / 1000 * 3.14;
-            s.numbers.Second = rand() / 1000 * 3.14;
-            s.metadata.Name = simdb::generateUUID();
-            s.metadata.Value = rand() / 1000 * 3.14;
-            return s;
-        }
-    };
-
-    // Another struct for writing and verifying SQLite
-    // records. See buildSchemaB() below.
-    struct TestSQLiteSchemaB {
-        struct Strings {
-            std::string First;
-            std::string Second;
-        };
-        Strings strings;
-
-        struct Metadata {
-            std::string Name;
-            std::string Value;
-        };
-        Metadata metadata;
-
-        static TestSQLiteSchemaB createRandom() {
-            TestSQLiteSchemaB s;
-            s.strings.First = simdb::generateUUID();
-            s.strings.Second = simdb::generateUUID();
-            s.metadata.Name = simdb::generateUUID();
-            s.metadata.Value = simdb::generateUUID();
-            return s;
-        }
-    };
-
-    // Struct for writing and verifying HDF5 records
-    struct TestHDF5SchemaC {
-        double x;
-        double y;
-        uint16_t z;
-
-        static TestHDF5SchemaC createRandom() {
-            TestHDF5SchemaC s;
-            s.x = rand() / 1000 * 3.14;
-            s.y = rand() / 1000 * 3.14;
-            s.z = rand();
-            return s;
-        }
-    };
-}
-
-namespace sparta_simdb {
-
-    // Helper class which creates random SQLite / HDF5
-    // structs for SimDB writes, and stores the structs
-    // in memory too. The data will be read back from
-    // the database at the end of simulation, and the
-    // values retrieved from file will be compared with
-    // the values that were stored in memory.
-    class DatabaseTester {
-    public:
-        DatabaseTester() = default;
-        ~DatabaseTester() = default;
-
-        const TestSQLiteSchemaA & createAndStoreRecordForSQLiteSchemaA() {
-            if (records_schemaA_.size() < 100) {
-                indices_schemaA_.emplace_back(records_schemaA_.size());
-                records_schemaA_.emplace_back(TestSQLiteSchemaA::createRandom());
-                return records_schemaA_.back();
-            } else {
-                indices_schemaA_.emplace_back(rand() % records_schemaA_.size());
-                return records_schemaA_[indices_schemaA_.back()];
-            }
-        }
-
-        const TestSQLiteSchemaB & createAndStoreRecordForSQLiteSchemaB() {
-            if (records_schemaB_.size() < 100) {
-                indices_schemaB_.emplace_back(records_schemaB_.size());
-                records_schemaB_.emplace_back(TestSQLiteSchemaB::createRandom());
-                return records_schemaB_.back();
-            } else {
-                indices_schemaB_.emplace_back(rand() % records_schemaB_.size());
-                return records_schemaB_[indices_schemaB_.back()];
-            }
-        }
-
-        const TestHDF5SchemaC & createAndStoreRecordForHDF5SchemaC() {
-            records_schemaC_.emplace_back(TestHDF5SchemaC::createRandom());
-            return records_schemaC_.back();
-        }
-
-        const std::vector<TestSQLiteSchemaA> & getWrittenRecordsForSchemaA() const {
-            return records_schemaA_;
-        }
-
-        const std::vector<TestSQLiteSchemaB> & getWrittenRecordsForSchemaB() const {
-            return records_schemaB_;
-        }
-
-        const std::vector<TestHDF5SchemaC> & getWrittenRecordsForSchemaC() const {
-            return records_schemaC_;
-        }
-
-        void verifyRecords(const std::string & db_file) const {
-            simdb::ObjectManager obj_mgr(".");
-            if (!obj_mgr.connectToExistingDatabase(db_file)) {
-                return;
-            }
-
-            auto numeric_db = GET_DB_FROM_CURRENT_SIMULATION(NumericMeta);
-            if (numeric_db) {
-                auto values_query =
-                    numeric_db->createObjectQueryForTable("Numbers");
-
-                if (values_query) {
-                    double first = 0, second = 0;
-                    values_query->writeResultIterationsTo(
-                        "First", &first, "Second", &second);
-
-                    if (values_query->countMatches() != indices_schemaA_.size()) {
-                        throw sparta::SpartaException("Could not verify SimDB records");
-                    }
-
-                    auto result_iter = values_query->executeQuery();
-                    size_t record_idx = 0;
-                    while (result_iter->getNext()) {
-                        const auto & expected = records_schemaA_[indices_schemaA_[record_idx]];
-                        if (first != expected.numbers.First) {
-                            throw sparta::SpartaException("Could not verify SimDB records");
-                        }
-                        if (second != expected.numbers.Second) {
-                            throw sparta::SpartaException("Could not verify SimDB records");
-                        }
-                        ++record_idx;
-                    }
-                }
-
-                auto meta_query =
-                    numeric_db->createObjectQueryForTable("Metadata");
-                if (meta_query) {
-                    std::string name;
-                    double value = 0;
-                    meta_query->writeResultIterationsTo("Name", &name, "Value", &value);
-
-                    if (meta_query->countMatches() != indices_schemaA_.size()) {
-                        throw sparta::SpartaException("Could not verify SimDB records");
-                    }
-
-                    auto result_iter = meta_query->executeQuery();
-                    size_t record_idx = 0;
-                    while (result_iter->getNext()) {
-                        const auto & expected = records_schemaA_[indices_schemaA_[record_idx]];
-                        if (name != expected.metadata.Name) {
-                            throw sparta::SpartaException("Could not verify SimDB records");
-                        }
-                        if (value != expected.metadata.Value) {
-                            throw sparta::SpartaException("Could not verify SimDB records");
-                        }
-                        ++record_idx;
-                    }
-                }
-            }
-        }
-
-    private:
-        std::vector<TestSQLiteSchemaA> records_schemaA_;
-        std::vector<TestSQLiteSchemaB> records_schemaB_;
-        std::vector<TestHDF5SchemaC> records_schemaC_;
-        std::vector<uint16_t> indices_schemaA_;
-        std::vector<uint16_t> indices_schemaB_;
-        std::vector<uint16_t> indices_schemaC_;
-    };
-}
-
-namespace {
-
-    // Schema builder to test two simdb::ObjectManager's
-    // bound to the same database file, separated in that
-    // same file by their respective application name.
-    // A third schema builder is for another ObjectManager,
-    // though it will be used to write records to an HDF5
-    // database, and therefore will be in its own file.
-    // SimDB's worker thread should be able to keep them
-    // separated into two groups: one group for the two
-    // SQLite database connections, and one group only
-    // serving the one HDF5 connection.
-    //
-    // Note that the two schema builders below have some
-    // overlap in their table definitions: schemaA and
-    // schemaB have some of the same table names, but
-    // these tables have different column configurations.
-    // This should not be a problem for ObjectManager
-    // since it will use its unique application name
-    // with the table names we give it to create a
-    // unique schema inside the shared file, separated
-    // from other applications tied to the same file.
-    // The specific way in which the schemas are kept
-    // separate in the file is not our concern; the
-    // DbConnProxy subclasses take care of those
-    // specifics.
-    void buildSchemaA(simdb::Schema & schema)
-    {
-        using dt = simdb::ColumnDataType;
-
-        schema.addTable("Numbers")
-            .addColumn("First", dt::double_t)
-            .addColumn("Second", dt::double_t);
-
-        schema.addTable("Metadata")
-            .addColumn("Name", dt::string_t)
-            .addColumn("Value", dt::double_t);
-    }
-
-    void buildSchemaB(simdb::Schema & schema)
-    {
-        using dt = simdb::ColumnDataType;
-
-        schema.addTable("Strings")
-            .addColumn("First", dt::string_t)
-            .addColumn("Second", dt::string_t);
-
-        schema.addTable("Metadata")
-            .addColumn("Name", dt::string_t)
-            .addColumn("Value", dt::string_t);
-    }
-
-    void buildSchemaC(simdb::Schema & schema)
-    {
-        using dt = simdb::ColumnDataType;
-
-        schema.addTable("Numbers")
-            .addField("x", dt::double_t, FOFFSET(TestHDF5SchemaC,x))
-            .addField("y", dt::double_t, FOFFSET(TestHDF5SchemaC,y))
-            .addField("z", dt::uint16_t, FOFFSET(TestHDF5SchemaC,z));
-    }
-
-    simdb::DbConnProxy * createSQLiteProxy()
-    {
-        return new simdb::SQLiteConnProxy;
-    }
-
-    simdb::DbConnProxy * createHDF5Proxy()
-    {
-        return new simdb::HDF5ConnProxy;
-    }
-}
 
 namespace sparta {
 
@@ -336,19 +64,6 @@ namespace sparta {
         TreeNode(parent, "baz_node", "BazGroup", 0, desc)
       {
           baz_.reset(new IntParameterSet(this));
-          checkDbAccess();
-      }
-
-      void checkDbAccess(const bool stop_checking = false) {
-          if (stop_checking_db_access_) {
-              return;
-          }
-          if (auto dbconn = GET_DB_FOR_COMPONENT(Stats, this)) {
-              //Run a simple query against the database just to verify
-              //the connection is open and accepting requests
-              (void) dbconn->findObject("ObjectManagersInDatabase", 1);
-              stop_checking_db_access_ = stop_checking;
-          }
       }
 
       void readParams() {
@@ -364,48 +79,8 @@ namespace sparta {
 
   private:
       std::unique_ptr<IntParameterSet> baz_;
-      bool stop_checking_db_access_ = false;
   };
 
-}
-
-template <typename DataT>
-void validateParameter(const sparta::ParameterSet & params,
-                       const std::string & param_name,
-                       const DataT & expected_value)
-{
-    if (!params.hasParameter(param_name)) {
-        return;
-    }
-    const DataT actual_value = params.getParameterValueAs<DataT>(param_name);
-    if (actual_value != expected_value) {
-        throw sparta::SpartaException("Invalid extension parameter encountered:\n")
-            << "\tParameter name:             " << param_name
-            << "\nParameter value (actual):   " << actual_value
-            << "\nParameter value (expected): " << expected_value;
-    }
-}
-
-template <typename DataT>
-void validateParameter(const sparta::ParameterSet & params,
-                       const std::string & param_name,
-                       const std::set<DataT> & expected_values)
-{
-    bool found = false;
-    for (const auto & expected : expected_values) {
-        try {
-            found = false;
-            validateParameter<DataT>(params, param_name, expected);
-            found = true;
-            break;
-        } catch (...) {
-        }
-    }
-
-    if (!found) {
-        throw sparta::SpartaException("Invalid extension parameter "
-                                  "encountered for '") << param_name << "'";
-    }
 }
 
 class CircleExtensions : public sparta::ExtensionsParamsOnly
@@ -448,15 +123,6 @@ double calculateAverageOfInternalCounters(
     return agg / counters.size();
 }
 
-void tryAccessSimDB()
-{
-    if (auto dbconn = GET_DB_FROM_CURRENT_SIMULATION(Stats)) {
-        //Run a simple query against the database just to verify
-        //the connection is open and accepting requests
-        (void) dbconn->findObject("ObjectManagersInDatabase", 1);
-    }
-}
-
 ExampleSimulator::ExampleSimulator(const std::string& topology,
                                    sparta::Scheduler & scheduler,
                                    uint32_t num_cores,
@@ -466,8 +132,7 @@ ExampleSimulator::ExampleSimulator(const std::string& topology,
     cpu_topology_(topology),
     num_cores_(num_cores),
     instruction_limit_(instruction_limit),
-    show_factories_(show_factories),
-    simdb_tester_(std::make_shared<sparta_simdb::DatabaseTester>())
+    show_factories_(show_factories)
 {
     // Set up the CPU Resource Factory to be available through ResourceTreeNode
     getResourceSet()->addResourceFactory<core_example::CPUFactory>();
@@ -488,20 +153,6 @@ ExampleSimulator::ExampleSimulator(const std::string& topology,
     // definition YAML files.
     sparta::trigger::ContextCounterTrigger::registerContextCounterCalcFunction(
         "avg", &calculateAverageOfInternalCounters);
-
-    //SQLite namespaces: NumericMeta & StringMeta
-    REGISTER_SIMDB_NAMESPACE(NumericMeta, SQLite);
-    REGISTER_SIMDB_SCHEMA_BUILDER(NumericMeta, buildSchemaA);
-
-    REGISTER_SIMDB_NAMESPACE(StringMeta,  SQLite);
-    REGISTER_SIMDB_SCHEMA_BUILDER(StringMeta, buildSchemaB);
-
-    //HDF5 namespace: NumericVals
-    REGISTER_SIMDB_NAMESPACE(NumericVals, HDF5);
-    REGISTER_SIMDB_SCHEMA_BUILDER(NumericVals, buildSchemaC);
-
-    //Proxy factory registration
-    REGISTER_SIMDB_PROXY_CREATE_FUNCTION(HDF5, createHDF5Proxy);
 }
 
 void ExampleSimulator::registerStatCalculationFcns_()
@@ -528,17 +179,6 @@ ExampleSimulator::~ExampleSimulator()
     if (on_triggered_notifier_registered_) {
         getRoot()->DEREGISTER_FOR_NOTIFICATION(
             onTriggered_, std::string, "sparta_expression_trigger_fired");
-    }
-
-    if (simdb_perf_async_ctrl_enabled_) {
-        std::set<std::string> simdb_files;
-        if (auto dbconn = GET_DB_FOR_COMPONENT(NumericMeta, this)) {
-            simdb_files.insert(dbconn->getDatabaseFile());
-        }
-
-        for (const auto & db_file : simdb_files) {
-            simdb_tester_->verifyRecords(db_file);
-        }
     }
 }
 
@@ -582,79 +222,90 @@ void ExampleSimulator::buildTree_()
 
     // Validate tree node extensions during tree building
     for(uint32_t i = 0; i < num_cores_; ++i){
-        sparta::TreeNode * dispatch = getRoot()->getChild("cpu.core0.dispatch", false);
-        if (dispatch) {
-            sparta::TreeNode::ExtensionsBase * extensions = dispatch->getExtension("user_data");
+        const std::string dispatch_loc = "cpu.core" + std::to_string(i) + ".dispatch";
+        const std::string alu0_loc = "cpu.core" + std::to_string(i) + ".alu0";
+        const std::string alu1_loc = "cpu.core" + std::to_string(i) + ".alu1";
+        const std::string fpu_loc = "cpu.core" + std::to_string(i) + ".fpu";
 
-            // If present, validate the parameter values as given in the extension / configuration file
-            if (extensions != nullptr) {
-                const sparta::ParameterSet * dispatch_prms = extensions->getParameters();
-                sparta_assert(dispatch_prms != nullptr);
-                validateParameter<std::string>(*dispatch_prms, "when_", "buildTree_");
-                validateParameter<std::string>(*dispatch_prms, "why_", "checkAvailability");
-            }
-
-            // There might be an extension given in --extension-file that is not found
-            // at all in any --config-file given at the command prompt. Verify that if
-            // present, the value is as expected.
-            extensions = dispatch->getExtension("square");
-            if (extensions != nullptr) {
-                const sparta::ParameterSet * dispatch_prms = extensions->getParameters();
-                sparta_assert(dispatch_prms != nullptr);
-                validateParameter<std::string>(*dispatch_prms, "edges_", "4");
-            }
+        // user_data.when_ (dispatch)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(dispatch_loc), "when_", "user_data")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "buildTree_";
+            }, "Parameter 'when_' should be 'buildTree_'");
         }
 
-        // See if there are any extensions for the alu0/alu1 nodes
-        sparta::TreeNode * alu0 = getRoot()->getChild("cpu.core0.alu0");
-        sparta::TreeNode * alu1 = getRoot()->getChild("cpu.core0.alu1");
-        if (alu0) {
-            sparta::TreeNode::ExtensionsBase * extensions = alu0->getExtension("difficulty");
-            if (extensions != nullptr) {
-                const sparta::ParameterSet * alu0_prms = extensions->getParameters();
-                sparta_assert(alu0_prms != nullptr);
-
-                validateParameter<std::string>(*alu0_prms, "color_", "black");
-                validateParameter<std::string>(*alu0_prms, "shape_", "diamond");
-            }
-        }
-        if (alu1) {
-            sparta::TreeNode::ExtensionsBase * extensions = alu1->getExtension("difficulty");
-            if (extensions != nullptr) {
-                const sparta::ParameterSet * alu1_prms = extensions->getParameters();
-                sparta_assert(alu1_prms != nullptr);
-
-                validateParameter<std::string>(*alu1_prms, "color_", "green");
-                validateParameter<std::string>(*alu1_prms, "shape_", "circle");
-            }
+        // user_data.why_ (dispatch)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(dispatch_loc), "why_", "user_data")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "checkAvailability";
+            }, "Parameter 'why_' should be 'checkAvailability'");
         }
 
-        // Once again, ask for a named extension for a tree node that was just created.
-        // The difference here is that the 'circle' extension also has a factory associated
-        // with it.
-        sparta::TreeNode * fpu = getRoot()->getChild("cpu.core0.fpu", false);
-        if (fpu) {
-            sparta::TreeNode::ExtensionsBase * extensions = fpu->getExtension("circle");
-
-            // If present, validate the parameter values as given in the extension / configuration file
-            if (extensions != nullptr) {
-                const sparta::ParameterSet * fpu_prms = extensions->getParameters();
-                sparta_assert(fpu_prms != nullptr);
-
-                validateParameter<std::string>(*fpu_prms, "color_", "green");
-                validateParameter<std::string>(*fpu_prms, "shape_", "round");
-                validateParameter<double>     (*fpu_prms, "degrees_", 360.0);
-
-                // While most of the 'circle' extensions are given in --config-file options,
-                // there might be more parameters added in with --extension-file, so let's check
-                validateParameter<std::string>(*fpu_prms, "edges_", "0");
-
-                // We know the subclass type, so we should be able to safely dynamic cast
-                // to that type and call methods on it
-                const CircleExtensions * circle_subclass = dynamic_cast<const CircleExtensions*>(extensions);
-                circle_subclass->doSomethingElse();
-            }
+        // square.edges_ (dispatch)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(dispatch_loc), "edges_", "square")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "4";
+            }, "Parameter 'edges_' should be '4'");
         }
+
+        // difficulty.color_ (alu0)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu0_loc), "color_", "difficulty")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "black";
+            }, "Parameter 'color_' should be 'black'");
+        }
+
+        // difficulty.shape_ (alu0)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu0_loc), "shape_", "difficulty")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "diamond";
+            }, "Parameter 'shape_' should be 'diamond'");
+        }
+
+        // difficulty.color_ (alu1)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu1_loc), "color_", "difficulty")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "green";
+            }, "Parameter 'color_' should be 'green'");
+        }
+
+        // difficulty.shape_ (alu1)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu1_loc), "shape_", "difficulty")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "circle";
+            }, "Parameter 'shape_' should be 'circle'");
+        }
+
+        // circle.color_ (fpu)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(fpu_loc), "color_", "circle")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "green";
+            }, "Parameter 'color_' should be 'green'");
+        }
+
+        // circle.shape_ (fpu)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(fpu_loc), "shape_", "circle")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "round";
+            }, "Parameter 'shape_' should be 'round'");
+        }
+
+        // circle.degrees_ (fpu)
+        if (auto prm = getExtensionParameter_<double>(getRoot()->getChild(fpu_loc), "degrees_", "circle")) {
+            prm->addDependentValidationCallback([](double & val, const sparta::TreeNode*) -> bool {
+                return val == 360.0;
+            }, "Parameter 'degrees_' should be 360.0");
+        }
+
+        // circle.edges_ (fpu)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(fpu_loc), "edges_", "circle")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "0";
+            }, "Parameter 'edges_' should be '0'");
+        }
+
+        // User-specified extension class
+        getExtension_<CircleExtensions>(getRoot()->getChild(fpu_loc), "circle")->doSomethingElse();
     }
 
     // Attach two tree nodes to get the following:
@@ -685,55 +336,6 @@ void ExampleSimulator::buildTree_()
 
 void ExampleSimulator::configureTree_()
 {
-    //Context-aware SimDB access
-    std::pair<std::string, std::string> sqlite_db_files;
-    if (auto dbconn = GET_DB_FOR_COMPONENT(NumericMeta, this)) {
-        const TestSQLiteSchemaA data = simdb_tester_->
-            createAndStoreRecordForSQLiteSchemaA();
-
-        const double first = data.numbers.First;
-        const double second = data.numbers.Second;
-        dbconn->getTable("Numbers")->createObjectWithArgs(
-            "First", first, "Second", second);
-
-        const std::string meta_name = data.metadata.Name;
-        const double meta_value = data.metadata.Value;
-        dbconn->getTable("Metadata")->createObjectWithArgs(
-            "Name", meta_name, "Value", meta_value);
-
-        sqlite_db_files.first = dbconn->getDatabaseFile();
-
-        //Verification of the two records we just made above
-        //will occur at the end of the simulation.
-    }
-
-    if (auto dbconn = GET_DB_FOR_COMPONENT(StringMeta, this)) {
-        const TestSQLiteSchemaB data = simdb_tester_->
-            createAndStoreRecordForSQLiteSchemaB();
-
-        const std::string first = data.strings.First;
-        const std::string second = data.strings.Second;
-        dbconn->getTable("Strings")->createObjectWithArgs(
-            "First", first, "Second", second);
-
-        const std::string meta_name = data.metadata.Name;
-        const std::string meta_value = data.metadata.Value;
-        dbconn->getTable("Metadata")->createObjectWithArgs(
-            "Name", meta_name, "Value", meta_value);
-
-        sqlite_db_files.second = dbconn->getDatabaseFile();
-
-        //Verification of the two records we just made above
-        //will occur at the end of the simulation.
-    }
-
-    //Both of the ObjectManager's used above should have put the
-    //created records into the same file.
-    sparta_assert(sqlite_db_files.first == sqlite_db_files.second);
-
-    //Context-unaware SimDB access
-    tryAccessSimDB();
-
     validateTreeNodeExtensions_();
 
     // In TREE_CONFIGURING phase
@@ -775,9 +377,6 @@ void ExampleSimulator::configureTree_()
     getRoot()->REGISTER_FOR_NOTIFICATION(
         onTriggered_, std::string, "sparta_expression_trigger_fired");
     on_triggered_notifier_registered_ = true;
-
-    simdb_perf_async_ctrl_enabled_ = sparta::IsFeatureValueEnabled(
-        getFeatureConfiguration(), "simdb-perf-async-ctrl") > 0;
 }
 
 void ExampleSimulator::bindTree_()
@@ -802,19 +401,6 @@ void ExampleSimulator::bindTree_()
         CREATE_SPARTA_HANDLER(ExampleSimulator, postToToggleTrigger_),
         "1 ns",
         getRoot()));
-
-    lazy_table_create_trigger_.reset(new sparta::trigger::ExpressionTrigger(
-        "DelayedTableCreate",
-        CREATE_SPARTA_HANDLER(ExampleSimulator, addToStatsSchema_),
-        "top.cpu.core0.rob.stats.total_number_retired >= 12000",
-        getRoot()->getSearchScope(),
-        nullptr));
-
-    if (auto db_root = GET_DB_FROM_CURRENT_SIMULATION(Stats)) {
-        lazy_table_proxy_ = db_root->getConditionalTable("Lazy");
-        sparta_assert(lazy_table_proxy_ != nullptr);
-        sparta_assert(lazy_table_proxy_->getTable() == nullptr);
-    }
 
     static const uint32_t warmup_multiplier = 1000;
     auto gen_expression = [](const uint32_t core_idx) {
@@ -862,132 +448,6 @@ void ExampleSimulator::postRandomNumber_()
     const size_t random = rand() % 25;
     testing_notification_source_->postNotification(random);
     random_number_trigger_->reschedule();
-
-    if (dispatch_baz_) {
-        dispatch_baz_->checkDbAccess(true);
-    }
-
-    if (!simdb_perf_async_ctrl_enabled_) {
-        return;
-    }
-
-    using ObjectDatabase = simdb::ObjectManager::ObjectDatabase;
-
-    // In the SimDB-related code below, note that GET_DB_FOR_COMPONENT is
-    // returning a unique_ptr<ObjectDatabase>, not a shared_ptr.
-    //
-    // The ability to request database connections and get unique_ptr's
-    // back is important because it demonstrates that different parts
-    // of the simulator can write data into the same database, into their
-    // own namespace's schema, sharing the same worker thread (which is
-    // just implementation detail, but it's important for performance and
-    // scalability) with no coordination required between the simulator
-    // components / call sites.
-    //
-    // Also note that we have a mixture of DB writes going on here. There
-    // are two separate physical database files: one is SQLite, and the
-    // other is HDF5. The SQLite file has two namespaces in it, named
-    // NumericMeta and StringMeta; the HDF5 file just has one namespace
-    // in it called NumericVals. These namespaces, their database formats,
-    // and the namespace schema definition was registered with SimDB from
-    // the ExampleSimulator's constructor earlier on.
-
-    if (auto obj_db = GET_DB_FOR_COMPONENT(NumericMeta, this)) {
-        // Helper class which writes a data record on the worker thread
-        class TestWriter : public simdb::WorkerTask
-        {
-        public:
-            TestWriter(ObjectDatabase * obj_db,
-                       sparta_simdb::DatabaseTester * db_tester) :
-                obj_db_(obj_db),
-                simdb_tester_(db_tester)
-            {}
-
-            void completeTask() override {
-              const TestSQLiteSchemaA data = simdb_tester_->
-                  createAndStoreRecordForSQLiteSchemaA();
-
-                obj_db_->getTable("Numbers")->createObjectWithArgs(
-                    "First", data.numbers.First,
-                    "Second", data.numbers.Second);
-
-                obj_db_->getTable("Metadata")->createObjectWithArgs(
-                    "Name", data.metadata.Name,
-                    "Value", data.metadata.Value);
-            }
-
-        private:
-            ObjectDatabase * obj_db_ = nullptr;
-            sparta_simdb::DatabaseTester * simdb_tester_ = nullptr;
-        };
-
-        std::unique_ptr<simdb::WorkerTask> task(new TestWriter(
-            obj_db, simdb_tester_.get()));
-        obj_db->getTaskQueue()->addWorkerTask(std::move(task));
-    }
-
-    if (auto obj_db = GET_DB_FOR_COMPONENT(StringMeta, this)) {
-        // Helper class which writes a data record on the worker thread
-        class TestWriter : public simdb::WorkerTask
-        {
-        public:
-            TestWriter(ObjectDatabase * obj_db,
-                       sparta_simdb::DatabaseTester * db_tester) :
-                obj_db_(obj_db),
-                simdb_tester_(db_tester)
-            {}
-
-            void completeTask() override {
-                const TestSQLiteSchemaB data = simdb_tester_->
-                    createAndStoreRecordForSQLiteSchemaB();
-
-                obj_db_->getTable("Strings")->createObjectWithArgs(
-                    "First", data.strings.First,
-                    "Second", data.strings.Second);
-
-                obj_db_->getTable("Metadata")->createObjectWithArgs(
-                    "Name", data.metadata.Name,
-                    "Value", data.metadata.Value);
-            }
-
-        private:
-            ObjectDatabase * obj_db_ = nullptr;
-            sparta_simdb::DatabaseTester * simdb_tester_ = nullptr;
-        };
-
-        std::unique_ptr<simdb::WorkerTask> task(new TestWriter(
-            obj_db, simdb_tester_.get()));
-        obj_db->getTaskQueue()->addWorkerTask(std::move(task));
-    }
-
-    if (auto obj_db = GET_DB_FOR_COMPONENT(NumericVals, this)) {
-        // Helper class which writes a data record on the worker thread
-        class TestWriter : public simdb::WorkerTask
-        {
-        public:
-            TestWriter(ObjectDatabase * obj_db,
-                       sparta_simdb::DatabaseTester * db_tester) :
-                obj_db_(obj_db),
-                simdb_tester_(db_tester)
-            {}
-
-            void completeTask() override {
-                const TestHDF5SchemaC data = simdb_tester_->
-                    createAndStoreRecordForHDF5SchemaC();
-
-                obj_db_->getTable("Numbers")->createObjectWithVals(
-                    data.x, data.y, data.z);
-            }
-
-        private:
-            ObjectDatabase * obj_db_ = nullptr;
-            sparta_simdb::DatabaseTester * simdb_tester_ = nullptr;
-        };
-
-        std::unique_ptr<simdb::WorkerTask> task(new TestWriter(
-            obj_db, simdb_tester_.get()));
-        obj_db->getTaskQueue()->addWorkerTask(std::move(task));
-    }
 }
 
 void ExampleSimulator::postToToggleTrigger_()
@@ -1020,155 +480,212 @@ void ExampleSimulator::postToToggleTrigger_()
     toggle_notif_trigger_->reschedule();
 }
 
-void ExampleSimulator::addToStatsSchema_()
-{
-    if (auto db_root = getDatabaseRoot()) {
-        if (auto db_namespace = db_root->getNamespace("Stats")) {
-            db_namespace->addToSchema([&](simdb::Schema & schema) {
-                using dt = simdb::ColumnDataType;
-
-                schema.addTable("Lazy")
-                    .addColumn("Foo", dt::string_t)
-                    .addColumn("Bar", dt::int32_t);
-            });
-
-            lazy_table_create_trigger_.reset(new sparta::trigger::ExpressionTrigger(
-                "DelayedTableCreate",
-                CREATE_SPARTA_HANDLER(ExampleSimulator, addToLazySchemaTable_),
-                "top.cpu.core0.rob.stats.total_number_retired >= 40000",
-                getRoot()->getSearchScope(),
-                nullptr));
-        }
-    }
-}
-
-void ExampleSimulator::addToLazySchemaTable_()
-{
-    if (lazy_table_proxy_->isWritable()) {
-        const std::string foo = "hello_world";
-        const int bar = 45;
-
-        auto recordA = lazy_table_proxy_->getTable()->createObjectWithArgs(
-            "Foo", foo, "Bar", bar);
-
-        auto db_root = GET_DB_FROM_CURRENT_SIMULATION(Stats);
-        sparta_assert(db_root != nullptr);
-
-        auto recordB = db_root->getTable("Lazy")->createObjectWithArgs(
-            "Foo", foo, "Bar", bar);
-
-        sparta_assert(recordA->getPropertyString("Foo") ==
-                    recordB->getPropertyString("Foo"));
-
-        sparta_assert(recordA->getPropertyInt32("Bar") ==
-                    recordB->getPropertyInt32("Bar"));
-    }
-}
-
 void ExampleSimulator::onTriggered_(const std::string & msg)
 {
     std::cout << "     [trigger] " << msg << std::endl;
 }
 
+template <typename ParamT>
+sparta::Parameter<ParamT>* ExampleSimulator::getExtensionParameter_(
+    sparta::TreeNode* node,
+    const std::string& param_name,
+    const std::string& ext_name)
+{
+    if (!node) {
+        return nullptr;
+    }
+
+    sparta::TreeNode::ExtensionsBase * ext = ext_name.empty() ?
+        node->getExtension() :
+        node->getExtension(ext_name);
+
+    if (!ext) {
+        return nullptr;
+    }
+
+    sparta::ParameterSet * params = ext->getParameters();
+    if (!params) {
+        return nullptr;
+    }
+
+    if (!params->hasParameter(param_name)) {
+        return nullptr;
+    }
+
+    return &params->getParameterAs<ParamT>(param_name);
+}
+
+template <typename ExtensionT>
+ExtensionT* ExampleSimulator::getExtension_(
+    sparta::TreeNode* node,
+    const std::string& ext_name)
+{
+    static_assert(std::is_base_of<sparta::TreeNode::ExtensionsBase, ExtensionT>::value,
+                  "ExtensionT must be derived from sparta::TreeNode::ExtensionsBase");
+
+    if (!node) {
+        return nullptr;
+    }
+
+    return ext_name.empty() ?
+        dynamic_cast<ExtensionT*>(node->getExtension()) :
+        dynamic_cast<ExtensionT*>(node->getExtension(ext_name));
+}
+
 void ExampleSimulator::validateTreeNodeExtensions_()
 {
-    // From the yaml file, the 'cat' extension had parameters 'name_' and 'language_'
-    sparta::TreeNode * core_tn = getRoot()->getChild("cpu.core0.lsu");
-    if (core_tn == nullptr) {
-        return;
+    // cat.name_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.lsu"), "name_", "cat"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "Tom";
+            }, "Parameter 'name_' should be 'Tom'");
     }
-    sparta::TreeNode::ExtensionsBase * cat_base = core_tn->getExtension("cat");
-    if (cat_base == nullptr) {
-        return;
+
+    // cat.language_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.lsu"), "language_", "cat"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "meow" || val == "grrr";
+            }, "Parameter 'language_' should be 'meow' or 'grrr'");
     }
-    sparta::ParameterSet * cat_prms = cat_base->getParameters();
 
-    validateParameter<std::string>(*cat_prms, "name_", "Tom");
-
-    // The expected "meow" parameter value, given in a --config-file, may have
-    // been overridden in a provided --extension-file
-    validateParameter<std::string>(*cat_prms, "language_", {"meow", "grrr"});
-
-    // Same goes for the 'mouse' extension...
-    sparta::TreeNode::ExtensionsBase * mouse_base = core_tn->getExtension("mouse");
-    if (mouse_base == nullptr) {
-        return;
+    // mouse.name_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.lsu"), "name_", "mouse"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "Jerry";
+            }, "Parameter 'name_' should be 'Jerry'");
     }
-    sparta::ParameterSet * mouse_prms = mouse_base->getParameters();
 
-    validateParameter<std::string>(*mouse_prms, "name_", "Jerry");
-    validateParameter<std::string>(*mouse_prms, "language_", "squeak");
-
-    // Another extension called 'circle' was put on a different tree node...
-    sparta::TreeNode * fpu_tn = getRoot()->getChild("cpu.core0.fpu");
-    if (fpu_tn == nullptr) {
-        return;
+    // mouse.language_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.lsu"), "language_", "mouse"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "squeak";
+            }, "Parameter 'language_' should be 'squeak'");
     }
-    sparta::TreeNode::ExtensionsBase * circle_base = fpu_tn->getExtension("circle");
-    if (circle_base == nullptr) {
-        return;
+
+    // circle.color_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.fpu"), "color_", "circle"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "green";
+            }, "Parameter 'color_' should be 'green'");
     }
-    sparta::ParameterSet * circle_prms = circle_base->getParameters();
 
-    // The 'circle' extension had 'color_' and 'shape_' parameters given in the yaml file:
-    validateParameter<std::string>(*circle_prms, "color_", "green");
-    validateParameter<std::string>(*circle_prms, "shape_", "round");
-
-    // That subclass also gave a parameter value not found in the yaml file at all:
-    validateParameter<double>(*circle_prms, "degrees_", 360.0);
-
-    // Further, the 'circle' extension gave a subclass factory for the CircleExtensions class...
-    // so we should be able to dynamic_cast to the known type:
-    const CircleExtensions * circle_subclass = dynamic_cast<const CircleExtensions*>(circle_base);
-    circle_subclass->doSomethingElse();
-
-    // Lastly, verify that there are no issues with putting extensions on the 'top' node
-    sparta::TreeNode * top_node = getRoot();
-    if (top_node == nullptr) {
-        return;
+    // circle.shape_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.fpu"), "shape_", "circle"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "round";
+            }, "Parameter 'shape_' should be 'round'");
     }
-    sparta::TreeNode::ExtensionsBase * top_extensions = top_node->getExtension("apple");
-    if (top_extensions == nullptr) {
-        return;
+
+    // circle.degrees_
+    if (auto prm = getExtensionParameter_<double>(
+        getRoot()->getChild("cpu.core0.fpu"), "degrees_", "circle"))
+    {
+        prm->addDependentValidationCallback(
+            [](double & val, const sparta::TreeNode*) -> bool {
+                return val == 360.0;
+            }, "Parameter 'degrees_' should be 360.0");
     }
-    sparta::ParameterSet *top_prms = top_extensions->getParameters();
-    validateParameter<std::string>(*top_prms, "color_", "red");
+
+    // User-specified extension class
+    getExtension_<CircleExtensions>(getRoot()->getChild("cpu.core0.fpu"), "circle")->doSomethingElse();
+
+    // apple.color_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot(), "color_", "apple"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "red";
+            }, "Parameter 'color_' should be 'red'");
+    }
 
     // The 'core0.lsu' node has two named extensions, so asking that node for
-    // unqualified extensions (no name specified) should throw
-    try {
-        core_tn->getExtension();
-        throw sparta::SpartaException("Expected an exception to be thrown for unqualified "
-                                  "call to TreeNode::getExtension()");
-    } catch (...) {
-    }
-
-    // While the 'core0.fpu' node only had one extension, so we should be able to
-    // access it without giving any particular name
-    sparta::TreeNode::ExtensionsBase * circle_base_by_default = fpu_tn->getExtension();
-    circle_prms = circle_base_by_default->getParameters();
-
-    validateParameter<std::string>(*circle_prms, "color_", "green");
-    validateParameter<std::string>(*circle_prms, "shape_", "round");
-    validateParameter<double>(*circle_prms, "degrees_", 360.0);
-
-    // Check to see if additional parameters were added to this tree node's extension
-    // (--config-file and --extension-file options can be given at the same time, and
-    // we should have access to the merged result of both ParameterTree's)
-    if (circle_prms->getNumParameters() > 3) {
-        validateParameter<std::string>(*circle_prms, "edges_", "0");
-    }
-
-    // Verify that we can work with extensions on 'top.core0.dispatch.baz_node', which
-    // was added to this example simulator to reproduce bug
-    sparta::TreeNode * baz_node = getRoot()->getChild("cpu.core0.dispatch.baz_node", false);
-    if (baz_node) {
-        sparta::TreeNode::ExtensionsBase * extensions = baz_node->getExtension("baz_ext");
-        if (extensions) {
-            const sparta::ParameterSet * baz_prms = extensions->getParameters();
-            sparta_assert(baz_prms != nullptr);
-            validateParameter<std::string>(*baz_prms, "ticket_", "663");
+    // unqualified extensions (no name specified) should throw.
+    //
+    // Note that we still have to check if core0.lsu has multiple extensions,
+    // since it will have zero in most example simulations unless --extension-file
+    // was used.
+    auto core0_lsu = getRoot()->getChild("cpu.core0.lsu");
+    if (core0_lsu->getNumExtensions() > 1) {
+        bool threw = false;
+        try {
+            getExtension_<>(core0_lsu);
+        } catch (...) {
+            threw = true;
         }
+
+        if (!threw) {
+            throw sparta::SpartaException("Expected an exception to be thrown for unqualified "
+                                          "call to TreeNode::getExtension()");
+        }
+    }
+
+    // <unnamed>.color_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.fpu"), "color_"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "green";
+            }, "Parameter 'color_' should be 'green'");
+    }
+
+    // <unnamed>.shape_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.fpu"), "shape_"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "round";
+            }, "Parameter 'shape_' should be 'round'");
+    }
+
+    // <unnamed>.degrees_
+    if (auto prm = getExtensionParameter_<double>(
+        getRoot()->getChild("cpu.core0.fpu"), "degrees_"))
+    {
+        prm->addDependentValidationCallback(
+            [](double & val, const sparta::TreeNode*) -> bool {
+                return val == 360.0;
+            }, "Parameter 'degrees_' should be 360.0");
+    }
+
+    // <unnamed>.edges_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.fpu"), "edges_"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "0";
+            }, "Parameter 'edges_' should be '0'");
+    }
+
+    // baz_ext.ticket_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.dispatch.baz_node", false), "ticket_", "baz_ext"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "663";
+            }, "Parameter 'ticket_' should be '663'");
     }
 }
 

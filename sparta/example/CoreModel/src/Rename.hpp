@@ -67,7 +67,6 @@ namespace core_example
 
         const uint32_t num_to_rename_per_cycle_;
         uint32_t credits_dispatch_ = 0;
-        bool stop_checking_db_access_ = false;
 
         //! Send initial credits
         void sendInitialCredits_();

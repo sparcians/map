@@ -1,0 +1,6 @@
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: untriggered.json
+    format:    js_json

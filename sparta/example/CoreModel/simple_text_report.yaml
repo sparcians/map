@@ -1,0 +1,28 @@
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: untriggered.txt
+    format:    txt
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: start_triggered.txt
+    format:    txt
+    trigger:
+      start:   top.cpu.core0.rob.stats.total_number_retired >= 1500
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: stop_triggered.txt
+    format:    txt
+    trigger:
+      stop:    top.cpu.core0.rob.stats.total_number_retired >= 9500
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: start_stop_triggered.txt
+    format:    txt
+    trigger:
+      start:   top.cpu.core0.rob.stats.total_number_retired >= 1500
+      stop:    top.cpu.core0.rob.stats.total_number_retired >= 9500

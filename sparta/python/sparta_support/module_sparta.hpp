@@ -27,10 +27,6 @@
 #include "python/sparta_support/facade/ReportTriggers.hpp"
 #include "sparta/statistics/dispatch/archives/StatisticsArchives.hpp"
 #include "sparta/statistics/dispatch/streams/StatisticsStreams.hpp"
-#include "simdb/ObjectManager.hpp"
-#include "simdb/ObjectRef.hpp"
-#include "sparta/report/db/ReportTimeseries.hpp"
-#include "sparta/report/db/ReportHeader.hpp"
 #include "sparta/dynamic_pipeline/GenericUnit.hpp"
 #include "sparta/dynamic_pipeline/GenericResourceFactory.hpp"
 #include "sparta/ports/Port.hpp"
@@ -756,60 +752,6 @@ struct casting_wrapper <sparta::statistics::StreamNode>
             //name. This would prevent tab completion from working.
             sparta_assert(c->getName().find(".") == std::string::npos);
             members.append(bp::str(c->getName()));
-        }
-        bp::setattr(obj, "__members__", members);
-    }
-};
-
-/*!
- * \brief Wrapper for the Simulation Database object
- */
-template <>
-struct casting_wrapper <simdb::ObjectManager>
-{
-    bp::object new_wrapper(const simdb::ObjectManager * sim_db) {
-        return bp::object(bp::ptr(sim_db));
-    }
-
-    void prepopulate(const simdb::ObjectManager * sim_db, bp::object & obj) const {
-        bp::list members;
-        if (!sim_db->getQualifiedTableName("Timeseries", "Stats").empty()) {
-            std::vector<std::unique_ptr<simdb::ObjectRef>> timeseries_obj_refs;
-            sim_db->findObjects("Timeseries", {}, timeseries_obj_refs);
-
-            for (auto & timeseries_obj_ref : timeseries_obj_refs) {
-                sparta_assert(timeseries_obj_ref != nullptr,
-                            "Unexpected null timeseries returned from the database");
-                sparta::db::ReportTimeseries ts(std::move(timeseries_obj_ref));
-                std::string dest_file = ts.getHeader().getSourceReportDescDestFile();
-                if (dest_file.empty()) {
-                    throw sparta::SpartaException("Encountered a timeseries record in the ")
-                        << "database that did not have its DestFile column value set. "
-                        << "See database file '" << sim_db->getDatabaseFile() << "' to "
-                        << "investigate (table=\"Timeseries\", rowid="
-                        << timeseries_obj_ref->getId() << ").";
-                }
-
-                //Python will not allow file separators in member names.
-                //In the case of CSV files written to a subdirectory like:
-                //          <pwd>
-                //             foo/
-                //                bar/out.csv
-                //
-                //The dest_file could be something like:
-                //  "example/CoreModel/AccuracyCheckedDBs/foo/bar/out.csv"
-                //
-                //Let's just take the file name, "out.csv", and use that
-                //to prepopulate the python object members.
-                auto slash = dest_file.find_last_of("/");
-                if (slash < dest_file.size() - 1) {
-                    dest_file = dest_file.substr(slash + 1);
-                }
-
-                //Python will not allow dots in member names
-                boost::replace_all(dest_file, ".", "_");
-                members.append(bp::str(dest_file));
-            }
         }
         bp::setattr(obj, "__members__", members);
     }

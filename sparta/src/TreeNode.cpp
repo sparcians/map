@@ -2171,6 +2171,19 @@ void TreeNode::finalizeTree_() {
 
     createResource_();
 
+    // Tree node extensions parameter validation should occur here.
+    // We do this here since parameter validation also occurs for
+    // resources in createResource_() above.
+    for (const auto& kvp : extensions_) {
+        if (const auto* params = kvp.second->getParameters()) {
+            std::string errs;
+            if (!params->validateDependencies(this, errs)) {
+                throw SpartaException("Parameter validation callbacks indicated invalid parameters: ")
+                    << errs;
+            }
+        }
+    }
+
     // Iterate by index just in case children may be added within
     // as a result of createResource_ on child nodes()
     // It is important that addChild always append new children to the

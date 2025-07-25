@@ -9,9 +9,6 @@
 #include "Rename.hpp"
 #include "sparta/events/StartupEvent.hpp"
 #include "sparta/app/FeatureConfiguration.hpp"
-#include "sparta/report/DatabaseInterface.hpp"
-#include "simdb/ObjectManager.hpp"
-#include "simdb/ObjectRef.hpp"
 
 namespace core_example
 {
@@ -62,23 +59,6 @@ namespace core_example
         }
         out_uop_queue_credits_.send(uop_queue_.size());
         uop_queue_.clear();
-
-        if (!stop_checking_db_access_) {
-            if (auto container = getContainer()) {
-                if (auto sim = container->getSimulation()) {
-                    if (sparta::IsFeatureValueEnabled(sim->getFeatureConfiguration(),
-                                                    "wildcard-components"))
-                    {
-                        if (auto dbconn = GET_DB_FOR_COMPONENT(Stats, container)) {
-                            //Run a simple query against the database just to verify
-                            //the connection is open and accepting requests
-                            (void) dbconn->findObject("ObjectManagersInDatabase", 1);
-                        }
-                    }
-                }
-            }
-            stop_checking_db_access_ = true;
-        }
     }
 
     void Rename::decodedInstructions_(const InstGroup & insts)

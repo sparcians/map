@@ -4,7 +4,6 @@
 
 #include "sparta/kernel/SpartaHandler.hpp"
 #include "sparta/kernel/Scheduler.hpp"
-#include "simdb_fwd.hpp"
 
 namespace sparta {
     class Clock;
@@ -15,10 +14,6 @@ namespace sparta {
 
     namespace statistics {
         class StreamController;
-    }
-
-    namespace async {
-        class AsynchronousTaskEval;
     }
 
 namespace control {
@@ -55,8 +50,6 @@ public:
     void setStreamController(const std::shared_ptr<statistics::StreamController> & controller);
 
     std::shared_ptr<statistics::StreamController> & getStreamController();
-
-    void setDatabaseTaskThread(simdb::AsyncTaskEval * db_thread);
 
     uint64_t getCurrentCycle(const std::string& clk_name) const;
 
@@ -117,11 +110,6 @@ private:
     //! Statistics stream controller. Used for starting/stopping listener
     //! objects, and forcing data flushes.
     std::shared_ptr<statistics::StreamController> stream_controller_;
-
-    //! Database task thread. This is given to us so that we can
-    //! force synchronization points during simulation pause (end
-    //! of a runi/runc command, etc.)
-    simdb::AsyncTaskEval * db_task_thread_ = nullptr;
 };
 
 } // namespace control

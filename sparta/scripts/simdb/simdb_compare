@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Path to the Python script
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+PYTHON_SCRIPT="$SCRIPT_DIR/simdb_compare.py"
+
+# Check if the Python script exists
+if [[ ! -f "$PYTHON_SCRIPT" ]]; then
+    echo "Error: simdb_compare.py not found in $SCRIPT_DIR" >&2
+    exit 1
+fi
+
+# Run the Python script with all the arguments passed to this wrapper
+exec python3 "$PYTHON_SCRIPT" "$@" "--quiet"

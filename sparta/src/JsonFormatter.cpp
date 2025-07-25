@@ -18,7 +18,6 @@
 
 #include "sparta/report/format/JSON.hpp"
 #include "sparta/report/format/JSON_reduced.hpp"
-#include "sparta/report/db/DatabaseContextCounter.hpp"
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/prettywriter.h"
@@ -108,66 +107,11 @@ void extractStatisticsJsonFull(rapidjson::Document & doc,
 
     // Keep track of the order in which stats and subunits are written
     std::set<const void*> dont_print_these;
-    std::set<const void*> db_dont_print_these;
-
-    const Report::SubStaticticInstances & sub_stats = r->getSubStatistics();
-    const Report::DBSubStatisticInstances & db_sub_stats = r->getDBSubStatistics();
 
     for (const statistics::stat_pair_t & si : r->getStatistics())
     {
         const std::string stat_name = !si.first.empty() ? si.first : si.second->getLocation();
         if (!stat_name.empty()) {
-            const StatisticInstance * stat_inst = si.second.get();
-            const StatisticDef * def = stat_inst->getStatisticDef();
-            const CounterBase * ctr = stat_inst->getCounter();
-            const ParameterBase * prm = stat_inst->getParameter();
-
-            auto sub_stat_iter = sub_stats.find(def);
-            const bool valid_stat_def = (def != nullptr);
-            const bool has_valid_sub_stats =
-                (valid_stat_def && sub_stat_iter != sub_stats.end());
-
-            auto db_sub_stat_iter = db_sub_stats.find(stat_inst);
-            const bool has_valid_db_sub_stats = (db_sub_stat_iter != db_sub_stats.end());
-
-            rapidjson::Value grouped_json;
-            if (has_valid_sub_stats && def->groupedPrinting(sub_stat_iter->second,
-                                                            dont_print_these,
-                                                            &grouped_json, &doc)) {
-                const std::string & name = def->getName();
-                contents.AddMember(rapidjson::StringRef(name.c_str()),
-                                   grouped_json,
-                                   doc.GetAllocator());
-                continue;
-            }
-            if (dont_print_these.count(ctr) > 0 || dont_print_these.count(prm) > 0) {
-                continue;
-            }
-            dont_print_these.clear();
-
-            if (has_valid_db_sub_stats) {
-                const std::shared_ptr<db::DatabaseContextCounter> & db_ctx_ctr =
-                    db_sub_stat_iter->second.first;
-
-                const std::vector<const StatisticInstance*> & db_sub_sis =
-                    db_sub_stat_iter->second.second;
-
-                if (db_ctx_ctr->groupedPrinting(db_sub_sis,
-                                                db_dont_print_these,
-                                                &grouped_json, &doc))
-                {
-                    const std::string & name = db_ctx_ctr->getName();
-                    contents.AddMember(rapidjson::StringRef(name.c_str()),
-                                       grouped_json,
-                                       doc.GetAllocator());
-                    continue;
-                }
-            }
-            if (db_dont_print_these.count(stat_inst) > 0) {
-                continue;
-            }
-            db_dont_print_these.clear();
-
             rapidjson::Value stats_json;
             stats_json.SetObject();
 
@@ -389,67 +333,12 @@ void extractStatisticsJsonReduced(rapidjson::Document & doc,
     // XXX: This might cause name collisions if max_report_depth != -1
     std::string local_name = flattenReportName(r->getName());
 
-    const Report::SubStaticticInstances & sub_stats = r->getSubStatistics();
-    const Report::DBSubStatisticInstances & db_sub_stats = r->getDBSubStatistics();
-
     // Keep track of the order in which stats and subunits are written
     std::set<const void*> dont_print_these;
-    std::set<const void*> db_dont_print_these;
 
     for (const statistics::stat_pair_t & si : r->getStatistics()) {
         const std::string stat_name = !si.first.empty() ? si.first : si.second->getLocation();
         if (!stat_name.empty()) {
-            const StatisticInstance * stat_inst = si.second.get();
-            const StatisticDef * def = stat_inst->getStatisticDef();
-            const CounterBase * ctr = stat_inst->getCounter();
-            const ParameterBase * prm = stat_inst->getParameter();
-
-            auto sub_stat_iter = sub_stats.find(def);
-            const bool valid_stat_def = (def != nullptr);
-            const bool has_valid_sub_stats =
-                (valid_stat_def && sub_stat_iter != sub_stats.end());
-
-            auto db_sub_stat_iter = db_sub_stats.find(stat_inst);
-            const bool has_valid_db_sub_stats = (db_sub_stat_iter != db_sub_stats.end());
-
-            rapidjson::Value grouped_json;
-            if (has_valid_sub_stats && def->groupedPrintingReduced(sub_stat_iter->second,
-                                                                   dont_print_these,
-                                                                   &grouped_json, &doc)) {
-                const std::string & name = def->getName();
-                contents.AddMember(rapidjson::StringRef(name.c_str()),
-                                   grouped_json,
-                                   doc.GetAllocator());
-                continue;
-            }
-            if (dont_print_these.count(ctr) > 0 || dont_print_these.count(prm) > 0) {
-                continue;
-            }
-            dont_print_these.clear();
-
-            if (has_valid_db_sub_stats) {
-                const std::shared_ptr<db::DatabaseContextCounter> & db_ctx_ctr =
-                    db_sub_stat_iter->second.first;
-
-                const std::vector<const StatisticInstance*> & db_sub_sis =
-                    db_sub_stat_iter->second.second;
-
-                if (db_ctx_ctr->groupedPrintingReduced(db_sub_sis,
-                                                       db_dont_print_these,
-                                                       &grouped_json, &doc))
-                {
-                    const std::string & name = db_ctx_ctr->getName();
-                    contents.AddMember(rapidjson::StringRef(name.c_str()),
-                                       grouped_json,
-                                       doc.GetAllocator());
-                    continue;
-                }
-            }
-            if (db_dont_print_these.count(stat_inst) > 0) {
-                continue;
-            }
-            db_dont_print_these.clear();
-
             const double val = si.second->getValue();
             if (omit_zero_values && val == 0) {
                 continue;

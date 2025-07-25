@@ -28,11 +28,15 @@
 
 namespace YP = YAML; // Prevent collision with YAML class in ConfigParser namespace.
 
+namespace simdb {
+    class AppManager;
+    class DatabaseManager;
+}
+
 namespace sparta {
 
 class Clock;
 class MemoryProfiler;
-class DatabaseAccessor;
 
 namespace python {
     class PythonInterpreter;
@@ -112,53 +116,6 @@ public:
     }
 
     /*!
-     * \brief Get the database root for this simulation.
-     * \return Pointer to the DatabaseRoot
-     *
-     * This is a container that holds all databases the simulation is
-     * using.  The underlying ObjectManager methods such as getTable()
-     * and findObject() can be accessed indirectly using the
-     * ObjectDatabase class (nested class inside ObjectManager). For
-     * example, say that we ran a simulation using the --report
-     * command line option, and we want to go through the DatabaseRoot
-     * to get the StatisticInstance / reports database records:
-     *
-     * \code
-     *     simdb::DatabaseRoot * db_root = sim->getDatabaseRoot();
-     *
-     *     simdb::DatabaseNamespace * stats_namespace = db_root->
-     *         getNamespace("Stats");
-     *
-     *     simdb::ObjectManager::ObjectDatabase * stats_db =
-     *         stats_namespace->getDatabase();
-     * \endcode
-     *
-     * Once you have the ObjectDatabase for the desired namespace,
-     * access the table wrappers like so:
-     *
-     * \code
-     *     std::unique_ptr<simdb::TableRef> ts_table =
-     *         stats_db->getTable("Timeseries");
-     * \endcode
-     *
-     * See "simdb/include/simdb/schema/DatabaseRoot.hpp" and
-     * "simdb/include/simdb/ObjectManager.hpp" for more info
-     * about using these other classes to read and write
-     * database records in a SimDB namespace.
-     */
-    simdb::DatabaseRoot * getDatabaseRoot() const;
-
-    /*!
-     * \brief There is a 1-to-1 mapping between a running simulation
-     * and the database it is using. Some components in the simulator
-     * may have database access, while others are not intended to use
-     * the database. This is controlled via command line arguments, and
-     * the simulation's DatabaseAccessor knows which components are DB-
-     * enabled, and which are not.
-     */
-    const DatabaseAccessor * getSimulationDatabaseAccessor() const;
-
-    /*!
      * \brief Configures the simulator after construction. Necessary only when
      *        using the simple constructor
      *
@@ -205,6 +162,21 @@ public:
 
     //! \brief Returns the simulation's scheduler
     const sparta::Scheduler * getScheduler() const { return scheduler_; }
+
+    //! \brief Returns all SimDB application managers
+    std::vector<simdb::AppManager*> getAppManagers();
+
+    //! \brief Returns all SimDB database managers
+    std::vector<simdb::DatabaseManager*> getDbManagers();
+
+    //! \brief Get an app manager for a specific database file
+    simdb::AppManager* getAppManager(const std::string & db_file = "sparta.db") const;
+
+    //! \brief Get a database manager for a specific database file
+    simdb::DatabaseManager* getDbManager(const std::string & db_file = "sparta.db") const;
+
+    //! \brief Returns all database files managed by this simulation
+    std::vector<std::string> getDatabaseFiles() const;
 
     /*!
      * \brief Returns whether or not the simulator was configured using a final
@@ -726,15 +698,7 @@ protected:
      * \brief Sets up all reports in this simulation. This can be called during
      * finalization or deferred until later.
      */
-    void setupReports_();
-
-    /*!
-     * \brief Right before the main sim loop, this method is called in order
-     * to create any SimDB triggers the simulation was configured to use.
-     * These triggers dictate when database namespace(s) are opened and
-     * closed for reads and writes via the simdb::TableProxy class.
-     */
-    void setupDatabaseTriggers_();
+    void setupReports_(ReportStatsCollector* collector);
 
     /*!
      * \brief In the case where a comma-separated list of file formats was
@@ -1009,45 +973,31 @@ private:
     std::unique_ptr<control::TemporaryRunControl> rc_;
 
     /*!
-     * \brief This database holds things like report
-     * metadata and StatisticInstance values.
-     *
-     * \note This is not publicly accessible. Think of
-     * this pointer as a "shortcut" to the SI / reports
-     * namespace in the simulation database; it is used
-     * so often in Simulation.cpp, and passed around to
-     * other classes related to reports / post-processing
-     * that we hang onto is as a convenience.
+     * \brief Create enabled SimDB apps during framework finalization.
      */
-    simdb::ObjectManager * stats_db_ = nullptr;
+    void createSimDbApps_();
+    int argc_ = 0;
+    char** argv_ = nullptr;
 
     /*!
-     * \brief Database root for this simulation. This is a container
-     * holding all database connections currently in use. The reports /
-     * SI database tables & records are just a subset of what can be
-     * accessed via the DatabaseRoot. Other databases may be available
-     * as well (pipeline collection DB, branch prediction DB, etc.)
+     * \brief SimDB instances with the associated AppManager.
      */
-    std::unique_ptr<simdb::DatabaseRoot> db_root_;
+    struct SimDbManagers
+    {
+        std::shared_ptr<simdb::DatabaseManager> db_mgr;
+        std::shared_ptr<simdb::AppManager> app_mgr;
+
+        SimDbManagers(std::shared_ptr<simdb::DatabaseManager> db_mgr,
+                      std::shared_ptr<simdb::AppManager> app_mgr)
+            : db_mgr(db_mgr)
+            , app_mgr(app_mgr)
+        {}
+    };
 
     /*!
-     * \brief Accessor who knows which simulation components are
-     * enabled for SimDB access, and which are not.
+     * \brief Db/App managers, keyed by database filename.
      */
-    std::shared_ptr<DatabaseAccessor> sim_db_accessor_;
-private:
-    //! At the very end of the simulation's configure() method,
-    //! take a first look at the feature values we were given.
-    void inspectFeatureValues_();
-
-    //! Tests may enable a post-simulation report validation
-    //! step, where contents of the database (SI values, metadata,
-    //! etc.) are compared against a baseline report.
-    bool isReportValidationEnabled_() const;
-
-    //! List of report filenames which *failed* post-simulation
-    //! report verification.
-    std::set<std::string> report_verif_failed_fnames_;
+    std::map<std::string, std::shared_ptr<SimDbManagers>> simdb_managers_;
 };
 
 } // namespace app

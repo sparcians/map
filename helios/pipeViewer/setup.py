@@ -18,7 +18,7 @@ transaction_db = setuptools.Extension(
     'pipe_view.transactiondb',
     language='c++',
     sources=['pipe_view/transactiondb/src/transactiondb.pyx'],
-    libraries=["sparta", "simdb", "hdf5", "sqlite3"],
+    libraries=["sparta", "hdf5", "sqlite3"],
     pyrex_gdb = True,
     extra_compile_args = compile_args,
 )
@@ -26,7 +26,7 @@ core = setuptools.Extension(
     'pipe_view.core',
     language='c++',
     sources=['pipe_view/core/src/core.pyx'],
-    libraries=["sparta", "simdb", "hdf5", "sqlite3"],
+    libraries=["sparta", "hdf5", "sqlite3"],
     pyrex_gdb = True,
     extra_compile_args = compile_args,
 )
@@ -34,7 +34,7 @@ logsearch = setuptools.Extension(
     'pipe_view.logsearch',
     language='c++',
     sources=['pipe_view/logsearch/src/logsearch.pyx', 'pipe_view/logsearch/src/log_search.cpp'],
-    libraries=["sparta", "simdb", "hdf5", "sqlite3"],
+    libraries=["sparta", "hdf5", "sqlite3"],
     pyrex_gdb = True,
     extra_compile_args = compile_args,
 )

@@ -65,8 +65,6 @@ if [[ "$OSX_ARCH" != "arm64" ]]; then
 
     cmake --build . -j "$CPU_COUNT" --target regress
     df -h /
-    cmake --build . -j "$CPU_COUNT" --target simdb_regress
-    df -h /
 
     # The example tests are built as a part of the toplevel 'regress'
     # target but they aren't run.  We have to explicitly run

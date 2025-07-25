@@ -27,6 +27,10 @@ namespace sparta {
     }
 }
 
+namespace simdb {
+    class DatabaseManager;
+}
+
 namespace sparta {
 class Scheduler;
 

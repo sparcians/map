@@ -21,6 +21,12 @@ MAP is broken into two parts:
 [![MacOS Build Status](https://dev.azure.com/sparcians/map/_apis/build/status/sparcians.map?branchName=master&label=MacOS)](https://dev.azure.com/sparcians/map/_build/latest?definitionId=1&branchName=master)
 [![Documentation](https://github.com/sparcians/map/workflows/Documentation/badge.svg)](https://sparcians.github.io/map/)
 
+## Cloning MAP
+
+Clone MAP with the --recursive option to also clone the git submodules:
+
+- `git clone git@github.com:sparcians/map.git --recursive`
+
 ## Building MAP
 
 Building MAP is done in two parts
