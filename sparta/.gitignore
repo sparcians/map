@@ -13,3 +13,4 @@ cmake-build-*
 *~
 compile_commands.json
 .vscode
+simdb_verif_results

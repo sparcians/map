@@ -16,7 +16,6 @@
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/simulation/TreeNodePrivateAttorney.hpp"
 #include "sparta/trigger/ContextCounterTrigger.hpp"
-#include "sparta/statistics/StatInstCalculator.hpp"
 #include <boost/math/constants/constants.hpp>
 
 namespace phoenix = boost::phoenix;

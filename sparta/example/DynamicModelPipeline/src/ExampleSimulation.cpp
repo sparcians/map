@@ -13,13 +13,6 @@
 #include "sparta/simulation/TreeNodeExtensions.hpp"
 #include "sparta/trigger/ContextCounterTrigger.hpp"
 #include "sparta/utils/StringUtils.hpp"
-#include "sparta/report/DatabaseInterface.hpp"
-#include "simdb/schema/Schema.hpp"
-#include "simdb/async/AsyncTaskEval.hpp"
-#include "simdb/impl/sqlite/SQLiteConnProxy.hpp"
-#include "simdb/impl/hdf5/HDF5ConnProxy.hpp"
-#include "simdb/utils/uuids.hpp"
-#include "simdb/utils/ObjectQuery.hpp"
 
 #include "Fetch.hpp"
 #include "Decode.hpp"
@@ -34,269 +27,6 @@
 // UPDATE
 #include "BIU.hpp"
 #include "MSS.hpp"
-
-namespace {
-
-    // Struct for writing and verifying SQLite records.
-    // See buildSchemaA() below.
-    struct TestSQLiteSchemaA {
-        struct Numbers {
-            double First;
-            double Second;
-        };
-        Numbers numbers;
-
-        struct Metadata {
-            std::string Name;
-            double Value;
-        };
-        Metadata metadata;
-
-        static TestSQLiteSchemaA createRandom() {
-            TestSQLiteSchemaA s;
-            s.numbers.First = rand() / 1000 * 3.14;
-            s.numbers.Second = rand() / 1000 * 3.14;
-            s.metadata.Name = simdb::generateUUID();
-            s.metadata.Value = rand() / 1000 * 3.14;
-            return s;
-        }
-    };
-
-    // Another struct for writing and verifying SQLite
-    // records. See buildSchemaB() below.
-    struct TestSQLiteSchemaB {
-        struct Strings {
-            std::string First;
-            std::string Second;
-        };
-        Strings strings;
-
-        struct Metadata {
-            std::string Name;
-            std::string Value;
-        };
-        Metadata metadata;
-
-        static TestSQLiteSchemaB createRandom() {
-            TestSQLiteSchemaB s;
-            s.strings.First = simdb::generateUUID();
-            s.strings.Second = simdb::generateUUID();
-            s.metadata.Name = simdb::generateUUID();
-            s.metadata.Value = simdb::generateUUID();
-            return s;
-        }
-    };
-
-    // Struct for writing and verifying HDF5 records
-    struct TestHDF5SchemaC {
-        double x;
-        double y;
-        uint16_t z;
-
-        static TestHDF5SchemaC createRandom() {
-            TestHDF5SchemaC s;
-            s.x = rand() / 1000 * 3.14;
-            s.y = rand() / 1000 * 3.14;
-            s.z = rand();
-            return s;
-        }
-    };
-
-    // Helper class which creates random SQLite / HDF5
-    // structs for SimDB writes, and stores the structs
-    // in memory too. The data will be read back from
-    // the database at the end of simulation, and the
-    // values retrieved from file will be compared with
-    // the values that were stored in memory.
-    class DatabaseTester {
-    public:
-        static DatabaseTester & getTester() {
-            static DatabaseTester tester;
-            return tester;
-        }
-
-        ~DatabaseTester() = default;
-
-        const TestSQLiteSchemaA & createAndStoreRecordForSQLiteSchemaA() {
-            if (records_schemaA_.size() < 100) {
-                indices_schemaA_.emplace_back(records_schemaA_.size());
-                records_schemaA_.emplace_back(TestSQLiteSchemaA::createRandom());
-                return records_schemaA_.back();
-            } else {
-                indices_schemaA_.emplace_back(rand() % records_schemaA_.size());
-                return records_schemaA_[indices_schemaA_.back()];
-            }
-        }
-
-        const TestSQLiteSchemaB & createAndStoreRecordForSQLiteSchemaB() {
-            if (records_schemaB_.size() < 100) {
-                indices_schemaB_.emplace_back(records_schemaB_.size());
-                records_schemaB_.emplace_back(TestSQLiteSchemaB::createRandom());
-                return records_schemaB_.back();
-            } else {
-                indices_schemaB_.emplace_back(rand() % records_schemaB_.size());
-                return records_schemaB_[indices_schemaB_.back()];
-            }
-        }
-
-        const TestHDF5SchemaC & createAndStoreRecordForHDF5SchemaC() {
-            records_schemaC_.emplace_back(TestHDF5SchemaC::createRandom());
-            return records_schemaC_.back();
-        }
-
-        const std::vector<TestSQLiteSchemaA> & getWrittenRecordsForSchemaA() const {
-            return records_schemaA_;
-        }
-
-        const std::vector<TestSQLiteSchemaB> & getWrittenRecordsForSchemaB() const {
-            return records_schemaB_;
-        }
-
-        const std::vector<TestHDF5SchemaC> & getWrittenRecordsForSchemaC() const {
-            return records_schemaC_;
-        }
-
-        void verifyRecords(const std::string & db_file) const {
-            simdb::ObjectManager obj_mgr(".");
-            if (!obj_mgr.connectToExistingDatabase(db_file)) {
-                return;
-            }
-
-            auto numeric_db = GET_DB_FROM_CURRENT_SIMULATION(NumericMeta);
-            if (numeric_db) {
-                auto values_query =
-                    numeric_db->createObjectQueryForTable("Numbers");
-
-                if (values_query) {
-                    double first, second;
-                    values_query->writeResultIterationsTo(
-                        "First", &first, "Second", &second);
-
-                    if (values_query->countMatches() != indices_schemaA_.size()) {
-                        throw sparta::SpartaException("Could not verify SimDB records");
-                    }
-
-                    auto result_iter = values_query->executeQuery();
-                    size_t record_idx = 0;
-                    while (result_iter->getNext()) {
-                        const auto & expected = records_schemaA_[indices_schemaA_[record_idx]];
-                        if (first != expected.numbers.First) {
-                            throw sparta::SpartaException("Could not verify SimDB records");
-                        }
-                        if (second != expected.numbers.Second) {
-                            throw sparta::SpartaException("Could not verify SimDB records");
-                        }
-                        ++record_idx;
-                    }
-                }
-
-                auto meta_query =
-                    numeric_db->createObjectQueryForTable("Metadata");
-                if (meta_query) {
-                    std::string name;
-                    double value;
-                    meta_query->writeResultIterationsTo("Name", &name, "Value", &value);
-
-                    if (meta_query->countMatches() != indices_schemaA_.size()) {
-                        throw sparta::SpartaException("Could not verify SimDB records");
-                    }
-
-                    auto result_iter = meta_query->executeQuery();
-                    size_t record_idx = 0;
-                    while (result_iter->getNext()) {
-                        const auto & expected = records_schemaA_[indices_schemaA_[record_idx]];
-                        if (name != expected.metadata.Name) {
-                            throw sparta::SpartaException("Could not verify SimDB records");
-                        }
-                        if (value != expected.metadata.Value) {
-                            throw sparta::SpartaException("Could not verify SimDB records");
-                        }
-                        ++record_idx;
-                    }
-                }
-            }
-        }
-
-    private:
-        DatabaseTester() = default;
-        std::vector<TestSQLiteSchemaA> records_schemaA_;
-        std::vector<TestSQLiteSchemaB> records_schemaB_;
-        std::vector<TestHDF5SchemaC> records_schemaC_;
-        std::vector<uint16_t> indices_schemaA_;
-        std::vector<uint16_t> indices_schemaB_;
-        std::vector<uint16_t> indices_schemaC_;
-    };
-
-    // Schema builder to test two simdb::ObjectManager's
-    // bound to the same database file, separated in that
-    // same file by their respective application name.
-    // A third schema builder is for another ObjectManager,
-    // though it will be used to write records to an HDF5
-    // database, and therefore will be in its own file.
-    // SimDB's worker thread should be able to keep them
-    // separated into two groups: one group for the two
-    // SQLite database connections, and one group only
-    // serving the one HDF5 connection.
-    //
-    // Note that the two schema builders below have some
-    // overlap in their table definitions: schemaA and
-    // schemaB have some of the same table names, but
-    // these tables have different column configurations.
-    // This should not be a problem for ObjectManager
-    // since it will use its unique application name
-    // with the table names we give it to create a
-    // unique schema inside the shared file, separated
-    // from other applications tied to the same file.
-    // The specific way in which the schemas are kept
-    // separate in the file is not our concern; the
-    // DbConnProxy subclasses take care of those
-    // specifics.
-    void buildSchemaA(simdb::Schema & schema)
-    {
-        using dt = simdb::ColumnDataType;
-
-        schema.addTable("Numbers")
-            .addColumn("First", dt::double_t)
-            .addColumn("Second", dt::double_t);
-
-        schema.addTable("Metadata")
-            .addColumn("Name", dt::string_t)
-            .addColumn("Value", dt::double_t);
-    }
-
-    void buildSchemaB(simdb::Schema & schema)
-    {
-        using dt = simdb::ColumnDataType;
-
-        schema.addTable("Strings")
-            .addColumn("First", dt::string_t)
-            .addColumn("Second", dt::string_t);
-
-        schema.addTable("Metadata")
-            .addColumn("Name", dt::string_t)
-            .addColumn("Value", dt::string_t);
-    }
-
-    void buildSchemaC(simdb::Schema & schema)
-    {
-        using dt = simdb::ColumnDataType;
-
-        schema.addTable("Numbers")
-            .addField("x", dt::double_t, FOFFSET(TestHDF5SchemaC,x))
-            .addField("y", dt::double_t, FOFFSET(TestHDF5SchemaC,y))
-            .addField("z", dt::uint16_t, FOFFSET(TestHDF5SchemaC,z));
-    }
-
-    simdb::DbConnProxy * createSQLiteProxy()
-    {
-        return new simdb::SQLiteConnProxy;
-    }
-
-    simdb::DbConnProxy * createHDF5Proxy()
-    {
-        return new simdb::HDF5ConnProxy;
-    }
-}
 
 namespace sparta {
 
@@ -329,11 +59,6 @@ namespace sparta {
         TreeNode(parent, "baz_node", "BazGroup", 0, desc)
       {
           baz_.reset(new IntParameterSet(this));
-          if (auto dbconn = GET_DB_FOR_COMPONENT(Stats, this)) {
-              //Run a simple query against the database just to verify
-              //the connection is open and accepting requests
-              (void) dbconn->findObject("ObjectManagersInDatabase", 1);
-          }
       }
 
       void readParams() {
@@ -427,15 +152,6 @@ double calculateAverageOfInternalCounters(
     return agg / counters.size();
 }
 
-void tryAccessSimDB()
-{
-    if (auto dbconn = GET_DB_FROM_CURRENT_SIMULATION(Stats)) {
-        //Run a simple query against the database just to verify
-        //the connection is open and accepting requests
-        (void) dbconn->findObject("ObjectManagersInDatabase", 1);
-    }
-}
-
 ExampleSimulator::ExampleSimulator(sparta::Scheduler & scheduler,
                                    uint32_t num_cores,
                                    uint64_t instruction_limit,
@@ -484,20 +200,6 @@ ExampleSimulator::ExampleSimulator(sparta::Scheduler & scheduler,
     // definition YAML files.
     sparta::trigger::ContextCounterTrigger::registerContextCounterCalcFunction(
         "avg", &calculateAverageOfInternalCounters);
-
-    //SQLite namespaces: NumericMeta & StringMeta
-    REGISTER_SIMDB_NAMESPACE(NumericMeta, SQLite);
-    REGISTER_SIMDB_SCHEMA_BUILDER(NumericMeta, buildSchemaA);
-
-    REGISTER_SIMDB_NAMESPACE(StringMeta,  SQLite);
-    REGISTER_SIMDB_SCHEMA_BUILDER(StringMeta, buildSchemaB);
-
-    //HDF5 namespace: NumericVals
-    REGISTER_SIMDB_NAMESPACE(NumericVals, HDF5);
-    REGISTER_SIMDB_SCHEMA_BUILDER(NumericVals, buildSchemaC);
-
-    //Proxy factory registration
-    REGISTER_SIMDB_PROXY_CREATE_FUNCTION(HDF5, createHDF5Proxy);
 }
 
 
@@ -507,17 +209,6 @@ ExampleSimulator::~ExampleSimulator()
     if (on_triggered_notifier_registered_) {
         getRoot()->DEREGISTER_FOR_NOTIFICATION(
             onTriggered_, std::string, "sparta_expression_trigger_fired");
-    }
-
-    if (simdb_perf_async_ctrl_enabled_) {
-        std::set<std::string> simdb_files;
-        if (auto dbconn = GET_DB_FOR_COMPONENT(NumericMeta, this)) {
-            simdb_files.insert(dbconn->getDatabaseFile());
-        }
-
-        for (const auto & db_file : simdb_files) {
-            DatabaseTester::getTester().verifyRecords(db_file);
-        }
     }
 }
 
@@ -749,55 +440,6 @@ void ExampleSimulator::buildTree_()
 
 void ExampleSimulator::configureTree_()
 {
-    //Context-aware SimDB access
-    std::pair<std::string, std::string> sqlite_db_files;
-    if (auto dbconn = GET_DB_FOR_COMPONENT(NumericMeta, this)) {
-        const TestSQLiteSchemaA data = DatabaseTester::getTester().
-            createAndStoreRecordForSQLiteSchemaA();
-
-        const double first = data.numbers.First;
-        const double second = data.numbers.Second;
-        dbconn->getTable("Numbers")->createObjectWithArgs(
-            "First", first, "Second", second);
-
-        const std::string meta_name = data.metadata.Name;
-        const double meta_value = data.metadata.Value;
-        dbconn->getTable("Metadata")->createObjectWithArgs(
-            "Name", meta_name, "Value", meta_value);
-
-        sqlite_db_files.first = dbconn->getDatabaseFile();
-
-        //Verification of the two records we just made above
-        //will occur at the end of the simulation.
-    }
-
-    if (auto dbconn = GET_DB_FOR_COMPONENT(StringMeta, this)) {
-        const TestSQLiteSchemaB data = DatabaseTester::getTester().
-            createAndStoreRecordForSQLiteSchemaB();
-
-        const std::string first = data.strings.First;
-        const std::string second = data.strings.Second;
-        dbconn->getTable("Strings")->createObjectWithArgs(
-            "First", first, "Second", second);
-
-        const std::string meta_name = data.metadata.Name;
-        const std::string meta_value = data.metadata.Value;
-        dbconn->getTable("Metadata")->createObjectWithArgs(
-            "Name", meta_name, "Value", meta_value);
-
-        sqlite_db_files.second = dbconn->getDatabaseFile();
-
-        //Verification of the two records we just made above
-        //will occur at the end of the simulation.
-    }
-
-    //Both of the ObjectManager's used above should have put the
-    //created records into the same file.
-    sparta_assert(sqlite_db_files.first == sqlite_db_files.second);
-
-    //Context-unaware SimDB access
-    tryAccessSimDB();
-
     validateTreeNodeExtensions_();
 
     // In TREE_CONFIGURING phase
@@ -838,9 +480,6 @@ void ExampleSimulator::configureTree_()
     getRoot()->REGISTER_FOR_NOTIFICATION(
         onTriggered_, std::string, "sparta_expression_trigger_fired");
     on_triggered_notifier_registered_ = true;
-
-    simdb_perf_async_ctrl_enabled_ = sparta::IsFeatureValueEnabled(
-        getFeatureConfiguration(), "simdb-perf-async-ctrl") > 0;
 }
 
 void ExampleSimulator::bindTree_()

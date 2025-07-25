@@ -17,6 +17,9 @@
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/statistics/StatisticInstance.hpp"
 
+#if SIMDB_ENABLED
+#include "simdb/sqlite/DatabaseManager.hpp"
+#endif
 
 void sparta::report::format::JavascriptObject::writeContentToStream_(std::ostream& out) const
 {
@@ -29,7 +32,7 @@ void sparta::report::format::JavascriptObject::writeContentToStream_(std::ostrea
     std::vector<std::string> all_key_names;
     writeReport_(out, *report_, all_key_names);
 
-    out << "    \"ordered_keys\" : [    \n";
+    out << "    \"ordered_keys\": [\n";
     for (uint32_t idx = 0; idx < all_key_names.size(); idx++) {
         out << "      \"" << all_key_names[idx] << "\"";
         if (idx != (all_key_names.size() - 1)) {
@@ -70,7 +73,7 @@ void sparta::report::format::JavascriptObject::writeContentToStream_(std::ostrea
                 out << ",\n";
             }
         }
-        out << "  }\n";
+        out << "\n  }\n";
     }
 
     out << "}\n";
@@ -246,4 +249,23 @@ void sparta::report::format::JavascriptObject::writeReportList_(std::ostream& ou
     for (const auto & r : reports) {
         writeReport_(out, r, all_unit_names);
     }
+}
+
+void sparta::report::format::JavascriptObject::writeLeafNodeInfoToDB(simdb::DatabaseManager * db_mgr)
+{
+#if SIMDB_ENABLED
+    for (const auto & report_name : leaf_nodes_) {
+        db_mgr->INSERT(SQL_TABLE("JsJsonLeafNodes"),
+                       SQL_COLUMNS("ReportName", "IsParentOfLeafNodes"),
+                       SQL_VALUES(report_name, 0));
+    }
+
+    for (const auto & report_name : parents_of_leaf_nodes_) {
+        db_mgr->INSERT(SQL_TABLE("JsJsonLeafNodes"),
+                       SQL_COLUMNS("ReportName", "IsParentOfLeafNodes"),
+                       SQL_VALUES(report_name, 1));
+    }
+#else
+    (void)db_mgr;
+#endif
 }

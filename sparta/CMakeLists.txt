@@ -7,14 +7,28 @@ project (sparta CXX)
 
 set (GEN_DEBUG_INFO ON CACHE BOOL "Genearate debug info in compile & link -g")
 
+# Note that all of SimDB is optional, though included by default.
+# If this option is OFF, then it is assumed that MAP was cloned
+# without the --recursive option, therefore the SimDB submodule
+# was not cloned. If OFF, we will not put SimDB on the include
+# path, nor build the SimDB test, nor install SimDB alongside
+# the Sparta headers.
+option (USING_SIMDB "Enable Sparta to be used with SimDB" ON)
+
 set (SPARTA_BASE ${CMAKE_CURRENT_SOURCE_DIR})
 include (${SPARTA_BASE}/cmake/sparta-config.cmake)
+
+if (USING_SIMDB)
+  if (EXISTS "${SPARTA_BASE}/simdb/CMakeLists.txt")
+    add_subdirectory (${SPARTA_BASE}/simdb)
+  else ()
+    message(FATAL_ERROR "SimDB not found. Run 'git submodule update --init --recursive'")
+  endif ()
+endif ()
 
 # Add the source for libsparta.a
 list (APPEND SourceCppFiles
             src/ArgosOutputter.cpp
-            src/AsyncTimeseriesReport.cpp
-            src/AsyncNonTimeseriesReport.cpp
             src/Backtrace.cpp
             src/BaseFormatter.cpp
             src/Clock.cpp
@@ -26,8 +40,6 @@ list (APPEND SourceCppFiles
             src/CounterBase.cpp
             src/CsvFormatter.cpp
             src/DAG.cpp
-            src/DatabaseContextCounter.cpp
-            src/DatabaseSchema.cpp
             src/Destination.cpp
             src/EdgeFactory.cpp
             src/EventNode.cpp
@@ -45,10 +57,7 @@ list (APPEND SourceCppFiles
             src/RegisterSet.cpp
             src/Report.cpp
             src/ReportDescriptor.cpp
-            src/ReportHeader.cpp
             src/ReportRepository.cpp
-            src/ReportTimeseries.cpp
-            src/ReportVerifier.cpp
             src/Resource.cpp
             src/SpartaException.cpp
             src/RootTreeNode.cpp
@@ -58,8 +67,6 @@ list (APPEND SourceCppFiles
             src/Simulation.cpp
             src/SimulationConfiguration.cpp
             src/SimulationInfo.cpp
-            src/SingleUpdateReport.cpp
-            src/SINodeHierarchy.cpp
             src/StatisticDef.cpp
             src/StatisticInstance.cpp
             src/StatisticsArchives.cpp
@@ -80,6 +87,10 @@ list (APPEND SourceCppFiles
             src/State.tpp
             src/GenericUnit.cpp
 )
+
+if (USING_SIMDB)
+  list (APPEND SourceCppFiles src/ReportStatsCollector.cpp)
+endif ()
 
 # Add python support
 if (COMPILE_WITH_PYTHON)
@@ -214,15 +225,21 @@ find_package (Cppcheck)
 
 add_library (sparta ${SourceCppFiles})
 
+if (USING_SIMDB)
+  message (STATUS "SimDB is enabled")
+  target_compile_definitions (sparta PRIVATE -DSIMDB_ENABLED=1)
+  target_include_directories (sparta PUBLIC "./simdb/include/")
+  install(DIRECTORY simdb/include/ DESTINATION include)
+else ()
+  message (STATUS "SimDB is disabled")
+  target_compile_definitions (sparta PRIVATE -DSIMDB_ENABLED=0)
+endif ()
+
 # Add local includes
 target_include_directories (sparta PUBLIC "./")
-target_include_directories (sparta PUBLIC "simdb/include")
 
 set (SPARTA_STATIC_LIBS ${PROJECT_BINARY_DIR}/libsparta.a)
 set (SPARTA_CMAKE_MACRO_PATH ${SPARTA_BASE}/cmake)
-
-# Build the SimDB library
-add_subdirectory (simdb)
 
 #
 # Testing, examples, and tools
@@ -237,3 +254,9 @@ install(DIRECTORY sparta/ DESTINATION include/sparta)
 install(DIRECTORY cache/ DESTINATION include/cache)
 install(FILES ${SPARTA_STATIC_LIBS} DESTINATION lib)
 install(DIRECTORY cmake/ DESTINATION lib/cmake/sparta)
+install(DIRECTORY scripts/simdb/exporters/ DESTINATION bin/exporters)
+install(PROGRAMS scripts/simdb/simdb_compare DESTINATION bin)
+install(PROGRAMS scripts/simdb/simdb_export DESTINATION bin)
+install(FILES scripts/simdb/simdb_export.py
+              scripts/simdb/simdb_compare.py
+              scripts/simdb/compare_utils.py DESTINATION bin)

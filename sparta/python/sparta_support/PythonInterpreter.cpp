@@ -21,7 +21,6 @@
 #include "sparta/app/ReportDescriptor.hpp"
 #include "sparta/statistics/dispatch/archives/StatisticsArchives.hpp"
 #include "sparta/statistics/dispatch/streams/StreamController.hpp"
-#include "simdb/async/AsyncTaskEval.hpp"
 
 static const std::thread::id main_thread_id = std::this_thread::get_id();
 
@@ -375,51 +374,6 @@ void PythonInterpreter::publishStatisticsStreams(statistics::StatisticsStreams *
     }
 
     published_obj_names_[streams] = "stream_config";
-}
-
-void PythonInterpreter::publishSimulationDatabase(simdb::ObjectManager * sim_db)
-{
-    sparta_assert(sim_db, "Cannot publish null simdb::ObjectManager "
-                "object to Python environment");
-
-    sparta_assert(Py_IsInitialized(),
-                "Attempted to publish simulation database object when Python "
-                "was not initialized");
-
-    auto global_ns = getGlobalNS();
-
-    try {
-        global_ns["sim_db"] = WrapperCache<simdb::ObjectManager>().wrap(sim_db);
-        std::cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n"
-                  << "* Simulation Database:                                                   \n"
-                  << "* * * You can now access any timeseries data produced by the simulator's \n"
-            "* * * statistics reporting engine using the 'sim_db' object.             \n"
-                  << "* * * " << std::endl;
-    } catch (bp::error_already_set&) {
-        PyErr_Print();
-    }
-
-    published_obj_names_[sim_db] = "sim_db";
-}
-
-void PythonInterpreter::publishDatabaseController(simdb::AsyncTaskEval * db_queue)
-{
-    sparta_assert(db_queue, "Cannot publish null simdb::AsyncTaskEval "
-                "object to Python environment");
-
-    sparta_assert(Py_IsInitialized(),
-                "Attempted to publish database controller object when Python "
-                "was not initialized");
-
-    auto global_ns = getGlobalNS();
-
-    try {
-        global_ns["__db_queue"] = WrapperCache<simdb::AsyncTaskEval>().wrap(db_queue);
-    } catch (bp::error_already_set&) {
-        PyErr_Print();
-    }
-
-    published_obj_names_[db_queue] = "__db_queue";
 }
 
 void PythonInterpreter::publishSimulator(app::Simulation * sim) {

@@ -1934,6 +1934,13 @@ namespace sparta
          */
         const std::set<std::string> & getAllExtensionNames();
 
+        /*!
+         * \brief Get the number of extensions for this node.
+         */
+        size_t getNumExtensions() const {
+            return extensions_.size();
+        }
+
         ////////////////////////////////////////////////////////////////////////
         //! @}
         //!

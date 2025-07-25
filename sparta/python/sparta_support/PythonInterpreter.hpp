@@ -9,7 +9,6 @@
 #pragma once
 
 #include "sparta/sparta.hpp" // For macro definitions
-#include "simdb_fwd.hpp"
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -41,10 +40,6 @@ namespace control {
 namespace statistics {
     class StatisticsArchives;
     class StatisticsStreams;
-}
-
-namespace async {
-    class AsynchronousTaskEval;
 }
 
 namespace python {
@@ -147,10 +142,6 @@ namespace python {
         void publishStatisticsArchives(statistics::StatisticsArchives * archives);
 
         void publishStatisticsStreams(statistics::StatisticsStreams * streams);
-
-        void publishSimulationDatabase(simdb::ObjectManager * sim_db);
-
-        void publishDatabaseController(simdb::AsyncTaskEval * db_queue);
 
         void publishSimulator(app::Simulation * sim);
 
