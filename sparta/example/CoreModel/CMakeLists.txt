@@ -26,7 +26,7 @@ sparta_application(sparta_core_example)
 
 include (CTest)
 
-# Add the custom regress/regress_valgrind targets.
+# Add the custom regress/regress_valgrind/simdb_report_suite targets.
 add_custom_target (core_example_regress)
 add_custom_target (core_example_regress_valgrind)
 
@@ -45,6 +45,10 @@ message(STATUS "Found " ${NUM_CORES} " cores in machine (for ctest)")
 # that can be loaded into the CI test result tracker
 add_custom_command(TARGET core_example_regress          POST_BUILD COMMAND ctest -LE ${VALGRIND_TEST_LABEL} -j${NUM_CORES} --test-action test)
 add_custom_command(TARGET core_example_regress_valgrind POST_BUILD COMMAND ctest -L  ${VALGRIND_TEST_LABEL} -j${NUM_CORES} --test-action test)
+
+# Ensure the simulator is built first.
+add_dependencies(core_example_regress sparta_core_example)
+add_dependencies(core_example_regress_valgrind sparta_core_example)
 
 #
 # Testing
@@ -144,3 +148,6 @@ sparta_named_test(sparta_core_example_arch_report_default sparta_core_example -i
 
 # get_target_property(OUT sparta_core_example LINK_LIBRARIES)
 # message(STATUS "THIS OUT: ${OUT}")
+
+# Run all backwards compatibility tests for map_v2.1+ reports and their v2.0.* equivalents
+add_test(NAME sparta_simdb_report_verif_suite COMMAND python3 ../../../scripts/simdb/run_report_verif_suite.py --sim-exe-path sparta_core_example --serial --force --fail-fast)
