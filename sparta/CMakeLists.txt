@@ -18,6 +18,14 @@ option (USING_SIMDB "Enable Sparta to be used with SimDB" ON)
 set (SPARTA_BASE ${CMAKE_CURRENT_SOURCE_DIR})
 include (${SPARTA_BASE}/cmake/sparta-config.cmake)
 
+if (USING_SIMDB)
+  if (EXISTS "${SPARTA_BASE}/simdb/CMakeLists.txt")
+    add_subdirectory (${SPARTA_BASE}/simdb)
+  else ()
+    message(FATAL_ERROR "SimDB not found. Run 'git submodule update --init --recursive'")
+  endif ()
+endif ()
+
 # Add the source for libsparta.a
 list (APPEND SourceCppFiles
             src/ArgosOutputter.cpp
