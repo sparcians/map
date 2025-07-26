@@ -10,6 +10,7 @@ import glob
 import json
 import sys
 import io
+import shlex
 from compare_utils import *
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -163,6 +164,18 @@ class SpartaTest:
 
         sim_args = self.sim_cmd.split()
 
+        yaml_replacements = {}
+        if "--report-yaml-replacements" in sim_args:
+            tokens = shlex.split(self.sim_cmd)
+            idx = tokens.index("--report-yaml-replacements") + 1
+
+            # Gather arg/val pairs until the next option (starts with "--")
+            while idx < len(tokens) and not tokens[idx].startswith("--"):
+                key = tokens[idx]
+                val = tokens[idx + 1] if idx + 1 < len(tokens) else None
+                yaml_replacements[key] = val
+                idx += 2
+
         # Ensure '--enable-simdb-reports' is present.
         if "--enable-simdb-reports" not in sim_args:
             sim_args.append("--enable-simdb-reports")
@@ -230,6 +243,9 @@ class SpartaTest:
         for yaml_file in visited_yamls:
             with open(FindYamlFile(yaml_file), 'r') as fin:
                 for line in fin.readlines():
+                    for word, replacement in yaml_replacements.items():
+                        line = line.replace('%'+word+'%', replacement)
+
                     match = re.search(r'dest_file:\s*([\w.-]+)', line)
                     if match:
                         dest_file = match.group(1)
@@ -428,11 +444,8 @@ else:
         try:
             success = test.RunTest()
             if not success and args.fail_fast:
-                # TODO cnyce: fix this test failure
-                silenced_tests = ('sparta_core_example_report_yaml_replacements')
-                if test.test_name not in silenced_tests:
-                    print (f"Early exit due to test failure: {test.test_name}")
-                    exit(1)
+                print (f"Early exit due to test failure: {test.test_name}")
+                exit(1)
         except Exception as e:
             pass
         sys.stdout.flush()
