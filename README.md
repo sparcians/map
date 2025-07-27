@@ -60,7 +60,7 @@ Use `apt`, `yum` or `brew` to install.
 
 Clone sparta:
 ```
-git clone --recursive git@github.com:sparcians/map
+git clone --recursive git@github.com:sparcians/map --branch map_v2
 ```
 
 Build sparta:
