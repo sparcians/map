@@ -103,7 +103,7 @@ namespace sparta
             }
 
             // Set a payload for a delayed delivery
-            void setPayload_(const DataT & pl) {
+            void setPayload_(const std::optional<DataT> & pl) {
                 sparta_assert(scheduled_ == false);
                 payload_ = pl;
             }
