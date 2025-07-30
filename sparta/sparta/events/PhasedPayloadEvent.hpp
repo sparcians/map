@@ -11,6 +11,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include "sparta/events/EventNode.hpp"
 #include "sparta/events/Scheduleable.hpp"
 #include "sparta/events/SchedulingPhases.hpp"
@@ -109,7 +110,8 @@ namespace sparta
 
             // Get a payload for a delayed delivery
             const DataT & getPayload_() const {
-                return payload_;
+                sparta_assert(payload_.has_value(), "Payload is not set");
+                return payload_.value();
             }
 
 
@@ -126,14 +128,15 @@ namespace sparta
                             "Some construct is trying to deliver a payload twice: "
                             << parent_->name_ << " to handler: "
                             << target_consumer_event_handler_.getName());
+                sparta_assert(payload_.has_value(), "Payload is not set");
                 scheduled_ = false;
-                target_consumer_event_handler_((const void*)&payload_);
+                target_consumer_event_handler_((const void*)&payload_.value());
                 reclaim_();
             }
 
             PhasedPayloadEvent<DataT> * parent_ = nullptr;
             const SpartaHandler         target_consumer_event_handler_;
-            DataT                       payload_;
+            std::optional<DataT>        payload_ = std::nullopt;
             typename ProxyInflightList::iterator loc_;
             bool scheduled_ = false;
             bool cancelled_ = false;
@@ -178,9 +181,7 @@ namespace sparta
             if (SPARTA_EXPECT_FALSE(pl_location == inflight_pl_.end())) {
                 return;
             }
-            if constexpr(MetaStruct::is_any_pointer<DataT>::value) {
-                (*pl_location)->setPayload_(nullptr);
-            }
+            (*pl_location)->setPayload_(std::nullopt);
             free_pl_[free_idx_++] = *pl_location;
             inflight_pl_.erase(pl_location);
             pl_location = inflight_pl_.end();
