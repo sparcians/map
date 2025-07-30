@@ -136,9 +136,9 @@ class TextReportExporter:
             # out << "\n";
             if self.GetShowReportRange() and depth == 0:
                 out.write(" [")
-                out.write(str(report_start))
+                out.write(str(int(report_start)))
                 out.write(",")
-                out.write(str(report_end))
+                out.write(str(int(report_end)))
                 out.write("]")
             out.write("\n")
 
