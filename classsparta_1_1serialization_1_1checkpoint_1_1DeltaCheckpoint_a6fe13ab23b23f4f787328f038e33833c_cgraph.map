@@ -1,0 +1,12 @@
+<map id="sparta::serialization::checkpoint::DeltaCheckpoint::canDelete" name="sparta::serialization::checkpoint::DeltaCheckpoint::canDelete">
+<area shape="rect" id="Node000001" title="Can this checkpoint be deleted Cannot be deleted if:" alt="" coords="5,85,197,141"/>
+<area shape="poly" id="edge1_Node000001_Node000001" title=" " alt="" coords="54,85,55,75,63,66,79,61,101,59,126,61,141,68,139,73,125,66,101,64,80,66,66,71,60,77,59,85"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a181f5bd1247c81ce6b4988e2ffeb32c1" title="Returns next checkpoint following *this. May be an empty vector if there are no later checkpoints fol..." alt="" coords="260,5,421,61"/>
+<area shape="poly" id="edge2_Node000001_Node000002" title=" " alt="" coords="186,82,244,63,245,68,187,87"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a34a8164584635a65bf411dead281837b" title="Indicates whether this checkpoint has been flagged deleted." alt="" coords="245,85,436,141"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="197,110,229,110,229,116,197,116"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a298af42f2d8f655088a1a61ff91d776b" title="Is this checkpoint a snapshot (contains ALL simulator state)" alt="" coords="245,165,436,221"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="187,139,241,157,240,162,186,144"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a1ab50505bd631547981015601a4f40e8" title="Returns the ID of this checkpoint." alt="" coords="484,85,645,141"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="436,110,468,110,468,116,436,116"/>
+</map>

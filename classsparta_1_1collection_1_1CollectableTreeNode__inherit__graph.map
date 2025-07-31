@@ -1,0 +1,27 @@
+<map id="sparta::collection::CollectableTreeNode" name="sparta::collection::CollectableTreeNode">
+<area shape="rect" id="Node000001" title="An abstract type of TreeNode that has virtual calls to start collection on this node,..." alt="" coords="588,230,737,271"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1collection_1_1Collectable.html" title=" " alt="" coords="871,5,1030,61"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="676,215,693,181,716,141,747,103,783,71,825,50,870,38,871,43,827,55,786,75,751,107,721,145,697,183,680,217"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1collection_1_1Collectable.html" title=" " alt="" coords="871,85,1030,126"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="688,217,729,174,755,153,783,136,826,120,870,110,871,115,828,125,786,141,758,158,733,178,691,220"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1collection_1_1Collectable.html" title=" " alt="" coords="882,150,1019,191"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="724,221,784,200,881,178,882,183,785,205,726,226"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1collection_1_1IterableCollector.html" title=" " alt="" coords="869,215,1032,286"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="752,248,868,248,868,253,752,253"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1collection_1_1Collectable.html" title="Class used to either manually or auto&#45;collect an Annotation String object in a pipeline database." alt="" coords="853,309,1048,365"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="726,274,785,296,853,314,852,319,784,301,724,279"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html" title=" " alt="" coords="785,390,1116,535"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="692,281,734,328,786,375,803,387,800,391,783,379,730,332,688,285"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1collection_1_1IterableCollector.html" title="A collector of any iterable type (std::vector, std::list, sparta::Buffer, etc)" alt="" coords="857,559,1044,630"/>
+<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="671,286,682,343,703,413,718,450,737,485,760,517,786,546,820,568,858,581,856,586,817,572,783,550,755,521,732,487,713,452,698,415,677,344,666,287"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="420,238,540,263"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="556,248,588,248,588,253,556,253"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="199,212,372,238"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="388,236,420,240,419,245,387,241"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,212,151,238"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="166,222,198,222,198,228,166,228"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="199,262,372,287"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="387,259,419,255,420,261,388,265"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1collection_1_1DelayedCollectable.html" title="Class used to record data in pipeline collection, but recorded in a delayed fashion." alt="" coords="1164,309,1301,365"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="1063,334,1164,334,1164,340,1063,340"/>
+</map>
