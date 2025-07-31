@@ -101,8 +101,11 @@ class CSVReportExporter:
                 fout.write('\n')
 
     def __WriteHeader(self, fout, report_name, start_tick, end_tick, meta_kvpairs, trigger_locs):
-        if end_tick == -1:
+        start_tick = int(start_tick)
+        if end_tick == '18446744073709551615':
             end_tick = 'SIMULATION_END'
+        else:
+            end_tick = int(end_tick)
         fout.write(f'# report="{report_name}",start={start_tick},end={end_tick}')
 
         if not meta_kvpairs:
