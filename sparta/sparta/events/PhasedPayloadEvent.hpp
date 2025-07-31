@@ -128,7 +128,9 @@ namespace sparta
                             "Some construct is trying to deliver a payload twice: "
                             << parent_->name_ << " to handler: "
                             << target_consumer_event_handler_.getName());
-                sparta_assert(payload_.has_value(), "Payload is not set");
+                sparta_assert(payload_.has_value(), "Payload is not set: " 
+                            << parent_->name_ << " to handler: " 
+                            << target_consumer_event_handler_.getName());
                 scheduled_ = false;
                 target_consumer_event_handler_((const void*)&payload_.value());
                 reclaim_();
