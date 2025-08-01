@@ -33,8 +33,8 @@ void ReportStatsCollector::defineSchema(simdb::Schema& schema)
     report_tbl.addColumn("ReportDescID", dt::int32_t);
     report_tbl.addColumn("ParentReportID", dt::int32_t);
     report_tbl.addColumn("Name", dt::string_t);
-    report_tbl.addColumn("StartTick", dt::int64_t);
-    report_tbl.addColumn("EndTick", dt::int64_t);
+    report_tbl.addColumn("StartTick", dt::uint64_t);
+    report_tbl.addColumn("EndTick", dt::uint64_t);
     report_tbl.addColumn("InfoString", dt::string_t);
     report_tbl.addColumn("StartCounter", dt::string_t);
     report_tbl.addColumn("StopCounter", dt::string_t);
@@ -77,7 +77,7 @@ void ReportStatsCollector::defineSchema(simdb::Schema& schema)
     siminfo_tbl.addColumn("SimVersion", dt::string_t);
     siminfo_tbl.addColumn("SpartaVersion", dt::string_t);
     siminfo_tbl.addColumn("ReproInfo", dt::string_t);
-    siminfo_tbl.addColumn("SimEndTick", dt::int64_t);
+    siminfo_tbl.addColumn("SimEndTick", dt::uint64_t);
     siminfo_tbl.setColumnDefaultValue("SimEndTick", -1);
     siminfo_tbl.disableAutoIncPrimaryKey();
 
@@ -107,7 +107,7 @@ void ReportStatsCollector::defineSchema(simdb::Schema& schema)
     // to which report.
     auto& desc_records_tbl = schema.addTable("DescriptorRecords");
     desc_records_tbl.addColumn("ReportDescID", dt::int32_t);
-    desc_records_tbl.addColumn("Tick", dt::int64_t);
+    desc_records_tbl.addColumn("Tick", dt::uint64_t);
     desc_records_tbl.addColumn("DataBlob", dt::blob_t);
     desc_records_tbl.createIndexOn("ReportDescID");
 
@@ -117,7 +117,7 @@ void ReportStatsCollector::defineSchema(simdb::Schema& schema)
     // the report/trigger was inactive.
     auto& csv_skip_annotations_tbl = schema.addTable("CsvSkipAnnotations");
     csv_skip_annotations_tbl.addColumn("ReportDescID", dt::int32_t);
-    csv_skip_annotations_tbl.addColumn("Tick", dt::int64_t);
+    csv_skip_annotations_tbl.addColumn("Tick", dt::uint64_t);
     csv_skip_annotations_tbl.addColumn("Annotation", dt::string_t);
     csv_skip_annotations_tbl.createIndexOn("ReportDescID");
 }
