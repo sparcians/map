@@ -1,0 +1,41 @@
+<map id="sparta::InPort" name="sparta::InPort">
+<area shape="rect" id="Node000001" title="Base class for all InPort types." alt="" coords="724,438,822,464"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="918,5,1043,46"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="775,422,786,339,806,230,833,126,850,85,868,57,891,40,917,30,919,35,893,45,872,61,854,88,838,128,811,231,792,340,780,423"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="895,71,1066,111"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="771,422,775,361,789,281,801,238,818,196,840,157,868,122,893,105,896,110,872,126,844,160,823,199,806,240,794,282,781,361,777,422"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="918,136,1043,177"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="774,422,781,372,798,309,825,244,845,214,868,188,891,172,916,162,918,167,893,177,872,192,849,217,830,247,803,311,787,373,779,423"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="870,201,1091,242"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="778,422,789,384,807,339,833,293,868,253,887,240,890,245,872,257,837,296,812,341,794,386,783,424"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="918,267,1043,307"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="785,423,818,370,841,342,868,318,892,305,917,296,919,301,894,310,872,323,845,346,822,373,789,426"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="914,332,1047,373"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="801,426,833,404,869,383,912,366,914,371,871,388,836,408,804,430"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="878,397,1083,438"/>
+<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="837,438,877,432,878,437,838,443"/>
+<area shape="rect" id="Node000014" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="918,463,1043,503"/>
+<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="838,458,918,471,917,476,837,463"/>
+<area shape="rect" id="Node000015" href="$classsparta_1_1DataInPort.html" title=" " alt="" coords="918,528,1043,569"/>
+<area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="805,471,836,493,871,513,918,530,916,535,869,517,833,497,802,476"/>
+<area shape="rect" id="Node000016" href="$classsparta_1_1SyncInPort.html" title=" " alt="" coords="917,593,1044,634"/>
+<area shape="poly" id="edge15_Node000001_Node000016" title=" " alt="" coords="790,476,822,528,845,555,872,578,894,591,918,599,916,604,891,595,868,583,841,559,818,532,785,479"/>
+<area shape="rect" id="Node000017" href="$classsparta_1_1SyncInPort.html" title=" " alt="" coords="878,659,1083,699"/>
+<area shape="poly" id="edge16_Node000001_Node000017" title=" " alt="" coords="783,478,794,515,812,560,838,605,872,644,890,656,888,661,868,648,833,608,807,562,789,517,778,480"/>
+<area shape="rect" id="Node000018" href="$classsparta_1_1DataInPort.html" title="DataInPort receives data from sender using a DataOutPort." alt="" coords="918,724,1043,765"/>
+<area shape="poly" id="edge17_Node000001_Node000018" title=" " alt="" coords="779,479,787,528,803,590,830,654,849,683,872,709,893,724,918,733,916,738,891,729,868,713,845,687,825,657,798,592,781,529,774,480"/>
+<area shape="rect" id="Node000019" href="$classsparta_1_1SignalInPort.html" title="SignalInPort receives data from sender using a SignalOutPort." alt="" coords="914,789,1048,814"/>
+<area shape="poly" id="edge18_Node000001_Node000019" title=" " alt="" coords="776,479,779,541,792,621,805,663,821,704,843,741,872,774,891,787,914,795,912,800,889,792,868,778,839,745,817,706,799,665,787,622,774,542,771,480"/>
+<area shape="rect" id="Node000020" href="$classsparta_1_1SyncInPort.html" title="Class that defines an synchronized input port on modules on two different clocks." alt="" coords="917,839,1044,879"/>
+<area shape="poly" id="edge19_Node000001_Node000020" title=" " alt="" coords="780,479,792,559,812,663,839,761,855,799,872,825,893,840,918,850,916,855,890,845,868,829,850,802,834,763,807,664,787,560,775,479"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Port.html" title="The port interface used to bind port types together and defines a port behavior." alt="" coords="588,438,676,464"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="691,448,723,448,723,454,691,454"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="420,438,540,464"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="556,448,588,448,588,454,556,454"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="199,413,372,438"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="388,436,420,441,419,446,387,442"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,413,151,438"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="166,423,198,423,198,428,166,428"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="199,462,372,488"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="387,460,419,456,420,461,388,465"/>
+</map>

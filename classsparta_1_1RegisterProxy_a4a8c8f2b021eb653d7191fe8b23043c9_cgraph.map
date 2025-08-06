@@ -1,0 +1,15 @@
+<map id="sparta::RegisterProxy::getCurrentRegister" name="sparta::RegisterProxy::getCurrentRegister">
+<area shape="rect" id="Node000001" title="Gets the current register being pointed to by this proxy based on simulation state." alt="" coords="5,39,149,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1RegisterSet.html#a4039f6c216473cdca511b9eba2cf3a5b" title="Determine the current bank for this register set based on the context of time simulator." alt="" coords="197,5,328,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,43,181,38,182,43,149,49"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1RegisterSet.html#a241833409fbcb31c8e99a5f14ee5946c" title="Retrieves a concrete register child that is a Register with the given dotted path." alt="" coords="197,71,328,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="149,69,182,74,181,80,148,74"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#ab18a936bf3a826ff18bd374d2a6b531d" title="Retrieves a child that is castable to T with the given dotted path." alt="" coords="376,78,565,104"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="328,88,361,88,361,94,328,94"/>
+<area shape="rect" id="Node000005" href="$namespacesparta.html#ac0a2df7a7ca53b2fc0384476286b95ec" title="Demangles a C++ symbol." alt="" coords="651,29,770,54"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="536,75,635,54,636,60,537,80"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1TreeNode.html#ac598185049018290d5ea6cb674d10473" title="Retrieves a child with this dotted path name." alt="" coords="624,78,797,104"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="566,88,608,88,608,94,566,94"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="613,128,808,153"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="537,102,630,121,629,126,536,107"/>
+</map>

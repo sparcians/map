@@ -1,0 +1,14 @@
+<map id="/github/workspace/sparta/sparta/serialization" name="/github/workspace/sparta/sparta/serialization">
+<area shape="rect" id="node1" href="dir_538f46becf9f81566841c79369e25095.html" title="utils" alt="" coords="27,137,72,162"/>
+<area shape="rect" id="node2" href="dir_bae73467595dcad1358f78a6740bd606.html" title="simulation" alt="" coords="96,137,176,162"/>
+<area shape="rect" id="node3" href="dir_e68ac958302b52af687f2cf1071c917c.html" title="kernel" alt="" coords="200,137,256,162"/>
+<area shape="rect" id="node5" href="dir_6933e972bc2685f75ca425bfec4bc689.html" title="checkpoint" alt="" coords="151,63,236,89"/>
+<area shape="poly" id="edge1" href="dir_000003_000026.html" alt="" coords="170,92,87,133,85,128,168,87"/>
+<area shape="rect" id="edge1-headlabel" href="dir_000003_000026.html" title="11" alt="" coords="85,129,99,144"/>
+<area shape="poly" id="edge2" href="dir_000003_000018.html" alt="" coords="186,91,157,126,153,123,182,87"/>
+<area shape="rect" id="edge2-headlabel" href="dir_000003_000018.html" title="4" alt="" coords="160,120,167,135"/>
+<area shape="poly" id="edge3" href="dir_000003_000010.html" alt="" coords="201,88,218,121,213,124,197,90"/>
+<area shape="rect" id="edge3-headlabel" href="dir_000003_000010.html" title="2" alt="" coords="218,109,225,124"/>
+<area shape="rect" id="clust2" href="dir_8ad37f76043d9378d228f99e093d801a.html" alt="" coords="27,52,247,99"/>
+<area shape="rect" id="clust1" href="dir_8b51add0bc6ff831487a715a42aa15b5.html" title="sparta" alt="" coords="16,16,267,173"/>
+</map>
