@@ -130,7 +130,9 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
     using ZlibFunction = simdb::pipeline::Function<ReportStatsAtTick, CompressedReportStatsAtTick>;
 
     auto zlib_task = simdb::pipeline::createTask<ZlibFunction>(
-        [](ReportStatsAtTick&& in, simdb::ConcurrentQueue<CompressedReportStatsAtTick>& out)
+        [](ReportStatsAtTick&& in,
+           simdb::ConcurrentQueue<CompressedReportStatsAtTick>& out,
+           bool /*simulation_terminating*/)
         {
             CompressedReportStatsAtTick compressed(std::move(in));
             out.emplace(std::move(compressed));
@@ -138,7 +140,9 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
     );
 
     auto sqlite_task = db_accessor->createAsyncWriter<ReportStatsCollector, CompressedReportStatsAtTick, void>(
-        [this](CompressedReportStatsAtTick&& in, simdb::pipeline::AppPreparedINSERTs* tables)
+        [this](CompressedReportStatsAtTick&& in,
+               simdb::pipeline::AppPreparedINSERTs* tables,
+               bool /*simulation_terminating*/)
         {
             const auto descriptor = in.getDescriptor();
             const auto descriptor_id = getDescriptorID(descriptor);
