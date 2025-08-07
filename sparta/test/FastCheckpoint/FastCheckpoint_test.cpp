@@ -364,7 +364,7 @@ void generalTest()
 
     // Look at a restore chain
 
-    auto* cp20 = (fcp.findInternalCheckpoint(20));
+    auto* cp20 = (fcp.findCheckpoint(20));
     auto rc20 = cp20->getRestoreChain();
     EXPECT_EQUAL(rc20.size(), 6); // 0 -> 16 -> 17 -> * -> 19 -> 20
     std::cout << "\nRestore chain for cp 20:" << std::endl;
@@ -394,11 +394,11 @@ void generalTest()
     auto cpA = fcp.createCheckpoint();
     ////r1->write<uint32_t>(0xbbbb);
     std::cout << "Dumping restore chain for cpA (" << cpA << ")" << std::endl;
-    fcp.findInternalCheckpoint(cpA)->dumpRestoreChain(std::cout);
+    fcp.findCheckpoint(cpA)->dumpRestoreChain(std::cout);
     std::cout << std::endl;
     continues.clear();
     fcp.dumpBranch(std::cout,
-                   fcp.findCheckpoint(cpP),
+                   cpP,
                    0,
                    0,
                    continues);
@@ -407,11 +407,11 @@ void generalTest()
     auto cpC = fcp.createCheckpoint();
     //////fcp.deleteCheckpoint(cpA);
     std::cout << "Dumping restore chain for cpC (" << cpC << ")" << std::endl;
-    fcp.findInternalCheckpoint(cpC)->dumpRestoreChain(std::cout);
+    fcp.findCheckpoint(cpC)->dumpRestoreChain(std::cout);
     std::cout << std::endl;
     continues.clear();
     fcp.dumpBranch(std::cout,
-                   fcp.findCheckpoint(cpP),
+                   cpP,
                    0,
                    0,
                    continues);
@@ -420,7 +420,7 @@ void generalTest()
     fcp.deleteCheckpoint(cpC);
     continues.clear();
     fcp.dumpBranch(std::cout,
-                   fcp.findCheckpoint(cpP),
+                   cpP,
                    0,
                    0,
                    continues);
@@ -429,7 +429,7 @@ void generalTest()
     fcp.deleteCheckpoint(cpA);
     continues.clear();
     fcp.dumpBranch(std::cout,
-                   fcp.findCheckpoint(cpP),
+                   cpP,
                    0,
                    0,
                    continues);
@@ -438,11 +438,11 @@ void generalTest()
     auto cpB = fcp.createCheckpoint();
     fcp.loadCheckpoint(cpB);
     std::cout << "Dumping restore chain for cpB (" << cpB << ")" << std::endl;
-    fcp.findInternalCheckpoint(cpB)->dumpRestoreChain(std::cout);
+    fcp.findCheckpoint(cpB)->dumpRestoreChain(std::cout);
     std::cout << std::endl;
     continues.clear();
     fcp.dumpBranch(std::cout,
-                   fcp.findCheckpoint(cpP),
+                   cpP,
                    0,
                    0,
                    continues);

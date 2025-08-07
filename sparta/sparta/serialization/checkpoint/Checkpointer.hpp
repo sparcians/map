@@ -127,25 +127,13 @@ namespace sparta::serialization::checkpoint
          * \note This is an approxiation and does not include some of
          * minimal dynamic overhead from stl containers.
          */
-        uint64_t getTotalMemoryUse() const noexcept {
-            uint64_t mem = 0;
-            for(auto& cp : chkpts_){
-                mem += cp.second->getTotalMemoryUse();
-            }
-            return mem;
-        }
+        virtual uint64_t getTotalMemoryUse() const noexcept = 0;
 
         /*!
          * \brief Computes and returns the memory usage by this checkpointer at
          * this moment purely for the checkpoint state being held
          */
-        uint64_t getContentMemoryUse() const noexcept {
-            uint64_t mem = 0;
-            for(auto& cp : chkpts_){
-                mem += cp.second->getContentMemoryUse();
-            }
-            return mem;
-        }
+        virtual uint64_t getContentMemoryUse() const noexcept = 0;
 
         /*!
          * \brief Returns the total number of checkpoints which have been
@@ -362,45 +350,13 @@ namespace sparta::serialization::checkpoint
         virtual std::deque<chkpt_id_t> getCheckpointChain(chkpt_id_t id) const = 0;
 
         /*!
-         * \brief Finds the latest checkpoint at or before the given tick
-         * starting at the \a from checkpoint and working backward.
-         * If no checkpoints before or at tick are found, returns nullptr.
-         * \param tick Tick to search for
-         * \param from Checkpoint at which to begin searching for a tick.
-         * Must be a valid checkpoint known by this checkpointer.
-         * See hasCheckpoint.
-         * \return The latest checkpoint with a tick number less than or equal
-         * to the \a tick argument. Returns nullptr if no checkpoints before \a
-         * tick were found. It is possible for the checkpoint identified by \a
-         * from could be returned.
-         * \warning This is not a high-performance method. Generally,
-         * a client of this interface knows a paticular ID.
-         * \throw CheckpointError if \a from does not refer to a valid
-         * checkpoint.
-         */
-        virtual Checkpoint* findLatestCheckpointAtOrBefore(tick_t tick,
-                                                           chkpt_id_t from) = 0;
-
-        /*!
-         * \brief Finds a checkpoint by its ID
-         * \param id ID of checkpoint to find. Guaranteed not to be flagged as
-         * deleted
-         * \return Checkpoint with ID of \a id if found or nullptr if not found
-         */
-        Checkpoint* findCheckpoint(chkpt_id_t id) noexcept {
-            return findCheckpoint_(id);
-        }
-
-        /*!
          * \brief Tests whether this checkpoint manager has a checkpoint with
          * the given id.
          * \return True if id refers to a checkpoint held by this checkpointer
          * and false if not. If id == Checkpoint::UNIDENTIFIED_CHECKPOINT,
          * always returns false
          */
-        virtual bool hasCheckpoint(chkpt_id_t id) const noexcept {
-            return findCheckpoint_(id) != nullptr;
-        }
+        virtual bool hasCheckpoint(chkpt_id_t id) const noexcept = 0;
 
         /*!
          * \brief Returns the head checkpoint which is equivalent to the
@@ -505,23 +461,14 @@ namespace sparta::serialization::checkpoint
          * ostream with a newline following each checkpoint
          * \param o ostream to dump to
          */
-        void dumpList(std::ostream& o) const {
-            for(auto& cp : chkpts_){
-                o << cp.second->stringize() << std::endl;
-            }
-        }
+        virtual void dumpList(std::ostream& o) const = 0;
 
         /*!
          * \brief Dumps this checkpointer's data to an ostream with a newline
          * following each checkpoint
          * \param o ostream to dump to
          */
-        void dumpData(std::ostream& o) const {
-            for(auto& cp : chkpts_){
-                cp.second->dumpData(o);
-                o << std::endl;
-            }
-        }
+        virtual void dumpData(std::ostream& o) const = 0;
 
         /*!
          * \brief Dumps this checkpointer's data to an
@@ -529,13 +476,7 @@ namespace sparta::serialization::checkpoint
          * following each checkpoint description and each checkpoint data dump
          * \param o ostream to dump to
          */
-        void dumpAnnotatedData(std::ostream& o) const {
-            for(auto& cp : chkpts_){
-                o << cp.second->stringize() << std::endl;
-                cp.second->dumpData(o);
-                o << std::endl;
-            }
-        }
+        virtual void dumpAnnotatedData(std::ostream& o) const = 0;
 
         /*!
          * \brief Debugging utility which dumps values in some bytes across a
@@ -561,7 +502,7 @@ namespace sparta::serialization::checkpoint
          */
         void dumpTree(std::ostream& o) const {
             std::deque<uint32_t> c;
-            dumpBranch(o, head_, 0, 0, c);
+            dumpBranch(o, getHeadID(), 0, 0, c);
             o << '\n';
         }
 
@@ -578,7 +519,7 @@ namespace sparta::serialization::checkpoint
          * expected in directory-like tree-view displays
          */
         void dumpBranch(std::ostream& o,
-                        const Checkpoint* chkpt,
+                        const chkpt_id_t chkpt,
                         uint32_t indent,
                         uint32_t pos,
                         std::deque<uint32_t>& continues) const {
@@ -601,7 +542,7 @@ namespace sparta::serialization::checkpoint
                 }
             }
 
-            auto nexts = chkpt->getNexts();
+            auto nexts = getNextIDs_(chkpt);
             std::stringstream ss;
 
             // Draw separator between prev checkpoint and this
@@ -612,14 +553,14 @@ namespace sparta::serialization::checkpoint
             }
 
             // Draw box around object if it is current
-            if(current_ == chkpt){
+            if(current_ && current_->getID() == chkpt){
                 ss << "[ ";
             }
 
             dumpCheckpointNode_(chkpt, ss);
             ss << ' ';
 
-            if(current_ == chkpt){
+            if(current_ && current_->getID() == chkpt){
                 ss << ']';
             }
 
@@ -654,20 +595,6 @@ namespace sparta::serialization::checkpoint
     protected:
 
         /*!
-         * \brief Attempts to find a checkpoint within this checkpointer by ID.
-         * \param id Checkpoint ID to search for
-         * \return Pointer to found checkpoint with matchind ID. If not found,
-         * returns nullptr.
-         * \todo Faster lookup?
-         */
-        virtual Checkpoint* findCheckpoint_(chkpt_id_t id) noexcept = 0;
-
-        /*!
-         * \brief const variant of findCheckpoint_
-         */
-        virtual const Checkpoint* findCheckpoint_(chkpt_id_t id) const noexcept = 0;
-
-        /*!
          * \brief Create a head node.
          * \pre ArchDatas for tree root are already enumerated
          * \pre Tree of getRoot() is already finalized
@@ -689,8 +616,8 @@ namespace sparta::serialization::checkpoint
          */
         virtual chkpt_id_t createCheckpoint_(bool force_snapshot=false) = 0;
 
-        virtual void dumpCheckpointNode_(const Checkpoint* chkpt, std::ostream& o) const {
-            o << chkpt->getID();
+        virtual void dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o) const {
+            o << id;
         }
 
         /*!
@@ -749,14 +676,9 @@ namespace sparta::serialization::checkpoint
         }
 
         /*!
-         * \brief All checkpoints sorted by ascending tick number (or
-         * equivalently ascending checkpoint ID since both are monotonically
-         * increasing)
-         *
-         * This map must still be explicitly torn down in reverse order by a
-         * subclass of Checkpointer
+         * \brief Returns IDs of the checkpoints immediately following the given checkpoint.
          */
-        std::map<chkpt_id_t, std::unique_ptr<Checkpoint>> chkpts_;
+        virtual std::vector<chkpt_id_t> getNextIDs_(chkpt_id_t id) const = 0;
 
         /*!
          * \brief Scheduler whose tick count will be set and read. Cannnot be
@@ -818,7 +740,7 @@ namespace sparta::serialization::checkpoint
 
         /*!
          * \brief Head checkpoint. This is the first checkpoint taken but cannot
-         * be deleted. Head checkpoint memory is owned by chkpts_.
+         * be deleted. Head checkpoint memory is owned by checkpointer subclass.
          */
         Checkpoint* head_;
 

@@ -678,6 +678,35 @@ namespace sparta::serialization::checkpoint
         }
 
         /*!
+         * \brief Get the ID of our previous checkpoint. Returns UNIDENTIFIED_CHECKPOINT
+         * if we have no previous checkpoint, as is the case with the head checkpoint
+         * and snapshots.
+         */
+        chkpt_id_t getPrevID() const override {
+            if (auto prev = static_cast<const DeltaCheckpoint*>(getPrev())) {
+                if (!prev->isFlaggedDeleted()) {
+                    return prev->getID();
+                }
+            }
+            return UNIDENTIFIED_CHECKPOINT;
+        }
+
+        /*!
+         * \brief Returns next checkpoint following *this. May be an empty
+         * vector if there are no later checkpoints.
+         */
+        std::vector<chkpt_id_t> getNextIDs() const override {
+            std::vector<chkpt_id_t> next_ids;
+            for (const auto chkpt : getNexts()) {
+                const auto dcp = static_cast<const DeltaCheckpoint*>(chkpt);
+                if (!dcp->isFlaggedDeleted()) {
+                    next_ids.push_back(chkpt->getID());
+                }
+            }
+            return next_ids;
+        }
+
+        /*!
          * \brief Attempts to restore this checkpoint including any previous
          * deltas (dependencies).
          *
