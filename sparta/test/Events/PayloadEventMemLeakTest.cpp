@@ -41,11 +41,7 @@ int main()
     sparta::SpartaSharedPointerAllocator<uint32_t> int_shared_pointer_allocator(1, 1);
 
     EventHandler ev_handler;
-    sparta::PayloadEvent<PointerWrapper>
-        pld_data_event(&event_set, "event",
-                       CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(EventHandler,
-                                                                &ev_handler,
-                                                                handler, PointerWrapper), 0);
+    sparta::PayloadEvent<PointerWrapper> pld_data_event(&event_set, "event", CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(EventHandler, &ev_handler, handler, PointerWrapper), 0);
 
     scheduler.finalize();
     rtn.enterConfiguring();
@@ -55,9 +51,8 @@ int main()
     constexpr bool measure_run_time = false;
 
     pld_data_event.preparePayload(PointerWrapper(sparta::allocate_sparta_shared_pointer<uint32_t>(int_shared_pointer_allocator, 0)))->schedule();
-    scheduler.run(1, exacting_run, measure_run_time);
-    pld_data_event.preparePayload(PointerWrapper(sparta::allocate_sparta_shared_pointer<uint32_t>(int_shared_pointer_allocator, 1)))->schedule();
-    scheduler.run(1, exacting_run, measure_run_time);
+    scheduler.run(3, exacting_run, measure_run_time);
+    EXPECT_FALSE(int_shared_pointer_allocator.hasOutstandingObjects());
 
     rtn.enterTeardown();
 
