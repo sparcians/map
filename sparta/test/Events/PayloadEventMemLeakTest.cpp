@@ -6,6 +6,8 @@
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/simulation/RootTreeNode.hpp"
 
+#include "sparta/utils/SpartaSharedPointerAllocator.hpp"
+
 TEST_INIT
 
 class EventHandler
@@ -20,6 +22,15 @@ public:
     }
 };
 
+struct PointerWrapper 
+{
+public:
+    PointerWrapper() : ptr(nullptr) {}
+    PointerWrapper(sparta::SpartaSharedPointer<uint32_t> ptr) : ptr(ptr) {}
+    
+    sparta::SpartaSharedPointer<uint32_t> ptr;
+};
+
 int main()
 {
     sparta::Scheduler    scheduler;
@@ -27,13 +38,14 @@ int main()
     sparta::RootTreeNode rtn;
     sparta::EventSet     event_set(&rtn);
     event_set.setClock(&clk);
+    sparta::SpartaSharedPointerAllocator<uint32_t> int_shared_pointer_allocator(1, 1);
 
     EventHandler ev_handler;
-    sparta::PayloadEvent<uint32_t>
-        pld_data_event(&event_set, "good_event",
+    sparta::PayloadEvent<PointerWrapper>
+        pld_data_event(&event_set, "event",
                        CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(EventHandler,
                                                                 &ev_handler,
-                                                                handler, uint32_t), 0);
+                                                                handler, PointerWrapper), 0);
 
     scheduler.finalize();
     rtn.enterConfiguring();
@@ -42,9 +54,9 @@ int main()
     constexpr bool exacting_run = true;
     constexpr bool measure_run_time = false;
 
-    pld_data_event.preparePayload(0)->schedule();
+    pld_data_event.preparePayload(PointerWrapper(sparta::allocate_sparta_shared_pointer<uint32_t>(int_shared_pointer_allocator, 0)))->schedule();
     scheduler.run(1, exacting_run, measure_run_time);
-    pld_data_event.preparePayload(1)->schedule();
+    pld_data_event.preparePayload(PointerWrapper(sparta::allocate_sparta_shared_pointer<uint32_t>(int_shared_pointer_allocator, 1)))->schedule();
     scheduler.run(1, exacting_run, measure_run_time);
 
     rtn.enterTeardown();
