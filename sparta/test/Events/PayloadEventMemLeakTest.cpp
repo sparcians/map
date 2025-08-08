@@ -3,10 +3,9 @@
 #include "sparta/events/EventSet.hpp"
 #include "sparta/events/PayloadEvent.hpp"
 #include "sparta/utils/SpartaTester.hpp"
+#include "sparta/utils/SpartaSharedPointerAllocator.hpp"
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/simulation/RootTreeNode.hpp"
-
-#include "sparta/utils/SpartaSharedPointerAllocator.hpp"
 
 TEST_INIT
 
@@ -22,6 +21,7 @@ public:
     }
 };
 
+// The struct that contains a shared pointer
 struct PointerWrapper 
 {
 public:
@@ -38,10 +38,13 @@ int main()
     sparta::RootTreeNode rtn;
     sparta::EventSet     event_set(&rtn);
     event_set.setClock(&clk);
-    sparta::SpartaSharedPointerAllocator<uint32_t> int_shared_pointer_allocator(1, 1);
-
     EventHandler ev_handler;
+
+    // The payload event that send a data containing a shared pointer
     sparta::PayloadEvent<PointerWrapper> pld_data_event(&event_set, "event", CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(EventHandler, &ev_handler, handler, PointerWrapper), 0);
+
+    // Monitor the memory usage of the shared pointer
+    sparta::SpartaSharedPointerAllocator<uint32_t> int_shared_pointer_allocator(1, 1);
 
     scheduler.finalize();
     rtn.enterConfiguring();
@@ -50,9 +53,16 @@ int main()
     constexpr bool exacting_run = true;
     constexpr bool measure_run_time = false;
 
+    // schedule the event with a shared pointer
     pld_data_event.preparePayload(PointerWrapper(sparta::allocate_sparta_shared_pointer<uint32_t>(int_shared_pointer_allocator, 0)))->schedule();
+
+    // Deliver the event
     scheduler.run(3, exacting_run, measure_run_time);
-    EXPECT_FALSE(int_shared_pointer_allocator.hasOutstandingObjects());
+
+    EXPECT_FALSE(pld_data_event.isScheduled()); // The event is already finished
+
+    // The shared pointer is not stored anywhere other than the event payload
+    EXPECT_FALSE(int_shared_pointer_allocator.hasOutstandingObjects());  
 
     rtn.enterTeardown();
 
