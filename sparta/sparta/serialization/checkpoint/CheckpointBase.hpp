@@ -55,9 +55,6 @@ namespace sparta::serialization::checkpoint
         //! @{
         ////////////////////////////////////////////////////////////////////////
 
-        //! \brief Not default constructable
-        CheckpointBase() = delete;
-
         //! \brief Not copy constructable
         CheckpointBase(const CheckpointBase&) = delete;
 
@@ -80,12 +77,23 @@ namespace sparta::serialization::checkpoint
             chkpt_id_(id)
         { }
 
+        CheckpointBase() = default;
+
     public:
 
         /*!
          * \brief Destructor
          */
         virtual ~CheckpointBase() = default;
+
+        /*!
+         * \brief boost::serialization support
+         */
+        template <typename Archive>
+        void serialize(Archive& ar, const unsigned int /*version*/) {
+            ar & tick_;
+            ar & chkpt_id_;
+        }
 
         /*!
          * \brief Returns a string describing this object
@@ -172,7 +180,7 @@ namespace sparta::serialization::checkpoint
         }
 
     private:
-        const tick_t tick_;   //!< Tick number for this checkpoint.
+        tick_t tick_;         //!< Tick number for this checkpoint.
         chkpt_id_t chkpt_id_; //!< This checkpoint's ID. Guaranteed to be unique from other checkpoints'
     };
 

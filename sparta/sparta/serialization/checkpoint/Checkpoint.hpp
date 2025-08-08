@@ -53,12 +53,10 @@ namespace sparta::serialization::checkpoint
 
 
         /*!
-         * \brief Destructor
-         *
-         * Removes this checkpoint from the chain and patches chain between prev
+         * \brief Removes this checkpoint from the chain and patches chain between prev
          * and each item in the nexts list
          */
-        virtual ~Checkpoint() {
+        virtual void disconnect() {
             if(getPrev()){
                 getPrev()->removeNext(this);
             }
@@ -70,7 +68,6 @@ namespace sparta::serialization::checkpoint
                     getPrev()->addNext(d);
                 }
             }
-
         }
 
         ////////////////////////////////////////////////////////////////////////

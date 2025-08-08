@@ -368,7 +368,7 @@ namespace sparta::serialization::checkpoint
          * The head checkpoint has an ID of
          * Checkpoint::UNIDENTIFIED_CHECKPOINT and can never be deleted.
          */
-        const Checkpoint* getHead() const noexcept {
+        const CheckpointBase* getHead() const noexcept {
             return head_;
         }
 
@@ -631,14 +631,14 @@ namespace sparta::serialization::checkpoint
         /*!
          * \brief Non-const variant of getHead_
          */
-        Checkpoint* getHead_() noexcept {
+        CheckpointBase* getHead_() noexcept {
             return head_;
         }
 
         /*!
          * \brief Gets the head checkpoint. Returns nullptr if none created yet
          */
-        const Checkpoint* getHead_() const noexcept {
+        const CheckpointBase* getHead_() const noexcept {
             return head_;
         }
 
@@ -649,7 +649,7 @@ namespace sparta::serialization::checkpoint
          * \pre Internal head pointer must be nullptr.
          * \note This can only be done once
          */
-        void setHead_(Checkpoint* head) {
+        virtual void setHead_(CheckpointBase* head) {
             sparta_assert(head != nullptr, "head argument in setHead_ cannot be nullptr");
             sparta_assert(head_ == nullptr, "Cannot setHead_ again on a Checkpointer once heas is already set");
             head_ = head;
@@ -659,7 +659,7 @@ namespace sparta::serialization::checkpoint
          * \brief Gets the current checkpointer pointer. Returns nullptr if
          * there is no current checkpoint object
          */
-        Checkpoint* getCurrent_() const noexcept {
+        CheckpointBase* getCurrent_() const noexcept {
             return current_;
         }
 
@@ -669,7 +669,7 @@ namespace sparta::serialization::checkpoint
          * checkpoint created will follow the current checkpoint set here.
          * Cannot be nullptr
          */
-        void setCurrent_(Checkpoint* current) {
+        virtual void setCurrent_(CheckpointBase* current) {
             sparta_assert(current != nullptr,
                         "Can never setCurrent_ to nullptr except. A null current is a valid state at initialization only")
             current_ = current;
@@ -742,7 +742,7 @@ namespace sparta::serialization::checkpoint
          * \brief Head checkpoint. This is the first checkpoint taken but cannot
          * be deleted. Head checkpoint memory is owned by checkpointer subclass.
          */
-        Checkpoint* head_;
+        CheckpointBase* head_;
 
         /*!
          * \brief ArchDatas required to checkpoint for this checkpointiner based
@@ -753,7 +753,7 @@ namespace sparta::serialization::checkpoint
         /*!
          * \brief Most recent checkpoint created or loaded
          */
-        Checkpoint* current_;
+        CheckpointBase* current_;
 
         /*!
          * \brief Total checkpoint ever created by this instance. Monotonically
