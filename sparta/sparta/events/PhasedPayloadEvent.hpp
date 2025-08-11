@@ -11,7 +11,6 @@
 #pragma once
 
 #include <memory>
-#include <optional>
 #include "sparta/events/EventNode.hpp"
 #include "sparta/events/Scheduleable.hpp"
 #include "sparta/events/SchedulingPhases.hpp"
@@ -103,15 +102,26 @@ namespace sparta
             }
 
             // Set a payload for a delayed delivery
-            void setPayload_(const std::optional<DataT> & pl) {
+            void setPayload_(const DataT & pl) {
                 sparta_assert(scheduled_ == false);
                 payload_ = pl;
             }
 
+            // Destroy payload
+            void destroyPayload_() {
+                sparta_assert(scheduled_ == false);
+                if constexpr(MetaStruct::is_any_pointer<DataT>::value) {
+                    payload_ = nullptr;
+                    return;
+                }
+                if constexpr(std::is_class_v<DataT>) {
+                    payload_.~DataT();
+                }
+            }
+
             // Get a payload for a delayed delivery
             const DataT & getPayload_() const {
-                sparta_assert(payload_.has_value(), "Payload is not set");
-                return payload_.value();
+                return payload_;
             }
 
 
@@ -128,17 +138,14 @@ namespace sparta
                             "Some construct is trying to deliver a payload twice: "
                             << parent_->name_ << " to handler: "
                             << target_consumer_event_handler_.getName());
-                sparta_assert(payload_.has_value(), "Payload is not set: " 
-                            << parent_->name_ << " to handler: " 
-                            << target_consumer_event_handler_.getName());
                 scheduled_ = false;
-                target_consumer_event_handler_((const void*)&payload_.value());
+                target_consumer_event_handler_((const void*)&payload_);
                 reclaim_();
             }
 
             PhasedPayloadEvent<DataT> * parent_ = nullptr;
             const SpartaHandler         target_consumer_event_handler_;
-            std::optional<DataT>        payload_ = std::nullopt;
+            DataT                       payload_;
             typename ProxyInflightList::iterator loc_;
             bool scheduled_ = false;
             bool cancelled_ = false;
@@ -183,7 +190,7 @@ namespace sparta
             if (SPARTA_EXPECT_FALSE(pl_location == inflight_pl_.end())) {
                 return;
             }
-            (*pl_location)->setPayload_(std::nullopt);
+            (*pl_location)->destroyPayload_();
             free_pl_[free_idx_++] = *pl_location;
             inflight_pl_.erase(pl_location);
             pl_location = inflight_pl_.end();

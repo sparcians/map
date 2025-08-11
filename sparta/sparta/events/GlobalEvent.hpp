@@ -58,7 +58,9 @@ namespace sparta
 
         const SchedulingPhase & getSchedulingPhase() const { return phase_; }
 
-        ~GlobalEventProxy() = default;
+        ~GlobalEventProxy(){
+            ev_handler_.reset();
+        }
 
     private:
         SchedulingPhase                                 phase_;
