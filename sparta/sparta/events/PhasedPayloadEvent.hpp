@@ -107,6 +107,18 @@ namespace sparta
                 payload_ = pl;
             }
 
+            // Destroy payload
+            void destroyPayload_() {
+                sparta_assert(scheduled_ == false);
+                if constexpr(MetaStruct::is_any_pointer<DataT>::value) {
+                    payload_ = nullptr;
+                    return;
+                }
+                if constexpr(std::is_class_v<DataT>) {
+                    payload_.~DataT();
+                }
+            }
+
             // Get a payload for a delayed delivery
             const DataT & getPayload_() const {
                 return payload_;
@@ -178,9 +190,7 @@ namespace sparta
             if (SPARTA_EXPECT_FALSE(pl_location == inflight_pl_.end())) {
                 return;
             }
-            if constexpr(MetaStruct::is_any_pointer<DataT>::value) {
-                (*pl_location)->setPayload_(nullptr);
-            }
+            (*pl_location)->destroyPayload_();
             free_pl_[free_idx_++] = *pl_location;
             inflight_pl_.erase(pl_location);
             pl_location = inflight_pl_.end();
