@@ -1,6 +1,9 @@
 // <DatabaseCheckpointer> -*- C++ -*-
 
 #include "sparta/serialization/checkpoint/DatabaseCheckpointer.hpp"
+#include "simdb/apps/AppRegistration.hpp"
+#include "simdb/schema/SchemaDef.hpp"
+#include "simdb/pipeline/AsyncDatabaseAccessor.hpp"
 #include "simdb/pipeline/Pipeline.hpp"
 #include "simdb/pipeline/elements/Function.hpp"
 #include "simdb/pipeline/elements/Buffer.hpp"
@@ -19,12 +22,12 @@ namespace sparta::serialization::checkpoint
 using tick_t = typename CheckpointBase::tick_t;
 using chkpt_id_t = typename CheckpointBase::chkpt_id_t;
 using checkpoint_type = DatabaseCheckpoint;
-using checkpoint_uptr = std::unique_ptr<DatabaseCheckpoint>;
-using checkpoint_uptrs = std::vector<checkpoint_uptr>;
+using checkpoint_ptr = std::shared_ptr<DatabaseCheckpoint>;
+using checkpoint_ptrs = std::vector<checkpoint_ptr>;
 
 struct ChkptWindow {
     std::vector<chkpt_id_t> chkpt_ids;
-    checkpoint_uptrs chkpts;
+    checkpoint_ptrs chkpts;
 
     // TODO cnyce: Try to avoid use of unique_ptr. Everything is already movable
     // and has default constructors.
@@ -77,10 +80,10 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
     auto pipeline = std::make_unique<simdb::pipeline::Pipeline>(db_mgr_, NAME);
 
     // Task 1: Clone the next checkpoint from the cache to send down pipeline
-    auto feed_pipeline = simdb::pipeline::createTask<simdb::pipeline::Function<void, checkpoint_uptr>>(
-        [this](simdb::ConcurrentQueue<checkpoint_uptr>& out, bool /*simulation_terminating*/) mutable
+    auto feed_pipeline = simdb::pipeline::createTask<simdb::pipeline::Function<void, checkpoint_ptr>>(
+        [this](simdb::ConcurrentQueue<checkpoint_ptr>& out, bool /*simulation_terminating*/) mutable
         {
-            checkpoint_uptr next_chkpt;
+            checkpoint_ptr next_chkpt;
             if (cloneNextPipelineHeadCheckpoint_(next_chkpt)) {
                 out.emplace(std::move(next_chkpt));
                 return true;
@@ -92,11 +95,11 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
     // Task 2: Buffer snapshots and their deltas into checkpoint windows
     const auto window_len = getSnapshotThreshold();
     const auto flush_partial = true;
-    auto create_window = simdb::pipeline::createTask<simdb::pipeline::Buffer<checkpoint_uptr>>(window_len, flush_partial);
+    auto create_window = simdb::pipeline::createTask<simdb::pipeline::Buffer<checkpoint_ptr>>(window_len, flush_partial);
 
     // Task 3: Add the IDs of all checkpoints in this window
-    auto add_chkpt_ids = simdb::pipeline::createTask<simdb::pipeline::Function<checkpoint_uptrs, ChkptWindow>>(
-        [](checkpoint_uptrs&& chkpts,
+    auto add_chkpt_ids = simdb::pipeline::createTask<simdb::pipeline::Function<checkpoint_ptrs, ChkptWindow>>(
+        [](checkpoint_ptrs&& chkpts,
            simdb::ConcurrentQueue<ChkptWindow>& windows,
            bool /*simulation_terminating*/)
         {
@@ -196,142 +199,171 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
 
 uint32_t DatabaseCheckpointer::getSnapshotThreshold() const noexcept
 {
-    return 0;
+    return snap_thresh_;
 }
 
 void DatabaseCheckpointer::setSnapshotThreshold(uint32_t thresh) noexcept
 {
-    (void)thresh;
+    snap_thresh_ = thresh;
 }
 
 uint64_t DatabaseCheckpointer::getTotalMemoryUse() const noexcept
 {
+    //TODO cnyce
     return 0;
 }
 
 uint64_t DatabaseCheckpointer::getContentMemoryUse() const noexcept
 {
+    //TODO cnyce
     return 0;
 }
 
 void DatabaseCheckpointer::deleteCheckpoint(chkpt_id_t id)
 {
+    //TODO cnyce
     (void)id;
 }
 
 void DatabaseCheckpointer::loadCheckpoint(chkpt_id_t id)
 {
+    //TODO cnyce
     (void)id;
 }
 
 std::vector<chkpt_id_t> DatabaseCheckpointer::getCheckpointsAt(tick_t t) const
 {
+    //TODO cnyce
     (void)t;
     return {};
 }
 
 std::vector<chkpt_id_t> DatabaseCheckpointer::getCheckpoints() const
 {
+    //TODO cnyce
     return {};
 }
 
 uint32_t DatabaseCheckpointer::getNumCheckpoints() const noexcept
 {
+    //TODO cnyce
     return 0;
 }
 
 uint32_t DatabaseCheckpointer::getNumSnapshots() const noexcept
 {
+    //TODO cnyce
     return 0;
 }
 
 uint32_t DatabaseCheckpointer::getNumDeltas() const noexcept
 {
+    //TODO cnyce
     return 0;
 }
 
 uint32_t DatabaseCheckpointer::getNumDeadCheckpoints() const noexcept
 {
+    //TODO cnyce
     return 0;
 }
 
 std::deque<chkpt_id_t> DatabaseCheckpointer::getCheckpointChain(chkpt_id_t id) const
 {
+    //TODO cnyce
     return {};
 }
 
-std::optional<checkpoint_type> DatabaseCheckpointer::findLatestCheckpointAtOrBefore(tick_t tick, chkpt_id_t from)
+DatabaseCheckpointAccessor<false> DatabaseCheckpointer::findLatestCheckpointAtOrBefore(tick_t tick, chkpt_id_t from)
 {
+    //TODO cnyce
     (void)tick;
     (void)from;
-    return std::optional<checkpoint_type>();
+    return DatabaseCheckpointAccessor<false>(this, CheckpointBase::UNIDENTIFIED_CHECKPOINT);
 }
 
-std::optional<checkpoint_type> DatabaseCheckpointer::findCheckpoint(chkpt_id_t id) noexcept
+DatabaseCheckpointAccessor<false> DatabaseCheckpointer::findCheckpoint(chkpt_id_t id) noexcept
 {
-    (void)id;
-    return std::optional<checkpoint_type>();
+    return DatabaseCheckpointAccessor<false>(this, id);
 }
 
 bool DatabaseCheckpointer::hasCheckpoint(chkpt_id_t id) const noexcept
 {
+    //TODO cnyce
     (void)id;
     return false;
 }
 
 void DatabaseCheckpointer::dumpRestoreChain(std::ostream& o, chkpt_id_t id) const
 {
+    //TODO cnyce
     (void)o;
     (void)id;
 }
 
 std::stack<chkpt_id_t> DatabaseCheckpointer::getHistoryChain(chkpt_id_t id) const
 {
+    //TODO cnyce
     (void)id;
     return {};
 }
 
 std::stack<chkpt_id_t> DatabaseCheckpointer::getRestoreChain(chkpt_id_t id) const
 {
+    //TODO cnyce
     (void)id;
     return {};
 }
 
 std::vector<chkpt_id_t> DatabaseCheckpointer::getNextIDs(chkpt_id_t id) const
 {
+    //TODO cnyce
     (void)id;
     return {};
 }
 
 void DatabaseCheckpointer::load(const std::vector<ArchData*>& dats, chkpt_id_t id)
 {
+    //TODO cnyce
     (void)dats;
     (void)id;
 }
 
 uint32_t DatabaseCheckpointer::getDistanceToPrevSnapshot(chkpt_id_t id) const noexcept
 {
+    //TODO cnyce
     (void)id;
     return 0;
 }
 
+bool DatabaseCheckpointer::canDelete(chkpt_id_t id) const noexcept
+{
+    //TODO cnyce
+    (void)id;
+    return true;
+}
+
 std::string DatabaseCheckpointer::stringize() const
 {
+    //TODO cnyce
     return "";
 }
 
 void DatabaseCheckpointer::dumpList(std::ostream& o) const
 {
+    //TODO cnyce
     (void)o;
 }
 
 void DatabaseCheckpointer::dumpData(std::ostream& o) const
 {
+    //TODO cnyce
     (void)o;
 }
 
 void DatabaseCheckpointer::dumpAnnotatedData(std::ostream& o) const
 {
+    //TODO cnyce
     (void)o;
 }
 
@@ -342,6 +374,7 @@ void DatabaseCheckpointer::traceValue(
     uint32_t offset,
     uint32_t size)
 {
+    //TODO cnyce
     (void)o;
     (void)id;
     (void)container;
@@ -371,9 +404,9 @@ void DatabaseCheckpointer::createHead_()
         throw exc;
     }
 
-    std::unique_ptr<checkpoint_type> chkpt(new checkpoint_type(
+    std::shared_ptr<checkpoint_type> chkpt(new checkpoint_type(
         getRoot(), getArchDatas(), next_chkpt_id_++, tick,
-        checkpoint_type::UNIDENTIFIED_CHECKPOINT, true, this));
+        nullptr, true, this));
 
     setHead_(chkpt.get());
     num_alive_checkpoints_++;
@@ -429,9 +462,9 @@ chkpt_id_t DatabaseCheckpointer::createCheckpoint_(bool force_snapshot)
         is_snapshot = prev->getDistanceToPrevSnapshot() >= getSnapshotThreshold();
     }
 
-    std::unique_ptr<checkpoint_type> chkpt(new checkpoint_type(
+    std::shared_ptr<checkpoint_type> chkpt(new checkpoint_type(
         getRoot(), getArchDatas(), next_chkpt_id_++, tick,
-        prev->getID(), force_snapshot || is_snapshot, this));
+        prev, force_snapshot || is_snapshot, this));
 
     auto current = chkpt.get();
     setCurrent_(current);
@@ -451,30 +484,55 @@ chkpt_id_t DatabaseCheckpointer::createCheckpoint_(bool force_snapshot)
 
 void DatabaseCheckpointer::cleanupChain_(chkpt_id_t id)
 {
+    // TODO cnyce
     (void)id;
 }
 
 bool DatabaseCheckpointer::recursForwardFindAlive_(chkpt_id_t id) const
 {
+    // TODO cnyce
     (void)id;
     return false;
 }
 
-std::optional<checkpoint_type> DatabaseCheckpointer::findCheckpoint_(chkpt_id_t id) const noexcept
+DatabaseCheckpointAccessor<false> DatabaseCheckpointer::findCheckpoint_(chkpt_id_t id) noexcept
 {
-    (void)id;
-    return std::optional<checkpoint_type>();
+    return DatabaseCheckpointAccessor<false>(this, id);
+}
+
+DatabaseCheckpointAccessor<true> DatabaseCheckpointer::findCheckpoint_(chkpt_id_t id) const noexcept
+{
+    return DatabaseCheckpointAccessor<true>(this, id);
 }
 
 void DatabaseCheckpointer::dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o) const
 {
-    (void)id;
-    (void)o;
+    static std::string SNAPSHOT_NOTICE = "(s)";
+    auto cp = findCheckpoint_(id);
+
+    // Draw data for this checkpoint
+    if(cp->isFlaggedDeleted()){
+        o << cp->getDeletedRepr();
+    }else{
+        o << cp->getID();
+    }
+    // Show that this is a snapshot
+    if(cp->isSnapshot()){
+        o << ' ' << SNAPSHOT_NOTICE;
+    }
 }
 
 std::vector<chkpt_id_t> DatabaseCheckpointer::getNextIDs_(chkpt_id_t id) const
 {
-    (void)id;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto it = chkpts_cache_.find(id);
+        if (it != chkpts_cache_.end()) {
+            return it->second->getNextIDs();
+        }
+    }
+
+    // TODO cnyce: go to database
     return {};
 }
 
@@ -505,15 +563,18 @@ void DatabaseCheckpointer::setCurrentID_(chkpt_id_t id)
     current_id_ = id;
 }
 
-void DatabaseCheckpointer::addToCache_(std::unique_ptr<checkpoint_type> chkpt)
+void DatabaseCheckpointer::addToCache_(std::shared_ptr<checkpoint_type> chkpt)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     auto id = chkpt->getID();
     chkpt_ids_for_pipeline_head_.push(id);
-    chkpts_cache_[id] = std::move(chkpt);
+
+    auto& cp = chkpts_cache_[id];
+    sparta_assert(!cp);
+    cp = std::move(chkpt);
 }
 
-bool DatabaseCheckpointer::cloneNextPipelineHeadCheckpoint_(std::unique_ptr<checkpoint_type>& next)
+bool DatabaseCheckpointer::cloneNextPipelineHeadCheckpoint_(std::shared_ptr<checkpoint_type>& next)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (chkpt_ids_for_pipeline_head_.empty()) {

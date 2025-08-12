@@ -2,11 +2,7 @@
 
 #pragma once
 
-#include "sparta/serialization/checkpoint/CheckpointBase.hpp"
-#include "sparta/serialization/checkpoint/CheckpointExceptions.hpp"
-#include "sparta/serialization/checkpoint/VectorStorage.hpp"
-
-#include <unordered_set>
+#include "sparta/serialization/checkpoint/DatabaseCheckpointBase.hpp"
 
 namespace sparta::serialization::checkpoint
 {
@@ -16,7 +12,7 @@ namespace sparta::serialization::checkpoint
     * \brief Checkpoint class optimized for use with database-backed
     * checkpointers.
     */
-    class DatabaseCheckpoint : public CheckpointBase
+    class DatabaseCheckpoint : public DatabaseCheckpointBase
     {
     public:
 
@@ -46,14 +42,15 @@ namespace sparta::serialization::checkpoint
                            const std::vector<ArchData*>& dats,          
                            chkpt_id_t id,
                            tick_t tick,
-                           chkpt_id_t prev_id,
+                           DatabaseCheckpoint* prev,
                            bool is_snapshot,
                            DatabaseCheckpointer* checkpointer);
 
         //! \brief This constructor is called during checkpoing cloning
         DatabaseCheckpoint(chkpt_id_t prev_id,
-                           chkpt_id_t deleted_id_,
-                           bool is_snapshot_,
+                           const std::vector<chkpt_id_t>& next_ids,
+                           chkpt_id_t deleted_id,
+                           bool is_snapshot,
                            const storage::VectorStorage& storage,
                            DatabaseCheckpointer* checkpointer);
 
@@ -68,6 +65,7 @@ namespace sparta::serialization::checkpoint
         void serialize(Archive& ar, const unsigned int version) {
             CheckpointBase::serialize(ar, version);
             ar & prev_id_;
+            ar & next_ids_;
             ar & deleted_id_;
             ar & is_snapshot_;
             ar & data_;
@@ -86,13 +84,6 @@ namespace sparta::serialization::checkpoint
         void dumpData(std::ostream& o) const override;
 
         /*!
-         * \brief Dumps the restore chain for this checkpoint.
-         * \see getRestoreChain()
-         * \param o ostream to which chain data will be dumped
-         */
-        void dumpRestoreChain(std::ostream& o) const;
-
-        /*!
          * \brief Returns memory usage by this checkpoint
          */
         uint64_t getTotalMemoryUse() const noexcept override;
@@ -103,26 +94,20 @@ namespace sparta::serialization::checkpoint
         uint64_t getContentMemoryUse() const noexcept override;
 
         /*!
-         * \brief Implement trace of a value across the restore chain as described in Checkpointer::traceValue
-         */
-        void traceValue(std::ostream& o, const std::vector<ArchData*>& dats,
-                        const ArchData* container, uint32_t offset, uint32_t size);
-
-        /*!
          * \brief Returns a stack of checkpoints from this checkpoint as far
          * back as possible until no previous link is found. This is a superset
          * of getRestoreChain and contains checkpoints that do not actually need
          * to be inspected for restoring this checkpoint's data. This may reach
          * the head checkpoint if no gaps are encountered.
          */
-        std::stack<chkpt_id_t> getHistoryChain() const;
+        std::stack<chkpt_id_t> getHistoryChain() const override;
 
         /*!
          * \brief Returns a stack of checkpoints that must be restored from
          * top-to-bottom to fully restore the state associated with this
          * checkpoint.
          */
-        std::stack<chkpt_id_t> getRestoreChain() const;
+        std::stack<chkpt_id_t> getRestoreChain() const override;
 
         /*!
          * \brief Get the ID of our previous checkpoint. Returns UNIDENTIFIED_CHECKPOINT
@@ -154,7 +139,7 @@ namespace sparta::serialization::checkpoint
          * \warning This is a recursive search of a checkpoint tree which has potentially many
          * branches and could have high time cost
          */
-        bool canDelete() const noexcept;
+        bool canDelete() const noexcept override;
 
         /*!
          * \brief Allows this checkpoint to be deleted if it is no longer a
@@ -167,7 +152,7 @@ namespace sparta::serialization::checkpoint
          * \see canDelete
          * \see isFlaggedDeleted
          */
-        void flagDeleted();
+        void flagDeleted() override;
 
         /*!
          * \brief Indicates whether this checkpoint has been flagged deleted.
@@ -176,14 +161,14 @@ namespace sparta::serialization::checkpoint
          * \note If false, Checkpoint ID will also be UNIDENTIFIED_CHECKPOINT
          * \see flagDeleted()
          */
-        bool isFlaggedDeleted() const noexcept;
+        bool isFlaggedDeleted() const noexcept override;
 
         /*!
          * \brief Return the ID had by this checkpoint before it was deleted
          * If this checkpoint has not been flagged for deletion, this will be
          * UNIDENTIFIED_CHECKPOINT
          */
-        chkpt_id_t getDeletedID() const noexcept;
+        chkpt_id_t getDeletedID() const noexcept override;
 
         /*!
          * \brief Gets the representation of this deleted checkpoint as part of
@@ -196,7 +181,7 @@ namespace sparta::serialization::checkpoint
         /*!
          * \brief Is this checkpoint a snapshot (contains ALL simulator state)
          */
-        bool isSnapshot() const noexcept;
+        bool isSnapshot() const noexcept override;
 
         /*!
          * \brief Determines how many checkpoints away the closest, earlier
@@ -208,14 +193,14 @@ namespace sparta::serialization::checkpoint
          * \note This is a noexcept function, which means that the exception if
          * no snapshot is encountered is uncatchable. This is intentional.
          */
-        uint32_t getDistanceToPrevSnapshot() const noexcept;
+        uint32_t getDistanceToPrevSnapshot() const noexcept override;
 
         /*!
          * \brief Loads delta state of this checkpoint to root.
          * Does not look at any other checkpoints checkpoints.
          * \see load
          */
-        void loadState(const std::vector<ArchData*>& dats);
+        void loadState(const std::vector<ArchData*>& dats) override;
 
         /*!
          * \brief Create a deep copy of this checkpoint.
@@ -244,6 +229,11 @@ namespace sparta::serialization::checkpoint
          * \brief ID of the previous checkpoint.
          */
         chkpt_id_t prev_id_;
+
+        /*!
+         * \brief IDs of the next checkpoints.
+         */
+        std::vector<chkpt_id_t> next_ids_;
 
         /*!
          * \brief ID of the checkpoint before it was deleted. This is invalid

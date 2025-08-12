@@ -4,10 +4,9 @@
 
 #include "sparta/serialization/checkpoint/Checkpointer.hpp"
 #include "sparta/serialization/checkpoint/DatabaseCheckpoint.hpp"
-#include "simdb/apps/AppRegistration.hpp"
+#include "sparta/serialization/checkpoint/DatabaseCheckpointAccessor.hpp"
 #include "simdb/apps/App.hpp"
-#include "simdb/utils/ConcurrentQueue.hpp"
-#include <optional>
+#include "simdb/pipeline/Pipeline.hpp"
 
 //! Default threshold for creating snapshots
 #ifndef DEFAULT_SNAPSHOT_THRESH
@@ -16,6 +15,8 @@
 
 namespace sparta::serialization::checkpoint
 {
+
+class DatabaseCheckpointer;
 
 /*!
  * \brief Implementation of the FastCheckpointer which only holds
@@ -210,7 +211,7 @@ public:
      * \throw CheckpointError if \a from does not refer to a valid
      * checkpoint.
      */
-    std::optional<checkpoint_type> findLatestCheckpointAtOrBefore(tick_t tick, chkpt_id_t from);
+    DatabaseCheckpointAccessor<false> findLatestCheckpointAtOrBefore(tick_t tick, chkpt_id_t from);
 
     /*!
      * \brief Finds a checkpoint by its ID
@@ -218,7 +219,7 @@ public:
      * deleted
      * \return Checkpoint with ID of \a id if found or nullptr if not found
      */
-    std::optional<checkpoint_type> findCheckpoint(chkpt_id_t id) noexcept;
+    DatabaseCheckpointAccessor<false> findCheckpoint(chkpt_id_t id) noexcept;
 
     /*!
      * \brief Tests whether this checkpoint manager has a checkpoint with
@@ -377,7 +378,12 @@ private:
      * returns nullptr.
      * \todo Faster lookup?
      */
-    std::optional<checkpoint_type> findCheckpoint_(chkpt_id_t id) const noexcept;
+    DatabaseCheckpointAccessor<false> findCheckpoint_(chkpt_id_t id) noexcept;
+
+    /*!
+     * \brief Const version of findCheckpoint_()
+     */
+    DatabaseCheckpointAccessor<true> findCheckpoint_(chkpt_id_t id) const noexcept;
 
     /*!
      * \brief Implements Checkpointer::dumpCheckpointNode_
@@ -413,12 +419,12 @@ private:
     /*!
      * \brief Add the given checkpoint to the cache and start processing it.
      */
-    void addToCache_(std::unique_ptr<checkpoint_type> chkpt);
+    void addToCache_(std::shared_ptr<checkpoint_type> chkpt);
 
     /*!
      * \brief Clone the next checkpoint that is ready for processing.
      */
-    bool cloneNextPipelineHeadCheckpoint_(std::unique_ptr<checkpoint_type>& next);
+    bool cloneNextPipelineHeadCheckpoint_(std::shared_ptr<checkpoint_type>& next);
 
     //! \brief Checkpointer head ID. Used to prevent the head from being deleted from the cache.
     chkpt_id_t head_id_ = checkpoint_type::UNIDENTIFIED_CHECKPOINT;
@@ -427,7 +433,7 @@ private:
     chkpt_id_t current_id_ = checkpoint_type::UNIDENTIFIED_CHECKPOINT;
 
     //! \brief Subset (or all of) our checkpoints that we currently are holding in memory.
-    std::unordered_map<chkpt_id_t, std::unique_ptr<checkpoint_type>> chkpts_cache_;
+    std::unordered_map<chkpt_id_t, std::shared_ptr<checkpoint_type>> chkpts_cache_;
 
     //! \brief Ordered running list of checkpoint IDs that come in via calls to createCheckpoint_().
     //! This is used in the pipeline to pick off and start processing checkpoints in the same order
@@ -440,11 +446,6 @@ private:
 
     //! \brief SimDB instance
     simdb::DatabaseManager* db_mgr_ = nullptr;
-
-    //! \brief Cloned checkpoints for pipeline. Original checkpoints held in cache.
-    //using checkpoint_clone = checkpoint_type::DetachedClone;
-    //simdb::ConcurrentQueue<std::unique_ptr<checkpoint_clone>>* pipeline_head_ = nullptr;
-
 
     /*!
      * \brief Snapshot generation threshold. Every n checkpoints in a chain

@@ -51,12 +51,11 @@ namespace sparta::serialization::checkpoint
 
     public:
 
-
         /*!
          * \brief Removes this checkpoint from the chain and patches chain between prev
          * and each item in the nexts list
          */
-        virtual void disconnect() {
+        virtual ~Checkpoint() {
             if(getPrev()){
                 getPrev()->removeNext(this);
             }

@@ -565,7 +565,6 @@ namespace sparta::serialization::checkpoint
                     // Erase element in the map
                     auto itr = chkpts_.find(id);
                     sparta_assert(itr != chkpts_.end());
-                    itr->second->disconnect();
                     chkpts_.erase(itr);
                 }
 

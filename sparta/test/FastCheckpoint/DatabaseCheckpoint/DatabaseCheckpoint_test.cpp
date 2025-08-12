@@ -143,19 +143,15 @@ void generalTest()
         EXPECT_NOTHROW(dbcp.loadCheckpoint(id));
 
         auto chkpt = dbcp.findCheckpoint(id);
-        EXPECT_TRUE(chkpt.has_value());
+        uint32_t expected_r1 = id * 5ul;
+        EXPECT_EQUAL(r1->read<uint32_t>(), expected_r1);
 
-        if (chkpt.has_value()) {
-            uint32_t expected_r1 = id * 5ul;
-            EXPECT_EQUAL(r1->read<uint32_t>(), expected_r1);
+        uint32_t expected_r2 = id % 5ul;
+        EXPECT_EQUAL(r2->read<uint32_t>(), expected_r2);
 
-            uint32_t expected_r2 = id % 5ul;
-            EXPECT_EQUAL(r2->read<uint32_t>(), expected_r2);
-
-            auto expected_tick = dbcp.getCurrentTick();
-            EXPECT_EQUAL(sched.getCurrentTick(), expected_tick);
-            EXPECT_EQUAL(chkpt->getTick(), expected_tick);
-        }
+        auto expected_tick = dbcp.getCurrentTick();
+        EXPECT_EQUAL(sched.getCurrentTick(), expected_tick);
+        EXPECT_EQUAL(chkpt->getTick(), expected_tick);
     }
 
     // Finish...

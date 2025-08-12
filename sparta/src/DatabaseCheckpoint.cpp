@@ -9,27 +9,31 @@ namespace sparta::serialization::checkpoint
 using tick_t = typename CheckpointBase::tick_t;
 using chkpt_id_t = typename CheckpointBase::chkpt_id_t;
 using checkpoint_type = DatabaseCheckpoint;
-using checkpoint_uptr = std::unique_ptr<DatabaseCheckpoint>;
+using checkpoint_ptr = std::shared_ptr<DatabaseCheckpoint>;
 
 DatabaseCheckpoint::DatabaseCheckpoint(TreeNode& root,
                                        const std::vector<ArchData*>& dats,          
                                        chkpt_id_t id,
                                        tick_t tick,
-                                       chkpt_id_t prev_id,
+                                       DatabaseCheckpoint* prev,
                                        bool is_snapshot,
                                        DatabaseCheckpointer* checkpointer)
-    : CheckpointBase(id, tick)
-    , prev_id_(prev_id)
+    : DatabaseCheckpointBase(id, tick)
+    , prev_id_(prev ? prev->getID() : UNIDENTIFIED_CHECKPOINT)
     , deleted_id_(UNIDENTIFIED_CHECKPOINT)
     , is_snapshot_(is_snapshot)
     , checkpointer_(checkpointer)
 {
     (void)root;
-    if (prev_id == UNIDENTIFIED_CHECKPOINT) {
+    if (prev_id_ == UNIDENTIFIED_CHECKPOINT) {
         if (is_snapshot == false) {
             throw CheckpointError("Cannot create a DatabaseCheckpoint id=")
                 << id << " at tick=" << tick << " which has no prev_delta and is not a snapshot";
         }
+    }
+
+    if (prev) {
+        prev->next_ids_.push_back(getID());
     }
 
     // Store the checkpoint from root
@@ -41,12 +45,14 @@ DatabaseCheckpoint::DatabaseCheckpoint(TreeNode& root,
 }
 
 DatabaseCheckpoint::DatabaseCheckpoint(chkpt_id_t prev_id,
+                                       const std::vector<chkpt_id_t>& next_ids,
                                        chkpt_id_t deleted_id,
                                        bool is_snapshot,
                                        const storage::VectorStorage& storage,
                                        DatabaseCheckpointer* checkpointer)
-    : CheckpointBase(getID(), getTick())
+    : DatabaseCheckpointBase(getID(), getTick())
     , prev_id_(prev_id)
+    , next_ids_(next_ids)
     , deleted_id_(deleted_id)
     , is_snapshot_(is_snapshot)
     , data_(storage)
@@ -77,11 +83,6 @@ void DatabaseCheckpoint::dumpData(std::ostream& o) const
     data_.dump(o);
 }
 
-void DatabaseCheckpoint::dumpRestoreChain(std::ostream& o) const
-{
-    checkpointer_->dumpRestoreChain(o, getID());
-}
-
 uint64_t DatabaseCheckpoint::getTotalMemoryUse() const noexcept
 {
     return getContentMemoryUse() \
@@ -92,21 +93,6 @@ uint64_t DatabaseCheckpoint::getTotalMemoryUse() const noexcept
 uint64_t DatabaseCheckpoint::getContentMemoryUse() const noexcept
 {
     return data_.getSize();
-}
-
-void DatabaseCheckpoint::traceValue(
-    std::ostream& o,
-    const std::vector<ArchData*>& dats,
-    const ArchData* container,
-    uint32_t offset,
-    uint32_t size)
-{
-    // TODO cnyce
-    (void)o;
-    (void)dats;
-    (void)container;
-    (void)offset;
-    (void)size;
 }
 
 std::stack<chkpt_id_t> DatabaseCheckpoint::getHistoryChain() const
@@ -126,12 +112,13 @@ chkpt_id_t DatabaseCheckpoint::getPrevID() const
 
 std::vector<chkpt_id_t> DatabaseCheckpoint::getNextIDs() const
 {
-    return checkpointer_->getNextIDs(getID());
+    return next_ids_;
 }
 
 void DatabaseCheckpoint::load(const std::vector<ArchData*>& dats)
 {
-    checkpointer_->load(dats, getID());
+    //TODO cnyce
+    (void)dats;
 }
 
 bool DatabaseCheckpoint::canDelete() const noexcept
@@ -196,7 +183,7 @@ void DatabaseCheckpoint::loadState(const std::vector<ArchData*>& dats)
 
 std::unique_ptr<DatabaseCheckpoint> DatabaseCheckpoint::clone() const
 {
-    auto clone = new DatabaseCheckpoint(prev_id_, deleted_id_, is_snapshot_, data_, checkpointer_);
+    auto clone = new DatabaseCheckpoint(prev_id_, next_ids_, deleted_id_, is_snapshot_, data_, checkpointer_);
     return std::unique_ptr<DatabaseCheckpoint>(clone);
 }
 
@@ -205,7 +192,6 @@ void DatabaseCheckpoint::storeSnapshot_(const std::vector<ArchData*>& dats)
     sparta_assert(data_.good(),
                   "Attempted to storeSnapshot_ from a DatabaseCheckpoint with a bad data buffer");
 
-    // Cannot have stored already
     for (ArchData* ad : dats) {
         ad->saveAll(data_);
     }
@@ -216,7 +202,6 @@ void DatabaseCheckpoint::storeDelta_(const std::vector<ArchData*>& dats)
     sparta_assert(data_.good(),
                   "Attempted to storeDelta_ from a DatabaseCheckpoint with a bad data buffer");
 
-    // Cannot have stored already
     for (ArchData* ad : dats) {
         ad->save(data_);
     }
