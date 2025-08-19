@@ -104,24 +104,24 @@ namespace sparta
             // Set a payload for a delayed delivery
             void setPayload_(const DataT & pl) {
                 sparta_assert(scheduled_ == false);
-                payload_ = pl;
+                payload_ = new (&payload_storage_) DataT(pl);
             }
 
             // Destroy payload
             void destroyPayload_() {
                 sparta_assert(scheduled_ == false);
                 if constexpr(MetaStruct::is_any_pointer<DataT>::value) {
-                    payload_ = nullptr;
+                    *payload_ = nullptr;
                     return;
                 }
                 if constexpr(std::is_class_v<DataT>) {
-                    payload_.~DataT();
+                    payload_->~DataT();
                 }
             }
 
             // Get a payload for a delayed delivery
             const DataT & getPayload_() const {
-                return payload_;
+                return *payload_;
             }
 
 
@@ -139,13 +139,14 @@ namespace sparta
                             << parent_->name_ << " to handler: "
                             << target_consumer_event_handler_.getName());
                 scheduled_ = false;
-                target_consumer_event_handler_((const void*)&payload_);
+                target_consumer_event_handler_((const void*)payload_);
                 reclaim_();
             }
 
             PhasedPayloadEvent<DataT> * parent_ = nullptr;
             const SpartaHandler         target_consumer_event_handler_;
-            DataT                       payload_;
+            DataT *                     payload_;
+            std::byte                   payload_storage_[sizeof(DataT)];
             typename ProxyInflightList::iterator loc_;
             bool scheduled_ = false;
             bool cancelled_ = false;
