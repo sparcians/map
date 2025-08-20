@@ -146,7 +146,7 @@ namespace sparta
             PhasedPayloadEvent<DataT> * parent_ = nullptr;
             const SpartaHandler         target_consumer_event_handler_;
             DataT *                     payload_;
-            std::byte                   payload_storage_[sizeof(DataT)];
+            alignas(DataT) std::byte    payload_storage_[sizeof(DataT)];
             typename ProxyInflightList::iterator loc_;
             bool scheduled_ = false;
             bool cancelled_ = false;
