@@ -46,6 +46,9 @@ int main()
     // The payload event that send a data containing a shared pointer
     sparta::PayloadEvent<PointerWrapper> pld_ptr_wrapper_event(&event_set, "pld_ptr_wrapper_event", CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(EventHandler, &ev_handler, handler, PointerWrapper), 0);
 
+    // unique pointer to the event
+    std::unique_ptr<sparta::PayloadEvent<sparta::SpartaSharedPointer<uint32_t>>> pld_event_ptr = std::make_unique<sparta::PayloadEvent<sparta::SpartaSharedPointer<uint32_t>>>(&event_set, "pld_event_ptr", CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(EventHandler, &ev_handler, handler, sparta::SpartaSharedPointer<uint32_t>), 0);
+
     // Monitor the memory usage of the shared pointer
     sparta::SpartaSharedPointerAllocator<uint32_t> int_shared_pointer_allocator(1, 1);
 
@@ -73,7 +76,15 @@ int main()
     // The shared pointer is not stored anywhere other than the event payload
     EXPECT_FALSE(int_shared_pointer_allocator.hasOutstandingObjects());  
 
+    pld_event_ptr->preparePayload(sparta::allocate_sparta_shared_pointer<uint32_t>(int_shared_pointer_allocator, 0))->schedule(3);
+
     rtn.enterTeardown();
+
+    // check the payload of the outstanding event is destroyed
+    pld_event_ptr.reset();
+    EXPECT_FALSE(int_shared_pointer_allocator.hasOutstandingObjects());  
+
+    
 
     REPORT_ERROR;
     return ERROR_CODE;
