@@ -110,13 +110,7 @@ namespace sparta
             // Destroy payload
             void destroyPayload_() {
                 sparta_assert(scheduled_ == false);
-                if constexpr(MetaStruct::is_any_pointer<DataT>::value) {
-                    *payload_ = nullptr;
-                    return;
-                }
-                if constexpr(std::is_class_v<DataT>) {
-                    payload_->~DataT();
-                }
+                std::destroy_at(payload_);
             }
 
             // Get a payload for a delayed delivery
