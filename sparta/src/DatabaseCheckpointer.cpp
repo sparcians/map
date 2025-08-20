@@ -1,6 +1,7 @@
 // <DatabaseCheckpointer> -*- C++ -*-
 
 #include "sparta/serialization/checkpoint/DatabaseCheckpointer.hpp"
+#include "sparta/serialization/checkpoint/DatabaseCheckpointQuery.hpp"
 #include "simdb/apps/AppRegistration.hpp"
 #include "simdb/schema/SchemaDef.hpp"
 #include "simdb/pipeline/AsyncDatabaseAccessor.hpp"
@@ -59,6 +60,17 @@ struct ChkptWindowBytes {
 };
 
 using EvictedChkptIDs = std::vector<chkpt_id_t>;
+
+DatabaseCheckpointer::DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, TreeNode& root, Scheduler* sched) :
+    Checkpointer(root, sched),
+    chkpt_query_(std::make_shared<DatabaseCheckpointQuery>(db_mgr)),
+    db_mgr_(db_mgr),
+    snap_thresh_(DEFAULT_SNAPSHOT_THRESH),
+    next_chkpt_id_(checkpoint_type::MIN_CHECKPOINT),
+    num_alive_checkpoints_(0),
+    num_alive_snapshots_(0),
+    num_dead_checkpoints_(0)
+{ }
 
 void DatabaseCheckpointer::defineSchema(simdb::Schema& schema)
 {
@@ -209,14 +221,22 @@ void DatabaseCheckpointer::setSnapshotThreshold(uint32_t thresh) noexcept
 
 uint64_t DatabaseCheckpointer::getTotalMemoryUse() const noexcept
 {
-    //TODO cnyce
-    return 0;
+    std::lock_guard<std::mutex> lock(mutex_);
+    uint64_t mem = 0;
+    for (const auto& [id, chkpt] : chkpts_cache_) {
+        mem += chkpt->getTotalMemoryUse();
+    }
+    return mem;
 }
 
 uint64_t DatabaseCheckpointer::getContentMemoryUse() const noexcept
 {
-    //TODO cnyce
-    return 0;
+    std::lock_guard<std::mutex> lock(mutex_);
+    uint64_t mem = 0;
+    for (const auto& [id, chkpt] : chkpts_cache_) {
+        mem += chkpt->getTotalMemoryUse();
+    }
+    return mem;
 }
 
 void DatabaseCheckpointer::deleteCheckpoint(chkpt_id_t id)
@@ -233,65 +253,116 @@ void DatabaseCheckpointer::loadCheckpoint(chkpt_id_t id)
 
 std::vector<chkpt_id_t> DatabaseCheckpointer::getCheckpointsAt(tick_t t) const
 {
-    //TODO cnyce
-    (void)t;
-    return {};
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    std::vector<chkpt_id_t> results;
+    for (const auto& [id, chkpt] : chkpts_cache_) {
+        if (chkpt->getTick() == t && !chkpt->isFlaggedDeleted()) {
+            results.push_back(id);
+        }
+    }
+
+    for (auto id : chkpt_query_->getCheckpointsAt(t)) {
+        results.push_back(id);
+    }
+
+    return results;
 }
 
 std::vector<chkpt_id_t> DatabaseCheckpointer::getCheckpoints() const
 {
-    //TODO cnyce
-    return {};
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    std::vector<chkpt_id_t> results;
+    for (const auto& [id, chkpt] : chkpts_cache_) {
+        if (!chkpt->isFlaggedDeleted()) {
+            results.push_back(id);
+        }
+    }
+
+    for (auto id : chkpt_query_->getCheckpoints()) {
+        results.push_back(id);
+    }
+
+    return results;
 }
 
 uint32_t DatabaseCheckpointer::getNumCheckpoints() const noexcept
 {
-    //TODO cnyce
-    return 0;
+    return num_alive_checkpoints_;
 }
 
 uint32_t DatabaseCheckpointer::getNumSnapshots() const noexcept
 {
-    //TODO cnyce
-    return 0;
+    return num_alive_snapshots_;
 }
 
 uint32_t DatabaseCheckpointer::getNumDeltas() const noexcept
 {
-    //TODO cnyce
-    return 0;
+    return getNumCheckpoints() - getNumSnapshots();
 }
 
 uint32_t DatabaseCheckpointer::getNumDeadCheckpoints() const noexcept
 {
-    //TODO cnyce
-    return 0;
+    return num_dead_checkpoints_;
 }
 
 std::deque<chkpt_id_t> DatabaseCheckpointer::getCheckpointChain(chkpt_id_t id) const
 {
-    //TODO cnyce
-    return {};
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    std::deque<chkpt_id_t> chain;
+    if (!getHead()) {
+        return chain;
+    }
+
+    if (!hasCheckpoint(id)) {
+        throw CheckpointError("There is no checkpoint with ID ") << id;
+    }
+
+    auto it = chkpts_cache_.find(id);
+    while (it != chkpts_cache_.end()) {
+        chain.push_back(id);
+        id = it->second->getPrevID();
+        it = chkpts_cache_.find(id);
+    }
+
+    while (id != checkpoint_type::UNIDENTIFIED_CHECKPOINT) {
+        chain.push_back(id);
+        id = chkpt_query_->getPrevID(id);
+    }
+
+    return chain;
 }
 
 DatabaseCheckpointAccessor<false> DatabaseCheckpointer::findLatestCheckpointAtOrBefore(tick_t tick, chkpt_id_t from)
 {
+    if (!hasCheckpoint(from)) {
+        throw SpartaException("Invalid checkpoint ID");
+    }
+
     //TODO cnyce
     (void)tick;
-    (void)from;
     return DatabaseCheckpointAccessor<false>(this, CheckpointBase::UNIDENTIFIED_CHECKPOINT);
 }
 
-DatabaseCheckpointAccessor<false> DatabaseCheckpointer::findCheckpoint(chkpt_id_t id) noexcept
+DatabaseCheckpointAccessor<false> DatabaseCheckpointer::findCheckpoint(chkpt_id_t id)
 {
+    if (!hasCheckpoint(id)) {
+        throw SpartaException("Invalid checkpoint ID");
+    }
+
     return DatabaseCheckpointAccessor<false>(this, id);
 }
 
 bool DatabaseCheckpointer::hasCheckpoint(chkpt_id_t id) const noexcept
 {
-    //TODO cnyce
-    (void)id;
-    return false;
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (chkpts_cache_.find(id) != chkpts_cache_.end()) {
+        return true;
+    }
+
+    return chkpt_query_->hasCheckpoint(id);
 }
 
 void DatabaseCheckpointer::dumpRestoreChain(std::ostream& o, chkpt_id_t id) const
@@ -303,9 +374,22 @@ void DatabaseCheckpointer::dumpRestoreChain(std::ostream& o, chkpt_id_t id) cons
 
 std::stack<chkpt_id_t> DatabaseCheckpointer::getHistoryChain(chkpt_id_t id) const
 {
-    //TODO cnyce
-    (void)id;
-    return {};
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    std::stack<chkpt_id_t> chain;
+    auto it = chkpts_cache_.find(id);
+    while (it != chkpts_cache_.end()) {
+        chain.push(id);
+        id = it->second->getPrevID();
+        it = chkpts_cache_.find(id);
+    }
+
+    while (id != checkpoint_type::UNIDENTIFIED_CHECKPOINT) {
+        chain.push(id);
+        id = chkpt_query_->getPrevID(id);
+    }
+
+    return chain;
 }
 
 std::stack<chkpt_id_t> DatabaseCheckpointer::getRestoreChain(chkpt_id_t id) const
@@ -317,9 +401,14 @@ std::stack<chkpt_id_t> DatabaseCheckpointer::getRestoreChain(chkpt_id_t id) cons
 
 std::vector<chkpt_id_t> DatabaseCheckpointer::getNextIDs(chkpt_id_t id) const
 {
-    //TODO cnyce
-    (void)id;
-    return {};
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    auto it = chkpts_cache_.find(id);
+    if (it != chkpts_cache_.end()) {
+        return it->second->getNextIDs();
+    }
+
+    return chkpt_query_->getNextIDs(id);
 }
 
 void DatabaseCheckpointer::load(const std::vector<ArchData*>& dats, chkpt_id_t id)
@@ -331,16 +420,49 @@ void DatabaseCheckpointer::load(const std::vector<ArchData*>& dats, chkpt_id_t i
 
 uint32_t DatabaseCheckpointer::getDistanceToPrevSnapshot(chkpt_id_t id) const noexcept
 {
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    uint32_t dist = 0;
+    auto it = chkpts_cache_.find(id);
+    while (it != chkpts_cache_.end()) {
+        if (it->second->isSnapshot()) {
+            return dist;
+        }
+        id = it->second->getPrevID();
+        it = chkpts_cache_.find(id);
+        ++dist;
+    }
+
+    return chkpt_query_->getDistanceToPrevSnapshot(id);
+}
+
+bool DatabaseCheckpointer::isSnapshot(chkpt_id_t id) const noexcept
+{
     //TODO cnyce
     (void)id;
-    return 0;
+    return false;
 }
 
 bool DatabaseCheckpointer::canDelete(chkpt_id_t id) const noexcept
 {
-    //TODO cnyce
-    (void)id;
-    return true;
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    auto it = chkpts_cache_.find(id);
+    if (it == chkpts_cache_.end()) {
+        return chkpt_query_->canDelete(id);
+    }
+
+    if (!it->second->isFlaggedDeleted()) {
+        return false;
+    }
+
+    for (auto next_id : getNextIDs(id)) {
+        if (!canDelete(next_id) && !isSnapshot(next_id)) {
+            return false;
+        }
+    }
+
+    return false;
 }
 
 std::string DatabaseCheckpointer::stringize() const

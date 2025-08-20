@@ -117,8 +117,7 @@ std::vector<chkpt_id_t> DatabaseCheckpoint::getNextIDs() const
 
 void DatabaseCheckpoint::load(const std::vector<ArchData*>& dats)
 {
-    //TODO cnyce
-    (void)dats;
+    checkpointer_->load(dats, getID());
 }
 
 bool DatabaseCheckpoint::canDelete() const noexcept

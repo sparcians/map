@@ -48,6 +48,10 @@ uint64_t DatabaseCheckpointAccessor<IsConst>::getContentMemoryUse() const noexce
 template <bool IsConst>
 void DatabaseCheckpointAccessor<IsConst>::load(const std::vector<ArchData*>& dats)
 {
+    if constexpr (IsConst) {
+        throw SpartaException("Cannot call load() on a const DatabaseCheckpointAccessor");
+    }
+
     //TODO cnyce
     (void)dats;
 }
@@ -97,6 +101,10 @@ bool DatabaseCheckpointAccessor<IsConst>::canDelete() const noexcept
 template <bool IsConst>
 void DatabaseCheckpointAccessor<IsConst>::flagDeleted()
 {
+    if constexpr (IsConst) {
+        throw SpartaException("Cannot call flagDeleted() on a const DatabaseCheckpointAccessor");
+    }
+
     //TODO cnyce
 }
 
@@ -131,6 +139,10 @@ uint32_t DatabaseCheckpointAccessor<IsConst>::getDistanceToPrevSnapshot() const 
 template <bool IsConst>
 void DatabaseCheckpointAccessor<IsConst>::loadState(const std::vector<ArchData*>& dats)
 {
+    if constexpr (IsConst) {
+        throw SpartaException("Cannot call loadState() on a const DatabaseCheckpointAccessor");
+    }
+
     //TODO cnyce
     (void)dats;
 }

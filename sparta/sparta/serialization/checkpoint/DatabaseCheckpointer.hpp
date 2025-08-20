@@ -17,6 +17,7 @@ namespace sparta::serialization::checkpoint
 {
 
 class DatabaseCheckpointer;
+class DatabaseCheckpointQuery;
 
 /*!
  * \brief Implementation of the FastCheckpointer which only holds
@@ -46,15 +47,7 @@ public:
      * \param sched Scheduler to read and restart on checkpoint restore (if
      *              not nullptr)
      */
-    DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, TreeNode& root, Scheduler* sched=nullptr) :
-        Checkpointer(root, sched),
-        db_mgr_(db_mgr),
-        snap_thresh_(DEFAULT_SNAPSHOT_THRESH),
-        next_chkpt_id_(checkpoint_type::MIN_CHECKPOINT),
-        num_alive_checkpoints_(0),
-        num_alive_snapshots_(0),
-        num_dead_checkpoints_(0)
-    { }
+    DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, TreeNode& root, Scheduler* sched=nullptr);
 
     /*!
      * \brief Define the SimDB schema for this checkpointer.
@@ -219,7 +212,7 @@ public:
      * deleted
      * \return Checkpoint with ID of \a id if found or nullptr if not found
      */
-    DatabaseCheckpointAccessor<false> findCheckpoint(chkpt_id_t id) noexcept;
+    DatabaseCheckpointAccessor<false> findCheckpoint(chkpt_id_t id);
 
     /*!
      * \brief Tests whether this checkpoint manager has a checkpoint with
@@ -270,12 +263,30 @@ public:
     void load(const std::vector<ArchData*>& dats, chkpt_id_t id);
 
     /*!
-     * \brief TODO cnyce
+     * \brief Determines how many checkpoints away the closest, earlier
+     * snapshot is.
+     * \return distance to closest snapshot. If this node is a snapshot,
+     * returns 0; if immediate getPrev() is a snapshot, returns 1; and
+     * so on.
+     *
+     * \note This is a noexcept function, which means that the exception if
+     * no snapshot is encountered is uncatchable. This is intentional.
      */
     uint32_t getDistanceToPrevSnapshot(chkpt_id_t id) const noexcept;
 
     /*!
-     * \brief TODO cnyce
+     * \brief Check if the given checkpoint is a snapshot (not a delta).
+     * \return Returns false if not a snapshot or the id is not a checkpoint.
+     */
+    bool isSnapshot(chkpt_id_t id) const noexcept;
+
+    /*!
+     * \brief Can this checkpoint be deleted
+     * Cannot be deleted if:
+     * \li This checkpoint has any ancestors which are not deletable and not snapshots
+     * \li This checkpoint was not flagged for deletion with flagDeleted
+     * \warning This is a recursive search of a checkpoint tree which has potentially many
+     * branches and could have high time cost
      */
     bool canDelete(chkpt_id_t id) const noexcept;
 
@@ -440,6 +451,11 @@ private:
     //! in which they were received, while keeping the cache designed to use an unordered_map for
     //! random access.
     std::queue<chkpt_id_t> chkpt_ids_for_pipeline_head_;
+
+    //! \brief SQLite query object to "extend" the checkpoint search space from just the
+    //! cache to include the database. Combinations of in-memory checkpoints, recreated
+    //! checkpoints, and database schema/query optimizations are used for performance.
+    std::shared_ptr<DatabaseCheckpointQuery> chkpt_query_;
 
     //! \brief Mutex to protect our checkpoints cache.
     mutable std::mutex mutex_;
