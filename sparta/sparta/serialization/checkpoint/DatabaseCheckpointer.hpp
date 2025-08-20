@@ -4,7 +4,6 @@
 
 #include "sparta/serialization/checkpoint/Checkpointer.hpp"
 #include "sparta/serialization/checkpoint/DatabaseCheckpoint.hpp"
-#include "sparta/serialization/checkpoint/DatabaseCheckpointAccessor.hpp"
 #include "simdb/apps/App.hpp"
 #include "simdb/pipeline/Pipeline.hpp"
 
@@ -204,7 +203,7 @@ public:
      * \throw CheckpointError if \a from does not refer to a valid
      * checkpoint.
      */
-    DatabaseCheckpointAccessor<false> findLatestCheckpointAtOrBefore(tick_t tick, chkpt_id_t from);
+    std::unique_ptr<DatabaseCheckpoint> findLatestCheckpointAtOrBefore(tick_t tick, chkpt_id_t from);
 
     /*!
      * \brief Finds a checkpoint by its ID
@@ -212,7 +211,7 @@ public:
      * deleted
      * \return Checkpoint with ID of \a id if found or nullptr if not found
      */
-    DatabaseCheckpointAccessor<false> findCheckpoint(chkpt_id_t id);
+    std::unique_ptr<DatabaseCheckpoint> findCheckpoint(chkpt_id_t id);
 
     /*!
      * \brief Tests whether this checkpoint manager has a checkpoint with
@@ -389,12 +388,12 @@ private:
      * returns nullptr.
      * \todo Faster lookup?
      */
-    DatabaseCheckpointAccessor<false> findCheckpoint_(chkpt_id_t id) noexcept;
+    std::unique_ptr<DatabaseCheckpoint> findCheckpoint_(chkpt_id_t id) noexcept;
 
     /*!
      * \brief Const version of findCheckpoint_()
      */
-    DatabaseCheckpointAccessor<true> findCheckpoint_(chkpt_id_t id) const noexcept;
+    std::unique_ptr<DatabaseCheckpoint> findCheckpoint_(chkpt_id_t id) const noexcept;
 
     /*!
      * \brief Implements Checkpointer::dumpCheckpointNode_

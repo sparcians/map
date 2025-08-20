@@ -18,7 +18,7 @@ DatabaseCheckpoint::DatabaseCheckpoint(TreeNode& root,
                                        DatabaseCheckpoint* prev,
                                        bool is_snapshot,
                                        DatabaseCheckpointer* checkpointer)
-    : DatabaseCheckpointBase(id, tick)
+    : CheckpointBase(id, tick)
     , prev_id_(prev ? prev->getID() : UNIDENTIFIED_CHECKPOINT)
     , deleted_id_(UNIDENTIFIED_CHECKPOINT)
     , is_snapshot_(is_snapshot)
@@ -50,7 +50,7 @@ DatabaseCheckpoint::DatabaseCheckpoint(chkpt_id_t prev_id,
                                        bool is_snapshot,
                                        const storage::VectorStorage& storage,
                                        DatabaseCheckpointer* checkpointer)
-    : DatabaseCheckpointBase(getID(), getTick())
+    : CheckpointBase(getID(), getTick())
     , prev_id_(prev_id)
     , next_ids_(next_ids)
     , deleted_id_(deleted_id)

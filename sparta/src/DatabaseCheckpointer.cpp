@@ -63,7 +63,7 @@ using EvictedChkptIDs = std::vector<chkpt_id_t>;
 
 DatabaseCheckpointer::DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, TreeNode& root, Scheduler* sched) :
     Checkpointer(root, sched),
-    chkpt_query_(std::make_shared<DatabaseCheckpointQuery>(db_mgr)),
+    chkpt_query_(std::make_shared<DatabaseCheckpointQuery>(db_mgr, root, sched)),
     db_mgr_(db_mgr),
     snap_thresh_(DEFAULT_SNAPSHOT_THRESH),
     next_chkpt_id_(checkpoint_type::MIN_CHECKPOINT),
@@ -335,7 +335,7 @@ std::deque<chkpt_id_t> DatabaseCheckpointer::getCheckpointChain(chkpt_id_t id) c
     return chain;
 }
 
-DatabaseCheckpointAccessor<false> DatabaseCheckpointer::findLatestCheckpointAtOrBefore(tick_t tick, chkpt_id_t from)
+std::unique_ptr<DatabaseCheckpoint> DatabaseCheckpointer::findLatestCheckpointAtOrBefore(tick_t tick, chkpt_id_t from)
 {
     if (!hasCheckpoint(from)) {
         throw SpartaException("Invalid checkpoint ID");
@@ -343,16 +343,15 @@ DatabaseCheckpointAccessor<false> DatabaseCheckpointer::findLatestCheckpointAtOr
 
     //TODO cnyce
     (void)tick;
-    return DatabaseCheckpointAccessor<false>(this, CheckpointBase::UNIDENTIFIED_CHECKPOINT);
+    return nullptr;
 }
 
-DatabaseCheckpointAccessor<false> DatabaseCheckpointer::findCheckpoint(chkpt_id_t id)
+std::unique_ptr<DatabaseCheckpoint> DatabaseCheckpointer::findCheckpoint(chkpt_id_t id)
 {
     if (!hasCheckpoint(id)) {
         throw SpartaException("Invalid checkpoint ID");
     }
-
-    return DatabaseCheckpointAccessor<false>(this, id);
+    return nullptr;
 }
 
 bool DatabaseCheckpointer::hasCheckpoint(chkpt_id_t id) const noexcept
@@ -617,14 +616,18 @@ bool DatabaseCheckpointer::recursForwardFindAlive_(chkpt_id_t id) const
     return false;
 }
 
-DatabaseCheckpointAccessor<false> DatabaseCheckpointer::findCheckpoint_(chkpt_id_t id) noexcept
+std::unique_ptr<DatabaseCheckpoint> DatabaseCheckpointer::findCheckpoint_(chkpt_id_t id) noexcept
 {
-    return DatabaseCheckpointAccessor<false>(this, id);
+    //TODO cnyce
+    (void)id;
+    return nullptr;
 }
 
-DatabaseCheckpointAccessor<true> DatabaseCheckpointer::findCheckpoint_(chkpt_id_t id) const noexcept
+std::unique_ptr<DatabaseCheckpoint> DatabaseCheckpointer::findCheckpoint_(chkpt_id_t id) const noexcept
 {
-    return DatabaseCheckpointAccessor<true>(this, id);
+    //TODO cnyce
+    (void)id;
+    return nullptr;
 }
 
 void DatabaseCheckpointer::dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o) const
