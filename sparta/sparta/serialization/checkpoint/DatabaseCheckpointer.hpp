@@ -211,7 +211,7 @@ public:
      * deleted
      * \return Checkpoint with ID of \a id if found or nullptr if not found
      */
-    std::unique_ptr<DatabaseCheckpoint> findCheckpoint(chkpt_id_t id);
+    std::unique_ptr<DatabaseCheckpoint> findCheckpoint(chkpt_id_t id, bool must_exist=true) const;
 
     /*!
      * \brief Tests whether this checkpoint manager has a checkpoint with
@@ -251,15 +251,6 @@ public:
      * vector if there are no later checkpoints.
      */
     std::vector<chkpt_id_t> getNextIDs(chkpt_id_t id) const;
-
-    /*!
-     * \brief Attempts to restore this checkpoint including any previous
-     * deltas (dependencies).
-     *
-     * Uses loadState to restore state from each checkpoint in the
-     * restore chain.
-     */
-    void load(const std::vector<ArchData*>& dats, chkpt_id_t id);
 
     /*!
      * \brief Determines how many checkpoints away the closest, earlier
@@ -371,6 +362,12 @@ private:
     void cleanupChain_(chkpt_id_t id);
 
     /*!
+     * \brief Remove the given checkpoint from the cache and/or DB. The
+     * adjacent checkpoints, if any, will be reconnected appropriately.
+     */
+    void disconnectChainLink_(chkpt_id_t id);
+
+    /*!
      * \brief Look forward to see if any future checkpoints depend on \a d.
      * \param d checkpoint to inspect and recursively search
      * \return true if the current checkpoint or any live checkpoints
@@ -380,20 +377,6 @@ private:
      * which branches down-chain depend on it.
      */
     bool recursForwardFindAlive_(chkpt_id_t id) const;
-
-    /*!
-     * \brief Attempts to find a checkpoint within this checkpointer by ID.
-     * \param id Checkpoint ID to search for
-     * \return Pointer to found checkpoint with matchind ID. If not found,
-     * returns nullptr.
-     * \todo Faster lookup?
-     */
-    std::unique_ptr<DatabaseCheckpoint> findCheckpoint_(chkpt_id_t id) noexcept;
-
-    /*!
-     * \brief Const version of findCheckpoint_()
-     */
-    std::unique_ptr<DatabaseCheckpoint> findCheckpoint_(chkpt_id_t id) const noexcept;
 
     /*!
      * \brief Implements Checkpointer::dumpCheckpointNode_
@@ -457,7 +440,7 @@ private:
     std::shared_ptr<DatabaseCheckpointQuery> chkpt_query_;
 
     //! \brief Mutex to protect our checkpoints cache.
-    mutable std::mutex mutex_;
+    mutable std::recursive_mutex mutex_;
 
     //! \brief SimDB instance
     simdb::DatabaseManager* db_mgr_ = nullptr;

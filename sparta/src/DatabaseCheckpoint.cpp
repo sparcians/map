@@ -117,7 +117,15 @@ std::vector<chkpt_id_t> DatabaseCheckpoint::getNextIDs() const
 
 void DatabaseCheckpoint::load(const std::vector<ArchData*>& dats)
 {
-    checkpointer_->load(dats, getID());
+    // BUild stack up to last snapshot
+    std::stack<chkpt_id_t> chkpt_ids = getRestoreChain();
+
+    // Load in proper order
+    while (!chkpt_ids.empty()) {
+        auto id = chkpt_ids.top();
+        chkpt_ids.pop();
+        checkpointer_->findCheckpoint(id)->loadState(dats);
+    }
 }
 
 bool DatabaseCheckpoint::canDelete() const noexcept

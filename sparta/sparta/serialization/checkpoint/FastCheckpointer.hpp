@@ -528,7 +528,7 @@ namespace sparta::serialization::checkpoint
                     // This snapshot is needed later. Move to previous delta and work from there
                     d = static_cast<checkpoint_type*>(d->getPrev());
                 }else{
-                    return; // This delta is needed. Therefore  all preceeding deltas are needed
+                    return; // This delta is needed. Therefore all preceeding deltas are needed
                 }
             }
 

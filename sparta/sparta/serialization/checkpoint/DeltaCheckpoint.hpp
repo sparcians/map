@@ -181,7 +181,7 @@ namespace sparta::serialization::checkpoint
                     o << '(';
                 }
                 if(cp->getID() == UNIDENTIFIED_CHECKPOINT){
-                    o << "*" << getDeletedID() << "";
+                    o << "*" << getDeletedID();
                 }else{
                     o << cp->getID();
                 }

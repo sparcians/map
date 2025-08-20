@@ -1,4 +1,5 @@
 #include "sparta/serialization/checkpoint/DatabaseCheckpointQuery.hpp"
+#include "sparta/serialization/checkpoint/DatabaseCheckpoint.hpp"
 
 namespace sparta::serialization::checkpoint
 {
@@ -91,6 +92,13 @@ void DatabaseCheckpointQuery::traceValue(std::ostream& o, chkpt_id_t id, const A
     (void)size;
 }
 
+std::unique_ptr<DatabaseCheckpoint> DatabaseCheckpointQuery::findCheckpoint(chkpt_id_t id)
+{
+    //TODO cnyce
+    (void)id;
+    return nullptr;
+}
+
 chkpt_id_t DatabaseCheckpointQuery::getPrevID(chkpt_id_t id) const
 {
     //TODO cnyce
@@ -110,13 +118,6 @@ uint32_t DatabaseCheckpointQuery::getDistanceToPrevSnapshot(chkpt_id_t id) const
     //TODO cnyce
     (void)id;
     return 0;
-}
-
-bool DatabaseCheckpointQuery::canDelete(chkpt_id_t id) const noexcept
-{
-    //TODO cnyce
-    (void)id;
-    return false;
 }
 
 void DatabaseCheckpointQuery::createHead_()

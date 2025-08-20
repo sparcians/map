@@ -12,6 +12,8 @@ namespace simdb
 namespace sparta::serialization::checkpoint
 {
 
+class DatabaseCheckpoint;
+
 /*!
  * \brief SQLite query object to "extend" the checkpoint search space from just the
  * cache to include the database. Combinations of in-memory checkpoints, recreated
@@ -29,8 +31,6 @@ public:
 
     uint64_t getContentMemoryUse() const noexcept override;
 
-    bool hasCheckpoint(chkpt_id_t id) const noexcept override;
-
     void deleteCheckpoint(chkpt_id_t id) override;
 
     void loadCheckpoint(chkpt_id_t id) override;
@@ -43,6 +43,8 @@ public:
 
     std::deque<chkpt_id_t> getCheckpointChain(chkpt_id_t id) const override;
 
+    bool hasCheckpoint(chkpt_id_t id) const noexcept override;
+
     void dumpList(std::ostream& o) const override;
 
     void dumpData(std::ostream& o) const override;
@@ -51,13 +53,13 @@ public:
 
     void traceValue(std::ostream& o, chkpt_id_t id, const ArchData* container, uint32_t offset, uint32_t size) override;
 
+    std::unique_ptr<DatabaseCheckpoint> findCheckpoint(chkpt_id_t id);
+
     chkpt_id_t getPrevID(chkpt_id_t id) const;
 
     std::vector<chkpt_id_t> getNextIDs(chkpt_id_t id) const;
 
     uint32_t getDistanceToPrevSnapshot(chkpt_id_t id) const noexcept;
-
-    bool canDelete(chkpt_id_t id) const noexcept;
 
 private:
     void createHead_() override;
