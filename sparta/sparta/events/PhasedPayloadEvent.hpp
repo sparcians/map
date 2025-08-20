@@ -221,7 +221,11 @@ namespace sparta
         }
 
         //! Destroy!
-        virtual ~PhasedPayloadEvent() {}
+        virtual ~PhasedPayloadEvent() {
+            for(PayloadDeliveringProxy * proxy : inflight_pl_) {
+                std::destroy_at(proxy->payload_);
+            }
+        }
 
         //! No assignments, no copies
         PhasedPayloadEvent<DataT> & operator=(const PhasedPayloadEvent<DataT> &) = delete;
