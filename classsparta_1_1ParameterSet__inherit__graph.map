@@ -1,0 +1,47 @@
+<map id="sparta::ParameterSet" name="sparta::ParameterSet">
+<area shape="rect" id="Node000001" title="Generic container of Parameters." alt="" coords="588,537,732,563"/>
+<area shape="rect" id="Node000006" href="$classConsumer_1_1ConsumerParameterSet.html" title=" " alt="" coords="780,5,1005,31"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="661,522,674,415,697,271,712,198,731,132,753,77,778,40,792,29,795,34,782,44,757,80,736,133,718,199,702,272,679,416,667,522"/>
+<area shape="rect" id="Node000007" href="$classProducerParameterSet.html" title=" " alt="" coords="816,55,969,80"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="662,521,676,425,700,296,716,231,734,172,755,124,778,91,795,79,814,71,816,76,798,83,782,95,759,126,739,174,721,232,706,297,681,426,667,522"/>
+<area shape="rect" id="Node000008" href="$classcore__example_1_1BIU_1_1BIUParameterSet.html" title="Parameters for BIU model." alt="" coords="824,104,960,145"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="659,521,663,449,680,351,695,299,716,247,743,199,778,156,799,141,823,131,825,136,802,146,781,160,747,202,720,249,700,300,685,352,669,449,664,522"/>
+<area shape="rect" id="Node000009" href="$classcore__example_1_1CPU_1_1CPUParameterSet.html" title="Parameters for CPU model." alt="" coords="822,170,963,210"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="661,521,669,460,688,379,703,337,723,295,748,256,778,222,798,207,821,198,823,203,801,212,781,225,752,259,728,297,708,339,693,381,674,461,666,522"/>
+<area shape="rect" id="Node000010" href="$classcore__example_1_1Core_1_1CoreParameterSet.html" title="Parameters for Core model." alt="" coords="825,235,960,276"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="664,521,676,471,697,408,731,343,752,313,778,287,800,272,824,263,826,268,802,277,781,291,756,317,735,346,702,410,681,473,669,523"/>
+<area shape="rect" id="Node000011" href="$classcore__example_1_1Decode_1_1DecodeParameterSet.html" title="Parameters for Decode model." alt="" coords="817,300,968,341"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="668,522,684,484,707,438,738,392,778,352,815,333,817,337,781,356,743,395,712,441,689,486,673,524"/>
+<area shape="rect" id="Node000012" href="$classcore__example_1_1Dispatch_1_1DispatchParameterSet.html" title="Parameters for Dispatch model." alt="" coords="813,366,972,406"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="676,523,718,469,747,441,778,417,811,401,814,406,781,422,750,445,722,473,680,526"/>
+<area shape="rect" id="Node000013" href="$classcore__example_1_1Execute_1_1ExecuteParameterSet.html" title="Parameters for Execute model." alt="" coords="816,431,969,472"/>
+<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="694,527,734,504,779,482,814,469,816,474,781,487,736,509,696,531"/>
+<area shape="rect" id="Node000014" href="$classcore__example_1_1Fetch_1_1FetchParameterSet.html" title="Parameters for Fetch model." alt="" coords="822,496,962,537"/>
+<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="747,535,821,524,822,530,748,540"/>
+<area shape="rect" id="Node000015" href="$classcore__example_1_1FlushManager_1_1FlushManagerParameters.html" title=" " alt="" coords="798,562,987,602"/>
+<area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="747,559,798,566,797,572,747,565"/>
+<area shape="rect" id="Node000016" href="$classcore__example_1_1LSU_1_1LSUParameterSet.html" title="Parameters for LSU model." alt="" coords="822,627,962,668"/>
+<area shape="poly" id="edge15_Node000001_Node000016" title=" " alt="" coords="697,569,781,612,823,627,821,632,779,617,694,573"/>
+<area shape="rect" id="Node000017" href="$classcore__example_1_1MSS_1_1MSSParameterSet.html" title="Parameters for MSS model." alt="" coords="821,692,964,733"/>
+<area shape="poly" id="edge16_Node000001_Node000017" title=" " alt="" coords="680,574,722,627,750,654,781,677,822,696,820,701,778,682,747,658,718,630,676,577"/>
+<area shape="rect" id="Node000018" href="$classcore__example_1_1Preloader_1_1PreloaderParameterSet.html" title=" " alt="" coords="811,758,974,798"/>
+<area shape="poly" id="edge17_Node000001_Node000018" title=" " alt="" coords="673,576,689,614,712,659,743,704,781,743,812,760,810,764,778,747,739,708,707,662,684,616,668,578"/>
+<area shape="rect" id="Node000019" href="$classcore__example_1_1ROB_1_1ROBParameterSet.html" title="Parameters for ROB model." alt="" coords="822,823,963,864"/>
+<area shape="poly" id="edge18_Node000001_Node000019" title=" " alt="" coords="669,578,681,627,702,689,735,753,757,783,781,808,801,821,823,830,821,835,798,826,778,812,752,786,731,756,697,692,676,629,664,579"/>
+<area shape="rect" id="Node000020" href="$classcore__example_1_1Rename_1_1RenameParameterSet.html" title="Parameters for Rename model." alt="" coords="815,888,970,929"/>
+<area shape="poly" id="edge19_Node000001_Node000020" title=" " alt="" coords="666,578,674,639,694,719,709,761,728,802,752,840,781,874,797,885,815,894,813,899,794,890,778,877,748,843,723,804,704,763,688,720,669,640,661,579"/>
+<area shape="rect" id="Node000021" href="$classcore__example_1_1SimpleTLB_1_1TLBParameterSet.html" title=" " alt="" coords="806,954,978,994"/>
+<area shape="poly" id="edge20_Node000001_Node000021" title=" " alt="" coords="664,579,669,651,685,748,700,799,720,850,747,897,781,939,807,956,804,961,778,943,743,900,716,852,695,801,680,749,663,651,659,579"/>
+<area shape="rect" id="Node000022" href="$classsparta_1_1IntParameterSet.html" title=" " alt="" coords="813,1019,972,1044"/>
+<area shape="poly" id="edge21_Node000001_Node000022" title=" " alt="" coords="667,578,681,674,706,803,721,867,739,925,760,973,782,1004,796,1015,814,1023,812,1028,794,1020,778,1008,755,975,734,927,716,868,700,804,676,675,662,579"/>
+<area shape="rect" id="Node000023" href="$classsparta_1_1Scoreboard_1_1ScoreboardParameters.html" title=" " alt="" coords="812,1068,972,1109"/>
+<area shape="poly" id="edge22_Node000001_Node000023" title=" " alt="" coords="667,578,680,683,703,826,719,899,737,965,758,1019,782,1055,796,1067,813,1075,811,1080,793,1071,778,1059,753,1021,732,967,714,900,698,827,674,684,662,579"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="420,537,540,563"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="556,548,588,548,588,553,556,553"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="199,512,372,538"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="388,535,420,540,419,545,387,541"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,512,151,538"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="166,522,198,522,198,528,166,528"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="199,561,372,587"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="387,559,419,555,420,560,388,564"/>
+</map>

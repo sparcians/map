@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,31,206,56"/>
+<area shape="rect" id="Node000001" href="$classcore__example_1_1SimpleCacheLine.html" title=" " alt="" coords="254,5,463,31"/>
+<area shape="poly" id="edge214_Node000000_Node000001" title=" " alt="" coords="221,29,253,26,254,31,221,35"/>
+<area shape="rect" id="Node000002" href="$classcore__example_1_1SimpleTLBEntry.html" title=" " alt="" coords="258,55,459,80"/>
+<area shape="poly" id="edge215_Node000000_Node000002" title=" " alt="" coords="221,52,257,55,257,61,221,57"/>
+</map>

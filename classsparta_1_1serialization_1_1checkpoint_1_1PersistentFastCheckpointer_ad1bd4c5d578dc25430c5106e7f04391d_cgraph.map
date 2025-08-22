@@ -1,0 +1,19 @@
+<map id="sparta::serialization::checkpoint::PersistentFastCheckpointer::save" name="sparta::serialization::checkpoint::PersistentFastCheckpointer::save">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,117,187,173"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a635083089c21e29907190647b3963d83" title="Creates a checkpoint at the given scheduler&#39;s current tick with a new checkpoint ID some point after ..." alt="" coords="235,117,407,173"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="187,142,219,142,219,148,187,148"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#ab555167eb11cd29ba3d0d55bfeba3d6c" title="Create a checkpoint." alt="" coords="455,41,627,97"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="402,114,443,100,445,105,404,119"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a182c99fa315f6596d2a7cee9d616014e" title="Creates a head without taking an identified checkpoint. Cannot already have a head." alt="" coords="455,157,627,213"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="408,158,440,164,439,169,407,163"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a1ab50505bd631547981015601a4f40e8" title="Returns the ID of this checkpoint." alt="" coords="692,5,853,61"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="627,53,676,45,677,51,628,58"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a8b1a87ef3baa56e2170129b0c5ed1c7c" title="Create a head node." alt="" coords="686,85,859,141"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="627,156,671,142,672,147,628,161"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1Scheduler.html#a34dcaf99252d9e9e0511d69d2aa84ff8" title="The current tick the Scheduler is working on or just finished." alt="" coords="709,165,836,206"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="628,182,693,182,693,188,628,188"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="675,230,870,255"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="628,204,703,223,702,228,627,209"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="700,280,845,320"/>
+<area shape="poly" id="edge8_Node000005_Node000009" title=" " alt="" coords="584,211,628,239,677,265,689,271,687,276,674,270,625,244,581,216"/>
+</map>

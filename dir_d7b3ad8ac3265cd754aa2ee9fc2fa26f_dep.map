@@ -1,0 +1,19 @@
+<map id="/github/workspace/sparta/sparta/ports" name="/github/workspace/sparta/sparta/ports">
+<area shape="rect" id="node1" href="dir_38df6f7c106d7c195f162803cd54b3e8.html" title="events" alt="" coords="27,126,88,152"/>
+<area shape="rect" id="node2" href="dir_538f46becf9f81566841c79369e25095.html" title="utils" alt="" coords="112,126,157,152"/>
+<area shape="rect" id="node3" href="dir_bae73467595dcad1358f78a6740bd606.html" title="simulation" alt="" coords="181,126,262,152"/>
+<area shape="rect" id="node4" href="dir_d9eaae3f6493443cb9f9b547db1ae94c.html" title="collection" alt="" coords="286,126,362,152"/>
+<area shape="rect" id="node5" href="dir_e68ac958302b52af687f2cf1071c917c.html" title="kernel" alt="" coords="386,126,443,152"/>
+<area shape="rect" id="node6" href="dir_d7b3ad8ac3265cd754aa2ee9fc2fa26f.html" title="ports" alt="" coords="196,52,246,78"/>
+<area shape="poly" id="edge1" href="dir_000014_000007.html" alt="" coords="197,80,100,122,98,117,195,75"/>
+<area shape="rect" id="edge1-headlabel" href="dir_000014_000007.html" title="12" alt="" coords="98,119,112,134"/>
+<area shape="poly" id="edge2" href="dir_000014_000026.html" alt="" coords="208,81,162,118,159,114,205,76"/>
+<area shape="rect" id="edge2-headlabel" href="dir_000014_000026.html" title="6" alt="" coords="165,113,172,128"/>
+<area shape="poly" id="edge3" href="dir_000014_000018.html" alt="" coords="224,78,224,110,219,110,219,78"/>
+<area shape="rect" id="edge3-headlabel" href="dir_000014_000018.html" title="4" alt="" coords="226,100,233,115"/>
+<area shape="poly" id="edge4" href="dir_000014_000004.html" alt="" coords="240,76,296,115,293,119,237,81"/>
+<area shape="rect" id="edge4-headlabel" href="dir_000014_000004.html" title="2" alt="" coords="293,101,300,116"/>
+<area shape="poly" id="edge5" href="dir_000014_000010.html" alt="" coords="248,73,373,119,371,124,246,78"/>
+<area shape="rect" id="edge5-headlabel" href="dir_000014_000010.html" title="2" alt="" coords="369,105,376,120"/>
+<area shape="rect" id="clust1" href="dir_8b51add0bc6ff831487a715a42aa15b5.html" title="sparta" alt="" coords="16,16,453,162"/>
+</map>
