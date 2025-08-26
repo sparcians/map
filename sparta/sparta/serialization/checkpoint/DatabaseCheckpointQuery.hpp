@@ -13,6 +13,7 @@ namespace sparta::serialization::checkpoint
 {
 
 class DatabaseCheckpoint;
+class DatabaseCheckpointer;
 
 /*!
  * \brief SQLite query object to "extend" the checkpoint search space from just the
@@ -22,8 +23,12 @@ class DatabaseCheckpoint;
 class DatabaseCheckpointQuery : public Checkpointer
 {
 public:
-    DatabaseCheckpointQuery(simdb::DatabaseManager* db_mgr, TreeNode& root, sparta::Scheduler* sched=nullptr)
+    DatabaseCheckpointQuery(DatabaseCheckpointer* checkpointer,
+                            simdb::DatabaseManager* db_mgr,
+                            TreeNode& root,
+                            Scheduler* sched=nullptr)
         : Checkpointer(root, sched)
+        , checkpointer_(checkpointer)
         , db_mgr_(db_mgr)
     {}
 
@@ -53,7 +58,7 @@ public:
 
     void traceValue(std::ostream& o, chkpt_id_t id, const ArchData* container, uint32_t offset, uint32_t size) override;
 
-    std::unique_ptr<DatabaseCheckpoint> findCheckpoint(chkpt_id_t id);
+    std::shared_ptr<DatabaseCheckpoint> findCheckpoint(chkpt_id_t id, bool must_exist=false) const;
 
     chkpt_id_t getPrevID(chkpt_id_t id) const;
 
@@ -70,8 +75,9 @@ private:
 
     std::vector<chkpt_id_t> getNextIDs_(chkpt_id_t id) const override;
 
-    //! \brief SimDB instance
-    simdb::DatabaseManager* db_mgr_ = nullptr;
+    mutable DatabaseCheckpointer* checkpointer_ = nullptr;
+
+    mutable simdb::DatabaseManager* db_mgr_ = nullptr;
 };
 
 } // namespace sparta::serialization::checkpoint

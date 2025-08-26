@@ -33,6 +33,9 @@ DatabaseCheckpoint::DatabaseCheckpoint(TreeNode& root,
     }
 
     if (prev) {
+        if (!prev->next_ids_.empty()) {
+            throw CheckpointError("DatabaseCheckpointer does not support multiple checkpoint branches");
+        }
         prev->next_ids_.push_back(getID());
     }
 
@@ -124,7 +127,7 @@ void DatabaseCheckpoint::load(const std::vector<ArchData*>& dats)
     while (!chkpt_ids.empty()) {
         auto id = chkpt_ids.top();
         chkpt_ids.pop();
-        checkpointer_->findCheckpoint(id)->loadState(dats);
+        checkpointer_->cloneCheckpoint(id)->loadState(dats);
     }
 }
 

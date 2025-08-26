@@ -142,7 +142,7 @@ void generalTest()
     for (auto id : chkpt_ids) {
         EXPECT_NOTHROW(dbcp.loadCheckpoint(id));
 
-        auto chkpt = dbcp.findCheckpoint(id);
+        auto chkpt = dbcp.cloneCheckpoint(id);
         uint32_t expected_r1 = id * 5ul;
         EXPECT_EQUAL(r1->read<uint32_t>(), expected_r1);
 

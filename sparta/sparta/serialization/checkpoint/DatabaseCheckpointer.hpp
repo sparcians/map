@@ -6,6 +6,7 @@
 #include "sparta/serialization/checkpoint/DatabaseCheckpoint.hpp"
 #include "simdb/apps/App.hpp"
 #include "simdb/pipeline/Pipeline.hpp"
+#include <unordered_set>
 
 //! Default threshold for creating snapshots
 #ifndef DEFAULT_SNAPSHOT_THRESH
@@ -94,25 +95,11 @@ public:
     uint64_t getContentMemoryUse() const noexcept override;
 
     /*!
-     * \brief Deletes a checkpoint by ID.
-     * \param id ID of checkpoint to delete. Must not be
-     * Checkpoint::UNIDENTIFIED_CHECKPOINT and must not be equal to the
-     * ID of the head checkpoint.
-     * \throw CheckpointError if this manager has no checkpoint with given
-     * id. Test with hasCheckpoint first. If id ==
-     * Checkpoint::UNIDENTIFIED_CHECKPOINT, always throws.
-     * Throws if id == getHeadID(). Head cannot be deleted
-     *
-     * Internally, this deletion may be effective-only and actual data may
-     * still exist in an incaccessible form as part of the checkpoint
-     * tree implementation.
-     *
-     * If the current checkpoint is deleted, current will be updated back
-     * along the current checkpoints previous checkpoint chain until a non
-     * deleted checkpoint is found. This will become the new current
-     * checkpoint
+     * \brief Explicit checkpoint deletion is NOT supported by this checkpointer.
      */
-    void deleteCheckpoint(chkpt_id_t id) override;
+    void deleteCheckpoint(chkpt_id_t) override final {
+        throw CheckpointError("deleteCheckpoint() not supported");
+    }
 
     /*!
      * \brief Loads state from a specific checkpoint by ID
@@ -203,15 +190,25 @@ public:
      * \throw CheckpointError if \a from does not refer to a valid
      * checkpoint.
      */
-    std::unique_ptr<DatabaseCheckpoint> findLatestCheckpointAtOrBefore(tick_t tick, chkpt_id_t from);
+    std::shared_ptr<DatabaseCheckpoint> findLatestCheckpointAtOrBefore(tick_t tick, chkpt_id_t from);
 
     /*!
-     * \brief Finds a checkpoint by its ID
+     * \brief Finds a checkpoint by its ID.
      * \param id ID of checkpoint to find. Guaranteed not to be flagged as
      * deleted
+     * \note ONLY SEARCHES CHECKPOINT CACHE. Use cloneCheckpoint() to also search the database.
      * \return Checkpoint with ID of \a id if found or nullptr if not found
      */
-    std::unique_ptr<DatabaseCheckpoint> findCheckpoint(chkpt_id_t id, bool must_exist=true) const;
+    std::weak_ptr<DatabaseCheckpoint> findCheckpoint(chkpt_id_t id) const;
+
+    /*!
+     * \brief Finds a checkpoint by its ID.
+     * \param id ID of checkpoint to find. Guaranteed not to be flagged as
+     * deleted
+     * \note SEARCHES BOTH THE CACHE AND THE DATABASE
+     * \return Checkpoint with ID of \a id if found or nullptr if not found
+     */
+    std::shared_ptr<DatabaseCheckpoint> cloneCheckpoint(chkpt_id_t id) const;
 
     /*!
      * \brief Tests whether this checkpoint manager has a checkpoint with
@@ -348,35 +345,25 @@ private:
     chkpt_id_t createCheckpoint_(bool force_snapshot=false) override;
 
     /*!
-     * \brief Delete given checkpoint and all contiguous previous
-     * checkpoints which can be deleted (See checkpoint_type::canDelete).
-     * This is the only place where checkpoint objects are actually freed
-     * (aside from destruction) and it ensures that they will not disrupt
-     * the checkpoint delta chains. All other deletion is simply flagging
-     * and re-identifying checkpoints
-     * \param d Checkpoint to attempt to delete first. Function will then
-     * move through each previous checkpoint until reaching head.
-     * \post Head checkpoint will never be deleted by this function
-     * \note Never flags any new checkpoints as deleted
+     * \brief Deletes a checkpoint by ID.
+     * \param id ID of checkpoint to delete. Must not be
+     * Checkpoint::UNIDENTIFIED_CHECKPOINT and must not be equal to the
+     * ID of the head checkpoint.
+     * \throw CheckpointError if this manager has no checkpoint with given
+     * id. Test with hasCheckpoint first. If id ==
+     * Checkpoint::UNIDENTIFIED_CHECKPOINT, always throws.
+     * Throws if id == getHeadID(). Head cannot be deleted
+     *
+     * Internally, this deletion may be effective-only and actual data may
+     * still exist in an incaccessible form as part of the checkpoint
+     * tree implementation.
+     *
+     * If the current checkpoint is deleted, current will be updated back
+     * along the current checkpoints previous checkpoint chain until a non
+     * deleted checkpoint is found. This will become the new current
+     * checkpoint
      */
-    void cleanupChain_(chkpt_id_t id);
-
-    /*!
-     * \brief Remove the given checkpoint from the cache and/or DB. The
-     * adjacent checkpoints, if any, will be reconnected appropriately.
-     */
-    void disconnectChainLink_(chkpt_id_t id);
-
-    /*!
-     * \brief Look forward to see if any future checkpoints depend on \a d.
-     * \param d checkpoint to inspect and recursively search
-     * \return true if the current checkpoint or any live checkpoints
-     * are hit in the search. Search terminates on each branch when a
-     * snapshot or the end of the branch is reached. The branch to inspect
-     * (\a d) will not be checked itself since the point is to determine
-     * which branches down-chain depend on it.
-     */
-    bool recursForwardFindAlive_(chkpt_id_t id) const;
+    void deleteCheckpoint_(chkpt_id_t id);
 
     /*!
      * \brief Implements Checkpointer::dumpCheckpointNode_
@@ -414,11 +401,6 @@ private:
      */
     void addToCache_(std::shared_ptr<checkpoint_type> chkpt);
 
-    /*!
-     * \brief Clone the next checkpoint that is ready for processing.
-     */
-    bool cloneNextPipelineHeadCheckpoint_(std::shared_ptr<checkpoint_type>& next);
-
     //! \brief Checkpointer head ID. Used to prevent the head from being deleted from the cache.
     chkpt_id_t head_id_ = checkpoint_type::UNIDENTIFIED_CHECKPOINT;
 
@@ -428,11 +410,8 @@ private:
     //! \brief Subset (or all of) our checkpoints that we currently are holding in memory.
     std::unordered_map<chkpt_id_t, std::shared_ptr<checkpoint_type>> chkpts_cache_;
 
-    //! \brief Ordered running list of checkpoint IDs that come in via calls to createCheckpoint_().
-    //! This is used in the pipeline to pick off and start processing checkpoints in the same order
-    //! in which they were received, while keeping the cache designed to use an unordered_map for
-    //! random access.
-    std::queue<chkpt_id_t> chkpt_ids_for_pipeline_head_;
+    //! \brief Subset (or all of) our checkpoints in the cache that haven't been send down the pipeline.
+    std::vector<std::weak_ptr<checkpoint_type>> chkpts_queue_;
 
     //! \brief SQLite query object to "extend" the checkpoint search space from just the
     //! cache to include the database. Combinations of in-memory checkpoints, recreated
@@ -440,10 +419,19 @@ private:
     std::shared_ptr<DatabaseCheckpointQuery> chkpt_query_;
 
     //! \brief Mutex to protect our checkpoints cache.
-    mutable std::recursive_mutex mutex_;
+    mutable std::recursive_mutex cache_mutex_;
+
+    //! \brief Set of dead checkpoint IDs.
+    std::unordered_set<chkpt_id_t> dead_chkpt_ids_;
+
+    //! \brief Mutex to protect our set of dead checkpoint IDs.
+    mutable std::recursive_mutex dead_chkpts_mutex_;
 
     //! \brief SimDB instance
     simdb::DatabaseManager* db_mgr_ = nullptr;
+
+    //! \brief Pipeline. Held onto to enable flushing.
+    simdb::pipeline::Pipeline* pipeline_ = nullptr;
 
     /*!
      * \brief Snapshot generation threshold. Every n checkpoints in a chain

@@ -9,6 +9,27 @@
 namespace sparta::serialization::checkpoint
 {
     class DatabaseCheckpointer;
+    class DatabaseCheckpoint;
+
+    struct ChkptWindowBytes {
+        using chkpt_id_t = CheckpointBase::chkpt_id_t;
+        std::vector<chkpt_id_t> chkpt_ids;
+        std::vector<char> chkpt_bytes;
+        uint64_t start_tick;
+        uint64_t end_tick;
+    };
+
+    struct ChkptWindow {
+        using chkpt_id_t = CheckpointBase::chkpt_id_t;
+        std::vector<chkpt_id_t> chkpt_ids;
+        std::vector<std::shared_ptr<DatabaseCheckpoint>> chkpts;
+        uint64_t start_tick;
+        uint64_t end_tick;
+
+        //! \brief Support boost::serialization
+        template <typename Archive>
+        void serialize(Archive& ar, const unsigned int /*version*/);
+    };
 
     /*!
     * \brief Checkpoint class optimized for use with database-backed
@@ -253,5 +274,31 @@ namespace sparta::serialization::checkpoint
         //! \brief Checkpointer who created us
         DatabaseCheckpointer* checkpointer_ = nullptr;
     };
+
+    //! Defined down here for "new DatabaseCheckpoint"
+    template <typename Archive>
+    inline void ChkptWindow::serialize(Archive& ar, const unsigned int /*version*/) {
+        // TODO cnyce: Try to avoid use of unique_ptr. Everything is already movable
+        // and has default constructors.
+        ar & chkpt_ids;
+        ar & start_tick;
+        ar & end_tick;
+
+        if (chkpts.empty()) {
+            // We are loading checkpoint window from disk
+            chkpts.reserve(chkpt_ids.size());
+            for (size_t i = 0; i < chkpt_ids.size(); ++i) {
+                chkpts.emplace_back(new DatabaseCheckpoint);
+                ar & *chkpts.back();
+            }
+        }
+
+        else {
+            // We are saving a checkpoint window to disk
+            for (auto& chkpt : chkpts) {
+                ar & *chkpt;
+            }
+        }
+    }
 
 } // namespace sparta::serialization::checkpoint
