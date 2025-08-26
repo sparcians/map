@@ -112,19 +112,19 @@ bool DatabaseCheckpointQuery::hasCheckpoint(chkpt_id_t id) const noexcept
 
 void DatabaseCheckpointQuery::dumpList(std::ostream& o) const
 {
-    //TODO cnyce: look back
+    //TODO cnyce
     (void)o;
 }
 
 void DatabaseCheckpointQuery::dumpData(std::ostream& o) const
 {
-    //TODO cnyce: look back
+    //TODO cnyce
     (void)o;
 }
 
 void DatabaseCheckpointQuery::dumpAnnotatedData(std::ostream& o) const
 {
-    //TODO cnyce: look back
+    //TODO cnyce
     (void)o;
 }
 

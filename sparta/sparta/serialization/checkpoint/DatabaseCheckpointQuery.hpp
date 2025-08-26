@@ -28,7 +28,6 @@ public:
                             TreeNode& root,
                             Scheduler* sched=nullptr)
         : Checkpointer(root, sched)
-        , checkpointer_(checkpointer)
         , db_mgr_(db_mgr)
     {}
 
@@ -74,8 +73,6 @@ private:
     void dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o) const override;
 
     std::vector<chkpt_id_t> getNextIDs_(chkpt_id_t id) const override;
-
-    mutable DatabaseCheckpointer* checkpointer_ = nullptr;
 
     mutable simdb::DatabaseManager* db_mgr_ = nullptr;
 };
