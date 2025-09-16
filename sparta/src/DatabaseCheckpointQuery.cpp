@@ -19,22 +19,24 @@ using tick_t = typename DatabaseCheckpointQuery::tick_t;
 
 uint64_t DatabaseCheckpointQuery::getTotalMemoryUse() const noexcept
 {
+    //TODO cnyce
     return 0;
 }
 
 uint64_t DatabaseCheckpointQuery::getContentMemoryUse() const noexcept
 {
+    //TODO cnyce
     return 0;
 }
 
-void DatabaseCheckpointQuery::deleteCheckpoint(chkpt_id_t)
+void DatabaseCheckpointQuery::deleteCheckpoint(chkpt_id_t id)
 {
-    throw CheckpointError("deleteCheckpoint() not supported");
+    tagged_deleted_ids_.insert(id);
 }
 
 void DatabaseCheckpointQuery::loadCheckpoint(chkpt_id_t)
 {
-    throw CheckpointError("loadCheckpoint() not supported");
+    throw CheckpointError("DatabaseCheckpointQuery::loadCheckpoint() not supported");
 }
 
 std::vector<chkpt_id_t> DatabaseCheckpointQuery::getCheckpointsAt(tick_t t) const
@@ -106,8 +108,24 @@ bool DatabaseCheckpointQuery::hasCheckpoint(chkpt_id_t id) const noexcept
 {
     auto query = db_mgr_->createQuery("ChkptWindowIDs");
     query->addConstraintForUInt64("ChkptID", simdb::Constraints::EQUAL, id);
+
+    int bytes_id;
+    query->select("ChkptWindowBytesID", bytes_id);
+
     auto results = query->getResultSet();
     return results.getNextRecord();
+}
+
+bool DatabaseCheckpointQuery::isSnapshot(chkpt_id_t id) const noexcept
+{
+    auto chkpt = findCheckpoint(id);
+    return chkpt ? chkpt->isSnapshot() : false;
+}
+
+bool DatabaseCheckpointQuery::canDelete(chkpt_id_t id) const noexcept
+{
+    auto chkpt = findCheckpoint(id);
+    return chkpt ? chkpt->canDelete() : false;
 }
 
 void DatabaseCheckpointQuery::dumpList(std::ostream& o) const
@@ -145,7 +163,7 @@ std::shared_ptr<DatabaseCheckpoint> DatabaseCheckpointQuery::findCheckpoint(chkp
     auto query = db_mgr_->createQuery("ChkptWindowIDs");
     query->addConstraintForUInt64("ChkptID", simdb::Constraints::EQUAL, id);
 
-    int window_id;
+    int window_id = 404;
     query->select("ChkptWindowBytesID", window_id);
 
     auto results1 = query->getResultSet();
@@ -163,7 +181,12 @@ std::shared_ptr<DatabaseCheckpoint> DatabaseCheckpointQuery::findCheckpoint(chkp
     query->select("WindowBytes", bytes);
 
     auto results2 = query->getResultSet();
-    sparta_assert(results2.getNextRecord());
+    if (!results2.getNextRecord()) {
+        if (must_exist) {
+            throw CheckpointError("There is no checkpoint with ID ") << id;
+        }
+        return nullptr;
+    }
 
     // "Undo" task 5 (zlib compression)
     std::vector<char> uncompressed;
@@ -194,10 +217,30 @@ chkpt_id_t DatabaseCheckpointQuery::getPrevID(chkpt_id_t id) const
     return chkpt->getPrevID();
 }
 
-std::vector<chkpt_id_t> DatabaseCheckpointQuery::getNextIDs(chkpt_id_t id) const
+std::vector<chkpt_id_t> DatabaseCheckpointQuery::getNextIDs(chkpt_id_t id, bool immediate_only) const
 {
-    auto chkpt = findCheckpoint(id, true);
-    return chkpt->getNextIDs();
+    std::vector<chkpt_id_t> next_ids;
+    while (true) {
+        auto chkpt = findCheckpoint(id, false);
+        if (!chkpt) {
+            break;
+        }
+
+        auto ids = chkpt->getNextIDs();
+        if (ids.empty()) {
+            break;
+        }
+
+        next_ids.insert(next_ids.end(), ids.begin(), ids.end());
+        if (immediate_only) {
+            break;
+        }
+
+        assert(ids.size() == 1);
+        id = ids[0];
+    }
+
+    return next_ids;
 }
 
 uint32_t DatabaseCheckpointQuery::getDistanceToPrevSnapshot(chkpt_id_t id) const noexcept
@@ -217,22 +260,9 @@ chkpt_id_t DatabaseCheckpointQuery::createCheckpoint_(bool)
     throw CheckpointError("Cannot create checkpoint head for DatabaseCheckpointQuery");
 }
 
-void DatabaseCheckpointQuery::dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o) const
+void DatabaseCheckpointQuery::dumpCheckpointNode_(const chkpt_id_t, std::ostream&) const
 {
-    static std::string SNAPSHOT_NOTICE = "(s)";
-    auto chkpt = findCheckpoint(id, true);
-
-    // Draw data for this checkpoint
-    if (chkpt->isFlaggedDeleted()) {
-        o << chkpt->getDeletedRepr();
-    } else {
-        o << chkpt->getID();
-    }
-
-    // Show that this is a snapshot
-    if (chkpt->isSnapshot()) {
-        o << ' ' << SNAPSHOT_NOTICE;
-    }
+    throw CheckpointError("Cannot dump checkpoint node for DatabaseCheckpointQuery");
 }
 
 std::vector<chkpt_id_t> DatabaseCheckpointQuery::getNextIDs_(chkpt_id_t id) const

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "sparta/serialization/checkpoint/Checkpointer.hpp"
+#include <unordered_set>
 
 namespace simdb
 {
@@ -29,7 +30,8 @@ public:
                             Scheduler* sched=nullptr)
         : Checkpointer(root, sched)
         , db_mgr_(db_mgr)
-    {}
+    {
+    }
 
     uint64_t getTotalMemoryUse() const noexcept override;
 
@@ -49,6 +51,10 @@ public:
 
     bool hasCheckpoint(chkpt_id_t id) const noexcept override;
 
+    bool isSnapshot(chkpt_id_t id) const noexcept;
+
+    bool canDelete(chkpt_id_t id) const noexcept;
+
     void dumpList(std::ostream& o) const override;
 
     void dumpData(std::ostream& o) const override;
@@ -61,7 +67,7 @@ public:
 
     chkpt_id_t getPrevID(chkpt_id_t id) const;
 
-    std::vector<chkpt_id_t> getNextIDs(chkpt_id_t id) const;
+    std::vector<chkpt_id_t> getNextIDs(chkpt_id_t id, bool immediate_only = true) const;
 
     uint32_t getDistanceToPrevSnapshot(chkpt_id_t id) const noexcept;
 
@@ -75,6 +81,8 @@ private:
     std::vector<chkpt_id_t> getNextIDs_(chkpt_id_t id) const override;
 
     mutable simdb::DatabaseManager* db_mgr_ = nullptr;
+
+    std::unordered_set<chkpt_id_t> tagged_deleted_ids_;
 };
 
 } // namespace sparta::serialization::checkpoint

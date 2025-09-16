@@ -47,13 +47,15 @@ DatabaseCheckpoint::DatabaseCheckpoint(TreeNode& root,
     }
 }
 
-DatabaseCheckpoint::DatabaseCheckpoint(chkpt_id_t prev_id,
+DatabaseCheckpoint::DatabaseCheckpoint(chkpt_id_t id,
+                                       tick_t tick,
+                                       chkpt_id_t prev_id,
                                        const std::vector<chkpt_id_t>& next_ids,
                                        chkpt_id_t deleted_id,
                                        bool is_snapshot,
                                        const storage::VectorStorage& storage,
                                        DatabaseCheckpointer* checkpointer)
-    : CheckpointBase(getID(), getTick())
+    : CheckpointBase(id, tick)
     , prev_id_(prev_id)
     , next_ids_(next_ids)
     , deleted_id_(deleted_id)
@@ -120,7 +122,7 @@ std::vector<chkpt_id_t> DatabaseCheckpoint::getNextIDs() const
 
 void DatabaseCheckpoint::load(const std::vector<ArchData*>& dats)
 {
-    // BUild stack up to last snapshot
+    // Build stack up to last snapshot
     std::stack<chkpt_id_t> chkpt_ids = getRestoreChain();
 
     // Load in proper order
@@ -193,7 +195,7 @@ void DatabaseCheckpoint::loadState(const std::vector<ArchData*>& dats)
 
 std::unique_ptr<DatabaseCheckpoint> DatabaseCheckpoint::clone() const
 {
-    auto clone = new DatabaseCheckpoint(prev_id_, next_ids_, deleted_id_, is_snapshot_, data_, checkpointer_);
+    auto clone = new DatabaseCheckpoint(getID(), getTick(), prev_id_, next_ids_, deleted_id_, is_snapshot_, data_, checkpointer_);
     return std::unique_ptr<DatabaseCheckpoint>(clone);
 }
 

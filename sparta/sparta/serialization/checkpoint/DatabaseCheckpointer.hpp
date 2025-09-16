@@ -97,14 +97,12 @@ public:
     /*!
      * \brief Explicit checkpoint deletion is NOT supported by this checkpointer.
      */
-    void deleteCheckpoint(chkpt_id_t) override final {
-        throw CheckpointError("deleteCheckpoint() not supported");
-    }
+    void deleteCheckpoint(chkpt_id_t) override final;
 
     /*!
      * \brief Loads state from a specific checkpoint by ID
-     * \note Does not delete checkpoints. Checkpoints must be explicitly
-     * deleted by deleteCheckpoint
+     * \note This implicitly deletes all future checkpoints since this checkpointer
+     * does not allow more than one branch.
      * \throw CheckpointError if id does not refer to checkpoint that exists
      * or if checkpoint could not be load.
      * \warning If checkpoint fails during loading for reasons other than an
@@ -208,7 +206,7 @@ public:
      * \note SEARCHES BOTH THE CACHE AND THE DATABASE
      * \return Checkpoint with ID of \a id if found or nullptr if not found
      */
-    std::shared_ptr<DatabaseCheckpoint> cloneCheckpoint(chkpt_id_t id) const;
+    std::shared_ptr<DatabaseCheckpoint> cloneCheckpoint(chkpt_id_t id, bool must_exist=true) const;
 
     /*!
      * \brief Tests whether this checkpoint manager has a checkpoint with
@@ -410,22 +408,19 @@ private:
     //! \brief Subset (or all of) our checkpoints that we currently are holding in memory.
     std::unordered_map<chkpt_id_t, std::shared_ptr<checkpoint_type>> chkpts_cache_;
 
-    //! \brief Subset (or all of) our checkpoints in the cache that haven't been send down the pipeline.
-    std::vector<std::weak_ptr<checkpoint_type>> chkpts_queue_;
+    //! \brief Ordered list of checkpoint windows (snapshot + deltas).
+    std::deque<std::vector<chkpt_id_t>> chkpt_windows_;
 
     //! \brief SQLite query object to "extend" the checkpoint search space from just the
     //! cache to include the database. Combinations of in-memory checkpoints, recreated
     //! checkpoints, and database schema/query optimizations are used for performance.
     std::shared_ptr<DatabaseCheckpointQuery> chkpt_query_;
 
+    //! \brief IDs of checkpoints pending eviction from the cache once they are no longer current.
+    std::queue<chkpt_id_t> pending_eviction_ids_;
+
     //! \brief Mutex to protect our checkpoints cache.
     mutable std::recursive_mutex cache_mutex_;
-
-    //! \brief Set of dead checkpoint IDs.
-    std::unordered_set<chkpt_id_t> dead_chkpt_ids_;
-
-    //! \brief Mutex to protect our set of dead checkpoint IDs.
-    mutable std::recursive_mutex dead_chkpts_mutex_;
 
     //! \brief SimDB instance
     simdb::DatabaseManager* db_mgr_ = nullptr;

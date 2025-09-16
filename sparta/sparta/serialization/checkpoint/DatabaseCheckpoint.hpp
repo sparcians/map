@@ -69,8 +69,10 @@ namespace sparta::serialization::checkpoint
                            bool is_snapshot,
                            DatabaseCheckpointer* checkpointer);
 
-        //! \brief This constructor is called during checkpoing cloning
-        DatabaseCheckpoint(chkpt_id_t prev_id,
+        //! \brief This constructor is called during checkpoint cloning
+        DatabaseCheckpoint(chkpt_id_t id,
+                           tick_t tick,
+                           chkpt_id_t prev_id,
                            const std::vector<chkpt_id_t>& next_ids,
                            chkpt_id_t deleted_id,
                            bool is_snapshot,
