@@ -205,8 +205,6 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
     auto evict_from_cache = simdb::pipeline::createTask<simdb::pipeline::Function<EvictedChkptIDs, void>>(
         [this](EvictedChkptIDs&& evicted_ids, bool simulation_terminating) mutable
         {
-            return;//TODO cnyce
-
             // TODO cnyce: We are allocating and deallocating a LOT of checkpoints.
             // See if we can reuse a pool of them. Could also try to just add a pool
             // to the VectorStorage::Segment class.
@@ -214,15 +212,16 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
 
             for (auto id : evicted_ids) {
                 if (id == head_id_) {
+                    // Never evict the head checkpoint
                     continue;
                 }
 
-                if (id == current_id_) {
-                    pending_eviction_ids_.push(id);
-                    continue;
+                if (auto it = chkpts_cache_.find(id); it != chkpts_cache_.end()) {
+                    it->second->flagDecached();
+                    if (findCheckpoint(id).lock() != nullptr) {
+                        throw CheckpointError("Internal error - checkpoint should be marked as decached");
+                    }
                 }
-
-                chkpts_cache_.erase(id);
             }
         }
     );
@@ -271,10 +270,9 @@ uint64_t DatabaseCheckpointer::getContentMemoryUse() const noexcept
     return mem;
 }
 
-void DatabaseCheckpointer::deleteCheckpoint(chkpt_id_t) 
+void DatabaseCheckpointer::deleteCheckpoint(chkpt_id_t)
 {
-    // TODO cnyce
-    throw CheckpointError("deleteCheckpoint() not supported");
+    throw CheckpointError("Explicit checkpoint deletion is not supported by DatabaseCheckpointer");
 }
 
 void DatabaseCheckpointer::loadCheckpoint(chkpt_id_t id)
@@ -291,7 +289,6 @@ void DatabaseCheckpointer::loadCheckpoint(chkpt_id_t id)
     }
 
     chkpt->load(getArchDatas());
-    //TODO cnyce: chkpts_cache_.erase(id);
 
     // Delete all future checkpoints past this one. Do this from the cache
     // as well as from the database.
@@ -356,9 +353,10 @@ std::vector<chkpt_id_t> DatabaseCheckpointer::getCheckpoints() const
         }
     }
 
-    for (auto id : chkpt_query_->getCheckpoints()) {
-        results.insert(id);
-    }
+    //TODO cnyce: Put this back when the cache is actually purged
+    //for (auto id : chkpt_query_->getCheckpoints()) {
+    //    results.insert(id);
+    //}
 
     std::vector<chkpt_id_t> chkpts(results.begin(), results.end());
     std::sort(chkpts.begin(), chkpts.end());
@@ -434,6 +432,9 @@ std::weak_ptr<DatabaseCheckpoint> DatabaseCheckpointer::findCheckpoint(chkpt_id_
     std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
 
     if (auto it = chkpts_cache_.find(id); it != chkpts_cache_.end()) {
+        if (it->second->isFlaggedDeleted() || it->second->isFlaggedDecached()) {
+            return std::weak_ptr<DatabaseCheckpoint>();
+        }
         return it->second;
     }
 
@@ -444,7 +445,7 @@ std::shared_ptr<DatabaseCheckpoint> DatabaseCheckpointer::cloneCheckpoint(chkpt_
 {
     std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
 
-    if (auto it = chkpts_cache_.find(id); it != chkpts_cache_.end()) {
+    if (auto it = chkpts_cache_.find(id); it != chkpts_cache_.end()) {//TODO cnyce: && !it->second->isFlaggedDecached()) {
         return it->second->clone();
     }
 
@@ -463,8 +464,8 @@ bool DatabaseCheckpointer::hasCheckpoint(chkpt_id_t id) const noexcept
 {
     std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
 
-    if (chkpts_cache_.find(id) != chkpts_cache_.end()) {
-        return true;
+    if (auto it = chkpts_cache_.find(id); it != chkpts_cache_.end()) {
+        return !it->second->isFlaggedDeleted();
     }
 
     return chkpt_query_->hasCheckpoint(id);
@@ -813,7 +814,7 @@ void DatabaseCheckpointer::deleteCheckpoint_(chkpt_id_t id)
         }
 
         auto next_ids = it->second->getNextIDs();
-        //TODO cnyce: chkpts_cache_.erase(it);
+        it->second->flagDeleted();
 
         if (!next_ids.empty()) {
             if (next_ids.size() != 1) {
@@ -892,8 +893,8 @@ void DatabaseCheckpointer::setCurrentID_(chkpt_id_t id)
         pending_eviction_ids_.pop();
         if (id == current_id_) {
             pending_eviction_ids_.push(id);
-        } else {
-            //TODO cnyce: chkpts_cache_.erase(id);
+        } else if (auto it = chkpts_cache_.find(id); it != chkpts_cache_.end()) {
+            it->second->flagDecached();
         }
     }
 }

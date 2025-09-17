@@ -75,6 +75,7 @@ namespace sparta::serialization::checkpoint
                            chkpt_id_t prev_id,
                            const std::vector<chkpt_id_t>& next_ids,
                            chkpt_id_t deleted_id,
+                           bool decached,
                            bool is_snapshot,
                            const storage::VectorStorage& storage,
                            DatabaseCheckpointer* checkpointer);
@@ -204,6 +205,18 @@ namespace sparta::serialization::checkpoint
         std::string getDeletedRepr() const override;
 
         /*!
+         * \brief Mark this checkpoint as no longer in the cache. It will still
+         * live in the cache until the checkpointer has a chance to evict it.
+         */
+        void flagDecached();
+
+        /*!
+         * \brief Should this checkpoint be considered ready for eviction from
+         * the cache?
+         */
+        bool isFlaggedDecached() const noexcept;
+
+        /*!
          * \brief Is this checkpoint a snapshot (contains ALL simulator state)
          */
         bool isSnapshot() const noexcept;
@@ -266,6 +279,9 @@ namespace sparta::serialization::checkpoint
          * about whether it is deleted or not.
          */
         chkpt_id_t deleted_id_;
+
+        //! \brief Has this checkpoint been flagged as ready to be decached?
+        bool decached_ = false;
 
         //! \brief Is this node a snapshot?
         bool is_snapshot_;

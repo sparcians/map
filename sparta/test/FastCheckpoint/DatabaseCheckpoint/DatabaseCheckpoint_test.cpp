@@ -85,6 +85,8 @@ void generalTest()
     auto r1 = rset->getRegister("reg2");
     auto r2 = rset2->getRegister("reg2");
     assert(r1 != r2);
+    r1->write<uint32_t>(0 * 5ul);
+    r2->write<uint32_t>(0 % 5ul);
 
     simdb::DatabaseManager db_mgr("test.db", true);
     simdb::AppManager app_mgr(&db_mgr);
@@ -130,7 +132,9 @@ void generalTest()
 
     // Create 1000 checkpoints, and periodically access an old one. Also
     // go to sleep sometimes to increase the chances we have to go to the
-    // database to retrieve a checkpoint.
+    // database to retrieve a checkpoint. Keep a clone of checkpoint 3 for
+    // later verification.
+    std::shared_ptr<DatabaseCheckpoint> clone3;
     for (uint32_t i = 1; i <= 100; ++i) {
         step_checkpointer(i);
 
@@ -140,6 +144,9 @@ void generalTest()
         if (cached_cp) {
             EXPECT_EQUAL(cached_cp->getID(), i);
             EXPECT_EQUAL(cached_cp->getPrevID(), i - 1);
+            if (i == 3) {
+                clone3 = dbcp.cloneCheckpoint(3);
+            }
         }
 
         // Access an old one, which may or may not be in the cache
@@ -159,8 +166,13 @@ void generalTest()
         EXPECT_NOTHROW(dbcp.loadCheckpoint(id));
         EXPECT_EQUAL(dbcp.getCurrentID(), id);
         EXPECT_EQUAL(dbcp.getNumCheckpoints(), id + 1);
+        EXPECT_FALSE(dbcp.hasCheckpoint(id + 1));
         EXPECT_EQUAL(sched.getCurrentTick(), id);
-        // TODO cnyce: verify registers
+
+        auto r1_val = r1->read<uint32_t>();
+        auto r2_val = r2->read<uint32_t>();
+        EXPECT_EQUAL(r1_val, id * 5ul);
+        EXPECT_EQUAL(r2_val, id % 5ul);
     };
 
     // Load very recent checkpoints that are definitely in the cache
@@ -182,198 +194,15 @@ void generalTest()
     step_checkpointer(42);
     verif_load_chkpt(40);
 
-    // Go back to checkpoint 1
-    verif_load_chkpt(1);
-
-    // Take 3 more checkpoints with IDs 2, 3, and 4
-    step_checkpointer(2);
-    step_checkpointer(3);
-    step_checkpointer(4);
-
-    // Go back to head
-    verif_load_chkpt(head_id);
-
-    // Take some checkpoints and ensure that the current ID is always increasing by 1 with no gaps
-    step_checkpointer(1);
-    step_checkpointer(2);
-    step_checkpointer(3);
-    verif_load_chkpt(2);
-    verif_load_chkpt(1);
-    verif_load_chkpt(head_id);
-
-    // Ensure exception is thrown when loading a non-existent checkpoint
-    EXPECT_THROW(dbcp.loadCheckpoint(9999));
-    EXPECT_THROW(dbcp.cloneCheckpoint(9999));
-    EXPECT_NOTHROW(dbcp.cloneCheckpoint(9999, false));
-
-    // Create checkpoints 1-50. Keep a clone of checkpoint 3 for later.
-    std::unique_ptr<DatabaseCheckpoint> clone3;
-    for (uint32_t i = 1; i <= 50; ++i) {
-        step_checkpointer(i);
-        if (i == 3) {
-            clone3 = dbcp.findCheckpoint(3).lock()->clone();
-        }
-    }
-
-    // Verify checkpoint chain: 0-50
-    auto chain = dbcp.getCheckpointChain(dbcp.getCurrentID());
-    EXPECT_EQUAL(chain.size(), 51);
-    uint32_t chain_idx = 0;
-    for (uint32_t i = 0; i <= 50; ++i) {
-        EXPECT_EQUAL(chain[chain_idx++], 50-i);
-    }
-
-    // Sleep for a bit to flush the pipeline to ensure the checkpoint chain
-    // can be retrieved from the database.
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    chain = dbcp.getCheckpointChain(dbcp.getCurrentID());
-    EXPECT_EQUAL(chain.size(), 51);
-    chain_idx = 0;
-    for (uint32_t i = 0; i <= 50; ++i) {
-        EXPECT_EQUAL(chain[chain_idx++], 50-i);
-    }
-
-    // Load checkpoint 45
-    verif_load_chkpt(45);
-
-    // Verify that checkpoints 46+ have been implicitly deleted
-    // TODO cnyce: EXPECT_FALSE(dbcp.hasCheckpoint(46));
-
-    // Create checkpoints 46-55
-    for (uint32_t i = 46; i <= 55; ++i) {
-        step_checkpointer(i);
-    }
-
-    // Verify checkpoint chain: 0-55
-    chain = dbcp.getCheckpointChain(dbcp.getCurrentID());
-    EXPECT_EQUAL(chain.size(), 56);
-    chain_idx = 0;
-    for (uint32_t i = 0; i <= 55; ++i) {
-        EXPECT_EQUAL(chain[chain_idx++], 55-i);
-    }
-
-    // Create checkpoints 56-58
-    for (uint32_t i = 56; i <= 58; ++i) {
-        step_checkpointer(i);
-    }
-
-    // Delete checkpoint always throws
-    // TODO cnyce: relax this restriction?
-    EXPECT_THROW(dbcp.deleteCheckpoint(57));
-
-    // Create checkpoints 59-70
-    for (uint32_t i = 59; i <= 70; ++i) {
-        step_checkpointer(i);
-    }
-
-    // Load checkpoint 58
-    verif_load_chkpt(58);
-
-    // Finish
-    app_mgr.postSimLoopTeardown();
-    root.enterTeardown();
-    clocks.enterTeardown();
-    return;
-
-
-
-    // Verify all checkpoints: 0-58
-    auto all_chkpts = dbcp.getCheckpoints();
-    EXPECT_EQUAL(all_chkpts.size(), 59);
-    EXPECT_EQUAL(dbcp.getNumCheckpoints(), 59);
-    uint32_t idx = 0;
-    for (uint32_t i = 0; i <= 58; ++i) {
-        EXPECT_EQUAL(all_chkpts[idx++], i);
-    }
-    EXPECT_EQUAL(idx, all_chkpts.size());
-
-    // Create checkpoints 59-75
-    for (uint32_t i = 59; i <= 75; ++i) {
-        step_checkpointer(i);
-    }
-
-    // Verify all checkpoints: 0-75
-    all_chkpts = dbcp.getCheckpoints();
-    EXPECT_EQUAL(all_chkpts.size(), 76);
-    EXPECT_EQUAL(dbcp.getNumCheckpoints(), 76);
-    idx = 0;
-    for (uint32_t i = 0; i <= 75; ++i) {
-        EXPECT_EQUAL(all_chkpts[idx++], i);
-    }
-    EXPECT_EQUAL(idx, all_chkpts.size());
-
-    uint32_t all_idx = 0;
-    for (uint32_t i = 0; i <= 45; ++i) {
-        EXPECT_EQUAL(all_chkpts[all_idx++], i);
-    }
-    for (uint32_t i = 51; i <= 56; ++i) {
-        EXPECT_EQUAL(all_chkpts[all_idx++], i);
-    }
-    EXPECT_EQUAL(all_chkpts[all_idx++], 58);
-    for (uint32_t i = 71; i <= 75; ++i) {
-        EXPECT_EQUAL(all_chkpts[all_idx++], i);
-    }
-    EXPECT_EQUAL(all_idx, all_chkpts.size());
-    all_idx = 0;
-
-    // Nothing to test, just call dumpRestoreChain()
-    dbcp.dumpRestoreChain(std::cout, 73);
-
-    // Verify history chain up to current checkpoint
-    auto history_chain = dbcp.getHistoryChain(dbcp.getCurrentID());
-    while (!history_chain.empty()) {
-        EXPECT_EQUAL(history_chain.top(), all_chkpts[all_idx++]);
-        history_chain.pop();
-    }
-    all_idx = 0;
-
-    // Verify restore chain up to current checkpoint
-    auto restore_chain = dbcp.getRestoreChain(dbcp.getCurrentID());
-    auto id = restore_chain.top();
-    restore_chain.pop();
-    std::weak_ptr<DatabaseCheckpoint> chkpt;
-    EXPECT_NOTHROW(chkpt = dbcp.findCheckpoint(id));
-    auto c = chkpt.lock();
-    EXPECT_NOTEQUAL(c, nullptr);
-    EXPECT_TRUE(c->isSnapshot());
-
-    while (!restore_chain.empty()) {
-        id = restore_chain.top();
-        restore_chain.pop();
-        EXPECT_NOTHROW(chkpt = dbcp.findCheckpoint(id));
-        c = chkpt.lock();
-        EXPECT_NOTEQUAL(c, nullptr);
-        EXPECT_FALSE(c->isSnapshot());
-    }
-
-    // Verify that cached checkpoints are clonable
-    auto cache73 = dbcp.findCheckpoint(73).lock();
-    auto clone73 = dbcp.cloneCheckpoint(73);
-
-    std::ostringstream cache_oss;
-    std::ostringstream clone_oss;
-
-    cache73->dumpData(cache_oss);
-    clone73->dumpData(clone_oss);
-
-    EXPECT_EQUAL(cache_oss.str(), clone_oss.str());
-    EXPECT_EQUAL(cache73->getTotalMemoryUse(), clone73->getTotalMemoryUse());
-    EXPECT_EQUAL(cache73->getContentMemoryUse(), clone73->getContentMemoryUse());
-    EXPECT_TRUE(cache73->getHistoryChain() == clone73->getHistoryChain());
-    EXPECT_TRUE(cache73->getRestoreChain() == clone73->getRestoreChain());
-    EXPECT_EQUAL(cache73->getPrevID(), clone73->getPrevID());
-    EXPECT_EQUAL(cache73->getNextIDs(), clone73->getNextIDs());
-    EXPECT_EQUAL(cache73->getTick(), clone73->getTick());
-    EXPECT_EQUAL(cache73->isSnapshot(), clone73->isSnapshot());
-    EXPECT_EQUAL(cache73->getDistanceToPrevSnapshot(), clone73->getDistanceToPrevSnapshot());
-
-    // Wait until checkpoint 3 is evicted from cache
+    // Wait until checkpoint 3 is evicted from cache with a 3-second timeout
     uint32_t num_tries = 0;
     while (dbcp.findCheckpoint(3).lock() != nullptr) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        EXPECT_NOTEQUAL(++num_tries, 100); // 1-second timeout
+        EXPECT_NOTEQUAL(++num_tries, 300);
     }
 
+// TODO cnyce
+#if 0
     // Ask the checkpointer to retrieve checkpoint 3 from the database
     auto dbchkpt3 = dbcp.cloneCheckpoint(3);
     EXPECT_EQUAL(dbchkpt3->getID(), clone3->getID());
@@ -405,6 +234,170 @@ void generalTest()
 
     // Nothing to test, just call dumpRestoreChain()
     dbcp.dumpRestoreChain(std::cout, 3);
+#endif
+
+    // Go back to checkpoint 1
+    verif_load_chkpt(1);
+
+    // Take 3 more checkpoints with IDs 2, 3, and 4
+    step_checkpointer(2);
+    step_checkpointer(3);
+    step_checkpointer(4);
+
+    // Go back to head
+    verif_load_chkpt(head_id);
+
+    // Take some checkpoints and ensure that the current ID is always increasing by 1 with no gaps
+    step_checkpointer(1);
+    step_checkpointer(2);
+    step_checkpointer(3);
+    verif_load_chkpt(2);
+    verif_load_chkpt(1);
+    verif_load_chkpt(head_id);
+
+    // Ensure exception is thrown when loading a non-existent checkpoint
+    EXPECT_THROW(dbcp.loadCheckpoint(9999));
+    EXPECT_THROW(dbcp.cloneCheckpoint(9999));
+    EXPECT_NOTHROW(dbcp.cloneCheckpoint(9999, false));
+
+    // Create checkpoints 1-50.
+    for (uint32_t i = 1; i <= 50; ++i) {
+        step_checkpointer(i);
+    }
+
+    // Verify checkpoint chain: 0-50
+    auto chain = dbcp.getCheckpointChain(dbcp.getCurrentID());
+    EXPECT_EQUAL(chain.size(), 51);
+    uint32_t chain_idx = 0;
+    for (uint32_t i = 0; i <= 50; ++i) {
+        EXPECT_EQUAL(chain[chain_idx++], 50-i);
+    }
+
+    // Sleep for a bit to flush the pipeline to ensure the checkpoint chain
+    // can be retrieved from the database.
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    chain = dbcp.getCheckpointChain(dbcp.getCurrentID());
+    EXPECT_EQUAL(chain.size(), 51);
+    chain_idx = 0;
+    for (uint32_t i = 0; i <= 50; ++i) {
+        EXPECT_EQUAL(chain[chain_idx++], 50-i);
+    }
+
+    // Load checkpoint 45
+    verif_load_chkpt(45);
+
+    // Verify that checkpoints 46+ have been implicitly deleted
+    EXPECT_FALSE(dbcp.hasCheckpoint(46));
+
+    // Create checkpoints 46-55
+    for (uint32_t i = 46; i <= 55; ++i) {
+        step_checkpointer(i);
+    }
+
+    // Verify checkpoint chain: 0-55
+    chain = dbcp.getCheckpointChain(dbcp.getCurrentID());
+    EXPECT_EQUAL(chain.size(), 56);
+    chain_idx = 0;
+    for (uint32_t i = 0; i <= 55; ++i) {
+        EXPECT_EQUAL(chain[chain_idx++], 55-i);
+    }
+
+    // Create checkpoints 56-58
+    for (uint32_t i = 56; i <= 58; ++i) {
+        step_checkpointer(i);
+    }
+
+    // Delete checkpoint always throws
+    EXPECT_THROW(dbcp.deleteCheckpoint(57));
+
+    // Create checkpoints 59-70
+    for (uint32_t i = 59; i <= 70; ++i) {
+        step_checkpointer(i);
+    }
+
+    // Load checkpoint 58
+    verif_load_chkpt(58);
+
+    // Verify all checkpoints: 0-58
+    auto all_chkpts = dbcp.getCheckpoints();
+    EXPECT_EQUAL(all_chkpts.size(), 59);
+    EXPECT_EQUAL(dbcp.getNumCheckpoints(), 59);
+    uint32_t idx = 0;
+    for (uint32_t i = 0; i <= 58; ++i) {
+        EXPECT_EQUAL(all_chkpts[idx++], i);
+    }
+    EXPECT_EQUAL(idx, all_chkpts.size());
+
+    // Create checkpoints 59-75
+    for (uint32_t i = 59; i <= 75; ++i) {
+        step_checkpointer(i);
+    }
+
+    // Verify all checkpoints: 0-75
+    all_chkpts = dbcp.getCheckpoints();
+    EXPECT_EQUAL(all_chkpts.size(), 76);
+    EXPECT_EQUAL(dbcp.getNumCheckpoints(), 76);
+    idx = 0;
+    for (uint32_t i = 0; i <= 75; ++i) {
+        EXPECT_EQUAL(all_chkpts[idx++], i);
+    }
+    EXPECT_EQUAL(idx, all_chkpts.size());
+
+    // Nothing to test, just call dumpRestoreChain()
+    EXPECT_NOTHROW(dbcp.dumpRestoreChain(std::cout, 73));
+
+    // Verify history chain up to current checkpoint
+    size_t all_idx = 0;
+    auto history_chain = dbcp.getHistoryChain(dbcp.getCurrentID());
+    while (!history_chain.empty()) {
+        EXPECT_EQUAL(history_chain.top(), all_chkpts[all_idx++]);
+        history_chain.pop();
+    }
+
+    // Verify restore chain up to current checkpoint
+    auto restore_chain = dbcp.getRestoreChain(dbcp.getCurrentID());
+    auto id = restore_chain.top();
+    restore_chain.pop();
+    std::weak_ptr<DatabaseCheckpoint> chkpt;
+    EXPECT_NOTHROW(chkpt = dbcp.findCheckpoint(id));
+    auto c = chkpt.lock();
+    EXPECT_NOTEQUAL(c, nullptr);
+    EXPECT_TRUE(c->isSnapshot());
+
+    while (!restore_chain.empty()) {
+        id = restore_chain.top();
+        restore_chain.pop();
+        EXPECT_NOTHROW(chkpt = dbcp.findCheckpoint(id));
+        c = chkpt.lock();
+        EXPECT_NOTEQUAL(c, nullptr);
+        EXPECT_FALSE(c->isSnapshot());
+    }
+
+    // Verify that checkpoint clones are as expected
+    auto cache73 = dbcp.findCheckpoint(73).lock();
+    auto clone73 = dbcp.cloneCheckpoint(73);
+
+    std::ostringstream cache_oss;
+    std::ostringstream clone_oss;
+
+    cache73->dumpData(cache_oss);
+    clone73->dumpData(clone_oss);
+
+    EXPECT_EQUAL(cache_oss.str(), clone_oss.str());
+    EXPECT_EQUAL(cache73->getTotalMemoryUse(), clone73->getTotalMemoryUse());
+    EXPECT_EQUAL(cache73->getContentMemoryUse(), clone73->getContentMemoryUse());
+    EXPECT_TRUE(cache73->getHistoryChain() == clone73->getHistoryChain());
+    EXPECT_TRUE(cache73->getRestoreChain() == clone73->getRestoreChain());
+    EXPECT_EQUAL(cache73->getPrevID(), clone73->getPrevID());
+    EXPECT_EQUAL(cache73->getNextIDs(), clone73->getNextIDs());
+    EXPECT_EQUAL(cache73->getTick(), clone73->getTick());
+    EXPECT_EQUAL(cache73->isSnapshot(), clone73->isSnapshot());
+    EXPECT_EQUAL(cache73->getDistanceToPrevSnapshot(), clone73->getDistanceToPrevSnapshot());
+
+    // Finish
+    app_mgr.postSimLoopTeardown();
+    root.enterTeardown();
+    clocks.enterTeardown();
 
     // Nothing to test, just call dumpList/dumpData/dumpAnnotatedData
     dbcp.dumpList(std::cout);
@@ -413,16 +406,6 @@ void generalTest()
     std::cout << std::endl;
     dbcp.dumpAnnotatedData(std::cout);
     std::cout << std::endl;
-
-    // Load checkpoint 8 and verify registers
-    EXPECT_NOTHROW(dbcp.loadCheckpoint(8));
-    EXPECT_EQUAL(r1->read<uint32_t>(), 40ul);  // 8 * 5
-    EXPECT_EQUAL(r2->read<uint32_t>(), 3ul);   // 8 % 5
-    EXPECT_EQUAL(sched.getCurrentTick(), 8);
-    EXPECT_EQUAL(dbcp.getNumCheckpoints(), 9);
-
-    // Finish...
-    app_mgr.postSimLoopTeardown();
 }
 
 int main()
