@@ -52,7 +52,6 @@ DatabaseCheckpoint::DatabaseCheckpoint(chkpt_id_t id,
                                        chkpt_id_t prev_id,
                                        const std::vector<chkpt_id_t>& next_ids,
                                        chkpt_id_t deleted_id,
-                                       bool decached,
                                        bool is_snapshot,
                                        const storage::VectorStorage& storage,
                                        DatabaseCheckpointer* checkpointer)
@@ -60,7 +59,6 @@ DatabaseCheckpoint::DatabaseCheckpoint(chkpt_id_t id,
     , prev_id_(prev_id)
     , next_ids_(next_ids)
     , deleted_id_(deleted_id)
-    , decached_(decached)
     , is_snapshot_(is_snapshot)
     , data_(storage)
     , checkpointer_(checkpointer)
@@ -131,16 +129,11 @@ void DatabaseCheckpoint::load(const std::vector<ArchData*>& dats)
     while (!chkpt_ids.empty()) {
         auto id = chkpt_ids.top();
         chkpt_ids.pop();
-        checkpointer_->cloneCheckpoint(id)->loadState(dats);
+        checkpointer_->findCheckpoint(id)->loadState(dats);
     }
 }
 
-bool DatabaseCheckpoint::canDelete() const noexcept
-{
-    return checkpointer_->canDelete(getID());
-}
-
-void DatabaseCheckpoint::flagDeleted()
+void DatabaseCheckpoint::flagDeleted_()
 {
     sparta_assert(!isFlaggedDeleted(),
                   "Cannot delete a checkpoint when it is already deleted: " << this);
@@ -167,16 +160,6 @@ std::string DatabaseCheckpoint::getDeletedRepr() const
         ss << getID();
     }
     return ss.str();
-}
-
-void DatabaseCheckpoint::flagDecached()
-{
-    decached_ = true;
-}
-
-bool DatabaseCheckpoint::isFlaggedDecached() const noexcept
-{
-    return decached_;
 }
 
 bool DatabaseCheckpoint::isSnapshot() const noexcept
@@ -207,7 +190,7 @@ void DatabaseCheckpoint::loadState(const std::vector<ArchData*>& dats)
 
 std::unique_ptr<DatabaseCheckpoint> DatabaseCheckpoint::clone() const
 {
-    auto clone = new DatabaseCheckpoint(getID(), getTick(), prev_id_, next_ids_, deleted_id_, decached_, is_snapshot_, data_, checkpointer_);
+    auto clone = new DatabaseCheckpoint(getID(), getTick(), prev_id_, next_ids_, deleted_id_, is_snapshot_, data_, checkpointer_);
     return std::unique_ptr<DatabaseCheckpoint>(clone);
 }
 

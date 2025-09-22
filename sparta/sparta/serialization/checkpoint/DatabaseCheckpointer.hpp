@@ -17,7 +17,6 @@ namespace sparta::serialization::checkpoint
 {
 
 class DatabaseCheckpointer;
-class DatabaseCheckpointQuery;
 
 /*!
  * \brief Implementation of the FastCheckpointer which only holds
@@ -30,6 +29,9 @@ public:
     static constexpr auto NAME = "db-checkpointer";
 
     using checkpoint_type = DatabaseCheckpoint;
+    using checkpoint_ptr = std::shared_ptr<checkpoint_type>;
+    using checkpoint_ptrs = std::vector<checkpoint_ptr>;
+    using window_id_t = uint64_t;
 
     /*!
      * \brief FastCheckpointer Constructor
@@ -61,6 +63,11 @@ public:
         simdb::pipeline::AsyncDatabaseAccessor* db_accessor) override;
 
     /*!
+     * \brief Flush all windows down the pipeline before threads are shut down.
+     */
+    void preTeardown() override;
+
+    /*!
      * \brief Returns the next-shapshot threshold.
      *
      * This represents the distance between two checkpoints required for the
@@ -72,13 +79,18 @@ public:
      *
      * This value is a performance/space tradeoff knob.
      */
-    uint32_t getSnapshotThreshold() const noexcept;
+    uint32_t getSnapshotThreshold() const;
 
     /*!
      * \brief Sets the snapshot threshold
      * \see getSnapshotThreshold
      */
-    void setSnapshotThreshold(uint32_t thresh) noexcept;
+    void setSnapshotThreshold(uint32_t thresh);
+
+    /*!
+     * \brief Sets the max number of cached windows (LRU)
+     */
+    void setMaxCachedWindows(uint32_t max_windows);
 
     /*!
      * \brief Computes and returns the memory usage by this checkpointer at
@@ -121,7 +133,7 @@ public:
      * \note Makes a new vector of results. This should not be called in the
      * critical path.
      */
-    std::vector<chkpt_id_t> getCheckpointsAt(tick_t t) const override;
+    std::vector<chkpt_id_t> getCheckpointsAt(tick_t t) override;
 
     /*!
      * \brief Gets all checkpoint IDs available on any timeline sorted by
@@ -131,28 +143,22 @@ public:
      * \note Makes a new vector of results. This should not be called in the
      * critical path.
      */
-    std::vector<chkpt_id_t> getCheckpoints() const override;
+    std::vector<chkpt_id_t> getCheckpoints() override;
 
     /*!
      * \brief Gets the current number of checkpoints having valid IDs
      */
-    uint32_t getNumCheckpoints() const noexcept override;
+    uint32_t getNumCheckpoints() noexcept override;
 
     /*!
      * \brief Gets the current number of snapshots with valid IDs
      */
-    uint32_t getNumSnapshots() const noexcept;
+    uint32_t getNumSnapshots() noexcept;
 
     /*!
      * \brief Gets the current number of delta checkpoints with valid IDs
      */
-    uint32_t getNumDeltas() const noexcept;
-
-    /*!
-     * \brief Gets the curent number of checkpoints (delta or snapshot)
-     * withOUT valid IDs.
-     */
-    uint32_t getNumDeadCheckpoints() const noexcept;
+    uint32_t getNumDeltas() noexcept;
 
     /*!
      * \brief Debugging utility which gets a deque of checkpoints
@@ -169,44 +175,16 @@ public:
      * \note Makes a new vector of results. This should not be called in the
      * critical path.
      */
-    std::deque<chkpt_id_t> getCheckpointChain(chkpt_id_t id) const override;
-
-    /*!
-     * \brief Finds the latest checkpoint at or before the given tick
-     * starting at the \a from checkpoint and working backward.
-     * If no checkpoints before or at tick are found, returns nullptr.
-     * \param tick Tick to search for
-     * \param from Checkpoint at which to begin searching for a tick.
-     * Must be a valid checkpoint known by this checkpointer.
-     * See hasCheckpoint.
-     * \return The latest checkpoint with a tick number less than or equal
-     * to the \a tick argument. Returns nullptr if no checkpoints before \a
-     * tick were found. It is possible for the checkpoint identified by \a
-     * from could be returned.
-     * \warning This is not a high-performance method. Generally,
-     * a client of this interface knows a paticular ID.
-     * \throw CheckpointError if \a from does not refer to a valid
-     * checkpoint.
-     */
-    std::shared_ptr<DatabaseCheckpoint> findLatestCheckpointAtOrBefore(tick_t tick, chkpt_id_t from);
+    std::deque<chkpt_id_t> getCheckpointChain(chkpt_id_t id) override;
 
     /*!
      * \brief Finds a checkpoint by its ID.
      * \param id ID of checkpoint to find. Guaranteed not to be flagged as
      * deleted
-     * \note ONLY SEARCHES CHECKPOINT CACHE. Use cloneCheckpoint() to also search the database.
+     * \note ONLY SEARCHES CHECKPOINT CACHE.
      * \return Checkpoint with ID of \a id if found or nullptr if not found
      */
-    std::weak_ptr<DatabaseCheckpoint> findCheckpoint(chkpt_id_t id) const;
-
-    /*!
-     * \brief Finds a checkpoint by its ID.
-     * \param id ID of checkpoint to find. Guaranteed not to be flagged as
-     * deleted
-     * \note SEARCHES BOTH THE CACHE AND THE DATABASE
-     * \return Checkpoint with ID of \a id if found or nullptr if not found
-     */
-    std::shared_ptr<DatabaseCheckpoint> cloneCheckpoint(chkpt_id_t id, bool must_exist=true) const;
+    std::shared_ptr<DatabaseCheckpoint> findCheckpoint(chkpt_id_t id, bool must_exist=false);
 
     /*!
      * \brief Tests whether this checkpoint manager has a checkpoint with
@@ -215,7 +193,7 @@ public:
      * and false if not. If id == Checkpoint::UNIDENTIFIED_CHECKPOINT,
      * always returns false
      */
-    bool hasCheckpoint(chkpt_id_t id) const noexcept override;
+    bool hasCheckpoint(chkpt_id_t id) noexcept override;
 
     /*!
      * \brief Dumps the restore chain for this checkpoint.
@@ -223,7 +201,7 @@ public:
      * \param o ostream to which chain data will be dumped
      * \param id ID of starting checkpoint
      */
-    void dumpRestoreChain(std::ostream& o, chkpt_id_t id) const;
+    void dumpRestoreChain(std::ostream& o, chkpt_id_t id);
 
     /*!
      * \brief Returns a stack of checkpoints from this checkpoint as far
@@ -232,20 +210,20 @@ public:
      * to be inspected for restoring this checkpoint's data. This may reach
      * the head checkpoint if no gaps are encountered.
      */
-    std::stack<chkpt_id_t> getHistoryChain(chkpt_id_t id) const;
+    std::stack<chkpt_id_t> getHistoryChain(chkpt_id_t id);
 
     /*!
      * \brief Returns a stack of checkpoints that must be restored from
      * top-to-bottom to fully restore the state associated with this
      * checkpoint.
      */
-    std::stack<chkpt_id_t> getRestoreChain(chkpt_id_t id) const;
+    std::stack<chkpt_id_t> getRestoreChain(chkpt_id_t id);
 
     /*!
      * \brief Returns next checkpoint following *this. May be an empty
      * vector if there are no later checkpoints.
      */
-    std::vector<chkpt_id_t> getNextIDs(chkpt_id_t id) const;
+    std::vector<chkpt_id_t> getNextIDs(chkpt_id_t id);
 
     /*!
      * \brief Determines how many checkpoints away the closest, earlier
@@ -257,23 +235,13 @@ public:
      * \note This is a noexcept function, which means that the exception if
      * no snapshot is encountered is uncatchable. This is intentional.
      */
-    uint32_t getDistanceToPrevSnapshot(chkpt_id_t id) const noexcept;
+    uint32_t getDistanceToPrevSnapshot(chkpt_id_t id) noexcept;
 
     /*!
      * \brief Check if the given checkpoint is a snapshot (not a delta).
      * \return Returns false if not a snapshot or the id is not a checkpoint.
      */
-    bool isSnapshot(chkpt_id_t id) const noexcept;
-
-    /*!
-     * \brief Can this checkpoint be deleted
-     * Cannot be deleted if:
-     * \li This checkpoint has any ancestors which are not deletable and not snapshots
-     * \li This checkpoint was not flagged for deletion with flagDeleted
-     * \warning This is a recursive search of a checkpoint tree which has potentially many
-     * branches and could have high time cost
-     */
-    bool canDelete(chkpt_id_t id) const noexcept;
+    bool isSnapshot(chkpt_id_t id) noexcept;
 
     /*!
      * \brief Returns a string describing this object
@@ -285,14 +253,14 @@ public:
      * ostream with a newline following each checkpoint
      * \param o ostream to dump to
      */
-    void dumpList(std::ostream& o) const override;
+    void dumpList(std::ostream& o) override;
 
     /*!
      * \brief Dumps this checkpointer's data to an ostream with a newline
      * following each checkpoint
      * \param o ostream to dump to
      */
-    void dumpData(std::ostream& o) const override;
+    void dumpData(std::ostream& o) override;
 
     /*!
      * \brief Dumps this checkpointer's data to an
@@ -300,7 +268,7 @@ public:
      * following each checkpoint description and each checkpoint data dump
      * \param o ostream to dump to
      */
-    void dumpAnnotatedData(std::ostream& o) const override;
+    void dumpAnnotatedData(std::ostream& o) override;
 
     /*!
      * \brief Debugging utility which dumps values in some bytes across a
@@ -366,12 +334,12 @@ private:
     /*!
      * \brief Implements Checkpointer::dumpCheckpointNode_
      */
-    void dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o) const override;
+    void dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o) override;
 
     /*!
      * \brief Returns IDs of the checkpoints immediately following the given checkpoint.
      */
-    std::vector<chkpt_id_t> getNextIDs_(chkpt_id_t id) const override;
+    std::vector<chkpt_id_t> getNextIDs_(chkpt_id_t id) override;
 
     /*!
      * \brief Intercept calls to Checkpointer::setHead_() and ensure we do not delete it.
@@ -399,25 +367,72 @@ private:
      */
     void addToCache_(std::shared_ptr<checkpoint_type> chkpt);
 
+    /*!
+     * \brief Get the window ID for the given checkpoint ID
+     */
+    window_id_t getWindowID_(chkpt_id_t id) const {
+        return id / (snap_thresh_ + 1);
+    }
+
+    /*!
+     * \brief Get the window ID for the given checkpoint
+     */
+    template <typename CheckpointPtrT>
+    window_id_t getWindowID_(const CheckpointPtrT& chkpt) const {
+        return getWindowID_(chkpt->getID());
+    }
+
+    /*!
+     * \brief Bump the given window ID to the front of the LRU cache
+     */
+    void touchWindow_(window_id_t id);
+
+    /*!
+     * \brief Evict the least recently used window from the cache if needed
+     */
+    void evictWindowsIfNeeded_(bool force_flush=false);
+
+    /*!
+     * \brief Ensure this checkpoint's window is loaded in the LRU cache
+     */
+    bool ensureWindowLoaded_(chkpt_id_t id, bool must_succeed=true);
+
+    /*!
+     * \brief Retrieve a checkpoint window from the database
+     */
+    checkpoint_ptrs getWindowFromDatabase_(window_id_t win_id);
+
+    /*!
+     * \brief "Undo" the pipeline for a ChkptWindows.WindowBytes blob
+     * into the original vector of checkpoints
+     */
+    std::unique_ptr<ChkptWindow> deserializeWindow_(const std::vector<char>& window_bytes) const;
+
+    /*!
+     * \brief Apply the given callback to every checkpoint (cached and database).
+     */
+    void forEachCheckpoint_(const std::function<void(const DatabaseCheckpoint*)>& cb);
+
     //! \brief Checkpointer head ID. Used to prevent the head from being deleted from the cache.
     chkpt_id_t head_id_ = checkpoint_type::UNIDENTIFIED_CHECKPOINT;
 
     //! \brief Checkpointer current ID. Used to prevent the current node from being deleted from the cache.
     chkpt_id_t current_id_ = checkpoint_type::UNIDENTIFIED_CHECKPOINT;
 
+    //! \brief Pipeline input queue from which new checkpoints to be processed are read.
+    simdb::ConcurrentQueue<checkpoint_ptrs>* pipeline_head_ = nullptr;
+
     //! \brief Subset (or all of) our checkpoints that we currently are holding in memory.
-    std::unordered_map<chkpt_id_t, std::shared_ptr<checkpoint_type>> chkpts_cache_;
+    std::unordered_map<window_id_t, checkpoint_ptrs> chkpts_cache_;
 
-    //! \brief Ordered list of checkpoint windows (snapshot + deltas).
-    std::deque<std::vector<chkpt_id_t>> chkpt_windows_;
+    //! \brief LRU list of window IDs in our cache. Most recently used at front.
+    std::list<window_id_t> lru_list_;
 
-    //! \brief SQLite query object to "extend" the checkpoint search space from just the
-    //! cache to include the database. Combinations of in-memory checkpoints, recreated
-    //! checkpoints, and database schema/query optimizations are used for performance.
-    std::shared_ptr<DatabaseCheckpointQuery> chkpt_query_;
+    //! \brief Map of window ID to its position in the LRU list for O(1) access.
+    std::unordered_map<window_id_t, std::list<window_id_t>::iterator> lru_map_;
 
-    //! \brief IDs of checkpoints pending eviction from the cache once they are no longer current.
-    std::queue<chkpt_id_t> pending_eviction_ids_;
+    //! \brief Maximum number of windows to hold in memory at any given time.
+    utils::ValidValue<uint32_t> max_cached_windows_;
 
     //! \brief Mutex to protect our checkpoints cache.
     mutable std::recursive_mutex cache_mutex_;
@@ -425,39 +440,19 @@ private:
     //! \brief SimDB instance
     simdb::DatabaseManager* db_mgr_ = nullptr;
 
-    //! \brief Pipeline. Held onto to enable flushing.
-    simdb::pipeline::Pipeline* pipeline_ = nullptr;
+    //! \brief Checkpoint pipeline flusher
+    std::unique_ptr<simdb::pipeline::RunnableFlusher> pipeline_flusher_;
 
     /*!
      * \brief Snapshot generation threshold. Every n checkpoints in a chain
      * are taken as snapshots instead of deltas
      */
-    uint32_t snap_thresh_;
+    utils::ValidValue<uint32_t> snap_thresh_;
 
     /*!
      * \brief Next checkpoint ID value
      */
     chkpt_id_t next_chkpt_id_;
-
-    /*!
-     * \brief Number of living checkpoints of either snapshot or delta type.
-     * (where checkpoint isFlaggedDeleted()=false)
-     */
-    uint32_t num_alive_checkpoints_;
-
-    /*!
-     * \brief Number of living snapshot checkpoints (where checkpoint
-     * isFlaggedDeleted()=false). Will be <= num_alive_checkpoints_
-     * The number of delta checkpoints (not snapshots) can be computed as
-     * num_alive_checkpoints_ - num_alive_snapshots_.
-     */
-    uint32_t num_alive_snapshots_;
-
-    /*!
-     * \brief Number of checkpoints which have been flagged as deleted but
-     * still exist in the checkpointer.
-     */
-    uint32_t num_dead_checkpoints_;
 };
 
 } // namespace sparta::serialization::checkpoint

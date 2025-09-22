@@ -13,18 +13,20 @@ namespace sparta::serialization::checkpoint
 
     struct ChkptWindowBytes {
         using chkpt_id_t = CheckpointBase::chkpt_id_t;
-        std::vector<chkpt_id_t> chkpt_ids;
         std::vector<char> chkpt_bytes;
-        uint64_t start_tick;
-        uint64_t end_tick;
+        chkpt_id_t start_chkpt_id = CheckpointBase::UNIDENTIFIED_CHECKPOINT;
+        chkpt_id_t end_chkpt_id = CheckpointBase::UNIDENTIFIED_CHECKPOINT;
+        uint64_t start_tick = 0;
+        uint64_t end_tick = 0;
     };
 
     struct ChkptWindow {
         using chkpt_id_t = CheckpointBase::chkpt_id_t;
-        std::vector<chkpt_id_t> chkpt_ids;
         std::vector<std::shared_ptr<DatabaseCheckpoint>> chkpts;
-        uint64_t start_tick;
-        uint64_t end_tick;
+        chkpt_id_t start_chkpt_id = CheckpointBase::UNIDENTIFIED_CHECKPOINT;
+        chkpt_id_t end_chkpt_id = CheckpointBase::UNIDENTIFIED_CHECKPOINT;
+        uint64_t start_tick = 0;
+        uint64_t end_tick = 0;
 
         //! \brief Support boost::serialization
         template <typename Archive>
@@ -75,7 +77,6 @@ namespace sparta::serialization::checkpoint
                            chkpt_id_t prev_id,
                            const std::vector<chkpt_id_t>& next_ids,
                            chkpt_id_t deleted_id,
-                           bool decached,
                            bool is_snapshot,
                            const storage::VectorStorage& storage,
                            DatabaseCheckpointer* checkpointer);
@@ -89,10 +90,12 @@ namespace sparta::serialization::checkpoint
 
         template <typename Archive>
         void serialize(Archive& ar, const unsigned int version) {
+            sparta_assert(deleted_id_ == CheckpointBase::UNIDENTIFIED_CHECKPOINT,
+                          "Cannot serialize a DatabaseCheckpoint that was already deleted");
+
             CheckpointBase::serialize(ar, version);
             ar & prev_id_;
             ar & next_ids_;
-            ar & deleted_id_;
             ar & is_snapshot_;
             ar & data_;
         }
@@ -158,29 +161,6 @@ namespace sparta::serialization::checkpoint
         void load(const std::vector<ArchData*>& dats) override;
 
         /*!
-         * \brief Can this checkpoint be deleted
-         * Cannot be deleted if:
-         * \li This checkpoint has any ancestors which are not deletable and not snapshots
-         * \li This checkpoint was not flagged for deletion with flagDeleted
-         * \warning This is a recursive search of a checkpoint tree which has potentially many
-         * branches and could have high time cost
-         */
-        bool canDelete() const noexcept;
-
-        /*!
-         * \brief Allows this checkpoint to be deleted if it is no longer a
-         * previous delta of some other delta (i.e. getNexts() returns an
-         * empty vector). Sets the checkpoint ID to invalid. Calling multiple
-         * times has no effect
-         * \pre Must not already be flagged deleted
-         * \post isFlaggedDeleted() will return true
-         * \post getDeletedID() will return the current ID (if any)
-         * \see canDelete
-         * \see isFlaggedDeleted
-         */
-        void flagDeleted();
-
-        /*!
          * \brief Indicates whether this checkpoint has been flagged deleted.
          * \note Does not imply that the checkpoint can safely be deleted;
          * only that it was flagged for deletion.
@@ -203,18 +183,6 @@ namespace sparta::serialization::checkpoint
          * the ID if not yet deleted
          */
         std::string getDeletedRepr() const override;
-
-        /*!
-         * \brief Mark this checkpoint as no longer in the cache. It will still
-         * live in the cache until the checkpointer has a chance to evict it.
-         */
-        void flagDecached();
-
-        /*!
-         * \brief Should this checkpoint be considered ready for eviction from
-         * the cache?
-         */
-        bool isFlaggedDecached() const noexcept;
 
         /*!
          * \brief Is this checkpoint a snapshot (contains ALL simulator state)
@@ -264,6 +232,19 @@ namespace sparta::serialization::checkpoint
         void storeDelta_(const std::vector<ArchData*>& dats);
 
         /*!
+         * \brief Allows this checkpoint to be deleted if it is no longer a
+         * previous delta of some other delta (i.e. getNexts() returns an
+         * empty vector). Sets the checkpoint ID to invalid. Calling multiple
+         * times has no effect
+         * \pre Must not already be flagged deleted
+         * \post isFlaggedDeleted() will return true
+         * \post getDeletedID() will return the current ID (if any)
+         * \see canDelete
+         * \see isFlaggedDeleted
+         */
+        void flagDeleted_();
+
+        /*!
          * \brief ID of the previous checkpoint.
          */
         chkpt_id_t prev_id_;
@@ -280,9 +261,6 @@ namespace sparta::serialization::checkpoint
          */
         chkpt_id_t deleted_id_;
 
-        //! \brief Has this checkpoint been flagged as ready to be decached?
-        bool decached_ = false;
-
         //! \brief Is this node a snapshot?
         bool is_snapshot_;
 
@@ -296,22 +274,19 @@ namespace sparta::serialization::checkpoint
     //! Defined down here for "new DatabaseCheckpoint"
     template <typename Archive>
     inline void ChkptWindow::serialize(Archive& ar, const unsigned int /*version*/) {
-        // TODO cnyce: Try to avoid use of unique_ptr. Everything is already movable
-        // and has default constructors.
-        ar & chkpt_ids;
+        ar & start_chkpt_id;
+        ar & end_chkpt_id;
         ar & start_tick;
         ar & end_tick;
 
         if (chkpts.empty()) {
-            // We are loading checkpoint window from disk
-            chkpts.reserve(chkpt_ids.size());
-            for (size_t i = 0; i < chkpt_ids.size(); ++i) {
+            // We are loading a checkpoint window from disk
+            const auto num_chkpts = end_chkpt_id - start_chkpt_id + 1;
+            for (size_t i = 0; i < num_chkpts; ++i) {
                 chkpts.emplace_back(new DatabaseCheckpoint);
                 ar & *chkpts.back();
             }
-        }
-
-        else {
+        } else {
             // We are saving a checkpoint window to disk
             for (auto& chkpt : chkpts) {
                 ar & *chkpt;

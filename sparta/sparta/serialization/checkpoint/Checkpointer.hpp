@@ -311,7 +311,7 @@ namespace sparta::serialization::checkpoint
          * \note Makes a new vector of results. This should not be called in a
          * performance-critical path.
          */
-        virtual std::vector<chkpt_id_t> getCheckpointsAt(tick_t t) const = 0;
+        virtual std::vector<chkpt_id_t> getCheckpointsAt(tick_t t) = 0;
 
         /*!
          * \brief Gets all known checkpoint IDs available on any timeline sorted
@@ -321,7 +321,7 @@ namespace sparta::serialization::checkpoint
          * \note Makes a new vector of results. This should not be called in a
          * performance-critical path.
          */
-        virtual std::vector<chkpt_id_t> getCheckpoints() const = 0;
+        virtual std::vector<chkpt_id_t> getCheckpoints() = 0;
 
         /*!
          * \brief Gets the current number of checkpoints having valid IDs
@@ -330,7 +330,7 @@ namespace sparta::serialization::checkpoint
          * Ignores any internal temporary or deleted checkpoints without
          * visible IDs
          */
-        virtual uint32_t getNumCheckpoints() const noexcept = 0;
+        virtual uint32_t getNumCheckpoints() noexcept = 0;
 
         /*!
          * \brief Debugging utility which gets a deque of checkpoints
@@ -347,7 +347,7 @@ namespace sparta::serialization::checkpoint
          * \note Makes a new vector of results. This should not be called in the
          * critical path.
          */
-        virtual std::deque<chkpt_id_t> getCheckpointChain(chkpt_id_t id) const = 0;
+        virtual std::deque<chkpt_id_t> getCheckpointChain(chkpt_id_t id) = 0;
 
         /*!
          * \brief Tests whether this checkpoint manager has a checkpoint with
@@ -356,7 +356,7 @@ namespace sparta::serialization::checkpoint
          * and false if not. If id == Checkpoint::UNIDENTIFIED_CHECKPOINT,
          * always returns false
          */
-        virtual bool hasCheckpoint(chkpt_id_t id) const noexcept = 0;
+        virtual bool hasCheckpoint(chkpt_id_t id) noexcept = 0;
 
         /*!
          * \brief Returns the head checkpoint which is equivalent to the
@@ -461,14 +461,14 @@ namespace sparta::serialization::checkpoint
          * ostream with a newline following each checkpoint
          * \param o ostream to dump to
          */
-        virtual void dumpList(std::ostream& o) const = 0;
+        virtual void dumpList(std::ostream& o) = 0;
 
         /*!
          * \brief Dumps this checkpointer's data to an ostream with a newline
          * following each checkpoint
          * \param o ostream to dump to
          */
-        virtual void dumpData(std::ostream& o) const = 0;
+        virtual void dumpData(std::ostream& o) = 0;
 
         /*!
          * \brief Dumps this checkpointer's data to an
@@ -476,7 +476,7 @@ namespace sparta::serialization::checkpoint
          * following each checkpoint description and each checkpoint data dump
          * \param o ostream to dump to
          */
-        virtual void dumpAnnotatedData(std::ostream& o) const = 0;
+        virtual void dumpAnnotatedData(std::ostream& o) = 0;
 
         /*!
          * \brief Debugging utility which dumps values in some bytes across a
@@ -500,7 +500,7 @@ namespace sparta::serialization::checkpoint
          * for deep branches will be difficult to read
          * \param o ostream to dump to
          */
-        void dumpTree(std::ostream& o) const {
+        void dumpTree(std::ostream& o) {
             std::deque<uint32_t> c;
             dumpBranch(o, getHeadID(), 0, 0, c);
             o << '\n';
@@ -522,7 +522,7 @@ namespace sparta::serialization::checkpoint
                         const chkpt_id_t chkpt,
                         uint32_t indent,
                         uint32_t pos,
-                        std::deque<uint32_t>& continues) const {
+                        std::deque<uint32_t>& continues) {
             //! \todo Move the constants somewhere static outside this function (especially the assert)
             static const std::string SEP_STR = "-> "; // Normal checkpoint chain
             static const std::string CONT_SEP_STR = "`> "; // Checkpoint branch from higher line
@@ -616,7 +616,7 @@ namespace sparta::serialization::checkpoint
          */
         virtual chkpt_id_t createCheckpoint_(bool force_snapshot=false) = 0;
 
-        virtual void dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o) const {
+        virtual void dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o) {
             o << id;
         }
 
@@ -678,7 +678,7 @@ namespace sparta::serialization::checkpoint
         /*!
          * \brief Returns IDs of the checkpoints immediately following the given checkpoint.
          */
-        virtual std::vector<chkpt_id_t> getNextIDs_(chkpt_id_t id) const = 0;
+        virtual std::vector<chkpt_id_t> getNextIDs_(chkpt_id_t id) = 0;
 
         /*!
          * \brief Scheduler whose tick count will be set and read. Cannnot be

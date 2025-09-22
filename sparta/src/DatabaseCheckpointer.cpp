@@ -1,7 +1,6 @@
 // <DatabaseCheckpointer> -*- C++ -*-
 
 #include "sparta/serialization/checkpoint/DatabaseCheckpointer.hpp"
-#include "sparta/serialization/checkpoint/DatabaseCheckpointQuery.hpp"
 #include "simdb/apps/AppRegistration.hpp"
 #include "simdb/schema/SchemaDef.hpp"
 #include "simdb/pipeline/AsyncDatabaseAccessor.hpp"
@@ -22,20 +21,11 @@ namespace sparta::serialization::checkpoint
 
 using tick_t = typename CheckpointBase::tick_t;
 using chkpt_id_t = typename CheckpointBase::chkpt_id_t;
-using checkpoint_type = DatabaseCheckpoint;
-using checkpoint_ptr = std::shared_ptr<DatabaseCheckpoint>;
-using checkpoint_ptrs = std::vector<checkpoint_ptr>;
-using EvictedChkptIDs = std::vector<chkpt_id_t>;
 
 DatabaseCheckpointer::DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, TreeNode& root, Scheduler* sched) :
     Checkpointer(root, sched),
-    chkpt_query_(std::make_shared<DatabaseCheckpointQuery>(this, db_mgr, root, sched)),
     db_mgr_(db_mgr),
-    snap_thresh_(DEFAULT_SNAPSHOT_THRESH),
-    next_chkpt_id_(checkpoint_type::MIN_CHECKPOINT),
-    num_alive_checkpoints_(0),
-    num_alive_snapshots_(0),
-    num_dead_checkpoints_(0)
+    next_chkpt_id_(checkpoint_type::MIN_CHECKPOINT)
 {
 }
 
@@ -43,21 +33,17 @@ void DatabaseCheckpointer::defineSchema(simdb::Schema& schema)
 {
     using dt = simdb::SqlDataType;
 
-    auto& window_bytes = schema.addTable("ChkptWindowBytes");
-    window_bytes.addColumn("WindowBytes", dt::blob_t);
-
-    auto& window_ids = schema.addTable("ChkptWindowIDs");
-    window_ids.addColumn("ChkptWindowBytesID", dt::int32_t);
-    window_ids.addColumn("ChkptID", dt::int32_t);
-    window_ids.createIndexOn("ChkptID");
-    //window_ids.disableAutoIncPrimaryKey();
-
-    auto& window_ticks = schema.addTable("ChkptWindowTicks");
-    window_ticks.addColumn("ChkptWindowBytesID", dt::int32_t);
-    window_ticks.addColumn("StartTick", dt::int32_t);
-    window_ticks.addColumn("EndTick", dt::int32_t);
-    window_ticks.createCompoundIndexOn({"StartTick", "EndTick"});
-    //window_ticks.disableAutoIncPrimaryKey();
+    auto& windows = schema.addTable("ChkptWindows");
+    windows.addColumn("WindowID", dt::uint64_t);
+    windows.addColumn("WindowBytes", dt::blob_t);
+    windows.addColumn("StartChkpID", dt::uint64_t);
+    windows.addColumn("EndChkpID", dt::uint64_t);
+    windows.addColumn("StartTick", dt::uint64_t);
+    windows.addColumn("EndTick", dt::uint64_t);
+    windows.createIndexOn("WindowID");
+    windows.createCompoundIndexOn({"StartChkpID", "EndChkpID"});
+    windows.createCompoundIndexOn({"StartTick", "EndTick"});
+    windows.disableAutoIncPrimaryKey();
 }
 
 std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
@@ -65,74 +51,47 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
 {
     auto pipeline = std::make_unique<simdb::pipeline::Pipeline>(db_mgr_, NAME);
 
-    // Task 1: Clone an entire checkpoint window (snapshot plus all deltas until next snapshot)
-    auto clone_window = simdb::pipeline::createTask<simdb::pipeline::Function<void, checkpoint_ptrs>>(
-        [this](simdb::ConcurrentQueue<checkpoint_ptrs>& out, bool simulation_terminating) mutable -> bool
+    // Task 1: Chop off "flag deleted" checkpoints from the given window. This is needed
+    // since the checkpointer many times will grab a window from the database, mark some
+    // checkpoints as deleted, and leave the window in the cache. When the window gets
+    // old enough to be evicted from the LRU cache and re-sent down the pipeline, we do
+    // not want to propagate the deleted checkpoints back into the database.
+    auto purge_deleted = simdb::pipeline::createTask<simdb::pipeline::Function<checkpoint_ptrs, checkpoint_ptrs>>(
+        [](checkpoint_ptrs&& chkpts_in,
+           simdb::ConcurrentQueue<checkpoint_ptrs>& chkpts_out,
+           bool /*force_flush*/)
         {
-            std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+            checkpoint_ptrs alive_chkpts;
+            bool ensure_rest_deleted = false;
 
-            bool sent = false;
+            // Rule: Once we see a deleted checkpoint, all following checkpoints
+            // in the window must also be deleted. This is to ensure that
+            // checkpoints are always contiguous in the database.
 
-            auto send_window = [&]() {
-                auto window = std::move(chkpt_windows_.front());
-                chkpt_windows_.pop_front();
-
-                checkpoint_ptrs chkpts;
-                for (auto id : window) {
-                    auto it = chkpts_cache_.find(id);
-                    if (it == chkpts_cache_.end()) {
-                        throw CheckpointError("Invalid checkpoint - has been deleted");
-                    }
-                    const auto& c = it->second;
-                    if (chkpts.empty() && !c->isSnapshot()) {
-                        throw CheckpointError("Invalid checkpoint - first in window is not a snapshot");
-                    } else if (!chkpts.empty() && c->isSnapshot()) {
-                        throw CheckpointError("Invalid checkpoint - only one snapshot per window");
-                    }
-
-                    chkpts.emplace_back(c->clone());
+            for (const auto& chkpt : chkpts_in) {
+                if (chkpt->isFlaggedDeleted()) {
+                    ensure_rest_deleted = true;
+                } else if (ensure_rest_deleted) {
+                    throw CheckpointError("Checkpoint window has non-contiguous deleted checkpoints");
+                } else {
+                    alive_chkpts.push_back(chkpt);
                 }
-
-                if (!chkpts.empty()) {
-                    out.emplace(std::move(chkpts));
-                    sent = true;
-                }
-            };
-
-            // Note the >2 is to ensure we always have at least one complete window
-            // in the cache for fast APIs on very recent checkpoints. The second
-            // window may be partial so we can't send it yet.
-            while (chkpt_windows_.size() > 2) {
-                send_window();
             }
-
-            // If we are terminating, send all remaining windows.
-            while (!chkpt_windows_.empty() && simulation_terminating) {
-                send_window();
-            }
-
-            return sent;
         }
     );
 
-    // Task 2: Add the IDs of all checkpoints in this window
-    auto add_chkpt_ids = simdb::pipeline::createTask<simdb::pipeline::Function<checkpoint_ptrs, ChkptWindow>>(
+    // Task 2: Package up checkpoints into a checkpoint window
+    auto create_window = simdb::pipeline::createTask<simdb::pipeline::Function<checkpoint_ptrs, ChkptWindow>>(
         [](checkpoint_ptrs&& chkpts,
            simdb::ConcurrentQueue<ChkptWindow>& windows,
-           bool /*simulation_terminating*/)
+           bool /*force_flush*/)
         {
-            uint64_t start_tick = std::numeric_limits<uint64_t>::max();
-            uint64_t end_tick = 0;
-
             ChkptWindow window;
+            window.start_chkpt_id = chkpts.front()->getID();
+            window.end_chkpt_id = chkpts.back()->getID();
+            window.start_tick = chkpts.front()->getTick();
+            window.end_tick = chkpts.back()->getTick();
             window.chkpts = std::move(chkpts);
-            for (auto& chkpt : window.chkpts) {
-                window.chkpt_ids.push_back(chkpt->getID());
-                start_tick = std::min(start_tick, chkpt->getTick());
-                end_tick = std::max(end_tick, chkpt->getTick());
-            }
-            window.start_tick = start_tick;
-            window.end_tick = end_tick;
             windows.emplace(std::move(window));
         }
     );
@@ -141,7 +100,7 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
     auto window_to_bytes = simdb::pipeline::createTask<simdb::pipeline::Function<ChkptWindow, ChkptWindowBytes>>(
         [](ChkptWindow&& window,
            simdb::ConcurrentQueue<ChkptWindowBytes>& window_bytes,
-           bool /*simulation_terminating*/)
+           bool /*force_flush*/)
         {
             ChkptWindowBytes bytes;
             boost::iostreams::back_insert_device<std::vector<char>> inserter(bytes.chkpt_bytes);
@@ -150,10 +109,8 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
             oa << window;
             os.flush();
 
-            for (const auto& chkpt : window.chkpts) {
-                bytes.chkpt_ids.push_back(chkpt->getID());
-            }
-
+            bytes.start_chkpt_id = window.start_chkpt_id;
+            bytes.end_chkpt_id = window.end_chkpt_id;
             bytes.start_tick = window.start_tick;
             bytes.end_tick = window.end_tick;
             window_bytes.emplace(std::move(bytes));
@@ -164,98 +121,88 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
     auto zlib_bytes = simdb::pipeline::createTask<simdb::pipeline::Function<ChkptWindowBytes, ChkptWindowBytes>>(
         [](ChkptWindowBytes&& bytes_in,
            simdb::ConcurrentQueue<ChkptWindowBytes>& bytes_out,
-           bool /*simulation_terminating*/)
+           bool /*force_flush*/)
         {
-            ChkptWindowBytes compressed;
-            compressed.chkpt_ids = std::move(bytes_in.chkpt_ids);
-            simdb::compressData(bytes_in.chkpt_bytes, compressed.chkpt_bytes);
-            bytes_out.emplace(std::move(compressed));
+            std::vector<char> compressed_bytes;
+            simdb::compressData(bytes_in.chkpt_bytes, compressed_bytes);
+            std::swap(bytes_in.chkpt_bytes, compressed_bytes);
+            bytes_out.emplace(std::move(bytes_in));
         }
     );
 
     // Task 5: Write to the database
-    auto write_to_db = db_accessor->createAsyncWriter<DatabaseCheckpointer, ChkptWindowBytes, EvictedChkptIDs>(
-        [](ChkptWindowBytes&& bytes_in,
-           simdb::ConcurrentQueue<EvictedChkptIDs>& evicted_ids,
-           simdb::pipeline::AppPreparedINSERTs* tables,
-           bool /*simulation_terminating*/)
+    auto write_to_db = db_accessor->createAsyncWriter<DatabaseCheckpointer, ChkptWindowBytes, void>(
+        [this](ChkptWindowBytes&& bytes_in,
+               simdb::pipeline::AppPreparedINSERTs* tables,
+               bool /*force_flush*/)
         {
-            auto bytes_inserter = tables->getPreparedINSERT("ChkptWindowBytes");
-            bytes_inserter->setColumnValue(0, bytes_in.chkpt_bytes);
-            auto bytes_id = bytes_inserter->createRecord();
+            auto window_inserter = tables->getPreparedINSERT("ChkptWindows");
 
-            auto chkpt_ids_inserter = tables->getPreparedINSERT("ChkptWindowIDs");
-            chkpt_ids_inserter->setColumnValue(0, bytes_id);
-            for (auto id : bytes_in.chkpt_ids) {
-                chkpt_ids_inserter->setColumnValue(1, (int)id);
-                chkpt_ids_inserter->createRecord();
+            utils::ValidValue<uint64_t> win_id;
+            for (chkpt_id_t cid = bytes_in.start_chkpt_id; cid <= bytes_in.end_chkpt_id; ++cid) {
+                auto window_id = getWindowID_(cid);
+                if (!win_id.isValid()) {
+                    win_id = window_id;
+                } else if (win_id != window_id) {
+                    throw CheckpointError("Checkpoint window has inconsistent window IDs");
+                }
             }
 
-            auto chkpt_ticks_inserter = tables->getPreparedINSERT("ChkptWindowTicks");
-            chkpt_ticks_inserter->setColumnValue(0, bytes_id);
-            chkpt_ticks_inserter->setColumnValue(1, (int)bytes_in.start_tick);
-            chkpt_ticks_inserter->setColumnValue(2, (int)bytes_in.end_tick);
-            chkpt_ticks_inserter->createRecord();
-
-            evicted_ids.emplace(std::move(bytes_in.chkpt_ids));
+            window_inserter->setColumnValue(0, win_id.getValue());
+            window_inserter->setColumnValue(1, bytes_in.chkpt_bytes);
+            window_inserter->setColumnValue(2, bytes_in.start_chkpt_id);
+            window_inserter->setColumnValue(3, bytes_in.end_chkpt_id);
+            window_inserter->setColumnValue(4, bytes_in.start_tick);
+            window_inserter->setColumnValue(5, bytes_in.end_tick);
+            window_inserter->createRecord();
         }
     );
 
-    // Task 6: Perform cache eviction after a window of checkpoints has been written to SimDB
-    auto evict_from_cache = simdb::pipeline::createTask<simdb::pipeline::Function<EvictedChkptIDs, void>>(
-        [this](EvictedChkptIDs&& evicted_ids, bool simulation_terminating) mutable
-        {
-            // TODO cnyce: We are allocating and deallocating a LOT of checkpoints.
-            // See if we can reuse a pool of them. Could also try to just add a pool
-            // to the VectorStorage::Segment class.
-            std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+    *purge_deleted >> *create_window >> *window_to_bytes >> *zlib_bytes >> *write_to_db;
 
-            for (auto id : evicted_ids) {
-                if (id == head_id_) {
-                    // Never evict the head checkpoint
-                    continue;
-                }
+    pipeline_head_ = purge_deleted->getTypedInputQueue<checkpoint_ptrs>();
 
-                if (auto it = chkpts_cache_.find(id); it != chkpts_cache_.end()) {
-                    it->second->flagDecached();
-                    if (findCheckpoint(id).lock() != nullptr) {
-                        throw CheckpointError("Internal error - checkpoint should be marked as decached");
-                    }
-                }
-            }
-        }
-    );
-
-    *clone_window >> *add_chkpt_ids >> *window_to_bytes >> *zlib_bytes >> *write_to_db >> *evict_from_cache;
-
-    pipeline_ = pipeline.get();
+    pipeline_flusher_ = std::make_unique<simdb::pipeline::RunnableFlusher>(
+        *db_mgr_, purge_deleted, create_window, window_to_bytes, zlib_bytes, write_to_db);
 
     pipeline->createTaskGroup("CheckpointPipeline")
-        ->addTask(std::move(clone_window))
-        ->addTask(std::move(add_chkpt_ids))
+        ->addTask(std::move(purge_deleted))
+        ->addTask(std::move(create_window))
         ->addTask(std::move(window_to_bytes))
-        ->addTask(std::move(zlib_bytes))
-        ->addTask(std::move(evict_from_cache));
+        ->addTask(std::move(zlib_bytes));
 
     return pipeline;
 }
 
-uint32_t DatabaseCheckpointer::getSnapshotThreshold() const noexcept
+uint32_t DatabaseCheckpointer::getSnapshotThreshold() const
 {
     return snap_thresh_;
 }
 
-void DatabaseCheckpointer::setSnapshotThreshold(uint32_t thresh) noexcept
+void DatabaseCheckpointer::setSnapshotThreshold(uint32_t thresh)
 {
+    sparta_assert(!snap_thresh_.isValid(), "Snapshot threshold cannot be changed once set.");
+    sparta_assert(thresh > 1, "Snapshot threshold must be greater than 1");
     snap_thresh_ = thresh;
+}
+
+void DatabaseCheckpointer::setMaxCachedWindows(uint32_t max_windows)
+{
+    sparta_assert(!max_cached_windows_.isValid(), "Max cached windows cannot be changed once set.");
+    sparta_assert(max_windows > 0, "Max cached windows must be greater than 0");
+    max_cached_windows_ = max_windows;
 }
 
 uint64_t DatabaseCheckpointer::getTotalMemoryUse() const noexcept
 {
     std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+
+    // Only add up the memory use from the cache.
     uint64_t mem = 0;
-    for (const auto& [id, chkpt] : chkpts_cache_) {
-        mem += chkpt->getTotalMemoryUse();
+    for (const auto& [win_id, window] : chkpts_cache_) {
+        for (const auto& chkpt : window) {
+            mem += chkpt->getTotalMemoryUse();
+        }
     }
     return mem;
 }
@@ -263,9 +210,13 @@ uint64_t DatabaseCheckpointer::getTotalMemoryUse() const noexcept
 uint64_t DatabaseCheckpointer::getContentMemoryUse() const noexcept
 {
     std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+
+    // Only add up the memory use from the cache.
     uint64_t mem = 0;
-    for (const auto& [id, chkpt] : chkpts_cache_) {
-        mem += chkpt->getContentMemoryUse();
+    for (const auto& [win_id, window] : chkpts_cache_) {
+        for (const auto& chkpt : window) {
+            mem += chkpt->getContentMemoryUse();
+        }
     }
     return mem;
 }
@@ -279,15 +230,11 @@ void DatabaseCheckpointer::loadCheckpoint(chkpt_id_t id)
 {
     std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
 
-    if (auto c = getCurrent_(); !c || (c && c->getID() == id)) {
+    if (auto c = getCurrent_(); !c || c->getID() == id) {
         return;
     }
 
-    auto chkpt = (id == head_id_) ? findCheckpoint(id).lock() : cloneCheckpoint(id);
-    if (!chkpt) {
-        throw CheckpointError("There is no checkpoint with ID ") << id;
-    }
-
+    auto chkpt = findCheckpoint(id, true);
     chkpt->load(getArchDatas());
 
     // Delete all future checkpoints past this one. Do this from the cache
@@ -306,14 +253,7 @@ void DatabaseCheckpointer::loadCheckpoint(chkpt_id_t id)
     // Move current to this checkpoint.
     setCurrent_(chkpt.get());
 
-    // Add this checkpoint to the cache if not the head checkpoint.
-    // The head checkpoint is always in the cache.
-    if (id != head_id_) {
-        addToCache_(std::move(chkpt));
-    }
-
     // Increasing-by-one, starting-at-zero checkpoint IDs guarantee we can do this:
-    num_alive_checkpoints_ = id + 1;
     next_chkpt_id_ = id + 1;
 
     // Restore scheduler tick number
@@ -322,163 +262,118 @@ void DatabaseCheckpointer::loadCheckpoint(chkpt_id_t id)
     }
 }
 
-std::vector<chkpt_id_t> DatabaseCheckpointer::getCheckpointsAt(tick_t t) const
+void DatabaseCheckpointer::preTeardown()
 {
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
-
-    std::unordered_set<chkpt_id_t> results;
-    for (const auto& [id, chkpt] : chkpts_cache_) {
-        if (chkpt->getTick() == t && !chkpt->isFlaggedDeleted()) {
-            results.insert(id);
-        }
-    }
-
-    for (auto id : chkpt_query_->getCheckpointsAt(t)) {
-        results.insert(id);
-    }
-
-    std::vector<chkpt_id_t> chkpts(results.begin(), results.end());
-    std::sort(chkpts.begin(), chkpts.end());
-    return chkpts;
+    // Send every window down the pipeline and flush it.
+    evictWindowsIfNeeded_(true);
+    pipeline_flusher_->flush();
 }
 
-std::vector<chkpt_id_t> DatabaseCheckpointer::getCheckpoints() const
+std::vector<chkpt_id_t> DatabaseCheckpointer::getCheckpointsAt(tick_t t)
 {
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+    std::unordered_set<chkpt_id_t> ids;
 
-    std::unordered_set<chkpt_id_t> results;
-    for (const auto& [id, chkpt] : chkpts_cache_) {
+    forEachCheckpoint_([t, &ids](const DatabaseCheckpoint* chkpt) {
+        if (!chkpt->isFlaggedDeleted() && chkpt->getTick() == t) {
+            ids.insert(chkpt->getID());
+        }
+    });
+
+    std::vector<chkpt_id_t> ret(ids.begin(), ids.end());
+    std::sort(ret.begin(), ret.end());
+    return ret;
+}
+
+std::vector<chkpt_id_t> DatabaseCheckpointer::getCheckpoints()
+{
+    std::unordered_set<chkpt_id_t> ids;
+
+    forEachCheckpoint_([&ids](const DatabaseCheckpoint* chkpt) {
         if (!chkpt->isFlaggedDeleted()) {
-            results.insert(id);
+            ids.insert(chkpt->getID());
         }
-    }
+    });
 
-    //TODO cnyce: Put this back when the cache is actually purged
-    //for (auto id : chkpt_query_->getCheckpoints()) {
-    //    results.insert(id);
-    //}
-
-    std::vector<chkpt_id_t> chkpts(results.begin(), results.end());
-    std::sort(chkpts.begin(), chkpts.end());
-    return chkpts;
+    std::vector<chkpt_id_t> ret(ids.begin(), ids.end());
+    std::sort(ret.begin(), ret.end());
+    return ret;
 }
 
-uint32_t DatabaseCheckpointer::getNumCheckpoints() const noexcept
+uint32_t DatabaseCheckpointer::getNumCheckpoints() noexcept
 {
-    return num_alive_checkpoints_;
+    return next_chkpt_id_;
 }
 
-uint32_t DatabaseCheckpointer::getNumSnapshots() const noexcept
+uint32_t DatabaseCheckpointer::getNumSnapshots() noexcept
 {
-    return num_alive_snapshots_;
+    return next_chkpt_id_ ? getWindowID_(next_chkpt_id_) + 1 : 0;
 }
 
-uint32_t DatabaseCheckpointer::getNumDeltas() const noexcept
+uint32_t DatabaseCheckpointer::getNumDeltas() noexcept
 {
     return getNumCheckpoints() - getNumSnapshots();
 }
 
-uint32_t DatabaseCheckpointer::getNumDeadCheckpoints() const noexcept
+std::deque<chkpt_id_t> DatabaseCheckpointer::getCheckpointChain(chkpt_id_t id)
 {
-    return num_dead_checkpoints_;
-}
-
-std::deque<chkpt_id_t> DatabaseCheckpointer::getCheckpointChain(chkpt_id_t id) const
-{
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
-
     std::deque<chkpt_id_t> chain;
     if (!getHead()) {
         return chain;
     }
 
-    if (!hasCheckpoint(id)) {
+    if (hasCheckpoint(id)) {
+        // This checkpointer guarantees a linear chain of checkpoints with no gaps.
+        // While we could also walk backwards using getPrevID(), load checkpoints
+        // into memory, and call getID() on each of them, the result of doing that
+        // would effectively load every window into our cache only to dump most of
+        // them (LRU). The cache could very well end up being 100% full of very old
+        // checkpoints, thus slowing down further API calls to reload newer windows
+        // into the cache.
+        do {
+            chain.push_back(id);
+        } while (id-- > 0);
+    } else {
         throw CheckpointError("There is no checkpoint with ID ") << id;
-    }
-
-    auto it = chkpts_cache_.find(id);
-    while (it != chkpts_cache_.end()) {
-        chain.push_back(id);
-        id = it->second->getPrevID();
-        it = chkpts_cache_.find(id);
-    }
-
-    while (id != checkpoint_type::UNIDENTIFIED_CHECKPOINT) {
-        chain.push_back(id);
-        id = chkpt_query_->getPrevID(id);
     }
 
     return chain;
 }
 
-std::shared_ptr<DatabaseCheckpoint> DatabaseCheckpointer::findLatestCheckpointAtOrBefore(tick_t tick, chkpt_id_t from)
+std::shared_ptr<DatabaseCheckpoint> DatabaseCheckpointer::findCheckpoint(chkpt_id_t id, bool must_exist)
 {
     std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
 
-    auto id = from;
-    do {
-        auto chkpt = cloneCheckpoint(id);
-        if (chkpt->getTick() <= tick) {
-            break;
-        }
-        id = chkpt->getPrevID();
-    } while (id != checkpoint_type::UNIDENTIFIED_CHECKPOINT);
-
-    return cloneCheckpoint(id);
-}
-
-std::weak_ptr<DatabaseCheckpoint> DatabaseCheckpointer::findCheckpoint(chkpt_id_t id) const
-{
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
-
-    if (auto it = chkpts_cache_.find(id); it != chkpts_cache_.end()) {
-        if (it->second->isFlaggedDeleted() || it->second->isFlaggedDecached()) {
-            return std::weak_ptr<DatabaseCheckpoint>();
-        }
-        return it->second;
-    }
-
-    return std::weak_ptr<DatabaseCheckpoint>();
-}
-
-std::shared_ptr<DatabaseCheckpoint> DatabaseCheckpointer::cloneCheckpoint(chkpt_id_t id, bool must_exist) const
-{
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
-
-    if (auto it = chkpts_cache_.find(id); it != chkpts_cache_.end()) {//TODO cnyce: && !it->second->isFlaggedDecached()) {
-        return it->second->clone();
-    }
-
-    auto chkpt = chkpt_query_->findCheckpoint(id);
-    if (!chkpt && must_exist) {
-        throw CheckpointError("There is no checkpoint with ID ") << id;
-    } else if (!chkpt) {
+    if (!ensureWindowLoaded_(id, must_exist)) {
         return nullptr;
     }
 
-    chkpt->checkpointer_ = const_cast<DatabaseCheckpointer*>(this);
+    auto win_id = getWindowID_(id);
+    auto& window = chkpts_cache_[win_id];
+    sparta_assert(!window.empty());
+
+    // Find the checkpoint in the window in constant time, noting that
+    // the window will have checkpoints in ascending order by ID with
+    // no gaps.
+    auto snapshot_id = window.front()->getID();
+    auto& chkpt = window.at(id - snapshot_id);
+    sparta_assert(chkpt->getID() == id);
     return chkpt;
 }
 
-bool DatabaseCheckpointer::hasCheckpoint(chkpt_id_t id) const noexcept
+bool DatabaseCheckpointer::hasCheckpoint(chkpt_id_t id) noexcept
 {
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
-
-    if (auto it = chkpts_cache_.find(id); it != chkpts_cache_.end()) {
-        return !it->second->isFlaggedDeleted();
-    }
-
-    return chkpt_query_->hasCheckpoint(id);
+    return findCheckpoint(id) != nullptr;
 }
 
-void DatabaseCheckpointer::dumpRestoreChain(std::ostream& o, chkpt_id_t id) const
+void DatabaseCheckpointer::dumpRestoreChain(std::ostream& o, chkpt_id_t id)
 {
     auto rc = getRestoreChain(id);
     while (true) {
-        const auto chkpt = cloneCheckpoint(rc.top());
+        auto chkpt = findCheckpoint(rc.top());
         rc.pop();
+
         if (chkpt->isSnapshot()) {
-            o << '(';
+            o << "(";
         }
         if (chkpt->getID() == checkpoint_type::UNIDENTIFIED_CHECKPOINT) {
             o << "*" << chkpt->getDeletedID();
@@ -486,7 +381,7 @@ void DatabaseCheckpointer::dumpRestoreChain(std::ostream& o, chkpt_id_t id) cons
             o << chkpt->getID();
         }
         if (chkpt->isSnapshot()) {
-            o << ')';
+            o << ")";
         }
         if (rc.empty()) {
             break;
@@ -496,118 +391,51 @@ void DatabaseCheckpointer::dumpRestoreChain(std::ostream& o, chkpt_id_t id) cons
     }
 }
 
-std::stack<chkpt_id_t> DatabaseCheckpointer::getHistoryChain(chkpt_id_t id) const
+std::stack<chkpt_id_t> DatabaseCheckpointer::getHistoryChain(chkpt_id_t id)
 {
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+    ensureWindowLoaded_(id, true);
 
     std::stack<chkpt_id_t> chain;
-    auto it = chkpts_cache_.find(id);
-    while (it != chkpts_cache_.end()) {
+    do {
         chain.push(id);
-        id = it->second->getPrevID();
-        it = chkpts_cache_.find(id);
-    }
-
-    while (id != checkpoint_type::UNIDENTIFIED_CHECKPOINT) {
-        chain.push(id);
-        id = chkpt_query_->getPrevID(id);
-    }
+    } while (id-- > 0);
 
     return chain;
 }
 
-std::stack<chkpt_id_t> DatabaseCheckpointer::getRestoreChain(chkpt_id_t id) const
-{
-    // Build stack up to last snapshot
-    std::stack<chkpt_id_t> chkpts;
-    while (true) {
-        chkpts.push(id);
-        auto chkpt = cloneCheckpoint(id);
-        if (chkpt->isSnapshot()) {
-            break;
-        }
-        id = chkpt->getPrevID();
-    }
-    return chkpts;
-}
-
-std::vector<chkpt_id_t> DatabaseCheckpointer::getNextIDs(chkpt_id_t id) const
+std::stack<chkpt_id_t> DatabaseCheckpointer::getRestoreChain(chkpt_id_t id)
 {
     std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
 
-    if (auto it = chkpts_cache_.find(id); it != chkpts_cache_.end()) {
-        return it->second->getNextIDs();
-    }
+    ensureWindowLoaded_(id, true);
+    auto win_id = getWindowID_(id);
+    auto& window = chkpts_cache_[win_id];
+    sparta_assert(!window.empty());
 
-    return chkpt_query_->getNextIDs(id);
+    std::stack<chkpt_id_t> chain;
+    auto snapshot_id = window.front()->getID();
+    do {
+        chain.push(id);
+    } while (id-- > snapshot_id);
+
+    return chain;
 }
 
-uint32_t DatabaseCheckpointer::getDistanceToPrevSnapshot(chkpt_id_t id) const noexcept
+std::vector<chkpt_id_t> DatabaseCheckpointer::getNextIDs(chkpt_id_t id)
 {
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
-
-    uint32_t dist = 0;
-    auto it = chkpts_cache_.find(id);
-    while (it != chkpts_cache_.end()) {
-        if (it->second->isSnapshot()) {
-            return dist;
-        }
-        id = it->second->getPrevID();
-        it = chkpts_cache_.find(id);
-        ++dist;
-    }
-
-    // Note that we only evict entire checkpoint "windows" from the cache,
-    // which means the cache never has "partial" windows like:
-    //
-    //   Snapshot threshold: 10     (window length)
-    //                              (1 snapshot, 9 deltas)
-    //
-    //   Cache:              DB:
-    //   3,4,5,6,7,8,9,10    1,2    <-- never going to happen
-    //
-    //   Cache:              DB:
-    //   21-30               1-20   <-- always like this ("full" windows only)
-    //
-    // This means we either can answer the API question entirely using the
-    // cache or entirely using the DB. That is why the line of code below
-    // is not something like:
-    //
-    //     return dist + chkpt_query_->getDistanceToPrevSnapshot(id);
-
-    return chkpt_query_->getDistanceToPrevSnapshot(id);
+    auto chkpt = findCheckpoint(id, true);
+    return chkpt->getNextIDs();
 }
 
-bool DatabaseCheckpointer::isSnapshot(chkpt_id_t id) const noexcept
+uint32_t DatabaseCheckpointer::getDistanceToPrevSnapshot(chkpt_id_t id) noexcept
 {
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
-
-    if (auto it = chkpts_cache_.find(id); it != chkpts_cache_.end()) {
-        return it->second->isSnapshot();
-    }
-
-    return chkpt_query_->isSnapshot(id);
+    return getRestoreChain(id).size() - 1;
 }
 
-bool DatabaseCheckpointer::canDelete(chkpt_id_t id) const noexcept
+bool DatabaseCheckpointer::isSnapshot(chkpt_id_t id) noexcept
 {
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
-
-    if (auto it = chkpts_cache_.find(id); it != chkpts_cache_.end()) {
-        if (!it->second->isFlaggedDeleted()) {
-            return false;
-        }
-
-        for (auto next_id : it->second->getNextIDs()) {
-            if (!canDelete(next_id) && !isSnapshot(next_id)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    return chkpt_query_->canDelete(id);
+    auto chkpt = findCheckpoint(id, true);
+    return chkpt->isSnapshot();
 }
 
 std::string DatabaseCheckpointer::stringize() const
@@ -617,40 +445,51 @@ std::string DatabaseCheckpointer::stringize() const
     return ss.str();
 }
 
-void DatabaseCheckpointer::dumpList(std::ostream& o) const
+void DatabaseCheckpointer::dumpList(std::ostream& o)
 {
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+    std::map<chkpt_id_t, std::string> chkpt_strings;
 
-    for (const auto& [id, chkpt] : chkpts_cache_) {
-        o << chkpt->stringize() << std::endl;
+    forEachCheckpoint_([&chkpt_strings](const DatabaseCheckpoint* chkpt) {
+        chkpt_strings[chkpt->getID()] = chkpt->stringize();
+    });
+
+    for (const auto& [id, str] : chkpt_strings) {
+        o << str << "\n";
     }
-
-    chkpt_query_->dumpList(o);
+    o << std::flush;
 }
 
-void DatabaseCheckpointer::dumpData(std::ostream& o) const
+void DatabaseCheckpointer::dumpData(std::ostream& o)
 {
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+    std::map<chkpt_id_t, std::string> chkpt_strings;
 
-    for (const auto& [id, chkpt] : chkpts_cache_) {
-        chkpt->dumpData(o);
-        o << std::endl;
+    forEachCheckpoint_([&chkpt_strings](const DatabaseCheckpoint* chkpt) {
+        std::ostringstream oss;
+        chkpt->dumpData(oss);
+        chkpt_strings[chkpt->getID()] = oss.str();
+    });
+
+    for (const auto& [id, str] : chkpt_strings) {
+        o << str << "\n";
     }
-
-    chkpt_query_->dumpData(o);
+    o << std::flush;
 }
 
-void DatabaseCheckpointer::dumpAnnotatedData(std::ostream& o) const
+void DatabaseCheckpointer::dumpAnnotatedData(std::ostream& o)
 {
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+    std::map<chkpt_id_t, std::string> chkpt_strings;
 
-    for (const auto& [id, chkpt] : chkpts_cache_) {
-        o << chkpt->stringize() << std::endl;
-        chkpt->dumpData(o);
-        o << std::endl;
+    forEachCheckpoint_([&chkpt_strings](const DatabaseCheckpoint* chkpt) {
+        std::ostringstream oss;
+        oss << chkpt->stringize() << "\n";
+        chkpt->dumpData(oss);
+        chkpt_strings[chkpt->getID()] = oss.str();
+    });
+
+    for (const auto& [id, str] : chkpt_strings) {
+        o << str << "\n";
     }
-
-    chkpt_query_->dumpAnnotatedData(o);
+    o << std::flush;
 }
 
 void DatabaseCheckpointer::traceValue(
@@ -700,13 +539,12 @@ void DatabaseCheckpointer::createHead_()
     setHead_(chkpt.get());
     setCurrent_(chkpt.get());
     addToCache_(std::move(chkpt));
-
-    num_alive_checkpoints_++;
-    num_alive_snapshots_++;
 }
 
 chkpt_id_t DatabaseCheckpointer::createCheckpoint_(bool force_snapshot)
 {
+    sparta_assert(!force_snapshot, "Forced snapshots are not supported by DatabaseCheckpointer");
+
     std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
 
     bool is_snapshot;
@@ -761,65 +599,20 @@ chkpt_id_t DatabaseCheckpointer::createCheckpoint_(bool force_snapshot)
     auto current = chkpt.get();
     setCurrent_(current);
     addToCache_(std::move(chkpt));
-    num_alive_checkpoints_++;
-    num_alive_snapshots_ += (current->isSnapshot() == true) ? 1 : 0;
-
     return current->getID();
 }
 
 void DatabaseCheckpointer::deleteCheckpoint_(chkpt_id_t id)
 {
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
-
-    // Purge all future checkpoints from chkpt_windows_.
-    for (auto it = chkpt_windows_.begin(); it != chkpt_windows_.end(); ++it) {
-        auto& window = *it;
-
-        // Because IDs are monotonically increasing, we can skip windows
-        if (window.empty() || id < window.front()) {
-            // ID cannot be in this or any future window
-            chkpt_windows_.erase(it, chkpt_windows_.end());
-            break;
-        }
-
-        if (id > window.back()) {
-            // ID cannot be in this window, continue searching
-            continue;
-        }
-
-        // ID must be within this window
-        auto pos = std::find(window.begin(), window.end(), id);
-        if (pos != window.end()) {
-            window.erase(pos, window.end());
-            if (window.empty()) {
-                it = chkpt_windows_.erase(it);
-            } else {
-                ++it;
-            }
-            if (it != chkpt_windows_.end()) {
-                chkpt_windows_.erase(it, chkpt_windows_.end());
-            }
-            break;
-        }
-    }
-
-    // Purge from the database
-    chkpt_query_->deleteCheckpoint(id);
-
-    // Purge from the cache
     while (true) {
-        auto it = chkpts_cache_.find(id);
-        if (it == chkpts_cache_.end()) {
-            break;
-        }
+        auto chkpt = findCheckpoint(id, true);
+        chkpt->flagDeleted_();
 
-        auto next_ids = it->second->getNextIDs();
-        it->second->flagDeleted();
+        auto next_ids = chkpt->getNextIDs();
+        sparta_assert(next_ids.size() <= 1,
+                      "DatabaseCheckpointer does not support multiple checkpoint branches");
 
         if (!next_ids.empty()) {
-            if (next_ids.size() != 1) {
-                throw CheckpointError("DatabaseCheckpointer does not support multiple checkpoint branches");
-            }
             id = next_ids[0];
         } else {
             break;
@@ -827,34 +620,18 @@ void DatabaseCheckpointer::deleteCheckpoint_(chkpt_id_t id)
     }
 }
 
-void DatabaseCheckpointer::dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o) const
+void DatabaseCheckpointer::dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o)
 {
     static std::string SNAPSHOT_NOTICE = "(s)";
 
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
-
-    checkpoint_ptr chkpt_ptr;
-    if (auto it = chkpts_cache_.find(id); it != chkpts_cache_.end()) {
-        chkpt_ptr = it->second;
-    } else {
-        chkpt_ptr = chkpt_query_->findCheckpoint(id);
-    }
-
-    auto cp = chkpt_ptr.get();
-
-    // Draw data for this checkpoint
-    if (cp->isFlaggedDeleted()) {
-        o << cp->getDeletedRepr();
-    }else{
-        o << cp->getID();
-    }
-    // Show that this is a snapshot
-    if (cp->isSnapshot()) {
+    auto chkpt = findCheckpoint(id, true);
+    o << chkpt->getID();
+    if (chkpt->isSnapshot()) {
         o << ' ' << SNAPSHOT_NOTICE;
     }
 }
 
-std::vector<chkpt_id_t> DatabaseCheckpointer::getNextIDs_(chkpt_id_t id) const
+std::vector<chkpt_id_t> DatabaseCheckpointer::getNextIDs_(chkpt_id_t id)
 {
     return getNextIDs(id);
 }
@@ -886,38 +663,188 @@ void DatabaseCheckpointer::setCurrentID_(chkpt_id_t id)
     std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
     sparta_assert(id != checkpoint_type::UNIDENTIFIED_CHECKPOINT);
     current_id_ = id;
-
-    // If we are moving current_, see if we can evict any pending IDs
-    while (!pending_eviction_ids_.empty()) {
-        auto id = pending_eviction_ids_.front();
-        pending_eviction_ids_.pop();
-        if (id == current_id_) {
-            pending_eviction_ids_.push(id);
-        } else if (auto it = chkpts_cache_.find(id); it != chkpts_cache_.end()) {
-            it->second->flagDecached();
-        }
-    }
 }
 
 void DatabaseCheckpointer::addToCache_(std::shared_ptr<checkpoint_type> chkpt)
 {
     std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
 
-    auto id = chkpt->getID();
-    chkpts_cache_[id] = chkpt;
+    const auto win_id = chkpt->getID() / (snap_thresh_ + 1);
+    auto& window = chkpts_cache_[win_id];
+    sparta_assert(window.empty() || window.back()->getID() == chkpt->getID() - 1,
+                  "Checkpoints must be added in ID order with no gaps");
+    window.emplace_back(std::move(chkpt));
+    touchWindow_(win_id);
+    evictWindowsIfNeeded_();
+}
 
-    if (!chkpt_windows_.empty() && !chkpt_windows_.back().empty() && chkpt_windows_.back().back() == id) {
+void DatabaseCheckpointer::touchWindow_(window_id_t id)
+{
+    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+
+    auto it = lru_map_.find(id);
+    if (it != lru_map_.end()) {
+        lru_list_.erase(it->second);
+    }
+    lru_list_.push_front(id);
+    lru_map_[id] = lru_list_.begin();
+}
+
+void DatabaseCheckpointer::evictWindowsIfNeeded_(bool force_flush)
+{
+    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+
+    uint32_t num_windows_to_evict = 0;
+
+    if (force_flush) {
+        num_windows_to_evict = lru_list_.size();
+    } else if (lru_list_.size() > max_cached_windows_) {
+        num_windows_to_evict = lru_list_.size() - max_cached_windows_;
+    }
+
+    if (num_windows_to_evict == 0) {
         return;
     }
 
-    if (chkpt->isSnapshot()) {
-        chkpt_windows_.emplace_back();
+    while (num_windows_to_evict > 0) {
+        // Evict the least recently used window
+        const auto win_id = lru_list_.back();
+
+        // Unless we are flushing, do not evict the window containing
+        // the current checkpoint or the head checkpoint
+        if (!force_flush) {
+            auto current = getCurrent_();
+            auto current_win_id = getWindowID_(current->getID());
+
+            auto head = getHead_();
+            auto head_win_id = getWindowID_(head->getID());
+
+            // If the current or head checkpoint is in this window, skip eviction.
+            // Decrement the number of windows to evict since we are skipping this one.
+            if (current_win_id == win_id || head_win_id == win_id) {
+                sparta_assert(num_windows_to_evict-- > 0);
+                touchWindow_(win_id);
+                continue;
+            }
+        }
+
+        lru_list_.pop_back();
+        lru_map_.erase(win_id);
+
+        // Send the window down the pipeline for writing to the database
+        auto& window = chkpts_cache_[win_id];
+        pipeline_head_->emplace(std::move(window));
+
+        // Cleanup
+        chkpts_cache_.erase(win_id);
+        sparta_assert(num_windows_to_evict-- > 0);
+    }
+}
+
+bool DatabaseCheckpointer::ensureWindowLoaded_(chkpt_id_t chkpt_id, bool must_succeed)
+{
+    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+
+    window_id_t win_id = getWindowID_(chkpt_id);
+    if (chkpts_cache_.find(win_id) == chkpts_cache_.end()) {
+        checkpoint_ptrs window_chkpts = getWindowFromDatabase_(win_id);
+        if (window_chkpts.empty() && must_succeed) {
+            throw CheckpointError("Could not find checkpoint window with ID ") << win_id;
+        }
+        chkpts_cache_[win_id] = std::move(window_chkpts);
     }
 
-    auto& window = chkpt_windows_.back();
-    if (window.empty() || window.back() != id) {
-        window.push_back(id);
+    bool success = false;
+    for (const auto& chkpt : chkpts_cache_[win_id]) {
+        if (chkpt->getID() == chkpt_id) {
+            success = true;
+            break;
+        }
     }
+
+    if (!success && must_succeed) {
+        throw CheckpointError("Could not find checkpoint with ID ") << chkpt_id;
+    }
+
+    touchWindow_(win_id);
+    evictWindowsIfNeeded_();
+    return success;
+}
+
+std::vector<std::shared_ptr<DatabaseCheckpoint>> DatabaseCheckpointer::getWindowFromDatabase_(window_id_t win_id)
+{
+    std::vector<std::shared_ptr<DatabaseCheckpoint>> window_chkpts;
+    pipeline_flusher_->flush();
+
+    db_mgr_->safeTransaction([&]() {
+        auto query = db_mgr_->createQuery("ChkptWindows");
+        query->addConstraintForUInt64("WindowID", simdb::Constraints::EQUAL, win_id);
+
+        std::vector<char> compressed_window_bytes;
+        query->select("WindowBytes", compressed_window_bytes);
+
+        auto results = query->getResultSet();
+        if (results.getNextRecord()) {
+            std::unique_ptr<ChkptWindow> window_restored = deserializeWindow_(compressed_window_bytes);
+            sparta_assert(window_restored && !window_restored->chkpts.empty());
+            window_chkpts = std::move(window_restored->chkpts);
+        }
+    });
+
+    return window_chkpts;
+}
+
+std::unique_ptr<ChkptWindow> DatabaseCheckpointer::deserializeWindow_(const std::vector<char>& compressed_window_bytes) const
+{
+    std::vector<char> window_bytes;
+    simdb::decompressData(compressed_window_bytes, window_bytes);
+
+    auto window_restored = std::make_unique<ChkptWindow>();
+    boost::iostreams::basic_array_source<char> device(window_bytes.data(), window_bytes.size());
+    boost::iostreams::stream<boost::iostreams::basic_array_source<char>> is(device);
+    boost::archive::binary_iarchive ia(is);
+    ia >> *window_restored;
+
+    return window_restored;
+}
+
+void DatabaseCheckpointer::forEachCheckpoint_(const std::function<void(const DatabaseCheckpoint*)>& cb)
+{
+    // Flush the pipeline so that every checkpoint is either in our cache or on disk.
+    // There is no guarantee that the cache has newer checkpoints than the database,
+    // since many APIs load old windows into the cache and "mix them together" with
+    // whatever is already in the cache (new and old).
+    pipeline_flusher_->flush();
+
+    {
+        std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+
+        // Gather up all checkpoint IDs from our cache
+        for (const auto& [win_id, window] : chkpts_cache_) {
+            for (const auto& chkpt : window) {
+                cb(chkpt.get());
+            }
+        }
+    }
+
+    // Query the database for any other checkpoints
+    db_mgr_->safeTransaction([&]() {
+        auto query = db_mgr_->createQuery("ChkptWindows");
+
+        std::vector<char> compressed_window_bytes;
+        query->select("WindowBytes", compressed_window_bytes);
+
+        auto results = query->getResultSet();
+        while (results.getNextRecord())
+        {
+            auto window = deserializeWindow_(compressed_window_bytes);
+            for (const auto& chkpt : window->chkpts) {
+                sparta_assert(!chkpt->isFlaggedDeleted(),
+                              "Deleted checkpoints should never make it to the database");
+                cb(chkpt.get());
+            }
+        }
+    });
 }
 
 REGISTER_SIMDB_APPLICATION(DatabaseCheckpointer);

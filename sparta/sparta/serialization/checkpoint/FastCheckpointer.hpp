@@ -266,7 +266,7 @@ namespace sparta::serialization::checkpoint
          * \note Makes a new vector of results. This should not be called in the
          * critical path.
          */
-        std::vector<chkpt_id_t> getCheckpointsAt(tick_t t) const override {
+        std::vector<chkpt_id_t> getCheckpointsAt(tick_t t) override {
             std::vector<chkpt_id_t> results;
             for(auto& p : chkpts_){
                 const Checkpoint* cp = p.second.get();
@@ -286,7 +286,7 @@ namespace sparta::serialization::checkpoint
          * \note Makes a new vector of results. This should not be called in the
          * critical path.
          */
-        std::vector<chkpt_id_t> getCheckpoints() const override {
+        std::vector<chkpt_id_t> getCheckpoints() override {
             std::vector<chkpt_id_t> results;
             for(auto& p : chkpts_){
                 const Checkpoint* cp = p.second.get();
@@ -301,7 +301,7 @@ namespace sparta::serialization::checkpoint
         /*!
          * \brief Gets the current number of checkpoints having valid IDs
          */
-        uint32_t getNumCheckpoints() const noexcept override {
+        uint32_t getNumCheckpoints() noexcept override {
             return num_alive_checkpoints_;
         }
 
@@ -342,7 +342,7 @@ namespace sparta::serialization::checkpoint
          * \note Makes a new vector of results. This should not be called in the
          * critical path.
          */
-        std::deque<chkpt_id_t> getCheckpointChain(chkpt_id_t id) const override {
+        std::deque<chkpt_id_t> getCheckpointChain(chkpt_id_t id) override {
             std::deque<chkpt_id_t> results;
             if(!getHead()){
                 return results;
@@ -414,7 +414,7 @@ namespace sparta::serialization::checkpoint
          * and false if not. If id == Checkpoint::UNIDENTIFIED_CHECKPOINT,
          * always returns false
          */
-        bool hasCheckpoint(chkpt_id_t id) const noexcept override {
+        bool hasCheckpoint(chkpt_id_t id) noexcept override {
             return chkpts_.find(id) != chkpts_.end();
         }
 
@@ -439,7 +439,7 @@ namespace sparta::serialization::checkpoint
          * ostream with a newline following each checkpoint
          * \param o ostream to dump to
          */
-        void dumpList(std::ostream& o) const override {
+        void dumpList(std::ostream& o) override {
             for(auto& cp : chkpts_){
                 o << cp.second->stringize() << std::endl;
             }
@@ -450,7 +450,7 @@ namespace sparta::serialization::checkpoint
          * following each checkpoint
          * \param o ostream to dump to
          */
-        void dumpData(std::ostream& o) const override {
+        void dumpData(std::ostream& o) override {
             for(auto& cp : chkpts_){
                 cp.second->dumpData(o);
                 o << std::endl;
@@ -463,7 +463,7 @@ namespace sparta::serialization::checkpoint
          * following each checkpoint description and each checkpoint data dump
          * \param o ostream to dump to
          */
-        void dumpAnnotatedData(std::ostream& o) const override {
+        void dumpAnnotatedData(std::ostream& o) override {
             for(auto& cp : chkpts_){
                 o << cp.second->stringize() << std::endl;
                 cp.second->dumpData(o);
@@ -642,7 +642,7 @@ namespace sparta::serialization::checkpoint
         /*!
          * \brief Implements Checkpointer::dumpCheckpointNode_
          */
-        void dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o) const override {
+        void dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o) override {
             static std::string SNAPSHOT_NOTICE = "(s)";
             auto cp = findCheckpoint_(id);
 
@@ -763,7 +763,7 @@ namespace sparta::serialization::checkpoint
         /*!
          * \brief Returns IDs of the checkpoints immediately following the given checkpoint.
          */
-        std::vector<chkpt_id_t> getNextIDs_(chkpt_id_t id) const override final {
+        std::vector<chkpt_id_t> getNextIDs_(chkpt_id_t id) override final {
             std::vector<chkpt_id_t> next_ids;
             if (const auto chkpt = findCheckpoint_(id)) {
                 for (const auto next : chkpt->getNexts()) {

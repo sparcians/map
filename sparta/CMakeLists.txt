@@ -42,7 +42,6 @@ list (APPEND SourceCppFiles
             src/DAG.cpp
             src/DatabaseCheckpoint.cpp
             src/DatabaseCheckpointer.cpp
-            src/DatabaseCheckpointQuery.cpp
             src/Destination.cpp
             src/EdgeFactory.cpp
             src/EventNode.cpp
