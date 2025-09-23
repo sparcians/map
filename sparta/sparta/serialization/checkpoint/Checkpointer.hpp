@@ -330,7 +330,7 @@ namespace sparta::serialization::checkpoint
          * Ignores any internal temporary or deleted checkpoints without
          * visible IDs
          */
-        virtual uint32_t getNumCheckpoints() noexcept = 0;
+        virtual uint32_t getNumCheckpoints() const noexcept = 0;
 
         /*!
          * \brief Debugging utility which gets a deque of checkpoints

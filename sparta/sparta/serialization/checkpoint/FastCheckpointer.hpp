@@ -301,7 +301,7 @@ namespace sparta::serialization::checkpoint
         /*!
          * \brief Gets the current number of checkpoints having valid IDs
          */
-        uint32_t getNumCheckpoints() noexcept override {
+        uint32_t getNumCheckpoints() const noexcept override {
             return num_alive_checkpoints_;
         }
 

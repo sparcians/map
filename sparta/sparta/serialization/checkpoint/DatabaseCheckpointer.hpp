@@ -158,17 +158,17 @@ public:
     /*!
      * \brief Gets the current number of checkpoints with valid IDs.
      */
-    uint32_t getNumCheckpoints() noexcept override;
+    uint32_t getNumCheckpoints() const noexcept override;
 
     /*!
      * \brief Gets the current number of snapshots with valid IDs.
      */
-    uint32_t getNumSnapshots() noexcept;
+    uint32_t getNumSnapshots() const noexcept;
 
     /*!
      * \brief Gets the current number of delta checkpoints with valid IDs.
      */
-    uint32_t getNumDeltas() noexcept;
+    uint32_t getNumDeltas() const noexcept;
 
     /*!
      * \brief Debugging utility which gets a deque of checkpoints

@@ -267,17 +267,17 @@ std::vector<chkpt_id_t> DatabaseCheckpointer::getCheckpoints()
     return ret;
 }
 
-uint32_t DatabaseCheckpointer::getNumCheckpoints() noexcept
+uint32_t DatabaseCheckpointer::getNumCheckpoints() const noexcept
 {
     return next_chkpt_id_;
 }
 
-uint32_t DatabaseCheckpointer::getNumSnapshots() noexcept
+uint32_t DatabaseCheckpointer::getNumSnapshots() const noexcept
 {
     return next_chkpt_id_ ? getWindowID_(next_chkpt_id_) + 1 : 0;
 }
 
-uint32_t DatabaseCheckpointer::getNumDeltas() noexcept
+uint32_t DatabaseCheckpointer::getNumDeltas() const noexcept
 {
     return getNumCheckpoints() - getNumSnapshots();
 }
