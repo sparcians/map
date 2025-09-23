@@ -872,6 +872,8 @@ int main()
     testConstIterator();
     testInvalidates();
 
+    // TODO: remove (just touch file)
+
     REPORT_ERROR;
     return ERROR_CODE;
 }
