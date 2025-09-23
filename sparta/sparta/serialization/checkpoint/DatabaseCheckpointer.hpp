@@ -286,6 +286,9 @@ public:
      */
     void traceValue(std::ostream& o, chkpt_id_t id, const ArchData* container, uint32_t offset, uint32_t size) override;
 
+    //! \brief Check if the given checkpoint is currently cached in memory.
+    bool isCheckpointCached(chkpt_id_t id) const noexcept;
+
 private:
 
     /*!
@@ -443,15 +446,11 @@ private:
     //! \brief Checkpoint pipeline flusher
     std::unique_ptr<simdb::pipeline::RunnableFlusher> pipeline_flusher_;
 
-    /*!
-     * \brief Snapshot generation threshold. Every n checkpoints in a chain
-     * are taken as snapshots instead of deltas
-     */
+    //! \brief Snapshot generation threshold. Every n checkpoints in a chain
+    //! are taken as snapshots instead of deltas.
     utils::ValidValue<uint32_t> snap_thresh_;
 
-    /*!
-     * \brief Next checkpoint ID value
-     */
+    //! \brief Next checkpoint ID value
     chkpt_id_t next_chkpt_id_;
 };
 

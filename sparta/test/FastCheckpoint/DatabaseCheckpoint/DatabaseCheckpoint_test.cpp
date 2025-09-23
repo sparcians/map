@@ -62,13 +62,22 @@ class DummyDevice : public sparta::TreeNode
 {
 public:
     DummyDevice(sparta::TreeNode* parent) :
-        sparta::TreeNode(parent, "dummy", "", sparta::TreeNode::GROUP_IDX_NONE, "dummy node for register test")
+        sparta::TreeNode(parent, "dummy", "", sparta::TreeNode::GROUP_IDX_NONE, "dummy node for checkpoint test")
     {}
 };
 
-//! General test for saving and loading checkpoints to/from SimDB
-void generalTest()
+int main()
 {
+    auto warn_cerr = std::make_unique<sparta::log::Tap>(
+        sparta::TreeNode::getVirtualGlobalNode(),
+        sparta::log::categories::WARN,
+        std::cerr);
+
+    auto warn_file = std::make_unique<sparta::log::Tap>(
+        sparta::TreeNode::getVirtualGlobalNode(),
+        sparta::log::categories::WARN,
+        "warnings.log");
+
     sparta::Scheduler sched;
     RootTreeNode clocks("clocks");
     sparta::Clock clk(&clocks, "clock", &sched);
@@ -117,22 +126,21 @@ void generalTest()
     EXPECT_EQUAL(dbcp.getCurrentID(), head_id);
     EXPECT_EQUAL(dbcp.getCurrentTick(), 0);
 
-    auto step_checkpointer = [&](uint32_t i) {
-        r1->write<uint32_t>(i * 5ul);
-        r2->write<uint32_t>(i % 5ul);
+    auto step_checkpointer = [&](DatabaseCheckpointer::chkpt_id_t expected_id) {
+        r1->write<uint32_t>(expected_id * 5ul);
+        r2->write<uint32_t>(expected_id % 5ul);
         sched.run(1, true, false);
 
-        DatabaseCheckpointer::chkpt_id_t id;
-        EXPECT_NOTHROW(id = dbcp.createCheckpoint());
-        EXPECT_EQUAL(id, i);
-        EXPECT_EQUAL(id, dbcp.getCurrentID());
-        return id;
+        DatabaseCheckpointer::chkpt_id_t actual_id;
+        EXPECT_NOTHROW(actual_id = dbcp.createCheckpoint());
+        EXPECT_EQUAL(actual_id, expected_id);
+        EXPECT_EQUAL(actual_id, dbcp.getCurrentID());
+        return actual_id;
     };
 
-    auto find_checkpoint = [&](DatabaseCheckpointer::chkpt_id_t id, bool must_exist = false) {
+    auto verif_find_checkpoint = [&](DatabaseCheckpointer::chkpt_id_t id, bool must_exist = true) {
         std::shared_ptr<DatabaseCheckpoint> cp;
         EXPECT_NOTHROW(cp = dbcp.findCheckpoint(id, must_exist));
-        EXPECT_NOTEQUAL(cp, nullptr);
         if (cp) {
             EXPECT_EQUAL(cp->getID(), id);
             EXPECT_EQUAL(cp->getPrevID(), (id > 0) ? (id - 1) : DatabaseCheckpoint::UNIDENTIFIED_CHECKPOINT);
@@ -140,38 +148,33 @@ void generalTest()
         return cp;
     };
 
+    auto wait_until_evicted = [&](DatabaseCheckpointer::chkpt_id_t id) {
+        size_t num_tries = 0;
+        while (dbcp.isCheckpointCached(id) && num_tries < 3) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            ++num_tries;
+        }
+        EXPECT_FALSE(num_tries == 3);
+        EXPECT_FALSE(dbcp.isCheckpointCached(id));
+    };
+
     // Create 1000 checkpoints, and periodically access an old one. Also
     // go to sleep sometimes to increase the chances we have to go to the
-    // database to retrieve a checkpoint. Keep a clone of checkpoint 3 for
-    // later verification.
-    std::shared_ptr<DatabaseCheckpoint> clone3;
+    // database to retrieve a checkpoint.
     for (uint32_t i = 1; i <= 1000; ++i) {
+        // Step the scheduler and take a checkpoint
         step_checkpointer(i);
 
         // Access most recent from the cache directly
-        find_checkpoint(i);
+        verif_find_checkpoint(i);
 
-        // Store checkpoint 3 for later verification
-        if (i == 3) {
-            clone3 = find_checkpoint(3);
+        // Force some of the checkpoints to be retrieved from the database
+        if (i % 100 == 0 && i > 250) {
+            auto old_id = i - 100;
+            wait_until_evicted(old_id);
+            verif_find_checkpoint(old_id);
         }
-
-#if 0
-        // Access an old one, which may or may not be in the cache
-        if (rand() % 10 == 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(rand() % 50));
-            auto old_id = static_cast<uint64_t>(rand() % i);
-            find_checkpoint(old_id);
-        }
-#endif
     }
-
-    // Finish
-    app_mgr.postSimLoopTeardown();
-    root.enterTeardown();
-    clocks.enterTeardown();
-
-    return; // TODO cnyce
 
     auto verif_load_chkpt = [&](DatabaseCheckpointer::chkpt_id_t id) {
         EXPECT_NOTHROW(dbcp.loadCheckpoint(id));
@@ -186,68 +189,107 @@ void generalTest()
         EXPECT_EQUAL(r2_val, id % 5ul);
     };
 
+    // Nothing to test, just call dumpList/dumpData/dumpAnnotatedData.
+    // Do this while we have a lot of checkpoints in the cache and
+    // the database for max code coverage.
+    dbcp.dumpList(std::cout);
+    std::cout << std::endl;
+    dbcp.dumpData(std::cout);
+    std::cout << std::endl;
+    dbcp.dumpAnnotatedData(std::cout);
+    std::cout << std::endl;
+
+    // Verify that cached / DB-recreated checkpoints are identical:
+    //   1. Get the current checkpoint from the cache
+    auto cached_cp1000 = dbcp.findCheckpoint(dbcp.getCurrentID());
+    EXPECT_TRUE(dbcp.isCheckpointCached(cached_cp1000->getID()));
+
+    //   2. Write a lot more checkpoints to force the oldest ones out of the cache
+    for (uint32_t i = 1001; i <= 1500; ++i) {
+        step_checkpointer(i);
+    }
+    wait_until_evicted(cached_cp1000->getID());
+
+    //   3. Recreate the same checkpoint from the database
+    EXPECT_FALSE(dbcp.isCheckpointCached(cached_cp1000->getID()));
+    auto recreated_cp1000 = dbcp.findCheckpoint(cached_cp1000->getID());
+
+    EXPECT_NOTEQUAL(cached_cp1000, nullptr);
+    EXPECT_NOTEQUAL(recreated_cp1000, nullptr);
+
+    if (cached_cp1000 && recreated_cp1000) {
+        std::ostringstream oss1;
+        std::ostringstream oss2;
+
+        cached_cp1000->dumpData(oss1);
+        recreated_cp1000->dumpData(oss2);
+
+        EXPECT_EQUAL(oss1.str(), oss2.str());
+        EXPECT_EQUAL(cached_cp1000->getTotalMemoryUse(), recreated_cp1000->getTotalMemoryUse());
+        EXPECT_EQUAL(cached_cp1000->getContentMemoryUse(), recreated_cp1000->getContentMemoryUse());
+        EXPECT_TRUE(cached_cp1000->getHistoryChain() == recreated_cp1000->getHistoryChain());
+        EXPECT_TRUE(cached_cp1000->getRestoreChain() == recreated_cp1000->getRestoreChain());
+        EXPECT_EQUAL(cached_cp1000->getPrevID(), recreated_cp1000->getPrevID());
+        EXPECT_EQUAL(cached_cp1000->getNextIDs(), recreated_cp1000->getNextIDs());
+        EXPECT_EQUAL(cached_cp1000->getTick(), recreated_cp1000->getTick());
+        EXPECT_EQUAL(cached_cp1000->isSnapshot(), recreated_cp1000->isSnapshot());
+        EXPECT_EQUAL(cached_cp1000->getDistanceToPrevSnapshot(), recreated_cp1000->getDistanceToPrevSnapshot());
+    }
+
     // Load very recent checkpoints that are definitely in the cache
-    verif_load_chkpt(100);
-    verif_load_chkpt(99);
-    verif_load_chkpt(95);
-    verif_load_chkpt(90);
-    verif_load_chkpt(89);
-
-    // Load checkpoints that have probably already been evicted from the cache
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    verif_load_chkpt(49);
-    verif_load_chkpt(45);
-    verif_load_chkpt(40);
-    verif_load_chkpt(39);
-
-    step_checkpointer(40);
-    step_checkpointer(41);
-    step_checkpointer(42);
-    verif_load_chkpt(40);
-
-    // Wait until checkpoint 3 is evicted from cache with a 3-second timeout
-    uint32_t num_tries = 0;
-    while (dbcp.findCheckpoint(3) != nullptr) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        EXPECT_NOTEQUAL(++num_tries, 300);
+    for (size_t i = 1500; i > 1475; --i) {
+        EXPECT_TRUE(dbcp.isCheckpointCached(i));
+        verif_load_chkpt(i);
     }
 
-    // Ask the checkpointer to retrieve checkpoint 3 from the database
-    std::shared_ptr<DatabaseCheckpoint> dbchkpt3;
-    EXPECT_NOTHROW(dbchkpt3 = dbcp.findCheckpoint(3, true));
-    EXPECT_NOTEQUAL(dbchkpt3, nullptr);
-    if (dbchkpt3) {
-        // Verify that the database checkpoint matches the original clone of 3
-        EXPECT_EQUAL(dbchkpt3->getID(), clone3->getID());
-
-        std::ostringstream clone3_oss, dbchkpt3_oss;
-        clone3->dumpData(clone3_oss);
-        dbchkpt3->dumpData(dbchkpt3_oss);
-        EXPECT_EQUAL(clone3_oss.str(), dbchkpt3_oss.str());
+    // Load checkpoints that have already been evicted from the cache
+    for (size_t i = 250; i > 225; --i) {
+        wait_until_evicted(i);
+    }
+    for (size_t i = 250; i > 225; --i) {
+        verif_load_chkpt(i);
     }
 
-
-    // Verify history chain for a db-recreated checkpoint
-    auto hist_chain3 = dbcp.getHistoryChain(3);
-    for (auto hist_id : {3,2,1,0}) {
-        EXPECT_FALSE(hist_chain3.empty());
-        EXPECT_EQUAL(hist_chain3.top(), hist_id);
-        hist_chain3.pop();
+    // Verify history chain
+    auto hist_chain13 = dbcp.getHistoryChain(13);
+    for (auto hist_id : {0,1,2,3,4,5,6,7,8,9,10,11,12,13}) {
+        EXPECT_FALSE(hist_chain13.empty());
+        EXPECT_EQUAL(hist_chain13.top(), hist_id);
+        hist_chain13.pop();
     }
+    EXPECT_TRUE(hist_chain13.empty());
 
-    // Verify restore chain for a db-recreated checkpoint
-    auto rest_chain3 = dbcp.getRestoreChain(3);
-    for (auto rest_id : {3,2,1,0}) {
-        EXPECT_FALSE(rest_chain3.empty());
-        EXPECT_EQUAL(rest_chain3.top(), rest_id);
-        rest_chain3.pop();
+    // Verify restore chain
+    auto rest_chain13 = dbcp.getRestoreChain(13);
+    for (auto rest_id : {11,12,13}) {
+        EXPECT_FALSE(rest_chain13.empty());
+        EXPECT_EQUAL(rest_chain13.top(), rest_id);
+        rest_chain13.pop();
     }
+    EXPECT_TRUE(rest_chain13.empty());
 
-    // Verify distance to previous snapshot for a db-recreated checkpoint
-    EXPECT_EQUAL(dbchkpt3->getDistanceToPrevSnapshot(), 3);
+    // Verify distance to previous snapshot:
+    //
+    //    Checkpoint ID                 Snapshot?
+    //    0                             Yes (head)
+    //    1-10                          No
+    //    11                            Yes
+    //    12-21                         No
+    //    22                            Yes
+    //    23-32                         No
+    //    33                            Yes
+    std::shared_ptr<DatabaseCheckpoint> cp;
+    EXPECT_NOTHROW(cp = dbcp.findCheckpoint(33, true));
+    EXPECT_EQUAL(cp->getDistanceToPrevSnapshot(), 0);
+    EXPECT_NOTHROW(cp = dbcp.findCheckpoint(32, true));
+    EXPECT_EQUAL(cp->getDistanceToPrevSnapshot(), 10);
+    EXPECT_NOTHROW(cp = dbcp.findCheckpoint(22, true));
+    EXPECT_EQUAL(cp->getDistanceToPrevSnapshot(), 0);
+    EXPECT_NOTHROW(cp = dbcp.findCheckpoint(5, true));
+    EXPECT_EQUAL(cp->getDistanceToPrevSnapshot(), 5);
 
     // Nothing to test, just call dumpRestoreChain()
-    dbcp.dumpRestoreChain(std::cout, 3);
+    dbcp.dumpRestoreChain(std::cout, 32);
 
     // Go back to checkpoint 1
     verif_load_chkpt(1);
@@ -386,59 +428,16 @@ void generalTest()
         EXPECT_FALSE(c->isSnapshot());
     }
 
-    // Verify that checkpoint clones are as expected
-    auto cache73 = dbcp.findCheckpoint(73);
-    auto clone73 = dbcp.findCheckpoint(73);
-
-    EXPECT_NOTEQUAL(cache73, nullptr);
-    EXPECT_NOTEQUAL(clone73, nullptr);
-
-    if (cache73 && clone73) {
-        std::ostringstream cache_oss;
-        std::ostringstream clone_oss;
-
-        cache73->dumpData(cache_oss);
-        clone73->dumpData(clone_oss);
-
-        EXPECT_EQUAL(cache_oss.str(), clone_oss.str());
-        EXPECT_EQUAL(cache73->getTotalMemoryUse(), clone73->getTotalMemoryUse());
-        EXPECT_EQUAL(cache73->getContentMemoryUse(), clone73->getContentMemoryUse());
-        EXPECT_TRUE(cache73->getHistoryChain() == clone73->getHistoryChain());
-        EXPECT_TRUE(cache73->getRestoreChain() == clone73->getRestoreChain());
-        EXPECT_EQUAL(cache73->getPrevID(), clone73->getPrevID());
-        EXPECT_EQUAL(cache73->getNextIDs(), clone73->getNextIDs());
-        EXPECT_EQUAL(cache73->getTick(), clone73->getTick());
-        EXPECT_EQUAL(cache73->isSnapshot(), clone73->isSnapshot());
-        EXPECT_EQUAL(cache73->getDistanceToPrevSnapshot(), clone73->getDistanceToPrevSnapshot());
-    }
-
-    // Nothing to test, just call dumpList/dumpData/dumpAnnotatedData
-    dbcp.dumpList(std::cout);
-    std::cout << std::endl;
-    dbcp.dumpData(std::cout);
-    std::cout << std::endl;
-    dbcp.dumpAnnotatedData(std::cout);
-    std::cout << std::endl;
+    // Verify that the head checkpoint is in the cache until simulation teardown.
+    EXPECT_TRUE(dbcp.isCheckpointCached(head_id));
 
     // Finish
     app_mgr.postSimLoopTeardown();
     root.enterTeardown();
     clocks.enterTeardown();
-}
 
-int main()
-{
-    std::unique_ptr<sparta::log::Tap> warn_cerr(new sparta::log::Tap(
-        sparta::TreeNode::getVirtualGlobalNode(),
-        sparta::log::categories::WARN,
-        std::cerr));
-
-    std::unique_ptr<sparta::log::Tap> warn_file(new sparta::log::Tap(
-        sparta::TreeNode::getVirtualGlobalNode(),
-        sparta::log::categories::WARN,
-        "warnings.log"));
-
-    generalTest();
+    // Ensure that the head checkpoint is no longer in the cache
+    EXPECT_FALSE(dbcp.isCheckpointCached(head_id));
 
     REPORT_ERROR;
     return ERROR_CODE;

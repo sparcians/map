@@ -90,9 +90,6 @@ namespace sparta::serialization::checkpoint
 
         template <typename Archive>
         void serialize(Archive& ar, const unsigned int version) {
-            sparta_assert(deleted_id_ == CheckpointBase::UNIDENTIFIED_CHECKPOINT,
-                          "Cannot serialize a DatabaseCheckpoint that was already deleted");
-
             CheckpointBase::serialize(ar, version);
             ar & prev_id_;
             ar & next_ids_;
@@ -289,6 +286,8 @@ namespace sparta::serialization::checkpoint
         } else {
             // We are saving a checkpoint window to disk
             for (auto& chkpt : chkpts) {
+                sparta_assert(!chkpt->isFlaggedDeleted(),
+                              "Cannot serialize a ChkptWindow that contains a deleted checkpoint");
                 ar & *chkpt;
             }
         }

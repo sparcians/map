@@ -71,11 +71,15 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
             for (const auto& chkpt : chkpts_in) {
                 if (chkpt->isFlaggedDeleted()) {
                     ensure_rest_deleted = true;
-                } else if (ensure_rest_deleted) {
+                } else if (ensure_rest_deleted && !chkpt->isFlaggedDeleted()) {
                     throw CheckpointError("Checkpoint window has non-contiguous deleted checkpoints");
                 } else {
                     alive_chkpts.push_back(chkpt);
                 }
+            }
+
+            if (!alive_chkpts.empty()) {
+                chkpts_out.emplace(std::move(alive_chkpts));
             }
         }
     );
@@ -508,6 +512,14 @@ void DatabaseCheckpointer::traceValue(
     sparta_assert(false, "Not implemented");
 }
 
+bool DatabaseCheckpointer::isCheckpointCached(chkpt_id_t id) const noexcept
+{
+    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+    const auto win_id = getWindowID_(id);
+    const auto it = chkpts_cache_.find(win_id);
+    return it != chkpts_cache_.end();
+}
+
 void DatabaseCheckpointer::createHead_()
 {
     std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
@@ -604,20 +616,70 @@ chkpt_id_t DatabaseCheckpointer::createCheckpoint_(bool force_snapshot)
 
 void DatabaseCheckpointer::deleteCheckpoint_(chkpt_id_t id)
 {
-    while (true) {
-        auto chkpt = findCheckpoint(id, true);
-        chkpt->flagDeleted_();
+    window_id_t start_win_id = getWindowID_(id);
+    window_id_t end_win_id = getWindowID_(next_chkpt_id_ - 1);
 
-        auto next_ids = chkpt->getNextIDs();
-        sparta_assert(next_ids.size() <= 1,
-                      "DatabaseCheckpointer does not support multiple checkpoint branches");
+    for (window_id_t win_id = start_win_id; win_id <= end_win_id; ++win_id) {
+        auto it = chkpts_cache_.find(win_id);
+        if (it != chkpts_cache_.end()) {
+            if (win_id == start_win_id) {
+                // Only delete checkpoints in this window >= id
+                auto& window = it->second;
+                auto new_end = std::remove_if(window.begin(), window.end(),
+                    [id](const std::shared_ptr<checkpoint_type>& chkpt) {
+                        return chkpt->getID() >= id;
+                    });
 
-        if (!next_ids.empty()) {
-            id = next_ids[0];
-        } else {
-            break;
+                window.erase(new_end, window.end());
+                if (window.empty()) {
+                    chkpts_cache_.erase(it);
+                }
+            } else {
+                // Delete the entire window
+                chkpts_cache_.erase(it);
+            }
         }
     }
+
+    // Now delete from the database
+    pipeline_flusher_->flush();
+
+    db_mgr_->safeTransaction(
+        [&]()
+        {
+            // DELETE FROM ChkptWindows WHERE WindowID > start_win_id
+            auto query = db_mgr_->createQuery("ChkptWindows");
+            query->addConstraintForUInt64("WindowID", simdb::Constraints::GREATER, start_win_id);
+            query->deleteResultSet();
+
+            // Now update the window containing start_win_id to remove checkpoints >= id
+            query->resetConstraints();
+            query->addConstraintForUInt64("WindowID", simdb::Constraints::EQUAL, start_win_id);
+
+            std::vector<char> compressed_window_bytes;
+            query->select("WindowBytes", compressed_window_bytes);
+
+            auto results = query->getResultSet();
+            if (results.getNextRecord()) {
+                // DELETE FROM ChkptWindows WHERE WindowID = start_win_id
+                query->deleteResultSet();
+
+                // Deserialize the window
+                auto window = deserializeWindow_(compressed_window_bytes);
+
+                // Remove checkpoints >= id
+                auto new_end = std::remove_if(window->chkpts.begin(), window->chkpts.end(),
+                    [id](const std::shared_ptr<checkpoint_type>& chkpt) {
+                        return chkpt->getID() >= id;
+                    });
+                window->chkpts.erase(new_end, window->chkpts.end());
+
+                // Send down the pipeline
+                if (!window->chkpts.empty()) {
+                    pipeline_head_->emplace(std::move(window->chkpts));
+                }
+            }
+        });
 }
 
 void DatabaseCheckpointer::dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o)
@@ -804,6 +866,10 @@ std::unique_ptr<ChkptWindow> DatabaseCheckpointer::deserializeWindow_(const std:
     boost::iostreams::stream<boost::iostreams::basic_array_source<char>> is(device);
     boost::archive::binary_iarchive ia(is);
     ia >> *window_restored;
+
+    for (auto& chkpt : window_restored->chkpts) {
+        chkpt->checkpointer_ = const_cast<DatabaseCheckpointer*>(this);
+    }
 
     return window_restored;
 }
