@@ -141,7 +141,7 @@ int main()
             sched.run(1, true, false);
         }
 
-        DatabaseCheckpointer::chkpt_id_t actual_id;
+        DatabaseCheckpointer::chkpt_id_t actual_id = DatabaseCheckpoint::UNIDENTIFIED_CHECKPOINT;
         EXPECT_NOTHROW(actual_id = dbcp.createCheckpoint());
         EXPECT_EQUAL(actual_id, expected_id);
         EXPECT_EQUAL(actual_id, dbcp.getCurrentID());
