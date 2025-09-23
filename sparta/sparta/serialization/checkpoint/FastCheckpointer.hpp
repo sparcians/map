@@ -418,6 +418,22 @@ namespace sparta::serialization::checkpoint
             return chkpts_.find(id) != chkpts_.end();
         }
 
+        /*!
+         * \brief Returns IDs of the checkpoints immediately following the given checkpoint.
+         */
+        std::vector<chkpt_id_t> getNextIDs(chkpt_id_t id) override final {
+            std::vector<chkpt_id_t> next_ids;
+            if (const auto chkpt = findCheckpoint_(id)) {
+                for (const auto next : chkpt->getNexts()) {
+                    const auto dcp = static_cast<checkpoint_type*>(next);
+                    if (!dcp->isFlaggedDeleted()) {
+                        next_ids.push_back(next->getID());
+                    }
+                }
+            }
+            return next_ids;
+        }
+
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
@@ -758,22 +774,6 @@ namespace sparta::serialization::checkpoint
             }
 
             return dcp->getID();
-        }
-
-        /*!
-         * \brief Returns IDs of the checkpoints immediately following the given checkpoint.
-         */
-        std::vector<chkpt_id_t> getNextIDs_(chkpt_id_t id) override final {
-            std::vector<chkpt_id_t> next_ids;
-            if (const auto chkpt = findCheckpoint_(id)) {
-                for (const auto next : chkpt->getNexts()) {
-                    const auto dcp = static_cast<checkpoint_type*>(next);
-                    if (!dcp->isFlaggedDeleted()) {
-                        next_ids.push_back(next->getID());
-                    }
-                }
-            }
-            return next_ids;
         }
 
         /*!

@@ -440,6 +440,11 @@ namespace sparta::serialization::checkpoint
             return 0;
         }
 
+        /*!
+         * \brief Returns IDs of the checkpoints immediately following the given checkpoint.
+         */
+        virtual std::vector<chkpt_id_t> getNextIDs(chkpt_id_t id) = 0;
+
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
@@ -542,7 +547,7 @@ namespace sparta::serialization::checkpoint
                 }
             }
 
-            auto nexts = getNextIDs_(chkpt);
+            auto nexts = getNextIDs(chkpt);
             std::stringstream ss;
 
             // Draw separator between prev checkpoint and this
@@ -674,11 +679,6 @@ namespace sparta::serialization::checkpoint
                         "Can never setCurrent_ to nullptr except. A null current is a valid state at initialization only")
             current_ = current;
         }
-
-        /*!
-         * \brief Returns IDs of the checkpoints immediately following the given checkpoint.
-         */
-        virtual std::vector<chkpt_id_t> getNextIDs_(chkpt_id_t id) = 0;
 
         /*!
          * \brief Scheduler whose tick count will be set and read. Cannnot be

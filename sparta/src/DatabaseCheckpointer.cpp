@@ -51,40 +51,7 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
 {
     auto pipeline = std::make_unique<simdb::pipeline::Pipeline>(db_mgr_, NAME);
 
-    // Task 1: Chop off "flag deleted" checkpoints from the given window. This is needed
-    // since the checkpointer many times will grab a window from the database, mark some
-    // checkpoints as deleted, and leave the window in the cache. When the window gets
-    // old enough to be evicted from the LRU cache and re-sent down the pipeline, we do
-    // not want to propagate the deleted checkpoints back into the database.
-    auto purge_deleted = simdb::pipeline::createTask<simdb::pipeline::Function<checkpoint_ptrs, checkpoint_ptrs>>(
-        [](checkpoint_ptrs&& chkpts_in,
-           simdb::ConcurrentQueue<checkpoint_ptrs>& chkpts_out,
-           bool /*force_flush*/)
-        {
-            checkpoint_ptrs alive_chkpts;
-            bool ensure_rest_deleted = false;
-
-            // Rule: Once we see a deleted checkpoint, all following checkpoints
-            // in the window must also be deleted. This is to ensure that
-            // checkpoints are always contiguous in the database.
-
-            for (const auto& chkpt : chkpts_in) {
-                if (chkpt->isFlaggedDeleted()) {
-                    ensure_rest_deleted = true;
-                } else if (ensure_rest_deleted && !chkpt->isFlaggedDeleted()) {
-                    throw CheckpointError("Checkpoint window has non-contiguous deleted checkpoints");
-                } else {
-                    alive_chkpts.push_back(chkpt);
-                }
-            }
-
-            if (!alive_chkpts.empty()) {
-                chkpts_out.emplace(std::move(alive_chkpts));
-            }
-        }
-    );
-
-    // Task 2: Package up checkpoints into a checkpoint window
+    // Task 1: Package up checkpoints into a checkpoint window
     auto create_window = simdb::pipeline::createTask<simdb::pipeline::Function<checkpoint_ptrs, ChkptWindow>>(
         [](checkpoint_ptrs&& chkpts,
            simdb::ConcurrentQueue<ChkptWindow>& windows,
@@ -100,7 +67,7 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
         }
     );
 
-    // Task 3: Serialize a checkpoint window into a char buffer
+    // Task 2: Serialize a checkpoint window into a char buffer
     auto window_to_bytes = simdb::pipeline::createTask<simdb::pipeline::Function<ChkptWindow, ChkptWindowBytes>>(
         [](ChkptWindow&& window,
            simdb::ConcurrentQueue<ChkptWindowBytes>& window_bytes,
@@ -121,7 +88,7 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
         }
     );
 
-    // Task 4: Perform zlib compression on the checkpoint window bytes
+    // Task 3: Perform zlib compression on the checkpoint window bytes
     auto zlib_bytes = simdb::pipeline::createTask<simdb::pipeline::Function<ChkptWindowBytes, ChkptWindowBytes>>(
         [](ChkptWindowBytes&& bytes_in,
            simdb::ConcurrentQueue<ChkptWindowBytes>& bytes_out,
@@ -134,7 +101,7 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
         }
     );
 
-    // Task 5: Write to the database
+    // Task 4: Write to the database
     auto write_to_db = db_accessor->createAsyncWriter<DatabaseCheckpointer, ChkptWindowBytes, void>(
         [this](ChkptWindowBytes&& bytes_in,
                simdb::pipeline::AppPreparedINSERTs* tables,
@@ -162,15 +129,14 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
         }
     );
 
-    *purge_deleted >> *create_window >> *window_to_bytes >> *zlib_bytes >> *write_to_db;
+    *create_window >> *window_to_bytes >> *zlib_bytes >> *write_to_db;
 
-    pipeline_head_ = purge_deleted->getTypedInputQueue<checkpoint_ptrs>();
+    pipeline_head_ = create_window->getTypedInputQueue<checkpoint_ptrs>();
 
     pipeline_flusher_ = std::make_unique<simdb::pipeline::RunnableFlusher>(
-        *db_mgr_, purge_deleted, create_window, window_to_bytes, zlib_bytes, write_to_db);
+        *db_mgr_, create_window, window_to_bytes, zlib_bytes, write_to_db);
 
     pipeline->createTaskGroup("CheckpointPipeline")
-        ->addTask(std::move(purge_deleted))
         ->addTask(std::move(create_window))
         ->addTask(std::move(window_to_bytes))
         ->addTask(std::move(zlib_bytes));
@@ -278,7 +244,7 @@ std::vector<chkpt_id_t> DatabaseCheckpointer::getCheckpointsAt(tick_t t)
     std::unordered_set<chkpt_id_t> ids;
 
     forEachCheckpoint_([t, &ids](const DatabaseCheckpoint* chkpt) {
-        if (!chkpt->isFlaggedDeleted() && chkpt->getTick() == t) {
+        if (chkpt->getTick() == t) {
             ids.insert(chkpt->getID());
         }
     });
@@ -293,9 +259,7 @@ std::vector<chkpt_id_t> DatabaseCheckpointer::getCheckpoints()
     std::unordered_set<chkpt_id_t> ids;
 
     forEachCheckpoint_([&ids](const DatabaseCheckpoint* chkpt) {
-        if (!chkpt->isFlaggedDeleted()) {
-            ids.insert(chkpt->getID());
-        }
+        ids.insert(chkpt->getID());
     });
 
     std::vector<chkpt_id_t> ret(ids.begin(), ids.end());
@@ -379,11 +343,7 @@ void DatabaseCheckpointer::dumpRestoreChain(std::ostream& o, chkpt_id_t id)
         if (chkpt->isSnapshot()) {
             o << "(";
         }
-        if (chkpt->getID() == checkpoint_type::UNIDENTIFIED_CHECKPOINT) {
-            o << "*" << chkpt->getDeletedID();
-        } else {
-            o << chkpt->getID();
-        }
+        o << chkpt->getID();
         if (chkpt->isSnapshot()) {
             o << ")";
         }
@@ -509,7 +469,7 @@ void DatabaseCheckpointer::traceValue(
     (void)offset;
     (void)size;
 
-    sparta_assert(false, "Not implemented");
+    throw CheckpointError("DatabaseCheckpointer::traceValue() not implemented");
 }
 
 bool DatabaseCheckpointer::isCheckpointCached(chkpt_id_t id) const noexcept
@@ -555,7 +515,9 @@ void DatabaseCheckpointer::createHead_()
 
 chkpt_id_t DatabaseCheckpointer::createCheckpoint_(bool force_snapshot)
 {
-    sparta_assert(!force_snapshot, "Forced snapshots are not supported by DatabaseCheckpointer");
+    if (force_snapshot) {
+        throw CheckpointError("DatabaseCheckpointer does not support forced snapshots");
+    }
 
     std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
 
@@ -616,6 +578,11 @@ chkpt_id_t DatabaseCheckpointer::createCheckpoint_(bool force_snapshot)
 
 void DatabaseCheckpointer::deleteCheckpoint_(chkpt_id_t id)
 {
+    // Throw if trying to delete head checkpoint
+    if (id == getHeadID()) {
+        throw CheckpointError("Cannot delete head checkpoint with ID ") << id;
+    }
+
     window_id_t start_win_id = getWindowID_(id);
     window_id_t end_win_id = getWindowID_(next_chkpt_id_ - 1);
 
@@ -644,42 +611,40 @@ void DatabaseCheckpointer::deleteCheckpoint_(chkpt_id_t id)
     // Now delete from the database
     pipeline_flusher_->flush();
 
-    db_mgr_->safeTransaction(
-        [&]()
-        {
-            // DELETE FROM ChkptWindows WHERE WindowID > start_win_id
-            auto query = db_mgr_->createQuery("ChkptWindows");
-            query->addConstraintForUInt64("WindowID", simdb::Constraints::GREATER, start_win_id);
+    db_mgr_->safeTransaction([&]() {
+        // DELETE FROM ChkptWindows WHERE WindowID > start_win_id
+        auto query = db_mgr_->createQuery("ChkptWindows");
+        query->addConstraintForUInt64("WindowID", simdb::Constraints::GREATER, start_win_id);
+        query->deleteResultSet();
+
+        // Now update the window containing start_win_id to remove checkpoints >= id
+        query->resetConstraints();
+        query->addConstraintForUInt64("WindowID", simdb::Constraints::EQUAL, start_win_id);
+
+        std::vector<char> compressed_window_bytes;
+        query->select("WindowBytes", compressed_window_bytes);
+
+        auto results = query->getResultSet();
+        if (results.getNextRecord()) {
+            // DELETE FROM ChkptWindows WHERE WindowID = start_win_id
             query->deleteResultSet();
 
-            // Now update the window containing start_win_id to remove checkpoints >= id
-            query->resetConstraints();
-            query->addConstraintForUInt64("WindowID", simdb::Constraints::EQUAL, start_win_id);
+            // Deserialize the window
+            auto window = deserializeWindow_(compressed_window_bytes);
 
-            std::vector<char> compressed_window_bytes;
-            query->select("WindowBytes", compressed_window_bytes);
+            // Remove checkpoints >= id
+            auto new_end = std::remove_if(window->chkpts.begin(), window->chkpts.end(),
+                [id](const std::shared_ptr<checkpoint_type>& chkpt) {
+                    return chkpt->getID() >= id;
+                });
+            window->chkpts.erase(new_end, window->chkpts.end());
 
-            auto results = query->getResultSet();
-            if (results.getNextRecord()) {
-                // DELETE FROM ChkptWindows WHERE WindowID = start_win_id
-                query->deleteResultSet();
-
-                // Deserialize the window
-                auto window = deserializeWindow_(compressed_window_bytes);
-
-                // Remove checkpoints >= id
-                auto new_end = std::remove_if(window->chkpts.begin(), window->chkpts.end(),
-                    [id](const std::shared_ptr<checkpoint_type>& chkpt) {
-                        return chkpt->getID() >= id;
-                    });
-                window->chkpts.erase(new_end, window->chkpts.end());
-
-                // Send down the pipeline
-                if (!window->chkpts.empty()) {
-                    pipeline_head_->emplace(std::move(window->chkpts));
-                }
+            // Send down the pipeline
+            if (!window->chkpts.empty()) {
+                pipeline_head_->emplace(std::move(window->chkpts));
             }
-        });
+        }
+    });
 }
 
 void DatabaseCheckpointer::dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o)
@@ -691,11 +656,6 @@ void DatabaseCheckpointer::dumpCheckpointNode_(const chkpt_id_t id, std::ostream
     if (chkpt->isSnapshot()) {
         o << ' ' << SNAPSHOT_NOTICE;
     }
-}
-
-std::vector<chkpt_id_t> DatabaseCheckpointer::getNextIDs_(chkpt_id_t id)
-{
-    return getNextIDs(id);
 }
 
 void DatabaseCheckpointer::setHead_(CheckpointBase* head)
@@ -795,7 +755,9 @@ void DatabaseCheckpointer::evictWindowsIfNeeded_(bool force_flush)
 
         // Send the window down the pipeline for writing to the database
         auto& window = chkpts_cache_[win_id];
-        pipeline_head_->emplace(std::move(window));
+        if (!window.empty()) {
+            pipeline_head_->emplace(std::move(window));
+        }
 
         // Cleanup
         chkpts_cache_.erase(win_id);
@@ -905,8 +867,6 @@ void DatabaseCheckpointer::forEachCheckpoint_(const std::function<void(const Dat
         {
             auto window = deserializeWindow_(compressed_window_bytes);
             for (const auto& chkpt : window->chkpts) {
-                sparta_assert(!chkpt->isFlaggedDeleted(),
-                              "Deleted checkpoints should never make it to the database");
                 cb(chkpt.get());
             }
         }

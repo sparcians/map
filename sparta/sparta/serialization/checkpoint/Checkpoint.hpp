@@ -92,8 +92,7 @@ namespace sparta::serialization::checkpoint
 
         /*!
          * \brief Get the ID of our previous checkpoint. Returns UNIDENTIFIED_CHECKPOINT
-         * if we have no previous checkpoint, as is the case with the head checkpoint
-         * and snapshots.
+         * only for the head checkpoint.
          */
         chkpt_id_t getPrevID() const override {
             return prev_ ? prev_->getID() : UNIDENTIFIED_CHECKPOINT;

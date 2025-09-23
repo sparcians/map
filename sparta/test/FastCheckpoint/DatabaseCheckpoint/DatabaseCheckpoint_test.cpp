@@ -116,6 +116,11 @@ int main()
     root.enterFinalized();
     sched.finalize();
     EXPECT_EQUAL(sched.getCurrentTick(), 0);
+    EXPECT_TRUE(dbcp.getCheckpointsAt(0).empty());
+    EXPECT_EQUAL(dbcp.getNumCheckpoints(), 0);
+    EXPECT_EQUAL(dbcp.getNumSnapshots(), 0);
+    EXPECT_EQUAL(dbcp.getNumDeltas(), 0);
+    EXPECT_TRUE(dbcp.getCheckpointChain(0).empty());
 
     // CHECKPOINT: Head
     DatabaseCheckpointer::chkpt_id_t head_id;
@@ -125,16 +130,27 @@ int main()
     EXPECT_EQUAL(head_id, dbcp.getHead()->getID());
     EXPECT_EQUAL(dbcp.getCurrentID(), head_id);
     EXPECT_EQUAL(dbcp.getCurrentTick(), 0);
+    EXPECT_TRUE(dbcp.isSnapshot(head_id));
 
-    auto step_checkpointer = [&](DatabaseCheckpointer::chkpt_id_t expected_id) {
+    std::cout << dbcp.stringize() << std::endl;
+
+    auto step_checkpointer = [&](DatabaseCheckpointer::chkpt_id_t expected_id, bool step_sched = true) {
         r1->write<uint32_t>(expected_id * 5ul);
         r2->write<uint32_t>(expected_id % 5ul);
-        sched.run(1, true, false);
+        if (step_sched) {
+            sched.run(1, true, false);
+        }
 
         DatabaseCheckpointer::chkpt_id_t actual_id;
         EXPECT_NOTHROW(actual_id = dbcp.createCheckpoint());
         EXPECT_EQUAL(actual_id, expected_id);
         EXPECT_EQUAL(actual_id, dbcp.getCurrentID());
+        EXPECT_EQUAL(dbcp.getNumCheckpoints(), expected_id + 1);
+
+        // Should always have the head and current checkpoints in the cache
+        EXPECT_TRUE(dbcp.isCheckpointCached(dbcp.getHeadID()));
+        EXPECT_TRUE(dbcp.isCheckpointCached(dbcp.getCurrentID()));
+
         return actual_id;
     };
 
@@ -144,8 +160,28 @@ int main()
         if (cp) {
             EXPECT_EQUAL(cp->getID(), id);
             EXPECT_EQUAL(cp->getPrevID(), (id > 0) ? (id - 1) : DatabaseCheckpoint::UNIDENTIFIED_CHECKPOINT);
+            EXPECT_EQUAL(cp->isSnapshot(), (id % (dbcp.getSnapshotThreshold() + 1)) == 0);
+
+            if (cp->isSnapshot()) {
+                EXPECT_EQUAL(cp->getDistanceToPrevSnapshot(), 0);
+            } else {
+                EXPECT_EQUAL(cp->getDistanceToPrevSnapshot(), id % (dbcp.getSnapshotThreshold() + 1));
+            }
         }
         return cp;
+    };
+
+    auto verif_load_chkpt = [&](DatabaseCheckpointer::chkpt_id_t id) {
+        EXPECT_NOTHROW(dbcp.loadCheckpoint(id));
+        EXPECT_EQUAL(dbcp.getCurrentID(), id);
+        EXPECT_EQUAL(dbcp.getNumCheckpoints(), id + 1);
+        EXPECT_FALSE(dbcp.hasCheckpoint(id + 1));
+        EXPECT_EQUAL(sched.getCurrentTick(), id);
+
+        auto r1_val = r1->read<uint32_t>();
+        auto r2_val = r2->read<uint32_t>();
+        EXPECT_EQUAL(r1_val, id * 5ul);
+        EXPECT_EQUAL(r2_val, id % 5ul);
     };
 
     auto wait_until_evicted = [&](DatabaseCheckpointer::chkpt_id_t id) {
@@ -157,6 +193,12 @@ int main()
         EXPECT_FALSE(num_tries == 3);
         EXPECT_FALSE(dbcp.isCheckpointCached(id));
     };
+
+    // Ensure force_snapshot=true always throws. Not supported.
+    EXPECT_THROW(dbcp.createCheckpoint(true));
+
+    // Ensure traceValue() throws. Not supported.
+    EXPECT_THROW(dbcp.traceValue(std::cout, dbcp.getCurrentID(), nullptr, 0, 4));
 
     // Create 1000 checkpoints, and periodically access an old one. Also
     // go to sleep sometimes to increase the chances we have to go to the
@@ -175,19 +217,6 @@ int main()
             verif_find_checkpoint(old_id);
         }
     }
-
-    auto verif_load_chkpt = [&](DatabaseCheckpointer::chkpt_id_t id) {
-        EXPECT_NOTHROW(dbcp.loadCheckpoint(id));
-        EXPECT_EQUAL(dbcp.getCurrentID(), id);
-        EXPECT_EQUAL(dbcp.getNumCheckpoints(), id + 1);
-        EXPECT_FALSE(dbcp.hasCheckpoint(id + 1));
-        EXPECT_EQUAL(sched.getCurrentTick(), id);
-
-        auto r1_val = r1->read<uint32_t>();
-        auto r2_val = r2->read<uint32_t>();
-        EXPECT_EQUAL(r1_val, id * 5ul);
-        EXPECT_EQUAL(r2_val, id % 5ul);
-    };
 
     // Nothing to test, just call dumpList/dumpData/dumpAnnotatedData.
     // Do this while we have a lot of checkpoints in the cache and
@@ -312,6 +341,8 @@ int main()
 
     // Ensure exception is thrown when loading a non-existent checkpoint
     EXPECT_THROW(dbcp.loadCheckpoint(9999));
+
+    // Ensure findCheckpoint() throws when must_exist=true and checkpoint does not exist
     EXPECT_THROW(dbcp.findCheckpoint(9999, true));
     EXPECT_NOTHROW(dbcp.findCheckpoint(9999, false));
 
@@ -427,6 +458,48 @@ int main()
         EXPECT_NOTEQUAL(c, nullptr);
         EXPECT_FALSE(c->isSnapshot());
     }
+
+    // To check the getCheckpointsAt() method, go back to the head
+    // checkpoint. Then take a bunch of checkpoints at tick 1, 2, and 3.
+    verif_load_chkpt(head_id);
+    EXPECT_EQUAL(sched.getCurrentTick(), 0);
+
+    std::vector<DatabaseCheckpointer::chkpt_id_t> chkpts_at_1;
+    for (uint32_t i = 1; i <= 300; ++i) {
+        const bool step_sched = (i == 1);
+        auto id = step_checkpointer(i, step_sched);
+        EXPECT_EQUAL(sched.getCurrentTick(), 1);
+        chkpts_at_1.push_back(id);
+    }
+
+    std::vector<DatabaseCheckpointer::chkpt_id_t> chkpts_at_2;
+    for (uint32_t i = 301; i <= 500; ++i) {
+        const bool step_sched = (i == 301);
+        auto id = step_checkpointer(i, step_sched);
+        EXPECT_EQUAL(sched.getCurrentTick(), 2);
+        chkpts_at_2.push_back(id);
+    }
+
+    std::vector<DatabaseCheckpointer::chkpt_id_t> chkpts_at_3;
+    for (uint32_t i = 501; i <= 700; ++i) {
+        const bool step_sched = (i == 501);
+        auto id = step_checkpointer(i, step_sched);
+        EXPECT_EQUAL(sched.getCurrentTick(), 3);
+        chkpts_at_3.push_back(id);
+    }
+
+    EXPECT_EQUAL(dbcp.getCheckpointsAt(1), chkpts_at_1);
+    EXPECT_EQUAL(dbcp.getCheckpointsAt(2), chkpts_at_2);
+    EXPECT_EQUAL(dbcp.getCheckpointsAt(3), chkpts_at_3);
+
+    // Wait for the older checkpoints to be evicted and
+    // verify getCheckpointsAt() again.
+    wait_until_evicted(chkpts_at_1.back());
+    wait_until_evicted(chkpts_at_2.back());
+
+    EXPECT_EQUAL(dbcp.getCheckpointsAt(1), chkpts_at_1);
+    EXPECT_EQUAL(dbcp.getCheckpointsAt(2), chkpts_at_2);
+    EXPECT_EQUAL(dbcp.getCheckpointsAt(3), chkpts_at_3);
 
     // Verify that the head checkpoint is in the cache until simulation teardown.
     EXPECT_TRUE(dbcp.isCheckpointCached(head_id));

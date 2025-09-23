@@ -20,7 +20,6 @@ DatabaseCheckpoint::DatabaseCheckpoint(TreeNode& root,
                                        DatabaseCheckpointer* checkpointer)
     : CheckpointBase(id, tick)
     , prev_id_(prev ? prev->getID() : UNIDENTIFIED_CHECKPOINT)
-    , deleted_id_(UNIDENTIFIED_CHECKPOINT)
     , is_snapshot_(is_snapshot)
     , checkpointer_(checkpointer)
 {
@@ -51,14 +50,12 @@ DatabaseCheckpoint::DatabaseCheckpoint(chkpt_id_t id,
                                        tick_t tick,
                                        chkpt_id_t prev_id,
                                        const std::vector<chkpt_id_t>& next_ids,
-                                       chkpt_id_t deleted_id,
                                        bool is_snapshot,
                                        const storage::VectorStorage& storage,
                                        DatabaseCheckpointer* checkpointer)
     : CheckpointBase(id, tick)
     , prev_id_(prev_id)
     , next_ids_(next_ids)
-    , deleted_id_(deleted_id)
     , is_snapshot_(is_snapshot)
     , data_(storage)
     , checkpointer_(checkpointer)
@@ -68,12 +65,7 @@ DatabaseCheckpoint::DatabaseCheckpoint(chkpt_id_t id,
 std::string DatabaseCheckpoint::stringize() const
 {
     std::stringstream ss;
-    ss << "<DatabaseCheckpoint id=";
-    if (isFlaggedDeleted()) {
-        ss << "DELETED";
-    } else {
-        ss << getID();
-    }
+    ss << "<DatabaseCheckpoint id=" << getID();
     ss << " at t=" << getTick();
     if (isSnapshot()) {
         ss << "(snapshot)";
@@ -133,35 +125,6 @@ void DatabaseCheckpoint::load(const std::vector<ArchData*>& dats)
     }
 }
 
-void DatabaseCheckpoint::flagDeleted_()
-{
-    sparta_assert(!isFlaggedDeleted(),
-                  "Cannot delete a checkpoint when it is already deleted: " << this);
-    deleted_id_ = getID();
-    setID_(UNIDENTIFIED_CHECKPOINT);
-}
-
-bool DatabaseCheckpoint::isFlaggedDeleted() const noexcept
-{
-    return getID() == UNIDENTIFIED_CHECKPOINT;
-}
-
-chkpt_id_t DatabaseCheckpoint::getDeletedID() const noexcept
-{
-    return deleted_id_;
-}
-
-std::string DatabaseCheckpoint::getDeletedRepr() const
-{
-    std::stringstream ss;
-    if (isFlaggedDeleted()) {
-        ss << "*" << getDeletedID();
-    } else {
-        ss << getID();
-    }
-    return ss.str();
-}
-
 bool DatabaseCheckpoint::isSnapshot() const noexcept
 {
     return is_snapshot_;
@@ -186,12 +149,6 @@ void DatabaseCheckpoint::loadState(const std::vector<ArchData*>& dats)
             ad->restore(data_);
         }
     }
-}
-
-std::unique_ptr<DatabaseCheckpoint> DatabaseCheckpoint::clone() const
-{
-    auto clone = new DatabaseCheckpoint(getID(), getTick(), prev_id_, next_ids_, deleted_id_, is_snapshot_, data_, checkpointer_);
-    return std::unique_ptr<DatabaseCheckpoint>(clone);
 }
 
 void DatabaseCheckpoint::storeSnapshot_(const std::vector<ArchData*>& dats)
