@@ -41,8 +41,8 @@ add_custom_target (regress_valgrind)
 # NOTE:
 # running ctest with --test-action test creates Testing/<datetime>/Test.xml
 # that can be loaded into the CI test result tracker
-add_custom_command (TARGET regress          POST_BUILD COMMAND ctest -LE ${VALGRIND_TEST_LABEL} -j${NUM_CORES} --test-action test)
-add_custom_command (TARGET regress_valgrind POST_BUILD COMMAND ctest -L  ${VALGRIND_TEST_LABEL} -j${NUM_CORES} --test-action test)
+add_custom_command (TARGET regress          POST_BUILD COMMAND ctest -LE "${VALGRIND_TEST_LABEL}" -j${NUM_CORES} --test-action test)
+add_custom_command (TARGET regress_valgrind POST_BUILD COMMAND ctest -L  "${VALGRIND_TEST_LABEL}" -j${NUM_CORES} --test-action test)
 
 #add_subdirectory (pipeViewer)
 add_subdirectory (Array)

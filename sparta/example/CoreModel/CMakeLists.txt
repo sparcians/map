@@ -43,8 +43,8 @@ message(STATUS "Found " ${NUM_CORES} " cores in machine (for ctest)")
 # NOTE:
 # running ctest with --test-action test creates Testing/<datetime>/Test.xml
 # that can be loaded into the CI test result tracker
-add_custom_command(TARGET core_example_regress          POST_BUILD COMMAND ctest -LE ${VALGRIND_TEST_LABEL} -j${NUM_CORES} --test-action test)
-add_custom_command(TARGET core_example_regress_valgrind POST_BUILD COMMAND ctest -L  ${VALGRIND_TEST_LABEL} -j${NUM_CORES} --test-action test)
+add_custom_command(TARGET core_example_regress          POST_BUILD COMMAND ctest -LE "${VALGRIND_TEST_LABEL}" -j${NUM_CORES} --test-action test)
+add_custom_command(TARGET core_example_regress_valgrind POST_BUILD COMMAND ctest -L  "${VALGRIND_TEST_LABEL}" -j${NUM_CORES} --test-action test)
 
 # Ensure the simulator is built first.
 add_dependencies(core_example_regress sparta_core_example)
