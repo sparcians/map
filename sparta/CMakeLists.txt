@@ -15,6 +15,12 @@ set (GEN_DEBUG_INFO ON CACHE BOOL "Genearate debug info in compile & link -g")
 # the Sparta headers.
 option (USING_SIMDB "Enable Sparta to be used with SimDB" ON)
 
+# The following option is typically enabled only for CI purposes.
+# Commits that fail the github checks will produce a log file with
+# specific failures in e.g. EXPECT_EQUAL, and those logs can be
+# retrieved directly from the CI job artifacts.
+option (SPARTA_TESTER_ERROR_LOG "Redirect the SpartaTester std::cerr to a log file" OFF)
+
 set (SPARTA_BASE ${CMAKE_CURRENT_SOURCE_DIR})
 include (${SPARTA_BASE}/cmake/sparta-config.cmake)
 

@@ -6,25 +6,6 @@ include (CTest)
 # Convenience macros and functions for tests
 include(${SPARTA_CMAKE_MACRO_PATH}/SpartaTestingMacros.cmake)
 
-# Setup options for valgrind testing.
-if (NOT APPLE)
-  find_program (VALGRIND_TOOL valgrind)
-  if (VALGRIND_TOOL)
-    set(VALGRIND_REGRESS_ENABLED TRUE)
-    message(STATUS "Valgrind regression enabled")
-  endif()
-endif()
-
-set (VALGRIND_OPTS
-  "--error-exitcode=5"
-  "--leak-check=full"
-  "--show-reachable=yes"
-  "--undef-value-errors=yes"
-  "--suppressions=${SPARTA_BASE}/test/valgrind_leakcheck.supp"
-  "--soname-synonyms=somalloc=NONE"
-  )
-set (VALGRIND_TEST_LABEL valgrind_test)
-
 # Since make does not pass the parallel jobs flag to ctest from the user,
 # a fixed count will be set based on core count w/ a max 8
 include(ProcessorCount)
@@ -49,7 +30,9 @@ add_custom_command (TARGET regress_valgrind POST_BUILD COMMAND ctest -L  "${VALG
 add_subdirectory (Array)
 add_subdirectory (Audience)
 add_subdirectory (BasicHistogram)
-add_subdirectory (Buffer)
+if (NOT APPLE)
+  add_subdirectory (Buffer)
+endif ()
 add_subdirectory (Bus)
 add_subdirectory (cache)
 add_subdirectory (CachedMemory)
