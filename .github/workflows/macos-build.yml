@@ -12,7 +12,7 @@ jobs:
     strategy:
       # Strategy is a matrix of debug and release builds/regression
       matrix:
-        os: [macos-13]
+        os: [macos-15]
         BUILD_TYPE: [Release]
         COMPILER: [clang]
 
@@ -44,7 +44,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2
         continue-on-error: true
         with:
-          key: ${{ matrix.os }}-${{ matrix.BUILD_TYPE }}-${{ matrix.COMPILER }}-ccache-${{ github.ref_name }}
+          key: ${{ matrix.os }}-${{ matrix.BUILD_TYPE }}-${{ matrix.COMPILER }}-ccache-${{ github.run_id }}
           restore-keys: |
             ${{ matrix.os }}-${{ matrix.BUILD_TYPE }}-${{ matrix.COMPILER }}-ccache-master
             ${{ matrix.os }}-${{ matrix.BUILD_TYPE }}-${{ matrix.COMPILER }}-ccache
