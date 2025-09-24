@@ -52,7 +52,19 @@ namespace sparta
     {
     public:
         SpartaTester() : SpartaTester(0, std::cerr)
-        {}
+        {
+        #if LOG_ERRORS_TO_FILE
+            static std::ofstream cerr_log_file("SpartaTester_errors.log"); // Ensure it stays open
+            if (cerr_log_file.is_open()) {
+                cerr_.rdbuf(cerr_log_file.rdbuf());                        // Redirect cerr
+            } else {
+                cerr_ << SPARTA_CURRENT_COLOR_BRIGHT_RED
+                      << "WARNING: Could not open SpartaTester_errors.log for writing. "
+                      << "Errors will be printed to std::cerr."
+                      << SPARTA_CURRENT_COLOR_NORMAL << std::endl;
+            }
+        #endif
+        }
 
         bool expectAllReached(uint32_t expected_reached, const uint32_t line, const char * file) {
             bool ret = true;

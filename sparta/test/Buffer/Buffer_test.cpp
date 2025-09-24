@@ -863,16 +863,8 @@ void testInvalidates()
     // testEraseSupport<sparta::Buffer<int>::const_reverse_iterator, sparta::Buffer<int>>();
 }
 
-void redirectCerrToFile(const std::string& filename)
-{
-    static std::ofstream error_log(filename);          // Ensure it stays open
-    std::cerr.rdbuf(error_log.rdbuf());                // Redirect cerr
-}
-
 int main()
 {
-    redirectCerrToFile("Buffer_test_errors.log");
-
     testPointerTypes<std::shared_ptr<dummy_struct>>();
     testPointerTypes<sparta::SpartaSharedPointer<dummy_struct>>();
     generalTest();
