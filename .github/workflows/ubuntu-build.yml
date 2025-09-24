@@ -40,6 +40,7 @@ jobs:
 
       # Setup CCache to cache builds
       - name: ccache
+        if: false  # disable temporarily
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ matrix.os }}-${{ matrix.BUILD_TYPE }}-${{ matrix.COMPILER }}-ccache-${{ github.ref_name }}
