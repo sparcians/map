@@ -42,6 +42,7 @@ jobs:
       # Setup CCache to cache builds
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
+        continue-on-error: true
         with:
           key: ${{ matrix.os }}-${{ matrix.BUILD_TYPE }}-${{ matrix.COMPILER }}-ccache-${{ github.ref_name }}
           restore-keys: |
