@@ -105,6 +105,34 @@ if (NOT APPLE)
     list(APPEND Sparta_LIBS rt)
 endif ()
 
+# Setup options for valgrind testing.
+if(NOT APPLE)
+  find_program(VALGRIND_TOOL valgrind)
+  if(VALGRIND_TOOL)
+    set(VALGRIND_REGRESS_ENABLED TRUE)
+    message(STATUS "Valgrind regression enabled")
+  else()
+    set(VALGRIND_REGRESS_ENABLED FALSE)
+    message(STATUS "Valgrind regression disabled")
+  endif()
+endif()
+
+if(VALGRIND_REGRESS_ENABLED)
+  set(VALGRIND_OPTS
+    "--error-exitcode=5"
+    "--leak-check=full"
+    "--show-reachable=yes"
+    "--undef-value-errors=yes"
+    "--suppressions=${SPARTA_BASE}/test/valgrind_leakcheck.supp"
+    "--soname-synonyms=somalloc=NONE"
+    )
+endif()
+
+# Define this variable whether or not we have enabled valgrind testing. This ensures valid
+# ctest commands, e.g. ctest -LE ${VALGRIND_TEST_LABEL} -j${NUM_CORES} --test-action test
+# which cannot parse an empty label after -LE
+set(VALGRIND_TEST_LABEL valgrind_test)
+
 #
 # Python support
 #
