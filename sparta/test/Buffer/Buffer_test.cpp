@@ -863,6 +863,7 @@ void testInvalidates()
     // testEraseSupport<sparta::Buffer<int>::const_reverse_iterator, sparta::Buffer<int>>();
 }
 
+
 int main()
 {
     testPointerTypes<std::shared_ptr<dummy_struct>>();
