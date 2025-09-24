@@ -21,7 +21,7 @@ echo "Building Sparta Infra"
 cd ${GITHUB_WORKSPACE}/sparta
 mkdir -p ${BUILD_TYPE}
 cd ${BUILD_TYPE}
-CC=$COMPILER CXX=$CXX_COMPILER  cmake .. -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=/usr/local/
+CC=$COMPILER CXX=$CXX_COMPILER  cmake .. -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=/usr/local/ -DSPARTA_TESTER_ERROR_LOG=ON
 if [ $? -ne 0 ]; then
     echo "ERROR: CMake for Sparta framework failed"
     exit 1

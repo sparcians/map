@@ -10,6 +10,9 @@
 macro (sparta_regress target)
   add_dependencies (regress ${target} )
   add_dependencies (regress_valgrind ${target})
+  if (SPARTA_TESTER_ERROR_LOG)
+    target_compile_definitions (${target} PRIVATE LOG_ERRORS_TO_FILE=$<BOOL:${SPARTA_TESTER_ERROR_LOG}>)
+  endif ()
 endmacro (sparta_regress)
 
 # A function to add a sparta test with various options

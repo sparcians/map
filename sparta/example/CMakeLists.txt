@@ -2,25 +2,6 @@ project(EXAMPLES)
 
 include (CTest)
 
-# Setup options for valgrind testing.
-if (NOT APPLE)
-  message(STATUS "Valgrind regression enabled")
-  find_program (VALGRIND_TOOL valgrind)
-  if (VALGRIND_TOOL)
-    set(VALGRIND_REGRESS_ENABLED TRUE)
-  endif()
-endif()
-
-set (VALGRIND_OPTS
-    "--error-exitcode=5"
-    "--leak-check=full"
-    "--show-reachable=yes"
-    "--undef-value-errors=yes"
-    "--suppressions=${SPARTA_BASE}/test/valgrind_leakcheck.supp"
-    "--soname-synonyms=somalloc=NONE"
-    )
-set (VALGRIND_TEST_LABEL valgrind_test)
-
 # Since make does not pass the parallel jobs flag to ctest from the user,
 # a fixed count will be set based on core count w/ a max 8
 include(ProcessorCount)
