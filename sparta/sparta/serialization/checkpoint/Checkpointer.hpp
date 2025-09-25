@@ -654,7 +654,7 @@ namespace sparta::serialization::checkpoint
          * \pre Internal head pointer must be nullptr.
          * \note This can only be done once
          */
-        virtual void setHead_(CheckpointBase* head) {
+        void setHead_(CheckpointBase* head) {
             sparta_assert(head != nullptr, "head argument in setHead_ cannot be nullptr");
             sparta_assert(head_ == nullptr, "Cannot setHead_ again on a Checkpointer once heas is already set");
             head_ = head;
@@ -674,7 +674,7 @@ namespace sparta::serialization::checkpoint
          * checkpoint created will follow the current checkpoint set here.
          * Cannot be nullptr
          */
-        virtual void setCurrent_(CheckpointBase* current) {
+        void setCurrent_(CheckpointBase* current) {
             sparta_assert(current != nullptr,
                         "Can never setCurrent_ to nullptr except. A null current is a valid state at initialization only")
             current_ = current;

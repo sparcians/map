@@ -47,7 +47,7 @@ namespace sparta::serialization::checkpoint
     * \brief Checkpoint class optimized for use with database-backed
     * checkpointers.
     */
-    class DatabaseCheckpoint : public CheckpointBase
+    class DatabaseCheckpoint final : public CheckpointBase
     {
     public:
 
@@ -55,19 +55,16 @@ namespace sparta::serialization::checkpoint
         //! @{
         ////////////////////////////////////////////////////////////////////////
 
-        //! \brief Default constructable required for boost::serialization
-        DatabaseCheckpoint() = default;
-
         //! \brief Not copy constructable
         DatabaseCheckpoint(const DatabaseCheckpoint&) = delete;
 
         //! \brief Non-assignable
         DatabaseCheckpoint& operator=(const DatabaseCheckpoint&) = delete;
 
-        //! \brief Move constructor
-        DatabaseCheckpoint(DatabaseCheckpoint&&) = default;
+        //! \brief Not move constructable
+        DatabaseCheckpoint(DatabaseCheckpoint&&) = delete;
 
-        //! \brief Not move-assignable
+        //! \brief Not move assignable
         DatabaseCheckpoint& operator=(DatabaseCheckpoint&&) = delete;
 
     private:
@@ -81,18 +78,13 @@ namespace sparta::serialization::checkpoint
                            bool is_snapshot,
                            DatabaseCheckpointer* checkpointer);
 
-        //! \brief This constructor is called during checkpoint cloning
-        DatabaseCheckpoint(chkpt_id_t id,
-                           tick_t tick,
-                           chkpt_id_t prev_id,
-                           const std::vector<chkpt_id_t>& next_ids,
-                           bool is_snapshot,
-                           const storage::VectorStorage& storage,
-                           DatabaseCheckpointer* checkpointer);
+        //! \brief Default constructable required for boost::serialization of ChkptWindow
+        DatabaseCheckpoint() = default;
 
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
+        friend class ChkptWindow;
         friend class DatabaseCheckpointer;
 
     public:
@@ -116,9 +108,7 @@ namespace sparta::serialization::checkpoint
 
         /*!
          * \brief Writes all checkpoint raw data to an ostream.
-         *
          * \param o ostream to which raw data will be written.
-         *
          * \note No newlines or other extra characters will be appended.
          */
         void dumpData(std::ostream& o) const override;
@@ -191,9 +181,7 @@ namespace sparta::serialization::checkpoint
 
         /*!
          * \brief Loads delta state of this checkpoint to root.
-         *
          * \note Does not look at any other checkpoints.
-         * 
          * \see DatabaseCheckpointer::load
          */
         void loadState(const std::vector<ArchData*>& dats);

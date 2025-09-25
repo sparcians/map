@@ -21,6 +21,7 @@ namespace sparta::serialization::checkpoint
 
 using tick_t = typename CheckpointBase::tick_t;
 using chkpt_id_t = typename CheckpointBase::chkpt_id_t;
+using window_id_t = typename DatabaseCheckpointer::window_id_t;
 
 DatabaseCheckpointer::DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, TreeNode& root, Scheduler* sched) :
     Checkpointer(root, sched),
@@ -658,32 +659,24 @@ void DatabaseCheckpointer::dumpCheckpointNode_(const chkpt_id_t id, std::ostream
     }
 }
 
-void DatabaseCheckpointer::setHead_(CheckpointBase* head)
+void DatabaseCheckpointer::setHead_(DatabaseCheckpoint* head)
 {
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
-    setHeadID_(head->getID());
-    Checkpointer::setHead_(head);
-}
-
-void DatabaseCheckpointer::setCurrent_(CheckpointBase* current)
-{
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
-    setCurrentID_(current->getID());
-    Checkpointer::setCurrent_(current);
-}
-
-void DatabaseCheckpointer::setHeadID_(chkpt_id_t id)
-{
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+    const auto id = head->getID();
     sparta_assert(id != checkpoint_type::UNIDENTIFIED_CHECKPOINT);
-    sparta_assert(head_id_ == checkpoint_type::UNIDENTIFIED_CHECKPOINT || head_id_ == id);
+    sparta_assert(head_id_ == checkpoint_type::UNIDENTIFIED_CHECKPOINT);
+
+    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+    Checkpointer::setHead_(head);
     head_id_ = id;
 }
 
-void DatabaseCheckpointer::setCurrentID_(chkpt_id_t id)
+void DatabaseCheckpointer::setCurrent_(DatabaseCheckpoint* current)
 {
-    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+    const auto id = current->getID();
     sparta_assert(id != checkpoint_type::UNIDENTIFIED_CHECKPOINT);
+
+    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+    Checkpointer::setCurrent_(current);
     current_id_ = id;
 }
 
@@ -698,6 +691,11 @@ void DatabaseCheckpointer::addToCache_(std::shared_ptr<checkpoint_type> chkpt)
     window.emplace_back(std::move(chkpt));
     touchWindow_(win_id);
     evictWindowsIfNeeded_();
+}
+
+window_id_t DatabaseCheckpointer::getWindowID_(chkpt_id_t id) const
+{
+    return id / (snap_thresh_ + 1);
 }
 
 void DatabaseCheckpointer::touchWindow_(window_id_t id)

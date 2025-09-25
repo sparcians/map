@@ -19,7 +19,7 @@ class DatabaseCheckpointer;
  * checkpoints outside this window to/from SimDB as needed using
  * an LRU cache.
  */
-class DatabaseCheckpointer : public simdb::App, public Checkpointer
+class DatabaseCheckpointer final : public simdb::App, public Checkpointer
 {
 public:
     static constexpr auto NAME = "db-checkpointer";
@@ -343,24 +343,21 @@ private:
     void dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o) override;
 
     /*!
-     * \brief Intercept calls to Checkpointer::setHead_() and ensure we do not delete it.
+     * \brief Sets the head checkpointer pointer to \a head for the first
+     * time
+     * \param head New head checkpoint pointer. Must not be nullptr
+     * \pre Internal head pointer must be nullptr.
+     * \note This can only be done once
      */
-    void setHead_(CheckpointBase* head) override;
+    void setHead_(DatabaseCheckpoint* head);
 
     /*!
-     * \brief Intercept calls to Checkpointer::setCurrent_() and ensure we do not delete it.
+     * \brief Sets the current checkpoint pointer.
+     * \param current Pointer to set as current checkpoint. The next
+     * checkpoint created will follow the current checkpoint set here.
+     * Cannot be nullptr
      */
-    void setCurrent_(CheckpointBase* current) override;
-
-    /*!
-     * \brief Set ID of head checkpoint.
-     */
-    void setHeadID_(chkpt_id_t id);
-
-    /*!
-     * \brief Set ID of current checkpoint.
-     */
-    void setCurrentID_(chkpt_id_t id);
+    void setCurrent_(DatabaseCheckpoint* current);
 
     /*!
      * \brief Add the given checkpoint to the cache and bump its window to the
@@ -371,17 +368,7 @@ private:
     /*!
      * \brief Get the window ID for the given checkpoint ID.
      */
-    window_id_t getWindowID_(chkpt_id_t id) const {
-        return id / (snap_thresh_ + 1);
-    }
-
-    /*!
-     * \brief Get the window ID for the given checkpoint.
-     */
-    template <typename CheckpointPtrT>
-    window_id_t getWindowID_(const CheckpointPtrT& chkpt) const {
-        return getWindowID_(chkpt->getID());
-    }
+    window_id_t getWindowID_(chkpt_id_t id) const;
 
     /*!
      * \brief Bump the given window ID to the front of the LRU cache.

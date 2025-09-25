@@ -59,13 +59,13 @@ namespace sparta::serialization::checkpoint
         CheckpointBase(const CheckpointBase&) = delete;
 
         //! \brief Non-assignable
-        const CheckpointBase& operator=(const CheckpointBase&) = delete;
+        CheckpointBase& operator=(const CheckpointBase&) = delete;
 
-        //! \brief Default move construction
-        CheckpointBase(CheckpointBase&&) = default;
+        //! \brief Not move constructable
+        CheckpointBase(CheckpointBase&&) = delete;
 
-        //! \brief Default move assignment
-        CheckpointBase& operator=(CheckpointBase&&) = default;
+        //! \brief Not move assignable
+        CheckpointBase& operator=(CheckpointBase&&) = delete;
 
     protected:
 

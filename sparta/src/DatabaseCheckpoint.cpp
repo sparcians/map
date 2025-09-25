@@ -46,22 +46,6 @@ DatabaseCheckpoint::DatabaseCheckpoint(TreeNode& root,
     }
 }
 
-DatabaseCheckpoint::DatabaseCheckpoint(chkpt_id_t id,
-                                       tick_t tick,
-                                       chkpt_id_t prev_id,
-                                       const std::vector<chkpt_id_t>& next_ids,
-                                       bool is_snapshot,
-                                       const storage::VectorStorage& storage,
-                                       DatabaseCheckpointer* checkpointer)
-    : CheckpointBase(id, tick)
-    , prev_id_(prev_id)
-    , next_ids_(next_ids)
-    , is_snapshot_(is_snapshot)
-    , data_(storage)
-    , checkpointer_(checkpointer)
-{
-}
-
 std::string DatabaseCheckpoint::stringize() const
 {
     std::stringstream ss;

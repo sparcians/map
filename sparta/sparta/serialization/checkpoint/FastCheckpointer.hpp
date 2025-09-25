@@ -399,7 +399,7 @@ namespace sparta::serialization::checkpoint
          * deleted
          * \return Checkpoint with ID of \a id if found or nullptr if not found
          */
-        checkpoint_type* findCheckpoint(chkpt_id_t id) noexcept {
+        const checkpoint_type* findCheckpoint(chkpt_id_t id) noexcept {
             auto it = chkpts_.find(id);
             if (it != chkpts_.end()) {
                 return static_cast<checkpoint_type*>(it->second.get());
