@@ -66,7 +66,7 @@ public:
     {}
 };
 
-void RunCheckpointerTest(uint64_t initial_sched_tick = 0)
+void RunCheckpointerTest(uint64_t initial_tick = 0)
 {
     sparta::Scheduler sched;
     RootTreeNode clocks("clocks");
@@ -113,11 +113,10 @@ void RunCheckpointerTest(uint64_t initial_sched_tick = 0)
     EXPECT_TRUE(dbcp.getCheckpointChain(0).empty());
 
     // Advance the scheduler before taking the head checkpoint
-    if (initial_sched_tick > 0) {
-        sched.run(initial_sched_tick, true, false);
+    if (initial_tick > 0) {
+        sched.run(initial_tick, true, false);
     }
-    auto initial_tick = sched.getCurrentTick();
-    EXPECT_EQUAL(initial_tick, initial_sched_tick);
+    EXPECT_EQUAL(sched.getCurrentTick(), initial_tick);
 
     // CHECKPOINT: Head
     DatabaseCheckpointer::chkpt_id_t head_id;
@@ -503,19 +502,19 @@ void RunCheckpointerTest(uint64_t initial_sched_tick = 0)
     EXPECT_THROW(dbcp.findLatestCheckpointAtOrBefore(2, 9999));
 
     // Valid ID (1), but tick is before the head checkpoint
-    if (initial_sched_tick > 0) {
-        EXPECT_EQUAL(dbcp.findLatestCheckpointAtOrBefore(initial_sched_tick - 1, 1), nullptr);
+    if (initial_tick > 0) {
+        EXPECT_EQUAL(dbcp.findLatestCheckpointAtOrBefore(initial_tick - 1, 1), nullptr);
     }
 
     // Valid tick (2), valid ID
-    EXPECT_NOTHROW(chkpt = dbcp.findLatestCheckpointAtOrBefore(2 + initial_sched_tick, chkpts_at_2.back()));
+    EXPECT_NOTHROW(chkpt = dbcp.findLatestCheckpointAtOrBefore(2 + initial_tick, chkpts_at_2.back()));
     EXPECT_EQUAL(chkpt->getID(), chkpts_at_2.back());
-    EXPECT_EQUAL(chkpt->getTick(), 2 + initial_sched_tick);
+    EXPECT_EQUAL(chkpt->getTick(), 2 + initial_tick);
 
     // Valid tick (2), valid ID
-    EXPECT_NOTHROW(chkpt = dbcp.findLatestCheckpointAtOrBefore(2 + initial_sched_tick, chkpts_at_3.back()));
+    EXPECT_NOTHROW(chkpt = dbcp.findLatestCheckpointAtOrBefore(2 + initial_tick, chkpts_at_3.back()));
     EXPECT_EQUAL(chkpt->getID(), chkpts_at_2.back());
-    EXPECT_EQUAL(chkpt->getTick(), 2 + initial_sched_tick);
+    EXPECT_EQUAL(chkpt->getTick(), 2 + initial_tick);
 
     // Verify that the head checkpoint is in the cache until simulation teardown.
     EXPECT_TRUE(dbcp.isCheckpointCached(head_id));
