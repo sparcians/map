@@ -84,7 +84,7 @@ namespace sparta::serialization::checkpoint
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
-        friend class ChkptWindow;
+        friend struct ChkptWindow;
         friend class DatabaseCheckpointer;
 
     public:
