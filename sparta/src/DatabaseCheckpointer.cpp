@@ -787,25 +787,38 @@ bool DatabaseCheckpointer::ensureWindowLoaded_(chkpt_id_t chkpt_id, bool must_su
         checkpoint_ptrs window_chkpts = getWindowFromDatabase_(win_id);
         if (window_chkpts.empty() && must_succeed) {
             throw CheckpointError("Could not find checkpoint window with ID ") << win_id;
+        } else if (window_chkpts.empty()) {
+            return false;
         }
         chkpts_cache_[win_id] = std::move(window_chkpts);
     }
 
-    bool success = false;
-    for (const auto& chkpt : chkpts_cache_[win_id]) {
-        if (chkpt->getID() == chkpt_id) {
-            success = true;
-            break;
+    auto& window = chkpts_cache_[win_id];
+    if (window.empty()) {
+        if (must_succeed) {
+            throw CheckpointError("Checkpoint window with ID ") << win_id << " is empty";
         }
+        chkpts_cache_.erase(win_id);
+        return false;
     }
 
-    if (!success && must_succeed) {
-        throw CheckpointError("Could not find checkpoint with ID ") << chkpt_id;
+    auto snapshot_id = window.front()->getID();
+    if (chkpt_id < snapshot_id || chkpt_id > window.back()->getID()) {
+        if (must_succeed) {
+            throw CheckpointError("Checkpoint ID ") << chkpt_id
+                << " is not in the loaded checkpoint window with ID " << win_id
+                << " which contains checkpoints from " << snapshot_id
+                << " to " << window.back()->getID();
+        }
+        return false;
     }
+
+    auto& chkpt = window.at(chkpt_id - snapshot_id);
+    sparta_assert(chkpt->getID() == chkpt_id);
 
     touchWindow_(win_id);
     evictWindowsIfNeeded_();
-    return success;
+    return true;
 }
 
 std::vector<std::shared_ptr<DatabaseCheckpoint>> DatabaseCheckpointer::getWindowFromDatabase_(window_id_t win_id)
