@@ -329,6 +329,21 @@ std::shared_ptr<DatabaseCheckpoint> DatabaseCheckpointer::findCheckpoint(chkpt_i
     return chkpt;
 }
 
+std::shared_ptr<DatabaseCheckpoint> DatabaseCheckpointer::findLatestCheckpointAtOrBefore(tick_t tick, chkpt_id_t from)
+{
+    std::lock_guard<std::recursive_mutex> lock(cache_mutex_);
+
+    auto chkpt = findCheckpoint(from, true);
+    do {
+        if (chkpt->getTick() <= tick) {
+            break;
+        }
+        chkpt = findCheckpoint(chkpt->getPrevID());
+    } while (chkpt);
+
+    return (chkpt && chkpt->getTick() <= tick) ? chkpt : nullptr;
+}
+
 bool DatabaseCheckpointer::hasCheckpoint(chkpt_id_t id) noexcept
 {
     return findCheckpoint(id) != nullptr;

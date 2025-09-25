@@ -194,6 +194,25 @@ public:
     std::shared_ptr<DatabaseCheckpoint> findCheckpoint(chkpt_id_t id, bool must_exist=false);
 
     /*!
+     * \brief Finds the latest checkpoint at or before the given tick
+     * starting at the \a from checkpoint and working backward.
+     * If no checkpoints before or at tick are found, returns nullptr.
+     * \param tick Tick to search for
+     * \param from Checkpoint at which to begin searching for a tick.
+     * Must be a valid checkpoint known by this checkpointer.
+     * See hasCheckpoint.
+     * \return The latest checkpoint with a tick number less than or equal
+     * to the \a tick argument. Returns nullptr if no checkpoints before \a
+     * tick were found. It is possible for the checkpoint identified by \a
+     * from could be returned.
+     * \warning This is not a high-performance method. Generally,
+     * a client of this interface knows a paticular ID.
+     * \throw CheckpointError if \a from does not refer to a valid
+     * checkpoint.
+     */
+    std::shared_ptr<DatabaseCheckpoint> findLatestCheckpointAtOrBefore(tick_t tick, chkpt_id_t from);
+
+    /*!
      * \brief Tests whether this checkpoint manager has a checkpoint with
      * the given id in the cache or in the database.
      * \return True if id refers to a checkpoint held by this checkpointer

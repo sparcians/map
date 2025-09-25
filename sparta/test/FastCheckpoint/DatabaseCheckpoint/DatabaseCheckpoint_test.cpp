@@ -66,18 +66,8 @@ public:
     {}
 };
 
-int main()
+void RunCheckpointerTest(uint64_t initial_sched_tick = 0)
 {
-    auto warn_cerr = std::make_unique<sparta::log::Tap>(
-        sparta::TreeNode::getVirtualGlobalNode(),
-        sparta::log::categories::WARN,
-        std::cerr);
-
-    auto warn_file = std::make_unique<sparta::log::Tap>(
-        sparta::TreeNode::getVirtualGlobalNode(),
-        sparta::log::categories::WARN,
-        "warnings.log");
-
     sparta::Scheduler sched;
     RootTreeNode clocks("clocks");
     sparta::Clock clk(&clocks, "clock", &sched);
@@ -122,6 +112,13 @@ int main()
     EXPECT_EQUAL(dbcp.getNumDeltas(), 0);
     EXPECT_TRUE(dbcp.getCheckpointChain(0).empty());
 
+    // Advance the scheduler before taking the head checkpoint
+    if (initial_sched_tick > 0) {
+        sched.run(initial_sched_tick, true, false);
+    }
+    auto initial_tick = sched.getCurrentTick();
+    EXPECT_EQUAL(initial_tick, initial_sched_tick);
+
     // CHECKPOINT: Head
     DatabaseCheckpointer::chkpt_id_t head_id;
     EXPECT_NOTHROW(dbcp.createHead());
@@ -129,7 +126,7 @@ int main()
     EXPECT_NOTEQUAL(dbcp.getHead(), nullptr);
     EXPECT_EQUAL(head_id, dbcp.getHead()->getID());
     EXPECT_EQUAL(dbcp.getCurrentID(), head_id);
-    EXPECT_EQUAL(dbcp.getCurrentTick(), 0);
+    EXPECT_EQUAL(dbcp.getCurrentTick(), initial_tick);
     EXPECT_TRUE(dbcp.isSnapshot(head_id));
 
     std::cout << dbcp.stringize() << std::endl;
@@ -176,7 +173,7 @@ int main()
         EXPECT_EQUAL(dbcp.getCurrentID(), id);
         EXPECT_EQUAL(dbcp.getNumCheckpoints(), id + 1);
         EXPECT_FALSE(dbcp.hasCheckpoint(id + 1));
-        EXPECT_EQUAL(sched.getCurrentTick(), id);
+        EXPECT_EQUAL(sched.getCurrentTick(), id + initial_tick);
 
         auto r1_val = r1->read<uint32_t>();
         auto r2_val = r2->read<uint32_t>();
@@ -462,13 +459,13 @@ int main()
     // To check the getCheckpointsAt() method, go back to the head
     // checkpoint. Then take a bunch of checkpoints at tick 1, 2, and 3.
     verif_load_chkpt(head_id);
-    EXPECT_EQUAL(sched.getCurrentTick(), 0);
+    EXPECT_EQUAL(sched.getCurrentTick(), initial_tick);
 
     std::vector<DatabaseCheckpointer::chkpt_id_t> chkpts_at_1;
     for (uint32_t i = 1; i <= 300; ++i) {
         const bool step_sched = (i == 1);
         auto id = step_checkpointer(i, step_sched);
-        EXPECT_EQUAL(sched.getCurrentTick(), 1);
+        EXPECT_EQUAL(sched.getCurrentTick(), 1 + initial_tick);
         chkpts_at_1.push_back(id);
     }
 
@@ -476,7 +473,7 @@ int main()
     for (uint32_t i = 301; i <= 500; ++i) {
         const bool step_sched = (i == 301);
         auto id = step_checkpointer(i, step_sched);
-        EXPECT_EQUAL(sched.getCurrentTick(), 2);
+        EXPECT_EQUAL(sched.getCurrentTick(), 2 + initial_tick);
         chkpts_at_2.push_back(id);
     }
 
@@ -484,22 +481,41 @@ int main()
     for (uint32_t i = 501; i <= 700; ++i) {
         const bool step_sched = (i == 501);
         auto id = step_checkpointer(i, step_sched);
-        EXPECT_EQUAL(sched.getCurrentTick(), 3);
+        EXPECT_EQUAL(sched.getCurrentTick(), 3 + initial_tick);
         chkpts_at_3.push_back(id);
     }
 
-    EXPECT_EQUAL(dbcp.getCheckpointsAt(1), chkpts_at_1);
-    EXPECT_EQUAL(dbcp.getCheckpointsAt(2), chkpts_at_2);
-    EXPECT_EQUAL(dbcp.getCheckpointsAt(3), chkpts_at_3);
+    EXPECT_EQUAL(dbcp.getCheckpointsAt(1 + initial_tick), chkpts_at_1);
+    EXPECT_EQUAL(dbcp.getCheckpointsAt(2 + initial_tick), chkpts_at_2);
+    EXPECT_EQUAL(dbcp.getCheckpointsAt(3 + initial_tick), chkpts_at_3);
 
     // Wait for the older checkpoints to be evicted and
     // verify getCheckpointsAt() again.
     wait_until_evicted(chkpts_at_1.back());
     wait_until_evicted(chkpts_at_2.back());
 
-    EXPECT_EQUAL(dbcp.getCheckpointsAt(1), chkpts_at_1);
-    EXPECT_EQUAL(dbcp.getCheckpointsAt(2), chkpts_at_2);
-    EXPECT_EQUAL(dbcp.getCheckpointsAt(3), chkpts_at_3);
+    EXPECT_EQUAL(dbcp.getCheckpointsAt(1 + initial_tick), chkpts_at_1);
+    EXPECT_EQUAL(dbcp.getCheckpointsAt(2 + initial_tick), chkpts_at_2);
+    EXPECT_EQUAL(dbcp.getCheckpointsAt(3 + initial_tick), chkpts_at_3);
+
+    // Verify the findLatestCheckpointAtOrBefore() method.
+    // Valid tick (2), invalid ID (9999)
+    EXPECT_THROW(dbcp.findLatestCheckpointAtOrBefore(2, 9999));
+
+    // Valid ID (1), but tick is before the head checkpoint
+    if (initial_sched_tick > 0) {
+        EXPECT_EQUAL(dbcp.findLatestCheckpointAtOrBefore(initial_sched_tick - 1, 1), nullptr);
+    }
+
+    // Valid tick (2), valid ID
+    EXPECT_NOTHROW(chkpt = dbcp.findLatestCheckpointAtOrBefore(2 + initial_sched_tick, chkpts_at_2.back()));
+    EXPECT_EQUAL(chkpt->getID(), chkpts_at_2.back());
+    EXPECT_EQUAL(chkpt->getTick(), 2 + initial_sched_tick);
+
+    // Valid tick (2), valid ID
+    EXPECT_NOTHROW(chkpt = dbcp.findLatestCheckpointAtOrBefore(2 + initial_sched_tick, chkpts_at_3.back()));
+    EXPECT_EQUAL(chkpt->getID(), chkpts_at_2.back());
+    EXPECT_EQUAL(chkpt->getTick(), 2 + initial_sched_tick);
 
     // Verify that the head checkpoint is in the cache until simulation teardown.
     EXPECT_TRUE(dbcp.isCheckpointCached(head_id));
@@ -511,6 +527,27 @@ int main()
 
     // Ensure that the head checkpoint is no longer in the cache
     EXPECT_FALSE(dbcp.isCheckpointCached(head_id));
+}
+
+int main()
+{
+    auto warn_cerr = std::make_unique<sparta::log::Tap>(
+        sparta::TreeNode::getVirtualGlobalNode(),
+        sparta::log::categories::WARN,
+        std::cerr);
+
+    auto warn_file = std::make_unique<sparta::log::Tap>(
+        sparta::TreeNode::getVirtualGlobalNode(),
+        sparta::log::categories::WARN,
+        "warnings.log");
+
+    // Run the test with initial scheduler tick = 0,
+    // i.e. head checkpoint at tick 0
+    RunCheckpointerTest(0);
+
+    // Run the test with initial scheduler tick = 10,
+    // i.e. head checkpoint at tick 10
+    RunCheckpointerTest(10);
 
     REPORT_ERROR;
     return ERROR_CODE;
