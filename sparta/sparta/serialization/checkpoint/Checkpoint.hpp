@@ -2,21 +2,10 @@
 
 #pragma once
 
-#include <iostream>
-#include <sstream>
-
-#include "sparta/functional/ArchData.hpp"
-#include "sparta/utils/SpartaException.hpp"
-#include "sparta/utils/SpartaAssert.hpp"
-#include "sparta/kernel/Scheduler.hpp"
-
-#include "sparta/serialization/checkpoint/CheckpointExceptions.hpp"
-
+#include "sparta/serialization/checkpoint/CheckpointBase.hpp"
 
 namespace sparta::serialization::checkpoint
 {
-    class FastCheckpointer;
-
     /*!
      * \brief Single checkpoint object interface with a tick number and an ID
      * unique to the owning Checkpointer instance
@@ -25,34 +14,9 @@ namespace sparta::serialization::checkpoint
      * checkpoint data in memory or on disk at construction which can be
      * restored with load()
      */
-    class Checkpoint
+    class Checkpoint : public CheckpointBase
     {
     public:
-
-        //! \name Local Types
-        //! @{
-        ////////////////////////////////////////////////////////////////////////
-
-        //! \brief tick_t Tick type to which checkpoints will refer
-        typedef sparta::Scheduler::Tick tick_t;
-
-        //! \brief tick_t Tick type to which checkpoints will refer
-        typedef uint64_t chkpt_id_t;
-
-        ////////////////////////////////////////////////////////////////////////
-        //! @}
-
-        /*!
-         * \brief Indicates the smallest valid checkpoint id
-         */
-        static const chkpt_id_t MIN_CHECKPOINT = 0;
-
-        /*!
-         * \brief Indicates unidentified checkpoint (could mean 'invalid' or
-         * 'any') depending on context
-         */
-        static const chkpt_id_t UNIDENTIFIED_CHECKPOINT = ~(chkpt_id_t)0;
-
 
         //! \name Construction & Initialization
         //! @{
@@ -65,7 +29,13 @@ namespace sparta::serialization::checkpoint
         Checkpoint(const Checkpoint&) = delete;
 
         //! \brief Non-assignable
-        const Checkpoint& operator=(const Checkpoint&) = delete;
+        Checkpoint& operator=(const Checkpoint&) = delete;
+
+        //! \brief Not move constructable
+        Checkpoint(Checkpoint&&) = delete;
+
+        //! \brief Not move assignable
+        Checkpoint& operator=(Checkpoint&&) = delete;
 
     protected:
 
@@ -75,18 +45,14 @@ namespace sparta::serialization::checkpoint
         Checkpoint(chkpt_id_t id,
                    tick_t tick,
                    Checkpoint* prev) :
-            tick_(tick),
-            chkpt_id_(id),
+            CheckpointBase(id, tick),
             prev_(prev)
         { }
 
     public:
 
-
         /*!
-         * \brief Destructor
-         *
-         * Removes this checkpoint from the chain and patches chain between prev
+         * \brief Removes this checkpoint from the chain and patches chain between prev
          * and each item in the nexts list
          */
         virtual ~Checkpoint() {
@@ -101,71 +67,10 @@ namespace sparta::serialization::checkpoint
                     getPrev()->addNext(d);
                 }
             }
-
         }
 
         ////////////////////////////////////////////////////////////////////////
         //! @}
-
-        /*!
-         * \brief Returns a string describing this object
-         */
-        virtual std::string stringize() const {
-            std::stringstream ss;
-            ss << "<Checkpoint id=" << chkpt_id_ << " at t=" << tick_;
-            ss << ' ' << getTotalMemoryUse()/1000.0f << "kB (" << getContentMemoryUse()/1000.0f << "kB Data)";
-            ss << '>';
-            return ss.str();
-        }
-
-        /*!
-         * \brief Writes all checkpoint raw data to an ostream
-         * \param o ostream to which raw data will be written
-         * \note No newlines or other extra characters will be appended
-         */
-        virtual void dumpData(std::ostream& o) const = 0;
-
-        /*!
-         * \brief Returns memory usage by this checkpoint including any
-         * framework data structures
-         */
-        virtual uint64_t getTotalMemoryUse() const noexcept = 0;
-
-        /*!
-         * \brief Returns memory usage by this checkpoint solely for the
-         * checkpointed content.
-         */
-        virtual uint64_t getContentMemoryUse() const noexcept = 0;
-
-        //! \name Checkpoint Actions
-        //! @{
-        ////////////////////////////////////////////////////////////////////////
-
-        /*!
-         * \brief Attempts to restore this checkpoint state to the simulation
-         * state (ArchData) objects given to this Checkpoint at construction
-         */
-        virtual void load(const std::vector<ArchData*>& dats) = 0;
-
-        /*!
-         * \brief Returns the tick number at which this checkpoint was taken.
-         */
-        tick_t getTick() const noexcept { return tick_; }
-
-        /*!
-         * \brief Returns the ID of this checkpoint
-         * \note Number has no sequential meaning - it is effectively a random
-         * ID.
-         */
-        chkpt_id_t getID() const noexcept { return chkpt_id_; }
-
-        /*!
-         * \brief Gets the representation of this deleted checkpoint as part of
-         * a checkpoint chain (if that checkpointer supports deletion)
-         */
-        virtual std::string getDeletedRepr() const {
-            return "*";
-        }
 
         /*!
          * \brief Returns the previous checkpoint. If this checkpoint is a
@@ -177,12 +82,20 @@ namespace sparta::serialization::checkpoint
 
         /*!
          * \brief Sets the previous checkpoint of this checkpoint to \a prev
-         * \param prev New previou checkpoint. Overwrites previous
+         * \param prev New previous checkpoint. Overwrites previous
          * This will often be accompanied by a call to addNext on the
          * \a prev argument
          */
         void setPrev(Checkpoint* prev) noexcept {
             prev_ = prev;
+        }
+
+        /*!
+         * \brief Get the ID of our previous checkpoint. Returns UNIDENTIFIED_CHECKPOINT
+         * only for the head checkpoint.
+         */
+        chkpt_id_t getPrevID() const override {
+            return prev_ ? prev_->getID() : UNIDENTIFIED_CHECKPOINT;
         }
 
         /*!
@@ -242,22 +155,22 @@ namespace sparta::serialization::checkpoint
          */
         const std::vector<Checkpoint*>& getNexts() const noexcept { return nexts_; }
 
+        /*!
+         * \brief Returns next checkpoint following *this. May be an empty
+         * vector if there are no later checkpoints.
+         */
+        std::vector<chkpt_id_t> getNextIDs() const override {
+            std::vector<chkpt_id_t> next_ids;
+            for (const auto chkpt : getNexts()) {
+                next_ids.push_back(chkpt->getID());
+            }
+            return next_ids;
+        }
+
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
-    protected:
-
-        /*!
-         * \brief Sets the checkpoint ID.
-         */
-        void setID_(chkpt_id_t id) {
-            chkpt_id_ = id;
-        }
-
     private:
-
-        const tick_t tick_; //!< Tick number for this checkpoint.
-        chkpt_id_t chkpt_id_; //!< This checkpoint's ID. Guaranteed to be unique from other checkpoints'
 
         /*!
          * \brief Next checkpoint (later tick numbers in same forward stream of
@@ -270,27 +183,3 @@ namespace sparta::serialization::checkpoint
     };
 
 } // namespace sparta::serialization::checkpoint
-
-
-//! ostream insertion operator for Checkpoint
-inline std::ostream& operator<<(std::ostream& o, const sparta::serialization::checkpoint::Checkpoint& dcp){
-    o << dcp.stringize();
-    return o;
-}
-
-//! ostream insertion operator for Checkpoint
-inline std::ostream& operator<<(std::ostream& o, const sparta::serialization::checkpoint::Checkpoint* dcp){
-    if(dcp == 0){
-        o << "null";
-    }else{
-        o << dcp->stringize();
-    }
-    return o;
-}
-
-//! \brief Required in simulator source to define some globals.
-#define SPARTA_CHECKPOINT_BODY                                            \
-    namespace sparta{ namespace serialization { namespace checkpoint {    \
-        const Checkpoint::chkpt_id_t Checkpoint::MIN_CHECKPOINT;        \
-        const Checkpoint::chkpt_id_t Checkpoint::UNIDENTIFIED_CHECKPOINT; \
-    }}}
