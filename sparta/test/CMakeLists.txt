@@ -6,24 +6,6 @@ include (CTest)
 # Convenience macros and functions for tests
 include(${SPARTA_CMAKE_MACRO_PATH}/SpartaTestingMacros.cmake)
 
-# Setup options for valgrind testing.
-find_program (VALGRIND_TOOL valgrind)
-if (VALGRIND_TOOL)
-  message(STATUS "Valgrind enabled: ${VALGRIND_TOOL})")
-  set(VALGRIND_REGRESS_ENABLED TRUE)
-  set (VALGRIND_OPTS
-    "--error-exitcode=5"
-    "--leak-check=full"
-    "--show-reachable=yes"
-    "--undef-value-errors=yes"
-    "--suppressions=${SPARTA_BASE}/test/valgrind_leakcheck.supp"
-    "--soname-synonyms=somalloc=NONE"
-    )
-  set (VALGRIND_TEST_LABEL valgrind_test)
-else()
-  message(STATUS "valgrind testing NOT enabled")
-endif()
-
 # Since make does not pass the parallel jobs flag to ctest from the user,
 # a fixed count will be set based on core count w/ a max 8
 include(ProcessorCount)
@@ -62,6 +44,7 @@ add_subdirectory (ContextCounter)
 add_subdirectory (CycleHistogram)
 add_subdirectory (DAG)
 add_subdirectory (DAG_Ordering)
+add_subdirectory (DatabaseCheckpoint)
 add_subdirectory (DataView)
 add_subdirectory (Enum)
 add_subdirectory (Events)
