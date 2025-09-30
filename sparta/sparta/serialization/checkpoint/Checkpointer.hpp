@@ -87,10 +87,7 @@ namespace sparta::serialization::checkpoint
          */
         Checkpointer(TreeNode& root, sparta::Scheduler* sched=nullptr) :
             sched_(sched),
-            root_(root),
-            head_(nullptr),
-            current_(nullptr),
-            total_chkpts_created_(0)
+            root_(root)
         { }
 
         /*!
@@ -742,7 +739,7 @@ namespace sparta::serialization::checkpoint
          * \brief Head checkpoint. This is the first checkpoint taken but cannot
          * be deleted. Head checkpoint memory is owned by checkpointer subclass.
          */
-        CheckpointBase* head_;
+        CheckpointBase* head_ = nullptr;
 
         /*!
          * \brief ArchDatas required to checkpoint for this checkpointiner based
@@ -753,13 +750,13 @@ namespace sparta::serialization::checkpoint
         /*!
          * \brief Most recent checkpoint created or loaded
          */
-        CheckpointBase* current_;
+        CheckpointBase* current_ = nullptr;
 
         /*!
          * \brief Total checkpoint ever created by this instance. Monotonically
          * increasing. Includes the head checkpoint
          */
-        uint64_t total_chkpts_created_;
+        uint64_t total_chkpts_created_ = 0;
     };
 
 } // namespace sparta::serialization::checkpoint
