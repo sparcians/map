@@ -27,6 +27,7 @@ void testPushClearAccess();
 void testStatsOutput();
 void testPopBack();
 void testIteratorOperations();
+void testDecrementWraparoundBug();
 
 struct dummy_struct
 {
@@ -389,6 +390,7 @@ int main()
     testStatsOutput();
     testPopBack();
     testIteratorOperations();
+    testDecrementWraparoundBug();
 
     rtn.enterTeardown();
 #ifdef PIPEOUT_GEN
@@ -771,4 +773,32 @@ void testIteratorOperations()
     // Both increment and decrement should throw
     EXPECT_THROW(++detached_it);
     EXPECT_THROW(--detached_it);
+}
+
+void testDecrementWraparoundBug()
+{
+    // Test decrementing from iterator with physical_index_ = 0 after wraparound
+    // This should work correctly with the proper fix
+    sparta::Queue<uint32_t> queue_test("wraparound_test", 2, nullptr);
+    
+    // Fill to capacity
+    queue_test.push(100);
+    queue_test.push(200);
+    
+    // Pop one element to create space for wraparound
+    queue_test.pop();
+    
+    // Push new element - should wrap around to physical index 0
+    auto it = queue_test.push(300);
+    
+    // Verify the iterator is at logical index 1 (second position)
+    // but at physical index 0 due to wraparound
+    EXPECT_EQUAL(it.getIndex(), 1);
+    EXPECT_EQUAL(*it, 300);
+    
+    // Decrementing from physical index 0 should work correctly
+    --it;
+    EXPECT_TRUE(it.isValid());
+    EXPECT_EQUAL(*it, 200);
+    EXPECT_EQUAL(it.getIndex(), 0);
 }
