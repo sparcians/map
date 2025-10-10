@@ -779,26 +779,34 @@ void testDecrementWraparoundBug()
 {
     // Test decrementing from iterator with physical_index_ = 0 after wraparound
     // This should work correctly with the proper fix
-    sparta::Queue<uint32_t> queue_test("wraparound_test", 2, nullptr);
+    sparta::Queue<uint32_t> queue_test("wraparound_test", 2, nullptr);  // Size 2 -> physical size 4
 
-    // Fill to capacity
-    queue_test.push(100);
-    queue_test.push(200);
+    // Fill to capacity (2 elements)
+    queue_test.push(100);  // physical index 0, logical index 0
+    queue_test.push(200);  // physical index 1, logical index 1
 
-    // Pop one element to create space for wraparound
-    queue_test.pop();
+    // Pop all elements to move head to physical index 2
+    queue_test.pop();  // head now at physical index 1
+    queue_test.pop();  // head now at physical index 2
 
-    // Push new element - should wrap around to physical index 0
-    auto it = queue_test.push(300);
+    // Push new elements to fill the queue again
+    queue_test.push(300);  // physical index 2, logical index 0
+    queue_test.push(400);  // physical index 3, logical index 1
+
+    // Pop elements to move head forward
+    queue_test.pop();  // head now at physical index 3
+
+    // Push new element - this will wrap around to physical index 0
+    auto it = queue_test.push(500);
 
     // Verify the iterator is at logical index 1 (second position)
     // but at physical index 0 due to wraparound
     EXPECT_EQUAL(it.getIndex(), 1);
-    EXPECT_EQUAL(*it, 300);
+    EXPECT_EQUAL(*it, 500);
 
     // Decrementing from physical index 0 should work correctly
     --it;
     EXPECT_TRUE(it.isValid());
-    EXPECT_EQUAL(*it, 200);
+    EXPECT_EQUAL(*it, 400);
     EXPECT_EQUAL(it.getIndex(), 0);
 }
