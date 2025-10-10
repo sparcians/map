@@ -740,7 +740,7 @@ namespace sparta
         template<typename IteratorType>
         void decrementIterator_(IteratorType * itr) const
         {
-            sparta_assert(itr->physical_index_ != 0, name_ <<
+            sparta_assert(itr->isValid() || itr->physical_index_ == invalid_index_, name_ <<
                           ": Iterator is not valid for decrementing");
 
             uint32_t physical_index = itr->physical_index_;
