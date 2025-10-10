@@ -740,10 +740,10 @@ namespace sparta
         template<typename IteratorType>
         void decrementIterator_(IteratorType * itr) const
         {
-            sparta_assert(itr->isValid() || itr->physical_index_ == invalid_index_, name_ <<
-                          ": Iterator is not valid for decrementing");
+            sparta_assert(itr->isAttached_(), name_ << ": Trying to decrement an invalid iterator");
 
             uint32_t physical_index = itr->physical_index_;
+            sparta_assert(physical_index != current_head_idx_, name_ << ": Cannot decrement begin() iterator that already points to oldest element");
 
             // If it's the end iterator, go to the back - 1
             if(SPARTA_EXPECT_FALSE(physical_index == invalid_index_)) {
@@ -752,17 +752,9 @@ namespace sparta
                 itr->obj_id_ = queue_data_[phys_idx].obj_id;
             }
             else {
-                // See if decrementing this iterator puts into the weeds.
-                // If so, invalidate it.
                 physical_index = decrementIndexValue_(physical_index);
-                if(isValidPhysical_(physical_index)) {
-                    itr->physical_index_ = physical_index;
-                    itr->obj_id_ = queue_data_[physical_index].obj_id;
-                }
-                else {
-                    itr->physical_index_ = invalid_index_;
-                    itr->obj_id_ = invalid_index_;
-               }
+                itr->physical_index_ = physical_index;
+                itr->obj_id_ = queue_data_[physical_index].obj_id;
             }
         }
 
