@@ -718,7 +718,7 @@ void testDecrementIterator()
     }
     
     auto it = queue_test.end();
-    EXPECT_TRUE(it.isValid()); // end() should be valid for decrementing
+    EXPECT_FALSE(it.isValid()); // end() is not valid, but can be decremented
     
     // This should trigger the bug: the assertion itr->physical_index_ != 0 
     // should be itr->physical_index_ != invalid_index_
@@ -766,7 +766,7 @@ void testDecrementIteratorEdgeCases()
     // Test 2: Single element queue
     queue_test.push(42);
     auto it_single = queue_test.end();
-    EXPECT_TRUE(it_single.isValid());
+    EXPECT_FALSE(it_single.isValid()); // end() is not valid
     
     --it_single;
     EXPECT_TRUE(it_single.isValid());
@@ -815,7 +815,7 @@ void testDecrementIteratorWrapAround()
     // Physical layout: [10, 11, 2, 3] (wrapped around)
     
     auto it = queue_test.end();
-    EXPECT_TRUE(it.isValid());
+    EXPECT_FALSE(it.isValid()); // end() is not valid
     
     // Decrement through all elements
     --it;
@@ -858,7 +858,7 @@ void testDecrementIteratorInvalidation()
     ++it_mid; ++it_mid; // Point to element 2
     
     // Test that iterators remain valid after decrementing
-    EXPECT_TRUE(it_end.isValid());
+    EXPECT_FALSE(it_end.isValid()); // end() is not valid
     EXPECT_TRUE(it_mid.isValid());
     
     // Decrement end iterator
