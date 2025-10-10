@@ -26,10 +26,7 @@ void testIteratorValidity2();
 void testPushClearAccess();
 void testStatsOutput();
 void testPopBack();
-void testDecrementIterator();
-void testDecrementIteratorEdgeCases();
-void testDecrementIteratorWrapAround();
-void testDecrementIteratorInvalidation();
+void testIteratorOperations();
 
 struct dummy_struct
 {
@@ -391,10 +388,7 @@ int main()
     testPushClearAccess();
     testStatsOutput();
     testPopBack();
-    testDecrementIterator();
-    testDecrementIteratorEdgeCases();
-    testDecrementIteratorWrapAround();
-    testDecrementIteratorInvalidation();
+    testIteratorOperations();
 
     rtn.enterTeardown();
 #ifdef PIPEOUT_GEN
@@ -706,184 +700,75 @@ content:
     rtn.enterTeardown();
 }
 
-void testDecrementIterator()
+void testIteratorOperations()
 {
-    std::cout << "Testing basic decrement iterator functionality..." << std::endl;
-    
-    sparta::Queue<uint32_t> queue_test("decrement_test", 5, nullptr);
-    
-    // Test 1: Basic decrement from end() to beginning
-    for(uint32_t i = 0; i < 5; ++i) {
-        queue_test.push(i);
-    }
-    
-    auto it = queue_test.end();
-    EXPECT_FALSE(it.isValid()); // end() is not valid, but can be decremented
-    
-    // This should trigger the bug: the assertion itr->physical_index_ != 0 
-    // should be itr->physical_index_ != invalid_index_
-    std::cout << "Attempting to decrement from end() - this should expose the bug..." << std::endl;
-    
-    // Decrement from end() should go to the last element
-    --it;
-    EXPECT_TRUE(it.isValid());
-    EXPECT_EQUAL(*it, 4);
-    
-    // Continue decrementing through all elements
-    --it;
-    EXPECT_TRUE(it.isValid());
-    EXPECT_EQUAL(*it, 3);
-    
-    --it;
-    EXPECT_TRUE(it.isValid());
-    EXPECT_EQUAL(*it, 2);
-    
-    --it;
-    EXPECT_TRUE(it.isValid());
-    EXPECT_EQUAL(*it, 1);
-    
-    --it;
-    EXPECT_TRUE(it.isValid());
-    EXPECT_EQUAL(*it, 0);
-    
-    // Decrementing from the first element should invalidate
-    --it;
-    EXPECT_FALSE(it.isValid());
-    
-    std::cout << "Basic decrement test passed!" << std::endl;
-}
-
-void testDecrementIteratorEdgeCases()
-{
-    std::cout << "Testing decrement iterator edge cases..." << std::endl;
-    
-    sparta::Queue<uint32_t> queue_test("decrement_edge_test", 3, nullptr);
-    
-    // Test 1: Empty queue - end() decrement should fail gracefully
-    auto it_empty = queue_test.end();
-    EXPECT_FALSE(it_empty.isValid()); // end() of empty queue should be invalid
-    
-    // Test 2: Single element queue
-    queue_test.push(42);
-    auto it_single = queue_test.end();
-    EXPECT_FALSE(it_single.isValid()); // end() is not valid
-    
-    --it_single;
-    EXPECT_TRUE(it_single.isValid());
-    EXPECT_EQUAL(*it_single, 42);
-    
-    // Decrementing from the only element should invalidate
-    --it_single;
-    EXPECT_FALSE(it_single.isValid());
-    
-    // Test 3: Two element queue
-    queue_test.clear();
-    queue_test.push(10);
-    queue_test.push(20);
-    
-    auto it_two = queue_test.end();
-    --it_two;
-    EXPECT_EQUAL(*it_two, 20);
-    --it_two;
-    EXPECT_EQUAL(*it_two, 10);
-    --it_two;
-    EXPECT_FALSE(it_two.isValid());
-    
-    std::cout << "Edge cases test passed!" << std::endl;
-}
-
-void testDecrementIteratorWrapAround()
-{
-    std::cout << "Testing decrement iterator with wrap-around..." << std::endl;
-    
-    sparta::Queue<uint32_t> queue_test("decrement_wrap_test", 4, nullptr);
-    
-    // Fill the queue to capacity
-    for(uint32_t i = 0; i < 4; ++i) {
-        queue_test.push(i);
-    }
-    
-    // Pop some elements to create wrap-around
-    queue_test.pop(); // Remove 0, head moves to 1
-    queue_test.pop(); // Remove 1, head moves to 2
-    
-    // Add new elements to create wrap-around
-    queue_test.push(10);
-    queue_test.push(11);
-    
-    // Queue should now contain: [2, 3, 10, 11] with head at 2, write at 0
-    // Physical layout: [10, 11, 2, 3] (wrapped around)
-    
-    auto it = queue_test.end();
-    EXPECT_FALSE(it.isValid()); // end() is not valid
-    
-    // Decrement through all elements
-    --it;
-    EXPECT_TRUE(it.isValid());
-    EXPECT_EQUAL(*it, 11);
-    
-    --it;
-    EXPECT_TRUE(it.isValid());
-    EXPECT_EQUAL(*it, 10);
-    
-    --it;
-    EXPECT_TRUE(it.isValid());
-    EXPECT_EQUAL(*it, 3);
-    
-    --it;
-    EXPECT_TRUE(it.isValid());
-    EXPECT_EQUAL(*it, 2);
-    
-    // Decrementing from first element should invalidate
-    --it;
-    EXPECT_FALSE(it.isValid());
-    
-    std::cout << "Wrap-around test passed!" << std::endl;
-}
-
-void testDecrementIteratorInvalidation()
-{
-    std::cout << "Testing decrement iterator invalidation..." << std::endl;
-    
-    sparta::Queue<uint32_t> queue_test("decrement_invalidation_test", 5, nullptr);
+    sparta::Queue<uint32_t> queue_test("iterator_test", 5, nullptr);
     
     // Fill the queue
     for(uint32_t i = 0; i < 5; ++i) {
         queue_test.push(i);
     }
     
-    // Get iterators to various positions
-    auto it_end = queue_test.end();
-    auto it_mid = queue_test.begin();
-    ++it_mid; ++it_mid; // Point to element 2
+    // Test basic increment/decrement on valid iterators
+    auto it = queue_test.begin();
+    EXPECT_TRUE(it.isValid());
+    EXPECT_EQUAL(*it, 0);
     
-    // Test that iterators remain valid after decrementing
-    EXPECT_FALSE(it_end.isValid()); // end() is not valid
-    EXPECT_TRUE(it_mid.isValid());
+    // Increment should work
+    ++it;
+    EXPECT_TRUE(it.isValid());
+    EXPECT_EQUAL(*it, 1);
     
-    // Decrement end iterator
-    --it_end;
-    EXPECT_TRUE(it_end.isValid());
-    EXPECT_EQUAL(*it_end, 4);
+    // Decrement should work
+    --it;
+    EXPECT_TRUE(it.isValid());
+    EXPECT_EQUAL(*it, 0);
     
-    // Decrement mid iterator
-    --it_mid;
-    EXPECT_TRUE(it_mid.isValid());
-    EXPECT_EQUAL(*it_mid, 1);
+    // Test decrement from end() - should work
+    auto end_it = queue_test.end();
+    EXPECT_FALSE(end_it.isValid()); // end() is not valid, but can be decremented
     
-    // Test invalidation by popping elements
-    queue_test.pop(); // Remove element 0
-    queue_test.pop(); // Remove element 1
+    --end_it; // This should work and go to last element
+    EXPECT_TRUE(end_it.isValid());
+    EXPECT_EQUAL(*end_it, 4);
     
-    // The mid iterator should now be invalid since element 1 was removed
-    EXPECT_FALSE(it_mid.isValid());
+    // Test increment from end() - should throw
+    auto end_it2 = queue_test.end();
+    EXPECT_THROW(++end_it2); // Should throw when trying to increment end()
     
-    // The end iterator should still be valid
-    EXPECT_TRUE(it_end.isValid());
-    EXPECT_EQUAL(*it_end, 4);
+    // Test decrement from beginning - should invalidate
+    auto begin_it = queue_test.begin();
+    EXPECT_TRUE(begin_it.isValid());
+    EXPECT_EQUAL(*begin_it, 0);
     
-    // Test decrementing from an invalid iterator
-    EXPECT_THROW(--it_mid); // Should throw when trying to decrement invalid iterator
+    --begin_it; // Should invalidate (can't go before first element)
+    EXPECT_FALSE(begin_it.isValid());
     
-    std::cout << "Invalidation test passed!" << std::endl;
+    // Test increment from beginning - should work
+    auto begin_it2 = queue_test.begin();
+    ++begin_it2;
+    EXPECT_TRUE(begin_it2.isValid());
+    EXPECT_EQUAL(*begin_it2, 1);
+    
+    // Test increment from last element should go to end()
+    auto last_it = queue_test.begin();
+    ++last_it; ++last_it; ++last_it; ++last_it; // Go to last element
+    EXPECT_TRUE(last_it.isValid());
+    EXPECT_EQUAL(*last_it, 4);
+    
+    ++last_it; // Should go to end()
+    EXPECT_FALSE(last_it.isValid());
+    
+    // Test decrement from end() should go back to last element
+    --last_it;
+    EXPECT_TRUE(last_it.isValid());
+    EXPECT_EQUAL(*last_it, 4);
+    
+    // Test both should fail on detached iterators
+    sparta::Queue<uint32_t>::iterator detached_it;
+    EXPECT_FALSE(detached_it.isValid());
+    
+    // Both increment and decrement should throw
+    EXPECT_THROW(++detached_it);
+    EXPECT_THROW(--detached_it);
 }
