@@ -452,8 +452,21 @@ private:
     //! \brief SimDB instance.
     simdb::DatabaseManager* db_mgr_ = nullptr;
 
+    //! \brief Async DB accessor for high-priority DB work.
+    simdb::pipeline::AsyncDatabaseAccessor* db_accessor_ = nullptr;
+
     //! \brief Checkpoint pipeline flusher.
     std::unique_ptr<simdb::pipeline::RunnableFlusher> pipeline_flusher_;
+
+    //! \brief Set prior to RunnableFlusher snooper. This is the window ID we are
+    //! looking for throughout the whole pipeline (fast) before we just query the
+    //! database and recreate the checkpoints (slow).
+    utils::ValidValue<uint64_t> snoop_win_id_;
+
+    //! \brief Copy of checkpoint window we found in the pipeline during snooping.
+    //! We have to take a copy because the original might be destroyed (e.g. boost
+    //! serialized or zlib compressed) by the time we get around to using it.
+    checkpoint_ptrs snooped_window_;
 
     //! \brief Snapshot generation threshold. Every n checkpoints in a chain
     //! are taken as snapshots instead of deltas.

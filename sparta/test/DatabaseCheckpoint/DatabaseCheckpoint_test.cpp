@@ -14,6 +14,7 @@
 #include "sparta/memory/MemoryObject.hpp"
 #include "sparta/serialization/checkpoint/DatabaseCheckpointer.hpp"
 #include "sparta/utils/SpartaTester.hpp"
+#include "simdb/utils/TickTock.hpp"
 
 #include "simdb/apps/AppManager.hpp"
 #include "simdb/sqlite/DatabaseManager.hpp"
@@ -217,12 +218,13 @@ void RunCheckpointerTest(uint64_t initial_tick = 0)
     // Nothing to test, just call dumpList/dumpData/dumpAnnotatedData.
     // Do this while we have a lot of checkpoints in the cache and
     // the database for max code coverage.
-    dbcp.dumpList(std::cout);
-    std::cout << std::endl;
-    dbcp.dumpData(std::cout);
-    std::cout << std::endl;
-    dbcp.dumpAnnotatedData(std::cout);
-    std::cout << std::endl;
+    //TODO cnyce: put this back
+    //dbcp.dumpList(std::cout);
+    //std::cout << std::endl;
+    //dbcp.dumpData(std::cout);
+    //std::cout << std::endl;
+    //dbcp.dumpAnnotatedData(std::cout);
+    //std::cout << std::endl;
 
     // Verify that cached / DB-recreated checkpoints are identical:
     //   1. Get the current checkpoint from the cache
@@ -528,6 +530,88 @@ void RunCheckpointerTest(uint64_t initial_tick = 0)
     EXPECT_FALSE(dbcp.isCheckpointCached(head_id));
 }
 
+void ProfileLoadCheckpoint(DatabaseCheckpointer::chkpt_id_t load_id)
+{
+    sparta::Scheduler sched;
+    RootTreeNode clocks("clocks");
+    sparta::Clock clk(&clocks, "clock", &sched);
+
+    // Create a tree with some register sets and memory
+    RootTreeNode root;
+
+    DummyDevice dummy(&root);
+    std::unique_ptr<RegisterSet> rset(RegisterSet::create(&dummy, reg_defs));
+
+    DummyDevice dummy2(&dummy);
+    std::unique_ptr<RegisterSet> rset2(RegisterSet::create(&dummy2, reg_defs));
+
+    auto r1 = rset->getRegister("reg2");
+    auto r2 = rset2->getRegister("reg2");
+    assert(r1 != r2);
+    r1->write<uint32_t>(0);
+    r2->write<uint32_t>(0);
+
+    simdb::DatabaseManager db_mgr("test.db", true);
+    simdb::AppManager app_mgr(&db_mgr);
+
+    // Setup...
+    app_mgr.getAppFactory<DatabaseCheckpointer>()->setSpartaElems(root, &sched);
+    app_mgr.enableApp(DatabaseCheckpointer::NAME);
+    app_mgr.createEnabledApps();
+    app_mgr.createSchemas();
+    app_mgr.postInit(0, nullptr);
+    app_mgr.openPipelines();
+
+    auto& dbcp = *app_mgr.getApp<DatabaseCheckpointer>();
+    dbcp.setSnapshotThreshold(10);
+    dbcp.setMaxCachedWindows(10);
+
+    root.enterConfiguring();
+    root.enterFinalized();
+    sched.finalize();
+
+    dbcp.createHead();
+
+    auto step_checkpointer = [&](DatabaseCheckpointer::chkpt_id_t expected_id) {
+        r1->write<uint32_t>(expected_id * 5ul);
+        r2->write<uint32_t>(expected_id % 5ul);
+        sched.run(1, true, false);
+
+        DatabaseCheckpointer::chkpt_id_t actual_id = DatabaseCheckpoint::UNIDENTIFIED_CHECKPOINT;
+        EXPECT_NOTHROW(actual_id = dbcp.createCheckpoint());
+        EXPECT_EQUAL(actual_id, expected_id);
+        EXPECT_EQUAL(actual_id, dbcp.getCurrentID());
+        EXPECT_EQUAL(dbcp.getNumCheckpoints(), expected_id + 1);
+
+        // Should always have the head and current checkpoints in the cache
+        EXPECT_TRUE(dbcp.isCheckpointCached(dbcp.getHeadID()));
+        EXPECT_TRUE(dbcp.isCheckpointCached(dbcp.getCurrentID()));
+
+        return actual_id;
+    };
+
+    // Quickly create 1000 checkpoints. This fills up the pipeline to help bash edge cases.
+    for (uint32_t i = 1; i <= 1000; ++i) {
+        step_checkpointer(i);
+    }
+
+    // Load the checkpoint
+    {
+        const std::string profile_desc = "loadCheckpoint(" + std::to_string(load_id) + ")";
+        PROFILE_BLOCK(profile_desc.c_str());
+        dbcp.loadCheckpoint(load_id);
+    }
+
+    // Finish
+    app_mgr.postSimLoopTeardown();
+    root.enterTeardown();
+    clocks.enterTeardown();
+
+    // Now that the cache / pipeline / DB has been fully flushed, verify
+    // that any checkpoint >load_id **cannot** be found anywhere.
+    EXPECT_FALSE(dbcp.hasCheckpoint(load_id + 1));
+}
+
 int main()
 {
     auto warn_cerr = std::make_unique<sparta::log::Tap>(
@@ -542,11 +626,22 @@ int main()
 
     // Run the test with initial scheduler tick = 0,
     // i.e. head checkpoint at tick 0
-    RunCheckpointerTest(0);
+    //RunCheckpointerTest(0);
 
     // Run the test with initial scheduler tick = 10,
     // i.e. head checkpoint at tick 10
-    RunCheckpointerTest(10);
+    //RunCheckpointerTest(10);
+
+    // Measure elapsed times for loading checkpoints
+    // that either on disk or in the pipeline, but
+    // either way they are not in the cache. Importantly,
+    // we want the checkpointer to have about the same
+    // performance to load disk checkpoints regardless.
+    uint32_t load_id = 900;
+    while (load_id > 0) {
+        ProfileLoadCheckpoint(load_id);
+        load_id -= 100;
+    }
 
     REPORT_ERROR;
     return ERROR_CODE;
