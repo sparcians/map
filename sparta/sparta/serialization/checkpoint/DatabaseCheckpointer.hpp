@@ -460,14 +460,14 @@ private:
     //! \brief Checkpoint pipeline flusher.
     std::unique_ptr<simdb::pipeline::RunnableFlusher> pipeline_flusher_;
 
-    //! \brief Set prior to RunnableFlusher snooper. This is the window ID we are
-    //! looking for throughout the whole pipeline (fast) before we just query the
-    //! database and recreate the checkpoints (slow).
-    utils::ValidValue<uint64_t> snoop_win_id_;
+    //! \brief This is the window ID we are looking for throughout the whole
+    //! pipeline during a RunnableFlusher snoop operation (fast). If not found
+    //! in the pipeline task queues, we will have to query the database and
+    //! recreate the checkpoints ourselves (slow).
+    utils::ValidValue<window_id_t> snoop_win_id_for_retrieval_;
 
     //! \brief Copy of checkpoint window we found in the pipeline during snooping.
-    //! We have to take a copy because the original might be destroyed (e.g. boost
-    //! serialized or zlib compressed) by the time we get around to using it.
+    //! Used together with snoop_win_id_for_retrieval_.
     checkpoint_ptrs snooped_window_;
 
     //! \brief Snapshot generation threshold. Every n checkpoints in a chain
