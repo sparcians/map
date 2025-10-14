@@ -470,6 +470,11 @@ private:
     //! Used together with snoop_win_id_for_retrieval_.
     checkpoint_ptrs snooped_window_;
 
+    //! \brief This is the checkpoint ID we are looking for during a deleteCheckpoint_()
+    //! operation. All checkpoints from this ID to the most recent will be deleted from
+    //! the pipeline.
+    utils::ValidValue<chkpt_id_t> snoop_chkpt_id_for_deletion_;
+
     //! \brief Snapshot generation threshold. Every n checkpoints in a chain
     //! are taken as snapshots instead of deltas.
     utils::ValidValue<uint32_t> snap_thresh_;

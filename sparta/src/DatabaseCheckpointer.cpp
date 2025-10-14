@@ -147,92 +147,129 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
         *db_mgr_, create_window, window_to_bytes, zlib_bytes, write_to_db);
 
     // Assign snoopers to allow us to "peek" into the pipeline to retrieve
-    // copies of checkpoint windows as they are being processed. This is
-    // an optimization to avoid having to flush the entire pipeline just
-    // to run a query for a window that might still be in memory.
+    // copies of checkpoint windows or delete checkpoints as they are being
+    // processed. This is an optimization to avoid having to flush the entire
+    // pipeline just to run a query for a window that might still be in memory.
     // -------------------------------------------------------------------------------
-    pipeline_flusher_->assignQueueItemSnooper<checkpoint_ptrs>(
+    pipeline_flusher_->assignQueueSnooper<checkpoint_ptrs>(
         *create_window,
-        [this](const checkpoint_ptrs& chkpts) -> simdb::SnooperCallbackOutcome
+        [this](std::deque<checkpoint_ptrs>& queue) -> simdb::SnooperCallbackOutcome
         {
-            sparta_assert(snoop_win_id_for_retrieval_.isValid(),
-                          "Snooper called but we are not awaiting any window ID");
+            if (snoop_win_id_for_retrieval_.isValid()) {
+                for (const auto& chkpts : queue) {
+                    sparta_assert(!chkpts.empty(),
+                                  "Checkpoint window cannot be empty");
 
-            auto start_win_id = getWindowID_(chkpts.front()->getID());
-            auto end_win_id = getWindowID_(chkpts.back()->getID());
-            sparta_assert(start_win_id == end_win_id,
-                          "Checkpoint window has inconsistent window IDs");
+                    auto start_win_id = getWindowID_(chkpts.front()->getID());
+                    auto end_win_id = getWindowID_(chkpts.back()->getID());
+                    sparta_assert(start_win_id == end_win_id,
+                                  "Checkpoint window has inconsistent window IDs");
 
-            if (start_win_id == snoop_win_id_for_retrieval_.getValue()) {
-                // Checkpoints haven't been altered yet - take as is
-                snooped_window_ = chkpts;
-                return simdb::SnooperCallbackOutcome::FOUND_STOP;
+                    if (start_win_id == snoop_win_id_for_retrieval_.getValue()) {
+                        // Checkpoints haven't been altered yet - take as is
+                        snooped_window_ = chkpts;
+                        snoop_win_id_for_retrieval_.clearValid();
+                        return simdb::SnooperCallbackOutcome::FOUND_STOP;
+                    }
+                }
+                return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
             }
+
+            sparta_assert(snoop_chkpt_id_for_deletion_.isValid(),
+                          "Snooper called but we are not set up to snoop any checkpoint ID or window ID");
+
+            // TODO cnyce
             return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
         }
     );
 
-    pipeline_flusher_->assignQueueItemSnooper<ChkptWindow>(
+    pipeline_flusher_->assignQueueSnooper<ChkptWindow>(
         *window_to_bytes,
-        [this](const ChkptWindow& window) -> simdb::SnooperCallbackOutcome
+        [this](std::deque<ChkptWindow>& queue) -> simdb::SnooperCallbackOutcome
         {
-            sparta_assert(snoop_win_id_for_retrieval_.isValid(),
-                          "Snooper called but we are not awaiting any window ID");
+            if (snoop_win_id_for_retrieval_.isValid()) {
+                for (const auto& window : queue) {
+                    auto start_win_id = getWindowID_(window.start_chkpt_id);
+                    auto end_win_id = getWindowID_(window.end_chkpt_id);
+                    sparta_assert(start_win_id == end_win_id,
+                                  "Checkpoint window has inconsistent window IDs");
 
-            auto start_win_id = getWindowID_(window.start_chkpt_id);
-            auto end_win_id = getWindowID_(window.end_chkpt_id);
-            sparta_assert(start_win_id == end_win_id,
-                          "Checkpoint window has inconsistent window IDs");
-
-            if (start_win_id == snoop_win_id_for_retrieval_.getValue()) {
-                // Checkpoints haven't been serialized yet - take as is
-                snooped_window_ = window.chkpts;
-                return simdb::SnooperCallbackOutcome::FOUND_STOP;
+                    if (start_win_id == snoop_win_id_for_retrieval_.getValue()) {
+                        // Checkpoints haven't been serialized yet - take as is
+                        snooped_window_ = window.chkpts;
+                        snoop_win_id_for_retrieval_.clearValid();
+                        return simdb::SnooperCallbackOutcome::FOUND_STOP;
+                    }
+                }
+                return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
             }
+
+            sparta_assert(snoop_chkpt_id_for_deletion_.isValid(),
+                          "Snooper called but we are not set up to snoop any checkpoint ID or window ID");
+
+            // TODO cnyce
             return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
         }
     );
 
-    pipeline_flusher_->assignQueueItemSnooper<ChkptWindowBytes>(
+    pipeline_flusher_->assignQueueSnooper<ChkptWindowBytes>(
         *zlib_bytes,
-        [this](const ChkptWindowBytes& bytes) -> simdb::SnooperCallbackOutcome
+        [this](std::deque<ChkptWindowBytes>& queue) -> simdb::SnooperCallbackOutcome
         {
-            sparta_assert(snoop_win_id_for_retrieval_.isValid(),
-                          "Snooper called but we are not awaiting any window ID");
+            if (snoop_win_id_for_retrieval_.isValid()) {
+                for (const auto& window : queue) {
+                    auto start_win_id = getWindowID_(window.start_chkpt_id);
+                    auto end_win_id = getWindowID_(window.end_chkpt_id);
+                    sparta_assert(start_win_id == end_win_id,
+                                  "Checkpoint window has inconsistent window IDs");
 
-            auto start_win_id = getWindowID_(bytes.start_chkpt_id);
-            auto end_win_id = getWindowID_(bytes.end_chkpt_id);
-            sparta_assert(start_win_id == end_win_id,
-                          "Checkpoint window has inconsistent window IDs");
-
-            if (start_win_id == snoop_win_id_for_retrieval_.getValue()) {
-                // Undo boost::serialization (zlib decompression has not happened yet;
-                // recall that we are snooping the zlib task's input queue)
-                constexpr bool requires_decompression = false;
-                snooped_window_ = deserializeWindow_(bytes.chkpt_bytes, requires_decompression)->chkpts;
-                return simdb::SnooperCallbackOutcome::FOUND_STOP;
+                    if (start_win_id == snoop_win_id_for_retrieval_.getValue()) {
+                        // Undo boost::serialization, keeping in mind that zlib compression
+                        // has not yet been performed (we are snooping the zlib task's input
+                        // queue so these windows haven't made it to that task yet)
+                        constexpr bool requires_decompression = false;
+                        snooped_window_ = deserializeWindow_(window.chkpt_bytes, requires_decompression)->chkpts;
+                        snoop_win_id_for_retrieval_.clearValid();
+                        return simdb::SnooperCallbackOutcome::FOUND_STOP;
+                    }
+                }
+                return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
             }
+
+            sparta_assert(snoop_chkpt_id_for_deletion_.isValid(),
+                          "Snooper called but we are not set up to snoop any checkpoint ID or window ID");
+
+            // TODO cnyce
             return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
         }
     );
 
-    pipeline_flusher_->assignQueueItemSnooper<ChkptWindowBytes>(
+    pipeline_flusher_->assignQueueSnooper<ChkptWindowBytes>(
         *write_to_db,
-        [this](const ChkptWindowBytes& bytes) -> simdb::SnooperCallbackOutcome
+        [this](std::deque<ChkptWindowBytes>& queue) -> simdb::SnooperCallbackOutcome
         {
-            sparta_assert(snoop_win_id_for_retrieval_.isValid(),
-                          "Snooper called but we are not awaiting any window ID");
+            if (snoop_win_id_for_retrieval_.isValid()) {
+                for (const auto& window : queue) {
+                    auto start_win_id = getWindowID_(window.start_chkpt_id);
+                    auto end_win_id = getWindowID_(window.end_chkpt_id);
+                    sparta_assert(start_win_id == end_win_id,
+                                  "Checkpoint window has inconsistent window IDs");
 
-            auto start_win_id = getWindowID_(bytes.start_chkpt_id);
-            auto end_win_id = getWindowID_(bytes.end_chkpt_id);
-            sparta_assert(start_win_id == end_win_id,
-                          "Checkpoint window has inconsistent window IDs");
-
-            if (start_win_id == snoop_win_id_for_retrieval_.getValue()) {
-                // Undo zlib compression and boost::serialization
-                snooped_window_ = deserializeWindow_(bytes.chkpt_bytes)->chkpts;
-                return simdb::SnooperCallbackOutcome::FOUND_STOP;
+                    if (start_win_id == snoop_win_id_for_retrieval_.getValue()) {
+                        // Undo zlib compression and boost::serialization
+                        constexpr bool requires_decompression = true;
+                        snooped_window_ = deserializeWindow_(window.chkpt_bytes, requires_decompression)->chkpts;
+                        snoop_win_id_for_retrieval_.clearValid();
+                        return simdb::SnooperCallbackOutcome::FOUND_STOP;
+                    }
+                }
+                return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
             }
+
+            sparta_assert(snoop_chkpt_id_for_deletion_.isValid(),
+                          "Snooper called but we are not set up to snoop any checkpoint ID or window ID");
+
+            // TODO cnyce
             return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
         }
     );
@@ -946,6 +983,7 @@ std::vector<std::shared_ptr<DatabaseCheckpoint>> DatabaseCheckpointer::getWindow
 
     if (outcome.found)
     {
+        sparta_assert(!snoop_win_id_for_retrieval_.isValid());
         sparta_assert(!snooped_window_.empty());
         return std::move(snooped_window_);
     }
