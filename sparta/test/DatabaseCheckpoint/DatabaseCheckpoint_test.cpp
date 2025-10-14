@@ -626,11 +626,11 @@ int main()
 
     // Run the test with initial scheduler tick = 0,
     // i.e. head checkpoint at tick 0
-    //RunCheckpointerTest(0);
+    RunCheckpointerTest(0);
 
     // Run the test with initial scheduler tick = 10,
     // i.e. head checkpoint at tick 10
-    //RunCheckpointerTest(10);
+    RunCheckpointerTest(10);
 
     // Measure elapsed times for loading checkpoints
     // that either on disk or in the pipeline, but

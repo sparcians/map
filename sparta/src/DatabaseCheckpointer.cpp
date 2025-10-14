@@ -146,9 +146,9 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
     pipeline_flusher_ = std::make_unique<simdb::pipeline::RunnableFlusher>(
         *db_mgr_, create_window, window_to_bytes, zlib_bytes, write_to_db);
 
-    pipeline_flusher_->assignSnooper<checkpoint_ptrs>(
+    pipeline_flusher_->assignQueueItemSnooper<checkpoint_ptrs>(
         *create_window,
-        [this](const checkpoint_ptrs& chkpts) -> simdb::QueueItemSnooperOutcome
+        [this](const checkpoint_ptrs& chkpts) -> simdb::SnooperCallbackOutcome
         {
             sparta_assert(snoop_win_id_.isValid(),
                           "Snooper called but we are not awaiting any window ID");
@@ -161,15 +161,15 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
             if (start_win_id == snoop_win_id_.getValue()) {
                 // Checkpoints haven't been altered yet - take as is
                 snooped_window_ = chkpts;
-                return simdb::QueueItemSnooperOutcome::FOUND_STOP;
+                return simdb::SnooperCallbackOutcome::FOUND_STOP;
             }
-            return simdb::QueueItemSnooperOutcome::NOT_FOUND_CONTINUE;
+            return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
         }
     );
 
-    pipeline_flusher_->assignSnooper<ChkptWindow>(
+    pipeline_flusher_->assignQueueItemSnooper<ChkptWindow>(
         *window_to_bytes,
-        [this](const ChkptWindow& window) -> simdb::QueueItemSnooperOutcome
+        [this](const ChkptWindow& window) -> simdb::SnooperCallbackOutcome
         {
             sparta_assert(snoop_win_id_.isValid(),
                           "Snooper called but we are not awaiting any window ID");
@@ -182,15 +182,15 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
             if (start_win_id == snoop_win_id_.getValue()) {
                 // Checkpoints haven't been serialized yet - take as is
                 snooped_window_ = window.chkpts;
-                return simdb::QueueItemSnooperOutcome::FOUND_STOP;
+                return simdb::SnooperCallbackOutcome::FOUND_STOP;
             }
-            return simdb::QueueItemSnooperOutcome::NOT_FOUND_CONTINUE;
+            return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
         }
     );
 
-    pipeline_flusher_->assignSnooper<ChkptWindowBytes>(
+    pipeline_flusher_->assignQueueItemSnooper<ChkptWindowBytes>(
         *zlib_bytes,
-        [this](const ChkptWindowBytes& bytes) -> simdb::QueueItemSnooperOutcome
+        [this](const ChkptWindowBytes& bytes) -> simdb::SnooperCallbackOutcome
         {
             sparta_assert(snoop_win_id_.isValid(),
                           "Snooper called but we are not awaiting any window ID");
@@ -201,17 +201,19 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
                           "Checkpoint window has inconsistent window IDs");
 
             if (start_win_id == snoop_win_id_.getValue()) {
-                // Undo boost::serialization
-                snooped_window_ = deserializeWindow_(bytes.chkpt_bytes)->chkpts;
-                return simdb::QueueItemSnooperOutcome::FOUND_STOP;
+                // Undo boost::serialization (zlib decompression has not happened yet;
+                // recall that we are snooping the zlib task's input queue)
+                constexpr bool requires_decompression = false;
+                snooped_window_ = deserializeWindow_(bytes.chkpt_bytes, requires_decompression)->chkpts;
+                return simdb::SnooperCallbackOutcome::FOUND_STOP;
             }
-            return simdb::QueueItemSnooperOutcome::NOT_FOUND_CONTINUE;
+            return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
         }
     );
 
-    pipeline_flusher_->assignSnooper<ChkptWindowBytes>(
+    pipeline_flusher_->assignQueueItemSnooper<ChkptWindowBytes>(
         *write_to_db,
-        [this](const ChkptWindowBytes& bytes) -> simdb::QueueItemSnooperOutcome
+        [this](const ChkptWindowBytes& bytes) -> simdb::SnooperCallbackOutcome
         {
             sparta_assert(snoop_win_id_.isValid(),
                           "Snooper called but we are not awaiting any window ID");
@@ -223,16 +225,10 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
 
             if (start_win_id == snoop_win_id_.getValue()) {
                 // Undo zlib compression and boost::serialization
-                ChkptWindowBytes decompressed;
-                simdb::decompressData(bytes.chkpt_bytes, decompressed.chkpt_bytes);
-                decompressed.start_chkpt_id = bytes.start_chkpt_id;
-                decompressed.end_chkpt_id = bytes.end_chkpt_id;
-                decompressed.start_tick = bytes.start_tick;
-                decompressed.end_tick = bytes.end_tick;
-                snooped_window_ = deserializeWindow_(decompressed.chkpt_bytes)->chkpts;
-                return simdb::QueueItemSnooperOutcome::FOUND_STOP;
+                snooped_window_ = deserializeWindow_(bytes.chkpt_bytes)->chkpts;
+                return simdb::SnooperCallbackOutcome::FOUND_STOP;
             }
-            return simdb::QueueItemSnooperOutcome::NOT_FOUND_CONTINUE;
+            return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
         }
     );
 
@@ -963,13 +959,25 @@ std::vector<std::shared_ptr<DatabaseCheckpoint>> DatabaseCheckpointer::getWindow
     return window_chkpts;
 }
 
-std::unique_ptr<ChkptWindow> DatabaseCheckpointer::deserializeWindow_(const std::vector<char>& compressed_window_bytes) const
+std::unique_ptr<ChkptWindow> DatabaseCheckpointer::deserializeWindow_(
+    const std::vector<char>& window_bytes,
+    bool requires_decompression) const
 {
-    std::vector<char> window_bytes;
-    simdb::decompressData(compressed_window_bytes, window_bytes);
+    const char* data_ptr = nullptr;
+    size_t data_size = 0;
+
+    std::vector<char> decompressed_bytes;
+    if (requires_decompression) {
+        simdb::decompressData(window_bytes, decompressed_bytes);
+        data_ptr = decompressed_bytes.data();
+        data_size = decompressed_bytes.size();
+    } else {
+        data_ptr = window_bytes.data();
+        data_size = window_bytes.size();
+    }
 
     auto window_restored = std::make_unique<ChkptWindow>();
-    boost::iostreams::basic_array_source<char> device(window_bytes.data(), window_bytes.size());
+    boost::iostreams::basic_array_source<char> device(data_ptr, data_size);
     boost::iostreams::stream<boost::iostreams::basic_array_source<char>> is(device);
     boost::archive::binary_iarchive ia(is);
     ia >> *window_restored;

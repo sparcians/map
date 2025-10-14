@@ -416,7 +416,9 @@ private:
      * \brief "Undo" the pipeline for a ChkptWindows.WindowBytes blob
      * into the original ChkptWindow structure.
      */
-    std::unique_ptr<ChkptWindow> deserializeWindow_(const std::vector<char>& window_bytes) const;
+    std::unique_ptr<ChkptWindow> deserializeWindow_(
+        const std::vector<char>& window_bytes,
+        bool requires_decompression = true) const;
 
     /*!
      * \brief Apply the given callback to every checkpoint (cached and database).
