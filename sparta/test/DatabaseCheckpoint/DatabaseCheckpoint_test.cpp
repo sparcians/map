@@ -218,13 +218,12 @@ void RunCheckpointerTest(uint64_t initial_tick = 0)
     // Nothing to test, just call dumpList/dumpData/dumpAnnotatedData.
     // Do this while we have a lot of checkpoints in the cache and
     // the database for max code coverage.
-    //TODO cnyce: put this back
-    //dbcp.dumpList(std::cout);
-    //std::cout << std::endl;
-    //dbcp.dumpData(std::cout);
-    //std::cout << std::endl;
-    //dbcp.dumpAnnotatedData(std::cout);
-    //std::cout << std::endl;
+    dbcp.dumpList(std::cout);
+    std::cout << std::endl;
+    dbcp.dumpData(std::cout);
+    std::cout << std::endl;
+    dbcp.dumpAnnotatedData(std::cout);
+    std::cout << std::endl;
 
     // Verify that cached / DB-recreated checkpoints are identical:
     //   1. Get the current checkpoint from the cache
