@@ -408,17 +408,21 @@ private:
     bool ensureWindowLoaded_(chkpt_id_t id, bool must_succeed=true);
 
     /*!
-     * \brief Retrieve a checkpoint window from the database.
-     */
-    checkpoint_ptrs getWindowFromDatabase_(window_id_t win_id);
-
-    /*!
      * \brief "Undo" the pipeline for a ChkptWindows.WindowBytes blob
      * into the original ChkptWindow structure.
      */
     std::unique_ptr<ChkptWindow> deserializeWindow_(
         const std::vector<char>& window_bytes,
         bool requires_decompression = true) const;
+
+    /*!
+     * \brief Retrieve a checkpoint window from the pipeline if possible,
+     * or from the database if not. If found, it will be added to the
+     * cache and removed from the pipeline / deleted from the database.
+     * We do this to ensure that checkpoint windows are always in one
+     * place only (cache / pipeline / database).
+     */
+    bool loadWindowIntoCache_(window_id_t win_id, bool must_succeed=true);
 
     /*!
      * \brief Apply the given callback to every checkpoint (cached and database).
