@@ -76,25 +76,7 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
 {
     auto pipeline = std::make_unique<simdb::pipeline::Pipeline>(db_mgr_, NAME);
 
-    // Task 1: Package up checkpoints into a checkpoint window
-    auto create_window = simdb::pipeline::createTask<simdb::pipeline::Function<checkpoint_ptrs, ChkptWindow>>(
-        [](checkpoint_ptrs&& chkpts,
-           simdb::ConcurrentQueue<ChkptWindow>& windows,
-           bool /*force_flush*/)
-        {
-            ChkptWindow window;
-            window.start_chkpt_id = chkpts.front()->getID();
-            window.end_chkpt_id = chkpts.back()->getID();
-            window.start_tick = chkpts.front()->getTick();
-            window.end_tick = chkpts.back()->getTick();
-            window.chkpts = std::move(chkpts);
-            windows.emplace(std::move(window));
-
-            return simdb::pipeline::RunnableOutcome::DID_WORK;
-        }
-    );
-
-    // Task 2: Serialize a checkpoint window into a char buffer
+    // Task 1: Serialize a checkpoint window into a char buffer
     auto window_to_bytes = simdb::pipeline::createTask<simdb::pipeline::Function<ChkptWindow, ChkptWindowBytes>>(
         [](ChkptWindow&& window,
            simdb::ConcurrentQueue<ChkptWindowBytes>& window_bytes,
@@ -117,7 +99,7 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
         }
     );
 
-    // Task 3: Perform zlib compression on the checkpoint window bytes
+    // Task 2: Perform zlib compression on the checkpoint window bytes
     auto zlib_bytes = simdb::pipeline::createTask<simdb::pipeline::Function<ChkptWindowBytes, ChkptWindowBytes>>(
         [](ChkptWindowBytes&& bytes_in,
            simdb::ConcurrentQueue<ChkptWindowBytes>& bytes_out,
@@ -132,7 +114,7 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
         }
     );
 
-    // Task 4: Write to the database
+    // Task 3: Write to the database
     auto write_to_db = db_accessor->createAsyncWriter<DatabaseCheckpointer, ChkptWindowBytes, void>(
         [this](ChkptWindowBytes&& bytes_in,
                simdb::pipeline::AppPreparedINSERTs* tables,
@@ -162,62 +144,18 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
         }
     );
 
-    *create_window >> *window_to_bytes >> *zlib_bytes >> *write_to_db;
+    *window_to_bytes >> *zlib_bytes >> *write_to_db;
 
-    pipeline_head_ = create_window->getTypedInputQueue<checkpoint_ptrs>();
+    pipeline_head_ = window_to_bytes->getTypedInputQueue<ChkptWindow>();
 
     pipeline_flusher_ = std::make_unique<simdb::pipeline::RunnableFlusher>(
-        *db_mgr_, create_window, window_to_bytes, zlib_bytes, write_to_db);
+        *db_mgr_, window_to_bytes, zlib_bytes, write_to_db);
 
     // Assign snoopers to allow us to "peek" into the pipeline to retrieve
     // copies of checkpoint windows or delete checkpoints as they are being
     // processed. This is an optimization to avoid having to flush the entire
     // pipeline just to run a query for a window that might still be in memory.
     // -------------------------------------------------------------------------------
-    pipeline_flusher_->assignQueueSnooper<checkpoint_ptrs>(
-        *create_window,
-        [this](std::deque<checkpoint_ptrs>& queue) -> simdb::SnooperCallbackOutcome
-        {
-            if (snoop_win_id_for_retrieval_.isValid()) {
-                // Check the windows in the queue for the one we are looking for.
-                // If found, take it out of the queue and add it to the cache,
-                // deleting it from the pipeline.
-                auto it = find_unique_if(queue.begin(), queue.end(),
-                    [this](const checkpoint_ptrs& chkpts)
-                    {
-                        sparta_assert(!chkpts.empty(),
-                                      "Checkpoint window cannot be empty");
-
-                        auto start_win_id = getWindowID_(chkpts.front()->getID());
-                        auto end_win_id = getWindowID_(chkpts.back()->getID());
-                        sparta_assert(start_win_id == end_win_id,
-                                      "Checkpoint window has inconsistent window IDs");
-
-                        return (start_win_id == snoop_win_id_for_retrieval_.getValue());
-                    });
-
-                if (it != queue.end()) {
-                    checkpoint_ptrs chkpts = std::move(*it);
-                    sparta_assert(!chkpts.empty(),
-                                  "Checkpoint window cannot be empty");
-
-                    fast_remove_from_deque(queue, it);
-                    chkpts_cache_[snoop_win_id_for_retrieval_.getValue()] = std::move(chkpts);
-                    return simdb::SnooperCallbackOutcome::FOUND_STOP;
-                }
-
-                // Continue looking in the next task's queue
-                return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
-            }
-
-            sparta_assert(snoop_chkpt_id_for_deletion_.isValid(),
-                          "Snooper called but we are not set up to snoop any checkpoint ID or window ID");
-
-            // TODO cnyce
-            return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
-        }
-    );
-
     pipeline_flusher_->assignQueueSnooper<ChkptWindow>(
         *window_to_bytes,
         [this](std::deque<ChkptWindow>& queue) -> simdb::SnooperCallbackOutcome
@@ -352,7 +290,6 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
     );
 
     pipeline->createTaskGroup("CheckpointPipeline")
-        ->addTask(std::move(create_window))
         ->addTask(std::move(window_to_bytes))
         ->addTask(std::move(zlib_bytes));
 
@@ -881,7 +818,13 @@ void DatabaseCheckpointer::deleteCheckpoint_(chkpt_id_t id)
 
             // Send down the pipeline
             if (!window->chkpts.empty()) {
-                pipeline_head_->emplace(std::move(window->chkpts));
+                ChkptWindow send_window;
+                send_window.start_chkpt_id = window->chkpts.front()->getID();
+                send_window.end_chkpt_id = window->chkpts.back()->getID();
+                send_window.start_tick = window->chkpts.front()->getTick();
+                send_window.end_tick = window->chkpts.back()->getTick();
+                send_window.chkpts = std::move(window->chkpts);
+                pipeline_head_->emplace(std::move(send_window));
             }
         }
     });
@@ -993,7 +936,13 @@ void DatabaseCheckpointer::evictWindowsIfNeeded_(bool force_flush)
         // Send the window down the pipeline for writing to the database
         auto& window = chkpts_cache_[win_id];
         if (!window.empty()) {
-            pipeline_head_->emplace(std::move(window));
+            ChkptWindow send_window;
+            send_window.start_chkpt_id = window.front()->getID();
+            send_window.end_chkpt_id = window.back()->getID();
+            send_window.start_tick = window.front()->getTick();
+            send_window.end_tick = window.back()->getTick();
+            send_window.chkpts = std::move(window);
+            pipeline_head_->emplace(std::move(send_window));
         }
 
         // Cleanup

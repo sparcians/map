@@ -438,7 +438,7 @@ private:
     chkpt_id_t current_id_ = checkpoint_type::UNIDENTIFIED_CHECKPOINT;
 
     //! \brief Pipeline input queue which accepts the oldest checkpoint window from the cache.
-    simdb::ConcurrentQueue<checkpoint_ptrs>* pipeline_head_ = nullptr;
+    simdb::ConcurrentQueue<ChkptWindow>* pipeline_head_ = nullptr;
 
     //! \brief Subset (or all of) our checkpoints that we currently are holding in memory.
     std::unordered_map<window_id_t, checkpoint_ptrs> chkpts_cache_;
