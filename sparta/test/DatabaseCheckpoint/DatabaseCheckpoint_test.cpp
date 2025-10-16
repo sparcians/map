@@ -589,8 +589,8 @@ void ProfileLoadCheckpoint(DatabaseCheckpointer::chkpt_id_t load_id)
         return actual_id;
     };
 
-    // Quickly create 1000 checkpoints. This fills up the pipeline to help bash edge cases.
-    for (uint32_t i = 1; i <= 1000; ++i) {
+    // Quickly create 10000 checkpoints. This fills up the pipeline to help bash edge cases.
+    for (uint32_t i = 1; i <= 10000; ++i) {
         step_checkpointer(i);
     }
 
@@ -636,10 +636,15 @@ int main()
     // either way they are not in the cache. Importantly,
     // we want the checkpointer to have about the same
     // performance to load disk checkpoints regardless.
-    uint32_t load_id = 900;
+    //
+    // The test will create 10000 checkpoints, so we will
+    // load checkpoints 9000, 8750, 8500, ..., 250. This
+    // should give a good mixture of loading checkpoints
+    // from the pipeline vs on disk.
+    uint32_t load_id = 9000;
     while (load_id > 0) {
         ProfileLoadCheckpoint(load_id);
-        load_id -= 100;
+        load_id -= 250;
     }
 
     REPORT_ERROR;

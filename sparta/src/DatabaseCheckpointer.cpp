@@ -573,6 +573,19 @@ void DatabaseCheckpointer::loadCheckpoint(chkpt_id_t id)
         return;
     }
 
+    // Disable the pipeline for the duration of this function. Even if
+    // we find the checkpoint in the cache, we still have to flush all
+    // future checkpoints / windows from the pipeline. We use a snooper
+    // to do this.
+    //
+    // Also note that there is a scopedDisableAll() inside findCheckpoint(),
+    // but that becomes a no-op since we are already disabled here.
+    // The "false" flag here means "do not bother putting the threads to
+    // sleep too". Just the thread's runnables will be disabled. Waiting
+    // for the threads to ACK the sleep request can take milliseconds
+    // which is too long for loading checkpoints.
+    auto disabler = pipeline_flusher_->scopedDisableAll(false);
+
     auto chkpt = findCheckpoint(id, true);
     chkpt->load(getArchDatas());
 
@@ -974,12 +987,6 @@ void DatabaseCheckpointer::deleteCheckpoint_(chkpt_id_t id)
         throw CheckpointError("Cannot delete head checkpoint with ID ") << id;
     }
 
-    // Disable the pipeline for the duration of this function. Even if
-    // we find the checkpoint in the cache, we still have to flush all
-    // future checkpoints / windows from the pipeline. We use a snooper
-    // to do this.
-    auto disabler = pipeline_flusher_->scopedDisableAll();
-
     window_id_t start_win_id = getWindowID_(id);
     window_id_t end_win_id = getWindowID_(next_chkpt_id_ - 1);
 
@@ -1213,7 +1220,7 @@ bool DatabaseCheckpointer::loadWindowIntoCache_(window_id_t win_id, bool must_su
     }
 
     // Disable the pipelines so we can safely snoop the task queues.
-    auto disabler = pipeline_flusher_->scopedDisableAll();
+    auto disabler = pipeline_flusher_->scopedDisableAll(false);
 
     snoop_win_id_for_retrieval_ = win_id;
     auto outcome = pipeline_flusher_->snoopAll();
