@@ -425,6 +425,40 @@ private:
     bool loadWindowIntoCache_(window_id_t win_id, bool must_succeed=true);
 
     /*!
+     * \brief Check the pipeline queue for the window ID that we are
+     * looking for during a snoop operation.
+     * \note snoop_win_id_for_retrieval_ must be valid.
+     */
+    simdb::SnooperCallbackOutcome handleLoadWindowIntoCacheSnooper_(
+        std::deque<ChkptWindow>& queue);
+
+    /*!
+     * \brief Check the pipeline queue for the checkpoint ID that we are
+     * looking for during a snoop operation.
+     * \note snoop_win_id_for_retrieval_ must be valid.
+     */
+    simdb::SnooperCallbackOutcome handleLoadWindowIntoCacheSnooper_(
+        std::deque<ChkptWindowBytes>& queue,
+        bool requires_decompression);
+
+    /*!
+     * \brief Check the pipeline queue for windows to be deleted during a
+     * snoop operation.
+     * \note snoop_chkpt_id_for_deletion_ must be valid.
+     */
+    simdb::SnooperCallbackOutcome handleDeleteCheckpointSnooper_(
+        std::deque<ChkptWindow>& queue);
+
+    /*!
+     * \brief Check the pipeline queue for windows to be deleted during a
+     * snoop operation.
+     * \note snoop_chkpt_id_for_deletion_ must be valid.
+     */
+    simdb::SnooperCallbackOutcome handleDeleteCheckpointSnooper_(
+        std::deque<ChkptWindowBytes>& queue,
+        bool requires_decompression);
+
+    /*!
      * \brief Apply the given callback to every checkpoint (cached and database).
      * \note Do not call in the critical path. Used for debugging and for the
      * various dump* apis.
