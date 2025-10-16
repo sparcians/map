@@ -66,6 +66,7 @@ Iter find_unique_if(Iter begin, Iter end, Pred pred)
 template <typename T>
 void fast_remove_from_deque(std::deque<T>& deq, typename std::deque<T>::iterator it)
 {
+    sparta_assert(!deq.empty());
     sparta_assert(it != deq.end(), "Cannot remove invalid iterator from deque");
     std::iter_swap(it, deq.end() - 1); // Swap with last
     deq.pop_back();                    // Remove last in constant time
@@ -82,7 +83,7 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
            simdb::ConcurrentQueue<ChkptWindowBytes>& window_bytes,
            bool /*force_flush*/)
         {
-            if (window.ignore) {
+            if (window.ignore || window.chkpts.empty()) {
                 // This window was marked for deletion during a snoop operation.
                 return simdb::pipeline::RunnableOutcome::NO_OP;
             }
@@ -110,7 +111,7 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
            simdb::ConcurrentQueue<ChkptWindowBytes>& bytes_out,
            bool /*force_flush*/)
         {
-            if (bytes_in.ignore) {
+            if (bytes_in.ignore || bytes_in.chkpt_bytes.empty()) {
                 // This window was marked for deletion during a snoop operation.
                 return simdb::pipeline::RunnableOutcome::NO_OP;
             }
@@ -182,7 +183,7 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
                simdb::pipeline::AppPreparedINSERTs* tables,
                bool /*force_flush*/)
         {
-            if (bytes_in.ignore) {
+            if (bytes_in.ignore || bytes_in.chkpt_bytes.empty()) {
                 // This window was marked for deletion during a snoop operation.
                 return simdb::pipeline::RunnableOutcome::NO_OP;
             }
@@ -266,7 +267,7 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
         {
             // Decompression needed since we are snooping the DB writer task's input queue
             // which is the zlib task's output queue. So compression has already run.
-            constexpr bool requires_decompression = false;
+            constexpr bool requires_decompression = true;
 
             if (snoop_win_id_for_retrieval_.isValid()) {
                 return handleLoadWindowIntoCacheSnooper_(queue, requires_decompression);
@@ -959,6 +960,10 @@ std::unique_ptr<ChkptWindow> DatabaseCheckpointer::deserializeWindow_(
     const std::vector<char>& window_bytes,
     bool requires_decompression) const
 {
+    if (window_bytes.empty()) {
+        return nullptr;
+    }
+
     const char* data_ptr = nullptr;
     size_t data_size = 0;
 
@@ -1068,7 +1073,7 @@ simdb::SnooperCallbackOutcome DatabaseCheckpointer::handleLoadWindowIntoCacheSno
             auto start_win_id = getWindowID_(window.start_chkpt_id);
             auto end_win_id = getWindowID_(window.end_chkpt_id);
             sparta_assert(start_win_id == end_win_id,
-                            "Checkpoint window has inconsistent window IDs");
+                          "Checkpoint window has inconsistent window IDs");
 
             return (start_win_id == snoop_win_id_for_retrieval_.getValue());
         });
@@ -1076,7 +1081,7 @@ simdb::SnooperCallbackOutcome DatabaseCheckpointer::handleLoadWindowIntoCacheSno
     if (it != queue.end()) {
         checkpoint_ptrs chkpts = std::move(it->chkpts);
         sparta_assert(!chkpts.empty(),
-                        "Checkpoint window cannot be empty");
+                      "Checkpoint window cannot be empty");
 
         fast_remove_from_deque(queue, it);
         chkpts_cache_[snoop_win_id_for_retrieval_.getValue()] = std::move(chkpts);
@@ -1100,19 +1105,19 @@ simdb::SnooperCallbackOutcome DatabaseCheckpointer::handleLoadWindowIntoCacheSno
             auto start_win_id = getWindowID_(bytes.start_chkpt_id);
             auto end_win_id = getWindowID_(bytes.end_chkpt_id);
             sparta_assert(start_win_id == end_win_id,
-                            "Checkpoint window has inconsistent window IDs");
+                          "Checkpoint window has inconsistent window IDs");
 
             return (start_win_id == snoop_win_id_for_retrieval_.getValue());
         });
 
     if (it != queue.end()) {
         // "Undo" boost::serialization for this item and add it to the cache.
-        // Note that we do not have to decompress since we are snooping the
-        // zlib task's input queue, so compression hasn't happened yet.
+        // Honor the "requires_decompression" flag since this method is called
+        // during pre-zlib and post-zlib task snoopers.
         checkpoint_ptrs chkpts = deserializeWindow_(it->chkpt_bytes, requires_decompression)->chkpts;
 
         sparta_assert(!chkpts.empty(),
-                        "Checkpoint window cannot be empty");
+                      "Checkpoint window cannot be empty");
 
         fast_remove_from_deque(queue, it);
         chkpts_cache_[snoop_win_id_for_retrieval_.getValue()] = std::move(chkpts);
@@ -1203,8 +1208,8 @@ simdb::SnooperCallbackOutcome DatabaseCheckpointer::handleDeleteCheckpointSnoope
 
     if (it != queue.end()) {
         // "Undo" boost::serialization for this item to get its checkpoints.
-        // Note that we do not have to decompress since we are snooping the
-        // zlib task's input queue, so compression hasn't happened yet.
+        // Honor the "requires_decompression" flag since this method is called
+        // during pre-zlib and post-zlib task snoopers.
         auto window = deserializeWindow_(it->chkpt_bytes, requires_decompression);
 
         auto chkpt_it = std::find_if(window->chkpts.begin(), window->chkpts.end(),
