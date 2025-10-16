@@ -82,6 +82,11 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
            simdb::ConcurrentQueue<ChkptWindowBytes>& window_bytes,
            bool /*force_flush*/)
         {
+            if (window.ignore) {
+                // This window was marked for deletion during a snoop operation.
+                return simdb::pipeline::RunnableOutcome::NO_OP;
+            }
+
             ChkptWindowBytes bytes;
             boost::iostreams::back_insert_device<std::vector<char>> inserter(bytes.chkpt_bytes);
             boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char>>> os(inserter);
@@ -105,6 +110,11 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
            simdb::ConcurrentQueue<ChkptWindowBytes>& bytes_out,
            bool /*force_flush*/)
         {
+            if (bytes_in.ignore) {
+                // This window was marked for deletion during a snoop operation.
+                return simdb::pipeline::RunnableOutcome::NO_OP;
+            }
+
             std::vector<char> compressed_bytes;
             simdb::compressData(bytes_in.chkpt_bytes, compressed_bytes);
             std::swap(bytes_in.chkpt_bytes, compressed_bytes);
@@ -114,12 +124,69 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
         }
     );
 
-    // Task 3: Write to the database
+    // Task 3: Handle any pending window deletions right after deleteCheckpoint_()
+    // is done running in the main thread.
+    auto handle_deletions = db_accessor->createAsyncReader<chkpt_id_t, void>(
+        [this](chkpt_id_t&& id,
+               simdb::DatabaseManager* db_mgr,
+               bool /*force_flush*/)
+        {
+            auto start_win_id = getWindowID_(id);
+
+            // DELETE FROM ChkptWindows WHERE WindowID > start_win_id
+            auto query = db_mgr->createQuery("ChkptWindows");
+            query->addConstraintForUInt64("WindowID", simdb::Constraints::GREATER, start_win_id);
+            query->deleteResultSet();
+
+            // Now update the window containing start_win_id to remove checkpoints >= id
+            query->resetConstraints();
+            query->addConstraintForUInt64("WindowID", simdb::Constraints::EQUAL, start_win_id);
+
+            std::vector<char> compressed_window_bytes;
+            query->select("WindowBytes", compressed_window_bytes);
+
+            auto results = query->getResultSet();
+            if (results.getNextRecord()) {
+                // DELETE FROM ChkptWindows WHERE WindowID = start_win_id
+                query->deleteResultSet();
+
+                // Deserialize the window
+                auto window = deserializeWindow_(compressed_window_bytes);
+
+                // Remove checkpoints >= id
+                auto new_end = std::remove_if(window->chkpts.begin(), window->chkpts.end(),
+                    [id](const std::shared_ptr<checkpoint_type>& chkpt) {
+                        return chkpt->getID() >= id;
+                    });
+                window->chkpts.erase(new_end, window->chkpts.end());
+
+                // Send down the pipeline
+                if (!window->chkpts.empty()) {
+                    ChkptWindow send_window;
+                    send_window.start_chkpt_id = window->chkpts.front()->getID();
+                    send_window.end_chkpt_id = window->chkpts.back()->getID();
+                    send_window.start_tick = window->chkpts.front()->getTick();
+                    send_window.end_tick = window->chkpts.back()->getTick();
+                    send_window.chkpts = std::move(window->chkpts);
+                    pipeline_head_->emplace(std::move(send_window));
+                }
+            }
+
+            return simdb::pipeline::RunnableOutcome::DID_WORK;
+        }
+    );
+
+    // Task 4: Write to the database
     auto write_to_db = db_accessor->createAsyncWriter<DatabaseCheckpointer, ChkptWindowBytes, void>(
         [this](ChkptWindowBytes&& bytes_in,
                simdb::pipeline::AppPreparedINSERTs* tables,
                bool /*force_flush*/)
         {
+            if (bytes_in.ignore) {
+                // This window was marked for deletion during a snoop operation.
+                return simdb::pipeline::RunnableOutcome::NO_OP;
+            }
+
             auto window_inserter = tables->getPreparedINSERT("ChkptWindows");
 
             utils::ValidValue<uint64_t> win_id;
@@ -147,9 +214,10 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
     *window_to_bytes >> *zlib_bytes >> *write_to_db;
 
     pipeline_head_ = window_to_bytes->getTypedInputQueue<ChkptWindow>();
+    pending_deletions_head_ = handle_deletions->getTypedInputQueue<chkpt_id_t>();
 
     pipeline_flusher_ = std::make_unique<simdb::pipeline::RunnableFlusher>(
-        *db_mgr_, window_to_bytes, zlib_bytes, write_to_db);
+        *db_mgr_, window_to_bytes, zlib_bytes, handle_deletions, write_to_db);
 
     // Assign snoopers to allow us to "peek" into the pipeline to retrieve
     // copies of checkpoint windows or delete checkpoints as they are being
@@ -192,7 +260,53 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
             sparta_assert(snoop_chkpt_id_for_deletion_.isValid(),
                           "Snooper called but we are not set up to snoop any checkpoint ID or window ID");
 
-            // TODO cnyce
+            // Look for any windows in the queue that can be fully deleted.
+            // Some snoop operations may be deleting many windows in the
+            // pipeline, so we just set a flag to ignore them when they
+            // are processed on the pipeline threads.
+            for (auto& window : queue) {
+                auto start_chkpt_id = window.start_chkpt_id;
+                if (start_chkpt_id >= snoop_chkpt_id_for_deletion_.getValue()) {
+                    window.ignore = true;
+                }
+            }
+
+            // Now look for any windows that may need to be partially deleted.
+            // This is the case where our checkpoint to delete is inside a window.
+            // Note that only one (if any) window can be partially deleted,
+            // since windows do not overlap.
+            auto it = find_unique_if(queue.begin(), queue.end(),
+                [this](const ChkptWindow& window)
+                {
+                    return (window.start_chkpt_id < snoop_chkpt_id_for_deletion_.getValue() &&
+                            window.end_chkpt_id >= snoop_chkpt_id_for_deletion_.getValue());
+                });
+
+            if (it != queue.end()) {
+                auto chkpt_it = std::find_if(it->chkpts.begin(), it->chkpts.end(),
+                    [this](const checkpoint_ptr& chkpt)
+                    {
+                        return (chkpt->getID() == snoop_chkpt_id_for_deletion_.getValue());
+                    });
+
+                sparta_assert(chkpt_it != it->chkpts.end(),
+                              "Partially deleted checkpoint not found in its window");
+
+                // Erase from this checkpoint to the end of the window
+                it->chkpts.erase(chkpt_it, it->chkpts.end());
+
+                // Add this window back to the cache if it still has checkpoints
+                if (!it->chkpts.empty()) {
+                    auto win_id = getWindowID_(it->start_chkpt_id);
+                    chkpts_cache_[win_id] = std::move(it->chkpts);
+                    touchWindow_(win_id);
+                }
+
+                // Remove this window from the pipeline
+                fast_remove_from_deque(queue, it);
+            }
+
+            // Always snoop the whole pipeline for more deletions
             return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
         }
     );
@@ -238,7 +352,58 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
             sparta_assert(snoop_chkpt_id_for_deletion_.isValid(),
                           "Snooper called but we are not set up to snoop any checkpoint ID or window ID");
 
-            // TODO cnyce
+            // Look for any windows in the queue that can be fully deleted.
+            // Some snoop operations may be deleting many windows in the
+            // pipeline, so we just set a flag to ignore them when they
+            // are processed on the pipeline threads.
+            for (auto& bytes : queue) {
+                if (bytes.start_chkpt_id >= snoop_chkpt_id_for_deletion_.getValue()) {
+                    bytes.ignore = true;
+                }
+            }
+
+            // Now look for any windows that may need to be partially deleted.
+            // This is the case where our checkpoint to delete is inside a window.
+            // Note that only one (if any) window can be partially deleted,
+            // since windows do not overlap.
+            auto it = find_unique_if(queue.begin(), queue.end(),
+                [this](const ChkptWindowBytes& bytes)
+                {
+                    return (bytes.start_chkpt_id < snoop_chkpt_id_for_deletion_.getValue() &&
+                            bytes.end_chkpt_id >= snoop_chkpt_id_for_deletion_.getValue());
+                });
+
+            if (it != queue.end()) {
+                // "Undo" boost::serialization for this item to get its checkpoints.
+                // Note that we do not have to decompress since we are snooping the
+                // zlib task's input queue, so compression hasn't happened yet.
+                constexpr bool requires_decompression = false;
+                auto window = deserializeWindow_(it->chkpt_bytes, requires_decompression);
+
+                auto chkpt_it = std::find_if(window->chkpts.begin(), window->chkpts.end(),
+                    [this](const checkpoint_ptr& chkpt)
+                    {
+                        return (chkpt->getID() == snoop_chkpt_id_for_deletion_.getValue());
+                    });
+
+                sparta_assert(chkpt_it != window->chkpts.end(),
+                              "Partially deleted checkpoint not found in its window");
+
+                // Erase from this checkpoint to the end of the window
+                window->chkpts.erase(chkpt_it, window->chkpts.end());
+
+                // Add this window back to the cache if it still has checkpoints
+                if (!window->chkpts.empty()) {
+                    auto win_id = getWindowID_(window->start_chkpt_id);
+                    chkpts_cache_[win_id] = std::move(window->chkpts);
+                    touchWindow_(win_id);
+                }
+
+                // Remove this window from the pipeline
+                fast_remove_from_deque(queue, it);
+            }
+
+            // Always snoop the whole pipeline for more deletions
             return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
         }
     );
@@ -284,7 +449,58 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
             sparta_assert(snoop_chkpt_id_for_deletion_.isValid(),
                           "Snooper called but we are not set up to snoop any checkpoint ID or window ID");
 
-            // TODO cnyce
+            // Look for any windows in the queue that can be fully deleted.
+            // Some snoop operations may be deleting many windows in the
+            // pipeline, so we just set a flag to ignore them when they
+            // are processed on the pipeline threads.
+            for (auto& bytes : queue) {
+                if (bytes.start_chkpt_id >= snoop_chkpt_id_for_deletion_.getValue()) {
+                    bytes.ignore = true;
+                }
+            }
+
+            // Now look for any windows that may need to be partially deleted.
+            // This is the case where our checkpoint to delete is inside a window.
+            // Note that only one (if any) window can be partially deleted,
+            // since windows do not overlap.
+            auto it = find_unique_if(queue.begin(), queue.end(),
+                [this](const ChkptWindowBytes& bytes)
+                {
+                    return (bytes.start_chkpt_id < snoop_chkpt_id_for_deletion_.getValue() &&
+                            bytes.end_chkpt_id >= snoop_chkpt_id_for_deletion_.getValue());
+                });
+
+            if (it != queue.end()) {
+                // "Undo" boost::serialization for this item to get its checkpoints.
+                // Note that we have to decompress since we are snooping the database
+                // writer task's input queue, so compression hasn't happened yet.
+                constexpr bool requires_decompression = true;
+                auto window = deserializeWindow_(it->chkpt_bytes, requires_decompression);
+
+                auto chkpt_it = std::find_if(window->chkpts.begin(), window->chkpts.end(),
+                    [this](const checkpoint_ptr& chkpt)
+                    {
+                        return (chkpt->getID() == snoop_chkpt_id_for_deletion_.getValue());
+                    });
+
+                sparta_assert(chkpt_it != window->chkpts.end(),
+                              "Partially deleted checkpoint not found in its window");
+
+                // Erase from this checkpoint to the end of the window
+                window->chkpts.erase(chkpt_it, window->chkpts.end());
+
+                // Add this window back to the cache if it still has checkpoints
+                if (!window->chkpts.empty()) {
+                    auto win_id = getWindowID_(window->start_chkpt_id);
+                    chkpts_cache_[win_id] = std::move(window->chkpts);
+                    touchWindow_(win_id);
+                }
+
+                // Remove this window from the pipeline
+                fast_remove_from_deque(queue, it);
+            }
+
+            // Always snoop the whole pipeline for more deletions
             return simdb::SnooperCallbackOutcome::NOT_FOUND_CONTINUE;
         }
     );
@@ -758,6 +974,12 @@ void DatabaseCheckpointer::deleteCheckpoint_(chkpt_id_t id)
         throw CheckpointError("Cannot delete head checkpoint with ID ") << id;
     }
 
+    // Disable the pipeline for the duration of this function. Even if
+    // we find the checkpoint in the cache, we still have to flush all
+    // future checkpoints / windows from the pipeline. We use a snooper
+    // to do this.
+    auto disabler = pipeline_flusher_->scopedDisableAll();
+
     window_id_t start_win_id = getWindowID_(id);
     window_id_t end_win_id = getWindowID_(next_chkpt_id_ - 1);
 
@@ -783,51 +1005,15 @@ void DatabaseCheckpointer::deleteCheckpoint_(chkpt_id_t id)
         }
     }
 
-    // Now delete from the database
-    pipeline_flusher_->waterfallFlush();
+    // Set up the snooper to look for checkpoints in the pipeline
+    // that should be removed.
+    snoop_chkpt_id_for_deletion_ = id;
+    pipeline_flusher_->snoopAll();
+    snoop_chkpt_id_for_deletion_.clearValid();
 
-    // Now delete from the database. Use an async eval() call to get highest
-    // priority and best response time.
-    db_accessor_->eval([&](simdb::DatabaseManager* db_mgr) {
-        // DELETE FROM ChkptWindows WHERE WindowID > start_win_id
-        auto query = db_mgr->createQuery("ChkptWindows");
-        query->addConstraintForUInt64("WindowID", simdb::Constraints::GREATER, start_win_id);
-        query->deleteResultSet();
-
-        // Now update the window containing start_win_id to remove checkpoints >= id
-        query->resetConstraints();
-        query->addConstraintForUInt64("WindowID", simdb::Constraints::EQUAL, start_win_id);
-
-        std::vector<char> compressed_window_bytes;
-        query->select("WindowBytes", compressed_window_bytes);
-
-        auto results = query->getResultSet();
-        if (results.getNextRecord()) {
-            // DELETE FROM ChkptWindows WHERE WindowID = start_win_id
-            query->deleteResultSet();
-
-            // Deserialize the window
-            auto window = deserializeWindow_(compressed_window_bytes);
-
-            // Remove checkpoints >= id
-            auto new_end = std::remove_if(window->chkpts.begin(), window->chkpts.end(),
-                [id](const std::shared_ptr<checkpoint_type>& chkpt) {
-                    return chkpt->getID() >= id;
-                });
-            window->chkpts.erase(new_end, window->chkpts.end());
-
-            // Send down the pipeline
-            if (!window->chkpts.empty()) {
-                ChkptWindow send_window;
-                send_window.start_chkpt_id = window->chkpts.front()->getID();
-                send_window.end_chkpt_id = window->chkpts.back()->getID();
-                send_window.start_tick = window->chkpts.front()->getTick();
-                send_window.end_tick = window->chkpts.back()->getTick();
-                send_window.chkpts = std::move(window->chkpts);
-                pipeline_head_->emplace(std::move(send_window));
-            }
-        }
-    });
+    // Forward this deletion to the database thread task instead
+    // of running DB work in the main thread.
+    pending_deletions_head_->push(id);
 }
 
 void DatabaseCheckpointer::dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o)

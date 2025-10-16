@@ -440,6 +440,9 @@ private:
     //! \brief Pipeline input queue which accepts the oldest checkpoint window from the cache.
     simdb::ConcurrentQueue<ChkptWindow>* pipeline_head_ = nullptr;
 
+    //! \brief Pipeline input queue which accepts checkpoint IDs to delete from the pipeline.
+    simdb::ConcurrentQueue<chkpt_id_t>* pending_deletions_head_ = nullptr;
+
     //! \brief Subset (or all of) our checkpoints that we currently are holding in memory.
     std::unordered_map<window_id_t, checkpoint_ptrs> chkpts_cache_;
 
@@ -469,10 +472,6 @@ private:
     //! in the pipeline task queues, we will have to query the database and
     //! recreate the checkpoints ourselves (slow).
     utils::ValidValue<window_id_t> snoop_win_id_for_retrieval_;
-
-    //! \brief Copy of checkpoint window we found in the pipeline during snooping.
-    //! Used together with snoop_win_id_for_retrieval_.
-    checkpoint_ptrs snooped_window_;
 
     //! \brief This is the checkpoint ID we are looking for during a deleteCheckpoint_()
     //! operation. All checkpoints from this ID to the most recent will be deleted from
