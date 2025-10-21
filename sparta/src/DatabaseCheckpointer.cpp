@@ -72,10 +72,11 @@ void fast_remove_from_deque(std::deque<T>& deq, typename std::deque<T>::iterator
     deq.pop_back();                    // Remove last in constant time
 }
 
-std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
-    simdb::pipeline::AsyncDatabaseAccessor* db_accessor)
+void DatabaseCheckpointer::createPipeline(simdb::pipeline::PipelineManager* pipeline_mgr)
 {
-    auto pipeline = std::make_unique<simdb::pipeline::Pipeline>(db_mgr_, NAME);
+    pipeline_mgr_ = pipeline_mgr;
+    auto pipeline = pipeline_mgr_->createPipeline(NAME);
+    auto db_accessor = pipeline_mgr_->getAsyncDatabaseAccessor();
 
     // Task 1: Serialize a checkpoint window into a char buffer
     auto window_to_bytes = simdb::pipeline::createTask<simdb::pipeline::Function<ChkptWindow, ChkptWindowBytes>>(
@@ -285,7 +286,6 @@ std::unique_ptr<simdb::pipeline::Pipeline> DatabaseCheckpointer::createPipeline(
         ->addTask(std::move(zlib_bytes));
 
     db_accessor_ = db_accessor;
-    return pipeline;
 }
 
 uint32_t DatabaseCheckpointer::getSnapshotThreshold() const
@@ -359,7 +359,7 @@ void DatabaseCheckpointer::loadCheckpoint(chkpt_id_t id)
     // sleep too". Just the thread's runnables will be disabled. Waiting
     // for the threads to ACK the sleep request can take milliseconds
     // which is too long for loading checkpoints.
-    auto disabler = pipeline_flusher_->scopedDisableAll(false);
+    auto disabler = pipeline_mgr_->scopedDisableAll(false);
 
     auto chkpt = findCheckpoint(id, true);
     chkpt->load(getArchDatas());
@@ -999,7 +999,7 @@ bool DatabaseCheckpointer::loadWindowIntoCache_(window_id_t win_id, bool must_su
     }
 
     // Disable the pipelines so we can safely snoop the task queues.
-    auto disabler = pipeline_flusher_->scopedDisableAll(false);
+    auto disabler = pipeline_mgr_->scopedDisableAll(false);
 
     snoop_win_id_for_retrieval_ = win_id;
     auto outcome = pipeline_flusher_->snoopAll();

@@ -55,8 +55,7 @@ public:
     /*!
      * \brief Instantiate the async processing pipeline to save/load checkpoints.
      */
-    std::unique_ptr<simdb::pipeline::Pipeline> createPipeline(
-        simdb::pipeline::AsyncDatabaseAccessor* db_accessor) override;
+    void createPipeline(simdb::pipeline::PipelineManager* pipeline_mgr) override;
 
     /*!
      * \brief Flush all cached windows down the pipeline before threads are shut down.
@@ -494,6 +493,9 @@ private:
 
     //! \brief SimDB instance.
     simdb::DatabaseManager* db_mgr_ = nullptr;
+
+    //! \brief Pipeline manager used to create and disable/re-enable the pipeline.
+    simdb::pipeline::PipelineManager* pipeline_mgr_ = nullptr;
 
     //! \brief Async DB accessor for high-priority DB work.
     simdb::pipeline::AsyncDatabaseAccessor* db_accessor_ = nullptr;

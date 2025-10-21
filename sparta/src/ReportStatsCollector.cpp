@@ -122,10 +122,10 @@ void ReportStatsCollector::defineSchema(simdb::Schema& schema)
     csv_skip_annotations_tbl.createIndexOn("ReportDescID");
 }
 
-std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
-    simdb::pipeline::AsyncDatabaseAccessor* db_accessor)
+void ReportStatsCollector::createPipeline(simdb::pipeline::PipelineManager* pipeline_mgr)
 {
-    auto pipeline = std::make_unique<simdb::pipeline::Pipeline>(db_mgr_, NAME);
+    auto pipeline = pipeline_mgr->createPipeline(NAME);
+    auto db_accessor = pipeline_mgr->getAsyncDatabaseAccessor();
 
     using ZlibFunction = simdb::pipeline::Function<ReportStatsAtTick, CompressedReportStatsAtTick>;
 
@@ -172,8 +172,6 @@ std::unique_ptr<simdb::pipeline::Pipeline> ReportStatsCollector::createPipeline(
 
     // We only have to setup the non-DB processing tasks. All calls to createAsyncWriter()
     // implicitly put those created tasks on the shared DB thread.
-
-    return pipeline;
 }
 
 void ReportStatsCollector::setScheduler(const Scheduler* scheduler)
