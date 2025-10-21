@@ -25,6 +25,7 @@ namespace sparta::serialization::checkpoint
         chkpt_id_t end_chkpt_id = CheckpointBase::UNIDENTIFIED_CHECKPOINT;
         uint64_t start_tick = 0;
         uint64_t end_tick = 0;
+        bool ignore = false;
 
         //! \brief Support boost::serialization
         template <typename Archive>
@@ -41,6 +42,7 @@ namespace sparta::serialization::checkpoint
         chkpt_id_t end_chkpt_id = CheckpointBase::UNIDENTIFIED_CHECKPOINT;
         uint64_t start_tick = 0;
         uint64_t end_tick = 0;
+        bool ignore = false;
     };
 
     /*!
