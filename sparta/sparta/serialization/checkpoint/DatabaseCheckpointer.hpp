@@ -55,8 +55,7 @@ public:
     /*!
      * \brief Instantiate the async processing pipeline to save/load checkpoints.
      */
-    std::unique_ptr<simdb::pipeline::Pipeline> createPipeline(
-        simdb::pipeline::AsyncDatabaseAccessor* db_accessor) override;
+    void createPipeline(simdb::pipeline::PipelineManager* pipeline_mgr) override;
 
     /*!
      * \brief Flush all cached windows down the pipeline before threads are shut down.
@@ -408,15 +407,55 @@ private:
     bool ensureWindowLoaded_(chkpt_id_t id, bool must_succeed=true);
 
     /*!
-     * \brief Retrieve a checkpoint window from the database.
-     */
-    checkpoint_ptrs getWindowFromDatabase_(window_id_t win_id);
-
-    /*!
      * \brief "Undo" the pipeline for a ChkptWindows.WindowBytes blob
      * into the original ChkptWindow structure.
      */
-    std::unique_ptr<ChkptWindow> deserializeWindow_(const std::vector<char>& window_bytes) const;
+    std::unique_ptr<ChkptWindow> deserializeWindow_(
+        const std::vector<char>& window_bytes,
+        bool requires_decompression = true) const;
+
+    /*!
+     * \brief Retrieve a checkpoint window from the pipeline if possible,
+     * or from the database if not. If found, it will be added to the
+     * cache and removed from the pipeline / deleted from the database.
+     * We do this to ensure that checkpoint windows are always in one
+     * place only (cache / pipeline / database).
+     */
+    bool loadWindowIntoCache_(window_id_t win_id, bool must_succeed=true);
+
+    /*!
+     * \brief Check the pipeline queue for the window ID that we are
+     * looking for during a snoop operation.
+     * \note snoop_win_id_for_retrieval_ must be valid.
+     */
+    simdb::SnooperCallbackOutcome handleLoadWindowIntoCacheSnooper_(
+        std::deque<ChkptWindow>& queue);
+
+    /*!
+     * \brief Check the pipeline queue for the checkpoint ID that we are
+     * looking for during a snoop operation.
+     * \note snoop_win_id_for_retrieval_ must be valid.
+     */
+    simdb::SnooperCallbackOutcome handleLoadWindowIntoCacheSnooper_(
+        std::deque<ChkptWindowBytes>& queue,
+        bool requires_decompression);
+
+    /*!
+     * \brief Check the pipeline queue for windows to be deleted during a
+     * snoop operation.
+     * \note snoop_chkpt_id_for_deletion_ must be valid.
+     */
+    simdb::SnooperCallbackOutcome handleDeleteCheckpointSnooper_(
+        std::deque<ChkptWindow>& queue);
+
+    /*!
+     * \brief Check the pipeline queue for windows to be deleted during a
+     * snoop operation.
+     * \note snoop_chkpt_id_for_deletion_ must be valid.
+     */
+    simdb::SnooperCallbackOutcome handleDeleteCheckpointSnooper_(
+        std::deque<ChkptWindowBytes>& queue,
+        bool requires_decompression);
 
     /*!
      * \brief Apply the given callback to every checkpoint (cached and database).
@@ -432,7 +471,10 @@ private:
     chkpt_id_t current_id_ = checkpoint_type::UNIDENTIFIED_CHECKPOINT;
 
     //! \brief Pipeline input queue which accepts the oldest checkpoint window from the cache.
-    simdb::ConcurrentQueue<checkpoint_ptrs>* pipeline_head_ = nullptr;
+    simdb::ConcurrentQueue<ChkptWindow>* pipeline_head_ = nullptr;
+
+    //! \brief Pipeline input queue which accepts checkpoint IDs to delete from the pipeline.
+    simdb::ConcurrentQueue<chkpt_id_t>* pending_deletions_head_ = nullptr;
 
     //! \brief Subset (or all of) our checkpoints that we currently are holding in memory.
     std::unordered_map<window_id_t, checkpoint_ptrs> chkpts_cache_;
@@ -452,8 +494,25 @@ private:
     //! \brief SimDB instance.
     simdb::DatabaseManager* db_mgr_ = nullptr;
 
+    //! \brief Pipeline manager used to create and disable/re-enable the pipeline.
+    simdb::pipeline::PipelineManager* pipeline_mgr_ = nullptr;
+
+    //! \brief Async DB accessor for high-priority DB work.
+    simdb::pipeline::AsyncDatabaseAccessor* db_accessor_ = nullptr;
+
     //! \brief Checkpoint pipeline flusher.
     std::unique_ptr<simdb::pipeline::RunnableFlusher> pipeline_flusher_;
+
+    //! \brief This is the window ID we are looking for throughout the whole
+    //! pipeline during a RunnableFlusher snoop operation (fast). If not found
+    //! in the pipeline task queues, we will have to query the database and
+    //! recreate the checkpoints ourselves (slow).
+    utils::ValidValue<window_id_t> snoop_win_id_for_retrieval_;
+
+    //! \brief This is the checkpoint ID we are looking for during a deleteCheckpoint_()
+    //! operation. All checkpoints from this ID to the most recent will be deleted from
+    //! the pipeline.
+    utils::ValidValue<chkpt_id_t> snoop_chkpt_id_for_deletion_;
 
     //! \brief Snapshot generation threshold. Every n checkpoints in a chain
     //! are taken as snapshots instead of deltas.
