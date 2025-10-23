@@ -538,21 +538,37 @@ class AppFactory<sparta::serialization::checkpoint::DatabaseCheckpointer> : publ
 public:
     using AppT = sparta::serialization::checkpoint::DatabaseCheckpointer;
 
-    void setSpartaElems(sparta::TreeNode& root, sparta::Scheduler* sched = nullptr)
+    /// @brief Sets the ArchData root for a given instance of the checkpointer.
+    /// @param instance_num 0 if using one checkpointer instance, else the instance number (1-based)
+    /// @param root TreeNode at which ArchData will be taken
+    /// @note Scheduler must be set separately via setScheduler()
+    /// @note This is required before createEnabledApps() is called
+    void setArchDataRoot(size_t instance_num, sparta::TreeNode& root)
     {
-        root_ = &root;
-        sched_ = sched;
+        roots_by_inst_num_[instance_num] = &root;
     }
 
-    AppT* createApp(DatabaseManager* db_mgr) override
+    /// @brief Sets the Scheduler for all instances of the checkpointer.
+    /// @param sched Scheduler to use for the checkpoint's tick numbers
+    /// @note This is optional if ticks are not needed
+    void setScheduler(sparta::Scheduler& sched)
     {
-        if (!root_) {
+        scheduler_ = &sched;
+    }
+
+    AppT* createApp(DatabaseManager* db_mgr, size_t instance_num = 0) override
+    {
+        auto it = roots_by_inst_num_.find(instance_num);
+        if (it == roots_by_inst_num_.end()) {
             throw sparta::SpartaException(
-                "Must set root (and maybe scheduler) before instantiating DatabaseCheckpointer app");
+                "No TreeNode (ArchData root) set for DatabaseCheckpointer instance number ")
+                << instance_num << ". Did you forget to call setArchDataRoot()?";
         }
 
+        auto root = it->second;
+
         // Make the ctor call that the default AppFactory cannot make.
-        return new AppT(db_mgr, *root_, sched_);
+        return new AppT(db_mgr, *root, scheduler_);
     }
 
     void defineSchema(Schema& schema) const override
@@ -561,8 +577,8 @@ public:
     }
 
 private:
-    sparta::TreeNode* root_ = nullptr;
-    sparta::Scheduler* sched_ = nullptr;
+    sparta::Scheduler* scheduler_ = nullptr;
+    std::map<size_t, sparta::TreeNode*> roots_by_inst_num_;
 };
 
 } // namespace simdb
