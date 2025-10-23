@@ -92,7 +92,8 @@ void RunCheckpointerTest(uint64_t initial_tick = 0)
     simdb::AppManager app_mgr(&db_mgr);
 
     // Setup...
-    app_mgr.getAppFactory<DatabaseCheckpointer>()->setSpartaElems(root, &sched);
+    app_mgr.getAppFactory<DatabaseCheckpointer>()->setArchDataRoot(0, root);
+    app_mgr.getAppFactory<DatabaseCheckpointer>()->setScheduler(sched);
     app_mgr.enableApp(DatabaseCheckpointer::NAME);
     app_mgr.createEnabledApps();
     app_mgr.createSchemas();
@@ -554,7 +555,8 @@ void ProfileLoadCheckpoint(DatabaseCheckpointer::chkpt_id_t load_id)
     simdb::AppManager app_mgr(&db_mgr);
 
     // Setup...
-    app_mgr.getAppFactory<DatabaseCheckpointer>()->setSpartaElems(root, &sched);
+    app_mgr.getAppFactory<DatabaseCheckpointer>()->setArchDataRoot(0, root);
+    app_mgr.getAppFactory<DatabaseCheckpointer>()->setScheduler(sched);
     app_mgr.enableApp(DatabaseCheckpointer::NAME);
     app_mgr.createEnabledApps();
     app_mgr.createSchemas();
