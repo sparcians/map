@@ -591,6 +591,19 @@ void RunStepStepStepLoadTest()
         return actual_id;
     };
 
+    auto verif_load_chkpt = [&](DatabaseCheckpointer::chkpt_id_t id) {
+        EXPECT_NOTHROW(dbcp.loadCheckpoint(id));
+        EXPECT_EQUAL(dbcp.getCurrentID(), id);
+        EXPECT_EQUAL(dbcp.getNumCheckpoints(), id + 1);
+        EXPECT_FALSE(dbcp.hasCheckpoint(id + 1));
+        EXPECT_EQUAL(sched.getCurrentTick(), id);
+
+        auto r1_val = r1->read<uint32_t>();
+        auto r2_val = r2->read<uint32_t>();
+        EXPECT_EQUAL(r1_val, id * 5ul);
+        EXPECT_EQUAL(r2_val, id % 5ul);
+    };
+
     // Step forward 100 times and then load the first checkpoint
     // in this range (go backwards 99 checkpoints).
     uint32_t load_id = 1;
@@ -598,7 +611,7 @@ void RunStepStepStepLoadTest()
         for (uint32_t i = load_id; i < load_id + 100; ++i) {
             step_checkpointer(i);
         }
-        dbcp.loadCheckpoint(load_id);
+        verif_load_chkpt(load_id);
         ++load_id;
     }
 

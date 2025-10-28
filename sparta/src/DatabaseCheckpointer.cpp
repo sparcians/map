@@ -1001,7 +1001,9 @@ bool DatabaseCheckpointer::loadWindowIntoCache_(window_id_t win_id, bool must_su
     }
 
     // Disable the pipelines so we can safely snoop the task queues.
-    auto disabler = pipeline_mgr_->scopedDisableAll(false);
+    // Also disable the threads.
+    constexpr bool pause_threads = true;
+    auto disabler = pipeline_mgr_->scopedDisableAll(pause_threads);
 
     snoop_win_id_for_retrieval_ = win_id;
     auto outcome = pipeline_flusher_->snoopAll();
