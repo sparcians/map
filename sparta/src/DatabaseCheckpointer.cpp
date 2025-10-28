@@ -133,6 +133,7 @@ void DatabaseCheckpointer::createPipeline(simdb::pipeline::PipelineManager* pipe
                simdb::DatabaseManager* db_mgr,
                bool /*force_flush*/)
         {
+            sparta_assert(db_mgr->isInTransaction());
             auto start_win_id = getWindowID_(id);
 
             // DELETE FROM ChkptWindows WHERE WindowID > start_win_id
@@ -184,6 +185,7 @@ void DatabaseCheckpointer::createPipeline(simdb::pipeline::PipelineManager* pipe
                simdb::pipeline::AppPreparedINSERTs* tables,
                bool /*force_flush*/)
         {
+            sparta_assert(db_mgr_->isInTransaction());
             if (bytes_in.ignore || bytes_in.chkpt_bytes.empty()) {
                 // This window was marked for deletion during a snoop operation.
                 return simdb::pipeline::RunnableOutcome::NO_OP;
@@ -999,7 +1001,9 @@ bool DatabaseCheckpointer::loadWindowIntoCache_(window_id_t win_id, bool must_su
     }
 
     // Disable the pipelines so we can safely snoop the task queues.
-    auto disabler = pipeline_mgr_->scopedDisableAll(false);
+    // Also disable the threads.
+    constexpr bool pause_threads = true;
+    auto disabler = pipeline_mgr_->scopedDisableAll(pause_threads);
 
     snoop_win_id_for_retrieval_ = win_id;
     auto outcome = pipeline_flusher_->snoopAll();
@@ -1070,6 +1074,10 @@ simdb::SnooperCallbackOutcome DatabaseCheckpointer::handleLoadWindowIntoCacheSno
     auto it = find_unique_if(queue.begin(), queue.end(),
         [this](const ChkptWindow& window)
         {
+            if (window.ignore) {
+                return false;
+            }
+
             auto start_win_id = getWindowID_(window.start_chkpt_id);
             auto end_win_id = getWindowID_(window.end_chkpt_id);
             sparta_assert(start_win_id == end_win_id,
@@ -1102,6 +1110,10 @@ simdb::SnooperCallbackOutcome DatabaseCheckpointer::handleLoadWindowIntoCacheSno
     auto it = find_unique_if(queue.begin(), queue.end(),
         [this](const ChkptWindowBytes& bytes)
         {
+            if (bytes.ignore) {
+                return false;
+            }
+
             auto start_win_id = getWindowID_(bytes.start_chkpt_id);
             auto end_win_id = getWindowID_(bytes.end_chkpt_id);
             sparta_assert(start_win_id == end_win_id,
@@ -1149,6 +1161,10 @@ simdb::SnooperCallbackOutcome DatabaseCheckpointer::handleDeleteCheckpointSnoope
     auto it = find_unique_if(queue.begin(), queue.end(),
         [this](const ChkptWindow& window)
         {
+            if (window.ignore) {
+                return false;
+            }
+
             return (window.start_chkpt_id < snoop_chkpt_id_for_deletion_.getValue() &&
                     window.end_chkpt_id >= snoop_chkpt_id_for_deletion_.getValue());
         });
@@ -1202,6 +1218,10 @@ simdb::SnooperCallbackOutcome DatabaseCheckpointer::handleDeleteCheckpointSnoope
     auto it = find_unique_if(queue.begin(), queue.end(),
         [this](const ChkptWindowBytes& bytes)
         {
+            if (bytes.ignore) {
+                return false;
+            }
+
             return (bytes.start_chkpt_id < snoop_chkpt_id_for_deletion_.getValue() &&
                     bytes.end_chkpt_id >= snoop_chkpt_id_for_deletion_.getValue());
         });
