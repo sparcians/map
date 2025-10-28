@@ -530,6 +530,97 @@ void RunCheckpointerTest(uint64_t initial_tick = 0)
     EXPECT_FALSE(dbcp.isCheckpointCached(head_id));
 }
 
+void RunStepStepStepLoadTest()
+{
+    sparta::Scheduler sched;
+    RootTreeNode clocks("clocks");
+    sparta::Clock clk(&clocks, "clock", &sched);
+
+    // Create a tree with some register sets and memory
+    RootTreeNode root;
+
+    DummyDevice dummy(&root);
+    std::unique_ptr<RegisterSet> rset(RegisterSet::create(&dummy, reg_defs));
+
+    DummyDevice dummy2(&dummy);
+    std::unique_ptr<RegisterSet> rset2(RegisterSet::create(&dummy2, reg_defs));
+
+    auto r1 = rset->getRegister("reg2");
+    auto r2 = rset2->getRegister("reg2");
+    assert(r1 != r2);
+    r1->write<uint32_t>(0);
+    r2->write<uint32_t>(0);
+
+    simdb::DatabaseManager db_mgr("test.db", true);
+    simdb::AppManager app_mgr(&db_mgr);
+
+    // Setup...
+    app_mgr.getAppFactory<DatabaseCheckpointer>()->setArchDataRoot(0, root);
+    app_mgr.getAppFactory<DatabaseCheckpointer>()->setScheduler(sched);
+    app_mgr.enableApp(DatabaseCheckpointer::NAME);
+    app_mgr.createEnabledApps();
+    app_mgr.createSchemas();
+    app_mgr.postInit(0, nullptr);
+    app_mgr.openPipelines();
+
+    auto& dbcp = *app_mgr.getApp<DatabaseCheckpointer>();
+    dbcp.setSnapshotThreshold(10);
+    dbcp.setMaxCachedWindows(10);
+
+    root.enterConfiguring();
+    root.enterFinalized();
+    sched.finalize();
+
+    dbcp.createHead();
+
+    auto step_checkpointer = [&](DatabaseCheckpointer::chkpt_id_t expected_id) {
+        r1->write<uint32_t>(expected_id * 5ul);
+        r2->write<uint32_t>(expected_id % 5ul);
+        sched.run(1, true, false);
+
+        DatabaseCheckpointer::chkpt_id_t actual_id = DatabaseCheckpoint::UNIDENTIFIED_CHECKPOINT;
+        EXPECT_NOTHROW(actual_id = dbcp.createCheckpoint());
+        EXPECT_EQUAL(actual_id, expected_id);
+        EXPECT_EQUAL(actual_id, dbcp.getCurrentID());
+        EXPECT_EQUAL(dbcp.getNumCheckpoints(), expected_id + 1);
+
+        // Should always have the head and current checkpoints in the cache
+        EXPECT_TRUE(dbcp.isCheckpointCached(dbcp.getHeadID()));
+        EXPECT_TRUE(dbcp.isCheckpointCached(dbcp.getCurrentID()));
+
+        return actual_id;
+    };
+
+    auto verif_load_chkpt = [&](DatabaseCheckpointer::chkpt_id_t id) {
+        EXPECT_NOTHROW(dbcp.loadCheckpoint(id));
+        EXPECT_EQUAL(dbcp.getCurrentID(), id);
+        EXPECT_EQUAL(dbcp.getNumCheckpoints(), id + 1);
+        EXPECT_FALSE(dbcp.hasCheckpoint(id + 1));
+        EXPECT_EQUAL(sched.getCurrentTick(), id);
+
+        auto r1_val = r1->read<uint32_t>();
+        auto r2_val = r2->read<uint32_t>();
+        EXPECT_EQUAL(r1_val, id * 5ul);
+        EXPECT_EQUAL(r2_val, id % 5ul);
+    };
+
+    // Step forward 100 times and then load the first checkpoint
+    // in this range (go backwards 99 checkpoints).
+    uint32_t load_id = 1;
+    while (load_id < 100) {
+        for (uint32_t i = load_id; i < load_id + 100; ++i) {
+            step_checkpointer(i);
+        }
+        verif_load_chkpt(load_id);
+        ++load_id;
+    }
+
+    // Finish
+    app_mgr.postSimLoopTeardown();
+    root.enterTeardown();
+    clocks.enterTeardown();
+}
+
 void ProfileLoadCheckpoint(DatabaseCheckpointer::chkpt_id_t load_id)
 {
     sparta::Scheduler sched;
@@ -632,6 +723,11 @@ int main()
     // Run the test with initial scheduler tick = 10,
     // i.e. head checkpoint at tick 10
     RunCheckpointerTest(10);
+
+    // Run a test where we step forward N times, then
+    // load the first checkpoint in that range (rollback
+    // N-1 checkpoints).
+    RunStepStepStepLoadTest();
 
     // Measure elapsed times for loading checkpoints
     // that either on disk or in the pipeline, but
