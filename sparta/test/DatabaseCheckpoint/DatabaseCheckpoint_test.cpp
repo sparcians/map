@@ -596,10 +596,8 @@ void RunStepStepStepLoadTest()
     uint32_t load_id = 1;
     while (load_id < 100) {
         for (uint32_t i = load_id; i < load_id + 100; ++i) {
-            std::cout << "Creating checkpoint " << i << std::endl;
             step_checkpointer(i);
         }
-        std::cout << "Loading checkpoint " << load_id << std::endl;
         dbcp.loadCheckpoint(load_id);
         ++load_id;
     }
