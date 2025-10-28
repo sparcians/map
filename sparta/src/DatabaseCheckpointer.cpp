@@ -1070,6 +1070,10 @@ simdb::SnooperCallbackOutcome DatabaseCheckpointer::handleLoadWindowIntoCacheSno
     auto it = find_unique_if(queue.begin(), queue.end(),
         [this](const ChkptWindow& window)
         {
+            if (window.ignore) {
+                return false;
+            }
+
             auto start_win_id = getWindowID_(window.start_chkpt_id);
             auto end_win_id = getWindowID_(window.end_chkpt_id);
             sparta_assert(start_win_id == end_win_id,
@@ -1102,6 +1106,10 @@ simdb::SnooperCallbackOutcome DatabaseCheckpointer::handleLoadWindowIntoCacheSno
     auto it = find_unique_if(queue.begin(), queue.end(),
         [this](const ChkptWindowBytes& bytes)
         {
+            if (bytes.ignore) {
+                return false;
+            }
+
             auto start_win_id = getWindowID_(bytes.start_chkpt_id);
             auto end_win_id = getWindowID_(bytes.end_chkpt_id);
             sparta_assert(start_win_id == end_win_id,
@@ -1149,6 +1157,10 @@ simdb::SnooperCallbackOutcome DatabaseCheckpointer::handleDeleteCheckpointSnoope
     auto it = find_unique_if(queue.begin(), queue.end(),
         [this](const ChkptWindow& window)
         {
+            if (window.ignore) {
+                return false;
+            }
+
             return (window.start_chkpt_id < snoop_chkpt_id_for_deletion_.getValue() &&
                     window.end_chkpt_id >= snoop_chkpt_id_for_deletion_.getValue());
         });
@@ -1202,6 +1214,10 @@ simdb::SnooperCallbackOutcome DatabaseCheckpointer::handleDeleteCheckpointSnoope
     auto it = find_unique_if(queue.begin(), queue.end(),
         [this](const ChkptWindowBytes& bytes)
         {
+            if (bytes.ignore) {
+                return false;
+            }
+
             return (bytes.start_chkpt_id < snoop_chkpt_id_for_deletion_.getValue() &&
                     bytes.end_chkpt_id >= snoop_chkpt_id_for_deletion_.getValue());
         });
