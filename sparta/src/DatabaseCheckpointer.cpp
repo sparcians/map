@@ -1027,6 +1027,8 @@ bool DatabaseCheckpointer::loadWindowIntoCache_(window_id_t win_id, bool must_su
     // Final note: since the pipelines are disabled, we do not have to worry
     // about using safeTransaction as this thread is the only one accessing
     // the database.
+
+    // TODO cnyce: consider using an async eval right here to protect the database
     auto query = db_mgr_->createQuery("ChkptWindows");
     query->addConstraintForUInt64("WindowID", simdb::Constraints::EQUAL, win_id);
 
