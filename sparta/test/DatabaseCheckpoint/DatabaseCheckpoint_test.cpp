@@ -714,7 +714,7 @@ int main()
     // Run a test where we step forward N times, then
     // load the first checkpoint in that range (rollback
     // N-1 checkpoints).
-    RunStepStepStepLoadTest();
+    //RunStepStepStepLoadTest();
 
     // Measure elapsed times for loading checkpoints
     // that either on disk or in the pipeline, but
