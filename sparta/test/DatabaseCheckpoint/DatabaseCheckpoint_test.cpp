@@ -705,16 +705,34 @@ int main()
 
     // Run the test with initial scheduler tick = 0,
     // i.e. head checkpoint at tick 0
-    RunCheckpointerTest(0);
+    try {
+        RunCheckpointerTest(0);
+    } catch (const std::exception& ex) {
+        EXPECT_EQUAL(std::string(ex.what()), "RunCheckpointerTest");
+    } catch (...) {
+        EXPECT_EQUAL(std::string("Unknown exception"), "RunCheckpointerTest");
+    }
 
     // Run the test with initial scheduler tick = 10,
     // i.e. head checkpoint at tick 10
-    RunCheckpointerTest(10);
+    try {
+        RunCheckpointerTest(10);
+    } catch (const std::exception& ex) {
+        EXPECT_EQUAL(std::string(ex.what()), "RunCheckpointerTest");
+    } catch (...) {
+        EXPECT_EQUAL(std::string("Unknown exception"), "RunCheckpointerTest");
+    }
 
     // Run a test where we step forward N times, then
     // load the first checkpoint in that range (rollback
     // N-1 checkpoints).
-    //RunStepStepStepLoadTest();
+    try {
+        RunStepStepStepLoadTest();
+    } catch (const std::exception& ex) {
+        EXPECT_EQUAL(std::string(ex.what()), "RunStepStepStepLoadTest");
+    } catch (...) {
+        EXPECT_EQUAL(std::string("Unknown exception"), "RunStepStepStepLoadTest");
+    }
 
     // Measure elapsed times for loading checkpoints
     // that either on disk or in the pipeline, but
@@ -728,7 +746,13 @@ int main()
     // from the pipeline vs on disk.
     uint32_t load_id = 9000;
     while (load_id > 0) {
-        ProfileLoadCheckpoint(load_id);
+        try {
+            ProfileLoadCheckpoint(load_id);
+        } catch (const std::exception& ex) {
+            EXPECT_EQUAL(std::string(ex.what()), "ProfileLoadCheckpoint");
+        } catch (...) {
+            EXPECT_EQUAL(std::string("Unknown exception"), "ProfileLoadCheckpoint");
+        }
         load_id -= 250;
     }
 
