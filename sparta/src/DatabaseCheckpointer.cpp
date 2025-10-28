@@ -133,6 +133,7 @@ void DatabaseCheckpointer::createPipeline(simdb::pipeline::PipelineManager* pipe
                simdb::DatabaseManager* db_mgr,
                bool /*force_flush*/)
         {
+            sparta_assert(db_mgr->isInTransaction());
             auto start_win_id = getWindowID_(id);
 
             // DELETE FROM ChkptWindows WHERE WindowID > start_win_id
@@ -184,6 +185,7 @@ void DatabaseCheckpointer::createPipeline(simdb::pipeline::PipelineManager* pipe
                simdb::pipeline::AppPreparedINSERTs* tables,
                bool /*force_flush*/)
         {
+            sparta_assert(db_mgr_->isInTransaction());
             if (bytes_in.ignore || bytes_in.chkpt_bytes.empty()) {
                 // This window was marked for deletion during a snoop operation.
                 return simdb::pipeline::RunnableOutcome::NO_OP;
@@ -1027,8 +1029,6 @@ bool DatabaseCheckpointer::loadWindowIntoCache_(window_id_t win_id, bool must_su
     // Final note: since the pipelines are disabled, we do not have to worry
     // about using safeTransaction as this thread is the only one accessing
     // the database.
-
-    // TODO cnyce: consider using an async eval right here to protect the database
     auto query = db_mgr_->createQuery("ChkptWindows");
     query->addConstraintForUInt64("WindowID", simdb::Constraints::EQUAL, win_id);
 
