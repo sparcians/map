@@ -45,7 +45,8 @@ public:
      * \param sched Scheduler to read and restart on checkpoint restore (if
      *              not nullptr)
      */
-    DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, TreeNode& root, Scheduler* sched=nullptr);
+    DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, TreeNode& root, Scheduler* sched=nullptr,
+                         const std::vector<sparta::TreeNode*>& additional_roots = {});
 
     /*!
      * \brief Define the SimDB schema for this checkpointer.
@@ -543,9 +544,10 @@ public:
     /// @param root TreeNode at which ArchData will be taken
     /// @note Scheduler must be set separately via setScheduler()
     /// @note This is required before createEnabledApps() is called
-    void setArchDataRoot(size_t instance_num, sparta::TreeNode& root)
+    void setArchDataRoot(size_t instance_num, sparta::TreeNode& root, const std::vector<sparta::TreeNode*>& additional_roots = {})
     {
         roots_by_inst_num_[instance_num] = &root;
+        additional_roots_by_inst_num_[instance_num] = additional_roots;
     }
 
     /// @brief Sets the Scheduler for all instances of the checkpointer.
@@ -567,8 +569,14 @@ public:
 
         auto root = it->second;
 
+        auto it2 = additional_roots_by_inst_num_.find(instance_num);
+        std::vector<sparta::TreeNode*> additional_roots;
+        if (it2 != additional_roots_by_inst_num_.end()) {
+            additional_roots = it2->second;
+        }
+
         // Make the ctor call that the default AppFactory cannot make.
-        return new AppT(db_mgr, *root, scheduler_);
+        return new AppT(db_mgr, *root, scheduler_, additional_roots);
     }
 
     void defineSchema(Schema& schema) const override
@@ -579,6 +587,7 @@ public:
 private:
     sparta::Scheduler* scheduler_ = nullptr;
     std::map<size_t, sparta::TreeNode*> roots_by_inst_num_;
+    std::map<size_t, std::vector<sparta::TreeNode*>> additional_roots_by_inst_num_;
 };
 
 } // namespace simdb

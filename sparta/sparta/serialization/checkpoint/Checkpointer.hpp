@@ -85,26 +85,16 @@ namespace sparta::serialization::checkpoint
          * checkpointer will not touch attempt to roll back the scheduler on
          * checkpoint restores
          */
-        Checkpointer(TreeNode& root, sparta::Scheduler* sched=nullptr) :
+        Checkpointer(TreeNode& root, sparta::Scheduler* sched=nullptr, const std::vector<TreeNode*> & additional_roots = {}):
             sched_(sched),
-            root_(root)
+            root_(root),
+            additional_roots_(additional_roots)
         { }
 
         /*!
          * \brief Destructor
          */
         virtual ~Checkpointer() {
-        }
-
-        /*!
-         * \brief Add additional root nodes from which ArchData checkpoints will be taken.
-         * \pre Must be called before createHead
-         */
-        void addRoot(TreeNode& root) {
-            if (head_) {
-                throw CheckpointError("Cannot add additional checkpoint roots after head has been created");
-            }
-            additional_roots_.push_back(&root);
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -123,6 +113,11 @@ namespace sparta::serialization::checkpoint
          * \brief Non-const variant of getRoot
          */
         TreeNode& getRoot() noexcept { return root_; }
+
+        /*!
+         * \brief Returns the additional root nodes associated with this checkpointer
+         */
+        const std::vector<TreeNode*>& getAdditionalRoots() const noexcept { return additional_roots_; }
 
         /*!
          * \brief Returns the sheduler associated with this checkpointer

@@ -24,8 +24,9 @@ using tick_t = typename CheckpointBase::tick_t;
 using chkpt_id_t = typename CheckpointBase::chkpt_id_t;
 using window_id_t = typename DatabaseCheckpointer::window_id_t;
 
-DatabaseCheckpointer::DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, TreeNode& root, Scheduler* sched) :
-    Checkpointer(root, sched),
+DatabaseCheckpointer::DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, TreeNode& root, Scheduler* sched,
+                                           const std::vector<sparta::TreeNode*>& additional_roots) :
+    Checkpointer(root, sched, additional_roots),
     db_mgr_(db_mgr),
     next_chkpt_id_(checkpoint_type::MIN_CHECKPOINT)
 {
