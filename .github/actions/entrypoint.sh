@@ -39,19 +39,19 @@ fi
 rm install.log
 
 if [ "${BUILD_TYPE}" = "Release" ]; then
-    make -j${NUM_CORES} regress
+    make regress
     if [ $? -ne 0 ]; then
         echo "ERROR: regress of sparta FAILED!!!"
         exit 1
     fi
 
-    make -j${NUM_CORES} example_regress
+    make example_regress
     if [ $? -ne 0 ]; then
         echo "ERROR: example_regress of sparta FAILED!!!"
         exit 1
     fi
 
-    make -j${NUM_CORES} core_example_regress
+    make core_example_regress
     if [ $? -ne 0 ]; then
         echo "ERROR: core_example_regress of sparta FAILED!!!"
         exit 1
