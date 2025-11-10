@@ -44,6 +44,8 @@ public:
      *
      * \param sched Scheduler to read and restart on checkpoint restore (if
      *              not nullptr)
+     *
+     * \param additional_roots Additional TreeNodes at which checkpoints will be taken.
      */
     DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, TreeNode& root, Scheduler* sched=nullptr,
                          const std::vector<sparta::TreeNode*>& additional_roots = {});

@@ -82,6 +82,7 @@ namespace sparta::serialization::checkpoint
          * finalized (see sparta::TreeNode::isFinalized). At this point, the node
          * does not need to be finalized
          * \param sched Relevant scheduler. If nullptr (default), the
+         * \param additional_roots Additional TreeNodes at which checkpoints will be taken.
          * checkpointer will not touch attempt to roll back the scheduler on
          * checkpoint restores
          */

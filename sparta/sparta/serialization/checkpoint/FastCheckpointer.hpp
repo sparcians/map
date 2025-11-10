@@ -86,9 +86,12 @@ namespace sparta::serialization::checkpoint
          *
          * \param sched Scheduler to read and restart on checkpoint restore (if
          *              not nullptr)
+         *
+         * \param additional_roots Additional TreeNodes at which checkpoints will be taken.
          */
-        FastCheckpointer(TreeNode& root, Scheduler* sched=nullptr) :
-            Checkpointer(root, sched),
+        FastCheckpointer(TreeNode& root, Scheduler* sched=nullptr,
+                         const std::vector<sparta::TreeNode*>& additional_roots = {}) :
+            Checkpointer(root, sched, additional_roots),
             snap_thresh_(DEFAULT_SNAPSHOT_THRESH),
             next_chkpt_id_(checkpoint_type::MIN_CHECKPOINT),
             num_alive_checkpoints_(0),

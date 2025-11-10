@@ -145,10 +145,13 @@ namespace sparta::serialization::checkpoint
          *              restoring checkpoints. See
          *              sparta::serialization::Checkpoint::Checkpoint
          *              for details
+         *
+         * \param additional_roots Additional TreeNodes at which checkpoints will be taken.
          */
         PersistentFastCheckpointer(TreeNode& root,
-                                   sparta::Scheduler* sched=nullptr) :
-            FastCheckpointer(root, sched),
+                                   sparta::Scheduler* sched=nullptr,
+                                   const std::vector<sparta::TreeNode*>& additional_roots = {}) :
+            FastCheckpointer(root, sched, additional_roots),
             prefix_("chkpt"),
             suffix_("data")
         { }
