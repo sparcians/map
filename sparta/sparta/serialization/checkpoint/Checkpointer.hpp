@@ -96,6 +96,17 @@ namespace sparta::serialization::checkpoint
         virtual ~Checkpointer() {
         }
 
+        /*!
+         * \brief Add additional root nodes from which ArchData checkpoints will be taken.
+         * \pre Must be called before createHead
+         */
+        void addRoot(TreeNode& root) {
+            if (head_) {
+                throw CheckpointError("Cannot add additional checkpoint roots after head has been created");
+            }
+            additional_roots_.push_back(&root);
+        }
+
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
@@ -703,6 +714,9 @@ namespace sparta::serialization::checkpoint
 
             // Recursively walk the tree and add all ArchDatas to adatas_
             recursAddArchData_(&root_, adatas_helper);
+            for(TreeNode* additional_root : additional_roots_){
+                recursAddArchData_(additional_root, adatas_helper);
+            }
         }
 
         /*!
@@ -734,6 +748,7 @@ namespace sparta::serialization::checkpoint
         }
 
         TreeNode& root_; //!< Root of tree at which checkpoints will be taken
+        std::vector<TreeNode*> additional_roots_; //!< Additional root nodes for checkpointing
 
         /*!
          * \brief Head checkpoint. This is the first checkpoint taken but cannot
