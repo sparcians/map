@@ -24,9 +24,8 @@ using tick_t = typename CheckpointBase::tick_t;
 using chkpt_id_t = typename CheckpointBase::chkpt_id_t;
 using window_id_t = typename DatabaseCheckpointer::window_id_t;
 
-DatabaseCheckpointer::DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, TreeNode& root, Scheduler* sched,
-                                           const std::vector<sparta::TreeNode*>& additional_roots) :
-    Checkpointer(root, sched, additional_roots),
+DatabaseCheckpointer::DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, const std::vector<sparta::TreeNode*>& roots, Scheduler* sched) :
+    Checkpointer(roots, sched),
     db_mgr_(db_mgr),
     next_chkpt_id_(checkpoint_type::MIN_CHECKPOINT)
 {
@@ -587,7 +586,15 @@ bool DatabaseCheckpointer::isSnapshot(chkpt_id_t id) noexcept
 std::string DatabaseCheckpointer::stringize() const
 {
     std::stringstream ss;
-    ss << "<DatabaseCheckpointer on " << getRoot().getLocation() << '>';
+    ss << "<DatabaseCheckpointer on ";
+    for (size_t i = 0; i < getRoots().size(); ++i) {
+        TreeNode* root = getRoots()[i];
+        if (i != 0) {
+            ss << ", ";
+        }
+        ss << root->getLocation();
+    }
+    ss << ">";
     return ss.str();
 }
 
@@ -675,19 +682,21 @@ void DatabaseCheckpointer::createHead_()
         throw CheckpointError("Cannot create head at ")
             << tick << " because a head already exists in this checkpointer";
     }
-    if (getRoot().isFinalized() == false) {
-        CheckpointError exc("Cannot create a checkpoint until the tree is finalized. Attempting to checkpoint from node ");
-        exc << getRoot().getLocation() << " at tick ";
-        if (sched_) {
-            exc << tick;
-        }else{
-            exc << "<no scheduler>";
+    for (auto root : getRoots()) {
+        if (root->isFinalized() == false) {
+            CheckpointError exc("Cannot create a checkpoint until the tree is finalized. Attempting to checkpoint from node ");
+            exc << root->getLocation() << " at tick ";
+            if (sched_) {
+                exc << tick;
+            }else{
+                exc << "<no scheduler>";
+            }
+            throw exc;
         }
-        throw exc;
     }
 
     std::shared_ptr<checkpoint_type> chkpt(new checkpoint_type(
-        getRoot(), getArchDatas(), next_chkpt_id_++, tick,
+        getArchDatas(), next_chkpt_id_++, tick,
         nullptr, true, this));
 
     setHead_(chkpt.get());
@@ -749,7 +758,7 @@ chkpt_id_t DatabaseCheckpointer::createCheckpoint_(bool force_snapshot)
     }
 
     std::shared_ptr<checkpoint_type> chkpt(new checkpoint_type(
-        getRoot(), getArchDatas(), next_chkpt_id_++, tick,
+        getArchDatas(), next_chkpt_id_++, tick,
         prev, force_snapshot || is_snapshot, this));
 
     auto current = chkpt.get();

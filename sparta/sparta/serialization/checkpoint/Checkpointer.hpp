@@ -81,15 +81,26 @@ namespace sparta::serialization::checkpoint
          * RootTreeNode. Before the first checkpoint is taken, this node must be
          * finalized (see sparta::TreeNode::isFinalized). At this point, the node
          * does not need to be finalized
-         * \param sched Relevant scheduler. If nullptr (default), the
-         * \param additional_roots Additional TreeNodes at which checkpoints will be taken.
-         * checkpointer will not touch attempt to roll back the scheduler on
-         * checkpoint restores
+         * \param sched Relevant scheduler. If nullptr (default), the checkpoints
+         * will not have their Ticks assigned
          */
-        Checkpointer(TreeNode& root, sparta::Scheduler* sched=nullptr, const std::vector<TreeNode*> & additional_roots = {}):
+        Checkpointer(TreeNode& root, sparta::Scheduler* sched=nullptr):
+            Checkpointer({&root}, sched)
+        { }
+
+        /*!
+         * \brief Checkpointer Constructor
+         * \param roots TreeNodes at which checkpoints will be taken.
+         * This cannot be changed later. These do not necessarily need to be
+         * RootTreeNodes. Before the first checkpoint is taken, these nodes must be
+         * finalized (see sparta::TreeNode::isFinalized). At this point, the nodes
+         * do not need to be finalized.
+         * \param sched Relevant scheduler. If nullptr (default), the checkpoints
+         * will not have their Ticks assigned
+         */
+        Checkpointer(const std::vector<TreeNode*>& roots, sparta::Scheduler* sched=nullptr):
             sched_(sched),
-            root_(root),
-            additional_roots_(additional_roots)
+            roots_(roots)
         { }
 
         /*!
@@ -106,19 +117,9 @@ namespace sparta::serialization::checkpoint
         ////////////////////////////////////////////////////////////////////////
 
         /*!
-         * \brief Returns the root associated with this checkpointer
+         * \brief Returns the root(s) associated with this checkpointer
          */
-        const TreeNode& getRoot() const noexcept { return root_; }
-
-        /*!
-         * \brief Non-const variant of getRoot
-         */
-        TreeNode& getRoot() noexcept { return root_; }
-
-        /*!
-         * \brief Returns the additional root nodes associated with this checkpointer
-         */
-        const std::vector<TreeNode*>& getAdditionalRoots() const noexcept { return additional_roots_; }
+        const std::vector<TreeNode*> & getRoots() const noexcept { return roots_; }
 
         /*!
          * \brief Returns the sheduler associated with this checkpointer
@@ -191,15 +192,17 @@ namespace sparta::serialization::checkpoint
                 exc << " because a head already exists in this checkpointer";
                 throw exc;
             }
-            if(root_.isFinalized() == false){
-                CheckpointError exc("Cannot create a checkpoint until the tree is finalized. Attempting to checkpoint from node ");
-                exc << root_.getLocation() << " at tick ";
-                if(sched_){
-                    exc << tick;
-                }else{
-                    exc << "<no scheduler>";
+            for (auto root : roots_) {
+                if(root->isFinalized() == false){
+                    CheckpointError exc("Cannot create a checkpoint until the tree is finalized. Attempting to checkpoint from node ");
+                    exc << root->getLocation() << " at tick ";
+                    if(sched_){
+                        exc << tick;
+                    }else{
+                        exc << "<no scheduler>";
+                    }
+                    throw exc;
                 }
-                throw exc;
             }
 
             enumerateArchDatas_(); // Determines which ArchDatas are required and populates adatas_
@@ -461,7 +464,15 @@ namespace sparta::serialization::checkpoint
          */
         virtual std::string stringize() const {
             std::stringstream ss;
-            ss << "<Checkpointer on " << root_.getLocation() << '>';
+            ss << "<Checkpointer on ";
+            for (size_t i = 0; i < roots_.size(); ++i) {
+                TreeNode* root = roots_[i];
+                if (i != 0) {
+                    ss << ", ";
+                }
+                ss << root->getLocation();
+            }
+            ss << ">";
             return ss.str();
         }
 
@@ -709,9 +720,8 @@ namespace sparta::serialization::checkpoint
             std::map<ArchData*,TreeNode*> adatas_helper;
 
             // Recursively walk the tree and add all ArchDatas to adatas_
-            recursAddArchData_(&root_, adatas_helper);
-            for(TreeNode* additional_root : additional_roots_){
-                recursAddArchData_(additional_root, adatas_helper);
+            for(TreeNode* root : roots_) {
+                recursAddArchData_(root, adatas_helper);
             }
         }
 
@@ -729,10 +739,11 @@ namespace sparta::serialization::checkpoint
                 if(ad != nullptr){
                     auto itr = adatas_helper.find(ad);
                     if(itr != adatas_helper.end()){
-                        throw CheckpointError("Found a second reference to ArchData ")
-                            << ad << " in the tree: " << root_.stringize() << " . First reference found throgh "
-                            << itr->second->getLocation() << " and second found through " << n->getLocation()
-                            << " . An ArchData should be findable throug exactly 1 TreeNode";
+                        //TODO cnyce
+                        //throw CheckpointError("Found a second reference to ArchData ")
+                        //    << ad << " in the tree: " << root_.stringize() << " . First reference found throgh "
+                        //    << itr->second->getLocation() << " and second found through " << n->getLocation()
+                        //    << " . An ArchData should be findable throug exactly 1 TreeNode";
                     }
                     adatas_.push_back(ad);
                     adatas_helper[ad] = n; // Add to helper map
@@ -743,8 +754,7 @@ namespace sparta::serialization::checkpoint
             }
         }
 
-        TreeNode& root_; //!< Root of tree at which checkpoints will be taken
-        std::vector<TreeNode*> additional_roots_; //!< Additional root nodes for checkpointing
+        std::vector<TreeNode*> roots_; //!< Roots of tree at which checkpoints will be taken
 
         /*!
          * \brief Head checkpoint. This is the first checkpoint taken but cannot

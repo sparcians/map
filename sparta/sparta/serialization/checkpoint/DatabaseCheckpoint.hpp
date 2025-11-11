@@ -72,8 +72,7 @@ namespace sparta::serialization::checkpoint
     private:
 
         //! \brief Construction to be performed by friend class DatabaseCheckpointer
-        DatabaseCheckpoint(TreeNode& root,
-                           const std::vector<ArchData*>& dats,          
+        DatabaseCheckpoint(const std::vector<ArchData*>& dats,          
                            chkpt_id_t id,
                            tick_t tick,
                            DatabaseCheckpoint* prev,

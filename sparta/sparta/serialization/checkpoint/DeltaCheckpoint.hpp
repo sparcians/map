@@ -88,8 +88,7 @@ namespace sparta::serialization::checkpoint
          * Snapshot checkpoint can be restored without walking any checkpoint
          * chains
          */
-        DeltaCheckpoint(TreeNode& root,
-                        const std::vector<ArchData*>& dats,
+        DeltaCheckpoint(const std::vector<ArchData*>& dats,
                         chkpt_id_t id,
                         tick_t tick,
                         DeltaCheckpoint* prev_delta,
@@ -98,7 +97,6 @@ namespace sparta::serialization::checkpoint
             deleted_id_(UNIDENTIFIED_CHECKPOINT),
             is_snapshot_(is_snapshot)
         {
-            (void) root;
             if(nullptr == prev_delta){
                 if(is_snapshot == false){
                     throw CheckpointError("Cannot create a DeltaCheckpoint id=")
