@@ -88,7 +88,7 @@ namespace sparta::serialization::checkpoint
          *              not nullptr)
          */
         FastCheckpointer(TreeNode& root, Scheduler* sched=nullptr) :
-            FastCheckpointer({&root}, sched)
+            FastCheckpointer(std::vector<sparta::TreeNode*>{1ul, &root}, sched)
         { }
 
         /*!

@@ -148,7 +148,7 @@ namespace sparta::serialization::checkpoint
          */
         PersistentFastCheckpointer(TreeNode& root,
                                    sparta::Scheduler* sched=nullptr) :
-            PersistentFastCheckpointer({&root}, sched)
+            PersistentFastCheckpointer(std::vector<sparta::TreeNode*>{1ul, &root}, sched)
         { }
 
         /*!
