@@ -705,21 +705,8 @@ void ProfileLoadCheckpoint(DatabaseCheckpointer::chkpt_id_t load_id)
     EXPECT_FALSE(dbcp.hasCheckpoint(load_id + 1));
 }
 
-std::string exception_str;
-int signal_raised = 0;
-void signalHandler(int signum)
-{
-    signal_raised = signum;
-}
-
 int main()
 {
-    signal(SIGTERM, signalHandler);
-    signal(SIGINT, signalHandler);
-    signal(SIGSEGV, signalHandler);
-    signal(SIGABRT, signalHandler);
-    signal(SIGPIPE, signalHandler);
-
     auto warn_cerr = std::make_unique<sparta::log::Tap>(
         sparta::TreeNode::getVirtualGlobalNode(),
         sparta::log::categories::WARN,
@@ -728,44 +715,36 @@ int main()
     auto warn_file = std::make_unique<sparta::log::Tap>(
         sparta::TreeNode::getVirtualGlobalNode(),
         sparta::log::categories::WARN,
-        "db-checkpointer-warnings.log");
+        "warnings.log");
 
-    std::string exception_str;
-    try {
-        // Run the test with initial scheduler tick = 0,
-        // i.e. head checkpoint at tick 0
-        RunCheckpointerTest(0);
+    // Run the test with initial scheduler tick = 0,
+    // i.e. head checkpoint at tick 0
+    RunCheckpointerTest(0);
 
-        // Run the test with initial scheduler tick = 10,
-        // i.e. head checkpoint at tick 10
-        RunCheckpointerTest(10);
+    // Run the test with initial scheduler tick = 10,
+    // i.e. head checkpoint at tick 10
+    RunCheckpointerTest(10);
 
-        // Run a test where we step forward N times, then
-        // load the first checkpoint in that range (rollback
-        // N-1 checkpoints).
-        RunStepStepStepLoadTest();
+    // Run a test where we step forward N times, then
+    // load the first checkpoint in that range (rollback
+    // N-1 checkpoints).
+    RunStepStepStepLoadTest();
 
-        // Measure elapsed times for loading checkpoints
-        // that either on disk or in the pipeline, but
-        // either way they are not in the cache. Importantly,
-        // we want the checkpointer to have about the same
-        // performance to load disk checkpoints regardless.
-        //
-        // The test will create 10000 checkpoints, so we will
-        // load checkpoints 9000, 8750, 8500, ..., 250. This
-        // should give a good mixture of loading checkpoints
-        // from the pipeline vs on disk.
-        uint32_t load_id = 9000;
-        while (load_id > 0) {
-            ProfileLoadCheckpoint(load_id);
-            load_id -= 250;
-        }
-    } catch (const std::exception & ex) {
-        exception_str = ex.what();
+    // Measure elapsed times for loading checkpoints
+    // that either on disk or in the pipeline, but
+    // either way they are not in the cache. Importantly,
+    // we want the checkpointer to have about the same
+    // performance to load disk checkpoints regardless.
+    //
+    // The test will create 10000 checkpoints, so we will
+    // load checkpoints 9000, 8750, 8500, ..., 250. This
+    // should give a good mixture of loading checkpoints
+    // from the pipeline vs on disk.
+    uint32_t load_id = 9000;
+    while (load_id > 0) {
+        ProfileLoadCheckpoint(load_id);
+        load_id -= 250;
     }
-
-    EXPECT_EQUAL(signal_raised, 0);
-    EXPECT_EQUAL(exception_str, "");
 
     REPORT_ERROR;
     return ERROR_CODE;
