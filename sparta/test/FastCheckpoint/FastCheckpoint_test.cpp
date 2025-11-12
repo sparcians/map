@@ -971,7 +971,7 @@ int main()
 
     std::unique_ptr<sparta::log::Tap> warn_file(new sparta::log::Tap(sparta::TreeNode::getVirtualGlobalNode(),
                                                                  sparta::log::categories::WARN,
-                                                                 "warnings.log"));
+                                                                 "fast-checkpointer-warnings.log"));
 
     generalTest();
     stackTest();
