@@ -97,6 +97,29 @@ namespace sparta::serialization::checkpoint
         { }
 
         /*!
+         * \brief FastCheckpointer Constructor
+         *
+         * \param roots TreeNodes at which checkpoints will be taken.
+         *              These cannot be changed later. These do not
+         *              necessarily need to be RootTreeNodes. Before
+         *              the first checkpoint is taken, these nodes must
+         *              be finalized (see
+         *              sparta::TreeNode::isFinalized). At this point,
+         *              the nodes do not need to be finalized
+         *
+         * \param sched Scheduler to read and restart on checkpoint restore (if
+         *              not nullptr)
+         */
+        FastCheckpointer(const std::vector<sparta::TreeNode*>& roots, Scheduler* sched=nullptr) :
+            Checkpointer(roots, sched),
+            snap_thresh_(DEFAULT_SNAPSHOT_THRESH),
+            next_chkpt_id_(checkpoint_type::MIN_CHECKPOINT),
+            num_alive_checkpoints_(0),
+            num_alive_snapshots_(0),
+            num_dead_checkpoints_(0)
+        { }
+
+        /*!
          * \brief Destructor
          *
          * Frees all checkpoint data
@@ -446,7 +469,15 @@ namespace sparta::serialization::checkpoint
          */
         std::string stringize() const override {
             std::stringstream ss;
-            ss << "<FastCheckpointer on " << getRoot().getLocation() << '>';
+            ss << "<FastCheckpointer on ";
+            for (size_t i = 0; i < getRoots().size(); ++i) {
+                TreeNode* root = getRoots()[i];
+                if (i != 0) {
+                    ss << ", ";
+                }
+                ss << root->getLocation();
+            }
+            ss << '>';
             return ss.str();
         }
 
@@ -689,18 +720,20 @@ namespace sparta::serialization::checkpoint
                 throw CheckpointError("Cannot create head at ")
                     << tick << " because a head already exists in this checkpointer";
             }
-            if(getRoot().isFinalized() == false){
-                CheckpointError exc("Cannot create a checkpoint until the tree is finalized. Attempting to checkpoint from node ");
-                exc << getRoot().getLocation() << " at tick ";
-                if(sched_){
-                    exc << tick;
-                }else{
-                    exc << "<no scheduler>";
+            for (auto root : getRoots()) {
+                if(root->isFinalized() == false){
+                    CheckpointError exc("Cannot create a checkpoint until the tree is finalized. Attempting to checkpoint from node ");
+                    exc << root->getLocation() << " at tick ";
+                    if(sched_){
+                        exc << tick;
+                    }else{
+                        exc << "<no scheduler>";
+                    }
+                    throw exc;
                 }
-                throw exc;
             }
 
-            checkpoint_type* dcp = new checkpoint_type(getRoot(), getArchDatas(), next_chkpt_id_++, tick, nullptr, true);
+            checkpoint_type* dcp = new checkpoint_type(getArchDatas(), next_chkpt_id_++, tick, nullptr, true);
             chkpts_[dcp->getID()].reset(dcp);
             setHead_(dcp);
             num_alive_checkpoints_++;
@@ -755,8 +788,7 @@ namespace sparta::serialization::checkpoint
                 is_snapshot = prev->getDistanceToPrevSnapshot() >= getSnapshotThreshold();
             }
 
-            checkpoint_type* dcp = new checkpoint_type(getRoot(),
-                                                       getArchDatas(), // Created during createHead
+            checkpoint_type* dcp = new checkpoint_type(getArchDatas(), // Created during createHead
                                                        next_chkpt_id_++,
                                                        tick,
                                                        prev,

@@ -11,8 +11,7 @@ using chkpt_id_t = typename CheckpointBase::chkpt_id_t;
 using checkpoint_type = DatabaseCheckpoint;
 using checkpoint_ptr = std::shared_ptr<DatabaseCheckpoint>;
 
-DatabaseCheckpoint::DatabaseCheckpoint(TreeNode& root,
-                                       const std::vector<ArchData*>& dats,          
+DatabaseCheckpoint::DatabaseCheckpoint(const std::vector<ArchData*>& dats,          
                                        chkpt_id_t id,
                                        tick_t tick,
                                        DatabaseCheckpoint* prev,
@@ -23,7 +22,6 @@ DatabaseCheckpoint::DatabaseCheckpoint(TreeNode& root,
     , is_snapshot_(is_snapshot)
     , checkpointer_(checkpointer)
 {
-    (void)root;
     if (prev_id_ == UNIDENTIFIED_CHECKPOINT) {
         if (is_snapshot == false) {
             throw CheckpointError("Cannot create a DatabaseCheckpoint id=")
