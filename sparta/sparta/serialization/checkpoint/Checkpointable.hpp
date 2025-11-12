@@ -13,7 +13,7 @@
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/utils/MathUtils.hpp"
 
-namespace sparta {
+namespace sparta::serialization::checkpoint {
     /**
      * \class Checkpointable
      * \brief Class to enable a modeler to register checkpointable
@@ -62,12 +62,12 @@ namespace sparta {
      *            sparta::Checkpointable(my_node),
      *            my_checkpointable_integer_(allocateCheckpointable<uint64_t)>()),
      *            my_checkpointable_struct_(allocateCheckpointable<MyCheckpointStructure)>(0,
-     * "Hello World"))
+     *                                      "Hello World"))
      *        {}
      *
      *   private:
      *        // Checkpointable class
-     *        sparta::Checkpointable my_checkpointables_;
+     *        sparta::serialization::checkpoint::Checkpointable my_checkpointables_;
      *
      *        // Objects to be checkpointed
      *        struct MyCheckpointStructure {

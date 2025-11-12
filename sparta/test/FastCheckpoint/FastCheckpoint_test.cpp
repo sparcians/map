@@ -99,7 +99,7 @@ public:
     }
 
 private:
-    sparta::Checkpointable checkpointables_;
+    sparta::serialization::checkpoint::Checkpointable checkpointables_;
 
     struct CheckpointStruct {
         CheckpointStruct(int id, const char * init_str) :
