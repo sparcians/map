@@ -63,12 +63,11 @@ public:
     DummyDevice(sparta::TreeNode* parent, uint16_t dum_id) :
         sparta::TreeNode(parent, "dummy" + std::to_string(dum_id), "", sparta::TreeNode::GROUP_IDX_NONE, "dummy node for register test"),
         checkpointables_(parent),
-        checkpoint_struct_(checkpointables_.allocateCheckpointable<CheckpointStruct>()),
-        checkpoint_int_(checkpointables_.allocateCheckpointable<uint64_t>())
+        checkpoint_struct_(checkpointables_.allocateCheckpointable<CheckpointStruct>(dum_id, "Hello")),
+        checkpoint_int_(checkpointables_.allocateCheckpointable<uint64_t>(dum_id)),
+        initial_struct_values_(dum_id, "Hello"),
+        initial_int_value_(checkpoint_int_)
     {
-        checkpoint_int_ = dum_id;
-        initial_int_value_ = checkpoint_int_;
-        ::memcpy(&initial_struct_values_, &checkpoint_struct_, sizeof(CheckpointStruct));
     }
 
     void changeCPStates()
@@ -103,16 +102,23 @@ private:
     sparta::Checkpointable checkpointables_;
 
     struct CheckpointStruct {
+        CheckpointStruct(int id, const char * init_str) :
+            checkpoint_int(id),
+            checkpoint_float(id)
+        {
+            ::strcpy(str, init_str);
+        }
+
         uint32_t checkpoint_int = 0;
         float    checkpoint_float = 0;
-        char str[1024] = "Hello";
+        char str[1024];
     };
 
     CheckpointStruct & checkpoint_struct_;
     uint64_t & checkpoint_int_;
 
     CheckpointStruct initial_struct_values_;
-    uint64_t initial_int_value_ = std::numeric_limits<uint64_t>::max();
+    const uint64_t initial_int_value_ = std::numeric_limits<uint64_t>::max();
 };
 
 //! \brief General test for checkpointing behavior. Creates/deletes/loads, etc.
