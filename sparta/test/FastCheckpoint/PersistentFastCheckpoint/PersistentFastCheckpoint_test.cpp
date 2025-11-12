@@ -99,8 +99,7 @@ void generalTest()
 
     // Create the checkpointer
 
-    const std::vector<sparta::TreeNode*> roots = {&root};
-    PersistentFastCheckpointer pfcp(roots, &sched);
+    PersistentFastCheckpointer pfcp(root, &sched);
     pfcp.setSnapshotThreshold(0);  // All checkpoints to be snapshots
 
     root.enterConfiguring();
