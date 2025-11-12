@@ -178,7 +178,7 @@ namespace sparta {
             return 1ull << ((sizeof(uint64_t) * 8) - __builtin_clzll(v - 1ull));
         }
 
-        constexpr inline uint64_t ones (uint64_t x) {
+        constexpr uint64_t ones (uint64_t x) {
             const uint64_t y = (static_cast<uint64_t>(1) << x) - 1;
             return y;
         }
