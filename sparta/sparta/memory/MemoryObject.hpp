@@ -225,7 +225,7 @@ namespace sparta
                 return ArchData::getInitialValSize();
             }
 
-        }; // class DebugMemoryIF
+        }; // class MemoryObject
 
 
         /*!

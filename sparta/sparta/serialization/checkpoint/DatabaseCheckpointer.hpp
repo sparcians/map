@@ -34,18 +34,19 @@ public:
      *
      * \param db_mgr SimDB instance to use as a backing store for all checkpoints.
      *
-     * \param root TreeNode at which checkpoints will be taken.
-     *             This cannot be changed later. This does not
-     *             necessarily need to be a RootTreeNode. Before
-     *             the first checkpoint is taken, this node must
+     * \param roots TreeNodes at which checkpoints will be taken.
+     *             These cannot be changed later. These do not
+     *             necessarily need to be RootTreeNodes. Before
+     *             the first checkpoint is taken, these nodes must
      *             be finalized (see sparta::TreeNode::isFinalized).
-     *             At the point of construction, the node does not
+     *             At the point of construction, the nodes do not
      *             need to be finalized.
      *
      * \param sched Scheduler to read and restart on checkpoint restore (if
      *              not nullptr)
      */
-    DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, TreeNode& root, Scheduler* sched=nullptr);
+    DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, const std::vector<sparta::TreeNode*> & roots,
+                         sparta::Scheduler* sched = nullptr);
 
     /*!
      * \brief Define the SimDB schema for this checkpointer.
@@ -321,8 +322,8 @@ private:
 
     /*!
      * \brief Create a head node.
-     * \pre ArchDatas for tree root are already enumerated
-     * \pre Tree of getRoot() is already finalized
+     * \pre ArchDatas for tree roots are already enumerated
+     * \pre Trees of all getRoots() are already finalized
      * \pre Guaranteed to have a null head at this time
      * (getHead() == nullptr)
      * \post Must create a head checkpoint
@@ -538,14 +539,14 @@ class AppFactory<sparta::serialization::checkpoint::DatabaseCheckpointer> : publ
 public:
     using AppT = sparta::serialization::checkpoint::DatabaseCheckpointer;
 
-    /// @brief Sets the ArchData root for a given instance of the checkpointer.
+    /// @brief Sets the ArchData root(s) for a given instance of the checkpointer.
     /// @param instance_num 0 if using one checkpointer instance, else the instance number (1-based)
-    /// @param root TreeNode at which ArchData will be taken
+    /// @param roots TreeNode(s) at which ArchData will be taken
     /// @note Scheduler must be set separately via setScheduler()
     /// @note This is required before createEnabledApps() is called
-    void setArchDataRoot(size_t instance_num, sparta::TreeNode& root)
+    void setArchDataRoots(size_t instance_num, const std::vector<sparta::TreeNode*>& roots)
     {
-        roots_by_inst_num_[instance_num] = &root;
+        roots_by_inst_num_[instance_num] = roots;
     }
 
     /// @brief Sets the Scheduler for all instances of the checkpointer.
@@ -565,10 +566,10 @@ public:
                 << instance_num << ". Did you forget to call setArchDataRoot()?";
         }
 
-        auto root = it->second;
+        const auto & roots = it->second;
 
         // Make the ctor call that the default AppFactory cannot make.
-        return new AppT(db_mgr, *root, scheduler_);
+        return new AppT(db_mgr, roots, scheduler_);
     }
 
     void defineSchema(Schema& schema) const override
@@ -578,7 +579,7 @@ public:
 
 private:
     sparta::Scheduler* scheduler_ = nullptr;
-    std::map<size_t, sparta::TreeNode*> roots_by_inst_num_;
+    std::map<size_t, std::vector<sparta::TreeNode*>> roots_by_inst_num_;
 };
 
 } // namespace simdb

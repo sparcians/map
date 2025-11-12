@@ -154,6 +154,30 @@ namespace sparta::serialization::checkpoint
         { }
 
         /*!
+         * \brief PersistentFastCheckpointer Constructor
+         *
+         * \param roots TreeNodes at which checkpoints will be taken.
+         *              This cannot be changed later. These do not
+         *              necessarily need to be RootTreeNodes. Before
+         *              the first checkpoint is taken, these nodes must
+         *              be finalized (see
+         *              sparta::TreeNode::isFinalized). At this point,
+         *              the nodes do not need to be finalized
+         *
+         * \param sched Scheduler whose current cycle will be read
+         *              when taking checkpoints and restored when
+         *              restoring checkpoints. See
+         *              sparta::serialization::Checkpoint::Checkpoint
+         *              for details
+         */
+        PersistentFastCheckpointer(const std::vector<sparta::TreeNode*>& roots,
+                                   sparta::Scheduler* sched=nullptr) :
+            FastCheckpointer(roots, sched),
+            prefix_("chkpt"),
+            suffix_("data")
+        { }
+
+        /*!
          * \brief Destructor
          *
          */

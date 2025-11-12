@@ -24,8 +24,8 @@ using tick_t = typename CheckpointBase::tick_t;
 using chkpt_id_t = typename CheckpointBase::chkpt_id_t;
 using window_id_t = typename DatabaseCheckpointer::window_id_t;
 
-DatabaseCheckpointer::DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, TreeNode& root, Scheduler* sched) :
-    Checkpointer(root, sched),
+DatabaseCheckpointer::DatabaseCheckpointer(simdb::DatabaseManager* db_mgr, const std::vector<sparta::TreeNode*>& roots, Scheduler* sched) :
+    Checkpointer(roots, sched),
     db_mgr_(db_mgr),
     next_chkpt_id_(checkpoint_type::MIN_CHECKPOINT)
 {
@@ -586,7 +586,15 @@ bool DatabaseCheckpointer::isSnapshot(chkpt_id_t id) noexcept
 std::string DatabaseCheckpointer::stringize() const
 {
     std::stringstream ss;
-    ss << "<DatabaseCheckpointer on " << getRoot().getLocation() << '>';
+    ss << "<DatabaseCheckpointer on ";
+    for (size_t i = 0; i < getRoots().size(); ++i) {
+        TreeNode* root = getRoots()[i];
+        if (i != 0) {
+            ss << ", ";
+        }
+        ss << root->getLocation();
+    }
+    ss << ">";
     return ss.str();
 }
 
@@ -674,19 +682,21 @@ void DatabaseCheckpointer::createHead_()
         throw CheckpointError("Cannot create head at ")
             << tick << " because a head already exists in this checkpointer";
     }
-    if (getRoot().isFinalized() == false) {
-        CheckpointError exc("Cannot create a checkpoint until the tree is finalized. Attempting to checkpoint from node ");
-        exc << getRoot().getLocation() << " at tick ";
-        if (sched_) {
-            exc << tick;
-        }else{
-            exc << "<no scheduler>";
+    for (auto root : getRoots()) {
+        if (root->isFinalized() == false) {
+            CheckpointError exc("Cannot create a checkpoint until the tree is finalized. Attempting to checkpoint from node ");
+            exc << root->getLocation() << " at tick ";
+            if (sched_) {
+                exc << tick;
+            }else{
+                exc << "<no scheduler>";
+            }
+            throw exc;
         }
-        throw exc;
     }
 
     std::shared_ptr<checkpoint_type> chkpt(new checkpoint_type(
-        getRoot(), getArchDatas(), next_chkpt_id_++, tick,
+        getArchDatas(), next_chkpt_id_++, tick,
         nullptr, true, this));
 
     setHead_(chkpt.get());
@@ -748,7 +758,7 @@ chkpt_id_t DatabaseCheckpointer::createCheckpoint_(bool force_snapshot)
     }
 
     std::shared_ptr<checkpoint_type> chkpt(new checkpoint_type(
-        getRoot(), getArchDatas(), next_chkpt_id_++, tick,
+        getArchDatas(), next_chkpt_id_++, tick,
         prev, force_snapshot || is_snapshot, this));
 
     auto current = chkpt.get();
@@ -1031,38 +1041,42 @@ bool DatabaseCheckpointer::loadWindowIntoCache_(window_id_t win_id, bool must_su
     // Final note: since the pipelines are disabled, we do not have to worry
     // about using safeTransaction as this thread is the only one accessing
     // the database.
-    auto query = db_mgr_->createQuery("ChkptWindows");
-    query->addConstraintForUInt64("WindowID", simdb::Constraints::EQUAL, win_id);
+    bool success = false;
 
-    std::vector<char> compressed_window_bytes;
-    query->select("WindowBytes", compressed_window_bytes);
+    db_mgr_->safeTransaction([&]() {
+        auto query = db_mgr_->createQuery("ChkptWindows");
+        query->addConstraintForUInt64("WindowID", simdb::Constraints::EQUAL, win_id);
 
-    auto results = query->getResultSet();
-    if (results.getNextRecord()) {
-        std::unique_ptr<ChkptWindow> window_restored = deserializeWindow_(compressed_window_bytes);
-        sparta_assert(window_restored && !window_restored->chkpts.empty());
+        std::vector<char> compressed_window_bytes;
+        query->select("WindowBytes", compressed_window_bytes);
 
-        auto start_win_id = getWindowID_(window_restored->chkpts.front()->getID());
-        auto end_win_id = getWindowID_(window_restored->chkpts.back()->getID());
-        sparta_assert(start_win_id == end_win_id && start_win_id == win_id,
-                      "Checkpoint window has inconsistent window IDs");
+        auto results = query->getResultSet();
+        if (results.getNextRecord()) {
+            std::unique_ptr<ChkptWindow> window_restored = deserializeWindow_(compressed_window_bytes);
+            sparta_assert(window_restored && !window_restored->chkpts.empty());
 
-        // Add to the cache, bump the window ID in the LRU list, and evict
-        // windows if needed.
-        chkpts_cache_[win_id] = std::move(window_restored->chkpts);
-        touchWindow_(win_id);
-        evictWindowsIfNeeded_();
+            auto start_win_id = getWindowID_(window_restored->chkpts.front()->getID());
+            auto end_win_id = getWindowID_(window_restored->chkpts.back()->getID());
+            sparta_assert(start_win_id == end_win_id && start_win_id == win_id,
+                        "Checkpoint window has inconsistent window IDs");
 
-        // Now delete from the database.
-        query->deleteResultSet();
+            // Add to the cache, bump the window ID in the LRU list, and evict
+            // windows if needed.
+            chkpts_cache_[win_id] = std::move(window_restored->chkpts);
+            touchWindow_(win_id);
+            evictWindowsIfNeeded_();
 
-        return true;
-    }
+            // Now delete from the database.
+            query->deleteResultSet();
 
-    if (must_succeed) {
+            success = true;
+        }
+    });
+
+    if (must_succeed && !success) {
         throw CheckpointError("Could not find checkpoint window with ID ") << win_id;
     }
-    return false;
+    return success;
 }
 
 simdb::SnooperCallbackOutcome DatabaseCheckpointer::handleLoadWindowIntoCacheSnooper_(
