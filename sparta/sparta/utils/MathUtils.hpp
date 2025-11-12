@@ -16,14 +16,14 @@
 namespace sparta {
     namespace utils {
 
-        inline double log2 (double x) {
+        constexpr double log2 (double x) {
             // double y = std::log(x) / std::log(2.0);
             // return y;
             return std::log2(x);
         }
 
         template <class T>
-        inline uint32_t log2_lsb(const T& x)
+        constexpr uint32_t log2_lsb(const T& x)
         {
             (void) x;
             //bool UNSUPPORTED_TYPE = false;
@@ -37,14 +37,14 @@ namespace sparta {
             // (0..31) of the least significant bit in iclass
             // Refer to Leiserson's bitscan algorithm:
             // http://chessprogramming.wikispaces.com/BitScan
-            static const uint32_t index32[32] = {
+            constexpr uint32_t index32[32] = {
                 0,   1, 28,  2, 29, 14, 24, 3,
                 30, 22, 20, 15, 25, 17,  4, 8,
                 31, 27, 13, 23, 21, 19, 16, 7,
                 26, 12, 18,  6, 11,  5, 10, 9
             };
 
-            static const uint32_t debruijn32 = 0x077CB531u;
+            constexpr uint32_t debruijn32 = 0x077CB531u;
 
             return index32[((x & -x) * debruijn32) >> 27];
         }
@@ -56,7 +56,7 @@ namespace sparta {
             // (0..63) of the least significant bit in iclass
             // Refer to Leiserson's bitscan algorithm:
             // http://chessprogramming.wikispaces.com/BitScan
-            static const uint32_t index64[64] = {
+            constexpr uint32_t index64[64] = {
                 63,  0, 58,  1, 59, 47, 53,  2,
                 60, 39, 48, 27, 54, 33, 42,  3,
                 61, 51, 37, 40, 49, 18, 28, 20,
@@ -67,7 +67,7 @@ namespace sparta {
                 44, 24, 15,  8, 23,  7,  6,  5
             };
 
-            static const uint64_t debruijn64 = 0x07EDD5E59A4E28C2ull;
+            constexpr uint64_t debruijn64 = 0x07EDD5E59A4E28C2ull;
 
             return index64[((x & -x) * debruijn64) >> 58];
         }
@@ -104,7 +104,7 @@ namespace sparta {
 
             // This is a fast floor(log2(x)) based on DeBrujin's algorithm
             // (based on generally available and numerous sources)
-            static const uint64_t lut[] = {
+            constexpr uint64_t lut[] = {
                 0,  9,  1, 10, 13, 21,  2, 29,
                 11, 14, 16, 18, 22, 25,  3, 30,
                 8, 12, 20, 28, 15, 17, 24,  7,
@@ -130,7 +130,7 @@ namespace sparta {
 
             // This is a fast floor(log2(x)) based on DeBrujin's algorithm
             // (based on generally available and numerous sources)
-            static const uint64_t lut[] = {
+            constexpr uint64_t lut[] = {
                     63,  0, 58,  1, 59, 47, 53,  2,
                     60, 39, 48, 27, 54, 33, 42,  3,
                     61, 51, 37, 40, 49, 18, 28, 20,
