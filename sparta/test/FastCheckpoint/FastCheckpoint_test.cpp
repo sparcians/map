@@ -1,4 +1,3 @@
-
 #include <inttypes.h>
 #include <iostream>
 #include <stack>
@@ -13,6 +12,7 @@
 #include "sparta/functional/RegisterSet.hpp"
 #include "sparta/memory/MemoryObject.hpp"
 #include "sparta/serialization/checkpoint/FastCheckpointer.hpp"
+#include "sparta/serialization/checkpoint/Checkpointable.hpp"
 
 #include "sparta/utils/SpartaTester.hpp"
 
@@ -60,9 +60,65 @@ class DummyDevice : public sparta::TreeNode
 {
 public:
 
-    DummyDevice(sparta::TreeNode* parent) :
-        sparta::TreeNode(parent, "dummy", "", sparta::TreeNode::GROUP_IDX_NONE, "dummy node for register test")
-    {}
+    DummyDevice(sparta::TreeNode* parent, uint16_t dum_id) :
+        sparta::TreeNode(parent, "dummy" + std::to_string(dum_id), "", sparta::TreeNode::GROUP_IDX_NONE, "dummy node for register test"),
+        checkpointables_(parent),
+        checkpoint_struct_(checkpointables_.allocateCheckpointable<CheckpointStruct>(dum_id, "Hello")),
+        checkpoint_int_(checkpointables_.allocateCheckpointable<uint64_t>(dum_id)),
+        initial_struct_values_(dum_id, "Hello"),
+        initial_int_value_(checkpoint_int_)
+    {
+    }
+
+    void changeCPStates()
+    {
+        ++checkpoint_int_;
+        ++checkpoint_struct_.checkpoint_int;
+        ++checkpoint_struct_.checkpoint_float;
+        if (checkpoint_struct_.checkpoint_int > 1) {
+            ::strcpy(checkpoint_struct_.str, "There");
+        }
+        else {
+            ::strcpy(checkpoint_struct_.str, "World");
+        }
+    }
+
+    void printState() const {
+        std::cout << getName() << ":\n\t"
+                  << checkpoint_int_ << ", "
+                  << checkpoint_struct_.checkpoint_int << ", "
+                  << checkpoint_struct_.checkpoint_float << ", "
+                  << checkpoint_struct_.str << std::endl;
+    }
+
+    void checkAgainstInitial() const {
+        EXPECT_EQUAL(checkpoint_int_, initial_int_value_);
+        EXPECT_EQUAL(checkpoint_struct_.checkpoint_int, initial_struct_values_.checkpoint_int);
+        EXPECT_EQUAL(checkpoint_struct_.checkpoint_float, initial_struct_values_.checkpoint_float);
+        EXPECT_TRUE(::strcmp(checkpoint_struct_.str, initial_struct_values_.str) == 0);
+    }
+
+private:
+    sparta::Checkpointable checkpointables_;
+
+    struct CheckpointStruct {
+        CheckpointStruct(int id, const char * init_str) :
+            checkpoint_int(id),
+            checkpoint_float(id)
+        {
+            ::strcpy(str, init_str);
+        }
+
+        uint32_t checkpoint_int = 0;
+        float    checkpoint_float = 0;
+        char str[1024];
+    };
+
+    CheckpointStruct & checkpoint_struct_;
+    uint64_t & checkpoint_int_;
+
+    const CheckpointStruct initial_struct_values_;
+    const uint64_t initial_int_value_ = std::numeric_limits<uint64_t>::max();
 };
 
 //! \brief General test for checkpointing behavior. Creates/deletes/loads, etc.
@@ -74,10 +130,10 @@ void generalTest()
 
     // Create a tree with some register sets and a memory
     RootTreeNode root;
-    DummyDevice dummy(&root);
+    DummyDevice dummy(&root, 0);
     std::unique_ptr<RegisterSet> rset(RegisterSet::create(&dummy, reg_defs));
     auto r1 = rset->getRegister("reg2");
-    DummyDevice dummy2(&dummy);
+    DummyDevice dummy2(&dummy, 1);
     std::unique_ptr<RegisterSet> rset2(RegisterSet::create(&dummy2, reg_defs));
     auto r2 = rset2->getRegister("reg2");
     assert(r1 != r2);
@@ -96,9 +152,7 @@ void generalTest()
     // Print current register set by the ostream insertion operator
     std::cout << *rset << std::endl;
 
-
     // Create a checkpointer
-
     FastCheckpointer fcp(root, &sched);
     fcp.setSnapshotThreshold(5);
 
@@ -106,10 +160,7 @@ void generalTest()
     root.enterFinalized();
 
     // Set up checkpointing (after tree finalization)
-
-
     EXPECT_EQUAL(sched.getCurrentTick(), 0); //unfinalized sched at tick 0
-
 
     // CHECKPOINT: HEAD
     r1->write<uint32_t>(0x0);
@@ -126,6 +177,9 @@ void generalTest()
     std::cout << "Register set @ cp-head" << std::endl;
     std::cout << *rset << std::endl << std::endl;
 
+    dummy .printState();
+    dummy2.printState();
+
     EXPECT_NOTEQUAL(fcp.getHead(), nullptr);
     EXPECT_EQUAL(fcp.getHead()->getID(), head_id);
     EXPECT_EQUAL(fcp.getCurrentID(), head_id); // Current is head because head is only checkpoint
@@ -138,12 +192,17 @@ void generalTest()
     // NO CHANGE in r2 here // r2->write<uint32_t>(0x2);
     FastCheckpointer::chkpt_id_t first_id = 0;
 
+    dummy.changeCPStates();
+    dummy2.changeCPStates();
+
     EXPECT_NOTHROW(first_id = fcp.createCheckpoint());
 
     EXPECT_EQUAL(fcp.getCurrentID(), first_id);
     EXPECT_EQUAL(fcp.getCurrentID(), 1);
     std::cout << "Register set @ cp1" << std::endl;
     std::cout << *rset << std::endl << std::endl;
+    dummy .printState();
+    dummy2.printState();
 
     sched.finalize(); // Note that checkpoints could be created before this!
 
@@ -163,17 +222,27 @@ void generalTest()
     mem_if.write(0x100, 32, buf);
     FastCheckpointer::chkpt_id_t second_id;
 
+    dummy.changeCPStates();
+    dummy2.changeCPStates();
+
     EXPECT_NOTHROW(second_id = fcp.createCheckpoint());
 
     EXPECT_EQUAL(fcp.getCurrentID(), second_id);
     EXPECT_EQUAL(fcp.getCurrentID(), 2);
     std::cout << "Register set @ cp2" << std::endl;
     std::cout << *rset << std::endl << std::endl;
+    dummy .printState();
+    dummy2.printState();
 
     sparta::Scheduler::Tick curtick = sched.getCurrentTick();
     sched.restartAt(curtick - 1); // Travel back in time (on the scheduler without telling the checkpointer)
     EXPECT_THROW(fcp.createCheckpoint()); // Cannot add checkpoint in the past (less than tick of current)
     sched.restartAt(curtick);
+
+    dummy.changeCPStates();
+    dummy2.changeCPStates();
+    dummy .printState();
+    dummy2.printState();
 
     // Note: To properly change the scheduler time without loading a checkpoint,
     // use Checkpointer::forgetCurrent() after changing time in the scheduler
@@ -181,7 +250,6 @@ void generalTest()
     sched.run(10, true);
     // Scheduler's tick is zero-based
     EXPECT_EQUAL(sched.getCurrentTick(), 21);
-
 
     // Go back in time to cycle 1
     EXPECT_NOTHROW(fcp.loadCheckpoint(first_id));
@@ -191,7 +259,10 @@ void generalTest()
     std::cout << *rset << std::endl << std::endl;
     EXPECT_EQUAL(r1->read<uint32_t>(), 0x1);
     EXPECT_EQUAL(r2->read<uint32_t>(), 0x1); // r2 was not written between head and cp1
-
+    dummy.printState();
+    dummy2.printState();
+    dummy.checkAgainstInitial();
+    dummy2.checkAgainstInitial();
 
     // proceed to tick 1, nothing should happen, but time advancement
     sched.run(1, true, false);
@@ -210,6 +281,9 @@ void generalTest()
 
     EXPECT_NOTHROW(third_id = fcp.createCheckpoint());
 
+    dummy.changeCPStates();
+    dummy2.changeCPStates();
+
     EXPECT_EQUAL(fcp.getCurrentID(), third_id);
     EXPECT_EQUAL(fcp.getCurrentID(), 3);
     std::cout << "Register set @ cp3" << std::endl;
@@ -223,6 +297,8 @@ void generalTest()
         chpts_b1[i] = fcp.createCheckpoint();
         sched.run(1, true);
         EXPECT_EQUAL(sched.getCurrentTick(), 3+i+1);
+        dummy.changeCPStates();
+        dummy2.changeCPStates();
     }
 
     EXPECT_EQUAL(sched.getCurrentTick(), 3 + NUM_CHECKS_IN_LOOP);
@@ -519,7 +595,7 @@ void stackTest()
 
     // Place into a tree
     RootTreeNode root;
-    DummyDevice dummy(&root);
+    DummyDevice dummy(&root, 0);
     std::unique_ptr<RegisterSet> rset(RegisterSet::create(&dummy, reg_defs));
     auto r = rset->getRegister("reg2");
 
@@ -627,10 +703,10 @@ void deletionTest1()
 
     // Create a tree with some register sets and a memory
     RootTreeNode root;
-    DummyDevice dummy(&root);
+    DummyDevice dummy(&root, 0);
     std::unique_ptr<RegisterSet> rset(RegisterSet::create(&dummy, reg_defs));
     auto r1 = rset->getRegister("reg2");
-    DummyDevice dummy2(&dummy);
+    DummyDevice dummy2(&dummy, 1);
     std::unique_ptr<RegisterSet> rset2(RegisterSet::create(&dummy2, reg_defs));
     auto r2 = rset2->getRegister("reg2");
     assert(r1 != r2);
@@ -722,10 +798,10 @@ void deletionTest2()
 
     // Create a tree with some register sets and a memory
     RootTreeNode root;
-    DummyDevice dummy(&root);
+    DummyDevice dummy(&root, 0);
     std::unique_ptr<RegisterSet> rset(RegisterSet::create(&dummy, reg_defs));
     auto r1 = rset->getRegister("reg2");
-    DummyDevice dummy2(&dummy);
+    DummyDevice dummy2(&dummy, 1);
     std::unique_ptr<RegisterSet> rset2(RegisterSet::create(&dummy2, reg_defs));
     auto r2 = rset2->getRegister("reg2");
     assert(r1 != r2);
@@ -821,10 +897,10 @@ void deletionTest3()
 
     // Create a tree with some register sets and a memory
     RootTreeNode root;
-    DummyDevice dummy(&root);
+    DummyDevice dummy(&root, 0);
     std::unique_ptr<RegisterSet> rset(RegisterSet::create(&dummy, reg_defs));
     auto r1 = rset->getRegister("reg2");
-    DummyDevice dummy2(&dummy);
+    DummyDevice dummy2(&dummy, 1);
     std::unique_ptr<RegisterSet> rset2(RegisterSet::create(&dummy2, reg_defs));
     auto r2 = rset2->getRegister("reg2");
     assert(r1 != r2);
@@ -906,10 +982,10 @@ void speedTest1()
 
     // Create a tree with some register sets and a memory
     RootTreeNode root;
-    DummyDevice dummy(&root);
+    DummyDevice dummy(&root, 0);
     std::unique_ptr<RegisterSet> rset(RegisterSet::create(&dummy, reg_defs));
     auto r1 = rset->getRegister("reg2");
-    DummyDevice dummy2(&dummy);
+    DummyDevice dummy2(&dummy, 1);
     std::unique_ptr<RegisterSet> rset2(RegisterSet::create(&dummy2, reg_defs));
     auto r2 = rset2->getRegister("reg2");
     assert(r1 != r2);

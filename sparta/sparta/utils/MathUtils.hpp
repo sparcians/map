@@ -149,7 +149,7 @@ namespace sparta {
             return lut[((uint64_t)((x - (x >> 1)) * 0x07EDD5E59A4E28C2ull)) >> 58];
         }
 
-        inline uint64_t ceil_log2 (uint64_t x)
+        constexpr uint64_t ceil_log2 (uint64_t x)
         {
             // If x is a power of 2 then ceil_log2(x) is floor_log2(x).
             // Otherwise ceil_log2(x) is floor_log2(x) + 1.
@@ -160,17 +160,17 @@ namespace sparta {
             return y;
         }
 
-        inline uint64_t pow2 (uint64_t x) {
-            uint64_t y = static_cast<uint64_t>(1) << x;
+        constexpr uint64_t pow2 (uint64_t x) {
+            const uint64_t y = static_cast<uint64_t>(1) << x;
             return y;
         }
 
-        inline bool is_power_of_2 (uint64_t x) {
-            bool y = x && !(x & (x - 1));
+        constexpr bool is_power_of_2 (uint64_t x) {
+            const bool y = x && !(x & (x - 1));
             return y;
         }
 
-        inline uint64_t next_power_of_2(uint64_t v)
+        constexpr uint64_t next_power_of_2(uint64_t v)
         {
             if(v < 2) {
                 return 1ull;
@@ -178,8 +178,8 @@ namespace sparta {
             return 1ull << ((sizeof(uint64_t) * 8) - __builtin_clzll(v - 1ull));
         }
 
-        inline uint64_t ones (uint64_t x) {
-            uint64_t y = (static_cast<uint64_t>(1) << x) - 1;
+        constexpr inline uint64_t ones (uint64_t x) {
+            const uint64_t y = (static_cast<uint64_t>(1) << x) - 1;
             return y;
         }
 
