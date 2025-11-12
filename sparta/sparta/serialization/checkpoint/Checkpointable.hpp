@@ -3,18 +3,17 @@
 #pragma once
 
 #include <cassert>
-#include <vector>
+#include <cstring>
 #include <list>
 #include <memory>
 #include <type_traits>
-#include <cstring>
+#include <vector>
 
-#include "sparta/utils/MathUtils.hpp"
-#include "sparta/simulation/TreeNode.hpp"
 #include "sparta/functional/ArchData.hpp"
+#include "sparta/simulation/TreeNode.hpp"
+#include "sparta/utils/MathUtils.hpp"
 
-namespace sparta
-{
+namespace sparta {
     /**
      * \class Checkpointable
      * \brief Class to enable a modeler to register checkpointable
@@ -62,7 +61,8 @@ namespace sparta
      *        MyCheckpointable(sparta:TreeNode * my_node) :
      *            sparta::Checkpointable(my_node),
      *            my_checkpointable_integer_(allocateCheckpointable<uint64_t)>()),
-     *            my_checkpointable_struct_(allocateCheckpointable<MyCheckpointStructure)>(0, "Hello World"))
+     *            my_checkpointable_struct_(allocateCheckpointable<MyCheckpointStructure)>(0,
+     * "Hello World"))
      *        {}
      *
      *   private:
@@ -93,10 +93,7 @@ namespace sparta
 
         //! \brief Create a Checkpointable object used to allocate
         //!        components for checkpointing
-        Checkpointable(sparta::TreeNode * cp_node) :
-            cp_node_(cp_node)
-        {
-        }
+        Checkpointable(sparta::TreeNode *cp_node) : cp_node_(cp_node) {}
 
         /**
          * \brief Allocate a checkpointable type
@@ -109,41 +106,38 @@ namespace sparta
          * and array types of PODs.
          *
          */
-        template<class CheckpointableT, typename... CpArgs>
-        CheckpointableT & allocateCheckpointable(CpArgs... cp_args)
+        template <class CheckpointableT, typename... CpArgs>
+        CheckpointableT &allocateCheckpointable(CpArgs... cp_args)
         {
             static_assert(false == std::is_pointer_v<CheckpointableT>,
                           "Checkpointable object cannot be a pointer");
-            constexpr size_t checkpointable_size = utils::next_power_of_2(sizeof(CheckpointableT));
-            auto & cp_component = checkpoint_components_.emplace_back(new CheckpointComponent(cp_node_,
-                                                                                              checkpointable_size));
+            constexpr size_t checkpointable_size =
+                          utils::next_power_of_2(sizeof(CheckpointableT));
+            auto &cp_component = checkpoint_components_.emplace_back(
+                new CheckpointComponent(cp_node_, checkpointable_size));
 
             auto cp_mem = cp_component->getRawDataPtr();
             return *(new (cp_mem) CheckpointableT(cp_args...));
         }
 
     private:
-        sparta::TreeNode * cp_node_ = nullptr;
+        sparta::TreeNode *cp_node_ = nullptr;
 
         struct CheckpointComponent
         {
-            CheckpointComponent(sparta::TreeNode * cp_node,
-                                ArchData::offset_type line_size) :
-                adata_(cp_node,
-                       line_size,
-                       ArchData::DEFAULT_INITIAL_FILL,
-                       ArchData::DEFAULT_INITIAL_FILL_SIZE,
-                       false), // Cannot delete lines
-                dview_(&adata_, 0, line_size,
-                       ArchDataSegment::INVALID_ID, // subset of
-                       0) // subset_offset
+            CheckpointComponent(sparta::TreeNode *cp_node,
+                                ArchData::offset_type line_size)
+                : adata_(cp_node, line_size, ArchData::DEFAULT_INITIAL_FILL,
+                         ArchData::DEFAULT_INITIAL_FILL_SIZE,
+                         false), // Cannot delete lines
+                  dview_(&adata_, 0, line_size,
+                         ArchDataSegment::INVALID_ID, // subset of
+                         0)                           // subset_offset
             {
                 adata_.layout();
             }
 
-            uint8_t * getRawDataPtr() {
-                return dview_.getLine()->getRawDataPtr(0);
-            }
+            uint8_t *getRawDataPtr() { return dview_.getLine()->getRawDataPtr(0); }
 
             //! \brief ArchData that will hold snapshots of this Checkpointable
             ArchData adata_;
@@ -153,6 +147,5 @@ namespace sparta
         };
 
         std::vector<std::unique_ptr<CheckpointComponent>> checkpoint_components_;
-
     };
-}
+} // namespace sparta

@@ -117,7 +117,7 @@ private:
     CheckpointStruct & checkpoint_struct_;
     uint64_t & checkpoint_int_;
 
-    CheckpointStruct initial_struct_values_;
+    const CheckpointStruct initial_struct_values_;
     const uint64_t initial_int_value_ = std::numeric_limits<uint64_t>::max();
 };
 
