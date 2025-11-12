@@ -728,7 +728,7 @@ int main()
     auto warn_file = std::make_unique<sparta::log::Tap>(
         sparta::TreeNode::getVirtualGlobalNode(),
         sparta::log::categories::WARN,
-        "warnings.log");
+        "db-checkpointer-warnings.log");
 
     std::string exception_str;
     try {

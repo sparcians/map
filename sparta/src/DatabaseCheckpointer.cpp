@@ -1041,38 +1041,42 @@ bool DatabaseCheckpointer::loadWindowIntoCache_(window_id_t win_id, bool must_su
     // Final note: since the pipelines are disabled, we do not have to worry
     // about using safeTransaction as this thread is the only one accessing
     // the database.
-    auto query = db_mgr_->createQuery("ChkptWindows");
-    query->addConstraintForUInt64("WindowID", simdb::Constraints::EQUAL, win_id);
+    bool success = false;
 
-    std::vector<char> compressed_window_bytes;
-    query->select("WindowBytes", compressed_window_bytes);
+    db_mgr_->safeTransaction([&]() {
+        auto query = db_mgr_->createQuery("ChkptWindows");
+        query->addConstraintForUInt64("WindowID", simdb::Constraints::EQUAL, win_id);
 
-    auto results = query->getResultSet();
-    if (results.getNextRecord()) {
-        std::unique_ptr<ChkptWindow> window_restored = deserializeWindow_(compressed_window_bytes);
-        sparta_assert(window_restored && !window_restored->chkpts.empty());
+        std::vector<char> compressed_window_bytes;
+        query->select("WindowBytes", compressed_window_bytes);
 
-        auto start_win_id = getWindowID_(window_restored->chkpts.front()->getID());
-        auto end_win_id = getWindowID_(window_restored->chkpts.back()->getID());
-        sparta_assert(start_win_id == end_win_id && start_win_id == win_id,
-                      "Checkpoint window has inconsistent window IDs");
+        auto results = query->getResultSet();
+        if (results.getNextRecord()) {
+            std::unique_ptr<ChkptWindow> window_restored = deserializeWindow_(compressed_window_bytes);
+            sparta_assert(window_restored && !window_restored->chkpts.empty());
 
-        // Add to the cache, bump the window ID in the LRU list, and evict
-        // windows if needed.
-        chkpts_cache_[win_id] = std::move(window_restored->chkpts);
-        touchWindow_(win_id);
-        evictWindowsIfNeeded_();
+            auto start_win_id = getWindowID_(window_restored->chkpts.front()->getID());
+            auto end_win_id = getWindowID_(window_restored->chkpts.back()->getID());
+            sparta_assert(start_win_id == end_win_id && start_win_id == win_id,
+                        "Checkpoint window has inconsistent window IDs");
 
-        // Now delete from the database.
-        query->deleteResultSet();
+            // Add to the cache, bump the window ID in the LRU list, and evict
+            // windows if needed.
+            chkpts_cache_[win_id] = std::move(window_restored->chkpts);
+            touchWindow_(win_id);
+            evictWindowsIfNeeded_();
 
-        return true;
-    }
+            // Now delete from the database.
+            query->deleteResultSet();
 
-    if (must_succeed) {
+            success = true;
+        }
+    });
+
+    if (must_succeed && !success) {
         throw CheckpointError("Could not find checkpoint window with ID ") << win_id;
     }
-    return false;
+    return success;
 }
 
 simdb::SnooperCallbackOutcome DatabaseCheckpointer::handleLoadWindowIntoCacheSnooper_(
