@@ -4,6 +4,7 @@
 #include <stack>
 #include <ctime>
 #include <array>
+#include <signal.h>
 
 #include "sparta/sparta.hpp"
 #include "sparta/simulation/TreeNode.hpp"
@@ -88,7 +89,7 @@ void RunCheckpointerTest(uint64_t initial_tick = 0)
     r1->write<uint32_t>(0 * 5ul);
     r2->write<uint32_t>(0 % 5ul);
 
-    simdb::DatabaseManager db_mgr("test.db", true);
+    simdb::DatabaseManager db_mgr("dbchkptr-test1.db", true);
     simdb::AppManager app_mgr(&db_mgr);
 
     // Setup...
@@ -551,7 +552,7 @@ void RunStepStepStepLoadTest()
     r1->write<uint32_t>(0);
     r2->write<uint32_t>(0);
 
-    simdb::DatabaseManager db_mgr("test.db", true);
+    simdb::DatabaseManager db_mgr("dbchkptr-test2.db", true);
     simdb::AppManager app_mgr(&db_mgr);
 
     // Setup...
@@ -642,7 +643,7 @@ void ProfileLoadCheckpoint(DatabaseCheckpointer::chkpt_id_t load_id)
     r1->write<uint32_t>(0);
     r2->write<uint32_t>(0);
 
-    simdb::DatabaseManager db_mgr("test.db", true);
+    simdb::DatabaseManager db_mgr("dbchkptr-test3.db", true);
     simdb::AppManager app_mgr(&db_mgr);
 
     // Setup...
@@ -704,8 +705,21 @@ void ProfileLoadCheckpoint(DatabaseCheckpointer::chkpt_id_t load_id)
     EXPECT_FALSE(dbcp.hasCheckpoint(load_id + 1));
 }
 
+std::string exception_str;
+int signal_raised = 0;
+void signalHandler(int signum)
+{
+    signal_raised = signum;
+}
+
 int main()
 {
+    signal(SIGTERM, signalHandler);
+    signal(SIGINT, signalHandler);
+    signal(SIGSEGV, signalHandler);
+    signal(SIGABRT, signalHandler);
+    signal(SIGPIPE, signalHandler);
+
     auto warn_cerr = std::make_unique<sparta::log::Tap>(
         sparta::TreeNode::getVirtualGlobalNode(),
         sparta::log::categories::WARN,
@@ -750,6 +764,7 @@ int main()
         exception_str = ex.what();
     }
 
+    EXPECT_EQUAL(signal_raised, 0);
     EXPECT_EQUAL(exception_str, "");
 
     REPORT_ERROR;
