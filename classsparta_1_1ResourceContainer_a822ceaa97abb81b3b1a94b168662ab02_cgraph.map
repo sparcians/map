@@ -1,0 +1,17 @@
+<map id="sparta::ResourceContainer::getResourceAs" name="sparta::ResourceContainer::getResourceAs">
+<area shape="rect" id="Node000001" title="Overload of getResourceAs for const access with a non&#45;pointer template type." alt="" coords="5,154,179,194"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ResourceContainer.html#a8a6dc7a027715d3981f50bc0823bde07" title="Gets the resource contained by this node (if any) as the given type." alt="" coords="227,154,400,194"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="179,172,211,172,211,177,179,177"/>
+<area shape="rect" id="Node000003" href="$namespacesparta.html#ac0a2df7a7ca53b2fc0384476286b95ec" title="Demangles a C++ symbol." alt="" coords="475,5,594,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="328,152,377,97,410,67,447,41,459,35,462,40,449,46,414,71,381,100,332,155"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedObject.html#a2dcca61565924f0a4208c6509f9a42ba" title="Returns the location of this node in device tree which can be used to navigate the device tree in met..." alt="" coords="462,55,607,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="354,151,447,106,463,100,465,105,449,111,356,156"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ResourceContainer.html#af399ae644f27a3982dd3a2a788ae8d24" title="Gets the rtti type name (demangled) of the resource type held by this container. If there is no resou..." alt="" coords="448,120,621,161"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="400,158,432,154,433,159,401,164"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="462,186,607,226"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="401,184,447,191,446,196,400,189"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1PhasedObject.html#a5c50c75766fa4096ba77b12c3a53edd1" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="462,251,607,292"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="357,193,449,236,465,242,463,247,447,241,355,198"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1PhasedObject.html#a8555fc19699141ca78722846bd2e2dc3" title="Is this node (and thus the entire tree above it) in the &quot;teardown&quot; phase." alt="" coords="462,316,607,357"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="333,193,382,246,414,275,449,301,459,307,457,312,447,306,411,279,379,250,329,197"/>
+</map>

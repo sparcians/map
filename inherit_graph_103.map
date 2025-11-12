@@ -1,0 +1,13 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="49,48,134,73"/>
+<area shape="rect" id="Node000001" href="$classsparta_1_1app_1_1ReportStatsCollector.html" title=" " alt="" coords="260,5,419,46"/>
+<area shape="poly" id="edge16_Node000000_Node000001" title=" " alt="" coords="149,50,259,34,260,39,150,55"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1DatabaseCheckpointer.html" title="Implementation of the FastCheckpointer which only holds a subset of checkpoints in memory at any give..." alt="" coords="226,71,453,111"/>
+<area shape="poly" id="edge17_Node000000_Node000002" title=" " alt="" coords="150,65,226,74,225,80,149,70"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html" title="Checkpointer interface. Defines an ID&#45;based checkpointing API for tree of related checkpoints which c..." alt="" coords="5,101,178,142"/>
+<area shape="poly" id="edge18_Node000003_Node000002" title=" " alt="" coords="193,106,225,102,226,108,194,112"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html" title="Implements quick checkpointing through delta&#45;checkpoint trees which store state&#45;deltas in a compact f..." alt="" coords="240,136,438,177"/>
+<area shape="poly" id="edge19_Node000003_Node000004" title=" " alt="" coords="194,133,240,140,240,145,193,139"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1PersistentFastCheckpointer.html" title="Implements a Persistent FastCheckpointer, i.e. implements an interface to save checkpoints to disk." alt="" coords="501,128,682,184"/>
+<area shape="poly" id="edge20_Node000004_Node000005" title=" " alt="" coords="454,154,501,154,501,159,454,159"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="simdb::AppFactory&lt; sparta::serialization::checkpoint::DatabaseCheckpointer &gt;" name="simdb::AppFactory&lt; sparta::serialization::checkpoint::DatabaseCheckpointer &gt;">
+<area shape="rect" id="Node000001" title="This AppFactory specialization is provided since we have an app that inherits from Checkpointer,..." alt="" coords="5,79,244,135"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="66,5,183,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="127,47,127,78,122,78,122,47"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="sparta::serialization::checkpoint::DatabaseCheckpointer" name="sparta::serialization::checkpoint::DatabaseCheckpointer">
+<area shape="rect" id="Node000001" title="Implementation of the FastCheckpointer which only holds a subset of checkpoints in memory at any give..." alt="" coords="10,94,238,135"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,13,91,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="71,49,109,92,105,96,67,52"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html" title="Checkpointer interface. Defines an ID&#45;based checkpointing API for tree of related checkpoints which c..." alt="" coords="115,5,288,46"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="176,60,143,95,139,92,172,56"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::DatabaseCheckpoint" name="sparta::serialization::checkpoint::DatabaseCheckpoint">
+<area shape="rect" id="Node000001" title="Checkpoint class optimized for use with database&#45;backed checkpointers." alt="" coords="5,94,222,135"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1CheckpointBase.html" title="Single checkpoint object interface with a tick number and an ID unique to the owning Checkpointer ins..." alt="" coords="18,5,209,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="116,62,116,94,111,94,111,62"/>
+</map>
