@@ -741,11 +741,10 @@ namespace sparta::serialization::checkpoint
                 if(ad != nullptr){
                     auto itr = adatas_helper.find(ad);
                     if(itr != adatas_helper.end()){
-                        //TODO cnyce
-                        //throw CheckpointError("Found a second reference to ArchData ")
-                        //    << ad << " in the tree: " << root_.stringize() << " . First reference found throgh "
-                        //    << itr->second->getLocation() << " and second found through " << n->getLocation()
-                        //    << " . An ArchData should be findable throug exactly 1 TreeNode";
+                        throw CheckpointError("Found a second reference to ArchData ")
+                            << ad << " in the checkpointer: " << stringize() << " . First reference found throgh "
+                            << itr->second->getLocation() << " and second found through " << n->getLocation()
+                            << " . An ArchData should be findable throug exactly 1 TreeNode";
                     }
                     adatas_.push_back(ad);
                     adatas_helper[ad] = n; // Add to helper map

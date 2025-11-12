@@ -544,7 +544,7 @@ public:
     /// @param roots TreeNode(s) at which ArchData will be taken
     /// @note Scheduler must be set separately via setScheduler()
     /// @note This is required before createEnabledApps() is called
-    void setArchDataRoots(size_t instance_num, const std::vector<sparta::TreeNode*>& roots = {})
+    void setArchDataRoots(size_t instance_num, const std::vector<sparta::TreeNode*>& roots)
     {
         roots_by_inst_num_[instance_num] = roots;
     }

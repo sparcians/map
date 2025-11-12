@@ -89,7 +89,7 @@ void RunCheckpointerTest(uint64_t initial_tick = 0)
     r1->write<uint32_t>(0 * 5ul);
     r2->write<uint32_t>(0 % 5ul);
 
-    simdb::DatabaseManager db_mgr("dbchkptr-test1.db", true);
+    simdb::DatabaseManager db_mgr("test.db", true);
     simdb::AppManager app_mgr(&db_mgr);
 
     // Setup...
@@ -552,7 +552,7 @@ void RunStepStepStepLoadTest()
     r1->write<uint32_t>(0);
     r2->write<uint32_t>(0);
 
-    simdb::DatabaseManager db_mgr("dbchkptr-test2.db", true);
+    simdb::DatabaseManager db_mgr("test.db", true);
     simdb::AppManager app_mgr(&db_mgr);
 
     // Setup...
@@ -643,7 +643,7 @@ void ProfileLoadCheckpoint(DatabaseCheckpointer::chkpt_id_t load_id)
     r1->write<uint32_t>(0);
     r2->write<uint32_t>(0);
 
-    simdb::DatabaseManager db_mgr("dbchkptr-test3.db", true);
+    simdb::DatabaseManager db_mgr("test.db", true);
     simdb::AppManager app_mgr(&db_mgr);
 
     // Setup...
