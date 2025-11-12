@@ -11,7 +11,6 @@
 #include <random>
 
 #include "sparta/utils/SpartaException.hpp"
-#include "sparta/utils/SpartaAssert.hpp"
 
 namespace sparta {
     namespace utils {
@@ -23,11 +22,10 @@ namespace sparta {
         }
 
         template <class T>
-        constexpr uint32_t log2_lsb(const T& x)
+        constexpr uint32_t log2_lsb(const T&)
         {
-            (void) x;
-            //bool UNSUPPORTED_TYPE = false;
-            throw SpartaException("Unsupported type for log2_lsb: ") << typeid(T).name();
+            static_assert(false, "log2_lsb can only used with types uint32_t or uint64_t");
+            return 0;
         }
 
         template <>
@@ -189,46 +187,46 @@ namespace sparta {
         // but not for unsigned integer types, since the x < 0 test
         // will always be false.
         template <class T>
-        inline T abs(T x)
+        constexpr T abs(T x)
         {
             return (x < 0 ? -x : x);
         }
 
         template <>
-        inline uint8_t abs<uint8_t>(uint8_t x) {
+        constexpr uint8_t abs<uint8_t>(uint8_t x) {
             uint8_t sign_mask = int8_t(x) >> 7;
             return (x + sign_mask) ^ sign_mask;
         }
 
         template <>
-        inline uint16_t abs<uint16_t>(uint16_t x) {
+        constexpr uint16_t abs<uint16_t>(uint16_t x) {
             uint16_t sign_mask = int16_t(x) >> 15;
             return (x + sign_mask) ^ sign_mask;
         }
 
         template <>
-        inline uint32_t abs<uint32_t>(uint32_t x) {
+        constexpr uint32_t abs<uint32_t>(uint32_t x) {
             uint32_t sign_mask = int32_t(x) >> 31;
             return (x + sign_mask) ^ sign_mask;
         }
 
         template <>
-        inline uint64_t abs<uint64_t>(uint64_t x) {
+        constexpr uint64_t abs<uint64_t>(uint64_t x) {
             uint64_t sign_mask = int64_t(x) >> 63;
             return (x + sign_mask) ^ sign_mask;
         }
 
         template <class T>
-        inline T gcd(T u, T v)
+        constexpr T gcd(T u, T v)
         {
             (void) u;
             (void) v;
-            static_assert("This is an unsupported type");
+            static_assert(false, "This is an unsupported type");
         }
 
         // Adapted from WIKI article on binary GCD algorithm
         template <>
-        inline uint32_t gcd<uint32_t>(uint32_t u, uint32_t v)
+        constexpr uint32_t gcd<uint32_t>(uint32_t u, uint32_t v)
         {
             // GCD(0,x) == GCD(x,0) == x
             if (u == 0 || v == 0)
@@ -263,7 +261,7 @@ namespace sparta {
 
         // Adapted from WIKI article on binary GCD algorithm
         template <>
-        inline uint64_t gcd<uint64_t>(uint64_t u, uint64_t v)
+        constexpr uint64_t gcd<uint64_t>(uint64_t u, uint64_t v)
         {
             // GCD(0,x) == GCD(x,0) == x
             if (u == 0 || v == 0)
@@ -297,16 +295,13 @@ namespace sparta {
         }
 
         template <class T>
-        inline T lcm(const T& u, const T& v)
+        constexpr T lcm(const T&, const T&)
         {
-            (void) u;
-            (void) v;
-            //bool UNSUPPORTED_TYPE = false;
-            throw SpartaException("Unsupported type for lcm: ") << typeid(T).name();
+            static_assert(false, "Unsupported type for lcm");
         }
 
         template <>
-        inline uint32_t lcm<uint32_t>(const uint32_t &u, const uint32_t &v)
+        constexpr uint32_t lcm<uint32_t>(const uint32_t &u, const uint32_t &v)
         {
             if (u == 1) {
                 return v;
@@ -319,7 +314,7 @@ namespace sparta {
         }
 
         template <>
-        inline uint64_t lcm<uint64_t>(const uint64_t &u, const uint64_t &v)
+        constexpr uint64_t lcm<uint64_t>(const uint64_t &u, const uint64_t &v)
         {
             if (u == 1) {
                 return v;
@@ -332,7 +327,7 @@ namespace sparta {
         }
 
         template <class T>
-        inline T
+        constexpr T
         safe_power(T n, T e)
         {
             static_assert(std::is_integral<T>::value, "sparta::safe_power only supports integer data types");
@@ -357,7 +352,7 @@ namespace sparta {
         //! a supplied tolerance. The tolerance value defaults
         //! to machine epsilon.
         template <typename T>
-        inline
+        constexpr
         typename std::enable_if<
             std::is_floating_point<T>::value,
         bool>::type
@@ -381,7 +376,7 @@ namespace sparta {
 
         //! \brief Pick a random integral number
         template <typename T>
-        inline
+        constexpr
         typename std::enable_if<
             std::is_integral<T>::value,
         T>::type
@@ -393,7 +388,7 @@ namespace sparta {
 
         //! \brief Pick a random floating-point number
         template <typename T>
-        inline
+        constexpr
         typename std::enable_if<
             std::is_floating_point<T>::value,
         T>::type
