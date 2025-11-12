@@ -88,7 +88,12 @@ namespace sparta::serialization::checkpoint
          *              not nullptr)
          */
         FastCheckpointer(TreeNode& root, Scheduler* sched=nullptr) :
-            FastCheckpointer(std::vector<sparta::TreeNode*>{1ul, &root}, sched)
+            Checkpointer(root, sched),
+            snap_thresh_(DEFAULT_SNAPSHOT_THRESH),
+            next_chkpt_id_(checkpoint_type::MIN_CHECKPOINT),
+            num_alive_checkpoints_(0),
+            num_alive_snapshots_(0),
+            num_dead_checkpoints_(0)
         { }
 
         /*!

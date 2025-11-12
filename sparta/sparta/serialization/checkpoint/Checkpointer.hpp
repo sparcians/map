@@ -85,8 +85,10 @@ namespace sparta::serialization::checkpoint
          * will not have their Ticks assigned
          */
         Checkpointer(TreeNode& root, sparta::Scheduler* sched=nullptr):
-            Checkpointer({&root}, sched)
-        { }
+            sched_(sched)
+        {
+            roots_.push_back(&root);
+        }
 
         /*!
          * \brief Checkpointer Constructor
