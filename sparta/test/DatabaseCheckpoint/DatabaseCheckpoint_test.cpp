@@ -4,7 +4,6 @@
 #include <stack>
 #include <ctime>
 #include <array>
-#include <signal.h>
 
 #include "sparta/sparta.hpp"
 #include "sparta/simulation/TreeNode.hpp"
