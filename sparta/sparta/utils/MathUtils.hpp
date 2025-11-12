@@ -31,7 +31,7 @@ namespace sparta {
         }
 
         template <>
-        inline uint32_t log2_lsb<uint32_t>(const uint32_t &x)
+        constexpr uint32_t log2_lsb<uint32_t>(const uint32_t &x)
         {
             // This uses a DeBrujin sequence to find the index
             // (0..31) of the least significant bit in iclass
@@ -50,7 +50,7 @@ namespace sparta {
         }
 
         template <>
-        inline uint32_t log2_lsb<uint64_t>(const uint64_t &x)
+        constexpr uint32_t log2_lsb<uint64_t>(const uint64_t &x)
         {
             // This uses a DeBrujin sequence to find the index
             // (0..63) of the least significant bit in iclass
@@ -73,7 +73,7 @@ namespace sparta {
         }
 
         template <class T>
-        inline uint64_t floor_log2(T x)
+        constexpr uint64_t floor_log2(T x)
         {
             // floor_log2(x) is the index of the most-significant 1 bit of x.
             // (This is the old iterative version)
@@ -87,13 +87,13 @@ namespace sparta {
         }
 
         template<>
-        inline uint64_t floor_log2<double>(double x)
+        constexpr uint64_t floor_log2<double>(double x)
         {
             return std::floor(log2(x));
         }
 
         template <>
-        inline uint64_t floor_log2<uint32_t>(uint32_t x)
+        constexpr uint64_t floor_log2<uint32_t>(uint32_t x)
         {
             if (x == 0) {
                 // NOTE: This function returns 0 for log2(0) for compatibility with the old version,
@@ -119,7 +119,7 @@ namespace sparta {
         }
 
         template <>
-        inline uint64_t floor_log2<uint64_t>(uint64_t x)
+        constexpr uint64_t floor_log2<uint64_t>(uint64_t x)
         {
             if (x == 0) {
                 // NOTE: This function returns 0 for log2(0) for compatibility with the old version,
