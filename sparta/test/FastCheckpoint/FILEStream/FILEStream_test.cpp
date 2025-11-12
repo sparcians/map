@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <iostream>
 #include <fstream>
+#include <signal.h>
 
 #include "sparta/serialization/checkpoint/FILEStream.hpp"
 #include "sparta/utils/SpartaTester.hpp"
@@ -143,15 +144,34 @@ void testInvalidPipeCmd() {
     EXPECT_NOTEQUAL(0, pclose(pipeOut)); // Pipe command returns nonzero
 }
 
+std::string exception_str;
+int signal_raised = 0;
+void signalHandler(int signum)
+{
+    signal_raised = signum;
+}
+
 int main() {
-    testFileWrite();
-    testFileRead();
-    testXzCompressedFileWriteRead();
-    testFpNull();
-    testFileNotWritable();
-    testInvalidPipeCmd();
+    signal(SIGTERM, signalHandler);
+    signal(SIGINT, signalHandler);
+    signal(SIGSEGV, signalHandler);
+    signal(SIGABRT, signalHandler);
+    signal(SIGPIPE, signalHandler);
+
+    try {
+        testFileWrite();
+        testFileRead();
+        testXzCompressedFileWriteRead();
+        testFpNull();
+        testFileNotWritable();
+        testInvalidPipeCmd();
+    } catch (const sparta::SpartaException& ex) {
+        exception_str = ex.what();
+    }
+
+    EXPECT_EQUAL(signal_raised, 0);
+    EXPECT_EQUAL(exception_str, "");
 
     REPORT_ERROR;
-
     return ERROR_CODE;
 }
