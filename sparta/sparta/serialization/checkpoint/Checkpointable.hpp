@@ -142,7 +142,7 @@ namespace sparta::serialization::checkpoint {
             //! \brief ArchData that will hold snapshots of this Checkpointable
             ArchData adata_;
 
-            //! \brief Objects registered
+            //! \brief Data view in the arch state for the checkpointable object
             DataView dview_;
         };
 
