@@ -117,7 +117,6 @@
   sparta::ArchData            | \copybrief sparta::ArchData &nbsp;
   sparta::DataView            | \copybrief sparta::DataView &nbsp;
   sparta::RegisterBankTable   | \copybrief sparta::RegisterBankTable &nbsp;
-  sparta::RegisterDefinitionSet  | \copybrief sparta::RegisterDefinitionSet &nbsp;
   sparta::Register            | \copybrief sparta::Register &nbsp;
   sparta::RegisterSet         | \copybrief sparta::RegisterSet &nbsp;
 
@@ -138,6 +137,20 @@
   sparta::memory::Translation          | \copybrief sparta::memory::Translation &nbsp;
   sparta::memory::TranslationIF        | \copybrief sparta::memory::TranslationIF &nbsp;
   sparta::memory::TranslationIFNode    | \copybrief sparta::memory::TranslationIFNode &nbsp;
+
+  ================================================================================
+  \subsection cp_overview Sparta Checkpointing Support (sparta/serialization/checkpoint)
+
+  Class | Brief Description
+  ----- | -----------------
+  sparta::serialization::checkpoint::CheckpointError  | \copybrief sparta::serialization::checkpoint::CheckpointError &nbsp;
+  sparta::serialization::checkpoint::Checkpoint       | \copybrief sparta::serialization::checkpoint::Checkpoint &nbsp;
+  sparta::serialization::checkpoint::Checkpointable   | \copybrief sparta::serialization::checkpoint::Checkpointable &nbsp;
+  sparta::serialization::checkpoint::DeltaCheckpoint  | \copybrief sparta::serialization::checkpoint::DeltaCheckpoint &nbsp;
+  sparta::serialization::checkpoint::Checkpointer     | \copybrief sparta::serialization::checkpoint::Checkpointer &nbsp;
+  sparta::serialization::checkpoint::FastCheckpointer | \copybrief sparta::serialization::checkpoint::FastCheckpointer &nbsp;
+  sparta::serialization::checkpoint::PersistentFastCheckpointer | \copybrief sparta::serialization::checkpoint::PersistentFastCheckpointer &nbsp;
+
 
   ================================================================================
   \subsection pevents_overview Sparta PEvents (Performance Events) (sparta/pevents)

@@ -11,52 +11,50 @@
 #include <random>
 
 #include "sparta/utils/SpartaException.hpp"
-#include "sparta/utils/SpartaAssert.hpp"
 
 namespace sparta {
     namespace utils {
 
-        inline double log2 (double x) {
+        constexpr double log2 (double x) {
             // double y = std::log(x) / std::log(2.0);
             // return y;
             return std::log2(x);
         }
 
         template <class T>
-        inline uint32_t log2_lsb(const T& x)
+        constexpr uint32_t log2_lsb(const T&)
         {
-            (void) x;
-            //bool UNSUPPORTED_TYPE = false;
-            throw SpartaException("Unsupported type for log2_lsb: ") << typeid(T).name();
+            static_assert(false, "log2_lsb can only used with types uint32_t or uint64_t");
+            return 0;
         }
 
         template <>
-        inline uint32_t log2_lsb<uint32_t>(const uint32_t &x)
+        constexpr uint32_t log2_lsb<uint32_t>(const uint32_t &x)
         {
             // This uses a DeBrujin sequence to find the index
             // (0..31) of the least significant bit in iclass
             // Refer to Leiserson's bitscan algorithm:
             // http://chessprogramming.wikispaces.com/BitScan
-            static const uint32_t index32[32] = {
+            constexpr uint32_t index32[32] = {
                 0,   1, 28,  2, 29, 14, 24, 3,
                 30, 22, 20, 15, 25, 17,  4, 8,
                 31, 27, 13, 23, 21, 19, 16, 7,
                 26, 12, 18,  6, 11,  5, 10, 9
             };
 
-            static const uint32_t debruijn32 = 0x077CB531u;
+            constexpr uint32_t debruijn32 = 0x077CB531u;
 
             return index32[((x & -x) * debruijn32) >> 27];
         }
 
         template <>
-        inline uint32_t log2_lsb<uint64_t>(const uint64_t &x)
+        constexpr uint32_t log2_lsb<uint64_t>(const uint64_t &x)
         {
             // This uses a DeBrujin sequence to find the index
             // (0..63) of the least significant bit in iclass
             // Refer to Leiserson's bitscan algorithm:
             // http://chessprogramming.wikispaces.com/BitScan
-            static const uint32_t index64[64] = {
+            constexpr uint32_t index64[64] = {
                 63,  0, 58,  1, 59, 47, 53,  2,
                 60, 39, 48, 27, 54, 33, 42,  3,
                 61, 51, 37, 40, 49, 18, 28, 20,
@@ -67,13 +65,13 @@ namespace sparta {
                 44, 24, 15,  8, 23,  7,  6,  5
             };
 
-            static const uint64_t debruijn64 = 0x07EDD5E59A4E28C2ull;
+            constexpr uint64_t debruijn64 = 0x07EDD5E59A4E28C2ull;
 
             return index64[((x & -x) * debruijn64) >> 58];
         }
 
         template <class T>
-        inline uint64_t floor_log2(T x)
+        constexpr uint64_t floor_log2(T x)
         {
             // floor_log2(x) is the index of the most-significant 1 bit of x.
             // (This is the old iterative version)
@@ -87,13 +85,13 @@ namespace sparta {
         }
 
         template<>
-        inline uint64_t floor_log2<double>(double x)
+        constexpr uint64_t floor_log2<double>(double x)
         {
             return std::floor(log2(x));
         }
 
         template <>
-        inline uint64_t floor_log2<uint32_t>(uint32_t x)
+        constexpr uint64_t floor_log2<uint32_t>(uint32_t x)
         {
             if (x == 0) {
                 // NOTE: This function returns 0 for log2(0) for compatibility with the old version,
@@ -104,7 +102,7 @@ namespace sparta {
 
             // This is a fast floor(log2(x)) based on DeBrujin's algorithm
             // (based on generally available and numerous sources)
-            static const uint64_t lut[] = {
+            constexpr uint64_t lut[] = {
                 0,  9,  1, 10, 13, 21,  2, 29,
                 11, 14, 16, 18, 22, 25,  3, 30,
                 8, 12, 20, 28, 15, 17, 24,  7,
@@ -119,7 +117,7 @@ namespace sparta {
         }
 
         template <>
-        inline uint64_t floor_log2<uint64_t>(uint64_t x)
+        constexpr uint64_t floor_log2<uint64_t>(uint64_t x)
         {
             if (x == 0) {
                 // NOTE: This function returns 0 for log2(0) for compatibility with the old version,
@@ -130,7 +128,7 @@ namespace sparta {
 
             // This is a fast floor(log2(x)) based on DeBrujin's algorithm
             // (based on generally available and numerous sources)
-            static const uint64_t lut[] = {
+            constexpr uint64_t lut[] = {
                     63,  0, 58,  1, 59, 47, 53,  2,
                     60, 39, 48, 27, 54, 33, 42,  3,
                     61, 51, 37, 40, 49, 18, 28, 20,
@@ -149,7 +147,7 @@ namespace sparta {
             return lut[((uint64_t)((x - (x >> 1)) * 0x07EDD5E59A4E28C2ull)) >> 58];
         }
 
-        inline uint64_t ceil_log2 (uint64_t x)
+        constexpr uint64_t ceil_log2 (uint64_t x)
         {
             // If x is a power of 2 then ceil_log2(x) is floor_log2(x).
             // Otherwise ceil_log2(x) is floor_log2(x) + 1.
@@ -160,17 +158,17 @@ namespace sparta {
             return y;
         }
 
-        inline uint64_t pow2 (uint64_t x) {
-            uint64_t y = static_cast<uint64_t>(1) << x;
+        constexpr uint64_t pow2 (uint64_t x) {
+            const uint64_t y = static_cast<uint64_t>(1) << x;
             return y;
         }
 
-        inline bool is_power_of_2 (uint64_t x) {
-            bool y = x && !(x & (x - 1));
+        constexpr bool is_power_of_2 (uint64_t x) {
+            const bool y = x && !(x & (x - 1));
             return y;
         }
 
-        inline uint64_t next_power_of_2(uint64_t v)
+        constexpr uint64_t next_power_of_2(uint64_t v)
         {
             if(v < 2) {
                 return 1ull;
@@ -178,8 +176,8 @@ namespace sparta {
             return 1ull << ((sizeof(uint64_t) * 8) - __builtin_clzll(v - 1ull));
         }
 
-        inline uint64_t ones (uint64_t x) {
-            uint64_t y = (static_cast<uint64_t>(1) << x) - 1;
+        constexpr uint64_t ones (uint64_t x) {
+            const uint64_t y = (static_cast<uint64_t>(1) << x) - 1;
             return y;
         }
 
@@ -189,46 +187,46 @@ namespace sparta {
         // but not for unsigned integer types, since the x < 0 test
         // will always be false.
         template <class T>
-        inline T abs(T x)
+        constexpr T abs(T x)
         {
             return (x < 0 ? -x : x);
         }
 
         template <>
-        inline uint8_t abs<uint8_t>(uint8_t x) {
+        constexpr uint8_t abs<uint8_t>(uint8_t x) {
             uint8_t sign_mask = int8_t(x) >> 7;
             return (x + sign_mask) ^ sign_mask;
         }
 
         template <>
-        inline uint16_t abs<uint16_t>(uint16_t x) {
+        constexpr uint16_t abs<uint16_t>(uint16_t x) {
             uint16_t sign_mask = int16_t(x) >> 15;
             return (x + sign_mask) ^ sign_mask;
         }
 
         template <>
-        inline uint32_t abs<uint32_t>(uint32_t x) {
+        constexpr uint32_t abs<uint32_t>(uint32_t x) {
             uint32_t sign_mask = int32_t(x) >> 31;
             return (x + sign_mask) ^ sign_mask;
         }
 
         template <>
-        inline uint64_t abs<uint64_t>(uint64_t x) {
+        constexpr uint64_t abs<uint64_t>(uint64_t x) {
             uint64_t sign_mask = int64_t(x) >> 63;
             return (x + sign_mask) ^ sign_mask;
         }
 
         template <class T>
-        inline T gcd(T u, T v)
+        constexpr T gcd(T u, T v)
         {
             (void) u;
             (void) v;
-            static_assert("This is an unsupported type");
+            static_assert(false, "This is an unsupported type");
         }
 
         // Adapted from WIKI article on binary GCD algorithm
         template <>
-        inline uint32_t gcd<uint32_t>(uint32_t u, uint32_t v)
+        constexpr uint32_t gcd<uint32_t>(uint32_t u, uint32_t v)
         {
             // GCD(0,x) == GCD(x,0) == x
             if (u == 0 || v == 0)
@@ -263,7 +261,7 @@ namespace sparta {
 
         // Adapted from WIKI article on binary GCD algorithm
         template <>
-        inline uint64_t gcd<uint64_t>(uint64_t u, uint64_t v)
+        constexpr uint64_t gcd<uint64_t>(uint64_t u, uint64_t v)
         {
             // GCD(0,x) == GCD(x,0) == x
             if (u == 0 || v == 0)
@@ -297,16 +295,13 @@ namespace sparta {
         }
 
         template <class T>
-        inline T lcm(const T& u, const T& v)
+        constexpr T lcm(const T&, const T&)
         {
-            (void) u;
-            (void) v;
-            //bool UNSUPPORTED_TYPE = false;
-            throw SpartaException("Unsupported type for lcm: ") << typeid(T).name();
+            static_assert(false, "Unsupported type for lcm");
         }
 
         template <>
-        inline uint32_t lcm<uint32_t>(const uint32_t &u, const uint32_t &v)
+        constexpr uint32_t lcm<uint32_t>(const uint32_t &u, const uint32_t &v)
         {
             if (u == 1) {
                 return v;
@@ -319,7 +314,7 @@ namespace sparta {
         }
 
         template <>
-        inline uint64_t lcm<uint64_t>(const uint64_t &u, const uint64_t &v)
+        constexpr uint64_t lcm<uint64_t>(const uint64_t &u, const uint64_t &v)
         {
             if (u == 1) {
                 return v;
@@ -332,7 +327,7 @@ namespace sparta {
         }
 
         template <class T>
-        inline T
+        constexpr T
         safe_power(T n, T e)
         {
             static_assert(std::is_integral<T>::value, "sparta::safe_power only supports integer data types");
@@ -357,7 +352,7 @@ namespace sparta {
         //! a supplied tolerance. The tolerance value defaults
         //! to machine epsilon.
         template <typename T>
-        inline
+        constexpr
         typename std::enable_if<
             std::is_floating_point<T>::value,
         bool>::type
@@ -381,7 +376,7 @@ namespace sparta {
 
         //! \brief Pick a random integral number
         template <typename T>
-        inline
+        constexpr
         typename std::enable_if<
             std::is_integral<T>::value,
         T>::type
@@ -393,7 +388,7 @@ namespace sparta {
 
         //! \brief Pick a random floating-point number
         template <typename T>
-        inline
+        constexpr
         typename std::enable_if<
             std::is_floating_point<T>::value,
         T>::type

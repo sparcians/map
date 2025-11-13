@@ -8,7 +8,7 @@ interfaces allowing models built with Sparta to work together for
 functional simulation, performance simulation, analysis, and design.
 
 This framework is built on the principles of a OO framework design.
-It's written in C++ (mostly C++11 and some 17) as well as python.  The
+It's written in C++ (mostly C++17) as well as python.  The
 concepts in modeling communication/scheduling are similar to SystemC
 and Gem5, but takes a much more abstract approach to simulation
 design.
