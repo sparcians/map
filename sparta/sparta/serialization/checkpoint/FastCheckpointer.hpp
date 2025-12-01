@@ -936,10 +936,6 @@ namespace sparta::serialization::checkpoint
                 tick = sched_->getCurrentTick();
             }
 
-            //if(getHead()){
-            //    throw CheckpointError("Cannot create head at ")
-            //        << tick << " because a head already exists in this checkpointer";
-            //}
             for (auto root : getRoots()) {
                 if(root->isFinalized() == false){
                     CheckpointError exc("Cannot create a checkpoint until the tree is finalized. Attempting to checkpoint from node ");

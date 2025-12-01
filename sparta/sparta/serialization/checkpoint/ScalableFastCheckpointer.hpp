@@ -59,20 +59,15 @@ public:
     static void defineSchema(simdb::Schema& schema);
 
     /*!
-     * \brief Instantiate the async processing pipeline to save/load checkpoints.
+     * \brief Instantiate the async processing pipeline to save checkpoints to the DB.
      */
     void createPipeline(simdb::pipeline::PipelineManager* pipeline_mgr) override;
-
-    /*!
-     * \brief Handle any final pipeline tasks before threads are shut down.
-     */
-    void preTeardown() override;
 
     /*!
      * \brief Use the FastCheckpointer to create checkpoints / checkpoint branches.
      */
     FastCheckpointer& getFastCheckpointer() noexcept {
-        return *checkpointer_;
+        return checkpointer_;
     }
 
     /*!
@@ -109,7 +104,7 @@ public:
     std::string stringize() const;
 
 private:
-    std::unique_ptr<FastCheckpointer> checkpointer_;
+    FastCheckpointer checkpointer_;
     simdb::DatabaseManager* db_mgr_ = nullptr;
 
     struct ChkptWindow {
@@ -161,9 +156,9 @@ namespace simdb
 {
 
 /*!
- * \brief This AppFactory specialization is provided since we have an app that inherits
- * from Checkpointer, and thus cannot have the default app subclass ctor signature
- * that only takes the DatabaseManager like most other apps.
+ * \brief This AppFactory specialization is provided since we have to initialize the FastCheckpointer
+ * which takes the ArchData root(s) / Scheduler, and thus cannot have the default app subclass ctor
+ * signature that only takes the DatabaseManager like most other apps.
  */
 template <>
 class AppFactory<sparta::serialization::checkpoint::ScalableFastCheckpointer> : public AppFactoryBase
@@ -171,19 +166,19 @@ class AppFactory<sparta::serialization::checkpoint::ScalableFastCheckpointer> : 
 public:
     using AppT = sparta::serialization::checkpoint::ScalableFastCheckpointer;
 
-    /// @brief Sets the ArchData root(s) for a given instance of the checkpointer.
-    /// @param instance_num 0 if using one checkpointer instance, else the instance number (1-based)
-    /// @param roots TreeNode(s) at which ArchData will be taken
-    /// @note Scheduler must be set separately via setScheduler()
-    /// @note This is required before createEnabledApps() is called
+    /// \brief Sets the ArchData root(s) for a given instance of the checkpointer.
+    /// \param instance_num 0 if using one checkpointer instance, else the instance number (1-based)
+    /// \param roots TreeNode(s) at which ArchData will be taken
+    /// \note Scheduler must be set separately via setScheduler()
+    /// \note This is required before createEnabledApps() is called
     void setArchDataRoots(size_t instance_num, const std::vector<sparta::TreeNode*>& roots)
     {
         roots_by_inst_num_[instance_num] = roots;
     }
 
-    /// @brief Sets the Scheduler for all instances of the checkpointer.
-    /// @param sched Scheduler to use for the checkpoint's tick numbers
-    /// @note This is optional if ticks are not needed
+    /// \brief Sets the Scheduler for all instances of the checkpointer.
+    /// \param sched Scheduler to use for the checkpoint's tick numbers
+    /// \note This is optional if ticks are not needed
     void setScheduler(sparta::Scheduler& sched)
     {
         scheduler_ = &sched;

@@ -4,7 +4,6 @@
 #include "simdb/pipeline/AsyncDatabaseAccessor.hpp"
 #include "simdb/pipeline/elements/Function.hpp"
 #include "simdb/utils/Compress.hpp"
-#include "simdb/utils/TickTock.hpp"
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -19,7 +18,7 @@ namespace sparta::serialization::checkpoint
 ScalableFastCheckpointer::ScalableFastCheckpointer(simdb::DatabaseManager* db_mgr,
                                                    const std::vector<TreeNode*> & roots,
                                                    Scheduler* sched)
-    : checkpointer_(std::make_unique<FastCheckpointer>(roots, sched)),
+    : checkpointer_(roots, sched),
       db_mgr_(db_mgr)
 {
 }
@@ -35,8 +34,7 @@ void ScalableFastCheckpointer::defineSchema(simdb::Schema& schema)
     windows.addColumn("StartTick", dt::uint64_t);
     windows.addColumn("EndTick", dt::uint64_t);
     windows.addColumn("NumCheckpoints", dt::int32_t);
-    windows.createCompoundIndexOn({"StartArchID", "EndArchID"});
-    windows.createCompoundIndexOn({"StartTick", "EndTick"});
+    windows.createCompoundIndexOn({"StartArchID", "EndArchID", "StartTick", "EndTick"});
     windows.disableAutoIncPrimaryKey();
 }
 
@@ -107,9 +105,9 @@ void ScalableFastCheckpointer::createPipeline(simdb::pipeline::PipelineManager* 
 
     // Task 4: Write to the database
     auto write_to_db = db_accessor->createAsyncWriter<ScalableFastCheckpointer, ChkptWindowBytes, void>(
-        [this](ChkptWindowBytes&& bytes_in,
-               simdb::pipeline::AppPreparedINSERTs* tables,
-               bool /*force_flush*/)
+        [](ChkptWindowBytes&& bytes_in,
+           simdb::pipeline::AppPreparedINSERTs* tables,
+           bool /*force_flush*/)
         {
             auto window_inserter = tables->getPreparedINSERT("ChkptWindows");
             window_inserter->setColumnValue(0, bytes_in.chkpt_bytes);
@@ -129,30 +127,21 @@ void ScalableFastCheckpointer::createPipeline(simdb::pipeline::PipelineManager* 
     // Store the pipeline input queue
     pipeline_head_ = add_arch_ids->getTypedInputQueue<ChkptWindow>();
 
+    // Create a flusher to flush the pipeline on demand
     pipeline_flusher_ = std::make_unique<simdb::pipeline::RunnableFlusher>(
         *db_mgr_, add_arch_ids, window_to_bytes, zlib_bytes, write_to_db);
 
+    // Assign non-database pipeline tasks to one thread (DB task "write_to_db"
+    // is implicitly going to be on the dedicated DB thread)
     pipeline->createTaskGroup("CheckpointPipeline")
         ->addTask(std::move(add_arch_ids))
         ->addTask(std::move(window_to_bytes))
         ->addTask(std::move(zlib_bytes));
 }
 
-void ScalableFastCheckpointer::preTeardown()
-{
-    // Warn if there are remaining uncommitted checkpoints on the current branch.
-    if (auto current = checkpointer_->getCurrentID(); current != checkpoint_type::UNIDENTIFIED_CHECKPOINT) {
-        auto chkpt_chain = checkpointer_->getCheckpointChain(current);
-        if (!chkpt_chain.empty()) {
-            std::cout << "WARNING: " << chkpt_chain.size() << " uncommitted checkpoints remain at "
-                      << "end of simulation" << std::endl;
-        }
-    }
-}
-
 void ScalableFastCheckpointer::commitCurrentBranch(bool force_new_head_chkpt)
 {
-    checkpointer_->squashCurrentBranch(*this, force_new_head_chkpt);
+    checkpointer_.squashCurrentBranch(*this, force_new_head_chkpt);
 }
 
 void ScalableFastCheckpointer::saveCheckpoints(checkpoint_ptrs&& checkpoints)
@@ -194,8 +183,8 @@ std::string ScalableFastCheckpointer::stringize() const
 {
     std::stringstream ss;
     ss << "<ScalableFastCheckpointer on ";
-    for (size_t i = 0; i < checkpointer_->getRoots().size(); ++i) {
-        TreeNode* root = checkpointer_->getRoots()[i];
+    for (size_t i = 0; i < checkpointer_.getRoots().size(); ++i) {
+        TreeNode* root = checkpointer_.getRoots()[i];
         if (i != 0) {
             ss << ", ";
         }

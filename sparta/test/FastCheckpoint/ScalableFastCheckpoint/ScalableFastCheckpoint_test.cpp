@@ -21,6 +21,9 @@ using chkpt_id_t = typename ScalableFastCheckpointer::chkpt_id_t;
 
 static const uint16_t HINT_NONE=0;
 
+#define EXPECT_SNAPSHOT(id) EXPECT_TRUE(fcp.findCheckpoint(id)->isSnapshot());
+#define EXPECT_DELTA(id) EXPECT_FALSE(fcp.findCheckpoint(id)->isSnapshot());
+
 //! Some register and field definition tables
 Register::Definition reg_defs[] = {
     { 0, "reg0", Register::GROUP_NUM_NONE, "", Register::GROUP_IDX_NONE, "reg desc", 1,
@@ -80,7 +83,6 @@ void RunCheckpointerTest()
     app_mgr.enableApp(ScalableFastCheckpointer::NAME);
     app_mgr.createEnabledApps();
     app_mgr.createSchemas();
-    app_mgr.postInit(0, nullptr);
     app_mgr.openPipelines();
 
     auto& dbcp = *app_mgr.getApp<ScalableFastCheckpointer>();
@@ -88,10 +90,11 @@ void RunCheckpointerTest()
     fcp.setSnapshotThreshold(5);
 
     // Run tests
-    std::unordered_map<chkpt_id_t, std::pair<uint32_t, uint32_t>> expected_vals_at_chkpts;
-
     auto create_checkpoint = [&](bool force_snapshot = false)
     {
+        // Writing to the registers before checkpointing is not really necessary,
+        // since we are not validating the values after loadCheckpoint(). That
+        // functionality is already covered by the FastCheckpointer test.
         uint32_t r1_val = rand();
         uint32_t r2_val = rand();
 
@@ -99,7 +102,6 @@ void RunCheckpointerTest()
         r2->write<uint32_t>(r2_val);
 
         auto chkpt_id = fcp.createCheckpoint(force_snapshot);
-        expected_vals_at_chkpts[chkpt_id] = std::make_pair(r1_val, r2_val);
         return chkpt_id;
     };
 
@@ -126,10 +128,10 @@ void RunCheckpointerTest()
     auto D2 = create_checkpoint();
     auto D3 = create_checkpoint();
 
-    EXPECT_TRUE(fcp.findCheckpoint(S1)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D1)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D2)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D3)->isSnapshot());
+    EXPECT_SNAPSHOT(S1);
+    EXPECT_DELTA(D1);
+    EXPECT_DELTA(D2);
+    EXPECT_DELTA(D3);
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 0);
 
     // Try to serialize the current chain without forcing a new head checkpoint.
@@ -153,11 +155,12 @@ void RunCheckpointerTest()
     auto D4 = create_checkpoint();
     auto D5 = create_checkpoint();
 
+    EXPECT_DELTA(D4);
+    EXPECT_DELTA(D5);
+
     // Current chain is now:
     //   S1->D1->D2->D3->D4->D5
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 0);
-    EXPECT_FALSE(fcp.findCheckpoint(D4)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D5)->isSnapshot());
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 6);
     EXPECT_EQUAL(fcp.getNumSnapshots(), 1);
     EXPECT_EQUAL(fcp.getNumDeltas(), 5);
@@ -180,6 +183,7 @@ void RunCheckpointerTest()
     // that we just forced.
     dbcp.commitCurrentBranch(true);
     auto S2 = fcp.getHeadID();
+    EXPECT_SNAPSHOT(S2);
 
     // Current chain is now:
     //   S2
@@ -187,7 +191,6 @@ void RunCheckpointerTest()
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 1);
     EXPECT_EQUAL(fcp.getNumSnapshots(), 1);
     EXPECT_EQUAL(fcp.getNumDeltas(), 0);
-    EXPECT_TRUE(fcp.findCheckpoint(S2)->isSnapshot());
     EXPECT_EQUAL(fcp.getCheckpointChain(S2).size(), 1);
     EXPECT_EQUAL(fcp.findCheckpoint(S2)->getRestoreChain().size(), 1);
 
@@ -198,6 +201,12 @@ void RunCheckpointerTest()
     auto D9  = create_checkpoint();
     auto D10 = create_checkpoint();
 
+    EXPECT_DELTA(D6);
+    EXPECT_DELTA(D7);
+    EXPECT_DELTA(D8);
+    EXPECT_DELTA(D9);
+    EXPECT_DELTA(D10);
+
     // Checkpoint chain is now:
     //   S2 -> D6->D7->D8->D9->D10
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 6);
@@ -207,25 +216,18 @@ void RunCheckpointerTest()
     EXPECT_EQUAL(fcp.getCheckpointChain(D10).size(), 6);
     EXPECT_EQUAL(fcp.findCheckpoint(D10)->getRestoreChain().size(), 6);
 
-    EXPECT_TRUE(fcp.findCheckpoint(S2)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D6)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D7)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D8)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D9)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D10)->isSnapshot());
-
     // Append new snapshot
     auto S3 = create_checkpoint();
-    EXPECT_TRUE(fcp.findCheckpoint(S3)->isSnapshot());
+    EXPECT_SNAPSHOT(S3);
 
     // Append 3 new delta checkpoints
     auto D11 = create_checkpoint();
     auto D12 = create_checkpoint();
     auto D13 = create_checkpoint();
 
-    EXPECT_FALSE(fcp.findCheckpoint(D11)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D12)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D13)->isSnapshot());
+    EXPECT_DELTA(D11);
+    EXPECT_DELTA(D12);
+    EXPECT_DELTA(D13);
 
     // Checkpoint chain is now:
     //   S2 -> D6->D7->D8->D9->D10 -> S3 -> D11->D12->D13
@@ -251,6 +253,10 @@ void RunCheckpointerTest()
     auto D15 = create_checkpoint();
     auto S4  = create_checkpoint();
 
+    EXPECT_DELTA(D14);
+    EXPECT_DELTA(D15);
+    EXPECT_SNAPSHOT(S4);
+
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 12); // S1 through D10 (same)
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 7);   // S3 -> D11->D12->D13->D14->D15 -> S4
     EXPECT_EQUAL(fcp.getNumSnapshots(), 2);     // S3 and S4
@@ -259,13 +265,6 @@ void RunCheckpointerTest()
 
     // Current chain is now:
     //   S3 -> D11->D12->D13->D14->D15 -> S4
-    EXPECT_TRUE(fcp.findCheckpoint(S3)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D11)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D12)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D13)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D14)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D15)->isSnapshot());
-    EXPECT_TRUE(fcp.findCheckpoint(S4)->isSnapshot());
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 7);
 
     // Now go back to S3 and create another branch of checkpoints (5 deltas
@@ -278,12 +277,12 @@ void RunCheckpointerTest()
     auto D20 = create_checkpoint();
     auto S5  = create_checkpoint();
 
-    EXPECT_FALSE(fcp.findCheckpoint(D16)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D17)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D18)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D19)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D20)->isSnapshot());
-    EXPECT_TRUE(fcp.findCheckpoint(S5)->isSnapshot());
+    EXPECT_DELTA(D16);
+    EXPECT_DELTA(D17);
+    EXPECT_DELTA(D18);
+    EXPECT_DELTA(D19);
+    EXPECT_DELTA(D20);
+    EXPECT_SNAPSHOT(S5);
 
     // We now have two active branches in the fast checkpointer:
     //   S3 -> D11->D12->D13->D14->D15 -> S4
@@ -317,8 +316,8 @@ void RunCheckpointerTest()
     EXPECT_EQUAL(fcp.getNumSnapshots(), 1);     // S4 snapshot
     EXPECT_EQUAL(fcp.getNumDeltas(), 0);        // Nothing else but S4
     EXPECT_EQUAL(fcp.getHeadID(), S4);
-    EXPECT_TRUE(fcp.findCheckpoint(fcp.getHeadID())->isSnapshot());
-    EXPECT_TRUE(fcp.findCheckpoint(fcp.getCurrentID())->isSnapshot());
+    EXPECT_SNAPSHOT(fcp.getHeadID());
+    EXPECT_SNAPSHOT(fcp.getCurrentID());
     EXPECT_EQUAL(fcp.getCheckpointChain(S4).size(), 1);
     EXPECT_EQUAL(fcp.findCheckpoint(S4)->getRestoreChain().size(), 1);
 
@@ -329,8 +328,8 @@ void RunCheckpointerTest()
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 18);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 1);
     EXPECT_EQUAL(fcp.getHeadID(), S4);
-    EXPECT_TRUE(fcp.findCheckpoint(fcp.getHeadID())->isSnapshot());
-    EXPECT_TRUE(fcp.findCheckpoint(fcp.getCurrentID())->isSnapshot());
+    EXPECT_SNAPSHOT(fcp.getHeadID());
+    EXPECT_SNAPSHOT(fcp.getCurrentID());
     EXPECT_EQUAL(fcp.getCheckpointChain(S4).size(), 1);
     EXPECT_EQUAL(fcp.findCheckpoint(S4)->getRestoreChain().size(), 1);
 
@@ -343,12 +342,12 @@ void RunCheckpointerTest()
     auto D25 = create_checkpoint();
     auto S6  = create_checkpoint();
 
-    EXPECT_FALSE(fcp.findCheckpoint(D21)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D22)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D23)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D24)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D25)->isSnapshot());
-    EXPECT_TRUE(fcp.findCheckpoint(S6)->isSnapshot());
+    EXPECT_DELTA(D21);
+    EXPECT_DELTA(D22);
+    EXPECT_DELTA(D23);
+    EXPECT_DELTA(D24);
+    EXPECT_DELTA(D25);
+    EXPECT_SNAPSHOT(S6);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 7);
 
     // Commit the current branch without forcing a new head checkpoint.
@@ -370,21 +369,21 @@ void RunCheckpointerTest()
     auto D30 = create_checkpoint();
     auto S7  = create_checkpoint();
 
-    EXPECT_FALSE(fcp.findCheckpoint(D26)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D27)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D28)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D29)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D30)->isSnapshot());
-    EXPECT_TRUE(fcp.findCheckpoint(S7)->isSnapshot());
+    EXPECT_DELTA(D26);
+    EXPECT_DELTA(D27);
+    EXPECT_DELTA(D28);
+    EXPECT_DELTA(D29);
+    EXPECT_DELTA(D30);
+    EXPECT_SNAPSHOT(S7);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 7);
 
     // Commit the current branch and force a new head snapshot S8
     dbcp.commitCurrentBranch(true);
-    EXPECT_EQUAL(dbcp.getNumCheckpoints(), 31); // Got 7 more chkpts
-
     auto S8 = fcp.getHeadID();
-    EXPECT_TRUE(fcp.findCheckpoint(S8)->isSnapshot());
-    EXPECT_EQUAL(fcp.getNumCheckpoints(), 1); // S8 only
+    EXPECT_SNAPSHOT(S8);
+
+    EXPECT_EQUAL(dbcp.getNumCheckpoints(), 31); // Got 7 more chkpts
+    EXPECT_EQUAL(fcp.getNumCheckpoints(), 1);   // S8 only
     EXPECT_EQUAL(fcp.getCheckpointChain(S8).size(), 1);
     EXPECT_EQUAL(fcp.findCheckpoint(S8)->getRestoreChain().size(), 1);
 
@@ -396,16 +395,17 @@ void RunCheckpointerTest()
     auto D32 = create_checkpoint();
     auto S9  = create_checkpoint(true); // Force snapshot
 
-    EXPECT_FALSE(fcp.findCheckpoint(D31)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D32)->isSnapshot());
-    EXPECT_TRUE(fcp.findCheckpoint(S9)->isSnapshot());
+    EXPECT_DELTA(D31);
+    EXPECT_DELTA(D32);
+    EXPECT_SNAPSHOT(S9);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 4);
 
     fcp.loadCheckpoint(D32);
     auto D33 = create_checkpoint();
     auto D34 = create_checkpoint();
-    EXPECT_FALSE(fcp.findCheckpoint(D33)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D34)->isSnapshot());
+
+    EXPECT_DELTA(D33);
+    EXPECT_DELTA(D34);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 6);
 
     // Commit the current branch without forcing a new head checkpoint.
@@ -423,7 +423,7 @@ void RunCheckpointerTest()
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 1);
 
     auto S10 = fcp.getHeadID();
-    EXPECT_TRUE(fcp.findCheckpoint(S10)->isSnapshot());
+    EXPECT_SNAPSHOT(S10);
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 36); // Got 5 more chkpts
     EXPECT_EQUAL(fcp.getCheckpointChain(S10).size(), 1);
     EXPECT_EQUAL(fcp.findCheckpoint(S10)->getRestoreChain().size(), 1);
@@ -443,14 +443,14 @@ void RunCheckpointerTest()
     auto D40 = create_checkpoint();
     fcp.loadCheckpoint(D37);
 
-    EXPECT_TRUE(fcp.findCheckpoint(S10)->isSnapshot());
-    EXPECT_TRUE(fcp.findCheckpoint(S11)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D35)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D36)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D37)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D38)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D39)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D40)->isSnapshot());
+    EXPECT_SNAPSHOT(S10);
+    EXPECT_SNAPSHOT(S11);
+    EXPECT_DELTA(D35);
+    EXPECT_DELTA(D36);
+    EXPECT_DELTA(D37);
+    EXPECT_DELTA(D38);
+    EXPECT_DELTA(D39);
+    EXPECT_DELTA(D40);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 8);
     EXPECT_EQUAL(fcp.getNumSnapshots(), 2);
 
@@ -481,14 +481,14 @@ void RunCheckpointerTest()
     auto S13 = create_checkpoint(true); // Force snapshot
     auto D46 = create_checkpoint();
 
-    EXPECT_TRUE(fcp.findCheckpoint(S12)->isSnapshot());
-    EXPECT_TRUE(fcp.findCheckpoint(S13)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D41)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D42)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D43)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D44)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D45)->isSnapshot());
-    EXPECT_FALSE(fcp.findCheckpoint(D46)->isSnapshot());
+    EXPECT_SNAPSHOT(S12);
+    EXPECT_SNAPSHOT(S13);
+    EXPECT_DELTA(D41);
+    EXPECT_DELTA(D42);
+    EXPECT_DELTA(D43);
+    EXPECT_DELTA(D44);
+    EXPECT_DELTA(D45);
+    EXPECT_DELTA(D46);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 10);
 
     // Commit the current branch without forcing a new head checkpoint.
