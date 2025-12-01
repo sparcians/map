@@ -48,8 +48,8 @@ namespace sparta::serialization::checkpoint
         //! @{
         ////////////////////////////////////////////////////////////////////////
 
-        //! \brief Not default constructable
-        DeltaCheckpoint() = delete;
+        //! \brief Default constructor to support boost::serialization
+        DeltaCheckpoint() = default;
 
         //! \brief Not copy constructable
         DeltaCheckpoint(const DeltaCheckpoint&) = delete;
@@ -528,6 +528,27 @@ namespace sparta::serialization::checkpoint
             */
         }
 
+        /*!
+         * \brief Make this the head checkpoint by detaching from previous checkpoint.
+         * \note Asserts that this is a snapshot.
+         * \note This does not mark the previous checkpoint for deletion.
+         */
+        void makeHeadCheckpoint() override {
+            sparta_assert(is_snapshot_);
+            Checkpoint::makeHeadCheckpoint();
+        }
+
+        /*!
+         * \brief boost::serialization support
+         */
+        template <typename Archive>
+        void serialize(Archive& ar, const unsigned int version) {
+            Checkpoint::serialize(ar, version);
+            ar & deleted_id_;
+            ar & is_snapshot_;
+            ar & data_;
+        }
+
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
@@ -603,7 +624,7 @@ namespace sparta::serialization::checkpoint
          * about whether it is deleted or not.
          */
         chkpt_id_t deleted_id_;
-        bool const is_snapshot_; //!< Is this node a snapshot
+        bool is_snapshot_; //!< Is this node a snapshot
         StorageT data_; //!< Storage implementation
     };
 
