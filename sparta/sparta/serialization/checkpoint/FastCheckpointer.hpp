@@ -706,7 +706,7 @@ namespace sparta::serialization::checkpoint
                     std::unordered_set<chkpt_id_t> to_keep;
 
                     for (auto id : chkpt_chain) {
-                        if (id != restore_chain.top()->getID() && findCheckpoint(id) != nullptr) {
+                        if (id != restore_chain.top()->getID()) {
                             auto chkpt = std::move(chkpts_[id]);
 
                             sparta_assert(num_alive_checkpoints_-- > 0);
