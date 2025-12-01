@@ -1,4 +1,4 @@
-#include "sparta/serialization/checkpoint/ScalableFastCheckpointer.hpp"
+#include "sparta/serialization/checkpoint/CherryPickFastCheckpointer.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
 #include "sparta/functional/Register.hpp"
@@ -16,8 +16,8 @@ using sparta::RegisterSet;
 using sparta::RootTreeNode;
 using sparta::memory::MemoryObject;
 using sparta::memory::BlockingMemoryObjectIFNode;
-using sparta::serialization::checkpoint::ScalableFastCheckpointer;
-using chkpt_id_t = typename ScalableFastCheckpointer::chkpt_id_t;
+using sparta::serialization::checkpoint::CherryPickFastCheckpointer;
+using chkpt_id_t = typename CherryPickFastCheckpointer::chkpt_id_t;
 
 static const uint16_t HINT_NONE=0;
 
@@ -78,14 +78,14 @@ void RunCheckpointerTest()
     simdb::AppManager app_mgr(&db_mgr);
 
     // Setup...
-    app_mgr.getAppFactory<ScalableFastCheckpointer>()->setArchDataRoots(0, {&root});
-    app_mgr.getAppFactory<ScalableFastCheckpointer>()->setScheduler(sched);
-    app_mgr.enableApp(ScalableFastCheckpointer::NAME);
+    app_mgr.getAppFactory<CherryPickFastCheckpointer>()->setArchDataRoots(0, {&root});
+    app_mgr.getAppFactory<CherryPickFastCheckpointer>()->setScheduler(sched);
+    app_mgr.enableApp(CherryPickFastCheckpointer::NAME);
     app_mgr.createEnabledApps();
     app_mgr.createSchemas();
     app_mgr.openPipelines();
 
-    auto& dbcp = *app_mgr.getApp<ScalableFastCheckpointer>();
+    auto& dbcp = *app_mgr.getApp<CherryPickFastCheckpointer>();
     auto& fcp = dbcp.getFastCheckpointer();
     fcp.setSnapshotThreshold(5);
 

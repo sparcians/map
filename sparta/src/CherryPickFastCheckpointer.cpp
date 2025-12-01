@@ -1,4 +1,4 @@
-#include "sparta/serialization/checkpoint/ScalableFastCheckpointer.hpp"
+#include "sparta/serialization/checkpoint/CherryPickFastCheckpointer.hpp"
 #include "simdb/apps/AppRegistration.hpp"
 #include "simdb/schema/SchemaDef.hpp"
 #include "simdb/pipeline/AsyncDatabaseAccessor.hpp"
@@ -15,7 +15,7 @@
 namespace sparta::serialization::checkpoint
 {
 
-ScalableFastCheckpointer::ScalableFastCheckpointer(simdb::DatabaseManager* db_mgr,
+CherryPickFastCheckpointer::CherryPickFastCheckpointer(simdb::DatabaseManager* db_mgr,
                                                    const std::vector<TreeNode*> & roots,
                                                    Scheduler* sched)
     : checkpointer_(roots, sched),
@@ -23,7 +23,7 @@ ScalableFastCheckpointer::ScalableFastCheckpointer(simdb::DatabaseManager* db_mg
 {
 }
 
-void ScalableFastCheckpointer::defineSchema(simdb::Schema& schema)
+void CherryPickFastCheckpointer::defineSchema(simdb::Schema& schema)
 {
     using dt = simdb::SqlDataType;
 
@@ -38,7 +38,7 @@ void ScalableFastCheckpointer::defineSchema(simdb::Schema& schema)
     windows.disableAutoIncPrimaryKey();
 }
 
-void ScalableFastCheckpointer::createPipeline(simdb::pipeline::PipelineManager* pipeline_mgr)
+void CherryPickFastCheckpointer::createPipeline(simdb::pipeline::PipelineManager* pipeline_mgr)
 {
     auto pipeline = pipeline_mgr->createPipeline(NAME);
     auto db_accessor = pipeline_mgr->getAsyncDatabaseAccessor();
@@ -104,7 +104,7 @@ void ScalableFastCheckpointer::createPipeline(simdb::pipeline::PipelineManager* 
     );
 
     // Task 4: Write to the database
-    auto write_to_db = db_accessor->createAsyncWriter<ScalableFastCheckpointer, ChkptWindowBytes, void>(
+    auto write_to_db = db_accessor->createAsyncWriter<CherryPickFastCheckpointer, ChkptWindowBytes, void>(
         [](ChkptWindowBytes&& bytes_in,
            simdb::pipeline::AppPreparedINSERTs* tables,
            bool /*force_flush*/)
@@ -139,12 +139,12 @@ void ScalableFastCheckpointer::createPipeline(simdb::pipeline::PipelineManager* 
         ->addTask(std::move(zlib_bytes));
 }
 
-void ScalableFastCheckpointer::commitCurrentBranch(bool force_new_head_chkpt)
+void CherryPickFastCheckpointer::commitCurrentBranch(bool force_new_head_chkpt)
 {
     checkpointer_.squashCurrentBranch(*this, force_new_head_chkpt);
 }
 
-void ScalableFastCheckpointer::saveCheckpoints(checkpoint_ptrs&& checkpoints)
+void CherryPickFastCheckpointer::saveCheckpoints(checkpoint_ptrs&& checkpoints)
 {
     sparta_assert(!checkpoints.empty());
     sparta_assert(checkpoints.front()->isSnapshot());
@@ -165,7 +165,7 @@ void ScalableFastCheckpointer::saveCheckpoints(checkpoint_ptrs&& checkpoints)
     pipeline_head_->emplace(std::move(window));
 }
 
-size_t ScalableFastCheckpointer::getNumCheckpoints() const
+size_t CherryPickFastCheckpointer::getNumCheckpoints() const
 {
     pipeline_flusher_->waterfallFlush();
 
@@ -179,10 +179,10 @@ size_t ScalableFastCheckpointer::getNumCheckpoints() const
     return count;
 }
 
-std::string ScalableFastCheckpointer::stringize() const
+std::string CherryPickFastCheckpointer::stringize() const
 {
     std::stringstream ss;
-    ss << "<ScalableFastCheckpointer on ";
+    ss << "<CherryPickFastCheckpointer on ";
     for (size_t i = 0; i < checkpointer_.getRoots().size(); ++i) {
         TreeNode* root = checkpointer_.getRoots()[i];
         if (i != 0) {
@@ -194,6 +194,6 @@ std::string ScalableFastCheckpointer::stringize() const
     return ss.str();
 }
 
-REGISTER_SIMDB_APPLICATION(ScalableFastCheckpointer);
+REGISTER_SIMDB_APPLICATION(CherryPickFastCheckpointer);
 
 } // namespace sparta::serialization::checkpoint

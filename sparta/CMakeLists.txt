@@ -67,7 +67,7 @@ list (APPEND SourceCppFiles
             src/Resource.cpp
             src/SpartaException.cpp
             src/RootTreeNode.cpp
-            src/ScalableFastCheckpointer.cpp
+            src/CherryPickFastCheckpointer.cpp
             src/Scheduler.cpp
             src/Scheduleable.cpp
             src/Scoreboard.cpp

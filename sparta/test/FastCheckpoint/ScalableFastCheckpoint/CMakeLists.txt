@@ -1,5 +1,0 @@
-project(ScalableFastCheckpoint_test)
-
-sparta_add_test_executable(ScalableFastCheckpoint_test ScalableFastCheckpoint_test.cpp)
-
-sparta_test(ScalableFastCheckpoint_test ScalableFastCheckpoint_test_RUN)

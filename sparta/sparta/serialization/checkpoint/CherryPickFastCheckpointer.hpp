@@ -1,4 +1,4 @@
-// <ScalableFastCheckpointer> -*- C++ -*-
+// <CherryPickFastCheckpointer> -*- C++ -*-
 
 #pragma once
 
@@ -22,7 +22,7 @@ namespace simdb::pipeline
 namespace sparta::serialization::checkpoint
 {
 
-class ScalableFastCheckpointer final : public simdb::App
+class CherryPickFastCheckpointer final : public simdb::App
 {
 public:
     using checkpoint_type = typename FastCheckpointer::checkpoint_type;
@@ -32,10 +32,10 @@ public:
     using arch_id_t = uint64_t;
     using tick_t = typename Checkpointer::tick_t;
 
-    static constexpr auto NAME = "scalable-fast-checkpointer";
+    static constexpr auto NAME = "cherry-pick-fast-checkpointer";
 
     /*!
-     * \brief ScalableFastCheckpointer constructor
+     * \brief CherryPickFastCheckpointer constructor
      *
      * \param db_mgr SimDB instance to use as a backing store for all checkpoints.
      *
@@ -50,8 +50,8 @@ public:
      * \param sched Scheduler to read and restart on checkpoint restore (if
      *              not nullptr)
      */
-    ScalableFastCheckpointer(simdb::DatabaseManager* db_mgr, const std::vector<TreeNode*> & roots,
-                             Scheduler* sched = nullptr);
+    CherryPickFastCheckpointer(simdb::DatabaseManager* db_mgr, const std::vector<TreeNode*> & roots,
+                               Scheduler* sched = nullptr);
 
     /*!
      * \brief Define the SimDB schema for this checkpointer.
@@ -161,10 +161,10 @@ namespace simdb
  * signature that only takes the DatabaseManager like most other apps.
  */
 template <>
-class AppFactory<sparta::serialization::checkpoint::ScalableFastCheckpointer> : public AppFactoryBase
+class AppFactory<sparta::serialization::checkpoint::CherryPickFastCheckpointer> : public AppFactoryBase
 {
 public:
-    using AppT = sparta::serialization::checkpoint::ScalableFastCheckpointer;
+    using AppT = sparta::serialization::checkpoint::CherryPickFastCheckpointer;
 
     /// \brief Sets the ArchData root(s) for a given instance of the checkpointer.
     /// \param instance_num 0 if using one checkpointer instance, else the instance number (1-based)
