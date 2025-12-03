@@ -3,6 +3,7 @@
 #include "simdb/schema/SchemaDef.hpp"
 #include "simdb/pipeline/AsyncDatabaseAccessor.hpp"
 #include "simdb/pipeline/elements/Function.hpp"
+#include "simdb/pipeline/elements/DatabaseTask.hpp"
 #include "simdb/utils/Compress.hpp"
 
 #include <boost/archive/binary_oarchive.hpp>
@@ -104,12 +105,14 @@ void CherryPickFastCheckpointer::createPipeline(simdb::pipeline::PipelineManager
     );
 
     // Task 4: Write to the database
-    auto write_to_db = db_accessor->createAsyncWriter<CherryPickFastCheckpointer, ChkptWindowBytes, void>(
+    using WriteTask = simdb::pipeline::DatabaseTask<ChkptWindowBytes, void>;
+    auto write_to_db = simdb::pipeline::createTask<WriteTask>(
+        db_mgr_,
         [](ChkptWindowBytes&& bytes_in,
-           simdb::pipeline::AppPreparedINSERTs* tables,
+           simdb::pipeline::DatabaseAccessor& accessor,
            bool /*force_flush*/)
         {
-            auto window_inserter = tables->getPreparedINSERT("ChkptWindows");
+            auto window_inserter = accessor.getTableInserter<CherryPickFastCheckpointer>("ChkptWindows");
             window_inserter->setColumnValue(0, bytes_in.chkpt_bytes);
             window_inserter->setColumnValue(1, bytes_in.start_arch_id);
             window_inserter->setColumnValue(2, bytes_in.end_arch_id);
@@ -131,12 +134,14 @@ void CherryPickFastCheckpointer::createPipeline(simdb::pipeline::PipelineManager
     pipeline_flusher_ = std::make_unique<simdb::pipeline::RunnableFlusher>(
         *db_mgr_, add_arch_ids, window_to_bytes, zlib_bytes, write_to_db);
 
-    // Assign non-database pipeline tasks to one thread (DB task "write_to_db"
-    // is implicitly going to be on the dedicated DB thread)
+    // Assign non-database pipeline tasks to one thread
     pipeline->createTaskGroup("CheckpointPipeline")
         ->addTask(std::move(add_arch_ids))
         ->addTask(std::move(window_to_bytes))
         ->addTask(std::move(zlib_bytes));
+
+    // Assign the database task to the DB thread
+    db_accessor->addTask(std::move(write_to_db));
 }
 
 void CherryPickFastCheckpointer::commitCurrentBranch(bool force_new_head_chkpt)
