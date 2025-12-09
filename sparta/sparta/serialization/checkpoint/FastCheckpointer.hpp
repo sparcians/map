@@ -6,6 +6,7 @@
 #include <sstream>
 #include <stack>
 #include <queue>
+#include <unordered_set>
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/functional/ArchData.hpp"
@@ -66,8 +67,9 @@ namespace sparta::serialization::checkpoint
     {
     public:
 
-        typedef DeltaCheckpoint<storage::VectorStorage> checkpoint_type;
-        //typedef DeltaCheckpoint<storage::StringStreamStorage> checkpoint_type;
+        using checkpoint_type = DeltaCheckpoint<storage::VectorStorage>;
+        using checkpoint_ptr = std::unique_ptr<checkpoint_type>;
+        using checkpoint_ptrs = std::vector<checkpoint_ptr>;
 
         //! \name Construction & Initialization
         //! @{
@@ -533,10 +535,228 @@ namespace sparta::serialization::checkpoint
             }
         }
 
+        /*!
+         * \brief When satisfied with the outstanding/uncommitted checkpoints, call this
+         * method to commit them to the DiskT object.
+         *
+         * \param force_new_head_chkpt If false, then this checkpoint chain:
+         *   S1 -> D1 -> D2 -> D3 -> S2 -> D4 -> D5 (current)
+         *   Would result in this being saved to disk:
+         *   S1 -> D1 -> D2 -> D3
+         *   While the S2 checkpoint becomes the new head checkpoint in memory,
+         *   and D4/D5 are retained in the FastCheckpointer.
+         *
+         *   If true, then everything from S1 to D5 will be saved to disk, and a new
+         *   head checkpoint S3 will be created in memory at the current tick.
+         */
+        template <typename DiskT>
+        void squashCurrentBranch(DiskT& disk, bool force_new_head_chkpt = false) {
+            auto disk_checkpoints = squashCurrentBranch_(force_new_head_chkpt);
+            if (!disk_checkpoints.empty()) {
+                disk.saveCheckpoints(std::move(disk_checkpoints));
+            }
+        }
+
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
     protected:
+
+        /*!
+         * \brief Squash the current branch and discard all those checkpoints
+         * that do not exist on the current branch. Returns the checkpoints
+         * that need to be saved to disk.
+         *
+         * \param force_new_head_chkpt See public method squashCurrentBranch()
+         */
+        checkpoint_ptrs squashCurrentBranch_(bool force_new_head_chkpt = false) {
+            if (!getCurrent_()) {
+                return {};
+            }
+
+            checkpoint_ptrs to_save;
+
+            // "Force new head checkpoint" means that we should release every
+            // checkpoint from the current checkpoint back to the head checkpoint,
+            // delete all remaining checkpoints on other branches, and retake the
+            // head checkpoint.
+            if (force_new_head_chkpt) {
+                auto current_id = getCurrentID();
+                auto chkpt_chain = getCheckpointChain(current_id);
+
+                // Checkpoint chains are returned from "right to left", i.e. the
+                // first id is the current checkpoint, and the last is the head
+                // checkpoint. Reverse this list so that we serialize the checkpoints
+                // to disk in the order they were created.
+                std::reverse(chkpt_chain.begin(), chkpt_chain.end());
+
+                for (auto id : chkpt_chain) {
+                    sparta_assert(hasCheckpoint(id));
+                    auto chkpt = std::move(chkpts_[id]);
+
+                    sparta_assert(num_alive_checkpoints_-- > 0);
+                    if (chkpt->isSnapshot()) {
+                        sparta_assert(num_alive_snapshots_-- > 0);
+                    }
+
+                    to_save.emplace_back(std::move(chkpt));
+                    chkpts_.erase(id);
+                }
+
+                for (auto& [id, chkpt] : chkpts_) {
+                    chkpt->flagDeleted();
+                }
+                chkpts_.clear();
+
+                createHead_();
+            }
+
+            // If we are not forcing a new head checkpoint, then we can only
+            // remove checkpoints along the current chain if there exists more
+            // than one snapshot. The most recent of these will become the new
+            // head checkpoint. Say we have these checkpoints:
+            //
+            //   S1 -> 2 -> 3 -> S2 -> 4 -> 5
+            //         |
+            //         | -> 6 -> S3 -> 7
+            //                    |
+            //                    8 -> 9
+            //
+            // If the current checkpoint is id 7, then the checkpoint chain is
+            //   S1 -> 2 -> 6 -> S3 -> 7
+            //
+            // And the restore chain is:
+            //   S3 -> 7
+            //
+            // Since the checkpoint chain (back to head) is different than
+            // the restore chain (back to the last snapshot), that means
+            // that we have at least two snapshots, and can therefore return
+            // the chain S1 -> 2 -> 6 for writing to disk, while retaining
+            // the chain S3 -> 7 and deleting everything else (uncommitted
+            // branches). Then set the new head checkpoint to S3.
+            //
+            // On the other hand, if our checkpoints are like this:
+            //
+            //   S1 -> 2 -> 3
+            //
+            // Then the checkpoint chain and restore chain are the same, and
+            // we only have one snapshot. We therefore can only remove checkpoints
+            // that are NOT along the checkpoint/restore chains, and there are
+            // no checkpoints returned to the caller for saving to disk, and
+            // the head checkpoint stays the same at S1.
+            else {
+                auto current_id = getCurrentID();
+                auto chkpt_chain = getCheckpointChain(current_id);
+                auto restore_chain = static_cast<checkpoint_type*>(getCurrent_())->getRestoreChain();
+
+                // We can speed up the comparison by just checking the chain lengths.
+                // If they are the same then we can only remove uncommitted branches.
+                if (chkpt_chain.size() == restore_chain.size()) {
+                    std::unordered_set<chkpt_id_t> to_keep(chkpt_chain.begin(), chkpt_chain.end());
+                    std::vector<chkpt_id_t> to_delete;
+                    for (auto& [id, chkpt] : chkpts_) {
+                        if (!to_keep.count(id)) {
+                            chkpt->flagDeleted();
+                            to_delete.emplace_back(id);
+                        }                        
+                    }
+
+                    for (auto id : to_delete) {
+                        auto chkpt = std::move(chkpts_[id]);
+
+                        sparta_assert(num_alive_checkpoints_-- > 0);
+                        if (chkpt->isSnapshot()) {
+                            sparta_assert(num_alive_snapshots_-- > 0);
+                        }
+
+                        chkpts_.erase(id);
+                    }
+
+                    // Sanity check
+                    sparta_assert(chkpts_.find(getHeadID()) != chkpts_.end());
+                    sparta_assert(static_cast<const checkpoint_type*>(getHead())->isSnapshot());
+                }
+
+                // If the chains are different, then we have at least two snapshots
+                // and can save all but the latest checkpoint window (snapshot plus
+                // deltas).
+                else {
+                    // Say the checkpoint chain is this (recall its first checkpoint
+                    // is the current/newest, i.e. in backwards order):
+                    //
+                    //   7 -> S3 -> 6 -> 2 -> S1
+                    //
+                    // And the restore chain is this (recall that its first checkpoint
+                    // is the most recent snapshot leading up to the current checkpoint):
+                    //
+                    //   S3 -> 7
+                    //
+                    // The algorithm goes like this:
+                    //   1) Reverse the checkpoint chain into e.g.
+                    //      S1 -> 2 -> 6 -> S3 -> 7
+                    //   2) Loop over the checkpoint chain, and any id not at
+                    //      the restore chain (stack) "top" should be added
+                    //      to the list of checkpoints we will save to disk.
+                    //      If the id is the same as the restore chain "top",
+                    //      then store the new head checkpoint if it is a full
+                    //      snapshot and pop() the stack.
+                    //   3) Delete all checkpoints that are neither saved to disk
+                    //      or left in the checkpointer (uncommitted branches).
+                    std::reverse(chkpt_chain.begin(), chkpt_chain.end());
+                    std::unordered_set<chkpt_id_t> to_keep;
+
+                    for (auto id : chkpt_chain) {
+                        if (id != restore_chain.top()->getID()) {
+                            auto chkpt = std::move(chkpts_[id]);
+
+                            sparta_assert(num_alive_checkpoints_-- > 0);
+                            if (chkpt->isSnapshot()) {
+                                sparta_assert(num_alive_snapshots_-- > 0);
+                            }
+
+                            to_save.emplace_back(std::move(chkpt));
+                            chkpts_.erase(id);
+                        } else {
+                            if (restore_chain.top()->isSnapshot()) {
+                                setHead_(restore_chain.top());
+                            }
+                            to_keep.insert(restore_chain.top()->getID());
+                            restore_chain.pop();
+
+                            if (restore_chain.empty()) {
+                                break;
+                            }
+                        }
+                    }
+
+                    std::vector<chkpt_id_t> to_delete;
+                    for (auto& [id, chkpt] : chkpts_) {
+                        if (!to_keep.count(id)) {
+                            to_delete.emplace_back(id);
+                        }
+                    }
+
+                    for (auto id : to_delete) {
+                        auto & chkpt = chkpts_[id];
+                        chkpt->flagDeleted();
+
+                        sparta_assert(num_alive_checkpoints_-- > 0);
+                        if (chkpt->isSnapshot()) {
+                            sparta_assert(num_alive_snapshots_-- > 0);
+                        }
+                    }
+
+                    for (auto id : to_delete) {
+                        chkpts_.erase(id);
+                    }
+                }
+            }
+
+            sparta_assert(getHead() != nullptr);
+            sparta_assert(getHeadID() != checkpoint_type::UNIDENTIFIED_CHECKPOINT);
+
+            return to_save;
+        }
 
         /*!
          * \brief Delete given checkpoint and all contiguous previous
@@ -716,10 +936,6 @@ namespace sparta::serialization::checkpoint
                 tick = sched_->getCurrentTick();
             }
 
-            if(getHead()){
-                throw CheckpointError("Cannot create head at ")
-                    << tick << " because a head already exists in this checkpointer";
-            }
             for (auto root : getRoots()) {
                 if(root->isFinalized() == false){
                     CheckpointError exc("Cannot create a checkpoint until the tree is finalized. Attempting to checkpoint from node ");
@@ -816,7 +1032,7 @@ namespace sparta::serialization::checkpoint
          * This map must still be explicitly torn down in reverse order by a
          * subclass of Checkpointer
          */
-        std::map<chkpt_id_t, std::unique_ptr<Checkpoint>> chkpts_;
+        std::map<chkpt_id_t, checkpoint_ptr> chkpts_;
 
         /*!
          * \brief Snapshot generation threshold. Every n checkpoints in a chain

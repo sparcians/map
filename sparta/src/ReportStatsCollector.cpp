@@ -7,6 +7,7 @@
 #include "sparta/report/format/ReportHeader.hpp"
 #include "simdb/pipeline/Pipeline.hpp"
 #include "simdb/pipeline/elements/Function.hpp"
+#include "simdb/pipeline/elements/DatabaseTask.hpp"
 #include "simdb/apps/AppRegistration.hpp"
 #include "simdb/utils/Compress.hpp"
 
@@ -140,9 +141,11 @@ void ReportStatsCollector::createPipeline(simdb::pipeline::PipelineManager* pipe
         }
     );
 
-    auto sqlite_task = db_accessor->createAsyncWriter<ReportStatsCollector, CompressedReportStatsAtTick, void>(
+    using WriteTask = simdb::pipeline::DatabaseTask<CompressedReportStatsAtTick, void>;
+    auto sqlite_task = simdb::pipeline::createTask<WriteTask>(
+        db_mgr_,
         [this](CompressedReportStatsAtTick&& in,
-               simdb::pipeline::AppPreparedINSERTs* tables,
+               simdb::pipeline::DatabaseAccessor& accessor,
                bool /*force_flush*/)
         {
             const auto descriptor = in.getDescriptor();
@@ -150,7 +153,7 @@ void ReportStatsCollector::createPipeline(simdb::pipeline::PipelineManager* pipe
             const auto tick = in.getTick();
             const auto& bytes = in.getBytes();
 
-            auto inserter = tables->getPreparedINSERT("DescriptorRecords");
+            auto inserter = accessor.getTableInserter<ReportStatsCollector>("DescriptorRecords");
             inserter->setColumnValue(0, descriptor_id);
             inserter->setColumnValue(1, tick);
             inserter->setColumnValue(2, bytes);
@@ -170,8 +173,7 @@ void ReportStatsCollector::createPipeline(simdb::pipeline::PipelineManager* pipe
     pipeline->createTaskGroup("Compression")
         ->addTask(std::move(zlib_task));
 
-    // We only have to setup the non-DB processing tasks. All calls to createAsyncWriter()
-    // implicitly put those created tasks on the shared DB thread.
+    db_accessor->addTask(std::move(sqlite_task));
 }
 
 void ReportStatsCollector::setScheduler(const Scheduler* scheduler)

@@ -22,8 +22,8 @@ namespace sparta::serialization::checkpoint
         //! @{
         ////////////////////////////////////////////////////////////////////////
 
-        //! \brief Not default constructable
-        Checkpoint() = delete;
+        //! \brief Default constructor to support boost::serialization
+        Checkpoint() = default;
 
         //! \brief Not copy constructable
         Checkpoint(const Checkpoint&) = delete;
@@ -165,6 +165,18 @@ namespace sparta::serialization::checkpoint
                 next_ids.push_back(chkpt->getID());
             }
             return next_ids;
+        }
+
+        /*!
+         * \brief Make this the head checkpoint by detaching from previous checkpoint.
+         * \note If this is-a DeltaCheckpoint, asserts that this is a snapshot.
+         * \note This does not mark the previous checkpoint for deletion.
+         */
+        void makeHeadCheckpoint() override {
+            if (prev_) {
+                sparta_assert(prev_->getID() != UNIDENTIFIED_CHECKPOINT);
+                prev_ = nullptr;
+            }
         }
 
         ////////////////////////////////////////////////////////////////////////
