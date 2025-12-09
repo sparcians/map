@@ -41,25 +41,33 @@ namespace sparta
         /*!
          * \brief Construct a DataView
          * \param data Data which this view will access. Must not be nullptr
-         * \param id ID of this DataView (as an ArchDataSegment
+         * \param id ID of this DataView (as an ArchDataSegment)
          * \param size size of \<data\> accessed by this view. Must be a power of
-         * 2 greater than 0. This is validated by ArchDataSegment
+         *             2 greater than 0. This is validated by ArchDataSegment
          * \param subset_of ID of another DataView of which this is a subset
-         * (occupies only a subset of the other dataview's space).
+         *                  (occupies only a subset of the other dataview's space).
          * \param subset_offset Offset in bytes within the dataview indicated by
-         * \a subset_of
-         * \param initial_buf_le Buffer from which initial value will be copied
-         * byte-by-byte from a little-endian byte array source. Therefore, bytes
-         * could be swapped if Sparta is run (if supported) on a BE architecture.
-         * The result should be that hand-coded intitial_buf byte-arrays needn't
-         * be updated during such changes. This pointer must be nullptr or
-         * contain a number of bytes >= \a size. The pointer must be valid at
-         * least until DataView::place is called during initialization
-         * \note Subsets relationships might not be validated at construction.
-         * Invalid subset relationships might only be tested at ArchData
-         * layout-time. This means that a DataView which is larger than
-         * another DataView of which it is declared a subset will not cause an
-         * error until layout-time (see layout).
+         *                      \a subset_of
+         * \param initial_buf_le Buffer from which initial value will
+         *                       be copied byte-by-byte from a
+         *                       little-endian byte array
+         *                       source. Therefore, bytes could be
+         *                       swapped if Sparta is run (if
+         *                       supported) on a BE architecture.  The
+         *                       result should be that hand-coded
+         *                       intitial_buf byte-arrays needn't be
+         *                       updated during such changes. This
+         *                       pointer must be nullptr or contain a
+         *                       number of bytes >= \a size. The
+         *                       pointer must be valid at least until
+         *                       DataView::place is called during
+         *                       initialization
+         * \note Subsets relationships might not be validated at
+         *       construction.  Invalid subset relationships might
+         *       only be tested at ArchData layout-time. This means
+         *       that a DataView which is larger than another DataView
+         *       of which it is declared a subset will not cause an
+         *       error until layout-time (see layout).
          */
         DataView(ArchData* data,
                  ident_type id,
