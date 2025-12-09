@@ -1,0 +1,5 @@
+project(CherryPickFastCheckpoint_test)
+
+sparta_add_test_executable(CherryPickFastCheckpoint_test CherryPickFastCheckpoint_test.cpp)
+
+sparta_test(CherryPickFastCheckpoint_test CherryPickFastCheckpoint_test_RUN)

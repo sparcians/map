@@ -1,5 +1,0 @@
-project(DatabaseCheckpoint_test)
-
-sparta_add_test_executable(DatabaseCheckpoint_test DatabaseCheckpoint_test.cpp)
-
-sparta_test(DatabaseCheckpoint_test DatabaseCheckpoint_test_RUN)

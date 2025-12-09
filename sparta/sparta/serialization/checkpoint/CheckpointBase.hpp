@@ -167,6 +167,13 @@ namespace sparta::serialization::checkpoint
             return "*";
         }
 
+        /*!
+         * \brief Make this the head checkpoint by detaching from previous checkpoint.
+         * \note If this is-a DeltaCheckpoint, asserts that this is a snapshot.
+         * \note This does not mark the previous checkpoint for deletion.
+         */
+        virtual void makeHeadCheckpoint() = 0;
+
         ////////////////////////////////////////////////////////////////////////
         //! @}
 

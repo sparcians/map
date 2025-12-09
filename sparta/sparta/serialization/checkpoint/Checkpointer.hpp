@@ -665,15 +665,14 @@ namespace sparta::serialization::checkpoint
         }
 
         /*!
-         * \brief Sets the head checkpointer pointer to \a head for the first
-         * time
+         * \brief Sets the head checkpointer pointer to \a head
          * \param head New head checkpoint pointer. Must not be nullptr
-         * \pre Internal head pointer must be nullptr.
-         * \note This can only be done once
          */
         void setHead_(CheckpointBase* head) {
             sparta_assert(head != nullptr, "head argument in setHead_ cannot be nullptr");
-            sparta_assert(head_ == nullptr, "Cannot setHead_ again on a Checkpointer once heas is already set");
+            if (head_) {
+                head->makeHeadCheckpoint();
+            }
             head_ = head;
         }
 
