@@ -624,8 +624,12 @@ namespace sparta::serialization::checkpoint
          * about whether it is deleted or not.
          */
         chkpt_id_t deleted_id_;
-        bool is_snapshot_; //!< Is this node a snapshot
-        StorageT data_; //!< Storage implementation
+
+        //! \brief Is this checkpoint a full snapshot or delta?
+        bool is_snapshot_ = false;
+
+        //! \brief Storage implementation for checkpoint data
+        StorageT data_;
     };
 
 } // namespace sparta::serialization::checkpoint
