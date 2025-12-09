@@ -46,8 +46,6 @@ list (APPEND SourceCppFiles
             src/CounterBase.cpp
             src/CsvFormatter.cpp
             src/DAG.cpp
-            src/DatabaseCheckpoint.cpp
-            src/DatabaseCheckpointer.cpp
             src/Destination.cpp
             src/EdgeFactory.cpp
             src/EventNode.cpp
@@ -69,6 +67,7 @@ list (APPEND SourceCppFiles
             src/Resource.cpp
             src/SpartaException.cpp
             src/RootTreeNode.cpp
+            src/CherryPickFastCheckpointer.cpp
             src/Scheduler.cpp
             src/Scheduleable.cpp
             src/Scoreboard.cpp
