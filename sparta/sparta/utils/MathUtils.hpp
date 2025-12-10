@@ -15,6 +15,9 @@
 namespace sparta {
     namespace utils {
 
+        template <class T>
+        struct always_false : std::false_type {};
+
         constexpr double log2 (double x) {
             // double y = std::log(x) / std::log(2.0);
             // return y;
@@ -24,7 +27,7 @@ namespace sparta {
         template <class T>
         constexpr uint32_t log2_lsb(const T&)
         {
-            static_assert(false, "log2_lsb can only used with types uint32_t or uint64_t");
+            static_assert(always_false<T>::value, "log2_lsb can only be used with types uint32_t or uint64_t");
             return 0;
         }
 
@@ -221,7 +224,7 @@ namespace sparta {
         {
             (void) u;
             (void) v;
-            static_assert(false, "This is an unsupported type");
+            static_assert(always_false<T>::value, "gcd can only be used with types uint32_t or uint64_t");
         }
 
         // Adapted from WIKI article on binary GCD algorithm
@@ -297,7 +300,7 @@ namespace sparta {
         template <class T>
         constexpr T lcm(const T&, const T&)
         {
-            static_assert(false, "Unsupported type for lcm");
+            static_assert(always_false<T>::value, "lcm can only be used with types uint32_t or uint64_t");
         }
 
         template <>
