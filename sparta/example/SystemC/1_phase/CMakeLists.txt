@@ -6,7 +6,7 @@ if(SYSTEMC_SUPPORT)
 
   set (TLM_EXAMPLES_DIR $ENV{SYSTEMC_HOME}/examples/tlm)
   if (NOT EXISTS ${TLM_EXAMPLES_DIR})
-    message (STATUS "TLM examples directory NOT found.  Will not build SysC example: sparta/example/SystemC")
+    message (FATAL_ERROR "TLM examples directory NOT found.  Will not build SysC example: sparta/example/SystemC")
   else()
     message (STATUS "TLM examples directory: ${TLM_EXAMPLES_DIR}")
 
