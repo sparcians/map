@@ -68,7 +68,12 @@
   See an example of this in `sparta/test/SystemC_test.cpp`.
 
   There are 3 other examples of how Sparta can be used in a SystemC
-  environment in the examples/SystemC directory:
+  environment in the examples/SystemC directory.  These examples use
+  the TLM examples found in the SystemC distribution
+  (`systemc/examples/tlm`).  Make sure
+  `-DTLM_EXAMPLES_DIR=/path/to/systemc/examples/tlm` is set before
+  running `cmake` on Sparta to enabled these examples.
+
   \code
      1_phase
      2_phase
@@ -77,10 +82,7 @@
 
   Each directory is an example of using the TLM initiator/target
   at_*_phase example swapping out the TLM target with a Sparta memory
-  object and a Sparta/TLM socket adapter.  These examples can only be
-  built if the TLM examples are present in the SystemC directory.
-  Make sure `SYSTEMC_HOME` is set before running `cmake` on Sparta.
-  See above...
+  object and a Sparta/TLM socket adapter.
 
   Caveats on using the SystemC adapters:
 
