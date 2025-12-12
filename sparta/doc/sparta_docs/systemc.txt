@@ -27,7 +27,7 @@
   example).  First, build SystemC:
 
   \code
-  cd /path/to/systemc-2.3.3; mkdir build; cd build
+  cd /path/to/systemc-2.3.x; mkdir build; cd build
   cmake .. -DCMAKE_CXX_STANDARD=17 -DCMAKE_BUILD_TYPE=Release
   make install
   \endcode
@@ -35,7 +35,7 @@
   Then, configure/build Sparta again:
 
   -# Set your `SYSTEMC_HOME` environment variable to the SystemC build:
-  `export SYSTEMC_HOME=/path/to/systemc-2.3.3`
+  `export SYSTEMC_HOME=/path/to/systemc-2.3.x`
   -# Re-configure Sparta: `cmake .. -DCMAKE_BUILD_TYPE=Release -DCOMPILE_WITH_SYSTEMC=ON`
 
   The enablement message should print at this point.
@@ -67,6 +67,8 @@
 
   See an example of this in `sparta/test/SystemC_test.cpp`.
 
+  \section sysc_examples SystemC/Sparta Examples
+
   There are 3 other examples of how Sparta can be used in a SystemC
   environment in the examples/SystemC directory.  These examples use
   the TLM examples found in the SystemC distribution
@@ -84,6 +86,56 @@
   at_*_phase example swapping out the TLM target with a Sparta memory
   object and a Sparta/TLM socket adapter.
 
+  Each example illustrates a TLM/SystemC transaction initiator
+  (traffic generator) found in
+  `systemc/examples/tlm/at_?_phase/include/initiator_top.h` connected
+  to a TLM/SystemC `SimpleBusAT` found in
+  `systemc/examples/tlm/common/include/models/SimpleBusAT.h` driving
+  requests into a Sparta `sparta_target::SpartaMemory` object.
+
+  Transactions from the initiators flow throw the bus and into
+  SystemC/TLM/Sparta Gasket `sparta_target::SpartaTLMTargetGasket`.
+
+  The gaskets "convert" `tlm_generic_payload` objects into a
+  `sparta_target::MemoryRequest` on a `nb_transport_fw` which in turn is fed
+  into the the `sparta_target::SpartaMemory` object.
+
+  Responses are converted back from the Sparta data types to the TLM payload.
+
+  Here's a simple diagram of the flow:
+
+  \dot
+  digraph pipeline {
+     rankdir=LR
+     node [shape=record, fontname=Helvetica, fontsize=10];
+     "tlm::initiator_top";
+     "tlm::SimpleBusAT";
+     SpartaTLMTargetGasket [ URL="\ref SpartaTLMTargetGasket.hpp"];
+     SpartaMemory [ URL="\ref SpartaMemory.hpp"];
+
+     "tlm::initiator_top" -> "tlm::SimpleBusAT" [arrowhead="open", style="solid", label="tlm::tlm_generic_payload"];
+     "tlm::SimpleBusAT" -> SpartaTLMTargetGasket [arrowhead="open", style="solid", label="tlm::tlm_generic_payload"];
+     SpartaTLMTargetGasket -> SpartaMemory [arrowhead="open", style="solid", label="sparta_target::MemoryRequest", URL="\ref MemoryRequest.hpp"];
+  }
+  \enddot
+
+  Simulation instantiation occurs in the typical `sc_main.cpp` found
+  in `sparta/example/SystemC/common`.  The main class that creates the
+  simulator is `sparta_sim::SpartaSystemCSimulator` found in the same directory.
+
+  This class creates the following components:
+
+  - `systemc_example::systemc_example_top` that contains the `tlm::SimpleBusAT` and the two `tlm::initiator_top` instances
+  - `sparta_target::SpartaTLMTargetGasket` that binds to SystemC on one side and Sparta on the other
+  - `sparta_target::SpartaMemory` which is the receiver of traffic from the initiators
+  - `sparta::SysCSpartaSchedulerAdapter` which will run the simulator including the SystemC kernel
+
+  Binding of the classes occurs in `sparta_sim::SpartaSystemCSimulator`.
+
+  Finally, this class, when told to run, will run the
+  `sparta::SysCSpartaSchedulerAdapter` which runs both sparta and the
+  SystemC components
+
   Caveats on using the SystemC adapters:
 
   -# Only one adapter is allowed in simulation
@@ -93,7 +145,7 @@
      not work if the Sparta component requires advancement from the
      Sparta Scheduler.  This is currently untested.
   -# Communication between a Sparta component (Sparta Port) and a
-    SystemC Port (or TLM callback) requires a Sparta/SystemC gasket to
-    be written by the modeler
+     SystemC Port (or TLM callback) requires a Sparta/SystemC gasket to
+     be written by the modeler
 
 */
