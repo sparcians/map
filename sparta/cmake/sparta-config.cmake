@@ -159,6 +159,13 @@ if (COMPILE_WITH_SYSTEMC)
     endif ()
 
     message (STATUS "SystemC enabled: ${SystemCLanguage_VERSION}")
+    if (${SystemCLanguage_VERSION} VERSION_LESS_EQUAL "2.3")
+      message (WARNING "SystemC version is not 2.3.  Sparta was tested with 2.3")
+    endif()
+
+    if (${SystemCLanguage_VERSION} VERSION_GREATER_EQUAL "3")
+      message (WARNING "SystemC version is not 2.3.  Sparta was tested with 2.3")
+    endif()
 
     set (SYSTEMC_SUPPORT True)
     add_definitions(-DSYSTEMC_SUPPORT)
