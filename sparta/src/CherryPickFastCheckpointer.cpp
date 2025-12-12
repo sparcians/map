@@ -2,8 +2,6 @@
 #include "simdb/apps/AppRegistration.hpp"
 #include "simdb/schema/SchemaDef.hpp"
 #include "simdb/pipeline/AsyncDatabaseAccessor.hpp"
-#include "simdb/pipeline/elements/Function.hpp"
-#include "simdb/pipeline/elements/DatabaseTask.hpp"
 #include "simdb/utils/Compress.hpp"
 
 #include <boost/archive/binary_oarchive.hpp>
@@ -39,80 +37,82 @@ void CherryPickFastCheckpointer::defineSchema(simdb::Schema& schema)
     windows.disableAutoIncPrimaryKey();
 }
 
-void CherryPickFastCheckpointer::createPipeline(simdb::pipeline::PipelineManager* pipeline_mgr)
+/// Process checkpoint windows on one thread
+class ProcessStage : public simdb::pipeline::Stage
 {
-    auto pipeline = pipeline_mgr->createPipeline(NAME);
-    auto db_accessor = pipeline_mgr->getAsyncDatabaseAccessor();
+public:
+    ProcessStage(const std::string& name, simdb::pipeline::QueueRepo& queue_repo)
+        : simdb::pipeline::Stage(name, queue_repo)
+    {
+        addInPort_<ChkptWindow>("input_window", input_queue_);
+        addOutPort_<ChkptWindowBytes>("output_window_bytes", output_queue_);
+    }
 
-    // Task 1: Give an auto-incrementing arch id to each incoming checkpoint window
-    auto add_arch_ids = simdb::pipeline::createTask<simdb::pipeline::Function<ChkptWindow, ChkptWindow>>(
-        [arch_id = uint64_t(0)]
-        (ChkptWindow&& window_in,
-         simdb::ConcurrentQueue<ChkptWindow>& window_out,
-         bool /*force_flush*/) mutable
-         {
-             window_in.start_arch_id = arch_id;
-             window_in.end_arch_id = arch_id + window_in.checkpoints.size() - 1;
-             sparta_assert(window_in.end_arch_id >= window_in.start_arch_id);
-             arch_id += window_in.checkpoints.size();
-             window_out.emplace(std::move(window_in));
-             return simdb::pipeline::RunnableOutcome::DID_WORK;
-         }
-    );
+    using ChkptWindow = CherryPickFastCheckpointer::ChkptWindow;
+    using ChkptWindowBytes = CherryPickFastCheckpointer::ChkptWindowBytes;
 
-    // Task 2: Serialize a checkpoint window into a char buffer
-    auto window_to_bytes = simdb::pipeline::createTask<simdb::pipeline::Function<ChkptWindow, ChkptWindowBytes>>(
-        [](ChkptWindow&& window,
-           simdb::ConcurrentQueue<ChkptWindowBytes>& window_bytes,
-           bool /*force_flush*/)
-        {
-            ChkptWindowBytes bytes;
-            boost::iostreams::back_insert_device<std::vector<char>> inserter(bytes.chkpt_bytes);
-            boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char>>> os(inserter);
-            boost::archive::binary_oarchive oa(os);
-            oa << window;
-            os.flush();
-
-            bytes.start_arch_id = window.start_arch_id;
-            bytes.end_arch_id = window.end_arch_id;
-            bytes.start_tick = window.start_tick;
-            bytes.end_tick = window.end_tick;
-            bytes.num_chkpts = window.checkpoints.size();
-            window_bytes.emplace(std::move(bytes));
-
-            // Silence the warning from the DeltaCheckpoint destructor
-            for (auto & chkpt : window.checkpoints) {
-                chkpt->flagDeleted();
-            }
-
-            return simdb::pipeline::RunnableOutcome::DID_WORK;
+private:
+    simdb::pipeline::PipelineAction run_(bool) override
+    {
+        ChkptWindow window_in;
+        if (!input_queue_->try_pop(window_in)) {
+            return simdb::pipeline::PipelineAction::SLEEP;
         }
-    );
 
-    // Task 3: Perform zlib compression on the checkpoint window bytes
-    auto zlib_bytes = simdb::pipeline::createTask<simdb::pipeline::Function<ChkptWindowBytes, ChkptWindowBytes>>(
-        [](ChkptWindowBytes&& bytes_in,
-           simdb::ConcurrentQueue<ChkptWindowBytes>& bytes_out,
-           bool /*force_flush*/)
-        {
-            std::vector<char> compressed_bytes;
-            simdb::compressData(bytes_in.chkpt_bytes, compressed_bytes);
-            std::swap(bytes_in.chkpt_bytes, compressed_bytes);
-            bytes_out.emplace(std::move(bytes_in));
+        window_in.start_arch_id = arch_id_;;
+        window_in.end_arch_id = arch_id_ + window_in.checkpoints.size() - 1;
+        sparta_assert(window_in.end_arch_id >= window_in.start_arch_id);
+        arch_id_ += window_in.checkpoints.size();
 
-            return simdb::pipeline::RunnableOutcome::DID_WORK;
+        ChkptWindowBytes bytes_out;
+        boost::iostreams::back_insert_device<std::vector<char>> inserter(bytes_out.chkpt_bytes);
+        boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char>>> os(inserter);
+        boost::archive::binary_oarchive oa(os);
+        oa << window_in;
+        os.flush();
+
+        bytes_out.start_arch_id = window_in.start_arch_id;
+        bytes_out.end_arch_id = window_in.end_arch_id;
+        bytes_out.start_tick = window_in.start_tick;
+        bytes_out.end_tick = window_in.end_tick;
+        bytes_out.num_chkpts = window_in.checkpoints.size();
+
+        // Silence the warning from the DeltaCheckpoint destructor
+        for (auto & chkpt : window_in.checkpoints) {
+            chkpt->flagDeleted();
         }
-    );
 
-    // Task 4: Write to the database
-    using WriteTask = simdb::pipeline::DatabaseTask<ChkptWindowBytes, void>;
-    auto write_to_db = simdb::pipeline::createTask<WriteTask>(
-        db_mgr_,
-        [](ChkptWindowBytes&& bytes_in,
-           simdb::pipeline::DatabaseAccessor& accessor,
-           bool /*force_flush*/)
-        {
-            auto window_inserter = accessor.getTableInserter<CherryPickFastCheckpointer>("ChkptWindows");
+        std::vector<char> compressed_bytes;
+        simdb::compressData(bytes_out.chkpt_bytes, compressed_bytes);
+        std::swap(bytes_out.chkpt_bytes, compressed_bytes);
+        output_queue_->emplace(std::move(bytes_out));
+
+        return simdb::pipeline::PipelineAction::PROCEED;
+    }
+
+    simdb::ConcurrentQueue<ChkptWindow>* input_queue_ = nullptr;
+    simdb::ConcurrentQueue<ChkptWindowBytes>* output_queue_ = nullptr;
+    uint64_t arch_id_ = 0;
+};
+
+/// Write to SQLite on dedicated database thread
+class DatabaseStage : public simdb::pipeline::DatabaseStage<CherryPickFastCheckpointer>
+{
+public:
+    DatabaseStage(const std::string& name, simdb::pipeline::QueueRepo& queue_repo)
+        : simdb::pipeline::DatabaseStage<CherryPickFastCheckpointer>(name, queue_repo)
+    {
+        addInPort_<ChkptWindowBytes>("input_window_bytes", input_queue_);
+    }
+
+    using ChkptWindowBytes = CherryPickFastCheckpointer::ChkptWindowBytes;
+
+private:
+    simdb::pipeline::PipelineAction run_(bool) override
+    {
+        ChkptWindowBytes bytes_in;
+        if (input_queue_->try_pop(bytes_in)) {
+            auto window_inserter = getTableInserter_("ChkptWindows");
             window_inserter->setColumnValue(0, bytes_in.chkpt_bytes);
             window_inserter->setColumnValue(1, bytes_in.start_arch_id);
             window_inserter->setColumnValue(2, bytes_in.end_arch_id);
@@ -120,28 +120,31 @@ void CherryPickFastCheckpointer::createPipeline(simdb::pipeline::PipelineManager
             window_inserter->setColumnValue(4, bytes_in.end_tick);
             window_inserter->setColumnValue(5, (int)bytes_in.num_chkpts);
             window_inserter->createRecord();
-            return simdb::pipeline::RunnableOutcome::DID_WORK;
+            return simdb::pipeline::PipelineAction::PROCEED;
         }
-    );
 
-    // Connect the pipeline tasks
-    *add_arch_ids >> *window_to_bytes >> *zlib_bytes >> *write_to_db;
+        return simdb::pipeline::PipelineAction::SLEEP;
+    }
+
+    simdb::ConcurrentQueue<ChkptWindowBytes>* input_queue_ = nullptr;
+};
+
+void CherryPickFastCheckpointer::createPipeline(simdb::pipeline::PipelineManager* pipeline_mgr)
+{
+    auto pipeline = pipeline_mgr->createPipeline(NAME, this);
+
+    pipeline->addStage<ProcessStage>("process_events");
+    pipeline->addStage<DatabaseStage>("write_events");
+    pipeline->noMoreStages();
+
+    pipeline->bind("process_events.output_window_bytes", "write_events.input_window_bytes");
+    pipeline->noMoreBindings();
 
     // Store the pipeline input queue
-    pipeline_head_ = add_arch_ids->getTypedInputQueue<ChkptWindow>();
+    pipeline_head_ = pipeline->getInPortQueue<ChkptWindow>("process_events.input_window");
 
     // Create a flusher to flush the pipeline on demand
-    pipeline_flusher_ = std::make_unique<simdb::pipeline::RunnableFlusher>(
-        *db_mgr_, add_arch_ids, window_to_bytes, zlib_bytes, write_to_db);
-
-    // Assign non-database pipeline tasks to one thread
-    pipeline->createTaskGroup("CheckpointPipeline")
-        ->addTask(std::move(add_arch_ids))
-        ->addTask(std::move(window_to_bytes))
-        ->addTask(std::move(zlib_bytes));
-
-    // Assign the database task to the DB thread
-    db_accessor->addTask(std::move(write_to_db));
+    pipeline_flusher_ = pipeline->createFlusher({"process_events", "write_events"});
 }
 
 void CherryPickFastCheckpointer::commitCurrentBranch(bool force_new_head_chkpt)
@@ -172,7 +175,7 @@ void CherryPickFastCheckpointer::saveCheckpoints(checkpoint_ptrs&& checkpoints)
 
 size_t CherryPickFastCheckpointer::getNumCheckpoints() const
 {
-    pipeline_flusher_->waterfallFlush();
+    pipeline_flusher_->flush();
 
     auto query = db_mgr_->createQuery("ChkptWindows");
 

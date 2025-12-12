@@ -16,7 +16,7 @@ namespace sparta
 
 namespace simdb::pipeline
 {
-    class RunnableFlusher;
+    class Flusher;
 }
 
 namespace sparta::serialization::checkpoint
@@ -103,10 +103,6 @@ public:
      */
     std::string stringize() const;
 
-private:
-    FastCheckpointer checkpointer_;
-    simdb::DatabaseManager* db_mgr_ = nullptr;
-
     struct ChkptWindow {
         arch_id_t start_arch_id = UINT64_MAX;
         arch_id_t end_arch_id = UINT64_MAX;
@@ -146,8 +142,11 @@ private:
         std::vector<char> chkpt_bytes;
     };
 
+private:
+    FastCheckpointer checkpointer_;
+    simdb::DatabaseManager* db_mgr_ = nullptr;
     simdb::ConcurrentQueue<ChkptWindow>* pipeline_head_ = nullptr;
-    std::unique_ptr<simdb::pipeline::RunnableFlusher> pipeline_flusher_;
+    std::unique_ptr<simdb::pipeline::Flusher> pipeline_flusher_;
 };
 
 } // namespace sparta::serialization::checkpoint
