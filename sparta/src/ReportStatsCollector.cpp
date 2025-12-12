@@ -6,8 +6,6 @@
 #include "sparta/report/format/JavascriptObject.hpp"
 #include "sparta/report/format/ReportHeader.hpp"
 #include "simdb/pipeline/Pipeline.hpp"
-#include "simdb/pipeline/elements/Function.hpp"
-#include "simdb/pipeline/elements/DatabaseTask.hpp"
 #include "simdb/apps/AppRegistration.hpp"
 #include "simdb/utils/Compress.hpp"
 
@@ -123,57 +121,85 @@ void ReportStatsCollector::defineSchema(simdb::Schema& schema)
     csv_skip_annotations_tbl.createIndexOn("ReportDescID");
 }
 
+using ReportStatsAtTick = ReportStatsCollector::ReportStatsAtTick;
+using CompressedReportStatsAtTick = ReportStatsCollector::CompressedReportStatsAtTick;
+
+class CompressorStage : public simdb::pipeline::Stage
+{
+public:
+    CompressorStage(const std::string& name, simdb::pipeline::QueueRepo& queue_repo)
+        : simdb::pipeline::Stage(name, queue_repo)
+    {
+        addInPort_<ReportStatsAtTick>("input_report_stats", input_queue_);
+        addOutPort_<CompressedReportStatsAtTick>("output_compressed_report_stats", output_queue_);
+    }
+
+private:
+    simdb::pipeline::PipelineAction run_(bool) override
+    {
+        ReportStatsAtTick stats_at_tick;
+        if (!input_queue_->try_pop(stats_at_tick)) {
+            return simdb::pipeline::PipelineAction::SLEEP;
+        }
+
+        CompressedReportStatsAtTick compressed(std::move(stats_at_tick));
+        output_queue_->emplace(std::move(compressed));
+        return simdb::pipeline::PipelineAction::PROCEED;
+    }
+
+    simdb::ConcurrentQueue<ReportStatsAtTick>* input_queue_ = nullptr;
+    simdb::ConcurrentQueue<CompressedReportStatsAtTick>* output_queue_ = nullptr;
+};
+
+class DatabaseStage : public simdb::pipeline::DatabaseStage<ReportStatsCollector>
+{
+public:
+    DatabaseStage(const std::string& name, simdb::pipeline::QueueRepo& queue_repo, const ReportStatsCollector* collector)
+        : simdb::pipeline::DatabaseStage<ReportStatsCollector>(name, queue_repo)
+        , collector_(collector)
+    {
+        addInPort_<CompressedReportStatsAtTick>("input_compressed_report_stats", input_queue_);
+    }
+
+private:
+    simdb::pipeline::PipelineAction run_(bool) override
+    {
+        CompressedReportStatsAtTick compressed;
+        if (!input_queue_->try_pop(compressed)) {
+            return simdb::pipeline::PipelineAction::SLEEP;
+        }
+
+        const auto descriptor = compressed.getDescriptor();
+        const auto descriptor_id = collector_->getDescriptorID(descriptor);
+        const auto tick = compressed.getTick();
+        const auto& bytes = compressed.getBytes();
+
+        auto inserter = getTableInserter_("DescriptorRecords");
+        inserter->setColumnValue(0, descriptor_id);
+        inserter->setColumnValue(1, tick);
+        inserter->setColumnValue(2, bytes);
+        inserter->createRecord();
+
+        return simdb::pipeline::PipelineAction::PROCEED;
+    }
+
+    const ReportStatsCollector* collector_ = nullptr;
+    simdb::ConcurrentQueue<CompressedReportStatsAtTick>* input_queue_ = nullptr;
+};
+
 void ReportStatsCollector::createPipeline(simdb::pipeline::PipelineManager* pipeline_mgr)
 {
-    auto pipeline = pipeline_mgr->createPipeline(NAME);
-    auto db_accessor = pipeline_mgr->getAsyncDatabaseAccessor();
+    auto pipeline = pipeline_mgr->createPipeline(NAME, this);
 
-    using ZlibFunction = simdb::pipeline::Function<ReportStatsAtTick, CompressedReportStatsAtTick>;
+    pipeline->addStage<CompressorStage>("compress_stats");
+    pipeline->addStage<DatabaseStage>("write_stats", this);
+    pipeline->noMoreStages();
 
-    auto zlib_task = simdb::pipeline::createTask<ZlibFunction>(
-        [](ReportStatsAtTick&& in,
-           simdb::ConcurrentQueue<CompressedReportStatsAtTick>& out,
-           bool /*force_flush*/)
-        {
-            CompressedReportStatsAtTick compressed(std::move(in));
-            out.emplace(std::move(compressed));
-            return simdb::pipeline::RunnableOutcome::DID_WORK;
-        }
-    );
-
-    using WriteTask = simdb::pipeline::DatabaseTask<CompressedReportStatsAtTick, void>;
-    auto sqlite_task = simdb::pipeline::createTask<WriteTask>(
-        db_mgr_,
-        [this](CompressedReportStatsAtTick&& in,
-               simdb::pipeline::DatabaseAccessor& accessor,
-               bool /*force_flush*/)
-        {
-            const auto descriptor = in.getDescriptor();
-            const auto descriptor_id = getDescriptorID(descriptor);
-            const auto tick = in.getTick();
-            const auto& bytes = in.getBytes();
-
-            auto inserter = accessor.getTableInserter<ReportStatsCollector>("DescriptorRecords");
-            inserter->setColumnValue(0, descriptor_id);
-            inserter->setColumnValue(1, tick);
-            inserter->setColumnValue(2, bytes);
-            inserter->createRecord();
-
-            return simdb::pipeline::RunnableOutcome::DID_WORK;
-        }
-    );
-
-    // Connect tasks -------------------------------------------------------------------
-    *zlib_task >> *sqlite_task;
+    pipeline->bind("compress_stats.output_compressed_report_stats", "write_stats.input_compressed_report_stats");
+    pipeline->noMoreBindings();
 
     // Get the pipeline input (head) ---------------------------------------------------
-    pipeline_queue_ = zlib_task->getTypedInputQueue<ReportStatsAtTick>();
-
-    // Assign threads (task groups) ----------------------------------------------------
-    pipeline->createTaskGroup("Compression")
-        ->addTask(std::move(zlib_task));
-
-    db_accessor->addTask(std::move(sqlite_task));
+    pipeline_queue_ = pipeline->getInPortQueue<ReportStatsAtTick>("compress_stats.input_report_stats");
 }
 
 void ReportStatsCollector::setScheduler(const Scheduler* scheduler)

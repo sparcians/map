@@ -5,7 +5,7 @@ project(DOCUMENTATION_MODEL)
 # with different defines
 macro (example_comm_build name build_defines)
     add_executable(${name} main.cpp)
-    target_link_libraries(${name} sparta ${Sparta_LIBS} -L${PROJECT_BINARY_DIR}/../../..)
+    target_link_libraries(${name} ${Sparta_LIBS} -L${PROJECT_BINARY_DIR}/../../..)
     set_target_properties(${name} PROPERTIES COMPILE_DEFINITIONS "${build_defines}")
     sparta_test(${name})
 endmacro(example_comm_build)

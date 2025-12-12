@@ -851,6 +851,7 @@ void Simulation::finalizeFramework()
     for (auto app_mgr : app_mgrs)
     {
         app_mgr->postInit(argc_, argv_);
+        app_mgr->initializePipelines();
         app_mgr->openPipelines();
     }
 #endif

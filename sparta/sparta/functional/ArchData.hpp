@@ -421,29 +421,46 @@ namespace sparta
 
         /*!
          * \brief Constructor
-         * \param owner_node TreeNode which owns this ArchData. Is allowed to be
-         * nullptr. This owner must exist through the lifetime of this ArchData.
-         * This owner is part of a diagnostic utility to determine whether
-         * all relevant ArchDatas can be located by checkpointing mechanisms.
-         * See sparta::RootTreeNode::checkArchDataAssociations.
-         * \param line_size Line size in bytes. All segments referring to this
-         * ArchData must be aligned to one line. segments referring to ranges
-         * spanning lines will be allowed to construct. Must be a power of 2.
-         * A line size of 0 indicates that everything is to be laid out on one
-         * line
+         * \param owner_node TreeNode which owns this ArchData. Is
+         *                   allowed to be nullptr. This owner must
+         *                   exist through the lifetime of this
+         *                   ArchData.  This owner is part of a
+         *                   diagnostic utility to determine whether
+         *                   all relevant ArchDatas can be located by
+         *                   checkpointing mechanisms.  See
+         *                   sparta::RootTreeNode::checkArchDataAssociations.
+         *
+         * \param line_size Line size in bytes. All segments referring
+         *                  to this ArchData must be aligned to one
+         *                  line. segments referring to ranges
+         *                  spanning lines will be allowed to
+         *                  construct. Must be a power of 2.  A line
+         *                  size of 0 indicates that everything is to
+         *                  be laid out on one line
+         *
          * \param initial Initial value of each byte allocated by the ArchData.
-         * Bytes beyond \a initial_val_size must be 0
+         *                 Bytes beyond \a initial_val_size must be 0
+         *
          * \param initial_val_size Number of bytes from Value to use
-         * repeating fill. This must be a power of 2 between 1 and 8 inclusive.
-         * \param can_free_lines Can this ArchData free its lines when reset.
-         * This allows Memory objects to reclaim memory when reset but may be
-         * undesired when representing a set of registers or counters where
-         * Register or Counter classes have cached pointers into the lines.
-         * Any ArchData which will allow objects to cache pointers to its lines
-         * or lines' memory must set this to false unless it plans to update
-         * those cached pointers each time it is reset.
+         *                         repeating fill. This must be a
+         *                         power of 2 between 1 and 8
+         *                         inclusive.
+         *
+         * \param can_free_lines Can this ArchData free its lines when
+         *                       reset.  This allows Memory objects to
+         *                       reclaim memory when reset but may be
+         *                       undesired when representing a set of
+         *                       registers or counters where Register
+         *                       or Counter classes have cached
+         *                       pointers into the lines.  Any
+         *                       ArchData which will allow objects to
+         *                       cache pointers to its lines or lines'
+         *                       memory must set this to false unless
+         *                       it plans to update those cached
+         *                       pointers each time it is reset.
+         *
          * \post Adds self to static all_archdatas_-> Therefore ArchData
-         * construction is not thread safe.
+         *       construction is not thread safe.
          */
         ArchData(TreeNode* owner_node=nullptr,
                  offset_type line_size=DEFAULT_LINE_SIZE,
