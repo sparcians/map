@@ -1,0 +1,5 @@
+<map id="sparta::AsyncEvent::scheduleRelativeTick" name="sparta::AsyncEvent::scheduleRelativeTick">
+<area shape="rect" id="Node000001" title="Asynchronously schedule this event on an relative tick." alt="" coords="5,5,157,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Scheduler.html#a24061975f983f1388e32114fbc996dff" title="Asynchronously schedule an event." alt="" coords="205,5,347,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="157,23,190,23,190,28,157,28"/>
+</map>
