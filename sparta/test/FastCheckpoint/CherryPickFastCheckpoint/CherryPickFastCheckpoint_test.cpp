@@ -83,6 +83,7 @@ void RunCheckpointerTest()
     app_mgr.enableApp(CherryPickFastCheckpointer::NAME);
     app_mgr.createEnabledApps();
     app_mgr.createSchemas();
+    app_mgr.initializePipelines();
     app_mgr.openPipelines();
 
     auto& dbcp = *app_mgr.getApp<CherryPickFastCheckpointer>();

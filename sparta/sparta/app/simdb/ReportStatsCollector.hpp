@@ -68,29 +68,6 @@ public:
 
     void postTeardown() override;
 
-private:
-    void writeReportInfo_(const ReportDescriptor* desc);
-
-    void writeReportInfo_(const ReportDescriptor* desc,
-                          const Report* r,
-                          std::unordered_set<std::string>& visited_stats,
-                          int parent_report_id);
-
-    using Descriptor = std::tuple<std::string, std::string, std::string, std::string>;
-    std::vector<std::pair<const ReportDescriptor*, Descriptor>> descriptors_;
-    std::unordered_map<const ReportDescriptor*, int> descriptor_ids_;
-    std::unordered_map<const ReportDescriptor*, const report::format::ReportHeader*> descriptor_headers_;
-    std::unordered_map<const ReportDescriptor*, std::vector<int>> descriptor_report_ids_;
-    std::unordered_map<const ReportDescriptor*, std::vector<int>> descriptor_report_style_ids_;
-    std::unordered_map<const ReportDescriptor*, std::vector<int>> descriptor_report_meta_ids_;
-    std::unordered_map<const ReportDescriptor*, std::vector<const StatisticInstance*>> simdb_stats_;
-    std::unordered_map<const ReportDescriptor*, uint64_t> report_start_times_;
-    std::unordered_map<const ReportDescriptor*, uint64_t> report_end_times_;
-    std::unordered_map<const ReportDescriptor*, std::map<std::string, std::string>> report_metadata_;
-    std::unordered_map<const ReportDescriptor*, std::vector<std::pair<uint64_t, std::string>>> report_skip_annotations_;
-    const Scheduler* scheduler_ = nullptr;
-    simdb::DatabaseManager* db_mgr_ = nullptr;
-
     class ReportAtTick
     {
     public:
@@ -156,6 +133,28 @@ private:
         std::vector<char> bytes_;
     };
 
+private:
+    void writeReportInfo_(const ReportDescriptor* desc);
+
+    void writeReportInfo_(const ReportDescriptor* desc,
+                          const Report* r,
+                          std::unordered_set<std::string>& visited_stats,
+                          int parent_report_id);
+
+    using Descriptor = std::tuple<std::string, std::string, std::string, std::string>;
+    std::vector<std::pair<const ReportDescriptor*, Descriptor>> descriptors_;
+    std::unordered_map<const ReportDescriptor*, int> descriptor_ids_;
+    std::unordered_map<const ReportDescriptor*, const report::format::ReportHeader*> descriptor_headers_;
+    std::unordered_map<const ReportDescriptor*, std::vector<int>> descriptor_report_ids_;
+    std::unordered_map<const ReportDescriptor*, std::vector<int>> descriptor_report_style_ids_;
+    std::unordered_map<const ReportDescriptor*, std::vector<int>> descriptor_report_meta_ids_;
+    std::unordered_map<const ReportDescriptor*, std::vector<const StatisticInstance*>> simdb_stats_;
+    std::unordered_map<const ReportDescriptor*, uint64_t> report_start_times_;
+    std::unordered_map<const ReportDescriptor*, uint64_t> report_end_times_;
+    std::unordered_map<const ReportDescriptor*, std::map<std::string, std::string>> report_metadata_;
+    std::unordered_map<const ReportDescriptor*, std::vector<std::pair<uint64_t, std::string>>> report_skip_annotations_;
+    const Scheduler* scheduler_ = nullptr;
+    simdb::DatabaseManager* db_mgr_ = nullptr;
     simdb::ConcurrentQueue<ReportStatsAtTick>* pipeline_queue_ = nullptr;
 };
 
