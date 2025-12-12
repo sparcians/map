@@ -2,13 +2,12 @@ project(SYSTEMC_EXAMPLE)
 
 include (../ExamplesMacros.cmake)
 
-if(SYSTEMC_SUPPORT)
+if(SYSTEMC_SUPPORT AND TLM_EXAMPLES_DIR)
 
-  set (TLM_EXAMPLES_DIR $ENV{SYSTEMC_HOME}/examples/tlm)
   if (NOT EXISTS ${TLM_EXAMPLES_DIR})
-    message (STATUS "TLM examples directory NOT found.  Will not build SysC example: sparta/example/SystemC")
+    message (FATAL_ERROR "TLM examples directory NOT found.  Please set -DTLM_EXAMPLES_DIR=/path/to/examples/tlm")
   else()
-    message (STATUS "TLM examples directory: ${TLM_EXAMPLES_DIR}")
+    message (STATUS "TLM example 4_phase enabled")
 
     add_executable(sparta_sysc_model_4_phase
       ../common/SpartaSystemCSimulator.cpp
@@ -45,9 +44,10 @@ if(SYSTEMC_SUPPORT)
 
       )
 
-    include (../../../test/TestingMacros.cmake)
     sparta_named_test(sparta_sys_phase4_tlm sparta_sysc_model_4_phase)
 
   endif()
 
+else()
+  message (STATUS "TLM 4_phase example disabled (TLM_EXAMPLES_DIR not set)")
 endif()
