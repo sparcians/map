@@ -41,8 +41,7 @@ void CherryPickFastCheckpointer::defineSchema(simdb::Schema& schema)
 class ProcessStage : public simdb::pipeline::Stage
 {
 public:
-    ProcessStage(const std::string& name, simdb::pipeline::QueueRepo& queue_repo)
-        : simdb::pipeline::Stage(name, queue_repo)
+    ProcessStage()
     {
         addInPort_<ChkptWindow>("input_window", input_queue_);
         addOutPort_<ChkptWindowBytes>("output_window_bytes", output_queue_);
@@ -99,8 +98,7 @@ private:
 class DatabaseStage : public simdb::pipeline::DatabaseStage<CherryPickFastCheckpointer>
 {
 public:
-    DatabaseStage(const std::string& name, simdb::pipeline::QueueRepo& queue_repo)
-        : simdb::pipeline::DatabaseStage<CherryPickFastCheckpointer>(name, queue_repo)
+    DatabaseStage()
     {
         addInPort_<ChkptWindowBytes>("input_window_bytes", input_queue_);
     }
