@@ -127,8 +127,7 @@ using CompressedReportStatsAtTick = ReportStatsCollector::CompressedReportStatsA
 class CompressorStage : public simdb::pipeline::Stage
 {
 public:
-    CompressorStage(const std::string& name, simdb::pipeline::QueueRepo& queue_repo)
-        : simdb::pipeline::Stage(name, queue_repo)
+    CompressorStage()
     {
         addInPort_<ReportStatsAtTick>("input_report_stats", input_queue_);
         addOutPort_<CompressedReportStatsAtTick>("output_compressed_report_stats", output_queue_);
@@ -154,9 +153,8 @@ private:
 class DatabaseStage : public simdb::pipeline::DatabaseStage<ReportStatsCollector>
 {
 public:
-    DatabaseStage(const std::string& name, simdb::pipeline::QueueRepo& queue_repo, const ReportStatsCollector* collector)
-        : simdb::pipeline::DatabaseStage<ReportStatsCollector>(name, queue_repo)
-        , collector_(collector)
+    DatabaseStage(const ReportStatsCollector* collector)
+        : collector_(collector)
     {
         addInPort_<CompressedReportStatsAtTick>("input_compressed_report_stats", input_queue_);
     }
