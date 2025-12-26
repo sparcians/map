@@ -619,12 +619,22 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
     // Simulation Database Options
     #if SIMDB_ENABLED
     simdb_opts_.add_options()
-        ("simdb-file",
-         named_value<std::vector<std::string>>("FILENAME", 1, 1),
-         "Specify a simulation database file to hold reports and other sim artifacts. Use together with "
-         "--enable-simdb-* options to selectively add artifacts to the database.")
+        ("simdb-apps",
+         named_value<std::vector<std::string>>("DATABASE_FILE app1 app2 ...", 2, -1)->multitoken(),
+         "Instantiate and run the provided SimDB applications and associate them with the "
+         "simulation database file DATABASE_FILE. You can use this option multiple times to "
+         "create apps going to different databases.")
         ("enable-simdb-reports",
-         "Enable the simulation database to hold reports.");
+         named_value<std::vector<std::string>>("[DATABASE_FILE]", 0, 1),
+         "Enable the simulation database to hold reports. If no database file is specified, "
+         "it will default to sparta.db")
+        ("disable-legacy-reports",
+         "Do not produce legacy formatted reports on the filesystem. Only write the SimDB file. "
+         "This is to be used with --enable-simdb-reports.")
+        ("sqlite-safety",
+         named_value<std::vector<std::string>>("MODE", 1, 1),
+         "Journaling mode / synchronous settings for SQLite3: fastest|safest|balanced (default:balanced)")
+        ;
     #endif
 
     // Feature Options
@@ -1123,11 +1133,36 @@ bool CommandLineSimulator::parse(int argc,
             }else if (o.string_key == "report-update-icount") {
                 throw_report_deprecated = true;
                 ++i;
-            }else if (o.string_key == "simdb-file") {
-                const auto& simdb_file = o.value[0];
-                sim_config_.simdb_config.setSimDBFile(simdb_file);
+            }else if (o.string_key == "simdb-apps") {
+                const auto simdb_file = o.value.at(0);
+                for (size_t idx = 1; idx < o.value.size(); ++idx) {
+                    sim_config_.simdb_config.enableApp(o.value.at(idx), simdb_file);
+                }
                 opts.options.erase(opts.options.begin() + i);
-
+            }else if (o.string_key == "enable-simdb-reports") {
+                std::string simdb_file = "sparta.db";
+                if (o.value.size() > 0) {
+                    simdb_file = o.value.at(0);
+                }
+                sim_config_.simdb_config.enableApp("simdb-reports", simdb_file);
+                opts.options.erase(opts.options.begin() + i);
+            }else if (o.string_key == "sqlite-safety") {
+                const std::string mode = o.value.at(0);
+                if (mode == "fastest") {
+                    sim_config_.simdb_config.addPragmaOnOpen("journal_mode", "OFF");
+                    sim_config_.simdb_config.addPragmaOnOpen("synchronous", "OFF");
+                } else if (mode == "safest") {
+                    sim_config_.simdb_config.addPragmaOnOpen("journal_mode", "DELETE");
+                    sim_config_.simdb_config.addPragmaOnOpen("synchronous", "FULL");
+                } else if (mode == "balanced") {
+                    sim_config_.simdb_config.addPragmaOnOpen("journal_mode", "WAL");
+                    sim_config_.simdb_config.addPragmaOnOpen("synchronous", "NORMAL");
+                } else {
+                    printUsageHelp_();
+                    err_code = 1;
+                    return false;
+                }
+                opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "pipeline-collection") {
                 //Enforce that we cannot set pipeline-collection options twice.
                 if(collection_parsed)
@@ -1537,8 +1572,12 @@ bool CommandLineSimulator::parse(int argc,
             std::cout << report_opts_.getOptionsLevelUpTo(0) << std::endl;
             showReportsHelp();
         }else if(help_topic_ == "simdb"){
-            std::cout << simdb_opts_.getOptionsLevelUpTo(0) << std::endl;
-            showSimDBHelp();
+            #if SIMDB_ENABLED
+                std::cout << simdb_opts_.getOptionsLevelUpTo(0) << std::endl;
+                showSimDBHelp();
+            #else
+                std::cout << "SimDB is not enabled in this build of SPARTA (-DUSING_SIMDB=ON)." << std::endl;
+            #endif
         }else if(help_topic_ == "pipeout"){
             std::cout << pipeout_opts_.getOptionsLevelUpTo(0) << std::endl;
         }else{
@@ -1798,10 +1837,8 @@ bool CommandLineSimulator::parse(int argc,
     sim_config_.report_on_error         = vm_.count("report-on-error") > 0;
     sim_config_.reports                 = reports;
 
-    // The various --enable-simdb-* options will implicitly set the database file to sparta.db
-    // unless otherwise specified with --simdb-file (which has already been parsed above).
-    if (vm_.count("enable-simdb-reports") > 0) {
-        sim_config_.simdb_config.enableSimDBReports();
+    if (vm_.count("disable-legacy-reports") > 0) {
+        sim_config_.simdb_config.disableLegacyReports();
     }
 
     //pevents

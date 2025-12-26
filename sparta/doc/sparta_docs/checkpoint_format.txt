@@ -11,17 +11,6 @@
   Checkpoints are binary files and are not expected to be human
   readable.
 
-  \subsection cp_classes Checkpointing Classes
-
-  Class | Brief Derivatives
-  ----- | -----------------
-  sparta::serialization::checkpoint::CheckpointError  | \copybrief sparta::serialization::checkpoint::CheckpointError &nbsp;
-  sparta::serialization::checkpoint::Checkpoint       | \copybrief sparta::serialization::checkpoint::Checkpoint &nbsp;
-  sparta::serialization::checkpoint::DeltaCheckpoint  | \copybrief sparta::serialization::checkpoint::DeltaCheckpoint &nbsp;
-  sparta::serialization::checkpoint::Checkpointer     | \copybrief sparta::serialization::checkpoint::Checkpointer &nbsp;
-  sparta::serialization::checkpoint::FastCheckpointer | \copybrief sparta::serialization::checkpoint::FastCheckpointer &nbsp;
-  sparta::serialization::checkpoint::PersistentFastCheckpointer | \copybrief sparta::serialization::checkpoint::PersistentFastCheckpointer &nbsp;
-
   \subsection cp_support How to Checkpoint
 
   Checkpointing is performed through the model and not from the

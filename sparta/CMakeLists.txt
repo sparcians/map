@@ -15,8 +15,22 @@ set (GEN_DEBUG_INFO ON CACHE BOOL "Genearate debug info in compile & link -g")
 # the Sparta headers.
 option (USING_SIMDB "Enable Sparta to be used with SimDB" ON)
 
+# The following option is typically enabled only for CI purposes.
+# Commits that fail the github checks will produce a log file with
+# specific failures in e.g. EXPECT_EQUAL, and those logs can be
+# retrieved directly from the CI job artifacts.
+option (SPARTA_TESTER_ERROR_LOG "Redirect the SpartaTester std::cerr to a log file" OFF)
+
 set (SPARTA_BASE ${CMAKE_CURRENT_SOURCE_DIR})
 include (${SPARTA_BASE}/cmake/sparta-config.cmake)
+
+if (USING_SIMDB)
+  if (EXISTS "${SPARTA_BASE}/simdb/CMakeLists.txt")
+    add_subdirectory (${SPARTA_BASE}/simdb)
+  else ()
+    message(FATAL_ERROR "SimDB not found. Run 'git submodule update --init --recursive'")
+  endif ()
+endif ()
 
 # Add the source for libsparta.a
 list (APPEND SourceCppFiles
@@ -53,6 +67,7 @@ list (APPEND SourceCppFiles
             src/Resource.cpp
             src/SpartaException.cpp
             src/RootTreeNode.cpp
+            src/CherryPickFastCheckpointer.cpp
             src/Scheduler.cpp
             src/Scheduleable.cpp
             src/Scoreboard.cpp
@@ -79,6 +94,10 @@ list (APPEND SourceCppFiles
             src/State.tpp
             src/GenericUnit.cpp
 )
+
+if (USING_SIMDB)
+  list (APPEND SourceCppFiles src/ReportStatsCollector.cpp)
+endif ()
 
 # Add python support
 if (COMPILE_WITH_PYTHON)
@@ -242,3 +261,9 @@ install(DIRECTORY sparta/ DESTINATION include/sparta)
 install(DIRECTORY cache/ DESTINATION include/cache)
 install(FILES ${SPARTA_STATIC_LIBS} DESTINATION lib)
 install(DIRECTORY cmake/ DESTINATION lib/cmake/sparta)
+install(DIRECTORY scripts/simdb/exporters/ DESTINATION bin/exporters)
+install(PROGRAMS scripts/simdb/simdb_compare DESTINATION bin)
+install(PROGRAMS scripts/simdb/simdb_export DESTINATION bin)
+install(FILES scripts/simdb/simdb_export.py
+              scripts/simdb/simdb_compare.py
+              scripts/simdb/compare_utils.py DESTINATION bin)

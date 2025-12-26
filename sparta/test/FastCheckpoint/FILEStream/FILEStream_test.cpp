@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <iostream>
 #include <fstream>
+#include <signal.h>
 
 #include "sparta/serialization/checkpoint/FILEStream.hpp"
 #include "sparta/utils/SpartaTester.hpp"
@@ -14,11 +15,23 @@
 
 TEST_INIT
 
+std::string current_test;
+std::string exception_str;
+int signal_raised = 0;
+void signalHandler(int signum)
+{
+    // Print out the failing test that caused the signal
+    EXPECT_EQUAL(current_test, "");
+    signal_raised = signum;
+}
+
 /*! Write stuff out to an ostream
  *
  * Used by multiple test cases.
  */
 void writeStuffToOstream(std::ostream& os) {
+    current_test = __FUNCTION__;
+
     // Write a few characters
     os << "a b c ";
 
@@ -40,6 +53,7 @@ void writeStuffToOstream(std::ostream& os) {
  * Used by multiple test cases.
  */
 void readStuffFromIstreamAndCheck(std::istream& is) {
+    current_test = __FUNCTION__;
 
     char c;
     is >> c;
@@ -74,6 +88,7 @@ void readStuffFromIstreamAndCheck(std::istream& is) {
 
 //! Test writing to a file stream backed by a file.
 void testFileWrite() {
+    current_test = __FUNCTION__;
     // Write some stuff out to a file backed by a FILE *.
 
     FILE *fd = fopen("testFile1", "w");
@@ -90,6 +105,7 @@ void testFileWrite() {
 
 //! Test reading from a file stream backed by a file.
 void testFileRead() {
+    current_test = __FUNCTION__;
     // Write some stuff out to a file via an ofstream.
     std::ofstream os("testFile2");
     writeStuffToOstream(os);
@@ -106,6 +122,7 @@ void testFileRead() {
 
 //! Test writing to a pipe through XZ, then reading back
 void testXzCompressedFileWriteRead() {
+    current_test = __FUNCTION__;
     FILE *pipeOut = popen("xz -6 - > testFile3.xz", "w");
     FILEOstream fos(pipeOut);
     std::ostream& os = fos.getStream();
@@ -121,11 +138,13 @@ void testXzCompressedFileWriteRead() {
 
 //! Test what happens when the FP is null
 void testFpNull() {
+    current_test = __FUNCTION__;
     EXPECT_THROW(FILEOstream fos(nullptr));
 }
 
 //! Test what happens when an output file isn't writable
 void testFileNotWritable() {
+    current_test = __FUNCTION__;
     FILE *fd = fopen("testFile3.xz", "r");  // Opened for reading
     FILEOstream fos(fd);
     std::ostream& os = fos.getStream();
@@ -135,6 +154,7 @@ void testFileNotWritable() {
 
 //! Test what happens when an invalid pipe command is provided
 void testInvalidPipeCmd() {
+    current_test = __FUNCTION__;
     FILE *pipeOut = popen("blah blah blah", "w");
     FILEOstream fos(pipeOut);
     std::ostream& os = fos.getStream();
@@ -144,14 +164,26 @@ void testInvalidPipeCmd() {
 }
 
 int main() {
-    testFileWrite();
-    testFileRead();
-    testXzCompressedFileWriteRead();
-    testFpNull();
-    testFileNotWritable();
-    testInvalidPipeCmd();
+    signal(SIGTERM, signalHandler);
+    signal(SIGINT, signalHandler);
+    signal(SIGSEGV, signalHandler);
+    signal(SIGABRT, signalHandler);
+    signal(SIGPIPE, signalHandler);
+
+    try {
+        testFileWrite();
+        testFileRead();
+        testXzCompressedFileWriteRead();
+        testFpNull();
+        testFileNotWritable();
+        testInvalidPipeCmd();
+    } catch (const sparta::SpartaException& ex) {
+        exception_str = ex.what();
+    }
+
+    EXPECT_EQUAL(signal_raised, 0);
+    EXPECT_EQUAL(exception_str, "");
 
     REPORT_ERROR;
-
     return ERROR_CODE;
 }

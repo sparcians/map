@@ -20,7 +20,7 @@ template<typename T, typename A>
  * \brief Utility for element-wise potentially-deep-copying a vector.
  * Invoked by methods at the end of this file
  */
-template <template<class, class...> class C, typename T>
+template <template<class...> class C, typename T>
 class VectorCopier
 {
 public:
@@ -121,7 +121,7 @@ public:
  *
  * This is not useful as often as you might think.
  */
-template <template<class, class...> class C, typename T>
+template <template<class...> class C, typename T>
 void copyVectorDeep(const std::vector<C<T>>& input,
                     std::vector<C<T>>& output)
 {
@@ -134,7 +134,7 @@ void copyVectorDeep(const std::vector<C<T>>& input,
  *
  * This is not useful as often as you might think.
  */
-template <template<class, class...> class C, typename T>
+template <template<class...> class C, typename T>
 void copyVectorExtractRawPointers(const std::vector<C<T>>& input,
                                   std::vector<T*>& output)
 {

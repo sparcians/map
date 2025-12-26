@@ -83,45 +83,6 @@ namespace sparta {
 
 }
 
-template <typename DataT>
-void validateParameter(const sparta::ParameterSet & params,
-                       const std::string & param_name,
-                       const DataT & expected_value)
-{
-    if (!params.hasParameter(param_name)) {
-        return;
-    }
-    const DataT actual_value = params.getParameterValueAs<DataT>(param_name);
-    if (actual_value != expected_value) {
-        throw sparta::SpartaException("Invalid extension parameter encountered:\n")
-            << "\tParameter name:             " << param_name
-            << "\nParameter value (actual):   " << actual_value
-            << "\nParameter value (expected): " << expected_value;
-    }
-}
-
-template <typename DataT>
-void validateParameter(const sparta::ParameterSet & params,
-                       const std::string & param_name,
-                       const std::set<DataT> & expected_values)
-{
-    bool found = false;
-    for (const auto & expected : expected_values) {
-        try {
-            found = false;
-            validateParameter<DataT>(params, param_name, expected);
-            found = true;
-            break;
-        } catch (...) {
-        }
-    }
-
-    if (!found) {
-        throw sparta::SpartaException("Invalid extension parameter "
-                                  "encountered for '") << param_name << "'";
-    }
-}
-
 class CircleExtensions : public sparta::ExtensionsParamsOnly
 {
 public:
@@ -261,79 +222,90 @@ void ExampleSimulator::buildTree_()
 
     // Validate tree node extensions during tree building
     for(uint32_t i = 0; i < num_cores_; ++i){
-        sparta::TreeNode * dispatch = getRoot()->getChild("cpu.core0.dispatch", false);
-        if (dispatch) {
-            sparta::TreeNode::ExtensionsBase * extensions = dispatch->getExtension("user_data");
+        const std::string dispatch_loc = "cpu.core" + std::to_string(i) + ".dispatch";
+        const std::string alu0_loc = "cpu.core" + std::to_string(i) + ".alu0";
+        const std::string alu1_loc = "cpu.core" + std::to_string(i) + ".alu1";
+        const std::string fpu_loc = "cpu.core" + std::to_string(i) + ".fpu";
 
-            // If present, validate the parameter values as given in the extension / configuration file
-            if (extensions != nullptr) {
-                const sparta::ParameterSet * dispatch_prms = extensions->getParameters();
-                sparta_assert(dispatch_prms != nullptr);
-                validateParameter<std::string>(*dispatch_prms, "when_", "buildTree_");
-                validateParameter<std::string>(*dispatch_prms, "why_", "checkAvailability");
-            }
-
-            // There might be an extension given in --extension-file that is not found
-            // at all in any --config-file given at the command prompt. Verify that if
-            // present, the value is as expected.
-            extensions = dispatch->getExtension("square");
-            if (extensions != nullptr) {
-                const sparta::ParameterSet * dispatch_prms = extensions->getParameters();
-                sparta_assert(dispatch_prms != nullptr);
-                validateParameter<std::string>(*dispatch_prms, "edges_", "4");
-            }
+        // user_data.when_ (dispatch)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(dispatch_loc), "when_", "user_data")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "buildTree_";
+            }, "Parameter 'when_' should be 'buildTree_'");
         }
 
-        // See if there are any extensions for the alu0/alu1 nodes
-        sparta::TreeNode * alu0 = getRoot()->getChild("cpu.core0.alu0");
-        sparta::TreeNode * alu1 = getRoot()->getChild("cpu.core0.alu1");
-        if (alu0) {
-            sparta::TreeNode::ExtensionsBase * extensions = alu0->getExtension("difficulty");
-            if (extensions != nullptr) {
-                const sparta::ParameterSet * alu0_prms = extensions->getParameters();
-                sparta_assert(alu0_prms != nullptr);
-
-                validateParameter<std::string>(*alu0_prms, "color_", "black");
-                validateParameter<std::string>(*alu0_prms, "shape_", "diamond");
-            }
-        }
-        if (alu1) {
-            sparta::TreeNode::ExtensionsBase * extensions = alu1->getExtension("difficulty");
-            if (extensions != nullptr) {
-                const sparta::ParameterSet * alu1_prms = extensions->getParameters();
-                sparta_assert(alu1_prms != nullptr);
-
-                validateParameter<std::string>(*alu1_prms, "color_", "green");
-                validateParameter<std::string>(*alu1_prms, "shape_", "circle");
-            }
+        // user_data.why_ (dispatch)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(dispatch_loc), "why_", "user_data")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "checkAvailability";
+            }, "Parameter 'why_' should be 'checkAvailability'");
         }
 
-        // Once again, ask for a named extension for a tree node that was just created.
-        // The difference here is that the 'circle' extension also has a factory associated
-        // with it.
-        sparta::TreeNode * fpu = getRoot()->getChild("cpu.core0.fpu", false);
-        if (fpu) {
-            sparta::TreeNode::ExtensionsBase * extensions = fpu->getExtension("circle");
-
-            // If present, validate the parameter values as given in the extension / configuration file
-            if (extensions != nullptr) {
-                const sparta::ParameterSet * fpu_prms = extensions->getParameters();
-                sparta_assert(fpu_prms != nullptr);
-
-                validateParameter<std::string>(*fpu_prms, "color_", "green");
-                validateParameter<std::string>(*fpu_prms, "shape_", "round");
-                validateParameter<double>     (*fpu_prms, "degrees_", 360.0);
-
-                // While most of the 'circle' extensions are given in --config-file options,
-                // there might be more parameters added in with --extension-file, so let's check
-                validateParameter<std::string>(*fpu_prms, "edges_", "0");
-
-                // We know the subclass type, so we should be able to safely dynamic cast
-                // to that type and call methods on it
-                const CircleExtensions * circle_subclass = dynamic_cast<const CircleExtensions*>(extensions);
-                circle_subclass->doSomethingElse();
-            }
+        // square.edges_ (dispatch)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(dispatch_loc), "edges_", "square")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "4";
+            }, "Parameter 'edges_' should be '4'");
         }
+
+        // difficulty.color_ (alu0)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu0_loc), "color_", "difficulty")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "black";
+            }, "Parameter 'color_' should be 'black'");
+        }
+
+        // difficulty.shape_ (alu0)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu0_loc), "shape_", "difficulty")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "diamond";
+            }, "Parameter 'shape_' should be 'diamond'");
+        }
+
+        // difficulty.color_ (alu1)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu1_loc), "color_", "difficulty")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "green";
+            }, "Parameter 'color_' should be 'green'");
+        }
+
+        // difficulty.shape_ (alu1)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu1_loc), "shape_", "difficulty")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "circle";
+            }, "Parameter 'shape_' should be 'circle'");
+        }
+
+        // circle.color_ (fpu)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(fpu_loc), "color_", "circle")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "green";
+            }, "Parameter 'color_' should be 'green'");
+        }
+
+        // circle.shape_ (fpu)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(fpu_loc), "shape_", "circle")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "round";
+            }, "Parameter 'shape_' should be 'round'");
+        }
+
+        // circle.degrees_ (fpu)
+        if (auto prm = getExtensionParameter_<double>(getRoot()->getChild(fpu_loc), "degrees_", "circle")) {
+            prm->addDependentValidationCallback([](double & val, const sparta::TreeNode*) -> bool {
+                return val == 360.0;
+            }, "Parameter 'degrees_' should be 360.0");
+        }
+
+        // circle.edges_ (fpu)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(fpu_loc), "edges_", "circle")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "0";
+            }, "Parameter 'edges_' should be '0'");
+        }
+
+        // User-specified extension class
+        getExtension_<CircleExtensions>(getRoot()->getChild(fpu_loc), "circle")->doSomethingElse();
     }
 
     // Attach two tree nodes to get the following:
@@ -513,105 +485,207 @@ void ExampleSimulator::onTriggered_(const std::string & msg)
     std::cout << "     [trigger] " << msg << std::endl;
 }
 
+template <typename ParamT>
+sparta::Parameter<ParamT>* ExampleSimulator::getExtensionParameter_(
+    sparta::TreeNode* node,
+    const std::string& param_name,
+    const std::string& ext_name)
+{
+    if (!node) {
+        return nullptr;
+    }
+
+    sparta::TreeNode::ExtensionsBase * ext = ext_name.empty() ?
+        node->getExtension() :
+        node->getExtension(ext_name);
+
+    if (!ext) {
+        return nullptr;
+    }
+
+    sparta::ParameterSet * params = ext->getParameters();
+    if (!params) {
+        return nullptr;
+    }
+
+    if (!params->hasParameter(param_name)) {
+        return nullptr;
+    }
+
+    return &params->getParameterAs<ParamT>(param_name);
+}
+
+template <typename ExtensionT>
+ExtensionT* ExampleSimulator::getExtension_(
+    sparta::TreeNode* node,
+    const std::string& ext_name)
+{
+    static_assert(std::is_base_of<sparta::TreeNode::ExtensionsBase, ExtensionT>::value,
+                  "ExtensionT must be derived from sparta::TreeNode::ExtensionsBase");
+
+    if (!node) {
+        return nullptr;
+    }
+
+    return ext_name.empty() ?
+        dynamic_cast<ExtensionT*>(node->getExtension()) :
+        dynamic_cast<ExtensionT*>(node->getExtension(ext_name));
+}
+
 void ExampleSimulator::validateTreeNodeExtensions_()
 {
-    // From the yaml file, the 'cat' extension had parameters 'name_' and 'language_'
-    sparta::TreeNode * core_tn = getRoot()->getChild("cpu.core0.lsu");
-    if (core_tn == nullptr) {
-        return;
+    // cat.name_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.lsu"), "name_", "cat"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "Tom";
+            }, "Parameter 'name_' should be 'Tom'");
     }
-    sparta::TreeNode::ExtensionsBase * cat_base = core_tn->getExtension("cat");
-    if (cat_base == nullptr) {
-        return;
+
+    // cat.language_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.lsu"), "language_", "cat"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "meow" || val == "grrr";
+            }, "Parameter 'language_' should be 'meow' or 'grrr'");
     }
-    sparta::ParameterSet * cat_prms = cat_base->getParameters();
 
-    validateParameter<std::string>(*cat_prms, "name_", "Tom");
-
-    // The expected "meow" parameter value, given in a --config-file, may have
-    // been overridden in a provided --extension-file
-    validateParameter<std::string>(*cat_prms, "language_", {"meow", "grrr"});
-
-    // Same goes for the 'mouse' extension...
-    sparta::TreeNode::ExtensionsBase * mouse_base = core_tn->getExtension("mouse");
-    if (mouse_base == nullptr) {
-        return;
+    // mouse.name_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.lsu"), "name_", "mouse"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "Jerry";
+            }, "Parameter 'name_' should be 'Jerry'");
     }
-    sparta::ParameterSet * mouse_prms = mouse_base->getParameters();
 
-    validateParameter<std::string>(*mouse_prms, "name_", "Jerry");
-    validateParameter<std::string>(*mouse_prms, "language_", "squeak");
-
-    // Another extension called 'circle' was put on a different tree node...
-    sparta::TreeNode * fpu_tn = getRoot()->getChild("cpu.core0.fpu");
-    if (fpu_tn == nullptr) {
-        return;
+    // mouse.language_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.lsu"), "language_", "mouse"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "squeak";
+            }, "Parameter 'language_' should be 'squeak'");
     }
-    sparta::TreeNode::ExtensionsBase * circle_base = fpu_tn->getExtension("circle");
-    if (circle_base == nullptr) {
-        return;
+
+    // circle.color_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.fpu"), "color_", "circle"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "green";
+            }, "Parameter 'color_' should be 'green'");
     }
-    sparta::ParameterSet * circle_prms = circle_base->getParameters();
 
-    // The 'circle' extension had 'color_' and 'shape_' parameters given in the yaml file:
-    validateParameter<std::string>(*circle_prms, "color_", "green");
-    validateParameter<std::string>(*circle_prms, "shape_", "round");
-
-    // That subclass also gave a parameter value not found in the yaml file at all:
-    validateParameter<double>(*circle_prms, "degrees_", 360.0);
-
-    // Further, the 'circle' extension gave a subclass factory for the CircleExtensions class...
-    // so we should be able to dynamic_cast to the known type:
-    const CircleExtensions * circle_subclass = dynamic_cast<const CircleExtensions*>(circle_base);
-    circle_subclass->doSomethingElse();
-
-    // Lastly, verify that there are no issues with putting extensions on the 'top' node
-    sparta::TreeNode * top_node = getRoot();
-    if (top_node == nullptr) {
-        return;
+    // circle.shape_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.fpu"), "shape_", "circle"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "round";
+            }, "Parameter 'shape_' should be 'round'");
     }
-    sparta::TreeNode::ExtensionsBase * top_extensions = top_node->getExtension("apple");
-    if (top_extensions == nullptr) {
-        return;
+
+    // circle.degrees_
+    if (auto prm = getExtensionParameter_<double>(
+        getRoot()->getChild("cpu.core0.fpu"), "degrees_", "circle"))
+    {
+        prm->addDependentValidationCallback(
+            [](double & val, const sparta::TreeNode*) -> bool {
+                return val == 360.0;
+            }, "Parameter 'degrees_' should be 360.0");
     }
-    sparta::ParameterSet *top_prms = top_extensions->getParameters();
-    validateParameter<std::string>(*top_prms, "color_", "red");
+
+    // User-specified extension class
+    getExtension_<CircleExtensions>(getRoot()->getChild("cpu.core0.fpu"), "circle")->doSomethingElse();
+
+    // apple.color_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot(), "color_", "apple"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "red";
+            }, "Parameter 'color_' should be 'red'");
+    }
 
     // The 'core0.lsu' node has two named extensions, so asking that node for
-    // unqualified extensions (no name specified) should throw
-    try {
-        core_tn->getExtension();
-        throw sparta::SpartaException("Expected an exception to be thrown for unqualified "
-                                  "call to TreeNode::getExtension()");
-    } catch (...) {
-    }
-
-    // While the 'core0.fpu' node only had one extension, so we should be able to
-    // access it without giving any particular name
-    sparta::TreeNode::ExtensionsBase * circle_base_by_default = fpu_tn->getExtension();
-    circle_prms = circle_base_by_default->getParameters();
-
-    validateParameter<std::string>(*circle_prms, "color_", "green");
-    validateParameter<std::string>(*circle_prms, "shape_", "round");
-    validateParameter<double>(*circle_prms, "degrees_", 360.0);
-
-    // Check to see if additional parameters were added to this tree node's extension
-    // (--config-file and --extension-file options can be given at the same time, and
-    // we should have access to the merged result of both ParameterTree's)
-    if (circle_prms->getNumParameters() > 3) {
-        validateParameter<std::string>(*circle_prms, "edges_", "0");
-    }
-
-    // Verify that we can work with extensions on 'top.core0.dispatch.baz_node', which
-    // was added to this example simulator to reproduce bug
-    sparta::TreeNode * baz_node = getRoot()->getChild("cpu.core0.dispatch.baz_node", false);
-    if (baz_node) {
-        sparta::TreeNode::ExtensionsBase * extensions = baz_node->getExtension("baz_ext");
-        if (extensions) {
-            const sparta::ParameterSet * baz_prms = extensions->getParameters();
-            sparta_assert(baz_prms != nullptr);
-            validateParameter<std::string>(*baz_prms, "ticket_", "663");
+    // unqualified extensions (no name specified) should throw.
+    //
+    // Note that we still have to check if core0.lsu has multiple extensions,
+    // since it will have zero in most example simulations unless --extension-file
+    // was used.
+    auto core0_lsu = getRoot()->getChild("cpu.core0.lsu");
+    if (core0_lsu->getNumExtensions() > 1) {
+        bool threw = false;
+        try {
+            getExtension_<>(core0_lsu);
+        } catch (...) {
+            threw = true;
         }
+
+        if (!threw) {
+            throw sparta::SpartaException("Expected an exception to be thrown for unqualified "
+                                          "call to TreeNode::getExtension()");
+        }
+    }
+
+    // <unnamed>.color_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.fpu"), "color_"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "green";
+            }, "Parameter 'color_' should be 'green'");
+    }
+
+    // <unnamed>.shape_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.fpu"), "shape_"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "round";
+            }, "Parameter 'shape_' should be 'round'");
+    }
+
+    // <unnamed>.degrees_
+    if (auto prm = getExtensionParameter_<double>(
+        getRoot()->getChild("cpu.core0.fpu"), "degrees_"))
+    {
+        prm->addDependentValidationCallback(
+            [](double & val, const sparta::TreeNode*) -> bool {
+                return val == 360.0;
+            }, "Parameter 'degrees_' should be 360.0");
+    }
+
+    // <unnamed>.edges_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.fpu"), "edges_"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "0";
+            }, "Parameter 'edges_' should be '0'");
+    }
+
+    // baz_ext.ticket_
+    if (auto prm = getExtensionParameter_<std::string>(
+        getRoot()->getChild("cpu.core0.dispatch.baz_node", false), "ticket_", "baz_ext"))
+    {
+        prm->addDependentValidationCallback(
+            [](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "663";
+            }, "Parameter 'ticket_' should be '663'");
     }
 }
 

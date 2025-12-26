@@ -1,11 +1,12 @@
 import os, zlib, struct
 from .utils import FormatNumber
+import numpy as np
 
 class CSVReportExporter:
     def __init__(self):
         pass
 
-    def Export(self, dest_file, descriptor_id, db_conn):
+    def Export(self, dest_file, descriptor_id, db_conn, cmdline_args):
         cursor = db_conn.cursor()
 
         # Start with the CSV header, which looks something like this:
@@ -70,48 +71,41 @@ class CSVReportExporter:
         # Lastly, deserialize the raw values. Each record in this query corresponds to another
         # row in the CSV report (one SQL record only holds the values for the same report descriptor).
         with open(dest_file, 'a') as fout:
-            basename = os.path.basename(dest_file)
-            cmd = f'SELECT Data, IsCompressed, Notes FROM CollectionRecords WHERE Notes LIKE \'{basename}%\' ORDER BY Tick ASC'
+            # We need to ensure that we "interleave" the records from the CollectionRecords table
+            # and the CsvSkipAnnotations table before writing them to the CSV file.
+            csv_row_text_by_tick = {}
+
+            cmd = f'SELECT Tick, DataBlob FROM DescriptorRecords WHERE ReportDescID={descriptor_id}'
             cursor.execute(cmd)
-            for data, is_compressed, notes in cursor.fetchall():
-                # If the Notes column is something like "out.csv_skipped_anno#1033", that means we
-                # should write a row of empty values for this record to denote the number of times
-                # we skipped writing to the report.
-                if notes.find('skipped_anno') != -1:
-                    hash_idx = notes.find('#')
-                    anno = notes[hash_idx:]
-                    anno += ','*(len(stat_headers) - 1)
-                    fout.write(anno)
-                    fout.write('\n')
-                    continue
+            for tick, data in cursor.fetchall():
+                data = zlib.decompress(data)
+                dt = np.dtype([('value', '<f8')])
+                records = np.frombuffer(data, dtype=dt)
+                double_values = records['value']
+                row_values = [FormatNumber(value) for value in double_values]
+                row_text = ','.join(row_values)
+                csv_row_text_by_tick[tick] = row_text
 
-                if is_compressed:
-                    data = zlib.decompress(data)
+            # Now get all the skipped annotations for this report descriptor, if any.
+            cmd = f'SELECT Tick, Annotation FROM CsvSkipAnnotations WHERE ReportDescID={descriptor_id}'
+            cursor.execute(cmd)
+            for tick, anno in cursor.fetchall():
+                anno += ','*(len(stat_headers) - 1)
+                csv_row_text_by_tick[tick] = anno
 
-                # The data values are stored as:
-                #   [elem_id(u16), value(double), elem_id(u16), value(double), ...]
-                #
-                # We only care about the values, not the element IDs. Everything in these records
-                # is already in the order we want, meaning that the values line up with the stat
-                # headers we already wrote out.
-                #
-                # We could assert that the encountered element IDs correspond to the headers,
-                # although that would be a bit of a performance hit. The SimDB verification
-                # tests would be failing if this was not the case, so we will skip that for now.
-                elem_id_size = 2
-                value_size = 8
-
-                row_values = []
-                for i in range(elem_id_size, len(data), elem_id_size + value_size):
-                    value = struct.unpack('d', data[i:i + value_size])[0]
-                    row_values.append(FormatNumber(value))
-
-                fout.write(','.join(row_values))
+            # Now write all the rows in order.
+            ticks = sorted(csv_row_text_by_tick.keys())
+            for tick in ticks:
+                row_text = csv_row_text_by_tick[tick]
+                fout.write(row_text)
                 fout.write('\n')
 
     def __WriteHeader(self, fout, report_name, start_tick, end_tick, meta_kvpairs, trigger_locs):
-        if end_tick == -1:
+        start_tick = int(start_tick)
+        if end_tick == '18446744073709551615':
             end_tick = 'SIMULATION_END'
+        else:
+            end_tick = int(end_tick)
         fout.write(f'# report="{report_name}",start={start_tick},end={end_tick}')
 
         if not meta_kvpairs:

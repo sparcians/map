@@ -24,7 +24,7 @@ class StatisticInstance:
         return self.vis
 
     def GetValue(self):
-        return self.stat_value_getter.GetValueByLocation(self.location)
+        return self.stat_value_getter.GetNext()
 
 class StatValueGetter:
     def __init__(self, stats_values, stat_values_by_loc):
@@ -45,19 +45,33 @@ class StatValueGetter:
         return self.stat_values_by_loc[loc]
 
 def GetStatsValuesGetter(cursor, dest_file, replace_nan_with_nanstring=False, replace_inf_with_infstring=False, decimal_places=-1):
-    dest_file_name = os.path.basename(dest_file)
-    cmd = f"SELECT Data, IsCompressed FROM CollectionRecords WHERE Notes='{dest_file_name}'"
+    dest_file = os.path.basename(dest_file)
+    cmd = f"SELECT Id, Format FROM ReportDescriptors WHERE DestFile='{dest_file}'"
     cursor.execute(cmd)
-    stats_blob, is_compressed = cursor.fetchone()
-    if is_compressed:
-        stats_blob = zlib.decompress(stats_blob)
+    descriptor_id, descriptor_format = cursor.fetchone()
+
+    # TODO cnyce: Clean up this API or refactor so it is obvious that this method
+    # is NOT for timeseries reports.
+    if descriptor_format in ('csv', 'csv_cumulative'):
+        raise ValueError(f"Unsupported report format: {descriptor_format}")
+
+
+    cmd = f'SELECT DataBlob FROM DescriptorRecords WHERE ReportDescID={descriptor_id}'
+    cursor.execute(cmd)
+    stats_blob = cursor.fetchone()[0]
+    stats_blob = zlib.decompress(stats_blob)
 
     # Turn the stats blob (byte vector) into a vector of doubles.
-    assert len(stats_blob) % (2+8) == 0, "Invalid stats blob length"
-    stats_values = []
-    coll_ids = []
-    for i in range(0, len(stats_blob), 2+8):
-        val = struct.unpack("d", stats_blob[i+2:i+10])[0]
+    assert len(stats_blob) % 8 == 0, "Invalid stats blob length"
+
+    if len(stats_blob) == 0:
+        return StatValueGetter([], {})
+ 
+    format = str(len(stats_blob) // 8) + 'd'  # 'd' means double
+    stats_values = struct.unpack(format, stats_blob)
+    stats_values = list(stats_values)
+
+    for i, val in enumerate(stats_values):
         if replace_nan_with_nanstring and math.isnan(val):
             val = "nan"
         elif replace_inf_with_infstring and math.isinf(val):
@@ -65,33 +79,9 @@ def GetStatsValuesGetter(cursor, dest_file, replace_nan_with_nanstring=False, re
         else:
             val = FormatNumber(val, as_string=False, decimal_places=decimal_places)
 
-        stats_values.append(val)
-        cid = struct.unpack("H", stats_blob[i:i+2])[0]
-        coll_ids.append(cid)
+        stats_values[i] = val
 
-    # The above stats_values (linear list) is to be used when the entire stat
-    # collection is to be read one stat at a time using the GetNext() method.
-    # Some uses need to access stat values by location.
-    #
-    # We can use the collectable ID to get the location of the stat since
-    # the location/collectable ID pair is stored in the CollectableTreeNodes
-    # table.
-    stat_locs_by_coll_id = {}
-    cmd = "SELECT ElementTreeNodeID, Location FROM CollectableTreeNodes"
-    cursor.execute(cmd)
-    for coll_id, loc in cursor.fetchall():
-        stat_locs_by_coll_id[coll_id] = loc
-
-    stat_values_by_coll_id = {}
-    for cid, val in zip(coll_ids, stats_values):
-        stat_values_by_coll_id[cid] = val
-
-    stat_values_by_loc = {}
-    for cid, val in stat_values_by_coll_id.items():
-        loc = stat_locs_by_coll_id[cid]
-        stat_values_by_loc[loc] = val
-
-    return StatValueGetter(stats_values, stat_values_by_loc)
+    return StatValueGetter(stats_values, {})
 
 def HasStatistics(cursor, descriptor_id, report_id, recursive=False):
     def Impl(cursor, descriptor_id, report_id, recursive):
@@ -220,3 +210,13 @@ def GetReportStyle(cursor, report_id, descriptor_id, style_name, style_default=N
 
     style_value = cursor.fetchone()
     return style_value[0] if style_value else style_default
+
+def GetReportStyleDict(cursor, report_id, descriptor_id):
+    cmd = f"SELECT StyleName, StyleValue FROM ReportStyles WHERE ReportDescID = {descriptor_id} AND ReportID = {report_id}"
+    cursor.execute(cmd)
+
+    style_dict = {}
+    for style_name, style_value in cursor.fetchall():
+        style_dict[style_name] = style_value
+
+    return style_dict

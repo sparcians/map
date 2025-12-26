@@ -16,8 +16,8 @@ int main()
     table.addColumn("TheInt", dt::int32_t);
     table.addColumn("TheString", dt::string_t);
 
-    simdb::DatabaseManager db_mgr("test.db", true);
-    EXPECT_TRUE(db_mgr.createDatabaseFromSchema(schema));
+    simdb::DatabaseManager db_mgr("simdb-test.db", true);
+    db_mgr.appendSchema(schema);
 
     auto record = db_mgr.INSERT(
         SQL_TABLE("TheTable"),
@@ -25,8 +25,6 @@ int main()
         SQL_VALUES(112233, "HelloWorld"));
 
     EXPECT_EQUAL(record->getId(), 1);
-
-    db_mgr.closeDatabase();
 
     REPORT_ERROR;
     return ERROR_CODE;

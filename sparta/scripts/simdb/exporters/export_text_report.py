@@ -17,7 +17,7 @@ class TextReportExporter:
         self.show_report_range = True
         self.val_col = 0
 
-    def Export(self, dest_file, descriptor_id, db_conn):
+    def Export(self, dest_file, descriptor_id, db_conn, cmdline_args):
         out = io.StringIO()
         if self.GetShowSimInfo():
             # out << sparta::SimulationInfo::getInstance().stringize("", "\n") << std::endl << std::endl;
@@ -76,7 +76,7 @@ class TextReportExporter:
         report_name, report_start, report_end = row
 
         if report_end == -1:
-            cmd = "SELECT SimEndTick FROM SimulationInfo WHERE Id = 1"
+            cmd = "SELECT SimEndTick FROM SimulationInfo LIMIT 1"
             cursor.execute(cmd)
             report_end = cursor.fetchone()[0]
 
@@ -136,9 +136,9 @@ class TextReportExporter:
             # out << "\n";
             if self.GetShowReportRange() and depth == 0:
                 out.write(" [")
-                out.write(str(report_start))
+                out.write(str(int(report_start)))
                 out.write(",")
-                out.write(str(report_end))
+                out.write(str(int(report_end)))
                 out.write("]")
             out.write("\n")
 

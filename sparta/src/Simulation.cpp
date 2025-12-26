@@ -84,6 +84,11 @@
 #include "sparta/trigger/Trigger.hpp"
 #include "sparta/utils/StringUtils.hpp"
 
+#if SIMDB_ENABLED
+#include "sparta/app/simdb/ReportStatsCollector.hpp"
+#include "simdb/apps/AppManager.hpp"
+#endif
+
 namespace YAML {
 class EventHandler;
 }  // namespace YAML
@@ -365,8 +370,6 @@ void Simulation::configure(const int argc,
                            SimulationConfiguration * configuration,
                            const bool use_pyshell)
 {
-    (void) argc; // Used by Python shell
-    (void) argv; // Used by Python shell
     sparta_assert(configuration != nullptr,
                 "You must supply a persistent SimulationConfiguration object");
 
@@ -377,6 +380,8 @@ void Simulation::configure(const int argc,
 
     sim_config_ = configuration;
     print_dag_  = sim_config_->show_dag;
+    argc_ = argc;
+    argv_ = argv;
 
     ReportDescVec expanded_descriptors;
     for (const auto & rd : sim_config_->reports) {
@@ -456,6 +461,44 @@ void Simulation::configure(const int argc,
     simulation_state_.configure();
 }
 
+void Simulation::createSimDbApps_()
+{
+#if SIMDB_ENABLED
+    const auto & simdb_config = sim_config_->simdb_config;
+
+    const auto enabled_apps = simdb_config.getEnabledApps();
+    if (enabled_apps.empty()) {
+        return;
+    }
+
+    std::map<std::string, std::set<std::string>> apps_by_db_file;
+    for (const auto & app_name : enabled_apps)
+    {
+        for (const auto & db_file : simdb_config.getAppDatabases(app_name))
+        {
+            apps_by_db_file[db_file].insert(app_name);
+        }
+    }
+
+    for (const auto & [db_file, app_names] : apps_by_db_file)
+    {
+        const auto& pragmas = simdb_config.getPragmas();
+        constexpr auto new_file = true;
+        auto db_mgr = std::make_shared<simdb::DatabaseManager>(db_file, new_file, pragmas);
+        auto app_mgr = std::make_shared<simdb::AppManager>(db_mgr.get());
+
+        for (const auto & app_name : app_names)
+        {
+            app_mgr->enableApp(app_name);
+        }
+
+        app_mgr->createEnabledApps();
+        app_mgr->createSchemas();
+        simdb_managers_[db_file] = std::make_shared<SimDbManagers>(db_mgr, app_mgr);
+    }
+#endif
+}
+
 void Simulation::addReport(const ReportDescriptor & rep)
 {
     sparta_assert(root_.isFinalized() == false || root_.isFinalizing(),
@@ -489,6 +532,58 @@ void Simulation::addReport(const ReportDescriptor & rep)
         // Simply append to list. Nothing to do until finalization (unlike taps)
         rep_descs_.push_back(rep);
     }
+}
+
+std::vector<simdb::AppManager*> Simulation::getAppManagers()
+{
+    std::vector<simdb::AppManager*> app_mgrs;
+    for (auto [db_file, mgrs] : simdb_managers_)
+    {
+        app_mgrs.push_back(mgrs->app_mgr.get());
+    }
+    return app_mgrs;
+}
+
+std::vector<simdb::DatabaseManager*> Simulation::getDbManagers()
+{
+    std::vector<simdb::DatabaseManager*> db_mgrs;
+    for (auto & [db_file, mgrs] : simdb_managers_)
+    {
+        db_mgrs.push_back(mgrs->db_mgr.get());
+    }
+    return db_mgrs;
+}
+
+simdb::AppManager* Simulation::getAppManager(const std::string & db_file) const
+{
+    auto it = simdb_managers_.find(db_file);
+    if (it == simdb_managers_.end())
+    {
+        return nullptr;
+    }
+
+    return it->second->app_mgr.get();
+}
+
+simdb::DatabaseManager* Simulation::getDbManager(const std::string & db_file) const
+{
+    auto it = simdb_managers_.find(db_file);
+    if (it == simdb_managers_.end())
+    {
+        return nullptr;
+    }
+
+    return it->second->db_mgr.get();
+}
+
+std::vector<std::string> Simulation::getDatabaseFiles() const
+{
+    std::vector<std::string> db_files;
+    for (const auto & [db_file, mgrs] : simdb_managers_)
+    {
+        db_files.push_back(db_file);
+    }
+    return db_files;
 }
 
 void Simulation::installTaps(const log::TapDescVec& taps)
@@ -716,12 +811,50 @@ void Simulation::finalizeFramework()
 
     this->setupControllerTriggers_();
 
+    // Setup SimDB apps and their databases.
+    this->createSimDbApps_();
+
+    bool reports_setup = false;
+
+#if SIMDB_ENABLED
+    std::vector<simdb::AppManager*> app_mgrs;
+    for (const auto & [db_file, simdb_mgrs] : simdb_managers_)
+    {
+        auto db_mgr = simdb_mgrs->db_mgr;
+        auto app_mgr = simdb_mgrs->app_mgr;
+        app_mgrs.push_back(app_mgr.get());
+
+        if (auto app = app_mgr->getApp<ReportStatsCollector>(false))
+        {
+            if (reports_setup)
+            {
+                throw SpartaException("Stats reports cannot be sent to more than one database");
+            }
+
+            app->setScheduler(getScheduler());
+            db_mgr->safeTransaction([&]() { setupReports_(app); });
+            reports_setup = true;
+        }
+    }
+#endif
+
     // Set up reports.  This must happen after the DAG is finalized so
     // that the report startup trigger can be scheduled
-    this->setupReports_();
+    if (!reports_setup) {
+        setupReports_(nullptr);
+    }
 
     framework_finalized_ = true;
     report_repository_->postFinalizeFramework();
+
+#if SIMDB_ENABLED
+    for (auto app_mgr : app_mgrs)
+    {
+        app_mgr->postInit(argc_, argv_);
+        app_mgr->initializePipelines();
+        app_mgr->openPipelines();
+    }
+#endif
 }
 
 void Simulation::run(uint64_t run_time)
@@ -825,6 +958,13 @@ void Simulation::run(uint64_t run_time)
         // Write reports
         saveReports();
     }
+
+#if SIMDB_ENABLED
+    for (auto app_mgr : getAppManagers())
+    {
+        app_mgr->postSimLoopTeardown();
+    }
+#endif
 
     if(eptr == std::exception_ptr()){
         // Dump debug if there was no error and the policy is to always dump.
@@ -954,6 +1094,8 @@ void Simulation::saveReports()
         }
         std::cout << summary_fmt << std::endl;;
     }
+
+    report_repository_->saveReports();
 
 #ifdef SPARTA_TCMALLOC_SUPPORT
     if (memory_profiler_) {
@@ -1342,7 +1484,7 @@ void Simulation::validateDescriptorCanBeAdded_(
     }
 }
 
-void Simulation::setupReports_()
+void Simulation::setupReports_(ReportStatsCollector* collector)
 {
     validateReportDescriptors_(rep_descs_);
 
@@ -1365,7 +1507,7 @@ void Simulation::setupReports_()
         }
 
         sparta::ReportRepository::DirectoryHandle directoryH =
-            report_repository_->createDirectory(rd);
+            report_repository_->createDirectory(rd, collector);
 
         size_t idx = 0;
         for(sparta::TreeNode* r : roots){

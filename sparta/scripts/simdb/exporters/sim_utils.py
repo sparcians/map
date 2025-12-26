@@ -4,7 +4,7 @@ class SimulationInfo:
     @classmethod
     def GetHeaderPairs(cls, db_conn):
         cursor = db_conn.cursor()
-        cmd = "SELECT HeaderName, HeaderValue FROM SimulationInfoHeaderPairs"
+        cmd = "SELECT HeaderName, HeaderValue FROM SimulationInfoHeaderPairs WHERE HeaderName != 'Other'"
         cursor.execute(cmd)
 
         header_pairs = []
@@ -25,6 +25,22 @@ class SimulationInfo:
 
             # out << p.second << line_end;
             out.write(f"{p[1]}{line_end}")
+
+        # if(other.size() > 0){
+        #     o << line_start << "Other:" << line_end;
+        #     for(const std::string& oi : other){
+        #         o << line_start << "  " << oi << line_end;
+        #     }
+        # }
+        cmd = "SELECT HeaderValue FROM SimulationInfoHeaderPairs WHERE HeaderName == 'Other'"
+        cursor = db_conn.cursor()
+        cursor.execute(cmd)
+
+        others = cursor.fetchall()
+        if others:
+            out.write(f"{line_start}Other:{line_end}")
+            for row in others:
+                out.write(f"{line_start}  {row[0]}{line_end}")
 
 def GetSimInfo(cursor):
     cmd = "SELECT SimName, SimVersion, SpartaVersion, ReproInfo FROM SimulationInfo"

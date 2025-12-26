@@ -28,6 +28,11 @@
 
 namespace YP = YAML; // Prevent collision with YAML class in ConfigParser namespace.
 
+namespace simdb {
+    class AppManager;
+    class DatabaseManager;
+}
+
 namespace sparta {
 
 class Clock;
@@ -164,6 +169,21 @@ public:
 
     //! \brief Returns the simulation's scheduler
     const sparta::Scheduler * getScheduler() const { return scheduler_; }
+
+    //! \brief Returns all SimDB application managers
+    std::vector<simdb::AppManager*> getAppManagers();
+
+    //! \brief Returns all SimDB database managers
+    std::vector<simdb::DatabaseManager*> getDbManagers();
+
+    //! \brief Get an app manager for a specific database file
+    simdb::AppManager* getAppManager(const std::string & db_file = "sparta.db") const;
+
+    //! \brief Get a database manager for a specific database file
+    simdb::DatabaseManager* getDbManager(const std::string & db_file = "sparta.db") const;
+
+    //! \brief Returns all database files managed by this simulation
+    std::vector<std::string> getDatabaseFiles() const;
 
     /*!
      * \brief Returns whether or not the simulator was configured using a final
@@ -685,7 +705,7 @@ protected:
      * \brief Sets up all reports in this simulation. This can be called during
      * finalization or deferred until later.
      */
-    void setupReports_();
+    void setupReports_(ReportStatsCollector* collector);
 
     /*!
      * \brief In the case where a comma-separated list of file formats was
@@ -958,6 +978,33 @@ private:
      *\brief Run controller interface
      */
     std::unique_ptr<control::TemporaryRunControl> rc_;
+
+    /*!
+     * \brief Create enabled SimDB apps during framework finalization.
+     */
+    void createSimDbApps_();
+    int argc_ = 0;
+    char** argv_ = nullptr;
+
+    /*!
+     * \brief SimDB instances with the associated AppManager.
+     */
+    struct SimDbManagers
+    {
+        std::shared_ptr<simdb::DatabaseManager> db_mgr;
+        std::shared_ptr<simdb::AppManager> app_mgr;
+
+        SimDbManagers(std::shared_ptr<simdb::DatabaseManager> db_mgr,
+                      std::shared_ptr<simdb::AppManager> app_mgr)
+            : db_mgr(db_mgr)
+            , app_mgr(app_mgr)
+        {}
+    };
+
+    /*!
+     * \brief Db/App managers, keyed by database filename.
+     */
+    std::map<std::string, std::shared_ptr<SimDbManagers>> simdb_managers_;
 };
 
 } // namespace app

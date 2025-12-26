@@ -104,12 +104,18 @@ namespace sparta
             // Set a payload for a delayed delivery
             void setPayload_(const DataT & pl) {
                 sparta_assert(scheduled_ == false);
-                payload_ = pl;
+                payload_ = new (&payload_storage_) DataT(pl);
+            }
+
+            // Destroy payload
+            void destroyPayload_() {
+                sparta_assert(scheduled_ == false);
+                std::destroy_at(payload_);
             }
 
             // Get a payload for a delayed delivery
             const DataT & getPayload_() const {
-                return payload_;
+                return *payload_;
             }
 
 
@@ -127,13 +133,14 @@ namespace sparta
                             << parent_->name_ << " to handler: "
                             << target_consumer_event_handler_.getName());
                 scheduled_ = false;
-                target_consumer_event_handler_((const void*)&payload_);
+                target_consumer_event_handler_((const void*)payload_);
                 reclaim_();
             }
 
             PhasedPayloadEvent<DataT> * parent_ = nullptr;
             const SpartaHandler         target_consumer_event_handler_;
-            DataT                       payload_;
+            DataT *                     payload_;
+            alignas(DataT) std::byte    payload_storage_[sizeof(DataT)];
             typename ProxyInflightList::iterator loc_;
             bool scheduled_ = false;
             bool cancelled_ = false;
@@ -178,9 +185,7 @@ namespace sparta
             if (SPARTA_EXPECT_FALSE(pl_location == inflight_pl_.end())) {
                 return;
             }
-            if constexpr(MetaStruct::is_any_pointer<DataT>::value) {
-                (*pl_location)->setPayload_(nullptr);
-            }
+            (*pl_location)->destroyPayload_();
             free_pl_[free_idx_++] = *pl_location;
             inflight_pl_.erase(pl_location);
             pl_location = inflight_pl_.end();
@@ -216,7 +221,11 @@ namespace sparta
         }
 
         //! Destroy!
-        virtual ~PhasedPayloadEvent() {}
+        virtual ~PhasedPayloadEvent() {
+            for(PayloadDeliveringProxy * proxy : inflight_pl_) {
+                std::destroy_at(proxy->payload_);
+            }
+        }
 
         //! No assignments, no copies
         PhasedPayloadEvent<DataT> & operator=(const PhasedPayloadEvent<DataT> &) = delete;

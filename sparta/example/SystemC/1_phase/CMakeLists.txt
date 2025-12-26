@@ -2,19 +2,18 @@ project(SYSTEMC_EXAMPLE)
 
 include (../ExamplesMacros.cmake)
 
-if(SYSTEMC_SUPPORT)
+if(SYSTEMC_SUPPORT AND TLM_EXAMPLES_DIR)
 
-  set (TLM_EXAMPLES_DIR $ENV{SYSTEMC_HOME}/examples/tlm)
   if (NOT EXISTS ${TLM_EXAMPLES_DIR})
-    message (STATUS "TLM examples directory NOT found.  Will not build SysC example: sparta/example/SystemC")
+    message (FATAL_ERROR "TLM examples directory NOT found.  Please set -DTLM_EXAMPLES_DIR=/path/to/examples/tlm")
   else()
-    message (STATUS "TLM examples directory: ${TLM_EXAMPLES_DIR}")
+    message (STATUS "TLM example 1_phase enabled")
 
     add_executable(sparta_sysc_model_1_phase
       ../common/SpartaSystemCSimulator.cpp
       ../common/systemc_example_top.cpp
 
-     ../common/sparta-target/SpartaMemory.cpp
+      ../common/sparta-target/SpartaMemory.cpp
       sparta-target/SpartaTLMTargetGasket.cpp
 
       # From the TLM examples
@@ -25,7 +24,7 @@ if(SYSTEMC_SUPPORT)
       ${TLM_EXAMPLES_DIR}/common/src/memory.cpp
 
       ../common/sc_main.cpp
-      )
+    )
 
     sparta_application(sparta_sysc_model_1_phase)
     target_link_libraries (sparta_sysc_model_1_phase SystemC::systemc)
@@ -43,10 +42,12 @@ if(SYSTEMC_SUPPORT)
       ../common/
       ../common/sparta-target/
 
-      )
+    )
 
     sparta_named_test(sparta_sys_phase1_tlm sparta_sysc_model_1_phase)
 
   endif()
 
+else()
+  message (STATUS "TLM 1_phase example disabled (TLM_EXAMPLES_DIR not set)")
 endif()

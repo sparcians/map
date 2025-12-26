@@ -35,16 +35,12 @@
 
 namespace sparta::app {
     class SimulationConfiguration;
+    class ReportStatsCollector;
 }  // namespace sparta::app
 
 namespace sparta::trigger {
     class SkippedAnnotatorBase;
 }  // namespace sparta::trigger
-
-namespace simdb {
-    class CollectionPoint;
-    class DatabaseManager;
-}  // namespace simdb
 
 namespace sparta {
 
@@ -194,34 +190,20 @@ namespace sparta {
             std::string orig_dest_file_;
 
             /*!
-             * \brief SimDB instance owned by ReportRepository.
+             * \brief Report stats collector for SimDB.
              */
-            simdb::DatabaseManager* db_mgr_ = nullptr;
+            ReportStatsCollector* collector_ = nullptr;
 
             /*!
-             * \brief Cache the Scheduler so we know the current tick for every
-             * call to simdb::CollectionMgr::sweep().
+             * \brief Set to false only when the simulation was run with
+             * --disable-legacy-reports --enable-simdb-reports.
+             * Note that the intended use for writing both legacy and
+             * SimDB reports is to allow for a transition period
+             * where users can migrate to the new SimDB reports,
+             * using a provided comparison script to verify backwards
+             * compatibility.
              */
-            const Scheduler* scheduler_ = nullptr;
-
-            /*!
-             * \brief Stats for each report (collected_stat_t) are stored as pairs
-             * of a StatisticInstance and a simdb::CollectionPoint. The data value
-             * is retrieved from the StatisticInstance and written to the SimDB
-             * CollectionPoint.
-             */
-            using collected_stat_t = std::pair<const StatisticInstance*, std::shared_ptr<simdb::CollectionPoint>>;
-            std::vector<collected_stat_t> simdb_stats_;
-
-            /*!
-             * \brief Write all metadata about the given report (and its subreports
-             * and statistics) to SimDB.
-             */
-            void configSimDbReport_(
-                const Report* r,
-                std::unordered_set<std::string> & visited_stats,
-                const int report_desc_id = 0,
-                const int parent_report_id = 0);
+            bool legacy_reports_enabled_ = true;
 
             /*!
              * \brief Go through the SimDB collection system and "activate" all of our
@@ -395,16 +377,9 @@ namespace sparta {
             std::shared_ptr<statistics::StreamNode> createRootStatisticsStream();
 
             /*!
-             * \brief Write all metadata about our report (and its subreports
-             * and statistics) to SimDB.
-             * 
-             * \return Returns the database ID of the report descriptor in the 
-             * ReportDescriptors table. Returns 0 if:
-             *    - SIMDB_ENABLED is false
-             *    - this descriptor is not enabled
-             *    - this descriptor has no reports
+             * \brief Get ready for SimDB report collection.
              */
-            int configSimDbReports(simdb::DatabaseManager* db_mgr, RootTreeNode* root);
+            bool configSimDbReports(app::ReportStatsCollector* collector);
 
             //! \brief Report descriptors may be triggered to stop early - ensure no
             //! further updates are written to disk
@@ -490,6 +465,24 @@ namespace sparta {
             }
 
             /*!
+             * \brief In MAP v2.1, we provide report systems for both legacy reports
+             * and SimDB-exported reports. We allow using both at the same time in
+             * order to validate the SimDB reports for backwards compatibility.
+             *
+             * This function is called when these two command line options are used:
+             *   --enable-simdb-reports --disable-legacy-reports
+             *
+             * Using "--disable-legacy-reports" in MAP v2.1 is akin to saying "I have
+             * verified that the SimDB reports are the same and I only want to use
+             * SimDB now".
+             *
+             * This method will be removed in a future release.
+             */
+            void disableLegacyReports() {
+                legacy_reports_enabled_ = false;
+            }
+
+            /*!
              * \brief Saves all of the instantiations whose formatters do not support
              * 'update' to their respective
              * destinations. Returns the number of reports written in full in this call
@@ -530,6 +523,11 @@ namespace sparta {
              * written. After simulation, reports are appended to these files
              */
             void clearDestinationFiles(const Simulation& sim);
+
+            /*!
+             * \brief Called when the ReportRepository is shutting down.
+             */
+            void teardown();
 
             /*!
              * \brief Returns the usage count (incremented by addInstantiation)

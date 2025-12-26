@@ -99,8 +99,9 @@ namespace sparta
 
         public:
             DataPointer() { }
+            ~DataPointer() { }
 
-            DataPointer(DataPointer &&orig) {
+            DataPointer(DataPointer &&orig) noexcept {
                 ::memcpy(&object_memory_, &orig.object_memory_, sizeof(object_memory_));
                 data = reinterpret_cast<value_type*>(&object_memory_);
             }

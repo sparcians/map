@@ -61,7 +61,7 @@ endif ()
 
 # Find RapidJSON
 find_package (RapidJSON 1.1 REQUIRED)
-include_directories (SYSTEM ${RapidJSON_INCLUDE_DIRS})
+include_directories (SYSTEM ${RAPIDJSON_INCLUDE_DIRS} ${RapidJSON_INCLUDE_DIRS})
 message (STATUS "Using RapidJSON CPP ${RapidJSON_VERSION}")
 
 # Find zlib
@@ -69,9 +69,12 @@ find_package(ZLIB REQUIRED)
 include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 message (STATUS "Using zlib ${ZLIB_VERSION_STRING}")
 
+# Find PThreads, etc
+find_package(Threads REQUIRED)
+
 # Populate the Sparta_LIBS variable with the required libraries for
 # basic Sparta linking
-set (Sparta_LIBS sparta yaml-cpp::yaml-cpp ZLIB::ZLIB pthread
+set (Sparta_LIBS sparta yaml-cpp::yaml-cpp ZLIB::ZLIB Threads::Threads
   Boost::date_time Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
 
 # Link against sqlite3 and hdf5 if SimDB is enabled
@@ -89,10 +92,46 @@ else ()
   message (STATUS "Skipping SQLite3 and HDF5 -- SimDB is disabled")
 endif ()
 
+# If HDF5 is built with MPI support, we also need to add the MPI include dirs and link against the MPI library
+if(HDF5_IS_PARALLEL)
+    find_package(MPI REQUIRED COMPONENTS CXX)
+    include_directories (SYSTEM ${MPI_CXX_INCLUDE_DIRS})
+    list(APPEND Sparta_LIBS MPI::MPI_CXX)
+    message (STATUS "Using MPI ${MPI_CXX_VERSION}")
+endif()
+
 # On Linux we need to link against rt as well
 if (NOT APPLE)
     list(APPEND Sparta_LIBS rt)
 endif ()
+
+# Setup options for valgrind testing.
+if(NOT APPLE)
+  find_program(VALGRIND_TOOL valgrind)
+  if(VALGRIND_TOOL)
+    set(VALGRIND_REGRESS_ENABLED TRUE)
+    message(STATUS "Valgrind regression enabled")
+  else()
+    set(VALGRIND_REGRESS_ENABLED FALSE)
+    message(STATUS "Valgrind regression disabled")
+  endif()
+endif()
+
+if(VALGRIND_REGRESS_ENABLED)
+  set(VALGRIND_OPTS
+    "--error-exitcode=5"
+    "--leak-check=full"
+    "--show-reachable=yes"
+    "--undef-value-errors=yes"
+    "--suppressions=${SPARTA_BASE}/test/valgrind_leakcheck.supp"
+    "--soname-synonyms=somalloc=NONE"
+    )
+endif()
+
+# Define this variable whether or not we have enabled valgrind testing. This ensures valid
+# ctest commands, e.g. ctest -LE ${VALGRIND_TEST_LABEL} -j${NUM_CORES} --test-action test
+# which cannot parse an empty label after -LE
+set(VALGRIND_TEST_LABEL valgrind_test)
 
 #
 # Python support
@@ -113,16 +152,25 @@ endif ()
 # SystemC support.  This will enable/disable Sparta Scheduler support
 option (COMPILE_WITH_SYSTEMC "Compile in SystemC support" OFF)
 if (COMPILE_WITH_SYSTEMC)
-  find_package(SystemCLanguage HINTS ENV{SYSTEMC_HOME})
+  find_package(SystemCLanguage 2.3 HINTS ENV{SYSTEMC_HOME})
   if (SystemCLanguage_FOUND)
     if (NOT ${SystemC_CXX_STANDARD} EQUAL ${CMAKE_CXX_STANDARD})
       message (FATAL_ERROR "SystemC was not built with the C++ standard (${SystemC_CXX_STANDARD}) required by Sparta (${CMAKE_CXX_STANDARD})")
     endif ()
+
     message (STATUS "SystemC enabled: ${SystemCLanguage_VERSION}")
+    if (${SystemCLanguage_VERSION} VERSION_LESS_EQUAL "2.3")
+      message (WARNING "SystemC version is not 2.3.  Sparta was tested with 2.3")
+    endif()
+
+    if (${SystemCLanguage_VERSION} VERSION_GREATER_EQUAL "3")
+      message (WARNING "SystemC version is not 2.3.  Sparta was tested with 2.3")
+    endif()
+
     set (SYSTEMC_SUPPORT True)
     add_definitions(-DSYSTEMC_SUPPORT)
   else ()
-    message (STATUS "SystemC not found -- disabling tests/examples")
+    message (FATAL_ERROR "SystemC was not found")
   endif ()
 else()
   message(STATUS "SystemC support disabled")

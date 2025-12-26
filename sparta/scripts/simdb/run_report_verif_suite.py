@@ -10,6 +10,8 @@ import glob
 import json
 import sys
 import io
+import shlex
+from compare_utils import *
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sparta_dir = os.path.dirname(os.path.dirname(script_dir))
@@ -25,7 +27,13 @@ parser.add_argument("--force", action="store_true", help="Force overwrite of the
 parser.add_argument("--serial", action="store_true", help="Run tests serially instead of in parallel.")
 parser.add_argument("--skip", nargs='+', default=[], help="Skip the specified tests.")
 parser.add_argument("--test-only", nargs='+', default=[], help="Run only the specified test(s).")
+parser.add_argument("--v2-exact", action="store_true", help="Use exact comparison against MAP v2 for report contents (e.g. 0.00082 != 8.2e-4).")
+parser.add_argument("--fail-fast", action="store_true", help="Immediately stop the tests as soon as any fail. Must be used with --serial.")
 args = parser.parse_args()
+
+if args.fail_fast and not args.serial:
+    # Returns exit code 2
+    parser.error("--fail-fast can only be used with --serial")
 
 # Overwrite the results directory since each test runs in its own tempdir.
 args.results_dir = os.path.abspath(args.results_dir)
@@ -154,15 +162,19 @@ class SpartaTest:
                 dst = os.path.join(self.test_dir, os.path.basename(src))
                 SymlinkTree(src, dst)
 
-        # Ensure '--simdb-file sparta.db' is present, or add it, or replace it.
         sim_args = self.sim_cmd.split()
-        if "--simdb-file" in sim_args:
-            simdb_index = sim_args.index("--simdb-file")
-            assert simdb_index + 1 < len(sim_args)
-            sim_args[simdb_index + 1] = "sparta.db"
-        else:
-            sim_args.append("--simdb-file")
-            sim_args.append("sparta.db")
+
+        yaml_replacements = {}
+        if "--report-yaml-replacements" in sim_args:
+            tokens = shlex.split(self.sim_cmd)
+            idx = tokens.index("--report-yaml-replacements") + 1
+
+            # Gather arg/val pairs until the next option (starts with "--")
+            while idx < len(tokens) and not tokens[idx].startswith("--"):
+                key = tokens[idx]
+                val = tokens[idx + 1] if idx + 1 < len(tokens) else None
+                yaml_replacements[key] = val
+                idx += 2
 
         # Ensure '--enable-simdb-reports' is present.
         if "--enable-simdb-reports" not in sim_args:
@@ -179,7 +191,7 @@ class SpartaTest:
         # continues all the way to report comparison.
         if not os.path.exists("sparta.db"):
             self.__WriteToTestLog("sparta.db not found. Test cannot continue.")
-            return
+            return False
 
         # Get the expected Sparta-generated reports from "recursively" parsing the
         # YAML files, starting with the sim command, looking for all reports of the
@@ -231,6 +243,9 @@ class SpartaTest:
         for yaml_file in visited_yamls:
             with open(FindYamlFile(yaml_file), 'r') as fin:
                 for line in fin.readlines():
+                    for word, replacement in yaml_replacements.items():
+                        line = line.replace('%'+word+'%', replacement)
+
                     match = re.search(r'dest_file:\s*([\w.-]+)', line)
                     if match:
                         dest_file = match.group(1)
@@ -244,7 +259,7 @@ class SpartaTest:
         # We cannot continue the test if we cannot find the baseline reports.
         if not baseline_reports:
             self.__WriteToTestLog("No baseline reports found.")
-            return
+            return False
 
         failed = False
         for report in baseline_reports:
@@ -254,7 +269,7 @@ class SpartaTest:
 
         if failed:
             self.__WriteToTestLog(f"Baseline report(s) not found.")
-            return
+            return False
 
         # Create the 'baseline_reports' directory and move the baseline reports there.
         os.makedirs("baseline_reports")
@@ -265,46 +280,20 @@ class SpartaTest:
 
         # Export all reports from SimDB into the 'simdb_reports' directory.
         export_cmd = "python3 " + os.path.join(script_dir, "simdb_export.py")
-        export_cmd += " --db-file sparta.db"
         export_cmd += " --export-dir simdb_reports"
         export_cmd += " --force"
+        if args.v2_exact:
+            export_cmd += " --v2"
+        export_cmd += " sparta.db"
 
         self.__WriteToTestLog(f"Exporting SimDB reports with command: {export_cmd}")
         subprocess.run(export_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # Compare the baseline reports to the SimDB reports.
-        passing_reports = []
-        failing_reports = []
-        unsupported_reports = []
-
-        self.__WriteToTestLog("Comparing baseline reports to SimDB reports.")
-        for report in baseline_reports:
-            baseline_report = os.path.join("baseline_reports", report)
-            simdb_report = os.path.join("simdb_reports", report)
-
-            if not os.path.exists(simdb_report):
-                self.__WriteToTestLog(f"SimDB report {report} not found.")
-                failing_reports.append(report)
-                continue
-
-            # Compare the two reports.
-            comparator = GetComparator(report)
-            if comparator is None:
-                self.__WriteToTestLog(f"Report {report} is not supported for comparison.")
-                unsupported_reports.append(report)
-                continue
-
-            if not comparator.Compare(baseline_report, simdb_report):
-                self.__WriteToTestLog(f"Baseline report {report} does not match SimDB report. Test will fail.")
-                failing_reports.append(report)
-            else:
-                self.__WriteToTestLog(f"Baseline report {report} matches SimDB report.")
-                passing_reports.append(report)
-
-        num_passed = len(passing_reports)
-        total_comparisons = num_passed + len(failing_reports)
-        msg = f"Report comparison complete: {num_passed} of {total_comparisons} reports passed."
-        self.__WriteToTestLog(msg)
+        compare_results = RunComparison("baseline_reports", "simdb_reports", baseline_reports, self.logout, args.v2_exact)
+        passing_reports = compare_results["passing"]
+        failing_reports = compare_results["failing"]
+        unsupported_reports = compare_results["unsupported"]
 
         if unsupported_reports:
             msg = "Unsupported reports:\n"
@@ -349,10 +338,29 @@ class SpartaTest:
                 if passfail == "FAIL":
                     shutil.copy("sparta.db", os.path.join(report_dir, "sparta.db"))
 
+                    if extension == "json":
+                        try:
+                            from deepdiff import DeepDiff
+                            # If DeepDiff is available, we can provide a more detailed diff.
+                            with open(baseline_report, "r", encoding="utf-8") as bf:
+                                with open(simdb_report, "r", encoding="utf-8") as sf:
+                                    baseline_data = json.load(bf)
+                                    simdb_data = json.load(sf)
+                                    diff = DeepDiff(baseline_data, simdb_data, ignore_order=True, ignore_type_in_groups=True)
+                                    if diff:
+                                        with open(os.path.join(report_dir, "diff.json"), "w") as df:
+                                            df.write(diff.to_json(indent=4))
+                        except ImportError:
+                            with open(os.path.join(report_dir, "diff.json"), "w") as df:
+                                df.write("DeepDiff not available. No detailed diff provided.\n")
+
         # Delete this test's RUNNING directory.
         running_test_dir = os.path.join(args.results_dir, "RUNNING", self.test_name)
         if os.path.exists(running_test_dir):
             shutil.rmtree(running_test_dir)
+
+        success = not failing_reports
+        return success
 
     def __WriteToTestLog(self, text):
         self.logout.write(text.rstrip() + "\n")
@@ -360,75 +368,6 @@ class SpartaTest:
     def __CopyTestLog(self, report_dir):
         with open(os.path.join(report_dir, "test.log"), "w") as fout:
             fout.write(self.logout.getvalue())
-
-def GetComparator(dest_file):
-    extension = os.path.splitext(dest_file)[1]
-    if extension in ('.txt', '.text'):
-        return TextReportComparator()
-    if extension in ('.json'):
-        return JSONReportComparator()
-    if extension in ('.csv'):
-        return CSVReportComparator()
-
-    return None
-
-class Comparator:
-    def __init__(self):
-        pass
-
-    def NormalizeText(self, text):
-        # Remove leading/trailing whitespace and replace all internal whitespace with a single space
-        return re.sub(r'\s+', ' ', text.strip())
-
-class TextReportComparator(Comparator):
-    def __init__(self):
-        Comparator.__init__(self)
-
-    def Compare(self, baseline_report, simdb_report):
-        with open(baseline_report, "r") as bf, open(simdb_report, "r") as ef:
-            baseline_text = self.NormalizeText(bf.read())
-            export_text = self.NormalizeText(ef.read())
-
-        return baseline_text == export_text
-
-class JSONReportComparator(Comparator):
-    def __init__(self):
-        Comparator.__init__(self)
-
-    def Compare(self, baseline_report, simdb_report):
-        with open(baseline_report, "r", encoding="utf-8") as bf, open(simdb_report, "r", encoding="utf-8") as ef:
-            try:
-                baseline_data = json.load(bf)
-            except json.JSONDecodeError as e:
-                return False
-
-            try:
-                export_data = json.load(ef)
-            except json.JSONDecodeError as e:
-                return False
-
-        return baseline_data == export_data
-
-class CSVReportComparator(Comparator):
-    def __init__(self):
-        Comparator.__init__(self)
-
-    def Compare(self, baseline_report, simdb_report):
-        with open(baseline_report, "r") as bf, open(simdb_report, "r") as ef:
-            bf_lines = bf.readlines()
-            ef_lines = ef.readlines()
-
-            if len(bf_lines) != len(ef_lines):
-                return False
-
-            for i in range(len(bf_lines)):
-                bf_line = self.NormalizeText(bf_lines[i])
-                ef_line = self.NormalizeText(ef_lines[i])
-
-                if bf_line != ef_line:
-                    return False
-
-        return True
 
 # Parse all sparta_copy() files and all sparta_recursive_copy() dirs for each test.
 copy_files = []
@@ -503,7 +442,10 @@ else:
         sys.stdout.write('\033[2K\r')
         print(f"--- Test {i+1} of {len(sparta_tests)}:\t{test.test_name}", end="\r")
         try:
-            test.RunTest()
+            success = test.RunTest()
+            if not success and args.fail_fast:
+                print (f"Early exit due to test failure: {test.test_name}")
+                exit(1)
         except Exception as e:
             pass
         sys.stdout.flush()

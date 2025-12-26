@@ -6,6 +6,7 @@
 #include <sstream>
 #include <stack>
 #include <queue>
+#include <unordered_set>
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/functional/ArchData.hpp"
@@ -66,8 +67,9 @@ namespace sparta::serialization::checkpoint
     {
     public:
 
-        typedef DeltaCheckpoint<storage::VectorStorage> checkpoint_type;
-        //typedef DeltaCheckpoint<storage::StringStreamStorage> checkpoint_type;
+        using checkpoint_type = DeltaCheckpoint<storage::VectorStorage>;
+        using checkpoint_ptr = std::unique_ptr<checkpoint_type>;
+        using checkpoint_ptrs = std::vector<checkpoint_ptr>;
 
         //! \name Construction & Initialization
         //! @{
@@ -89,6 +91,29 @@ namespace sparta::serialization::checkpoint
          */
         FastCheckpointer(TreeNode& root, Scheduler* sched=nullptr) :
             Checkpointer(root, sched),
+            snap_thresh_(DEFAULT_SNAPSHOT_THRESH),
+            next_chkpt_id_(checkpoint_type::MIN_CHECKPOINT),
+            num_alive_checkpoints_(0),
+            num_alive_snapshots_(0),
+            num_dead_checkpoints_(0)
+        { }
+
+        /*!
+         * \brief FastCheckpointer Constructor
+         *
+         * \param roots TreeNodes at which checkpoints will be taken.
+         *              These cannot be changed later. These do not
+         *              necessarily need to be RootTreeNodes. Before
+         *              the first checkpoint is taken, these nodes must
+         *              be finalized (see
+         *              sparta::TreeNode::isFinalized). At this point,
+         *              the nodes do not need to be finalized
+         *
+         * \param sched Scheduler to read and restart on checkpoint restore (if
+         *              not nullptr)
+         */
+        FastCheckpointer(const std::vector<sparta::TreeNode*>& roots, Scheduler* sched=nullptr) :
+            Checkpointer(roots, sched),
             snap_thresh_(DEFAULT_SNAPSHOT_THRESH),
             next_chkpt_id_(checkpoint_type::MIN_CHECKPOINT),
             num_alive_checkpoints_(0),
@@ -138,6 +163,32 @@ namespace sparta::serialization::checkpoint
          */
         void setSnapshotThreshold(uint32_t thresh) noexcept {
             snap_thresh_ = thresh;
+        }
+
+        /*!
+         * \brief Computes and returns the memory usage by this checkpointer at
+         * this moment including any framework overhead
+         * \note This is an approxiation and does not include some of
+         * minimal dynamic overhead from stl containers.
+         */
+        uint64_t getTotalMemoryUse() const noexcept override {
+            uint64_t mem = 0;
+            for(auto& cp : chkpts_){
+                mem += cp.second->getTotalMemoryUse();
+            }
+            return mem;
+        }
+
+        /*!
+         * \brief Computes and returns the memory usage by this checkpointer at
+         * this moment purely for the checkpoint state being held
+         */
+        uint64_t getContentMemoryUse() const noexcept override {
+            uint64_t mem = 0;
+            for(auto& cp : chkpts_){
+                mem += cp.second->getContentMemoryUse();
+            }
+            return mem;
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -233,18 +284,6 @@ namespace sparta::serialization::checkpoint
         }
 
         /*!
-         * \brief Queries a specific checkpoint by ID
-         */
-        bool checkpointExists(chkpt_id_t id) {
-            bool exists = false;
-            checkpoint_type* d = findCheckpoint_(id);
-            if(d){
-                exists = true;
-            }
-            return exists;
-        }
-
-        /*!
          * \brief Gets all checkpoints taken at tick t on any timeline.
          * \param t Tick number at which checkpoints should found.
          * \return vector of valid checkpoint IDs (never
@@ -252,7 +291,7 @@ namespace sparta::serialization::checkpoint
          * \note Makes a new vector of results. This should not be called in the
          * critical path.
          */
-        std::vector<chkpt_id_t> getCheckpointsAt(tick_t t) const override {
+        std::vector<chkpt_id_t> getCheckpointsAt(tick_t t) override {
             std::vector<chkpt_id_t> results;
             for(auto& p : chkpts_){
                 const Checkpoint* cp = p.second.get();
@@ -272,7 +311,7 @@ namespace sparta::serialization::checkpoint
          * \note Makes a new vector of results. This should not be called in the
          * critical path.
          */
-        std::vector<chkpt_id_t> getCheckpoints() const override {
+        std::vector<chkpt_id_t> getCheckpoints() override {
             std::vector<chkpt_id_t> results;
             for(auto& p : chkpts_){
                 const Checkpoint* cp = p.second.get();
@@ -328,7 +367,7 @@ namespace sparta::serialization::checkpoint
          * \note Makes a new vector of results. This should not be called in the
          * critical path.
          */
-        std::deque<chkpt_id_t> getCheckpointChain(chkpt_id_t id) const override {
+        std::deque<chkpt_id_t> getCheckpointChain(chkpt_id_t id) override {
             std::deque<chkpt_id_t> results;
             if(!getHead()){
                 return results;
@@ -362,7 +401,7 @@ namespace sparta::serialization::checkpoint
          * checkpoint.
          */
         checkpoint_type* findLatestCheckpointAtOrBefore(tick_t tick,
-                                                        chkpt_id_t from) override {
+                                                        chkpt_id_t from) {
             checkpoint_type* d = findCheckpoint_(from);
             if(!d){
                 throw CheckpointError("There is no checkpoint with ID ") << from;
@@ -379,13 +418,45 @@ namespace sparta::serialization::checkpoint
             return d;
         }
 
+        /*!
+         * \brief Finds a checkpoint by its ID
+         * \param id ID of checkpoint to find. Guaranteed not to be flagged as
+         * deleted
+         * \return Checkpoint with ID of \a id if found or nullptr if not found
+         */
+        const checkpoint_type* findCheckpoint(chkpt_id_t id) noexcept {
+            auto it = chkpts_.find(id);
+            if (it != chkpts_.end()) {
+                return static_cast<checkpoint_type*>(it->second.get());
+            }
+            return nullptr;
+        }
 
         /*!
-         * \brief Gets a checkpoint through findCheckpoint interface casted to
-         * the type of Checkpoint subclass used by this class.
+         * \brief Tests whether this checkpoint manager has a checkpoint with
+         * the given id.
+         * \return True if id refers to a checkpoint held by this checkpointer
+         * and false if not. If id == Checkpoint::UNIDENTIFIED_CHECKPOINT,
+         * always returns false
          */
-        checkpoint_type* findInternalCheckpoint(chkpt_id_t id) {
-            return static_cast<checkpoint_type*>(findCheckpoint_(id));
+        bool hasCheckpoint(chkpt_id_t id) noexcept override {
+            return chkpts_.find(id) != chkpts_.end();
+        }
+
+        /*!
+         * \brief Returns IDs of the checkpoints immediately following the given checkpoint.
+         */
+        std::vector<chkpt_id_t> getNextIDs(chkpt_id_t id) override final {
+            std::vector<chkpt_id_t> next_ids;
+            if (const auto chkpt = findCheckpoint_(id)) {
+                for (const auto next : chkpt->getNexts()) {
+                    const auto dcp = static_cast<checkpoint_type*>(next);
+                    if (!dcp->isFlaggedDeleted()) {
+                        next_ids.push_back(next->getID());
+                    }
+                }
+            }
+            return next_ids;
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -400,8 +471,53 @@ namespace sparta::serialization::checkpoint
          */
         std::string stringize() const override {
             std::stringstream ss;
-            ss << "<FastCheckpointer on " << getRoot().getLocation() << '>';
+            ss << "<FastCheckpointer on ";
+            for (size_t i = 0; i < getRoots().size(); ++i) {
+                TreeNode* root = getRoots()[i];
+                if (i != 0) {
+                    ss << ", ";
+                }
+                ss << root->getLocation();
+            }
+            ss << '>';
             return ss.str();
+        }
+
+        /*!
+         * \brief Dumps this checkpointer's flat list of checkpoints to an
+         * ostream with a newline following each checkpoint
+         * \param o ostream to dump to
+         */
+        void dumpList(std::ostream& o) override {
+            for(auto& cp : chkpts_){
+                o << cp.second->stringize() << std::endl;
+            }
+        }
+
+        /*!
+         * \brief Dumps this checkpointer's data to an ostream with a newline
+         * following each checkpoint
+         * \param o ostream to dump to
+         */
+        void dumpData(std::ostream& o) override {
+            for(auto& cp : chkpts_){
+                cp.second->dumpData(o);
+                o << std::endl;
+            }
+        }
+
+        /*!
+         * \brief Dumps this checkpointer's data to an
+         * ostream with annotations between each ArchData and a newline
+         * following each checkpoint description and each checkpoint data dump
+         * \param o ostream to dump to
+         */
+        void dumpAnnotatedData(std::ostream& o) override {
+            for(auto& cp : chkpts_){
+                o << cp.second->stringize() << std::endl;
+                cp.second->dumpData(o);
+                o << std::endl;
+            }
         }
 
         /*!
@@ -419,10 +535,228 @@ namespace sparta::serialization::checkpoint
             }
         }
 
+        /*!
+         * \brief When satisfied with the outstanding/uncommitted checkpoints, call this
+         * method to commit them to the DiskT object.
+         *
+         * \param force_new_head_chkpt If false, then this checkpoint chain:
+         *   S1 -> D1 -> D2 -> D3 -> S2 -> D4 -> D5 (current)
+         *   Would result in this being saved to disk:
+         *   S1 -> D1 -> D2 -> D3
+         *   While the S2 checkpoint becomes the new head checkpoint in memory,
+         *   and D4/D5 are retained in the FastCheckpointer.
+         *
+         *   If true, then everything from S1 to D5 will be saved to disk, and a new
+         *   head checkpoint S3 will be created in memory at the current tick.
+         */
+        template <typename DiskT>
+        void squashCurrentBranch(DiskT& disk, bool force_new_head_chkpt = false) {
+            auto disk_checkpoints = squashCurrentBranch_(force_new_head_chkpt);
+            if (!disk_checkpoints.empty()) {
+                disk.saveCheckpoints(std::move(disk_checkpoints));
+            }
+        }
+
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
     protected:
+
+        /*!
+         * \brief Squash the current branch and discard all those checkpoints
+         * that do not exist on the current branch. Returns the checkpoints
+         * that need to be saved to disk.
+         *
+         * \param force_new_head_chkpt See public method squashCurrentBranch()
+         */
+        checkpoint_ptrs squashCurrentBranch_(bool force_new_head_chkpt = false) {
+            if (!getCurrent_()) {
+                return {};
+            }
+
+            checkpoint_ptrs to_save;
+
+            // "Force new head checkpoint" means that we should release every
+            // checkpoint from the current checkpoint back to the head checkpoint,
+            // delete all remaining checkpoints on other branches, and retake the
+            // head checkpoint.
+            if (force_new_head_chkpt) {
+                auto current_id = getCurrentID();
+                auto chkpt_chain = getCheckpointChain(current_id);
+
+                // Checkpoint chains are returned from "right to left", i.e. the
+                // first id is the current checkpoint, and the last is the head
+                // checkpoint. Reverse this list so that we serialize the checkpoints
+                // to disk in the order they were created.
+                std::reverse(chkpt_chain.begin(), chkpt_chain.end());
+
+                for (auto id : chkpt_chain) {
+                    sparta_assert(hasCheckpoint(id));
+                    auto chkpt = std::move(chkpts_[id]);
+
+                    sparta_assert(num_alive_checkpoints_-- > 0);
+                    if (chkpt->isSnapshot()) {
+                        sparta_assert(num_alive_snapshots_-- > 0);
+                    }
+
+                    to_save.emplace_back(std::move(chkpt));
+                    chkpts_.erase(id);
+                }
+
+                for (auto& [id, chkpt] : chkpts_) {
+                    chkpt->flagDeleted();
+                }
+                chkpts_.clear();
+
+                createHead_();
+            }
+
+            // If we are not forcing a new head checkpoint, then we can only
+            // remove checkpoints along the current chain if there exists more
+            // than one snapshot. The most recent of these will become the new
+            // head checkpoint. Say we have these checkpoints:
+            //
+            //   S1 -> 2 -> 3 -> S2 -> 4 -> 5
+            //         |
+            //         | -> 6 -> S3 -> 7
+            //                    |
+            //                    8 -> 9
+            //
+            // If the current checkpoint is id 7, then the checkpoint chain is
+            //   S1 -> 2 -> 6 -> S3 -> 7
+            //
+            // And the restore chain is:
+            //   S3 -> 7
+            //
+            // Since the checkpoint chain (back to head) is different than
+            // the restore chain (back to the last snapshot), that means
+            // that we have at least two snapshots, and can therefore return
+            // the chain S1 -> 2 -> 6 for writing to disk, while retaining
+            // the chain S3 -> 7 and deleting everything else (uncommitted
+            // branches). Then set the new head checkpoint to S3.
+            //
+            // On the other hand, if our checkpoints are like this:
+            //
+            //   S1 -> 2 -> 3
+            //
+            // Then the checkpoint chain and restore chain are the same, and
+            // we only have one snapshot. We therefore can only remove checkpoints
+            // that are NOT along the checkpoint/restore chains, and there are
+            // no checkpoints returned to the caller for saving to disk, and
+            // the head checkpoint stays the same at S1.
+            else {
+                auto current_id = getCurrentID();
+                auto chkpt_chain = getCheckpointChain(current_id);
+                auto restore_chain = static_cast<checkpoint_type*>(getCurrent_())->getRestoreChain();
+
+                // We can speed up the comparison by just checking the chain lengths.
+                // If they are the same then we can only remove uncommitted branches.
+                if (chkpt_chain.size() == restore_chain.size()) {
+                    std::unordered_set<chkpt_id_t> to_keep(chkpt_chain.begin(), chkpt_chain.end());
+                    std::vector<chkpt_id_t> to_delete;
+                    for (auto& [id, chkpt] : chkpts_) {
+                        if (!to_keep.count(id)) {
+                            chkpt->flagDeleted();
+                            to_delete.emplace_back(id);
+                        }                        
+                    }
+
+                    for (auto id : to_delete) {
+                        auto chkpt = std::move(chkpts_[id]);
+
+                        sparta_assert(num_alive_checkpoints_-- > 0);
+                        if (chkpt->isSnapshot()) {
+                            sparta_assert(num_alive_snapshots_-- > 0);
+                        }
+
+                        chkpts_.erase(id);
+                    }
+
+                    // Sanity check
+                    sparta_assert(chkpts_.find(getHeadID()) != chkpts_.end());
+                    sparta_assert(static_cast<const checkpoint_type*>(getHead())->isSnapshot());
+                }
+
+                // If the chains are different, then we have at least two snapshots
+                // and can save all but the latest checkpoint window (snapshot plus
+                // deltas).
+                else {
+                    // Say the checkpoint chain is this (recall its first checkpoint
+                    // is the current/newest, i.e. in backwards order):
+                    //
+                    //   7 -> S3 -> 6 -> 2 -> S1
+                    //
+                    // And the restore chain is this (recall that its first checkpoint
+                    // is the most recent snapshot leading up to the current checkpoint):
+                    //
+                    //   S3 -> 7
+                    //
+                    // The algorithm goes like this:
+                    //   1) Reverse the checkpoint chain into e.g.
+                    //      S1 -> 2 -> 6 -> S3 -> 7
+                    //   2) Loop over the checkpoint chain, and any id not at
+                    //      the restore chain (stack) "top" should be added
+                    //      to the list of checkpoints we will save to disk.
+                    //      If the id is the same as the restore chain "top",
+                    //      then store the new head checkpoint if it is a full
+                    //      snapshot and pop() the stack.
+                    //   3) Delete all checkpoints that are neither saved to disk
+                    //      or left in the checkpointer (uncommitted branches).
+                    std::reverse(chkpt_chain.begin(), chkpt_chain.end());
+                    std::unordered_set<chkpt_id_t> to_keep;
+
+                    for (auto id : chkpt_chain) {
+                        if (id != restore_chain.top()->getID()) {
+                            auto chkpt = std::move(chkpts_[id]);
+
+                            sparta_assert(num_alive_checkpoints_-- > 0);
+                            if (chkpt->isSnapshot()) {
+                                sparta_assert(num_alive_snapshots_-- > 0);
+                            }
+
+                            to_save.emplace_back(std::move(chkpt));
+                            chkpts_.erase(id);
+                        } else {
+                            if (restore_chain.top()->isSnapshot()) {
+                                setHead_(restore_chain.top());
+                            }
+                            to_keep.insert(restore_chain.top()->getID());
+                            restore_chain.pop();
+
+                            if (restore_chain.empty()) {
+                                break;
+                            }
+                        }
+                    }
+
+                    std::vector<chkpt_id_t> to_delete;
+                    for (auto& [id, chkpt] : chkpts_) {
+                        if (!to_keep.count(id)) {
+                            to_delete.emplace_back(id);
+                        }
+                    }
+
+                    for (auto id : to_delete) {
+                        auto & chkpt = chkpts_[id];
+                        chkpt->flagDeleted();
+
+                        sparta_assert(num_alive_checkpoints_-- > 0);
+                        if (chkpt->isSnapshot()) {
+                            sparta_assert(num_alive_snapshots_-- > 0);
+                        }
+                    }
+
+                    for (auto id : to_delete) {
+                        chkpts_.erase(id);
+                    }
+                }
+            }
+
+            sparta_assert(getHead() != nullptr);
+            sparta_assert(getHeadID() != checkpoint_type::UNIDENTIFIED_CHECKPOINT);
+
+            return to_save;
+        }
 
         /*!
          * \brief Delete given checkpoint and all contiguous previous
@@ -461,7 +795,7 @@ namespace sparta::serialization::checkpoint
                     // This snapshot is needed later. Move to previous delta and work from there
                     d = static_cast<checkpoint_type*>(d->getPrev());
                 }else{
-                    return; // This delta is needed. Therefore  all preceeding deltas are needed
+                    return; // This delta is needed. Therefore all preceeding deltas are needed
                 }
             }
 
@@ -553,7 +887,7 @@ namespace sparta::serialization::checkpoint
          * returns nullptr.
          * \todo Faster lookup?
          */
-        checkpoint_type* findCheckpoint_(chkpt_id_t id) noexcept override {
+        checkpoint_type* findCheckpoint_(chkpt_id_t id) noexcept {
             auto itr = chkpts_.find(id);
             if (itr != chkpts_.end()) {
                 return static_cast<checkpoint_type*>(itr->second.get());
@@ -564,7 +898,7 @@ namespace sparta::serialization::checkpoint
         /*!
          * \brief const variant of findCheckpoint_
          */
-        const checkpoint_type* findCheckpoint_(chkpt_id_t id) const noexcept override {
+        const checkpoint_type* findCheckpoint_(chkpt_id_t id) const noexcept {
             auto itr = chkpts_.find(id);
             if (itr != chkpts_.end()) {
                 return static_cast<checkpoint_type*>(itr->second.get());
@@ -575,17 +909,15 @@ namespace sparta::serialization::checkpoint
         /*!
          * \brief Implements Checkpointer::dumpCheckpointNode_
          */
-        void dumpCheckpointNode_(const Checkpoint* chkpt, std::ostream& o) const override {
+        void dumpCheckpointNode_(const chkpt_id_t id, std::ostream& o) override {
             static std::string SNAPSHOT_NOTICE = "(s)";
-
-            // checkpoint_type is a known direct base class of Checkpoint
-            const checkpoint_type* cp = static_cast<const checkpoint_type*>(chkpt);
+            auto cp = findCheckpoint_(id);
 
             // Draw data for this checkpoint
             if(cp->isFlaggedDeleted()){
-                o << chkpt->getDeletedRepr();
+                o << cp->getDeletedRepr();
             }else{
-                o << chkpt->getID();
+                o << cp->getID();
             }
             // Show that this is a snapshot
             if(cp->isSnapshot()){
@@ -604,22 +936,20 @@ namespace sparta::serialization::checkpoint
                 tick = sched_->getCurrentTick();
             }
 
-            if(getHead()){
-                throw CheckpointError("Cannot create head at ")
-                    << tick << " because a head already exists in this checkpointer";
-            }
-            if(getRoot().isFinalized() == false){
-                CheckpointError exc("Cannot create a checkpoint until the tree is finalized. Attempting to checkpoint from node ");
-                exc << getRoot().getLocation() << " at tick ";
-                if(sched_){
-                    exc << tick;
-                }else{
-                    exc << "<no scheduler>";
+            for (auto root : getRoots()) {
+                if(root->isFinalized() == false){
+                    CheckpointError exc("Cannot create a checkpoint until the tree is finalized. Attempting to checkpoint from node ");
+                    exc << root->getLocation() << " at tick ";
+                    if(sched_){
+                        exc << tick;
+                    }else{
+                        exc << "<no scheduler>";
+                    }
+                    throw exc;
                 }
-                throw exc;
             }
 
-            checkpoint_type* dcp = new checkpoint_type(getRoot(), getArchDatas(), next_chkpt_id_++, tick, nullptr, true);
+            checkpoint_type* dcp = new checkpoint_type(getArchDatas(), next_chkpt_id_++, tick, nullptr, true);
             chkpts_[dcp->getID()].reset(dcp);
             setHead_(dcp);
             num_alive_checkpoints_++;
@@ -674,8 +1004,7 @@ namespace sparta::serialization::checkpoint
                 is_snapshot = prev->getDistanceToPrevSnapshot() >= getSnapshotThreshold();
             }
 
-            checkpoint_type* dcp = new checkpoint_type(getRoot(),
-                                                       getArchDatas(), // Created during createHead
+            checkpoint_type* dcp = new checkpoint_type(getArchDatas(), // Created during createHead
                                                        next_chkpt_id_++,
                                                        tick,
                                                        prev,
@@ -695,6 +1024,15 @@ namespace sparta::serialization::checkpoint
             return dcp->getID();
         }
 
+        /*!
+         * \brief All checkpoints sorted by ascending tick number (or
+         * equivalently ascending checkpoint ID since both are monotonically
+         * increasing)
+         *
+         * This map must still be explicitly torn down in reverse order by a
+         * subclass of Checkpointer
+         */
+        std::map<chkpt_id_t, checkpoint_ptr> chkpts_;
 
         /*!
          * \brief Snapshot generation threshold. Every n checkpoints in a chain

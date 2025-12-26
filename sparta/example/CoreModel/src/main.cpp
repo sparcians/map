@@ -77,6 +77,9 @@ int main(int argc, char **argv)
             show_factories = true;
         }
 
+        const std::string cores_info = "Num cores: " + std::to_string(num_cores);
+        sparta::SimulationInfo::getInstance().addOtherInfo(cores_info);
+
         // Create the simulator
         sparta::Scheduler scheduler;
         ExampleSimulator sim("core_topology_1",

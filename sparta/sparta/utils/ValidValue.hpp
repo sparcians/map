@@ -108,6 +108,25 @@ namespace utils
         }
 
         /**
+         * \brief Compare equal
+         * \param val The ValidValue to compare, asserts if this valid isn't valid
+         * \return true if equal
+         */
+        bool operator==(const ValidValue<T> & val) const {
+            sparta_assert(valid_ == true, "ValidValue is not valid for compare!");
+            return (value_ == val.value_);
+        }
+
+        /**
+         * \brief Compare not equal
+         * \param val The ValidValue to compare, asserts if this valid isn't valid
+         * \return true if not equal
+         */
+        bool operator!=(const ValidValue<T> & val) const {
+            return !operator==(val);
+        }
+
+        /**
          * \brief Is this value valid
          * \return true if valid
          */
@@ -160,6 +179,21 @@ namespace utils
          */
         void clearValid() {
             valid_ = false;
+        }
+
+        /**
+         * \brief Boost::serialization support
+         */
+        template <typename Archive>
+        void serialize(Archive & ar, const unsigned int /* version */) {
+            // The operator& here is a reader/writer for the member variable RHS.
+            // We should always read and write the valid_ flag, but only do the
+            // same for value_ when valid.
+            ar & valid_;
+            if (valid_)
+            {
+                ar & value_;
+            }
         }
 
     private:
