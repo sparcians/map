@@ -9,6 +9,10 @@ establishment is used to represent all of the components instantiated
 by Sparta as well as those components created by the modeler to build,
 connect, run, observe, and destroy the simulation.
 
+A "component" can be defined as the Rename block of a CPU model or at
+a higher level such as a DDR controller (which will contain
+sub-components).
+
 This chapter will go over the class structures used to build a running
 simulator.  The chapter will first introduce the modeler to the base
 classes used to make up a simulation environment then will show how to
@@ -611,6 +615,11 @@ namespace my_simulator
 ----
 namespace my_simulator
 {
+
+    MySimulator::MySimulator() {...}
+
+    void MySimulator::buildTree_() {...}
+
     void MySimulator::configureTree_()
     {
 
@@ -654,11 +663,93 @@ objects, and instruct them to instantiate the modeler's specific
 implementation of a `sparta::Unit`.
 
 After the modeler's components (instances of `sparta::Unit`) are
-created, the framework will automatically turn to binding those
-components and enters the <<bind>>.
+created, these components are essentially ready for execution.
+However, communication _between_ components (especially those with
+`sparta::Ports`) is not yet established.  These connections are
+performed in the next/final phase called the Bind Phase of simulation.
+
 
 ==== Bind Phase [[bind]]
 
+During this phase (called automatically during
+`Simulation::finalizeTree()`), components instantiated from the
+previous phase are now ready to be bound together.  This binding is
+only pertinent for those components that have `sparta::Port` objects
+or `sparta::Bus` objects that need to be connected.  This is the heart
+of simulation for a Sparta-based model where data is
+communicated/passed from one component to another.
+
+Binding is the responsibility of the modeler and not the framework.
+The framework only holds the components necessary for binding to ease
+the process of binding, but is unaware of how components should be
+connected.
+
+Binding happens in the modeler's derivation of `bindTree_` virtual
+method of `sparta::app::Simulation`.  Ports are found using the Ports name
+
+To bind two `sparta::Port` or `sparta::Bus` objects together, the
+following rules apply:
+
+1. One of the Ports *must be* an `sparta::InPort` type and the other *must be*
+a `sparta::OutPort` type
+1. If the Port is a data type
+(`sparta::DataInPort`/`sparta::DataOutPort`) the data type *must be*
+equivalent and not castable
+1. If the components are `sparta::Bus` types, they must be equivalent
+in size and polarity.  For example, if the Bus has 1 InPort and 2
+OutPorts, the Bus being bound to must have 1 OutPort and 2 InPorts of
+the same name.
+
+[source,cpp]
+----
+#pragma once
+
+#include <vector>
+#include <memory>
+
+#include "sparta/app/Simulation.hpp"
+#include "sparta/kernel/Scheduler.hpp"
+
+// Forward declare
+namespace sparta { class TreeNode; }
+
+namespace my_simulator
+{
+    // MySimulator.hpp
+    class MySimulator : public sparta::app::Simulation
+    {
+        // ... construction code
+
+    private:
+
+        // Override sparta::app::Simulation's method
+        void buildTree_() override final;
+        void configureTree_() override final;
+        void bindTree_() override final;
+
+        std::vector<std::unique_ptr<sparta::TreeNode>> tns_to_delete_;
+
+        // Other user defined private member variables/methods...
+    };
+}
+----
+
+[source,cpp]
+----
+namespace my_simulator
+{
+    MySimulator::MySimulator() {...}
+
+    void MySimulator::buildTree_() {...}
+
+    void MySimulator::configureTree_() {...}
+
+    void MySimulator::bindTree_()
+    {
+
+    }
+}
+----
 
 ==== Running the Simulation
 
@@ -666,6 +757,8 @@ The last part of simulation configuration is to tell the Sparta
 framework it can now "lock" the simulation environment and expect no
 more topological changes.  This is done through the call to
 https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a18ede64ec543df1bb56a71618fe82757[`sparta::app::Simulation::finalizeFramework()`]
+
+
 
 [source,cpp]
 ----
