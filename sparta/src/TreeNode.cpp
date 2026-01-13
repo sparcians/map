@@ -2801,7 +2801,7 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
         extensions_[extension_name] = std::move(extension);
 
         app::Simulation * sim = getSimulation();
-        if(sim != nullptr)
+        if(sim != nullptr && sim->getSimulationConfiguration() != nullptr)
         {
             // Apply extensions from the virtual extensions tree
             app::SimulationConfiguration * cfg = sim->getSimulationConfiguration();
