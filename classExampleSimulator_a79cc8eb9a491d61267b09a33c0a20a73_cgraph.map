@@ -1,0 +1,11 @@
+<map id="ExampleSimulator::ExampleSimulator" name="ExampleSimulator::ExampleSimulator">
+<area shape="rect" id="Node000001" title="Construct ExampleSimulator." alt="" coords="5,104,186,145"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ResourceSet.html#a061a2e9aad915600829e1270a1e6a1ea" title="Add a resource factory by its template type." alt="" coords="266,5,412,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,101,233,57,253,49,255,54,235,61,138,106"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1app_1_1Simulation.html#a94c0e80dff0aee45b5b749ea7b369990" title="Include an extension factory for this simulation&#39;s device tree nodes. They will be given to specific ..." alt="" coords="234,71,445,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="186,109,218,105,218,110,187,115"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1app_1_1Simulation.html#aa21d7af1c6ff9a262aea8c21f1868331" title="Returns the resource set for this Simulation." alt="" coords="264,136,415,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="187,134,248,142,248,147,186,139"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1app_1_1Simulation.html#a9c40c1627781bfdf3762e5f204216618" title="Set a controller to handle custom simulation events." alt="" coords="255,201,424,242"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="139,143,235,186,255,193,253,198,233,191,136,147"/>
+</map>

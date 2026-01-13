@@ -1,0 +1,27 @@
+<map id="sparta::ArchData::restoreAll" name="sparta::ArchData::restoreAll">
+<area shape="rect" id="Node000001" title="Restores a full checkpoint snapshot (not a delta). This removes all lines NOT found in the snapshot d..." alt="" coords="5,132,184,157"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData.html#a5712a66066badbc5ae4d9fb98b5a79d4" title="Deletes (if possible) data held within the ArchData, restoring it to a &#39;clean&#45;state&#39;...." alt="" coords="236,78,390,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="150,128,242,105,243,111,151,133"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ArchData.html#a78a6e8fc2a8c69de5528bec55773b4e4" title="Restores a delta checkpoint (not a full snapshot). This contains only additive changes." alt="" coords="232,160,395,185"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="184,153,216,157,216,163,183,158"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ArchData.html#a9eaa9d9ef72fc6322e444a4cfebd6ddd" title="Indicates whether this ArchData can free its lines after allocating them. Otherwise,..." alt="" coords="463,5,633,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="361,75,457,48,458,53,363,80"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TieredMap.html#acede0ffe2b71c113400eb8d37ac83d1c" title="Clears the map. Frees all mappings and data structures." alt="" coords="483,71,613,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="391,88,468,88,468,94,391,94"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ArchData.html#afd6648775a857328800b6c6f053562c1" title="Gets the line associated with this offset, allocating a new line if necessary." alt="" coords="465,136,631,161"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="395,161,449,156,450,161,395,167"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1ArchData.html#a10382f08f1fdbfe14981713c80d51b81" title="Returns the owner TreeNode." alt="" coords="443,185,653,210"/>
+<area shape="poly" id="edge11_Node000005_Node000012" title=" " alt="" coords="396,178,428,182,427,187,395,184"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1ArchData_1_1Line.html#a33abd3449c3bf810a453c52f0c43f590" title="Restore data from input buffer." alt="" coords="474,235,622,275"/>
+<area shape="poly" id="edge12_Node000005_Node000013" title=" " alt="" coords="348,183,444,220,463,227,461,232,442,226,346,188"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ArchData.html#a07e41ac141e36036cffedb4afad07197" title="Determines if this ArchData contains a byte for the specified address." alt="" coords="701,43,874,83"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="616,132,652,121,676,107,700,93,712,87,714,92,703,97,679,112,654,125,618,137"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1TieredMap.html#a8a87b132e5d7c6126454765d8966e3ed" title="Finds a mapping for key k if one exists in this map." alt="" coords="712,108,863,133"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="631,136,696,128,697,134,632,141"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="704,157,871,198"/>
+<area shape="poly" id="edge9_Node000006_Node000010" title=" " alt="" coords="632,156,689,163,688,168,631,161"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1ArchData_1_1Line.html#aa4be1659c3bd363e291962cfb812ffff" title="Offset into the owning ArchData." alt="" coords="713,223,862,263"/>
+<area shape="poly" id="edge10_Node000006_Node000011" title=" " alt="" coords="626,159,655,170,679,188,703,207,714,213,712,218,700,212,676,192,652,175,624,164"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1TieredMap.html#ad157505881efdd0d3f14695b05bc5dec" title="Attempts to get a pair_t associated with the key k without modifying the data structure." alt="" coords="922,100,1052,141"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="863,118,906,118,906,123,863,123"/>
+</map>

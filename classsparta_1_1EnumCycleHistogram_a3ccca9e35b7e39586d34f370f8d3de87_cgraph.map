@@ -1,0 +1,21 @@
+<map id="sparta::EnumCycleHistogram::EnumCycleHistogram" name="sparta::EnumCycleHistogram::EnumCycleHistogram">
+<area shape="rect" id="Node000001" title="EnumCycleHistogram constructor." alt="" coords="5,153,194,194"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a7b6ca285ffd1077f9622662c167315e9" title="Adds a TreeNode to this node as a child." alt="" coords="252,21,428,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="118,151,170,103,204,77,240,55,253,50,255,54,243,60,207,81,174,107,122,155"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#aec70f36a682dadc1d571fcd723f12cd6" title="Walks up parents (starting with self) until a parent with an associated local clock is found,..." alt="" coords="252,70,429,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="140,150,241,106,265,98,267,103,243,111,142,155"/>
+<area shape="rect" id="Node000007" href="$namespacesparta.html#a6379e6669e33ed5fe30711ca4a75f539" title="Given an enum class type, this method figures out the string." alt="" coords="252,120,429,161"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="194,158,236,152,237,157,195,163"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1TreeNode.html#aeefcb776a4574cd8075f92caaeb4676d" title="Tracks a node as an expected parent without actually adding this node as a child. This is used almost..." alt="" coords="242,185,439,226"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="195,184,226,188,226,193,194,189"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1CycleHistogramBase.html#a5af67e4be27a6130d3ac7c22d2df5bab" title="Start counting, taking into account the specified delay." alt="" coords="248,251,433,291"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="145,192,243,235,262,243,260,248,241,240,143,197"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1CycleHistogramBase.html#a3829b65802452b544f33ad9ed3bf4803" title=" " alt="" coords="248,316,433,357"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="120,193,172,246,206,275,243,301,254,307,252,312,240,305,203,279,169,250,116,196"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a883ef289de0f961e1d69a988b50338d8" title="Gets the clock associated directly with this Node. This is useful for configuration and simulator deb..." alt="" coords="490,5,666,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="396,67,475,48,476,53,397,72"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="487,70,669,96"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="430,80,472,80,472,86,430,86"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="506,120,651,161"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="397,94,491,117,490,122,396,99"/>
+</map>

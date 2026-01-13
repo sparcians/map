@@ -1,0 +1,27 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,373,110,398"/>
+<area shape="rect" id="Node000001" href="$structMetaStruct_1_1is__any__pointer.html" title="This templated struct lets us know about whether the datatype is actually an ordinary object or point..." alt="" coords="178,5,323,46"/>
+<area shape="poly" id="edge310_Node000000_Node000001" title=" " alt="" coords="57,357,62,296,76,216,89,174,106,132,128,92,156,57,176,42,179,46,160,61,132,95,111,134,94,176,82,218,67,297,62,358"/>
+<area shape="rect" id="Node000002" href="$structMetaStruct_1_1is__bool.html" title="Templated struct for detecting Boolean Type." alt="" coords="184,71,316,111"/>
+<area shape="poly" id="edge311_Node000000_Node000002" title=" " alt="" coords="59,357,68,307,85,245,113,180,133,149,156,122,182,105,185,109,159,126,137,153,118,182,90,246,73,308,64,358"/>
+<area shape="rect" id="Node000003" href="$structMetaStruct_1_1is__char__pointer.html" title="Templated struct for detecting char pointer type." alt="" coords="178,136,323,177"/>
+<area shape="poly" id="edge312_Node000000_Node000003" title=" " alt="" coords="63,357,75,320,94,274,121,228,156,188,176,174,179,179,159,192,125,231,99,277,80,321,68,359"/>
+<area shape="rect" id="Node000004" href="$structMetaStruct_1_1is__pair.html" title="This templated struct lets us know about whether the datatype is actually an std::pair object...." alt="" coords="186,201,315,242"/>
+<area shape="poly" id="edge313_Node000000_Node000004" title=" " alt="" coords="70,358,105,305,129,277,156,253,184,237,186,242,159,257,133,281,109,308,75,361"/>
+<area shape="rect" id="Node000005" href="$structMetaStruct_1_1is__sparta__enum.html" title="Detect whether template parameter is sparta::utils::Enum type. Case when it is not a sparta::utils::E..." alt="" coords="178,267,322,307"/>
+<area shape="poly" id="edge314_Node000000_Node000005" title=" " alt="" coords="87,361,156,318,185,305,187,310,159,323,90,366"/>
+<area shape="rect" id="Node000006" href="$structMetaStruct_1_1is__stl__container.html" title="This templated struct takes a type and tells us whether that type is a STL container." alt="" coords="171,332,330,373"/>
+<area shape="poly" id="edge315_Node000000_Node000006" title=" " alt="" coords="125,371,170,363,171,369,126,377"/>
+<area shape="rect" id="Node000007" href="$structMetaStruct_1_1is__string.html" title="Templated struct for detecting String Type." alt="" coords="180,397,320,438"/>
+<area shape="poly" id="edge316_Node000000_Node000007" title=" " alt="" coords="126,394,180,403,179,409,125,399"/>
+<area shape="rect" id="Node000008" href="$classMetaTypeList_1_1is__empty.html" title="Class Template is_empty Generic case." alt="" coords="171,463,330,503"/>
+<area shape="poly" id="edge317_Node000000_Node000008" title=" " alt="" coords="90,405,159,447,187,460,185,464,156,452,87,410"/>
+<area shape="rect" id="Node000009" href="$structMetaTypeList_1_1is__meta__typelist.html" title="Variadic Class Template which takes a type and matches it if that is a type_list. Generic case result..." alt="" coords="174,528,326,569"/>
+<area shape="poly" id="edge318_Node000000_Node000009" title=" " alt="" coords="75,411,109,462,133,489,159,513,180,525,177,530,156,517,129,493,105,466,71,414"/>
+<area shape="rect" id="Node000010" href="$structsparta_1_1is__sparta__enum.html" title="Detect whether template parameter is sparta::utils::Enum type." alt="" coords="158,593,343,618"/>
+<area shape="poly" id="edge319_Node000000_Node000010" title=" " alt="" coords="68,413,79,450,98,495,124,540,159,578,179,590,176,594,156,582,120,543,93,498,74,452,63,414"/>
+<area shape="rect" id="Node000011" href="$structsparta_1_1utils_1_1always__false.html" title=" " alt="" coords="184,643,317,683"/>
+<area shape="poly" id="edge320_Node000000_Node000011" title=" " alt="" coords="65,413,74,460,92,518,120,577,138,605,159,629,185,645,182,650,156,633,134,608,115,580,87,520,69,461,60,414"/>
+<area shape="rect" id="Node000012" href="$structsparta_1_1utils_1_1is__vector.html" title=" " alt="" coords="162,708,338,733"/>
+<area shape="poly" id="edge321_Node000000_Node000012" title=" " alt="" coords="62,414,67,472,82,548,94,587,111,626,133,662,159,693,176,705,173,709,156,697,128,665,106,628,89,589,77,549,62,473,57,414"/>
+</map>
