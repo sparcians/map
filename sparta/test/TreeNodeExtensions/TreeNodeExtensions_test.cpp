@@ -1,14 +1,13 @@
 #include "sparta/sparta.hpp"
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/simulation/TreeNodeExtensions.hpp"
-#include "sparta/simulation/Clock.hpp"
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/kernel/SleeperThread.hpp"
 #include "sparta/app/Simulation.hpp"
 #include "sparta/app/CommandLineSimulator.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 
-#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string.hpp>
 
 /*!
  * \file TreeNodeExtensions_test.cpp
@@ -23,9 +22,9 @@ TEST_INIT
 // User-defined tree node extension class. YAML extension file
 // provides "color" and "shape" parameters, e.g. "green circle",
 // "blue square", and "black diamond". Also has a YAML parameter
-// "name" which is the name of the trail. The last parameter
-// "trail_closed" is not given in the YAML file, but is added
-// to the extension's parameter set when the extension is created.
+// "trail_name". The last parameter "trail_closed" is not given
+// in the YAML file, but is added to the extension's parameter
+// set when the extension is created.
 class SkiTrailExtension : public sparta::ExtensionsParamsOnly
 {
 public:
@@ -117,11 +116,11 @@ private:
         // We are going to read all the parameters in the TestExtensions() method
         // but that occurs after CommandLineSimulator::populateSimulation() where
         // these exceptions come from.
-        if (auto cfg = getSimulationConfiguration()) {
-            cfg->getUnboundParameterTree().getRoot()->unrequire();
-            cfg->getArchUnboundParameterTree().getRoot()->unrequire();
-            cfg->getExtensionsUnboundParameterTree().getRoot()->unrequire();
-        }
+        //if (auto cfg = getSimulationConfiguration()) {
+        //    cfg->getUnboundParameterTree().getRoot()->unrequire();
+        //    cfg->getArchUnboundParameterTree().getRoot()->unrequire();
+        //    cfg->getExtensionsUnboundParameterTree().getRoot()->unrequire();
+        //}
     }
 
     void bindTree_() override
@@ -143,7 +142,7 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
     // Create extensions from ski_trails.yaml for non-command line simulations.
     // CommandLineSimulator test already did this.
     if (!cmdline_sim) {
-        top->createExtensions("ski_trails.yaml", {}, true);
+        top->createExtensions("ski_trails.yaml", {} /*no search paths*/, true /*verbose*/);
     }
 
     // Validate the extensions created from the YAML files. Note that we
@@ -158,9 +157,12 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
     auto node2_ext = node2->getExtension("ski_trail", false);
     auto node3_ext = node3->getExtension("ski_trail", false);
 
+    // top, node1, and node2 should have extensions from ski_trails.yaml.
     EXPECT_NOTEQUAL(top_ext, nullptr);
     EXPECT_NOTEQUAL(node1_ext, nullptr);
     EXPECT_NOTEQUAL(node2_ext, nullptr);
+
+    // node3 should NOT have an extension yet (not in ski_trails.yaml).
     EXPECT_EQUAL(node3_ext, nullptr);
 
     auto verif_ski_trail = [](sparta::TreeNode::ExtensionsBase * extension,
@@ -204,7 +206,7 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
     // Now add extensions from global_meta.yaml for non-command line simulations.
     // CommandLineSimulator test already did this.
     if (!cmdline_sim) {
-        top->createExtensions("global_meta.yaml", {}, true);
+        top->createExtensions("global_meta.yaml", {} /*no search paths*/, true /*verbose*/);
     }
 
     // Check getNumExtensions()
