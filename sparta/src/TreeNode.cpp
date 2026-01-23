@@ -22,6 +22,8 @@
 #include <initializer_list>
 #include <iterator>
 
+#include <boost/algorithm/string.hpp>
+
 #include "sparta/simulation/TreeNodeExtensions.hpp"
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/simulation/VirtualGlobalTreeNode.hpp"
@@ -35,6 +37,7 @@
 #include "sparta/simulation/RootTreeNode.hpp"
 #include "sparta/log/MessageSource.hpp"
 #include "sparta/utils/Printing.hpp"
+#include "sparta/utils/Utils.hpp"
 
 namespace sparta
 {
@@ -2174,7 +2177,7 @@ void TreeNode::finalizeTree_() {
     // Tree node extensions parameter validation should occur here.
     // We do this here since parameter validation also occurs for
     // resources in createResource_() above.
-    for (const auto& kvp : extensions_) {
+    for (const auto& kvp : getAllExtensions()) {
         if (const auto* params = kvp.second->getParameters()) {
             std::string errs;
             if (!params->validateDependencies(this, errs)) {
@@ -2683,264 +2686,76 @@ bool TreeNode::notificationCategoryMatch(const std::string* query_id,
     return false;
 }
 
-void TreeNode::addExtensionParameters(const std::string & extension_name,
-                                      std::unique_ptr<ParameterSet> extension_params)
+TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_name,
+                                                  bool create_if_needed)
 {
-    if (extensions_.find(extension_name) != extensions_.end()) {
-        return;
-    }
-    if (extension_parameters_.find(extension_name) != extension_parameters_.end()) {
-        return;
-    }
-    extension_parameters_[extension_name] = std::move(extension_params);
-}
-
-void TreeNode::addExtensionFactory(const std::string & extension_name,
-                                   std::function<ExtensionsBase*()> factory)
-{
-    if (extensions_.find(extension_name) != extensions_.end()) {
-        return;
-    }
-    if (extension_factories_.find(extension_name) != extension_factories_.end()) {
-        return;
-    }
-    extension_factories_[extension_name] = factory;
-}
-
-TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_name)
-{
-    auto ext_iter = extensions_.find(extension_name);
-    if (ext_iter != extensions_.end()) {
-        return ext_iter->second.get();
-    }
-
-    std::unique_ptr<ParameterSet> extension_parameters;
-    auto prm_iter = extension_parameters_.find(extension_name);
-    if (prm_iter != extension_parameters_.end()) {
-        extension_parameters = std::move(prm_iter->second);
-    }
-    else {
-        extension_parameters.reset(new sparta::ParameterSet(nullptr));
-    }
-
-    std::unique_ptr<ExtensionsBase> extension;
-    auto factory_iter = extension_factories_.find(extension_name);
-    if (factory_iter != extension_factories_.end()) {
-        extension.reset(factory_iter->second());
-    } else if (prm_iter != extension_parameters_.end()) {
-        extension.reset(new ExtensionsParamsOnly);
-    }
-
-    ExtensionsBase * obj = nullptr;
-
-    auto resolve_extension_node =
-        [&](const ParameterTree & ptree) -> const ParameterTree::Node*
-        {
-            const std::string loc = getLocation();
-            std::regex path_separator("[\\.,]");
-            std::vector<std::string> path_elems =
-                { std::sregex_token_iterator(loc.begin(), loc.end(), path_separator, -1),
-                  std::sregex_token_iterator() };
-
-            const ParameterTree::Node * extension_node = ptree.getRoot();
-            for (auto elems : path_elems)
-            {
-                ParameterTree::Node * child_node = extension_node->getChild(elems);
-                if (child_node == nullptr) {
-                    extension_node = nullptr;
-                    break;
-                }
-                extension_node = child_node;
-            }
-
-            //If the extension node is null at this point, it means a bad node path was
-            //given in the config-file that does not correspond to 'this' tree node's
-            //location in the device tree
-            if (extension_node == nullptr) {
-                if (extension_name != "*") {
-                    std::ostringstream oss;
-                    ptree.getRoot()->recursePrint(oss);
-                    const std::string tree_str = oss.str();
-                    if (!tree_str.empty() && tree_str != "\n") {
-                        std::cerr << "Invalid node path found in arch/config/extensions file YAML. The tree node\n"
-                                  << "that requested extension '" << extension_name
-                                  << "' has the following device tree location:\n"
-                                  << "\t" << getLocation() << "\n"
-                                  << "This doesn't match anything in the extensions tree. Expansion:\n"
-                                  << "\t"
-                                  << tree_str << std::endl;
-                    }
-                }
-            }
-            return extension_node;
-        };
-
-    auto resolve_named_extension_node =
-        [&extension_name] (const ParameterTree::Node * node) -> const ParameterTree::Node*
-        {
-            sparta_assert(node != nullptr);
-            node = node->getChild("extension");
-
-            if (node != nullptr) {
-                // Look for the extension name under this node
-                std::vector<const ParameterTree::Node*> children = node->getChildren();
-                for (const ParameterTree::Node * child : children) {
-                    if (child->getName() == extension_name) {
-                        return child;
-                    }
-                }
-            }
-            return nullptr;
-        };
-
-    if (extension != nullptr)
-    {
-        extension->setParameters(std::move(extension_parameters));
-        extension->postCreate();
-        obj = extension.get();
-        extensions_[extension_name] = std::move(extension);
-
-        app::Simulation * sim = getSimulation();
-        if(sim != nullptr && sim->getSimulationConfiguration() != nullptr)
-        {
-            // Apply extensions from the virtual extensions tree
-            app::SimulationConfiguration * cfg = sim->getSimulationConfiguration();
-            auto & extensions_pt  = cfg->getExtensionsUnboundParameterTree();
-            auto extension_node = resolve_extension_node(extensions_pt);
-            if (extension_node != nullptr) {
-                extension_node = resolve_named_extension_node(extension_node);
-            }
-
-            // If the extension_node is null, then there are no
-            // extension files provided populating the virtual parameter tree
-            if(extension_node != nullptr)
-            {
-                auto extensions_ps = obj->getParameters();
-
-                for(auto param : *(extensions_ps))
-                {
-                    auto extens_tn = extension_node->getChild(param->getName());
-                    if(extens_tn) {
-                        app::ParameterApplicator pa("", extens_tn->getValue());
-                        pa.apply(param);
-                    }
-                }
-            }
+    auto it = cached_extensions_.find(extension_name);
+    if (it != cached_extensions_.end()) {
+        std::weak_ptr<ExtensionsBase> & weak_ext = it->second;
+        if (auto ext = weak_ext.lock()) {
+            return ext.get();
         }
     }
 
-    else {
-        // See if we can go through the virtual parameter tree to build the extension
-        // object ourselves
-        app::Simulation * sim = getSimulation();
-        if (sim == nullptr) {
-            return nullptr;
-        }
-        app::SimulationConfiguration * cfg = sim->getSimulationConfiguration();
-        if (cfg != nullptr) {
-            const ParameterTree::Node * extension_node = nullptr;
-            const ParameterTree::Node * arch_extension_node = nullptr;
+    auto root = dynamic_cast<RootTreeNode*>(getRoot());
+    if (!root) {
+        return nullptr;
+    }
 
-            if (extension_name != "*") {
-                extension_node = resolve_extension_node(
-                    cfg->getExtensionsUnboundParameterTree());
-                if (extension_node != nullptr) {
-                    extension_node = resolve_named_extension_node(extension_node);
-                }
-            } else if (extension_names_.empty()) {
-                extension_node = resolve_extension_node(
-                    cfg->getExtensionsUnboundParameterTree());
+    auto & ptree = root->getExtensionsUnboundParameterTree();
+    constexpr bool must_be_leaf = false;
+    auto ptree_node = ptree.tryGet(getLocation(), must_be_leaf);
+    if (!ptree_node) {
+        if (create_if_needed) {
+            constexpr bool required = false;
+            ptree_node = ptree.create(getLocation(), required);
 
-                auto get_extension_names_from_node = [&](const ParameterTree::Node * node) {
-                                                         if (node != nullptr) {
-                                                             node = node->getChild("extension");
-                                                         }
-                                                         if (node != nullptr) {
-                                                             std::vector<const ParameterTree::Node*> children = node->getChildren();
-                                                             for (const ParameterTree::Node * child : children) {
-                                                                 extension_names_.insert(child->getName());
-                                                             }
-                                                         }
-                                                     };
-
-                get_extension_names_from_node(extension_node);
-                get_extension_names_from_node(arch_extension_node);
-                for(auto & ext : extensions_) {
-                    extension_names_.insert(ext.first);
-                }
-                return nullptr;
+            std::shared_ptr<ExtensionsBase> extension;
+            auto factory = root->getExtensionFactory(extension_name);
+            if (factory) {
+                extension.reset(factory());
             } else {
                 return nullptr;
             }
 
-            // Right now, extension_node points to the extension
-            // belonging to the equivalent location in the device
-            // tree. The full path to the parameter node in the
-            // unbound parameter tree is something like
-            // 'top.core0.fpu.extension.user_data'
-            if (extension_node != nullptr) {
-                const std::string ext_name = extension_node->getName();
-                auto children = extension_node->getChildren();
+            extension->setParameters(std::make_unique<ParameterSet>(nullptr));
+            extension->postCreate();
 
-                std::unique_ptr<ExtensionDescriptor> desc(new ExtensionDescriptor);
-                desc->setName(ext_name);
-                desc->setNodeLocation(getLocation());
-
-                bool any_params_have_a_value = false;
-                for (const ParameterTree::Node * param : children) {
-                    if (param->hasValue()) {
-                        desc->addParameterAsString(param->getName(), param->getValue());
-                        any_params_have_a_value = true;
-                    }
-                }
-
-                if (!any_params_have_a_value) {
-                    std::cerr << "WARNING: Found a malformed extension: '"
-                              << extension_name << "' location: '"
-                              << extension_node->getOrigin() << "'\n\t"
-                              << "Expected 'extension.name: value' pairs for the named extension, but found only name"
-                              << std::endl;
-                    return nullptr;
-                }
-
-                addExtensionParameters(ext_name, desc->cloneParameters());
-                extension_descs_.emplace_back(desc.release());
-
-                // If someone already gave us a factory for this
-                // extension type, great.  If not, merge the root
-                // node's factories with ours. The simulation object,
-                // if there is one present, may have given the root
-                // node the factories to use.
-                if (extension_factories_.find(ext_name) == extension_factories_.end() &&
-                    getRoot() != this && getSimulation() != nullptr) {
-                    auto iter = getRoot()->extension_factories_.find(ext_name);
-                    if (iter != getRoot()->extension_factories_.end()) {
-                        extension_factories_[iter->first] = iter->second;
-                    }
-                }
-
-                return getExtension(ext_name);
-            }
+            ptree_node->setUserData(extension_name, std::move(extension));
+            return getExtension(extension_name, false);
         }
+
+        return nullptr;
     }
 
-    return obj;
+    auto extension = ptree_node->tryGetUserData<std::shared_ptr<ExtensionsBase>>(extension_name);
+    if (!extension) {
+        if (create_if_needed) {
+            std::shared_ptr<ExtensionsBase> extension;
+            auto factory = root->getExtensionFactory(extension_name);
+            if (factory) {
+                extension.reset(factory());
+            } else {
+                return nullptr;
+            }
+
+            extension->setParameters(std::make_unique<ParameterSet>(nullptr));
+            extension->postCreate();
+
+            ptree_node->setUserData(extension_name, std::move(extension));
+            return getExtension(extension_name, false);
+        }
+
+        return nullptr;
+    }
+
+    cached_extensions_[extension_name] = *extension;
+    return extension->get();
 }
 
 TreeNode::ExtensionsBase * TreeNode::getExtension()
 {
-    std::set<std::string> known_extension_names;
-
-    //Get together all extension names from the various maps
-    for (const auto & ext : extensions_) {
-        known_extension_names.insert(ext.first);
-    }
-    for (const auto & ext : extension_parameters_) {
-        known_extension_names.insert(ext.first);
-    }
-    for (const auto & ext : extension_factories_) {
-        known_extension_names.insert(ext.first);
-    }
+    std::set<std::string> known_extension_names = getAllExtensionNames();
 
     //Don't have any extension names? No extensions.
     if (known_extension_names.empty()) {
@@ -2964,13 +2779,113 @@ TreeNode::ExtensionsBase * TreeNode::getExtension()
     return getExtension(*known_extension_names.begin());
 }
 
-const std::set<std::string> & TreeNode::getAllExtensionNames()
+std::set<std::string> TreeNode::getAllExtensionNames() const
 {
-    if (extension_names_.empty()) {
-        getExtension("*");
+    auto root = dynamic_cast<const RootTreeNode*>(getRoot());
+    if (!root) {
+        return {};
     }
-    return extension_names_;
+
+    const auto & ptree = root->getExtensionsUnboundParameterTree();
+    constexpr bool must_be_leaf = false;
+    auto ptree_node = ptree.tryGet(getLocation(), must_be_leaf);
+    if (!ptree_node) {
+        return {};
+    }
+
+    const auto keys = ptree_node->getUserDataKeys();
+    if (keys.empty()) {
+        return {};
+    }
+
+    std::set<std::string> ext_names;
+    for (const auto & key : keys) {
+        const auto ext = ptree_node->tryGetUserData<std::shared_ptr<ExtensionsBase>>(key);
+        if (ext) {
+            ext_names.insert(key);
+        }
+    }
+
+    return ext_names;
 }
+
+template <typename T>
+typename std::enable_if<!is_vector<T>::value, T>::type
+getParameterValueAsImpl(const std::string& param_val_str)
+{
+    size_t end_pos = 0;
+    return utils::smartLexicalCast<T>(param_val_str, end_pos);
+}
+
+template <typename T>
+typename std::enable_if<is_vector<T>::value, T>::type
+getParameterValueAsImpl(const std::string& param_val_str)
+{
+    // Only difference for vectors is that they are enclosed in []
+    if (param_val_str.size() < 2 ||
+        param_val_str.front() != '[' ||
+        param_val_str.back() != ']') {
+        throw SpartaException("TreeNode extension parameter retrieval failed: Parameter value '")
+            << param_val_str << "' is not a valid vector representation.";
+    }
+
+    auto loc_s = param_val_str.substr(1, param_val_str.size() - 2);
+
+    // Split comma-delimited values
+    std::vector<std::string> tokens;
+    boost::split(tokens, loc_s, boost::is_any_of(","));
+
+    T result;
+    for (const auto& token : tokens) {
+        size_t end_pos = 0;
+        result.push_back(utils::smartLexicalCast<typename T::value_type>(token, end_pos));
+    }
+
+    return result;
+}
+
+template <typename T>
+T TreeNode::ExtensionsBase::getParameterValueAs(const std::string& param_name)
+{
+    auto ps = getParameters();
+    if (!ps) {
+        throw SpartaException("TreeNode extension parameter retrieval failed: No ParameterSet ")
+            << "is associated with this extension.";
+    }
+
+    auto p = ps->getParameter(param_name);
+    if (!p) {
+        throw SpartaException("TreeNode extension parameter retrieval failed: Parameter '")
+            << param_name << "' does not exist.";
+    }
+
+    std::string param_val_str = p->getValueAsString();
+    return getParameterValueAsImpl<T>(param_val_str);
+}
+
+// Supported types for tree node extensions (scalar):
+template int8_t TreeNode::ExtensionsBase::getParameterValueAs<int8_t>(const std::string&);
+template uint8_t TreeNode::ExtensionsBase::getParameterValueAs<uint8_t>(const std::string&);
+template int16_t TreeNode::ExtensionsBase::getParameterValueAs<int16_t>(const std::string&);
+template uint16_t TreeNode::ExtensionsBase::getParameterValueAs<uint16_t>(const std::string&);
+template int32_t TreeNode::ExtensionsBase::getParameterValueAs<int32_t>(const std::string&);
+template uint32_t TreeNode::ExtensionsBase::getParameterValueAs<uint32_t>(const std::string&);
+template int64_t TreeNode::ExtensionsBase::getParameterValueAs<int64_t>(const std::string&);
+template uint64_t TreeNode::ExtensionsBase::getParameterValueAs<uint64_t>(const std::string&);
+template double TreeNode::ExtensionsBase::getParameterValueAs<double>(const std::string&);
+template std::string TreeNode::ExtensionsBase::getParameterValueAs<std::string>(const std::string&);
+
+// As well as vector extension parameters:
+template std::vector<int8_t> TreeNode::ExtensionsBase::getParameterValueAs<std::vector<int8_t>>(const std::string&);
+template std::vector<uint8_t> TreeNode::ExtensionsBase::getParameterValueAs<std::vector<uint8_t>>(const std::string&);
+template std::vector<int16_t> TreeNode::ExtensionsBase::getParameterValueAs<std::vector<int16_t>>(const std::string&);
+template std::vector<uint16_t> TreeNode::ExtensionsBase::getParameterValueAs<std::vector<uint16_t>>(const std::string&);
+template std::vector<int32_t> TreeNode::ExtensionsBase::getParameterValueAs<std::vector<int32_t>>(const std::string&);
+template std::vector<uint32_t> TreeNode::ExtensionsBase::getParameterValueAs<std::vector<uint32_t>>(const std::string&);
+template std::vector<int64_t> TreeNode::ExtensionsBase::getParameterValueAs<std::vector<int64_t>>(const std::string&);
+template std::vector<uint64_t> TreeNode::ExtensionsBase::getParameterValueAs<std::vector<uint64_t>>(const std::string&);
+template std::vector<double> TreeNode::ExtensionsBase::getParameterValueAs<std::vector<double>>(const std::string&);
+template std::vector<std::string> TreeNode::ExtensionsBase::getParameterValueAs<std::vector<std::string>>(const std::string&);
 
 // Miscellaneous
 

@@ -1,0 +1,31 @@
+# Tree node extensions: Three ski trails from Mont Tremblant, Québec.
+# The "ski_trail" extension has a registered factory in the test file.
+
+# This YAML file will specify extensions ahead of time on:
+#   - top
+#   - top.node1
+#   - top.node1.node2
+#
+# The test also has:
+#   - top.node1.node2.node3
+#
+# And we will dynamically add extensions to node3 only when we call
+# TreeNode::getExtension() on that node in the test.
+
+top:
+  extension.ski_trail:
+    trail_name: Fuddle Duddle
+    color: green
+    shape: circle
+
+top.node1:
+  extension.ski_trail:
+    trail_name: Escapade
+    color: blue
+    shape: square
+
+top.node1.node2:
+  extension.ski_trail:
+    trail_name: Devil's River
+    color: black
+    shape: diamond

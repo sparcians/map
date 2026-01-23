@@ -565,7 +565,7 @@ protected:
      * files.
      */
     void addTreeNodeExtensionFactory_(const std::string & extension_name,
-                                      std::function<TreeNode::ExtensionsBase*()> creator);
+                                      std::function<TreeNode::ExtensionsBase*()> factory);
 
     //! \name Virtual Setup Interface
     //! @{
@@ -805,13 +805,6 @@ protected:
     std::unique_ptr<MetaTreeNode> meta_;
 
     /*!
-     * \brief Tree node extension factories by name.
-     */
-    std::unordered_map<
-        std::string,
-        std::function<TreeNode::ExtensionsBase*()>> tree_node_extension_factories_;
-
-    /*!
      * \brief Has the framework been finalized
      */
     bool framework_finalized_ = false;
@@ -868,15 +861,6 @@ protected:
      * ReportDescriptorCollection
      */
     std::unique_ptr<ReportConfiguration> report_config_;
-
-    /*!
-     * \brief Keep the extension descriptors alive for the entire simulation.
-     * The Simulation base class is meant to actually allocate and own this
-     * memory (named parameter sets) even though simulation subclasses are
-     * the only ones who use these extended parameters sets.
-     */
-    ExtensionDescriptorVec extension_descs_;
-    std::set<std::string> nodes_given_extensions_;
 
     /*!
      * \brief User configuration vector stored at "preprocessParameters"

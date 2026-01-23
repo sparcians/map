@@ -1,0 +1,4 @@
+project(TreeNodeExtensions_test)
+sparta_add_test_executable(TreeNodeExtensions_test TreeNodeExtensions_test.cpp)
+sparta_test(TreeNodeExtensions_test TreeNodeExtensions_test_RUN)
+sparta_copy(TreeNodeExtensions_test *.yaml)

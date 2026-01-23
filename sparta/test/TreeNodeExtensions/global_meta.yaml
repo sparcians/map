@@ -1,0 +1,15 @@
+# ExtensionsParamsOnly: no factory for this extension.
+# Used to test Parameter<T> creation for all supported types.
+
+top:
+  extension.global_meta:
+    int_scalar: 5
+    int_vector: [1,2,3]
+    neg_int_scalar: -4
+    neg_int_vector: [-1,-2,-3]
+    double_scalar: 6.7
+    double_vector: [1.1, 2.2, 3.3]
+    string_scalar: "foobar"
+    string_vector: ["hello", "world"]
+    hex_scalar: 0x12345
+    hex_vector: [0x1, 0x2, 0x3]

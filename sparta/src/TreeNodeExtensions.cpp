@@ -48,20 +48,26 @@ public:
         }
     }
 
-    ParameterSet * getParameters()
+    ParameterSet * getParameters() const
     {
         return parameters_.get();
     }
 
-    ParameterSet * getYamlOnlyParameters()
+    ParameterSet * getYamlOnlyParameters() const
     {
         return yaml_parameter_set_.get();
+    }
+
+    void addParameter(std::unique_ptr<ParameterBase> param)
+    {
+        user_parameters_.emplace_back(std::move(param));
     }
 
 private:
     std::unique_ptr<ParameterSet> parameters_;
     std::unique_ptr<ParameterSet> yaml_parameter_set_;
     std::vector<std::unique_ptr<Parameter<std::string>>> yaml_parameters_;
+    std::vector<std::unique_ptr<ParameterBase>> user_parameters_;
 };
 
 ExtensionsParamsOnly::ExtensionsParamsOnly() :
@@ -78,14 +84,19 @@ void ExtensionsParamsOnly::setParameters(std::unique_ptr<ParameterSet> params)
     impl_->setParameters(std::move(params));
 }
 
-ParameterSet * ExtensionsParamsOnly::getParameters()
+ParameterSet * ExtensionsParamsOnly::getParameters() const
 {
     return impl_->getParameters();
 }
 
-ParameterSet * ExtensionsParamsOnly::getYamlOnlyParameters()
+ParameterSet * ExtensionsParamsOnly::getYamlOnlyParameters() const
 {
     return impl_->getYamlOnlyParameters();
+}
+
+void ExtensionsParamsOnly::addParameter(std::unique_ptr<ParameterBase> param)
+{
+    impl_->addParameter(std::move(param));
 }
 
 /*!

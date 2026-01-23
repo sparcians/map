@@ -217,19 +217,41 @@ namespace app {
     void recursFindPTreeNodesNamed(
         const std::string & name,
         ParameterTree::Node * this_node,
-        ParameterTree::Node::ChildVector & matching_nodes)
+        std::vector<ParameterTree::Node*> & matching_nodes)
     {
         if (this_node == nullptr) {
             return;
         }
 
         if (this_node->getName() == name) {
-            matching_nodes.emplace_back(this_node->release());
+            matching_nodes.emplace_back(this_node);
             return;
         }
 
         const auto children = this_node->getChildren();
         for (ParameterTree::Node * child : children) {
+            recursFindPTreeNodesNamed(name, child, matching_nodes);
+        }
+    }
+
+    //! Local helper method that recurses down through a ParameterTree,
+    //! collecting all the nodes that have a given name.
+    void recursFindPTreeNodesNamed(
+        const std::string & name,
+        const ParameterTree::Node * this_node,
+        std::vector<const ParameterTree::Node*> & matching_nodes)
+    {
+        if (this_node == nullptr) {
+            return;
+        }
+
+        if (this_node->getName() == name) {
+            matching_nodes.emplace_back(this_node);
+            return;
+        }
+
+        const auto children = this_node->getChildren();
+        for (const ParameterTree::Node * child : children) {
             recursFindPTreeNodesNamed(name, child, matching_nodes);
         }
     }
@@ -261,12 +283,17 @@ namespace app {
         //First, let's find a list of all parameter tree nodes with the name
         //"extension". This is a reserved keyword - a ParameterTree::Node with
         //this name is definitely for tree node extensions.
-        ParameterTree::Node::ChildVector extension_nodes;
+        std::vector<ParameterTree::Node*> extension_nodes;
         recursFindPTreeNodesNamed("extension", arch_ptree_.getRoot(), extension_nodes);
         recursFindPTreeNodesNamed("extension", ptree_.getRoot(),      extension_nodes);
 
         if (extension_nodes.empty()) {
             return;
+        }
+
+        //Every node that belongs to an extension is implicitly unrequired.
+        for (auto node : extension_nodes) {
+            node->unrequire();
         }
 
         //From the extension nodes on down, find the full list of child
@@ -287,7 +314,7 @@ namespace app {
         //
         std::vector<const ParameterTree::Node*> has_value_nodes;
         for (const auto & node : extension_nodes) {
-            recursFindPTreeNodesWithValue(node.get(), has_value_nodes);
+            recursFindPTreeNodesWithValue(node, has_value_nodes);
         }
 
         //Now add these tree node extension leaf nodes to the final
@@ -296,6 +323,14 @@ namespace app {
             extensions_ptree_.set(node->getPath(), node->peekValue(),
                                   node->getRequiredCount() != 0, node->getOrigin());
         }
+    }
+
+    // Check if the unbound extensions ptree has any extensions.
+    bool SimulationConfiguration::hasTreeNodeExtensions() const
+    {
+        std::vector<const ParameterTree::Node*> extension_nodes;
+        recursFindPTreeNodesNamed("extension", extensions_ptree_.getRoot(), extension_nodes);
+        return !extension_nodes.empty();
     }
 
 } // namespace app

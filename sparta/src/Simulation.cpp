@@ -38,6 +38,7 @@
 #include "sparta/kernel/SleeperThread.hpp"
 #include "sparta/utils/File.hpp"
 #include "sparta/parsers/YAMLTreeEventHandler.hpp"
+#include "sparta/parsers/ConfigEmitterYAML.hpp"
 #include "src/State.tpp"
 #include "sparta/kernel/MemoryProfiler.hpp"
 #include "sparta/statistics/dispatch/streams/StatisticsStreams.hpp"
@@ -83,6 +84,7 @@
 #include "sparta/trigger/ExpressionTrigger.hpp"
 #include "sparta/trigger/Trigger.hpp"
 #include "sparta/utils/StringUtils.hpp"
+#include "sparta/utils/Utils.hpp"
 
 #if SIMDB_ENABLED
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
@@ -383,6 +385,18 @@ void Simulation::configure(const int argc,
     argc_ = argc;
     argv_ = argv;
 
+    if (sim_config_->hasTreeNodeExtensions()) {
+        namespace fs = std::filesystem;
+        fs::path temp_dir = fs::temp_directory_path();
+        fs::path temp_file = temp_dir / generateUUID();
+        temp_file.replace_extension(".yaml");
+
+        sparta::ConfigEmitter::YAML extensions_yaml(temp_file.string(), false /*Hide descriptions*/);
+        const auto& ptree = sim_config_->getExtensionsUnboundParameterTree();
+        extensions_yaml.addParameters(getRoot(), &ptree, false /*Not verbose*/);
+        getRoot()->createExtensions(temp_file.string(), {temp_dir.string()});
+    }
+
     ReportDescVec expanded_descriptors;
     for (const auto & rd : sim_config_->reports) {
         ReportDescVec one_expanded_descriptor = expandReportDescriptor_(rd);
@@ -464,6 +478,10 @@ void Simulation::configure(const int argc,
 void Simulation::createSimDbApps_()
 {
 #if SIMDB_ENABLED
+    if (!sim_config_) {
+        return;
+    }
+
     const auto & simdb_config = sim_config_->simdb_config;
 
     const auto enabled_apps = simdb_config.getEnabledApps();
@@ -1219,10 +1237,12 @@ uint32_t Simulation::reapplyAllParameters_(TreeNode* root)
 void Simulation::addTreeNodeExtensionFactory_(const std::string & extension_name,
                                               std::function<TreeNode::ExtensionsBase*()> factory)
 {
-    if (tree_node_extension_factories_.find(extension_name) == tree_node_extension_factories_.end()) {
-        tree_node_extension_factories_.emplace(extension_name, factory);
+    if (getRoot()->getPhase() != sparta::PhasedObject::TreePhase::TREE_BUILDING)
+    {
+        throw SpartaException("Cannot add extension factories once the simulator is configured");
     }
-    getRoot()->addExtensionFactory(extension_name, factory);
+
+    RootTreeNode::registerExtensionFactory(extension_name, factory);
 }
 
 bool Simulation::dumpDebugContent_(std::string& debug_filename,
@@ -1565,7 +1585,9 @@ void Simulation::setupReports_(ReportStatsCollector* collector)
 
     //Report configuration is locked down. Attempts to add or remove
     //descriptors either from C++ or Python will throw an exception.
-    report_config_->disallowChangesToDescriptors_();
+    if (report_config_) {
+        report_config_->disallowChangesToDescriptors_();
+    }
 }
 
 ReportDescVec Simulation::expandReportDescriptor_(const ReportDescriptor & rd) const

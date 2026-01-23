@@ -17,6 +17,8 @@
 #include <type_traits>
 #include <typeinfo>
 
+#include <boost/algorithm/string.hpp>
+
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/utils/Utils.hpp"
 #include "sparta/utils/SpartaException.hpp"

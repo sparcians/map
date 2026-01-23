@@ -173,9 +173,13 @@ namespace sparta
     class VirtualGlobalTreeNode;
     class ClockManager;
     class TreeNodePrivateAttorney;
+    class ParameterBase;
     class ParameterSet;
     class Scheduler;
     class ExtensionDescriptor;
+
+    template <typename T>
+    class Parameter;
 
     typedef std::vector<std::unique_ptr<ExtensionDescriptor>> ExtensionDescriptorVec;
 
@@ -1888,33 +1892,56 @@ namespace sparta
         public:
             ExtensionsBase();
             virtual ~ExtensionsBase();
+            virtual std::string getClassName() const { return "unknown"; }
             virtual void setParameters(std::unique_ptr<ParameterSet> params) = 0;
-            virtual ParameterSet * getParameters() = 0;
-            virtual ParameterSet * getYamlOnlyParameters() = 0;
+            virtual ParameterSet * getParameters() const = 0;
+            virtual ParameterSet * getYamlOnlyParameters() const = 0;
+            virtual void addParameter(std::unique_ptr<ParameterBase> param) = 0;
             virtual void postCreate() {}
+
+            /*!
+             * \brief All parameters are stored internally as a Parameter<std::string>.
+             * Call this method templated on the known specific type to parse the string
+             * as type T.
+             * \throw Throws an exception if the string cannot be parsed into type T.
+             * \note These are the ONLY parameter types supported by extensions:
+             *
+             *   getParameterValueAs<int8_t>
+             *   getParameterValueAs<uint8_t>
+             *
+             *   getParameterValueAs<int16_t>
+             *   getParameterValueAs<uint16_t>
+             *
+             *   getParameterValueAs<int32_t>
+             *   getParameterValueAs<uint32_t>
+             *
+             *   getParameterValueAs<int64_t>
+             *   getParameterValueAs<uint64_t>
+             *
+             *   getParameterValueAs<double>
+             *
+             *   getParameterValueAs<std::string>
+             *
+             * As well as vectors of the above types:
+             *
+             *   getParameterValueAs<std::vector<double>>
+             *   ...
+             */
+            template <typename T>
+            T getParameterValueAs(const std::string& param_name);
         };
-
-        /*!
-         * \brief Add a named parameter set to extend this tree node's metadata
-         */
-        void addExtensionParameters(const std::string & extension_name,
-                                    std::unique_ptr<ParameterSet> extension_params);
-
-        /*!
-         * \brief Add an extension factory to this tree node by its type (name). This
-         * method does not actually create any objects at this time. It will validate
-         * and create the extension only if asked for later on during simulation.
-         */
-        void addExtensionFactory(const std::string & extension_name,
-                                 std::function<ExtensionsBase*()> factory);
 
         /*!
          * \brief Get an extension object by type string. Returns nullptr if not
          *        found (unrecognized).
          * \param extension_name The name of the extension to find
+         * \param create_if_needed Create the extension on-demand if it was not
+         * explicitly given in an extension/config/arch file. ONLY honored if
+         * this extension has a registered factory.
          *
          */
-        ExtensionsBase * getExtension(const std::string & extension_name);
+        ExtensionsBase * getExtension(const std::string & extension_name,
+                                      bool create_if_needed = false);
 
         /*!
          * \brief Get an extension without needing to specify any particular type
@@ -1932,13 +1959,27 @@ namespace sparta
          * extensions. The performance cost is proportional to the number of nodes
          * in the virtual parameter tree.
          */
-        const std::set<std::string> & getAllExtensionNames();
+        std::set<std::string> getAllExtensionNames() const;
 
         /*!
          * \brief Get the number of extensions for this node.
          */
         size_t getNumExtensions() const {
-            return extensions_.size();
+            return getAllExtensionNames().size();
+        }
+
+        /*!
+         * \brief Get a map of extensions for this node.
+         */
+        std::map<std::string, ExtensionsBase*> getAllExtensions() {
+            std::map<std::string, ExtensionsBase*> extensions;
+            for (const auto & ext_name : getAllExtensionNames()) {
+                constexpr bool create_if_needed = false;
+                auto ext = getExtension(ext_name, create_if_needed);
+                sparta_assert(ext != nullptr);
+                extensions[ext_name] = ext;
+            }
+            return extensions;
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -4359,14 +4400,12 @@ namespace sparta
         const Clock* working_clock_;
 
         /*!
-         * \brief Set of extensions and their factories. Will only be turned into actual extension
-         * objects when (if) accessed during simulation. Validation will occur at that time as well.
+         * \brief Extensions which have already been requested and retrieved
+         * from the extensions ParameterTree. Cached for performance.
+         * \note Uses weak pointers since the extensions (shared_ptr) can be
+         * removed from the ParameterTree without our knowledge.
          */
-        std::unordered_map<std::string, std::unique_ptr<ExtensionsBase>> extensions_;
-        std::unordered_map<std::string, std::unique_ptr<ParameterSet>> extension_parameters_;
-        std::unordered_map<std::string, std::function<ExtensionsBase*()>> extension_factories_;
-        std::set<std::string> extension_names_;
-        ExtensionDescriptorVec extension_descs_;
+        std::unordered_map<std::string, std::weak_ptr<ExtensionsBase>> cached_extensions_;
 
         //! \name Internal class mis-use metrics
         //! @{
