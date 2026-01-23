@@ -10,7 +10,7 @@
 #include <map>
 #include <any>
 
-#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "sparta/utils/Utils.hpp"
 #include "sparta/simulation/Parameter.hpp"
@@ -768,13 +768,10 @@ namespace sparta
                     return;
                 }
 
-                auto indent_line = [&o](uint32_t indent) {
-                    for(uint32_t i=0; i<indent; ++i){
-                        o << " ";
-                    }
-                };
+                for(uint32_t i=0; i<indent; ++i){
+                    o << " ";
+                }
 
-                indent_line(indent);
                 o << "User data (" << getPath() << "):\n";
                 for (const auto & [ud_name, ud_printer] : user_data_printers_) {
                     std::any ud = user_data_.at(ud_name);

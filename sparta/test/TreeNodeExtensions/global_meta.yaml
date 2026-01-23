@@ -1,5 +1,4 @@
 # ExtensionsParamsOnly: no factory for this extension.
-# Used to test Parameter<T> creation for all supported types.
 
 top:
   extension.global_meta:

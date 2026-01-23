@@ -2694,6 +2694,9 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
         std::weak_ptr<ExtensionsBase> & weak_ext = it->second;
         if (auto ext = weak_ext.lock()) {
             return ext.get();
+        } else {
+            // Remove expired weak_ptr from cache
+            cached_extensions_.erase(it);
         }
     }
 
@@ -2707,9 +2710,6 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
     auto ptree_node = ptree.tryGet(getLocation(), must_be_leaf);
     if (!ptree_node) {
         if (create_if_needed) {
-            constexpr bool required = false;
-            ptree_node = ptree.create(getLocation(), required);
-
             std::shared_ptr<ExtensionsBase> extension;
             auto factory = root->getExtensionFactory(extension_name);
             if (factory) {
@@ -2721,8 +2721,12 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
             extension->setParameters(std::make_unique<ParameterSet>(nullptr));
             extension->postCreate();
 
+            constexpr bool required = false;
+            ptree_node = ptree.create(getLocation(), required);
             ptree_node->setUserData(extension_name, std::move(extension));
-            return getExtension(extension_name, false);
+
+            create_if_needed = false;
+            return getExtension(extension_name, create_if_needed);
         }
 
         return nullptr;
@@ -2741,9 +2745,10 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
 
             extension->setParameters(std::make_unique<ParameterSet>(nullptr));
             extension->postCreate();
-
             ptree_node->setUserData(extension_name, std::move(extension));
-            return getExtension(extension_name, false);
+
+            create_if_needed = false;
+            return getExtension(extension_name, create_if_needed);
         }
 
         return nullptr;

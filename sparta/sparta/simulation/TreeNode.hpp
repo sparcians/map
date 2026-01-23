@@ -178,9 +178,6 @@ namespace sparta
     class Scheduler;
     class ExtensionDescriptor;
 
-    template <typename T>
-    class Parameter;
-
     typedef std::vector<std::unique_ptr<ExtensionDescriptor>> ExtensionDescriptorVec;
 
     /*!

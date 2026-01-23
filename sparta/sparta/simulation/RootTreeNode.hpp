@@ -503,13 +503,6 @@ namespace sparta
         }
 
         /*!
-         * \brief Get all tree node extension factories.
-         */
-        static std::map<std::string, std::function<ExtensionsBase*()>> & getExtensionFactories() {
-            return extensionFactories_();
-        }
-
-        /*!
          * \brief Returns a ParameterTree containing an unbound set of
          * named tree node extensions and their parameter value(s).
          */
@@ -596,9 +589,6 @@ namespace sparta
                     //   top.node1.extension.foo:
                     //     bar: 2
                     //     baz: "blah"
-                    //
-                    // We extract the param values as strings, and later we will
-                    // convert to specific Parameter<T> params.
                     auto param_nodes = child->getChildren();
                     for (auto p : param_nodes) {
                         auto p_name = p->getName();
@@ -612,7 +602,7 @@ namespace sparta
             }
 
             // Create each extension using its registered factory if we have it,
-            // else we have to create a ExtensionsParamsOnly object.
+            // else we have to create an ExtensionsParamsOnly object.
             struct NodeExtension {
                 std::string path;
                 std::string ext_name;
@@ -636,9 +626,9 @@ namespace sparta
                 auto ps = node_extension->extension->getParameters();
 
                 for (const auto & kvp : desc.params) {
-                    // All parameters are created as Parameter<std::string>, and users
-                    // can later call ExtensionsBase::getParameterAs<T> which will attempt
-                    // to parse the string as T, and throw if it fails.
+                    // All parameters are created as Parameter<std::string>, and users will later
+                    // call ExtensionsBase::getParameterValueAs<T> which will attempt to parse the
+                    // string as T (smartLexicalCast), and throw if it fails.
                     const auto & p_name = kvp.first;
                     const auto & p_value = kvp.second;
                     const auto & p_desc = p_name;
