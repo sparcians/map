@@ -15,6 +15,7 @@
  *  - No simulation, just TreeNode's.
  *  - Simulation, but no CommandLineSimulator.
  *  - Simulation with CommandLineSimulator.
+ *  - Backwards compatibility test with factory registration in buildTree_().
  */
 
 TEST_INIT
@@ -185,11 +186,10 @@ private:
         // commonly register factories in buildTree_() instead, which
         // occurs after Simulation::configure(). To check backwards
         // compatibility, register a factory now for the "global_meta"
-        // extension now. The existing extension at this time is of
-        // final class type ExtensionsParamsOnly. When we register
-        // the factory, the existing ExtensionsParamsOnly extension
-        // will be automatically replaced with a GlobalMetadata
-        // extension object.
+        // extension. The existing extension at this time is of final
+        // class type ExtensionsParamsOnly. When we register the factory,
+        // the existing ExtensionsParamsOnly extension will be automatically
+        // replaced with a GlobalMetadata extension object.
         if (check_legacy_use_) {
             getRoot()->addExtensionFactory("global_meta", []() { return new GlobalMetadata; });
         }
@@ -429,7 +429,6 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
     node3_ext = node3->createExtension("global_meta", true /*replace*/);
     auto new_ext_uuid = node3_ext->getUUID();
     EXPECT_NOTEQUAL(new_ext_uuid, old_ext_uuid);
-    EXPECT_NOTEQUAL(node3_ext, nullptr);
 
     if (dynamic_cast<GlobalMetadata*>(node3_ext) != nullptr) {
         // Legacy use case with factory registered in buildTree_().
@@ -444,7 +443,7 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
 
     // --node-config-file test: node4 should get its extension
     // from node4_config.yaml.
-    auto node4 = node3->getChild("node4", false /*must_exist*/);
+    auto node4 = node3->getChild("node4");
     auto node4_ext = node4->getExtension("node_config");
     if (node4_ext) {
         const auto param_a = node4_ext->getParameterValueAs<uint32_t>("param_a");
@@ -531,7 +530,7 @@ void TestExtensionsWithCommandLineSim(const std::string & cmdline_args)
     cls->populateSimulation(&sim);
 
     // Run tree node extensions test
-    TestExtensions(sim.getRoot(), true /*Command-line sim*/);
+    TestExtensions(sim.getRoot(), true /*command-line sim*/);
 }
 
 // Test: Backwards compatibility checks
@@ -548,7 +547,7 @@ void TestExtensionsWithLegacyUse(const std::string & cmdline_args)
     cls->populateSimulation(&sim);
 
     // Run tree node extensions test
-    TestExtensions(sim.getRoot(), true /*Command-line sim*/);
+    TestExtensions(sim.getRoot(), true /*command-line sim*/);
 }
 
 int main(int argc, char** argv)
@@ -598,7 +597,7 @@ int main(int argc, char** argv)
     TestExtensionsWithCommandLineSim(
         "--config-file final.yaml --config-search-dir .");
 
-    // Backwards compatibility checks --------------------------------------------
+    // Backwards compatibility checks ------------------------------------------------
     TestExtensionsWithLegacyUse(
         "--extension-file ski_trails.yaml --extension-file global_meta.yaml --write-final-config final.yaml");
 

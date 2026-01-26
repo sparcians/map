@@ -2751,7 +2751,7 @@ void TreeNode::addExtensionFactory(const std::string & extension_name,
             new_extension->addParameter(std::move(param));
         }
 
-        // Add the new extention to the extensions parameter tree.
+        // Add the new extension to the extensions parameter tree.
         auto & ptree = root->getExtensionsUnboundParameterTree();
         constexpr bool must_be_leaf = false;
         auto ptree_node = ptree.tryGet(getLocation(), must_be_leaf);
@@ -2788,7 +2788,7 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
     // Handle locations that might end in '.' (do this so we can
     // append '.extension.<ext_name>' below without worry)
     auto loc = getLocation();
-    if (!loc.empty() && loc.back() == '.') {
+    if (loc.back() == '.') {
         loc.pop_back();
     }
 
@@ -2946,17 +2946,12 @@ getParameterValueAsImpl(const std::string& param_val_str)
     auto loc_s = param_val_str.substr(1, param_val_str.size() - 2);
 
     // Remove all whitespaces to ensure smartLexicalCast works properly
-    auto it = std::remove_if(
-        loc_s.begin(),
-        loc_s.end(),
+    auto it = std::remove_if(loc_s.begin(), loc_s.end(),
         [](char c){ return std::isspace(static_cast<unsigned char>(c)); });
     loc_s.erase(it, loc_s.end());
 
     // Remove all double quotes to ensure smartLexicalCast works properly
-    it = std::remove(
-        loc_s.begin(),
-        loc_s.end(),
-        '\"');
+    it = std::remove(loc_s.begin(), loc_s.end(), '\"');
     loc_s.erase(it, loc_s.end());
 
     // Split comma-delimited values
@@ -3012,7 +3007,7 @@ getParameterValueAsImpl(const std::string& param_val_str)
         pos = close_bracket + 1;
 
         // Skip comma and whitespace
-        while (pos < loc_s.size() && (loc_s[pos] == ',' || isspace(loc_s[pos]))) {
+        while (pos < loc_s.size() && (loc_s[pos] == ',' || ::isspace(loc_s[pos]))) {
             ++pos;
         }
     }

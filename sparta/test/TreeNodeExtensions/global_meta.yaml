@@ -1,4 +1,4 @@
-# ExtensionsParamsOnly: no factory for this extension.
+# All supported parameter types for tree node extensions
 
 top:
   extension.global_meta:

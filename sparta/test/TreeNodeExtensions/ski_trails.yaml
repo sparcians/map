@@ -10,7 +10,7 @@
 #   - top.node1.node2.node3
 #
 # And we will dynamically add extensions to node3 only when we call
-# TreeNode::getExtension() on that node in the test.
+# TreeNode::createExtension() on that node in the test.
 
 top:
   extension.ski_trail:
