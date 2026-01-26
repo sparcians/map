@@ -1,0 +1,7 @@
+# This config file is used to test extension creation for --node-config-file
+
+node1.node2.node3.node4:
+  extension.node_config:
+    param_a: 10
+    param_b: "foobar"
+    param_c: [4,5,6]

@@ -1926,27 +1926,69 @@ namespace sparta
              */
             template <typename T>
             T getParameterValueAs(const std::string& param_name);
+
+            /*!
+             * \brief UUID for testing purposes. NOT added to final config
+             * (--write-final-config) output.
+             */
+            const std::string & getUUID() const {
+                return uuid_;
+            }
+
+        private:
+            std::string uuid_;
         };
+
+        /*!
+         * \brief Add an extension factory to this tree node by its type (name).
+         * \note This MUST be called before or during buildTree_() (TREE_BUILDING phase).
+         * \note getRoot() MUST be of type RootTreeNode.
+         * \note Extensions are created automatically if provided in --extension-file,
+         * --arch, --config-file, or --node-config-file.
+         * \note If not provided in one of the above YAML files, getExtension(name)
+         * will always return nullptr.
+         */
+        void addExtensionFactory(const std::string & extension_name,
+                                 std::function<ExtensionsBase*()> factory);
 
         /*!
          * \brief Get an extension object by type string. Returns nullptr if not
          *        found (unrecognized).
          * \param extension_name The name of the extension to find
-         * \param create_if_needed Create the extension on-demand if it was not
-         * explicitly given in an extension/config/arch file. ONLY honored if
-         * this extension has a registered factory.
-         *
+         * \note If 'this' tree node was not given an extension in any of the
+         * --extension-file, --arch, --config-file, or --node-config-file YAML
+         * files, then this will always return nullptr. If you want to create
+         * an extension for this node on demand, call createExtension(name).
          */
-        ExtensionsBase * getExtension(const std::string & extension_name,
-                                      bool create_if_needed = false);
+        ExtensionsBase * getExtension(const std::string & extension_name);
 
         /*!
          * \brief Get an extension without needing to specify any particular type
          * string. If no extensions exist, returns nullptr. If only one extension
          * exists, returns that extension. If more than one extension exists, throws
          * an exception.
+         * \note If 'this' tree node was not given an extension in any of the
+         * --extension-file, --arch, --config-file, or --node-config-file YAML
+         * files, then this will always return nullptr. If you want to create
+         * an extension for this node on demand, call createExtension(name).
          */
         ExtensionsBase * getExtension();
+
+        /*!
+         * \brief Create an extension on demand. This is useful if you want to
+         * add an extension to a node that was not specified in any of the
+         * --extension-file, --arch, --config-file, or --node-config-file YAML
+         * files.
+         * \param extension_name The name of the extension to create.
+         * \param replace If true, remove any existing extension of the same name
+         * before creating a new one. If false, returns the existing extension if one
+         * exists.
+         * \note Does not require a registered extension factory. If no factory
+         * exists for the given name, returns an ExtensionsParamsOnly. Otherwise,
+         * returns an extension subclass created by the factory.
+         */
+        ExtensionsBase * createExtension(const std::string & extension_name,
+                                         bool replace=false);
 
         /*!
          * \brief Extension names, if any. Tree node extensions are typically
@@ -1971,8 +2013,7 @@ namespace sparta
         std::map<std::string, ExtensionsBase*> getAllExtensions() {
             std::map<std::string, ExtensionsBase*> extensions;
             for (const auto & ext_name : getAllExtensionNames()) {
-                constexpr bool create_if_needed = false;
-                auto ext = getExtension(ext_name, create_if_needed);
+                auto ext = getExtension(ext_name);
                 sparta_assert(ext != nullptr);
                 extensions[ext_name] = ext;
             }

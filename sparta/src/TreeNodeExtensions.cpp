@@ -17,6 +17,7 @@
 #include "sparta/utils/KeyValue.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/SpartaException.hpp"
+#include "sparta/utils/Utils.hpp"
 
 namespace YAML {
 class EventHandler;
@@ -213,6 +214,7 @@ std::unique_ptr<ParameterSet> ExtensionDescriptor::cloneParameters() const
  * \brief TreeNode::ExtensionsBase class implementation
  */
 TreeNode::ExtensionsBase::ExtensionsBase()
+    : uuid_(generateUUID())
 {
 }
 

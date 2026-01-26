@@ -623,20 +623,30 @@ namespace sparta
                 }
 
                 node_extension->extension->setParameters(std::make_unique<ParameterSet>(nullptr));
-                auto ps = node_extension->extension->getParameters();
 
+                // Call postCreate before adding parameters. Extension subclasses may have
+                // added some parameters explicitly during this call, and we want to avoid
+                // adding parameters twice.
+                node_extension->extension->postCreate();
+
+                auto ps = node_extension->extension->getParameters();
                 for (const auto & kvp : desc.params) {
-                    // All parameters are created as Parameter<std::string>, and users will later
-                    // call ExtensionsBase::getParameterValueAs<T> which will attempt to parse the
-                    // string as T (smartLexicalCast), and throw if it fails.
                     const auto & p_name = kvp.first;
                     const auto & p_value = kvp.second;
+
+                    // If this parameter was already created during postCreate, just set its value.
+                    if (auto p = ps->getParameter(p_name, false /*must_exist*/)) {
+                        app::ParameterApplicator pa("", p_value);
+                        pa.apply(p);
+                        continue;
+                    }
+
+                    // Otherwise, create a new parameter, defaulting to string type.
                     const auto & p_desc = p_name;
                     auto param = std::make_unique<Parameter<std::string>>(p_name, p_value, p_desc, ps);
                     node_extension->extension->addParameter(std::move(param));
                 }
 
-                node_extension->extension->postCreate();
                 node_extensions.emplace_back(std::move(node_extension));
             }
 

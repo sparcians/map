@@ -12,3 +12,13 @@ top:
     string_vector: ["hello", "world"]
     hex_scalar: 0x12345
     hex_vector: [0x1, 0x2, 0x3]
+    string_nested_vectors:
+    [
+      ["a", "b", "c"],
+      ["d", "e", "f"]
+    ]
+    int_nested_vectors:
+    [
+      [1, 2, 3],
+      [4, 5, 6]
+    ]
