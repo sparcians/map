@@ -2052,19 +2052,6 @@ namespace sparta
         /*!
          * \brief Get a map of extensions for this node.
          */
-        std::map<std::string, ExtensionsBase*> getAllExtensions() {
-            std::map<std::string, ExtensionsBase*> extensions;
-            for (const auto & ext_name : getAllExtensionNames()) {
-                auto ext = getExtension(ext_name);
-                sparta_assert(ext != nullptr);
-                extensions[ext_name] = ext;
-            }
-            return extensions;
-        }
-
-        /*!
-         * \brief Get a map of extensions for this node (const version).
-         */
         std::map<std::string, const ExtensionsBase*> getAllExtensions() const {
             std::map<std::string, const ExtensionsBase*> extensions;
             for (const auto & ext_name : getAllExtensionNames()) {

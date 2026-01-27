@@ -2844,7 +2844,7 @@ const TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & exte
     }
 
     auto extension = ptree_node->tryGetUserData<std::shared_ptr<ExtensionsBase>>(extension_name);
-    return extension->get();
+    return extension ? extension->get() : nullptr;
 }
 
 TreeNode::ExtensionsBase * TreeNode::getExtension()

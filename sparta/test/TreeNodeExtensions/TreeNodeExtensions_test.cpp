@@ -233,6 +233,11 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
     auto top_ext = top->getExtension("ski_trail");
     auto node1_ext = node1->getExtension("ski_trail");
     auto node2_ext = node2->getExtension("ski_trail");
+
+    // Some tests will end up dynamically creating the extension for node3
+    // on demand if we use the non-const getExtension() method. Verify that
+    // using the const version does not create the extension.
+    EXPECT_EQUAL(const_cast<const sparta::TreeNode*>(node3)->getExtension("ski_trail"), nullptr);
     auto node3_ext = node3->getExtension("ski_trail");
 
     // top, node1, and node2 should have extensions from ski_trails.yaml.
@@ -455,18 +460,6 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
         EXPECT_EQUAL(param_a, 10);
         EXPECT_EQUAL(param_b, "foobar");
         EXPECT_EQUAL(param_c, std::vector<uint32_t>({4,5,6}));
-    }
-
-    // Get code coverage for the const version of getAllExtensions(),
-    // which also tests the const version of getExtension().
-    const auto & const_top = *top;
-    auto const_extensions = const_top.getAllExtensions();
-    auto nonconst_extensions = top->getAllExtensions();
-    EXPECT_EQUAL(const_extensions.size(), nonconst_extensions.size());
-
-    for (const auto & [ext_name, const_ext_ptr] : const_extensions) {
-        auto nonconst_ext_ptr = nonconst_extensions.at(ext_name);
-        EXPECT_EQUAL(const_ext_ptr, nonconst_ext_ptr);
     }
 }
 
