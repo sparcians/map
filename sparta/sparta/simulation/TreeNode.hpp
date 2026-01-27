@@ -28,6 +28,7 @@
 
 #include "sparta/utils/StaticInit.hpp"
 #include "sparta/simulation/ResourceContainer.hpp"
+#include "sparta/simulation/TreeNodeExtensionsSupport.hpp"
 #include "sparta/functional/ArchDataContainer.hpp"
 #include "sparta/utils/Utils.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -1923,9 +1924,19 @@ namespace sparta
              *
              *   getParameterValueAs<std::vector<double>>
              *   ...
+             *
+             * And nested vectors of the above types:
+             *
+             *   getParameterValueAs<std::vector<std::vector<uint32_t>>>
+             *   ...
              */
             template <typename T>
-            T getParameterValueAs(const std::string& param_name);
+            T getParameterValueAs(const std::string& param_name) {
+                static_assert(extensions::is_supported<T>::value,
+                              "ExtensionsBase::getParameterValueAs<T> called with "
+                              "unsupported type T. See documentation for supported types.");
+                return getParameterValueAs_<T>(param_name);
+            }
 
             /*!
              * \brief UUID for testing purposes. NOT added to final config
@@ -1936,6 +1947,9 @@ namespace sparta
             }
 
         private:
+            template <typename T>
+            T getParameterValueAs_(const std::string& param_name);
+
             std::string uuid_;
         };
 
