@@ -20,12 +20,11 @@
 
 TEST_INIT
 
-// User-defined tree node extension class. YAML extension file
-// provides "color" and "shape" parameters, e.g. "green circle",
-// "blue square", and "black diamond". Also has a YAML parameter
-// "trail_name". The last parameter "trail_closed" is not given
-// in the YAML file, but is added to the extension's parameter
-// set when the extension is created.
+// User-defined tree node extension class. YAML extension file provides "color"
+// and "shape" parameters, e.g. "green circle", "blue square", and "black diamond".
+// Also has a YAML parameter "trail_name". The last parameter "trail_closed" is not
+// given in the YAML file for all extensions, but is added to the extension's parameter
+// set when the extension is created and can be overridden in the YAML file if desired.
 class SkiTrailExtension : public sparta::ExtensionsParamsOnly
 {
 public:
@@ -269,20 +268,23 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
     auto verif_ski_trail = [](sparta::TreeNode::ExtensionsBase * extension,
                               const std::string & expected_trail_name,
                               const std::string & expected_color,
-                              const std::string & expected_shape)
+                              const std::string & expected_shape,
+                              const bool expected_trail_closed)
     {
         const auto actual_trail_name = extension->getParameterValueAs<std::string>("trail_name");
         const auto actual_color = extension->getParameterValueAs<std::string>("color");
         const auto actual_shape = extension->getParameterValueAs<std::string>("shape");
+        const auto actual_trail_closed = extension->getParameterValueAs<bool>("trail_closed");
 
         EXPECT_EQUAL(expected_trail_name, actual_trail_name);
         EXPECT_EQUAL(expected_color, actual_color);
         EXPECT_EQUAL(expected_shape, actual_shape);
+        EXPECT_EQUAL(expected_trail_closed, actual_trail_closed);
     };
 
-    verif_ski_trail(top_ext, "Fuddle Duddle", "green", "circle");
-    verif_ski_trail(node1_ext, "Escapade", "blue", "square");
-    verif_ski_trail(node2_ext, "Devil's River", "black", "diamond");
+    verif_ski_trail(top_ext, "Fuddle Duddle", "green", "circle", false);
+    verif_ski_trail(node1_ext, "Escapade", "blue", "square", false);
+    verif_ski_trail(node2_ext, "Devil's River", "black", "diamond", true);
 
     // For the command-line sim test, the top node has two extensions already.
     // That means we cannot call getExtension() without an explicit extension

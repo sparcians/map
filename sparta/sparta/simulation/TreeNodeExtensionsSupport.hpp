@@ -10,16 +10,17 @@ namespace sparta::extensions {
 template <typename T>
 struct is_supported_scalar : std::false_type {};
 
-template <> struct is_supported_scalar<int8_t>   : std::true_type {};
-template <> struct is_supported_scalar<uint8_t>  : std::true_type {};
-template <> struct is_supported_scalar<int16_t>  : std::true_type {};
-template <> struct is_supported_scalar<uint16_t> : std::true_type {};
-template <> struct is_supported_scalar<int32_t>  : std::true_type {};
-template <> struct is_supported_scalar<uint32_t> : std::true_type {};
-template <> struct is_supported_scalar<int64_t>  : std::true_type {};
-template <> struct is_supported_scalar<uint64_t> : std::true_type {};
-template <> struct is_supported_scalar<double>   : std::true_type {};
+template <> struct is_supported_scalar<int8_t>      : std::true_type {};
+template <> struct is_supported_scalar<uint8_t>     : std::true_type {};
+template <> struct is_supported_scalar<int16_t>     : std::true_type {};
+template <> struct is_supported_scalar<uint16_t>    : std::true_type {};
+template <> struct is_supported_scalar<int32_t>     : std::true_type {};
+template <> struct is_supported_scalar<uint32_t>    : std::true_type {};
+template <> struct is_supported_scalar<int64_t>     : std::true_type {};
+template <> struct is_supported_scalar<uint64_t>    : std::true_type {};
+template <> struct is_supported_scalar<double>      : std::true_type {};
 template <> struct is_supported_scalar<std::string> : std::true_type {};
+template <> struct is_supported_scalar<bool>        : std::true_type {};
 
 template <typename T, size_t Depth>
 struct is_supported_impl : is_supported_scalar<T> {};

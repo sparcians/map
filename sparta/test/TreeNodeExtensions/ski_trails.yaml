@@ -29,3 +29,4 @@ top.node1.node2:
     trail_name: Devil's River
     color: black
     shape: diamond
+    trail_closed: true

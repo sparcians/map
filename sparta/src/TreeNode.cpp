@@ -3104,6 +3104,7 @@ template int64_t TreeNode::ExtensionsBase::getParameterValueAs_<int64_t>(const s
 template uint64_t TreeNode::ExtensionsBase::getParameterValueAs_<uint64_t>(const std::string&);
 template double TreeNode::ExtensionsBase::getParameterValueAs_<double>(const std::string&);
 template std::string TreeNode::ExtensionsBase::getParameterValueAs_<std::string>(const std::string&);
+template bool TreeNode::ExtensionsBase::getParameterValueAs_<bool>(const std::string&);
 
 // Vectors are supported too:
 template std::vector<int8_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<int8_t>>(const std::string&);
@@ -3116,6 +3117,7 @@ template std::vector<int64_t> TreeNode::ExtensionsBase::getParameterValueAs_<std
 template std::vector<uint64_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<uint64_t>>(const std::string&);
 template std::vector<double> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<double>>(const std::string&);
 template std::vector<std::string> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::string>>(const std::string&);
+template std::vector<bool> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<bool>>(const std::string&);
 
 // Nested vectors are supported too:
 template std::vector<std::vector<int8_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<int8_t>>>(const std::string&);
@@ -3128,6 +3130,8 @@ template std::vector<std::vector<int64_t>> TreeNode::ExtensionsBase::getParamete
 template std::vector<std::vector<uint64_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<uint64_t>>>(const std::string&);
 template std::vector<std::vector<double>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<double>>>(const std::string&);
 template std::vector<std::vector<std::string>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<std::string>>>(const std::string&);
+template std::vector<std::vector<bool>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<bool>>>(const std::string&);
+
 // Miscellaneous
 
 void TreeNode::addChildNameMapping_(const std::string& name,

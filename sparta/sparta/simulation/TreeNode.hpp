@@ -1920,6 +1920,8 @@ namespace sparta
              *
              *   getParameterValueAs<std::string>
              *
+             *   getParameterValueAs<bool>
+             *
              * As well as vectors of the above types:
              *
              *   getParameterValueAs<std::vector<double>>
