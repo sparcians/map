@@ -2820,7 +2820,60 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
     return extension->get();
 }
 
+const TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_name) const
+{
+    auto root = dynamic_cast<const RootTreeNode*>(getRoot());
+    if (!root) {
+        return nullptr;
+    }
+
+    const auto & ptree = root->getExtensionsUnboundParameterTree();
+    constexpr bool must_be_leaf = false;
+
+    // Handle locations that might end in '.' (do this so we can
+    // append '.extension.<ext_name>' below without worry)
+    auto loc = getLocation();
+    if (loc.back() == '.') {
+        loc.pop_back();
+    }
+
+    auto ptree_node = ptree.tryGet(loc, must_be_leaf);
+    if (!ptree_node) {
+        // Always return nullptr if tree node not found in any input YAML file.
+        return nullptr;
+    }
+
+    auto extension = ptree_node->tryGetUserData<std::shared_ptr<ExtensionsBase>>(extension_name);
+    return extension->get();
+}
+
 TreeNode::ExtensionsBase * TreeNode::getExtension()
+{
+    std::set<std::string> known_extension_names = getAllExtensionNames();
+
+    //Don't have any extension names? No extensions.
+    if (known_extension_names.empty()) {
+        return nullptr;
+    }
+
+    //More than one unique extension name? Exception.
+    else if (known_extension_names.size() > 1) {
+        std::ostringstream oss;
+        oss << "TreeNode::getExtension() overload called without any specific " << std::endl;
+        oss << "named extension requested. However, more than one extension was " << std::endl;
+        oss << "found. Applies to '" << getLocation() << "'" << std::endl;
+        oss << "Here are the extension names found at this node:" << std::endl;
+        for (const auto & ext : known_extension_names) {
+            oss << "\t" << ext << std::endl;
+        }
+        throw SpartaException(oss.str());
+    }
+
+    //Get the one named extension
+    return getExtension(*known_extension_names.begin());
+}
+
+const TreeNode::ExtensionsBase * TreeNode::getExtension() const
 {
     std::set<std::string> known_extension_names = getAllExtensionNames();
 

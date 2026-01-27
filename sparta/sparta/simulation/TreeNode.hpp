@@ -1963,6 +1963,17 @@ namespace sparta
         ExtensionsBase * getExtension(const std::string & extension_name);
 
         /*!
+         * \brief Get an extension object by type string. Returns nullptr if not
+         *        found (unrecognized).
+         * \param extension_name The name of the extension to find
+         * \note If 'this' tree node was not given an extension in any of the
+         * --extension-file, --arch, --config-file, or --node-config-file YAML
+         * files, then this will always return nullptr. If you want to create
+         * an extension for this node on demand, call createExtension(name).
+         */
+        const ExtensionsBase * getExtension(const std::string & extension_name) const;
+
+        /*!
          * \brief Get an extension without needing to specify any particular type
          * string. If no extensions exist, returns nullptr. If only one extension
          * exists, returns that extension. If more than one extension exists, throws
@@ -1973,6 +1984,21 @@ namespace sparta
          * an extension for this node on demand, call createExtension(name).
          */
         ExtensionsBase * getExtension();
+
+        /*!
+         * \brief Get an extension without needing to specify any particular type
+         * string. If no extensions exist, returns nullptr. If only one extension
+         * exists, returns that extension. If more than one extension exists, throws
+         * an exception.
+         * \note If 'this' tree node was not given an extension in any of the
+         * --extension-file, --arch, --config-file, or --node-config-file YAML
+         * files, then this will always return nullptr. If you want to create
+         * an extension for this node on demand, call createExtension(name).
+         * \note Unlike the non-const version, this method will never create
+         * the extension automatically under the hood, nor will it cache the
+         * extension for performance.
+         */
+        const ExtensionsBase * getExtension() const;
 
         /*!
          * \brief Create an extension on demand. This is useful if you want to
@@ -2012,6 +2038,19 @@ namespace sparta
          */
         std::map<std::string, ExtensionsBase*> getAllExtensions() {
             std::map<std::string, ExtensionsBase*> extensions;
+            for (const auto & ext_name : getAllExtensionNames()) {
+                auto ext = getExtension(ext_name);
+                sparta_assert(ext != nullptr);
+                extensions[ext_name] = ext;
+            }
+            return extensions;
+        }
+
+        /*!
+         * \brief Get a map of extensions for this node (const version).
+         */
+        std::map<std::string, const ExtensionsBase*> getAllExtensions() const {
+            std::map<std::string, const ExtensionsBase*> extensions;
             for (const auto & ext_name : getAllExtensionNames()) {
                 auto ext = getExtension(ext_name);
                 sparta_assert(ext != nullptr);

@@ -454,6 +454,18 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
         EXPECT_EQUAL(param_b, "foobar");
         EXPECT_EQUAL(param_c, std::vector<uint32_t>({4,5,6}));
     }
+
+    // Get code coverage for the const version of getAllExtensions(),
+    // which also tests the const version of getExtension().
+    const auto & const_top = *top;
+    auto const_extensions = const_top.getAllExtensions();
+    auto nonconst_extensions = top->getAllExtensions();
+    EXPECT_EQUAL(const_extensions.size(), nonconst_extensions.size());
+
+    for (const auto & [ext_name, const_ext_ptr] : const_extensions) {
+        auto nonconst_ext_ptr = nonconst_extensions.at(ext_name);
+        EXPECT_EQUAL(const_ext_ptr, nonconst_ext_ptr);
+    }
 }
 
 // Test: No simulation, just TreeNode's.
