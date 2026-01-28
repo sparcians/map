@@ -1990,6 +1990,50 @@ namespace sparta
         const ExtensionsBase * getExtension(const std::string & extension_name) const;
 
         /*!
+         * \brief Get an extension, downcast to the given type.
+         * \throw Throws an exception if the extension exists, but the downcast failed.
+         */
+        template <typename T>
+        T* getExtensionAs(const std::string & extension_name) {
+            static_assert(std::is_base_of<ExtensionsBase, T>::value);
+            auto ext = getExtension(extension_name);
+            if (!ext) {
+                return nullptr;
+            }
+
+            auto ret = dynamic_cast<T*>(ext);
+            if (!ret) {
+                throw SpartaException("Could not downcast extension '")
+                    << extension_name << "' to " << typeid(T).name() << ". "
+                    << "Actual extension type is " << ext->getClassName() << ".";
+            }
+
+            return ret;
+        }
+
+        /*!
+         * \brief Get an extension, downcast to the given type.
+         * \throw Throws an exception if the extension exists, but the downcast failed.
+         */
+        template <typename T>
+        const T* getExtensionAs(const std::string & extension_name) const {
+            static_assert(std::is_base_of<ExtensionsBase, T>::value);
+            auto ext = getExtension(extension_name);
+            if (!ext) {
+                return nullptr;
+            }
+
+            auto ret = dynamic_cast<const T*>(ext);
+            if (!ret) {
+                throw SpartaException("Could not downcast extension '")
+                    << extension_name << "' to " << typeid(T).name() << ". "
+                    << "Actual extension type is " << ext->getClassName() << ".";
+            }
+
+            return ret;
+        }
+
+        /*!
          * \brief Get an extension without needing to specify any particular type
          * string. If no extensions exist, returns nullptr. If only one extension
          * exists, returns that extension. If more than one extension exists, throws

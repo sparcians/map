@@ -226,6 +226,7 @@ private:
         if (check_legacy_use_) {
             if (!sparta::RootTreeNode::getExtensionFactory("global_meta")) {
                 auto ext = getRoot()->createExtension("global_meta");
+                EXPECT_NOTEQUAL(ext, nullptr);
                 EXPECT_EQUAL(dynamic_cast<GlobalMetadata*>(ext), nullptr);
                 EXPECT_THROW(getRoot()->addExtensionFactory("global_meta",
                     []() { return new GlobalMetadata; }));
@@ -486,6 +487,11 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
         // The created extension should be of type GlobalMetadata
         // with all supported parameters.
         EXPECT_EQUAL(node3_ext->getParameters()->getNumParameters(), 12);
+
+        // Get coverage for getExtensionAs<T>
+        auto const_node3 = const_cast<const sparta::TreeNode*>(node3);
+        EXPECT_EQUAL(node3_ext, node3->getExtensionAs<GlobalMetadata>("global_meta"));
+        EXPECT_EQUAL(node3_ext, const_node3->getExtensionAs<GlobalMetadata>("global_meta"));
     } else {
         // Normal use case without factory registered. The created extension should
         // be of type ExtensionsParamsOnly with zero parameters.
