@@ -147,6 +147,39 @@ private:
     sparta::TreeNode node4_;
 };
 
+class MultiCoreTestTree
+{
+public:
+    MultiCoreTestTree()
+        : top_("top")
+        , core0_(&top_, "core0", "core0")
+        , core1_(&top_, "core1", "core1")
+        , core0_foo0_(&core0_, "foo0", "foo0")
+        , core0_foo1_(&core0_, "foo1", "foo1")
+        , core1_foo0_(&core1_, "foo0", "foo0")
+        , core1_foo1_(&core1_, "foo1", "foo1")
+    {}
+
+    sparta::RootTreeNode * getRoot()
+    {
+        return &top_;
+    }
+
+    ~MultiCoreTestTree()
+    {
+        top_.enterTeardown();
+    }
+
+private:
+    sparta::RootTreeNode top_;
+    sparta::TreeNode core0_;
+    sparta::TreeNode core1_;
+    sparta::TreeNode core0_foo0_;
+    sparta::TreeNode core0_foo1_;
+    sparta::TreeNode core1_foo0_;
+    sparta::TreeNode core1_foo1_;
+};
+
 class TestSimulator : public sparta::app::Simulation
 {
 public:
@@ -176,21 +209,28 @@ private:
         to_free_.emplace_back(node4);
 
         // The new way to use extensions is to register factories with
-        // the REGISTER_TREE_NODE_EXTENSION macro. This ensures that
-        // factories can be used when we create extensions in the
-        // Simulation::configure() / RootTreeNode::createExtensions()
-        // methods.
+        // the REGISTER_TREE_NODE_EXTENSION macro. That ensures that
+        // factories are available as soon as the program loads.
         //
-        // Though extensions have been redesigned, existing simulators
-        // commonly register factories in buildTree_() instead, which
-        // occurs after Simulation::configure(). To check backwards
-        // compatibility, register a factory now for the "global_meta"
-        // extension. The existing extension at this time is of final
-        // class type ExtensionsParamsOnly. When we register the factory,
-        // the existing ExtensionsParamsOnly extension will be automatically
-        // replaced with a GlobalMetadata extension object.
+        // The non-static legacy API addExtensionFactory() remains so
+        // downstream simulators don't have to change their code if
+        // they don't want to. But we need to ensure that if we are
+        // registering a factory, and there already exists an extension
+        // with this name that was NOT created with the factory, that
+        // we throw an exception. The factory needs to be registered
+        // before creating extensions of that type.
+        //
+        // In other words, addExtensionFactory() is left for backwards
+        // compatibility, while the exception is for future-proofing
+        // misuse of the legacy API.
         if (check_legacy_use_) {
-            getRoot()->addExtensionFactory("global_meta", []() { return new GlobalMetadata; });
+            if (!sparta::RootTreeNode::getExtensionFactory("global_meta")) {
+                auto ext = getRoot()->createExtension("global_meta");
+                EXPECT_EQUAL(dynamic_cast<GlobalMetadata*>(ext), nullptr);
+                EXPECT_THROW(getRoot()->addExtensionFactory("global_meta",
+                    []() { return new GlobalMetadata; }));
+                EXPECT_TRUE(getRoot()->removeExtension("global_meta"));
+            }
         }
     }
 
@@ -198,12 +238,14 @@ private:
     {
         // Ensure factory registration is disallowed by now. Must be TREE_BUILDING.
         EXPECT_THROW(addTreeNodeExtensionFactory_("dummy", []() { return new SkiTrailExtension; }))
+        EXPECT_THROW(getRoot()->addExtensionFactory("dummy", []() { return new SkiTrailExtension; }))
     }
 
     void bindTree_() override
     {
         // Ensure factory registration is disallowed by now. Must be TREE_BUILDING.
         EXPECT_THROW(addTreeNodeExtensionFactory_("dummy", []() { return new SkiTrailExtension; }))
+        EXPECT_THROW(getRoot()->addExtensionFactory("dummy", []() { return new SkiTrailExtension; }))
     }
 
     // Miscellaneous nodes to free at destruction
@@ -211,6 +253,66 @@ private:
 
     // Flag saying whether to check legacy use of extensions for backwards compatibility
     const bool check_legacy_use_;
+};
+
+// Validate the "global_meta" extension parameters.
+void VerifyGlobalMeta(sparta::TreeNode::ExtensionsBase * extension)
+{
+    const uint64_t expected_int_scalar = 5;
+    const uint64_t actual_int_scalar = extension->getParameterValueAs<uint64_t>("int_scalar");
+    EXPECT_EQUAL(expected_int_scalar, actual_int_scalar);
+
+    const std::vector<uint64_t> expected_int_vector = {1,2,3};
+    const std::vector<uint64_t> actual_int_vector = extension->getParameterValueAs<std::vector<uint64_t>>("int_vector");
+    EXPECT_EQUAL(expected_int_vector, actual_int_vector);
+
+    const int32_t expected_neg_int_scalar = -4;
+    const int32_t actual_neg_int_scalar = extension->getParameterValueAs<int32_t>("neg_int_scalar");
+    EXPECT_EQUAL(expected_neg_int_scalar, actual_neg_int_scalar);
+
+    const std::vector<int32_t> expected_neg_int_vector = {-1,-2,-3};
+    const std::vector<int32_t> actual_neg_int_vector = extension->getParameterValueAs<std::vector<int32_t>>("neg_int_vector");
+    EXPECT_EQUAL(expected_neg_int_vector, actual_neg_int_vector);
+
+    const double expected_double_scalar = 6.7;
+    const double actual_double_scalar = extension->getParameterValueAs<double>("double_scalar");
+    EXPECT_EQUAL(expected_double_scalar, actual_double_scalar);
+
+    const std::vector<double> expected_double_vector = {1.1, 2.2, 3.3};
+    const std::vector<double> actual_double_vector = extension->getParameterValueAs<std::vector<double>>("double_vector");
+    EXPECT_EQUAL(expected_double_vector, actual_double_vector);
+
+    const std::string expected_string_scalar = "foobar";
+    const std::string actual_string_scalar = extension->getParameterValueAs<std::string>("string_scalar");
+    EXPECT_EQUAL(expected_string_scalar, actual_string_scalar);
+
+    const std::vector<std::string> expected_string_vector = {"hello", "world"};
+    const std::vector<std::string> actual_string_vector = extension->getParameterValueAs<std::vector<std::string>>("string_vector");
+    EXPECT_EQUAL(expected_string_vector, actual_string_vector);
+
+    const uint64_t expected_hex_scalar = 0x12345;
+    const uint64_t actual_hex_scalar = extension->getParameterValueAs<uint64_t>("hex_scalar");
+    EXPECT_EQUAL(expected_hex_scalar, actual_hex_scalar);
+
+    const std::vector<uint64_t> expected_hex_vector = {0x1, 0x2, 0x3};
+    const std::vector<uint64_t> actual_hex_vector = extension->getParameterValueAs<std::vector<uint64_t>>("hex_vector");
+    EXPECT_EQUAL(expected_hex_vector, actual_hex_vector);
+
+    const std::vector<std::vector<std::string>> expected_string_nested_vectors = {
+        {"a", "b", "c"},
+        {"d", "e", "f"}
+    };
+    const std::vector<std::vector<std::string>> actual_string_nested_vectors =
+        extension->getParameterValueAs<std::vector<std::vector<std::string>>>("string_nested_vectors");
+    EXPECT_EQUAL(expected_string_nested_vectors, actual_string_nested_vectors);
+
+    const std::vector<std::vector<uint32_t>> expected_int_nested_vectors = {
+        {1, 2, 3},
+        {4, 5, 6}
+    };
+    const std::vector<std::vector<uint32_t>> actual_int_nested_vectors =
+        extension->getParameterValueAs<std::vector<std::vector<uint32_t>>>("int_nested_vectors");
+    EXPECT_EQUAL(expected_int_nested_vectors, actual_int_nested_vectors);
 };
 
 // Common test function for all three use cases:
@@ -222,7 +324,7 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
     // Create extensions from ski_trails.yaml for non-command line simulations.
     // CommandLineSimulator test already did this.
     if (!cmdline_sim) {
-        top->createExtensions("ski_trails.yaml", {} /*no search paths*/, true /*verbose*/);
+        top->addExtensions("ski_trails.yaml", {"."} /*search paths*/, true /*verbose*/);
     }
 
     // Validate the extensions created from the YAML files.
@@ -291,17 +393,9 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
     verif_ski_trail(node1_ext, "Escapade", "blue", "square", false);
     verif_ski_trail(node2_ext, "Devil's River", "black", "diamond", true);
 
-    // For the command-line sim test, the top node has two extensions already.
-    // That means we cannot call getExtension() without an explicit extension
-    // name.
-    if (cmdline_sim) {
+    if (top->getNumExtensions() > 1) {
         EXPECT_THROW(top->getExtension());
-    }
-
-    // For non-command line sim tests, the top node only has one extension
-    // so far from ski_trails.yaml, so we should be able to call getExtension()
-    // without an explicit extension name.
-    else {
+    } else {
         EXPECT_EQUAL(top->getExtension(), top_ext);
     }
 
@@ -314,86 +408,36 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
     // Now add extensions from global_meta.yaml for non-command line simulations.
     // CommandLineSimulator test already did this.
     if (!cmdline_sim) {
-        top->createExtensions("global_meta.yaml", {} /*no search paths*/, true /*verbose*/);
+        top->addExtensions("global_meta.yaml", {"."} /*search paths*/, true /*verbose*/);
     }
 
-    // Check getNumExtensions()
-    EXPECT_EQUAL(top->getNumExtensions(), 2);
-
-    // Check getAllExtensionNames()
+    // Check getNumExtensions() before calling top->createExtension("global_meta").
+    // We should only have the one extension from ski_trails.yaml until we make
+    // the above API call.
+    EXPECT_EQUAL(top->getNumExtensions(), 1);
     auto ext_names = top->getAllExtensionNames();
-    auto expected_ext_names = std::set<std::string>({"ski_trail", "global_meta"});
+    auto expected_ext_names = std::set<std::string>({"ski_trail"});
+    EXPECT_TRUE(ext_names == expected_ext_names);
+
+    // Make sure global_meta extension does not exist on top node. Without a
+    // registered factory, getExtension() does not implicitly create the extension
+    // under the hood.
+    EXPECT_EQUAL(top->getExtension("global_meta"), nullptr);
+
+    // Now create the global_meta extension explicitly.
+    top->createExtension("global_meta");
+    auto top_global_meta_ext = top->getExtension("global_meta");
+    EXPECT_NOTEQUAL(top_global_meta_ext, nullptr);
+    EXPECT_EQUAL(top->getNumExtensions(), 2);
+    ext_names = top->getAllExtensionNames();
+    expected_ext_names = std::set<std::string>({"ski_trail", "global_meta"});
     EXPECT_TRUE(ext_names == expected_ext_names);
 
     // Since "top" now has two extensions, we cannot call getExtension()
     // without an extension name since it is ambiguous.
     EXPECT_THROW(top->getExtension());
 
-    // Validate the "global_meta" extension on "top". This extension contains
-    // all supported data types, both scalar and vector.
-    auto top_global_meta_ext = top->getExtension("global_meta");
-    EXPECT_NOTEQUAL(top_global_meta_ext, nullptr);
-
-    auto verif_global_meta = [](sparta::TreeNode::ExtensionsBase * extension)
-    {
-        const uint64_t expected_int_scalar = 5;
-        const uint64_t actual_int_scalar = extension->getParameterValueAs<uint64_t>("int_scalar");
-        EXPECT_EQUAL(expected_int_scalar, actual_int_scalar);
-
-        const std::vector<uint64_t> expected_int_vector = {1,2,3};
-        const std::vector<uint64_t> actual_int_vector = extension->getParameterValueAs<std::vector<uint64_t>>("int_vector");
-        EXPECT_EQUAL(expected_int_vector, actual_int_vector);
-
-        const int32_t expected_neg_int_scalar = -4;
-        const int32_t actual_neg_int_scalar = extension->getParameterValueAs<int32_t>("neg_int_scalar");
-        EXPECT_EQUAL(expected_neg_int_scalar, actual_neg_int_scalar);
-
-        const std::vector<int32_t> expected_neg_int_vector = {-1,-2,-3};
-        const std::vector<int32_t> actual_neg_int_vector = extension->getParameterValueAs<std::vector<int32_t>>("neg_int_vector");
-        EXPECT_EQUAL(expected_neg_int_vector, actual_neg_int_vector);
-
-        const double expected_double_scalar = 6.7;
-        const double actual_double_scalar = extension->getParameterValueAs<double>("double_scalar");
-        EXPECT_EQUAL(expected_double_scalar, actual_double_scalar);
-
-        const std::vector<double> expected_double_vector = {1.1, 2.2, 3.3};
-        const std::vector<double> actual_double_vector = extension->getParameterValueAs<std::vector<double>>("double_vector");
-        EXPECT_EQUAL(expected_double_vector, actual_double_vector);
-
-        const std::string expected_string_scalar = "foobar";
-        const std::string actual_string_scalar = extension->getParameterValueAs<std::string>("string_scalar");
-        EXPECT_EQUAL(expected_string_scalar, actual_string_scalar);
-
-        const std::vector<std::string> expected_string_vector = {"hello", "world"};
-        const std::vector<std::string> actual_string_vector = extension->getParameterValueAs<std::vector<std::string>>("string_vector");
-        EXPECT_EQUAL(expected_string_vector, actual_string_vector);
-
-        const uint64_t expected_hex_scalar = 0x12345;
-        const uint64_t actual_hex_scalar = extension->getParameterValueAs<uint64_t>("hex_scalar");
-        EXPECT_EQUAL(expected_hex_scalar, actual_hex_scalar);
-
-        const std::vector<uint64_t> expected_hex_vector = {0x1, 0x2, 0x3};
-        const std::vector<uint64_t> actual_hex_vector = extension->getParameterValueAs<std::vector<uint64_t>>("hex_vector");
-        EXPECT_EQUAL(expected_hex_vector, actual_hex_vector);
-
-        const std::vector<std::vector<std::string>> expected_string_nested_vectors = {
-            {"a", "b", "c"},
-            {"d", "e", "f"}
-        };
-        const std::vector<std::vector<std::string>> actual_string_nested_vectors =
-            extension->getParameterValueAs<std::vector<std::vector<std::string>>>("string_nested_vectors");
-        EXPECT_EQUAL(expected_string_nested_vectors, actual_string_nested_vectors);
-
-        const std::vector<std::vector<uint32_t>> expected_int_nested_vectors = {
-            {1, 2, 3},
-            {4, 5, 6}
-        };
-        const std::vector<std::vector<uint32_t>> actual_int_nested_vectors =
-            extension->getParameterValueAs<std::vector<std::vector<uint32_t>>>("int_nested_vectors");
-        EXPECT_EQUAL(expected_int_nested_vectors, actual_int_nested_vectors);
-    };
-
-    verif_global_meta(top_global_meta_ext);
+    VerifyGlobalMeta(top_global_meta_ext);
 
     // Up to now, node3 does not have any extensions. Test on-demand extension creation
     // with a registered factory.
@@ -557,6 +601,52 @@ void TestExtensionsWithLegacyUse(const std::string & cmdline_args)
     TestExtensions(sim.getRoot(), true /*command-line sim*/);
 }
 
+// Test: Checks extensions with wildcards in the YAML file.
+void TestExtensionWildcards()
+{
+    MultiCoreTestTree tree;
+    tree.getRoot()->addExtensions("multi_core.yaml", {"."} /*search paths*/, true /*verbose*/);
+
+    auto root = tree.getRoot();
+    auto scope = root->getSearchScope();
+    auto core0_foo0_tn = scope->getChild("top.core0.foo0");
+    auto core0_foo1_tn = scope->getChild("top.core0.foo1");
+    auto core1_foo0_tn = scope->getChild("top.core1.foo0");
+    auto core1_foo1_tn = scope->getChild("top.core1.foo1");
+
+    // Verify that no extensions have been created yet.
+    EXPECT_EQUAL(core0_foo0_tn->getNumExtensions(), 0);
+    EXPECT_EQUAL(core0_foo1_tn->getNumExtensions(), 0);
+    EXPECT_EQUAL(core1_foo0_tn->getNumExtensions(), 0);
+    EXPECT_EQUAL(core1_foo1_tn->getNumExtensions(), 0);
+
+    // Register the GlobalMetadata factory.
+    EXPECT_NOTHROW(root->addExtensionFactory("global_meta",
+        []() { return new GlobalMetadata; }));
+
+    // Create the extensions.
+    auto core0_foo0_ext = core0_foo0_tn->getExtension("global_meta");
+    auto core0_foo1_ext = core0_foo1_tn->getExtension("global_meta");
+    auto core1_foo0_ext = core0_foo0_tn->getExtension("global_meta");
+    auto core1_foo1_ext = core0_foo1_tn->getExtension("global_meta");
+
+    // Verify factory was used.
+    EXPECT_NOTEQUAL(dynamic_cast<GlobalMetadata*>(core0_foo0_ext), nullptr);
+    EXPECT_NOTEQUAL(dynamic_cast<GlobalMetadata*>(core0_foo1_ext), nullptr);
+    EXPECT_NOTEQUAL(dynamic_cast<GlobalMetadata*>(core1_foo0_ext), nullptr);
+    EXPECT_NOTEQUAL(dynamic_cast<GlobalMetadata*>(core1_foo1_ext), nullptr);
+
+    // Verify all extensions are shared since multi_core.yaml does this:
+    //
+    //   top.core*.foo*.extension.global_params:
+    //     ...
+    EXPECT_EQUAL(std::set<sparta::TreeNode::ExtensionsBase*>(
+        {core0_foo0_ext, core0_foo1_ext, core1_foo0_ext, core1_foo1_ext}).size(), 1);
+
+    // Verify all global metadata parameters.
+    VerifyGlobalMeta(core0_foo0_ext);
+}
+
 int main(int argc, char** argv)
 {
     sparta::SleeperThread::disableForever();
@@ -610,6 +700,9 @@ int main(int argc, char** argv)
 
     TestExtensionsWithLegacyUse(
         "--config-file final.yaml --config-search-dir .");
+
+    // No simulator, just TreeNode's (with wildcards in extension YAML) --------------
+    TestExtensionWildcards();
 
     REPORT_ERROR;
     return ERROR_CODE;

@@ -2701,64 +2701,32 @@ void TreeNode::addExtensionFactory(const std::string & extension_name,
         throw SpartaException("Cannot add extension factories once the simulator is configured");
     }
 
-    // If an extension by this name already exists for this node, and this is the first time
-    // we are registering a factory for this extension name, we need to replace the existing
-    // extension with the factory-created one.
-    //
-    // This is for backwards compatibility with code that adds extension factories after
-    // extensions have already been created in the parameter tree in the call to the
-    // Simulation::configure() method. It is common for simulators to register factories
-    // in buildTree_() which happens after configure().
-    const bool first_registration = RootTreeNode::getExtensionFactory(extension_name) == nullptr;
-    const bool has_extension = getAllExtensionNames().count(extension_name) > 0;
+    if (!RootTreeNode::getExtensionFactory(extension_name)) {
+        const auto & ptree = root->getExtensionsUnboundParameterTree();
+        auto map = ptree.getAllNodeExtensions();
 
-    if (first_registration && has_extension) {
-        auto extension = getExtension(extension_name);
-        sparta_assert(extension != nullptr);
-
-        auto ps = extension->getParameters();
-        sparta_assert(ps != nullptr);
-
-        std::vector<ParameterBase*> params;
-        ps->getChildrenOfType<ParameterBase>(params);
-
-        // Extract key-value pairs for the parameter name and value-as-string.
-        std::vector<std::pair<std::string, std::string>> param_kvps;
-        for (auto p : params) {
-            auto p_name = p->getName();
-            auto p_value = p->getValueAsString();
-            param_kvps.push_back(std::make_pair(p_name, p_value));
-        }
-
-        // Create the new extension from the factory.
-        std::shared_ptr<TreeNode::ExtensionsBase> new_extension(factory());
-        new_extension->setParameters(std::make_unique<ParameterSet>(nullptr));
-        new_extension->postCreate();
-        ps = new_extension->getParameters();
-
-        for (const auto & [p_name, p_value] : param_kvps) {
-            // If this parameter was already created during postCreate, just
-            // set its value.
-            if (auto p = ps->getParameter(p_name, false /*must_exist*/)) {
-                app::ParameterApplicator pa("", p_value);
-                pa.apply(p);
-                continue;
+        std::vector<std::string> existing_ext_paths;
+        for (const auto & [node, exts] : map) {
+            for (const auto & [ext_name, _] : exts) {
+                if (ext_name == extension_name) {
+                    existing_ext_paths.push_back(node->getPath());
+                    break;
+                }
             }
-
-            // Otherwise, create a new parameter, defaulting to string type.
-            const auto & p_desc = p_name;
-            auto param = std::make_unique<Parameter<std::string>>(p_name, p_value, p_desc, ps);
-            new_extension->addParameter(std::move(param));
         }
 
-        // Add the new extension to the extensions parameter tree.
-        auto & ptree = root->getExtensionsUnboundParameterTree();
-        constexpr bool must_be_leaf = false;
-        auto ptree_node = ptree.tryGet(getLocation(), must_be_leaf);
-        sparta_assert(ptree_node != nullptr);
-
-        sparta_assert(ptree_node->clearUserData(extension_name));
-        ptree_node->setUserData(extension_name, std::move(new_extension));
+        if (!existing_ext_paths.empty()) {
+            std::ostringstream oss;
+            oss << "Cannot register extension factory for '" << extension_name << "'.\n";
+            oss << "There are already extensions of this type that were created without \n";
+            oss << "a factory, or with a different factory. You must register factories \n";
+            oss << "ahead of time before calling getExtension() / createExtension() on \n";
+            oss << "the TreeNode objects. These nodes already have this extension:\n";
+            for (const auto & p : existing_ext_paths) {
+                oss << "\t" << p << "\n";
+            }
+            throw SpartaException(oss.str());
+        }
     }
 
     RootTreeNode::registerExtensionFactory(extension_name, factory);
@@ -2785,13 +2753,7 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
     auto & ptree = root->getExtensionsUnboundParameterTree();
     constexpr bool must_be_leaf = false;
 
-    // Handle locations that might end in '.' (do this so we can
-    // append '.extension.<ext_name>' below without worry)
     auto loc = getLocation();
-    if (loc.back() == '.') {
-        loc.pop_back();
-    }
-
     auto ptree_node = ptree.tryGet(loc, must_be_leaf);
     if (!ptree_node) {
         // Always return nullptr if tree node not found in any input YAML file.
@@ -2800,20 +2762,17 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
 
     auto extension = ptree_node->tryGetUserData<std::shared_ptr<ExtensionsBase>>(extension_name);
     if (!extension) {
-        std::shared_ptr<ExtensionsBase> ext;
         auto factory = RootTreeNode::getExtensionFactory(extension_name);
         if (factory) {
-            ext.reset(factory());
+            auto ext = createExtension(extension_name, true /*replace=true to avoid inf recursion*/);
+            sparta_assert(ext != nullptr);
+
+            extension = ptree_node->tryGetUserData<std::shared_ptr<ExtensionsBase>>(extension_name);
+            sparta_assert(extension != nullptr);
         } else {
             // Always return nullptr if no factory found for extension
             return nullptr;
         }
-
-        ext->setParameters(std::make_unique<ParameterSet>(nullptr));
-        ext->postCreate();
-        ptree_node->setUserData(extension_name, std::move(ext));
-        extension = ptree_node->tryGetUserData<std::shared_ptr<ExtensionsBase>>(extension_name);
-        sparta_assert(extension != nullptr);
     }
 
     cached_extensions_[extension_name] = *extension;
@@ -2830,13 +2789,7 @@ const TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & exte
     const auto & ptree = root->getExtensionsUnboundParameterTree();
     constexpr bool must_be_leaf = false;
 
-    // Handle locations that might end in '.' (do this so we can
-    // append '.extension.<ext_name>' below without worry)
     auto loc = getLocation();
-    if (loc.back() == '.') {
-        loc.pop_back();
-    }
-
     auto ptree_node = ptree.tryGet(loc, must_be_leaf);
     if (!ptree_node) {
         // Always return nullptr if tree node not found in any input YAML file.
@@ -2918,7 +2871,13 @@ TreeNode::ExtensionsBase * TreeNode::createExtension(const std::string & extensi
 
     auto & ptree = root->getExtensionsUnboundParameterTree();
     constexpr bool required = false;
-    auto ptree_node = ptree.create(getLocation(), required);
+    constexpr bool must_be_leaf = false;
+
+    auto loc = getLocation();
+    auto ptree_node = ptree.tryGet(loc, must_be_leaf);
+    if (!ptree_node) {
+        ptree_node = ptree.create(loc, required);
+    }
 
     // If replacing, remove any existing extension first
     if (replace) {
@@ -2936,12 +2895,79 @@ TreeNode::ExtensionsBase * TreeNode::createExtension(const std::string & extensi
     }
 
     extension->setParameters(std::make_unique<ParameterSet>(nullptr));
+    auto ps = extension->getParameters();
+    sparta_assert(ps != nullptr);
+
+    // Call postCreate before adding parameters found in the ptree. The extension
+    // subclass created from the factory might have parameters with default values
+    // that are overridden by those found in the YAML file, and we can't add any
+    // parameters to the ParameterSet with the same name.
     extension->postCreate();
 
+    // Extract key-value pairs for the parameter name and value-as-string.
+    auto ext_node = ptree_node->create("extension." + extension_name, required);
+    auto ext_param_nodes = ext_node->getChildren();
+
+    std::vector<std::pair<std::string, std::string>> param_kvps;
+    for (auto p : ext_param_nodes) {
+        auto p_name = p->getName();
+        auto p_value = p->getValue();
+        param_kvps.push_back(std::make_pair(p_name, p_value));
+    }
+
+    for (const auto & [p_name, p_value] : param_kvps) {
+        // If this parameter was already created during postCreate, just
+        // set its value.
+        if (auto p = ps->getParameter(p_name, false /*must_exist*/)) {
+            app::ParameterApplicator pa("", p_value);
+            pa.apply(p);
+            continue;
+        }
+
+        // Otherwise, create a new parameter, defaulting to string type.
+        const auto & p_desc = p_name;
+        auto param = std::make_unique<Parameter<std::string>>(p_name, p_value, p_desc, ps);
+        extension->addParameter(std::move(param));
+    }
+
+    // Add all parameters into the ptree.
+    std::vector<ParameterBase*> params;
+    ps->getChildrenOfType<ParameterBase>(params);
+
+    for (auto p : params) {
+        auto p_name = p->getName();
+        auto p_value = p->getValueAsString();
+        auto n = ext_node->addChild(p_name, required);
+        n->setValue(p_value, required);
+    }
+
+    // Add the new extension to the extensions parameter tree.
     ptree_node->setUserData(extension_name, std::move(extension));
     auto ext = getExtension(extension_name);
     sparta_assert(ext != nullptr);
     return ext;
+}
+
+bool TreeNode::removeExtension(const std::string & extension_name)
+{
+    auto root = dynamic_cast<RootTreeNode*>(getRoot());
+    if (!root) {
+        return false;
+    }
+
+    auto & ptree = root->getExtensionsUnboundParameterTree();
+    auto ptree_node = ptree.tryGet(getLocation(), false /*must_be_leaf*/);
+    if (!ptree_node) {
+        return false;
+    }
+
+    if (getAllExtensionNames().count(extension_name) == 0) {
+        return false;
+    }
+
+    auto success = ptree_node->clearUserData(extension_name);
+    sparta_assert(success);
+    return true;
 }
 
 std::set<std::string> TreeNode::getAllExtensionNames() const

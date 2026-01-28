@@ -394,7 +394,7 @@ void Simulation::configure(const int argc,
         sparta::ConfigEmitter::YAML extensions_yaml(temp_file.string(), false /*Hide descriptions*/);
         const auto& ptree = sim_config_->getExtensionsUnboundParameterTree();
         extensions_yaml.addParameters(getRoot(), &ptree, false /*Not verbose*/);
-        getRoot()->createExtensions(temp_file.string(), {temp_dir.string()});
+        getRoot()->addExtensions(temp_file.string(), {temp_dir.string()});
     }
 
     ReportDescVec expanded_descriptors;

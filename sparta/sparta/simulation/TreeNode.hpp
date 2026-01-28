@@ -2033,6 +2033,12 @@ namespace sparta
                                          bool replace=false);
 
         /*!
+         * \brief Remove an extension by its name. Returns true if successful,
+         * false if the extension was not found.
+         */
+        bool removeExtension(const std::string & extension_name);
+
+        /*!
          * \brief Extension names, if any. Tree node extensions are typically
          * instantiated on-demand for best performance (you have to explicitly
          * ask for an extension by its name, or it won't be created) - so note

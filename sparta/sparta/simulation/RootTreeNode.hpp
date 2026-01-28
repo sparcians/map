@@ -520,11 +520,14 @@ namespace sparta
         }
 
         /*!
-         * \brief Create or update tree node extension(s) from the given YAML file.
+         * \brief Add tree node extension(s) from the given YAML file.
+         * This method simply adds the extension information to our
+         * underlying ParameterTree. The extension(s) will not be
+         * instantiated until you call TreeNode::getExtension().
          */
-        void createExtensions(const std::string & yaml_file,
-                              const std::vector<std::string> & config_search_paths = {},
-                              const bool verbose_cfg = false)
+        void addExtensions(const std::string & yaml_file,
+                           const std::vector<std::string> & config_search_paths = {},
+                           const bool verbose_cfg = false)
         {
             app::NodeConfigFileApplicator applicator("", yaml_file, config_search_paths);
 
@@ -537,131 +540,12 @@ namespace sparta
                 node->unrequire();
             }
 
-            if (verbose_cfg) {
-                std::cout << "Parsed extension file '" << yaml_file << "' into tree:\n";
-                constexpr bool print_user_data = false; // Already printed from "extension" nodes
-                ptree.recursePrint(std::cout, print_user_data);
-            }
-
-            // Find all ParameterTree::Node's named "extension"
-            std::vector<ParameterTree::Node*> extension_nodes;
-            std::function<void(ParameterTree::Node*)> recurse_find_ext_nodes;
-
-            recurse_find_ext_nodes = [&](ParameterTree::Node* n)
-            {
-                if (n->getName() == "extension") {
-                    extension_nodes.push_back(n);
-                } else {
-                    for (auto child : n->getChildren()) {
-                        recurse_find_ext_nodes(child);
-                    }
-                }
-            };
-
-            recurse_find_ext_nodes(ptree.getRoot());
-
-            // For every extension node, extract:
-            //   - path (unbound TreeNode that gets the extension)
-            //   - extension name
-            //   - name/value pairs for all extension parameters
-            struct ExtensionDesc {
-                std::string path;
-                std::string ext_name;
-                std::vector<std::pair<std::string, std::string>> params;
-            };
-
-            std::vector<ExtensionDesc> ext_descriptors;
-            for (auto n : extension_nodes) {
-                // Create one extension descriptor for each child of this node.
-                for (auto child : n->getChildren()) {
-                    ExtensionDesc desc;
-
-                    // Path e.g. "top.node1" from "top.node1.extension.foo"
-                    desc.path = n->getPath();
-                    auto idx = desc.path.rfind(".extension");
-                    sparta_assert(idx != std::string::npos);
-                    desc.path = desc.path.substr(0, idx);
-
-                    // Extension name e.g. "foo" from "top.node1.extension.foo"
-                    desc.ext_name = child->getName();
-
-                    // Param key-value pairs e.g. [bar:"2", baz:"blah"] from:
-                    //   top.node1.extension.foo:
-                    //     bar: 2
-                    //     baz: "blah"
-                    auto param_nodes = child->getChildren();
-                    for (auto p : param_nodes) {
-                        auto p_name = p->getName();
-                        auto p_value = p->getValue();
-                        auto kvp = std::make_pair(p_name, p_value);
-                        desc.params.push_back(kvp);
-                    }
-
-                    ext_descriptors.emplace_back(std::move(desc));
-                }
-            }
-
-            // Create each extension using its registered factory if we have it,
-            // else we have to create an ExtensionsParamsOnly object.
-            struct NodeExtension {
-                std::string path;
-                std::string ext_name;
-                std::shared_ptr<TreeNode::ExtensionsBase> extension;
-            };
-
-            std::vector<std::unique_ptr<NodeExtension>> node_extensions;
-            for (const auto & desc : ext_descriptors) {
-                auto node_extension = std::make_unique<NodeExtension>();
-                node_extension->path = desc.path;
-                node_extension->ext_name = desc.ext_name;
-
-                auto factory = getExtensionFactory(desc.ext_name);
-                if (factory) {
-                    node_extension->extension.reset(factory());
-                } else {
-                    node_extension->extension = std::make_shared<ExtensionsParamsOnly>();
-                }
-
-                node_extension->extension->setParameters(std::make_unique<ParameterSet>(nullptr));
-
-                // Call postCreate before adding parameters. Extension subclasses may have
-                // added some parameters explicitly during this call, and we want to avoid
-                // adding parameters twice.
-                node_extension->extension->postCreate();
-
-                auto ps = node_extension->extension->getParameters();
-                for (const auto & kvp : desc.params) {
-                    const auto & p_name = kvp.first;
-                    const auto & p_value = kvp.second;
-
-                    // If this parameter was already created during postCreate, just set its value.
-                    if (auto p = ps->getParameter(p_name, false /*must_exist*/)) {
-                        app::ParameterApplicator pa("", p_value);
-                        pa.apply(p);
-                        continue;
-                    }
-
-                    // Otherwise, create a new parameter, defaulting to string type.
-                    const auto & p_desc = p_name;
-                    auto param = std::make_unique<Parameter<std::string>>(p_name, p_value, p_desc, ps);
-                    node_extension->extension->addParameter(std::move(param));
-                }
-
-                node_extensions.emplace_back(std::move(node_extension));
-            }
-
             // Store the extensions in the std::any map owned by the ParameterTree::Node's
             extensions_ptree_.merge(ptree);
             if (verbose_cfg) {
                 std::cout << "After merging extension file '" << yaml_file << "', parameter tree contains:\n";
                 constexpr bool print_user_data = false; // Already printed from "extension" nodes
                 extensions_ptree_.recursePrint(std::cout, print_user_data);
-            }
-
-            for (auto & extension : node_extensions) {
-                constexpr bool must_be_leaf = false;
-                auto n = extensions_ptree_.tryGet(extension->path, must_be_leaf);
-                n->setUserData(extension->ext_name, extension->extension);
             }
         }
 

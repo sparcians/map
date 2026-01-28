@@ -877,6 +877,23 @@ namespace sparta
             }
 
             /*!
+             * \brief Get a mapping from Nodes to their extensions recursively.
+             */
+            void recurseGetAllNodeExtensions(
+                std::map<const Node*, std::map<std::string, const TreeNode::ExtensionsBase*>> & map) const
+            {
+                for (const auto & key : getUserDataKeys()) {
+                    if (auto ext = tryGetUserData<std::shared_ptr<TreeNode::ExtensionsBase>>(key)) {
+                        map[this][key] = ext->get();
+                    }
+                }
+
+                for (auto child : getChildren()) {
+                    child->recurseGetAllNodeExtensions(map);
+                }
+            }
+
+            /*!
              * \brief Get all user data keys (names).
              */
             std::set<std::string> getUserDataKeys() const {
@@ -1270,6 +1287,17 @@ namespace sparta
          */
         void recursePrint(std::ostream& o, bool print_user_data=true) const {
             root_->recursePrint(o, 0, print_user_data); // Begin with 0 indent
+        }
+
+        /*!
+         * \brief Get a mapping from Nodes to their extensions.
+         */
+        std::map<const Node*, std::map<std::string, const TreeNode::ExtensionsBase*>>
+        getAllNodeExtensions() const
+        {
+            std::map<const Node*, std::map<std::string, const TreeNode::ExtensionsBase*>> all_ext_map;
+            root_->recurseGetAllNodeExtensions(all_ext_map);
+            return all_ext_map;
         }
 
     private:
