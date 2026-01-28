@@ -28,6 +28,7 @@
 
 #include "sparta/utils/StaticInit.hpp"
 #include "sparta/simulation/ResourceContainer.hpp"
+#include "sparta/simulation/TreeNodeExtensionsSupport.hpp"
 #include "sparta/functional/ArchDataContainer.hpp"
 #include "sparta/utils/Utils.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -173,6 +174,7 @@ namespace sparta
     class VirtualGlobalTreeNode;
     class ClockManager;
     class TreeNodePrivateAttorney;
+    class ParameterBase;
     class ParameterSet;
     class Scheduler;
     class ExtensionDescriptor;
@@ -1888,22 +1890,79 @@ namespace sparta
         public:
             ExtensionsBase();
             virtual ~ExtensionsBase();
+            virtual std::string getClassName() const { return "unknown"; }
             virtual void setParameters(std::unique_ptr<ParameterSet> params) = 0;
-            virtual ParameterSet * getParameters() = 0;
-            virtual ParameterSet * getYamlOnlyParameters() = 0;
+            virtual ParameterSet * getParameters() const = 0;
+            virtual ParameterSet * getYamlOnlyParameters() const = 0;
+            virtual void addParameter(std::unique_ptr<ParameterBase> param) = 0;
             virtual void postCreate() {}
+
+            /*!
+             * \brief All parameters are stored internally as a Parameter<std::string>.
+             * Call this method templated on the known specific type to parse the string
+             * as type T.
+             * \throw Throws an exception if the string cannot be parsed into type T.
+             * \note These are the ONLY parameter types supported by extensions:
+             *
+             *   getParameterValueAs<int8_t>
+             *   getParameterValueAs<uint8_t>
+             *
+             *   getParameterValueAs<int16_t>
+             *   getParameterValueAs<uint16_t>
+             *
+             *   getParameterValueAs<int32_t>
+             *   getParameterValueAs<uint32_t>
+             *
+             *   getParameterValueAs<int64_t>
+             *   getParameterValueAs<uint64_t>
+             *
+             *   getParameterValueAs<double>
+             *
+             *   getParameterValueAs<std::string>
+             *
+             *   getParameterValueAs<bool>
+             *
+             * As well as vectors of the above types:
+             *
+             *   getParameterValueAs<std::vector<double>>
+             *   ...
+             *
+             * And nested vectors of the above types:
+             *
+             *   getParameterValueAs<std::vector<std::vector<uint32_t>>>
+             *   ...
+             */
+            template <typename T>
+            T getParameterValueAs(const std::string& param_name) {
+                static_assert(extensions::is_supported<T>::value,
+                              "ExtensionsBase::getParameterValueAs<T> called with "
+                              "unsupported type T. See documentation for supported types.");
+                return getParameterValueAs_<T>(param_name);
+            }
+
+            /*!
+             * \brief UUID for testing purposes. NOT added to final config
+             * (--write-final-config) output.
+             */
+            const std::string & getUUID() const {
+                return uuid_;
+            }
+
+        private:
+            template <typename T>
+            T getParameterValueAs_(const std::string& param_name);
+
+            std::string uuid_;
         };
 
         /*!
-         * \brief Add a named parameter set to extend this tree node's metadata
-         */
-        void addExtensionParameters(const std::string & extension_name,
-                                    std::unique_ptr<ParameterSet> extension_params);
-
-        /*!
-         * \brief Add an extension factory to this tree node by its type (name). This
-         * method does not actually create any objects at this time. It will validate
-         * and create the extension only if asked for later on during simulation.
+         * \brief Add an extension factory to this tree node by its type (name).
+         * \note This MUST be called before or during buildTree_() (TREE_BUILDING phase).
+         * \note getRoot() MUST be of type RootTreeNode.
+         * \note Extensions are created automatically if provided in --extension-file,
+         * --arch, --config-file, or --node-config-file.
+         * \note If not provided in one of the above YAML files, getExtension(name)
+         * will always return nullptr.
          */
         void addExtensionFactory(const std::string & extension_name,
                                  std::function<ExtensionsBase*()> factory);
@@ -1912,17 +1971,116 @@ namespace sparta
          * \brief Get an extension object by type string. Returns nullptr if not
          *        found (unrecognized).
          * \param extension_name The name of the extension to find
-         *
+         * \note If 'this' tree node was not given an extension in any of the
+         * --extension-file, --arch, --config-file, or --node-config-file YAML
+         * files, then this will always return nullptr. If you want to create
+         * an extension for this node on demand, call createExtension(name).
          */
         ExtensionsBase * getExtension(const std::string & extension_name);
+
+        /*!
+         * \brief Get an extension object by type string. Returns nullptr if not
+         *        found (unrecognized).
+         * \param extension_name The name of the extension to find
+         * \note If 'this' tree node was not given an extension in any of the
+         * --extension-file, --arch, --config-file, or --node-config-file YAML
+         * files, then this will always return nullptr. If you want to create
+         * an extension for this node on demand, call createExtension(name).
+         */
+        const ExtensionsBase * getExtension(const std::string & extension_name) const;
+
+        /*!
+         * \brief Get an extension, downcast to the given type.
+         * \throw Throws an exception if the extension exists, but the downcast failed.
+         */
+        template <typename T>
+        T* getExtensionAs(const std::string & extension_name) {
+            static_assert(std::is_base_of<ExtensionsBase, T>::value);
+            auto ext = getExtension(extension_name);
+            if (!ext) {
+                return nullptr;
+            }
+
+            auto ret = dynamic_cast<T*>(ext);
+            if (!ret) {
+                throw SpartaException("Could not downcast extension '")
+                    << extension_name << "' to " << typeid(T).name() << ". "
+                    << "Actual extension type is " << ext->getClassName() << ".";
+            }
+
+            return ret;
+        }
+
+        /*!
+         * \brief Get an extension, downcast to the given type.
+         * \throw Throws an exception if the extension exists, but the downcast failed.
+         */
+        template <typename T>
+        const T* getExtensionAs(const std::string & extension_name) const {
+            static_assert(std::is_base_of<ExtensionsBase, T>::value);
+            auto ext = getExtension(extension_name);
+            if (!ext) {
+                return nullptr;
+            }
+
+            auto ret = dynamic_cast<const T*>(ext);
+            if (!ret) {
+                throw SpartaException("Could not downcast extension '")
+                    << extension_name << "' to " << typeid(T).name() << ". "
+                    << "Actual extension type is " << ext->getClassName() << ".";
+            }
+
+            return ret;
+        }
 
         /*!
          * \brief Get an extension without needing to specify any particular type
          * string. If no extensions exist, returns nullptr. If only one extension
          * exists, returns that extension. If more than one extension exists, throws
          * an exception.
+         * \note If 'this' tree node was not given an extension in any of the
+         * --extension-file, --arch, --config-file, or --node-config-file YAML
+         * files, then this will always return nullptr. If you want to create
+         * an extension for this node on demand, call createExtension(name).
          */
         ExtensionsBase * getExtension();
+
+        /*!
+         * \brief Get an extension without needing to specify any particular type
+         * string. If no extensions exist, returns nullptr. If only one extension
+         * exists, returns that extension. If more than one extension exists, throws
+         * an exception.
+         * \note If 'this' tree node was not given an extension in any of the
+         * --extension-file, --arch, --config-file, or --node-config-file YAML
+         * files, then this will always return nullptr. If you want to create
+         * an extension for this node on demand, call createExtension(name).
+         * \note Unlike the non-const version, this method will never create
+         * the extension automatically under the hood, nor will it cache the
+         * extension for performance.
+         */
+        const ExtensionsBase * getExtension() const;
+
+        /*!
+         * \brief Create an extension on demand. This is useful if you want to
+         * add an extension to a node that was not specified in any of the
+         * --extension-file, --arch, --config-file, or --node-config-file YAML
+         * files.
+         * \param extension_name The name of the extension to create.
+         * \param replace If true, remove any existing extension of the same name
+         * before creating a new one. If false, returns the existing extension if one
+         * exists.
+         * \note Does not require a registered extension factory. If no factory
+         * exists for the given name, returns an ExtensionsParamsOnly. Otherwise,
+         * returns an extension subclass created by the factory.
+         */
+        ExtensionsBase * createExtension(const std::string & extension_name,
+                                         bool replace=false);
+
+        /*!
+         * \brief Remove an extension by its name. Returns true if successful,
+         * false if the extension was not found.
+         */
+        bool removeExtension(const std::string & extension_name);
 
         /*!
          * \brief Extension names, if any. Tree node extensions are typically
@@ -1932,13 +2090,26 @@ namespace sparta
          * extensions. The performance cost is proportional to the number of nodes
          * in the virtual parameter tree.
          */
-        const std::set<std::string> & getAllExtensionNames();
+        std::set<std::string> getAllExtensionNames() const;
 
         /*!
          * \brief Get the number of extensions for this node.
          */
         size_t getNumExtensions() const {
-            return extensions_.size();
+            return getAllExtensionNames().size();
+        }
+
+        /*!
+         * \brief Get a map of extensions for this node.
+         */
+        std::map<std::string, const ExtensionsBase*> getAllExtensions() const {
+            std::map<std::string, const ExtensionsBase*> extensions;
+            for (const auto & ext_name : getAllExtensionNames()) {
+                auto ext = getExtension(ext_name);
+                sparta_assert(ext != nullptr);
+                extensions[ext_name] = ext;
+            }
+            return extensions;
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -4359,14 +4530,12 @@ namespace sparta
         const Clock* working_clock_;
 
         /*!
-         * \brief Set of extensions and their factories. Will only be turned into actual extension
-         * objects when (if) accessed during simulation. Validation will occur at that time as well.
+         * \brief Extensions which have already been requested and retrieved
+         * from the extensions ParameterTree. Cached for performance.
+         * \note Uses weak pointers since the extensions (shared_ptr) can be
+         * removed from the ParameterTree without our knowledge.
          */
-        std::unordered_map<std::string, std::unique_ptr<ExtensionsBase>> extensions_;
-        std::unordered_map<std::string, std::unique_ptr<ParameterSet>> extension_parameters_;
-        std::unordered_map<std::string, std::function<ExtensionsBase*()>> extension_factories_;
-        std::set<std::string> extension_names_;
-        ExtensionDescriptorVec extension_descs_;
+        std::unordered_map<std::string, std::weak_ptr<ExtensionsBase>> cached_extensions_;
 
         //! \name Internal class mis-use metrics
         //! @{
