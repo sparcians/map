@@ -14,6 +14,7 @@
 
 namespace sparta {
 
+class ParameterBase;
 class ParameterSet;
 
 /*!
@@ -26,12 +27,12 @@ public:
     explicit ExtensionsParamsOnly();
     virtual ~ExtensionsParamsOnly();
     virtual void setParameters(std::unique_ptr<ParameterSet> params) override final;
-    virtual ParameterSet * getParameters() override final;
-    virtual ParameterSet * getYamlOnlyParameters() override final;
+    virtual void addParameter(std::unique_ptr<ParameterBase> param) override final;
+    virtual ParameterSet * getParameters() const override final;
+    virtual ParameterSet * getYamlOnlyParameters() const override final;
 
 private:
     class Impl;
-
     std::shared_ptr<Impl> impl_;
 };
 

@@ -222,6 +222,11 @@ public:
     void copyTreeNodeExtensionsFromArchAndConfigPTrees();
 
     /*!
+     * Check if the unbound extensions ptree has any extensions.
+     */
+    bool hasTreeNodeExtensions() const;
+
+    /*!
      * Returns a ParameterTree containing an unbound set of parameter
      * values which can be read and later applied. Some of these
      * parameters will be applied to Parameter TreeNodes at some point
