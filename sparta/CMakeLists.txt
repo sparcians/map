@@ -67,7 +67,6 @@ list (APPEND SourceCppFiles
             src/Resource.cpp
             src/SpartaException.cpp
             src/RootTreeNode.cpp
-            src/CherryPickFastCheckpointer.cpp
             src/Scheduler.cpp
             src/Scheduleable.cpp
             src/Scoreboard.cpp
@@ -96,7 +95,10 @@ list (APPEND SourceCppFiles
 )
 
 if (USING_SIMDB)
-  list (APPEND SourceCppFiles src/ReportStatsCollector.cpp)
+  list (APPEND SourceCppFiles
+    src/CherryPickFastCheckpointer.cpp
+    src/ReportStatsCollector.cpp
+  )
 endif ()
 
 # Add python support
