@@ -27,6 +27,9 @@
 #include "sparta/app/ReportDescriptor.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 
+// Reuse hash<pair<string,string>>
+#include "sparta/report/format/DetailInfoData.hpp"
+
 namespace sparta {
 namespace app {
 
@@ -513,10 +516,11 @@ public:
             return legacy_reports_enabled_;
         }
 
-        void enableApp(const std::string & app_name, const std::string & db_file)
+        void enableApp(const std::string & app_name, const std::string & db_file, size_t num_instances = 1)
         {
             enabled_apps_[db_file].insert(app_name);
             app_db_files_[app_name].insert(db_file);
+            enabled_app_counts_[std::make_pair(app_name, db_file)] = num_instances;
         }
 
         bool appEnabled(const std::string & app_name) const
@@ -532,6 +536,16 @@ public:
                 apps.emplace_back(app_name);
             }
             return apps;
+        }
+
+        size_t getAppInstances(const std::string & app_name, const std::string & db_file) const
+        {
+            auto key = std::make_pair(app_name, db_file);
+            auto it = enabled_app_counts_.find(key);
+            if (it == enabled_app_counts_.end()) {
+                return 0;
+            }
+            return it->second;
         }
 
         std::vector<std::string> getAppDatabases(const std::string & app_name) const
@@ -565,6 +579,7 @@ public:
         std::string simdb_file_;
         std::map<std::string, std::set<std::string>> enabled_apps_;
         std::map<std::string, std::set<std::string>> app_db_files_;
+        std::unordered_map<std::pair<std::string, std::string>, size_t> enabled_app_counts_;
         bool legacy_reports_enabled_ = true;
         std::map<std::string, std::string> dbmgr_pragmas_;
     } simdb_config;
