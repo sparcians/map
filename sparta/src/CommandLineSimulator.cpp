@@ -620,7 +620,7 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
     #if SIMDB_ENABLED
     simdb_opts_.add_options()
         ("simdb-apps",
-         named_value<std::vector<std::string>>("DATABASE_FILE app1 app2 ...", 2, -1)->multitoken(),
+         named_value<std::vector<std::string>>("DATABASE_FILE app1 [count=1] app2 [count=1]...", 2, -1)->multitoken(),
          "Instantiate and run the provided SimDB applications and associate them with the "
          "simulation database file DATABASE_FILE. You can use this option multiple times to "
          "create apps going to different databases. The optional 'count' argument tells Sparta "
@@ -1139,9 +1139,26 @@ bool CommandLineSimulator::parse(int argc,
                 ++i;
             }else if (o.string_key == "simdb-apps") {
                 const auto simdb_file = o.value.at(0);
+                std::map<std::string, size_t> app_instances;
+
                 for (size_t idx = 1; idx < o.value.size(); ++idx) {
-                    sim_config_.simdb_config.enableApp(o.value.at(idx), simdb_file);
+                    const std::string & app_name = o.value.at(idx);
+                    size_t num_instances = 1;
+                    if (idx + 1 < o.value.size()) {
+                        const std::string & next = o.value.at(idx + 1);
+                        const bool is_number = std::all_of(next.begin(), next.end(), ::isdigit);
+                        if (is_number) {
+                            num_instances = std::stoul(next);
+                            ++idx;
+                        }
+                    }
+                    app_instances[app_name] = num_instances;
                 }
+
+                for (const auto & [app_name, num_instances] : app_instances) {
+                    sim_config_.simdb_config.enableApp(app_name, simdb_file, num_instances);
+                }
+
                 opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "simdb-file") {
                 const std::string simdb_file = o.value.at(0);

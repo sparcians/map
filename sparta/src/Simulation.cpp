@@ -532,7 +532,9 @@ void Simulation::createSimDbApps_()
 
         for (const auto & app_name : app_names)
         {
-            app_mgr->enableApp(app_name);
+            auto num_instances = simdb_config.getAppInstances(app_name, db_file);
+            sparta_assert(num_instances > 0);
+            app_mgr->enableApp(app_name, num_instances);
         }
 
         app_mgr->createEnabledApps();
