@@ -740,6 +740,42 @@ namespace sparta
             }
 
             /*!
+             * \brief Recursively find all nodes that have a given name.
+             */
+            void recursFindPTreeNodesNamed(
+                const std::string & name,
+                std::vector<Node*> & matching_nodes)
+            {
+                if (getName() == name) {
+                    matching_nodes.emplace_back(this);
+                    return;
+                }
+
+                const auto children = getChildren();
+                for (ParameterTree::Node * child : children) {
+                    child->recursFindPTreeNodesNamed(name, matching_nodes);
+                }
+            }
+
+            /*!
+             * \brief Recursively find all nodes that have a given name.
+             */
+            void recursFindPTreeNodesNamed(
+                const std::string & name,
+                std::vector<const Node*> & matching_nodes) const
+            {
+                if (getName() == name) {
+                    matching_nodes.emplace_back(this);
+                    return;
+                }
+
+                const auto children = getChildren();
+                for (const ParameterTree::Node * child : children) {
+                    child->recursFindPTreeNodesNamed(name, matching_nodes);
+                }
+            }
+
+            /*!
              * \brief Recursively print
              */
             void recursePrint(std::ostream& o, uint32_t indent=0, bool print_user_data=true) const {

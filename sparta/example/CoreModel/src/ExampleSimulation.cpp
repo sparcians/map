@@ -86,9 +86,6 @@ namespace sparta {
 class CircleExtensions : public sparta::ExtensionsParamsOnly
 {
 public:
-    CircleExtensions() : sparta::ExtensionsParamsOnly() {}
-    virtual ~CircleExtensions() {}
-
     void doSomethingElse() const {
         std::cout << "Invoking a method that is unknown to the sparta::TreeNode object, "
                      "even though 'this' object was created by, and currently owned by, "
@@ -96,7 +93,6 @@ public:
     }
 
 private:
-
     // Note: this parameter is NOT in the yaml config file,
     // but subclasses can provide any parameter type supported
     // by sparta::Parameter<T> which may be too complicated to
@@ -106,11 +102,23 @@ private:
     // The base class will clobber together whatever parameter values it
     // found in the yaml file, and give us a chance to add custom parameters
     // to the same set
-    virtual void postCreate() override {
+    void postCreate() override {
         sparta::ParameterSet * ps = getParameters();
         degrees_.reset(new sparta::Parameter<double>(
             "degrees_", 360.0, "Number of degrees in a circle", ps));
     }
+};
+
+class NeverExplicitlyInstantiated : public sparta::ExtensionsParamsOnly
+{
+private:
+    void postCreate() override {
+        sparta::ParameterSet * ps = getParameters();
+        value_.reset(new sparta::Parameter<int>(
+            "value_", 555, "Dummy value", ps));
+    }
+
+    std::unique_ptr<sparta::Parameter<int>> value_;
 };
 
 double calculateAverageOfInternalCounters(
@@ -142,6 +150,7 @@ ExampleSimulator::ExampleSimulator(const std::string& topology,
     //      to their tree node extension, and/or for those that want to extend node
     //      parameter sets with more complicated sparta::Parameter<T> data types
     addTreeNodeExtensionFactory_("circle", [](){return new CircleExtensions;});
+    addTreeNodeExtensionFactory_("never_explicitly_instantiated", [](){return new NeverExplicitlyInstantiated;});
 
     // Initialize example simulation controller
     controller_.reset(new ExampleSimulator::ExampleController(this));

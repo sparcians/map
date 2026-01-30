@@ -59,6 +59,16 @@ public:
         return yaml_parameter_set_.get();
     }
 
+    ParameterSet * getParameters()
+    {
+        return parameters_.get();
+    }
+
+    ParameterSet * getYamlOnlyParameters()
+    {
+        return yaml_parameter_set_.get();
+    }
+
     void addParameter(std::unique_ptr<ParameterBase> param)
     {
         user_parameters_.emplace_back(std::move(param));
@@ -91,6 +101,16 @@ ParameterSet * ExtensionsParamsOnly::getParameters() const
 }
 
 ParameterSet * ExtensionsParamsOnly::getYamlOnlyParameters() const
+{
+    return impl_->getYamlOnlyParameters();
+}
+
+ParameterSet * ExtensionsParamsOnly::getParameters()
+{
+    return impl_->getParameters();
+}
+
+ParameterSet * ExtensionsParamsOnly::getYamlOnlyParameters()
 {
     return impl_->getYamlOnlyParameters();
 }

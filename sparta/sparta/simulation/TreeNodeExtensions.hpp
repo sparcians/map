@@ -30,6 +30,8 @@ public:
     virtual void addParameter(std::unique_ptr<ParameterBase> param) override final;
     virtual ParameterSet * getParameters() const override final;
     virtual ParameterSet * getYamlOnlyParameters() const override final;
+    virtual ParameterSet * getParameters() override final;
+    virtual ParameterSet * getYamlOnlyParameters() override final;
 
 private:
     class Impl;

@@ -1,0 +1,5 @@
+top.cpu.core0.extension:
+  never_explicitly_instantiated:
+    foo_: 4
+    bar_: 5
+    # value_ parameter is set in postCreate() with default value
