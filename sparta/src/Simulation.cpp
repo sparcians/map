@@ -86,13 +86,26 @@
 #include "sparta/utils/StringUtils.hpp"
 #include "sparta/utils/Utils.hpp"
 
-// TODO cnyce: Remove this once the PipelineCollector app is created.
-// See Simulation::createSimDbApps_()
-#include "sparta/serialization/checkpoint/CherryPickFastCheckpointer.hpp"
-
 #if SIMDB_ENABLED
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
 #include "simdb/apps/AppManager.hpp"
+
+// We have example/CoreModel tests which need to load two different
+// SimDB apps. Sparta only has the ReportStatsCollector app and the
+// CherryPickFastCheckpointer app, though only ReportStatsCollector
+// is explicitly used by Simulation/ReportRepository. So the stats
+// collector is baked into the static library, but the checkpointer
+// app is only used in a unit test. Thus the linker "dead strips"
+// the checkpointer's symbols for CoreModel builds and the translation
+// unit's REGISTER_SIMDB_APPLICATION macro is never used unless we
+// force CherryPickFastCheckpointer to get baked into the library
+// like ReportStatsCollector.
+//
+// TODO cnyce: Remove this once the PipelineCollector app is created.
+// Use the pipeline collector app and stats collector app for the
+// CoreModel unit tests. PipelineCollector will be baked in like
+// ReportStatsCollector is.
+#include "sparta/serialization/checkpoint/CherryPickFastCheckpointer.hpp"
 #endif
 
 namespace YAML {
