@@ -86,6 +86,10 @@
 #include "sparta/utils/StringUtils.hpp"
 #include "sparta/utils/Utils.hpp"
 
+// TODO cnyce: Remove this once the PipelineCollector app is created.
+// See Simulation::createSimDbApps_()
+#include "sparta/serialization/checkpoint/CherryPickFastCheckpointer.hpp"
+
 #if SIMDB_ENABLED
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
 #include "simdb/apps/AppManager.hpp"
@@ -482,6 +486,10 @@ void Simulation::createSimDbApps_()
         return;
     }
 
+    // TODO cnyce: remove this - see comment at top of file (grep cnyce)
+    [[maybe_unused]] auto dummy = serialization::checkpoint::CherryPickFastCheckpointer(
+        nullptr /*db_mgr*/, {} /*roots*/, nullptr /*scheduler*/);
+
     const auto & simdb_config = sim_config_->simdb_config;
 
     const auto enabled_apps = simdb_config.getEnabledApps();
@@ -504,6 +512,10 @@ void Simulation::createSimDbApps_()
         constexpr auto new_file = true;
         auto db_mgr = std::make_shared<simdb::DatabaseManager>(db_file, new_file, pragmas);
         auto app_mgr = std::make_shared<simdb::AppManager>(db_mgr.get());
+
+        // TODO cnyce: remove this - see comment at top of file (grep cnyce)
+        auto factory = app_mgr->getAppFactory<serialization::checkpoint::CherryPickFastCheckpointer>();
+        factory->setArchDataRoots(0, {});
 
         for (const auto & app_name : app_names)
         {
@@ -979,13 +991,6 @@ void Simulation::run(uint64_t run_time)
         saveReports();
     }
 
-#if SIMDB_ENABLED
-    for (auto app_mgr : getAppManagers())
-    {
-        app_mgr->postSimLoopTeardown();
-    }
-#endif
-
     if(eptr == std::exception_ptr()){
         // Dump debug if there was no error and the policy is to always dump.
         // otherwise the dump will be done by an external exception handler
@@ -1126,6 +1131,13 @@ void Simulation::saveReports()
 
 void Simulation::postProcessingLastCall()
 {
+#if SIMDB_ENABLED
+    // This is added here to close AppManager's even with --no-run
+    for (auto app_mgr : getAppManagers())
+    {
+        app_mgr->postSimLoopTeardown();
+    }
+#endif
 }
 
 void Simulation::dumpMetaParameterTable(std::ostream& out) const

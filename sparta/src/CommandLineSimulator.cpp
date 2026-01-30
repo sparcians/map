@@ -625,6 +625,9 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "simulation database file DATABASE_FILE. You can use this option multiple times to "
          "create apps going to different databases. The optional 'count' argument tells Sparta "
          "how many app instances to create for each type, defaulting to 1.")
+        ("simdb-file",
+         named_value<std::vector<std::string>>("DATABASE_FILE", 1, 1)->multitoken(),
+         "Set or override the database output filename for all apps.")
         ("enable-simdb-reports",
          named_value<std::vector<std::string>>("[DATABASE_FILE]", 0, 1),
          "Enable the simulation database to hold reports. If no database file is specified, "
@@ -1156,6 +1159,10 @@ bool CommandLineSimulator::parse(int argc,
                     sim_config_.simdb_config.enableApp(app_name, simdb_file, num_instances);
                 }
 
+                opts.options.erase(opts.options.begin() + i);
+            }else if (o.string_key == "simdb-file") {
+                const std::string simdb_file = o.value.at(0);
+                sim_config_.simdb_config.setGlobalDatabaseFile(simdb_file);
                 opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "enable-simdb-reports") {
                 std::string simdb_file = "sparta.db";
@@ -2016,6 +2023,8 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
     sim_config_.copyTreeNodeExtensionsFromArchAndConfigPTrees();
 
     sim->setFeatureConfig(&feature_config_);
+
+    sim_config_.simdb_config.finalize();
 
     // Configure the simulator itself (not its content)
     sim->configure(argc_,
