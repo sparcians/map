@@ -27,6 +27,9 @@
 #include "sparta/app/ReportDescriptor.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 
+// Reuse hash<pair<string,string>>
+#include "sparta/report/format/DetailInfoData.hpp"
+
 namespace sparta {
 namespace app {
 
@@ -499,6 +502,11 @@ public:
     class SimDBConfig
     {
     public:
+        void setGlobalDatabaseFile(const std::string & db_file)
+        {
+            global_simdb_file_ = db_file;
+        }
+
         void disableLegacyReports()
         {
             if (!appEnabled("simdb-reports")) {
@@ -513,10 +521,11 @@ public:
             return legacy_reports_enabled_;
         }
 
-        void enableApp(const std::string & app_name, const std::string & db_file)
+        void enableApp(const std::string & app_name, const std::string & db_file, size_t num_instances = 1)
         {
             enabled_apps_[db_file].insert(app_name);
             app_db_files_[app_name].insert(db_file);
+            enabled_app_counts_[std::make_pair(app_name, db_file)] = num_instances;
         }
 
         bool appEnabled(const std::string & app_name) const
@@ -534,6 +543,16 @@ public:
             return apps;
         }
 
+        size_t getAppInstances(const std::string & app_name, const std::string & db_file) const
+        {
+            auto key = std::make_pair(app_name, db_file);
+            auto it = enabled_app_counts_.find(key);
+            if (it == enabled_app_counts_.end()) {
+                return 0;
+            }
+            return it->second;
+        }
+
         std::vector<std::string> getAppDatabases(const std::string & app_name) const
         {
             auto it = app_db_files_.find(app_name);
@@ -541,6 +560,86 @@ public:
                 return {it->second.begin(), it->second.end()};
             } else {
                 return {};
+            }
+        }
+
+        //Call this once prior to calling Simulation::configure()
+        void finalize()
+        {
+            if (global_simdb_file_.empty())
+            {
+                return;
+            }
+
+            //Try to set the global SimDB file.
+            //   --simdb-apps test.db app1 --simdb-file out.db
+            //       >> send app1 to out.db
+            //   --simdb-apps test.db app1 --enable-simdb-reports reports.db --simdb-file out.db
+            //       >> send app1 to out.db
+            //       >> send 'simdb-reports' (ReportStatsCollector) to out.db
+            //   --simdb-apps foo.db app1 --simdb-apps bar.db app1 --simdb-file out.db
+            //       >> THROW:
+            //       >>>> one instance of app1 was to go to foo.db, the other to bar.db
+            //       >>>> if we use only out.db, not clear if there should be two app1
+            //            instances or just one
+            std::ostringstream errors;
+            for (const auto & [app_name, db_files] : app_db_files_) {
+                if (db_files.size() > 1) {
+                    if (errors.str().empty()) {
+                        errors << "Cannot use --simdb-file if any app is sent to two "
+                               << "different databases:\n";
+                    }
+                    errors << "  " << app_name << " is sent to:\n";
+                    for (const auto & db_file : db_files) {
+                        errors << "    " << db_file << "\n";
+                    }
+                }
+            }
+
+            const auto error = errors.str();
+            if (!error.empty()) {
+                throw SpartaException(error);
+            }
+
+            for (const auto & [app_name, db_files] : app_db_files_) {
+                for (const auto & db_file : db_files) {
+                    auto key = std::make_pair(app_name, db_file);
+                    const auto num_instances = enabled_app_counts_.at(key);
+                    if (db_file != global_simdb_file_) {
+                        std::cout << "Redirecting " << num_instances << " instance"
+                                  << (num_instances == 1 ? "" : "s") << " of the '"
+                                  << app_name << "' app from " << db_file << " to "
+                                  << global_simdb_file_ << "\n";
+                        enableApp(app_name, global_simdb_file_, num_instances);
+                    }
+                }
+            }
+
+            std::vector<std::string> old_db_files;
+            for (const auto & [db_file, _] : enabled_apps_) {
+                if (db_file != global_simdb_file_) {
+                    old_db_files.push_back(db_file);
+                }
+            }
+
+            for (const auto & db_file : old_db_files) {
+                enabled_apps_.erase(db_file);
+            }
+
+            for (auto & [app_name, db_files] : app_db_files_) {
+                db_files.clear();
+                db_files.insert(global_simdb_file_);
+            }
+
+            std::vector<std::pair<std::string, std::string>> old_counts_kvps;
+            for (const auto & [key, num_instances] : enabled_app_counts_) {
+                if (key.second != global_simdb_file_) {
+                    old_counts_kvps.push_back(key);
+                }
+            }
+
+            for (const auto & key : old_counts_kvps) {
+                enabled_app_counts_.erase(key);
             }
         }
 
@@ -562,9 +661,10 @@ public:
         }
 
     private:
-        std::string simdb_file_;
+        std::string global_simdb_file_;
         std::map<std::string, std::set<std::string>> enabled_apps_;
         std::map<std::string, std::set<std::string>> app_db_files_;
+        std::unordered_map<std::pair<std::string, std::string>, size_t> enabled_app_counts_;
         bool legacy_reports_enabled_ = true;
         std::map<std::string, std::string> dbmgr_pragmas_;
     } simdb_config;
