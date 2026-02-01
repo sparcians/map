@@ -2084,20 +2084,150 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
         sim->finalizeTree();
 
+        auto wrap_up_final_config = [&](const sparta::ParameterTree & orig_ptree,
+                                        const std::string & filename,
+                                        bool show_descriptions)
+        {
+            sparta::ParameterTree ptree(orig_ptree);
+
+            // Ensure that default extension parameter values get added to the ParameterTree.
+            // Users expect any parameter added in postCreate() to be written to the final
+            // config file, and there is no guarantee that anybody calls getExtension() or
+            // createExtension() to instantiate the extensions. Repro steps for the reported
+            // bug:
+            //
+            //    ./sim --write-final-config final.yaml --arch small_core.yaml --no-run
+            //
+            // Where small_core.yaml specifies:
+            //
+            //    top.cpu.core0.extension.core_extensions:
+            //        exe_pipe_rename:
+            //          ["exe0", "alu0_pipe"],
+            //            ["exe1", "fpu0_pipe"],
+            //            ["exe2", "br_pipe"],
+            //            ["exe3", "vint_pipe"]
+            //          ]
+            //
+            // But in CoreExtensions::postCreate() we have:
+            //
+            //    sparta::ParameterSet* ps = getParameters();
+            //
+            //    // Add parameter not found in any extension/arch/config file
+            //    foo_param_.reset(new sparta::Parameter<int>("foo", 555, "Foo Param", ps));
+            //
+            // The bug is in final.yaml where the default "Foo Param" value of 555 is
+            // not listed in the YAML file if this extension was never created.
+            std::vector<ParameterTree::Node*> extension_nodes;
+            ptree.getRoot()->recursFindPTreeNodesNamed("extension", extension_nodes);
+
+            for (auto node : extension_nodes) {
+                auto children = node->getChildren();
+                for (auto child : children) {
+                    auto parent = node->getParent();
+                    sparta_assert(parent != nullptr);
+                    auto path = parent->getPath();
+
+                    // Note that the ParameterTree path might contain wildcards
+                    std::vector<TreeNode*> tree_nodes;
+                    sim->getRoot()->getSearchScope()->findChildren(path, tree_nodes);
+
+                    auto extension_name = child->getName();
+                    for (auto tree_node : tree_nodes) {
+                        // Use the const getExtension() to see if this extension was
+                        // already created.
+                        auto is_user_created_ext = const_cast<const TreeNode*>(tree_node)->
+                            getExtension(extension_name) != nullptr;
+
+                        // We are calling the non-const getExtension() so we can force
+                        // factory-registered extensions to be created.
+                        auto extension = tree_node->getExtension(extension_name);
+                        if (!extension) {
+                            continue;
+                        }
+
+                        auto ps = extension->getParameters();
+                        std::vector<ParameterBase*> params;
+                        ps->getChildrenOfType<ParameterBase>(params);
+
+                        for (auto p : params) {
+                            if (child->getChild(p->getName())) {
+                                // Parameter already exists in ptree
+                                continue;
+                            }
+
+                            // Add parameter to the ptree
+                            auto n = child->create(p->getName(), false /*not required*/);
+                            n->setValue(p->getValueAsString(), false /*not required*/);
+                        }
+
+                        // Now that the ParameterTree is updated, remove the extension
+                        // we just created with the non-const getExtension() call.
+                        if (!is_user_created_ext) {
+                            auto root = sim->getRoot();
+                            auto & exts_ptree = root->getExtensionsUnboundParameterTree();
+                            auto n = exts_ptree.tryGet(tree_node->getLocation(), false /*must_be_leaf*/);
+                            auto success = n->clearUserData(extension_name);
+                            sparta_assert(success);
+                        }
+                    }
+                }
+            }
+
+            // Now look for all extensions in the tree, starting from root. Add any extensions
+            // and their parameters to the ptree.
+            using TreeNodeExtensions = std::map<std::string /*ext name*/, const TreeNode::ExtensionsBase* /*ext*/>;
+            using AllTreeNodeExtensions = std::map<const TreeNode* /*owning node*/, TreeNodeExtensions /*node exts*/>;
+            std::function<void(const TreeNode*, AllTreeNodeExtensions&)> recurse_find_exts;
+
+            recurse_find_exts = [&](const TreeNode* node, AllTreeNodeExtensions & extensions)
+            {
+                for (const auto & [ext_name, ext] : node->getAllExtensions()) {
+                    extensions[node][ext_name] = ext;
+                }
+                for (const auto child : node->getChildren()) {
+                    recurse_find_exts(child, extensions);
+                }
+            };
+
+            AllTreeNodeExtensions all_extensions;
+            recurse_find_exts(sim->getRoot(), all_extensions);
+
+            for (const auto & [tn, tn_exts] : all_extensions) {
+                for (const auto & [ext_name, ext] : tn_exts) {
+                    auto tmp_tn_loc = tn->getLocation();
+                    if (tmp_tn_loc.back() == '.') {
+                        tmp_tn_loc.pop_back();
+                    }
+
+                    const auto ptree_path_to_ext = tmp_tn_loc + ".extension." + ext_name;
+                    auto ptree_node = ptree.create(ptree_path_to_ext, false /*not required*/);
+
+                    auto ps = ext->getParameters();
+                    std::vector<ParameterBase*> params;
+                    ps->getChildrenOfType<ParameterBase>(params);
+
+                    for (auto p : params) {
+                        auto p_name = p->getName();
+                        auto p_value = p->getValueAsString();
+                        ptree_node->create(p_name, false /*not required*/)->setValue(p_value);
+                    }
+                }
+            }
+
+            sparta::ConfigEmitter::YAML param_out(filename, show_descriptions);
+            param_out.addParameters(sim->getRoot()->getSearchScope(), &ptree, sim_config_.verbose_cfg);
+        };
+
         // Store final config file(s) after finalization so that all dynamic parameters are built
         //! \todo Print configuration if finalizeTree fails with exception then rethrow
         if(final_config_file_ != ""){
-            sparta::ConfigEmitter::YAML param_out(final_config_file_,
-                                                  false); // Hide descriptions
             const auto& ptree = sim->getSimulationConfiguration()->getExtensionsUnboundParameterTree();
-            param_out.addParameters(sim->getRoot()->getSearchScope(), &ptree, sim_config_.verbose_cfg);
+            wrap_up_final_config(ptree, final_config_file_, false /*Hide descriptions*/);
         }
 
         if(final_config_file_verbose_ != ""){
-            sparta::ConfigEmitter::YAML param_out(final_config_file_verbose_,
-                                                  true); // Show descriptions
             const auto& ptree = sim->getSimulationConfiguration()->getExtensionsUnboundParameterTree();
-            param_out.addParameters(sim->getRoot()->getSearchScope(), &ptree, sim_config_.verbose_cfg);
+            wrap_up_final_config(ptree, final_config_file_verbose_, true /*Show descriptions*/);
         }
 
         if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)

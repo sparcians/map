@@ -1894,6 +1894,8 @@ namespace sparta
             virtual void setParameters(std::unique_ptr<ParameterSet> params) = 0;
             virtual ParameterSet * getParameters() const = 0;
             virtual ParameterSet * getYamlOnlyParameters() const = 0;
+            virtual ParameterSet * getParameters() = 0;
+            virtual ParameterSet * getYamlOnlyParameters() = 0;
             virtual void addParameter(std::unique_ptr<ParameterBase> param) = 0;
             virtual void postCreate() {}
 

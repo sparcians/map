@@ -213,50 +213,6 @@ namespace app {
     }
 
     //! Local helper method that recurses down through a ParameterTree,
-    //! collecting all the nodes that have a given name.
-    void recursFindPTreeNodesNamed(
-        const std::string & name,
-        ParameterTree::Node * this_node,
-        std::vector<ParameterTree::Node*> & matching_nodes)
-    {
-        if (this_node == nullptr) {
-            return;
-        }
-
-        if (this_node->getName() == name) {
-            matching_nodes.emplace_back(this_node);
-            return;
-        }
-
-        const auto children = this_node->getChildren();
-        for (ParameterTree::Node * child : children) {
-            recursFindPTreeNodesNamed(name, child, matching_nodes);
-        }
-    }
-
-    //! Local helper method that recurses down through a ParameterTree,
-    //! collecting all the nodes that have a given name.
-    void recursFindPTreeNodesNamed(
-        const std::string & name,
-        const ParameterTree::Node * this_node,
-        std::vector<const ParameterTree::Node*> & matching_nodes)
-    {
-        if (this_node == nullptr) {
-            return;
-        }
-
-        if (this_node->getName() == name) {
-            matching_nodes.emplace_back(this_node);
-            return;
-        }
-
-        const auto children = this_node->getChildren();
-        for (const ParameterTree::Node * child : children) {
-            recursFindPTreeNodesNamed(name, child, matching_nodes);
-        }
-    }
-
-    //! Local helper method that recurses down through a ParameterTree,
     //! starting at a particular node in that tree, and collects all
     //! nodes that it finds during the traversal whose hasValue()==true
     void recursFindPTreeNodesWithValue(
@@ -284,8 +240,8 @@ namespace app {
         //"extension". This is a reserved keyword - a ParameterTree::Node with
         //this name is definitely for tree node extensions.
         std::vector<ParameterTree::Node*> extension_nodes;
-        recursFindPTreeNodesNamed("extension", arch_ptree_.getRoot(), extension_nodes);
-        recursFindPTreeNodesNamed("extension", ptree_.getRoot(),      extension_nodes);
+        arch_ptree_.getRoot()->recursFindPTreeNodesNamed("extension", extension_nodes);
+        ptree_.getRoot()->recursFindPTreeNodesNamed("extension", extension_nodes);
 
         if (extension_nodes.empty()) {
             return;
@@ -329,7 +285,7 @@ namespace app {
     bool SimulationConfiguration::hasTreeNodeExtensions() const
     {
         std::vector<const ParameterTree::Node*> extension_nodes;
-        recursFindPTreeNodesNamed("extension", extensions_ptree_.getRoot(), extension_nodes);
+        extensions_ptree_.getRoot()->recursFindPTreeNodesNamed("extension", extension_nodes);
         return !extension_nodes.empty();
     }
 
