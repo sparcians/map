@@ -1,8 +1,10 @@
-// <TreeNodeExtensions.h> -*- C++ -*-
+// <TreeNodeExtensions.hpp> -*- C++ -*-
 
 /**
  * \file TreeNodeExtensions.hpp
- *
+ * \brief This file provides classes used to extend TreeNode's so they can
+ * create and own hidden C++ objects without affecting simulator topology.
+ * \see sparta/extensions/README.md
  */
 
 #pragma once
