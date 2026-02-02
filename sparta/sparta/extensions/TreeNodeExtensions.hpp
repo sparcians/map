@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "sparta/simulation/TreeNodeExtensionsSupport.hpp"
+#include "sparta/extensions/TreeNodeExtensionsSupport.hpp"
 
 #include <memory>
 #include <string>

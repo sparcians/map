@@ -4,7 +4,7 @@
 
 This feature introduces **TreeNode Extensions**, a mechanism for attaching opaque, user-defined objects to any `sparta::TreeNode` in the device tree.
 
-Extensions allow users and framework components to associate additional behavior, metadata, or state with existing `TreeNode` instances **without modifying their class hierarchy** and **without participating in the normal tree construction lifecycle**.
+Extensions allow users and framework components to associate additional behavior, metadata, or state with existing `TreeNode` instances **without modifying simulator topology** and **without participating in the normal tree construction lifecycle**.
 
 Key properties:
 
@@ -14,10 +14,11 @@ Key properties:
   - Before or after `buildTree()`
   - Before or after `finalizeTree()`
   - During simulation
+  - After simulation
 - Extensions are instantiated via **user-registered factories**
 - Multiple extension types may coexist on the same `TreeNode`
-- Multiple instances of the same extension type may coexist on the same `TreeNode`
-- All extensions on a `TreeNode` are accessed by a unique name
+- Only one **instance** of an extension type may exist on a `TreeNode`
+- All extensions on a `TreeNode` are accessed by a unique name provided by extension subclasses
 
 Visualization of a device with extensions:
 
@@ -72,7 +73,7 @@ While this is essential for simulation correctness, it makes it difficult to:
 
 This feature is explicitly designed to:
 
-- Avoid modifying existing TreeNode subclasses
+- Avoid modifying existing `TreeNode` subclasses
 - Preserve Sparta’s strict tree lifecycle rules
 - Enable experimentation without framework changes
 - Allow tools and simulators to layer functionality cleanly
@@ -102,7 +103,7 @@ A TreeNode extension is:
   - `TreeNode::getExtension(name)`
   - `TreeNode::getExtensionAs<YourExtensionSubclass>(name)`
   - `TreeNode::getExtension() // must only have one extension`
-    - NOTE: Only the non-const versions of these APIs will create the extension
+    - NOTE: Only the **non-const** versions of these APIs will create the extension
     - NOTE: If these methods are called without a factory, and no such extension exists, one will NOT be created on demand
   - `TreeNode::createExtension(name)`
 - Created using string-only parameters if no factory exists
@@ -133,7 +134,7 @@ Extensions may be:
 - Registered anytime before `configureTree()`
 - Added to `TreeNodes` at any time
 - Accessed at any time
-- Lazily instantiated on first access (requires factory)
+- Lazily instantiated on first access (**requires factory**)
 
 This makes extensions ideal for:
 
@@ -147,10 +148,9 @@ This makes extensions ideal for:
 
 Extensions are typically created via **registered factories**.
 
-- You may add this macro to your extension subclass .cpp file:
+- You may add this macro to any `.cpp` file built by your simulator:
   - REGISTER_TREE_NODE_EXTENSION(YourExtensionSubclass)
   - Provides earliest possible factory registration
-  - Requires your subclass to provide `static constexpr auto NAME = "<extension-name>";`
 - You can also call `TreeNode::addExtensionFactory()`
   - Can only call before `configureTree()`
 - You can also call `app::Simulation::addTreeNodeExtensionFactory_()`
@@ -284,28 +284,7 @@ top.cpu.core*.extension:
 ./sim --extension-file extensions.yaml
 ```
 
-You can also make API calls yourself in the C++ code using `SimulationConfiguration`:
-
-```
-void MySimulator::buildTree_()
-{
-    auto rtn = getRoot();
-    rtn->addExtensionFactory(CoreExtensions::NAME,
-        [](){ return new CoreExtensions; });
-
-    auto sim_config = getSimulationConfiguration();
-
-    sim_config->processParameter(
-        "top.cpu.core*.extension.core_extensions.enabled_features",
-        "[foo,bar]", true /*optional*/);
-
-    sim_config->processParameter(
-        "top.cpu.core*.extension.core_extensions.extra_param",
-        "5.67", true /*optional*/);
-}
-```
-
-Or equivalently at the command line:
+You can also inline the extensions right on the command line:
 
 ```
 ./sim -p top.cpu.core*.extension.core_extensions.enabled_features '[foo,bar]'
@@ -360,7 +339,7 @@ The `const` version of `getExtension(name)` will only return the extension if it
 #### TreeNode::getExtension()
 
 - If zero extensions exist, return nullptr
-- If **exactly** one extension exists, same rules as the **non-const** `getExtension(only_extension_name)`
+- If **exactly** one extension exists, same as the **non-const** `getExtension(only_extension_name)`
 - If more than one extension exists, throws an exception
 
 ---
@@ -368,7 +347,7 @@ The `const` version of `getExtension(name)` will only return the extension if it
 #### TreeNode::getExtension() const
 
 - If zero extensions exist, return nullptr
-- If **exactly** one extension exists, same rules as the **const** `getExtension(only_extension_name)`
+- If **exactly** one extension exists, same as the **const** `getExtension(only_extension_name)`
 - If more than one extension exists, throws an exception
 
 ---
@@ -391,7 +370,7 @@ The `const` version of `getExtension(name)` will only return the extension if it
 
 ```
 if (tn->hasExtension("core_extensions")) {
-    tn->removeExtension("core_extensions");
+    sparta_assert(tn->removeExtension("core_extensions"));
     sparta_assert(!tn->hasExtension("core_extensions"));
 }
 
@@ -404,7 +383,7 @@ if (tn->hasExtension("core_extensions")) {
 ## What about `--write-final-config`?
 
 What **does** get added to the final config YAML file?
-- All extensions created in `buildTree()`, `configureTree()`, `finalizeTree()`
+- All extensions created in `buildTree()`, `configureTree()`, and `finalizeTree()`
 - Default parameter values specified in `postCreate()`
 - NOTE: Removing extensions after `finalizeTree()` does not omit them from the final YAML file
 
