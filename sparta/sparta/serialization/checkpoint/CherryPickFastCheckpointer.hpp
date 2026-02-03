@@ -64,23 +64,19 @@ public:
         using AppT = serialization::checkpoint::CherryPickFastCheckpointer;
 
         /// \brief Sets the ArchData root(s) and Scheduler for a given instance of the checkpointer.
-        /// \param instance_num 0 if using one checkpointer instance, else the instance number (1-based)
         /// \param roots TreeNode(s) at which ArchData will be taken
         /// \param sched Scheduler to use for the checkpoint's tick numbers
         /// \note This is required before createEnabledApps() is called
-        void parameterize(size_t instance_num, const std::vector<TreeNode*>& roots, Scheduler* sched = nullptr)
+        void parameterize(const std::vector<TreeNode*>& roots, Scheduler* sched = nullptr)
         {
-            roots_by_inst_num_[instance_num] = roots;
-            schedulers_by_inst_num_[instance_num] = sched;
+            roots_ = roots;
+            scheduler_ = sched;
         }
 
-        AppT* createApp(simdb::DatabaseManager* db_mgr, size_t instance_num = 0) override
+        AppT* createApp(simdb::DatabaseManager* db_mgr) override
         {
-            const auto& roots = getRoots_(instance_num);
-            auto scheduler = getScheduler_(instance_num);
-
             // Make the ctor call that the default AppFactory cannot make.
-            return new AppT(db_mgr, roots, scheduler);
+            return new AppT(db_mgr, roots_, scheduler_);
         }
 
         void defineSchema(simdb::Schema& schema) const override
@@ -89,31 +85,8 @@ public:
         }
 
     private:
-        const std::vector<TreeNode*>& getRoots_(size_t instance_num) const
-        {
-            auto it = roots_by_inst_num_.find(instance_num);
-            if (it == roots_by_inst_num_.end()) {
-                throw SpartaException(
-                    "No TreeNode (ArchData root) set for DatabaseCheckpointer instance number ")
-                    << instance_num << ". Did you forget to call parameterizeAppFactory()?";
-            }
-
-            return it->second;
-        }
-
-        Scheduler* getScheduler_(size_t instance_num) const
-        {
-            auto it = schedulers_by_inst_num_.find(instance_num);
-            if (it == schedulers_by_inst_num_.end())
-            {
-                return nullptr;
-            }
-
-            return it->second;
-        }
-
-        std::map<size_t, std::vector<TreeNode*>> roots_by_inst_num_;
-        std::map<size_t, Scheduler*> schedulers_by_inst_num_;
+        std::vector<TreeNode*> roots_;
+        Scheduler* scheduler_ = nullptr;
     };
 
     /*!

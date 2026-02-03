@@ -529,7 +529,7 @@ void Simulation::createSimDbApps_()
         // TODO cnyce: remove this - see comment at top of file (grep cnyce)
         using checkpointer_t = serialization::checkpoint::CherryPickFastCheckpointer;
         std::vector<TreeNode*> no_roots;
-        simdb::AppManager::parameterizeAppFactoryInstance<checkpointer_t>(0, no_roots);
+        simdb::AppManager::parameterizeAppFactory<checkpointer_t>(no_roots);
 
         for (const auto & app_name : app_names)
         {

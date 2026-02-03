@@ -79,7 +79,7 @@ void RunCheckpointerTest()
 
     // Setup...
     const std::vector<sparta::TreeNode*> roots({&root});
-    simdb::AppManager::parameterizeAppFactoryInstance<CherryPickFastCheckpointer>(0, roots, &sched);
+    simdb::AppManager::parameterizeAppFactory<CherryPickFastCheckpointer>(roots, &sched);
     app_mgr.enableApp(CherryPickFastCheckpointer::NAME);
     app_mgr.createEnabledApps();
     app_mgr.createSchemas();
