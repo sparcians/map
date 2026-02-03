@@ -28,7 +28,7 @@
 
 #include "sparta/utils/StaticInit.hpp"
 #include "sparta/simulation/ResourceContainer.hpp"
-#include "sparta/simulation/TreeNodeExtensionsSupport.hpp"
+#include "sparta/simulation/TreeNodeExtensions.hpp"
 #include "sparta/functional/ArchDataContainer.hpp"
 #include "sparta/utils/Utils.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -177,9 +177,6 @@ namespace sparta
     class ParameterBase;
     class ParameterSet;
     class Scheduler;
-    class ExtensionDescriptor;
-
-    typedef std::vector<std::unique_ptr<ExtensionDescriptor>> ExtensionDescriptorVec;
 
     /*!
      * \brief Node in a composite tree representing a sparta Tree item.
@@ -1882,80 +1879,7 @@ namespace sparta
         //! @{
         ////////////////////////////////////////////////////////////////////////
 
-        /*!
-         * \brief Base class used to extend TreeNode parameter sets
-         */
-        class ExtensionsBase
-        {
-        public:
-            ExtensionsBase();
-            virtual ~ExtensionsBase();
-            virtual std::string getClassName() const { return "unknown"; }
-            virtual void setParameters(std::unique_ptr<ParameterSet> params) = 0;
-            virtual ParameterSet * getParameters() const = 0;
-            virtual ParameterSet * getYamlOnlyParameters() const = 0;
-            virtual ParameterSet * getParameters() = 0;
-            virtual ParameterSet * getYamlOnlyParameters() = 0;
-            virtual void addParameter(std::unique_ptr<ParameterBase> param) = 0;
-            virtual void postCreate() {}
-
-            /*!
-             * \brief All parameters are stored internally as a Parameter<std::string>.
-             * Call this method templated on the known specific type to parse the string
-             * as type T.
-             * \throw Throws an exception if the string cannot be parsed into type T.
-             * \note These are the ONLY parameter types supported by extensions:
-             *
-             *   getParameterValueAs<int8_t>
-             *   getParameterValueAs<uint8_t>
-             *
-             *   getParameterValueAs<int16_t>
-             *   getParameterValueAs<uint16_t>
-             *
-             *   getParameterValueAs<int32_t>
-             *   getParameterValueAs<uint32_t>
-             *
-             *   getParameterValueAs<int64_t>
-             *   getParameterValueAs<uint64_t>
-             *
-             *   getParameterValueAs<double>
-             *
-             *   getParameterValueAs<std::string>
-             *
-             *   getParameterValueAs<bool>
-             *
-             * As well as vectors of the above types:
-             *
-             *   getParameterValueAs<std::vector<double>>
-             *   ...
-             *
-             * And nested vectors of the above types:
-             *
-             *   getParameterValueAs<std::vector<std::vector<uint32_t>>>
-             *   ...
-             */
-            template <typename T>
-            T getParameterValueAs(const std::string& param_name) {
-                static_assert(extensions::is_supported<T>::value,
-                              "ExtensionsBase::getParameterValueAs<T> called with "
-                              "unsupported type T. See documentation for supported types.");
-                return getParameterValueAs_<T>(param_name);
-            }
-
-            /*!
-             * \brief UUID for testing purposes. NOT added to final config
-             * (--write-final-config) output.
-             */
-            const std::string & getUUID() const {
-                return uuid_;
-            }
-
-        private:
-            template <typename T>
-            T getParameterValueAs_(const std::string& param_name);
-
-            std::string uuid_;
-        };
+        using ExtensionsBase = detail::ExtensionsBase;
 
         /*!
          * \brief Add an extension factory to this tree node by its type (name).
@@ -2083,6 +2007,26 @@ namespace sparta
          * false if the extension was not found.
          */
         bool removeExtension(const std::string & extension_name);
+
+        /*!
+         * \brief Check if this tree node has an extension by the given name.
+         */
+        bool hasExtension(const std::string & extension_name) const {
+            return getExtension(extension_name) != nullptr;
+        }
+
+        /*!
+         * \brief Check if this tree node has an extension by the given name and type.
+         */
+        template <typename T>
+        bool hasExtensionOfType(const std::string & extension_name) const noexcept {
+            auto ext = getExtension(extension_name);
+            if (!ext) {
+                return false;
+            }
+
+            return dynamic_cast<const T*>(ext) != nullptr;
+        }
 
         /*!
          * \brief Extension names, if any. Tree node extensions are typically

@@ -427,6 +427,7 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
 
     // Now create the global_meta extension explicitly.
     top->createExtension("global_meta");
+    EXPECT_TRUE(top->hasExtension("global_meta"));
     auto top_global_meta_ext = top->getExtension("global_meta");
     EXPECT_NOTEQUAL(top_global_meta_ext, nullptr);
     EXPECT_EQUAL(top->getNumExtensions(), 2);
@@ -443,6 +444,8 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
     // Up to now, node3 does not have any extensions. Test on-demand extension creation
     // with a registered factory.
     node3_ext = node3->createExtension("ski_trail");
+    EXPECT_TRUE(node3->hasExtension("ski_trail"));
+    EXPECT_TRUE(node3->hasExtensionOfType<SkiTrailExtension>("ski_trail"));
 
     // The created extension should be of type SkiTrailExtension with one parameter.
     // The SkiTrailExtension::postCreate() method adds the "trail_closed" parameter
