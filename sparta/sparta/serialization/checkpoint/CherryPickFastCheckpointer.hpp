@@ -65,8 +65,8 @@ public:
 
         /// \brief Sets the ArchData root(s) and Scheduler for a given instance of the checkpointer.
         /// \param instance_num 0 if using one checkpointer instance, else the instance number (1-based)
-        /// \param sched Scheduler to use for the checkpoint's tick numbers
         /// \param roots TreeNode(s) at which ArchData will be taken
+        /// \param sched Scheduler to use for the checkpoint's tick numbers
         /// \note This is required before createEnabledApps() is called
         void parameterize(size_t instance_num, const std::vector<TreeNode*>& roots, Scheduler* sched = nullptr)
         {
