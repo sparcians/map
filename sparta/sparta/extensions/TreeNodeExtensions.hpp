@@ -10,6 +10,7 @@
 #pragma once
 
 #include "sparta/extensions/TreeNodeExtensionsSupport.hpp"
+#include "sparta/utils/Utils.hpp"
 
 #include <memory>
 #include <string>
@@ -29,8 +30,8 @@ namespace detail {
 class ExtensionsBase
 {
 public:
-    ExtensionsBase();
-    virtual ~ExtensionsBase();
+    ExtensionsBase() : uuid_(generateUUID()) {}
+    virtual ~ExtensionsBase() = default;
     virtual std::string getClassName() const { return "unknown"; }
     virtual void setParameters(std::unique_ptr<ParameterSet> params) = 0;
     virtual ParameterSet * getParameters() const = 0;
