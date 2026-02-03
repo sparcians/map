@@ -112,7 +112,6 @@ public:
             return it->second;
         }
 
-        Scheduler* scheduler_ = nullptr;
         std::map<size_t, std::vector<TreeNode*>> roots_by_inst_num_;
         std::map<size_t, Scheduler*> schedulers_by_inst_num_;
     };
