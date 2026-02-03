@@ -527,8 +527,9 @@ void Simulation::createSimDbApps_()
         auto app_mgr = std::make_shared<simdb::AppManager>(db_mgr.get());
 
         // TODO cnyce: remove this - see comment at top of file (grep cnyce)
-        auto factory = app_mgr->getAppFactory<serialization::checkpoint::CherryPickFastCheckpointer>();
-        factory->setArchDataRoots(0, {});
+        using checkpointer_t = serialization::checkpoint::CherryPickFastCheckpointer;
+        std::vector<TreeNode*> no_roots;
+        simdb::AppManager::parameterizeAppFactoryInstance<checkpointer_t>(0, no_roots);
 
         for (const auto & app_name : app_names)
         {

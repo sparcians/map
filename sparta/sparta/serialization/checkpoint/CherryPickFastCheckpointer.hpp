@@ -54,6 +54,70 @@ public:
                                Scheduler* sched = nullptr);
 
     /*!
+     * \brief This AppFactory specialization is provided since we have to initialize the FastCheckpointer
+     * which takes the ArchData root(s) / Scheduler, and thus cannot have the default app subclass ctor
+     * signature that only takes the DatabaseManager like most other apps.
+     */
+    class AppFactory : public simdb::AppFactoryBase
+    {
+    public:
+        using AppT = serialization::checkpoint::CherryPickFastCheckpointer;
+
+        /// \brief Sets the ArchData root(s) and Scheduler for a given instance of the checkpointer.
+        /// \param instance_num 0 if using one checkpointer instance, else the instance number (1-based)
+        /// \param sched Scheduler to use for the checkpoint's tick numbers
+        /// \param roots TreeNode(s) at which ArchData will be taken
+        /// \note This is required before createEnabledApps() is called
+        void parameterize(size_t instance_num, const std::vector<TreeNode*>& roots, Scheduler* sched = nullptr)
+        {
+            roots_by_inst_num_[instance_num] = roots;
+            schedulers_by_inst_num_[instance_num] = sched;
+        }
+
+        AppT* createApp(simdb::DatabaseManager* db_mgr, size_t instance_num = 0) override
+        {
+            const auto& roots = getRoots_(instance_num);
+            auto scheduler = getScheduler_(instance_num);
+
+            // Make the ctor call that the default AppFactory cannot make.
+            return new AppT(db_mgr, roots, scheduler);
+        }
+
+        void defineSchema(simdb::Schema& schema) const override
+        {
+            AppT::defineSchema(schema);
+        }
+
+    private:
+        const std::vector<TreeNode*>& getRoots_(size_t instance_num) const
+        {
+            auto it = roots_by_inst_num_.find(instance_num);
+            if (it == roots_by_inst_num_.end()) {
+                throw SpartaException(
+                    "No TreeNode (ArchData root) set for DatabaseCheckpointer instance number ")
+                    << instance_num << ". Did you forget to call parameterizeAppFactory()?";
+            }
+
+            return it->second;
+        }
+
+        Scheduler* getScheduler_(size_t instance_num) const
+        {
+            auto it = schedulers_by_inst_num_.find(instance_num);
+            if (it == schedulers_by_inst_num_.end())
+            {
+                return nullptr;
+            }
+
+            return it->second;
+        }
+
+        Scheduler* scheduler_ = nullptr;
+        std::map<size_t, std::vector<TreeNode*>> roots_by_inst_num_;
+        std::map<size_t, Scheduler*> schedulers_by_inst_num_;
+    };
+
+    /*!
      * \brief Define the SimDB schema for this checkpointer.
      */
     static void defineSchema(simdb::Schema& schema);
@@ -150,62 +214,3 @@ private:
 };
 
 } // namespace sparta::serialization::checkpoint
-
-namespace simdb
-{
-
-/*!
- * \brief This AppFactory specialization is provided since we have to initialize the FastCheckpointer
- * which takes the ArchData root(s) / Scheduler, and thus cannot have the default app subclass ctor
- * signature that only takes the DatabaseManager like most other apps.
- */
-template <>
-class AppFactory<sparta::serialization::checkpoint::CherryPickFastCheckpointer> : public AppFactoryBase
-{
-public:
-    using AppT = sparta::serialization::checkpoint::CherryPickFastCheckpointer;
-
-    /// \brief Sets the ArchData root(s) for a given instance of the checkpointer.
-    /// \param instance_num 0 if using one checkpointer instance, else the instance number (1-based)
-    /// \param roots TreeNode(s) at which ArchData will be taken
-    /// \note Scheduler must be set separately via setScheduler()
-    /// \note This is required before createEnabledApps() is called
-    void setArchDataRoots(size_t instance_num, const std::vector<sparta::TreeNode*>& roots)
-    {
-        roots_by_inst_num_[instance_num] = roots;
-    }
-
-    /// \brief Sets the Scheduler for all instances of the checkpointer.
-    /// \param sched Scheduler to use for the checkpoint's tick numbers
-    /// \note This is optional if ticks are not needed
-    void setScheduler(sparta::Scheduler& sched)
-    {
-        scheduler_ = &sched;
-    }
-
-    AppT* createApp(DatabaseManager* db_mgr, size_t instance_num = 0) override
-    {
-        auto it = roots_by_inst_num_.find(instance_num);
-        if (it == roots_by_inst_num_.end()) {
-            throw sparta::SpartaException(
-                "No TreeNode (ArchData root) set for DatabaseCheckpointer instance number ")
-                << instance_num << ". Did you forget to call setArchDataRoot()?";
-        }
-
-        const auto & roots = it->second;
-
-        // Make the ctor call that the default AppFactory cannot make.
-        return new AppT(db_mgr, roots, scheduler_);
-    }
-
-    void defineSchema(Schema& schema) const override
-    {
-        AppT::defineSchema(schema);
-    }
-
-private:
-    sparta::Scheduler* scheduler_ = nullptr;
-    std::map<size_t, std::vector<sparta::TreeNode*>> roots_by_inst_num_;
-};
-
-} // namespace simdb
