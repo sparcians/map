@@ -1,0 +1,13 @@
+<map id="sparta::SimulationInfo::write" name="sparta::SimulationInfo::write">
+<area shape="rect" id="Node000001" title="Write this information to an ostream." alt="" coords="5,104,152,145"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1SimulationInfo.html#aaaf9c8cf6dd90544da19ef002a47275c" title="Gets (name, value) pairs for each header entry." alt="" coords="200,104,346,145"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,122,185,122,185,127,152,127"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TimeManager.html#a6728b6d1e95b60a1c6f21321491b37e6" title="Gets the number of seconds elapsed since the instantiation of SPARTA static and global vars." alt="" coords="400,5,543,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="309,101,393,57,406,50,408,55,395,61,312,106"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TimeManager.html#af030bd86de09c6db4e481d66fe77afb7" title="Returns the TimeManager singleton." alt="" coords="400,71,543,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="346,109,385,103,386,108,347,115"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1utils_1_1ValidValue.html#aca75dab39668be5fb02f4e2bb8d5019c" title="Get the value &#45; const version." alt="" coords="394,136,549,177"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="347,134,379,139,378,144,346,139"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1utils_1_1ValidValue.html#ae3676d510018298bdc57028aca4efaff" title="Is this value valid." alt="" coords="394,201,549,242"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="313,143,395,186,408,192,406,197,393,191,310,148"/>
+</map>

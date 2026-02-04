@@ -1,0 +1,5 @@
+<map id="sparta::memory::SimpleMemoryMap" name="sparta::memory::SimpleMemoryMap">
+<area shape="rect" id="Node000001" title="Memory mapping object which maps addresses onto block&#45;aligned destinations, each of which is a Blocki..." alt="" coords="5,5,232,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1SimpleMemoryMapNode.html" title="Memory mapping object which implements BlockingMemoryIFNode. Supports a simple mapping of incoming ad..." alt="" coords="18,79,219,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="121,46,121,79,116,79,116,46"/>
+</map>

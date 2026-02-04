@@ -1,0 +1,7 @@
+<map id="sparta::statistics::ArchiveNode::canAccessDataSeries" name="sparta::statistics::ArchiveNode::canAccessDataSeries">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,206,87"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1statistics_1_1ArchiveNode.html#a18e9b1a7e1f656a830808f0937d865dc" title=" " alt="" coords="259,5,404,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="206,42,243,36,244,41,206,47"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1utils_1_1ValidValue.html#ae3676d510018298bdc57028aca4efaff" title="Is this value valid." alt="" coords="254,71,409,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="206,71,239,75,238,80,206,76"/>
+</map>

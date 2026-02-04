@@ -1,0 +1,5 @@
+<map id="sparta::RegisterBankTable::dump" name="sparta::RegisterBankTable::dump">
+<area shape="rect" id="Node000001" title="Dump this register bank table to an out stream. Banks will be columns and group num/id will be rows." alt="" coords="5,5,179,46"/>
+<area shape="rect" id="Node000002" href="$namespacesparta.html#aa8b6a7e7f071080f91d35b6625afa0d3" title="Insert a number of some character into an ostream." alt="" coords="227,13,362,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="179,23,211,23,211,28,179,28"/>
+</map>
