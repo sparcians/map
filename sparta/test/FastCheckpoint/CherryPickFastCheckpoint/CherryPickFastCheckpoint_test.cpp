@@ -74,13 +74,17 @@ void RunCheckpointerTest()
     r1->write<uint32_t>(0);
     r2->write<uint32_t>(0);
 
-    simdb::DatabaseManager db_mgr("test.db", true);
-    simdb::AppManager app_mgr(&db_mgr);
+    simdb::AppManagers app_mgrs;
+    auto& app_mgr = app_mgrs.getAppManager("test.db", true /*new file*/);
 
     // Setup...
-    const std::vector<sparta::TreeNode*> roots({&root});
-    simdb::AppManager::parameterizeAppFactory<CherryPickFastCheckpointer>(roots, &sched);
+    // Apps must be enabled prior to parameterizing their custom factories
     app_mgr.enableApp(CherryPickFastCheckpointer::NAME);
+
+    // Now parameterize the factory
+    const std::vector<sparta::TreeNode*> roots({&root});
+    app_mgr.parameterizeAppFactory<CherryPickFastCheckpointer>(roots, &sched);
+
     app_mgr.createEnabledApps();
     app_mgr.createSchemas();
     app_mgr.initializePipelines();
@@ -504,7 +508,7 @@ void RunCheckpointerTest()
     EXPECT_EQUAL(fcp.findCheckpoint(D46)->getRestoreChain().size(), 2);
 
     // Finish
-    app_mgr.postSimLoopTeardown();
+    app_mgrs.postSimLoopTeardown();
     root.enterTeardown();
     clocks.enterTeardown();
 }
