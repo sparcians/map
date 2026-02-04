@@ -501,7 +501,6 @@ void Simulation::createSimDbApps_()
         return;
     }
 
-
     const auto & simdb_config = sim_config_->simdb_config;
     const auto enabled_apps = simdb_config.getEnabledApps();
 
@@ -540,10 +539,10 @@ void Simulation::createSimDbApps_()
         // give subclasses a chance to parameterize the app factories prior to
         // calling createEnabledApps().
         parameterizeApps_(&app_mgr);
-
-        app_mgr.createEnabledApps();
-        app_mgr.createSchemas();
     }
+
+    app_managers_->createEnabledApps();
+    app_managers_->createSchemas();
 #else
     if (!enabled_apps.empty())
     {
@@ -851,12 +850,9 @@ void Simulation::finalizeFramework()
     postFinalizeFramework_();
 
 #if SIMDB_ENABLED
-    for (auto & [app_mgr, _] : simdb_mgrs)
-    {
-        app_mgr->postInit(argc_, argv_);
-        app_mgr->initializePipelines();
-        app_mgr->openPipelines();
-    }
+    app_managers_->postInit(argc_, argv_);
+    app_managers_->initializePipelines();
+    app_managers_->openPipelines();
 #endif
 }
 

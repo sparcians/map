@@ -583,8 +583,11 @@ protected:
      * \brief When using SimDB apps, this method gets called when the
      * SimulationConfiguration (SimDbConfig) has been consumed, and
      * the appropriate apps have been enabled **but not yet instantiated**.
+     * \note Called once per AppManager (once per database)
+     * \note See app_mgr->getDatabaseManager()->getDatabaseFilePath()
+     * to see which database this AppManager is serving.
      */
-    virtual void parameterizeApps_(simdb::AppManager*) {}
+    virtual void parameterizeApps_([[maybe_unused]] simdb::AppManager* app_mgr) {}
 
     /*!
      * \brief Hook which is called at the end of finalizeFramework()

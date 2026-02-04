@@ -85,10 +85,10 @@ void RunCheckpointerTest()
     const std::vector<sparta::TreeNode*> roots({&root});
     app_mgr.parameterizeAppFactory<CherryPickFastCheckpointer>(roots, &sched);
 
-    app_mgr.createEnabledApps();
-    app_mgr.createSchemas();
-    app_mgr.initializePipelines();
-    app_mgr.openPipelines();
+    app_mgrs.createEnabledApps();
+    app_mgrs.createSchemas();
+    app_mgrs.initializePipelines();
+    app_mgrs.openPipelines();
 
     auto& dbcp = *app_mgr.getApp<CherryPickFastCheckpointer>();
     auto& fcp = dbcp.getFastCheckpointer();
