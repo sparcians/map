@@ -45,7 +45,7 @@ top
   |------------ buz: [1,2,3,4,5]
 ```
 
-However, if you call RootTreeNode::renderSubtree() (--show-tree) you
+However, if you call `RootTreeNode::renderSubtree()` (`--show-tree`) you
 will NOT see the "extensions" nodes or their descendants as they are
 not actually `TreeNodes`.
 
@@ -102,9 +102,9 @@ A TreeNode extension is:
 - Created on demand if a factory exists (can be `dynamic_cast` to `YourExtensionSubclass*`)
   - `TreeNode::getExtension(name)`
   - `TreeNode::getExtensionAs<YourExtensionSubclass>(name)`
-  - `TreeNode::getExtension() // must only have one extension`
-    - NOTE: Only the **non-const** versions of these APIs will create the extension
-    - NOTE: If these methods are called without a factory, and no such extension exists, one will NOT be created on demand
+  - `TreeNode::getExtension() // must have only one extension`
+    - Only the **non-const** versions of these APIs will create the extension
+    - If these methods are called without a factory, and no such extension exists, one **will NOT be created on demand**
   - `TreeNode::createExtension(name)`
 - Created using string-only parameters if no factory exists
   - `TreeNode::createExtension(name)`
@@ -149,12 +149,18 @@ This makes extensions ideal for:
 Extensions are typically created via **registered factories**.
 
 - You may add this macro to any `.cpp` file built by your simulator:
-  - REGISTER_TREE_NODE_EXTENSION(YourExtensionSubclass)
+  - `REGISTER_TREE_NODE_EXTENSION(YourExtensionSubclass)`
+  - The `.cpp` file must include the header file that contains `YourExtensionSubclass`
   - Provides earliest possible factory registration
 - You can also call `TreeNode::addExtensionFactory()`
   - Can only call before `configureTree()`
 - You can also call `app::Simulation::addTreeNodeExtensionFactory_()`
   - Can only call before `configureTree()`
+
+Note there is no difference between `TreeNode::addExtensionFactory()` and
+`app::Simulation::addTreeNodeExtensionFactory_()`.
+
+See the section "Registering an Extension" for examples.
 
 ### No Extension Factory?
 
@@ -222,12 +228,13 @@ Extension registration can be done several ways:
 If you want your extension to be registered as soon as possible, call the macro from a translation unit:
 
 ```
-// CoreExtensions.cpp
-
+// CoreExtensions.hpp
 #include "sparta/simulation/TreeNodeExtensions.hpp"
 class CoreExtensions : public sparta::ExtensionsParamsOnly { ... };
 
-#include "sparta/simulation/RootTreeNode.hpp"
+// CoreExtensions.cpp (or any source file built by your simulator)
+#include "CoreExtensions.hpp"                  // macro requires class visibility
+#include "sparta/simulation/RootTreeNode.hpp"  // macro lives here
 REGISTER_TREE_NODE_EXTENSION(CoreExtensions);
 ```
 
@@ -291,7 +298,7 @@ You can also inline the extensions right on the command line:
       -p top.cpu.core*.extension.core_extensions.extra_param 5.67
 ```
 
-NOTE: If you use `-p` at the command line, then these extensions/parameters MUST be read by the time `finalizeTree()` is called, else you get an exception.
+**NOTE:** If you use `-p` at the command line, then these extensions/parameters MUST be read by the time `finalizeTree()` is called, else you get an exception.
 
 ---
 
@@ -326,7 +333,7 @@ auto ext = tn->createExtension(name, false /*don't replace*/);
   - If a factory exists, invoke it and return the extension
   - If no factory exists, return nullptr, **not** `ExtensionsParamsOnly`
 
-NOTE: If the tree node's path is not in any extension/arch/config file, this **never** creates an extension, even with a registered factory.
+**NOTE:** If the tree node's path is not in any extension/arch/config file, this **never** creates an extension, even with a registered factory.
 
 ---
 
@@ -385,7 +392,7 @@ if (tn->hasExtension("core_extensions")) {
 What **does** get added to the final config YAML file?
 - All extensions created in `buildTree()`, `configureTree()`, and `finalizeTree()`
 - Default parameter values specified in `postCreate()`
-- NOTE: Removing extensions after `finalizeTree()` does not omit them from the final YAML file
+- **NOTE:** Removing extensions after `finalizeTree()` does not omit them from the final YAML file
 
 What **does not** get added to the final config YAML file?
 - Any extensions created in `finalizeFramework()`
@@ -396,4 +403,4 @@ What **does not** get added to the final config YAML file?
 
 ## Summary
 
-TreeNode Extensions provide a powerful and flexible way to associate user-defined behavior and state with Sparta’s device tree without compromising the framework’s design principles.
+**TreeNode Extensions** provide a powerful and flexible way to associate user-defined behavior and state with Sparta’s device tree without compromising the framework’s design principles.
