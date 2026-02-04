@@ -497,18 +497,19 @@ void Simulation::configure(const int argc,
 
 void Simulation::createSimDbApps_()
 {
-#if SIMDB_ENABLED
     if (!sim_config_) {
         return;
     }
 
+
+    const auto & simdb_config = sim_config_->simdb_config;
+    const auto enabled_apps = simdb_config.getEnabledApps();
+
+#if SIMDB_ENABLED
     // TODO cnyce: remove this - see comment at top of file (grep cnyce)
     [[maybe_unused]] auto dummy = serialization::checkpoint::CherryPickFastCheckpointer(
         nullptr /*db_mgr*/, {} /*roots*/, nullptr /*scheduler*/);
 
-    const auto & simdb_config = sim_config_->simdb_config;
-
-    const auto enabled_apps = simdb_config.getEnabledApps();
     if (enabled_apps.empty()) {
         return;
     }
@@ -542,6 +543,11 @@ void Simulation::createSimDbApps_()
 
         app_mgr.createEnabledApps();
         app_mgr.createSchemas();
+    }
+#else
+    if (!enabled_apps.empty())
+    {
+        throw SpartaException("Cannot use any command line SimDB options without -DUSING_SIMDB=ON");
     }
 #endif
 }
