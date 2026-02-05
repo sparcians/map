@@ -333,6 +333,9 @@ Simulation::Simulation(const std::string& sim_name,
                           (this, "Simulation::delayedPEventStart_")),
     simulation_state_(this)
 {
+#if SIMDB_ENABLED
+    app_managers_ = std::make_shared<simdb::AppManagers>();
+#endif
 
     // Watch for created nodes to which we will apply taps
     root_.getNodeAttachedNotification().REGISTER_FOR_THIS(rootDescendantAdded_);
@@ -494,18 +497,18 @@ void Simulation::configure(const int argc,
 
 void Simulation::createSimDbApps_()
 {
-#if SIMDB_ENABLED
     if (!sim_config_) {
         return;
     }
 
+    const auto & simdb_config = sim_config_->simdb_config;
+    const auto enabled_apps = simdb_config.getEnabledApps();
+
+#if SIMDB_ENABLED
     // TODO cnyce: remove this - see comment at top of file (grep cnyce)
     [[maybe_unused]] auto dummy = serialization::checkpoint::CherryPickFastCheckpointer(
         nullptr /*db_mgr*/, {} /*roots*/, nullptr /*scheduler*/);
 
-    const auto & simdb_config = sim_config_->simdb_config;
-
-    const auto enabled_apps = simdb_config.getEnabledApps();
     if (enabled_apps.empty()) {
         return;
     }
@@ -523,24 +526,27 @@ void Simulation::createSimDbApps_()
     {
         const auto& pragmas = simdb_config.getPragmas();
         constexpr auto new_file = true;
-        auto db_mgr = std::make_shared<simdb::DatabaseManager>(db_file, new_file, pragmas);
-        auto app_mgr = std::make_shared<simdb::AppManager>(db_mgr.get());
-
-        // TODO cnyce: remove this - see comment at top of file (grep cnyce)
-        using checkpointer_t = serialization::checkpoint::CherryPickFastCheckpointer;
-        std::vector<TreeNode*> no_roots;
-        simdb::AppManager::parameterizeAppFactory<checkpointer_t>(no_roots);
+        auto& app_mgr = app_managers_->getAppManager(db_file, new_file);
 
         for (const auto & app_name : app_names)
         {
             auto num_instances = simdb_config.getAppInstances(app_name, db_file);
             sparta_assert(num_instances > 0);
-            app_mgr->enableApp(app_name, num_instances);
+            app_mgr.enableApp(app_name, num_instances);
         }
 
-        app_mgr->createEnabledApps();
-        app_mgr->createSchemas();
-        simdb_managers_[db_file] = std::make_shared<SimDbManagers>(db_mgr, app_mgr);
+        // Now that the apps are enabled with the specific number of instances,
+        // give subclasses a chance to parameterize the app factories prior to
+        // calling createEnabledApps().
+        parameterizeApps_(&app_mgr);
+    }
+
+    app_managers_->createEnabledApps();
+    app_managers_->createSchemas();
+#else
+    if (!enabled_apps.empty())
+    {
+        throw SpartaException("Cannot use any command line SimDB options without -DUSING_SIMDB=ON");
     }
 #endif
 }
@@ -578,58 +584,6 @@ void Simulation::addReport(const ReportDescriptor & rep)
         // Simply append to list. Nothing to do until finalization (unlike taps)
         rep_descs_.push_back(rep);
     }
-}
-
-std::vector<simdb::AppManager*> Simulation::getAppManagers()
-{
-    std::vector<simdb::AppManager*> app_mgrs;
-    for (auto [db_file, mgrs] : simdb_managers_)
-    {
-        app_mgrs.push_back(mgrs->app_mgr.get());
-    }
-    return app_mgrs;
-}
-
-std::vector<simdb::DatabaseManager*> Simulation::getDbManagers()
-{
-    std::vector<simdb::DatabaseManager*> db_mgrs;
-    for (auto & [db_file, mgrs] : simdb_managers_)
-    {
-        db_mgrs.push_back(mgrs->db_mgr.get());
-    }
-    return db_mgrs;
-}
-
-simdb::AppManager* Simulation::getAppManager(const std::string & db_file) const
-{
-    auto it = simdb_managers_.find(db_file);
-    if (it == simdb_managers_.end())
-    {
-        return nullptr;
-    }
-
-    return it->second->app_mgr.get();
-}
-
-simdb::DatabaseManager* Simulation::getDbManager(const std::string & db_file) const
-{
-    auto it = simdb_managers_.find(db_file);
-    if (it == simdb_managers_.end())
-    {
-        return nullptr;
-    }
-
-    return it->second->db_mgr.get();
-}
-
-std::vector<std::string> Simulation::getDatabaseFiles() const
-{
-    std::vector<std::string> db_files;
-    for (const auto & [db_file, mgrs] : simdb_managers_)
-    {
-        db_files.push_back(db_file);
-    }
-    return db_files;
 }
 
 void Simulation::installTaps(const log::TapDescVec& taps)
@@ -863,14 +817,10 @@ void Simulation::finalizeFramework()
     bool reports_setup = false;
 
 #if SIMDB_ENABLED
-    std::vector<simdb::AppManager*> app_mgrs;
-    for (const auto & [db_file, simdb_mgrs] : simdb_managers_)
+    auto simdb_mgrs = app_managers_->getAllManagers();
+    for (auto & [app_mgr, db_mgr] : simdb_mgrs)
     {
-        auto db_mgr = simdb_mgrs->db_mgr;
-        auto app_mgr = simdb_mgrs->app_mgr;
-        app_mgrs.push_back(app_mgr.get());
-
-        if (auto app = app_mgr->getApp<ReportStatsCollector>(false))
+        if (auto app = app_mgr->getApp<ReportStatsCollector>())
         {
             if (reports_setup)
             {
@@ -893,13 +843,16 @@ void Simulation::finalizeFramework()
     framework_finalized_ = true;
     report_repository_->postFinalizeFramework();
 
+    // Let simulation subclasses add a hook for post-finalizeFramework().
+    // Do this before opening the SimDB threads so user's apps are not
+    // running in this hook. Simulation setup is typically assumed to
+    // be single-threaded.
+    postFinalizeFramework_();
+
 #if SIMDB_ENABLED
-    for (auto app_mgr : app_mgrs)
-    {
-        app_mgr->postInit(argc_, argv_);
-        app_mgr->initializePipelines();
-        app_mgr->openPipelines();
-    }
+    app_managers_->postInit(argc_, argv_);
+    app_managers_->initializePipelines();
+    app_managers_->openPipelines();
 #endif
 }
 
@@ -1147,10 +1100,7 @@ void Simulation::postProcessingLastCall()
 {
 #if SIMDB_ENABLED
     // This is added here to close AppManager's even with --no-run
-    for (auto app_mgr : getAppManagers())
-    {
-        app_mgr->postSimLoopTeardown();
-    }
+    app_managers_->postSimLoopTeardown();
 #endif
 }
 
