@@ -118,6 +118,39 @@ private:
     std::unique_ptr<sparta::Parameter<std::vector<std::vector<uint32_t>>>> int_nested_vectors_;
 };
 
+/// Extension subclass used to validate addExtension<T>(Args...) and replaceExtension<T>(Args...)
+/// These are special in that they can be created at any time (not just before finalizeTree),
+/// they can have any constructor (member variables might be references or have const values,
+/// so the default ctor won't work), and they never use registered factories.
+class OnTheFlyExtension : public sparta::ExtensionsParamsOnly
+{
+public:
+    static constexpr auto NAME = "on-the-fly";
+
+    std::string getClassName() const override
+    {
+        return NAME;
+    }
+
+    // The addExtension() api allows any ctor signature
+    OnTheFlyExtension(int ival, const std::string& sval)
+        : ival_(ival)
+        , sval_(sval)
+    {}
+
+    int getIntVal() const {
+        return ival_;
+    }
+
+    std::string getStringVal() const {
+        return sval_;
+    }
+
+private:
+    const int ival_;
+    const std::string sval_;
+};
+
 class TestTree
 {
 public:
@@ -127,6 +160,7 @@ public:
         , node2_(&node1_, "node2", "node2")
         , node3_(&node2_, "node3", "node3")
         , node4_(&node3_, "node4", "node4")
+        , node5_(&node4_, "node5", "node5")
     {}
 
     sparta::RootTreeNode * getRoot()
@@ -145,6 +179,7 @@ private:
     sparta::TreeNode node2_;
     sparta::TreeNode node3_;
     sparta::TreeNode node4_;
+    sparta::TreeNode node5_;
 };
 
 class MultiCoreTestTree
@@ -207,6 +242,13 @@ private:
 
         auto node4 = new sparta::TreeNode(node3, "node4", "node4");
         to_free_.emplace_back(node4);
+
+        auto node5 = new sparta::TreeNode(node4, "node5", "node5");
+        to_free_.emplace_back(node5);
+
+        // Register the ExtensionsParamsOnly factory for "node_config".
+        EXPECT_NOTHROW(getRoot()->addExtensionFactory("node_config",
+            []() { return new sparta::ExtensionsParamsOnly; }));
 
         // The new way to use extensions is to register factories with
         // the REGISTER_TREE_NODE_EXTENSION macro. That ensures that
@@ -416,7 +458,7 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
     // We should only have the one extension from ski_trails.yaml until we make
     // the above API call.
     EXPECT_EQUAL(top->getNumExtensions(), 1);
-    auto ext_names = top->getAllExtensionNames();
+    auto ext_names = top->getAllInstantiatedExtensionNames();
     auto expected_ext_names = std::set<std::string>({"ski_trail"});
     EXPECT_TRUE(ext_names == expected_ext_names);
 
@@ -431,7 +473,7 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
     auto top_global_meta_ext = top->getExtension("global_meta");
     EXPECT_NOTEQUAL(top_global_meta_ext, nullptr);
     EXPECT_EQUAL(top->getNumExtensions(), 2);
-    ext_names = top->getAllExtensionNames();
+    ext_names = top->getAllInstantiatedExtensionNames();
     expected_ext_names = std::set<std::string>({"ski_trail", "global_meta"});
     EXPECT_TRUE(ext_names == expected_ext_names);
 
@@ -513,7 +555,37 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
         EXPECT_EQUAL(param_a, 10);
         EXPECT_EQUAL(param_b, "foobar");
         EXPECT_EQUAL(param_c, std::vector<uint32_t>({4,5,6}));
+
+        // Make sure we can call this overload:
+        //   createExtension(bool replace = false);
+        auto new_node4_ext = node4->createExtension();
+        EXPECT_EQUAL(new_node4_ext, node4_ext); // because replace=false
+
+        auto new_node4_ext_uuid = new_node4_ext->getUUID();
+        new_node4_ext = node4->createExtension(true);
+        EXPECT_NOTEQUAL(new_node4_ext->getUUID(), new_node4_ext_uuid); // because replace=true
     }
+
+    // Make sure we can create an extension with non-default ctors using
+    // perfect forwarding. No factory required.
+    auto node5 = node4->getChild("node5");
+    auto on_the_fly_ext = node5->addExtension<OnTheFlyExtension>(555, "foobar");
+    EXPECT_EQUAL(on_the_fly_ext, node5->getExtension(OnTheFlyExtension::NAME));
+    EXPECT_EQUAL(on_the_fly_ext->getIntVal(), 555);
+    EXPECT_EQUAL(on_the_fly_ext->getStringVal(), "foobar");
+
+    // Make sure we hit an exception if we try to addExtension() again.
+    // The right way is to use replaceExtension().
+    EXPECT_THROW(node5->addExtension<OnTheFlyExtension>(404, "nope"));
+
+    // Validate replaceExtension().
+    auto on_the_fly_ext_uuid = on_the_fly_ext->getUUID();
+    auto replaced_on_the_fly_ext = node5->replaceExtension<OnTheFlyExtension>(777, "hello");
+    auto replaced_on_the_fly_ext_uuid = replaced_on_the_fly_ext->getUUID();
+    EXPECT_NOTEQUAL(replaced_on_the_fly_ext_uuid, on_the_fly_ext_uuid);
+    EXPECT_EQUAL(replaced_on_the_fly_ext, node5->getExtension(OnTheFlyExtension::NAME));
+    EXPECT_EQUAL(replaced_on_the_fly_ext->getIntVal(), 777);
+    EXPECT_EQUAL(replaced_on_the_fly_ext->getStringVal(), "hello");
 }
 
 // Test: No simulation, just TreeNode's.

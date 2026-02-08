@@ -412,7 +412,16 @@ void Simulation::configure(const int argc,
         temp_file.replace_extension(".yaml");
 
         sparta::ConfigEmitter::YAML extensions_yaml(temp_file.string(), false /*Hide descriptions*/);
+
         const auto& ptree = sim_config_->getExtensionsUnboundParameterTree();
+        ptree.visitLeaves([](const ParameterTree::Node* leaf){
+            // This configure() method is called prior to buildTree_(), so we can lock down
+            // extensions rules to say that buildTree_() is the earliest you are allowed to
+            // access extensions. There is little or no reason to need extensions earlier
+            // than buildTree_().
+            sparta_assert(leaf->getReadCount() == 0);
+        });
+
         extensions_yaml.addParameters(getRoot(), &ptree, false /*Not verbose*/);
         getRoot()->addExtensions(temp_file.string(), {temp_dir.string()});
     }
@@ -715,6 +724,109 @@ void Simulation::finalizeTree()
 
     if(sim_config_)
     {
+        // Before checking that all arch/config/extension YAML file parameters were read,
+        // we need to mirror all the RootTreeNode's extension ptree (which is touched when
+        // users actually access extensions) with the SimulationConfiguration's extension
+        // ptrees (which are auto-populated from the YAML files).
+        auto& arch_ptree = sim_config_->getArchUnboundParameterTree();
+        auto& cfg_ptree = sim_config_->getUnboundParameterTree();
+        auto& ext_ptree = sim_config_->getExtensionsUnboundParameterTree();
+
+        // First, clear the read counts for all leaves in the sim config's extension ptrees.
+        // The true answer to the question "Has this extension parameter been read?" comes
+        // from the RootTreeNode's extension ptree.
+        auto resetReadCountIfExtensionParam = [](const ParameterTree::Node* leaf){
+            auto parent = leaf->getParent();
+            auto grandparent = parent ? parent->getParent() : nullptr;
+            if(grandparent && grandparent->getName() == "extension"){
+                leaf->resetReadCount();
+            }
+        };
+        arch_ptree.visitLeaves([&](const ParameterTree::Node* leaf){
+            resetReadCountIfExtensionParam(leaf);
+        });
+        cfg_ptree.visitLeaves([&](const ParameterTree::Node* leaf){
+            resetReadCountIfExtensionParam(leaf);
+        });
+        ext_ptree.visitLeaves([&](const ParameterTree::Node* leaf){
+            resetReadCountIfExtensionParam(leaf);
+        });
+
+        auto& rtn_ptree = root_.getExtensionsUnboundParameterTree();
+        rtn_ptree.visitLeaves([&](const ParameterTree::Node* leaf){
+            auto parent = leaf->getParent();
+            if (!parent) {
+                return;
+            }
+
+            auto grandparent = parent->getParent();
+            if (!grandparent) {
+                return;
+            }
+
+            sparta_assert(grandparent->getName() == "extension");
+
+            // Full path: top.cpu.core0.extension.foobar.foo
+            auto path = leaf->getPath();
+            constexpr std::string_view marker = ".extension.";
+            auto pos = path.find(marker);
+            sparta_assert(pos != std::string::npos);
+
+            // TreeNode location: top.cpu.core0
+            // Extension param path: foobar.foo
+            std::string tn_loc = path.substr(0, pos);
+            std::string ext_param_path = path.substr(pos + marker.size());
+
+            std::vector<std::string> parts;
+            boost::split(parts, ext_param_path, boost::is_any_of("."));
+            sparta_assert(parts.size() == 2);
+
+            // Extension name: foobar
+            // Extension param name: foo
+            const auto& ext_name = parts[0];
+            const auto& ext_param_name = parts[1];
+
+            // Use const version of getExtension() so we don't accidentally
+            // read the extension by virtual of creating it
+            auto const_search_scope = const_cast<const GlobalTreeNode*>(getRoot()->getSearchScope());
+            constexpr auto must_exist = false;
+
+            if (auto tn = const_search_scope->getChild(tn_loc, must_exist)){
+                if (auto tn_ext = tn->getExtension(ext_name)){
+                    auto ext_param_set = tn_ext->getParameters();
+                    sparta_assert(ext_param_set != nullptr);
+
+                    // See if the extension parameter has been read from the root
+                    // tree node's ptree. If so, and that same extension parameter
+                    // path was found in --arch, --config, or --extension-file,
+                    // then increment the read counts in those ptrees to avoid
+                    // the "unread unbound parameter" exceptions.
+                    if (auto ext_param = ext_param_set->getChildAs<ParameterBase>(ext_param_name, must_exist)){
+                        auto read_count = ext_param->getReadCount();
+                        if (read_count > 0) {
+                            if (auto n = arch_ptree.tryGet(path)) {
+                                n->incrementReadCount();
+                            }
+                            if (auto n = cfg_ptree.tryGet(path)) {
+                                n->incrementReadCount();
+                            }
+                            if (auto n = ext_ptree.tryGet(path)) {
+                                n->incrementReadCount();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // One of the verif checks below will throw if the user specified extensions via
+        // --arch, --config-file, or --extension-file, but by now they have still not
+        // consumed all of the YAML parameters.
+        //
+        // We do NOT check the RootTreeNode's unbound extensions ptree since it can
+        // contain extensions created on the fly, and we don't care if users explicitly
+        // create an extension that was not in any YAML input file.
+
         // Ensure that all unbound parameters have been consumed by ParameterSets or explicitly
         checkAllVirtualParamsRead_(sim_config_->getArchUnboundParameterTree());
 
@@ -1855,6 +1967,25 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
                     break;
                 }
             }
+
+            if(!ok){
+                // See if this is an optional extension which does not have to be instantiated,
+                // in other words these parameters are okay to be left unread.
+                auto parent = node->getParent();
+                auto grandparent = parent ? parent->getParent() : nullptr;
+                if(grandparent && grandparent->getName() == "extension"){
+                    if(auto optional = parent->getChild("optional")){
+                        auto value = optional->getValue();
+                        if(value == "true"){
+                            ok = true;
+                        }else if(value != "false"){
+                            throw SpartaException("The 'optional' value must be 'true' or 'false', not '")
+                                << value << "'.";
+                        }
+                    }
+                }
+            }
+
             if(!ok){
                 if(node->isRequired()){
                     errors++;
@@ -1875,7 +2006,7 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
                   "correspond to any Parameter nodes in the device tree and were never directly "
                   "read from the unbound tree:\n";
             ex << err_list.str();
-            ex << "\n This can be the result of supplying an archicture yaml that sets an expected topology followed by -c/-p options that change that topology. \n"
+            ex << "\n This can be the result of supplying an architecture yaml that sets an expected topology followed by -c/-p options that change that topology. \n"
                 "\tIn this case, consider a new architecture or supply the architecture yaml file as a '-c' option instead of the '--arch' option";
             throw ex;
         }

@@ -534,12 +534,6 @@ namespace sparta
             ParameterTree ptree;
             applicator.applyUnbound(ptree, verbose_cfg);
 
-            std::vector<ParameterTree::Node*> nodes;
-            ptree.getUnreadValueNodes(&nodes);
-            for (auto node : nodes) {
-                node->unrequire();
-            }
-
             // Store the extensions in the std::any map owned by the ParameterTree::Node's
             extensions_ptree_.merge(ptree);
             if (verbose_cfg) {

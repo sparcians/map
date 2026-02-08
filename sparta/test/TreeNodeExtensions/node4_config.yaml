@@ -5,3 +5,4 @@ node1.node2.node3.node4:
     param_a: 10
     param_b: "foobar"
     param_c: [4,5,6]
+    optional: true
