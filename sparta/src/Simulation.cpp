@@ -787,7 +787,7 @@ void Simulation::finalizeTree()
             const auto& ext_param_name = parts[1];
 
             // Use const version of getExtension() so we don't accidentally
-            // read the extension by virtual of creating it
+            // read the extension by virtue of creating it
             auto const_search_scope = const_cast<const GlobalTreeNode*>(getRoot()->getSearchScope());
             constexpr auto must_exist = false;
 

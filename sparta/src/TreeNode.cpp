@@ -3241,7 +3241,7 @@ T TreeNode::ExtensionsBase::getParameterValueAs_(const std::string& param_name)
             << param_name << "' does not exist.";
     }
 
-    // We have to increment the read count, else we can an "unread unbound parameter"
+    // We have to increment the read count, else we can get an "unread unbound parameter"
     // exception during finalizeTree()
     p->incrementReadCount_();
 
