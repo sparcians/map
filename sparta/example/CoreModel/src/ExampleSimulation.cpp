@@ -70,7 +70,15 @@ namespace sparta {
           std::cout << "  Node '" << getLocation()
                     << "' has parameter 'baz' with a value set to "
                     << baz_->read() << std::endl;
-          auto ext = getExtension("baz_ext");
+
+          auto sim = getSimulation();
+          auto sim_config = sim->getSimulationConfiguration();
+          const auto& ext_ptree = sim_config->getExtensionsUnboundParameterTree();
+          if(!ext_ptree.tryGet(getLocation(), false /*must_be_leaf*/)) {
+              return;
+          }
+
+          auto ext = createExtension("baz_ext");
           if(ext) {
               std::cout << "That's the ticket: "
                         << ext->getParameters()->getParameterValueAs<std::string>("ticket_") << std::endl;
@@ -504,9 +512,26 @@ sparta::Parameter<ParamT>* ExampleSimulator::getExtensionParameter_(
         return nullptr;
     }
 
+    auto sim = node->getSimulation();
+    auto sim_config = sim->getSimulationConfiguration();
+    auto& ext_ptree = sim_config->getExtensionsUnboundParameterTree();
+
+    // The ext_name can be empty to verify createExtension() with no explicit
+    // extension name argument. Note that API only works if this node only
+    // has one extension, or it throws.
+    auto loc = node->getLocation() + ".extension";
+    if (!ext_name.empty()) {
+        loc += "." + ext_name + "." + param_name;
+    }
+
+    auto ext_node = ext_ptree.tryGet(loc);
+    if (!ext_node) {
+        return nullptr;
+    }
+
     sparta::TreeNode::ExtensionsBase * ext = ext_name.empty() ?
-        node->getExtension() :
-        node->getExtension(ext_name);
+        node->createExtension() :
+        node->createExtension(ext_name);
 
     if (!ext) {
         return nullptr;
@@ -521,7 +546,16 @@ sparta::Parameter<ParamT>* ExampleSimulator::getExtensionParameter_(
         return nullptr;
     }
 
-    return &params->getParameterAs<ParamT>(param_name);
+    auto param = &params->getParameterAs<ParamT>(param_name);
+
+    // The only reason this method exists is to get the parameter
+    // and then call addDependentValidationCallback() on it. The
+    // validation callbacks do not trigger an increment on the
+    // parameter's read count. Read the value now so we can avoid
+    // the "unread unbound parameter" exceptions.
+    param->getValue();
+
+    return param;
 }
 
 template <typename ExtensionT>

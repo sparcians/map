@@ -2802,7 +2802,7 @@ const TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & exte
 
 TreeNode::ExtensionsBase * TreeNode::getExtension()
 {
-    std::set<std::string> known_extension_names = getAllExtensionNames();
+    std::set<std::string> known_extension_names = getAllInstantiatedExtensionNames();
 
     //Don't have any extension names? No extensions.
     if (known_extension_names.empty()) {
@@ -2828,7 +2828,7 @@ TreeNode::ExtensionsBase * TreeNode::getExtension()
 
 const TreeNode::ExtensionsBase * TreeNode::getExtension() const
 {
-    std::set<std::string> known_extension_names = getAllExtensionNames();
+    std::set<std::string> known_extension_names = getAllInstantiatedExtensionNames();
 
     //Don't have any extension names? No extensions.
     if (known_extension_names.empty()) {
@@ -2870,7 +2870,7 @@ TreeNode::ExtensionsBase * TreeNode::createExtension(const std::string & extensi
     }
 
     auto & ptree = root->getExtensionsUnboundParameterTree();
-    constexpr bool required = false;
+    constexpr bool required = true;
     constexpr bool must_be_leaf = false;
 
     auto loc = getLocation();
@@ -2911,7 +2911,28 @@ TreeNode::ExtensionsBase * TreeNode::createExtension(const std::string & extensi
     std::vector<std::pair<std::string, std::string>> param_kvps;
     for (auto p : ext_param_nodes) {
         auto p_name = p->getName();
-        auto p_value = p->getValue();
+        if (p_name == "optional") {
+            auto p_value = p->peekValue();
+            try {
+                size_t end_pos;
+                utils::smartLexicalCast<bool>(p_value, end_pos);
+
+                // Don't print a whole bunch of identical messages
+                static std::set<std::string> msg_extensions;
+                if (msg_extensions.insert(extension_name).second) {
+                    std::cout << "Ignoring reserved keyword 'optional' in extensions YAML definition. "
+                            << "This is not a parameter - it tells the simulation that this YAML does "
+                            << "not have to be read before finalizeTree(). This was encountered for "
+                            << "extension '" << extension_name << "'." << std::endl;
+                }
+                continue;
+            } catch (const SpartaException &) {
+                throw SpartaException("Extension YAML 'optional' keyword must only be set to ")
+                    << "true or false, not '" << p_value << "'.";
+            }
+        }
+
+        auto p_value = p->peekValue();
         param_kvps.push_back(std::make_pair(p_name, p_value));
     }
 
@@ -2937,7 +2958,7 @@ TreeNode::ExtensionsBase * TreeNode::createExtension(const std::string & extensi
     for (auto p : params) {
         auto p_name = p->getName();
         auto p_value = p->getValueAsString();
-        auto n = ext_node->addChild(p_name, required);
+        auto n = ext_node->create(p_name, required);
         n->setValue(p_value, required);
     }
 
@@ -2945,7 +2966,85 @@ TreeNode::ExtensionsBase * TreeNode::createExtension(const std::string & extensi
     ptree_node->setUserData(extension_name, std::move(extension));
     auto ext = getExtension(extension_name);
     sparta_assert(ext != nullptr);
+
+    // Since extensions can be created on the fly, validate this extension's parameters.
+    // This already occurred for any extensions accessed/created before finalizeTree().
+    std::string errs;
+    if (!ext->getParameters()->validateDependencies(this, errs)) {
+        // Remove this extension and throw
+        sparta_assert(removeExtension(extension_name));
+        throw SpartaException("Parameter validation callbacks indicated invalid parameters: ")
+            << errs;
+    }
+
     return ext;
+}
+
+TreeNode::ExtensionsBase * TreeNode::createExtension(bool replace)
+{
+    std::set<std::string> known_extension_names = getAllConfigExtensionNames();
+
+    //Don't have any extension names? No extensions.
+    if (known_extension_names.empty()) {
+        return nullptr;
+    }
+
+    //More than one unique extension name? Exception.
+    else if (known_extension_names.size() > 1) {
+        std::ostringstream oss;
+        oss << "TreeNode::createExtension() overload called without any specific " << std::endl;
+        oss << "named extension requested. However, more than one extension was " << std::endl;
+        oss << "found. Applies to '" << getLocation() << "'" << std::endl;
+        oss << "Here are the extension names found at this node:" << std::endl;
+        for (const auto & ext : known_extension_names) {
+            oss << "\t" << ext << std::endl;
+        }
+        throw SpartaException(oss.str());
+    }
+
+    //Get the one named extension
+    return createExtension(*known_extension_names.begin(), replace);
+}
+
+TreeNode::ExtensionsBase * TreeNode::createExtension(const char* extension_name, bool replace)
+{
+    return createExtension(std::string(extension_name), replace);
+}
+
+void TreeNode::addExtension_(const std::string & extension_name, std::shared_ptr<ExtensionsBase> extension)
+{
+    auto root = dynamic_cast<RootTreeNode*>(getRoot());
+    if (!root) {
+        throw SpartaException("Cannot create extension '")
+            << extension_name << "'. RootTreeNode not found from node '"
+            << getLocation() << "'";
+    }
+
+    auto & ptree = root->getExtensionsUnboundParameterTree();
+    constexpr bool required = true;
+    constexpr bool must_be_leaf = false;
+
+    auto loc = getLocation();
+    auto ptree_node = ptree.tryGet(loc, must_be_leaf);
+    if (!ptree_node) {
+        ptree_node = ptree.create(loc, required);
+    }
+
+    // Add the new extension to the extensions parameter tree.
+    ptree_node->setUserData(extension_name, std::move(extension));
+    sparta_assert(hasExtension(extension_name));
+    auto ext = getExtension(extension_name);
+    sparta_assert(ext != nullptr);
+
+    // Since extensions can be created on the fly, validate this extension's parameters.
+    // This already occurred for any extensions accessed/created before finalizeTree().
+    std::string errs;
+    if (!ext->getParameters()->validateDependencies(this, errs)) {
+        // Remove this extension and throw
+        sparta_assert(removeExtension(extension_name));
+        throw SpartaException("Parameter validation callbacks indicated invalid parameters: ")
+            << errs;
+    }
 }
 
 bool TreeNode::removeExtension(const std::string & extension_name)
@@ -2961,7 +3060,7 @@ bool TreeNode::removeExtension(const std::string & extension_name)
         return false;
     }
 
-    if (getAllExtensionNames().count(extension_name) == 0) {
+    if (getAllInstantiatedExtensionNames().count(extension_name) == 0) {
         return false;
     }
 
@@ -2970,7 +3069,7 @@ bool TreeNode::removeExtension(const std::string & extension_name)
     return true;
 }
 
-std::set<std::string> TreeNode::getAllExtensionNames() const
+std::set<std::string> TreeNode::getAllInstantiatedExtensionNames() const
 {
     auto root = dynamic_cast<const RootTreeNode*>(getRoot());
     if (!root) {
@@ -2995,6 +3094,33 @@ std::set<std::string> TreeNode::getAllExtensionNames() const
         if (ext) {
             ext_names.insert(key);
         }
+    }
+
+    return ext_names;
+}
+
+std::set<std::string> TreeNode::getAllConfigExtensionNames() const
+{
+    auto sim = getSimulation();
+    if (!sim) {
+        return {};
+    }
+
+    auto sim_config = sim->getSimulationConfiguration();
+    if (!sim_config) {
+        return {};
+    }
+
+    const auto& ext_ptree = sim_config->getExtensionsUnboundParameterTree();
+    constexpr bool must_be_leaf = false;
+    auto ptree_node = ext_ptree.tryGet(getLocation() + ".extension", must_be_leaf);
+    if (!ptree_node) {
+        return {};
+    }
+
+    std::set<std::string> ext_names;
+    for (auto ext_node : ptree_node->getChildren()) {
+        ext_names.insert(ext_node->getName());
     }
 
     return ext_names;
@@ -3114,6 +3240,10 @@ T TreeNode::ExtensionsBase::getParameterValueAs_(const std::string& param_name)
         throw SpartaException("TreeNode extension parameter retrieval failed: Parameter '")
             << param_name << "' does not exist.";
     }
+
+    // We have to increment the read count, else we can an "unread unbound parameter"
+    // exception during finalizeTree()
+    p->incrementReadCount_();
 
     std::string param_val_str = p->getValueAsString();
     return getParameterValueAsImpl<T>(param_val_str);
