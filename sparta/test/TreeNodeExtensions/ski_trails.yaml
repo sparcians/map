@@ -17,12 +17,14 @@ top:
     trail_name: Fuddle Duddle
     color: green
     shape: circle
+    optional: true
 
 top.node1:
   extension.ski_trail:
     trail_name: Escapade
     color: blue
     shape: square
+    optional: true
 
 top.node1.node2:
   extension.ski_trail:
@@ -30,3 +32,4 @@ top.node1.node2:
     color: black
     shape: diamond
     trail_closed: true
+    optional: true

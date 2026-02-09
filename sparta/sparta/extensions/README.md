@@ -109,6 +109,11 @@ A TreeNode extension is:
 - Created using string-only parameters if no factory exists
   - `TreeNode::createExtension(name)`
   - Returns an `ExtensionsParamsOnly*` which cannot be `dynamic_cast` to anything
+- Created on demand, no factory required, and without restrictions on when you can create it
+  - `TreeNode::addExtension<T, Args...>`
+    - Creates your extension \<T\> class by forwarding constructor `Args...`
+  - `TreeNode::replaceExtension<T, Args...>`
+    - Removes existing extension `T::NAME`, then calls `addExtension<T, Args...>()`
 
 Think of extensions as a **type-indexed side table** attached to each `TreeNode`.
 
@@ -141,6 +146,31 @@ This makes extensions ideal for:
 - Late-bound instrumentation
 - Hidden metadata / implementation detail
 - Optional features controlled by configuration
+
+### When extensions cannot be used
+
+If you have an extension like this:
+
+```
+top.cpu.core0.extension.core_extensions:
+  foo: 4
+  bar: 5
+```
+
+And you fail to read the foo/bar parameters prior to `finalizeTree()`, you will get an `unread unbound parameter` exception. To get past this, you have to say that this extension is optional:
+
+```
+top.cpu.core0.extension.core_extensions:
+  foo: 4
+  bar: 5
+  optional: true
+```
+
+### When are extension parameters validated?
+
+If you add validation callbacks with `ParameterBase::addDependentValidationCallback()`, they will be called:
+- During `finalizeTree()` for all extensions created thus far
+- Whenever extensions are created on demand using `addExtension/replaceExtension<T, Args...>`
 
 ---
 

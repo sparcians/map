@@ -84,12 +84,6 @@ namespace app {
         ParameterTree ptree;
         config_applicators_.back()->applyUnbound(ptree, verbose_cfg);
 
-        std::vector<ParameterTree::Node*> nodes;
-        ptree.getUnreadValueNodes(&nodes);
-        for (auto node : nodes) {
-            node->unrequire();
-        }
-
         std::cout << "  [in] Extensions: " << config_applicators_.back()->stringize() << std::endl;
         extensions_ptree_.merge(ptree);
     }
@@ -245,11 +239,6 @@ namespace app {
 
         if (extension_nodes.empty()) {
             return;
-        }
-
-        //Every node that belongs to an extension is implicitly unrequired.
-        for (auto node : extension_nodes) {
-            node->unrequire();
         }
 
         //From the extension nodes on down, find the full list of child
