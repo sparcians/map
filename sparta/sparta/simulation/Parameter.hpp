@@ -809,6 +809,11 @@ namespace sparta
         }
 
         /*!
+         * \brief incrementReadCount_() needed by TreeNode::ExtensionsBase
+         */
+        friend class detail::ExtensionsBase;
+
+        /*!
          * \brief Resets the number of reads that wil be reported by
          * getReadCount.
          * \note Should be called only by a subclass or ParameterSet

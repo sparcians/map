@@ -276,7 +276,7 @@ void ExampleSimulator::buildTree_()
         // a particular named extension... for a tree node that was just created.
         sparta::TreeNode * dispatch = getRoot()->getChild("core0.dispatch", false);
         if (dispatch) {
-            sparta::TreeNode::ExtensionsBase * extensions = dispatch->getExtension("user_data");
+            sparta::TreeNode::ExtensionsBase * extensions = dispatch->getExtension("user_data", true);
 
             // If present, validate the parameter values as given in the extension / configuration file
             if (extensions != nullptr) {
@@ -289,7 +289,7 @@ void ExampleSimulator::buildTree_()
             // There might be an extension given in --extension-file that is not found
             // at all in any --config-file given at the command prompt. Verify that if
             // present, the value is as expected.
-            extensions = dispatch->getExtension("square");
+            extensions = dispatch->getExtension("square", true);
             if (extensions != nullptr) {
                 const sparta::ParameterSet * dispatch_prms = extensions->getParameters();
                 sparta_assert(dispatch_prms != nullptr);
@@ -313,7 +313,7 @@ void ExampleSimulator::buildTree_()
         sparta::TreeNode * alu0 = getRoot()->getChild("core0.alu0");
         sparta::TreeNode * alu1 = getRoot()->getChild("core0.alu1");
         if (alu0) {
-            sparta::TreeNode::ExtensionsBase * extensions = alu0->getExtension("difficulty");
+            sparta::TreeNode::ExtensionsBase * extensions = alu0->getExtension("difficulty", true);
             if (extensions != nullptr) {
                 const sparta::ParameterSet * alu0_prms = extensions->getParameters();
                 sparta_assert(alu0_prms != nullptr);
@@ -323,7 +323,7 @@ void ExampleSimulator::buildTree_()
             }
         }
         if (alu1) {
-            sparta::TreeNode::ExtensionsBase * extensions = alu1->getExtension("difficulty");
+            sparta::TreeNode::ExtensionsBase * extensions = alu1->getExtension("difficulty", true);
             if (extensions != nullptr) {
                 const sparta::ParameterSet * alu1_prms = extensions->getParameters();
                 sparta_assert(alu1_prms != nullptr);
@@ -698,7 +698,7 @@ void ExampleSimulator::validateTreeNodeExtensions_()
     if (core_tn == nullptr) {
         return;
     }
-    sparta::TreeNode::ExtensionsBase * cat_base = core_tn->getExtension("cat");
+    sparta::TreeNode::ExtensionsBase * cat_base = core_tn->getExtension("cat", true);
     if (cat_base == nullptr) {
         return;
     }
@@ -711,7 +711,7 @@ void ExampleSimulator::validateTreeNodeExtensions_()
     validateParameter<std::string>(*cat_prms, "language_", {"meow", "grrr"});
 
     // Same goes for the 'mouse' extension...
-    sparta::TreeNode::ExtensionsBase * mouse_base = core_tn->getExtension("mouse");
+    sparta::TreeNode::ExtensionsBase * mouse_base = core_tn->getExtension("mouse", true);
     if (mouse_base == nullptr) {
         return;
     }
@@ -748,7 +748,7 @@ void ExampleSimulator::validateTreeNodeExtensions_()
     if (top_node == nullptr) {
         return;
     }
-    sparta::TreeNode::ExtensionsBase * top_extensions = top_node->getExtension("apple");
+    sparta::TreeNode::ExtensionsBase * top_extensions = top_node->getExtension("apple", true);
     if (top_extensions == nullptr) {
         return;
     }
@@ -784,7 +784,7 @@ void ExampleSimulator::validateTreeNodeExtensions_()
     // was added to this example simulator to reproduce bug
     sparta::TreeNode * baz_node = getRoot()->getChild("core0.dispatch.baz_node", false);
     if (baz_node) {
-        sparta::TreeNode::ExtensionsBase * extensions = baz_node->getExtension("baz_ext");
+        sparta::TreeNode::ExtensionsBase * extensions = baz_node->getExtension("baz_ext", true);
         if (extensions) {
             const sparta::ParameterSet * baz_prms = extensions->getParameters();
             sparta_assert(baz_prms != nullptr);

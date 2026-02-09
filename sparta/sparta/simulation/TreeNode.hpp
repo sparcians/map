@@ -1897,12 +1897,15 @@ namespace sparta
          * \brief Get an extension object by type string. Returns nullptr if not
          *        found (unrecognized).
          * \param extension_name The name of the extension to find
+         * \param no_factory_ok If true, and this tree node was in one of the
+         * arch/config/extension YAML input files, and no factory exists for
+         * the extension name, return a configured ExtensionsParamsOnly.
          * \note If 'this' tree node was not given an extension in any of the
          * --extension-file, --arch, --config-file, or --node-config-file YAML
          * files, then this will always return nullptr. If you want to create
          * an extension for this node on demand, call createExtension(name).
          */
-        ExtensionsBase * getExtension(const std::string & extension_name);
+        ExtensionsBase * getExtension(const std::string & extension_name, bool no_factory_ok=false);
 
         /*!
          * \brief Get an extension object by type string. Returns nullptr if not
@@ -1960,8 +1963,8 @@ namespace sparta
         }
 
         /*!
-         * \brief Get an extension without needing to specify any particular type
-         * string. If no extensions exist, returns nullptr. If only one extension
+         * \brief Get an extension without needing to specify any particular extension
+         * name. If no extensions exist, returns nullptr. If only one extension
          * exists, returns that extension. If more than one extension exists, throws
          * an exception.
          * \note If 'this' tree node was not given an extension in any of the
@@ -1972,8 +1975,8 @@ namespace sparta
         ExtensionsBase * getExtension();
 
         /*!
-         * \brief Get an extension without needing to specify any particular type
-         * string. If no extensions exist, returns nullptr. If only one extension
+         * \brief Get an extension without needing to specify any particular extension
+         * name. If no extensions exist, returns nullptr. If only one extension
          * exists, returns that extension. If more than one extension exists, throws
          * an exception.
          * \note If 'this' tree node was not given an extension in any of the
@@ -2003,6 +2006,75 @@ namespace sparta
                                          bool replace=false);
 
         /*!
+         * \brief Create an extension on demand without needing to specify any
+         * particular extension name. If the arch/config/extension YAML input
+         * files have exactly one extension configured for this TreeNode, that
+         * extension will be created.
+         * \param replace If true, remove any existing extension of the same name
+         * before creating a new one. If false, returns the existing extension if one
+         * exists.
+         * \note If 'this' tree node was not given an extension in any of the
+         * --extension-file, --arch, --config-file, or --node-config-file YAML
+         * files, then this will always return nullptr.
+         * \note Does not require a registered extension factory. If no factory
+         * exists for the resolved extension name, returns an ExtensionsParamsOnly.
+         * Otherwise, returns an extension subclass created by the factory.
+         * \throw If 'this' tree node was given more than one extension in the
+         * input YAML files, this will always throw an exception.
+         */
+        ExtensionsBase * createExtension(bool replace=false);
+
+        /*!
+         * \see createExtension(name, replace)
+         */
+        ExtensionsBase * createExtension(const char* extension_name, bool replace = false);
+
+        /*!
+         * \brief Add an extension, specifying the ExtensionsBase subclass type.
+         * Forward any arguments needed to your subclass extension's constructor.
+         * The typical use case for addExtension() over the other apis is that these
+         * extensions are meant to be dynamic-only (on-demand only), bypassing the
+         * finalizeTree() checks that all extension parameters have been read. You
+         * can call addExtension() whenever you want.
+         * \note Instead of subclassing directly from ExtensionsBase, it is more
+         * common to subclass ExtensionsParamsOnly.
+         * \throw Throws if Extension::NAME is already an extension on this node. Use
+         * replaceExtension() instead.
+         */
+        template <typename Extension, typename... Args>
+        Extension * addExtension(Args&&... args) {
+            static_assert(std::is_base_of<ExtensionsBase, Extension>::value);
+            if (hasExtension(Extension::NAME)) {
+                throw SpartaException("Extension already exists: ") << Extension::NAME;
+            }
+
+            std::shared_ptr<ExtensionsBase> ext(new Extension(std::forward<Args>(args)...));
+            ext->setParameters(std::make_unique<ParameterSet>(nullptr));
+            ext->postCreate();
+
+            addExtension_(Extension::NAME, ext);
+            return dynamic_cast<Extension*>(ext.get());
+        }
+
+        /*!
+         * \brief Replace an extension, specifying the ExtensionsBase subclass type.
+         * This api is similar to addExtension() in that you do not have to read
+         * these parameters prior to finalizeTree() to avoid "unread unbound parameter"
+         * exceptions.
+         * \note If an extension with the name Extension::NAME already exists, it
+         * will be replaced. This api does not throw if there was no existing extension
+         * by the same name.
+         * \note Instead of subclassing directly from ExtensionsBase, it is more
+         * common to subclass ExtensionsParamsOnly.
+         */
+        template <typename Extension, typename... Args>
+        Extension * replaceExtension(Args&&... args) {
+            static_assert(std::is_base_of<ExtensionsBase, Extension>::value);
+            removeExtension(Extension::NAME);
+            return addExtension<Extension, Args...>(std::forward<Args>(args)...);
+        }
+
+        /*!
          * \brief Remove an extension by its name. Returns true if successful,
          * false if the extension was not found.
          */
@@ -2029,20 +2101,30 @@ namespace sparta
         }
 
         /*!
-         * \brief Extension names, if any. Tree node extensions are typically
-         * instantiated on-demand for best performance (you have to explicitly
-         * ask for an extension by its name, or it won't be created) - so note
-         * that calling this method will trigger the creation of all this node's
-         * extensions. The performance cost is proportional to the number of nodes
-         * in the virtual parameter tree.
+         * \brief Get a list of extension names for all **instantiated**
+         * extensions on this TreeNode.
+         * \note If you want a list of extension names found for this
+         * node in any arch/config/extension input YAML file, call the
+         * method getAllConfigExtensionNames().
          */
-        std::set<std::string> getAllExtensionNames() const;
+        std::set<std::string> getAllInstantiatedExtensionNames() const;
+
+        /*!
+         * \brief Get a list of extension names found for this node
+         * in all arch/config/extension files.
+         * \note If you want a list of extension names for **instantiated**
+         * extensions that exist already on this node, call the method
+         * getAllInstantiatedExtensionNames().
+         */
+        std::set<std::string> getAllConfigExtensionNames() const;
 
         /*!
          * \brief Get the number of extensions for this node.
+         * \note This refers to the number of **instantiated** extensions
+         * on this node.
          */
         size_t getNumExtensions() const {
-            return getAllExtensionNames().size();
+            return getAllInstantiatedExtensionNames().size();
         }
 
         /*!
@@ -2050,7 +2132,7 @@ namespace sparta
          */
         std::map<std::string, const ExtensionsBase*> getAllExtensions() const {
             std::map<std::string, const ExtensionsBase*> extensions;
-            for (const auto & ext_name : getAllExtensionNames()) {
+            for (const auto & ext_name : getAllInstantiatedExtensionNames()) {
                 auto ext = getExtension(ext_name);
                 sparta_assert(ext != nullptr);
                 extensions[ext_name] = ext;
@@ -4390,6 +4472,14 @@ namespace sparta
         bool hasChild_(const std::string& name, bool private_also) const noexcept;
 
     private:
+
+        /*!
+         * \brief addExtension() implementation
+         * \see See public addExtension() documentation
+         * \note Implemented in the cpp file since we need RootTreeNode and
+         * cannot include the header
+         */
+        void addExtension_(const std::string & extension_name, std::shared_ptr<ExtensionsBase> ext);
 
         /*!
          * \brief Unique ID of this node
