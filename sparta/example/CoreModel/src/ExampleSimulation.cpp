@@ -71,14 +71,7 @@ namespace sparta {
                     << "' has parameter 'baz' with a value set to "
                     << baz_->read() << std::endl;
 
-          auto sim = getSimulation();
-          auto sim_config = sim->getSimulationConfiguration();
-          const auto& ext_ptree = sim_config->getExtensionsUnboundParameterTree();
-          if(!ext_ptree.tryGet(getLocation(), false /*must_be_leaf*/)) {
-              return;
-          }
-
-          auto ext = createExtension("baz_ext");
+          auto ext = getExtension("baz_ext", true);
           if(ext) {
               std::cout << "That's the ticket: "
                         << ext->getParameters()->getParameterValueAs<std::string>("ticket_") << std::endl;
@@ -512,26 +505,9 @@ sparta::Parameter<ParamT>* ExampleSimulator::getExtensionParameter_(
         return nullptr;
     }
 
-    auto sim = node->getSimulation();
-    auto sim_config = sim->getSimulationConfiguration();
-    auto& ext_ptree = sim_config->getExtensionsUnboundParameterTree();
-
-    // The ext_name can be empty to verify createExtension() with no explicit
-    // extension name argument. Note that API only works if this node only
-    // has one extension, or it throws.
-    auto loc = node->getLocation() + ".extension";
-    if (!ext_name.empty()) {
-        loc += "." + ext_name + "." + param_name;
-    }
-
-    auto ext_node = ext_ptree.tryGet(loc);
-    if (!ext_node) {
-        return nullptr;
-    }
-
     sparta::TreeNode::ExtensionsBase * ext = ext_name.empty() ?
         node->createExtension() :
-        node->createExtension(ext_name);
+        node->getExtension(ext_name, true);
 
     if (!ext) {
         return nullptr;

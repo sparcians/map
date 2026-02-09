@@ -764,7 +764,9 @@ void Simulation::finalizeTree()
                 return;
             }
 
-            sparta_assert(grandparent->getName() == "extension");
+            if (grandparent->getName() != "extension") {
+                return;
+            }
 
             // Full path: top.cpu.core0.extension.foobar.foo
             auto path = leaf->getPath();

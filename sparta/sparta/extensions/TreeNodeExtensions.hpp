@@ -77,7 +77,7 @@ public:
      *   ...
      */
     template <typename T>
-    T getParameterValueAs(const std::string& param_name) {
+    T getParameterValueAs(const std::string& param_name) const {
         static_assert(extensions::is_supported<T>::value,
                         "ExtensionsBase::getParameterValueAs<T> called with "
                         "unsupported type T. See documentation for supported types.");
@@ -94,7 +94,7 @@ public:
 
 private:
     template <typename T>
-    T getParameterValueAs_(const std::string& param_name);
+    T getParameterValueAs_(const std::string& param_name) const;
 
     std::string uuid_;
 };

@@ -1897,12 +1897,15 @@ namespace sparta
          * \brief Get an extension object by type string. Returns nullptr if not
          *        found (unrecognized).
          * \param extension_name The name of the extension to find
+         * \param no_factory_ok If true, and this tree node was in one of the
+         * arch/config/extension YAML input files, and no factory exists for
+         * the extension name, return a configured ExtensionsParamsOnly.
          * \note If 'this' tree node was not given an extension in any of the
          * --extension-file, --arch, --config-file, or --node-config-file YAML
          * files, then this will always return nullptr. If you want to create
          * an extension for this node on demand, call createExtension(name).
          */
-        ExtensionsBase * getExtension(const std::string & extension_name);
+        ExtensionsBase * getExtension(const std::string & extension_name, bool no_factory_ok=false);
 
         /*!
          * \brief Get an extension object by type string. Returns nullptr if not

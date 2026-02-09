@@ -2732,7 +2732,7 @@ void TreeNode::addExtensionFactory(const std::string & extension_name,
     RootTreeNode::registerExtensionFactory(extension_name, factory);
 }
 
-TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_name)
+TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_name, bool no_factory_ok)
 {
     auto it = cached_extensions_.find(extension_name);
     if (it != cached_extensions_.end()) {
@@ -2766,7 +2766,10 @@ TreeNode::ExtensionsBase * TreeNode::getExtension(const std::string & extension_
         if (factory) {
             auto ext = createExtension(extension_name, true /*replace=true to avoid inf recursion*/);
             sparta_assert(ext != nullptr);
-
+            extension = ptree_node->tryGetUserData<std::shared_ptr<ExtensionsBase>>(extension_name);
+            sparta_assert(extension != nullptr);
+        } else if (no_factory_ok) {
+            createExtension(extension_name);
             extension = ptree_node->tryGetUserData<std::shared_ptr<ExtensionsBase>>(extension_name);
             sparta_assert(extension != nullptr);
         } else {
@@ -2921,9 +2924,9 @@ TreeNode::ExtensionsBase * TreeNode::createExtension(const std::string & extensi
                 static std::set<std::string> msg_extensions;
                 if (msg_extensions.insert(extension_name).second) {
                     std::cout << "Ignoring reserved keyword 'optional' in extensions YAML definition. "
-                            << "This is not a parameter - it tells the simulation that this YAML does "
-                            << "not have to be read before finalizeTree(). This was encountered for "
-                            << "extension '" << extension_name << "'." << std::endl;
+                              << "This is not a parameter - it tells the simulation that this YAML does "
+                              << "not have to be read before finalizeTree(). This was encountered for "
+                              << "extension '" << extension_name << "'." << std::endl;
                 }
                 continue;
             } catch (const SpartaException &) {
@@ -3227,7 +3230,7 @@ getParameterValueAsImpl(const std::string& param_val_str)
 }
 
 template <typename T>
-T TreeNode::ExtensionsBase::getParameterValueAs_(const std::string& param_name)
+T TreeNode::ExtensionsBase::getParameterValueAs_(const std::string& param_name) const
 {
     auto ps = getParameters();
     if (!ps) {
@@ -3250,43 +3253,43 @@ T TreeNode::ExtensionsBase::getParameterValueAs_(const std::string& param_name)
 }
 
 // Supported types for tree node extensions (scalar):
-template int8_t TreeNode::ExtensionsBase::getParameterValueAs_<int8_t>(const std::string&);
-template uint8_t TreeNode::ExtensionsBase::getParameterValueAs_<uint8_t>(const std::string&);
-template int16_t TreeNode::ExtensionsBase::getParameterValueAs_<int16_t>(const std::string&);
-template uint16_t TreeNode::ExtensionsBase::getParameterValueAs_<uint16_t>(const std::string&);
-template int32_t TreeNode::ExtensionsBase::getParameterValueAs_<int32_t>(const std::string&);
-template uint32_t TreeNode::ExtensionsBase::getParameterValueAs_<uint32_t>(const std::string&);
-template int64_t TreeNode::ExtensionsBase::getParameterValueAs_<int64_t>(const std::string&);
-template uint64_t TreeNode::ExtensionsBase::getParameterValueAs_<uint64_t>(const std::string&);
-template double TreeNode::ExtensionsBase::getParameterValueAs_<double>(const std::string&);
-template std::string TreeNode::ExtensionsBase::getParameterValueAs_<std::string>(const std::string&);
-template bool TreeNode::ExtensionsBase::getParameterValueAs_<bool>(const std::string&);
+template int8_t TreeNode::ExtensionsBase::getParameterValueAs_<int8_t>(const std::string&) const;
+template uint8_t TreeNode::ExtensionsBase::getParameterValueAs_<uint8_t>(const std::string&) const;
+template int16_t TreeNode::ExtensionsBase::getParameterValueAs_<int16_t>(const std::string&) const;
+template uint16_t TreeNode::ExtensionsBase::getParameterValueAs_<uint16_t>(const std::string&) const;
+template int32_t TreeNode::ExtensionsBase::getParameterValueAs_<int32_t>(const std::string&) const;
+template uint32_t TreeNode::ExtensionsBase::getParameterValueAs_<uint32_t>(const std::string&) const;
+template int64_t TreeNode::ExtensionsBase::getParameterValueAs_<int64_t>(const std::string&) const;
+template uint64_t TreeNode::ExtensionsBase::getParameterValueAs_<uint64_t>(const std::string&) const;
+template double TreeNode::ExtensionsBase::getParameterValueAs_<double>(const std::string&) const;
+template std::string TreeNode::ExtensionsBase::getParameterValueAs_<std::string>(const std::string&) const;
+template bool TreeNode::ExtensionsBase::getParameterValueAs_<bool>(const std::string&) const;
 
 // Vectors are supported too:
-template std::vector<int8_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<int8_t>>(const std::string&);
-template std::vector<uint8_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<uint8_t>>(const std::string&);
-template std::vector<int16_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<int16_t>>(const std::string&);
-template std::vector<uint16_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<uint16_t>>(const std::string&);
-template std::vector<int32_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<int32_t>>(const std::string&);
-template std::vector<uint32_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<uint32_t>>(const std::string&);
-template std::vector<int64_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<int64_t>>(const std::string&);
-template std::vector<uint64_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<uint64_t>>(const std::string&);
-template std::vector<double> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<double>>(const std::string&);
-template std::vector<std::string> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::string>>(const std::string&);
-template std::vector<bool> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<bool>>(const std::string&);
+template std::vector<int8_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<int8_t>>(const std::string&) const;
+template std::vector<uint8_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<uint8_t>>(const std::string&) const;
+template std::vector<int16_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<int16_t>>(const std::string&) const;
+template std::vector<uint16_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<uint16_t>>(const std::string&) const;
+template std::vector<int32_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<int32_t>>(const std::string&) const;
+template std::vector<uint32_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<uint32_t>>(const std::string&) const;
+template std::vector<int64_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<int64_t>>(const std::string&) const;
+template std::vector<uint64_t> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<uint64_t>>(const std::string&) const;
+template std::vector<double> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<double>>(const std::string&) const;
+template std::vector<std::string> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::string>>(const std::string&) const;
+template std::vector<bool> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<bool>>(const std::string&) const;
 
 // Nested vectors are supported too:
-template std::vector<std::vector<int8_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<int8_t>>>(const std::string&);
-template std::vector<std::vector<uint8_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<uint8_t>>>(const std::string&);
-template std::vector<std::vector<int16_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<int16_t>>>(const std::string&);
-template std::vector<std::vector<uint16_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<uint16_t>>>(const std::string&);
-template std::vector<std::vector<int32_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<int32_t>>>(const std::string&);
-template std::vector<std::vector<uint32_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<uint32_t>>>(const std::string&);
-template std::vector<std::vector<int64_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<int64_t>>>(const std::string&);
-template std::vector<std::vector<uint64_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<uint64_t>>>(const std::string&);
-template std::vector<std::vector<double>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<double>>>(const std::string&);
-template std::vector<std::vector<std::string>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<std::string>>>(const std::string&);
-template std::vector<std::vector<bool>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<bool>>>(const std::string&);
+template std::vector<std::vector<int8_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<int8_t>>>(const std::string&) const;
+template std::vector<std::vector<uint8_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<uint8_t>>>(const std::string&) const;
+template std::vector<std::vector<int16_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<int16_t>>>(const std::string&) const;
+template std::vector<std::vector<uint16_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<uint16_t>>>(const std::string&) const;
+template std::vector<std::vector<int32_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<int32_t>>>(const std::string&) const;
+template std::vector<std::vector<uint32_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<uint32_t>>>(const std::string&) const;
+template std::vector<std::vector<int64_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<int64_t>>>(const std::string&) const;
+template std::vector<std::vector<uint64_t>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<uint64_t>>>(const std::string&) const;
+template std::vector<std::vector<double>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<double>>>(const std::string&) const;
+template std::vector<std::vector<std::string>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<std::string>>>(const std::string&) const;
+template std::vector<std::vector<bool>> TreeNode::ExtensionsBase::getParameterValueAs_<std::vector<std::vector<bool>>>(const std::string&) const;
 
 // Miscellaneous
 
