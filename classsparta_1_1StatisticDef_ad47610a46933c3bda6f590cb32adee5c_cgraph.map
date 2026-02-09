@@ -1,0 +1,7 @@
+<map id="sparta::StatisticDef::StatisticDef" name="sparta::StatisticDef::StatisticDef">
+<area shape="rect" id="Node000001" title="Move constructor." alt="" coords="5,23,137,64"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a7b6ca285ffd1077f9622662c167315e9" title="Adds a TreeNode to this node as a child." alt="" coords="188,5,364,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="137,33,172,28,173,34,137,38"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="185,55,367,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="137,49,169,52,169,58,137,54"/>
+</map>

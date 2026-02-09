@@ -1,0 +1,5 @@
+<map id="sparta::ParameterBase::peekNumValues" name="sparta::ParameterBase::peekNumValues">
+<area shape="rect" id="Node000001" title="Wrapper for getNumValues with peek=true." alt="" coords="5,5,159,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ParameterBase.html#a1aef03b182d09beae70776f9326aebd3" title="Gets the number of elements contained in this Parameter as a Vector." alt="" coords="207,5,360,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="159,23,191,23,191,28,159,28"/>
+</map>

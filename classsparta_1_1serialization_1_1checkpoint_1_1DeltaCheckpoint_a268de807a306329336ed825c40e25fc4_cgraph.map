@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::DeltaCheckpoint::getHistoryChain" name="sparta::serialization::checkpoint::DeltaCheckpoint::getHistoryChain">
+<area shape="rect" id="Node000001" title="Returns a stack of checkpoints from this checkpoint as far back as possible until no previous link is..." alt="" coords="5,5,197,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a099fdcf88200fbcb8a2b1ac47b7df0f7" title="Returns the previous checkpoint. If this checkpoint is a snapshot, it has no previous checkpoint." alt="" coords="245,5,406,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,30,229,30,229,36,197,36"/>
+</map>

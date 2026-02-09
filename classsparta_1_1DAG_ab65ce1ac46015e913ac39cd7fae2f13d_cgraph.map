@@ -1,0 +1,7 @@
+<map id="sparta::DAG::newGOPVertex" name="sparta::DAG::newGOPVertex">
+<area shape="rect" id="Node000001" title="Create a new Vertex&#45;GOP point." alt="" coords="5,31,193,56"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1DAG.html#a41539cd0534d9987397940e29fa80718" title="Find a GOP point." alt="" coords="250,5,433,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,31,234,27,234,32,193,36"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1DAG.html#a651d357b385d5c4f00de234aa3b54cac" title="Get a new Vertex from the DAGs Vertex Factory Called in a Scheduleable after the scheduler_ has been ..." alt="" coords="241,55,442,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="193,50,225,53,225,59,193,55"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="sparta::serialization::checkpoint::Checkpointer::dumpTree" name="sparta::serialization::checkpoint::Checkpointer::dumpTree">
+<area shape="rect" id="Node000001" title="Dumps this checkpointer&#39;s tree to an ostream with a line for each branch. Printout timescale is not r..." alt="" coords="5,57,178,113"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#ab33cb96130204c11a6bf7f1b59384617" title="Recursively dumps one branch (and sub&#45;branches) to an ostream with a line for each branch." alt="" coords="226,109,398,165"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="179,103,211,111,210,116,178,108"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#ae494a8265a96f279c4cb445001006aa5" title="Returns the checkpoint ID of the head checkpoint (if it exists) which is equivalent to the earliest c..." alt="" coords="226,5,398,61"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="178,62,210,54,211,60,179,67"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="269,109,269,99,277,90,291,85,312,83,335,85,349,92,347,97,334,90,312,88,292,90,280,95,274,101,274,109"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1CheckpointBase.html#abcdccb90c47517e8bd4b6f4ec9cc3019" title="Returns the ID of this checkpoint." alt="" coords="446,17,637,73"/>
+<area shape="poly" id="edge3_Node000002_Node000003" title=" " alt="" coords="382,106,455,77,457,82,384,111"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#aa9d70e45665dc5992edbed5bd913c52d" title="Returns IDs of the checkpoints immediately following the given checkpoint." alt="" coords="456,109,628,165"/>
+<area shape="poly" id="edge4_Node000002_Node000004" title=" " alt="" coords="398,134,440,134,440,140,398,140"/>
+<area shape="poly" id="edge6_Node000005_Node000003" title=" " alt="" coords="399,35,431,37,430,42,398,40"/>
+</map>

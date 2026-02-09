@@ -1,0 +1,5 @@
+<map id="sparta::utils::FastList::erase" name="sparta::utils::FastList::erase">
+<area shape="rect" id="Node000001" title="Erase an element with the given iterator." alt="" coords="5,5,147,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1utils_1_1FastList_1_1NodeIterator.html#aaec956d8ba90baa546355ba580733c8e" title="Get the index in the list where this iterator points." alt="" coords="195,5,349,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="147,23,179,23,179,28,147,28"/>
+</map>

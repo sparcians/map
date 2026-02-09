@@ -1,0 +1,9 @@
+<map id="sparta::TreeNode::findAncestorByName" name="sparta::TreeNode::findAncestorByName">
+<area shape="rect" id="Node000001" title="Find ancestor by name." alt="" coords="5,47,204,88"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="252,5,434,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="204,44,262,32,263,37,205,50"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a31666fa4b498cd468991f2099e3fbbf7" title="Gets farthest ancestor of this node." alt="" coords="257,55,428,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="204,65,242,65,242,70,204,70"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#af61c4f67a5045b80c62fd331519b969d" title="Determines if the given pattern (which may contain wildcards) can describe this node." alt="" coords="257,104,428,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="193,86,243,98,242,103,191,91"/>
+</map>

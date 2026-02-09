@@ -1,0 +1,4 @@
+<map id="sparta::color::ColorScheme::enabled" name="sparta::color::ColorScheme::enabled">
+<area shape="rect" id="Node000001" title="would we like to enable or disable colors. By invoking this function with false, all color accessor f..." alt="" coords="5,29,181,70"/>
+<area shape="poly" id="edge1_Node000001_Node000001" title=" " alt="" coords="59,29,58,19,63,10,75,5,93,3,112,5,124,11,121,16,111,10,93,8,77,10,67,14,63,20,65,28"/>
+</map>

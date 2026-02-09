@@ -1,0 +1,19 @@
+<map id="sparta::collection::Collectable::collectWithDuration" name="sparta::collection::Collectable::collectWithDuration">
+<area shape="rect" id="Node000001" title="Calls collectWithDuration using the internal collected_object_ specified at construction." alt="" coords="5,36,167,91"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1Collectable.html#a6506b3af9a7da969befd4d11536881dc" title=" " alt="" coords="658,55,828,96"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="166,40,258,22,369,8,490,4,551,8,611,17,653,29,692,46,690,50,651,34,610,22,551,13,490,9,370,13,258,27,168,45"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1collection_1_1Collectable.html#a63da44af767f3e0c3479989822041cbd" title="Explicitly collect a value for the given duration." alt="" coords="215,105,376,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="168,88,201,99,199,104,166,93"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ac7d83237fc2aaa41c6b3809a4fb646e1" title="Determine whether or not this node has collection turned on or off." alt="" coords="876,77,1024,133"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="828,85,861,89,860,95,828,90"/>
+<area shape="poly" id="edge7_Node000004_Node000003" title=" " alt="" coords="376,127,860,106,861,111,377,132"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1collection_1_1Collectable.html#a56d9cf5ee0cc7e0897413afc6b73c541" title=" " alt="" coords="450,55,585,96"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="376,109,434,94,435,99,377,115"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1PhasedPayloadEvent.html#a3f7835dce02b716a08b1c88e23733955" title="Prepare a Scheduleable Payload for scheduling either now or later." alt="" coords="424,170,610,210"/>
+<area shape="poly" id="edge8_Node000004_Node000006" title=" " alt="" coords="377,151,422,163,420,168,376,156"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1Scheduleable.html#a3bb381d1ef9ccb3c335613c5600d162b" title="Schedule this event with its pre&#45;set delay using the pre&#45;set Clock." alt="" coords="446,259,588,300"/>
+<area shape="poly" id="edge9_Node000004_Node000007" title=" " alt="" coords="337,159,425,220,470,249,467,253,423,224,334,163"/>
+<area shape="poly" id="edge5_Node000005_Node000002" title=" " alt="" coords="585,73,642,73,642,78,585,78"/>
+<area shape="poly" id="edge6_Node000005_Node000005" title=" " alt="" coords="475,55,473,45,480,36,495,30,517,28,541,31,555,37,553,42,540,36,517,34,496,36,483,40,478,46,480,54"/>
+<area shape="poly" id="edge10_Node000007_Node000007" title=" " alt="" coords="475,259,473,249,480,240,495,234,517,232,541,235,555,241,553,246,540,240,517,238,496,240,483,244,478,250,480,258"/>
+</map>

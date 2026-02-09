@@ -1,0 +1,9 @@
+<map id="sparta::RootTreeNode::validatePreRun" name="sparta::RootTreeNode::validatePreRun">
+<area shape="rect" id="Node000001" title="Validate the entire tree immediately prior to running. All ports should be bound ,..." alt="" coords="5,55,153,96"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="201,5,395,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,54,200,41,230,33,232,38,201,46,154,59"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1PhasedObject.html#ade690bdb9df72fd6bad8847fbdf226f1" title="Gets the trees current phase." alt="" coords="225,55,370,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="153,73,210,73,210,78,153,78"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a22142bfb1cc678347ae0e371aeb8520a" title="Iterates the finalized tree and validates each node (e.g. ensures statistics can be evaluated)" alt="" coords="212,120,384,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="150,94,214,113,212,118,149,99"/>
+</map>

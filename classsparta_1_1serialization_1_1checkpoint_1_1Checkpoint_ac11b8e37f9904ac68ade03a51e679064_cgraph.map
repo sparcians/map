@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::Checkpoint::removeNext" name="sparta::serialization::checkpoint::Checkpoint::removeNext">
+<area shape="rect" id="Node000001" title="Removes a checkpoint following *this because it was deleted." alt="" coords="5,5,167,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a099fdcf88200fbcb8a2b1ac47b7df0f7" title="Returns the previous checkpoint. If this checkpoint is a snapshot, it has no previous checkpoint." alt="" coords="215,5,376,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="167,30,199,30,199,36,167,36"/>
+</map>

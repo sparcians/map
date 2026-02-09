@@ -1,0 +1,9 @@
+<map id="sparta::EnumCycleHistogram::startCounting" name="sparta::EnumCycleHistogram::startCounting">
+<area shape="rect" id="Node000001" title="Start counting, taking into account the specified delay." alt="" coords="5,71,194,111"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1CycleHistogramBase.html#a5af67e4be27a6130d3ac7c22d2df5bab" title="Start counting, taking into account the specified delay." alt="" coords="242,5,427,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="174,68,243,48,244,53,176,73"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1CycleHistogramBase.html#a2e8fac16b66925d8761cf6b72b0cb02c" title="Stop counting and increment internal count, taking into account the specified delay." alt="" coords="242,71,427,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="194,88,226,88,226,94,194,94"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1CycleHistogramBase.html#a3829b65802452b544f33ad9ed3bf4803" title=" " alt="" coords="242,136,427,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="176,109,244,129,243,134,174,114"/>
+</map>

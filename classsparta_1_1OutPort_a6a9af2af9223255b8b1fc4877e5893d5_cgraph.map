@@ -1,0 +1,9 @@
+<map id="sparta::OutPort::registerProducingEvent" name="sparta::OutPort::registerProducingEvent">
+<area shape="rect" id="Node000001" title="Add an event &quot;producer&quot; to this port." alt="" coords="5,47,163,88"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="211,5,390,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,47,226,32,227,38,164,52"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Port.html#a8d71612c1256b048b9ec52d06fe2ba2f" title="Is this port bound to another port?" alt="" coords="230,55,370,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="163,65,215,65,215,70,163,70"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1OutPort.html#a08bfa7d5cc8c5bc6961cd8fda5f72b7f" title=" " alt="" coords="222,104,379,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="164,86,208,98,206,103,162,91"/>
+</map>

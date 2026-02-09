@@ -1,0 +1,9 @@
+<map id="sparta::ParameterTree::Node::tryGetUserData" name="sparta::ParameterTree::Node::tryGetUserData">
+<area shape="rect" id="Node000001" title="Try to get any named user data (std::any_cast)" alt="" coords="5,39,160,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ParameterTree_1_1Node.html#a3fd63cc7e4e854ebd34c2d77f99a5c32" title="Gets the path to this node including the root node." alt="" coords="208,39,357,79"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="160,56,192,56,192,62,160,62"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ParameterTree_1_1Node.html#a8fe5011a81193c31d22533f1213911ef" title="Gets the name of this node." alt="" coords="405,5,554,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="357,44,389,38,390,44,358,49"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ParameterTree_1_1Node.html#acd09756ef616cfe1f1003c762a8a6b7c" title="Gets the parent of this node." alt="" coords="405,71,554,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="358,68,390,74,389,79,357,74"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="sparta::app::ReportStatsCollector::ReportAtTick" name="sparta::app::ReportStatsCollector::ReportAtTick">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,49,165,90"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1app_1_1ReportStatsCollector_1_1CompressedReportStatsAtTick.html" title=" " alt="" coords="213,5,433,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="180,52,212,47,213,53,181,57"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1app_1_1ReportStatsCollector_1_1ReportStatsAtTick.html" title=" " alt="" coords="230,85,416,126"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="180,81,230,88,229,94,180,86"/>
+</map>

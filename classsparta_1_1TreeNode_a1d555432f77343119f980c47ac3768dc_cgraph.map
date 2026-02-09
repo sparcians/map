@@ -1,0 +1,7 @@
+<map id="sparta::TreeNode::getAllExtensions" name="sparta::TreeNode::getAllExtensions">
+<area shape="rect" id="Node000001" title="Get a map of extensions for this node." alt="" coords="5,35,165,75"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#af9e9902e2233c6c0781c53652c0474c4" title="Get a list of extension names for all instantiated extensions on this TreeNode." alt="" coords="219,5,406,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="165,42,203,37,204,42,165,47"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a8c99280dc2adae048d57fb001d05de61" title="Get an extension without needing to specify any particular extension name. If no extensions exist,..." alt="" coords="213,70,413,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="165,62,197,66,197,71,165,67"/>
+</map>

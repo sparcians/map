@@ -1,0 +1,27 @@
+<map id="sparta::DataView::place_" name="sparta::DataView::place_">
+<area shape="rect" id="Node000001" title="Places this DataView within its ArchData." alt="" coords="5,261,169,287"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData.html#adf83047417984a2a745e88f105f4bad1" title="Checks that a segment is valid within this archdata by its given offset and size." alt="" coords="217,63,427,88"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="102,259,292,96,296,100,106,263"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ArchData.html#afd6648775a857328800b6c6f053562c1" title="Gets the line associated with this offset, allocating a new line if necessary." alt="" coords="239,235,405,260"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="169,262,223,256,223,261,169,268"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1ArchData_1_1Line.html#aa4be1659c3bd363e291962cfb812ffff" title="Offset into the owning ArchData." alt="" coords="506,284,654,325"/>
+<area shape="poly" id="edge11_Node000001_Node000010" title=" " alt="" coords="169,277,491,297,490,302,169,282"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1DataView.html#a8eb86e6d8d39eef642e6bf53d1f69a78" title=" " alt="" coords="238,347,406,372"/>
+<area shape="poly" id="edge12_Node000001_Node000011" title=" " alt="" coords="126,285,271,338,269,343,124,290"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ArchData.html#afde21b4a684f915cb56e8daba53e9d99" title="Checks to see that the size of the data is a valid access size." alt="" coords="475,5,685,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="383,59,503,32,505,38,384,65"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ArchData.html#aaed65a11540e5f04a01fc3256b61ae49" title="Determines whether the access defined by offset and size spans multiple ArchData Lines." alt="" coords="496,55,665,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="428,73,480,73,480,78,428,78"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="733,84,900,125"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="666,83,718,90,717,95,665,89"/>
+<area shape="poly" id="edge9_Node000006_Node000005" title=" " alt="" coords="339,232,397,193,435,173,474,156,536,137,599,123,717,108,718,113,600,129,537,142,476,161,437,178,400,198,342,236"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ArchData.html#a07e41ac141e36036cffedb4afad07197" title="Determines if this ArchData contains a byte for the specified address." alt="" coords="494,170,666,210"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="383,231,478,210,480,215,384,237"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1TieredMap.html#a8a87b132e5d7c6126454765d8966e3ed" title="Finds a mapping for key k if one exists in this map." alt="" coords="505,235,655,260"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="405,245,489,245,489,250,405,250"/>
+<area shape="poly" id="edge10_Node000006_Node000010" title=" " alt="" coords="384,258,491,282,490,288,383,264"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1TieredMap.html#ad157505881efdd0d3f14695b05bc5dec" title="Attempts to get a pair_t associated with the key k without modifying the data structure." alt="" coords="751,227,882,268"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="655,245,735,245,735,250,655,250"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1ArchDataSegment.html#ae30270498f1a2a6ab9375fcaf7d2df5c" title="Gets the layout size of this segment (number of bytes)" alt="" coords="496,350,665,390"/>
+<area shape="poly" id="edge13_Node000011_Node000012" title=" " alt="" coords="407,360,480,363,480,369,406,366"/>
+</map>

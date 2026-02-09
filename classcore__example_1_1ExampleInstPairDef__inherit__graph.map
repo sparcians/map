@@ -1,0 +1,5 @@
+<map id="core_example::ExampleInstPairDef" name="core_example::ExampleInstPairDef">
+<area shape="rect" id="Node000001" title="Pair Definition class of the Example instruction that flows through the example/CoreModel." alt="" coords="5,94,184,135"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="25,5,164,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,62,97,94,92,94,92,62"/>
+</map>

@@ -1,0 +1,16 @@
+<map id="sparta::memory::BlockingMemoryIFNode::tryWrite" name="sparta::memory::BlockingMemoryIFNode::tryWrite">
+<area shape="rect" id="Node000001" title="Attempt to write memory of size size at address addr." alt="" coords="5,153,171,194"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a4efd1a8b860fd5224a78b4f17f06853d" title="Determines if the given address spans block boundaries defined for this interface...." alt="" coords="219,5,417,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="108,151,156,107,217,62,239,50,242,55,220,67,159,111,111,155"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a56bff166f0c2e250be9450a8a152becc" title="Determines if the range [addr, addr+size) is within the access windows for this interface." alt="" coords="465,157,663,198"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="119,151,164,126,218,106,273,94,318,91,362,95,418,106,471,124,518,147,516,152,469,128,416,111,361,100,318,96,274,100,219,111,166,130,121,155"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1NotificationSourceBase.html#a8bd1a11753aa860f953f65f25cf22198" title="Is this NotificationSourceBase being observed at this node or an ancestor of any distance." alt="" coords="233,120,402,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="170,159,217,152,218,157,171,164"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1NotificationSource.html#a7853e8c00ab8e89b96fba9285cf7128e" title="Post with reference to data with parent as message origin." alt="" coords="233,185,402,226"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="171,182,218,189,217,194,170,188"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a1d460c6428bfcb6d1e37b3b908f17eef" title="Attempts to &#39;peek&#39; memory without having any side effects, size&#45;limitations, alignment constraints ex..." alt="" coords="219,251,417,291"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="129,192,220,235,238,243,236,248,218,240,127,197"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1memory_1_1BlockingMemoryIF.html#a73f4639204dbf2a145e07ab7d575d108" title="Implements tryWrite." alt="" coords="235,316,400,357"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="107,193,154,246,186,275,220,301,231,307,228,311,217,305,182,280,150,250,103,196"/>
+<area shape="poly" id="edge6_Node000006_Node000003" title=" " alt="" coords="382,248,416,235,499,202,501,207,418,240,383,253"/>
+</map>

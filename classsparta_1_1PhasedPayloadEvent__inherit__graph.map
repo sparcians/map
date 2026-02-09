@@ -1,0 +1,17 @@
+<map id="sparta::PhasedPayloadEvent&lt; DataT &gt;" name="sparta::PhasedPayloadEvent&lt; DataT &gt;">
+<area shape="rect" id="Node000001" title="Class to schedule a Scheduleable in the future with a payload, but the class itself is not typed on t..." alt="" coords="764,49,950,90"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1PayloadEvent.html" title=" " alt="" coords="999,5,1174,61"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="965,50,998,44,999,50,966,55"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1PayloadEvent.html" title="Class to schedule a Scheduleable in the future with a payload, typed on both the data type and the sc..." alt="" coords="998,85,1175,126"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="966,84,998,89,997,94,965,89"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1EventNode.html" title="EventNode is the base class for all event types in SPARTA. Not to be used by the modeler...." alt="" coords="588,56,716,82"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="731,66,763,66,763,72,731,72"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="420,56,540,82"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="556,66,588,66,588,72,556,72"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="199,31,372,57"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="388,54,420,59,419,64,387,60"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,31,151,57"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="166,41,198,41,198,46,166,46"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="199,80,372,106"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="387,78,419,74,420,79,388,83"/>
+</map>

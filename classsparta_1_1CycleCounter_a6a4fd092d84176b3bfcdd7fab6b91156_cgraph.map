@@ -1,0 +1,15 @@
+<map id="sparta::CycleCounter::stringize" name="sparta::CycleCounter::stringize">
+<area shape="rect" id="Node000001" title="Create a string representation of this node." alt="" coords="5,120,146,161"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1CycleCounter.html#a88fd7c307e15277ef72eef42aa3446d6" title="Gets the value of this counter." alt="" coords="209,5,373,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,118,137,79,192,41,208,34,210,39,195,46,140,83,98,122"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1CounterBase.html#afd1b340fd4b02a83486d5d7c171d4b1d" title="Gets the behavior for this counter specified at construction." alt="" coords="222,55,360,96"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="144,117,206,98,207,104,145,123"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1CounterBase.html#a6dd1db7c8ceac902182b4a2c8e0343ce" title="Returns a string containing the name of the given behavior." alt="" coords="222,120,360,161"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="146,138,206,138,206,144,146,144"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="194,185,388,211"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="147,157,194,170,224,178,223,183,193,175,145,162"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1InstrumentationNode.html#a4be3cb0085f64ae39e87921ee842a98c" title="Gets the visibility hint of this node. This is invariant after construction." alt="" coords="199,235,383,276"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="103,159,145,191,195,221,206,226,204,231,192,226,142,195,100,164"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Clock.html#a3671607fc743bf3a36be1ce37fcb27b5" title="Return the total elapsed cycles from this Clocks POV." alt="" coords="436,5,622,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="373,16,421,16,421,21,373,21"/>
+</map>

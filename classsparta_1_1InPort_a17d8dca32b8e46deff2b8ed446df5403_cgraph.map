@@ -1,0 +1,9 @@
+<map id="sparta::InPort::bind" name="sparta::InPort::bind">
+<area shape="rect" id="Node000001" title="Bind to an OutPort." alt="" coords="5,55,134,80"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Port.html#a92472c136101d56f2773a3c03689e25f" title="Method to bind this Port to another, pointer style." alt="" coords="213,5,330,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="125,51,200,33,202,38,126,57"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Port.html#afb0fd7ccb38114dd5aaaf4dc69f03e39" title="The direction of the port." alt="" coords="190,55,352,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="134,65,175,65,175,70,134,70"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="182,104,361,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="126,78,202,97,200,102,125,84"/>
+</map>

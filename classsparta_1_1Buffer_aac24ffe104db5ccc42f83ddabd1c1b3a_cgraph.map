@@ -1,0 +1,7 @@
+<map id="sparta::Buffer::accessBack" name="sparta::Buffer::accessBack">
+<area shape="rect" id="Node000001" title="Read and return the data at the bottom of the Buffer." alt="" coords="5,5,181,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Buffer.html#ab4acbe31cd8041c3cf7818886a67d825" title="Determine if data at the index is valid." alt="" coords="229,5,371,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="181,16,213,16,213,21,181,21"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Buffer.html#a58e8b8181aae8c9427385d0d1015a579" title="Return the number of valid entries." alt="" coords="419,5,545,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="372,16,403,16,403,21,372,21"/>
+</map>

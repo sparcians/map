@@ -1,0 +1,26 @@
+<map id="sparta::pevents::PeventCollector&lt; CollectedEntityType &gt;" name="sparta::pevents::PeventCollector&lt; CollectedEntityType &gt;">
+<area shape="rect" id="Node000001" title="Class that is capable of recording pevents as key value pairs, where a PairDefinition has been define..." alt="" coords="1549,95,1756,135"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="1230,5,1388,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1404,47,1572,92,1571,97,1402,53"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1pevents_1_1PeventCollectorTreeNode.html" title=" " alt="" coords="1205,71,1413,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="1428,97,1549,105,1548,110,1428,102"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="936,78,1130,104"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="1146,88,1205,88,1205,94,1146,94"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1log_1_1MessageSource.html" title="Message source object associated with a sparta TreeNode through which messages can be sent." alt="" coords="1219,136,1399,161"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="1414,136,1548,122,1549,128,1414,141"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1NotificationSource.html" title=" " alt="" coords="948,128,1118,169"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="1133,146,1218,146,1218,151,1133,151"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1NotificationSourceBase.html" title="A TreeNode that generates a single specific type of notification which propagates up a tree of TreeNo..." alt="" coords="592,137,792,162"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="807,147,948,146,948,151,807,152"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="423,173,543,198"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="558,170,613,161,614,166,559,175"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1Clock.html" title="A representation of simulated time." alt="" coords="816,192,912,217"/>
+<area shape="poly" id="edge12_Node000012_Node000008" title=" " alt="" coords="559,187,815,199,815,205,558,192"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="200,140,373,165"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="382,166,423,173,422,178,381,171"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,140,151,165"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="166,150,199,150,199,155,166,155"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="200,189,373,214"/>
+<area shape="poly" id="edge10_Node000008_Node000011" title=" " alt="" coords="388,191,422,188,422,193,389,196"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="927,202,1143,196,1277,187,1412,171,1500,154,1580,133,1581,139,1501,159,1413,176,1278,192,1143,201,927,207"/>
+</map>

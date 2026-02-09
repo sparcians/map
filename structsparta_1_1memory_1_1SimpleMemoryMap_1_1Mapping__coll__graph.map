@@ -1,0 +1,9 @@
+<map id="sparta::memory::SimpleMemoryMap::Mapping" name="sparta::memory::SimpleMemoryMap::Mapping">
+<area shape="rect" id="Node000001" title="Represents a mapping between an input address and output address for use in a destination BlockingMem..." alt="" coords="10,273,211,313"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1BlockingMemoryIF.html" title="Pure&#45;virtual memory interface which represents a simple, immediately accessible (blocking) address&#45;sp..." alt="" coords="28,169,193,210"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="113,225,113,272,108,272,108,225"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1memory_1_1DebugMemoryIF.html" title="Memory interface which represents a simple, immediately accessible (blocking) address&#45;space with supp..." alt="" coords="5,94,216,120"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="113,135,113,169,108,169,108,135"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1memory_1_1TranslationIF.html" title="Blocking translation interface with 1:1 translation unless subclassed." alt="" coords="15,5,206,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="113,47,113,94,108,94,108,47"/>
+</map>

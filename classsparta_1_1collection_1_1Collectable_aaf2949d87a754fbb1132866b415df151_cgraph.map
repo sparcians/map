@@ -1,0 +1,5 @@
+<map id="sparta::collection::Collectable::Collectable" name="sparta::collection::Collectable::Collectable">
+<area shape="rect" id="Node000001" title="Construct the Collectable, no data object associated, part of a group." alt="" coords="5,5,167,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a0e16aaf48db706d4ed5f1a8f696310d7" title="Gets the unique ID of this node." alt="" coords="215,13,413,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="167,23,199,23,199,28,167,28"/>
+</map>

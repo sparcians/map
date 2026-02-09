@@ -1,0 +1,5 @@
+<map id="sparta::AsyncEvent::cancel" name="sparta::AsyncEvent::cancel">
+<area shape="rect" id="Node000001" title="Cancel this event. This method should only be called from the main scheduler thread." alt="" coords="5,5,138,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Scheduler.html#aa73ad6cc42b7338ca1e42677c96eb36f" title="Cancel the given Scheduleable." alt="" coords="186,5,314,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="138,23,170,23,170,28,138,28"/>
+</map>

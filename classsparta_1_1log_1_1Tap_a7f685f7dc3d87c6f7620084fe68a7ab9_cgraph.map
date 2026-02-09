@@ -1,0 +1,5 @@
+<map id="sparta::log::Tap::Tap" name="sparta::log::Tap::Tap">
+<area shape="rect" id="Node000001" title="Non&#45;observing Constructor." alt="" coords="5,13,142,38"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1log_1_1DestinationManager.html#adcb100122c84178da8dce23834295316" title="Requests an existing Destination* from the manager and allocates a new one if it does not yet have a ..." alt="" coords="190,5,350,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="142,23,174,23,174,28,142,28"/>
+</map>

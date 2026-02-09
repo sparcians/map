@@ -1,0 +1,5 @@
+<map id="sparta::RegisterBase::isInBank" name="sparta::RegisterBase::isInBank">
+<area shape="rect" id="Node000001" title="Determines if this register is accessible through a specific bank index (assuming that this bank inde..." alt="" coords="5,5,147,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1RegisterBase.html#afaa1ab1227ac053474974a12a2c8f473" title="Is this register banked." alt="" coords="195,5,336,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="147,23,179,23,179,28,147,28"/>
+</map>

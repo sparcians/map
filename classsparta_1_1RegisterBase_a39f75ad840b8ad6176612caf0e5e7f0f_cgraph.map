@@ -1,0 +1,9 @@
+<map id="sparta::RegisterBase::reset" name="sparta::RegisterBase::reset">
+<area shape="rect" id="Node000001" title="Reset this register to its default value." alt="" coords="5,75,147,115"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1RegisterBase.html#a5f5051419be39c417a13694943e99a12" title="Poke a value into this regster." alt="" coords="195,29,336,70"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="146,76,179,68,180,73,147,81"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1RegisterBase.html#ab46a26d57e8e026d022f5be9bcd8e79f" title="Poke a value into this regster without it being affected by the write&#45;mask." alt="" coords="195,119,336,159"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="147,109,180,117,179,122,146,114"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="229,29,227,19,233,10,246,5,265,3,286,5,298,11,296,16,284,10,265,8,247,10,237,15,233,20,234,28"/>
+<area shape="poly" id="edge4_Node000003_Node000003" title=" " alt="" coords="229,119,227,109,233,100,246,94,265,92,286,94,298,101,296,105,284,100,265,97,247,99,237,104,233,110,234,117"/>
+</map>

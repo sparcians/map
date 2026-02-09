@@ -1,0 +1,15 @@
+<map id="sparta::memory::SimpleMemoryMapNode::tryWrite_" name="sparta::memory::SimpleMemoryMapNode::tryWrite_">
+<area shape="rect" id="Node000001" title="Implements tryWrite_." alt="" coords="5,71,207,111"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1SimpleMemoryMap.html#a5ef58f4130935e3a0a5af7c6125312a0" title="Finds the Mapping object associated with an address." alt="" coords="255,5,456,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="186,67,260,48,261,53,187,73"/>
+<area shape="rect" id="Node000003" href="$structsparta_1_1memory_1_1SimpleMemoryMap_1_1Mapping.html#a7b36d343646b9626487a0ab8c8adc934" title="Maps an input address to the address&#45;space for the destination memory interface." alt="" coords="255,71,456,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="207,88,239,88,239,94,207,94"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1memory_1_1BlockingMemoryIF.html#ae85336d877e0227b567f05f901c0e782" title="Attempt to write memory of size size at address addr." alt="" coords="273,136,438,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="187,109,261,129,260,134,186,115"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a4efd1a8b860fd5224a78b4f17f06853d" title="Determines if the given address spans block boundaries defined for this interface...." alt="" coords="504,71,702,111"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="435,133,508,113,509,118,436,138"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a56bff166f0c2e250be9450a8a152becc" title="Determines if the range [addr, addr+size) is within the access windows for this interface." alt="" coords="504,136,702,177"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="439,154,488,154,488,159,439,159"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1memory_1_1BlockingMemoryIF.html#a73f4639204dbf2a145e07ab7d575d108" title="Implements tryWrite." alt="" coords="520,201,686,242"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="436,175,509,194,508,199,435,180"/>
+</map>

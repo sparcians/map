@@ -1,0 +1,5 @@
+<map id="sparta::Scheduleable::setHandler" name="sparta::Scheduleable::setHandler">
+<area shape="rect" id="Node000001" title="Set the consumer handler/callback associated with this event." alt="" coords="5,5,147,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Scheduleable.html#ab2e055a1d7931c478f87d1f03c51bd01" title="Set a new label for this Scheduleable – used in debugging." alt="" coords="195,5,336,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="147,23,179,23,179,28,147,28"/>
+</map>

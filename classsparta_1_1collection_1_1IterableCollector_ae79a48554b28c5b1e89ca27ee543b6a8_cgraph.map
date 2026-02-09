@@ -1,0 +1,13 @@
+<map id="sparta::collection::IterableCollector::collectWithDuration" name="sparta::collection::IterableCollector::collectWithDuration">
+<area shape="rect" id="Node000001" title="Perform a collection, then close the records in the future." alt="" coords="5,145,145,201"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1IterableCollector.html#a83ddd1c011d14bcf976467395d541e74" title="Collect the contents of the associated iterable object." alt="" coords="225,29,346,85"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="115,142,191,95,210,86,212,90,194,99,118,147"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ac7d83237fc2aaa41c6b3809a4fb646e1" title="Determine whether or not this node has collection turned on or off." alt="" coords="212,109,360,165"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="145,159,196,150,197,155,146,164"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedPayloadEvent.html#a3f7835dce02b716a08b1c88e23733955" title="Prepare a Scheduleable Payload for scheduling either now or later." alt="" coords="193,189,379,230"/>
+<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="146,182,178,188,177,193,145,188"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1Scheduleable.html#a3bb381d1ef9ccb3c335613c5600d162b" title="Schedule this event with its pre&#45;set delay using the pre&#45;set Clock." alt="" coords="215,278,356,319"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="125,199,238,268,236,272,122,204"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="244,29,245,19,252,10,266,5,286,3,308,5,322,12,319,17,307,10,286,8,267,10,255,15,250,21,250,29"/>
+<area shape="poly" id="edge6_Node000005_Node000005" title=" " alt="" coords="246,278,244,268,250,259,265,254,286,252,309,254,322,260,320,265,307,259,286,257,266,259,254,263,249,269,251,277"/>
+</map>

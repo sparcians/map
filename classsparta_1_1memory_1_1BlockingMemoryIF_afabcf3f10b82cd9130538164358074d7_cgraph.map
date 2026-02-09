@@ -1,0 +1,16 @@
+<map id="sparta::memory::BlockingMemoryIF::write" name="sparta::memory::BlockingMemoryIF::write">
+<area shape="rect" id="Node000001" title="Attempts to write memory." alt="" coords="5,119,171,159"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1BlockingMemoryIF.html#ae85336d877e0227b567f05f901c0e782" title="Attempt to write memory of size size at address addr." alt="" coords="235,53,400,94"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="161,116,228,96,230,101,163,121"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#ae35fa48697f197f9357be0d6c5fae0c6" title="Verifies that the range [addr, addr+size) is within the access windows for this interface." alt="" coords="219,119,417,159"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="171,136,203,136,203,142,171,142"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#acb92bd2905d208cab60935b46dcd67a9" title="Verifies that the given address does not span block boundaries defined for this interface." alt="" coords="219,184,417,225"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="163,157,230,177,228,182,161,162"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a4efd1a8b860fd5224a78b4f17f06853d" title="Determines if the given address spans block boundaries defined for this interface...." alt="" coords="465,152,663,193"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="384,92,418,105,507,143,504,148,416,109,382,97"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a56bff166f0c2e250be9450a8a152becc" title="Determines if the range [addr, addr+size) is within the access windows for this interface." alt="" coords="465,5,663,46"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="400,55,449,45,450,51,401,60"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1memory_1_1BlockingMemoryIF.html#a73f4639204dbf2a145e07ab7d575d108" title="Implements tryWrite." alt="" coords="482,71,647,111"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="401,77,467,81,466,87,401,82"/>
+<area shape="poly" id="edge7_Node000007_Node000003" title=" " alt="" coords="417,189,449,185,450,190,418,194"/>
+</map>

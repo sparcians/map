@@ -1,0 +1,9 @@
+<map id="sparta::pevents::PeventCollectorTreeNode" name="sparta::pevents::PeventCollectorTreeNode">
+<area shape="rect" id="Node000001" title=" " alt="" coords="248,39,455,79"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1pevents_1_1NestedPeventCollector.html" title="a class that is capable of recording pevents as key value pairs, where a PairDefinition has been defi..." alt="" coords="508,5,706,46"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="470,41,507,36,507,41,471,46"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1pevents_1_1PeventCollector.html" title="Class that is capable of recording pevents as key value pairs, where a PairDefinition has been define..." alt="" coords="503,71,710,111"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="471,71,503,75,502,81,470,77"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,46,200,72"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="215,56,247,56,247,62,215,62"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="sparta::ResourceFactory&lt; ResourceT, ParamsT &gt;" name="sparta::ResourceFactory&lt; ResourceT, ParamsT &gt;">
+<area shape="rect" id="Node000001" title="Templated ResourceFactoryBase implementation which can be used to trivially define Resource Factories..." alt="" coords="18,79,184,120"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ResourceFactoryBase.html" title="Factory which can create Resources as well as the Parameter sets that can be modified before actually..." alt="" coords="5,5,197,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,46,104,79,98,79,98,46"/>
+</map>

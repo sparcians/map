@@ -1,0 +1,13 @@
+<map id="sparta::DataInPort::bind" name="sparta::DataInPort::bind">
+<area shape="rect" id="Node000001" title="Check the Data types." alt="" coords="5,72,131,113"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1InPort.html#a17d8dca32b8e46deff2b8ed446df5403" title="Bind to an OutPort." alt="" coords="212,55,340,80"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="131,83,196,74,197,80,131,88"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="179,104,373,130"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="131,97,163,101,163,106,131,103"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Port.html#a92472c136101d56f2773a3c03689e25f" title="Method to bind this Port to another, pointer style." alt="" coords="452,5,569,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="340,51,436,31,437,36,341,57"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Port.html#afb0fd7ccb38114dd5aaaf4dc69f03e39" title="The direction of the port." alt="" coords="430,55,592,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="341,65,414,65,414,70,341,70"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="421,104,600,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="341,78,432,98,430,103,340,84"/>
+</map>

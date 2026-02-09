@@ -1,0 +1,11 @@
+<map id="sparta::TreeNode::replaceExtension" name="sparta::TreeNode::replaceExtension">
+<area shape="rect" id="Node000001" title="Replace an extension, specifying the ExtensionsBase subclass type. This api is similar to addExtensio..." alt="" coords="5,27,174,68"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a1dc907c86ba95d84c6e97f9421cbbc85" title="Add an extension, specifying the ExtensionsBase subclass type. Forward any arguments needed to your s..." alt="" coords="222,5,425,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="174,34,206,30,206,36,175,40"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html#ac91d6baf74fae76dd391c4e68b04a936" title="Remove an extension by its name. Returns true if successful, false if the extension was not found." alt="" coords="239,55,408,96"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="175,55,224,61,223,66,174,60"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a00b99ce49b9d44c9cc8e7b738601ef4b" title="Check if this tree node has an extension by the given name." alt="" coords="473,5,676,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="425,16,457,16,457,21,425,21"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a8c99280dc2adae048d57fb001d05de61" title="Get an extension without needing to specify any particular extension name. If no extensions exist,..." alt="" coords="724,5,925,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="677,16,708,16,708,21,677,21"/>
+</map>

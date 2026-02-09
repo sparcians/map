@@ -1,0 +1,15 @@
+<map id="sparta::Counter::stringize" name="sparta::Counter::stringize">
+<area shape="rect" id="Node000001" title="Create a string representation of this node." alt="" coords="5,157,168,183"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Counter.html#a6ddd114c70b29a8ed9001635ba6d79a7" title="Gets the value of this counter." alt="" coords="251,5,384,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,155,142,100,176,68,214,41,236,31,238,36,217,46,179,72,146,103,99,158"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1CounterBase.html#afd1b340fd4b02a83486d5d7c171d4b1d" title="Gets the behavior for this counter specified at construction." alt="" coords="248,55,386,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="112,154,215,106,234,99,236,104,217,111,114,159"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1CounterBase.html#a6dd1db7c8ceac902182b4a2c8e0343ce" title="Returns a string containing the name of the given behavior." alt="" coords="248,120,386,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="168,157,232,149,233,154,169,162"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="220,185,414,211"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="169,177,205,182,205,187,168,183"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1InstrumentationNode.html#a4be3cb0085f64ae39e87921ee842a98c" title="Gets the visibility hint of this node. This is invariant after construction." alt="" coords="225,235,410,276"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="119,181,217,221,234,227,233,232,215,226,117,186"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1TreeNode.html#abeb9301d222aa616093a280921f65d4a" title="Render tags to a string in the form: &quot; tags:[tag0, tag1]&quot; If there are any tags. The leading space ma..." alt="" coords="216,300,419,326"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="100,182,147,232,180,261,217,285,231,292,229,297,214,290,177,265,144,236,96,185"/>
+</map>

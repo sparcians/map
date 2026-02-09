@@ -1,0 +1,7 @@
+<map id="sparta::EventSet::EventSet" name="sparta::EventSet::EventSet">
+<area shape="rect" id="Node000001" title="Constructor." alt="" coords="5,35,181,60"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a7b6ca285ffd1077f9622662c167315e9" title="Adds a TreeNode to this node as a child." alt="" coords="239,5,416,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="181,34,223,29,224,34,182,39"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#aeefcb776a4574cd8075f92caaeb4676d" title="Tracks a node as an expected parent without actually adding this node as a child. This is used almost..." alt="" coords="229,55,426,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="182,55,213,59,213,64,181,61"/>
+</map>

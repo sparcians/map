@@ -1,0 +1,7 @@
+<map id="sparta::Scheduleable::cancel" name="sparta::Scheduleable::cancel">
+<area shape="rect" id="Node000001" title="Cancel all the times that this Scheduleable was placed on the Scheduler." alt="" coords="5,39,147,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Scheduler.html#a1c3856191e10dd48f4bf0f0decd2883b" title="Cancel the given Scheduleable if on the Scheduler." alt="" coords="202,5,329,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="146,44,186,37,187,42,147,49"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Scheduleable.html#a083999e2a666507a219e321a128d517a" title=" " alt="" coords="195,71,336,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="147,68,180,74,179,79,146,74"/>
+</map>

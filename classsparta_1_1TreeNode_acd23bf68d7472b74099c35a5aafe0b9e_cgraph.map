@@ -1,0 +1,5 @@
+<map id="sparta::TreeNode::getExtensionAs" name="sparta::TreeNode::getExtensionAs">
+<area shape="rect" id="Node000001" title="Get an extension, downcast to the given type." alt="" coords="5,5,222,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a8c99280dc2adae048d57fb001d05de61" title="Get an extension without needing to specify any particular extension name. If no extensions exist,..." alt="" coords="270,5,470,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="222,16,254,16,254,21,222,21"/>
+</map>
