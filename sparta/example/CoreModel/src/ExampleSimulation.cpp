@@ -70,7 +70,8 @@ namespace sparta {
           std::cout << "  Node '" << getLocation()
                     << "' has parameter 'baz' with a value set to "
                     << baz_->read() << std::endl;
-          auto ext = getExtension("baz_ext");
+
+          auto ext = getExtension("baz_ext", true);
           if(ext) {
               std::cout << "That's the ticket: "
                         << ext->getParameters()->getParameterValueAs<std::string>("ticket_") << std::endl;
@@ -505,8 +506,8 @@ sparta::Parameter<ParamT>* ExampleSimulator::getExtensionParameter_(
     }
 
     sparta::TreeNode::ExtensionsBase * ext = ext_name.empty() ?
-        node->getExtension() :
-        node->getExtension(ext_name);
+        node->createExtension() :
+        node->getExtension(ext_name, true);
 
     if (!ext) {
         return nullptr;
@@ -521,7 +522,16 @@ sparta::Parameter<ParamT>* ExampleSimulator::getExtensionParameter_(
         return nullptr;
     }
 
-    return &params->getParameterAs<ParamT>(param_name);
+    auto param = &params->getParameterAs<ParamT>(param_name);
+
+    // The only reason this method exists is to get the parameter
+    // and then call addDependentValidationCallback() on it. The
+    // validation callbacks do not trigger an increment on the
+    // parameter's read count. Read the value now so we can avoid
+    // the "unread unbound parameter" exceptions.
+    param->getValue();
+
+    return param;
 }
 
 template <typename ExtensionT>

@@ -330,6 +330,13 @@ namespace sparta
             }
 
             /*!
+             * \brief Reset the read count back to zero
+             */
+            void resetReadCount() const {
+                read_count_ = 0;
+            }
+
+            /*!
              * \brief Gets the number of times this node has been accessed to be read
              * (i.e. with get/tryGet)
              */
@@ -772,6 +779,18 @@ namespace sparta
                 const auto children = getChildren();
                 for (const ParameterTree::Node * child : children) {
                     child->recursFindPTreeNodesNamed(name, matching_nodes);
+                }
+            }
+
+            /*!
+             * \brief Apply the given callback to all leaf nodes
+             */
+            void recurseVisitLeaves(std::function<void(const Node*)> callback) const {
+                if (children_.empty()) {
+                    callback(this);
+                }
+                for (const auto & child : children_) {
+                    child->recurseVisitLeaves(callback);
                 }
             }
 
@@ -1316,6 +1335,13 @@ namespace sparta
          */
         void merge(const ParameterTree& rhp) {
             root_->appendTree(rhp.getRoot());
+        }
+
+        /*!
+         * \brief Apply the given callback to all leaf nodes
+         */
+        void visitLeaves(std::function<void(const Node*)> callback) const {
+            root_->recurseVisitLeaves(callback);
         }
 
         /*!
