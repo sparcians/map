@@ -2861,6 +2861,12 @@ getParameterValueAsImpl(const std::string& param_val_str)
     if (param_val_str.size() < 4 ||
         param_val_str.substr(0,2) != "[[" ||
         param_val_str.substr(param_val_str.size()-2,2) != "]]") {
+
+        // Allow "[]" even for nested vectors
+        if (param_val_str == "[]") {
+            return {};
+        }
+
         throw SpartaException("TreeNode extension parameter retrieval failed: Parameter value '")
             << param_val_str << "' is not a valid nested vector representation.";
     }
