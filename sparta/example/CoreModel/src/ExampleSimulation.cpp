@@ -706,6 +706,28 @@ void ExampleSimulator::validateTreeNodeExtensions_()
                 return val == "663";
             }, "Parameter 'ticket_' should be '663'");
     }
+
+    // check if we are testing extension overrides
+    auto& ext_ptree = getSimulationConfiguration()->getExtensionsUnboundParameterTree();
+    std::vector<sparta::ParameterTree::Node*> nodes;
+    ext_ptree.getRoot()->recursFindPTreeNodesNamed("foobar", nodes);
+
+    if (!nodes.empty()) {
+        // If there is 1 node, we are using base_extensions.yaml only, else
+        // we are using the base extensions with override_extensions.yaml
+        // together.
+        sparta_assert(nodes.size() <= 2);
+        const int expected_lsu_foo = nodes.size() == 1 ? 4 : 8;
+        const int expected_lsu_bar = 5;
+
+        auto lsu = getRoot()->getChild("cpu.core0.lsu");
+        auto lsu_foobar_ext = lsu->createExtension("foobar");
+        auto actual_lsu_foo = lsu_foobar_ext->getParameterValueAs<int>("foo");
+        auto actual_lsu_bar = lsu_foobar_ext->getParameterValueAs<int>("bar");
+
+        sparta_assert(actual_lsu_foo == expected_lsu_foo);
+        sparta_assert(actual_lsu_bar == expected_lsu_bar);
+    }
 }
 
 ExampleSimulator::ExampleController::ExampleController(

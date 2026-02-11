@@ -2908,11 +2908,63 @@ TreeNode::ExtensionsBase * TreeNode::createExtension(const std::string & extensi
     extension->postCreate();
 
     // Extract key-value pairs for the parameter name and value-as-string.
-    auto ext_node = ptree_node->create("extension." + extension_name, required);
-    auto ext_param_nodes = ext_node->getChildren();
+    // Note that the merged arch/config/extension YAML files can result
+    // in the final extensions ptree having:
+    //
+    //   top.cpu.core*.extension.core_extensions:
+    //     foo: 4
+    //     bar: 5
+    //   top.cpu.core0.extension.core_extensions:
+    //     foo: 888
+    //
+    // So we need to apply all the core* (non-specific) extension params
+    // first, then override with the core0 (specific) extension params
+    // second.
+    std::vector<ParameterTree::Node*> all_ext_nodes;
+    ptree.getRoot()->recursFindPTreeNodesNamed("extension", all_ext_nodes);
+
+    // This vector will hold onto our extension parameter leaf nodes
+    // with a flag denoting "is this an override parameter" (specific).
+    std::vector<std::pair<bool, const ParameterTree::Node*>> ext_param_nodes;
+    for (auto ext_node : all_ext_nodes) {
+        auto owning_node = ext_node->getParent();
+        auto owning_node_path = owning_node->getPath();
+
+        if (owning_node_path == loc) {
+            ext_node->recurseVisitLeaves([&](const ParameterTree::Node* leaf) {
+                if (leaf->getParent()->getName() != extension_name) {
+                    return;
+                }
+
+                constexpr auto is_override = true;
+                sparta_assert(leaf->hasValue());
+                ext_param_nodes.push_back(std::make_pair(is_override, leaf));
+            });
+            continue;
+        }
+
+        if (ParameterTree::Node::matches(owning_node_path, loc)) {
+            ext_node->recurseVisitLeaves([&](const ParameterTree::Node* leaf) {
+                if (leaf->getParent()->getName() != extension_name) {
+                    return;
+                }
+
+                constexpr auto is_override = false;
+                sparta_assert(leaf->hasValue());
+                ext_param_nodes.push_back(std::make_pair(is_override, leaf));
+            });
+        }
+    }
+
+    // Reorder the parameter leaf nodes so that all the override parameters
+    // are at the end. Preserve original order of the vector within the two
+    // groups (is_override=true vs is_override=false).
+    std::stable_partition(ext_param_nodes.begin(), ext_param_nodes.end(),
+                          [](const auto& p) { return !p.first; });
 
     std::vector<std::pair<std::string, std::string>> param_kvps;
-    for (auto p : ext_param_nodes) {
+    for (auto kvp : ext_param_nodes) {
+        auto p = kvp.second;
         auto p_name = p->getName();
         if (p_name == "optional") {
             auto p_value = p->peekValue();
@@ -2958,6 +3010,7 @@ TreeNode::ExtensionsBase * TreeNode::createExtension(const std::string & extensi
     std::vector<ParameterBase*> params;
     ps->getChildrenOfType<ParameterBase>(params);
 
+    auto ext_node = ptree_node->create("extension." + extension_name, required);
     for (auto p : params) {
         auto p_name = p->getName();
         auto p_value = p->getValueAsString();

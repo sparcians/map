@@ -1,4 +1,3 @@
-
 #include <algorithm>
 #include <exception>
 #include <boost/algorithm/string/classification.hpp>
@@ -788,13 +787,17 @@ void Simulation::finalizeTree()
             const auto& ext_name = parts[0];
             const auto& ext_param_name = parts[1];
 
-            // Use const version of getExtension() so we don't accidentally
-            // read the extension by virtue of creating it
-            auto const_search_scope = const_cast<const GlobalTreeNode*>(getRoot()->getSearchScope());
-            constexpr auto must_exist = false;
+            // The parsed TreeNode location may have wildcards in it. Use findChildren()
+            // instead of getChild().
+            std::vector<TreeNode*> expanded_tns;
+            auto search_scope = getRoot()->getSearchScope();
+            search_scope->findChildren(tn_loc, expanded_tns);
 
-            if (auto tn = const_search_scope->getChild(tn_loc, must_exist)){
-                if (auto tn_ext = tn->getExtension(ext_name)){
+            for (auto tn : expanded_tns) {
+                // Use const version of getExtension() so we don't accidentally
+                // read the extension by virtue of creating it.
+                auto const_tn = const_cast<const TreeNode*>(tn);
+                if (auto tn_ext = const_tn->getExtension(ext_name)) {
                     auto ext_param_set = tn_ext->getParameters();
                     sparta_assert(ext_param_set != nullptr);
 
@@ -803,16 +806,23 @@ void Simulation::finalizeTree()
                     // path was found in --arch, --config, or --extension-file,
                     // then increment the read counts in those ptrees to avoid
                     // the "unread unbound parameter" exceptions.
+                    constexpr auto must_exist = false;
                     if (auto ext_param = ext_param_set->getChildAs<ParameterBase>(ext_param_name, must_exist)){
                         auto read_count = ext_param->getReadCount();
                         if (read_count > 0) {
-                            if (auto n = arch_ptree.tryGet(path)) {
+                            // We cannot call tryGet() with this leaf's path since
+                            // the path might have wildcards. Resolve the expanded
+                            // path without wildcards.
+                            auto expanded_path = tn->getLocation() + ".extension." +
+                                                 ext_name + "." + ext_param_name;
+
+                            if (auto n = arch_ptree.tryGet(expanded_path)) {
                                 n->incrementReadCount();
                             }
-                            if (auto n = cfg_ptree.tryGet(path)) {
+                            if (auto n = cfg_ptree.tryGet(expanded_path)) {
                                 n->incrementReadCount();
                             }
-                            if (auto n = ext_ptree.tryGet(path)) {
+                            if (auto n = ext_ptree.tryGet(expanded_path)) {
                                 n->incrementReadCount();
                             }
                         }

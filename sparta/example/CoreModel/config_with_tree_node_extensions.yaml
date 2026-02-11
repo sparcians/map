@@ -1,5 +1,8 @@
+# Note that this file uses a combination of paths with and without
+# wildcards since the extensions system has to be robust to both.
+
 top: {
-    cpu.core0.params.foo: 12,
+    cpu.core*.params.foo: 12,
     cpu.core0.lsu.extension.cat: {
         name_:     Tom,
         language_: meow
