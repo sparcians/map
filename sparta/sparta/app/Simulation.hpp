@@ -12,7 +12,6 @@
 #include "sparta/simulation/Resource.hpp"
 #include "sparta/simulation/ResourceFactory.hpp"
 #include "sparta/simulation/TreeNode.hpp"
-#include "sparta/simulation/TreeNodeExtensions.hpp"
 #include "sparta/log/Tap.hpp"
 #include "sparta/parsers/ConfigParserYAML.hpp"
 #include "sparta/simulation/ClockManager.hpp"
@@ -37,6 +36,7 @@ namespace sparta {
 
 class Clock;
 class MemoryProfiler;
+class TreeNodeExtensionManager;
 
 namespace python {
     class PythonInterpreter;
@@ -199,6 +199,20 @@ public:
      */
     SimulationConfiguration * getSimulationConfiguration() const {
         return sim_config_;
+    }
+
+    /*!
+     * \brief Returns this simulator's extensions manager
+     */
+    const TreeNodeExtensionManager * getExtensionManager(bool must_exist = true) const {
+        return root_.getExtensionManager(must_exist);
+    }
+
+    /*!
+     * \brief Returns this simulator's extensions manager
+     */
+    TreeNodeExtensionManager * getExtensionManager(bool must_exist = true) {
+        return root_.getExtensionManager(must_exist);
     }
 
     /*!
@@ -555,6 +569,18 @@ protected:
     void addTreeNodeExtensionFactory_(const std::string & extension_name,
                                       std::function<TreeNode::ExtensionsBase*()> factory);
 
+    /*!
+     * \brief The typical flow is to let the SimulationConfiguration own the
+     * TreeNodeExtensionManager, and the CommandLineSimulator gives it to the
+     * simulation in Simulation::configure(). To support manually-configured
+     * simulators that do not call configure(), subclass simulators can own
+     * the TreeNodeExtensionManager and give it to the Simulation.
+     * \throw Throws if this is called after the tree is built.
+     * \throw Throws if the TreeNodeExtensionManager was already set.
+     * \throw Throws if configure() is called later.
+     */
+    void setTreeNodeExtensionManager_(TreeNodeExtensionManager* mgr);
+
     //! \name Virtual Setup Interface
     //! @{
     ////////////////////////////////////////////////////////////////////////
@@ -817,7 +843,6 @@ protected:
      * Add any nodes allocated to this list to automatically manage them.
      */
     std::vector<std::unique_ptr<sparta::TreeNode>> to_delete_;
-
 
     // The SimulationConfiguration object
     SimulationConfiguration * sim_config_{nullptr};

@@ -147,9 +147,9 @@ sparta_named_test(sparta_core_example_final_cfg_optional_extensions sparta_core_
 #sparta_named_test(sparta_core_example_custom_histogram_stats sparta_core_example -i 100k --report multireport_r3.yaml)
 sparta_named_test(sparta_core_example_arch_report_simple sparta_core_example -i 10k --arch simple --arch-search-dir . --report top arch_report.yaml 1)
 sparta_named_test(sparta_core_example_arch_report_default sparta_core_example -i 10k --report top arch_report.yaml 1)
-sparta_named_test(sparta_core_example_base_extensions sparta_core_example -i 10k --extension-file base_extensions.yaml)
-sparta_named_test(sparta_core_example_override_extensions1 sparta_core_example -i 10k --extension-file base_extensions.yaml --extension-file override_extensions.yaml)
-sparta_named_test(sparta_core_example_override_extensions2 sparta_core_example -i 10k --extension-file override_extensions.yaml --extension-file base_extensions.yaml)
+sparta_named_test(sparta_core_example_base_extensions sparta_core_example -i 10k --extension-file base_extensions.yaml --num-cores 2)
+sparta_named_test(sparta_core_example_override_extensions sparta_core_example -i 10k --extension-files base_extensions.yaml override_extensions.yaml post_create_extensions.yaml --num-cores 2 -p top.extension.testing.expected_extensions expected_extensions.yaml)
+sparta_expect_failure_test(sparta_core_example_override_extensions_neg_test sparta_core_example -i 10k --extension-files base_extensions.yaml override_extensions.yaml --num-cores 2 -p) # read no extensions
 
 if(USING_SIMDB)
 sparta_named_test(sparta_core_example_simdb_global_file sparta_core_example --no-run --simdb-apps foo.db simdb-reports --simdb-apps bar.db cherry-pick-fast-checkpointer --simdb-file test.db)

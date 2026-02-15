@@ -28,7 +28,7 @@
 
 #include "sparta/utils/StaticInit.hpp"
 #include "sparta/simulation/ResourceContainer.hpp"
-#include "sparta/simulation/TreeNodeExtensions.hpp"
+#include "sparta/extensions/TreeNodeExtensionManager.hpp"
 #include "sparta/functional/ArchDataContainer.hpp"
 #include "sparta/utils/Utils.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -1894,8 +1894,7 @@ namespace sparta
                                  std::function<ExtensionsBase*()> factory);
 
         /*!
-         * \brief Get an extension object by type string. Returns nullptr if not
-         *        found (unrecognized).
+         * \brief Get an extension object by extension name.
          * \param extension_name The name of the extension to find
          * \param no_factory_ok If true, and this tree node was in one of the
          * arch/config/extension YAML input files, and no factory exists for
@@ -1905,61 +1904,44 @@ namespace sparta
          * files, then this will always return nullptr. If you want to create
          * an extension for this node on demand, call createExtension(name).
          */
-        ExtensionsBase * getExtension(const std::string & extension_name, bool no_factory_ok=false);
+        ExtensionsBase * getExtension(const std::string & extension_name, bool no_factory_ok=false)
+        {
+            auto ext_mgr = getExtensionManager_();
+            return ext_mgr->getExtension(getLocation(), extension_name, no_factory_ok);
+        }
 
         /*!
-         * \brief Get an extension object by type string. Returns nullptr if not
-         *        found (unrecognized).
+         * \brief Get an extension object by extension name.
          * \param extension_name The name of the extension to find
          * \note If 'this' tree node was not given an extension in any of the
          * --extension-file, --arch, --config-file, or --node-config-file YAML
          * files, then this will always return nullptr. If you want to create
          * an extension for this node on demand, call createExtension(name).
          */
-        const ExtensionsBase * getExtension(const std::string & extension_name) const;
-
-        /*!
-         * \brief Get an extension, downcast to the given type.
-         * \throw Throws an exception if the extension exists, but the downcast failed.
-         */
-        template <typename T>
-        T* getExtensionAs(const std::string & extension_name) {
-            static_assert(std::is_base_of<ExtensionsBase, T>::value);
-            auto ext = getExtension(extension_name);
-            if (!ext) {
-                return nullptr;
-            }
-
-            auto ret = dynamic_cast<T*>(ext);
-            if (!ret) {
-                throw SpartaException("Could not downcast extension '")
-                    << extension_name << "' to " << typeid(T).name() << ". "
-                    << "Actual extension type is " << ext->getClassName() << ".";
-            }
-
-            return ret;
+        const ExtensionsBase * getExtension(const std::string & extension_name) const
+        {
+            auto ext_mgr = getExtensionManager_();
+            return ext_mgr->getExtension(getLocation(), extension_name);
         }
 
         /*!
          * \brief Get an extension, downcast to the given type.
          * \throw Throws an exception if the extension exists, but the downcast failed.
          */
-        template <typename T>
-        const T* getExtensionAs(const std::string & extension_name) const {
-            static_assert(std::is_base_of<ExtensionsBase, T>::value);
-            auto ext = getExtension(extension_name);
-            if (!ext) {
-                return nullptr;
-            }
+        template <typename ExtensionT>
+        ExtensionT* getExtensionAs(const std::string & extension_name) {
+            auto ext_mgr = getExtensionManager_();
+            return ext_mgr->getExtensionAs<ExtensionT>(getLocation(), extension_name);
+        }
 
-            auto ret = dynamic_cast<const T*>(ext);
-            if (!ret) {
-                throw SpartaException("Could not downcast extension '")
-                    << extension_name << "' to " << typeid(T).name() << ". "
-                    << "Actual extension type is " << ext->getClassName() << ".";
-            }
-
-            return ret;
+        /*!
+         * \brief Get an extension, downcast to the given type.
+         * \throw Throws an exception if the extension exists, but the downcast failed.
+         */
+        template <typename ExtensionT>
+        const ExtensionT* getExtensionAs(const std::string & extension_name) const {
+            auto ext_mgr = getExtensionManager_();
+            return ext_mgr->getExtensionAs<ExtensionT>(getLocation(), extension_name);
         }
 
         /*!
@@ -2003,7 +1985,11 @@ namespace sparta
          * returns an extension subclass created by the factory.
          */
         ExtensionsBase * createExtension(const std::string & extension_name,
-                                         bool replace=false);
+                                         bool replace=false)
+        {
+            auto ext_mgr = getExtensionManager_();
+            return ext_mgr->createExtension(getLocation(), extension_name, replace);
+        }
 
         /*!
          * \brief Create an extension on demand without needing to specify any
@@ -2022,12 +2008,19 @@ namespace sparta
          * \throw If 'this' tree node was given more than one extension in the
          * input YAML files, this will always throw an exception.
          */
-        ExtensionsBase * createExtension(bool replace=false);
+        ExtensionsBase * createExtension(bool replace=false)
+        {
+            auto ext_mgr = getExtensionManager_();
+            return ext_mgr->createExtension(getLocation(), replace);
+        }
 
         /*!
-         * \see createExtension(name, replace)
+         * \see createExtension(std::string extension_name, bool replace)
          */
-        ExtensionsBase * createExtension(const char* extension_name, bool replace = false);
+        ExtensionsBase * createExtension(const char* extension_name, bool replace = false)
+        {
+            return createExtension(std::string(extension_name), replace);
+        }
 
         /*!
          * \brief Add an extension, specifying the ExtensionsBase subclass type.
@@ -2041,19 +2034,10 @@ namespace sparta
          * \throw Throws if Extension::NAME is already an extension on this node. Use
          * replaceExtension() instead.
          */
-        template <typename Extension, typename... Args>
-        Extension * addExtension(Args&&... args) {
-            static_assert(std::is_base_of<ExtensionsBase, Extension>::value);
-            if (hasExtension(Extension::NAME)) {
-                throw SpartaException("Extension already exists: ") << Extension::NAME;
-            }
-
-            std::shared_ptr<ExtensionsBase> ext(new Extension(std::forward<Args>(args)...));
-            ext->setParameters(std::make_unique<ParameterSet>(nullptr));
-            ext->postCreate();
-
-            addExtension_(Extension::NAME, ext);
-            return dynamic_cast<Extension*>(ext.get());
+        template <typename ExtensionT, typename... Args>
+        ExtensionT * addExtension(Args&&... args) {
+            auto ext_mgr = getExtensionManager_();
+            return ext_mgr->addExtension<ExtensionT>(getLocation(), std::forward<Args>(args)...);
         }
 
         /*!
@@ -2078,26 +2062,27 @@ namespace sparta
          * \brief Remove an extension by its name. Returns true if successful,
          * false if the extension was not found.
          */
-        bool removeExtension(const std::string & extension_name);
+        bool removeExtension(const std::string & extension_name)
+        {
+            auto ext_mgr = getExtensionManager_();
+            return ext_mgr->removeExtension(getLocation(), extension_name);
+        }
 
         /*!
          * \brief Check if this tree node has an extension by the given name.
          */
         bool hasExtension(const std::string & extension_name) const {
-            return getExtension(extension_name) != nullptr;
+            auto ext_mgr = getExtensionManager_();
+            return ext_mgr->hasExtension(getLocation(), extension_name);
         }
 
         /*!
          * \brief Check if this tree node has an extension by the given name and type.
          */
-        template <typename T>
+        template <typename ExtensionT>
         bool hasExtensionOfType(const std::string & extension_name) const noexcept {
-            auto ext = getExtension(extension_name);
-            if (!ext) {
-                return false;
-            }
-
-            return dynamic_cast<const T*>(ext) != nullptr;
+            auto ext_mgr = getExtensionManager_();
+            return ext_mgr->hasExtensionOfType<ExtensionT>(getLocation(), extension_name);
         }
 
         /*!
@@ -2107,7 +2092,11 @@ namespace sparta
          * node in any arch/config/extension input YAML file, call the
          * method getAllConfigExtensionNames().
          */
-        std::set<std::string> getAllInstantiatedExtensionNames() const;
+        std::set<std::string> getAllInstantiatedExtensionNames() const
+        {
+            auto ext_mgr = getExtensionManager_();
+            return ext_mgr->getAllInstantiatedExtensionNames(getLocation());
+        }
 
         /*!
          * \brief Get a list of extension names found for this node
@@ -2116,7 +2105,11 @@ namespace sparta
          * extensions that exist already on this node, call the method
          * getAllInstantiatedExtensionNames().
          */
-        std::set<std::string> getAllConfigExtensionNames() const;
+        std::set<std::string> getAllConfigExtensionNames() const
+        {
+            auto ext_mgr = getExtensionManager_();
+            return ext_mgr->getAllConfigExtensionNames(getLocation());
+        }
 
         /*!
          * \brief Get the number of extensions for this node.
@@ -2124,20 +2117,16 @@ namespace sparta
          * on this node.
          */
         size_t getNumExtensions() const {
-            return getAllInstantiatedExtensionNames().size();
+            auto ext_mgr = getExtensionManager_();
+            return ext_mgr->getNumExtensions(getLocation());
         }
 
         /*!
          * \brief Get a map of extensions for this node.
          */
         std::map<std::string, const ExtensionsBase*> getAllExtensions() const {
-            std::map<std::string, const ExtensionsBase*> extensions;
-            for (const auto & ext_name : getAllInstantiatedExtensionNames()) {
-                auto ext = getExtension(ext_name);
-                sparta_assert(ext != nullptr);
-                extensions[ext_name] = ext;
-            }
-            return extensions;
+            auto ext_mgr = getExtensionManager_();
+            return ext_mgr->getAllExtensions(getLocation());
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -4471,15 +4460,17 @@ namespace sparta
          */
         bool hasChild_(const std::string& name, bool private_also) const noexcept;
 
-    private:
+        /*!
+         * Get the TreeNodeExtensionManager from the root node.
+         */
+        TreeNodeExtensionManager * getExtensionManager_(bool must_exist = true);
 
         /*!
-         * \brief addExtension() implementation
-         * \see See public addExtension() documentation
-         * \note Implemented in the cpp file since we need RootTreeNode and
-         * cannot include the header
+         * Get the TreeNodeExtensionManager from the root node.
          */
-        void addExtension_(const std::string & extension_name, std::shared_ptr<ExtensionsBase> ext);
+        const TreeNodeExtensionManager * getExtensionManager_(bool must_exist = true) const;
+
+    private:
 
         /*!
          * \brief Unique ID of this node

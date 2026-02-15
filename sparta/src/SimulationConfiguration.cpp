@@ -74,20 +74,6 @@ namespace app {
         taps_.emplace_back(pattern, category, destination);
     }
 
-    //! Add a tree node extension (.yaml) file
-    //! \param filename The yaml file to consume
-    void SimulationConfiguration::processExtensionFile(const std::string & filename)
-    {
-        sparta_assert(!is_consumed_, "You cannot process extension files after simulation has been populated");
-        config_applicators_.emplace_back(new NodeConfigFileApplicator("", filename, config_search_paths_));
-
-        ParameterTree ptree;
-        config_applicators_.back()->applyUnbound(ptree, verbose_cfg);
-
-        std::cout << "  [in] Extensions: " << config_applicators_.back()->stringize() << std::endl;
-        extensions_ptree_.merge(ptree);
-    }
-
     void SimulationConfiguration::setStateTrackingFile(const std::string & filename)
     {
         sparta_assert(!is_consumed_, "You cannot set state tracking files after simulation has been populated");
@@ -223,59 +209,6 @@ namespace app {
         for (const ParameterTree::Node * child : children) {
             recursFindPTreeNodesWithValue(child, has_value_nodes);
         }
-    }
-
-    //! Look for any tree node extensions from the arch / config
-    //! ParameterTree's, and merge those extensions into the extensions
-    //! ParameterTree.
-    void SimulationConfiguration::copyTreeNodeExtensionsFromArchAndConfigPTrees()
-    {
-        //First, let's find a list of all parameter tree nodes with the name
-        //"extension". This is a reserved keyword - a ParameterTree::Node with
-        //this name is definitely for tree node extensions.
-        std::vector<ParameterTree::Node*> extension_nodes;
-        arch_ptree_.getRoot()->recursFindPTreeNodesNamed("extension", extension_nodes);
-        ptree_.getRoot()->recursFindPTreeNodesNamed("extension", extension_nodes);
-
-        if (extension_nodes.empty()) {
-            return;
-        }
-
-        //From the extension nodes on down, find the full list of child
-        //nodes which have parameter values. Say the arch/config file
-        //contained this:
-        //
-        //    top:
-        //      core0:
-        //        params.foo: 55
-        //        fpu.extension.bar:
-        //          color_: "blue"
-        //          shape_: "square"
-        //
-        //This has one extension which has two leaf children (hasValue==true),
-        //so the new list of nodes we are about to get would look like this:
-        //
-        //  ["top.core0.fpu.extension.bar.color_", "top.core0.fpu.extension.bar.shape_"]
-        //
-        std::vector<const ParameterTree::Node*> has_value_nodes;
-        for (const auto & node : extension_nodes) {
-            recursFindPTreeNodesWithValue(node, has_value_nodes);
-        }
-
-        //Now add these tree node extension leaf nodes to the final
-        //"extensions_ptree_".
-        for (const ParameterTree::Node * node : has_value_nodes) {
-            extensions_ptree_.set(node->getPath(), node->peekValue(),
-                                  node->getRequiredCount() != 0, node->getOrigin());
-        }
-    }
-
-    // Check if the unbound extensions ptree has any extensions.
-    bool SimulationConfiguration::hasTreeNodeExtensions() const
-    {
-        std::vector<const ParameterTree::Node*> extension_nodes;
-        extensions_ptree_.getRoot()->recursFindPTreeNodesNamed("extension", extension_nodes);
-        return !extension_nodes.empty();
     }
 
 } // namespace app

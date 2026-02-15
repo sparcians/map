@@ -26,6 +26,7 @@
 #include "sparta/utils/StringUtils.hpp"
 #include "sparta/app/ReportDescriptor.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
+#include "sparta/extensions/TreeNodeExtensionManager.hpp"
 
 // Reuse hash<pair<string,string>>
 #include "sparta/report/format/DetailInfoData.hpp"
@@ -158,9 +159,6 @@ public:
     //! Was a final configuration file provided?
     bool hasFinalConfig() const { return !final_config_file_.empty(); }
 
-    //! Consume an extension (.yaml) file
-    void processExtensionFile(const std::string & filename);
-
     //!  Set the filename for the State Tracking file
     void setStateTrackingFile(const std::string & filename);
 
@@ -218,18 +216,6 @@ public:
         getReportFormatsWhoOmitStatsWithValueZero() const;
 
     /*!
-     * Look for any tree node extensions from the arch / config
-     * ParameterTree's, and merge those extensions into the extensions
-     * ParameterTree.
-     */
-    void copyTreeNodeExtensionsFromArchAndConfigPTrees();
-
-    /*!
-     * Check if the unbound extensions ptree has any extensions.
-     */
-    bool hasTreeNodeExtensions() const;
-
-    /*!
      * Returns a ParameterTree containing an unbound set of parameter
      * values which can be read and later applied. Some of these
      * parameters will be applied to Parameter TreeNodes at some point
@@ -258,23 +244,6 @@ public:
      * and later applied as defaults to newly-constructed parameters.
      */
     const ParameterTree& getArchUnboundParameterTree() const { return arch_ptree_; }
-
-    /*!
-     * \brief Returns a ParameterTree containing an unbound set of
-     * named tree node extensions and their parameter value(s).
-     */
-    ParameterTree& getExtensionsUnboundParameterTree() {
-        return extensions_ptree_;
-    }
-
-    /*!
-     * \brief Returns a ParameterTree (const version) containing an
-     * unbound set of named tree node extensions and their parameter
-     * value(s).
-     */
-    const ParameterTree& getExtensionsUnboundParameterTree() const {
-        return extensions_ptree_;
-    }
 
     /*!
      * Was an arch file provided in this configuration?
@@ -670,6 +639,13 @@ public:
     } simdb_config;
 
     /*!
+     * The extension manager is responsible for parsing extensions
+     * from input YAML files and hiding extensions in an internal
+     * ParameterTree for all nodes with extensions.
+     */
+    TreeNodeExtensionManager extension_mgr;
+
+    /*!
      * Scheduler control: When a user calls sparta::Simulation::run()
      * with an amount of time _other than_ the default, the Scheduler
      * can do one of two things:
@@ -741,9 +717,6 @@ private:
 
     //! Unbound (pre-application) Parameter Tree
     ParameterTree ptree_;
-
-    //! Unbound (pre-application) Extensions Tree
-    ParameterTree extensions_ptree_;
 
     //! Vector of arch file search directories
     std::vector<std::string> arch_search_paths_;
