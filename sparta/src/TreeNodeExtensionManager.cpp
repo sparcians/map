@@ -223,12 +223,10 @@ ExtensionsBase * TreeNodeExtensionManager::createExtension(
 
             auto p_node = concrete_post_create_node->create(p_name, false /*unrequired*/);
             p_node->setValue(p_value, false /*unrequired*/, "postCreate" /*origin*/);
-            p_node->setUserData("user_visible", true);
 
             if (wildcard_post_create_node) {
                 p_node = wildcard_post_create_node->create(p_name, false /*unrequired*/);
                 p_node->setValue(p_value, false /*unrequired*/, "postCreate" /*origin*/);
-                p_node->setUserData("user_visible", true);
             }
         }
     }
@@ -348,22 +346,6 @@ void TreeNodeExtensionManager::addExtensions(
 
         auto n = dst_ptree.create(path);
         n->setValue(leaf->getValue(), false /*unrequired*/, leaf->getOrigin());
-
-        // Differentiate between auto-expanded nodes and user-visible nodes.
-        // This is needed to keep the --write-final-config YAML file looking
-        // like this:
-        //
-        //   top.cpu.core*.lsu.foobar.foo: 4
-        //
-        // Instead of this:
-        //
-        //   top.cpu.core0.lsu.foobar.foo: 4
-        //   top.cpu.core1.lsu.foobar.foo: 4
-        //
-        // We want the final config YAML file to match what users provided
-        // in the input YAML files.
-        n->setUserData("user_visible", true);
-
         return true; // keep going
     });
 }
@@ -521,7 +503,6 @@ const ParameterTree * TreeNodeExtensionManager::getFinalConfigPTree()
 
                     auto p = wildcard_ext_node->create(p_name, false /*unrequired*/);
                     p->setValue(p_value, false /*unrequired*/, p_origin);
-                    p->setUserData("user_visible", true);
                 }
             }
             continue;
@@ -564,7 +545,6 @@ const ParameterTree * TreeNodeExtensionManager::getFinalConfigPTree()
 
                     auto p = wildcard_ext_node->create(p_name, false /*unrequired*/);
                     p->setValue(p_value, false /*unrequired*/, p_origin);
-                    p->setUserData("user_visible", true);
                 }
             } else {
                 for (auto tn : matching_tns) {
@@ -598,7 +578,6 @@ const ParameterTree * TreeNodeExtensionManager::getFinalConfigPTree()
 
                         auto p = final_ext_node->create(p_name, false /*unrequired*/);
                         p->setValue(p_value, false /*unrequired*/, p_origin);
-                        p->setUserData("user_visible", true);
                     }
                 }
             }
@@ -615,7 +594,6 @@ const ParameterTree * TreeNodeExtensionManager::getFinalConfigPTree()
         auto parent = notNull(leaf->getParent());
         auto grandparent = notNull(parent->getParent());
         sparta_assert(grandparent->getName() == "extension");
-        sparta_assert(*leaf->tryGetUserData<bool>("user_visible"));
 
         const auto & [tn_loc, ext_name, ext_param] =
             parseExtensionParamPath_(leaf->getPath());
@@ -689,15 +667,11 @@ void TreeNodeExtensionManager::postBuildTree()
             // in the YAML files.
             auto p = concrete_config_ptree_->tryGet(param_path);
             if (p) {
-                sparta_assert(*p->tryGetUserData<bool>("user_visible", true));
                 continue;
             }
 
             p = concrete_config_ptree_->create(param_path);
             p->setValue(leaf->getValue(), false /*unrequired*/, leaf->getOrigin());
-            if (const bool * user_visible = leaf->tryGetUserData<bool>("user_visible")) {
-                p->setUserData("user_visible", *user_visible);
-            }
         }
 
         return true; // keep going
@@ -720,9 +694,6 @@ void TreeNodeExtensionManager::getUnreadExtensionParams(
     // ParameterBase's read count. If those are 0 (unread), then add the ptree node to
     // the unread ptree.
     final_config_ptree->visitLeaves([&](const ParameterTree::Node* leaf) {
-        // Ensure we are only writing user-visible nodes to the final config.
-        sparta_assert(*leaf->tryGetUserData<bool>("user_visible", true));
-
         // Verify that this is an extension parameter.
         auto parent = notNull(leaf->getParent());
         auto grandparent = notNull(parent->getParent());
