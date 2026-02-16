@@ -640,8 +640,9 @@ public:
 
     /*!
      * The extension manager is responsible for parsing extensions
-     * from input YAML files and hiding extensions in an internal
-     * ParameterTree for all nodes with extensions.
+     * from input YAML files, holding onto instantiated extensions,
+     * verifying that all extension parameters have been read, and
+     * producing the --write-final-config ParameterTree.
      */
     TreeNodeExtensionManager extension_mgr;
 

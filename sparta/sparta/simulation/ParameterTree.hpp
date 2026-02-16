@@ -44,18 +44,6 @@ namespace sparta
     public:
 
         /*!
-         * \class ApiKey
-         * \brief Helper to allow the Node class to friend the ParameterTree
-         * class on a per-api basis.
-         */
-        class ApiKey
-        {
-        private:
-            ApiKey() = default;
-            friend class ParameterTree;
-        };
-
-        /*!
          * \brief Node containing a Parameter and value to apply. Can
          * be used to describes a value extracted from the tree when
          * using get or tryGet. This is a copy of the value and is not
@@ -91,9 +79,6 @@ namespace sparta
             uint32_t write_count_; //!< Number of times this node's value has been written.
             mutable uint32_t read_count_ = 0; //!< Number of times this node's value has been read
             std::map<std::string, std::any> user_data_; //!< Name-value pairs of any user data type
-
-            //!< Wildcards allowed/disallowed. Controlled by app::Simulation.
-            bool path_wildcards_allowed_ = true;
 
             //!< Base class for std::any printers
             class UserDataPrinterBase
@@ -597,10 +582,6 @@ namespace sparta
                             "Cannot add a child to a virtual parameter tree node \"" << name_
                             << "\" since it already has a value: \"" << value_ << "\"");
 
-                if (!path_wildcards_allowed_ && TreeNode::hasWildcardCharacters(name)) {
-                    throw SpartaException("ParameterTree has path wildcards but it is not allowed");
-                }
-
                 children_.emplace_back(new Node(this, name));
                 if(required){
                     children_.back()->incRequired();
@@ -802,21 +783,6 @@ namespace sparta
                 for (const ParameterTree::Node * child : children) {
                     child->recursFindPTreeNodesNamed(name, matching_nodes);
                 }
-            }
-
-            /*!
-             * \brief Tell this node whether we allow wildcards from here
-             * on down the tree.
-             * \note Due to the ApiKey, can only be called by ParameterTree.
-             */
-            void recurseAllowPathWildcards(bool allow, ApiKey) {
-                recurseVisitNodes([&](Node* node){
-                    if (TreeNode::hasWildcardCharacters(node->getName())) {
-                        throw SpartaException("ParameterTree has path wildcards but it is not allowed");
-                    }
-                    node->path_wildcards_allowed_ = allow;
-                    return true; // keep going
-                });
             }
 
             /*!
@@ -1307,15 +1273,14 @@ namespace sparta
          * In other words, getting through this method returns the latest value set for the
          * parameter at the location described by \a path
          * \param path Path of node to retrieve
-         * \param exact_path If true, do not pattern-match the path's wildcards
          * \throw SpartaException if node with given path does not exist (see exists)
          * \return Node at the given location. This node is temporary and becomes stale on any
          * modification to this ParameterTree. Reading this node later may result in an incorrect
          * value
          * \warning The returned node should be considered stale when this ParameterTree is modified
          */
-        const Node& get(const std::string& path, bool exact_path=false) const {
-            const Node* node = tryGet(path, true, exact_path);
+        const Node& get(const std::string& path) const {
+            const Node* node = tryGet(path);
             if(!node){
                 throw SpartaException("Unable to find parameter in tree: \"") << path << "\"";
             }
@@ -1334,11 +1299,10 @@ namespace sparta
          * \brief Try to check if a node has value
          * \param path Path of the node to check
          * \param must_be_leaf Check only if leaf node
-         * \param exact_path If true, do not pattern-match the path's wildcards
          * \return Bool
          */
-        bool hasValue(const std::string& path, const bool must_be_leaf = true, bool exact_path=false) const {
-            const Node* n = tryGet_(path, must_be_leaf, exact_path);
+        bool hasValue(const std::string& path, const bool must_be_leaf = true) const {
+            const Node* n = tryGet_(path, must_be_leaf);
             return n != nullptr && n->hasValue();
         }
 
@@ -1346,11 +1310,10 @@ namespace sparta
          * \brief Try to check if a node exists
          * \param path Path of the node to check
          * \param must_be_leaf Check only if leaf node
-         * \param exact_path If true, do not pattern-match the path's wildcards
          * \return Bool
          */
-        bool exists(const std::string& path, const bool must_be_leaf = true, bool exact_path=false) const {
-            return tryGet_(path, must_be_leaf, exact_path) != nullptr;
+        bool exists(const std::string& path, const bool must_be_leaf = true) const {
+            return tryGet_(path, must_be_leaf) != nullptr;
         }
 
         /*!
@@ -1386,21 +1349,19 @@ namespace sparta
         /*!
          * \brief Try to get a node if it exists. Returns nullptr it it does not
          * \param path Path of the node to retrieve
-         * \param exact_path If true, do not pattern-match the path's wildcards
          * \return The node at the given path
          */
-        const Node* tryGet(const std::string& path, const bool must_be_leaf = true, bool exact_path=false) const {
-            return tryGet_(path, must_be_leaf, exact_path);
+        const Node* tryGet(const std::string& path, const bool must_be_leaf = true) const {
+            return tryGet_(path, must_be_leaf);
         }
 
         /*!
          * \brief tryGet non-const version
          * \param path Path of the node to retrieve
-         * \param exact_path If true, do not pattern-match the path's wildcards
          * \return The node at the given path
          */
-        Node* tryGet(const std::string& path, const bool must_be_leaf = true, bool exact_path=false) {
-            return tryGet_(path, must_be_leaf, exact_path);
+        Node* tryGet(const std::string& path, const bool must_be_leaf = true) {
+            return tryGet_(path, must_be_leaf);
         }
 
         /*!
@@ -1436,11 +1397,10 @@ namespace sparta
         /*!
          * \brief Unrequire a node in the tree
          * \param path The path to the node to unrequire (set ignore)
-         * \param exact_path If true, do not pattern-match the path's wildcards
          * \return true if the node was found and set; false otherwise
          */
-        bool unrequire(const std::string &path, bool exact_path=false) {
-            Node * node = tryGet_(path, false, exact_path);
+        bool unrequire(const std::string &path) {
+            Node * node = tryGet_(path, false);
             if(nullptr != node) {
                 node->unrequire();
                 return true;
@@ -1451,13 +1411,12 @@ namespace sparta
         /*!
          * \brief Has a node with a given path been read
          * \param[in] path Path to check
-         * \param exact_path If true, do not pattern-match the path's wildcards
          *
          * Resolves a path to any matching nodes (which may include any number
          * of wildcard nodes) and checks that at least one of those nodes have
          * been read 1 or more times.
          */
-        bool isRead(const std::string& path, bool exact_path=false) const {
+        bool isRead(const std::string& path) const {
             if(path.size() == 0){
                 return root_->hasValue() && root_->getReadCount() > 0;
             }
@@ -1473,7 +1432,7 @@ namespace sparta
                     "characters). Parents cannot currently be refrenced in the parameter tree";
             }
 
-            return recursIsRead_(root_.get(), path, immediate_child_name, name_pos, exact_path);
+            return recursIsRead_(root_.get(), path, immediate_child_name, name_pos);
         }
 
         Node const * getRoot() const { return root_.get(); }
@@ -1489,41 +1448,6 @@ namespace sparta
          */
         void merge(const ParameterTree& rhp) {
             root_->appendTree(rhp.getRoot());
-        }
-
-        /*!
-         * \brief Tell the ptree whether we allow wildcards in any node path.
-         */
-        void allowPathWildcards(bool allow) {
-            root_->recurseAllowPathWildcards(allow, ApiKey());
-        }
-
-        /*!
-         * \brief Check if we currently allow any node paths with wildcards.
-         */
-        bool pathWildcardsAllowed() const {
-            return path_wildcards_allowed_;
-        }
-
-        /*!
-         * \brief Check if this ptree has any nodes with wildcards.
-         * \param from Starting point; recurse from here.
-         */
-        bool hasPathWildcards(const Node* from = nullptr) const {
-            bool has_wildcards = false;
-            if (!from) {
-                from = root_.get();
-            }
-
-            from->recurseVisitNodes([&](const Node* node){
-                if (TreeNode::hasWildcardCharacters(node->getName())) {
-                    has_wildcards = true;
-                    return false; // stop recursing
-                }
-                return true; // keep going
-            });
-
-            return has_wildcards;
         }
 
         /*!
@@ -1594,7 +1518,7 @@ namespace sparta
          * \brief Attempt to get a node with a given path while respecting parameter application
          * order.
          */
-        const Node* tryGet_(const std::string& path, const bool must_be_leaf = true, bool exact_path=false) const {
+        const Node* tryGet_(const std::string& path, const bool must_be_leaf = true) const {
             if(path.size() == 0){
                 return root_.get();
             }
@@ -1611,14 +1535,14 @@ namespace sparta
             }
 
             return recursTryGet_<const Node>(static_cast<const Node*>(root_.get()), path,
-                                             immediate_child_name, name_pos, must_be_leaf, exact_path);
+                                             immediate_child_name, name_pos, must_be_leaf);
         }
 
         /*!
          * \brief Attempt to get a node with a given path while
          * respecting parameter application order. Non-const version
          */
-        Node* tryGet_(const std::string& path, const bool must_be_leaf = true, bool exact_path=false) {
+        Node* tryGet_(const std::string& path, const bool must_be_leaf = true) {
             if(path.size() == 0){
                 return root_.get();
             }
@@ -1635,13 +1559,13 @@ namespace sparta
             }
 
             return recursTryGet_(root_.get(), path,
-                                 immediate_child_name, name_pos, must_be_leaf, exact_path);
+                                 immediate_child_name, name_pos, must_be_leaf);
         }
 
         template<typename NodeT>
         static NodeT* recursTryGet_(NodeT* node, const std::string& path,
                                     const std::string& match_name,
-                                    size_t name_pos, const bool must_be_leaf, bool exact_path)
+                                    size_t name_pos, const bool must_be_leaf)
         {
             sparta_assert(!TreeNode::hasWildcardCharacters(match_name),
                         "Cannot attempt to read a node with a path containing wildcard "
@@ -1654,9 +1578,6 @@ namespace sparta
                 NodeT* backup = nullptr; // First match (if is has no value)
                 auto itr = node->getMatcherBegin();
                 for(; itr != node->getMatcherEnd(); ++itr){
-                    if(exact_path && itr.get()->getPath() != path){
-                        continue;
-                    }
                     if(itr.matches(match_name)){
                         if(itr.get()->hasValue() || !must_be_leaf){
                             itr.get()->incrementReadCount();
@@ -1689,7 +1610,7 @@ namespace sparta
             auto itr = node->getMatcherBegin();
             for(; itr != node->getMatcherEnd(); ++itr){
                 if(itr.matches(match_name)){
-                    NodeT* match = recursTryGet_(itr.get(), path, immediate_child_name, name_pos, must_be_leaf, exact_path);
+                    NodeT* match = recursTryGet_(itr.get(), path, immediate_child_name, name_pos, must_be_leaf);
                     if(match && (match->hasValue() || !must_be_leaf)) {
                         match->incrementReadCount();
                         if(result == nullptr){
@@ -1780,8 +1701,7 @@ namespace sparta
         bool recursIsRead_(const Node* node,
                            const std::string& path,
                            const std::string& match_name,
-                           size_t name_pos,
-                           bool exact_path) const
+                           size_t name_pos) const
         {
             sparta_assert(!TreeNode::hasWildcardCharacters(match_name),
                               "Cannot attempt to read a node with a path containing wildcard "
@@ -1791,9 +1711,6 @@ namespace sparta
             if(name_pos == std::string::npos){
                 auto itr = node->getMatcherBegin();
                 for(; itr != node->getMatcherEnd(); ++itr){
-                    if(exact_path && itr.get()->getPath() != path){
-                        continue;
-                    }
                     if(itr.matches(match_name)){
                         if(itr.get()->hasValue() && itr.get()->getReadCount() > 0){
                             return true;
@@ -1816,7 +1733,7 @@ namespace sparta
             auto itr = node->getMatcherBegin();
             for(; itr != node->getMatcherEnd(); ++itr){
                 if(itr.matches(match_name)){
-                    bool read = recursIsRead_(itr.get(), path, immediate_child_name, name_pos, exact_path);
+                    bool read = recursIsRead_(itr.get(), path, immediate_child_name, name_pos);
                     if(read){
                         return true;
                     }
@@ -1829,11 +1746,6 @@ namespace sparta
          * \brief Root of this ParameterTree
          */
         std::unique_ptr<Node> root_;
-
-        /*!
-         * \brief Wildcards allowed/disallowed. Controlled by app::Simulation.
-         */
-        bool path_wildcards_allowed_ = true;
 
     }; // class ParameterSet
 

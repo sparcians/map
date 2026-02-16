@@ -478,7 +478,7 @@ ExtensionT* ExampleSimulator::getExtension_(
 
 void ExampleSimulator::validateTreeNodeExtensions_()
 {
-    // Validate tree node extensions during tree building
+    // Validate tree node extensions during configureTree()
     for(uint32_t i = 0; i < num_cores_; ++i){
         const std::string dispatch_loc = "cpu.core" + std::to_string(i) + ".dispatch";
         const std::string alu0_loc = "cpu.core" + std::to_string(i) + ".alu0";
@@ -748,20 +748,6 @@ void ExampleSimulator::validateTreeNodeExtensions_()
                         sparta_assert(actual_val == expected_val);
                     }
                 }
-            }
-        }
-    }
-
-    // If the "testing" extension does not exist, silence errors about unread parameters
-    else {
-        std::vector<sparta::TreeNode*> matching_tns;
-        getRoot()->findChildren("cpu.core*.lsu", matching_tns);
-        for (auto lsu : matching_tns) {
-            auto ext = lsu->getExtension("foobar", true /*no_factory_ok*/);
-            if (ext) {
-                ext->getParameterValueAs<std::string>("foo");
-                ext->getParameterValueAs<std::string>("bar");
-                ext->getParameterValueAs<std::string>("extra");
             }
         }
     }

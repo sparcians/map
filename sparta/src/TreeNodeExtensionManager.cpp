@@ -204,8 +204,8 @@ ExtensionsBase * TreeNodeExtensionManager::createExtension(
                 if (param_node) {
                     p_value = param_node->peekValue();
                 }
-            } 
-            
+            }
+
             if (wildcard_post_create_node && p_value.empty()) {
                 auto param_node = wildcard_post_create_node->getChild(p_name);
                 if (param_node) {
@@ -914,7 +914,7 @@ void TreeNodeExtensionManager::checkAllYamlExtensionsCreated(
         for (const auto & err_msg : err_list) {
             err_oss << "    ";
             err_oss << (suppress_exceptions ? "NOTE: " : "ERROR: ");
-            err_oss << err_msg << "\n"; 
+            err_oss << err_msg << "\n";
         }
 
         if (suppress_exceptions) {
