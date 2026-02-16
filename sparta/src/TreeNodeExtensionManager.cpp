@@ -330,7 +330,6 @@ ExtensionsBase * TreeNodeExtensionManager::createExtension(
     const std::string & loc,
     bool replace)
 {
-    sparta_assert(notNull(root_)->getPhase() >= PhasedObject::TREE_CONFIGURING);
     std::set<std::string> known_extension_names = getAllConfigExtensionNames(loc);
 
     // Don't have any extension names? No extensions.
