@@ -124,6 +124,28 @@ ExtensionsBase * TreeNodeExtensionManager::getExtension(
     const std::string & extension_name,
     bool no_factory_ok)
 {
+    auto has_extension = hasExtension(loc, extension_name);
+
+    if (has_extension) {
+        bool remove_extension = false;
+        for (auto ptree : {wildcard_config_ptree_, concrete_config_ptree_}) {
+            if (auto ext_node = ptree->tryGet(loc + ".extension." + extension_name, false /*not a leaf*/)) {
+                if (auto * creation_phase = ext_node->tryGetUserData<PhasedObject::TreePhase>("creation_phase")) {
+                    auto curr_phase = notNull(root_)->getPhase();
+                    if (*creation_phase == PhasedObject::TREE_BUILDING && curr_phase >= PhasedObject::TREE_BUILDING) {
+                        remove_extension = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (remove_extension) {
+            auto success = removeExtension(loc, extension_name);
+            sparta_assert(success);
+        }
+    }
+
     // First check if we already have this extension.
     if (auto ext = getLiveExtension_(loc, extension_name)) {
         return ext;
@@ -157,10 +179,31 @@ ExtensionsBase * TreeNodeExtensionManager::createExtension(
     const std::string & extension_name,
     bool replace)
 {
-    sparta_assert(notNull(root_)->getPhase() >= PhasedObject::TREE_CONFIGURING);
+    auto has_extension = hasExtension(loc, extension_name);
+
+    if (has_extension) {
+        bool remove_extension = false;
+        for (auto ptree : {wildcard_config_ptree_, concrete_config_ptree_}) {
+            if (auto ext_node = ptree->tryGet(loc + ".extension." + extension_name, false /*not a leaf*/)) {
+                if (auto * creation_phase = ext_node->tryGetUserData<PhasedObject::TreePhase>("creation_phase")) {
+                    auto curr_phase = notNull(root_)->getPhase();
+                    if (*creation_phase == PhasedObject::TREE_BUILDING && curr_phase >= PhasedObject::TREE_BUILDING) {
+                        remove_extension = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (remove_extension) {
+            auto success = removeExtension(loc, extension_name);
+            sparta_assert(success);
+            replace = false;
+        }
+    }
 
     // Throw away the live extension if we have one and are replacing it.
-    if (replace && getLiveExtension_(loc, extension_name) != nullptr) {
+    if (replace && has_extension) {
         auto success = removeExtension(loc, extension_name);
         sparta_assert(success);
     }
@@ -189,6 +232,13 @@ ExtensionsBase * TreeNodeExtensionManager::createExtension(
     std::vector<ParameterBase*> post_create_params;
     ps->getChildrenOfType<ParameterBase>(post_create_params);
     auto ext_path = loc + ".extension." + extension_name;
+
+    for (auto ptree : {wildcard_config_ptree_, concrete_config_ptree_}) {
+        if (auto ext_node = ptree->tryGet(ext_path, false /*not a leaf*/)) {
+            auto curr_phase = notNull(root_)->getPhase();
+            ext_node->setUserData("creation_phase", curr_phase);
+        }
+    }
 
     auto & ordered_params = ordered_ext_params_[extension_name];
     if (!post_create_params.empty()) {
@@ -232,34 +282,43 @@ ExtensionsBase * TreeNodeExtensionManager::createExtension(
     }
 
     // Apply all parameters we were given in the arch/config/extension YAML
-    // files to the extension params in its ParameterSet.
-    auto ext_node = concrete_config_ptree_->tryGet(ext_path, false /*not a leaf*/);
-    if (ext_node) {
-        for (auto p : ext_node->getChildren()) {
-            const auto & [p_name, p_value] = validateParam(p);
+    // files to the extension params in its ParameterSet. Do this first for
+    // the parameters found in matching wildcard paths, followed by concrete
+    // paths. The reason is that we consider wildcard matches to be default
+    // values, and concrete matches to be override values (when both are given
+    // for the same tree node location).
+    for (auto ptree : {wildcard_config_ptree_, concrete_config_ptree_}) {
+        auto ext_node = ptree->tryGet(ext_path, false /*not a leaf*/);
+        if (ext_node) {
+            for (auto p : ext_node->getChildren()) {
+                const auto & [p_name, p_value] = validateParam(p);
 
-            // If this parameter was already created during postCreate(), just
-            // set its value.
-            if (auto p = ps->getParameter(p_name, false)) {
-                app::ParameterApplicator pa("", p_value);
-                pa.apply(p);
-                continue;
+                // If this parameter was already created during postCreate(), just
+                // set its value.
+                if (auto p = ps->getParameter(p_name, false)) {
+                    app::ParameterApplicator pa("", p_value);
+                    pa.apply(p);
+                    continue;
+                }
+
+                // Otherwise, create a new parameter, defaulting to string type.
+                const auto & p_desc = p_name;
+                auto param = std::make_unique<Parameter<std::string>>(p_name, p_value, p_desc, ps);
+                extension->addParameter(std::move(param));
             }
-
-            // Otherwise, create a new parameter, defaulting to string type.
-            const auto & p_desc = p_name;
-            auto param = std::make_unique<Parameter<std::string>>(p_name, p_value, p_desc, ps);
-            extension->addParameter(std::move(param));
         }
     }
 
     // Since extensions can be created on the fly, validate this extension's parameters.
     // This already occurred for any extensions accessed/created before finalizeTree().
+    // We have to check if this location exists in the device tree since extensions
+    // may be created during buildTree() before the node actually exists.
     std::string errs;
-    auto tn = notNull(root_)->getSearchScope()->getChild(loc);
-    if (!extension->getParameters()->validateDependencies(tn, errs)) {
-        throw SpartaException("Parameter validation callbacks indicated invalid parameters: ")
-            << errs;
+    if (auto tn = notNull(root_)->getSearchScope()->getChild(loc, false)) {
+        if (!extension->getParameters()->validateDependencies(tn, errs)) {
+            throw SpartaException("Parameter validation callbacks indicated invalid parameters: ")
+                << errs;
+        }
     }
 
     // Cache the extension and return it.
@@ -623,7 +682,6 @@ const ParameterTree * TreeNodeExtensionManager::getFinalConfigPTree()
 
 void TreeNodeExtensionManager::postBuildTree()
 {
-    sparta_assert(!hasExtensions());
     if (wildcard_config_ptree_->getRoot()->getChildren().empty()) {
         // No wildcard extensions to expand.
         return;
