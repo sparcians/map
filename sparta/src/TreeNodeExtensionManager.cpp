@@ -56,7 +56,7 @@ namespace
         std::string,           // ptree node path
         NamedExtensions
     >;
-}
+} // namespace (anonymous)
 
 namespace std
 {
@@ -66,7 +66,7 @@ namespace std
             return ext_param.getParamIndex();
         }
     };
-}
+} // namespace std
 
 namespace sparta
 {
@@ -127,28 +127,23 @@ ExtensionsBase * TreeNodeExtensionManager::getExtension(
     auto has_extension = hasExtension(loc, extension_name);
 
     if (has_extension) {
-        bool remove_extension = false;
         for (auto ptree : {wildcard_config_ptree_, concrete_config_ptree_}) {
             if (auto ext_node = ptree->tryGet(loc + ".extension." + extension_name, false /*not a leaf*/)) {
                 if (auto * creation_phase = ext_node->tryGetUserData<PhasedObject::TreePhase>("creation_phase")) {
                     auto curr_phase = notNull(root_)->getPhase();
                     if (*creation_phase == PhasedObject::TREE_BUILDING && curr_phase >= PhasedObject::TREE_BUILDING) {
-                        remove_extension = true;
-                        break;
+                        auto success = removeExtension(loc, extension_name);
+                        sparta_assert(success);
+                        has_extension = false;
                     }
                 }
             }
         }
-
-        if (remove_extension) {
-            auto success = removeExtension(loc, extension_name);
-            sparta_assert(success);
-        }
     }
 
     // First check if we already have this extension.
-    if (auto ext = getLiveExtension_(loc, extension_name)) {
-        return ext;
+    if (has_extension) {
+        return getLiveExtension_(loc, extension_name);
     }
 
     // If this tree node location was never in any of the
@@ -266,7 +261,8 @@ ExtensionsBase * TreeNodeExtensionManager::createExtension(
             auto ext_param = ps->getParameter(p_name);
             sparta_assert(ext_param != nullptr);
             if (!p_value.empty()) {
-                ext_param->setValueFromString(p_value);
+                app::ParameterApplicator applicator("", p_value);
+                applicator.apply(ext_param);
             } else {
                 p_value = ext_param->getValueAsString();
             }

@@ -134,6 +134,21 @@ private:
     std::unique_ptr<sparta::Parameter<int>> extra_;
 };
 
+class CoreExtensions : public sparta::ExtensionsParamsOnly
+{
+public:
+    using EnabledUnits = std::vector<std::vector<std::vector<std::string>>>;
+
+private:
+    void postCreate() override {
+        auto ps = getParameters();
+        enabled_units_.reset(new sparta::Parameter<std::vector<std::vector<std::vector<std::string>>>>(
+            "enabled_units_", {}, "Enabled units to test nested vectors", ps));
+    }
+
+    std::unique_ptr<sparta::Parameter<EnabledUnits>> enabled_units_;
+};
+
 double calculateAverageOfInternalCounters(
     const std::vector<const sparta::CounterBase*> & counters)
 {
@@ -165,6 +180,7 @@ ExampleSimulator::ExampleSimulator(const std::string& topology,
     addTreeNodeExtensionFactory_("circle", [](){return new CircleExtensions;});
     addTreeNodeExtensionFactory_("never_explicitly_instantiated", [](){return new NeverExplicitlyInstantiated;});
     addTreeNodeExtensionFactory_("foobar", [](){return new Foobar;});
+    addTreeNodeExtensionFactory_("core_extensions", [](){return new CoreExtensions;});
 
     // Initialize example simulation controller
     controller_.reset(new ExampleSimulator::ExampleController(this));
@@ -480,10 +496,11 @@ void ExampleSimulator::validateTreeNodeExtensions_()
 {
     // Validate tree node extensions during configureTree()
     for(uint32_t i = 0; i < num_cores_; ++i){
-        const std::string dispatch_loc = "cpu.core" + std::to_string(i) + ".dispatch";
-        const std::string alu0_loc = "cpu.core" + std::to_string(i) + ".alu0";
-        const std::string alu1_loc = "cpu.core" + std::to_string(i) + ".alu1";
-        const std::string fpu_loc = "cpu.core" + std::to_string(i) + ".fpu";
+        const std::string core_loc = "cpu.core" + std::to_string(i);
+        const std::string dispatch_loc = core_loc + ".dispatch";
+        const std::string alu0_loc = core_loc + ".alu0";
+        const std::string alu1_loc = core_loc + ".alu1";
+        const std::string fpu_loc = core_loc + ".fpu";
 
         // user_data.when_ (dispatch)
         if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(dispatch_loc), "when_", "user_data")) {
@@ -560,6 +577,41 @@ void ExampleSimulator::validateTreeNodeExtensions_()
             prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
                 return val == "0";
             }, "Parameter 'edges_' should be '0'");
+        }
+
+        // core_extensions.enabled_units_ (core0)
+        auto core_tn = getRoot()->getChild(core_loc);
+        using NestedVector = typename CoreExtensions::EnabledUnits;
+        if (auto prm = getExtensionParameter_<NestedVector>(core_tn, "enabled_units_", "core_extensions")) {
+            prm->addDependentValidationCallback([](NestedVector & actual_vecs, const sparta::TreeNode* node) -> bool {
+                // Note that we should read the extension to verify that it matches the incoming
+                // actual_vecs, but also to silence "unread unbound parameter" exceptions.
+                auto ext = node->getExtension("core_extensions");
+                if (!ext) {
+                    return false;
+                }
+
+                auto ps = ext->getParameters();
+                if (!ps->hasParameter("enabled_units_")) {
+                    return false;
+                }
+
+                auto& p = ps->getParameterAs<NestedVector>("enabled_units_");
+                if (p.getValue() != actual_vecs) {
+                    return false;
+                }
+
+                static NestedVector expected_vecs = {
+                    {
+                        {"int"},
+                        {"int", "div"},
+                        {"int", "mul"},
+                        {"int", "mul", "i2f", "cmov"}
+                    }
+                };
+
+                return p.getValue() == expected_vecs;
+            }, "Invalid enabled units in 'core_extensions' (nested vector param)");
         }
 
         // User-specified extension class

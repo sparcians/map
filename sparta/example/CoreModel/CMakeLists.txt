@@ -149,6 +149,7 @@ sparta_named_test(sparta_core_example_arch_report_simple sparta_core_example -i 
 sparta_named_test(sparta_core_example_arch_report_default sparta_core_example -i 10k --report top arch_report.yaml 1)
 sparta_named_test(sparta_core_example_override_extensions sparta_core_example -i 10k --extension-files base_extensions.yaml override_extensions.yaml post_create_extensions.yaml --num-cores 2 -p top.extension.testing.expected_extensions expected_extensions.yaml)
 sparta_expect_failure_test(sparta_core_example_override_extensions_neg_test sparta_core_example -i 10k --extension-files base_extensions.yaml override_extensions.yaml --num-cores 2 -p) # read no extensions
+sparta_named_test(sparta_core_example_3d_nested_extension_params sparta_core_example --no-run --extension-file nested_vecs.yaml --write-final-config final.yaml)
 
 if(USING_SIMDB)
 sparta_named_test(sparta_core_example_simdb_global_file sparta_core_example --no-run --simdb-apps foo.db simdb-reports --simdb-apps bar.db cherry-pick-fast-checkpointer --simdb-file test.db)

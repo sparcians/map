@@ -1,0 +1,11 @@
+top.cpu.core*.extension.core_extensions:
+  enabled_units_:
+  [
+    [
+      ["int"],
+      ["int", "div"],
+      ["int", "mul"],
+      ["int", "mul", "i2f", "cmov"]
+    ]
+  ]
+
