@@ -405,7 +405,9 @@ void Simulation::configure(const int argc,
     argc_ = argc;
     argv_ = argv;
 
-    sim_config_->extension_mgr.setRoot(getRoot());
+    if (!getExtensionManager(false)) {
+        setTreeNodeExtensionManager_(&sim_config_->extension_mgr);
+    }
 
     ReportDescVec expanded_descriptors;
     for (const auto & rd : sim_config_->reports) {
@@ -632,7 +634,7 @@ void Simulation::buildTree()
     }
 
     report_repository_->postBuildTree();
-    if (auto mgr = getExtensionManager()) {
+    if (auto mgr = getExtensionManager(false)) {
         mgr->postBuildTree();
     }
 }
@@ -715,9 +717,16 @@ void Simulation::finalizeTree()
         checkAllVirtualParamsRead_(sim_config_->getUnboundParameterTree());
 
         // Ensure that all unbound extension parameters were consumed
-        ParameterTree unread_exts;
-        getExtensionManager()->getUnreadExtensionParams(unread_exts);
-        checkAllVirtualParamsRead_(unread_exts);
+        if (auto mgr = getExtensionManager(false)) {
+            ParameterTree unread_exts;
+            mgr->getUnreadExtensionParams(unread_exts);
+            checkAllVirtualParamsRead_(unread_exts);
+
+            // Let the extension manager throw/warn if there were any extensions given
+            // in any input YAML file, but the extension was never created.
+            auto suppress_exceptions = sim_config_->suppress_unread_parameter_warnings;
+            mgr->checkAllYamlExtensionsCreated(suppress_exceptions);
+        }
     }
 
     // Check ports and such
@@ -1221,6 +1230,7 @@ void Simulation::addTreeNodeExtensionFactory_(const std::string & extension_name
 void Simulation::setTreeNodeExtensionManager_(TreeNodeExtensionManager* mgr)
 {
     mgr->setRoot(getRoot());
+    getRoot()->setExtensionManager(mgr);
 }
 
 bool Simulation::dumpDebugContent_(std::string& debug_filename,
@@ -1836,13 +1846,6 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
     std::vector<const ParameterTree::Node*> unread_nodes;
     pt.getUnreadValueNodes(&unread_nodes);
 
-    // Sort in alphabetical order
-    std::sort(unread_nodes.begin(), unread_nodes.end(),
-              [](const ParameterTree::Node* node1, const ParameterTree::Node* node2)
-    {
-        return node1->getPath() < node2->getPath();
-    });
-
     if(unread_nodes.size() > 0){
         uint32_t errors = 0;
         std::stringstream err_list;
@@ -1863,52 +1866,34 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
                 }
             }
 
-            std::string cerr_header = "unread unbound parameter: ";
-            std::string cerr_header_optional = "unread optional unbound parameter: ";
             if(!ok){
                 // See if this is an optional extension which does not have to be instantiated,
                 // in other words these parameters are okay to be left unread.
                 auto parent = node->getParent();
-                if(parent && parent->getName() == "extension"){
-                    cerr_header = "extension never created: ";
-                    cerr_header_optional = "extension never created: ";
-                }else{
-                    auto grandparent = parent ? parent->getParent() : nullptr;
-                    if(grandparent && grandparent->getName() == "extension"){
-                        if(auto optional = parent->getChild("optional")){
-                            auto value = optional->getValue();
-                            if(value == "true"){
-                                ok = true;
-                            }else if(value != "false"){
-                                throw SpartaException("The 'optional' value must be 'true' or 'false', not '")
-                                    << value << "'.";
-                            }
+                auto grandparent = parent ? parent->getParent() : nullptr;
+                if(grandparent && grandparent->getName() == "extension"){
+                    if(auto optional = parent->getChild("optional")){
+                        auto value = optional->getValue();
+                        if(value == "true"){
+                            ok = true;
+                        }else if(value != "false"){
+                            throw SpartaException("The 'optional' value must be 'true' or 'false', not '")
+                                << value << "'.";
                         }
                     }
                 }
             }
 
             if(!ok){
-                // Do not print "Path exists in tree up to..." for unread extension parameters.
-                // These paths are never found in the device tree.
-                auto print_path_exists = path.find(".extension.") == std::string::npos;
                 if(node->isRequired()){
                     errors++;
-                    err_list << "    ERROR: " << cerr_header << " \"" << path << "\" from: \""
-                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\".";
-                    if(print_path_exists){
-                        err_list << " Path exists in tree up to: \""
-                                 << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"";
-                    }
-                    err_list << std::endl;
+                    err_list << "    ERROR: unread unbound parameter: \"" << path << "\" from: \""
+                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\". Path exists in tree up to: \""
+                              << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"" << std::endl;
                 }else if(!sim_config_->suppress_unread_parameter_warnings) {
-                    std::cerr << "    NOTE: " << cerr_header_optional << " \"" << path << "\" from: \""
-                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\".";
-                    if(print_path_exists){
-                        err_list << " Path exists in tree up to: \""
-                                 << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"";
-                    }
-                    err_list << std::endl;
+                    std::cerr << "    NOTE: unread optional unbound parameter: \"" << path << "\" from: \""
+                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\". Path exists in tree up to: \""
+                              << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"" << std::endl;
                 }
             }
         }

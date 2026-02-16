@@ -311,6 +311,14 @@ public:
      */
     void getUnreadExtensionParams(ParameterTree & unread_ptree);
 
+    /*!
+     * \brief Throw or warn if there were any extensions provided
+     * in the YAML input files, but those extensions were never
+     * created.
+     * \note Must be called after the tree is finalized.
+     */
+    void checkAllYamlExtensionsCreated(bool suppress_exceptions = false);
+
 private:
 
     /*!

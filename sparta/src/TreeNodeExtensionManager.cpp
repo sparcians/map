@@ -97,7 +97,6 @@ TreeNodeExtensionManager::TreeNodeExtensionManager()
 void TreeNodeExtensionManager::setRoot(RootTreeNode* root)
 {
     sparta_assert(root_ == nullptr || root_ == root);
-    root->setExtensionManager(this);
     root_ = root;
 }
 
@@ -751,6 +750,166 @@ void TreeNodeExtensionManager::getUnreadExtensionParams(
 
         return true; // keep going
     });
+}
+
+void TreeNodeExtensionManager::checkAllYamlExtensionsCreated(
+    bool suppress_exceptions)
+{
+    sparta_assert(notNull(root_)->getPhase() == PhasedObject::TREE_FINALIZED);
+
+    // First walk through the extensions found in the wildcard config ptree.
+    // This gives us a chance to throw/warn a more concise message:
+    //
+    //   ERROR/NOTE: top.cpu.core*.lsu never instantiated extension "foobar"
+    //
+    // Instead of this (assume two cores):
+    //
+    //   ERROR/NOTE: top.cpu.core0.lsu never instantiated extension "foobar"
+    //   ERROR/NOTE: top.cpu.core1.lsu never instantiated extension "foobar"
+    std::vector<std::string> err_list;
+
+    // Keep track of errors already added to the error list. The key is "<loc>-<ext_name>".
+    std::unordered_set<std::string> handled_err_keys;
+
+    auto get_error = [](const std::string & loc, const std::string & ext_name)
+    {
+        std::ostringstream err;
+        err << loc << " never instantiated extension \"" << ext_name << "\"";
+        return err.str();
+    };
+
+    auto extension_optional = [this](const std::string & loc, const std::string & ext_name)
+    {
+        auto check_optional = [&](const ParameterTree & ptree) -> utils::ValidValue<bool>
+        {
+            utils::ValidValue<bool> is_optional;
+
+            auto ext_root_node = ptree.tryGet(loc, false /*not a leaf*/);
+            if (ext_root_node) {
+                auto path = ext_root_node->getPath() + ".extension." + ext_name + ".optional";
+                ptree.visitNodes([&](const ParameterTree::Node* node) {
+                    if (node->getPath() == path) {
+                        auto value = node->peekValue();
+                        if (value == "true") {
+                            is_optional = true;
+                        } else if (value == "false") {
+                            is_optional = false;
+                        } else {
+                            throw SpartaException("The 'optional' value must be 'true' or 'false', not '")
+                                << value << "'.";
+                        }
+                        return false; // stop visiting nodes; we have our answer
+                    }
+                    return true; // keep going
+                });
+            }
+
+            return is_optional;
+        };
+
+        auto optional_from_wildcard = check_optional(*wildcard_config_ptree_);
+        auto optional_from_concrete = check_optional(*concrete_config_ptree_);
+
+        if (optional_from_wildcard.isValid() && optional_from_concrete.isValid()) {
+            // Defer to the concrete extension config. It is considered an override.
+            return optional_from_concrete.getValue();
+        } else if (optional_from_wildcard.isValid()) {
+            return optional_from_wildcard.getValue();
+        } else if (optional_from_concrete.isValid()) {
+            return optional_from_concrete.getValue();
+        } else {
+            return false;
+        }
+    };
+
+    std::vector<const ParameterTree::Node*> wildcard_ext_nodes;
+    wildcard_config_ptree_->getRoot()->recursFindPTreeNodesNamed("extension", wildcard_ext_nodes);
+    for (auto node : wildcard_ext_nodes) {
+        auto loc_pattern = notNull(node->getParent())->getPath();
+        std::vector<TreeNode*> matching_tns;
+        notNull(root_)->getSearchScope()->findChildren(loc_pattern, matching_tns);
+
+        for (auto tn : matching_tns) {
+            auto loc = tn->getLocation();
+            auto config_ext_names = getAllConfigExtensionNames(loc);
+            auto instantiated_ext_names = getAllInstantiatedExtensionNames(loc);
+
+            for (const auto & cfg_ext_name : config_ext_names) {
+                bool is_error = false;
+                // Not instantiated?
+                if (instantiated_ext_names.count(cfg_ext_name) == 0) {
+                    // No error if extension is optional.
+                    is_error = !extension_optional(loc, cfg_ext_name);
+                }
+
+                if (is_error) {
+                    auto err = get_error(loc, cfg_ext_name);
+                    err_list.push_back(err);
+                    handled_err_keys.insert(loc + "-" + cfg_ext_name);
+                }
+            }
+        }
+    }
+
+    // Now go through the concrete extension ptree and look for more
+    // uninstantiated extensions. The YAML could have been something
+    // like this:
+    //
+    //   top.cpu.core*.lsu.extension.foobar
+    //   top.cpu.core0.lsu.extension.fizbuz
+    //
+    // And we haven't checked the "fizbuz" extension creation yet
+    // since that path has no wildcards, i.e. it would not have
+    // been in the wildcard extension ptree at all.
+    std::vector<const ParameterTree::Node*> concrete_ext_nodes;
+    concrete_config_ptree_->getRoot()->recursFindPTreeNodesNamed("extension", concrete_ext_nodes);
+    for (auto node : concrete_ext_nodes) {
+        auto loc = notNull(node->getParent())->getPath();
+        auto config_ext_names = getAllConfigExtensionNames(loc);
+        auto instantiated_ext_names = getAllInstantiatedExtensionNames(loc);
+
+        for (const auto & cfg_ext_name : config_ext_names) {
+            bool is_error = false;
+            // Not instantiated?
+            if (instantiated_ext_names.count(cfg_ext_name) == 0) {
+                // No error if extension is optional.
+                is_error = !extension_optional(loc, cfg_ext_name);
+            }
+
+            if (is_error) {
+                // Don't accidentally include identical errors/warnings in the
+                // event that the YAML files were:
+                //
+                //   top.cpu.core*.lsu.extension.foobar        (goes to wildcard ptree)
+                //   top.cpu.core0.lsu.extension.foobar        (goes to concrete ptree)
+                //
+                // That is not an invalid use case. The wildcard version might be
+                // in a larger YAML file full of default extensions, and the user
+                // provided a smaller "override" extension YAML file with different
+                // extension parameters. Without checking "handled_err_keys", we would
+                // issue redundant errors/warnings.
+                if (handled_err_keys.insert(loc + "-" + cfg_ext_name).second) {
+                    auto err = get_error(loc, cfg_ext_name);
+                    err_list.push_back(err);
+                }
+            }
+        }
+    }
+
+    if (!err_list.empty()) {
+        std::ostringstream err_oss;
+        for (const auto & err_msg : err_list) {
+            err_oss << "    ";
+            err_oss << (suppress_exceptions ? "NOTE: " : "ERROR: ");
+            err_oss << err_msg << "\n"; 
+        }
+
+        if (suppress_exceptions) {
+            std::cerr << err_oss.str() << std::endl;
+        } else {
+            throw SpartaException(err_oss.str());
+        }
+    }
 }
 
 bool TreeNodeExtensionManager::inYamlConfig_(
