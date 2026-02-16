@@ -1866,11 +1866,11 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
                 }
             }
 
+            auto parent = node->getParent();
+            auto grandparent = parent ? parent->getParent() : nullptr;
             if(!ok){
                 // See if this is an optional extension which does not have to be instantiated,
                 // in other words these parameters are okay to be left unread.
-                auto parent = node->getParent();
-                auto grandparent = parent ? parent->getParent() : nullptr;
                 if(grandparent && grandparent->getName() == "extension"){
                     if(auto optional = parent->getChild("optional")){
                         auto value = optional->getValue();
@@ -1884,16 +1884,24 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
                 }
             }
 
+            // Do not print "Path exists in tree up to" for extensions parameters. These paths
+            // will never exist in the device tree.
+            std::string path_exists_msg;
+            if(!grandparent || grandparent->getName() != "extension"){
+                path_exists_msg = " Path exists in tree up to: \""
+                    + root_.getSearchScope()->getDeepestMatchingPath(path) + "\"";
+            }
+
             if(!ok){
                 if(node->isRequired()){
                     errors++;
                     err_list << "    ERROR: unread unbound parameter: \"" << path << "\" from: \""
-                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\". Path exists in tree up to: \""
-                              << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"" << std::endl;
+                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\"."
+                              << path_exists_msg << std::endl;
                 }else if(!sim_config_->suppress_unread_parameter_warnings) {
-                    std::cerr << "    NOTE: unread optional unbound parameter: \"" << path << "\" from: \""
-                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\". Path exists in tree up to: \""
-                              << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"" << std::endl;
+                    std::cerr << "    ERROR: unread unbound parameter: \"" << path << "\" from: \""
+                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\"."
+                              << path_exists_msg << std::endl;
                 }
             }
         }
