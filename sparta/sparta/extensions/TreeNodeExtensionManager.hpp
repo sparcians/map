@@ -438,6 +438,38 @@ private:
      * \brief Simulation's RootTreeNode.
      */
     RootTreeNode* root_ = nullptr;
+
+    /*!
+     * \brief Keep track of the original extension param order
+     * as seen in the input YAML files.
+     */
+    class OrderedParams
+    {
+    public:
+        void insert(const std::string & param_name) {
+            auto it = std::find(ordered_params_.begin(),
+                                ordered_params_.end(),
+                                param_name);
+            if (it == ordered_params_.end()) {
+                ordered_params_.push_back(param_name);
+            }
+        }
+
+        size_t getPosition(const std::string & param_name) const {
+            auto it = std::find(ordered_params_.begin(),
+                                ordered_params_.end(),
+                                param_name);
+            if (it == ordered_params_.end()) {
+                throw SpartaException("Param name not found: ") << param_name;
+            }
+            return std::distance(ordered_params_.begin(), it);
+        }
+
+    private:
+        std::vector<std::string> ordered_params_;
+    };
+
+    std::map<std::string, OrderedParams> ordered_ext_params_;
 };
 
 template <typename ExtensionT>

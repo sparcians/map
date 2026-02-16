@@ -6,48 +6,67 @@
 
 #include <boost/algorithm/string.hpp>
 
-struct ScopedPTreeDumper
+namespace
 {
-public:
-    ScopedPTreeDumper(std::shared_ptr<sparta::ParameterTree> wildcard_config_ptree,
-                      std::shared_ptr<sparta::ParameterTree> concrete_config_ptree,
-                      std::shared_ptr<sparta::ParameterTree> write_final_config_ptree,
-                      const std::string & func)
-        : wildcard_config_ptree_(wildcard_config_ptree)
-        , concrete_config_ptree_(concrete_config_ptree)
-        , write_final_config_ptree_(write_final_config_ptree)
-        , func_(func)
+    class ExtensionParam
     {
-        printPTrees_("Entering");
-    }
+    private:
+        std::string name_;
+        std::string value_;
+        std::string origin_;
+        size_t param_idx_ = 0;
 
-    ~ScopedPTreeDumper()
+    public:
+        ExtensionParam(const std::string & name,
+                       const std::string & value,
+                       const std::string & origin,
+                       size_t param_idx)
+            : name_(name)
+            , value_(value)
+            , origin_(origin)
+            , param_idx_(param_idx)
+        {}
+
+        bool operator==(const ExtensionParam & other) const {
+            // Don't compare origins
+            return name_ == other.name_ && value_ == other.value_;
+        }
+
+        bool operator<(const ExtensionParam & other) const {
+            return param_idx_ < other.param_idx_;
+        }
+
+        const std::string & getName() const { return name_; }
+
+        const std::string & getValue() const { return value_; }
+
+        const std::string & getOrigin() const { return origin_; }
+
+        size_t getParamIndex() const { return param_idx_; }
+    };
+
+    using ExtensionParams = std::set<ExtensionParam>;
+
+    using NamedExtensions = std::map<
+        std::string,           // extension name
+        ExtensionParams
+    >;
+
+    using PTreeExtensions = std::map<
+        std::string,           // ptree node path
+        NamedExtensions
+    >;
+}
+
+namespace std
+{
+    template <> struct hash<ExtensionParam>
     {
-        printPTrees_("Exiting");
-    }
-
-private:
-    void printPTrees_(const std::string & entering_exiting) {
-        std::cout << "\n[debug] " << entering_exiting << " function: " << func_ << std::endl;
-
-        std::cout << "wildcard_config_ptree:\n";
-        wildcard_config_ptree_->recursePrint(std::cout);
-
-        std::cout << "concrete_config_ptree:\n";
-        concrete_config_ptree_->recursePrint(std::cout);
-
-        std::cout << "write_final_config_ptree:\n";
-        write_final_config_ptree_->recursePrint(std::cout);
-    }
-
-    std::shared_ptr<sparta::ParameterTree> wildcard_config_ptree_;
-    std::shared_ptr<sparta::ParameterTree> concrete_config_ptree_;
-    std::shared_ptr<sparta::ParameterTree> write_final_config_ptree_;
-    std::string func_;
-};
-
-#define DEBUG_THIS_FUNCTION \
-    [[maybe_unused]] ScopedPTreeDumper dumper(wildcard_config_ptree_, concrete_config_ptree_, write_final_config_ptree_, __FUNCTION__);
+        size_t operator()(const ExtensionParam & ext_param) const {
+            return ext_param.getParamIndex();
+        }
+    };
+}
 
 namespace sparta
 {
@@ -171,11 +190,13 @@ ExtensionsBase * TreeNodeExtensionManager::createExtension(
     ps->getChildrenOfType<ParameterBase>(post_create_params);
     auto ext_path = loc + ".extension." + extension_name;
 
+    auto & ordered_params = ordered_ext_params_[extension_name];
     if (!post_create_params.empty()) {
         auto concrete_post_create_node = concrete_config_ptree_->create(ext_path);
         auto wildcard_post_create_node = wildcard_config_ptree_->tryGet(ext_path, false /*not a leaf*/);
         for (auto p : post_create_params) {
             auto p_name = p->getName();
+            ordered_params.insert(p_name);
             std::string p_value;
 
             if (concrete_post_create_node) {
@@ -317,6 +338,10 @@ void TreeNodeExtensionManager::addExtensions(
             return true; // keep going
         }
 
+        auto ext_name = parent->getName();
+        auto & ordered_params = ordered_ext_params_[ext_name];
+        ordered_params.insert(leaf->getName());
+
         auto path = leaf->getPath();
         auto& dst_ptree = TreeNode::hasWildcardCharacters(path) ?
             *wildcard_config_ptree_ : *concrete_config_ptree_;
@@ -440,31 +465,7 @@ const ParameterTree * TreeNodeExtensionManager::getFinalConfigPTree()
     sparta_assert(notNull(root_)->getPhase() == PhasedObject::TREE_FINALIZED);
     write_final_config_ptree_->clear();
 
-    struct ExtensionParam {
-        std::string p_value;   // parameter value
-        std::string p_origin;  // parameter origin
-        bool operator==(const ExtensionParam & other) const {
-            // Only compare values
-            return p_value == other.p_value;
-        }
-    };
-
-    using NamedExtensionParams = std::map<
-        std::string,           // parameter name
-        ExtensionParam         // parameter value/origin
-    >;
-
-    using NamedExtensions = std::map<
-        std::string,           // extension name
-        NamedExtensionParams
-    >;
-
-    using PTreeExtensions = std::map<
-        std::string,           // ptree node path
-        NamedExtensions        // extensions by name
-    >;
-
-    auto extract_all_extensions_info = [](const ParameterTree & ptree, PTreeExtensions & ptree_extensions)
+    auto extract_all_extensions_info = [this](const ParameterTree & ptree, PTreeExtensions & ptree_extensions)
     {
         std::vector<const ParameterTree::Node*> extension_root_nodes;
         ptree.getRoot()->recursFindPTreeNodesNamed("extension", extension_root_nodes);
@@ -474,12 +475,14 @@ const ParameterTree * TreeNodeExtensionManager::getFinalConfigPTree()
             NamedExtensions & extensions_at_this_path = ptree_extensions[tn_loc];
             for (auto ext_node : ext_root_node->getChildren()) {
                 const auto & ext_name = ext_node->getName();
-                NamedExtensionParams & extension_params_at_this_extension = extensions_at_this_path[ext_name];
+                ExtensionParams & extension_params_at_this_extension = extensions_at_this_path[ext_name];
+                const auto & ordered_params = ordered_ext_params_[ext_name];
                 for (auto param_node : ext_node->getChildren()) {
                     const auto & p_name = param_node->getName();
                     const auto & p_value = param_node->peekValue();
                     const auto & p_origin = param_node->getOrigin();
-                    extension_params_at_this_extension[p_name] = ExtensionParam{p_value, p_origin};
+                    const auto param_pos = ordered_params.getPosition(p_name);
+                    extension_params_at_this_extension.emplace(p_name, p_value, p_origin, param_pos);
                 }
             }
         }
@@ -509,12 +512,14 @@ const ParameterTree * TreeNodeExtensionManager::getFinalConfigPTree()
         }
 
         if (use_wildcard_path) {
-            for (const auto & [ext_name, /*NamedExtensionParams*/wildcard_ext_params] : wildcard_ext_infos) {
+            for (const auto & [ext_name, /*ExtensionParams*/wildcard_ext_params] : wildcard_ext_infos) {
                 auto wildcard_ext_node = write_final_config_ptree_->create(wildcard_loc + ".extension." + ext_name);
-                for (const auto & [p_name, p_val_and_origin] : wildcard_ext_params) {
+                for (const auto & ext_param : wildcard_ext_params) {
+                    const auto & p_name = ext_param.getName();
+                    const auto & p_value = ext_param.getValue();
+                    const auto & p_origin = ext_param.getOrigin();
+
                     auto p = wildcard_ext_node->create(p_name, false /*unrequired*/);
-                    const auto & p_value = p_val_and_origin.p_value;
-                    const auto & p_origin = p_val_and_origin.p_origin;
                     p->setValue(p_value, false /*unrequired*/, p_origin);
                     p->setUserData("user_visible", true);
                 }
@@ -522,7 +527,7 @@ const ParameterTree * TreeNodeExtensionManager::getFinalConfigPTree()
             continue;
         }
 
-        for (const auto & [ext_name, /*NamedExtensionParams*/wildcard_ext_params] : wildcard_ext_infos) {
+        for (const auto & [ext_name, /*ExtensionParams*/wildcard_ext_params] : wildcard_ext_infos) {
             // See if this extension has identical parameter values in all
             // concrete extensions. If so, we will add the extension to the
             // final config ptree using the wildcard location to save YAML
@@ -533,12 +538,14 @@ const ParameterTree * TreeNodeExtensionManager::getFinalConfigPTree()
                 const auto & concrete_ext_node =
                     *notNull(concrete_config_ptree_->tryGet(concrete_ext_path, false /*not a leaf*/));
 
-                NamedExtensionParams concrete_ext_params;
+                ExtensionParams concrete_ext_params;
+                const auto & ordered_params = ordered_ext_params_[ext_name];
                 for (auto concrete_param_node : concrete_ext_node.getChildren()) {
                     const auto & p_name = concrete_param_node->getName();
                     const auto & p_value = concrete_param_node->peekValue();
                     const auto & p_origin = concrete_param_node->getOrigin();
-                    concrete_ext_params[p_name] = ExtensionParam{p_value, p_origin};
+                    const auto param_pos = ordered_params.getPosition(p_name);
+                    concrete_ext_params.emplace(p_name, p_value, p_origin, param_pos);
                 }
 
                 if (concrete_ext_params != wildcard_ext_params) {
@@ -550,10 +557,12 @@ const ParameterTree * TreeNodeExtensionManager::getFinalConfigPTree()
             if (use_wildcard_path) {
                 auto wildcard_ext_path = wildcard_loc + ".extension." + ext_name;
                 auto wildcard_ext_node = write_final_config_ptree_->create(wildcard_ext_path);
-                for (const auto & [p_name, p_val_and_origin] : wildcard_ext_params) {
+                for (const auto & ext_param : wildcard_ext_params) {
+                    const auto & p_name = ext_param.getName();
+                    const auto & p_value = ext_param.getValue();
+                    const auto & p_origin = ext_param.getOrigin();
+
                     auto p = wildcard_ext_node->create(p_name, false /*unrequired*/);
-                    const auto & p_value = p_val_and_origin.p_value;
-                    const auto & p_origin = p_val_and_origin.p_origin;
                     p->setValue(p_value, false /*unrequired*/, p_origin);
                     p->setUserData("user_visible", true);
                 }
@@ -565,25 +574,29 @@ const ParameterTree * TreeNodeExtensionManager::getFinalConfigPTree()
                     const auto & wildcard_ext_node =
                         *notNull(wildcard_config_ptree_->tryGet(concrete_ext_path, false /*not a leaf*/));
 
-                    NamedExtensionParams concrete_ext_params;
+                    ExtensionParams concrete_ext_params;
+                    const auto & ordered_params = ordered_ext_params_[ext_name];
                     for (auto wildcard_ext_param : wildcard_ext_node.getChildren()) {
                         const auto & p_name = wildcard_ext_param->getName();
+                        const auto param_pos = ordered_params.getPosition(p_name);
                         if (auto concrete_ext_param = concrete_ext_node.getChild(p_name)) {
                             const auto & p_value = concrete_ext_param->peekValue();
                             const auto & p_origin = concrete_ext_param->getOrigin();
-                            concrete_ext_params[p_name] = ExtensionParam{p_value, p_origin};
+                            concrete_ext_params.emplace(p_name, p_value, p_origin, param_pos);
                         } else {
                             const auto & p_value = wildcard_ext_param->peekValue();
                             const auto & p_origin = wildcard_ext_param->getOrigin();
-                            concrete_ext_params[p_name] = ExtensionParam{p_value, p_origin};
+                            concrete_ext_params.emplace(p_name, p_value, p_origin, param_pos);
                         }
                     }
 
                     auto final_ext_node = write_final_config_ptree_->create(concrete_ext_path, false /*unrequired*/);
-                    for (const auto & [p_name, p_val_and_origin] : concrete_ext_params) {
+                    for (const auto & ext_param : concrete_ext_params) {
+                        const auto & p_name = ext_param.getName();
+                        const auto & p_value = ext_param.getValue();
+                        const auto & p_origin = ext_param.getOrigin();
+
                         auto p = final_ext_node->create(p_name, false /*unrequired*/);
-                        const auto & p_value = p_val_and_origin.p_value;
-                        const auto & p_origin = p_val_and_origin.p_origin;
                         p->setValue(p_value, false /*unrequired*/, p_origin);
                         p->setUserData("user_visible", true);
                     }
