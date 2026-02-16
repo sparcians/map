@@ -259,6 +259,130 @@ void ExampleSimulator::buildTree_()
         }
     }
 
+    // Validate tree node extensions during configureTree()
+    for(uint32_t i = 0; i < num_cores_; ++i){
+        const std::string core_loc = "cpu.core" + std::to_string(i);
+        const std::string dispatch_loc = core_loc + ".dispatch";
+        const std::string alu0_loc = core_loc + ".alu0";
+        const std::string alu1_loc = core_loc + ".alu1";
+        const std::string fpu_loc = core_loc + ".fpu";
+
+        // user_data.when_ (dispatch)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(dispatch_loc), "when_", "user_data")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "buildTree_";
+            }, "Parameter 'when_' should be 'buildTree_'");
+        }
+
+        // user_data.why_ (dispatch)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(dispatch_loc), "why_", "user_data")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "checkAvailability";
+            }, "Parameter 'why_' should be 'checkAvailability'");
+        }
+
+        // square.edges_ (dispatch)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(dispatch_loc), "edges_", "square")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "4";
+            }, "Parameter 'edges_' should be '4'");
+        }
+
+        // difficulty.color_ (alu0)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu0_loc), "color_", "difficulty")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "black";
+            }, "Parameter 'color_' should be 'black'");
+        }
+
+        // difficulty.shape_ (alu0)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu0_loc), "shape_", "difficulty")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "diamond";
+            }, "Parameter 'shape_' should be 'diamond'");
+        }
+
+        // difficulty.color_ (alu1)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu1_loc), "color_", "difficulty")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "green";
+            }, "Parameter 'color_' should be 'green'");
+        }
+
+        // difficulty.shape_ (alu1)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu1_loc), "shape_", "difficulty")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "circle";
+            }, "Parameter 'shape_' should be 'circle'");
+        }
+
+        // circle.color_ (fpu)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(fpu_loc), "color_", "circle")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "green";
+            }, "Parameter 'color_' should be 'green'");
+        }
+
+        // circle.shape_ (fpu)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(fpu_loc), "shape_", "circle")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "round";
+            }, "Parameter 'shape_' should be 'round'");
+        }
+
+        // circle.degrees_ (fpu)
+        if (auto prm = getExtensionParameter_<double>(getRoot()->getChild(fpu_loc), "degrees_", "circle")) {
+            prm->addDependentValidationCallback([](double & val, const sparta::TreeNode*) -> bool {
+                return val == 360.0;
+            }, "Parameter 'degrees_' should be 360.0");
+        }
+
+        // circle.edges_ (fpu)
+        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(fpu_loc), "edges_", "circle")) {
+            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
+                return val == "0";
+            }, "Parameter 'edges_' should be '0'");
+        }
+
+        // core_extensions.enabled_units_ (core0)
+        auto core_tn = getRoot()->getChild(core_loc);
+        using NestedVector = typename CoreExtensions::EnabledUnits;
+        if (auto prm = getExtensionParameter_<NestedVector>(core_tn, "enabled_units_", "core_extensions")) {
+            prm->addDependentValidationCallback([](NestedVector & actual_vecs, const sparta::TreeNode* node) -> bool {
+                // Note that we should read the extension to verify that it matches the incoming
+                // actual_vecs, but also to silence "unread unbound parameter" exceptions.
+                auto ext = node->getExtension("core_extensions");
+                if (!ext) {
+                    return false;
+                }
+
+                auto ps = ext->getParameters();
+                if (!ps->hasParameter("enabled_units_")) {
+                    return false;
+                }
+
+                auto& p = ps->getParameterAs<NestedVector>("enabled_units_");
+                if (p.getValue() != actual_vecs) {
+                    return false;
+                }
+
+                static NestedVector expected_vecs = {
+                    {
+                        {"int"},
+                        {"int", "div"},
+                        {"int", "mul"},
+                        {"int", "mul", "i2f", "cmov"}
+                    }
+                };
+
+                return p.getValue() == expected_vecs;
+            }, "Invalid enabled units in 'core_extensions' (nested vector param)");
+        }
+
+        // User-specified extension class
+        getExtension_<CircleExtensions>(getRoot()->getChild(fpu_loc), "circle")->doSomethingElse();
+    }
+
     // Attach two tree nodes to get the following:
     //   top
     //     core0
@@ -494,130 +618,6 @@ ExtensionT* ExampleSimulator::getExtension_(
 
 void ExampleSimulator::validateTreeNodeExtensions_()
 {
-    // Validate tree node extensions during configureTree()
-    for(uint32_t i = 0; i < num_cores_; ++i){
-        const std::string core_loc = "cpu.core" + std::to_string(i);
-        const std::string dispatch_loc = core_loc + ".dispatch";
-        const std::string alu0_loc = core_loc + ".alu0";
-        const std::string alu1_loc = core_loc + ".alu1";
-        const std::string fpu_loc = core_loc + ".fpu";
-
-        // user_data.when_ (dispatch)
-        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(dispatch_loc), "when_", "user_data")) {
-            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
-                return val == "buildTree_";
-            }, "Parameter 'when_' should be 'buildTree_'");
-        }
-
-        // user_data.why_ (dispatch)
-        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(dispatch_loc), "why_", "user_data")) {
-            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
-                return val == "checkAvailability";
-            }, "Parameter 'why_' should be 'checkAvailability'");
-        }
-
-        // square.edges_ (dispatch)
-        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(dispatch_loc), "edges_", "square")) {
-            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
-                return val == "4";
-            }, "Parameter 'edges_' should be '4'");
-        }
-
-        // difficulty.color_ (alu0)
-        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu0_loc), "color_", "difficulty")) {
-            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
-                return val == "black";
-            }, "Parameter 'color_' should be 'black'");
-        }
-
-        // difficulty.shape_ (alu0)
-        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu0_loc), "shape_", "difficulty")) {
-            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
-                return val == "diamond";
-            }, "Parameter 'shape_' should be 'diamond'");
-        }
-
-        // difficulty.color_ (alu1)
-        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu1_loc), "color_", "difficulty")) {
-            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
-                return val == "green";
-            }, "Parameter 'color_' should be 'green'");
-        }
-
-        // difficulty.shape_ (alu1)
-        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(alu1_loc), "shape_", "difficulty")) {
-            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
-                return val == "circle";
-            }, "Parameter 'shape_' should be 'circle'");
-        }
-
-        // circle.color_ (fpu)
-        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(fpu_loc), "color_", "circle")) {
-            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
-                return val == "green";
-            }, "Parameter 'color_' should be 'green'");
-        }
-
-        // circle.shape_ (fpu)
-        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(fpu_loc), "shape_", "circle")) {
-            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
-                return val == "round";
-            }, "Parameter 'shape_' should be 'round'");
-        }
-
-        // circle.degrees_ (fpu)
-        if (auto prm = getExtensionParameter_<double>(getRoot()->getChild(fpu_loc), "degrees_", "circle")) {
-            prm->addDependentValidationCallback([](double & val, const sparta::TreeNode*) -> bool {
-                return val == 360.0;
-            }, "Parameter 'degrees_' should be 360.0");
-        }
-
-        // circle.edges_ (fpu)
-        if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(fpu_loc), "edges_", "circle")) {
-            prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
-                return val == "0";
-            }, "Parameter 'edges_' should be '0'");
-        }
-
-        // core_extensions.enabled_units_ (core0)
-        auto core_tn = getRoot()->getChild(core_loc);
-        using NestedVector = typename CoreExtensions::EnabledUnits;
-        if (auto prm = getExtensionParameter_<NestedVector>(core_tn, "enabled_units_", "core_extensions")) {
-            prm->addDependentValidationCallback([](NestedVector & actual_vecs, const sparta::TreeNode* node) -> bool {
-                // Note that we should read the extension to verify that it matches the incoming
-                // actual_vecs, but also to silence "unread unbound parameter" exceptions.
-                auto ext = node->getExtension("core_extensions");
-                if (!ext) {
-                    return false;
-                }
-
-                auto ps = ext->getParameters();
-                if (!ps->hasParameter("enabled_units_")) {
-                    return false;
-                }
-
-                auto& p = ps->getParameterAs<NestedVector>("enabled_units_");
-                if (p.getValue() != actual_vecs) {
-                    return false;
-                }
-
-                static NestedVector expected_vecs = {
-                    {
-                        {"int"},
-                        {"int", "div"},
-                        {"int", "mul"},
-                        {"int", "mul", "i2f", "cmov"}
-                    }
-                };
-
-                return p.getValue() == expected_vecs;
-            }, "Invalid enabled units in 'core_extensions' (nested vector param)");
-        }
-
-        // User-specified extension class
-        getExtension_<CircleExtensions>(getRoot()->getChild(fpu_loc), "circle")->doSomethingElse();
-    }
-
     // cat.name_
     if (auto prm = getExtensionParameter_<std::string>(
         getRoot()->getChild("cpu.core0.lsu"), "name_", "cat"))
