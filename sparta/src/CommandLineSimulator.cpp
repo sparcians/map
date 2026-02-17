@@ -2034,12 +2034,7 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
         sim_config_.reports.insert(sim_config_.reports.end(), descriptors.begin(), descriptors.end());
     }
 
-    const auto & config_ptree = sim_config_.getUnboundParameterTree();
-    const auto & arch_ptree = sim_config_.getArchUnboundParameterTree();
-
-    // Note that we pass in "false" for "not verbose" since verbose printouts
-    sim_config_.extension_mgr.addExtensions(config_ptree);
-    sim_config_.extension_mgr.addExtensions(arch_ptree);
+    sim_config_.copyTreeNodeExtensionsFromArchAndConfigPTrees();
 
     sim->setFeatureConfig(&feature_config_);
 

@@ -217,6 +217,13 @@ public:
         getReportFormatsWhoOmitStatsWithValueZero() const;
 
     /*!
+     * Look for any tree node extensions from the arch / config
+     * ParameterTree's, and merge those extensions into the extensions
+     * ParameterTree.
+     */
+    void copyTreeNodeExtensionsFromArchAndConfigPTrees();
+
+    /*!
      * Returns a ParameterTree containing an unbound set of parameter
      * values which can be read and later applied. Some of these
      * parameters will be applied to Parameter TreeNodes at some point

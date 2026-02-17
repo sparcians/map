@@ -211,5 +211,14 @@ namespace app {
         }
     }
 
+    //! Look for any tree node extensions from the arch / config
+    //! ParameterTree's, and merge those extensions into the extensions
+    //! ParameterTree.
+    void SimulationConfiguration::copyTreeNodeExtensionsFromArchAndConfigPTrees()
+    {
+        extension_mgr.addExtensions(getUnboundParameterTree());
+        extension_mgr.addExtensions(getArchUnboundParameterTree());
+    }
+
 } // namespace app
 } // namespace sparta
