@@ -27,7 +27,7 @@ std::pair<std::string, std::string> validateParam(const ParameterTree::Node* p)
 
             // Don't print a whole bunch of identical messages
             static std::set<std::string> msg_extensions;
-            const auto & extension_name = notNull(p->getParent())->peekValue();
+            const auto & extension_name = notNull(p->getParent())->getName();
             if (msg_extensions.insert(extension_name).second) {
                 std::cout << "Ignoring reserved keyword 'optional' in extensions YAML definition. "
                           << "This is not a parameter - it tells the simulation that this YAML does "
@@ -299,7 +299,6 @@ void TreeNodeExtensionManager::addExtensions(
     // But there is nothing wrong with users calling this api themselves; it just has to
     // be during or before buildTree().
     sparta_assert(root_ == nullptr || root_->getPhase() == PhasedObject::TREE_BUILDING);
-    sparta_assert(!hasExtensions());
 
     std::vector<const ParameterTree::Node*> ext_nodes;
     ptree.getRoot()->recursFindPTreeNodesNamed("extension", ext_nodes);

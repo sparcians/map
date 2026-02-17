@@ -196,7 +196,7 @@ public:
         ext->setParameters(std::make_unique<ParameterSet>(nullptr));
         ext->postCreate();
 
-        addExtension_(loc, ExtensionT::NAME, ext);
+        live_extensions_[loc][ExtensionT::NAME] = ext;
         return dynamic_cast<ExtensionT*>(ext.get());
     }
 
