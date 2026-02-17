@@ -634,9 +634,6 @@ void Simulation::buildTree()
     }
 
     report_repository_->postBuildTree();
-    if (auto mgr = getExtensionManager(false)) {
-        mgr->postBuildTree();
-    }
 }
 
 void Simulation::configureTree()
@@ -718,9 +715,7 @@ void Simulation::finalizeTree()
 
         // Ensure that all unbound extension parameters were consumed
         if (auto mgr = getExtensionManager(false)) {
-            ParameterTree unread_exts;
-            mgr->getUnreadExtensionParams(unread_exts);
-            checkAllVirtualParamsRead_(unread_exts);
+            checkAllVirtualParamsRead_(*mgr->getFinalConfigPTree());
 
             // Let the extension manager throw/warn if there were any extensions given
             // in any input YAML file, but the extension was never created.
@@ -1884,6 +1879,19 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
                 }
             }
 
+            // Check with the extensions manager to see if this unread parameter
+            // is due to an extension never being created. We issue different
+            // errors in that case.
+            if(auto mgr = getExtensionManager(false)){
+                if(!ok && grandparent && grandparent->getParent()){
+                    auto tn_loc = grandparent->getParent()->getPath();
+                    auto ext_name = parent->getName();
+                    if (!mgr->hasExtension(tn_loc, ext_name)){
+                        ok = true;
+                    }
+                }
+            }
+
             // Do not print "Path exists in tree up to" for extensions parameters. These paths
             // will never exist in the device tree.
             std::string path_exists_msg;
@@ -1899,7 +1907,7 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
                               << node->getOrigin() << "\". value: \"" << node->getValue() << "\"."
                               << path_exists_msg << std::endl;
                 }else if(!sim_config_->suppress_unread_parameter_warnings) {
-                    std::cerr << "    ERROR: unread unbound parameter: \"" << path << "\" from: \""
+                    std::cerr << "    NOTE: unread unbound parameter: \"" << path << "\" from: \""
                               << node->getOrigin() << "\". value: \"" << node->getValue() << "\"."
                               << path_exists_msg << std::endl;
                 }
@@ -1908,7 +1916,7 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
         if(errors > 0){
             SpartaException ex("");
             ex << "Found " << errors << " unread unbound parameters. These "
-                  "parameter were specified by a configuration file or the command line but do not "
+                  "parameters were specified by a configuration file or the command line but do not "
                   "correspond to any Parameter nodes in the device tree and were never directly "
                   "read from the unbound tree:\n";
             ex << err_list.str();

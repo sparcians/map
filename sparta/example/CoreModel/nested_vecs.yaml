@@ -1,5 +1,5 @@
 top.cpu.core*.extension.core_extensions:
-  enabled_units_:
+  enabled_units:
   [
     [
       ["int"],

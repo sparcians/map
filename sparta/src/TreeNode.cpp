@@ -2845,7 +2845,11 @@ template <typename T>
 typename std::enable_if<is_vector<T>::value && is_vector<typename T::value_type>::value, T>::type
 getParameterValueAsImpl(const std::string& param_val_str)
 {
-    // Only difference for vectors is that they are enclosed in [[]]
+    // Only difference for vectors is that they are enclosed in [[]] with the exception
+    // of empty vectors, where the string will be "[]"
+    if (param_val_str == "[]") {
+        return {};
+    }
     if (param_val_str.size() < 4 ||
         param_val_str.substr(0,2) != "[[" ||
         param_val_str.substr(param_val_str.size()-2,2) != "]]") {

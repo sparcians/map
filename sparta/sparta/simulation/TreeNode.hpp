@@ -2094,8 +2094,10 @@ namespace sparta
          */
         std::set<std::string> getAllInstantiatedExtensionNames() const
         {
-            auto ext_mgr = getExtensionManager_();
-            return ext_mgr->getAllInstantiatedExtensionNames(getLocation());
+            if (auto ext_mgr = getExtensionManager_(false)) {
+                return ext_mgr->getAllInstantiatedExtensionNames(getLocation());
+            }
+            return {};
         }
 
         /*!
@@ -2107,8 +2109,10 @@ namespace sparta
          */
         std::set<std::string> getAllConfigExtensionNames() const
         {
-            auto ext_mgr = getExtensionManager_();
-            return ext_mgr->getAllConfigExtensionNames(getLocation());
+            if (auto ext_mgr = getExtensionManager_(false)) {
+                return ext_mgr->getAllConfigExtensionNames(getLocation());
+            }
+            return {};
         }
 
         /*!
@@ -2117,16 +2121,20 @@ namespace sparta
          * on this node.
          */
         size_t getNumExtensions() const {
-            auto ext_mgr = getExtensionManager_();
-            return ext_mgr->getNumExtensions(getLocation());
+            if (auto ext_mgr = getExtensionManager_(false)) {
+                return ext_mgr->getNumExtensions(getLocation());
+            }
+            return 0;
         }
 
         /*!
          * \brief Get a map of extensions for this node.
          */
         std::map<std::string, const ExtensionsBase*> getAllExtensions() const {
-            auto ext_mgr = getExtensionManager_();
-            return ext_mgr->getAllExtensions(getLocation());
+            if (auto ext_mgr = getExtensionManager_(false)) {
+                return ext_mgr->getAllExtensions(getLocation());
+            }
+            return {};
         }
 
         ////////////////////////////////////////////////////////////////////////

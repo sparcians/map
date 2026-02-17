@@ -143,10 +143,12 @@ private:
     void postCreate() override {
         auto ps = getParameters();
         enabled_units_.reset(new sparta::Parameter<std::vector<std::vector<std::vector<std::string>>>>(
-            "enabled_units_", {}, "Enabled units to test nested vectors", ps));
+            "enabled_units", {}, "Enabled units to test nested vectors", ps));
+        fetch_type_.reset(new sparta::Parameter<std::string>("fetch_type", "dummy", "blah", ps));
     }
 
     std::unique_ptr<sparta::Parameter<EnabledUnits>> enabled_units_;
+    std::unique_ptr<sparta::Parameter<std::string>> fetch_type_;
 };
 
 double calculateAverageOfInternalCounters(
@@ -251,6 +253,12 @@ void ExampleSimulator::buildTree_()
     // Tell the factory to build the resources now
     cpu_factory->buildTree(getRoot());
 
+    if (auto ext = cpu_tn->getChild("core0")->getExtension("core_extensions", true)) {
+        auto ps = ext->getParameters();
+        auto & p = ps->getParameterAs<std::string>("fetch_type");
+        p.getValue();
+    }
+
     // Print the registered factories
     if(show_factories_){
         std::cout << "Registered factories: \n";
@@ -347,8 +355,12 @@ void ExampleSimulator::buildTree_()
         // core_extensions.enabled_units_ (core0)
         auto core_tn = getRoot()->getChild(core_loc);
         using NestedVector = typename CoreExtensions::EnabledUnits;
-        if (auto prm = getExtensionParameter_<NestedVector>(core_tn, "enabled_units_", "core_extensions")) {
+        if (auto prm = getExtensionParameter_<NestedVector>(core_tn, "enabled_units", "core_extensions")) {
             prm->addDependentValidationCallback([](NestedVector & actual_vecs, const sparta::TreeNode* node) -> bool {
+                if (actual_vecs.empty()) {
+                    return true;
+                }
+
                 // Note that we should read the extension to verify that it matches the incoming
                 // actual_vecs, but also to silence "unread unbound parameter" exceptions.
                 auto ext = node->getExtension("core_extensions");
@@ -357,11 +369,11 @@ void ExampleSimulator::buildTree_()
                 }
 
                 auto ps = ext->getParameters();
-                if (!ps->hasParameter("enabled_units_")) {
+                if (!ps->hasParameter("enabled_units")) {
                     return false;
                 }
 
-                auto& p = ps->getParameterAs<NestedVector>("enabled_units_");
+                auto& p = ps->getParameterAs<NestedVector>("enabled_units");
                 if (p.getValue() != actual_vecs) {
                     return false;
                 }

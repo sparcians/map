@@ -294,24 +294,6 @@ public:
     const ParameterTree * getFinalConfigPTree();
 
     /*!
-     * \brief Expand all wildcards seen in the input YAML files.
-     * Called right after buildTree() is finished.
-     */
-    void postBuildTree();
-
-    /*!
-     * \brief Return all the ptree nodes from input YAML files that
-     * have not been read yet. Used for error reporting (all params
-     * must be consumed before finalizeTree).
-     * \note This method takes a reference to an empty ParameterTree,
-     * and we will populate it only with the unread ptree nodes. We
-     * have to do this since ParameterTree::Node is a nested class,
-     * and thus cannot forward declare it in this header. We also do
-     * not want to include ParameterTree.hpp if we don't have to.
-     */
-    void getUnreadExtensionParams(ParameterTree & unread_ptree);
-
-    /*!
      * \brief Throw or warn if there were any extensions provided
      * in the YAML input files, but those extensions were never
      * created.
@@ -402,6 +384,16 @@ private:
         const std::string & path) const;
 
     /*!
+     * \brief Get the root tree node with safety checks.
+     */
+    const RootTreeNode* getRoot_() const;
+
+    /*!
+     * \brief Get the root tree node with safety checks.
+     */
+    RootTreeNode* getRoot_();
+
+    /*!
      * \brief ParameterTree which holds onto all extension parameter
      * nodes with wildcards in their path. This specifically holds
      * only extension configs explicitly given to us in calls to
@@ -422,6 +414,14 @@ private:
      * Regenerated every time we are asked for the final config ptree.
      */
     std::shared_ptr<ParameterTree> write_final_config_ptree_;
+
+    /*!
+     * \brief Dedicated ptree to hold onto all parameter values for
+     * those params created in postCreate() calls to extensions with
+     * registered factories. The values at the time of finalizeTree()
+     * will be added to the final config YAML file.
+     */
+    std::shared_ptr<ParameterTree> post_create_params_;
 
     /*!
      * \brief Cached extensions for getExtension() performance.

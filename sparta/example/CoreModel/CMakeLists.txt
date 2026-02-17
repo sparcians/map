@@ -147,7 +147,9 @@ sparta_named_test(sparta_core_example_final_cfg_optional_extensions sparta_core_
 #sparta_named_test(sparta_core_example_custom_histogram_stats sparta_core_example -i 100k --report multireport_r3.yaml)
 sparta_named_test(sparta_core_example_arch_report_simple sparta_core_example -i 10k --arch simple --arch-search-dir . --report top arch_report.yaml 1)
 sparta_named_test(sparta_core_example_arch_report_default sparta_core_example -i 10k --report top arch_report.yaml 1)
-sparta_named_test(sparta_core_example_override_extensions sparta_core_example -i 10k --extension-files base_extensions.yaml override_extensions.yaml post_create_extensions.yaml --num-cores 2 -p top.extension.testing.expected_extensions expected_extensions.yaml)
+sparta_named_test(sparta_core_example_override_extensions1 sparta_core_example -i 10k --extension-files base_extensions.yaml --num-cores 2 -p top.extension.testing.expected_extensions expected_extensions1.yaml)
+sparta_named_test(sparta_core_example_override_extensions2 sparta_core_example -i 10k --extension-files base_extensions.yaml override_extensions.yaml --num-cores 2 -p top.extension.testing.expected_extensions expected_extensions2.yaml)
+sparta_named_test(sparta_core_example_override_extensions3 sparta_core_example -i 10k --extension-files base_extensions.yaml override_extensions.yaml post_create_extensions.yaml --num-cores 2 -p top.extension.testing.expected_extensions expected_extensions3.yaml)
 sparta_expect_failure_test(sparta_core_example_override_extensions_neg_test sparta_core_example -i 10k --extension-files base_extensions.yaml override_extensions.yaml --num-cores 2 -p) # read no extensions
 sparta_named_test(sparta_core_example_3d_nested_extension_params sparta_core_example --no-run --extension-file nested_vecs.yaml --write-final-config final.yaml)
 
