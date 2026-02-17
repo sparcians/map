@@ -6,68 +6,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-namespace
-{
-    class ExtensionParam
-    {
-    private:
-        std::string name_;
-        std::string value_;
-        std::string origin_;
-        size_t param_idx_ = 0;
-
-    public:
-        ExtensionParam(const std::string & name,
-                       const std::string & value,
-                       const std::string & origin,
-                       size_t param_idx)
-            : name_(name)
-            , value_(value)
-            , origin_(origin)
-            , param_idx_(param_idx)
-        {}
-
-        bool operator==(const ExtensionParam & other) const {
-            // Don't compare origins
-            return name_ == other.name_ && value_ == other.value_;
-        }
-
-        bool operator<(const ExtensionParam & other) const {
-            return param_idx_ < other.param_idx_;
-        }
-
-        const std::string & getName() const { return name_; }
-
-        const std::string & getValue() const { return value_; }
-
-        const std::string & getOrigin() const { return origin_; }
-
-        size_t getParamIndex() const { return param_idx_; }
-    };
-
-    using ExtensionParams = std::set<ExtensionParam>;
-
-    using NamedExtensions = std::map<
-        std::string,           // extension name
-        ExtensionParams
-    >;
-
-    using PTreeExtensions = std::map<
-        std::string,           // ptree node path
-        NamedExtensions
-    >;
-} // namespace (anonymous)
-
-namespace std
-{
-    template <> struct hash<ExtensionParam>
-    {
-        size_t operator()(const ExtensionParam & ext_param) const {
-            return ext_param.getParamIndex();
-        }
-    };
-} // namespace std
-
 namespace sparta
 {
 
@@ -354,6 +292,12 @@ void TreeNodeExtensionManager::addExtensions(
 void TreeNodeExtensionManager::addExtensions(
     const ParameterTree & ptree)
 {
+    // Most of the time, we will not have a RootTreeNode, i.e. when using CommandLineSimulator.
+    // These api calls are made while command line options are being parsed, which is before
+    // the CommandLineSimulator has the Simulation object.
+    //
+    // But there is nothing wrong with users calling this api themselves; it just has to
+    // be during or before buildTree().
     sparta_assert(root_ == nullptr || root_->getPhase() == PhasedObject::TREE_BUILDING);
     sparta_assert(!hasExtensions());
 
@@ -592,19 +536,9 @@ void TreeNodeExtensionManager::checkAllYamlExtensionsCreated(
 {
     sparta_assert(getRoot_()->getPhase() == PhasedObject::TREE_FINALIZED);
 
-    // First walk through the extensions found in the wildcard config ptree.
-    // This gives us a chance to throw/warn a more concise message:
-    //
-    //   ERROR/NOTE: top.cpu.core*.lsu never instantiated extension "foobar"
-    //
-    // Instead of this (assume two cores):
-    //
-    //   ERROR/NOTE: top.cpu.core0.lsu never instantiated extension "foobar"
-    //   ERROR/NOTE: top.cpu.core1.lsu never instantiated extension "foobar"
-    std::vector<std::string> err_list;
-
     // Keep track of errors already added to the error list. The key is "<loc>-<ext_name>".
     std::unordered_set<std::string> handled_err_keys;
+    std::vector<std::string> err_list;
 
     auto get_error = [](const std::string & loc, const std::string & ext_name)
     {
@@ -613,37 +547,39 @@ void TreeNodeExtensionManager::checkAllYamlExtensionsCreated(
         return err.str();
     };
 
-    auto extension_optional = [this](const std::string & loc, const std::string & ext_name)
+    auto check_optional = [&](const ParameterTree & ptree,
+                              const std::string & loc,
+                              const std::string & ext_name) -> utils::ValidValue<bool>
     {
-        auto check_optional = [&](const ParameterTree & ptree) -> utils::ValidValue<bool>
-        {
-            utils::ValidValue<bool> is_optional;
+        utils::ValidValue<bool> is_optional;
 
-            auto ext_root_node = ptree.tryGet(loc, false /*not a leaf*/);
-            if (ext_root_node) {
-                auto path = ext_root_node->getPath() + ".extension." + ext_name + ".optional";
-                ptree.visitNodes([&](const ParameterTree::Node* node) {
-                    if (node->getPath() == path) {
-                        auto value = node->peekValue();
-                        if (value == "true") {
-                            is_optional = true;
-                        } else if (value == "false") {
-                            is_optional = false;
-                        } else {
-                            throw SpartaException("The 'optional' value must be 'true' or 'false', not '")
-                                << value << "'.";
-                        }
-                        return false; // stop visiting nodes; we have our answer
+        auto ext_root_node = ptree.tryGet(loc, false /*not a leaf*/);
+        if (ext_root_node) {
+            auto path = ext_root_node->getPath() + ".extension." + ext_name + ".optional";
+            ptree.visitNodes([&](const ParameterTree::Node* node) {
+                if (node->getPath() == path) {
+                    auto value = node->peekValue();
+                    if (value == "true") {
+                        is_optional = true;
+                    } else if (value == "false") {
+                        is_optional = false;
+                    } else {
+                        throw SpartaException("The 'optional' value must be 'true' or 'false', not '")
+                            << value << "'.";
                     }
-                    return true; // keep going
-                });
-            }
+                    return false; // stop visiting nodes; we have our answer
+                }
+                return true; // keep going
+            });
+        }
 
-            return is_optional;
-        };
+        return is_optional;
+    };
 
-        auto optional_from_wildcard = check_optional(*wildcard_config_ptree_);
-        auto optional_from_concrete = check_optional(*concrete_config_ptree_);
+    auto extension_optional = [&](const std::string & loc, const std::string & ext_name)
+    {
+        auto optional_from_wildcard = check_optional(*wildcard_config_ptree_, loc, ext_name);
+        auto optional_from_concrete = check_optional(*concrete_config_ptree_, loc, ext_name);
 
         if (optional_from_wildcard.isValid() && optional_from_concrete.isValid()) {
             // Defer to the concrete extension config. It is considered an override.

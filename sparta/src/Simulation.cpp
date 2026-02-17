@@ -1886,7 +1886,7 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
                 if(!ok && grandparent && grandparent->getParent()){
                     auto tn_loc = grandparent->getParent()->getPath();
                     auto ext_name = parent->getName();
-                    if (!mgr->hasExtension(tn_loc, ext_name)){
+                    if(!mgr->hasExtension(tn_loc, ext_name)){
                         ok = true;
                     }
                 }

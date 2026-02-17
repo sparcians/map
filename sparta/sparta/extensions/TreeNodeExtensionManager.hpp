@@ -15,11 +15,6 @@ namespace sparta {
 
 class RootTreeNode;
 class ParameterTree;
-class TreeNode;
-
-namespace ConfigEmitter {
-    class YAML;
-}
 
 //! \class TreeNodeExtensionManager
 //! \brief This class maintains all TreeNode extensions.
@@ -90,6 +85,7 @@ public:
     ExtensionT* getExtensionAs(const std::string & loc,
                                const std::string & extension_name)
     {
+        static_assert(std::is_base_of<ExtensionsBase, ExtensionT>::value);
         auto ext = getExtension(loc, extension_name);
         if (!ext) {
             return nullptr;
@@ -158,7 +154,8 @@ public:
      * \brief Add tree node extension(s) from the given YAML file.
      * \note This method simply adds the extension information to
      * our underlying ParameterTree. The extension(s) will not be
-     * instantiated until you call TreeNode::getExtension().
+     * instantiated until you call TreeNode::getExtension() or
+     * TreeNode::createExtension().
      * \note ONLY the extensions will be taken. The input YAML file can
      * be an arch/config file too, but irrelevant nodes will not
      * be merged.
@@ -170,7 +167,8 @@ public:
      * \brief Extract all extenstions from the given ParameterTree.
      * \note This method simply adds the extension information to
      * our underlying ParameterTree. The extension(s) will not be
-     * instantiated until you call TreeNode::getExtension().
+     * instantiated until you call TreeNode::getExtension() or
+     * TreeNode::createExtension().
      * \note ONLY the extensions will be taken. The input ptree can
      * be an arch/config ParameterTree too, but irrelevant nodes will
      * not be merged.
@@ -241,6 +239,7 @@ public:
     bool hasExtensionOfType(const std::string & loc,
                             const std::string & extension_name) const
     {
+        static_assert(std::is_base_of<ExtensionsBase, ExtensionT>::value);
         auto ext = getExtension(loc, extension_name);
         if (!ext) {
             return false;
@@ -290,6 +289,7 @@ public:
     /*!
      * \brief Get read-only access to our ParamterTree which holds
      * extension parameters. This is for --write-final-config.
+     * \note Must be called after the tree is finalized.
      */
     const ParameterTree * getFinalConfigPTree();
 
@@ -297,6 +297,8 @@ public:
      * \brief Throw or warn if there were any extensions provided
      * in the YAML input files, but those extensions were never
      * created.
+     * \param suppress_exceptions If true, all errors will be
+     * treated as warnings (stderr).
      * \note Must be called after the tree is finalized.
      */
     void checkAllYamlExtensionsCreated(bool suppress_exceptions = false);
@@ -425,8 +427,6 @@ private:
 
     /*!
      * \brief Cached extensions for getExtension() performance.
-     * \note Uses weak pointers since the extensions (shared_ptr) can be
-     * removed from the ParameterTree without our knowledge.
      */
     std::unordered_map<
         std::string,              // TreeNode location
@@ -441,7 +441,10 @@ private:
 
     /*!
      * \brief Keep track of the original extension param order
-     * as seen in the input YAML files.
+     * as seen in the input YAML files. This is done so that
+     * the final config YAML file show parameters in the same
+     * order that users gave in their yamls (not random order,
+     * not alphabetical order).
      */
     class OrderedParams
     {

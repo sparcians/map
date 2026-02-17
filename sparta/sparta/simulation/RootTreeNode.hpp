@@ -514,7 +514,7 @@ namespace sparta
         // The TreeNodeExtensionManager object owned by CommandLineSimulator,
         // a simulation subclass, or in the SimulationConfiguration object
         // on the stack in a unit test.
-        TreeNodeExtensionManager * extension_mgr_{nullptr};
+        TreeNodeExtensionManager * extension_mgr_ = nullptr;
 
         // No effect on root
         virtual void createResource_() override {};

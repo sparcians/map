@@ -253,7 +253,10 @@ void ExampleSimulator::buildTree_()
     // Tell the factory to build the resources now
     cpu_factory->buildTree(getRoot());
 
-    if (auto ext = cpu_tn->getChild("core0")->getExtension("core_extensions", true)) {
+    // This is here to verify that we can access an extension during buildTree(),
+    // read its value (increment the read count), and have that read count seen
+    // as "yes this has been read" during finalizeTree().
+    if(auto ext = cpu_tn->getChild("core0")->getExtension("core_extensions", true)){
         auto ps = ext->getParameters();
         auto & p = ps->getParameterAs<std::string>("fetch_type");
         p.getValue();
@@ -267,7 +270,7 @@ void ExampleSimulator::buildTree_()
         }
     }
 
-    // Validate tree node extensions during configureTree()
+    // Validate tree node extensions during tree building
     for(uint32_t i = 0; i < num_cores_; ++i){
         const std::string core_loc = "cpu.core" + std::to_string(i);
         const std::string dispatch_loc = core_loc + ".dispatch";
