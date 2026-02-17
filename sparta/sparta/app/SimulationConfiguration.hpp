@@ -26,6 +26,7 @@
 #include "sparta/utils/StringUtils.hpp"
 #include "sparta/app/ReportDescriptor.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
+#include "sparta/utils/Utils.hpp"
 #include "sparta/extensions/TreeNodeExtensionManager.hpp"
 
 // Reuse hash<pair<string,string>>
@@ -473,7 +474,12 @@ public:
     public:
         void setGlobalDatabaseFile(const std::string & db_file)
         {
-            global_simdb_file_ = db_file;
+            if (db_file == "autogen") {
+                global_simdb_file_ = generateUUID() + ".db";
+                std::cout << "Using auto-generated database file: " << global_simdb_file_ << std::endl;
+            } else {
+                global_simdb_file_ = db_file;
+            }
         }
 
         void disableLegacyReports()

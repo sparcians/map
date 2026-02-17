@@ -155,7 +155,7 @@ sparta_named_test(sparta_core_example_3d_nested_extension_params sparta_core_exa
 
 if(USING_SIMDB)
 sparta_named_test(sparta_core_example_simdb_global_file sparta_core_example --no-run --simdb-apps foo.db simdb-reports --simdb-apps bar.db cherry-pick-fast-checkpointer --simdb-file test.db)
-sparta_expect_failure_test(sparta_core_example_simdb_global_file_neg_test sparta_core_example --no-run --simdb-apps foo.db simdb-reports --simdb-apps bar.db simdb-reports --simdb-file test.db)
+sparta_expect_failure_test(sparta_core_example_simdb_global_file_neg_test sparta_core_example --no-run --simdb-apps foo.db simdb-reports --simdb-apps bar.db simdb-reports --simdb-file autogen)
 
 # Run all backwards compatibility tests for map_v2.1+ reports and their v2.0.* equivalents
 add_test(NAME sparta_simdb_report_verif_suite COMMAND python3 ../../../scripts/simdb/run_report_verif_suite.py --sim-exe-path sparta_core_example --serial --force --fail-fast)

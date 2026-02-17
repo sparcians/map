@@ -632,7 +632,8 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "how many app instances to create for each type, defaulting to 1.")
         ("simdb-file",
          named_value<std::vector<std::string>>("DATABASE_FILE", 1, 1)->multitoken(),
-         "Set or override the database output filename for all apps.")
+         "Set or override the database output filename for all apps. Use '--simdb-file autogen' "
+         "to generate a database file using a UUID.")
         ("enable-simdb-reports",
          named_value<std::vector<std::string>>("[DATABASE_FILE]", 0, 1),
          "Enable the simulation database to hold reports. If no database file is specified, "
