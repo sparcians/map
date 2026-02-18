@@ -9,12 +9,7 @@ top: {
         edges_:    4
     },
     core0.dispatch.baz_node.extension.baz_ext: {
-        ticket_:   "663"
-    }
-}
-
-top: {
-    core0.dispatch.baz_node.extension.baz_ext: {
-        ticket_:   <OPTIONAL>
+        ticket_:   "663",
+        optional: true
     }
 }
