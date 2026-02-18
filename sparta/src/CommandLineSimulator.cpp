@@ -1185,6 +1185,9 @@ bool CommandLineSimulator::parse(int argc,
                     sparta_assert(o.value[1] == "reuse");
                     reuse = true;
                 }
+                if(simdb_file == "autogen" && reuse){
+                    throw SpartaException("You cannot reuse an auto-generated (uuid) database file");
+                }
                 sim_config_.simdb_config.setGlobalDatabaseFile(simdb_file, reuse);
                 opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "reuse-simdb-file") {
