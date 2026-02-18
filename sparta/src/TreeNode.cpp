@@ -2784,14 +2784,22 @@ const TreeNode::ExtensionsBase * TreeNode::getExtension() const
 
 TreeNodeExtensionManager * TreeNode::getExtensionManager_(bool must_exist)
 {
-    auto root = notNull(dynamic_cast<RootTreeNode*>(getRoot()));
-    return root->getExtensionManager(must_exist);
+    auto r = dynamic_cast<RootTreeNode*>(getRoot());
+    auto ext_mgr = r ? r->getExtensionManager(must_exist) : nullptr;
+    if (!ext_mgr && must_exist) {
+        throw SpartaException("Expecting TreeNodeExtensionsManager to exist but it doesn't");
+    }
+    return ext_mgr;
 }
 
 const TreeNodeExtensionManager * TreeNode::getExtensionManager_(bool must_exist) const
 {
-    auto root = notNull(dynamic_cast<const RootTreeNode*>(getRoot()));
-    return root->getExtensionManager(must_exist);
+    auto r = dynamic_cast<const RootTreeNode*>(getRoot());
+    auto ext_mgr = r ? r->getExtensionManager(must_exist) : nullptr;
+    if (!ext_mgr && must_exist) {
+        throw SpartaException("Expecting TreeNodeExtensionsManager to exist but it doesn't");
+    }
+    return ext_mgr;
 }
 
 // Regular scalars
