@@ -623,9 +623,16 @@ protected:
     virtual void parameterizeApps_([[maybe_unused]] simdb::AppManager* app_mgr) {}
 
     /*!
-     * \brief Hook which is called at the end of finalizeFramework()
+     * \brief Hook which is called at the end of finalizeFramework() but
+     * right before SimDB app pipelines/threads are opened.
      */
     virtual void postFinalizeFramework_() {}
+
+    /*!
+     * \brief Hook which is called after SimDB apps are created, pipelines
+     * are opened, threads are running, and everything is ready to go.
+     */
+    virtual void onSimDbAppsReady_() {}
 
     ////////////////////////////////////////////////////////////////////////
     //! @}

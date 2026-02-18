@@ -839,6 +839,7 @@ void Simulation::finalizeFramework()
     app_managers_->postInit(argc_, argv_);
     app_managers_->initializePipelines();
     app_managers_->openPipelines();
+    onSimDbAppsReady_();
 #endif
 }
 
