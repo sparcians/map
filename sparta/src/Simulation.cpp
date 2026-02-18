@@ -88,24 +88,8 @@
 
 #if SIMDB_ENABLED
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
-#include "simdb/apps/AppManager.hpp"
-
-// We have example/CoreModel tests which need to load two different
-// SimDB apps. Sparta only has the ReportStatsCollector app and the
-// CherryPickFastCheckpointer app, though only ReportStatsCollector
-// is explicitly used by Simulation/ReportRepository. So the stats
-// collector is baked into the static library, but the checkpointer
-// app is only used in a unit test. Thus the linker "dead strips"
-// the checkpointer's symbols for CoreModel builds and the translation
-// unit's REGISTER_SIMDB_APPLICATION macro is never used unless we
-// force CherryPickFastCheckpointer to get baked into the library
-// like ReportStatsCollector.
-//
-// TODO cnyce: Remove this once the PipelineCollector app is created.
-// Use the pipeline collector app and stats collector app for the
-// CoreModel unit tests. PipelineCollector will be baked in like
-// ReportStatsCollector is.
 #include "sparta/serialization/checkpoint/CherryPickFastCheckpointer.hpp"
+#include "simdb/apps/AppManager.hpp"
 #endif
 
 namespace YAML {
@@ -497,13 +481,14 @@ void Simulation::createSimDbApps_()
     const auto enabled_apps = simdb_config.getEnabledApps();
 
 #if SIMDB_ENABLED
-    // TODO cnyce: remove this - see comment at top of file (grep cnyce)
-    [[maybe_unused]] auto dummy = serialization::checkpoint::CherryPickFastCheckpointer(
-        nullptr /*db_mgr*/, {} /*roots*/, nullptr /*scheduler*/);
-
     if (enabled_apps.empty()) {
         return;
     }
+
+    simdb::AppRegistrations app_registrations(app_managers_.get());
+    app_registrations.registerApp<ReportStatsCollector>();
+    app_registrations.registerApp<serialization::checkpoint::CherryPickFastCheckpointer>();
+    registerSimDbApps_(&app_registrations);
 
     std::map<std::string, std::set<std::string>> apps_by_db_file;
     for (const auto & app_name : enabled_apps)
@@ -517,8 +502,8 @@ void Simulation::createSimDbApps_()
     for (const auto & [db_file, app_names] : apps_by_db_file)
     {
         const auto& pragmas = simdb_config.getPragmas();
-        constexpr auto new_file = true;
-        auto& app_mgr = app_managers_->getAppManager(db_file, new_file);
+        const bool new_file = simdb_config.shouldOverwriteDatabase(db_file);
+        auto& app_mgr = app_managers_->createAppManager(db_file, new_file);
 
         for (const auto & app_name : app_names)
         {

@@ -30,6 +30,7 @@ namespace YP = YAML; // Prevent collision with YAML class in ConfigParser namesp
 namespace simdb {
     class AppManager;
     class AppManagers;
+    class AppRegistrations;
 }
 
 namespace sparta {
@@ -604,6 +605,12 @@ protected:
      * appropriate nodes
      */
     virtual void bindTree_() = 0;
+
+    /*!
+     * \brief Override this method to register your SimDB apps prior to
+     * parameterizing them and instantiating them.
+     */
+    virtual void registerSimDbApps_([[maybe_unused]] simdb::AppRegistrations* app_registrations) {}
 
     /*!
      * \brief When using SimDB apps, this method gets called when the

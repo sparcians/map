@@ -75,7 +75,8 @@ void RunCheckpointerTest()
     r2->write<uint32_t>(0);
 
     simdb::AppManagers app_mgrs;
-    auto& app_mgr = app_mgrs.getAppManager("test.db", true /*new file*/);
+    app_mgrs.registerApp<CherryPickFastCheckpointer>();
+    auto& app_mgr = app_mgrs.createAppManager("test.db", true /*new file*/);
 
     // Setup...
     // Apps must be enabled prior to parameterizing their custom factories

@@ -631,9 +631,13 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "create apps going to different databases. The optional 'count' argument tells Sparta "
          "how many app instances to create for each type, defaulting to 1.")
         ("simdb-file",
-         named_value<std::vector<std::string>>("DATABASE_FILE", 1, 1)->multitoken(),
+         named_value<std::vector<std::string>>("DATABASE_FILE [reuse]", 1, 2)->multitoken(),
          "Set or override the database output filename for all apps. Use '--simdb-file autogen' "
-         "to generate a database file using a UUID.")
+         "to generate a database file using a UUID. If you omit [reuse], a new database will be "
+         "generated, else the existing database will be appended to. Using '--simdb-file autogen "
+         "reuse' will throw.")
+        ("reuse-simdb-file",
+         "Reuse the specified database file.")
         ("enable-simdb-reports",
          named_value<std::vector<std::string>>("[DATABASE_FILE]", 0, 1),
          "Enable the simulation database to hold reports. If no database file is specified, "
@@ -1176,7 +1180,16 @@ bool CommandLineSimulator::parse(int argc,
                 opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "simdb-file") {
                 const std::string simdb_file = o.value.at(0);
-                sim_config_.simdb_config.setGlobalDatabaseFile(simdb_file);
+                bool reuse = false;
+                if(o.value.size() > 1){
+                    sparta_assert(o.value[1] == "reuse");
+                    reuse = true;
+                }
+                sim_config_.simdb_config.setGlobalDatabaseFile(simdb_file, reuse);
+                opts.options.erase(opts.options.begin() + i);
+            }else if (o.string_key == "reuse-simdb-file") {
+                const std::string simdb_file = o.value.at(0);
+                sim_config_.simdb_config.reuseDatabase(simdb_file);
                 opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "enable-simdb-reports") {
                 std::string simdb_file = "sparta.db";

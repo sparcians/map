@@ -479,7 +479,7 @@ public:
     class SimDBConfig
     {
     public:
-        void setGlobalDatabaseFile(const std::string & db_file)
+        void setGlobalDatabaseFile(const std::string & db_file, bool reuse = false)
         {
             if (db_file == "autogen") {
                 global_simdb_file_ = generateUUID() + ".db";
@@ -487,6 +487,21 @@ public:
             } else {
                 global_simdb_file_ = db_file;
             }
+
+            if (reuse)
+            {
+                reuseDatabase(db_file);
+            }
+        }
+
+        void reuseDatabase(const std::string & db_file)
+        {
+            reused_db_files_.insert(db_file);
+        }
+
+        bool shouldOverwriteDatabase(const std::string & db_file) const
+        {
+            return reused_db_files_.count(db_file) == 0;
         }
 
         void disableLegacyReports()
@@ -649,6 +664,7 @@ public:
         std::unordered_map<std::pair<std::string, std::string>, size_t> enabled_app_counts_;
         bool legacy_reports_enabled_ = true;
         std::map<std::string, std::string> dbmgr_pragmas_;
+        std::set<std::string> reused_db_files_;
     } simdb_config;
 
     /*!
