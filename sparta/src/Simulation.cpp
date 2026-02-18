@@ -607,7 +607,7 @@ void Simulation::buildTree()
 
     setupProfilers_();
 
-#if USING_SIMDB
+#if SIMDB_ENABLED
     simdb::AppRegistrations app_registrations(app_managers_.get());
     app_registrations.registerApp<ReportStatsCollector>();
     app_registrations.registerApp<serialization::checkpoint::CherryPickFastCheckpointer>();
