@@ -163,7 +163,6 @@ public:
         , node5_(&node4_, "node5", "node5")
     {
         top_.setExtensionManager(&extensions_mgr_);
-        extensions_mgr_.setRoot(&top_);
     }
 
     sparta::RootTreeNode * getRoot()
@@ -199,7 +198,6 @@ public:
         , core1_foo1_(&core1_, "foo1", "foo1")
     {
         top_.setExtensionManager(&extensions_mgr_);
-        extensions_mgr_.setRoot(&top_);
     }
 
     sparta::RootTreeNode * getRoot()
@@ -590,7 +588,6 @@ void TestExtensionsWithStandaloneSim()
     // a local TreeNodeExtensionManager and give it to the root.
     sparta::TreeNodeExtensionManager ext_mgr;
     sim.getRoot()->setExtensionManager(&ext_mgr);
-    ext_mgr.setRoot(sim.getRoot());
 
     // No CommandLineSimulator == no SimulationConfiguration.
     // Do not call Simulation::configure().

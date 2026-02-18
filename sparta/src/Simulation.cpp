@@ -1224,7 +1224,6 @@ void Simulation::addTreeNodeExtensionFactory_(const std::string & extension_name
 
 void Simulation::setTreeNodeExtensionManager_(TreeNodeExtensionManager* mgr)
 {
-    mgr->setRoot(getRoot());
     getRoot()->setExtensionManager(mgr);
 }
 

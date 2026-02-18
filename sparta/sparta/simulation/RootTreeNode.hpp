@@ -476,15 +476,7 @@ namespace sparta
          * \throw Throws if this is called after the tree is built.
          * \throw Throws if the TreeNodeExtensionManager was already set.
          */
-        void setExtensionManager(TreeNodeExtensionManager* mgr) {
-            if (getPhase() != TREE_BUILDING) {
-                throw SpartaException("Cannot set the TreeNodeExtensionManager after buildTree()");
-            }
-            if (extension_mgr_ && extension_mgr_ != mgr) {
-                throw SpartaException("TreeNodeExtensionManager already set");
-            }
-            extension_mgr_ = mgr;
-        }
+        void setExtensionManager(TreeNodeExtensionManager* mgr);
 
         /*!
          * \brief Get the TreeNodeExtensionsManager
