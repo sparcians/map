@@ -485,11 +485,6 @@ void Simulation::createSimDbApps_()
         return;
     }
 
-    simdb::AppRegistrations app_registrations(app_managers_.get());
-    app_registrations.registerApp<ReportStatsCollector>();
-    app_registrations.registerApp<serialization::checkpoint::CherryPickFastCheckpointer>();
-    registerSimDbApps_(&app_registrations);
-
     std::map<std::string, std::set<std::string>> apps_by_db_file;
     for (const auto & app_name : enabled_apps)
     {
@@ -611,6 +606,13 @@ void Simulation::buildTree()
 #endif
 
     setupProfilers_();
+
+#if USING_SIMDB
+    simdb::AppRegistrations app_registrations(app_managers_.get());
+    app_registrations.registerApp<ReportStatsCollector>();
+    app_registrations.registerApp<serialization::checkpoint::CherryPickFastCheckpointer>();
+    registerSimDbApps_(&app_registrations);
+#endif
 
     // Subclass callback
     {
