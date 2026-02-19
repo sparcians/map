@@ -134,6 +134,8 @@ namespace sparta
                         } else {
                             o << "extension without parameters";
                         }
+                    } else if constexpr (std::is_same_v<Value, bool>) {
+                        o << std::boolalpha << val << std::dec;
                     } else {
                         o << val;
                     }
@@ -579,6 +581,7 @@ namespace sparta
                 sparta_assert(hasValue() == false,
                             "Cannot add a child to a virtual parameter tree node \"" << name_
                             << "\" since it already has a value: \"" << value_ << "\"");
+
                 children_.emplace_back(new Node(this, name));
                 if(required){
                     children_.back()->incRequired();
@@ -783,15 +786,59 @@ namespace sparta
             }
 
             /*!
-             * \brief Apply the given callback to all leaf nodes
+             * \brief Apply the given callback to all nodes
+             * \tparam Callback std::function<bool(Node*)> or equivalent lambda
+             * \return Returns the total number of nodes visited
+             * \note The callback should return true if we should keep recursing,
+             * false to early return
              */
-            void recurseVisitLeaves(std::function<void(const Node*)> callback) const {
-                if (children_.empty()) {
-                    callback(this);
-                }
-                for (const auto & child : children_) {
-                    child->recurseVisitLeaves(callback);
-                }
+            template <typename Callback>
+            size_t recurseVisitNodes(Callback callback) {
+                size_t count = 0;
+                recurseVisitNodes_(callback, count);
+                return count;
+            }
+
+            /*!
+             * \brief Apply the given callback to all nodes
+             * \tparam Callback std::function<bool(const Node*)> or equivalent lambda
+             * \return Returns the total number of nodes visited
+             * \note The callback should return true if we should keep recursing,
+             * false to early return
+             */
+            template <typename Callback>
+            size_t recurseVisitNodes(Callback callback) const {
+                size_t count = 0;
+                recurseVisitNodes_(callback, count);
+                return count;
+            }
+
+            /*!
+             * \brief Apply the given callback to all leaf nodes
+             * \tparam Callback std::function<bool(Node*)> or equivalent lambda
+             * \return Returns the total number of leaves visited
+             * \note The callback should return true if we should keep recursing,
+             * false to early return
+             */
+            template <typename Callback>
+            size_t recurseVisitLeaves(Callback callback) {
+                size_t count = 0;
+                recurseVisitLeaves_(callback, count);
+                return count;
+            }
+
+            /*!
+             * \brief Apply the given callback to all leaf nodes
+             * \tparam Callback std::function<bool(const Node*)> or equivalent lambda
+             * \return Returns the total number of leaves visited
+             * \note The callback should return true if we should keep recursing,
+             * false to early return
+             */
+            template <typename Callback>
+            size_t recurseVisitLeaves(Callback callback) const {
+                size_t count = 0;
+                recurseVisitLeaves_(callback, count);
+                return count;
             }
 
             /*!
@@ -1059,6 +1106,72 @@ namespace sparta
                     Node* c = create(child->getName(), child->getRequiredCount() > 0); // Create if needed
                     c->recursAppendTree_(child);
                 }
+            }
+
+            template <typename Callback>
+            bool recurseVisitNodes_(Callback callback, size_t & count) {
+                ++count;
+                auto keep_going = callback(this);
+                if (!keep_going) {
+                    return false;
+                }
+                for (auto & child : children_) {
+                    if (!child->recurseVisitNodes_(callback, count)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            template <typename Callback>
+            bool recurseVisitNodes_(Callback callback, size_t & count) const {
+                ++count;
+                auto keep_going = callback(this);
+                if (!keep_going) {
+                    return false;
+                }
+                for (const auto & child : children_) {
+                    if (!child->recurseVisitNodes_(callback, count)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            template <typename Callback>
+            bool recurseVisitLeaves_(Callback callback, size_t & count) {
+                if (children_.empty()) {
+                    ++count;
+                    auto keep_going = callback(this);
+                    if (!keep_going) {
+                        return false;
+                    }
+                }
+
+                for (auto & child : children_) {
+                    if (!child->recurseVisitLeaves_(callback, count)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            template <typename Callback>
+            bool recurseVisitLeaves_(Callback callback, size_t & count) const {
+                if (children_.empty()) {
+                    ++count;
+                    auto keep_going = callback(this);
+                    if (!keep_going) {
+                        return false;
+                    }
+                }
+
+                for (const auto & child : children_) {
+                    if (!child->recurseVisitLeaves_(callback, count)) {
+                        return false;
+                    }
+                }
+                return true;
             }
 
             std::unique_ptr<Node> release_(Node *node) {
@@ -1338,10 +1451,51 @@ namespace sparta
         }
 
         /*!
-         * \brief Apply the given callback to all leaf nodes
+         * \brief Apply the given callback to all nodes
+         * \tparam Callback std::function<bool(Node*)> or equivalent lambda
+         * \return Returns the total number of nodes visited
+         * \note The callback should return true if we should keep recursing,
+         * false to early return
          */
-        void visitLeaves(std::function<void(const Node*)> callback) const {
-            root_->recurseVisitLeaves(callback);
+        template <typename Callback>
+        size_t visitNodes(Callback callback) {
+            return root_->recurseVisitNodes(callback);
+        }
+
+        /*!
+         * \brief Apply the given callback to all nodes
+         * \tparam Callback std::function<bool(const Node*)> or equivalent lambda
+         * \return Returns the total number of nodes visited
+         * \note The callback should return true if we should keep recursing,
+         * false to early return
+         */
+        template <typename Callback>
+        size_t visitNodes(Callback callback) const {
+            return root_->recurseVisitNodes(callback);
+        }
+
+        /*!
+         * \brief Apply the given callback to all leaf nodes
+         * \tparam Callback std::function<bool(Node*)> or equivalent lambda
+         * \return Returns the total number of nodes visited
+         * \note The callback should return true if we should keep recursing,
+         * false to early return
+         */
+        template <typename Callback>
+        size_t visitLeaves(Callback callback) {
+            return root_->recurseVisitLeaves(callback);
+        }
+
+        /*!
+         * \brief Apply the given callback to all leaf nodes
+         * \tparam Callback std::function<bool(const Node*)> or equivalent lambda
+         * \return Returns the total number of nodes visited
+         * \note The callback should return true if we should keep recursing,
+         * false to early return
+         */
+        template <typename Callback>
+        size_t visitLeaves(Callback callback) const {
+            return root_->recurseVisitLeaves(callback);
         }
 
         /*!

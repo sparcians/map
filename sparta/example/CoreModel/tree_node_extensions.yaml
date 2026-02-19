@@ -1,5 +1,8 @@
+# Note that this file uses a combination of paths with and without
+# wildcards since the extensions system has to be robust to both.
+
 top: {
-    cpu.core0.lsu.extension.cat: {
+    cpu.core*.lsu.extension.cat: {
         language_: grrr
     },
     cpu.core0.fpu.extension.circle: {

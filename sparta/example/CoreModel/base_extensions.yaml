@@ -1,0 +1,17 @@
+# This extensions file is used together with another extensions
+# file with the same tree node path in order to verify that we
+# can have a merged ParameterTree like this:
+#
+#   top.cpu.core*.lsu.extension.foobar:
+#     foo: 4
+#     bar: 5
+#   top.cpu.core0.lsu.extension.foobar:
+#     foo: 8
+#
+# We verify that the final 'foo' value is 8, since core*
+# is considered the "base" extension, while core0 is the
+# "override" extension.
+
+top.cpu.core*.lsu.extension.foobar:
+  foo: 4
+  bar: 5
