@@ -259,12 +259,12 @@ If you want your extension to be registered as soon as possible, call the macro 
 
 ```
 // CoreExtensions.hpp
-#include "sparta/simulation/TreeNodeExtensions.hpp"
+#include "sparta/extensions/TreeNodeExtensions.hpp"
 class CoreExtensions : public sparta::ExtensionsParamsOnly { ... };
 
 // CoreExtensions.cpp (or any source file built by your simulator)
-#include "CoreExtensions.hpp"                  // macro requires class visibility
-#include "sparta/simulation/RootTreeNode.hpp"  // macro lives here
+#include "CoreExtensions.hpp"                              // macro requires class visibility
+#include "sparta/extensions/TreeNodeExtensionManager.hpp"  // macro lives here
 REGISTER_TREE_NODE_EXTENSION(CoreExtensions);
 ```
 
@@ -319,6 +319,7 @@ top.cpu.core*.extension:
 
 # Run simulator
 ./sim --extension-file extensions.yaml
+./sim --extension-files base_extensions.yaml override_extensions.yaml
 ```
 
 You can also inline the extensions right on the command line:
@@ -330,7 +331,30 @@ You can also inline the extensions right on the command line:
 
 **NOTE:** If you use `-p` at the command line, then these extensions/parameters MUST be read by the time `finalizeTree()` is called, else you get an exception.
 
----
+If you have two YAML files like this:
+
+```
+# base_extensions.yaml
+top.cpu.core*.extension.core_extensions:
+  enabled_features:  [foo,bar]
+
+# override_extensions.yaml
+top.cpu.core1.extension.core_extensions:
+  enabled_features:  [foo]
+  extra_param:       8.8
+```
+
+The parameter values in the paths with wildcards will be applied first, followed by parameters with concrete paths. If you ran with `--write-final-config`, the final YAML file would be:
+
+```
+# final.yaml
+top.cpu.core0.extension.core_extensions:
+  enabled_features:  [foo,bar]  # default value from base_extensions.yaml
+  extra_param:       3.14       # default value from postCreate()
+top.cpu.core1.extension.core_extensions:
+  enabled_features:  [foo]      # from override_extensions.yaml
+  extra_param:       8.8        # from override_extensions.yaml
+```
 
 ### Example: Accessing an Extension
 
@@ -420,14 +444,29 @@ if (tn->hasExtension("core_extensions")) {
 ## What about `--write-final-config`?
 
 What **does** get added to the final config YAML file?
-- All extensions created in `buildTree()`, `configureTree()`, and `finalizeTree()`
-- Default parameter values specified in `postCreate()`
-- **NOTE:** Removing extensions after `finalizeTree()` does not omit them from the final YAML file
+- All extensions found in input YAML files: `--arch`, `--config-file`, `--node-config-file`, `--extension-file[s]`
+- Default parameter values specified in `postCreate()`, or their overridden values found in a YAML file
 
 What **does not** get added to the final config YAML file?
-- Any extensions created in `finalizeFramework()`
-- Any extensions created during or after simulation
-- Extension parameter changes that occur after `finalizeTree()`
+- Any extensions created in `finalizeFramework()`, or during/after simulation
+- Changes to extension parameter values via `ExtensionsBase::getParameters()`
+
+---
+
+## Error Reporting
+
+When you define extensions in any input YAML file, you must read all YAML parameters before `finalizeTree()` or you get an exception. This is the same exception that is raised when leaving `--arch` or `--config-file` parameters left unread. The errors for unread extension parameters look like this:
+
+```
+ERROR: unread unbound parameter: "top.cpu.core0.lsu.extension.foobar.foo" from: "base_extensions.yaml:15 col:7, override_extensions.yaml:1 col:7". value: "8".
+ERROR: unread unbound parameter: "top.cpu.core1.lsu.extension.foobar.bar" from: "base_extensions.yaml:16 col:7". value: "5".
+```
+
+The only parameters that can be left unread are those that are created in `postCreate()`. Lastly, if you define an extension in YAML, but fail to ever create that extension before `finalizeTree()`, you get this exception:
+
+```
+ERROR: top.cpu.core0 never instantiated extension "core_extensions"
+```
 
 ---
 

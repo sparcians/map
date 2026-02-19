@@ -26,6 +26,8 @@
 #include "sparta/utils/StringUtils.hpp"
 #include "sparta/app/ReportDescriptor.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
+#include "sparta/utils/Utils.hpp"
+#include "sparta/extensions/TreeNodeExtensionManager.hpp"
 
 // Reuse hash<pair<string,string>>
 #include "sparta/report/format/DetailInfoData.hpp"
@@ -158,9 +160,6 @@ public:
     //! Was a final configuration file provided?
     bool hasFinalConfig() const { return !final_config_file_.empty(); }
 
-    //! Consume an extension (.yaml) file
-    void processExtensionFile(const std::string & filename);
-
     //!  Set the filename for the State Tracking file
     void setStateTrackingFile(const std::string & filename);
 
@@ -225,11 +224,6 @@ public:
     void copyTreeNodeExtensionsFromArchAndConfigPTrees();
 
     /*!
-     * Check if the unbound extensions ptree has any extensions.
-     */
-    bool hasTreeNodeExtensions() const;
-
-    /*!
      * Returns a ParameterTree containing an unbound set of parameter
      * values which can be read and later applied. Some of these
      * parameters will be applied to Parameter TreeNodes at some point
@@ -258,23 +252,6 @@ public:
      * and later applied as defaults to newly-constructed parameters.
      */
     const ParameterTree& getArchUnboundParameterTree() const { return arch_ptree_; }
-
-    /*!
-     * \brief Returns a ParameterTree containing an unbound set of
-     * named tree node extensions and their parameter value(s).
-     */
-    ParameterTree& getExtensionsUnboundParameterTree() {
-        return extensions_ptree_;
-    }
-
-    /*!
-     * \brief Returns a ParameterTree (const version) containing an
-     * unbound set of named tree node extensions and their parameter
-     * value(s).
-     */
-    const ParameterTree& getExtensionsUnboundParameterTree() const {
-        return extensions_ptree_;
-    }
 
     /*!
      * Was an arch file provided in this configuration?
@@ -502,11 +479,148 @@ public:
     class SimDBConfig
     {
     public:
-        void setGlobalDatabaseFile(const std::string & db_file)
+        /*!
+         * \brief Set the simulation executable. This will be used as the default
+         * database filename (with a .db extension) unless otherwise specified.
+         */
+        void setSimExecutable(const std::string & exe_name)
         {
-            global_simdb_file_ = db_file;
+            sim_exec_db_filename_ = exe_name + ".db";
         }
 
+        /*!
+         * \brief Tell the simulation to enable the given app. Unless otherwise
+         * specified, the database will be the executable name with a '.db' file
+         * extension, and one app instance will be available.
+         * \note Use setAppDatabase() to override the database file for this app.
+         * \note Use setAppCount() to override the number of instances for this app.
+         */
+        void enableApp(const std::string & app_name)
+        {
+            sparta_assert(!appEnabled(app_name));
+            sparta_assert(!sim_exec_db_filename_.empty());
+
+            enabled_apps_.insert(app_name);
+            setAppCount(app_name, 1);
+            setAppDatabase(app_name, sim_exec_db_filename_);
+        }
+
+        /*!
+         * \brief Check if the given app is enabled.
+         */
+        bool appEnabled(const std::string & app_name) const
+        {
+            return enabled_apps_.count(app_name) > 0;
+        }
+
+        /*!
+         * \brief Return a list of all enabled apps.
+         */
+        std::vector<std::string> getEnabledApps() const
+        {
+            return {enabled_apps_.begin(), enabled_apps_.end()};
+        }
+
+        /*!
+         * \brief Set the number of instances that should be available for the given app.
+         */
+        void setAppCount(const std::string & app_name, size_t count)
+        {
+            sparta_assert(count > 0);
+            sparta_assert(appEnabled(app_name));
+            concrete_app_counts_[app_name] = count;
+            inferred_app_counts_.erase(app_name);
+        }
+
+        /*!
+         * \brief Set the number of instances that should be available for the given app
+         * using a device tree wildcard pattern. The app count will be inferred as the
+         * number of tree nodes matching this pattern by the time finalizeFramework()
+         * is called.
+         */
+        void inferAppCountFromTreePattern(const std::string & app_name, const std::string & pattern)
+        {
+            sparta_assert(!pattern.empty());
+            sparta_assert(appEnabled(app_name));
+            concrete_app_counts_.erase(app_name);
+            inferred_app_counts_[app_name] = pattern;
+        }
+
+        /*!
+         * \brief Get the device tree pattern from which to infer the number of instances
+         * of the given app we should create.
+         */
+        std::string getTreePatternForInferredAppCount(const std::string & app_name) const
+        {
+            if (!appEnabled(app_name)) {
+                throw SpartaException("App '") << app_name << "' is not enabled.";
+            }
+
+            auto it = inferred_app_counts_.find(app_name);
+            if (it != inferred_app_counts_.end()) {
+                return it->second;
+            }
+            return "";
+        }
+
+        /*!
+         * \brief Return the number of instances we should create for the given app.
+         * \note Only to be called after the tree is fully built. Throws if not.
+         */
+        size_t getAppCount(const std::string & app_name) const
+        {
+            if (!appEnabled(app_name)) {
+                return 0;
+            }
+
+            auto it = concrete_app_counts_.find(app_name);
+            if (it == concrete_app_counts_.end()) {
+                throw SpartaException("We do not know the app count yet. Has the tree been built?");
+            }
+            return it->second;
+        }
+
+        /*!
+         * \brief Direct the given app to go to the provided database file.
+         */
+        void setAppDatabase(const std::string & app_name, const std::string & db_file)
+        {
+            sparta_assert(appEnabled(app_name));
+            app_databases_[app_name] = db_file;
+        }
+
+        /*!
+         * \brief Get the database file for the given app.
+         */
+        std::string getAppDatabase(const std::string & app_name) const
+        {
+            sparta_assert(appEnabled(app_name));
+            return app_databases_.at(app_name);
+        }
+
+        /*!
+         * \brief Tell SimDB to open the given file without overwriting it.
+         */
+        void reuseDatabase(const std::string & db_file)
+        {
+            reused_db_files_.insert(db_file);
+        }
+
+        /*!
+         * \brief See if the given database should be overwritten or reused.
+         */
+        bool shouldOverwriteDatabase(const std::string & db_file) const
+        {
+            return reused_db_files_.count(db_file) == 0;
+        }
+
+        /*!
+         * \brief When used together with --enable-simdb-reports, the option
+         * --disable-legacy-reports results in stats reports only going to
+         * SimDB.
+         * \note "Legacy" here means formatted output files, e.g. json/html/txt.
+         * \note This is being deprecated in map_v3.
+         */
         void disableLegacyReports()
         {
             if (!appEnabled("simdb-reports")) {
@@ -516,140 +630,29 @@ public:
             legacy_reports_enabled_ = false;
         }
 
+        /*!
+         * \brief See if legacy stats reports are enabled or not.
+         * \note "Legacy" here means formatted output files, e.g. json/html/txt.
+         * \note This is being deprecated in map_v3.
+         */
         bool legacyReportsEnabled() const
         {
             return legacy_reports_enabled_;
         }
 
-        void enableApp(const std::string & app_name, const std::string & db_file, size_t num_instances = 1)
-        {
-            enabled_apps_[db_file].insert(app_name);
-            app_db_files_[app_name].insert(db_file);
-            enabled_app_counts_[std::make_pair(app_name, db_file)] = num_instances;
-        }
-
-        bool appEnabled(const std::string & app_name) const
-        {
-            return app_db_files_.count(app_name) > 0;
-        }
-
-        std::vector<std::string> getEnabledApps() const 
-        {
-            std::vector<std::string> apps;
-            for (const auto& [app_name, db_files] : app_db_files_)
-            {
-                apps.emplace_back(app_name);
-            }
-            return apps;
-        }
-
-        size_t getAppInstances(const std::string & app_name, const std::string & db_file) const
-        {
-            auto key = std::make_pair(app_name, db_file);
-            auto it = enabled_app_counts_.find(key);
-            if (it == enabled_app_counts_.end()) {
-                return 0;
-            }
-            return it->second;
-        }
-
-        std::vector<std::string> getAppDatabases(const std::string & app_name) const
-        {
-            auto it = app_db_files_.find(app_name);
-            if (it != app_db_files_.end()) {
-                return {it->second.begin(), it->second.end()};
-            } else {
-                return {};
-            }
-        }
-
-        //Call this once prior to calling Simulation::configure()
-        void finalize()
-        {
-            if (global_simdb_file_.empty())
-            {
-                return;
-            }
-
-            //Try to set the global SimDB file.
-            //   --simdb-apps test.db app1 --simdb-file out.db
-            //       >> send app1 to out.db
-            //   --simdb-apps test.db app1 --enable-simdb-reports reports.db --simdb-file out.db
-            //       >> send app1 to out.db
-            //       >> send 'simdb-reports' (ReportStatsCollector) to out.db
-            //   --simdb-apps foo.db app1 --simdb-apps bar.db app1 --simdb-file out.db
-            //       >> THROW:
-            //       >>>> one instance of app1 was to go to foo.db, the other to bar.db
-            //       >>>> if we use only out.db, not clear if there should be two app1
-            //            instances or just one
-            std::ostringstream errors;
-            for (const auto & [app_name, db_files] : app_db_files_) {
-                if (db_files.size() > 1) {
-                    if (errors.str().empty()) {
-                        errors << "Cannot use --simdb-file if any app is sent to two "
-                               << "different databases:\n";
-                    }
-                    errors << "  " << app_name << " is sent to:\n";
-                    for (const auto & db_file : db_files) {
-                        errors << "    " << db_file << "\n";
-                    }
-                }
-            }
-
-            const auto error = errors.str();
-            if (!error.empty()) {
-                throw SpartaException(error);
-            }
-
-            for (const auto & [app_name, db_files] : app_db_files_) {
-                for (const auto & db_file : db_files) {
-                    auto key = std::make_pair(app_name, db_file);
-                    const auto num_instances = enabled_app_counts_.at(key);
-                    if (db_file != global_simdb_file_) {
-                        std::cout << "Redirecting " << num_instances << " instance"
-                                  << (num_instances == 1 ? "" : "s") << " of the '"
-                                  << app_name << "' app from " << db_file << " to "
-                                  << global_simdb_file_ << "\n";
-                        enableApp(app_name, global_simdb_file_, num_instances);
-                    }
-                }
-            }
-
-            std::vector<std::string> old_db_files;
-            for (const auto & [db_file, _] : enabled_apps_) {
-                if (db_file != global_simdb_file_) {
-                    old_db_files.push_back(db_file);
-                }
-            }
-
-            for (const auto & db_file : old_db_files) {
-                enabled_apps_.erase(db_file);
-            }
-
-            for (auto & [app_name, db_files] : app_db_files_) {
-                db_files.clear();
-                db_files.insert(global_simdb_file_);
-            }
-
-            std::vector<std::pair<std::string, std::string>> old_counts_kvps;
-            for (const auto & [key, num_instances] : enabled_app_counts_) {
-                if (key.second != global_simdb_file_) {
-                    old_counts_kvps.push_back(key);
-                }
-            }
-
-            for (const auto & key : old_counts_kvps) {
-                enabled_app_counts_.erase(key);
-            }
-        }
-
-        //SQLite3 PRAGMA's to execute on database creation.
-        //  "PRAGMA <name> = <val>"
+        /*!
+         * \brief Add a SQLite PRAGMA to execute on database creation.
+         * \note Applies to all app databases if different.
+         */
         void addPragmaOnOpen(const std::string& name, const std::string& val)
         {
             dbmgr_pragmas_[name] = val;
         }
 
+        /*!
+         * \brief Get a list of name-value pairs for SQLite PRAGMA's
+         * to execute on database creation.
+         */
         std::vector<std::pair<std::string, std::string>> getPragmas() const
         {
             std::vector<std::pair<std::string, std::string>> pragmas;
@@ -661,13 +664,23 @@ public:
         }
 
     private:
-        std::string global_simdb_file_;
-        std::map<std::string, std::set<std::string>> enabled_apps_;
-        std::map<std::string, std::set<std::string>> app_db_files_;
-        std::unordered_map<std::pair<std::string, std::string>, size_t> enabled_app_counts_;
-        bool legacy_reports_enabled_ = true;
+        std::string sim_exec_db_filename_;
+        std::set<std::string> enabled_apps_;
+        std::map<std::string, size_t> concrete_app_counts_;
+        std::map<std::string, std::string> inferred_app_counts_;
+        std::map<std::string, std::string> app_databases_;
+        std::set<std::string> reused_db_files_;
         std::map<std::string, std::string> dbmgr_pragmas_;
+        bool legacy_reports_enabled_ = true;
     } simdb_config;
+
+    /*!
+     * The extension manager is responsible for parsing extensions
+     * from input YAML files, holding onto instantiated extensions,
+     * verifying that all extension parameters have been read, and
+     * producing the --write-final-config ParameterTree.
+     */
+    TreeNodeExtensionManager extension_mgr;
 
     /*!
      * Scheduler control: When a user calls sparta::Simulation::run()
@@ -741,9 +754,6 @@ private:
 
     //! Unbound (pre-application) Parameter Tree
     ParameterTree ptree_;
-
-    //! Unbound (pre-application) Extensions Tree
-    ParameterTree extensions_ptree_;
 
     //! Vector of arch file search directories
     std::vector<std::string> arch_search_paths_;

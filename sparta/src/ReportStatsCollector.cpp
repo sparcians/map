@@ -6,12 +6,10 @@
 #include "sparta/report/format/JavascriptObject.hpp"
 #include "sparta/report/format/ReportHeader.hpp"
 #include "simdb/pipeline/Pipeline.hpp"
-#include "simdb/apps/AppRegistration.hpp"
+#include "simdb/apps/AppManager.hpp"
 #include "simdb/utils/Compress.hpp"
 
 namespace sparta::app {
-
-REGISTER_SIMDB_APPLICATION(ReportStatsCollector);
 
 void ReportStatsCollector::defineSchema(simdb::Schema& schema)
 {
@@ -69,7 +67,7 @@ void ReportStatsCollector::defineSchema(simdb::Schema& schema)
     stat_defn_meta_tbl.addColumn("MetaName", dt::string_t);
     stat_defn_meta_tbl.addColumn("MetaValue", dt::string_t);
     stat_defn_meta_tbl.createIndexOn("StatisticInstID");
-    stat_defn_meta_tbl.disableAutoIncPrimaryKey();
+    stat_defn_meta_tbl.unsetPrimaryKey();
 
     auto& siminfo_tbl = schema.addTable("SimulationInfo");
     siminfo_tbl.addColumn("SimName", dt::string_t);
@@ -78,12 +76,12 @@ void ReportStatsCollector::defineSchema(simdb::Schema& schema)
     siminfo_tbl.addColumn("ReproInfo", dt::string_t);
     siminfo_tbl.addColumn("SimEndTick", dt::uint64_t);
     siminfo_tbl.setColumnDefaultValue("SimEndTick", -1);
-    siminfo_tbl.disableAutoIncPrimaryKey();
+    siminfo_tbl.unsetPrimaryKey();
 
     auto& siminfo_header_pairs_tbl = schema.addTable("SimulationInfoHeaderPairs");
     siminfo_header_pairs_tbl.addColumn("HeaderName", dt::string_t);
     siminfo_header_pairs_tbl.addColumn("HeaderValue", dt::string_t);
-    siminfo_header_pairs_tbl.disableAutoIncPrimaryKey();
+    siminfo_header_pairs_tbl.unsetPrimaryKey();
 
     auto& vis_tbl = schema.addTable("Visibilities");
     vis_tbl.addColumn("Hidden", dt::int32_t);
@@ -92,13 +90,13 @@ void ReportStatsCollector::defineSchema(simdb::Schema& schema)
     vis_tbl.addColumn("Normal", dt::int32_t);
     vis_tbl.addColumn("Summary", dt::int32_t);
     vis_tbl.addColumn("Critical", dt::int32_t);
-    vis_tbl.disableAutoIncPrimaryKey();
+    vis_tbl.unsetPrimaryKey();
 
     auto& js_json_leaf_nodes_tbl = schema.addTable("JsJsonLeafNodes");
     js_json_leaf_nodes_tbl.addColumn("ReportName", dt::string_t);
     js_json_leaf_nodes_tbl.addColumn("IsParentOfLeafNodes", dt::int32_t);
     js_json_leaf_nodes_tbl.setColumnDefaultValue("IsParentOfLeafNodes", -1);
-    js_json_leaf_nodes_tbl.disableAutoIncPrimaryKey();
+    js_json_leaf_nodes_tbl.unsetPrimaryKey();
 
     // In the case of multiple reports, we will end up with more than
     // one CollectionRecords rows with the same Tick value. We use this

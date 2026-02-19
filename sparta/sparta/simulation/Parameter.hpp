@@ -482,7 +482,7 @@ namespace sparta
          * \param[in] val Value to write to default
          * \pre This parameter is allowed to have been written but must not have
          * been read yet. This parameter must not be a vector
-         * \note Does not attempt to resture current value from default.
+         * \note Does not attempt to restore current value from default.
          * \note Does not increment write count
          * \warning Do not assign new defaults to Parameters without
          * understanding how architecture configurations interact with defaults
@@ -495,7 +495,7 @@ namespace sparta
          * \param[in] val Value to write to default
          * \pre This parameter is allowed to have been written but must not have
          * been read yet. This parameter must not be a vector
-         * \note Does not attempt to resture current value from default.
+         * \note Does not attempt to restore current value from default.
          * \note Does not increment write count
          * \warning Do not assign new defaults to Parameters without
          * understanding how architecture configurations interact with defaults
@@ -507,7 +507,7 @@ namespace sparta
          * at an n-dimensional array specified
          * \pre This parameter is allowed to have been written but must not have
          * been read yet. This parameter must not be a vector
-         * \note Does not attempt to resture current value from default.
+         * \note Does not attempt to restore current value from default.
          */
         virtual void overrideDefaultItemValueFromString(const std::vector<uint32_t>& indices,
                                                         const std::string& str) = 0;
@@ -515,7 +515,7 @@ namespace sparta
         /*!
          * \brief Override the default value by clearing the possibly-nested
          * vector (if this parameter is a vector).
-         * The nested vector contens can then be set by
+         * The nested vector contents can then be set by
          * overrideDefaultItemValueFromString
          */
         virtual void overrideDefaultResizeVectorsFromString(const std::vector<uint32_t>& indices) = 0;

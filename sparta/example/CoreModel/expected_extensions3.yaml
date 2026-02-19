@@ -1,0 +1,8 @@
+top.cpu.core0.lsu.extension.foobar:
+  foo: 8
+  bar: 5
+  extra: 777
+top.cpu.core1.lsu.extension.foobar:
+  foo: 4
+  bar: 5
+  extra: 888

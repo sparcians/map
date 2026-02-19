@@ -88,24 +88,8 @@
 
 #if SIMDB_ENABLED
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
-#include "simdb/apps/AppManager.hpp"
-
-// We have example/CoreModel tests which need to load two different
-// SimDB apps. Sparta only has the ReportStatsCollector app and the
-// CherryPickFastCheckpointer app, though only ReportStatsCollector
-// is explicitly used by Simulation/ReportRepository. So the stats
-// collector is baked into the static library, but the checkpointer
-// app is only used in a unit test. Thus the linker "dead strips"
-// the checkpointer's symbols for CoreModel builds and the translation
-// unit's REGISTER_SIMDB_APPLICATION macro is never used unless we
-// force CherryPickFastCheckpointer to get baked into the library
-// like ReportStatsCollector.
-//
-// TODO cnyce: Remove this once the PipelineCollector app is created.
-// Use the pipeline collector app and stats collector app for the
-// CoreModel unit tests. PipelineCollector will be baked in like
-// ReportStatsCollector is.
 #include "sparta/serialization/checkpoint/CherryPickFastCheckpointer.hpp"
+#include "simdb/apps/AppManager.hpp"
 #endif
 
 namespace YAML {
@@ -405,25 +389,8 @@ void Simulation::configure(const int argc,
     argc_ = argc;
     argv_ = argv;
 
-    if (sim_config_->hasTreeNodeExtensions()) {
-        namespace fs = std::filesystem;
-        fs::path temp_dir = fs::temp_directory_path();
-        fs::path temp_file = temp_dir / generateUUID();
-        temp_file.replace_extension(".yaml");
-
-        sparta::ConfigEmitter::YAML extensions_yaml(temp_file.string(), false /*Hide descriptions*/);
-
-        const auto& ptree = sim_config_->getExtensionsUnboundParameterTree();
-        ptree.visitLeaves([](const ParameterTree::Node* leaf){
-            // This configure() method is called prior to buildTree_(), so we can lock down
-            // extensions rules to say that buildTree_() is the earliest you are allowed to
-            // access extensions. There is little or no reason to need extensions earlier
-            // than buildTree_().
-            sparta_assert(leaf->getReadCount() == 0);
-        });
-
-        extensions_yaml.addParameters(getRoot(), &ptree, false /*Not verbose*/);
-        getRoot()->addExtensions(temp_file.string(), {temp_dir.string()});
+    if (!getExtensionManager(false)) {
+        setTreeNodeExtensionManager_(&sim_config_->extension_mgr);
     }
 
     ReportDescVec expanded_descriptors;
@@ -514,10 +481,6 @@ void Simulation::createSimDbApps_()
     const auto enabled_apps = simdb_config.getEnabledApps();
 
 #if SIMDB_ENABLED
-    // TODO cnyce: remove this - see comment at top of file (grep cnyce)
-    [[maybe_unused]] auto dummy = serialization::checkpoint::CherryPickFastCheckpointer(
-        nullptr /*db_mgr*/, {} /*roots*/, nullptr /*scheduler*/);
-
     if (enabled_apps.empty()) {
         return;
     }
@@ -525,21 +488,19 @@ void Simulation::createSimDbApps_()
     std::map<std::string, std::set<std::string>> apps_by_db_file;
     for (const auto & app_name : enabled_apps)
     {
-        for (const auto & db_file : simdb_config.getAppDatabases(app_name))
-        {
-            apps_by_db_file[db_file].insert(app_name);
-        }
+        auto db_file = simdb_config.getAppDatabase(app_name);
+        apps_by_db_file[db_file].insert(app_name);
     }
 
     for (const auto & [db_file, app_names] : apps_by_db_file)
     {
         const auto& pragmas = simdb_config.getPragmas();
-        constexpr auto new_file = true;
-        auto& app_mgr = app_managers_->getAppManager(db_file, new_file);
+        const bool new_file = simdb_config.shouldOverwriteDatabase(db_file);
+        auto& app_mgr = app_managers_->createAppManager(db_file, new_file);
 
         for (const auto & app_name : app_names)
         {
-            auto num_instances = simdb_config.getAppInstances(app_name, db_file);
+            auto num_instances = simdb_config.getAppCount(app_name);
             sparta_assert(num_instances > 0);
             app_mgr.enableApp(app_name, num_instances);
         }
@@ -547,7 +508,7 @@ void Simulation::createSimDbApps_()
         // Now that the apps are enabled with the specific number of instances,
         // give subclasses a chance to parameterize the app factories prior to
         // calling createEnabledApps().
-        parameterizeApps_(&app_mgr);
+        parameterizeSimDbApps_(&app_mgr);
     }
 
     app_managers_->createEnabledApps();
@@ -644,6 +605,13 @@ void Simulation::buildTree()
 
     setupProfilers_();
 
+#if SIMDB_ENABLED
+    simdb::AppRegistrations app_registrations(app_managers_.get());
+    app_registrations.registerApp<ReportStatsCollector>();
+    app_registrations.registerApp<serialization::checkpoint::CherryPickFastCheckpointer>();
+    registerSimDbApps_(&app_registrations);
+#endif
+
     // Subclass callback
     {
         PHASE_PROFILER(memory_profiler_, MemoryProfiler::Phase::Build);
@@ -724,111 +692,6 @@ void Simulation::finalizeTree()
 
     if(sim_config_)
     {
-        // Before checking that all arch/config/extension YAML file parameters were read,
-        // we need to mirror all the RootTreeNode's extension ptree (which is touched when
-        // users actually access extensions) with the SimulationConfiguration's extension
-        // ptrees (which are auto-populated from the YAML files).
-        auto& arch_ptree = sim_config_->getArchUnboundParameterTree();
-        auto& cfg_ptree = sim_config_->getUnboundParameterTree();
-        auto& ext_ptree = sim_config_->getExtensionsUnboundParameterTree();
-
-        // First, clear the read counts for all leaves in the sim config's extension ptrees.
-        // The true answer to the question "Has this extension parameter been read?" comes
-        // from the RootTreeNode's extension ptree.
-        auto resetReadCountIfExtensionParam = [](const ParameterTree::Node* leaf){
-            auto parent = leaf->getParent();
-            auto grandparent = parent ? parent->getParent() : nullptr;
-            if(grandparent && grandparent->getName() == "extension"){
-                leaf->resetReadCount();
-            }
-        };
-        arch_ptree.visitLeaves([&](const ParameterTree::Node* leaf){
-            resetReadCountIfExtensionParam(leaf);
-        });
-        cfg_ptree.visitLeaves([&](const ParameterTree::Node* leaf){
-            resetReadCountIfExtensionParam(leaf);
-        });
-        ext_ptree.visitLeaves([&](const ParameterTree::Node* leaf){
-            resetReadCountIfExtensionParam(leaf);
-        });
-
-        auto& rtn_ptree = root_.getExtensionsUnboundParameterTree();
-        rtn_ptree.visitLeaves([&](const ParameterTree::Node* leaf){
-            auto parent = leaf->getParent();
-            if (!parent) {
-                return;
-            }
-
-            auto grandparent = parent->getParent();
-            if (!grandparent) {
-                return;
-            }
-
-            if (grandparent->getName() != "extension") {
-                return;
-            }
-
-            // Full path: top.cpu.core0.extension.foobar.foo
-            auto path = leaf->getPath();
-            constexpr std::string_view marker = ".extension.";
-            auto pos = path.find(marker);
-            sparta_assert(pos != std::string::npos);
-
-            // TreeNode location: top.cpu.core0
-            // Extension param path: foobar.foo
-            std::string tn_loc = path.substr(0, pos);
-            std::string ext_param_path = path.substr(pos + marker.size());
-
-            std::vector<std::string> parts;
-            boost::split(parts, ext_param_path, boost::is_any_of("."));
-            sparta_assert(parts.size() == 2);
-
-            // Extension name: foobar
-            // Extension param name: foo
-            const auto& ext_name = parts[0];
-            const auto& ext_param_name = parts[1];
-
-            // Use const version of getExtension() so we don't accidentally
-            // read the extension by virtue of creating it
-            auto const_search_scope = const_cast<const GlobalTreeNode*>(getRoot()->getSearchScope());
-            constexpr auto must_exist = false;
-
-            if (auto tn = const_search_scope->getChild(tn_loc, must_exist)){
-                if (auto tn_ext = tn->getExtension(ext_name)){
-                    auto ext_param_set = tn_ext->getParameters();
-                    sparta_assert(ext_param_set != nullptr);
-
-                    // See if the extension parameter has been read from the root
-                    // tree node's ptree. If so, and that same extension parameter
-                    // path was found in --arch, --config, or --extension-file,
-                    // then increment the read counts in those ptrees to avoid
-                    // the "unread unbound parameter" exceptions.
-                    if (auto ext_param = ext_param_set->getChildAs<ParameterBase>(ext_param_name, must_exist)){
-                        auto read_count = ext_param->getReadCount();
-                        if (read_count > 0) {
-                            if (auto n = arch_ptree.tryGet(path)) {
-                                n->incrementReadCount();
-                            }
-                            if (auto n = cfg_ptree.tryGet(path)) {
-                                n->incrementReadCount();
-                            }
-                            if (auto n = ext_ptree.tryGet(path)) {
-                                n->incrementReadCount();
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // One of the verif checks below will throw if the user specified extensions via
-        // --arch, --config-file, or --extension-file, but by now they have still not
-        // consumed all of the YAML parameters.
-        //
-        // We do NOT check the RootTreeNode's unbound extensions ptree since it can
-        // contain extensions created on the fly, and we don't care if users explicitly
-        // create an extension that was not in any YAML input file.
-
         // Ensure that all unbound parameters have been consumed by ParameterSets or explicitly
         checkAllVirtualParamsRead_(sim_config_->getArchUnboundParameterTree());
 
@@ -836,7 +699,14 @@ void Simulation::finalizeTree()
         checkAllVirtualParamsRead_(sim_config_->getUnboundParameterTree());
 
         // Ensure that all unbound extension parameters were consumed
-        checkAllVirtualParamsRead_(sim_config_->getExtensionsUnboundParameterTree());
+        if (auto mgr = getExtensionManager(false)) {
+            checkAllVirtualParamsRead_(*mgr->getFinalConfigPTree());
+
+            // Let the extension manager throw/warn if there were any extensions given
+            // in any input YAML file, but the extension was never created.
+            auto suppress_exceptions = sim_config_->suppress_unread_parameter_warnings;
+            mgr->checkAllYamlExtensionsCreated(suppress_exceptions);
+        }
     }
 
     // Check ports and such
@@ -967,6 +837,7 @@ void Simulation::finalizeFramework()
     app_managers_->postInit(argc_, argv_);
     app_managers_->initializePipelines();
     app_managers_->openPipelines();
+    onSimDbAppsReady_();
 #endif
 }
 
@@ -1334,7 +1205,12 @@ void Simulation::addTreeNodeExtensionFactory_(const std::string & extension_name
         throw SpartaException("Cannot add extension factories once the simulator is configured");
     }
 
-    RootTreeNode::registerExtensionFactory(extension_name, factory);
+    TreeNodeExtensionManager::registerExtensionFactory(extension_name, factory);
+}
+
+void Simulation::setTreeNodeExtensionManager_(TreeNodeExtensionManager* mgr)
+{
+    getRoot()->setExtensionManager(mgr);
 }
 
 bool Simulation::dumpDebugContent_(std::string& debug_filename,
@@ -1970,11 +1846,11 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
                 }
             }
 
+            auto parent = node->getParent();
+            auto grandparent = parent ? parent->getParent() : nullptr;
             if(!ok){
                 // See if this is an optional extension which does not have to be instantiated,
                 // in other words these parameters are okay to be left unread.
-                auto parent = node->getParent();
-                auto grandparent = parent ? parent->getParent() : nullptr;
                 if(grandparent && grandparent->getName() == "extension"){
                     if(auto optional = parent->getChild("optional")){
                         auto value = optional->getValue();
@@ -1988,23 +1864,44 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
                 }
             }
 
+            // Check with the extensions manager to see if this unread parameter
+            // is due to an extension never being created. We issue different
+            // errors in that case.
+            if(auto mgr = getExtensionManager(false)){
+                if(!ok && grandparent && grandparent->getParent()){
+                    auto tn_loc = grandparent->getParent()->getPath();
+                    auto ext_name = parent->getName();
+                    if(!mgr->hasExtension(tn_loc, ext_name)){
+                        ok = true;
+                    }
+                }
+            }
+
+            // Do not print "Path exists in tree up to" for extensions parameters. These paths
+            // will never exist in the device tree.
+            std::string path_exists_msg;
+            if(!grandparent || grandparent->getName() != "extension"){
+                path_exists_msg = " Path exists in tree up to: \""
+                    + root_.getSearchScope()->getDeepestMatchingPath(path) + "\"";
+            }
+
             if(!ok){
                 if(node->isRequired()){
                     errors++;
                     err_list << "    ERROR: unread unbound parameter: \"" << path << "\" from: \""
-                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\". Path exists in tree up to: \""
-                              << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"" << std::endl;
+                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\"."
+                              << path_exists_msg << std::endl;
                 }else if(!sim_config_->suppress_unread_parameter_warnings) {
-                    std::cerr << "    NOTE: unread optional unbound parameter: \"" << path << "\" from: \""
-                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\". Path exists in tree up to: \""
-                              << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"" << std::endl;
+                    std::cerr << "    NOTE: unread unbound parameter: \"" << path << "\" from: \""
+                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\"."
+                              << path_exists_msg << std::endl;
                 }
             }
         }
         if(errors > 0){
             SpartaException ex("");
             ex << "Found " << errors << " unread unbound parameters. These "
-                  "parameter were specified by a configuration file or the command line but do not "
+                  "parameters were specified by a configuration file or the command line but do not "
                   "correspond to any Parameter nodes in the device tree and were never directly "
                   "read from the unbound tree:\n";
             ex << err_list.str();
