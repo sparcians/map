@@ -625,31 +625,39 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
     #if SIMDB_ENABLED
     simdb_opts_.add_options()
         ("simdb-apps",
-         named_value<std::vector<std::string>>("[DATABASE_FILE] app1 [count=1] app2 [count=1]...", 2, -1)->multitoken(),
-         "Instantiate and run the provided SimDB applications and associate them with the "
-         "simulation database file DATABASE_FILE. You can use this option multiple times to "
-         "create apps going to different databases. The optional 'count' argument tells Sparta "
-         "how many app instances to create for each type, defaulting to 1. If no database file "
-         "is specified (i.e. the first argument does not end in '.db'), it will default to "
-         "<sim_executable.db>")
-        ("simdb-file",
-         named_value<std::vector<std::string>>("DATABASE_FILE [reuse]", 1, 2)->multitoken(),
-         "Set or override the database output filename for all apps. Use '--simdb-file autogen' "
-         "to generate a database file using a UUID. If you omit [reuse], a new database will be "
-         "generated, else the existing database will be appended to. Using '--simdb-file autogen "
-         "reuse' will throw.")
-        ("reuse-simdb-file",
-         "Reuse the specified database file.")
+         named_value<std::vector<std::string>>("app1 [app2 app3...]", 1, -1)->multitoken(),
+         "List one or more apps that should be enabled.")
+        ("simdb-database",
+         named_value<std::string>("DATABASE_FILE", &global_simdb_file_),
+         "Set the database filename for all enabled apps. If not provided the executable name "
+         "will be used with the '.db' extension. If the given database filename is 'autogen', "
+         "a UUID-based filename will be generated.",
+         "Set the database filename for all enabled apps.")
+        ("simdb-app-database",
+         named_value<std::vector<std::string>>("APP_NAME DATABASE_FILE [APP_NAME DATABASE_FILE...]", 2, -1)->multitoken(),
+         "Override the database filename for specific app(s).")
+        ("simdb-app-count",
+         named_value<std::vector<std::string>>("APP_NAME COUNT|PATTERN [APP_NAME COUNT|PATTERN...]", 2, -1)->multitoken(),
+         "Tell SimDB how many instances of each app you want available. You can specify an explicit "
+         "count (integer), or you can provide a device tree location pattern e.g. top.cpu.core* which "
+         "will result in an app count that equals the number of tree nodes matching this pattern.",
+         "Tell SimDB how many instances of each app you want available, by explicit count or implicit "
+         "matching tree nodes.")
+        ("simdb-reuse",
+         named_value<std::vector<std::string>>("DATABASE_FILE [DATABASE_FILE...]", 1, -1)->multitoken(),
+         "Reuse the specified database file(s). Do not overwrite them.")
         ("enable-simdb-reports",
-         named_value<std::vector<std::string>>("[DATABASE_FILE]", 0, 1),
-         "Enable the simulation database to hold reports. If no database file is specified, "
-         "it will default to <sim_executable>.db")
+         named_value<std::vector<std::string>>("[DATABASE_FILE]", 0, 1)->multitoken(),
+         "Enable the simulation database to hold reports. If the database file is not provided, the "
+         "executable name will be used with a '.db' extension.")
         ("disable-legacy-reports",
          "Do not produce legacy formatted reports on the filesystem. Only write the SimDB file. "
          "This is to be used with --enable-simdb-reports.")
-        ("sqlite-safety",
-         named_value<std::vector<std::string>>("MODE", 1, 1),
+        ("simdb-safety",
          "Journaling mode / synchronous settings for SQLite3: fastest|safest|balanced (default:balanced)")
+        ("simdb-pragmas",
+         named_value<std::vector<std::string>>("PRAGMA_NAME PRAGMA_VALUE [PRAGMA_NAME PRAGMA_VALUE...]", 2, -1)->multitoken(),
+         "List of name-value pairs of SQLite pragmas to use when opening the database(s).")
         ;
     #endif
 
@@ -720,6 +728,7 @@ bool CommandLineSimulator::parse(int argc,
     argc_ = argc;
     argv_ = argv;
     ReportDescVec reports;
+    sim_config_.simdb_config.setSimExecutable(argv[0]);
 
     // Note: it is safe to reparse, but probably a bad idea
 
@@ -1158,57 +1167,45 @@ bool CommandLineSimulator::parse(int argc,
                 throw_report_deprecated = true;
                 ++i;
             }else if (o.string_key == "simdb-apps") {
-                std::filesystem::path simdb_file = o.value.at(0);
-                std::map<std::string, size_t> app_instances;
-
-                size_t start_idx = 1;
-                if(simdb_file.extension() != ".db"){
-                    simdb_file = argv[0] + std::string(".db");
-                    start_idx = 0;
+                for(const auto & app_name : o.value){
+                    sim_config_.simdb_config.enableApp(app_name);
+                }                
+                opts.options.erase(opts.options.begin() + i);
+            }else if (o.string_key == "simdb-app-database") {
+                sparta_assert(o.value.size() % 2 == 0);
+                for(size_t idx = 0; idx < o.value.size() - 1; idx += 2){
+                    const auto & app_name = o.value.at(idx);
+                    const auto & db_file = o.value.at(idx+1);
+                    sim_config_.simdb_config.setAppDatabase(app_name, db_file);
                 }
-                for(size_t idx = start_idx; idx < o.value.size(); ++idx){
-                    const std::string & app_name = o.value.at(idx);
-                    size_t num_instances = 1;
-                    if(idx + 1 < o.value.size()){
-                        const std::string & next = o.value.at(idx + 1);
-                        const bool is_number = std::all_of(next.begin(), next.end(), ::isdigit);
-                        if(is_number){
-                            num_instances = std::stoul(next);
-                            ++idx;
-                        }
+                opts.options.erase(opts.options.begin() + i);
+            }else if (o.string_key == "simdb-app-count") {
+                sparta_assert(o.value.size() % 2 == 0);
+                for(size_t idx = 0; idx < o.value.size() - 1; idx += 2){
+                    const auto & app_name = o.value.at(idx);
+                    const auto & count = o.value.at(idx+1);
+                    const bool is_number = std::all_of(count.begin(), count.end(), ::isdigit);
+                    if(is_number){
+                        sim_config_.simdb_config.setAppCount(app_name, std::atoi(count.c_str()));
+                    }else{
+                        sim_config_.simdb_config.inferAppCountFromTreePattern(app_name, count);
                     }
-                    app_instances[app_name] = num_instances;
                 }
-
-                for(const auto & [app_name, num_instances] : app_instances){
-                    sim_config_.simdb_config.enableApp(app_name, simdb_file, num_instances);
-                }
-
                 opts.options.erase(opts.options.begin() + i);
-            }else if (o.string_key == "simdb-file") {
-                const std::string simdb_file = o.value.at(0);
-                bool reuse = false;
-                if(o.value.size() > 1){
-                    sparta_assert(o.value[1] == "reuse");
-                    reuse = true;
+            }else if (o.string_key == "simdb-reuse") {
+                for(const auto & db_file : o.value){
+                    sim_config_.simdb_config.reuseDatabase(db_file);
                 }
-                if(simdb_file == "autogen" && reuse){
-                    throw SpartaException("You cannot reuse an auto-generated (uuid) database file");
-                }
-                sim_config_.simdb_config.setGlobalDatabaseFile(simdb_file, reuse);
-                opts.options.erase(opts.options.begin() + i);
-            }else if (o.string_key == "reuse-simdb-file") {
-                const std::string simdb_file = o.value.at(0);
-                sim_config_.simdb_config.reuseDatabase(simdb_file);
                 opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "enable-simdb-reports") {
-                std::string simdb_file = argv[0] + std::string(".db");
-                if (o.value.size() > 0) {
-                    simdb_file = o.value.at(0);
+                std::string report_db_file = argv[0] + std::string(".db");
+                if(!o.value.empty()){
+                    report_db_file = o.value.at(0);
                 }
-                sim_config_.simdb_config.enableApp("simdb-reports", simdb_file);
+                sim_config_.simdb_config.enableApp("simdb-reports");
+                sim_config_.simdb_config.setAppDatabase("simdb-reports", report_db_file);
                 opts.options.erase(opts.options.begin() + i);
-            }else if (o.string_key == "sqlite-safety") {
+            }else if (o.string_key == "simdb-safety") {
                 const std::string mode = o.value.at(0);
                 if (mode == "fastest") {
                     sim_config_.simdb_config.addPragmaOnOpen("journal_mode", "OFF");
@@ -1224,6 +1221,14 @@ bool CommandLineSimulator::parse(int argc,
                     err_code = 1;
                     return false;
                 }
+                opts.options.erase(opts.options.begin() + i);
+            }else if (o.string_key == "simdb-pragmas") {
+                sparta_assert(o.value.size() % 2 == 0);
+                for(size_t idx = 0; idx < o.value.size()-1; idx += 2){
+                    const auto & pragma_name = o.value.at(idx);
+                    const auto & pragma_value = o.value.at(idx + 1);
+                    sim_config_.simdb_config.addPragmaOnOpen(pragma_name, pragma_value);
+                }                
                 opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "pipeline-collection") {
                 //Enforce that we cannot set pipeline-collection options twice.
@@ -1686,6 +1691,16 @@ bool CommandLineSimulator::parse(int argc,
         sim_config_.omitStatsWithValueZeroForReportFormat("json_reduced");
     }
 
+    if (vm_.count("disable-legacy-reports")) {
+        sim_config_.simdb_config.disableLegacyReports();
+    }
+
+    if (!global_simdb_file_.empty()) {
+        for (const auto & app_name : sim_config_.simdb_config.getEnabledApps()) {
+            sim_config_.simdb_config.setAppDatabase(app_name, global_simdb_file_);
+        }
+    }
+
     // Get metadata architecture param from config files
     bool config_metadata_arch_final = false;
     for (const auto & cfg : config_pattern_names) {
@@ -2061,8 +2076,6 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
     sim->setFeatureConfig(&feature_config_);
 
-    sim_config_.simdb_config.finalize();
-
     // Configure the simulator itself (not its content)
     sim->configure(argc_,
                    argv_,
@@ -2267,6 +2280,21 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                                                                          true,
                                                                          false,
                                                                          !show_hidden_);
+        }
+
+        // The SimDB apps will be created in finalizeFramework() below. Now is the time
+        // to resolve any tree node patterns given to infer the number of app instances:
+        //
+        //   ./sim --simdb-apps my-app --simdb-app-count my-app top.cpu.core*
+        //
+        // If there are 4 nodes matching the pattern top.cpu.core*, we need 4 app instances.
+        for (const auto & app_name : sim_config_.simdb_config.getEnabledApps()) {
+            auto pattern = sim_config_.simdb_config.getTreePatternForInferredAppCount(app_name);
+            if (!pattern.empty()) {
+                std::vector<TreeNode*> matching_tns;
+                sim->getRoot()->getSearchScope()->findChildren(pattern, matching_tns);
+                sim_config_.simdb_config.setAppCount(app_name, matching_tns.size());
+            }
         }
 
         // Finalize framework before run (e.g. scheduler)

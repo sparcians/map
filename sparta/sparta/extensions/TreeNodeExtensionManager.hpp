@@ -423,7 +423,7 @@ private:
      * registered factories. The values at the time of finalizeTree()
      * will be added to the final config YAML file.
      */
-    std::shared_ptr<ParameterTree> post_create_params_;
+    std::shared_ptr<ParameterTree> post_create_params_ptree_;
 
     /*!
      * \brief Cached extensions for getExtension() performance.

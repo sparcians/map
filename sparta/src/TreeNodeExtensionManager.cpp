@@ -48,7 +48,7 @@ TreeNodeExtensionManager::TreeNodeExtensionManager()
     : wildcard_config_ptree_(std::make_shared<ParameterTree>())
     , concrete_config_ptree_(std::make_shared<ParameterTree>())
     , write_final_config_ptree_(std::make_shared<ParameterTree>())
-    , post_create_params_(std::make_shared<ParameterTree>())
+    , post_create_params_ptree_(std::make_shared<ParameterTree>())
 {
 }
 
@@ -176,19 +176,19 @@ ExtensionsBase * TreeNodeExtensionManager::createExtension(
             // in the YAML, so in this case the "p_value" variable will
             // still be empty.
             //
-            // If empty:     Add to the post_create_params_ ptree. We will add
+            // If empty:     Add to the post_create_params_ptree_ ptree. We will add
             //               the default values to the final config YAML file.
             // If not empty: We have a non-default param value in the YAML.
             //               Apply it to the sparta::Parameter and update the
-            //               param value in the post_create_params_ ptree.
+            //               param value in the post_create_params_ptree_ ptree.
             if (p_value.empty()) {
-                auto n = post_create_params_->create(p_path, false /*unrequired*/);
+                auto n = post_create_params_ptree_->create(p_path, false /*unrequired*/);
                 n->setValue(ext_param->getValueAsString(), false /*unrequired*/, "postCreate()" /*origin*/);
             } else {
                 app::ParameterApplicator applicator("", p_value);
                 applicator.apply(ext_param);
 
-                auto n = post_create_params_->create(p_path, false /*unrequired*/);
+                auto n = post_create_params_ptree_->create(p_path, false /*unrequired*/);
                 n->setValue(p_value, false /*unrequired*/, "postCreate()" /*origin*/);
             }
         }
@@ -509,7 +509,7 @@ const ParameterTree * TreeNodeExtensionManager::getFinalConfigPTree()
     });
 
     // Walk the entire postCreate ptree and add / update nodes
-    post_create_params_->visitLeaves([&](const ParameterTree::Node* leaf) {
+    post_create_params_ptree_->visitLeaves([&](const ParameterTree::Node* leaf) {
         // Path will be empty if we have no post create params.
         auto path = leaf->getPath();
         if (path.empty()) {
