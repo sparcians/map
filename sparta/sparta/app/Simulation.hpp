@@ -620,7 +620,7 @@ protected:
      * \note See app_mgr->getDatabaseManager()->getDatabaseFilePath()
      * to see which database this AppManager is serving.
      */
-    virtual void parameterizeApps_([[maybe_unused]] simdb::AppManager* app_mgr) {}
+    virtual void parameterizeSimDbApps_([[maybe_unused]] simdb::AppManager* app_mgr) {}
 
     /*!
      * \brief Hook which is called at the end of finalizeFramework() but

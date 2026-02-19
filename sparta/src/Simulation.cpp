@@ -510,7 +510,7 @@ void Simulation::createSimDbApps_()
         // Now that the apps are enabled with the specific number of instances,
         // give subclasses a chance to parameterize the app factories prior to
         // calling createEnabledApps().
-        parameterizeApps_(&app_mgr);
+        parameterizeSimDbApps_(&app_mgr);
     }
 
     app_managers_->createEnabledApps();
