@@ -1696,6 +1696,10 @@ bool CommandLineSimulator::parse(int argc,
     }
 
     if (!global_simdb_file_.empty()) {
+        if (global_simdb_file_ == "autogen") {
+            global_simdb_file_ = generateUUID() + ".db";
+            std::cout << "Using auto-generated database file: " << global_simdb_file_ << std::endl;
+        }
         for (const auto & app_name : sim_config_.simdb_config.getEnabledApps()) {
             sim_config_.simdb_config.setAppDatabase(app_name, global_simdb_file_);
         }
