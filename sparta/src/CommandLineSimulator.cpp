@@ -451,6 +451,11 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "Specify a YAML extension file to load at the global namespace of the simulator device tree. "
          "Example: \"--extension-file extensions.yaml\"",
          "Apply a YAML extension file at the top node in the simulator") // Brief
+        ("extension-files",
+         named_value<std::vector<std::string>>("FILENAME [FILENAME, ...]", 1, -1)->multitoken(),
+         "Specify YAML extension files to load at the global namespace of the simulator device tree. "
+         "Example: \"--extension-files base_extensions.yaml override_extensions.yaml\"",
+         "Apply YAML extension files at the top node in the simulator") // Brief
         ("control",
          named_value<std::vector<std::string>>("FILENAME", 1, 1),
          "Specify a YAML control file that contains trigger expressions for simulation pause, resume, "
@@ -620,24 +625,39 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
     #if SIMDB_ENABLED
     simdb_opts_.add_options()
         ("simdb-apps",
-         named_value<std::vector<std::string>>("DATABASE_FILE app1 [count=1] app2 [count=1]...", 2, -1)->multitoken(),
-         "Instantiate and run the provided SimDB applications and associate them with the "
-         "simulation database file DATABASE_FILE. You can use this option multiple times to "
-         "create apps going to different databases. The optional 'count' argument tells Sparta "
-         "how many app instances to create for each type, defaulting to 1.")
-        ("simdb-file",
-         named_value<std::vector<std::string>>("DATABASE_FILE", 1, 1)->multitoken(),
-         "Set or override the database output filename for all apps.")
+         named_value<std::vector<std::string>>("app1 [app2 app3...]", 1, -1)->multitoken(),
+         "List one or more apps that should be enabled.")
+        ("simdb-database",
+         named_value<std::string>("DATABASE_FILE", &global_simdb_file_),
+         "Set the database filename for all enabled apps. If not provided the executable name "
+         "will be used with the '.db' extension. If the given database filename is 'autogen', "
+         "a UUID-based filename will be generated.",
+         "Set the database filename for all enabled apps.")
+        ("simdb-app-database",
+         named_value<std::vector<std::string>>("APP_NAME DATABASE_FILE [APP_NAME DATABASE_FILE...]", 2, -1)->multitoken(),
+         "Override the database filename for specific app(s).")
+        ("simdb-app-count",
+         named_value<std::vector<std::string>>("APP_NAME COUNT|PATTERN [APP_NAME COUNT|PATTERN...]", 2, -1)->multitoken(),
+         "Tell SimDB how many instances of each app you want available. You can specify an explicit "
+         "count (integer), or you can provide a device tree location pattern e.g. top.cpu.core* which "
+         "will result in an app count that equals the number of tree nodes matching this pattern.",
+         "Tell SimDB how many instances of each app you want available, by explicit count or implicit "
+         "matching tree nodes.")
+        ("simdb-reuse",
+         named_value<std::vector<std::string>>("DATABASE_FILE [DATABASE_FILE...]", 1, -1)->multitoken(),
+         "Reuse the specified database file(s). Do not overwrite them.")
         ("enable-simdb-reports",
-         named_value<std::vector<std::string>>("[DATABASE_FILE]", 0, 1),
-         "Enable the simulation database to hold reports. If no database file is specified, "
-         "it will default to sparta.db")
+         named_value<std::vector<std::string>>("[DATABASE_FILE]", 0, 1)->multitoken(),
+         "Enable the simulation database to hold reports. If the database file is not provided, the "
+         "executable name will be used with a '.db' extension.")
         ("disable-legacy-reports",
          "Do not produce legacy formatted reports on the filesystem. Only write the SimDB file. "
          "This is to be used with --enable-simdb-reports.")
-        ("sqlite-safety",
-         named_value<std::vector<std::string>>("MODE", 1, 1),
+        ("simdb-safety",
          "Journaling mode / synchronous settings for SQLite3: fastest|safest|balanced (default:balanced)")
+        ("simdb-pragmas",
+         named_value<std::vector<std::string>>("PRAGMA_NAME PRAGMA_VALUE [PRAGMA_NAME PRAGMA_VALUE...]", 2, -1)->multitoken(),
+         "List of name-value pairs of SQLite pragmas to use when opening the database(s).")
         ;
     #endif
 
@@ -708,6 +728,7 @@ bool CommandLineSimulator::parse(int argc,
     argc_ = argc;
     argv_ = argv;
     ReportDescVec reports;
+    sim_config_.simdb_config.setSimExecutable(argv[0]);
 
     // Note: it is safe to reparse, but probably a bad idea
 
@@ -862,8 +883,16 @@ bool CommandLineSimulator::parse(int argc,
                     err_code = 1;
                     return false;
                 }
-                // Prepend a directory to the list of search directories
-                sim_config_.processExtensionFile(o.value[0]);
+                auto& ext_mgr = sim_config_.extension_mgr;
+                const auto& search_paths = sim_config_.getConfigSearchPath();
+                ext_mgr.addExtensions(o.value[0], search_paths);
+                opts.options.erase(opts.options.begin() + i);
+            }else if(o.string_key == "extension-files"){
+                auto& ext_mgr = sim_config_.extension_mgr;
+                const auto& search_paths = sim_config_.getConfigSearchPath();
+                for (const auto & filename : o.value) {
+                    ext_mgr.addExtensions(filename, search_paths);
+                }
                 opts.options.erase(opts.options.begin() + i);
             }else if(o.string_key == "enable-state-tracking") {
                 if(o.value.size() != 1) {
@@ -1138,40 +1167,45 @@ bool CommandLineSimulator::parse(int argc,
                 throw_report_deprecated = true;
                 ++i;
             }else if (o.string_key == "simdb-apps") {
-                const auto simdb_file = o.value.at(0);
-                std::map<std::string, size_t> app_instances;
-
-                for (size_t idx = 1; idx < o.value.size(); ++idx) {
-                    const std::string & app_name = o.value.at(idx);
-                    size_t num_instances = 1;
-                    if (idx + 1 < o.value.size()) {
-                        const std::string & next = o.value.at(idx + 1);
-                        const bool is_number = std::all_of(next.begin(), next.end(), ::isdigit);
-                        if (is_number) {
-                            num_instances = std::stoul(next);
-                            ++idx;
-                        }
-                    }
-                    app_instances[app_name] = num_instances;
-                }
-
-                for (const auto & [app_name, num_instances] : app_instances) {
-                    sim_config_.simdb_config.enableApp(app_name, simdb_file, num_instances);
-                }
-
+                for(const auto & app_name : o.value){
+                    sim_config_.simdb_config.enableApp(app_name);
+                }                
                 opts.options.erase(opts.options.begin() + i);
-            }else if (o.string_key == "simdb-file") {
-                const std::string simdb_file = o.value.at(0);
-                sim_config_.simdb_config.setGlobalDatabaseFile(simdb_file);
+            }else if (o.string_key == "simdb-app-database") {
+                sparta_assert(o.value.size() % 2 == 0);
+                for(size_t idx = 0; idx < o.value.size() - 1; idx += 2){
+                    const auto & app_name = o.value.at(idx);
+                    const auto & db_file = o.value.at(idx+1);
+                    sim_config_.simdb_config.setAppDatabase(app_name, db_file);
+                }
+                opts.options.erase(opts.options.begin() + i);
+            }else if (o.string_key == "simdb-app-count") {
+                sparta_assert(o.value.size() % 2 == 0);
+                for(size_t idx = 0; idx < o.value.size() - 1; idx += 2){
+                    const auto & app_name = o.value.at(idx);
+                    const auto & count = o.value.at(idx+1);
+                    const bool is_number = std::all_of(count.begin(), count.end(), ::isdigit);
+                    if(is_number){
+                        sim_config_.simdb_config.setAppCount(app_name, std::atoi(count.c_str()));
+                    }else{
+                        sim_config_.simdb_config.inferAppCountFromTreePattern(app_name, count);
+                    }
+                }
+                opts.options.erase(opts.options.begin() + i);
+            }else if (o.string_key == "simdb-reuse") {
+                for(const auto & db_file : o.value){
+                    sim_config_.simdb_config.reuseDatabase(db_file);
+                }
                 opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "enable-simdb-reports") {
-                std::string simdb_file = "sparta.db";
-                if (o.value.size() > 0) {
-                    simdb_file = o.value.at(0);
+                std::string report_db_file = argv[0] + std::string(".db");
+                if(!o.value.empty()){
+                    report_db_file = o.value.at(0);
                 }
-                sim_config_.simdb_config.enableApp("simdb-reports", simdb_file);
+                sim_config_.simdb_config.enableApp("simdb-reports");
+                sim_config_.simdb_config.setAppDatabase("simdb-reports", report_db_file);
                 opts.options.erase(opts.options.begin() + i);
-            }else if (o.string_key == "sqlite-safety") {
+            }else if (o.string_key == "simdb-safety") {
                 const std::string mode = o.value.at(0);
                 if (mode == "fastest") {
                     sim_config_.simdb_config.addPragmaOnOpen("journal_mode", "OFF");
@@ -1187,6 +1221,14 @@ bool CommandLineSimulator::parse(int argc,
                     err_code = 1;
                     return false;
                 }
+                opts.options.erase(opts.options.begin() + i);
+            }else if (o.string_key == "simdb-pragmas") {
+                sparta_assert(o.value.size() % 2 == 0);
+                for(size_t idx = 0; idx < o.value.size()-1; idx += 2){
+                    const auto & pragma_name = o.value.at(idx);
+                    const auto & pragma_value = o.value.at(idx + 1);
+                    sim_config_.simdb_config.addPragmaOnOpen(pragma_name, pragma_value);
+                }                
                 opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "pipeline-collection") {
                 //Enforce that we cannot set pipeline-collection options twice.
@@ -1649,6 +1691,20 @@ bool CommandLineSimulator::parse(int argc,
         sim_config_.omitStatsWithValueZeroForReportFormat("json_reduced");
     }
 
+    if (vm_.count("disable-legacy-reports")) {
+        sim_config_.simdb_config.disableLegacyReports();
+    }
+
+    if (!global_simdb_file_.empty()) {
+        if (global_simdb_file_ == "autogen") {
+            global_simdb_file_ = generateUUID() + ".db";
+            std::cout << "Using auto-generated database file: " << global_simdb_file_ << std::endl;
+        }
+        for (const auto & app_name : sim_config_.simdb_config.getEnabledApps()) {
+            sim_config_.simdb_config.setAppDatabase(app_name, global_simdb_file_);
+        }
+    }
+
     // Get metadata architecture param from config files
     bool config_metadata_arch_final = false;
     for (const auto & cfg : config_pattern_names) {
@@ -2024,8 +2080,6 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
     sim->setFeatureConfig(&feature_config_);
 
-    sim_config_.simdb_config.finalize();
-
     // Configure the simulator itself (not its content)
     sim->configure(argc_,
                    argv_,
@@ -2111,150 +2165,23 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
 
         sim->finalizeTree();
 
-        auto wrap_up_final_config = [&](const sparta::ParameterTree & orig_ptree,
-                                        const std::string & filename,
-                                        bool show_descriptions)
-        {
-            sparta::ParameterTree ptree(orig_ptree);
-
-            // Ensure that default extension parameter values get added to the ParameterTree.
-            // Users expect any parameter added in postCreate() to be written to the final
-            // config file, and there is no guarantee that anybody calls getExtension() or
-            // createExtension() to instantiate the extensions. Repro steps for the reported
-            // bug:
-            //
-            //    ./sim --write-final-config final.yaml --arch small_core.yaml --no-run
-            //
-            // Where small_core.yaml specifies:
-            //
-            //    top.cpu.core0.extension.core_extensions:
-            //        exe_pipe_rename:
-            //          ["exe0", "alu0_pipe"],
-            //            ["exe1", "fpu0_pipe"],
-            //            ["exe2", "br_pipe"],
-            //            ["exe3", "vint_pipe"]
-            //          ]
-            //
-            // But in CoreExtensions::postCreate() we have:
-            //
-            //    sparta::ParameterSet* ps = getParameters();
-            //
-            //    // Add parameter not found in any extension/arch/config file
-            //    foo_param_.reset(new sparta::Parameter<int>("foo", 555, "Foo Param", ps));
-            //
-            // The bug is in final.yaml where the default "Foo Param" value of 555 is
-            // not listed in the YAML file if this extension was never created.
-            std::vector<ParameterTree::Node*> extension_nodes;
-            ptree.getRoot()->recursFindPTreeNodesNamed("extension", extension_nodes);
-
-            for (auto node : extension_nodes) {
-                auto children = node->getChildren();
-                for (auto child : children) {
-                    auto parent = node->getParent();
-                    sparta_assert(parent != nullptr);
-                    auto path = parent->getPath();
-
-                    // Note that the ParameterTree path might contain wildcards
-                    std::vector<TreeNode*> tree_nodes;
-                    sim->getRoot()->getSearchScope()->findChildren(path, tree_nodes);
-
-                    auto extension_name = child->getName();
-                    for (auto tree_node : tree_nodes) {
-                        // Use the const getExtension() to see if this extension was
-                        // already created.
-                        auto is_user_created_ext = const_cast<const TreeNode*>(tree_node)->
-                            getExtension(extension_name) != nullptr;
-
-                        // We are calling the non-const getExtension() so we can force
-                        // factory-registered extensions to be created.
-                        auto extension = tree_node->getExtension(extension_name);
-                        if (!extension) {
-                            continue;
-                        }
-
-                        auto ps = extension->getParameters();
-                        std::vector<ParameterBase*> params;
-                        ps->getChildrenOfType<ParameterBase>(params);
-
-                        for (auto p : params) {
-                            if (child->getChild(p->getName())) {
-                                // Parameter already exists in ptree
-                                continue;
-                            }
-
-                            // Add parameter to the ptree
-                            auto n = child->create(p->getName(), false /*not required*/);
-                            n->setValue(p->getValueAsString(), false /*not required*/);
-                        }
-
-                        // Now that the ParameterTree is updated, remove the extension
-                        // we just created with the non-const getExtension() call.
-                        if (!is_user_created_ext) {
-                            auto root = sim->getRoot();
-                            auto & exts_ptree = root->getExtensionsUnboundParameterTree();
-                            auto n = exts_ptree.tryGet(tree_node->getLocation(), false /*must_be_leaf*/);
-                            auto success = n->clearUserData(extension_name);
-                            sparta_assert(success);
-                        }
-                    }
-                }
-            }
-
-            // Now look for all extensions in the tree, starting from root. Add any extensions
-            // and their parameters to the ptree.
-            using TreeNodeExtensions = std::map<std::string /*ext name*/, const TreeNode::ExtensionsBase* /*ext*/>;
-            using AllTreeNodeExtensions = std::map<const TreeNode* /*owning node*/, TreeNodeExtensions /*node exts*/>;
-            std::function<void(const TreeNode*, AllTreeNodeExtensions&)> recurse_find_exts;
-
-            recurse_find_exts = [&](const TreeNode* node, AllTreeNodeExtensions & extensions)
-            {
-                for (const auto & [ext_name, ext] : node->getAllExtensions()) {
-                    extensions[node][ext_name] = ext;
-                }
-                for (const auto child : node->getChildren()) {
-                    recurse_find_exts(child, extensions);
-                }
-            };
-
-            AllTreeNodeExtensions all_extensions;
-            recurse_find_exts(sim->getRoot(), all_extensions);
-
-            for (const auto & [tn, tn_exts] : all_extensions) {
-                for (const auto & [ext_name, ext] : tn_exts) {
-                    auto tmp_tn_loc = tn->getLocation();
-                    if (tmp_tn_loc.back() == '.') {
-                        tmp_tn_loc.pop_back();
-                    }
-
-                    const auto ptree_path_to_ext = tmp_tn_loc + ".extension." + ext_name;
-                    auto ptree_node = ptree.create(ptree_path_to_ext, false /*not required*/);
-
-                    auto ps = ext->getParameters();
-                    std::vector<ParameterBase*> params;
-                    ps->getChildrenOfType<ParameterBase>(params);
-
-                    for (auto p : params) {
-                        auto p_name = p->getName();
-                        auto p_value = p->getValueAsString();
-                        ptree_node->create(p_name, false /*not required*/)->setValue(p_value);
-                    }
-                }
-            }
-
-            sparta::ConfigEmitter::YAML param_out(filename, show_descriptions);
-            param_out.addParameters(sim->getRoot()->getSearchScope(), &ptree, sim_config_.verbose_cfg);
-        };
-
         // Store final config file(s) after finalization so that all dynamic parameters are built
         //! \todo Print configuration if finalizeTree fails with exception then rethrow
+        const ParameterTree * extensions_ptree = nullptr;
         if(final_config_file_ != ""){
-            const auto& ptree = sim->getSimulationConfiguration()->getExtensionsUnboundParameterTree();
-            wrap_up_final_config(ptree, final_config_file_, false /*Hide descriptions*/);
+            sparta::ConfigEmitter::YAML param_out(final_config_file_,
+                                                  false); // Hide descriptions
+            extensions_ptree = sim_config_.extension_mgr.getFinalConfigPTree();
+            param_out.addParameters(sim->getRoot()->getSearchScope(), extensions_ptree, sim_config_.verbose_cfg);
         }
 
         if(final_config_file_verbose_ != ""){
-            const auto& ptree = sim->getSimulationConfiguration()->getExtensionsUnboundParameterTree();
-            wrap_up_final_config(ptree, final_config_file_verbose_, true /*Show descriptions*/);
+            sparta::ConfigEmitter::YAML param_out(final_config_file_verbose_,
+                                                  true); // Show descriptions
+            if (!extensions_ptree) {
+                extensions_ptree = sim_config_.extension_mgr.getFinalConfigPTree();
+            }
+            param_out.addParameters(sim->getRoot()->getSearchScope(), extensions_ptree, sim_config_.verbose_cfg);
         }
 
         if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)
@@ -2357,6 +2284,21 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                                                                          true,
                                                                          false,
                                                                          !show_hidden_);
+        }
+
+        // The SimDB apps will be created in finalizeFramework() below. Now is the time
+        // to resolve any tree node patterns given to infer the number of app instances:
+        //
+        //   ./sim --simdb-apps my-app --simdb-app-count my-app top.cpu.core*
+        //
+        // If there are 4 nodes matching the pattern top.cpu.core*, we need 4 app instances.
+        for (const auto & app_name : sim_config_.simdb_config.getEnabledApps()) {
+            auto pattern = sim_config_.simdb_config.getTreePatternForInferredAppCount(app_name);
+            if (!pattern.empty()) {
+                std::vector<TreeNode*> matching_tns;
+                sim->getRoot()->getSearchScope()->findChildren(pattern, matching_tns);
+                sim_config_.simdb_config.setAppCount(app_name, matching_tns.size());
+            }
         }
 
         // Finalize framework before run (e.g. scheduler)

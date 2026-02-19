@@ -1,5 +1,5 @@
 #include "sparta/serialization/checkpoint/CherryPickFastCheckpointer.hpp"
-#include "simdb/apps/AppRegistration.hpp"
+#include "simdb/apps/AppManager.hpp"
 #include "simdb/schema/SchemaDef.hpp"
 #include "simdb/pipeline/AsyncDatabaseAccessor.hpp"
 #include "simdb/utils/Compress.hpp"
@@ -34,7 +34,7 @@ void CherryPickFastCheckpointer::defineSchema(simdb::Schema& schema)
     windows.addColumn("EndTick", dt::uint64_t);
     windows.addColumn("NumCheckpoints", dt::int32_t);
     windows.createCompoundIndexOn({"StartArchID", "EndArchID", "StartTick", "EndTick"});
-    windows.disableAutoIncPrimaryKey();
+    windows.unsetPrimaryKey();
 }
 
 /// Process checkpoint windows on one thread
@@ -199,7 +199,5 @@ std::string CherryPickFastCheckpointer::stringize() const
     ss << '>';
     return ss.str();
 }
-
-REGISTER_SIMDB_APPLICATION(CherryPickFastCheckpointer);
 
 } // namespace sparta::serialization::checkpoint

@@ -122,6 +122,35 @@ private:
     std::unique_ptr<sparta::Parameter<int>> value_;
 };
 
+class Foobar : public sparta::ExtensionsParamsOnly
+{
+private:
+    void postCreate() override {
+        sparta::ParameterSet * ps = getParameters();
+        extra_.reset(new sparta::Parameter<int>(
+            "extra", 404, "Extra postCreate parameter", ps));
+    }
+
+    std::unique_ptr<sparta::Parameter<int>> extra_;
+};
+
+class CoreExtensions : public sparta::ExtensionsParamsOnly
+{
+public:
+    using EnabledUnits = std::vector<std::vector<std::vector<std::string>>>;
+
+private:
+    void postCreate() override {
+        auto ps = getParameters();
+        enabled_units_.reset(new sparta::Parameter<std::vector<std::vector<std::vector<std::string>>>>(
+            "enabled_units", {}, "Enabled units to test nested vectors", ps));
+        fetch_type_.reset(new sparta::Parameter<std::string>("fetch_type", "dummy", "blah", ps));
+    }
+
+    std::unique_ptr<sparta::Parameter<EnabledUnits>> enabled_units_;
+    std::unique_ptr<sparta::Parameter<std::string>> fetch_type_;
+};
+
 double calculateAverageOfInternalCounters(
     const std::vector<const sparta::CounterBase*> & counters)
 {
@@ -152,6 +181,8 @@ ExampleSimulator::ExampleSimulator(const std::string& topology,
     //      parameter sets with more complicated sparta::Parameter<T> data types
     addTreeNodeExtensionFactory_("circle", [](){return new CircleExtensions;});
     addTreeNodeExtensionFactory_("never_explicitly_instantiated", [](){return new NeverExplicitlyInstantiated;});
+    addTreeNodeExtensionFactory_("foobar", [](){return new Foobar;});
+    addTreeNodeExtensionFactory_("core_extensions", [](){return new CoreExtensions;});
 
     // Initialize example simulation controller
     controller_.reset(new ExampleSimulator::ExampleController(this));
@@ -222,6 +253,15 @@ void ExampleSimulator::buildTree_()
     // Tell the factory to build the resources now
     cpu_factory->buildTree(getRoot());
 
+    // This is here to verify that we can access an extension during buildTree(),
+    // read its value (increment the read count), and have that read count seen
+    // as "yes this has been read" during finalizeTree().
+    if(auto ext = cpu_tn->getChild("core0")->getExtension("core_extensions", true)){
+        auto ps = ext->getParameters();
+        auto & p = ps->getParameterAs<std::string>("fetch_type");
+        p.getValue();
+    }
+
     // Print the registered factories
     if(show_factories_){
         std::cout << "Registered factories: \n";
@@ -232,10 +272,11 @@ void ExampleSimulator::buildTree_()
 
     // Validate tree node extensions during tree building
     for(uint32_t i = 0; i < num_cores_; ++i){
-        const std::string dispatch_loc = "cpu.core" + std::to_string(i) + ".dispatch";
-        const std::string alu0_loc = "cpu.core" + std::to_string(i) + ".alu0";
-        const std::string alu1_loc = "cpu.core" + std::to_string(i) + ".alu1";
-        const std::string fpu_loc = "cpu.core" + std::to_string(i) + ".fpu";
+        const std::string core_loc = "cpu.core" + std::to_string(i);
+        const std::string dispatch_loc = core_loc + ".dispatch";
+        const std::string alu0_loc = core_loc + ".alu0";
+        const std::string alu1_loc = core_loc + ".alu1";
+        const std::string fpu_loc = core_loc + ".fpu";
 
         // user_data.when_ (dispatch)
         if (auto prm = getExtensionParameter_<std::string>(getRoot()->getChild(dispatch_loc), "when_", "user_data")) {
@@ -312,6 +353,45 @@ void ExampleSimulator::buildTree_()
             prm->addDependentValidationCallback([](std::string & val, const sparta::TreeNode*) -> bool {
                 return val == "0";
             }, "Parameter 'edges_' should be '0'");
+        }
+
+        // core_extensions.enabled_units_ (core0)
+        auto core_tn = getRoot()->getChild(core_loc);
+        using NestedVector = typename CoreExtensions::EnabledUnits;
+        if (auto prm = getExtensionParameter_<NestedVector>(core_tn, "enabled_units", "core_extensions")) {
+            prm->addDependentValidationCallback([](NestedVector & actual_vecs, const sparta::TreeNode* node) -> bool {
+                if (actual_vecs.empty()) {
+                    return true;
+                }
+
+                // Note that we should read the extension to verify that it matches the incoming
+                // actual_vecs, but also to silence "unread unbound parameter" exceptions.
+                auto ext = node->getExtension("core_extensions");
+                if (!ext) {
+                    return false;
+                }
+
+                auto ps = ext->getParameters();
+                if (!ps->hasParameter("enabled_units")) {
+                    return false;
+                }
+
+                auto& p = ps->getParameterAs<NestedVector>("enabled_units");
+                if (p.getValue() != actual_vecs) {
+                    return false;
+                }
+
+                static NestedVector expected_vecs = {
+                    {
+                        {"int"},
+                        {"int", "div"},
+                        {"int", "mul"},
+                        {"int", "mul", "i2f", "cmov"}
+                    }
+                };
+
+                return p.getValue() == expected_vecs;
+            }, "Invalid enabled units in 'core_extensions' (nested vector param)");
         }
 
         // User-specified extension class
@@ -705,6 +785,38 @@ void ExampleSimulator::validateTreeNodeExtensions_()
             [](std::string & val, const sparta::TreeNode*) -> bool {
                 return val == "663";
             }, "Parameter 'ticket_' should be '663'");
+    }
+
+    if (auto ext = getRoot()->getExtension("testing", true /*no_factory_ok*/)) {
+        auto expected_exts_file = ext->getParameterValueAs<std::string>("expected_extensions");
+        sparta_assert(!expected_exts_file.empty());
+
+        sparta::ParameterTree expected_exts_ptree;
+        sparta::app::NodeConfigFileApplicator applicator("", expected_exts_file, {"./"});
+        applicator.applyUnbound(expected_exts_ptree);
+
+        std::vector<const sparta::ParameterTree::Node*> ext_root_nodes;
+        expected_exts_ptree.getRoot()->recursFindPTreeNodesNamed("extension", ext_root_nodes);
+
+        for (auto ext_root_node : ext_root_nodes) {
+            auto tn_pattern = ext_root_node->getParent()->getPath();
+            std::vector<sparta::TreeNode*> matching_tns;
+            getRoot()->getSearchScope()->findChildren(tn_pattern, matching_tns);
+
+            for (auto tn : matching_tns) {
+                for (auto ext_node : ext_root_node->getChildren()) {
+                    auto ext_name = ext_node->getName();
+                    ext = tn->getExtension(ext_name); // no factory NOT okay: we expect a Foobar
+                    sparta_assert(dynamic_cast<Foobar*>(ext) != nullptr);
+
+                    for (auto param_node : ext_node->getChildren()) {
+                        auto actual_val = ext->getParameterValueAs<std::string>(param_node->getName());
+                        auto expected_val = param_node->peekValue();
+                        sparta_assert(actual_val == expected_val);
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -83,6 +83,7 @@ list (APPEND SourceCppFiles
             src/TreeFilterExpressionGrammar.cpp
             src/TreeNode.cpp
             src/TreeNodeExtensions.cpp
+            src/TreeNodeExtensionManager.cpp
             src/Trigger.cpp
             src/TriggerManager.cpp
             src/Unit.cpp

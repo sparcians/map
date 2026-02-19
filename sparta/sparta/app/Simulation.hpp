@@ -12,7 +12,6 @@
 #include "sparta/simulation/Resource.hpp"
 #include "sparta/simulation/ResourceFactory.hpp"
 #include "sparta/simulation/TreeNode.hpp"
-#include "sparta/simulation/TreeNodeExtensions.hpp"
 #include "sparta/log/Tap.hpp"
 #include "sparta/parsers/ConfigParserYAML.hpp"
 #include "sparta/simulation/ClockManager.hpp"
@@ -31,12 +30,14 @@ namespace YP = YAML; // Prevent collision with YAML class in ConfigParser namesp
 namespace simdb {
     class AppManager;
     class AppManagers;
+    class AppRegistrations;
 }
 
 namespace sparta {
 
 class Clock;
 class MemoryProfiler;
+class TreeNodeExtensionManager;
 
 namespace python {
     class PythonInterpreter;
@@ -199,6 +200,20 @@ public:
      */
     SimulationConfiguration * getSimulationConfiguration() const {
         return sim_config_;
+    }
+
+    /*!
+     * \brief Returns this simulator's extensions manager
+     */
+    const TreeNodeExtensionManager * getExtensionManager(bool must_exist = true) const {
+        return root_.getExtensionManager(must_exist);
+    }
+
+    /*!
+     * \brief Returns this simulator's extensions manager
+     */
+    TreeNodeExtensionManager * getExtensionManager(bool must_exist = true) {
+        return root_.getExtensionManager(must_exist);
     }
 
     /*!
@@ -555,6 +570,18 @@ protected:
     void addTreeNodeExtensionFactory_(const std::string & extension_name,
                                       std::function<TreeNode::ExtensionsBase*()> factory);
 
+    /*!
+     * \brief The typical flow is to let the SimulationConfiguration own the
+     * TreeNodeExtensionManager, and the CommandLineSimulator gives it to the
+     * simulation in Simulation::configure(). To support manually-configured
+     * simulators that do not call configure(), subclass simulators can own
+     * the TreeNodeExtensionManager and give it to the Simulation.
+     * \throw Throws if this is called after the tree is built.
+     * \throw Throws if the TreeNodeExtensionManager was already set.
+     * \throw Throws if configure() is called later.
+     */
+    void setTreeNodeExtensionManager_(TreeNodeExtensionManager* mgr);
+
     //! \name Virtual Setup Interface
     //! @{
     ////////////////////////////////////////////////////////////////////////
@@ -580,6 +607,12 @@ protected:
     virtual void bindTree_() = 0;
 
     /*!
+     * \brief Override this method to register your SimDB apps prior to
+     * parameterizing them and instantiating them.
+     */
+    virtual void registerSimDbApps_([[maybe_unused]] simdb::AppRegistrations* app_registrations) {}
+
+    /*!
      * \brief When using SimDB apps, this method gets called when the
      * SimulationConfiguration (SimDbConfig) has been consumed, and
      * the appropriate apps have been enabled **but not yet instantiated**.
@@ -587,12 +620,19 @@ protected:
      * \note See app_mgr->getDatabaseManager()->getDatabaseFilePath()
      * to see which database this AppManager is serving.
      */
-    virtual void parameterizeApps_([[maybe_unused]] simdb::AppManager* app_mgr) {}
+    virtual void parameterizeSimDbApps_([[maybe_unused]] simdb::AppManager* app_mgr) {}
 
     /*!
-     * \brief Hook which is called at the end of finalizeFramework()
+     * \brief Hook which is called at the end of finalizeFramework() but
+     * right before SimDB app pipelines/threads are opened.
      */
     virtual void postFinalizeFramework_() {}
+
+    /*!
+     * \brief Hook which is called after SimDB apps are created, pipelines
+     * are opened, threads are running, and everything is ready to go.
+     */
+    virtual void onSimDbAppsReady_() {}
 
     ////////////////////////////////////////////////////////////////////////
     //! @}
@@ -817,7 +857,6 @@ protected:
      * Add any nodes allocated to this list to automatically manage them.
      */
     std::vector<std::unique_ptr<sparta::TreeNode>> to_delete_;
-
 
     // The SimulationConfiguration object
     SimulationConfiguration * sim_config_{nullptr};

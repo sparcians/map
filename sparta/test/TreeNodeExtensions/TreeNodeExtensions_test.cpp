@@ -161,7 +161,9 @@ public:
         , node3_(&node2_, "node3", "node3")
         , node4_(&node3_, "node4", "node4")
         , node5_(&node4_, "node5", "node5")
-    {}
+    {
+        top_.setExtensionManager(&extensions_mgr_);
+    }
 
     sparta::RootTreeNode * getRoot()
     {
@@ -180,6 +182,7 @@ private:
     sparta::TreeNode node3_;
     sparta::TreeNode node4_;
     sparta::TreeNode node5_;
+    sparta::TreeNodeExtensionManager extensions_mgr_;
 };
 
 class MultiCoreTestTree
@@ -193,7 +196,9 @@ public:
         , core0_foo1_(&core0_, "foo1", "foo1")
         , core1_foo0_(&core1_, "foo0", "foo0")
         , core1_foo1_(&core1_, "foo1", "foo1")
-    {}
+    {
+        top_.setExtensionManager(&extensions_mgr_);
+    }
 
     sparta::RootTreeNode * getRoot()
     {
@@ -213,6 +218,7 @@ private:
     sparta::TreeNode core0_foo1_;
     sparta::TreeNode core1_foo0_;
     sparta::TreeNode core1_foo1_;
+    sparta::TreeNodeExtensionManager extensions_mgr_;
 };
 
 class TestSimulator : public sparta::app::Simulation
@@ -266,7 +272,7 @@ private:
         // compatibility, while the exception is for future-proofing
         // misuse of the legacy API.
         if (check_legacy_use_) {
-            if (!sparta::RootTreeNode::getExtensionFactory("global_meta")) {
+            if (!sparta::TreeNodeExtensionManager::hasExtensionFactory("global_meta")) {
                 auto ext = getRoot()->createExtension("global_meta");
                 EXPECT_NOTEQUAL(ext, nullptr);
                 EXPECT_EQUAL(dynamic_cast<GlobalMetadata*>(ext), nullptr);
@@ -364,10 +370,12 @@ void VerifyGlobalMeta(sparta::TreeNode::ExtensionsBase * extension)
 //   - Simulation with CommandLineSimulator.
 void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
 {
+    auto ext_mgr = top->getExtensionManager();
+
     // Create extensions from ski_trails.yaml for non-command line simulations.
     // CommandLineSimulator test already did this.
     if (!cmdline_sim) {
-        top->addExtensions("ski_trails.yaml", {"."} /*search paths*/, true /*verbose*/);
+        ext_mgr->addExtensions("ski_trails.yaml", {"."} /*search paths*/);
     }
 
     // Validate the extensions created from the YAML files.
@@ -389,31 +397,6 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
     EXPECT_NOTEQUAL(top_ext, nullptr);
     EXPECT_NOTEQUAL(node1_ext, nullptr);
     EXPECT_NOTEQUAL(node2_ext, nullptr);
-
-    // node3 should NOT have an extension yet (not in ski_trails.yaml)
-    // except for the last --node-config-file command-line sim test.
-    // Check the SimulationConfiguration's ptree for "top.node1.node2.node3"
-    // to discern this case.
-    bool expect_node3 = false;
-    if (cmdline_sim) {
-        auto sim = top->getSimulation();
-        sparta_assert(sim != nullptr);
-        auto sim_cfg = sim->getSimulationConfiguration();
-        sparta_assert(sim_cfg != nullptr);
-
-        auto & ptree = sim_cfg->getExtensionsUnboundParameterTree();
-        constexpr bool must_be_leaf = false;
-        auto node3_ptree_node = ptree.tryGet("top.node1.node2.node3", must_be_leaf);
-        if (node3_ptree_node) {
-            expect_node3 = true;
-        }
-    }
-
-    if (expect_node3) {
-        EXPECT_NOTEQUAL(node3_ext, nullptr);
-    } else {
-        EXPECT_EQUAL(node3_ext, nullptr);
-    }
 
     auto verif_ski_trail = [](sparta::TreeNode::ExtensionsBase * extension,
                               const std::string & expected_trail_name,
@@ -451,7 +434,7 @@ void TestExtensions(sparta::RootTreeNode * top, bool cmdline_sim)
     // Now add extensions from global_meta.yaml for non-command line simulations.
     // CommandLineSimulator test already did this.
     if (!cmdline_sim) {
-        top->addExtensions("global_meta.yaml", {"."} /*search paths*/, true /*verbose*/);
+        ext_mgr->addExtensions("global_meta.yaml", {"."} /*search paths*/);
     }
 
     // Check getNumExtensions() before calling top->createExtension("global_meta").
@@ -601,14 +584,19 @@ void TestExtensionsWithStandaloneSim()
     sparta::Scheduler scheduler;
     TestSimulator sim(scheduler);
 
+    // Unlike the CommandLineSimulator tests, we have to create
+    // a local TreeNodeExtensionManager and give it to the root.
+    sparta::TreeNodeExtensionManager ext_mgr;
+    sim.getRoot()->setExtensionManager(&ext_mgr);
+
     // No CommandLineSimulator == no SimulationConfiguration.
     // Do not call Simulation::configure().
     sim.buildTree();
+    TestExtensions(sim.getRoot(), false /*Not a command-line sim*/);
+
     sim.configureTree();
     sim.finalizeTree();
     sim.finalizeFramework();
-
-    TestExtensions(sim.getRoot(), false /*Not a command-line sim*/);
 }
 
 // Helper to turn a single command line string into argc, argv
@@ -686,7 +674,8 @@ void TestExtensionsWithLegacyUse(const std::string & cmdline_args)
 void TestExtensionWildcards()
 {
     MultiCoreTestTree tree;
-    tree.getRoot()->addExtensions("multi_core.yaml", {"."} /*search paths*/, true /*verbose*/);
+    auto ext_mgr = tree.getRoot()->getExtensionManager();
+    ext_mgr->addExtensions("multi_core.yaml", {"."} /*search paths*/);
 
     auto root = tree.getRoot();
     auto scope = root->getSearchScope();
@@ -702,14 +691,14 @@ void TestExtensionWildcards()
     EXPECT_EQUAL(core1_foo1_tn->getNumExtensions(), 0);
 
     // Register the GlobalMetadata factory.
-    EXPECT_NOTHROW(root->addExtensionFactory("global_meta",
+    EXPECT_NOTHROW(sparta::TreeNodeExtensionManager::registerExtensionFactory("global_meta",
         []() { return new GlobalMetadata; }));
 
     // Create the extensions.
     auto core0_foo0_ext = core0_foo0_tn->getExtension("global_meta");
     auto core0_foo1_ext = core0_foo1_tn->getExtension("global_meta");
-    auto core1_foo0_ext = core0_foo0_tn->getExtension("global_meta");
-    auto core1_foo1_ext = core0_foo1_tn->getExtension("global_meta");
+    auto core1_foo0_ext = core1_foo0_tn->getExtension("global_meta");
+    auto core1_foo1_ext = core1_foo1_tn->getExtension("global_meta");
 
     // Verify factory was used.
     EXPECT_NOTEQUAL(dynamic_cast<GlobalMetadata*>(core0_foo0_ext), nullptr);
@@ -717,15 +706,21 @@ void TestExtensionWildcards()
     EXPECT_NOTEQUAL(dynamic_cast<GlobalMetadata*>(core1_foo0_ext), nullptr);
     EXPECT_NOTEQUAL(dynamic_cast<GlobalMetadata*>(core1_foo1_ext), nullptr);
 
-    // Verify all extensions are shared since multi_core.yaml does this:
+    // Despite the fact that multi_core.yaml does this:
     //
     //   top.core*.foo*.extension.global_params:
     //     ...
+    //
+    // We expect that the extension manager creates unique extensions
+    // for every node, despite the wildcards.
     EXPECT_EQUAL(std::set<sparta::TreeNode::ExtensionsBase*>(
-        {core0_foo0_ext, core0_foo1_ext, core1_foo0_ext, core1_foo1_ext}).size(), 1);
+        {core0_foo0_ext, core0_foo1_ext, core1_foo0_ext, core1_foo1_ext}).size(), 4);
 
     // Verify all global metadata parameters.
     VerifyGlobalMeta(core0_foo0_ext);
+    VerifyGlobalMeta(core0_foo1_ext);
+    VerifyGlobalMeta(core1_foo0_ext);
+    VerifyGlobalMeta(core1_foo1_ext);
 }
 
 int main(int argc, char** argv)

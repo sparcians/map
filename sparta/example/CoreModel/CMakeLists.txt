@@ -142,15 +142,22 @@ sparta_named_test(sparta_core_example_arch_with_extensions sparta_core_example -
 # The old behavior of Sparta allowed extensions to be optional by default.  Now they are an error
 #sparta_named_test(sparta_core_example_indiv_tree_node_extensions sparta_core_example -i 10k -p top.cpu.core0.lsu.extension.dog.language_ woof --extension-file tree_node_extensions.yaml -p top.cpu.core0.lsu.extension.cat.language_ meow --write-final-config final.yaml)
 sparta_named_test(sparta_core_example_indiv_tree_node_extensions sparta_core_example -i 10k --extension-file tree_node_extensions.yaml -p top.cpu.core0.lsu.extension.cat.language_ meow --write-final-config final.yaml)
-sparta_expect_failure_test(sparta_core_example_final_cfg_implicit_extensions sparta_core_example -i 10k --extension-file tree_node_extensions.yaml --extension-file never_explicitly_instantiated.yaml --write-final-config final_cfg_with_implicit_extensions.yaml --no-run)
-sparta_named_test(sparta_core_example_final_cfg_optional_extensions sparta_core_example -i 10k --extension-file tree_node_extensions.yaml --extension-file optional_extension.yaml --write-final-config final_cfg_with_optional_extensions.yaml --no-run)
+sparta_expect_failure_test(sparta_core_example_final_cfg_implicit_extensions sparta_core_example -i 10k --extension-files tree_node_extensions.yaml never_explicitly_instantiated.yaml --write-final-config final_cfg_with_implicit_extensions.yaml --no-run)
+sparta_named_test(sparta_core_example_final_cfg_optional_extensions sparta_core_example -i 10k --extension-files tree_node_extensions.yaml optional_extension.yaml --write-final-config final_cfg_with_optional_extensions.yaml --no-run)
 #sparta_named_test(sparta_core_example_custom_histogram_stats sparta_core_example -i 100k --report multireport_r3.yaml)
 sparta_named_test(sparta_core_example_arch_report_simple sparta_core_example -i 10k --arch simple --arch-search-dir . --report top arch_report.yaml 1)
 sparta_named_test(sparta_core_example_arch_report_default sparta_core_example -i 10k --report top arch_report.yaml 1)
+sparta_named_test(sparta_core_example_override_extensions1 sparta_core_example -i 10k --extension-files base_extensions.yaml --num-cores 2 -p top.extension.testing.expected_extensions expected_extensions1.yaml)
+sparta_named_test(sparta_core_example_override_extensions2 sparta_core_example -i 10k --extension-files base_extensions.yaml override_extensions.yaml --num-cores 2 -p top.extension.testing.expected_extensions expected_extensions2.yaml)
+sparta_named_test(sparta_core_example_override_extensions3 sparta_core_example -i 10k --extension-files base_extensions.yaml override_extensions.yaml post_create_extensions.yaml --num-cores 2 -p top.extension.testing.expected_extensions expected_extensions3.yaml)
+sparta_expect_failure_test(sparta_core_example_override_extensions_neg_test sparta_core_example -i 10k --extension-files base_extensions.yaml override_extensions.yaml --num-cores 2 -p) # read no extensions
+sparta_named_test(sparta_core_example_3d_nested_extension_params sparta_core_example --no-run --extension-file nested_vecs.yaml --write-final-config final.yaml)
 
 if(USING_SIMDB)
-sparta_named_test(sparta_core_example_simdb_global_file sparta_core_example --no-run --simdb-apps foo.db simdb-reports --simdb-apps bar.db cherry-pick-fast-checkpointer --simdb-file test.db)
-sparta_expect_failure_test(sparta_core_example_simdb_global_file_neg_test sparta_core_example --no-run --simdb-apps foo.db simdb-reports --simdb-apps bar.db simdb-reports --simdb-file test.db)
+sparta_named_test(sparta_core_example_simdb_apps1 sparta_core_example --simdb-apps simdb-reports cherry-pick-fast-checkpointer --simdb-database test.db --no-run)
+sparta_named_test(sparta_core_example_simdb_apps2 sparta_core_example --simdb-apps simdb-reports cherry-pick-fast-checkpointer --simdb-app-database simdb-reports reports.db --no-run)
+sparta_named_test(sparta_core_example_simdb_apps3 sparta_core_example --simdb-apps cherry-pick-fast-checkpointer --simdb-app-count cherry-pick-fast-checkpointer 2 --simdb-database autogen --no-run)
+sparta_named_test(sparta_core_example_simdb_apps4 sparta_core_example --simdb-apps cherry-pick-fast-checkpointer --simdb-app-count cherry-pick-fast-checkpointer top.cpu.core* --num-cores 2 --no-run)
 
 # Run all backwards compatibility tests for map_v2.1+ reports and their v2.0.* equivalents
 add_test(NAME sparta_simdb_report_verif_suite COMMAND python3 ../../../scripts/simdb/run_report_verif_suite.py --sim-exe-path sparta_core_example --serial --force --fail-fast)

@@ -28,6 +28,7 @@ namespace sparta
 {
     class ArchData;
     class Clock;
+    class TreeNodeExtensionManager;
 
     namespace app {
         class Simulation;
@@ -470,77 +471,31 @@ namespace sparta
         void dumpTypeMix(std::ostream& o) const;
 
         /*!
-         * \brief Register a tree node extension factory.
+         * \brief Enable tree node extensions by giving the root node a
+         * TreeNodeExtensionsManager
+         * \throw Throws if this is called after the tree is built.
+         * \throw Throws if the TreeNodeExtensionManager was already set.
          */
-        template <typename ExtensionT>
-        static void registerExtensionClass() {
-            static_assert(std::is_base_of<ExtensionsBase, ExtensionT>::value);
-            extensionFactories_()[ExtensionT::NAME] = []() { return new ExtensionT; };
-        }
+        void setExtensionManager(TreeNodeExtensionManager* mgr);
 
         /*!
-         * \brief Register a tree node extension factory.
+         * \brief Get the TreeNodeExtensionsManager
          */
-        static void registerExtensionFactory(const std::string & extension_name,
-                                             std::function<ExtensionsBase*()> factory)
-        {
-            extensionFactories_()[extension_name] = factory;
-        }
-
-        /*!
-         * \brief Get a tree node extension factory, if available. Check "operator bool()"
-         * before using.
-         */
-        static std::function<ExtensionsBase*()> & getExtensionFactory(const std::string & extension_name)
-        {
-            auto it = extensionFactories_().find(extension_name);
-            if (it != extensionFactories_().end()) {
-                return it->second;
+        const TreeNodeExtensionManager * getExtensionManager(bool must_exist = true) const {
+            if (!extension_mgr_ && must_exist) {
+                throw SpartaException("Expecting TreeNodeExtensionsManager to exist but it doesn't");
             }
-
-            static std::function<ExtensionsBase*()> none;
-            return none;
+            return extension_mgr_;
         }
 
         /*!
-         * \brief Returns a ParameterTree containing an unbound set of
-         * named tree node extensions and their parameter value(s).
+         * \brief Get the TreeNodeExtensionsManager
          */
-        ParameterTree& getExtensionsUnboundParameterTree() {
-            return extensions_ptree_;
-        }
-
-        /*!
-         * \brief Returns a ParameterTree (const version) containing an
-         * unbound set of named tree node extensions and their parameter
-         * value(s).
-         */
-        const ParameterTree& getExtensionsUnboundParameterTree() const {
-            return extensions_ptree_;
-        }
-
-        /*!
-         * \brief Add tree node extension(s) from the given YAML file.
-         * This method simply adds the extension information to our
-         * underlying ParameterTree. The extension(s) will not be
-         * instantiated until you call TreeNode::getExtension().
-         */
-        void addExtensions(const std::string & yaml_file,
-                           const std::vector<std::string> & config_search_paths = {},
-                           const bool verbose_cfg = false)
-        {
-            app::NodeConfigFileApplicator applicator("", yaml_file, config_search_paths);
-
-            ParameterTree ptree;
-            applicator.applyUnbound(ptree, verbose_cfg);
-
-            // Store the extensions in the std::any map owned by the ParameterTree::Node's
-            extensions_ptree_.merge(ptree);
-            if (verbose_cfg) {
-                std::cout << "After merging extension file '" << yaml_file << "', parameter tree contains:\n";
-                constexpr bool print_user_data = false; // Already printed from "extension" nodes
-                extensions_ptree_.recursePrint(std::cout, print_user_data);
+        TreeNodeExtensionManager * getExtensionManager(bool must_exist = true) {
+            if (!extension_mgr_ && must_exist) {
+                throw SpartaException("Expecting TreeNodeExtensionsManager to exist but it doesn't");
             }
+            return extension_mgr_;
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -548,17 +503,10 @@ namespace sparta
 
     private:
 
-        /*!
-         * \brief Get static extension factories. Wrapped in a method to prevent static
-         * initialization order fiasco.
-         */
-        static std::map<std::string, std::function<ExtensionsBase*()>> & extensionFactories_() {
-            static std::map<std::string, std::function<ExtensionsBase*()>> factories;
-            return factories;
-        }
-
-        //! Unbound (pre-application) Extensions Tree
-        ParameterTree extensions_ptree_;
+        // The TreeNodeExtensionManager object owned by CommandLineSimulator,
+        // a simulation subclass, or in the SimulationConfiguration object
+        // on the stack in a unit test.
+        TreeNodeExtensionManager * extension_mgr_ = nullptr;
 
         // No effect on root
         virtual void createResource_() override {};
@@ -641,20 +589,4 @@ namespace sparta
         NewDescendantNotiSrc new_node_noti_;
     };
 
-    template <typename ExtensionT>
-    class ExtensionRegistration
-    {
-    public:
-        ExtensionRegistration()
-        {
-            sparta::RootTreeNode::registerExtensionClass<ExtensionT>();
-        }
-    };
-
 } // namespace sparta
-
-#define SPARTA_CONCATENATE_DETAIL(x, y) x##y
-#define SPARTA_CONCATENATE(x, y) SPARTA_CONCATENATE_DETAIL(x, y)
-
-#define REGISTER_TREE_NODE_EXTENSION(ExtensionClass) \
-    sparta::ExtensionRegistration<ExtensionClass> SPARTA_CONCATENATE(__extension_registration_, __COUNTER__)
