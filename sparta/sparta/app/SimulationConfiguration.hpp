@@ -640,9 +640,10 @@ public:
             return legacy_reports_enabled_;
         }
 
-
-        //SQLite3 PRAGMA's to execute on database creation.
-        //  "PRAGMA <name> = <val>"
+        /*!
+         * \brief Add a SQLite PRAGMA to execute on database creation.
+         * \note Applies to all app databases if different.
+         */
         void addPragmaOnOpen(const std::string& name, const std::string& val)
         {
             dbmgr_pragmas_[name] = val;

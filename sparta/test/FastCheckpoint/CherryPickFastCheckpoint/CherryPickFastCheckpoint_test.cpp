@@ -20,6 +20,7 @@ using sparta::serialization::checkpoint::CherryPickFastCheckpointer;
 using chkpt_id_t = typename CherryPickFastCheckpointer::chkpt_id_t;
 using ChkptWindow = CherryPickFastCheckpointer::ChkptWindow;
 using checkpoint_type = typename CherryPickFastCheckpointer::checkpoint_type;
+const auto UNIDENTIFIED_CHECKPOINT = sparta::serialization::checkpoint::CheckpointBase::UNIDENTIFIED_CHECKPOINT;
 
 static const uint16_t HINT_NONE=0;
 
@@ -51,9 +52,9 @@ public:
 };
 
 //! Globals to be shared across test functions
-static const std::string db_file = "test.db";
-static std::unordered_map<chkpt_id_t, std::pair<uint32_t, uint32_t>> checkpoint_reg_values;
-static std::vector<std::pair<uint32_t, uint32_t>> committed_checkpoint_reg_values;
+const std::string db_file = "test.db";
+std::unordered_map<chkpt_id_t, std::pair<uint32_t, uint32_t>> checkpoint_reg_values;
+std::vector<std::pair<uint32_t, uint32_t>> committed_checkpoint_reg_values;
 
 void commitCurrentBranch(CherryPickFastCheckpointer& dbcp, std::vector<chkpt_id_t>& committed_checkpoints)
 {
@@ -65,10 +66,25 @@ void commitCurrentBranch(CherryPickFastCheckpointer& dbcp, std::vector<chkpt_id_
 
 void commitCurrentBranchWithNewHead(CherryPickFastCheckpointer& dbcp, std::vector<chkpt_id_t>& committed_checkpoints)
 {
+    // Before committing, take note of the current checkpoint ID in the FastCheckpointer. The checkpointer
+    // is going to internally create a new head checkpoint, and we need to log the register values for that
+    // checkpoint as well. The register values for the head are the same as the values for the current
+    // checkpoint prior to making the commitCurrentBranch() call below.
+    auto current_chkpt_id = dbcp.getFastCheckpointer().getCurrentID();
+
     dbcp.commitCurrentBranch(true, &committed_checkpoints);
     for (auto chkpt_id : committed_checkpoints) {
         committed_checkpoint_reg_values.push_back(checkpoint_reg_values[chkpt_id]);
     }
+
+    // Early return if no checkpoints have been taken yet.
+    if (current_chkpt_id == UNIDENTIFIED_CHECKPOINT) {
+        return;
+    }
+
+    auto head_chkpt_id = dbcp.getFastCheckpointer().getHeadID();
+    sparta_assert(current_chkpt_id != head_chkpt_id);
+    checkpoint_reg_values[head_chkpt_id] = checkpoint_reg_values[current_chkpt_id];
 }
 
 void RunCheckpointerTest()
@@ -577,14 +593,15 @@ void RunPostSimCheckpointerTest()
     size_t count = 0;
     for (const auto& [expected_r1_val, expected_r2_val] : committed_checkpoint_reg_values) {
         EXPECT_TRUE(replayer.step());
-        //EXPECT_EQUAL(r1->read<uint32_t>(), expected_r1_val);
-        //EXPECT_EQUAL(r2->read<uint32_t>(), expected_r2_val);
-        if (r1->read<uint32_t>() != expected_r1_val || r2->read<uint32_t>() != expected_r2_val) {
-            std::cout << "Failed at count " << count << std::endl;
-        }
+        EXPECT_EQUAL(r1->read<uint32_t>(), expected_r1_val);
+        EXPECT_EQUAL(r2->read<uint32_t>(), expected_r2_val);
         ++count;
     }
     EXPECT_FALSE(replayer.step()); // No more checkpoints to replay
+
+    // Finish
+    root.enterTeardown();
+    clocks.enterTeardown();
 }
 
 int main()

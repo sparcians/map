@@ -449,17 +449,16 @@ size_t CherryPickFastCheckpointer::getNumCheckpoints() const
 
     auto query = db_mgr_->createQuery("ChkptWindows");
 
-    uint64_t start_arch_id, end_arch_id;
-    query->select("StartArchID", start_arch_id);
-    query->select("EndArchID", end_arch_id);
+    int record_checkpoints = 0;
+    query->select("EndArchID - StartArchID + 1", record_checkpoints);
 
+    uint64_t total_checkpoints = 0;
     auto results = query->getResultSet();
-    uint64_t count = 0;
     while (results.getNextRecord()) {
-        count += end_arch_id - start_arch_id + 1;
+        total_checkpoints += record_checkpoints;
     }
 
-    return count;
+    return total_checkpoints;
 }
 
 std::string CherryPickFastCheckpointer::stringize() const
