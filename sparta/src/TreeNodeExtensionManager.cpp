@@ -2,6 +2,7 @@
 #include "sparta/simulation/ParameterTree.hpp"
 #include "sparta/simulation/RootTreeNode.hpp"
 #include "sparta/simulation/Parameter.hpp"
+#include "sparta/simulation/ParameterSet.hpp"
 #include "sparta/app/ConfigApplicators.hpp"
 
 #include <boost/algorithm/string.hpp>
@@ -680,6 +681,12 @@ void TreeNodeExtensionManager::checkAllYamlExtensionsCreated(
             throw SpartaException(err_oss.str());
         }
     }
+}
+
+void TreeNodeExtensionManager::doPostCreate_(ExtensionsBase* extension) const
+{
+    extension->setParameters(std::make_unique<ParameterSet>(nullptr));
+    extension->postCreate();
 }
 
 bool TreeNodeExtensionManager::inYamlConfig_(

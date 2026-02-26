@@ -193,8 +193,7 @@ public:
         }
 
         std::shared_ptr<ExtensionsBase> ext(new ExtensionT(std::forward<Args>(args)...));
-        ext->setParameters(std::make_unique<ParameterSet>(nullptr));
-        ext->postCreate();
+        doPostCreate_(ext.get());
 
         live_extensions_[loc][ExtensionT::NAME] = ext;
         return dynamic_cast<ExtensionT*>(ext.get());
@@ -368,6 +367,12 @@ private:
 
         return inner_it->second.get();
     }
+
+    /*!
+     * \brief Called when an extension is created via addExtension().
+     * Implemented in the cpp file to avoid circular includes.
+     */
+    void doPostCreate_(ExtensionsBase* extension) const;
 
     /*!
      * \brief Check if the given tree node location was configured
