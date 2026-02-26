@@ -47,7 +47,8 @@ void CherryPickFastCheckpointer::defineSchema(simdb::Schema& schema)
 class ProcessStage : public simdb::pipeline::Stage
 {
 public:
-    ProcessStage()
+    ProcessStage(simdb::ThreadSafeLogger* logger)
+        : logger_(logger)
     {
         addInPort_<ChkptWindow>("input_window", input_queue_);
         addOutPort_<ChkptWindowBytes>("output_window_bytes", output_queue_);
@@ -76,6 +77,14 @@ private:
         bytes_out.start_tick = window_in.start_tick;
         bytes_out.end_tick = window_in.end_tick;
 
+        if (logger_)
+        {
+            auto logger = logger_->protect();
+            logger << "[debug] Checkpointer ProcessStage got a window with arch id range: "
+                   << window_in.start_arch_id << "-" << window_in.end_arch_id
+                   << std::endl;
+        }
+
         // Silence the warning from the DeltaCheckpoint destructor
         for (auto & chkpt : window_in.checkpoints) {
             chkpt->flagDeleted();
@@ -89,6 +98,7 @@ private:
         return simdb::pipeline::PipelineAction::PROCEED;
     }
 
+    simdb::ThreadSafeLogger* logger_ = nullptr;
     simdb::ConcurrentQueue<ChkptWindow>* input_queue_ = nullptr;
     simdb::ConcurrentQueue<ChkptWindowBytes>* output_queue_ = nullptr;
 };
@@ -97,7 +107,8 @@ private:
 class DatabaseStage : public simdb::pipeline::DatabaseStage<CherryPickFastCheckpointer>
 {
 public:
-    DatabaseStage()
+    DatabaseStage(simdb::ThreadSafeLogger* logger)
+        : logger_(logger)
     {
         addInPort_<ChkptWindowBytes>("input_window_bytes", input_window_bytes_queue_);
         addInPort_<ArchIdsForTick>("input_arch_ids_for_tick", input_arch_ids_for_tick_queue_);
@@ -120,6 +131,13 @@ private:
             window_inserter->setColumnValue(3, bytes_in.start_tick);
             window_inserter->setColumnValue(4, bytes_in.end_tick);
             window_inserter->createRecord();
+            if (logger_)
+            {
+                auto logger = logger_->protect();
+                logger << "[debug] Checkpointer DatabaseStage wrote a window with arch id range: "
+                       << bytes_in.start_arch_id << "-" << bytes_in.end_arch_id
+                       << std::endl;
+            }
             action = simdb::pipeline::PipelineAction::PROCEED;
         }
 
@@ -130,12 +148,20 @@ private:
             tick_inserter->setColumnValue(1, arch_ids_for_tick_in.end_arch_id);
             tick_inserter->setColumnValue(2, arch_ids_for_tick_in.tick);
             tick_inserter->createRecord();
+            if (logger_)
+            {
+                auto logger = logger_->protect();
+                logger << "[debug] Checkpointer DatabaseStage wrote tick run for arch id range: "
+                       << arch_ids_for_tick_in.start_arch_id << "-"
+                       << arch_ids_for_tick_in.end_arch_id << std::endl;
+            }
             action = simdb::pipeline::PipelineAction::PROCEED;
         }
 
         return action;
     }
 
+    simdb::ThreadSafeLogger* logger_ = nullptr;
     simdb::ConcurrentQueue<ChkptWindowBytes>* input_window_bytes_queue_ = nullptr;
     simdb::ConcurrentQueue<ArchIdsForTick>* input_arch_ids_for_tick_queue_ = nullptr;
 };
@@ -144,8 +170,8 @@ void CherryPickFastCheckpointer::createPipeline(simdb::pipeline::PipelineManager
 {
     auto pipeline = pipeline_mgr->createPipeline(NAME, this);
 
-    pipeline->addStage<ProcessStage>("process_events");
-    pipeline->addStage<DatabaseStage>("write_events");
+    pipeline->addStage<ProcessStage>("process_events", getStdoutLogger());
+    pipeline->addStage<DatabaseStage>("write_events", getStdoutLogger());
     pipeline->noMoreStages();
 
     pipeline->bind("process_events.output_window_bytes", "write_events.input_window_bytes");
@@ -200,6 +226,7 @@ void CherryPickFastCheckpointer::saveCheckpoints(checkpoint_ptrs&& checkpoints)
         if (tick_runs_.empty()) {
             // First ever entry
             tick_runs_.push({chkpt_arch_id, chkpt_arch_id, tick});
+            ++chkpt_arch_id;
             continue;
         }
 
@@ -308,25 +335,18 @@ std::vector<ArchData*> CherryPickFastCheckpointer::DatabaseCheckpointLoader::enu
 }
 
 checkpoint_type* CherryPickFastCheckpointer::DatabaseCheckpointLoader::getChkptFromWindow_(
-    chkpt_id_t chkpt_id, tick_t tick, ChkptWindow& window)
+    arch_id_t arch_id, tick_t tick, ChkptWindow& window)
 {
     // To boost performance for use cases where the scheduler is not advanced, we can
     // leverage the fact that checkpoint IDs are monotonically increasing with no gaps.
     // If the ticks don't change, we'll do the lookup in O(1).
-    if (chkpt_id >= window.start_arch_id) {
-        auto chkpt_idx = chkpt_id - window.start_arch_id;
-        if (chkpt_idx < window.checkpoints.size()) {
-            auto& chkpt = window.checkpoints[chkpt_idx];
+    if (arch_id >= window.start_arch_id) {
+        auto idx = arch_id - window.start_arch_id;
+        if (idx < window.checkpoints.size()) {
+            auto& chkpt = window.checkpoints.at(idx);
             if (chkpt->getTick() == tick) {
                 return chkpt.get();
             }
-        }
-    }
-
-    // Default to O(n) lookup.
-    for (auto& chkpt : window.checkpoints) {
-        if (chkpt_id == chkpt->getID() && tick == chkpt->getTick()) {
-            return chkpt.get();
         }
     }
 
@@ -335,17 +355,17 @@ checkpoint_type* CherryPickFastCheckpointer::DatabaseCheckpointLoader::getChkptF
 }
 
 checkpoint_type* CherryPickFastCheckpointer::DatabaseCheckpointLoader::getChkptFromCache_(
-    chkpt_id_t chkpt_id, tick_t tick)
+    arch_id_t arch_id, tick_t tick)
 {
-    return cached_window_ ? getChkptFromWindow_(chkpt_id, tick, *cached_window_) : nullptr;
+    return cached_window_ ? getChkptFromWindow_(arch_id, tick, *cached_window_) : nullptr;
 }
 
 checkpoint_type* CherryPickFastCheckpointer::DatabaseCheckpointLoader::getChkptFromDisk_(
-    chkpt_id_t chkpt_id, tick_t tick)
+    arch_id_t arch_id, tick_t tick)
 {
     auto query = db_mgr_->createQuery("ChkptWindows");
-    query->addConstraintForUInt64("StartArchID", simdb::Constraints::LESS_EQUAL, chkpt_id);
-    query->addConstraintForUInt64("EndArchID", simdb::Constraints::GREATER_EQUAL, chkpt_id);
+    query->addConstraintForUInt64("StartArchID", simdb::Constraints::LESS_EQUAL, arch_id);
+    query->addConstraintForUInt64("EndArchID", simdb::Constraints::GREATER_EQUAL, arch_id);
     query->addConstraintForUInt64("StartTick", simdb::Constraints::LESS_EQUAL, tick);
     query->addConstraintForUInt64("EndTick", simdb::Constraints::GREATER_EQUAL, tick);
 
@@ -370,7 +390,7 @@ checkpoint_type* CherryPickFastCheckpointer::DatabaseCheckpointLoader::getChkptF
         auto checkpoint_window = std::make_unique<ChkptWindow>();
         ia >> *checkpoint_window;
 
-        checkpoint_type* exact_checkpoint = getChkptFromWindow_(chkpt_id, tick, *checkpoint_window);
+        checkpoint_type* exact_checkpoint = getChkptFromWindow_(arch_id, tick, *checkpoint_window);
         sparta_assert(exact_checkpoint); // Must succeed since we constrained the query
 
         // Assign prev/next checkpoints
