@@ -80,7 +80,7 @@ private:
         if (logger_)
         {
             auto logger = logger_->protect();
-            logger << "[debug] Checkpointer ProcessStage got a window with arch id range: "
+            logger << "Checkpointer ProcessStage got a window with arch id range: "
                    << window_in.start_arch_id << "-" << window_in.end_arch_id
                    << std::endl;
         }
@@ -134,7 +134,7 @@ private:
             if (logger_)
             {
                 auto logger = logger_->protect();
-                logger << "[debug] Checkpointer DatabaseStage wrote a window with arch id range: "
+                logger << "Checkpointer DatabaseStage wrote a window with arch id range: "
                        << bytes_in.start_arch_id << "-" << bytes_in.end_arch_id
                        << std::endl;
             }
@@ -151,7 +151,7 @@ private:
             if (logger_)
             {
                 auto logger = logger_->protect();
-                logger << "[debug] Checkpointer DatabaseStage wrote tick run for arch id range: "
+                logger << "Checkpointer DatabaseStage wrote tick run for arch id range: "
                        << arch_ids_for_tick_in.start_arch_id << "-"
                        << arch_ids_for_tick_in.end_arch_id << std::endl;
             }
@@ -170,8 +170,8 @@ void CherryPickFastCheckpointer::createPipeline(simdb::pipeline::PipelineManager
 {
     auto pipeline = pipeline_mgr->createPipeline(NAME, this);
 
-    pipeline->addStage<ProcessStage>("process_events", getStdoutLogger());
-    pipeline->addStage<DatabaseStage>("write_events", getStdoutLogger());
+    pipeline->addStage<ProcessStage>("process_events", getAppLogger());
+    pipeline->addStage<DatabaseStage>("write_events", getAppLogger());
     pipeline->noMoreStages();
 
     pipeline->bind("process_events.output_window_bytes", "write_events.input_window_bytes");

@@ -114,7 +114,6 @@ void RunCheckpointerTest()
     r2->write<uint32_t>(0);
 
     simdb::AppManagers app_mgrs;
-    app_mgrs.useThreadSafeStdoutLogger(true /*prefix [log]*/);
     app_mgrs.registerApp<CherryPickFastCheckpointer>();
     auto& app_mgr = app_mgrs.createAppManager(db_file, true /*new file*/);
 
