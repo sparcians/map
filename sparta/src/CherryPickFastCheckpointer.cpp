@@ -313,7 +313,6 @@ checkpoint_type* CherryPickFastCheckpointer::DatabaseCheckpointLoader::getChkptF
 {
     // To boost performance for use cases where the scheduler is not advanced, we can
     // leverage the fact that checkpoint IDs are monotonically increasing with no gaps.
-    // If the ticks don't change, we'll do the lookup in O(1).
     if (arch_id >= window.start_arch_id) {
         auto idx = arch_id - window.start_arch_id;
         if (idx < window.checkpoints.size()) {

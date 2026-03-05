@@ -1199,6 +1199,7 @@ bool CommandLineSimulator::parse(int argc,
                 for(const auto & db_file : o.value){
                     sim_config_.simdb_config.reuseDatabase(db_file);
                 }
+                opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "enable-simdb-reports") {
                 std::string report_db_file = argv[0] + std::string(".db");
                 if(!o.value.empty()){
