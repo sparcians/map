@@ -18,6 +18,9 @@ using sparta::memory::MemoryObject;
 using sparta::memory::BlockingMemoryObjectIFNode;
 using sparta::serialization::checkpoint::CherryPickFastCheckpointer;
 using chkpt_id_t = typename CherryPickFastCheckpointer::chkpt_id_t;
+using ChkptWindow = CherryPickFastCheckpointer::ChkptWindow;
+using checkpoint_type = typename CherryPickFastCheckpointer::checkpoint_type;
+const auto UNIDENTIFIED_CHECKPOINT = sparta::serialization::checkpoint::CheckpointBase::UNIDENTIFIED_CHECKPOINT;
 
 static const uint16_t HINT_NONE=0;
 
@@ -48,6 +51,42 @@ public:
     {}
 };
 
+//! Globals to be shared across test functions
+const std::string db_file = "test.db";
+std::unordered_map<chkpt_id_t, std::pair<uint32_t, uint32_t>> checkpoint_reg_values;
+std::vector<std::pair<uint32_t, uint32_t>> committed_checkpoint_reg_values;
+
+void commitCurrentBranch(CherryPickFastCheckpointer& dbcp, std::vector<chkpt_id_t>& committed_checkpoints)
+{
+    dbcp.commitCurrentBranch(false, &committed_checkpoints);
+    for (auto chkpt_id : committed_checkpoints) {
+        committed_checkpoint_reg_values.push_back(checkpoint_reg_values[chkpt_id]);
+    }
+}
+
+void commitCurrentBranchWithNewHead(CherryPickFastCheckpointer& dbcp, std::vector<chkpt_id_t>& committed_checkpoints)
+{
+    // Before committing, take note of the current checkpoint ID in the FastCheckpointer. The checkpointer
+    // is going to internally create a new head checkpoint, and we need to log the register values for that
+    // checkpoint as well. The register values for the head are the same as the values for the current
+    // checkpoint prior to making the commitCurrentBranch() call below.
+    auto current_chkpt_id = dbcp.getFastCheckpointer().getCurrentID();
+
+    dbcp.commitCurrentBranch(true, &committed_checkpoints);
+    for (auto chkpt_id : committed_checkpoints) {
+        committed_checkpoint_reg_values.push_back(checkpoint_reg_values[chkpt_id]);
+    }
+
+    // Early return if no checkpoints have been taken yet.
+    if (current_chkpt_id == UNIDENTIFIED_CHECKPOINT) {
+        return;
+    }
+
+    auto head_chkpt_id = dbcp.getFastCheckpointer().getHeadID();
+    sparta_assert(current_chkpt_id != head_chkpt_id);
+    checkpoint_reg_values[head_chkpt_id] = checkpoint_reg_values[current_chkpt_id];
+}
+
 void RunCheckpointerTest()
 {
     sparta::Scheduler sched;
@@ -76,7 +115,7 @@ void RunCheckpointerTest()
 
     simdb::AppManagers app_mgrs;
     app_mgrs.registerApp<CherryPickFastCheckpointer>();
-    auto& app_mgr = app_mgrs.createAppManager("test.db", true /*new file*/);
+    auto& app_mgr = app_mgrs.createAppManager(db_file, true /*new file*/);
 
     // Setup...
     // Apps must be enabled prior to parameterizing their custom factories
@@ -101,18 +140,23 @@ void RunCheckpointerTest()
         // Writing to the registers before checkpointing is not really necessary,
         // since we are not validating the values after loadCheckpoint(). That
         // functionality is already covered by the FastCheckpointer test.
-        uint32_t r1_val = rand();
-        uint32_t r2_val = rand();
+        uint32_t r1_val = rand() % 100;
+        uint32_t r2_val = rand() % 100;
 
         r1->write<uint32_t>(r1_val);
         r2->write<uint32_t>(r2_val);
 
         auto chkpt_id = fcp.createCheckpoint(force_snapshot);
+        checkpoint_reg_values[chkpt_id] = std::make_pair(r1_val, r2_val);
         return chkpt_id;
     };
 
+    // Data structure to keek track of the committed checkpoint IDs so we
+    // can validate the register values in the next test.
+    std::vector<chkpt_id_t> committed_checkpoints;
+
     // Make sure calling commitCurrentBranch() does nothing when we have no checkpoints.
-    dbcp.commitCurrentBranch();
+    commitCurrentBranch(dbcp, committed_checkpoints);
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 0);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 0);
     EXPECT_EQUAL(fcp.getNumSnapshots(), 0);
@@ -120,7 +164,7 @@ void RunCheckpointerTest()
 
     // Calling commitCurrentBranch(true) to force a new head checkpoint should also
     // do nothing when we have no checkpoints at all.
-    dbcp.commitCurrentBranch(true);
+    commitCurrentBranchWithNewHead(dbcp, committed_checkpoints);
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 0);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 0);
     EXPECT_EQUAL(fcp.getNumSnapshots(), 0);
@@ -146,7 +190,7 @@ void RunCheckpointerTest()
     //
     // Current chain before calling this method:
     //   S1->D1->D2->D3
-    dbcp.commitCurrentBranch();
+    commitCurrentBranch(dbcp, committed_checkpoints);
 
     // Since the previous commit was a no-op, we should not have anything
     // in the database yet. The chain is still S1->D1->D2->D3
@@ -175,7 +219,7 @@ void RunCheckpointerTest()
     // disk without forcing a new head checkpoint should still be a
     // no-op. Current chain before/after this no-op is thus:
     //   S1->D1->D2->D3->D4->D5
-    dbcp.commitCurrentBranch();
+    commitCurrentBranch(dbcp, committed_checkpoints);
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 0);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 6);
     EXPECT_EQUAL(fcp.getNumSnapshots(), 1);
@@ -187,7 +231,7 @@ void RunCheckpointerTest()
     // Everything checkpointed thus far should be in the database,
     // and the FastCheckpointer should only have the new S2 snapshot
     // that we just forced.
-    dbcp.commitCurrentBranch(true);
+    commitCurrentBranchWithNewHead(dbcp, committed_checkpoints);
     auto S2 = fcp.getHeadID();
     EXPECT_SNAPSHOT(S2);
 
@@ -245,7 +289,7 @@ void RunCheckpointerTest()
     // If we serialize now without forcing a new head checkpoint, we should only
     // be able to write to disk S2 through D10, and S3 through D13 should remain
     // in the fast checkpointer with S3 as the new head checkpoint.
-    dbcp.commitCurrentBranch();
+    commitCurrentBranch(dbcp, committed_checkpoints);
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 12); // S1 through D10 (added S2 through D10)
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 4);   // S3 through D13 (must retain S3, did not force)
     EXPECT_EQUAL(fcp.getNumSnapshots(), 1);     // S3 only
@@ -316,7 +360,7 @@ void RunCheckpointerTest()
     // The only thing remaining in the fast checkpointer
     // is S4 (current), while the database got six new
     // checkpoints S3->D11->D12->D13->D14->D15
-    dbcp.commitCurrentBranch();
+    commitCurrentBranch(dbcp, committed_checkpoints);
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 18); // S1-S3, D1-D15
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 1);   // S4 only
     EXPECT_EQUAL(fcp.getNumSnapshots(), 1);     // S4 snapshot
@@ -330,7 +374,7 @@ void RunCheckpointerTest()
     // Try to serialize to disk without forcing a new head checkpoint,
     // which is a no-op here since the fast checkpointer is only holding
     // onto S4 (the only snapshot - it can't get rid of it).
-    dbcp.commitCurrentBranch();
+    commitCurrentBranch(dbcp, committed_checkpoints);
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 18);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 1);
     EXPECT_EQUAL(fcp.getHeadID(), S4);
@@ -359,7 +403,7 @@ void RunCheckpointerTest()
     // Commit the current branch without forcing a new head checkpoint.
     // S5 should then be the new head and all other 6 checkpoints should
     // be flushed to disk.
-    dbcp.commitCurrentBranch();
+    commitCurrentBranch(dbcp, committed_checkpoints);
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 24);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 1);
     EXPECT_EQUAL(fcp.getHeadID(), S6);
@@ -384,7 +428,7 @@ void RunCheckpointerTest()
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 7);
 
     // Commit the current branch and force a new head snapshot S8
-    dbcp.commitCurrentBranch(true);
+    commitCurrentBranchWithNewHead(dbcp, committed_checkpoints);
     auto S8 = fcp.getHeadID();
     EXPECT_SNAPSHOT(S8);
 
@@ -417,7 +461,7 @@ void RunCheckpointerTest()
     // Commit the current branch without forcing a new head checkpoint.
     // The remaining branch in the fast checkpointer should be:
     //   S8 -> D31->D32->D33->D34
-    dbcp.commitCurrentBranch();
+    commitCurrentBranch(dbcp, committed_checkpoints);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 5);
     EXPECT_EQUAL(fcp.getHeadID(), S8);
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 31); // Did not get any new chkpts
@@ -425,7 +469,7 @@ void RunCheckpointerTest()
     EXPECT_EQUAL(fcp.findCheckpoint(D34)->getRestoreChain().size(), 5);
 
     // Commit the current branch and force a new head checkpoint S10
-    dbcp.commitCurrentBranch(true);
+    commitCurrentBranchWithNewHead(dbcp, committed_checkpoints);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 1);
 
     auto S10 = fcp.getHeadID();
@@ -464,7 +508,7 @@ void RunCheckpointerTest()
     // We should be left with:
     //   S11 -> D37       (fast checkpointer)
     //   S10 -> D35->D36  (added to DB)
-    dbcp.commitCurrentBranch();
+    commitCurrentBranch(dbcp, committed_checkpoints);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 2);
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 39); // Got 3 new chkpts
     EXPECT_EQUAL(fcp.getCheckpointChain(D37).size(), 2);
@@ -501,7 +545,7 @@ void RunCheckpointerTest()
     // We should be left with:
     //   S13 -> D46                      (fast checkpointer)
     //   S11 -> D37->D43 -> S12 -> D44   (added to DB)
-    dbcp.commitCurrentBranch();
+    commitCurrentBranch(dbcp, committed_checkpoints);
     EXPECT_EQUAL(fcp.getNumCheckpoints(), 2);
     EXPECT_EQUAL(fcp.getHeadID(), S13);
     EXPECT_EQUAL(dbcp.getNumCheckpoints(), 44); // Got 5 new chkpts
@@ -514,9 +558,62 @@ void RunCheckpointerTest()
     clocks.enterTeardown();
 }
 
+void RunPostSimCheckpointerTest()
+{
+    // Build the same simulator as the first test
+    sparta::Scheduler sched;
+    RootTreeNode clocks("clocks");
+    sparta::Clock clk(&clocks, "clock", &sched);
+
+    // Create a tree with some register sets and memory
+    RootTreeNode root;
+
+    DummyDevice dummy(&root);
+    std::unique_ptr<RegisterSet> rset(RegisterSet::create(&dummy, reg_defs));
+
+    DummyDevice dummy2(&dummy);
+    std::unique_ptr<RegisterSet> rset2(RegisterSet::create(&dummy2, reg_defs));
+
+    root.enterConfiguring();
+    root.enterFinalized();
+    sched.finalize();
+
+    auto r1 = rset->getRegister("reg2");
+    auto r2 = rset2->getRegister("reg2");
+    sparta_assert(r1 != r2);
+
+    // Attach to the existing database file
+    simdb::DatabaseManager db_mgr(db_file, false /*not a new file*/);
+
+    // Verify that checkpoints can be reloaded. Use the DatabaseCheckpointReplayer
+    // since that implicitly covers the DatabaseCheckpointLoader.
+    CherryPickFastCheckpointer::DatabaseCheckpointReplayer replayer(&db_mgr, &root);
+    EXPECT_EQUAL(replayer.getNumCheckpoints(), committed_checkpoint_reg_values.size());
+
+    size_t count = 0;
+    for (const auto& [expected_r1_val, expected_r2_val] : committed_checkpoint_reg_values) {
+        // Keep in mind that the very first checkpoint is the simulation's initial
+        // state, i.e. it was the first head checkpoint ever created. In other words,
+        // the first checkpoint is implicitly loaded already without calling step().
+        if (count > 0) {
+            EXPECT_TRUE(replayer.step());
+        }
+
+        EXPECT_EQUAL(r1->read<uint32_t>(), expected_r1_val);
+        EXPECT_EQUAL(r2->read<uint32_t>(), expected_r2_val);
+        ++count;
+    }
+    EXPECT_FALSE(replayer.step()); // No more checkpoints to replay
+
+    // Finish
+    root.enterTeardown();
+    clocks.enterTeardown();
+}
+
 int main()
 {
     RunCheckpointerTest();
+    RunPostSimCheckpointerTest();
 
     REPORT_ERROR;
     return ERROR_CODE;
