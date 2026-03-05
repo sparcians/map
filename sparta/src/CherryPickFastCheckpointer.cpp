@@ -47,8 +47,7 @@ void CherryPickFastCheckpointer::defineSchema(simdb::Schema& schema)
 class ProcessStage : public simdb::pipeline::Stage
 {
 public:
-    ProcessStage(simdb::ThreadSafeLogger* logger)
-        : logger_(logger)
+    ProcessStage()
     {
         addInPort_<ChkptWindow>("input_window", input_queue_);
         addOutPort_<ChkptWindowBytes>("output_window_bytes", output_queue_);
@@ -77,14 +76,6 @@ private:
         bytes_out.start_tick = window_in.start_tick;
         bytes_out.end_tick = window_in.end_tick;
 
-        if (logger_)
-        {
-            auto logger = logger_->protect();
-            logger << "Checkpointer ProcessStage got a window with arch id range: "
-                   << window_in.start_arch_id << "-" << window_in.end_arch_id
-                   << std::endl;
-        }
-
         // Silence the warning from the DeltaCheckpoint destructor
         for (auto & chkpt : window_in.checkpoints) {
             chkpt->flagDeleted();
@@ -98,7 +89,6 @@ private:
         return simdb::pipeline::PipelineAction::PROCEED;
     }
 
-    simdb::ThreadSafeLogger* logger_ = nullptr;
     simdb::ConcurrentQueue<ChkptWindow>* input_queue_ = nullptr;
     simdb::ConcurrentQueue<ChkptWindowBytes>* output_queue_ = nullptr;
 };
@@ -107,8 +97,7 @@ private:
 class DatabaseStage : public simdb::pipeline::DatabaseStage<CherryPickFastCheckpointer>
 {
 public:
-    DatabaseStage(simdb::ThreadSafeLogger* logger)
-        : logger_(logger)
+    DatabaseStage()
     {
         addInPort_<ChkptWindowBytes>("input_window_bytes", input_window_bytes_queue_);
         addInPort_<ArchIdsForTick>("input_arch_ids_for_tick", input_arch_ids_for_tick_queue_);
@@ -125,43 +114,28 @@ private:
         ChkptWindowBytes bytes_in;
         if (input_window_bytes_queue_->try_pop(bytes_in)) {
             auto window_inserter = getTableInserter_("ChkptWindows");
-            window_inserter->setColumnValue(0, bytes_in.chkpt_bytes);
-            window_inserter->setColumnValue(1, bytes_in.start_arch_id);
-            window_inserter->setColumnValue(2, bytes_in.end_arch_id);
-            window_inserter->setColumnValue(3, bytes_in.start_tick);
-            window_inserter->setColumnValue(4, bytes_in.end_tick);
-            window_inserter->createRecord();
-            if (logger_)
-            {
-                auto logger = logger_->protect();
-                logger << "Checkpointer DatabaseStage wrote a window with arch id range: "
-                       << bytes_in.start_arch_id << "-" << bytes_in.end_arch_id
-                       << std::endl;
-            }
+            window_inserter->createRecordWithColValues(
+                bytes_in.chkpt_bytes,
+                bytes_in.start_arch_id,
+                bytes_in.end_arch_id,
+                bytes_in.start_tick,
+                bytes_in.end_tick);
             action = simdb::pipeline::PipelineAction::PROCEED;
         }
 
         ArchIdsForTick arch_ids_for_tick_in;
         if (input_arch_ids_for_tick_queue_->try_pop(arch_ids_for_tick_in)) {
             auto tick_inserter = getTableInserter_("TickRuns");
-            tick_inserter->setColumnValue(0, arch_ids_for_tick_in.start_arch_id);
-            tick_inserter->setColumnValue(1, arch_ids_for_tick_in.end_arch_id);
-            tick_inserter->setColumnValue(2, arch_ids_for_tick_in.tick);
-            tick_inserter->createRecord();
-            if (logger_)
-            {
-                auto logger = logger_->protect();
-                logger << "Checkpointer DatabaseStage wrote tick run for arch id range: "
-                       << arch_ids_for_tick_in.start_arch_id << "-"
-                       << arch_ids_for_tick_in.end_arch_id << std::endl;
-            }
+            tick_inserter->createRecordWithColValues(
+                arch_ids_for_tick_in.start_arch_id,
+                arch_ids_for_tick_in.end_arch_id,
+                arch_ids_for_tick_in.tick);
             action = simdb::pipeline::PipelineAction::PROCEED;
         }
 
         return action;
     }
 
-    simdb::ThreadSafeLogger* logger_ = nullptr;
     simdb::ConcurrentQueue<ChkptWindowBytes>* input_window_bytes_queue_ = nullptr;
     simdb::ConcurrentQueue<ArchIdsForTick>* input_arch_ids_for_tick_queue_ = nullptr;
 };
@@ -170,8 +144,8 @@ void CherryPickFastCheckpointer::createPipeline(simdb::pipeline::PipelineManager
 {
     auto pipeline = pipeline_mgr->createPipeline(NAME, this);
 
-    pipeline->addStage<ProcessStage>("process_events", getAppLogger());
-    pipeline->addStage<DatabaseStage>("write_events", getAppLogger());
+    pipeline->addStage<ProcessStage>("process_events");
+    pipeline->addStage<DatabaseStage>("write_events");
     pipeline->noMoreStages();
 
     pipeline->bind("process_events.output_window_bytes", "write_events.input_window_bytes");

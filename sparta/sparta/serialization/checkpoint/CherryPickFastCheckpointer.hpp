@@ -247,7 +247,7 @@ public:
 
         //! \brief Linear index of the next checkpoint to load
         //! \note Starts at 1 since the first checkpoint taken is the first head
-        //! head checkpoint, i.e. the simulator's starting state, which is loaded
+        //! checkpoint, i.e. the simulator's starting state, which is loaded
         //! in our constructor.
         uint64_t next_checkpoint_idx_ = 1;
     };
