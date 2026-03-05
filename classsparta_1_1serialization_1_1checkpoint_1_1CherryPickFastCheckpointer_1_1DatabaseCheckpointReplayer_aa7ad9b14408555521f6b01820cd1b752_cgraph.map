@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::CherryPickFastCheckpointer::DatabaseCheckpointReplayer::DatabaseCheckpointReplayer" name="sparta::serialization::checkpoint::CherryPickFastCheckpointer::DatabaseCheckpointReplayer::DatabaseCheckpointReplayer">
+<area shape="rect" id="Node000001" title="Construct with multiple roots from which we&#39;ll find the ArchData&#39;s." alt="" coords="5,5,253,76"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1CherryPickFastCheckpointer_1_1DatabaseCheckpointLoader.html#a211605d5d7b64adb75ae9a1eabe07c5e" title="Load a checkpoint with an index between [0,getNumCheckpoints())" alt="" coords="301,5,524,76"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="253,38,285,38,285,43,253,43"/>
+</map>

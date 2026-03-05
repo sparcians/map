@@ -1,0 +1,5 @@
+<map id="sparta::app::SimulationConfiguration::SimDBConfig::setAppCount" name="sparta::app::SimulationConfiguration::SimDBConfig::setAppCount">
+<area shape="rect" id="Node000001" title="Set the number of instances that should be available for the given app." alt="" coords="5,5,232,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1app_1_1SimulationConfiguration_1_1SimDBConfig.html#ab864b79d7a84f20555e8ee4514c4e0c9" title="Check if the given app is enabled." alt="" coords="280,5,506,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="232,23,264,23,264,28,232,28"/>
+</map>

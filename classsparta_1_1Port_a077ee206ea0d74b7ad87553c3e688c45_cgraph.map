@@ -1,0 +1,7 @@
+<map id="sparta::Port::Port" name="sparta::Port::Port">
+<area shape="rect" id="Node000001" title="Construct a Port." alt="" coords="5,35,123,60"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a7b6ca285ffd1077f9622662c167315e9" title="Adds a TreeNode to this node as a child." alt="" coords="181,5,358,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="122,37,166,30,166,36,123,42"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#aeefcb776a4574cd8075f92caaeb4676d" title="Tracks a node as an expected parent without actually adding this node as a child. This is used almost..." alt="" coords="171,55,368,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="123,53,155,57,155,63,123,58"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,80,203,106"/>
+<area shape="rect" id="Node000001" href="$classCircleExtensions.html" title=" " alt="" coords="279,5,396,31"/>
+<area shape="poly" id="edge235_Node000000_Node000001" title=" " alt="" coords="155,72,250,40,286,29,287,34,251,45,157,77"/>
+<area shape="rect" id="Node000002" href="$classCoreExtensions.html" title=" " alt="" coords="282,55,394,80"/>
+<area shape="poly" id="edge236_Node000000_Node000002" title=" " alt="" coords="218,78,281,71,282,76,219,83"/>
+<area shape="rect" id="Node000003" href="$classFoobar.html" title=" " alt="" coords="307,104,368,130"/>
+<area shape="poly" id="edge237_Node000000_Node000003" title=" " alt="" coords="218,102,307,111,307,116,218,107"/>
+<area shape="rect" id="Node000004" href="$classNeverExplicitlyInstantiated.html" title=" " alt="" coords="251,153,425,179"/>
+<area shape="poly" id="edge238_Node000000_Node000004" title=" " alt="" coords="158,109,251,140,288,150,286,155,250,145,156,114"/>
+</map>
