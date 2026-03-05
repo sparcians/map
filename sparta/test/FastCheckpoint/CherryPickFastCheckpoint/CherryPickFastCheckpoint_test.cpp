@@ -592,7 +592,13 @@ void RunPostSimCheckpointerTest()
 
     size_t count = 0;
     for (const auto& [expected_r1_val, expected_r2_val] : committed_checkpoint_reg_values) {
-        EXPECT_TRUE(replayer.step());
+        // Keep in mind that the very first checkpoint is the simulation's initial
+        // state, i.e. it was the first head checkpoint ever created. In other words,
+        // the first checkpoint is implicitly loaded already without calling step().
+        if (count > 0) {
+            EXPECT_TRUE(replayer.step());
+        }
+
         EXPECT_EQUAL(r1->read<uint32_t>(), expected_r1_val);
         EXPECT_EQUAL(r2->read<uint32_t>(), expected_r2_val);
         ++count;

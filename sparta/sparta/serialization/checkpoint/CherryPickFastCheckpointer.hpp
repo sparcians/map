@@ -228,7 +228,11 @@ public:
         //! \brief Construct with multiple roots from which we'll find the ArchData's
         DatabaseCheckpointReplayer(simdb::DatabaseManager* db_mgr, const std::vector<TreeNode*>& roots) :
             chkpt_loader_(db_mgr, roots)
-        {}
+        {
+            // Load the initial simulation state
+            constexpr size_t first_head_chkpt_id = 0;
+            chkpt_loader_.loadCheckpoint(first_head_chkpt_id);
+        }
 
         //! \brief Get the total number of committed checkpoints
         uint64_t getNumCheckpoints() const { return chkpt_loader_.getNumCheckpoints(); }
@@ -242,7 +246,10 @@ public:
         DatabaseCheckpointLoader chkpt_loader_;
 
         //! \brief Linear index of the next checkpoint to load
-        uint64_t next_checkpoint_idx_ = 0;
+        //! \note Starts at 1 since the first checkpoint taken is the first head
+        //! head checkpoint, i.e. the simulator's starting state, which is loaded
+        //! in our constructor.
+        uint64_t next_checkpoint_idx_ = 1;
     };
 
     /*!
