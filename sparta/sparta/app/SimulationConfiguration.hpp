@@ -489,6 +489,24 @@ public:
         }
 
         /*!
+         * \brief Before creating any apps, call this method to enable all apps
+         * to have access to a single thread-safe file logger.
+         * \param filename The name / path of the output file.
+         */
+        void useAppFileLogger(const std::string & filename)
+        {
+            app_file_logger_filename_ = filename;
+        }
+
+        /*!
+         * \brief Get the filename of the apps' shared file logger, if enabled.
+         */
+        std::string getAppLoggerFilename() const
+        {
+            return app_file_logger_filename_;
+        }
+
+        /*!
          * \brief Tell the simulation to enable the given app. Unless otherwise
          * specified, the database will be the executable name with a '.db' file
          * extension, and one app instance will be available.
@@ -665,6 +683,7 @@ public:
 
     private:
         std::string sim_exec_db_filename_;
+        std::string app_file_logger_filename_;
         std::set<std::string> enabled_apps_;
         std::map<std::string, size_t> concrete_app_counts_;
         std::map<std::string, std::string> inferred_app_counts_;

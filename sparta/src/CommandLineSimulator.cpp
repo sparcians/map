@@ -658,6 +658,9 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
         ("simdb-pragmas",
          named_value<std::vector<std::string>>("PRAGMA_NAME PRAGMA_VALUE [PRAGMA_NAME PRAGMA_VALUE...]", 2, -1)->multitoken(),
          "List of name-value pairs of SQLite pragmas to use when opening the database(s).")
+        ("simdb-app-log-file",
+         named_value<std::vector<std::string>>("FILENAME", 1, 1),
+         "Tell all SimDB apps to use the given filename for their thread-safe file loggers.")
         ;
     #endif
 
@@ -1229,6 +1232,10 @@ bool CommandLineSimulator::parse(int argc,
                     const auto & pragma_value = o.value.at(idx + 1);
                     sim_config_.simdb_config.addPragmaOnOpen(pragma_name, pragma_value);
                 }                
+                opts.options.erase(opts.options.begin() + i);
+            }else if (o.string_key == "simdb-app-log-file") {
+                const auto & filename = o.value.at(0);
+                sim_config_.simdb_config.useAppFileLogger(filename);
                 opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "pipeline-collection") {
                 //Enforce that we cannot set pipeline-collection options twice.
