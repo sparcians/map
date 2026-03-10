@@ -756,6 +756,8 @@ bool CommandLineSimulator::parse(int argc,
     std::vector<std::tuple<std::string, std::string, bool>> config_pattern_names;
     // --parameter / -p (pattern, value as a string)
     std::vector<std::tuple<std::string, std::string, bool>> individual_parameter_values;
+    // --extension-file / --extension-files / -e (filename)
+    std::vector<std::string> extension_files;
 
     // metadata arch value read from config files
     utils::ValidValue<std::pair<std::string, std::string>> config_metadata_arch;
@@ -886,15 +888,11 @@ bool CommandLineSimulator::parse(int argc,
                     err_code = 1;
                     return false;
                 }
-                auto& ext_mgr = sim_config_.extension_mgr;
-                const auto& search_paths = sim_config_.getConfigSearchPath();
-                ext_mgr.addExtensions(o.value[0], search_paths);
+                extension_files.push_back(o.value[0]);
                 opts.options.erase(opts.options.begin() + i);
             }else if(o.string_key == "extension-files"){
-                auto& ext_mgr = sim_config_.extension_mgr;
-                const auto& search_paths = sim_config_.getConfigSearchPath();
                 for (const auto & filename : o.value) {
-                    ext_mgr.addExtensions(filename, search_paths);
+                    extension_files.push_back(filename);
                 }
                 opts.options.erase(opts.options.begin() + i);
             }else if(o.string_key == "enable-state-tracking") {
@@ -1781,6 +1779,11 @@ bool CommandLineSimulator::parse(int argc,
         const std::string & value = std::get<1>(pvalue);
         const bool is_optional = std::get<2>(pvalue);
         sim_config_.processParameter(pattern, value, is_optional);
+    }
+
+    // Now apply --extension-file(s)
+    for (const auto & filename : extension_files) {
+        sim_config_.processExtensionFile(filename);
     }
 
     // Interpret debug-dump post-run value

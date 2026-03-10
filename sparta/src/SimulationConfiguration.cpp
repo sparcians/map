@@ -1,15 +1,15 @@
-// <EmbeddedSimulation> -*- C++ -*-
+// <SimulationConfiguration> -*- C++ -*-
 
 
 /*!
  * \file SimulationConfiguration.cpp
- * \brief Implementation for EmbeddedSimulation
  */
 
 #include "sparta/app/SimulationConfiguration.hpp"
 
 #include <cstddef>
 #include <iostream>
+#include <filesystem>
 
 #include "sparta/utils/File.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -63,6 +63,27 @@ namespace app {
         arch_applicator_.reset(new ArchNodeConfigFileApplicator(pattern, found_filename, arch_search_paths_));
         arch_applicator_->applyUnbound(arch_ptree_, verbose_cfg);
         std::cout << "  [in] Arch Config: " << arch_applicator_->stringize() << std::endl;
+    }
+
+    //! Apply extensions from a yaml file (--extension-file(s))
+    void SimulationConfiguration::processExtensionFile(const std::string & filename)
+    {
+        if (std::filesystem::exists(filename)) {
+            if (std::find(config_search_paths_.begin(), config_search_paths_.end(), ".") == config_search_paths_.end()) {
+                config_search_paths_.push_back(".");
+            }
+        }
+
+        sparta_assert(!is_consumed_, "You cannot process extension files after simulation has been populated");
+        config_applicators_.emplace_back(new NodeConfigFileApplicator("", filename, config_search_paths_));
+
+        ParameterTree ext_ptree;
+        config_applicators_.back()->applyUnbound(ext_ptree, verbose_cfg);
+        std::cout << "  [in] Configuration: " << config_applicators_.back()->stringize() << std::endl;
+
+        auto & wildcard_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_EXT_YAML_WITH_WILDCARDS];
+        auto & concrete_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_EXT_YAML_WITHOUT_WILDCARDS];
+        splitExtensionPTree_(ext_ptree, wildcard_exts, concrete_exts);
     }
 
     //! Enable logging on a specific node, for a specific category,
@@ -216,8 +237,81 @@ namespace app {
     //! ParameterTree.
     void SimulationConfiguration::copyTreeNodeExtensionsFromArchAndConfigPTrees()
     {
-        extension_mgr.addExtensions(getUnboundParameterTree());
-        extension_mgr.addExtensions(getArchUnboundParameterTree());
+        {
+            ParameterTree no_ext_ptree, ext_ptree;
+            extractPTreeExtensions_(arch_ptree_, no_ext_ptree, ext_ptree);
+
+            auto & wildcard_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_ARCH_YAML_WITH_WILDCARDS];
+            auto & concrete_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_ARCH_YAML_WITHOUT_WILDCARDS];
+            splitExtensionPTree_(ext_ptree, wildcard_exts, concrete_exts);
+        }
+
+        {
+            ParameterTree no_ext_ptree, ext_ptree;
+            extractPTreeExtensions_(ptree_, no_ext_ptree, ext_ptree);
+
+            auto & wildcard_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_CONFIG_YAML_OR_PARAM_WITH_WILDCARDS];
+            auto & concrete_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_CONFIG_YAML_OR_PARAM_WITHOUT_WILDCARDS];
+            splitExtensionPTree_(ext_ptree, wildcard_exts, concrete_exts);
+        }
+
+        for (const auto & ptree : extension_ptrees_) {
+            extension_mgr.addExtensions(ptree);
+        }
+    }
+
+    //! Helper to split a ParameterTree into two ptrees: one that has
+    //! only extensions, and the other which does not.
+    void SimulationConfiguration::extractPTreeExtensions_(
+        const ParameterTree & source_ptree,
+        ParameterTree & no_extensions,
+        ParameterTree & only_extensions)
+    {
+        source_ptree.visitLeaves([&](const ParameterTree::Node* leaf) {
+            auto path = leaf->getPath();
+            if (path.empty()) {
+                return false; // stop recursing
+            }
+            if (!leaf->hasValue()) {
+                return true; // keep going
+            }
+
+            auto & dest_ptree = path.find(".extension.") != std::string::npos ?
+                only_extensions : no_extensions;
+
+            auto n = dest_ptree.create(path, leaf->isRequired());
+            n->setValue(leaf->getValue(), leaf->isRequired(), leaf->getOrigin());
+
+            return true; // keep going
+        });
+    }
+
+    //! Helper to split a ParameterTree that only has extensions
+    //! into two ptrees: one that only has wildcard paths and one
+    //! that only has concrete paths.
+    void SimulationConfiguration::splitExtensionPTree_(
+        const ParameterTree & source_ptree,
+        ParameterTree & wildcard_extensions,
+        ParameterTree & concrete_extensions)
+    {
+        source_ptree.visitLeaves([&](const ParameterTree::Node* leaf) {
+            auto path = leaf->getPath();
+            if (path.empty()) {
+                return false; // stop recursing
+            }
+            if (!leaf->hasValue()) {
+                return true; // keep going
+            }
+
+            sparta_assert(path.find(".extension.") != std::string::npos);
+            auto & dest_ptree = TreeNode::hasWildcardCharacters(path) ?
+                wildcard_extensions : concrete_extensions;
+
+            auto n = dest_ptree.create(path, leaf->isRequired());
+            n->setValue(leaf->getValue(), leaf->isRequired(), leaf->getOrigin());
+
+            return true; // keep going
+        });
     }
 
 } // namespace app
