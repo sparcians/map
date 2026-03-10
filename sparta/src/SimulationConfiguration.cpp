@@ -240,7 +240,6 @@ namespace app {
         {
             ParameterTree no_ext_ptree, ext_ptree;
             extractPTreeExtensions_(arch_ptree_, no_ext_ptree, ext_ptree);
-            //arch_ptree_ = no_ext_ptree;
 
             auto & wildcard_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_ARCH_YAML_WITH_WILDCARDS];
             auto & concrete_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_ARCH_YAML_WITHOUT_WILDCARDS];
@@ -250,7 +249,6 @@ namespace app {
         {
             ParameterTree no_ext_ptree, ext_ptree;
             extractPTreeExtensions_(ptree_, no_ext_ptree, ext_ptree);
-            //ptree_ = no_ext_ptree;
 
             auto & wildcard_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_CONFIG_YAML_OR_PARAM_WITH_WILDCARDS];
             auto & concrete_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_CONFIG_YAML_OR_PARAM_WITHOUT_WILDCARDS];
