@@ -889,16 +889,10 @@ bool CommandLineSimulator::parse(int argc,
                     return false;
                 }
                 extension_files.push_back(o.value[0]);
-                //auto& ext_mgr = sim_config_.extension_mgr;
-                //const auto& search_paths = sim_config_.getConfigSearchPath();
-                //ext_mgr.addExtensions(o.value[0], search_paths);
                 opts.options.erase(opts.options.begin() + i);
             }else if(o.string_key == "extension-files"){
-                //auto& ext_mgr = sim_config_.extension_mgr;
-                //const auto& search_paths = sim_config_.getConfigSearchPath();
                 for (const auto & filename : o.value) {
                     extension_files.push_back(filename);
-                    //ext_mgr.addExtensions(filename, search_paths);
                 }
                 opts.options.erase(opts.options.begin() + i);
             }else if(o.string_key == "enable-state-tracking") {
