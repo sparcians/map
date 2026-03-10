@@ -723,6 +723,183 @@ void TestExtensionWildcards()
     VerifyGlobalMeta(core1_foo1_ext);
 }
 
+// Test: Explicitly test fixes for reported bugs
+void TestFixesForReportedBugs()
+{
+    {
+        // Bug #1
+        // If we have two yaml files with wildcards like this:
+        //
+        //   baseline.yaml
+        //   top.node*.extension.foobar:
+        //     int_value: 404
+        //
+        //   overrides.yaml
+        //   top.node*.extension.foobar:
+        //     int_value: 555
+        //
+        // And we run with:
+        //   --extension-file baseline.yaml --extension-file overrides.yaml
+        //
+        // We get the correct int_value of 555. But if we do this:
+        //   --arch baseline.yaml --arch-search-dir . --extension-file overrides.yaml
+        //
+        // We get the INCORRECT int_value of 404.
+        //
+        // Let's start by validating the correct use case first.
+        auto sim_config = std::make_unique<sparta::app::SimulationConfiguration>();
+        sim_config->processExtensionFile("baseline.yaml");
+        sim_config->processExtensionFile("overrides.yaml");
+        sim_config->copyTreeNodeExtensionsFromArchAndConfigPTrees();
+
+        auto scheduler = std::make_unique<sparta::Scheduler>();
+        auto sim = std::make_unique<TestSimulator>(*scheduler);
+
+        sim->configure(0, nullptr, sim_config.get(), false);
+        sim->buildTree();
+        sim->configureTree();
+
+        auto ext = sim->getRoot()->getChild("node1")->createExtension("foobar");
+        EXPECT_NOTEQUAL(ext, nullptr);
+        EXPECT_EQUAL(ext->getParameterValueAs<uint32_t>("int_value"), 555);
+
+        sim->finalizeTree();
+        sim->finalizeFramework();
+        sim.reset();
+        scheduler.reset();
+        sim_config.reset();
+
+        // Now verify that the bug is fixed.
+        sim_config = std::make_unique<sparta::app::SimulationConfiguration>();
+        sim_config->addArchSearchPath(".");
+        sim_config->processArch("", "baseline.yaml");
+        sim_config->processExtensionFile("overrides.yaml");
+        sim_config->copyTreeNodeExtensionsFromArchAndConfigPTrees();
+
+        scheduler = std::make_unique<sparta::Scheduler>();
+        sim = std::make_unique<TestSimulator>(*scheduler);
+
+        sim->configure(0, nullptr, sim_config.get(), false);
+        sim->buildTree();
+        sim->configureTree();
+
+        ext = sim->getRoot()->getChild("node1")->createExtension("foobar");
+        EXPECT_NOTEQUAL(ext, nullptr);
+        EXPECT_EQUAL(ext->getParameterValueAs<uint32_t>("int_value"), 555);
+
+        sim->finalizeTree();
+        sim->finalizeFramework();
+        sim.reset();
+        scheduler.reset();
+        sim_config.reset();
+    }
+
+    {
+        // Bug #2
+        // If we have an arch yaml file with wildcards (baseline values) and a
+        // command line parameter (-p) that specifies override values using
+        // wildcards, the final extension parameter values should have been
+        // taken from -p, regardless of the relative order of -p / --arch
+        //
+        // Let's start by validating the correct use case first, where concrete
+        // paths (no wildcards) are used for the -p pattern.
+        auto sim_config = std::make_unique<sparta::app::SimulationConfiguration>();
+        sim_config->addArchSearchPath(".");
+        sim_config->processArch("", "baseline.yaml");
+        sim_config->processParameter("top.node1.extension.foobar.int_value", "555");
+        sim_config->copyTreeNodeExtensionsFromArchAndConfigPTrees();
+
+        auto scheduler = std::make_unique<sparta::Scheduler>();
+        auto sim = std::make_unique<TestSimulator>(*scheduler);
+
+        sim->configure(0, nullptr, sim_config.get(), false);
+        sim->buildTree();
+        sim->configureTree();
+
+        auto ext = sim->getRoot()->getChild("node1")->createExtension("foobar");
+        EXPECT_NOTEQUAL(ext, nullptr);
+        EXPECT_EQUAL(ext->getParameterValueAs<uint32_t>("int_value"), 555);
+
+        sim->finalizeTree();
+        sim->finalizeFramework();
+        sim.reset();
+        scheduler.reset();
+        sim_config.reset();
+
+        // Run the correct use case again, just flipping the -p / --arch order.
+        sim_config = std::make_unique<sparta::app::SimulationConfiguration>();
+        sim_config->processParameter("top.node1.extension.foobar.int_value", "555");
+        sim_config->addArchSearchPath(".");
+        sim_config->processArch("", "baseline.yaml");
+        sim_config->copyTreeNodeExtensionsFromArchAndConfigPTrees();
+
+        scheduler = std::make_unique<sparta::Scheduler>();
+        sim = std::make_unique<TestSimulator>(*scheduler);
+
+        sim->configure(0, nullptr, sim_config.get(), false);
+        sim->buildTree();
+        sim->configureTree();
+
+        ext = sim->getRoot()->getChild("node1")->createExtension("foobar");
+        EXPECT_NOTEQUAL(ext, nullptr);
+        EXPECT_EQUAL(ext->getParameterValueAs<uint32_t>("int_value"), 555);
+
+        sim->finalizeTree();
+        sim->finalizeFramework();
+        sim.reset();
+        scheduler.reset();
+        sim_config.reset();
+
+        // Now verify that the bug is fixed (going back to wildcards for -p).
+        sim_config = std::make_unique<sparta::app::SimulationConfiguration>();
+        sim_config->processParameter("top.node*.extension.foobar.int_value", "555");
+        sim_config->addArchSearchPath(".");
+        sim_config->processArch("", "baseline.yaml");
+        sim_config->copyTreeNodeExtensionsFromArchAndConfigPTrees();
+
+        scheduler = std::make_unique<sparta::Scheduler>();
+        sim = std::make_unique<TestSimulator>(*scheduler);
+
+        sim->configure(0, nullptr, sim_config.get(), false);
+        sim->buildTree();
+        sim->configureTree();
+
+        ext = sim->getRoot()->getChild("node1")->createExtension("foobar");
+        EXPECT_NOTEQUAL(ext, nullptr);
+        EXPECT_EQUAL(ext->getParameterValueAs<uint32_t>("int_value"), 555);
+
+        sim->finalizeTree();
+        sim->finalizeFramework();
+        sim.reset();
+        scheduler.reset();
+        sim_config.reset();
+
+        // Now verify that the bug is fixed again, swapping -p and --arch
+        sim_config = std::make_unique<sparta::app::SimulationConfiguration>();
+        sim_config->addArchSearchPath(".");
+        sim_config->processArch("", "baseline.yaml");
+        sim_config->processParameter("top.node*.extension.foobar.int_value", "555");
+        sim_config->copyTreeNodeExtensionsFromArchAndConfigPTrees();
+
+        scheduler = std::make_unique<sparta::Scheduler>();
+        sim = std::make_unique<TestSimulator>(*scheduler);
+
+        sim->configure(0, nullptr, sim_config.get(), false);
+        sim->buildTree();
+        sim->configureTree();
+
+        ext = sim->getRoot()->getChild("node1")->createExtension("foobar");
+        EXPECT_NOTEQUAL(ext, nullptr);
+        EXPECT_EQUAL(ext->getParameterValueAs<uint32_t>("int_value"), 555);
+
+        sim->finalizeTree();
+        sim->finalizeFramework();
+        sim.reset();
+        scheduler.reset();
+        sim_config.reset();
+    }
+}
+
 int main(int argc, char** argv)
 {
     sparta::SleeperThread::disableForever();
@@ -779,6 +956,9 @@ int main(int argc, char** argv)
 
     // No simulator, just TreeNode's (with wildcards in extension YAML) --------------
     TestExtensionWildcards();
+
+    // Explicitly test fixes for reported bugs ---------------------------------------
+    TestFixesForReportedBugs();
 
     REPORT_ERROR;
     return ERROR_CODE;

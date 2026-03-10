@@ -151,6 +151,9 @@ public:
     void processArch(const std::string & pattern,
                      const std::string & filename);
 
+    //! Consume a yaml file with extensions (--extension-file(s))
+    void processExtensionFile(const std::string & filename);
+
     //! Enable logging on a specific node, for a specific category,
     //! and redirect output to the given destination
     void enableLogging(const std::string & pattern,
@@ -773,6 +776,42 @@ private:
 
     //! Unbound (pre-application) Parameter Tree
     ParameterTree ptree_;
+
+    //! Extensions can be added via processArch, processConfigFile,
+    //! processExtensionFile, and processParameter. They need to be
+    //! added to the extensions manager in a well-defined order, i.e.
+    //! baseline values first, followed by override values. The enum
+    //! below dictates the order in which the extension parameter values
+    //! are applied.
+    enum ExtensionsOrderOfOps : uint32_t
+    {
+        FROM_ARCH_YAML_WITH_WILDCARDS = 0,
+        FROM_CONFIG_YAML_OR_PARAM_WITH_WILDCARDS,
+        FROM_EXT_YAML_WITH_WILDCARDS,
+        FROM_ARCH_YAML_WITHOUT_WILDCARDS,
+        FROM_CONFIG_YAML_OR_PARAM_WITHOUT_WILDCARDS,
+        FROM_EXT_YAML_WITHOUT_WILDCARDS,
+        __N
+    };
+
+    //! Extension ptrees. Merged into the TreeNodeExtensionManager
+    //! adhering to the above order of operations.
+    std::array<ParameterTree, ExtensionsOrderOfOps::__N> extension_ptrees_;
+
+    //! Helper to split a ParameterTree into two ptrees: one that has
+    //! only extensions, and the other which does not.
+    static void extractPTreeExtensions_(
+        const ParameterTree & source_ptree,
+        ParameterTree & no_extensions,
+        ParameterTree & only_extensions);
+
+    //! Helper to split a ParameterTree that only has extensions
+    //! into two ptrees: one that only has wildcard paths and one
+    //! that only has concrete paths.
+    static void splitExtensionPTree_(
+        const ParameterTree & source_ptree,
+        ParameterTree & wildcard_extensions,
+        ParameterTree & concrete_extensions);
 
     //! Vector of arch file search directories
     std::vector<std::string> arch_search_paths_;
