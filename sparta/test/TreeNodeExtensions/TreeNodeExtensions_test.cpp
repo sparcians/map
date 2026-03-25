@@ -907,8 +907,8 @@ void TestFixesForReportedBugs()
         sim_config->processParameter("top.*.*.blah.nope", "true");
         sim_config->copyTreeNodeExtensionsFromArchAndConfigPTrees();
 
-        scheduler = std::make_unique<sparta::Scheduler>();
-        sim = std::make_unique<TestSimulator>(*scheduler);
+        auto scheduler = std::make_unique<sparta::Scheduler>();
+        auto sim = std::make_unique<TestSimulator>(*scheduler);
 
         sim->configure(0, nullptr, sim_config.get(), false);
         sim->buildTree();
