@@ -33,13 +33,13 @@ the latest stable v2.  `master` branch of Sparta should never be used (developme
 Building MAP is done in two parts
 
 1. Sparta, the modeling framework: build sparta only in the sparta folder
-2. Argos, the transaction viewer in Helios in the helios folder. Note that to build and use helios, you will need sparta built and installed somwehere on your system.
+2. Argos, the transaction viewer in Helios in the helios folder. Note that to build and use helios, you will need sparta built and installed somewhere on your system.
 
 The MAP repository has numerous dependencies, which are listed in a
 [conda recipe](https://github.com/sparcians/map/blob/master/conda.recipe/meta.yaml),
 and the versions of these libraries continuously change.
 
-There are few ways to setup a development environment for developing
+There are a few ways to set up a development environment for developing
 using Sparta: Simple (just install packages) or creating a Conda
 environment with the recipe found in sparta.
 
@@ -99,7 +99,7 @@ installed and would like to build everything (not just sparta).
 1. Create a sparta conda development environment
    * `./scripts/create_conda_env.sh sparta dev`
    * If the rendering fails (such as an unexpected error), try with
-     the safe enviroment: `conda env create -f
+     the safe environment: `conda env create -f
      scripts/rendered_safe_environment.yaml`
 1. Activate the environment
    * `conda activate sparta`
