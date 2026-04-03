@@ -1170,7 +1170,7 @@ bool CommandLineSimulator::parse(int argc,
             }else if (o.string_key == "simdb-apps") {
                 for(const auto & app_name : o.value){
                     sim_config_.simdb_config.enableApp(app_name);
-                }                
+                }
                 opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "simdb-app-database") {
                 sparta_assert(o.value.size() % 2 == 0);
@@ -1229,7 +1229,7 @@ bool CommandLineSimulator::parse(int argc,
                     const auto & pragma_name = o.value.at(idx);
                     const auto & pragma_value = o.value.at(idx + 1);
                     sim_config_.simdb_config.addPragmaOnOpen(pragma_name, pragma_value);
-                }                
+                }
                 opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "simdb-app-log-file") {
                 const auto & filename = o.value.at(0);

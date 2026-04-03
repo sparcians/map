@@ -1766,7 +1766,12 @@ void Simulation::attachReportTo_(sparta::ReportRepository::DirectoryHandle direc
     }
 
     std::stringstream rep_name;
-    rep_name << def_file << " on " << n->getLocation();
+    if (true == rd.name.empty()) {
+        rep_name << def_file << " on " << n->getLocation();
+    }
+    else {
+        rep_name << rd.name;
+    }
     std::unique_ptr<Report> r(new Report(rep_name.str(), n)); // Construct with context
     sparta_assert(r);
 
