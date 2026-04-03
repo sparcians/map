@@ -1868,7 +1868,7 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
             // is due to an extension never being created. We issue different
             // errors in that case.
             if(auto mgr = getExtensionManager(false)){
-                if(!ok && grandparent && grandparent->getParent()){
+                if(!ok && grandparent && grandparent->getParent() && grandparent->getName() == "extension"){
                     auto tn_loc = grandparent->getParent()->getPath();
                     auto ext_name = parent->getName();
                     if(!mgr->hasExtension(tn_loc, ext_name)){
