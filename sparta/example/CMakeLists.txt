@@ -23,7 +23,6 @@ add_custom_command (TARGET example_regress          POST_BUILD COMMAND ctest -LE
 add_custom_command (TARGET example_regress_valgrind POST_BUILD COMMAND ctest -L  ${VALGRIND_TEST_LABEL} -j${NUM_CORES} --test-action test)
 
 add_subdirectory(CoreModel)
-add_subdirectory(DynamicModelPipeline)
 add_subdirectory(SkeletonPipeline)
 add_subdirectory(SimpleAnnotationWriter)
 add_subdirectory(SystemC)

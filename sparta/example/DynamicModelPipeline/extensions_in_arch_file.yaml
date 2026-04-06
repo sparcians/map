@@ -1,6 +1,0 @@
-top: {
-    core0.lsu.extension.triangle: {
-        edges_: 3,
-        optional: true
-    }
-}

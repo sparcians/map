@@ -1,3 +1,0 @@
-content:
-  eat:    'core0.rob.stats.total_number_retired >= 6000'
-  sleep:  'core0.rob.stats.total_number_retired >= 7000'
