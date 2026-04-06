@@ -29,6 +29,11 @@ namespace sparta::cache
             }
         }
 
+        void reset() override
+        {
+            // TODO: implement
+        }
+
         ReplacementIF* clone() const override
         {
             return new LRUReplacement(num_ways_);
