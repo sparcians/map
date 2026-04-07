@@ -10,6 +10,7 @@
 
 #include <set>
 #include <map>
+#include <filesystem>
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/simulation/Clock.hpp"
@@ -200,7 +201,7 @@ namespace collection
          *       collection, call startCollection
          *
          */
-        PipelineCollector(const std::string& filepath, Scheduler::Tick heartbeat_interval,
+        PipelineCollector(std::filesystem::path filepath, Scheduler::Tick heartbeat_interval,
                           const sparta::Clock* root_clk, const sparta::TreeNode* root,
                           Scheduler* scheduler=nullptr) :
             Collector("PipelineCollector"),
@@ -209,6 +210,16 @@ namespace collection
             ev_heartbeat_(&collector_events_, Collector::getName() + "_heartbeat_event",
                           CREATE_SPARTA_HANDLER(PipelineCollector, performHeartBeat_), 0)
         {
+            if (!filepath.has_extension())
+            {
+                filepath.replace_extension(".db");
+            }
+            else if (filepath.extension() != ".db")
+            {
+                throw SpartaException("Expected pipeline collection output file of *.db file type, not '")
+                    << filepath << "'";
+            }
+
             // Sanity check - pipeline collection cannot occur without a scheduler
             sparta_assert(scheduler_);
 
@@ -265,23 +276,18 @@ namespace collection
                 fastest_clk = root_clk;
             }
 
-            // A multiple to multiply against the fastest clock when no heartbeat was set.
-            //! \todo The multiplier should also be scaled slightly by the number of locations
-            //! registered in order to better estimate the ideal heartbeat size.
-            static const uint32_t heartbeat_multiplier = 200;
-            // round heartbeat using a multiple of the fastest clock if one was not set.
-            if (heartbeat_interval == 0)
+            // TODO cnyce
+            if (heartbeat_interval != 10)
             {
-                sparta_assert(fastest_clk->getPeriod() != 0);
-                heartbeat_interval = fastest_clk->getPeriod() * heartbeat_multiplier;                //round up to the nearest multiple of 100
-                heartbeat_interval = heartbeat_interval + (100 - (heartbeat_interval % 100));
-                // pipeViewer requires that intervals be a multiple of 100.
-                sparta_assert(heartbeat_interval % 100 == 0)
+                if (heartbeat_interval != 0)
+                {
+                    std::cout << "Ignoring legacy Argos collection heartbeat interval "
+                              << heartbeat_interval << ". Using 10 for the interval instead."
+                              << std::endl;
+                }
+                heartbeat_interval = 10;
             }
 
-            // We are gonna subtract one from the heartbeat_interval
-            // later.. Better be greater than one.
-            sparta_assert(heartbeat_interval > 1);
             // Initialize some values.
             filepath_           = filepath;
             heartbeat_interval_ = heartbeat_interval;
@@ -596,23 +602,9 @@ namespace collection
         //! reader for fast access
         void performHeartBeat_()
         {
-            if(collection_active_) {
-                // Close all transactions
-                for(auto & ctn : registered_collectables_) {
-                    if(ctn->isCollected()) {
-                        ctn->restartRecord();
-                    }
-                }
-
-                // write an index
-                writer_->writeIndex();
-
-                // Remember the last time we recorded a heartbeat
-                last_heartbeat_ = scheduler_->getCurrentTick();
-
-                // Schedule another heartbeat
-                ev_heartbeat_.schedule(heartbeat_interval_);
-            }
+            //! TODO cnyce: look closely if we need this, and
+            //! if we do what is SimDB lacking
+            (void)ev_heartbeat_;
         }
 
         //! A pointer to the outputter class used for writing

@@ -10,6 +10,8 @@
 #include "sparta/simulation/State.hpp"
 #include "sparta/utils/SpartaSharedPointer.hpp"
 #include "sparta/utils/SpartaSharedPointerAllocator.hpp"
+#include "simdb/apps/argos/DataTypeHierarchy.hpp"
+#include "simdb/apps/argos/ArgosCollect.hpp"
 
 #include <cstdlib>
 #include <ostream>
@@ -249,4 +251,36 @@ namespace core_example
                               SPARTA_ADDPAIR("raddr",    &ExampleInst::getRAdr, std::ios::hex),
                               SPARTA_ADDPAIR("vaddr",    &ExampleInst::getVAdr, std::ios::hex))
     };
+
+    class ArgosCollector : public simdb::collection::ArgosCollectorBase<ExampleInst>
+    {
+    public:
+        ARGOS_COLLECT(DID,      &ExampleInst::getUniqueID);
+        ARGOS_COLLECT(uid,      &ExampleInst::getUniqueID);
+        ARGOS_COLLECT(mnemonic, &ExampleInst::getMnemonic);
+        ARGOS_COLLECT(complete, &ExampleInst::getCompleteStatus);
+        ARGOS_COLLECT(unit,     &ExampleInst::getUnit);
+        ARGOS_COLLECT(latency,  &ExampleInst::getExecuteTime);
+        ARGOS_COLLECT(raddr,    &ExampleInst::getRAdr/*TODO cnyce: std::ios::hex*/);
+        ARGOS_COLLECT(vaddr,    &ExampleInst::getVAdr/*TODO cnyce: std::ios::hex*/);
+    };
 }
+
+// Template specializations
+namespace simdb::collection {
+
+template <>
+struct EnumDescriptor<core_example::ExampleInst::TargetUnit>
+{
+    static std::vector<EnumMember> members()
+    {
+        return {{"ALU0", core_example::ExampleInst::TargetUnit::ALU0},
+                {"ALU1", core_example::ExampleInst::TargetUnit::ALU1},
+                {"FPU",  core_example::ExampleInst::TargetUnit::FPU },
+                {"BR",   core_example::ExampleInst::TargetUnit::BR  },
+                {"LSU",  core_example::ExampleInst::TargetUnit::LSU },
+                {"ROB",  core_example::ExampleInst::TargetUnit::ROB }};
+    }
+};
+
+} // namespace simdb::collection

@@ -17,6 +17,8 @@
 #include "sparta/simulation/State.hpp"
 #include "sparta/utils/SpartaSharedPointer.hpp"
 #include "sparta/utils/SpartaSharedPointerAllocator.hpp"
+#include "simdb/apps/argos/DataTypeHierarchy.hpp"
+#include "simdb/apps/argos/ArgosCollect.hpp"
 
 #include "cache/TreePLRUReplacement.hpp"
 
@@ -217,6 +219,16 @@ namespace core_example
                                   SPARTA_FLATTEN(         &MemoryAccessInfo::getInstPtr))
         };
 
+        class ArgosCollector : public simdb::collection::ArgosCollectorBase<MemoryAccessInfo>
+        {
+        public:
+            ARGOS_COLLECT(DID,   &MemoryAccessInfo::getInstUniqueID);
+            ARGOS_COLLECT(valid, &MemoryAccessInfo::getPhyAddrIsReady);
+            ARGOS_COLLECT(mmu,   &MemoryAccessInfo::getMMUState);
+            ARGOS_COLLECT(cache, &MemoryAccessInfo::getCacheState);
+            ARGOS_FLATTEN(       &MemoryAccessInfo::getInstPtr);
+        };
+
         // Forward declaration of the Pair Definition class is must as we are friending it.
         class LoadStoreInstInfoPairDef;
         // Keep record of instruction issue information
@@ -330,6 +342,15 @@ namespace core_example
                                   SPARTA_ADDPAIR("rank",  &LoadStoreInstInfo::getPriority),
                                   SPARTA_ADDPAIR("state", &LoadStoreInstInfo::getState),
                                   SPARTA_FLATTEN(         &LoadStoreInstInfo::getMemoryAccessInfoPtr))
+        };
+
+        class ArgosCollector : public simdb::collection::ArgosCollectorBase<LoadStoreInstInfo>
+        {
+        public:
+            ARGOS_COLLECT(DID,     &LoadStoreInstInfo::getInstUniqueID);
+            ARGOS_COLLECT(rank,    &LoadStoreInstInfo::getPriority);
+            ARGOS_COLLECT(state,   &LoadStoreInstInfo::getState);
+            ARGOS_FLATTEN(         &LoadStoreInstInfo::getMemoryAccessInfoPtr);
         };
 
         void setTLB(SimpleTLB& tlb)
@@ -611,3 +632,60 @@ namespace core_example
         return os;
     }
 } // namespace core_example
+
+// Template specializations
+namespace simdb::collection {
+
+template <>
+struct EnumDescriptor<core_example::LSU::MemoryAccessInfo::MMUState>
+{
+    static std::vector<EnumMember> members()
+    {
+        using MMUState = core_example::LSU::MemoryAccessInfo::MMUState;
+        return {{"no_access", MMUState::NO_ACCESS },
+                {"miss",      MMUState::MISS      },
+                {"hit",       MMUState::HIT       }};
+    }
+};
+
+template <>
+struct EnumDescriptor<core_example::LSU::MemoryAccessInfo::CacheState>
+{
+    static std::vector<EnumMember> members()
+    {
+        using CacheState = core_example::LSU::MemoryAccessInfo::CacheState;
+        return {{"no_access", CacheState::NO_ACCESS },
+                {"miss",      CacheState::MISS      },
+                {"hit",       CacheState::HIT       }};
+    }
+};
+
+template <>
+struct EnumDescriptor<core_example::LSU::LoadStoreInstInfo::IssuePriority>
+{
+    static std::vector<EnumMember> members()
+    {
+        using IssuePriority = core_example::LSU::LoadStoreInstInfo::IssuePriority;
+        return {{"(highest)",     IssuePriority::HIGHEST       },
+                {"($_reload)",    IssuePriority::CACHE_RELOAD  },
+                {"($_pending)",   IssuePriority::CACHE_PENDING },
+                {"(mmu_reload)",  IssuePriority::MMU_RELOAD    },
+                {"(mmu_pending)", IssuePriority::MMU_PENDING   },
+                {"(new_disp)",    IssuePriority::NEW_DISP      },
+                {"(lowest)",      IssuePriority::LOWEST        }};
+    }
+};
+
+template <>
+struct EnumDescriptor<core_example::LSU::LoadStoreInstInfo::IssueState>
+{
+    static std::vector<EnumMember> members()
+    {
+        using IssueState = core_example::LSU::LoadStoreInstInfo::IssueState;
+        return {{"(ready)",     IssueState::READY     },
+                {"(issued)",    IssueState::ISSUED    },
+                {"(not_ready)", IssueState::NOT_READY }};
+    }
+};
+
+} // namespace simdb::collection
