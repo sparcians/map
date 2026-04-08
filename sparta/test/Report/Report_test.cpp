@@ -730,7 +730,7 @@ content:
 
     // UPDATE 4.7.2026: the context is switched in the block above
     // and the internal scheduler (which is now deallocated) is
-    // being used.  This report is tecbnically now dead.
+    // being used.  This report is technically now dead.
     //EXPECT_NOTHROW( std::ofstream("immortal_report.txt", std::ios::out) << report; );
 
     // Report errors before drawing trees in case any nodes were attached which

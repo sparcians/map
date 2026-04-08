@@ -941,7 +941,6 @@ namespace sparta
 
             // Do the append now.  We can do this with different logic
             // that does not require a process.
-            //buffer_map_[num_valid_] = free_position_;
             buffer_map_[num_valid_] = free_position_;
 
             // Store the index in the data_pool_ to which current

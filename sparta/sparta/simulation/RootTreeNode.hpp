@@ -556,7 +556,7 @@ namespace sparta
                 // node notification object without it calling itself
                 // to notify that it's adding itself?  Easy -- the
                 // unique pointer isn't fully realized until it's
-                // fully added to the tree node heirarchy.
+                // fully added to the tree node hierarchy.
                 if (SPARTA_EXPECT_TRUE(new_node_noti_)) {
                     new_node_noti_->postNotification(*des);
                 }

@@ -26,7 +26,9 @@ MAP is broken into two parts:
 [NOTE] map_v1 is no longer supported.
 
 Current development branches:
-|| map_v2.0 || map_v2.1 || map_v2.2 ||
+
+| map_v2.0                               | map_v2.1                                    | map_v2.2 |
+| -------------------------------------- | ------------------------------------------- | ---------|
 | Development prior to SimDB integration | SimDB integration/report generation support | TreeNode Extensions API Update |
 
 Clone MAP with the `--recursive` option to also clone the git submodules, and `--branch map_v2.2` to clone
