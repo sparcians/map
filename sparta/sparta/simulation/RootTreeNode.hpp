@@ -82,13 +82,7 @@ namespace sparta
                      app::Simulation* sim,
                      GlobalTreeNode* search_scope) :
             TreeNode(name, GROUP_NAME_NONE, GROUP_IDX_NONE, desc),
-            sim_(sim),
-            new_node_noti_(this,
-                           "descendant_attached",
-                           "Notification immediately after a node becomes a descendant of this "
-                           "root at any distance. This new node may have children already attached "
-                           "which will not receive their own descendant_attached notification",
-                           "descendant_attached")
+            sim_(sim)
         {
             if(search_scope != nullptr){
                 search_node_ = search_scope;
@@ -102,6 +96,15 @@ namespace sparta
              * to ensure that getScopeRoot() never returns nullptr event when no
              * scope is explicitly defined. */
             setScopeRoot();
+
+            // Create the notification after the RTN is fully realized
+            new_node_noti_.reset(
+                new NewDescendantNotiSrc(this,
+                                         "descendant_attached",
+                                         "Notification immediately after a node becomes a descendant of this "
+                                         "root at any distance. This new node may have children already attached "
+                                         "which will not receive their own descendant_attached notification",
+                                         "descendant_attached"));
         }
 
         /*!
@@ -414,7 +417,7 @@ namespace sparta
          * sparta::NotificationSource::deregisterForThis methods.
          */
         NewDescendantNotiSrc& getNodeAttachedNotification() {
-            return new_node_noti_;
+            return *new_node_noti_;
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -549,7 +552,14 @@ namespace sparta
         virtual void onDescendentSubtreeAdded_(TreeNode* des) noexcept override final {
             // Broadcast notification for self coming into existence
             try{
-                new_node_noti_.postNotification(*des);
+                // There's an irony here ... how do you create the new
+                // node notification object without it calling itself
+                // to notify that it's adding itself?  Easy -- the
+                // unique pointer isn't fully realized until it's
+                // fully added to the tree node heirarchy.
+                if (SPARTA_EXPECT_TRUE(new_node_noti_)) {
+                    new_node_noti_->postNotification(*des);
+                }
 
                 // Iterate subtree headed by des and notify observers of these
                 for(TreeNode* child : TreeNodePrivateAttorney::getAllChildren(des)){
@@ -586,7 +596,7 @@ namespace sparta
          * \brief Notification the be posted when a descendent is attached to
          * this tree
          */
-        NewDescendantNotiSrc new_node_noti_;
+        std::unique_ptr<NewDescendantNotiSrc> new_node_noti_;
     };
 
 } // namespace sparta
