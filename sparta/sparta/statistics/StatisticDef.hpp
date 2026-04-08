@@ -27,9 +27,10 @@
 
 namespace sparta
 {
-namespace trigger {
-class ContextCounterTrigger;
-}  // namespace trigger
+
+    namespace trigger {
+        class ContextCounterTrigger;
+    }  // namespace trigger
 
     /*!
      * \brief Contains a statistic definition (some useful information which can
@@ -115,6 +116,86 @@ class ContextCounterTrigger;
             //VS_UNITS      = 4
         };
 
+        /*!
+         * \class ValueSemanticDetailed
+         * \brief Wrapper class to add meta information to a statistic definition
+         *
+         * When defining the ValueSemantic of a StatisticDef, this
+         * class enables the modeler to extend that semantic with meta
+         * information.  During report generation to data
+         * serialization formats (like json, yaml, or SimDB) this
+         * information is included with the statistic.
+         *
+         * Usage:
+         * \code
+         *     new sparta::StatisticDef(getContainer(),
+         *                              "my_stat_def_name",
+         *                              "my_stat_def_group_name,
+         *                              0,                                       // group idx
+         *                              "This is my fancy statistic definition", // desc
+         *                              getContainer(),                          // context
+         *                              "(counter1-counter2)/counter2 * 100",    // expression
+         *                              // ValueSemanticDetailed
+         *                              {
+         *                                  sparta::StatisticDef::ValueSemantic::VS_PERCENTAGE,
+         *                                  {
+         *                                      {"lowest_value" : "0" },
+         *                                      {"highest_value" : "100" },
+         *                                      {"polarity" : "positive" }  // Positive polarity, higher is better
+         *                                  }
+         *                              });
+         * \endcode
+         *
+         * The modeler is not required to provide any meta data
+         * information.  As an example, the following works as well:
+         *
+         * \code
+         *     new sparta::StatisticDef(getContainer(),
+         *                              "my_stat_def_name",
+         *                              "my_stat_def_group_name,
+         *                              0,                                       // group idx
+         *                              "This is my fancy statistic definition", // desc
+         *                              getContainer(),                          // context
+         *                              "(counter1-counter2)/counter2 * 100",    // expression
+         *                              sparta::StatisticDef::ValueSemantic::VS_PERCENTAGE); // semantic
+         * \endcode
+         */
+        class ValueSemanticDetailed
+        {
+        public:
+            /*!
+             * \brief Construct a ValueSemanticDetailed withoout meta data
+             * \param semantic The ValueSemantic
+             * \note Do not make this explicit
+             */
+            ValueSemanticDetailed(ValueSemantic semantic) :
+                ValueSemanticDetailed(semantic, {})
+            {}
+
+            /*!
+             * \brief Construct a ValueSemanticDetailed withoout meta data
+             * \param semantic The ValueSemantic
+             * \param meta_data MetadataPairs to assign `{("name", "value"}}`
+             */
+            ValueSemanticDetailed(ValueSemantic semantic,
+                                  const InstrumentationNode::MetadataPairs & meta_data) :
+                semantic_(semantic),
+                meta_data_(meta_data)
+            {}
+
+            //! Casting operator to obtain the original semantic
+            operator ValueSemantic() const { return semantic_; }
+
+            //! Get the meta data provided by the user
+            const InstrumentationNode::MetadataPairs & getMetadata() const {
+                return meta_data_;
+            }
+
+        private:
+            const ValueSemantic semantic_;
+            const InstrumentationNode::MetadataPairs meta_data_;
+        };
+
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
@@ -158,14 +239,14 @@ class ContextCounterTrigger;
          *
          * Example:
          * \code
-         * StatisticDef s1(parent, "foo0", "foo"m, 0, "The Foo", &stat_set,
+         * StatisticDef s1(parent, "foo0", "foo", 0, "The Foo", &stat_set,
          *                 "ctr_a/ctr_b",
-         *                 StatisticSet::VS_ABSOLUTE,
-         *                 StatisticSet::VIS_NORMAL);
-         * StatisticDef s2(parent, "foo0", "foo"m, 0, "The Foo", &stat_set,
+         *                 sparta::StatisticDef::VS_ABSOLUTE,
+         *                 sparta::StatisticDef::VIS_NORMAL);
+         * StatisticDef s2(parent, "foo0", "foo", 0, "The Foo", &stat_set,
          *                 Expression(5) / Expression(2),
-         *                 StatisticSet::VS_ABSOLUTE,
-         *                 StatisticSet::VIS_NORMAL);
+         *                 sparta::StatisticDef::VS_ABSOLUTE,
+         *                 sparta::StatisticDef::VIS_NORMAL);
          * \endcode
          */
         StatisticDef(TreeNode* parent,
@@ -175,7 +256,7 @@ class ContextCounterTrigger;
                      const std::string& desc,
                      TreeNode* context,
                      ExpressionArg expression,
-                     ValueSemantic semantic,
+                     ValueSemanticDetailed semantic,
                      visibility_t visibility) :
             InstrumentationNode(name,
                                 group,
@@ -191,7 +272,7 @@ class ContextCounterTrigger;
             setExpectedParent_(parent);
 
             sparta_assert(semantic_ != VS_INVALID,
-                              "Cannot construct a StatisticDef with VS_INVALID value semantic");
+                          "Cannot construct a StatisticDef with VS_INVALID value semantic");
 
             if(prebuilt_expr_ != nullptr){
                 expr_str_ = prebuilt_expr_->stringize();
@@ -219,6 +300,11 @@ class ContextCounterTrigger;
             if(parent){
                 parent->addChild(this);
             }
+
+            // Copy over the meta data to the InstrumentationNode.
+            meta_data_.insert(meta_data_.begin(),
+                              semantic.getMetadata().begin(),
+                              semantic.getMetadata().end());
         }
 
         /*!
@@ -230,7 +316,7 @@ class ContextCounterTrigger;
                      const std::string& desc,
                      TreeNode* context,
                      ExpressionArg expression,
-                     ValueSemantic semantic,
+                     ValueSemanticDetailed semantic,
                      visibility_t visibility) :
             StatisticDef(nullptr,
                          name,
@@ -257,7 +343,7 @@ class ContextCounterTrigger;
                      const std::string& desc,
                      TreeNode* context,
                      ExpressionArg expression,
-                     ValueSemantic semantic,
+                     ValueSemanticDetailed semantic,
                      visibility_t visibility) :
             StatisticDef(parent,
                          name,
@@ -283,7 +369,7 @@ class ContextCounterTrigger;
                      const std::string& desc,
                      TreeNode* context,
                      ExpressionArg expression,
-                     ValueSemantic semantic,
+                     ValueSemanticDetailed semantic,
                      visibility_t visibility) :
             StatisticDef(nullptr,
                          name,
@@ -399,7 +485,7 @@ class ContextCounterTrigger;
                      const std::string& desc,
                      TreeNode* context,
                      ExpressionArg expression,
-                     ValueSemantic semantic) :
+                     ValueSemanticDetailed semantic) :
             StatisticDef(parent,
                          name,
                          group,
@@ -422,7 +508,7 @@ class ContextCounterTrigger;
                      const std::string& desc,
                      TreeNode* context,
                      ExpressionArg expression,
-                     ValueSemantic semantic) :
+                     ValueSemanticDetailed semantic) :
             StatisticDef(nullptr,
                          name,
                          group,
@@ -447,7 +533,7 @@ class ContextCounterTrigger;
                      const std::string& desc,
                      TreeNode* context,
                      ExpressionArg expression,
-                     ValueSemantic semantic) :
+                     ValueSemanticDetailed semantic) :
             StatisticDef(parent,
                          name,
                          GROUP_NAME_NONE,
@@ -471,7 +557,7 @@ class ContextCounterTrigger;
                      const std::string& desc,
                      TreeNode* context,
                      ExpressionArg expression,
-                     ValueSemantic semantic) :
+                     ValueSemanticDetailed semantic) :
             StatisticDef(nullptr,
                          name,
                          GROUP_NAME_NONE,
@@ -629,7 +715,7 @@ class ContextCounterTrigger;
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
-private:
+    private:
 
         /*!
          * \brief Ensures that the parent node is a StatisticSet
@@ -650,7 +736,7 @@ private:
                     sparta::statistics::expression::Expression(expr_str_, context_);
                 }catch(SpartaException &ex){
                     throw SpartaException("Failed to validate StatisticDef: \"") << getLocation()
-                        << "\": " << ex.what();
+                                                                                 << "\": " << ex.what();
                 }
             }
         }
@@ -679,7 +765,7 @@ private:
         /*!
          * \brief Value semantic
          */
-        const ValueSemantic semantic_;
+        const ValueSemanticDetailed semantic_;
 
         /*!
          * \brief All pending substatistic information (TreeNode* and statistic
@@ -704,4 +790,3 @@ private:
     };
 
 } // namespace sparta
-
