@@ -23,11 +23,8 @@ namespace sparta
 
             uint32_t getNumWays() const { return num_ways_; }
 
-            // Reset LRU state
-            virtual void reset()
-            {
-                assert(0);
-            };
+            // Reset state
+            virtual void reset() = 0;
 
             // Clone the current object
             virtual ReplacementIF *clone() const = 0;
