@@ -120,7 +120,8 @@ namespace sparta
                             //auto& replacements = nvp->second;
                             if(!handleLeafScalarUnknownKey_(n, value, last_val_, *nvp)){
                                 std::stringstream ss;
-                                ss << "\tError found while parsing YAML file: " << markToString_(mark);
+                                ss << "\tError found while parsing YAML file: " << markToString_(mark)
+                                   << " unknown key: " << last_val_;
                                 addError_(ss.str());
                             }
                             // Keep the parser going, looking for more errors

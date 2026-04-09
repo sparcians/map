@@ -237,6 +237,11 @@ namespace sparta {
             std::string loc_pattern;
 
             /*!
+             * \brief The name of this report
+             */
+            std::string name;
+
+            /*!
              * \brief Filename of report definition. If '@', auto generates reports
              * with all counters and stats of loc_pattern
              */
@@ -330,6 +335,11 @@ namespace sparta {
 
             //! \brief Destructor (note that triggered reports are automatically flushed)
             ~ReportDescriptor();
+
+            //! \brief Getter for this report's name
+            const std::string & getDescriptorName() const {
+                return name;
+            }
 
             //! \brief Getter for this descriptor's pattern, e.g. "_global"
             const std::string & getDescriptorPattern() const {
