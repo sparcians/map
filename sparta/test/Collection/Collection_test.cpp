@@ -30,6 +30,7 @@ void testEmptyCollection()
 
     sparta::collection::Collectable<EmptyData> collector(&rtn, "empty_collection_test");
 
+    rtn.initializeCollectionSystem();
     rtn.enterConfiguring();
     rtn.enterFinalized();
 

@@ -34,7 +34,6 @@ endif ()
 
 # Add the source for libsparta.a
 list (APPEND SourceCppFiles
-            src/ArgosOutputter.cpp
             src/Backtrace.cpp
             src/BaseFormatter.cpp
             src/Clock.cpp

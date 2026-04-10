@@ -12,7 +12,6 @@
 #include <sstream>
 #include <functional>
 #include "sparta/collection/Collectable.hpp"
-#include "sparta/pipeViewer/transaction_structures.hpp"
 #include "sparta/events/EventSet.hpp"
 #include "sparta/events/PayloadEvent.hpp"
 

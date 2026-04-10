@@ -58,7 +58,6 @@
 #include "sparta/app/AppTriggers.hpp"
 #include "sparta/app/MetaTreeNode.hpp"
 #include "sparta/app/Simulation.hpp"
-#include "sparta/pipeViewer/InformationWriter.hpp"
 #include "sparta/log/Destination.hpp"
 #include "sparta/log/MessageSource.hpp"
 #include "sparta/log/Tap.hpp"
@@ -1254,10 +1253,10 @@ bool CommandLineSimulator::parse(int argc,
                     return false;
                 }
                 //Check to make sure we are --pipeline-collection was not set twice.
-                sim_config_.pipeline_collection_file_prefix = o.value.at(0);
+                sim_config_.pipeline_collection_db_file = o.value.at(0);
 
                 // Check that a valid file prefix was given
-                if(sim_config_.pipeline_collection_file_prefix.empty()){
+                if(sim_config_.pipeline_collection_db_file.empty()){
                     std::cerr << "Command line supplied an empty path for pipeline collection. "
                                  "This likely wasn't intended and is considered mis-use. Supply a "
                                  "non-empty string as the pipeout file prefix";
@@ -1935,6 +1934,14 @@ bool CommandLineSimulator::parse(int argc,
     //pevents
     run_pevents_ = (vm_.count("pevents-at") > 0) || (vm_.count("pevents") > 0) || (vm_.count("verbose-pevents") > 0);
 
+    if(sim_config_.pipeline_collection_db_file != NoPipelineCollectionStr){
+        std::filesystem::path db_filepath = sim_config_.pipeline_collection_db_file;
+        if(!db_filepath.has_extension()){
+            db_filepath.replace_extension(".db");
+            sim_config_.pipeline_collection_db_file = db_filepath.string();
+        }
+    }
+
     bool show_options = vm_.count("show-options") > 0;
     if(show_options){
         // Print out parameters if allowed. Do not configure within this block
@@ -1988,15 +1995,18 @@ bool CommandLineSimulator::parse(int argc,
 
         // Print out parameters related to Pipeline Collection.
         bool collecting = false;
-        if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr){
+        if(sim_config_.pipeline_collection_db_file != NoPipelineCollectionStr){
             collecting = true;
         }
 
         //print out some stuff about the pipeline collections run status.
         std::cout << "  pipeline-collection: " << std::boolalpha << collecting << std::endl;
         if(collecting){
-            std::cout << "  output dir:          " << sim_config_.pipeline_collection_file_prefix << std::endl;
+            std::cout << "  output database:     " << sim_config_.pipeline_collection_db_file << std::endl;
             std::cout << "  pipeline heartbeat:  " << pipeline_heartbeat_ << std::endl;
+
+            size_t end_pos;
+            sim_config_.pipeline_heartbeat = utils::smartLexicalCast<size_t>(pipeline_heartbeat_, end_pos);
         }
     }
 
@@ -2194,23 +2204,15 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             param_out.addParameters(sim->getRoot()->getSearchScope(), extensions_ptree, sim_config_.verbose_cfg);
         }
 
-        if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)
+        if(sim_config_.pipeline_collection_db_file != NoPipelineCollectionStr)
         {
             const bool multiple_triggers = sim_config_.trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI;
-            pipeline_collection_triggerable_.reset(new PipelineTrigger(sim_config_.pipeline_collection_file_prefix,
+            pipeline_collection_triggerable_.reset(new PipelineTrigger(sim_config_.pipeline_collection_db_file,
                                                                        pipeline_enabled_node_names_,
                                                                        heartbeat,
                                                                        multiple_triggers,
                                                                        sim->getRootClock(),
                                                                        sim->getRoot()));
-
-            // If pipeline collection is turned on begin writing an info file
-            // about the simulation.
-            info_out_.reset(new sparta::InformationWriter(sim_config_.pipeline_collection_file_prefix+"simulation.info"));
-            info_out_->write("Pipeline Collection files generated from simulator ");
-            info_out_->write(sim->getSimName());
-            info_out_->write("\n\nSimulation started at: ");
-            info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
         }
 
         // Finalize the pevent controller now that the tree is built.
@@ -2480,8 +2482,6 @@ void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
                 if(pipeline_collection_triggerable_->isTriggered()) {
                     pipeline_collection_triggerable_->stop();
                 }
-                info_out_->write("Simulation aborted at: ");
-                info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
             }
 
             // In interactive simulation, we would try and enter a "debug mode" and
@@ -2495,12 +2495,6 @@ void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
         if(pipeline_collection_triggerable_->isTriggered()) {
             pipeline_collection_triggerable_->stop();
         }
-
-         // Write the end time of the simulation.
-        info_out_->write("Simulation ended at: ");
-        info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
-        sparta::InformationWriter& outputter = *(info_out_.get());
-        outputter << "Heartbeat interval: " << pipeline_heartbeat_ << " ticks" << "\n";
     }
 
     if(show_tree_){

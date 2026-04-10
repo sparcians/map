@@ -178,6 +178,15 @@ namespace core_example
                 return phyAddrIsReady_;
             }
 
+            class ArgosCollector : public simdb::collection::ArgosCollectorBase<MemoryAccessInfo>
+            {
+            public:
+                ARGOS_COLLECT(DID,   &MemoryAccessInfo::getInstUniqueID);
+                ARGOS_COLLECT(valid, &MemoryAccessInfo::getPhyAddrIsReady);
+                ARGOS_COLLECT(mmu,   &MemoryAccessInfo::getMMUState);
+                ARGOS_COLLECT(cache, &MemoryAccessInfo::getCacheState);
+                ARGOS_FLATTEN(       &MemoryAccessInfo::getInstPtr);
+            };
 
         private:
             // load/store instruction pointer
@@ -217,16 +226,6 @@ namespace core_example
                                   SPARTA_ADDPAIR("mmu",   &MemoryAccessInfo::getMMUState),
                                   SPARTA_ADDPAIR("cache", &MemoryAccessInfo::getCacheState),
                                   SPARTA_FLATTEN(         &MemoryAccessInfo::getInstPtr))
-        };
-
-        class ArgosCollector : public simdb::collection::ArgosCollectorBase<MemoryAccessInfo>
-        {
-        public:
-            ARGOS_COLLECT(DID,   &MemoryAccessInfo::getInstUniqueID);
-            ARGOS_COLLECT(valid, &MemoryAccessInfo::getPhyAddrIsReady);
-            ARGOS_COLLECT(mmu,   &MemoryAccessInfo::getMMUState);
-            ARGOS_COLLECT(cache, &MemoryAccessInfo::getCacheState);
-            ARGOS_FLATTEN(       &MemoryAccessInfo::getInstPtr);
         };
 
         // Forward declaration of the Pair Definition class is must as we are friending it.
@@ -315,6 +314,15 @@ namespace core_example
                     < static_cast<uint32_t>(that->getPriority()));
             }
 
+            class ArgosCollector : public simdb::collection::ArgosCollectorBase<LoadStoreInstInfo>
+            {
+            public:
+                ARGOS_COLLECT(DID,     &LoadStoreInstInfo::getInstUniqueID);
+                ARGOS_COLLECT(rank,    &LoadStoreInstInfo::getPriority);
+                ARGOS_COLLECT(state,   &LoadStoreInstInfo::getState);
+                ARGOS_FLATTEN(         &LoadStoreInstInfo::getMemoryAccessInfoPtr);
+            };
+
         private:
             MemoryAccessInfoPtr mem_access_info_ptr_;
             sparta::State<IssuePriority> rank_;
@@ -342,15 +350,6 @@ namespace core_example
                                   SPARTA_ADDPAIR("rank",  &LoadStoreInstInfo::getPriority),
                                   SPARTA_ADDPAIR("state", &LoadStoreInstInfo::getState),
                                   SPARTA_FLATTEN(         &LoadStoreInstInfo::getMemoryAccessInfoPtr))
-        };
-
-        class ArgosCollector : public simdb::collection::ArgosCollectorBase<LoadStoreInstInfo>
-        {
-        public:
-            ARGOS_COLLECT(DID,     &LoadStoreInstInfo::getInstUniqueID);
-            ARGOS_COLLECT(rank,    &LoadStoreInstInfo::getPriority);
-            ARGOS_COLLECT(state,   &LoadStoreInstInfo::getState);
-            ARGOS_FLATTEN(         &LoadStoreInstInfo::getMemoryAccessInfoPtr);
         };
 
         void setTLB(SimpleTLB& tlb)
@@ -642,9 +641,9 @@ struct EnumDescriptor<core_example::LSU::MemoryAccessInfo::MMUState>
     static std::vector<EnumMember> members()
     {
         using MMUState = core_example::LSU::MemoryAccessInfo::MMUState;
-        return {{"no_access", MMUState::NO_ACCESS },
-                {"miss",      MMUState::MISS      },
-                {"hit",       MMUState::HIT       }};
+        return {{"no_access", (int64_t)MMUState::NO_ACCESS },
+                {"miss",      (int64_t)MMUState::MISS      },
+                {"hit",       (int64_t)MMUState::HIT       }};
     }
 };
 
@@ -654,9 +653,9 @@ struct EnumDescriptor<core_example::LSU::MemoryAccessInfo::CacheState>
     static std::vector<EnumMember> members()
     {
         using CacheState = core_example::LSU::MemoryAccessInfo::CacheState;
-        return {{"no_access", CacheState::NO_ACCESS },
-                {"miss",      CacheState::MISS      },
-                {"hit",       CacheState::HIT       }};
+        return {{"no_access", (int64_t)CacheState::NO_ACCESS },
+                {"miss",      (int64_t)CacheState::MISS      },
+                {"hit",       (int64_t)CacheState::HIT       }};
     }
 };
 
@@ -666,13 +665,13 @@ struct EnumDescriptor<core_example::LSU::LoadStoreInstInfo::IssuePriority>
     static std::vector<EnumMember> members()
     {
         using IssuePriority = core_example::LSU::LoadStoreInstInfo::IssuePriority;
-        return {{"(highest)",     IssuePriority::HIGHEST       },
-                {"($_reload)",    IssuePriority::CACHE_RELOAD  },
-                {"($_pending)",   IssuePriority::CACHE_PENDING },
-                {"(mmu_reload)",  IssuePriority::MMU_RELOAD    },
-                {"(mmu_pending)", IssuePriority::MMU_PENDING   },
-                {"(new_disp)",    IssuePriority::NEW_DISP      },
-                {"(lowest)",      IssuePriority::LOWEST        }};
+        return {{"(highest)",     (int64_t)IssuePriority::HIGHEST       },
+                {"($_reload)",    (int64_t)IssuePriority::CACHE_RELOAD  },
+                {"($_pending)",   (int64_t)IssuePriority::CACHE_PENDING },
+                {"(mmu_reload)",  (int64_t)IssuePriority::MMU_RELOAD    },
+                {"(mmu_pending)", (int64_t)IssuePriority::MMU_PENDING   },
+                {"(new_disp)",    (int64_t)IssuePriority::NEW_DISP      },
+                {"(lowest)",      (int64_t)IssuePriority::LOWEST        }};
     }
 };
 
@@ -682,9 +681,9 @@ struct EnumDescriptor<core_example::LSU::LoadStoreInstInfo::IssueState>
     static std::vector<EnumMember> members()
     {
         using IssueState = core_example::LSU::LoadStoreInstInfo::IssueState;
-        return {{"(ready)",     IssueState::READY     },
-                {"(issued)",    IssueState::ISSUED    },
-                {"(not_ready)", IssueState::NOT_READY }};
+        return {{"(ready)",     (int64_t)IssueState::READY     },
+                {"(issued)",    (int64_t)IssueState::ISSUED    },
+                {"(not_ready)", (int64_t)IssueState::NOT_READY }};
     }
 };
 

@@ -51,7 +51,6 @@ namespace po = boost::program_options;
 namespace pocls = boost::program_options::command_line_style;
 
 namespace sparta {
-class InformationWriter;
 
 namespace app {
 
@@ -457,7 +456,6 @@ protected:
      */
     std::unique_ptr<sparta::trigger::Triggerable> pipeline_collection_triggerable_;
     std::unique_ptr<sparta::trigger::Trigger>     pipeline_trigger_;
-    std::unique_ptr<sparta::InformationWriter>    info_out_;
 
     /*!
      * \brief Heartbeat period of pipeline collection file (before lexical cast

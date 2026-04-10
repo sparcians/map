@@ -1469,6 +1469,14 @@ TreeNode::ConstWeakPtr TreeNode::getWeakPtr() const {
     return ConstWeakPtr(self_ptr_); // Weak pointer from self shared ptr
 }
 
+simdb::collection::Collection<uint64_t>* TreeNode::getCollectionSystem(bool must_exist) {
+    auto root = getRoot();
+    if(root == this){
+        throw SpartaException("Cannot access collection system - no RootTreeNode available");
+    }
+    return root->getCollectionSystem(must_exist);
+}
+
 void TreeNode::addLink(TreeNode *node, const std::string &label)
 {
     sparta_assert(getPhase() == TREE_FINALIZED,

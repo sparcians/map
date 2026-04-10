@@ -76,6 +76,7 @@ int main ()
         ev(&es, "dummy_ev",
            CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(sparta::Pipe<uint32_t>, &pipe1, push_front, uint32_t));
 
+    rtn.initializeCollectionSystem();
     rtn.enterConfiguring();
     rtn.enterFinalized();
 

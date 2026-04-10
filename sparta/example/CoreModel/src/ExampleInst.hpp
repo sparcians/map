@@ -148,6 +148,19 @@ namespace core_example
         bool isSpeculative() const { return is_speculative_; }
         bool isStoreInst() const { return isStoreInst_; }
 
+        class ArgosCollector : public simdb::collection::ArgosCollectorBase<ExampleInst>
+        {
+        public:
+            ARGOS_COLLECT(DID,      &ExampleInst::getUniqueID);
+            ARGOS_COLLECT(uid,      &ExampleInst::getUniqueID);
+            ARGOS_COLLECT(mnemonic, &ExampleInst::getMnemonic);
+            ARGOS_COLLECT(complete, &ExampleInst::getCompletedStatus);
+            ARGOS_COLLECT(unit,     &ExampleInst::getUnit);
+            ARGOS_COLLECT(latency,  &ExampleInst::getExecuteTime);
+            ARGOS_COLLECT(raddr,    &ExampleInst::getRAdr/*TODO cnyce: std::ios::hex*/);
+            ARGOS_COLLECT(vaddr,    &ExampleInst::getVAdr/*TODO cnyce: std::ios::hex*/);
+        };
+
     private:
 
         const sparta::decode::DecoderBase static_inst_;
@@ -251,19 +264,6 @@ namespace core_example
                               SPARTA_ADDPAIR("raddr",    &ExampleInst::getRAdr, std::ios::hex),
                               SPARTA_ADDPAIR("vaddr",    &ExampleInst::getVAdr, std::ios::hex))
     };
-
-    class ArgosCollector : public simdb::collection::ArgosCollectorBase<ExampleInst>
-    {
-    public:
-        ARGOS_COLLECT(DID,      &ExampleInst::getUniqueID);
-        ARGOS_COLLECT(uid,      &ExampleInst::getUniqueID);
-        ARGOS_COLLECT(mnemonic, &ExampleInst::getMnemonic);
-        ARGOS_COLLECT(complete, &ExampleInst::getCompleteStatus);
-        ARGOS_COLLECT(unit,     &ExampleInst::getUnit);
-        ARGOS_COLLECT(latency,  &ExampleInst::getExecuteTime);
-        ARGOS_COLLECT(raddr,    &ExampleInst::getRAdr/*TODO cnyce: std::ios::hex*/);
-        ARGOS_COLLECT(vaddr,    &ExampleInst::getVAdr/*TODO cnyce: std::ios::hex*/);
-    };
 }
 
 // Template specializations
@@ -274,12 +274,12 @@ struct EnumDescriptor<core_example::ExampleInst::TargetUnit>
 {
     static std::vector<EnumMember> members()
     {
-        return {{"ALU0", core_example::ExampleInst::TargetUnit::ALU0},
-                {"ALU1", core_example::ExampleInst::TargetUnit::ALU1},
-                {"FPU",  core_example::ExampleInst::TargetUnit::FPU },
-                {"BR",   core_example::ExampleInst::TargetUnit::BR  },
-                {"LSU",  core_example::ExampleInst::TargetUnit::LSU },
-                {"ROB",  core_example::ExampleInst::TargetUnit::ROB }};
+        return {{"ALU0", 0},
+                {"ALU1", 1},
+                {"FPU",  2 },
+                {"BR",   3 },
+                {"LSU",  4 },
+                {"ROB",  5 }};
     }
 };
 

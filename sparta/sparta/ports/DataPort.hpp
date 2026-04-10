@@ -19,6 +19,7 @@
 #include "sparta/events/Precedence.hpp"
 #include "sparta/events/Scheduleable.hpp"
 #include "sparta/collection/Collectable.hpp"
+#include "sparta/collection/IterableCollector.hpp"
 
 namespace sparta
 {
@@ -288,7 +289,10 @@ namespace sparta
     class DataInPort final : public InPort, public DataContainer<DataT>
     {
         // Pipeline collection type
-        typedef collection::Collectable<DataT> CollectorType;
+        using CollectorType = std::conditional_t<
+            MetaStruct::is_stl<DataT>::value,
+            collection::IterableCollector<DataT, SchedulingPhase::Collection, false>,
+            collection::Collectable<DataT>>;
 
     public:
 
@@ -445,8 +449,15 @@ namespace sparta
          * \param node The TreeNode to add the collector
          */
         void enableCollection(TreeNode* node) override {
-            collector_.reset(new CollectorType(node, Port::name_, 0,
-                                               "Data being received on this DataInPort"));
+            if constexpr (MetaStruct::is_stl<DataT>::value) {
+                collector_.reset(new CollectorType(node, Port::name_,
+                                                   "Data being received on this DataInPort",
+                                                   nullptr,          // no backpointer / auto-collection
+                                                   UINT32_MAX));     // no known capacity
+            } else {
+                collector_.reset(new CollectorType(node, Port::name_, 0,
+                                                   "Data being received on this DataInPort"));
+            }
         }
 
     private:

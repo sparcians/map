@@ -12,6 +12,7 @@
 #include <cassert>
 #include <type_traits>
 
+#include "simdb/apps/argos/ArgosCollect.hpp"
 #include "sparta/utils/Utils.hpp"
 #include "sparta/utils/MetaStructs.hpp"
 #include "sparta/utils/SpartaSharedPointerBaseAllocator.hpp"
@@ -583,4 +584,42 @@ namespace MetaStruct {
 
     template<typename T>
     struct remove_any_pointer<sparta::SpartaSharedPointer<T> const &> { using type = T; };
+}
+
+namespace simdb::type_traits {
+    // Helper structs
+    template<typename T>
+    struct is_any_pointer<sparta::SpartaSharedPointer<T>> : public std::true_type {};
+
+    template<typename T>
+    struct is_any_pointer<sparta::SpartaSharedPointer<T> const> : public std::true_type {};
+
+    template<typename T>
+    struct is_any_pointer<sparta::SpartaSharedPointer<T> &> : public std::true_type {};
+
+    template<typename T>
+    struct is_any_pointer<sparta::SpartaSharedPointer<T> const &> : public std::true_type {};
+
+    template<typename T>
+    struct remove_any_pointer<sparta::SpartaSharedPointer<T>> { using type = T; };
+
+    template<typename T>
+    struct remove_any_pointer<sparta::SpartaSharedPointer<T> const> { using type = T; };
+
+    template<typename T>
+    struct remove_any_pointer<sparta::SpartaSharedPointer<T> &> { using type = T; };
+
+    template<typename T>
+    struct remove_any_pointer<sparta::SpartaSharedPointer<T> const &> { using type = T; };
+}
+
+namespace simdb::collection::detail {
+    template <typename T>
+    struct argos_struct_nested_type<sparta::SpartaSharedPointer<T>>
+    {
+        using type = T;
+    };
+
+    template <typename T>
+    struct is_smart_pointer<sparta::SpartaSharedPointer<T>> : std::true_type {};
 }

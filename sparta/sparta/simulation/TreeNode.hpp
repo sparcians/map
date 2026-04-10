@@ -36,6 +36,7 @@
 #include "sparta/utils/Printing.hpp"
 #include "sparta/utils/StringManager.hpp"
 #include "sparta/kernel/PhasedObject.hpp"
+#include "simdb/apps/argos/Collection.hpp"
 
 namespace sparta {
 class PostRunValidationInfo;
@@ -2339,6 +2340,12 @@ namespace sparta
          * \brief Const variant of getWeakPtr
          */
         ConstWeakPtr getWeakPtr() const;
+
+        /*!
+         * \brief Get the collection system for pipeline collection.
+         * \throw Throws if a RootTreeNode is not at the top of the tree.
+         */
+        virtual simdb::collection::Collection<uint64_t>* getCollectionSystem(bool must_exist = true);
 
         /*!
          * \brief Link this tree node with another tree node

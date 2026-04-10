@@ -538,6 +538,7 @@ int main ()
         examplePipeline9.registerHandlerAtStage<sparta::SchedulingPhase::Tick>
             (2, CREATE_SPARTA_HANDLER_WITH_DATA_WITH_OBJ(DummyClass, &dummyObj1, stage2_T_DataHandle, uint64_t)));
 
+    rtn.initializeCollectionSystem();
     rtn.enterConfiguring();
     rtn.enterFinalized();
 

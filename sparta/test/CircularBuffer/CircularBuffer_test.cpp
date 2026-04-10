@@ -460,6 +460,7 @@ void testCollection()
                                                 root_clk.get(), &buf10_stats);
     cir_buffer.enableCollection(&rtn);
 
+    rtn.initializeCollectionSystem();
     rtn.enterConfiguring();
     rtn.enterFinalized();
 

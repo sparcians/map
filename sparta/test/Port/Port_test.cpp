@@ -120,6 +120,7 @@ int main ()
     delay0_bind_in.bind(delay1_bind_out);
     EXPECT_THROW(delay1_bind_out.bind(delay0_bind_in));
 
+    rtn.initializeCollectionSystem();
     rtn.enterConfiguring();
     rtn.enterFinalized();
 

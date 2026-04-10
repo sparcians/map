@@ -237,6 +237,25 @@ namespace sparta
         }
 
         /*!
+         * \brief Call this method when pipeline collection is enabled.
+         * \throw Throws if collection system already initialized
+         * \throw Throws if getPhase() != TREE_BUILDING
+         * \throw Throws if getScheduler() == nullptr
+         * \throw Throws if there are no clocks anywhere under this root
+         */
+        simdb::collection::Collection<uint64_t>* initializeCollectionSystem(size_t heartbeat=10);
+
+        /*!
+         * \brief Get the collection system for pipeline collection
+         */
+        simdb::collection::Collection<uint64_t>* getCollectionSystem(bool must_exist = true) override{
+            if(!simdb_collection_ && must_exist){
+                throw SpartaException("Collection system never initialized");
+            }
+            return simdb_collection_.get();
+        }
+
+        /*!
          * \brief Public method to crystalize the tree structure and begin
          * configuring.
          * \pre Tree must be in TREE_BUILDING phase. Note that subtrees below
@@ -587,6 +606,12 @@ namespace sparta
          * this tree
          */
         NewDescendantNotiSrc new_node_noti_;
+
+        /*!
+         * \brief SimDB collection system used for pipeline collection. Created
+         * in Simulation::configure() when "-z" is used at the command line.
+         */
+        std::unique_ptr<simdb::collection::Collection<uint64_t>> simdb_collection_;
     };
 
 } // namespace sparta

@@ -70,6 +70,7 @@ int main()
     queue10_untimed.enableCollection(&rtn);
 #endif
 
+    rtn.initializeCollectionSystem();
     rtn.enterConfiguring();
     rtn.enterFinalized();
 

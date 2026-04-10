@@ -89,6 +89,7 @@
 #if SIMDB_ENABLED
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
 #include "sparta/serialization/checkpoint/CherryPickFastCheckpointer.hpp"
+#include "simdb/apps/argos/CollectionPipeline.hpp"
 #include "simdb/apps/AppManager.hpp"
 #endif
 
@@ -505,6 +506,11 @@ void Simulation::createSimDbApps_()
             app_mgr.enableApp(app_name, num_instances);
         }
 
+        using CollectionApp = simdb::collection::CollectionPipeline;
+        if (app_mgr.enabled(CollectionApp::NAME)) {
+            app_mgr.parameterizeAppFactory<CollectionApp>(root_.getCollectionSystem());
+        }
+
         // Now that the apps are enabled with the specific number of instances,
         // give subclasses a chance to parameterize the app factories prior to
         // calling createEnabledApps().
@@ -653,6 +659,17 @@ void Simulation::finalizeTree()
 {
     std::cout << "Finalizing tree..." << std::endl;
     sparta_assert(root_clk_ != nullptr, "Root clock was not set up in this simulator");
+
+    // Initialize the data collection system if pipeline collection is enabled.
+    if (sim_config_ && sim_config_->pipeline_collection_db_file != NoPipelineCollectionStr) {
+        root_.initializeCollectionSystem();
+        auto& simdb_config = sim_config_->simdb_config;
+
+        using CollectionApp = simdb::collection::CollectionPipeline;
+        app_managers_->registerApp<CollectionApp>();
+        simdb_config.enableApp(CollectionApp::NAME);
+        simdb_config.setAppDatabase(CollectionApp::NAME, sim_config_->pipeline_collection_db_file);
+    }
 
     // No more ResourceTreeNodes can be created during this.
 #ifdef SPARTA_PYTHON_SUPPORT

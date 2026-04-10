@@ -469,7 +469,13 @@ public:
      * The default pipeline collection prefix for pipeline collection
      * (-z option).  Empty string means no prefix
      */
-    std::string pipeline_collection_file_prefix = NoPipelineCollectionStr;
+    std::string pipeline_collection_db_file = NoPipelineCollectionStr;
+
+    /*!
+     * \brief Heartbeat period of pipeline collection file (after lexical cast
+     * and validation)
+     */
+    utils::ValidValue<size_t> pipeline_heartbeat;
 
     /*!
      * Additional report descriptions

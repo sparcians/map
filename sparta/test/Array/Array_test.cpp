@@ -113,6 +113,7 @@ int main()
     //Create a dummy treenode.
     sparta::RootTreeNode root_node("root");
     root_node.setClock(&clk);
+    root_node.initializeCollectionSystem();
 
     sparta::TreeNode root("root", "root tree node");
     root_node.addChild(&root);

@@ -100,6 +100,7 @@ void generalTest()
     buf10.enableCollection(&rtn);
 #endif
 
+    rtn.initializeCollectionSystem();
     rtn.enterConfiguring();
     rtn.enterFinalized();
 
@@ -108,7 +109,7 @@ void generalTest()
 
 #ifdef PIPEOUT_GEN
     sparta::collection::PipelineCollector pc("testBuffer", 1000000,
-                                           root_clk.get(), &rtn);
+                                             root_clk.get(), &rtn);
 #endif
 
     sched.finalize();

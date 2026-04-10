@@ -267,6 +267,9 @@ namespace MetaStruct {
     template<typename T>
     struct is_any_pointer<std::weak_ptr<T> const &> : public std::true_type {};
 
+    template<typename T>
+    inline constexpr bool is_any_pointer_v = is_any_pointer<T>::value;
+
     /*!
     * \brief Template type helper that removes any pointer.
     * A modeler may call certain APIs with shared pointers to the

@@ -73,7 +73,7 @@ namespace collection
          */
         void startCollecting(Collector * collector) {
             is_collected_ = true;
-            setCollecting_(true, collector);
+            setCollecting_(is_collected_, collector);
         }
 
         /**
@@ -82,8 +82,8 @@ namespace collection
          */
         void stopCollecting(Collector * collector)
         {
-            setCollecting_(false, collector);
             is_collected_ = false;
+            setCollecting_(is_collected_, collector);
         }
 
         /**
@@ -95,12 +95,6 @@ namespace collection
         //! Pure virtual method used by deriving classes to be
         //! notified when they can perform their collection
         virtual void collect() = 0;
-
-        //! Pure virtual method used by deriving classes to re-start a
-        //! record if necessary.  This is mostly used by
-        //! PipelineCollector where it will insert a heartbeat index
-        //! by closing all records and opening them again.
-        virtual void restartRecord() {}
 
         //! Pure virtual method used by deriving classes to force
         //! close a record.  This is useful for simulation end where
@@ -115,19 +109,16 @@ namespace collection
     protected:
 
         /**
+         * \brief A value that represents whether or not this TreeNode is
+         * being collected by a collector
+         */
+        bool is_collected_ = false; 
+
+        /**
          * \brief Indicate to sub-classes that collection has flipped
          * \param collect true if collection is enabled; false otherwise
          */
         virtual void setCollecting_(bool collect, Collector *) { (void) collect; }
-
-    private:
-
-        /**
-         * \brief A value that represents whether or not this TreeNode is
-         * being collected by a collector
-         */
-        bool is_collected_ = false;
-
     };
 
 }

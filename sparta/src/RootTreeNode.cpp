@@ -145,6 +145,50 @@ void RootTreeNode::dumpTypeMix(std::ostream& o) const {
     o << "UNIMPLEMENTED: " << __PRETTY_FUNCTION__ << std::endl;
 }
 
+simdb::collection::Collection<uint64_t>* RootTreeNode::initializeCollectionSystem(size_t heartbeat)
+{
+    if(simdb_collection_){
+        throw SpartaException("Collection system already initialized");
+    }
+
+    if(getPhase() >= TREE_FINALIZING){
+        throw SpartaException("Cannot initialize collection system after configureTree()");
+    }
+
+    auto scheduler = getScheduler(true /*must exist*/);
+
+    std::unordered_set<TreeNode*> visited;
+    std::queue<TreeNode*> node_queue;
+    node_queue.push(this);
+
+    std::map<std::string, size_t> clk_periods;
+    while(!node_queue.empty()){
+        auto n = node_queue.front();
+        node_queue.pop();
+        if(visited.insert(n).second){
+            if(auto clk = n->getClock()){
+                clk_periods[clk->getName()] = clk->getPeriod();
+            }
+            for(TreeNode* node : TreeNodePrivateAttorney::getAllChildren(n)){
+                node_queue.push(node);
+            }
+        }
+    }
+
+    if(clk_periods.empty()){
+        throw SpartaException("Cannot initialize collection system - no clocks found");
+    }
+
+    simdb_collection_ = std::make_unique<simdb::collection::Collection<uint64_t>>(heartbeat);
+    simdb_collection_->timestampWith([scheduler](){return scheduler->getCurrentTick();});
+
+    for(const auto& [clk_name, clk_period] : clk_periods){
+        simdb_collection_->addCollection(clk_name, clk_period);
+    }
+
+    return simdb_collection_.get();
+}
+
 void RootTreeNode::enterFinalized(sparta::python::PythonInterpreter* pyshell) {
     if(getPhase() != TREE_CONFIGURING){
         throw SpartaException("Device tree with root \"")
