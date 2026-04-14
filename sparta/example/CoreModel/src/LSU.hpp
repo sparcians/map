@@ -178,15 +178,7 @@ namespace core_example
                 return phyAddrIsReady_;
             }
 
-            class ArgosCollector : public simdb::collection::ArgosCollectorBase<MemoryAccessInfo>
-            {
-            public:
-                ARGOS_COLLECT(DID,   &MemoryAccessInfo::getInstUniqueID);
-                ARGOS_COLLECT(valid, &MemoryAccessInfo::getPhyAddrIsReady);
-                ARGOS_COLLECT(mmu,   &MemoryAccessInfo::getMMUState);
-                ARGOS_COLLECT(cache, &MemoryAccessInfo::getCacheState);
-                ARGOS_FLATTEN(       &MemoryAccessInfo::getInstPtr);
-            };
+            class ArgosCollector;
 
         private:
             // load/store instruction pointer
@@ -314,14 +306,7 @@ namespace core_example
                     < static_cast<uint32_t>(that->getPriority()));
             }
 
-            class ArgosCollector : public simdb::collection::ArgosCollectorBase<LoadStoreInstInfo>
-            {
-            public:
-                ARGOS_COLLECT(DID,     &LoadStoreInstInfo::getInstUniqueID);
-                ARGOS_COLLECT(rank,    &LoadStoreInstInfo::getPriority);
-                ARGOS_COLLECT(state,   &LoadStoreInstInfo::getState);
-                ARGOS_FLATTEN(         &LoadStoreInstInfo::getMemoryAccessInfoPtr);
-            };
+            class ArgosCollector;
 
         private:
             MemoryAccessInfoPtr mem_access_info_ptr_;
@@ -688,3 +673,28 @@ struct EnumDescriptor<core_example::LSU::LoadStoreInstInfo::IssueState>
 };
 
 } // namespace simdb::collection
+
+namespace core_example {
+
+class LSU::MemoryAccessInfo::ArgosCollector
+    : public simdb::collection::ArgosCollectorBase<LSU::MemoryAccessInfo>
+{
+public:
+    ARGOS_COLLECT(DID,   &LSU::MemoryAccessInfo::getInstUniqueID);
+    ARGOS_COLLECT(valid, &LSU::MemoryAccessInfo::getPhyAddrIsReady);
+    ARGOS_COLLECT(mmu,   &LSU::MemoryAccessInfo::getMMUState);
+    ARGOS_COLLECT(cache, &LSU::MemoryAccessInfo::getCacheState);
+    ARGOS_FLATTEN(       &LSU::MemoryAccessInfo::getInstPtr);
+};
+
+class LSU::LoadStoreInstInfo::ArgosCollector
+    : public simdb::collection::ArgosCollectorBase<LSU::LoadStoreInstInfo>
+{
+public:
+    ARGOS_COLLECT(DID,     &LSU::LoadStoreInstInfo::getInstUniqueID);
+    ARGOS_COLLECT(rank,    &LSU::LoadStoreInstInfo::getPriority);
+    ARGOS_COLLECT(state,   &LSU::LoadStoreInstInfo::getState);
+    ARGOS_FLATTEN(         &LSU::LoadStoreInstInfo::getMemoryAccessInfoPtr);
+};
+
+} // namespace core_example
