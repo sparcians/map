@@ -192,7 +192,7 @@ Specifically, the `sparta::ResourceTreeNode` is the main container for the follo
 
 The `sparta::ResourceTreeNode` will instantiate the modeler's unit as
 well as the parameters it uses.  However, by itself, the
-`sparta::ResourceTreeNode` does not know how to to instantiate the
+`sparta::ResourceTreeNode` does not know how to instantiate the
 modeler's modeling components.  To instantiate those components,
 `sparta::ResourceTreeNode` requires the modeler to provide an instance
 of a
@@ -382,7 +382,7 @@ been instantiated at end of this phase.
 
 Each `ResourceTreeNode` that is constructed takes the following:
 
-- It's parent tree node
+- Its parent tree node
 - A unique name for that node.  Rules do apply to this name.  The name
   must be python compatible meaning only alpha-numeric characters.
 - The group name if there is more than 1 node of the same name.  For
@@ -637,7 +637,7 @@ namespace my_simulator
 ==== Instantiate Phase [[instantiate]]
 
 Instantiating the components of simulation is a sparta-internal
-effort, but the phase is stil started by the user by calling
+effort, but the phase is still started by the user by calling
 https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a200bdd31a21e24a242770fcb8e7fff5f[`sparta::app::Simulation::finalizeTree()`]
 
 [source,cpp]
