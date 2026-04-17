@@ -4,7 +4,7 @@
 :data-uri:
 
 Building a Sparta Model requires establishing component hierarchies
-and relationships that will be used during similation.  This
+and relationships that will be used during simulation.  This
 establishment is used to represent all of the components instantiated
 by Sparta as well as those components created by the modeler to build,
 connect, run, observe, and destroy the simulation.
@@ -20,7 +20,7 @@ use those classes to form the final simulation.
 
 == Sparta Classes for Simulation
 
-As an example of a simulation heirarchy, take a generic SoC design
+As an example of a simulation hierarchy, take a generic SoC design
 which consists of multiple cores and a memory subsytem (`mss`).  Each
 core consists of subcomponents (`fetch`, `decode`, `rename`, etc).
 [plantuml,align="center"]
@@ -52,7 +52,7 @@ https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html[sparta::ap
 object is instantiated (https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a50d046cc0b13d2776fb51813bfa7b0c5[sparta::app::Simulation::getRoot()])..
 ****
 
-Each node of the heirarchy represents a
+Each node of the hierarchy represents a
 https://sparcians.github.io/map/classsparta_1_1TreeNode.html[sparta::TreeNode]
 which is the main "node container".  This container will hold
 everything related to that component like the component's
@@ -69,7 +69,7 @@ Pattern] from Design Patterns.
 [#Composite Pattern,link="https://en.wikipedia.org/wiki/Composite_pattern#/media/File:W3sDesign_Composite_Design_Pattern_UML.jpg"]
 image::../images/W3sDesign_Composite_Design_Pattern_UML.jpg[The Composite Pattern,align=center]
 
-This heirarchy and component relationship is what will be represented
+This hierarchy and component relationship is what will be represented
 in simulation and is at the heart of the Sparta Simulation Framework.
 Everything in simulation refers to these constructed artifacts and
 their relationships.
@@ -156,14 +156,14 @@ not direct, but rather through the containers in which they reside:
    my_core->getContainer()->getChildren ... etc
 ```
 
-This is highly discouraged, however, as resources should not be
-accessing each other directly. Instead, resources should communicate
-through https://sparcians.github.io/map/communication.html#comm_ports[`sparta::Ports`].
+This is highly discouraged -- as resources should communicate through
+Ports, not directly.  Instead, resources should communicate through
+https://sparcians.github.io/map/communication.html#comm_ports[`sparta::Ports`].
 
 === Sparta TreeNode
 
 As mentioned above, Sparta requires a modeler to build a simulation
-heirarchy to represent those components in simulation.  Each of those
+hierarchy to represent those components in simulation.  Each of those
 nodes is, or a derivative of, a `sparta::TreeNode`.
 
 Referring back to the Composite Pattern, `sparta::TreeNode` _is-a_
@@ -187,7 +187,7 @@ specific derivative of the `sparta::Unit` or `sparta::Resource`.
 
 Specifically, the `sparta::ResourceTreeNode` is the main container for the following components:
 
-1. `sparta::Unit` -- The base class that the modeler will create his/her component from
+1. `sparta::Unit` -- The base class that the modeler will create their component from
 1. `sparta::ParameterSet` -- The parameters used by the modeler's `sparta::Unit` to configure
 
 The `sparta::ResourceTreeNode` will instantiate the modeler's unit as
@@ -217,9 +217,9 @@ During finalization of the framework (documented in the next section),
 the `sparta::ResourceTreeNode` will use the given factory to
 instantiate the user defined modeling component.
 
-== Building the Simulation Heirarchy
+== Building the Simulation Hierarchy
 
-The simulation heirarchy can be built anywhere, including a simple
+The simulation hierarchy can be built anywhere, including a simple
 application that just contains `main()` and starts with a
 `sparta::RootTreeNode`.  However, to take advantage of Sparta's
 built-in command line parsing, automatic phase construction, automatic
@@ -280,12 +280,12 @@ Typical usecase is the modeler provides 1 instance of this object _per
 simulation_, but there's nothing in the framework that restricts this.
 
 At this point, the modeler has created the _beginnings_ of a
-simulator, but it does not contain any heirarchy nor any instantiated
+simulator, but it does not contain any hierarchy nor any instantiated
 modeling components.
 
-The building of the simulation heirarchy is done in stages, with each
-stage alloing the modeler define the heirarchy, configure the
-heirarchy, allow the framework to instantiate the simulator, and then
+The building of the simulation hierarchy is done in stages, with each
+stage allowing the modeler define the hierarchy, configure the
+hierarchy, allow the framework to instantiate the simulator, and then
 finally the stage to allow the modeler to bind all of the components
 together.
 
@@ -308,8 +308,8 @@ modeler through these phases:
 
 The virtual method
 https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#aecc889666b5da1b6891a6f1ed337fbc8[`sparta::app::Simulation::buildTree_()] will be called via
-https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a319e9c4e7418f8f953e1a527b4feff8a[sparta::app::Simulation::buidlTree()]
-in the plubic API:
+https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a319e9c4e7418f8f953e1a527b4feff8a[sparta::app::Simulation::buildTree()]
+in the public API:
 
 [source,cpp]
 ----
@@ -327,10 +327,10 @@ and establish relationships (parent and child) between those nodes.
 This is creating and setting up _pure_ Sparta componentry and the
 modeler's units/classes will not be created in this phase.
 
-To create the CPU heirarchy above, the modeler must override the
+To create the CPU hierarchy above, the modeler must override the
 protected `virtual` method `void buildTree_()` in the
 `sparta::app::Simulation` derivative.  In this method, the modeler
-will create the heirarchy of `sparta::ResourceTreeNode` objects that
+will create the hierarchy of `sparta::ResourceTreeNode` objects that
 represent, or contain, each of the modeler's units to be instantiated
 in simulation.
 
@@ -374,8 +374,8 @@ namespace my_simulator
 ----
 
 In the source file, implement the `buildTree_` method and create the
-node heirarchy.  Still realize that **none** of the modeler's components
-have been instantiated at end of this phase.
+node hierarchy.  Note that **none** of the modeler's components have
+been instantiated at end of this phase.
 
 [.underline]
 `buildTree_` Implementation Notes
@@ -448,7 +448,7 @@ namespace my_simulator
         tns_to_delete_.emplace_back(cpu_tn);
 
         // Create the CPU nodes, children of the CPU TreeNode.  For
-        // sake of brevity, assume a simulation of just 2 cores.  This
+        // the sake of brevity, assume a simulation of just 2 cores.  This
         // can be parameterized either on the command line (shown later)
         // or via parameters.
         constexpr uint32_t num_cores = 2;
@@ -511,7 +511,7 @@ use, and destroy the factories for you in the order that is preferable
 to flow of simulation.
 
 However, "stashing" the factory into the internal resource set is not
-required.  Instead, a modeler can create and maintain his/her own
+required.  Instead, a modeler can create and maintain their own
 factories in the private section of the Simulation instance:
 
 [source,cpp]
@@ -541,7 +541,7 @@ sparta::ResourceTreeNode* cpu_tn =
                                  &cpu_factory_);  // use local factory
 ----
 
-This is useful if the modeler has a collection of pre-mode factories
+This is useful if the modeler has a collection of pre-made factories
 to be reused.  However, there is one important caveat if a modeler
 chooses to do this:
 
@@ -575,7 +575,7 @@ are associated with _any_ of the modeled components to make
 adjustments, check for errors, etc.
 
 The `sparta::ParameterSet` objects are created by the
-`sparta::ResourceTreeNode` found in the tree node heirarchy.
+`sparta::ResourceTreeNode` found in the tree node hierarchy.
 
 [source,cpp]
 ----
@@ -629,7 +629,7 @@ namespace my_simulator
         const sparta::ParameterSet * core_parameters = core_rtn->getParameterSet();
         const sparta::Parameter<uint32_t> & num_branch_units =
             core_parameters->getParameterAs<uint32_t>("num_branch_units");
-         sparta_assert(num_branch_units == 1, "This core design only suppoerts 1 branch unit");
+         sparta_assert(num_branch_units == 1, "This core design only supports 1 branch unit");
     }
 }
 ----
