@@ -26,6 +26,11 @@
 #include "sparta/utils/StringUtils.hpp"
 #include "sparta/app/ReportDescriptor.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
+#include "sparta/utils/Utils.hpp"
+#include "sparta/extensions/TreeNodeExtensionManager.hpp"
+
+// Reuse hash<pair<string,string>>
+#include "sparta/report/format/DetailInfoData.hpp"
 
 namespace sparta {
 namespace app {
@@ -146,6 +151,9 @@ public:
     void processArch(const std::string & pattern,
                      const std::string & filename);
 
+    //! Consume a yaml file with extensions (--extension-file(s))
+    void processExtensionFile(const std::string & filename);
+
     //! Enable logging on a specific node, for a specific category,
     //! and redirect output to the given destination
     void enableLogging(const std::string & pattern,
@@ -154,9 +162,6 @@ public:
 
     //! Was a final configuration file provided?
     bool hasFinalConfig() const { return !final_config_file_.empty(); }
-
-    //! Consume an extension (.yaml) file
-    void processExtensionFile(const std::string & filename);
 
     //!  Set the filename for the State Tracking file
     void setStateTrackingFile(const std::string & filename);
@@ -250,23 +255,6 @@ public:
      * and later applied as defaults to newly-constructed parameters.
      */
     const ParameterTree& getArchUnboundParameterTree() const { return arch_ptree_; }
-
-    /*!
-     * \brief Returns a ParameterTree containing an unbound set of
-     * named tree node extensions and their parameter value(s).
-     */
-    ParameterTree& getExtensionsUnboundParameterTree() {
-        return extensions_ptree_;
-    }
-
-    /*!
-     * \brief Returns a ParameterTree (const version) containing an
-     * unbound set of named tree node extensions and their parameter
-     * value(s).
-     */
-    const ParameterTree& getExtensionsUnboundParameterTree() const {
-        return extensions_ptree_;
-    }
 
     /*!
      * Was an arch file provided in this configuration?
@@ -494,6 +482,166 @@ public:
     class SimDBConfig
     {
     public:
+        /*!
+         * \brief Set the simulation executable. This will be used as the default
+         * database filename (with a .db extension) unless otherwise specified.
+         */
+        void setSimExecutable(const std::string & exe_name)
+        {
+            sim_exec_db_filename_ = exe_name + ".db";
+        }
+
+        /*!
+         * \brief Before creating any apps, call this method to enable all apps
+         * to have access to a single thread-safe file logger.
+         * \param filename The name / path of the output file.
+         */
+        void useAppFileLogger(const std::string & filename)
+        {
+            app_file_logger_filename_ = filename;
+        }
+
+        /*!
+         * \brief Get the filename of the apps' shared file logger, if enabled.
+         */
+        std::string getAppLoggerFilename() const
+        {
+            return app_file_logger_filename_;
+        }
+
+        /*!
+         * \brief Tell the simulation to enable the given app. Unless otherwise
+         * specified, the database will be the executable name with a '.db' file
+         * extension, and one app instance will be available.
+         * \note Use setAppDatabase() to override the database file for this app.
+         * \note Use setAppCount() to override the number of instances for this app.
+         */
+        void enableApp(const std::string & app_name)
+        {
+            sparta_assert(!appEnabled(app_name));
+            sparta_assert(!sim_exec_db_filename_.empty());
+
+            enabled_apps_.insert(app_name);
+            setAppCount(app_name, 1);
+            setAppDatabase(app_name, sim_exec_db_filename_);
+        }
+
+        /*!
+         * \brief Check if the given app is enabled.
+         */
+        bool appEnabled(const std::string & app_name) const
+        {
+            return enabled_apps_.count(app_name) > 0;
+        }
+
+        /*!
+         * \brief Return a list of all enabled apps.
+         */
+        std::vector<std::string> getEnabledApps() const
+        {
+            return {enabled_apps_.begin(), enabled_apps_.end()};
+        }
+
+        /*!
+         * \brief Set the number of instances that should be available for the given app.
+         */
+        void setAppCount(const std::string & app_name, size_t count)
+        {
+            sparta_assert(count > 0);
+            sparta_assert(appEnabled(app_name));
+            concrete_app_counts_[app_name] = count;
+            inferred_app_counts_.erase(app_name);
+        }
+
+        /*!
+         * \brief Set the number of instances that should be available for the given app
+         * using a device tree wildcard pattern. The app count will be inferred as the
+         * number of tree nodes matching this pattern by the time finalizeFramework()
+         * is called.
+         */
+        void inferAppCountFromTreePattern(const std::string & app_name, const std::string & pattern)
+        {
+            sparta_assert(!pattern.empty());
+            sparta_assert(appEnabled(app_name));
+            concrete_app_counts_.erase(app_name);
+            inferred_app_counts_[app_name] = pattern;
+        }
+
+        /*!
+         * \brief Get the device tree pattern from which to infer the number of instances
+         * of the given app we should create.
+         */
+        std::string getTreePatternForInferredAppCount(const std::string & app_name) const
+        {
+            if (!appEnabled(app_name)) {
+                throw SpartaException("App '") << app_name << "' is not enabled.";
+            }
+
+            auto it = inferred_app_counts_.find(app_name);
+            if (it != inferred_app_counts_.end()) {
+                return it->second;
+            }
+            return "";
+        }
+
+        /*!
+         * \brief Return the number of instances we should create for the given app.
+         * \note Only to be called after the tree is fully built. Throws if not.
+         */
+        size_t getAppCount(const std::string & app_name) const
+        {
+            if (!appEnabled(app_name)) {
+                return 0;
+            }
+
+            auto it = concrete_app_counts_.find(app_name);
+            if (it == concrete_app_counts_.end()) {
+                throw SpartaException("We do not know the app count yet. Has the tree been built?");
+            }
+            return it->second;
+        }
+
+        /*!
+         * \brief Direct the given app to go to the provided database file.
+         */
+        void setAppDatabase(const std::string & app_name, const std::string & db_file)
+        {
+            sparta_assert(appEnabled(app_name));
+            app_databases_[app_name] = db_file;
+        }
+
+        /*!
+         * \brief Get the database file for the given app.
+         */
+        std::string getAppDatabase(const std::string & app_name) const
+        {
+            sparta_assert(appEnabled(app_name));
+            return app_databases_.at(app_name);
+        }
+
+        /*!
+         * \brief Tell SimDB to open the given file without overwriting it.
+         */
+        void reuseDatabase(const std::string & db_file)
+        {
+            reused_db_files_.insert(db_file);
+        }
+
+        /*!
+         * \brief See if the given database should be overwritten or reused.
+         */
+        bool shouldOverwriteDatabase(const std::string & db_file) const
+        {
+            return reused_db_files_.count(db_file) == 0;
+        }
+
+        /*!
+         * \brief When used together with --enable-simdb-reports, the option
+         * --disable-legacy-reports results in stats reports only going to
+         * SimDB.
+         * \note "Legacy" here means formatted output files, e.g. json/html/txt.
+         * \note This is being deprecated in map_v3.
+         */
         void disableLegacyReports()
         {
             if (!appEnabled("simdb-reports")) {
@@ -503,49 +651,29 @@ public:
             legacy_reports_enabled_ = false;
         }
 
+        /*!
+         * \brief See if legacy stats reports are enabled or not.
+         * \note "Legacy" here means formatted output files, e.g. json/html/txt.
+         * \note This is being deprecated in map_v3.
+         */
         bool legacyReportsEnabled() const
         {
             return legacy_reports_enabled_;
         }
 
-        void enableApp(const std::string & app_name, const std::string & db_file)
-        {
-            enabled_apps_[db_file].insert(app_name);
-            app_db_files_[app_name].insert(db_file);
-        }
-
-        bool appEnabled(const std::string & app_name) const
-        {
-            return app_db_files_.count(app_name) > 0;
-        }
-
-        std::vector<std::string> getEnabledApps() const 
-        {
-            std::vector<std::string> apps;
-            for (const auto& [app_name, db_files] : app_db_files_)
-            {
-                apps.emplace_back(app_name);
-            }
-            return apps;
-        }
-
-        std::vector<std::string> getAppDatabases(const std::string & app_name) const
-        {
-            auto it = app_db_files_.find(app_name);
-            if (it != app_db_files_.end()) {
-                return {it->second.begin(), it->second.end()};
-            } else {
-                return {};
-            }
-        }
-
-        //SQLite3 PRAGMA's to execute on database creation.
-        //  "PRAGMA <name> = <val>"
+        /*!
+         * \brief Add a SQLite PRAGMA to execute on database creation.
+         * \note Applies to all app databases if different.
+         */
         void addPragmaOnOpen(const std::string& name, const std::string& val)
         {
             dbmgr_pragmas_[name] = val;
         }
 
+        /*!
+         * \brief Get a list of name-value pairs for SQLite PRAGMA's
+         * to execute on database creation.
+         */
         std::vector<std::pair<std::string, std::string>> getPragmas() const
         {
             std::vector<std::pair<std::string, std::string>> pragmas;
@@ -557,12 +685,24 @@ public:
         }
 
     private:
-        std::string simdb_file_;
-        std::map<std::string, std::set<std::string>> enabled_apps_;
-        std::map<std::string, std::set<std::string>> app_db_files_;
-        bool legacy_reports_enabled_ = true;
+        std::string sim_exec_db_filename_;
+        std::string app_file_logger_filename_;
+        std::set<std::string> enabled_apps_;
+        std::map<std::string, size_t> concrete_app_counts_;
+        std::map<std::string, std::string> inferred_app_counts_;
+        std::map<std::string, std::string> app_databases_;
+        std::set<std::string> reused_db_files_;
         std::map<std::string, std::string> dbmgr_pragmas_;
+        bool legacy_reports_enabled_ = true;
     } simdb_config;
+
+    /*!
+     * The extension manager is responsible for parsing extensions
+     * from input YAML files, holding onto instantiated extensions,
+     * verifying that all extension parameters have been read, and
+     * producing the --write-final-config ParameterTree.
+     */
+    TreeNodeExtensionManager extension_mgr;
 
     /*!
      * Scheduler control: When a user calls sparta::Simulation::run()
@@ -637,8 +777,41 @@ private:
     //! Unbound (pre-application) Parameter Tree
     ParameterTree ptree_;
 
-    //! Unbound (pre-application) Extensions Tree
-    ParameterTree extensions_ptree_;
+    //! Extensions can be added via processArch, processConfigFile,
+    //! processExtensionFile, and processParameter. They need to be
+    //! added to the extensions manager in a well-defined order, i.e.
+    //! baseline values first, followed by override values. The enum
+    //! below dictates the order in which the extension parameter values
+    //! are applied.
+    enum ExtensionsOrderOfOps : uint32_t
+    {
+        FROM_ARCH_YAML_WITH_WILDCARDS = 0,
+        FROM_CONFIG_YAML_OR_PARAM_WITH_WILDCARDS,
+        FROM_EXT_YAML_WITH_WILDCARDS,
+        FROM_ARCH_YAML_WITHOUT_WILDCARDS,
+        FROM_CONFIG_YAML_OR_PARAM_WITHOUT_WILDCARDS,
+        FROM_EXT_YAML_WITHOUT_WILDCARDS,
+        __N
+    };
+
+    //! Extension ptrees. Merged into the TreeNodeExtensionManager
+    //! adhering to the above order of operations.
+    std::array<ParameterTree, ExtensionsOrderOfOps::__N> extension_ptrees_;
+
+    //! Helper to split a ParameterTree into two ptrees: one that has
+    //! only extensions, and the other which does not.
+    static void extractPTreeExtensions_(
+        const ParameterTree & source_ptree,
+        ParameterTree & no_extensions,
+        ParameterTree & only_extensions);
+
+    //! Helper to split a ParameterTree that only has extensions
+    //! into two ptrees: one that only has wildcard paths and one
+    //! that only has concrete paths.
+    static void splitExtensionPTree_(
+        const ParameterTree & source_ptree,
+        ParameterTree & wildcard_extensions,
+        ParameterTree & concrete_extensions);
 
     //! Vector of arch file search directories
     std::vector<std::string> arch_search_paths_;

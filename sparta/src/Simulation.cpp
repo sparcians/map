@@ -38,6 +38,7 @@
 #include "sparta/kernel/SleeperThread.hpp"
 #include "sparta/utils/File.hpp"
 #include "sparta/parsers/YAMLTreeEventHandler.hpp"
+#include "sparta/parsers/ConfigEmitterYAML.hpp"
 #include "src/State.tpp"
 #include "sparta/kernel/MemoryProfiler.hpp"
 #include "sparta/statistics/dispatch/streams/StatisticsStreams.hpp"
@@ -83,9 +84,11 @@
 #include "sparta/trigger/ExpressionTrigger.hpp"
 #include "sparta/trigger/Trigger.hpp"
 #include "sparta/utils/StringUtils.hpp"
+#include "sparta/utils/Utils.hpp"
 
 #if SIMDB_ENABLED
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
+#include "sparta/serialization/checkpoint/CherryPickFastCheckpointer.hpp"
 #include "simdb/apps/AppManager.hpp"
 #endif
 
@@ -314,6 +317,9 @@ Simulation::Simulation(const std::string& sim_name,
                           (this, "Simulation::delayedPEventStart_")),
     simulation_state_(this)
 {
+#if SIMDB_ENABLED
+    app_managers_ = std::make_shared<simdb::AppManagers>();
+#endif
 
     // Watch for created nodes to which we will apply taps
     root_.getNodeAttachedNotification().REGISTER_FOR_THIS(rootDescendantAdded_);
@@ -382,6 +388,10 @@ void Simulation::configure(const int argc,
     print_dag_  = sim_config_->show_dag;
     argc_ = argc;
     argv_ = argv;
+
+    if (!getExtensionManager(false)) {
+        setTreeNodeExtensionManager_(&sim_config_->extension_mgr);
+    }
 
     ReportDescVec expanded_descriptors;
     for (const auto & rd : sim_config_->reports) {
@@ -463,10 +473,14 @@ void Simulation::configure(const int argc,
 
 void Simulation::createSimDbApps_()
 {
-#if SIMDB_ENABLED
-    const auto & simdb_config = sim_config_->simdb_config;
+    if (!sim_config_) {
+        return;
+    }
 
+    const auto & simdb_config = sim_config_->simdb_config;
     const auto enabled_apps = simdb_config.getEnabledApps();
+
+#if SIMDB_ENABLED
     if (enabled_apps.empty()) {
         return;
     }
@@ -474,27 +488,35 @@ void Simulation::createSimDbApps_()
     std::map<std::string, std::set<std::string>> apps_by_db_file;
     for (const auto & app_name : enabled_apps)
     {
-        for (const auto & db_file : simdb_config.getAppDatabases(app_name))
-        {
-            apps_by_db_file[db_file].insert(app_name);
-        }
+        auto db_file = simdb_config.getAppDatabase(app_name);
+        apps_by_db_file[db_file].insert(app_name);
     }
 
     for (const auto & [db_file, app_names] : apps_by_db_file)
     {
         const auto& pragmas = simdb_config.getPragmas();
-        constexpr auto new_file = true;
-        auto db_mgr = std::make_shared<simdb::DatabaseManager>(db_file, new_file, pragmas);
-        auto app_mgr = std::make_shared<simdb::AppManager>(db_mgr.get());
+        const bool new_file = simdb_config.shouldOverwriteDatabase(db_file);
+        auto& app_mgr = app_managers_->createAppManager(db_file, new_file);
 
         for (const auto & app_name : app_names)
         {
-            app_mgr->enableApp(app_name);
+            auto num_instances = simdb_config.getAppCount(app_name);
+            sparta_assert(num_instances > 0);
+            app_mgr.enableApp(app_name, num_instances);
         }
 
-        app_mgr->createEnabledApps();
-        app_mgr->createSchemas();
-        simdb_managers_[db_file] = std::make_shared<SimDbManagers>(db_mgr, app_mgr);
+        // Now that the apps are enabled with the specific number of instances,
+        // give subclasses a chance to parameterize the app factories prior to
+        // calling createEnabledApps().
+        parameterizeSimDbApps_(&app_mgr);
+    }
+
+    app_managers_->createEnabledApps();
+    app_managers_->createSchemas();
+#else
+    if (!enabled_apps.empty())
+    {
+        throw SpartaException("Cannot use any command line SimDB options without -DUSING_SIMDB=ON");
     }
 #endif
 }
@@ -532,58 +554,6 @@ void Simulation::addReport(const ReportDescriptor & rep)
         // Simply append to list. Nothing to do until finalization (unlike taps)
         rep_descs_.push_back(rep);
     }
-}
-
-std::vector<simdb::AppManager*> Simulation::getAppManagers()
-{
-    std::vector<simdb::AppManager*> app_mgrs;
-    for (auto [db_file, mgrs] : simdb_managers_)
-    {
-        app_mgrs.push_back(mgrs->app_mgr.get());
-    }
-    return app_mgrs;
-}
-
-std::vector<simdb::DatabaseManager*> Simulation::getDbManagers()
-{
-    std::vector<simdb::DatabaseManager*> db_mgrs;
-    for (auto & [db_file, mgrs] : simdb_managers_)
-    {
-        db_mgrs.push_back(mgrs->db_mgr.get());
-    }
-    return db_mgrs;
-}
-
-simdb::AppManager* Simulation::getAppManager(const std::string & db_file) const
-{
-    auto it = simdb_managers_.find(db_file);
-    if (it == simdb_managers_.end())
-    {
-        return nullptr;
-    }
-
-    return it->second->app_mgr.get();
-}
-
-simdb::DatabaseManager* Simulation::getDbManager(const std::string & db_file) const
-{
-    auto it = simdb_managers_.find(db_file);
-    if (it == simdb_managers_.end())
-    {
-        return nullptr;
-    }
-
-    return it->second->db_mgr.get();
-}
-
-std::vector<std::string> Simulation::getDatabaseFiles() const
-{
-    std::vector<std::string> db_files;
-    for (const auto & [db_file, mgrs] : simdb_managers_)
-    {
-        db_files.push_back(db_file);
-    }
-    return db_files;
 }
 
 void Simulation::installTaps(const log::TapDescVec& taps)
@@ -634,6 +604,13 @@ void Simulation::buildTree()
 #endif
 
     setupProfilers_();
+
+#if SIMDB_ENABLED
+    simdb::AppRegistrations app_registrations(app_managers_.get());
+    app_registrations.registerApp<ReportStatsCollector>();
+    app_registrations.registerApp<serialization::checkpoint::CherryPickFastCheckpointer>();
+    registerSimDbApps_(&app_registrations);
+#endif
 
     // Subclass callback
     {
@@ -722,7 +699,14 @@ void Simulation::finalizeTree()
         checkAllVirtualParamsRead_(sim_config_->getUnboundParameterTree());
 
         // Ensure that all unbound extension parameters were consumed
-        checkAllVirtualParamsRead_(sim_config_->getExtensionsUnboundParameterTree());
+        if (auto mgr = getExtensionManager(false)) {
+            checkAllVirtualParamsRead_(*mgr->getFinalConfigPTree());
+
+            // Let the extension manager throw/warn if there were any extensions given
+            // in any input YAML file, but the extension was never created.
+            auto suppress_exceptions = sim_config_->suppress_unread_parameter_warnings;
+            mgr->checkAllYamlExtensionsCreated(suppress_exceptions);
+        }
     }
 
     // Check ports and such
@@ -817,14 +801,10 @@ void Simulation::finalizeFramework()
     bool reports_setup = false;
 
 #if SIMDB_ENABLED
-    std::vector<simdb::AppManager*> app_mgrs;
-    for (const auto & [db_file, simdb_mgrs] : simdb_managers_)
+    auto simdb_mgrs = app_managers_->getAllManagers();
+    for (auto & [app_mgr, db_mgr] : simdb_mgrs)
     {
-        auto db_mgr = simdb_mgrs->db_mgr;
-        auto app_mgr = simdb_mgrs->app_mgr;
-        app_mgrs.push_back(app_mgr.get());
-
-        if (auto app = app_mgr->getApp<ReportStatsCollector>(false))
+        if (auto app = app_mgr->getApp<ReportStatsCollector>())
         {
             if (reports_setup)
             {
@@ -847,13 +827,17 @@ void Simulation::finalizeFramework()
     framework_finalized_ = true;
     report_repository_->postFinalizeFramework();
 
+    // Let simulation subclasses add a hook for post-finalizeFramework().
+    // Do this before opening the SimDB threads so user's apps are not
+    // running in this hook. Simulation setup is typically assumed to
+    // be single-threaded.
+    postFinalizeFramework_();
+
 #if SIMDB_ENABLED
-    for (auto app_mgr : app_mgrs)
-    {
-        app_mgr->postInit(argc_, argv_);
-        app_mgr->initializePipelines();
-        app_mgr->openPipelines();
-    }
+    app_managers_->postInit(argc_, argv_);
+    app_managers_->initializePipelines();
+    app_managers_->openPipelines();
+    onSimDbAppsReady_();
 #endif
 }
 
@@ -958,13 +942,6 @@ void Simulation::run(uint64_t run_time)
         // Write reports
         saveReports();
     }
-
-#if SIMDB_ENABLED
-    for (auto app_mgr : getAppManagers())
-    {
-        app_mgr->postSimLoopTeardown();
-    }
-#endif
 
     if(eptr == std::exception_ptr()){
         // Dump debug if there was no error and the policy is to always dump.
@@ -1106,6 +1083,10 @@ void Simulation::saveReports()
 
 void Simulation::postProcessingLastCall()
 {
+#if SIMDB_ENABLED
+    // This is added here to close AppManager's even with --no-run
+    app_managers_->postSimLoopTeardown();
+#endif
 }
 
 void Simulation::dumpMetaParameterTable(std::ostream& out) const
@@ -1219,10 +1200,17 @@ uint32_t Simulation::reapplyAllParameters_(TreeNode* root)
 void Simulation::addTreeNodeExtensionFactory_(const std::string & extension_name,
                                               std::function<TreeNode::ExtensionsBase*()> factory)
 {
-    if (tree_node_extension_factories_.find(extension_name) == tree_node_extension_factories_.end()) {
-        tree_node_extension_factories_.emplace(extension_name, factory);
+    if (getRoot()->getPhase() != sparta::PhasedObject::TreePhase::TREE_BUILDING)
+    {
+        throw SpartaException("Cannot add extension factories once the simulator is configured");
     }
-    getRoot()->addExtensionFactory(extension_name, factory);
+
+    TreeNodeExtensionManager::registerExtensionFactory(extension_name, factory);
+}
+
+void Simulation::setTreeNodeExtensionManager_(TreeNodeExtensionManager* mgr)
+{
+    getRoot()->setExtensionManager(mgr);
 }
 
 bool Simulation::dumpDebugContent_(std::string& debug_filename,
@@ -1565,7 +1553,9 @@ void Simulation::setupReports_(ReportStatsCollector* collector)
 
     //Report configuration is locked down. Attempts to add or remove
     //descriptors either from C++ or Python will throw an exception.
-    report_config_->disallowChangesToDescriptors_();
+    if (report_config_) {
+        report_config_->disallowChangesToDescriptors_();
+    }
 }
 
 ReportDescVec Simulation::expandReportDescriptor_(const ReportDescriptor & rd) const
@@ -1776,7 +1766,12 @@ void Simulation::attachReportTo_(sparta::ReportRepository::DirectoryHandle direc
     }
 
     std::stringstream rep_name;
-    rep_name << def_file << " on " << n->getLocation();
+    if (true == rd.name.empty()) {
+        rep_name << def_file << " on " << n->getLocation();
+    }
+    else {
+        rep_name << rd.name;
+    }
     std::unique_ptr<Report> r(new Report(rep_name.str(), n)); // Construct with context
     sparta_assert(r);
 
@@ -1855,27 +1850,67 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
                     break;
                 }
             }
+
+            auto parent = node->getParent();
+            auto grandparent = parent ? parent->getParent() : nullptr;
+            if(!ok){
+                // See if this is an optional extension which does not have to be instantiated,
+                // in other words these parameters are okay to be left unread.
+                if(grandparent && grandparent->getName() == "extension"){
+                    if(auto optional = parent->getChild("optional")){
+                        auto value = optional->getValue();
+                        if(value == "true"){
+                            ok = true;
+                        }else if(value != "false"){
+                            throw SpartaException("The 'optional' value must be 'true' or 'false', not '")
+                                << value << "'.";
+                        }
+                    }
+                }
+            }
+
+            // Check with the extensions manager to see if this unread parameter
+            // is due to an extension never being created. We issue different
+            // errors in that case.
+            if(auto mgr = getExtensionManager(false)){
+                if(!ok && grandparent && grandparent->getParent() && grandparent->getName() == "extension"){
+                    auto tn_loc = grandparent->getParent()->getPath();
+                    auto ext_name = parent->getName();
+                    if(!mgr->hasExtension(tn_loc, ext_name)){
+                        ok = true;
+                    }
+                }
+            }
+
+            // Do not print "Path exists in tree up to" for extensions parameters. These paths
+            // will never exist in the device tree.
+            std::string path_exists_msg;
+            if(!grandparent || grandparent->getName() != "extension"){
+                path_exists_msg = " Path exists in tree up to: \""
+                    + root_.getSearchScope()->getDeepestMatchingPath(path) + "\"";
+            }
+
             if(!ok){
                 if(node->isRequired()){
                     errors++;
                     err_list << "    ERROR: unread unbound parameter: \"" << path << "\" from: \""
-                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\". Path exists in tree up to: \""
-                              << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"" << std::endl;
+                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\"."
+                              << path_exists_msg << std::endl;
                 }else if(!sim_config_->suppress_unread_parameter_warnings) {
-                    std::cerr << "    NOTE: unread optional unbound parameter: \"" << path << "\" from: \""
-                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\". Path exists in tree up to: \""
-                              << root_.getSearchScope()->getDeepestMatchingPath(path) << "\"" << std::endl;
+                    std::cerr << "    NOTE: unread unbound parameter: \"" << path << "\" from: \""
+                              << node->getOrigin() << "\". value: \"" << node->getValue() << "\"."
+                              << path_exists_msg << std::endl;
                 }
             }
         }
         if(errors > 0){
             SpartaException ex("");
             ex << "Found " << errors << " unread unbound parameters. These "
-                  "parameter were specified by a configuration file or the command line but do not "
+                  "parameters were specified by a configuration file or the command line but do not "
                   "correspond to any Parameter nodes in the device tree and were never directly "
                   "read from the unbound tree:\n";
             ex << err_list.str();
-            ex << "\n This can be the result of supplying an archicture yaml that sets an expected topology followed by -c/-p options that change that topology. \n"
+            ex << "\n This can be the result of supplying an architecture yaml that sets an expected topology followed by -c/-p options that change that topology. \n"
                 "\tIn this case, consider a new architecture or supply the architecture yaml file as a '-c' option instead of the '--arch' option";
             throw ex;
         }

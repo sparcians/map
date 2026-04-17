@@ -1,5 +1,4 @@
 top:
   cpu.core0.lsu.extension.triangle:
     edges_: 3
-  cpu.core0.lsu.extension.triangle:
-    edges_: <OPTIONAL>
+    optional: true

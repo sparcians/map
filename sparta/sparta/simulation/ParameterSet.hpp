@@ -314,7 +314,7 @@ namespace sparta
         template <class ContentT>
         const Parameter<ContentT>& getParameterAs(const std::string& name) const {
             const ParameterBase* pb = getParameter(name, true);
-            Parameter<ContentT>* p = dynamic_cast<const Parameter<ContentT>*>(pb);
+            const Parameter<ContentT>* p = dynamic_cast<const Parameter<ContentT>*>(pb);
             if(!p){
                 throw SpartaException("Found parameter \"") << name << "\" in ParameterSet "
                     << getLocation() << " but Parameter was not of requested type \""

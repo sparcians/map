@@ -197,6 +197,48 @@ int main ()
     std::cout << "After clearing pt2" << std::endl;
     pt2.recursePrint(std::cout);
 
+    // Test ParameterTree::Node user data (std::any)
+    ParameterTree pt5;
+    auto pt5_leaf = pt5.create("top.mid.leaf");
+
+    // setUserData: copy
+    const int leaf_int = 555;
+    pt5_leaf->setUserData("scalar_int", leaf_int);
+    EXPECT_EQUAL(pt5_leaf->getUserData<int>("scalar_int"), 555);
+    EXPECT_EQUAL(*pt5_leaf->tryGetUserData<int>("scalar_int", true), 555);
+    // setUserData: move
+    auto leaf_sh_ptr = std::make_shared<int>(555);
+    pt5_leaf->setUserData("shared_ptr", std::move(leaf_sh_ptr));
+    EXPECT_EQUAL(*pt5_leaf->getUserData<std::shared_ptr<int>>("shared_ptr"), 555);
+    EXPECT_EQUAL(**pt5_leaf->tryGetUserData<std::shared_ptr<int>>("shared_ptr"), 555);
+    // getUserData: doesn't exist
+    EXPECT_THROW(pt5_leaf->getUserData<std::string>("nope"));
+    // tryGetUserData: doesn't exist
+    EXPECT_EQUAL(pt5_leaf->tryGetUserData<std::string>("nope"), nullptr);
+    EXPECT_THROW(pt5_leaf->tryGetUserData<std::string>("nope", true));
+    // recursePrint: print the ptree with user data
+    pt5.recursePrint(std::cout);
+
+    // merge: verify that user data is merged in (not a full overwrite)
+    ParameterTree pt6;
+    auto pt6_leaf = pt6.create("top.mid.leaf");
+    pt6_leaf->setUserData("scalar_int", 404);  // will be overwritten by pt5.top.mid.leaf
+    auto pt6_leaf2 = pt6.create("top.mid.leaf2");
+    pt6_leaf2->setUserData("scalar_int", 888); // will not be overwritten by pt5 (does not have this path)
+
+    pt6.merge(pt5);
+    EXPECT_EQUAL(pt6_leaf->getUserData<int>("scalar_int"), 555);  // overwritten from 404 to 555
+    EXPECT_EQUAL(pt6_leaf2->getUserData<int>("scalar_int"), 888); // not overwritten
+
+    // clearUserData: exists
+    EXPECT_TRUE(pt6_leaf->clearUserData("scalar_int"));
+    // clearUserData: doesn't exist
+    EXPECT_FALSE(pt6_leaf->clearUserData("nope"));
+    // clearUserData: delete 1 item (last remaining item)
+    EXPECT_EQUAL(pt6_leaf->clearUserData(), 1);
+    // clearUserData: no more to delete
+    EXPECT_EQUAL(pt6_leaf->clearUserData(), 0);
+
     // Walk to apply to a device tree
 
     // Test Value (get, access, invalid, copy-construct, assign, lexical cast access)

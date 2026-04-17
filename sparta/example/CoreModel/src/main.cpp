@@ -93,7 +93,11 @@ int main(int argc, char **argv)
         cls.runSimulator(&sim);
 
         cls.postProcess(&sim);
-
+    }catch(const std::exception & ex){
+        // Log the error and return a non-zero exit code. This supports CTest
+        // negative testing for expected exceptions.
+        std::cerr << "Exception occurred: " << ex.what() << std::endl;
+        return 1;
     }catch(...){
         // Could still handle or log the exception here
         throw;

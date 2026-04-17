@@ -1,0 +1,5 @@
+# All supported parameter types for tree node extensions
+# with wildcards in their path
+
+top.core*.foo*:
+  include: global_meta_impl.yaml

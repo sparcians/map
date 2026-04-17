@@ -496,6 +496,11 @@ protected:
      */
     std::string help_topic_;
 
+    /*!
+     * \brief Database file to use for all enabled SimDB apps.
+     */
+    std::string global_simdb_file_;
+
 private:
 
     /*!

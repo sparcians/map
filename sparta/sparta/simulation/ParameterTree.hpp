@@ -7,11 +7,16 @@
 #include <regex>
 #include <memory>
 #include <string>
+#include <map>
+#include <any>
+
+#include <boost/algorithm/string.hpp>
 
 #include "sparta/utils/Utils.hpp"
 #include "sparta/simulation/Parameter.hpp"
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/utils/LexicalCast.hpp"
+#include "sparta/utils/MetaStructs.hpp"
 
 namespace sparta
 {
@@ -73,6 +78,72 @@ namespace sparta
             ChildVector children_; //!< Vector of children for this nodie
             uint32_t write_count_; //!< Number of times this node's value has been written.
             mutable uint32_t read_count_ = 0; //!< Number of times this node's value has been read
+            std::map<std::string, std::any> user_data_; //!< Name-value pairs of any user data type
+
+            //!< Base class for std::any printers
+            class UserDataPrinterBase
+            {
+            public:
+                virtual ~UserDataPrinterBase() = default;
+                virtual void print(const std::string& name, std::any user_data, std::ostream& o, uint32_t indent) const = 0;
+            };
+
+            //!< Specific std::any printers
+            template <typename T>
+            class UserDataPrinter : public UserDataPrinterBase
+            {
+            public:
+                void print(const std::string& name, std::any user_data, std::ostream& o, uint32_t indent) const override
+                {
+                    const T& ud = std::any_cast<const T&>(user_data);
+                    for (uint32_t i = 0; i < indent; ++i) {
+                        o << " ";
+                    }
+                    o << name << ": ";
+                    print_(o, ud, indent);
+                    o << "\n";
+                }
+
+            private:
+                template <typename Value>
+                typename std::enable_if<MetaStruct::is_any_pointer<Value>::value, void>::type
+                print_(std::ostream& o, const Value& val, uint32_t indent) const {
+                    if (!val) {
+                        o << "nullptr";
+                    } else {
+                        o << val << " -> ";
+                        print_(o, *val, indent);
+                    }
+                }
+
+                template <typename Value>
+                typename std::enable_if<!MetaStruct::is_any_pointer<Value>::value, void>::type
+                print_(std::ostream& o, const Value& val, uint32_t indent) const {
+                    if constexpr (std::is_same_v<Value, TreeNode::ExtensionsBase>) {
+                        if (auto ps = val.getParameters()) {
+                            o << val.getClassName() << " extension with parameters:\n";
+                            const std::string s = ps->dumpList();
+                            std::vector<std::string> lines;
+                            boost::split(lines, s, boost::is_any_of("\n"));
+                            for (auto & line : lines) {
+                                for (uint32_t i = 0; i < indent+2; ++i) {
+                                    o << " ";
+                                }
+                                o << line << "\n";
+                            }
+                        } else {
+                            o << "extension without parameters";
+                        }
+                    } else if constexpr (std::is_same_v<Value, bool>) {
+                        o << std::boolalpha << val << std::dec;
+                    } else {
+                        o << val;
+                    }
+                }
+            };
+
+            //!< Map of user data names to their std::any printers
+            std::unordered_map<std::string, std::unique_ptr<UserDataPrinterBase>> user_data_printers_;
 
             /*!
              * \brief How many "set"-ers require this virtual node to be a real
@@ -258,6 +329,13 @@ namespace sparta
              */
             void incrementReadCount() const {
                 ++read_count_;
+            }
+
+            /*!
+             * \brief Reset the read count back to zero
+             */
+            void resetReadCount() const {
+                read_count_ = 0;
             }
 
             /*!
@@ -503,6 +581,7 @@ namespace sparta
                 sparta_assert(hasValue() == false,
                             "Cannot add a child to a virtual parameter tree node \"" << name_
                             << "\" since it already has a value: \"" << value_ << "\"");
+
                 children_.emplace_back(new Node(this, name));
                 if(required){
                     children_.back()->incRequired();
@@ -671,9 +750,101 @@ namespace sparta
             }
 
             /*!
+             * \brief Recursively find all nodes that have a given name.
+             */
+            void recursFindPTreeNodesNamed(
+                const std::string & name,
+                std::vector<Node*> & matching_nodes)
+            {
+                if (getName() == name) {
+                    matching_nodes.emplace_back(this);
+                    return;
+                }
+
+                const auto children = getChildren();
+                for (ParameterTree::Node * child : children) {
+                    child->recursFindPTreeNodesNamed(name, matching_nodes);
+                }
+            }
+
+            /*!
+             * \brief Recursively find all nodes that have a given name.
+             */
+            void recursFindPTreeNodesNamed(
+                const std::string & name,
+                std::vector<const Node*> & matching_nodes) const
+            {
+                if (getName() == name) {
+                    matching_nodes.emplace_back(this);
+                    return;
+                }
+
+                const auto children = getChildren();
+                for (const ParameterTree::Node * child : children) {
+                    child->recursFindPTreeNodesNamed(name, matching_nodes);
+                }
+            }
+
+            /*!
+             * \brief Apply the given callback to all nodes
+             * \tparam Callback std::function<bool(Node*)> or equivalent lambda
+             * \return Returns the total number of nodes visited
+             * \note The callback should return true if we should keep recursing,
+             * false to early return
+             */
+            template <typename Callback>
+            size_t recurseVisitNodes(Callback callback) {
+                size_t count = 0;
+                recurseVisitNodes_(callback, count);
+                return count;
+            }
+
+            /*!
+             * \brief Apply the given callback to all nodes
+             * \tparam Callback std::function<bool(const Node*)> or equivalent lambda
+             * \return Returns the total number of nodes visited
+             * \note The callback should return true if we should keep recursing,
+             * false to early return
+             */
+            template <typename Callback>
+            size_t recurseVisitNodes(Callback callback) const {
+                size_t count = 0;
+                recurseVisitNodes_(callback, count);
+                return count;
+            }
+
+            /*!
+             * \brief Apply the given callback to all leaf nodes
+             * \tparam Callback std::function<bool(Node*)> or equivalent lambda
+             * \return Returns the total number of leaves visited
+             * \note The callback should return true if we should keep recursing,
+             * false to early return
+             */
+            template <typename Callback>
+            size_t recurseVisitLeaves(Callback callback) {
+                size_t count = 0;
+                recurseVisitLeaves_(callback, count);
+                return count;
+            }
+
+            /*!
+             * \brief Apply the given callback to all leaf nodes
+             * \tparam Callback std::function<bool(const Node*)> or equivalent lambda
+             * \return Returns the total number of leaves visited
+             * \note The callback should return true if we should keep recursing,
+             * false to early return
+             */
+            template <typename Callback>
+            size_t recurseVisitLeaves(Callback callback) const {
+                size_t count = 0;
+                recurseVisitLeaves_(callback, count);
+                return count;
+            }
+
+            /*!
              * \brief Recursively print
              */
-            void recursePrint(std::ostream& o, uint32_t indent=0) const {
+            void recursePrint(std::ostream& o, uint32_t indent=0, bool print_user_data=true) const {
                 for(uint32_t i=0; i<indent; ++i){
                     o << " ";
                 }
@@ -683,8 +854,30 @@ namespace sparta
                       << ", required " << required_ << ", origin '" << getOrigin() << "')";
                 }
                 o << "\n";
+                if(print_user_data){
+                    printUserData(o, indent+2);
+                }
                 for(auto & n : children_){
-                    n->recursePrint(o, indent+2);
+                    n->recursePrint(o, indent+2, print_user_data);
+                }
+            }
+
+            /*!
+             * \brief Pretty-print all user data for this node, if any.
+             */
+            void printUserData(std::ostream& o, uint32_t indent=0) const {
+                if (user_data_.empty()) {
+                    return;
+                }
+
+                for(uint32_t i=0; i<indent; ++i){
+                    o << " ";
+                }
+
+                o << "User data (" << getPath() << "):\n";
+                for (const auto & [ud_name, ud_printer] : user_data_printers_) {
+                    std::any ud = user_data_.at(ud_name);
+                    ud_printer->print(ud_name, ud, o, indent+2);
                 }
             }
 
@@ -711,6 +904,128 @@ namespace sparta
                     // 'ot' is a root node (no name). Merge it with this.
                     recursAppendTree_(ot);
                 }
+            }
+
+            /*!
+             * \brief Set any named user data (std::any)
+             * \note User data type must be copy constructible
+             */
+            template <typename T>
+            void setUserData(const std::string & name, const T & user_data) {
+                static_assert(std::is_copy_constructible<T>::value, "std::any only works with copyable types");
+                user_data_[name] = user_data;
+                user_data_printers_[name] = std::make_unique<UserDataPrinter<T>>();
+            }
+
+            /*!
+             * \brief Set any named user data (std::any)
+             * \note User data type must be copy constructible
+             */
+            template <typename T>
+            void setUserData(const std::string & name, T && user_data) {
+                static_assert(std::is_copy_constructible<T>::value, "std::any only works with copyable types");
+                user_data_[name] = std::move(user_data);
+                user_data_printers_[name] = std::make_unique<UserDataPrinter<T>>();
+            }
+
+            /*!
+             * \brief Get any named user data (std::any_cast)
+             */
+            template <typename T>
+            const T & getUserData(const std::string & name) const {
+                constexpr bool must_exist = true;
+                return *tryGetUserData<T>(name, must_exist);
+            }
+
+            /*!
+             * \brief Get any named user data (std::any_cast)
+             */
+            template <typename T>
+            T & getUserData(const std::string & name) {
+                constexpr bool must_exist = true;
+                return *tryGetUserData<T>(name, must_exist);
+            }
+
+            /*!
+             * \brief Try to get any named user data (std::any_cast)
+             */
+            template <typename T>
+            const T * tryGetUserData(const std::string & name, bool must_exist = false) const {
+                auto it = user_data_.find(name);
+                if (it == user_data_.end()) {
+                    if (must_exist) {
+                        throw SpartaException("User data '") << name << "' does not exist for node '"
+                            << getPath() << "'";
+                    }
+                    return nullptr;
+                }
+                return &std::any_cast<const T&>(it->second);
+            }
+
+            /*!
+             * \brief Try to get any named user data (std::any_cast)
+             */
+            template <typename T>
+            T * tryGetUserData(const std::string & name, bool must_exist = false) {
+                auto it = user_data_.find(name);
+                if (it == user_data_.end()) {
+                    if (must_exist) {
+                        throw SpartaException("User data '") << name << "' does not exist for node '"
+                            << getPath() << "'";
+                    }
+                    return nullptr;
+                }
+                return &std::any_cast<T&>(it->second);
+            }
+
+            /*!
+             * \brief Get a mapping from Nodes to their extensions recursively.
+             */
+            void recurseGetAllNodeExtensions(
+                std::map<const Node*, std::map<std::string, const TreeNode::ExtensionsBase*>> & map) const
+            {
+                for (const auto & key : getUserDataKeys()) {
+                    if (auto ext = tryGetUserData<std::shared_ptr<TreeNode::ExtensionsBase>>(key)) {
+                        map[this][key] = ext->get();
+                    }
+                }
+
+                for (auto child : getChildren()) {
+                    child->recurseGetAllNodeExtensions(map);
+                }
+            }
+
+            /*!
+             * \brief Get all user data keys (names).
+             */
+            std::set<std::string> getUserDataKeys() const {
+                std::set<std::string> keys;
+                for (const auto & [key, _] : user_data_) {
+                    keys.insert(key);
+                }
+                return keys;
+            }
+
+            /*!
+             * \brief Clear named user data. Returns true if removed, false if not found.
+             */
+            bool clearUserData(const std::string & name) {
+                user_data_printers_.erase(name);
+                if (user_data_.count(name)) {
+                    user_data_.erase(name);
+                    return true;
+                }
+                return false;
+            }
+
+            /*!
+             * \brief Clear all user data. Returns the number of elements removed.
+             */
+            size_t clearUserData() {
+                user_data_printers_.clear();
+                auto sz = user_data_.size();
+                user_data_.clear();
+                return sz;
             }
 
             /*!
@@ -774,7 +1089,6 @@ namespace sparta
             /*!
              * \brief Recursively append children of another node to this node while preserving order
              * \param ot "root" node of other tree to append to "this" tree
-             * \param required "required" property of any node to add
              */
             void recursAppendTree_(const Node* ot) {
                 // Inherit value. Never invalidate
@@ -782,11 +1096,82 @@ namespace sparta
                     setValue(ot->peekValue(), ot->getRequiredCount() > 0, ot->getOrigin());
                 }
 
+                // Inherit user data.
+                for(const auto & [ud_name, ud_value] : ot->user_data_){
+                    user_data_[ud_name] = ud_value;
+                }
+
                 for(auto & child : ot->getChildren()){
                     // TODO: copy required count instead of just boolean
                     Node* c = create(child->getName(), child->getRequiredCount() > 0); // Create if needed
                     c->recursAppendTree_(child);
                 }
+            }
+
+            template <typename Callback>
+            bool recurseVisitNodes_(Callback callback, size_t & count) {
+                ++count;
+                auto keep_going = callback(this);
+                if (!keep_going) {
+                    return false;
+                }
+                for (auto & child : children_) {
+                    if (!child->recurseVisitNodes_(callback, count)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            template <typename Callback>
+            bool recurseVisitNodes_(Callback callback, size_t & count) const {
+                ++count;
+                auto keep_going = callback(this);
+                if (!keep_going) {
+                    return false;
+                }
+                for (const auto & child : children_) {
+                    if (!child->recurseVisitNodes_(callback, count)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            template <typename Callback>
+            bool recurseVisitLeaves_(Callback callback, size_t & count) {
+                if (children_.empty()) {
+                    ++count;
+                    auto keep_going = callback(this);
+                    if (!keep_going) {
+                        return false;
+                    }
+                }
+
+                for (auto & child : children_) {
+                    if (!child->recurseVisitLeaves_(callback, count)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            template <typename Callback>
+            bool recurseVisitLeaves_(Callback callback, size_t & count) const {
+                if (children_.empty()) {
+                    ++count;
+                    auto keep_going = callback(this);
+                    if (!keep_going) {
+                        return false;
+                    }
+                }
+
+                for (const auto & child : children_) {
+                    if (!child->recurseVisitLeaves_(callback, count)) {
+                        return false;
+                    }
+                }
+                return true;
             }
 
             std::unique_ptr<Node> release_(Node *node) {
@@ -1058,16 +1443,77 @@ namespace sparta
          * \brief Merge this tree with another by applying all of its parameters
          * to this tree. Parameters in the right tree will override this tree's
          * parameters if there are duplicate paths or overlapping patterns
+         * \note This also copies all user data from the source ParameterTree
+         * into 'this'. User data will remain in the source tree (rhp).
          */
         void merge(const ParameterTree& rhp) {
             root_->appendTree(rhp.getRoot());
         }
 
         /*!
+         * \brief Apply the given callback to all nodes
+         * \tparam Callback std::function<bool(Node*)> or equivalent lambda
+         * \return Returns the total number of nodes visited
+         * \note The callback should return true if we should keep recursing,
+         * false to early return
+         */
+        template <typename Callback>
+        size_t visitNodes(Callback callback) {
+            return root_->recurseVisitNodes(callback);
+        }
+
+        /*!
+         * \brief Apply the given callback to all nodes
+         * \tparam Callback std::function<bool(const Node*)> or equivalent lambda
+         * \return Returns the total number of nodes visited
+         * \note The callback should return true if we should keep recursing,
+         * false to early return
+         */
+        template <typename Callback>
+        size_t visitNodes(Callback callback) const {
+            return root_->recurseVisitNodes(callback);
+        }
+
+        /*!
+         * \brief Apply the given callback to all leaf nodes
+         * \tparam Callback std::function<bool(Node*)> or equivalent lambda
+         * \return Returns the total number of nodes visited
+         * \note The callback should return true if we should keep recursing,
+         * false to early return
+         */
+        template <typename Callback>
+        size_t visitLeaves(Callback callback) {
+            return root_->recurseVisitLeaves(callback);
+        }
+
+        /*!
+         * \brief Apply the given callback to all leaf nodes
+         * \tparam Callback std::function<bool(const Node*)> or equivalent lambda
+         * \return Returns the total number of nodes visited
+         * \note The callback should return true if we should keep recursing,
+         * false to early return
+         */
+        template <typename Callback>
+        size_t visitLeaves(Callback callback) const {
+            return root_->recurseVisitLeaves(callback);
+        }
+
+        /*!
          * \brief Recursively print
          */
-        void recursePrint(std::ostream& o) const {
-            root_->recursePrint(o, 0); // Begin with 0 indent
+        void recursePrint(std::ostream& o, bool print_user_data=true) const {
+            root_->recursePrint(o, 0, print_user_data); // Begin with 0 indent
+        }
+
+        /*!
+         * \brief Get a mapping from Nodes to their extensions.
+         */
+        std::map<const Node*, std::map<std::string, const TreeNode::ExtensionsBase*>>
+        getAllNodeExtensions() const
+        {
+            std::map<const Node*, std::map<std::string, const TreeNode::ExtensionsBase*>> all_ext_map;
+            root_->recurseGetAllNodeExtensions(all_ext_map);
+            return all_ext_map;
         }
 
     private:

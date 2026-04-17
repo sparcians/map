@@ -7,6 +7,7 @@
  */
 
 #include "sparta/simulation/RootTreeNode.hpp"
+#include "sparta/extensions/TreeNodeExtensionManager.hpp"
 
 #include <algorithm>
 #include <sstream>
@@ -170,6 +171,18 @@ void RootTreeNode::enterFinalized(sparta::python::PythonInterpreter* pyshell) {
 #endif
 
     enterFinalized_(); // Enter the next phase (cannot throw)
+}
+
+void RootTreeNode::setExtensionManager(TreeNodeExtensionManager* mgr)
+{
+    if (getPhase() != TREE_BUILDING) {
+        throw SpartaException("Cannot set the TreeNodeExtensionManager after buildTree()");
+    }
+    if (extension_mgr_ && extension_mgr_ != mgr) {
+        throw SpartaException("TreeNodeExtensionManager already set");
+    }
+    extension_mgr_ = mgr;
+    mgr->setRoot(this);
 }
 
 } // namespace sparta

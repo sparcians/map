@@ -189,8 +189,8 @@ class SpartaTest:
 
         # Note that the RUNNING directory will be deleted if the test
         # continues all the way to report comparison.
-        if not os.path.exists("sparta.db"):
-            self.__WriteToTestLog("sparta.db not found. Test cannot continue.")
+        if not os.path.exists("sparta_core_example.db"):
+            self.__WriteToTestLog("sparta_core_example.db not found. Test cannot continue.")
             return False
 
         # Get the expected Sparta-generated reports from "recursively" parsing the
@@ -284,7 +284,7 @@ class SpartaTest:
         export_cmd += " --force"
         if args.v2_exact:
             export_cmd += " --v2"
-        export_cmd += " sparta.db"
+        export_cmd += " sparta_core_example.db"
 
         self.__WriteToTestLog(f"Exporting SimDB reports with command: {export_cmd}")
         subprocess.run(export_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -334,9 +334,9 @@ class SpartaTest:
                 shutil.copy(simdb_report, os.path.join(report_dir, "simdb." + extension))
                 self.__CopyTestLog(report_dir)
 
-                # Move sparta.db to the report directory (if failed)
+                # Move sparta_core_example.db to the report directory (if failed)
                 if passfail == "FAIL":
-                    shutil.copy("sparta.db", os.path.join(report_dir, "sparta.db"))
+                    shutil.copy("sparta_core_example.db", os.path.join(report_dir, "sparta_core_example.db"))
 
                     if extension == "json":
                         try:

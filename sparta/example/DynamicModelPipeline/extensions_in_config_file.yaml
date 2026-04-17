@@ -1,10 +1,6 @@
 top: {
     core0.lsu.extension.hexagon: {
-        edges_: 6
-    }
-}
-top: {
-    core0.lsu.extension.hexagon: {
-        edges_: <OPTIONAL>
+        edges_: 6,
+        optional: true
     }
 }

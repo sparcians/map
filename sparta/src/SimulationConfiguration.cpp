@@ -1,15 +1,15 @@
-// <EmbeddedSimulation> -*- C++ -*-
+// <SimulationConfiguration> -*- C++ -*-
 
 
 /*!
  * \file SimulationConfiguration.cpp
- * \brief Implementation for EmbeddedSimulation
  */
 
 #include "sparta/app/SimulationConfiguration.hpp"
 
 #include <cstddef>
 #include <iostream>
+#include <filesystem>
 
 #include "sparta/utils/File.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -65,6 +65,27 @@ namespace app {
         std::cout << "  [in] Arch Config: " << arch_applicator_->stringize() << std::endl;
     }
 
+    //! Apply extensions from a yaml file (--extension-file(s))
+    void SimulationConfiguration::processExtensionFile(const std::string & filename)
+    {
+        if (std::filesystem::exists(filename)) {
+            if (std::find(config_search_paths_.begin(), config_search_paths_.end(), ".") == config_search_paths_.end()) {
+                config_search_paths_.push_back(".");
+            }
+        }
+
+        sparta_assert(!is_consumed_, "You cannot process extension files after simulation has been populated");
+        config_applicators_.emplace_back(new NodeConfigFileApplicator("", filename, config_search_paths_));
+
+        ParameterTree ext_ptree;
+        config_applicators_.back()->applyUnbound(ext_ptree, verbose_cfg);
+        std::cout << "  [in] Configuration: " << config_applicators_.back()->stringize() << std::endl;
+
+        auto & wildcard_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_EXT_YAML_WITH_WILDCARDS];
+        auto & concrete_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_EXT_YAML_WITHOUT_WILDCARDS];
+        splitExtensionPTree_(ext_ptree, wildcard_exts, concrete_exts);
+    }
+
     //! Enable logging on a specific node, for a specific category,
     //! and redirect output to the given destination
     void SimulationConfiguration::enableLogging(const std::string & pattern,
@@ -72,26 +93,6 @@ namespace app {
                                                 const std::string & destination)
     {
         taps_.emplace_back(pattern, category, destination);
-    }
-
-    //! Add a tree node extension (.yaml) file
-    //! \param filename The yaml file to consume
-    void SimulationConfiguration::processExtensionFile(const std::string & filename)
-    {
-        sparta_assert(!is_consumed_, "You cannot process extension files after simulation has been populated");
-        config_applicators_.emplace_back(new NodeConfigFileApplicator("", filename, config_search_paths_));
-
-        ParameterTree ptree;
-        config_applicators_.back()->applyUnbound(ptree, verbose_cfg);
-
-        std::vector<ParameterTree::Node*> nodes;
-        ptree.getUnreadValueNodes(&nodes);
-        for (auto node : nodes) {
-            node->unrequire();
-        }
-
-        std::cout << "  [in] Extensions: " << config_applicators_.back()->stringize() << std::endl;
-        extensions_ptree_.merge(ptree);
     }
 
     void SimulationConfiguration::setStateTrackingFile(const std::string & filename)
@@ -213,28 +214,6 @@ namespace app {
     }
 
     //! Local helper method that recurses down through a ParameterTree,
-    //! collecting all the nodes that have a given name.
-    void recursFindPTreeNodesNamed(
-        const std::string & name,
-        ParameterTree::Node * this_node,
-        ParameterTree::Node::ChildVector & matching_nodes)
-    {
-        if (this_node == nullptr) {
-            return;
-        }
-
-        if (this_node->getName() == name) {
-            matching_nodes.emplace_back(this_node->release());
-            return;
-        }
-
-        const auto children = this_node->getChildren();
-        for (ParameterTree::Node * child : children) {
-            recursFindPTreeNodesNamed(name, child, matching_nodes);
-        }
-    }
-
-    //! Local helper method that recurses down through a ParameterTree,
     //! starting at a particular node in that tree, and collects all
     //! nodes that it finds during the traversal whose hasValue()==true
     void recursFindPTreeNodesWithValue(
@@ -258,44 +237,81 @@ namespace app {
     //! ParameterTree.
     void SimulationConfiguration::copyTreeNodeExtensionsFromArchAndConfigPTrees()
     {
-        //First, let's find a list of all parameter tree nodes with the name
-        //"extension". This is a reserved keyword - a ParameterTree::Node with
-        //this name is definitely for tree node extensions.
-        ParameterTree::Node::ChildVector extension_nodes;
-        recursFindPTreeNodesNamed("extension", arch_ptree_.getRoot(), extension_nodes);
-        recursFindPTreeNodesNamed("extension", ptree_.getRoot(),      extension_nodes);
+        {
+            ParameterTree no_ext_ptree, ext_ptree;
+            extractPTreeExtensions_(arch_ptree_, no_ext_ptree, ext_ptree);
 
-        if (extension_nodes.empty()) {
-            return;
+            auto & wildcard_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_ARCH_YAML_WITH_WILDCARDS];
+            auto & concrete_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_ARCH_YAML_WITHOUT_WILDCARDS];
+            splitExtensionPTree_(ext_ptree, wildcard_exts, concrete_exts);
         }
 
-        //From the extension nodes on down, find the full list of child
-        //nodes which have parameter values. Say the arch/config file
-        //contained this:
-        //
-        //    top:
-        //      core0:
-        //        params.foo: 55
-        //        fpu.extension.bar:
-        //          color_: "blue"
-        //          shape_: "square"
-        //
-        //This has one extension which has two leaf children (hasValue==true),
-        //so the new list of nodes we are about to get would look like this:
-        //
-        //  ["top.core0.fpu.extension.bar.color_", "top.core0.fpu.extension.bar.shape_"]
-        //
-        std::vector<const ParameterTree::Node*> has_value_nodes;
-        for (const auto & node : extension_nodes) {
-            recursFindPTreeNodesWithValue(node.get(), has_value_nodes);
+        {
+            ParameterTree no_ext_ptree, ext_ptree;
+            extractPTreeExtensions_(ptree_, no_ext_ptree, ext_ptree);
+
+            auto & wildcard_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_CONFIG_YAML_OR_PARAM_WITH_WILDCARDS];
+            auto & concrete_exts = extension_ptrees_[ExtensionsOrderOfOps::FROM_CONFIG_YAML_OR_PARAM_WITHOUT_WILDCARDS];
+            splitExtensionPTree_(ext_ptree, wildcard_exts, concrete_exts);
         }
 
-        //Now add these tree node extension leaf nodes to the final
-        //"extensions_ptree_".
-        for (const ParameterTree::Node * node : has_value_nodes) {
-            extensions_ptree_.set(node->getPath(), node->peekValue(),
-                                  node->getRequiredCount() != 0, node->getOrigin());
+        for (const auto & ptree : extension_ptrees_) {
+            extension_mgr.addExtensions(ptree);
         }
+    }
+
+    //! Helper to split a ParameterTree into two ptrees: one that has
+    //! only extensions, and the other which does not.
+    void SimulationConfiguration::extractPTreeExtensions_(
+        const ParameterTree & source_ptree,
+        ParameterTree & no_extensions,
+        ParameterTree & only_extensions)
+    {
+        source_ptree.visitLeaves([&](const ParameterTree::Node* leaf) {
+            auto path = leaf->getPath();
+            if (path.empty()) {
+                return false; // stop recursing
+            }
+            if (!leaf->hasValue()) {
+                return true; // keep going
+            }
+
+            auto for_extension = path.find(".extension.") != std::string::npos;
+            auto & dest_ptree = for_extension ? only_extensions : no_extensions;
+            auto value = for_extension ? leaf->getValue() : leaf->peekValue();
+            auto n = dest_ptree.create(path, leaf->isRequired());
+            n->setValue(value, leaf->isRequired(), leaf->getOrigin());
+
+            return true; // keep going
+        });
+    }
+
+    //! Helper to split a ParameterTree that only has extensions
+    //! into two ptrees: one that only has wildcard paths and one
+    //! that only has concrete paths.
+    void SimulationConfiguration::splitExtensionPTree_(
+        const ParameterTree & source_ptree,
+        ParameterTree & wildcard_extensions,
+        ParameterTree & concrete_extensions)
+    {
+        source_ptree.visitLeaves([&](const ParameterTree::Node* leaf) {
+            auto path = leaf->getPath();
+            if (path.empty()) {
+                return false; // stop recursing
+            }
+            if (!leaf->hasValue()) {
+                return true; // keep going
+            }
+
+            sparta_assert(path.find(".extension.") != std::string::npos);
+            auto & dest_ptree = TreeNode::hasWildcardCharacters(path) ?
+                wildcard_extensions : concrete_extensions;
+
+            auto n = dest_ptree.create(path, leaf->isRequired());
+            n->setValue(leaf->getValue(), leaf->isRequired(), leaf->getOrigin());
+
+            return true; // keep going
+        });
     }
 
 } // namespace app

@@ -12,7 +12,6 @@
 #include "sparta/simulation/Resource.hpp"
 #include "sparta/simulation/ResourceFactory.hpp"
 #include "sparta/simulation/TreeNode.hpp"
-#include "sparta/simulation/TreeNodeExtensions.hpp"
 #include "sparta/log/Tap.hpp"
 #include "sparta/parsers/ConfigParserYAML.hpp"
 #include "sparta/simulation/ClockManager.hpp"
@@ -30,13 +29,15 @@ namespace YP = YAML; // Prevent collision with YAML class in ConfigParser namesp
 
 namespace simdb {
     class AppManager;
-    class DatabaseManager;
+    class AppManagers;
+    class AppRegistrations;
 }
 
 namespace sparta {
 
 class Clock;
 class MemoryProfiler;
+class TreeNodeExtensionManager;
 
 namespace python {
     class PythonInterpreter;
@@ -170,20 +171,8 @@ public:
     //! \brief Returns the simulation's scheduler
     const sparta::Scheduler * getScheduler() const { return scheduler_; }
 
-    //! \brief Returns all SimDB application managers
-    std::vector<simdb::AppManager*> getAppManagers();
-
-    //! \brief Returns all SimDB database managers
-    std::vector<simdb::DatabaseManager*> getDbManagers();
-
-    //! \brief Get an app manager for a specific database file
-    simdb::AppManager* getAppManager(const std::string & db_file = "sparta.db") const;
-
-    //! \brief Get a database manager for a specific database file
-    simdb::DatabaseManager* getDbManager(const std::string & db_file = "sparta.db") const;
-
-    //! \brief Returns all database files managed by this simulation
-    std::vector<std::string> getDatabaseFiles() const;
+    //! \brief Get access to the SimDB AppManagers and their associated DatabaseManagers
+    simdb::AppManagers* getAppManagers() const { return app_managers_.get(); }
 
     /*!
      * \brief Returns whether or not the simulator was configured using a final
@@ -218,6 +207,20 @@ public:
      */
     SimulationConfiguration * getSimulationConfiguration() const {
         return sim_config_;
+    }
+
+    /*!
+     * \brief Returns this simulator's extensions manager
+     */
+    const TreeNodeExtensionManager * getExtensionManager(bool must_exist = true) const {
+        return root_.getExtensionManager(must_exist);
+    }
+
+    /*!
+     * \brief Returns this simulator's extensions manager
+     */
+    TreeNodeExtensionManager * getExtensionManager(bool must_exist = true) {
+        return root_.getExtensionManager(must_exist);
     }
 
     /*!
@@ -572,7 +575,19 @@ protected:
      * files.
      */
     void addTreeNodeExtensionFactory_(const std::string & extension_name,
-                                      std::function<TreeNode::ExtensionsBase*()> creator);
+                                      std::function<TreeNode::ExtensionsBase*()> factory);
+
+    /*!
+     * \brief The typical flow is to let the SimulationConfiguration own the
+     * TreeNodeExtensionManager, and the CommandLineSimulator gives it to the
+     * simulation in Simulation::configure(). To support manually-configured
+     * simulators that do not call configure(), subclass simulators can own
+     * the TreeNodeExtensionManager and give it to the Simulation.
+     * \throw Throws if this is called after the tree is built.
+     * \throw Throws if the TreeNodeExtensionManager was already set.
+     * \throw Throws if configure() is called later.
+     */
+    void setTreeNodeExtensionManager_(TreeNodeExtensionManager* mgr);
 
     //! \name Virtual Setup Interface
     //! @{
@@ -597,6 +612,34 @@ protected:
      * appropriate nodes
      */
     virtual void bindTree_() = 0;
+
+    /*!
+     * \brief Override this method to register your SimDB apps prior to
+     * parameterizing them and instantiating them.
+     */
+    virtual void registerSimDbApps_([[maybe_unused]] simdb::AppRegistrations* app_registrations) {}
+
+    /*!
+     * \brief When using SimDB apps, this method gets called when the
+     * SimulationConfiguration (SimDbConfig) has been consumed, and
+     * the appropriate apps have been enabled **but not yet instantiated**.
+     * \note Called once per AppManager (once per database)
+     * \note See app_mgr->getDatabaseManager()->getDatabaseFilePath()
+     * to see which database this AppManager is serving.
+     */
+    virtual void parameterizeSimDbApps_([[maybe_unused]] simdb::AppManager* app_mgr) {}
+
+    /*!
+     * \brief Hook which is called at the end of finalizeFramework() but
+     * right before SimDB app pipelines/threads are opened.
+     */
+    virtual void postFinalizeFramework_() {}
+
+    /*!
+     * \brief Hook which is called after SimDB apps are created, pipelines
+     * are opened, threads are running, and everything is ready to go.
+     */
+    virtual void onSimDbAppsReady_() {}
 
     ////////////////////////////////////////////////////////////////////////
     //! @}
@@ -812,13 +855,6 @@ protected:
     std::unique_ptr<MetaTreeNode> meta_;
 
     /*!
-     * \brief Tree node extension factories by name.
-     */
-    std::unordered_map<
-        std::string,
-        std::function<TreeNode::ExtensionsBase*()>> tree_node_extension_factories_;
-
-    /*!
      * \brief Has the framework been finalized
      */
     bool framework_finalized_ = false;
@@ -828,7 +864,6 @@ protected:
      * Add any nodes allocated to this list to automatically manage them.
      */
     std::vector<std::unique_ptr<sparta::TreeNode>> to_delete_;
-
 
     // The SimulationConfiguration object
     SimulationConfiguration * sim_config_{nullptr};
@@ -875,15 +910,6 @@ protected:
      * ReportDescriptorCollection
      */
     std::unique_ptr<ReportConfiguration> report_config_;
-
-    /*!
-     * \brief Keep the extension descriptors alive for the entire simulation.
-     * The Simulation base class is meant to actually allocate and own this
-     * memory (named parameter sets) even though simulation subclasses are
-     * the only ones who use these extended parameters sets.
-     */
-    ExtensionDescriptorVec extension_descs_;
-    std::set<std::string> nodes_given_extensions_;
 
     /*!
      * \brief User configuration vector stored at "preprocessParameters"
@@ -987,24 +1013,9 @@ private:
     char** argv_ = nullptr;
 
     /*!
-     * \brief SimDB instances with the associated AppManager.
+     * \brief SimDB DatabaseManager/AppManager instances.
      */
-    struct SimDbManagers
-    {
-        std::shared_ptr<simdb::DatabaseManager> db_mgr;
-        std::shared_ptr<simdb::AppManager> app_mgr;
-
-        SimDbManagers(std::shared_ptr<simdb::DatabaseManager> db_mgr,
-                      std::shared_ptr<simdb::AppManager> app_mgr)
-            : db_mgr(db_mgr)
-            , app_mgr(app_mgr)
-        {}
-    };
-
-    /*!
-     * \brief Db/App managers, keyed by database filename.
-     */
-    std::map<std::string, std::shared_ptr<SimDbManagers>> simdb_managers_;
+     std::shared_ptr<simdb::AppManagers> app_managers_;
 };
 
 } // namespace app

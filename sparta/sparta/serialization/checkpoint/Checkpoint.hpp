@@ -191,7 +191,7 @@ namespace sparta::serialization::checkpoint
          */
         std::vector<Checkpoint*> nexts_;
 
-        Checkpoint* prev_; //!< Previous checkpoint (earlier) than this. *this contains changes following prev.
+        Checkpoint* prev_ = nullptr; //!< Previous checkpoint (earlier) than this. *this contains changes following prev.
     };
 
 } // namespace sparta::serialization::checkpoint

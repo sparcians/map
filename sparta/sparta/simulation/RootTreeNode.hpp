@@ -13,9 +13,13 @@
 #include <vector>
 
 #include "sparta/simulation/TreeNode.hpp"
+#include "sparta/simulation/TreeNodeExtensions.hpp"
 #include "sparta/simulation/GlobalTreeNode.hpp"
+#include "sparta/app/ConfigApplicators.hpp"
 #include "sparta/log/NotificationSource.hpp"
 #include "sparta/simulation/TreeNodePrivateAttorney.hpp"
+#include "sparta/simulation/ParameterTree.hpp"
+#include "sparta/simulation/ParameterSet.hpp"
 #include "sparta/kernel/PhasedObject.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/SpartaException.hpp"
@@ -24,6 +28,7 @@ namespace sparta
 {
     class ArchData;
     class Clock;
+    class TreeNodeExtensionManager;
 
     namespace app {
         class Simulation;
@@ -77,13 +82,7 @@ namespace sparta
                      app::Simulation* sim,
                      GlobalTreeNode* search_scope) :
             TreeNode(name, GROUP_NAME_NONE, GROUP_IDX_NONE, desc),
-            sim_(sim),
-            new_node_noti_(this,
-                           "descendant_attached",
-                           "Notification immediately after a node becomes a descendant of this "
-                           "root at any distance. This new node may have children already attached "
-                           "which will not receive their own descendant_attached notification",
-                           "descendant_attached")
+            sim_(sim)
         {
             if(search_scope != nullptr){
                 search_node_ = search_scope;
@@ -97,6 +96,15 @@ namespace sparta
              * to ensure that getScopeRoot() never returns nullptr event when no
              * scope is explicitly defined. */
             setScopeRoot();
+
+            // Create the notification after the RTN is fully realized
+            new_node_noti_.reset(
+                new NewDescendantNotiSrc(this,
+                                         "descendant_attached",
+                                         "Notification immediately after a node becomes a descendant of this "
+                                         "root at any distance. This new node may have children already attached "
+                                         "which will not receive their own descendant_attached notification",
+                                         "descendant_attached"));
         }
 
         /*!
@@ -409,7 +417,7 @@ namespace sparta
          * sparta::NotificationSource::deregisterForThis methods.
          */
         NewDescendantNotiSrc& getNodeAttachedNotification() {
-            return new_node_noti_;
+            return *new_node_noti_;
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -465,10 +473,43 @@ namespace sparta
          */
         void dumpTypeMix(std::ostream& o) const;
 
+        /*!
+         * \brief Enable tree node extensions by giving the root node a
+         * TreeNodeExtensionsManager
+         * \throw Throws if this is called after the tree is built.
+         * \throw Throws if the TreeNodeExtensionManager was already set.
+         */
+        void setExtensionManager(TreeNodeExtensionManager* mgr);
+
+        /*!
+         * \brief Get the TreeNodeExtensionsManager
+         */
+        const TreeNodeExtensionManager * getExtensionManager(bool must_exist = true) const {
+            if (!extension_mgr_ && must_exist) {
+                throw SpartaException("Expecting TreeNodeExtensionsManager to exist but it doesn't");
+            }
+            return extension_mgr_;
+        }
+
+        /*!
+         * \brief Get the TreeNodeExtensionsManager
+         */
+        TreeNodeExtensionManager * getExtensionManager(bool must_exist = true) {
+            if (!extension_mgr_ && must_exist) {
+                throw SpartaException("Expecting TreeNodeExtensionsManager to exist but it doesn't");
+            }
+            return extension_mgr_;
+        }
+
         ////////////////////////////////////////////////////////////////////////
         //! @}
 
     private:
+
+        // The TreeNodeExtensionManager object owned by CommandLineSimulator,
+        // a simulation subclass, or in the SimulationConfiguration object
+        // on the stack in a unit test.
+        TreeNodeExtensionManager * extension_mgr_ = nullptr;
 
         // No effect on root
         virtual void createResource_() override {};
@@ -511,7 +552,14 @@ namespace sparta
         virtual void onDescendentSubtreeAdded_(TreeNode* des) noexcept override final {
             // Broadcast notification for self coming into existence
             try{
-                new_node_noti_.postNotification(*des);
+                // There's an irony here ... how do you create the new
+                // node notification object without it calling itself
+                // to notify that it's adding itself?  Easy -- the
+                // unique pointer isn't fully realized until it's
+                // fully added to the tree node hierarchy.
+                if (SPARTA_EXPECT_TRUE(new_node_noti_)) {
+                    new_node_noti_->postNotification(*des);
+                }
 
                 // Iterate subtree headed by des and notify observers of these
                 for(TreeNode* child : TreeNodePrivateAttorney::getAllChildren(des)){
@@ -548,7 +596,7 @@ namespace sparta
          * \brief Notification the be posted when a descendent is attached to
          * this tree
          */
-        NewDescendantNotiSrc new_node_noti_;
+        std::unique_ptr<NewDescendantNotiSrc> new_node_noti_;
     };
 
 } // namespace sparta

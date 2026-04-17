@@ -67,7 +67,6 @@ list (APPEND SourceCppFiles
             src/Resource.cpp
             src/SpartaException.cpp
             src/RootTreeNode.cpp
-            src/CherryPickFastCheckpointer.cpp
             src/Scheduler.cpp
             src/Scheduleable.cpp
             src/Scoreboard.cpp
@@ -84,6 +83,7 @@ list (APPEND SourceCppFiles
             src/TreeFilterExpressionGrammar.cpp
             src/TreeNode.cpp
             src/TreeNodeExtensions.cpp
+            src/TreeNodeExtensionManager.cpp
             src/Trigger.cpp
             src/TriggerManager.cpp
             src/Unit.cpp
@@ -96,7 +96,10 @@ list (APPEND SourceCppFiles
 )
 
 if (USING_SIMDB)
-  list (APPEND SourceCppFiles src/ReportStatsCollector.cpp)
+  list (APPEND SourceCppFiles
+    src/CherryPickFastCheckpointer.cpp
+    src/ReportStatsCollector.cpp
+  )
 endif ()
 
 # Add python support
@@ -168,7 +171,7 @@ endif ()
 if (ENABLE_SANITIZERS)
     message (STATUS "Building with address and undefined behavior sanitizers")
     add_compile_options(-fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined)
-    set (CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
+    add_link_options(-fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined )
 endif ()
 if(DEFINED SPARTA_CXX_FLAGS_DEBUG AND SPARTA_CXX_FLAGS_DEBUG)
   set(CMAKE_CXX_FLAGS_DEBUG "${SPARTA_CXX_FLAGS_DEBUG}")
