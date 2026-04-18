@@ -1,38 +1,94 @@
 # Documentation Workflow for Github Actions
+# Builds both the Doxygen API reference and the Sparta book,
+# deploying them together to GitHub Pages:
+#   https://sparcians.github.io/map/          <- Doxygen API reference
+#   https://sparcians.github.io/map/sparta_book/ <- Sparta book
 
 name: Documentation
 
-# Controls when the action will run. Triggers the workflow on push
-# events but only for the master branch
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+      - knutel/sparta-book
+
+permissions:
+  contents: write   # peaceiris/actions-gh-pages needs write access
 
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+      # ── 1. Checkout ──────────────────────────────────────────────────────────
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history needed for gh-pages orphan push
 
-    # Run doxygen command using the runners shell
-    # Doxygen Action: https://github.com/marketplace/actions/doxygen-action
-    - name: Build documentation
-      uses: mattnotmitt/doxygen-action@v1
-      with:
-        working-directory: 'sparta/doc'
-        doxyfile-path: './Doxyfile'
+      # ── 2. Build Doxygen API reference ───────────────────────────────────────
+      - name: Build Doxygen documentation
+        uses: mattnotmitt/doxygen-action@v1
+        with:
+          working-directory: 'sparta/doc'
+          doxyfile-path: './Doxyfile'
 
-    # Deploy to a gh-pages branch as an orphan (with only latest commit)
-    # GitHub Pages Action: https://github.com/marketplace/actions/github-pages-action
-    - name: Deploy documentation
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: sparta/doc/html
-        force_orphan: true
-        commit_message: '[ci skip] ${{ github.event.head_commit.message }}'
+      # ── 3. Install Java + Graphviz (PlantUML dependencies) ───────────────────
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install Graphviz
+        run: sudo apt-get install -y graphviz
+
+      # ── 4. Install Asciidoctor + asciidoctor-diagram ─────────────────────────
+      - name: Install Asciidoctor
+        run: |
+          sudo gem install asciidoctor
+          sudo gem install asciidoctor-diagram
+
+      # ── 5. Download PlantUML jar ──────────────────────────────────────────────
+      - name: Download PlantUML
+        run: |
+          mkdir -p $HOME/plantuml
+          curl -sSL https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar \
+               -o $HOME/plantuml/plantuml.jar
+          echo "PLANTUML_JAR=$HOME/plantuml/plantuml.jar" >> $GITHUB_ENV
+
+      # ── 6. Build the Sparta book ──────────────────────────────────────────────
+      - name: Build Sparta book
+        working-directory: sparta/doc/sparta_book
+        run: |
+          mkdir -p _site
+          asciidoctor \
+            --require asciidoctor-diagram \
+            -a data-uri \
+            -a toc=left \
+            -a toclevels=3 \
+            -a source-highlighter=rouge \
+            -a rouge-style=github \
+            -a imagesdir=images \
+            -D _site \
+            sparta_book.adoc
+          if [ -d images ]; then
+            cp -r images _site/images
+          fi
+
+      # ── 7. Merge outputs: Doxygen at root, book in sparta_book/ subdir ────────
+      - name: Merge into single deploy directory
+        run: |
+          mkdir -p _deploy/sparta_book
+          # Doxygen output goes to the root
+          cp -r sparta/doc/html/. _deploy/
+          # Book output goes into the sparta_book/ subdirectory
+          cp -r sparta/doc/sparta_book/_site/. _deploy/sparta_book/
+
+      # ── 8. Deploy to gh-pages branch ─────────────────────────────────────────
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: _deploy
+          force_orphan: true
+          commit_message: '[ci skip] ${{ github.event.head_commit.message }}'
