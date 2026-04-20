@@ -607,6 +607,7 @@ class ReportDescriptorFileParserYAML
         ReportDescVec completed_descriptors_;
 
         std::string loc_pattern_;
+        std::string name_;
         std::string dest_file_;
         std::string def_file_;
         std::string format_;
@@ -620,6 +621,7 @@ class ReportDescriptorFileParserYAML
         /*!
          * \brief Reserved keywords for this parser's dictionary
          */
+        static constexpr char KEY_NAME[]            = "name";
         static constexpr char KEY_CONTENT[]         = "content";
         static constexpr char KEY_REPORT[]          = "report";
         static constexpr char KEY_DEF_FILE[]        = "def_file";
@@ -714,7 +716,11 @@ class ReportDescriptorFileParserYAML
                     if (value == "true" || value == "1") {
                         auto_expand_context_counter_stats_ = true;
                     }
-                } else {
+                } else if (assoc_key == KEY_NAME)
+                {
+                    name_ = value;
+                }
+                else {
                     std::ostringstream oss;
                     oss << "Unrecognized key in report definition "
                            "file: '" << assoc_key << "'";
@@ -765,11 +771,14 @@ class ReportDescriptorFileParserYAML
                     return false;
                 }
 
-                completed_descriptors_.emplace_back(
+                auto & rd = completed_descriptors_.emplace_back(
                     loc_pattern_,
                     def_file_,
                     dest_file_,
                     format_);
+
+                // Report descriptors are named from the def file
+                rd.name = name_;
 
                 if (!trigger_kv_pairs_.empty()) {
                     std::unordered_map<std::string, boost::any> trigger_extensions;
@@ -798,7 +807,8 @@ class ReportDescriptorFileParserYAML
         virtual bool isReservedKey_(
             const std::string & key) const override final
         {
-            return (key == KEY_CONTENT          ||
+            return (key == KEY_NAME             ||
+                    key == KEY_CONTENT          ||
                     key == KEY_REPORT           ||
                     key == KEY_DEF_FILE         ||
                     key == KEY_DEST_FILE        ||
@@ -829,6 +839,7 @@ class ReportDescriptorFileParserYAML
         void prepareForNextDescriptor_()
         {
             loc_pattern_ = "_global";
+            name_.clear();
             dest_file_.clear();
             def_file_.clear();
             format_ = "text";
@@ -879,6 +890,15 @@ public:
         ReportDescriptorFileEventHandlerYAML handler(def_file_, {scope});
 
         while(parser_->HandleNextDocument(*((YP::EventHandler*)&handler))) {}
+
+        if(handler.getErrors().size() != 0){
+            SpartaException ex("One or more errors detected while consuming the report definition "
+                               "file:\n");
+            for(const std::string& es : handler.getErrors()){
+                ex << es << '\n';
+            }
+            throw  ex;
+        }
 
         return handler.getDescriptors();
     }
