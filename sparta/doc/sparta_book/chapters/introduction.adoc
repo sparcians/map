@@ -1,39 +1,214 @@
 = Introduction
+:url-systemc: https://systemc.org
+:url-gem5: https://www.gem5.org
+:url-olympia: https://github.com/riscv-software-src/riscv-perf-model
+:url-coyote: https://upcommons.upc.edu/handle/2117/350176
+:url-map: https://github.com/sparcians/map
+:url-sparcians: https://github.com/sparcians
+:url-riscv-sig: https://wiki.riscv.org/display/TECH/Performance+Modeling
+:url-composite: https://en.wikipedia.org/wiki/Composite_pattern
 
-Sparta is a modeling framework and toolkit for performance
-architecture engineers to build CPU, GPU, and platform models for the
-purpose of performance analysis of hardware design.
+== Foreword
 
-Sparta is _pure framework_ much like STL or Boost in that it doesn't
-do anything on its own, but rather provides structure/organization as
-well as numerous helper classes and interfaces to allow modelers to
-build fast functional and performance simulators,
+Sparta grew out of frustration.
 
-Sparta is built on the principles of a
-https://en.wikipedia.org/wiki/Software_framework[software-framework
-design] using
-https://en.wikipedia.org/wiki/Object-oriented_programming[Object-Oriented
+After more than two decades of building performance models and
+simulation frameworks inside the semiconductor industry, the author and
+two colleagues sat down and listed every requirement a modeling
+framework _should_ satisfy -- requirements that existing tools like
+{url-systemc}[SystemC] and {url-gem5}[gem5] left unmet.  The result,
+after years of design and iteration, is Sparta: a framework built from
+first principles for the people who build performance simulators for a
+living.
+
+This book is the documentation that Sparta always deserved.  It is
+written by the lead designer of the framework with the goal of turning
+a capable engineer into a productive Sparta modeler as quickly as
+possible.  The author is the lead designer and developer of the
+{url-sparcians}[Sparcians] open source organization and co-chair of
+the {url-riscv-sig}[RISC-V International Performance Modeling SIG].
+
+== What is Sparta?
+
+Sparta is a modeling framework and toolkit for performance architecture
+engineers to build CPU, GPU, and platform models for the purpose of
+performance analysis of hardware design.
+
+Sparta is a _pure framework_, much like STL or Boost, in that it does
+not do anything on its own.  Instead, it provides structure and
+organization as well as numerous helper classes and interfaces that
+allow modelers to build fast functional and performance simulators.
+
+Sparta is built on the principles of
+https://en.wikipedia.org/wiki/Software_framework[software framework design]
+using https://en.wikipedia.org/wiki/Object-oriented_programming[Object-Oriented
 Programming] and https://en.wikipedia.org/wiki/Design_Patterns[design
-patterns].  The framework is written in C++ (C++17/23) as well as python.
+patterns].  The framework is written in C++ (C++17/23) as well as Python.
 
-Sparta was built from the ground up to be a modeler's solution,
-enabling as many dynamic, run-time features as possible. These include
-topology definitions, multiple formats report generation, notification
-mechanisms. event ordering, modular unit definitions, data collection
-at any level at any moment in time, error handling (and resolutions),
-pipeline crawling, etc.
+Sparta was designed from the ground up to be a modeler's solution,
+enabling as many dynamic, run-time features as possible.  These include
+topology definitions, multiple report format generation, notification
+mechanisms, event ordering, modular unit definitions, data collection
+at any level at any point in time, error handling and resolution,
+pipeline visualization, and more.
 
-== Sparta vs SystemC/Gem5
+== Who This Book Is For
 
-The communication/scheduling concepts of Sparta are similar to SystemC
-and Gem5, but takes a much more abstract and more extensible approach
-to modeling.
+This book is written for performance architects and modeling engineers
+who want to build simulators using the Sparta framework.  Readers are
+expected to have working knowledge of C++ (C++11 or later) and a basic
+understanding of computer architecture concepts such as pipelines,
+caches, and memory hierarchies.  Prior experience with another
+simulation framework such as {url-systemc}[SystemC] or
+{url-gem5}[gem5] is helpful but not required.
 
+New graduate engineers will find this book most useful read from
+beginning to end.  Experienced architects evaluating Sparta for a new
+project may prefer to start with <<_sparta_vs_systemc_gem5>> and then
+jump to the chapters most relevant to their use case.
+
+The {url-olympia}[Olympia performance model] -- an open source
+out-of-order RISC-V CPU model maintained under RISC-V International --
+is a companion to this book.  Olympia is built entirely on Sparta and
+serves as a complete, real-world reference for every concept covered
+here.  Readers are encouraged to keep a clone of Olympia nearby and
+refer to it as each chapter introduces new framework concepts.
+
+== Sparta in the Wild
+
+Sparta is used in both industry and academia.  Public examples include:
+
+**{url-olympia}[Olympia]** is the canonical open source out-of-order
+RISC-V CPU performance model, maintained under RISC-V International
+and widely used as a starting point for RISC-V CPU performance modeling
+in industry and as a teaching vehicle in graduate microarchitecture
+courses.  Olympia is a trace-driven simulator modeling an RV64GC
+out-of-order core, with an execution-driven mode under active
+development.
+
+**{url-coyote}[Coyote]** is an open source execution-driven simulator
+from the Barcelona Supercomputing Center, built on Sparta to model
+RISC-V HPC memory hierarchies.  Presented at DATE 2021, Coyote focuses
+on data movement and memory system modeling, achieving simulation rates
+of up to 6 MIPS across 128 simulated cores.
+
+Beyond these public examples, Sparta has seen use at semiconductor
+companies building proprietary CPU and GPU performance models where the
+framework's runtime configurability, deterministic event ordering, and
+rich statistics infrastructure make it well suited to the demands of
+pre-silicon microarchitecture exploration.
+
+== Sparta vs SystemC/gem5
+
+The communication and scheduling concepts in Sparta are similar in
+spirit to {url-systemc}[SystemC] and {url-gem5}[gem5], but Sparta
+takes a more abstract and extensible approach to modeling.
+
+// AUTHOR NOTE: This is the most important section in the introduction.
+// Readers evaluating whether to use Sparta need a direct answer here.
+// Suggested points to cover based on the GitHub discussion #299:
+//
+//   - The key SystemC difference: Sparta's calendar-based scheduler
+//     allows explicit event ordering within and across blocks, solving
+//     the "mux problem" without delta cycles.  Modelers can declare
+//     that a calculation event fires only after all inputs are settled.
+//
+//   - What does Sparta do better than gem5? (cleaner separation of
+//     model and framework, easier to build proprietary designs from
+//     scratch, no ISA baggage, better suited to GPU/SoC modeling)
+//
+//   - What are the tradeoffs? (smaller community than gem5, no
+//     out-of-the-box ISA or functional model, C++ expertise required)
+//
+//   - When would you choose SystemC or gem5 instead?
 
 == Types of Simulation
 
-=== Cycle Base Simulation
+Before diving into Sparta itself, it is worth understanding the
+landscape of simulation styles that performance architects use.
+Sparta is designed primarily for cycle-based simulation but is
+flexible enough to support other approaches.
+
+=== Cycle-Based Simulation
+
+In cycle-based simulation, the simulator advances one clock cycle at a
+time.  Each unit in the model -- fetch, decode, execute, and so on --
+performs its work for the current cycle, passes data to downstream
+units, and waits for the next cycle.  This is the dominant style for
+CPU and GPU performance modeling because it maps naturally to the way
+digital hardware actually operates.
+
+Sparta's scheduler and event system are designed around this model.
+Units communicate through typed ports, events fire at specific cycle
+offsets, and the framework guarantees a deterministic execution order
+within each cycle.
+
+// AUTHOR NOTE: Anything to add about how Sparta specifically supports
+// cycle-based simulation that the reader should know up front?
+
+=== Event-Driven Simulation
+
+In event-driven simulation, the simulator does not advance by fixed
+clock ticks.  Instead, it maintains a queue of future events sorted by
+time and jumps directly from one event to the next, skipping periods
+of inactivity.  This can be significantly faster than cycle-based
+simulation for sparse workloads where most units are idle most of the
+time.
+
+// AUTHOR NOTE: Does Sparta support pure event-driven simulation, or is
+// it a hybrid? How does the Sparta scheduler relate to event-driven
+// concepts? What should a reader know about choosing between the two?
 
 === Reverse Execution Simulation
 
-=== Event Driven
+// AUTHOR NOTE: Please fill in this section. Reverse execution is not
+// a widely known concept outside performance modeling circles --
+// a brief explanation of what it is, why it matters, and whether/how
+// Sparta supports it would be valuable here.
+
+== A First Look at Sparta
+
+To make the concepts in this book concrete from the start, here is the
+smallest useful Sparta simulator: a single unit with a parameter,
+connected to the framework and ready to run.
+
+// AUTHOR NOTE: Please provide or verify a minimal but complete code
+// example here -- ideally 30-50 lines -- that compiles and runs.
+// The goal is to give the reader an immediate feel for what Sparta
+// code looks like before they encounter the detailed construction
+// chapter.  Something like: define a Unit subclass with one parameter,
+// instantiate it in a Simulation, finalize, and run for a few cycles.
+// The skeleton pipeline example in the Sparta docs may be a good
+// starting point: https://sparcians.github.io/map/skeleton_example.html
+
+== What Is in This Book
+
+This book covers the Sparta framework from the ground up, starting
+with simulation construction and working through communication,
+scheduling, statistics, and analysis.
+
+*Chapter 2 -- Simulation Construction* covers the class hierarchy that
+makes up a Sparta simulation: `TreeNode`, `ResourceTreeNode`, `Unit`,
+and `Resource`.  It explains the four phases of simulation construction
+-- Build, Configure, Instantiate, and Bind -- and shows how to wire
+them together into a running simulator.
+
+// AUTHOR NOTE: Add a one or two sentence summary for each subsequent
+// chapter as you write them.  Suggested chapters:
+//
+//   Chapter 3 -- Ports and Communication
+//   Chapter 4 -- Events and Scheduling
+//   Chapter 5 -- Parameters
+//   Chapter 6 -- Statistics and Reporting
+//   Chapter 7 -- Notifications
+//   Chapter 8 -- Pipeline Collection and Visualization (Argos/Helios)
+//   Chapter 9 -- Command Line Simulation
+//   Chapter 10 -- Advanced Topics
+
+Throughout this book, examples draw from {url-olympia}[Olympia], the
+open source RISC-V out-of-order performance model maintained under
+RISC-V International.  Olympia represents a complete, production-quality
+Sparta simulator and is the recommended companion codebase for readers
+who want to see every concept applied at scale.  The full source for
+Sparta, Olympia, and the rest of the modeling toolchain is available
+in the {url-map}[MAP repository] under the Sparcians organization.
