@@ -1,0 +1,350 @@
+= Getting Started
+:url-map: https://github.com/sparcians/map
+:url-map-v2: https://github.com/sparcians/map/tree/map_v2
+:url-skeleton: https://sparcians.github.io/map/skeleton_example.html
+:url-olympia: https://github.com/riscv-software-src/riscv-perf-model
+
+This chapter walks through installing Sparta, building the skeleton
+pipeline example that ships with the framework, and running it.  By
+the end of the chapter you will have a working Sparta environment and
+a concrete understanding of what a Sparta simulator looks like from
+the outside before diving into the code.
+
+== Prerequisites
+
+Sparta requires a C++17-capable compiler and CMake 3.14 or later.
+The following tools and libraries must be installed before building.
+
+=== Ubuntu 22.04 / 24.04
+
+[source,bash]
+----
+sudo apt-get install -y \
+    cmake \
+    g++ \
+    libboost-all-dev \
+    libyaml-cpp-dev \
+    rapidjson-dev \
+    libsqlite3-dev \
+    libhdf5-dev \
+    zlib1g-dev \
+    python3-dev \
+    doxygen \
+    graphviz
+----
+
+==== Windows (WSL)
+
+Install Ubuntu 22.04 or 24.04 from the Microsoft Store, open a WSL
+terminal, and follow the Ubuntu instructions above.  All subsequent
+commands in this chapter are identical under WSL.
+
+=== macOS
+
+Install https://brew.sh[Homebrew] if not already present, then:
+
+[source,bash]
+----
+brew install cmake boost yaml-cpp rapidjson sqlite hdf5 python3
+----
+
+NOTE: Sparta is tested against Apple Clang 14 and later.  If your
+Xcode command line tools are out of date, run
+`xcode-select --install` before proceeding.
+
+== Cloning the Repository
+
+Sparta lives inside the MAP (Modeling Architectural Platform)
+repository alongside the Helios visualization tools.  Always clone
+the stable `map_v2` branch -- the `master` branch is for development
+and should not be used for modeling work.
+
+[source,bash]
+----
+git clone git@github.com:sparcians/map.git \
+    --recursive \
+    --branch map_v2
+cd map
+----
+
+The `--recursive` flag is required to pull in the git submodules that
+Sparta depends on.
+
+== Building Sparta
+
+[source,bash]
+----
+cd sparta
+mkdir release
+cd release
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j$(nproc)     # Linux / WSL
+# make -j$(sysctl -n hw.logicalcpu)   # macOS
+----
+
+A successful build produces `libsparta.a` in the `release/` directory.
+To install Sparta system-wide so that downstream projects (like
+Olympia) can find it with `find_package(Sparta)`:
+
+[source,bash]
+----
+sudo make install
+----
+
+// AUTHOR NOTE: Is sudo make install the right install step for the
+// simple (non-conda) path? Does it install to /usr/local by default?
+// Please verify and correct if needed.
+
+== Building the Skeleton Pipeline
+
+The skeleton pipeline is a minimal but complete Sparta simulator
+included in the MAP repository under `sparta/example/SkeletonPipeline`.
+It models a simple producer/consumer system and exercises the core
+Sparta classes: `Unit`, `Port`, `Event`, `Parameter`, and `Scheduler`.
+
+[source,bash]
+----
+cd map/sparta/example/SkeletonPipeline
+mkdir release
+cd release
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j$(nproc)
+----
+
+This produces the `sparta_skeleton` binary in the `release/` directory.
+
+== Running the Skeleton Pipeline
+
+=== Default Run
+
+Run the simulator with its default configuration -- one producer, one
+consumer -- and let it run to completion:
+
+[source,bash]
+----
+./sparta_skeleton
+----
+
+// AUTHOR NOTE: Please paste the actual stdout from running this
+// command here, inside a literal block:
+//
+// [source]
+// ----
+// <paste output here>
+// ----
+//
+// The output should show the simulation summary including cycle count,
+// number of integers sent, and the auto-summary statistics table.
+
+=== Exploring the Simulation Tree
+
+One of Sparta's most useful built-in features is the ability to inspect
+the full component tree of a simulator before running it.  This shows
+every node, parameter, port, and statistic in the model:
+
+[source,bash]
+----
+./sparta_skeleton --show-tree --no-run
+----
+
+// AUTHOR NOTE: Please paste the actual stdout here.
+// This output is important -- it shows readers the tree structure
+// (top.producer0, top.consumer, etc.) that they will reference
+// throughout the book.
+
+=== Exploring Parameters
+
+To see every parameter in the simulation and its current value:
+
+[source,bash]
+----
+./sparta_skeleton --show-parameters --no-run
+----
+
+// AUTHOR NOTE: Please paste the actual stdout here.
+
+Parameters can be overridden on the command line using the `-p` flag
+with a path into the simulation tree.  For example, to tell the
+producer to send 10,000 integers instead of the default:
+
+[source,bash]
+----
+./sparta_skeleton -p top.producer0.params.max_ints_to_send 10K \
+    --show-parameters --no-run
+----
+
+// AUTHOR NOTE: Please paste the actual stdout showing the changed
+// parameter value here.
+
+=== Running with Multiple Producers
+
+The consumer is parameterized to accept connections from more than one
+producer.  To run with 10 producers:
+
+[source,bash]
+----
+./sparta_skeleton -p top.consumer.params.num_producers 10
+----
+
+// AUTHOR NOTE: Please paste the actual stdout here, showing how the
+// summary changes with 10 producers vs 1.
+
+=== Generating Reports
+
+Sparta's reporting system can produce output in several formats with no
+changes to the model code.  Try each of the following:
+
+[source,bash]
+----
+./sparta_skeleton --report-all output.html html   # HTML format
+./sparta_skeleton --report-all output.txt  text   # plain text
+./sparta_skeleton --report-all output.json json   # JSON format
+----
+
+// AUTHOR NOTE: Please paste a representative snippet of the text
+// report output here so readers can see what a Sparta report looks
+// like before the Statistics chapter covers it in detail.
+
+=== Enabling Logging
+
+Sparta has a built-in hierarchical logging system.  To capture all log
+messages from every component to a file:
+
+[source,bash]
+----
+./sparta_skeleton -l top info all.log
+----
+
+To capture only messages from the consumer:
+
+[source,bash]
+----
+./sparta_skeleton -l top.consumer info consumer.log
+----
+
+// AUTHOR NOTE: Please paste a few representative lines from one of
+// the log files here so readers can see the log format.
+
+== Walking Through the Code
+
+Now that you have seen the skeleton pipeline running, it is worth
+understanding what each piece of code does before the next chapters
+cover each concept in depth.
+
+The skeleton pipeline has three source files:
+
+[cols="1,1,2"]
+|===
+| File | Sparta Base Class | Purpose
+
+| `Producer.hpp` / `Producer.cpp`
+| `sparta::Unit`
+| Sends integers to the consumer on request
+
+| `Consumer.hpp` / `Consumer.cpp`
+| `sparta::Unit`
+| Receives integers from one or more producers
+
+| `SkeletonSimulator.hpp` / `SkeletonSimulator.cpp`
+| `sparta::app::Simulation`
+| Builds the tree, configures it, and binds the ports
+|===
+
+=== The Simulator: SkeletonSimulator
+
+`SkeletonSimulator` derives from `sparta::app::Simulation` and overrides
+three methods that Sparta calls in sequence during startup:
+
+`buildTree_`:: Creates the `ResourceTreeNode` hierarchy -- one consumer
+node and one or more producer nodes depending on the `num_producers`
+parameter.  At the end of this phase the tree exists but no `Unit`
+objects have been instantiated yet.
+
+`configureTree_`:: An opportunity to inspect or adjust parameters before
+the model is instantiated.  The skeleton pipeline does not override
+this in a meaningful way, but it is available.
+
+`bindTree_`:: Connects the ports between the producer and consumer units.
+Each producer's `out_` port is bound to the consumer's corresponding
+`in_` port.  This is where communication paths are established.
+
+This three-phase construction pattern is the heart of every Sparta
+simulator and is covered in full detail in
+<<_simulation_construction>>.
+
+=== The Units: Producer and Consumer
+
+Both `Producer` and `Consumer` derive from `sparta::Unit`.  Each unit
+declares its ports and events as member variables, and registers
+callbacks that Sparta calls when data arrives or events fire.
+
+The `Producer` works like this:
+
+1. On startup, a `sparta::StartupEvent` fires the `produceData_` method
+   on the first cycle.
+2. `produceData_` sends a `uint32_t` value out through its
+   `sparta::DataOutPort`.
+3. The producer then waits for a "go" signal from the consumer via a
+   `sparta::SignalInPort` before sending the next value.
+
+The `Consumer` works like this:
+
+1. On startup, it sends a "go" signal to each producer via a
+   `sparta::SignalOutPort`, kicking off the pipeline.
+2. When data arrives on its `sparta::DataInPort`, the port fires a
+   callback that schedules a `sparta::UniqueEvent` for the next phase
+   of the same cycle.
+3. That event consumes the data and sends another "go" to keep the
+   pipeline flowing.
+
+The use of a `UniqueEvent` in the consumer -- rather than processing
+data directly in the port callback -- is a deliberate pattern.  It
+guarantees that the consumer processes data only after all producers
+have had a chance to send in the current cycle.  This is Sparta's
+event ordering system at work, and it is covered in detail in
+<<_events_and_scheduling>>.
+
+=== Ports, Parameters, and Statistics
+
+Each unit in the skeleton pipeline also demonstrates three other core
+Sparta features that appear in almost every real model:
+
+**Parameters** are declared inside a nested `ParameterSet` class within
+each unit.  They are automatically exposed on the command line and in
+YAML configuration files with no extra code from the modeler.  The
+`max_ints_to_send` and `num_producers` parameters you used above are
+defined this way.
+
+**Statistics** (counters) are declared as `sparta::Counter` member
+variables inside the unit.  Sparta automatically collects them and
+includes them in the summary output and report files you generated
+earlier.
+
+**Logging** is done through a `sparta::log::MessageSource` attached to
+the unit's tree node.  Messages are emitted with `ILOG`, `WLOG`, and
+`ELOG` macros and are automatically routed by the `-l` command line
+option you used above.
+
+== What You Have Learned
+
+At this point you have:
+
+- Installed Sparta and its dependencies on your platform
+- Built and run a complete Sparta simulator
+- Inspected the simulation tree, parameters, and statistics from the
+  command line
+- Generated reports in multiple formats
+- Captured log output from specific components
+- Understood the high-level structure of a Sparta simulator at a
+  code level
+
+The next chapter walks through building a Sparta simulator from
+scratch, introducing each concept step by step.  After that,
+<<_simulation_construction>> covers the construction phase system
+in full detail.
+
+For reference, the skeleton pipeline source is in
+`sparta/example/SkeletonPipeline` in your MAP clone.  The
+{url-olympia}[Olympia performance model] is a production-scale
+example of the same patterns applied to a full out-of-order RISC-V
+core.
