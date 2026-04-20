@@ -683,6 +683,24 @@ void TreeNodeExtensionManager::checkAllYamlExtensionsCreated(
     }
 }
 
+std::map<std::string, std::function<ExtensionsBase*()>> & TreeNodeExtensionManager::extensionFactories_()  {
+    static std::map<std::string, std::function<ExtensionsBase*()>> factories;
+    return factories;
+}
+
+std::function<ExtensionsBase*()> & TreeNodeExtensionManager::getExtensionFactory_(
+    const std::string & extension_name)
+{
+    auto it = extensionFactories_().find(extension_name);
+    if (it != extensionFactories_().end()) {
+        return it->second;
+    }
+
+    static std::function<ExtensionsBase*()> no_factory;
+    return no_factory;
+}
+
+
 void TreeNodeExtensionManager::doPostCreate_(ExtensionsBase* extension) const
 {
     extension->setParameters(std::make_unique<ParameterSet>(nullptr));

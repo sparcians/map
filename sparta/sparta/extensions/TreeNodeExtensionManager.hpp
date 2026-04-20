@@ -308,25 +308,13 @@ private:
      * \brief Get static extension factories. Wrapped in a method to prevent static
      * initialization order fiasco.
      */
-    static std::map<std::string, std::function<ExtensionsBase*()>> & extensionFactories_() {
-        static std::map<std::string, std::function<ExtensionsBase*()>> factories;
-        return factories;
-    }
+    static std::map<std::string, std::function<ExtensionsBase*()>> & extensionFactories_();
 
     /*!
      * \brief Get a factory for the given extension name.
      */
     static std::function<ExtensionsBase*()> & getExtensionFactory_(
-        const std::string & extension_name)
-    {
-        auto it = extensionFactories_().find(extension_name);
-        if (it != extensionFactories_().end()) {
-            return it->second;
-        }
-
-        static std::function<ExtensionsBase*()> no_factory;
-        return no_factory;
-    }
+        const std::string & extension_name);
 
     /*!
      * \brief Try to get an extension by its location and extension name.
