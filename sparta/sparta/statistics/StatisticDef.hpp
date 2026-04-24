@@ -153,10 +153,10 @@ namespace sparta
          *     new sparta::StatisticDef(getContainer(),
          *                              "my_stat_def_name",
          *                              "my_stat_def_group_name,
-         *                              0,                                       // group idx
-         *                              "This is my fancy statistic definition", // desc
-         *                              getContainer(),                          // context
-         *                              "(counter1-counter2)/counter2 * 100",    // expression
+         *                              0,                                        // group idx
+         *                              "This is my simple statistic definition", // desc
+         *                              getContainer(),                           // context
+         *                              "(counter1-counter2)/counter2 * 100",     // expression
          *                              sparta::StatisticDef::ValueSemantic::VS_PERCENTAGE); // semantic
          * \endcode
          */
@@ -219,7 +219,6 @@ namespace sparta
             expr_str_(rhp.expr_str_),
             context_(rhp.context_),
             semantic_(rhp.semantic_)
-
         {
             // Note: this must happen in leaf type
             TreeNode* parent = rhp.getParent();

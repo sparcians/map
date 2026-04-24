@@ -27,7 +27,9 @@
       { "name": "Report X.core0.dummy.c2",
         "desc": "Counter 2 in dummy",
         "vis": "100000000",
-        "class": "50"
+        "class": "50",
+        "range": "0:100000000",
+        "semantic": "lower"
       },
       { "name": "Report X.core1.c2",
         "desc": "Counter 2",

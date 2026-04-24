@@ -338,13 +338,21 @@ int main()
                                  {"semantic", "higher" }
                              }
                          }
-            ); // Stat-reference
+            ); // Stat-reference with meta data
         StatisticDef sd4(&sset0, "s4", "Statistic Description", &sset0, "log2(16)/4+c3**c4"); // Expression on counters
 
         TreeNode dummy(&core0, "dummy", "Dummy node fore testing subtree-depth limits");
         StatisticSet sset_dummy(&dummy);
         Counter dummy_c1(&sset_dummy, "c1", "Counter 1 in dummy", Counter::COUNT_NORMAL, Counter::VIS_SUMMARY);
-        Counter dummy_c2(&sset_dummy, "c2", "Counter 2 in dummy", Counter::COUNT_NORMAL, Counter::VIS_NORMAL);
+        Counter dummy_c2(&sset_dummy, "c2", "Counter 2 in dummy",
+                         {
+                             Counter::COUNT_NORMAL,
+                             {
+                                 {"range", "0:100000000"},
+                                 {"semantic", "lower"},
+                             }
+                         },
+                         Counter::VIS_NORMAL);
 
         // Invalid StatisticDefs
         EXPECT_THROW(StatisticDef sd5(&sset0, "s5", "Statistic Description", &sset0, "1", StatisticDef::VS_INVALID));
