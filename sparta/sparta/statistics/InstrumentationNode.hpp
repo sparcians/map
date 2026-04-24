@@ -231,6 +231,7 @@ public:
      */
     InstrumentationNode(InstrumentationNode&& rhp) :
         TreeNode::TreeNode(std::move(rhp)),
+        meta_data_(std::move(rhp.meta_data_)),
         visibility_(rhp.visibility_),
         class_(rhp.class_),
         instrument_type_(rhp.instrument_type_)
