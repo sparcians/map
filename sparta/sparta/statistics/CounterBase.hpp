@@ -136,7 +136,7 @@ namespace sparta
          * information.  As an example, the following works as well:
          *
          * \code
-         *     new sparta::COunter(getContainer(),
+         *     new sparta::Counter(getContainer(),
          *                         "my_counter_name",
          *                         "my_counter_group_name,
          *                         0,                                      // group idx
@@ -148,7 +148,7 @@ namespace sparta
         {
         public:
             /*!
-             * \brief Construct a CounterBehaviorDetailed withoout meta data
+             * \brief Construct a CounterBehaviorDetailed without meta data
              * \param behavior The CounterBehavior
              * \note Do not make this explicit
              */
@@ -157,7 +157,7 @@ namespace sparta
             {}
 
             /*!
-             * \brief Construct a CounterBehaviorDetailed withoout meta data
+             * \brief Construct a CounterBehaviorDetailed without meta data
              * \param behavior The CounterBehavior
              * \param meta_data MetadataPairs to assign `{("name", "value"}}`
              */

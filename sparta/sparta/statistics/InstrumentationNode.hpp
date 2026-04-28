@@ -199,7 +199,7 @@ public:
 
     //! MetadataPairs are name/value pairs appended to an
     //! object/derived type in report generation.  This information
-    //! can be used for communication relevant information about an
+    //! can be used for communicating relevant information about an
     //! InstrumentationNode like value ranges, big numbers good/bad,
     //! etc.
     using StringPair = std::pair<std::string, std::string>;

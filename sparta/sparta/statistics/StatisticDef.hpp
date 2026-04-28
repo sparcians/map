@@ -164,7 +164,7 @@ namespace sparta
         {
         public:
             /*!
-             * \brief Construct a ValueSemanticDetailed withoout meta data
+             * \brief Construct a ValueSemanticDetailed without meta data
              * \param semantic The ValueSemantic
              * \note Do not make this explicit
              */
@@ -173,7 +173,7 @@ namespace sparta
             {}
 
             /*!
-             * \brief Construct a ValueSemanticDetailed withoout meta data
+             * \brief Construct a ValueSemanticDetailed without meta data
              * \param semantic The ValueSemantic
              * \param meta_data MetadataPairs to assign `{("name", "value"}}`
              */
