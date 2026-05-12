@@ -147,7 +147,7 @@ public:
 
     DynResource(sparta::TreeNode * node, // Node containing this resource
                 const SimpleDevice::ParameterSet * params // Parameters for this resource (happen to be the same as parents')
-                ) :
+        ) :
         sparta::Resource(node)
     {
         (void) params;
@@ -188,7 +188,7 @@ public:
 
     DynResourceWithCustomParams(sparta::TreeNode * node, // Node containing this resource
                                 const CustomParams * params // Parameters for this resource (happen to be the same as parents')
-                                ) :
+        ) :
         sparta::Resource(node)
     {
         // Access custom parameter
@@ -232,11 +232,11 @@ public:
         EXPECT_NOTHROW(node->getChildAs<sparta::ParameterSet>("params"));
 
         child1_.reset(new sparta::DynamicResourceTreeNode<DynResource,
-                                                        SimpleDevice::ParameterSet>
-                          (node, // this is parent
-                           "child", // new child node name
-                           "Dynamically created child node",
-                           params)); // Constructor takes same parameters as this resource. Could be a copy or modification though
+                      SimpleDevice::ParameterSet>
+                      (node, // this is parent
+                       "child", // new child node name
+                       "Dynamically created child node",
+                       params)); // Constructor takes same parameters as this resource. Could be a copy or modification though
 
         // It does NOT immediately have a resource, so it throws.
         EXPECT_THROW(child1_->getResource());
@@ -244,11 +244,11 @@ public:
 
         // Create another child
         auto n = new sparta::DynamicResourceTreeNode<DynResource,
-                                                   SimpleDevice::ParameterSet>
-                    (node, // this is parent
-                     "child2", // new child node name
-                     "Dynamically created child node",
-                     params); // Constructor takes same parameters as this resource. Could be a copy or modification though
+                                                     SimpleDevice::ParameterSet>
+            (node, // this is parent
+             "child2", // new child node name
+             "Dynamically created child node",
+             params); // Constructor takes same parameters as this resource. Could be a copy or modification though
         child2_.reset(n);
         n->finalize(); // Create a resource for it
 
@@ -268,9 +268,9 @@ public:
         // configuration files), but can be manually set here
         EXPECT_EQUAL(child4_.get(), nullptr);
         sparta::ResourceTreeNode* rtn2 = new sparta::ResourceTreeNode(node,
-                                                                  "child4",
-                                                                  "Dynamically created child node with params",
-                                                                  &drwcp_fact_);
+                                                                      "child4",
+                                                                      "Dynamically created child node with params",
+                                                                      &drwcp_fact_);
         child4_.reset(rtn2);
 
         // Set a parameter the awkward way (using a string)
@@ -346,7 +346,7 @@ public:
     };
 
     SimpleDevice3(sparta::TreeNode * node,
-                 const ParameterSet * params) :
+                  const ParameterSet * params) :
         sparta::Resource(node)
     {
         (void) params;
@@ -358,7 +358,7 @@ public:
 class LeafDevice : public sparta::Resource
 {
 public:
-        // Declaring as constexpr allows inline static const char*/float/double members
+    // Declaring as constexpr allows inline static const char*/float/double members
     static constexpr const char* name="LeafDevice";
 
     class ParameterSet : public sparta::ParameterSet
@@ -475,15 +475,15 @@ int main()
         sparta::RootTreeNode top("top");
         sparta::ResourceTreeNode a("a", "", sparta::TreeNode::GROUP_IDX_NONE, "The A node", &fact);
         sparta::ResourceTreeNode cant_see_me("cant_see_me", "", sparta::TreeNode::GROUP_IDX_NONE,
-                                           "a private node", &fact);
+                                             "a private node", &fact);
         cant_see_me.makeSubtreePrivate();
         sparta::TreeNode a1 (&cant_see_me, "a1_public",
-                           "A public node under a private subtree where private subtree is rooted at cant_see_me");
+                             "A public node under a private subtree where private subtree is rooted at cant_see_me");
         sparta::TreeNode a_private(&a1, "a_private",
-                                 "a private node under cant_see_me");
+                                   "a private node under cant_see_me");
         a_private.makeSubtreePrivate();
         sparta::ResourceTreeNode a_public(&cant_see_me, "a_public",
-                                        "a public node under cant_see_me", &fact_find_a_private);
+                                          "a public node under cant_see_me", &fact_find_a_private);
         sparta::ResourceTreeNode b("b", "b_group", 0, "The B node", &fact2);
         sparta::ResourceTreeNode b1("b1", "b_group", 1, "The B1 node", &fact3);
         EXPECT_NOTHROW(b1.addAlias("b_one")); // Exercise addAlias (singular)
@@ -986,17 +986,17 @@ int main()
         EXPECT_EQUAL(((decltype(a_sps_cv->strvecvec)::value_type)a_sps_cv->strvecvec).size(), 3);
         EXPECT_EQUAL(a_sps_cv->strvecvec,
                      decltype(a_sps_cv->strvecvec)::value_type({{"a", "hey", "there"},
-                                                                {"b", "friend"},
-                                                                {"c"}}));
+                             {"b", "friend"},
+                             {"c"}}));
 
         EXPECT_EQUAL(((decltype(a_sps_cv->strvecvecvec)::value_type)a_sps_cv->strvecvecvec).size(), 5);
         std::cout << a_sps_cv->strvecvecvec.getValueAsString() << std::endl;
         std::vector<std::vector<std::vector<std::string>>> other_3d_vec({{{"a"}, {"b"}, {"c"}},
-                                                                   {{"d", "e", "f"}},
-                                                                   {{"g"}, {"h", "i"}},
-                                                                   {{}},
-                                                                   {{"j"}}
-                                                                   });
+                                                                         {{"d", "e", "f"}},
+                                                                         {{"g"}, {"h", "i"}},
+                                                                         {{}},
+                                                                         {{"j"}}
+            });
         std::cout << other_3d_vec << std::endl;
         EXPECT_EQUAL(a_sps_cv->strvecvecvec, other_3d_vec);
 
@@ -1101,7 +1101,7 @@ int main()
 
         // Store Parameter Tree in file first. Compare with this later
         sparta::ConfigEmitter::YAML param_out(filename_orig,
-                                            true); // verbose
+                                              true); // verbose
 
         EXPECT_NOTHROW(param_out.addParameters(&top, nullptr, true)); // verbose
 
@@ -1127,7 +1127,7 @@ int main()
 
             // Store Parameter Tree
             sparta::ConfigEmitter::YAML param_out(filename_new,
-                                                false); // Terse
+                                                  false); // Terse
             EXPECT_NOTHROW(param_out.addParameters(&top, nullptr, false));
 
             // Reset read counts to write them again
@@ -1143,7 +1143,7 @@ int main()
 
             // Store Parameter Tree
             sparta::ConfigEmitter::YAML param_out(filename_new,
-                                                true); // Verbose
+                                                  true); // Verbose
             EXPECT_NOTHROW(param_out.addParameters(&top, nullptr, false));
 
             // Reset read counts to write them again
@@ -1199,7 +1199,7 @@ int main()
         EXPECT_NOTHROW( EXPECT_EQUAL(((const sparta::TreeNode&)a).getResourceAs<SimpleDevice>(), res) );
         EXPECT_NOTHROW( EXPECT_EQUAL(((const sparta::TreeNode&)a).getResourceAs<SimpleDevice*>(), res) );
         EXPECT_NOTHROW( EXPECT_EQUAL(a.getAs<sparta::ResourceTreeNode>()->getResource(), res); )
-        EXPECT_NOTHROW( EXPECT_EQUAL(((const sparta::TreeNode&)a).getAs<sparta::ResourceTreeNode>()->getResource(), res) );
+            EXPECT_NOTHROW( EXPECT_EQUAL(((const sparta::TreeNode&)a).getAs<sparta::ResourceTreeNode>()->getResource(), res) );
         EXPECT_NOTHROW( EXPECT_EQUAL(a.getAs<sparta::ResourceTreeNode>()->getResourceAs<SimpleDevice>(), res) );
         EXPECT_NOTHROW( EXPECT_EQUAL(a.getResource(), res) );
         EXPECT_NOTHROW( EXPECT_EQUAL(a.getResourceAs<SimpleDevice>(), res) );
@@ -1262,13 +1262,13 @@ int main()
         EXPECT_EQUAL(b1.getChild("leaf")->isTearingDown(), true);
     }
 
-    // Diagnostic printing of all unfreed TreeNodes. A few are expected
-    std::cout << "\nUnfreed TreeNodes (some globals expected)" << std::endl;
-    std::cout << sparta::TreeNode::formatAllNodes() << std::endl;
+      // Diagnostic printing of all unfreed TreeNodes. A few are expected
+      std::cout << "\nUnfreed TreeNodes (some globals expected)" << std::endl;
+      std::cout << sparta::TreeNode::formatAllNodes() << std::endl;
 
-    // Done
+      // Done
 
-    REPORT_ERROR;
+      REPORT_ERROR;
 
-    return ERROR_CODE;
+      return ERROR_CODE;
 }

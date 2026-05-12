@@ -153,6 +153,11 @@ sparta_named_test(sparta_core_example_override_extensions3 sparta_core_example -
 sparta_expect_failure_test(sparta_core_example_override_extensions_neg_test sparta_core_example -i 10k --extension-files base_extensions.yaml override_extensions.yaml --num-cores 2 -p) # read no extensions
 sparta_named_test(sparta_core_example_3d_nested_extension_params sparta_core_example --no-run --extension-file nested_vecs.yaml --write-final-config final.yaml)
 
+# Test multiline YAML output/input
+sparta_named_test(sparta_core_multi_line_write sparta_core_example --no-run -c test_configs/multi_test.yaml --write-final-config final_multi.yaml)
+sparta_named_test(sparta_core_multi_line_read  sparta_core_example --no-run --read-final-config final_multi.yaml)
+set_tests_properties(sparta_core_multi_line_read PROPERTIES DEPENDS "sparta_core_multi_line_write")
+
 if(USING_SIMDB)
 # NOTE: Be careful that multiple tests do not pile into the same database. If --simdb-database / --simdb-app-database is not provided, "sparta_core_example.db" is used.
 sparta_named_test(sparta_core_example_simdb_apps1 sparta_core_example --simdb-apps simdb-reports cherry-pick-fast-checkpointer --simdb-database test.db --no-run)

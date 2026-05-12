@@ -1,0 +1,11 @@
+top.cpu.core*.params:
+  contents: '["1st.1, one : 1",
+              "second.2, two : 2",
+              "third.3, three : 3"
+              ]'
+
+top.cpu.core*.extension.core_extensions:
+  multi: '["1st.1, one : 1",
+           "second.2, two : 2",
+           "third.3, three : 3"
+          ]'

@@ -142,13 +142,15 @@ public:
 private:
     void postCreate() override {
         auto ps = getParameters();
-        enabled_units_.reset(new sparta::Parameter<std::vector<std::vector<std::vector<std::string>>>>(
+        enabled_units_.reset(new sparta::Parameter<EnabledUnits>(
             "enabled_units", {}, "Enabled units to test nested vectors", ps));
         fetch_type_.reset(new sparta::Parameter<std::string>("fetch_type", "dummy", "blah", ps));
+        multi_type_.reset(new sparta::Parameter<std::vector<std::string>>("multi", {}, "test vector", ps));
     }
 
     std::unique_ptr<sparta::Parameter<EnabledUnits>> enabled_units_;
     std::unique_ptr<sparta::Parameter<std::string>> fetch_type_;
+    std::unique_ptr<sparta::Parameter<std::vector<std::string>>> multi_type_;
 };
 
 double calculateAverageOfInternalCounters(
@@ -393,6 +395,8 @@ void ExampleSimulator::buildTree_()
                 return p.getValue() == expected_vecs;
             }, "Invalid enabled units in 'core_extensions' (nested vector param)");
         }
+
+        (void)getExtensionParameter_<std::vector<std::string>>(core_tn, "multi", "core_extensions");
 
         // User-specified extension class
         getExtension_<CircleExtensions>(getRoot()->getChild(fpu_loc), "circle")->doSomethingElse();
