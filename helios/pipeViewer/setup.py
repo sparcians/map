@@ -10,7 +10,8 @@ compile_args += [
     '-Wno-deprecated-declarations',
     '-Wno-strict-aliasing',
     '-Wall',
-    '-Wpedantic'
+    '-Wpedantic',
+    '-I/opt/homebrew/lib/wx/include/osx_cocoa-unicode-3.2', '-I/opt/homebrew/include/wx-3.2', '-D_FILE_OFFSET_BITS=64', '-DwxDEBUG_LEVEL=0', '-DWXUSINGDLL', '-D__WXMAC__', '-D__WXOSX__', '-D__WXOSX_COCOA__'
 ]
 
 # Wrappers for the parts written in Cython

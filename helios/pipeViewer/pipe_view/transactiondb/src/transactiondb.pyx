@@ -98,7 +98,7 @@ cdef class Transaction:
         based on trans_ptr and trans_ptr must not be None/0. If True,
         trans_ptr may be None or any integer
         """
-        if (trans_ptr is not None) and (not isinstance(trans_ptr, (int, long))):
+        if (trans_ptr is not None) and (not isinstance(trans_ptr, int)):
             raise TypeError('trans_ptr must be either None or an integer or long to be converted to a C pointer, is type {0}' \
                             .format(type(trans_ptr)))
         if not isinstance(is_proxy, bool):
