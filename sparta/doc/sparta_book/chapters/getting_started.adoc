@@ -7,8 +7,8 @@
 This chapter walks through installing Sparta, building the skeleton
 pipeline example that ships with the framework, and running it.  By
 the end of the chapter you will have a working Sparta environment and
-a concrete understanding of what a Sparta simulator looks like from
-the outside before diving into the code.
+a concrete feel for what a Sparta simulator looks like from the outside
+before diving into the code.
 
 == Prerequisites
 
@@ -33,7 +33,7 @@ sudo apt-get install -y \
     graphviz
 ----
 
-==== Windows (WSL)
+=== Windows (WSL)
 
 Install Ubuntu 22.04 or 24.04 from the Microsoft Store, open a WSL
 terminal, and follow the Ubuntu instructions above.  All subsequent
@@ -80,20 +80,12 @@ cd release
 cmake .. -DCMAKE_BUILD_TYPE=Release
 make -j$(nproc)     # Linux / WSL
 # make -j$(sysctl -n hw.logicalcpu)   # macOS
-----
-
-A successful build produces `libsparta.a` in the `release/` directory.
-To install Sparta system-wide so that downstream projects (like
-Olympia) can find it with `find_package(Sparta)`:
-
-[source,bash]
-----
 sudo make install
 ----
 
-// AUTHOR NOTE: Is sudo make install the right install step for the
-// simple (non-conda) path? Does it install to /usr/local by default?
-// Please verify and correct if needed.
+A successful build produces `libsparta.a` and installs it to
+`/usr/local` so that downstream projects can find it with
+`find_package(Sparta)`.
 
 == Building the Skeleton Pipeline
 
@@ -122,59 +114,185 @@ consumer -- and let it run to completion:
 
 [source,bash]
 ----
-./sparta_skeleton
+% ./sparta_skeleton
 ----
 
-// AUTHOR NOTE: Please paste the actual stdout from running this
-// command here, inside a literal block:
-//
-// [source]
-// ----
-// <paste output here>
-// ----
-//
-// The output should show the simulation summary including cycle count,
-// number of integers sent, and the auto-summary statistics table.
+[source]
+----
+Setting up Simulation Content...
+Resources:
+  consumer, producer
+Building tree...
+Configuring tree...
+Finalizing tree...
+{0000000000 00000000 top.producer0 warning}  Modify test_b Producer(): 1
+Preparing to run...
+Meta-Parameters:
+  architecture: NONE
+  is_final_config: false
+Non-default model parameters: 2
+Running...
+Running Complete
+  *** Simulation Performance cannot be measured -- no user time detected.
+      Did the simulator run long enough?
+  Scheduler Events Fired: 301
+Run Successful!
+Saving reports...
+Automatic Simulation Summary [0,101]
+  scheduler
+      ticks                               = 100
+      picoseconds                         = 100
+      seconds                             = 1e-10
+      milliseconds                        = 1e-07
+      microseconds                        = 0.0001
+      nanoseconds                         = 0.1
+      host_machine_user_runtime_seconds   = 0
+      host_machine_system_runtime_seconds = 0
+      host_machine_wall_runtime_seconds   = 0
+      events_fired                        = 301
+      host_user_time_count_ms             = 0
+      host_system_time_count_ms           = 0
+      host_wall_time_count_ms             = 0
+  top
+    top.consumer
+        num_consumed                      = 100
+    top.producer0
+        num_produced                      = 100
+  clocks
+    clocks.Root
+        cycles                            = 101
+----
 
-=== Exploring the Simulation Tree
+A few things worth noting in this output:
+
+- Sparta reports the simulation phases as it works through them:
+  building, configuring, finalizing, then running.
+- The warning `Modify test_b Producer(): 1` is intentional -- it is
+  baked into the skeleton pipeline as an example of Sparta's warning
+  system in action, not an actual error.
+- The automatic summary shows statistics organized by the tree
+  hierarchy: `scheduler`, `top.consumer`, `top.producer0`, and
+  `clocks`.  The producer sent 100 integers and the consumer received
+  all 100 in 100 ticks.
+- The simulation fired 301 scheduler events in 100 ticks -- the
+  overhead of the Sparta scheduler itself, the port forwarding events,
+  and the producer/consumer logic combined.
+
+=== Inspecting the Simulation Tree
 
 One of Sparta's most useful built-in features is the ability to inspect
-the full component tree of a simulator before running it.  This shows
-every node, parameter, port, and statistic in the model:
+the full component tree before running.  This shows every node,
+parameter, port, event, statistic, and log message source in the model:
 
 [source,bash]
 ----
-./sparta_skeleton --show-tree --no-run
+% ./sparta_skeleton --show-tree --no-run
 ----
 
-// AUTHOR NOTE: Please paste the actual stdout here.
-// This output is important -- it shows readers the tree structure
-// (top.producer0, top.consumer, etc.) that they will reference
-// throughout the book.
+[source]
+----
+Setting up Simulation Content...
+Resources:
+  consumer, producer
+
+Pre-processed UnboundParameterTree:
+
+Building tree...
+
+Built Tree:
+top : <top (root)> (privacy: 0)
++-consumer : <top.consumer resource: "consumer"> (privacy: 0)
+| +-params : <top.consumer.params 1 params> {builtin} (privacy: 0)
+| | +-num_producers : <param uint32_t num_producers=1, def=1> (privacy: 0)
++-producer0 : <top.producer0 resource: "producer"> (producer[0]) (privacy: 0)
+| +-params : <top.producer0.params 3 params> {builtin} (privacy: 0)
+| | +-max_ints_to_send : <param uint32_t max_ints_to_send=100, def=100> (privacy: 0)
+| | +-test_param : <param uint32_t test_param=0, def=0 VOLATILE> (privacy: 0)
+| | +-arch_override_test_param : <param std::string arch_override_test_param=...> (privacy: 0)
+...
+Finalized Tree
+_SPARTA_global_node_ : <_SPARTA_global_node_> {builtin}
++-scheduler : <scheduler (root)>
+| +-stats : <scheduler.stats 7 stats, 6 counters> {builtin}
+| | +-ticks, picoseconds, seconds, milliseconds, ...
+| +-events : <scheduler.events 7 events> {builtin}
+| | +-gbl_event_Trigger, gbl_event_Update, gbl_event_PortUpdate, ...
++-top : <top (root)>
+| +-consumer : <top.consumer resource: "consumer">
+| | +-params, ports, events, stats, log sources
+| | +-ports
+| | | +-consumer_in_port : [bound to] {producer_out_port}
+| | | +-producer0_go_port : [bound to] {producer_go_port}
+| | +-events
+| | | +-ev_data_arrived
+| | +-stats
+| | | +-num_consumed : val:0
+| +-producer0 : <top.producer0 resource: "producer">
+| | +-ports
+| | | +-producer_out_port : [bound to] {consumer_in_port}
+| | | +-producer_go_port : [bound to] {producer0_go_port}
+| | +-stats
+| | | +-num_produced : val:0
++-clocks : <clocks (root)>
+| +-Root : <Clock Root period=1>
+| | +-stats
+| | | +-cycles : val:0
+----
+
+This tree output is worth studying carefully -- it is the map of
+everything in the simulation.  A few things stand out:
+
+**The tree has three phases of output.** First the Built Tree (after
+`buildTree_`), then the Configured Tree (after `configureTree_`), and
+finally the Finalized Tree (after elaboration).  In the Finalized Tree
+you can see things that did not exist in the Built Tree: ports, events,
+statistics, and log message sources.  These are created by the `Unit`
+constructors during elaboration, which happens between `configureTree_`
+and `bindTree_`.
+
+**Ports show their bindings.** After `bindTree_` runs, each port shows
+what it is connected to.  For example,
+`top.consumer.ports.consumer_in_port` shows `[bound to]
+{producer_out_port (top.producer0.ports.producer_out_port)}`.  If a
+port is unbound, the tree will show it clearly -- this is one of the
+fastest ways to debug a wiring mistake.
+
+**The scheduler is a tree node too.** The global scheduler exposes its
+own statistics (`ticks`, `events_fired`, etc.) and its internal event
+phases (`gbl_event_Trigger`, `gbl_event_Update`, and so on) directly
+in the tree.  This means you can report on scheduler statistics the
+same way you report on any other statistic in the model.
+
+**Every unit has built-in log message sources.** The `?` nodes under
+each unit are log message sources for `info`, `warning`, and `debug`
+categories.  The `observed:true` flag indicates which categories are
+currently being captured.
 
 === Exploring Parameters
 
-To see every parameter in the simulation and its current value:
+To see every parameter and its current value without running:
 
 [source,bash]
 ----
-./sparta_skeleton --show-parameters --no-run
+% ./sparta_skeleton --show-parameters --no-run
 ----
 
-// AUTHOR NOTE: Please paste the actual stdout here.
-
-Parameters can be overridden on the command line using the `-p` flag
-with a path into the simulation tree.  For example, to tell the
-producer to send 10,000 integers instead of the default:
+To override a parameter on the command line -- here, telling the
+producer to send 10,000 integers -- use the `-p` flag with the full
+tree path to the parameter:
 
 [source,bash]
 ----
-./sparta_skeleton -p top.producer0.params.max_ints_to_send 10K \
+% ./sparta_skeleton -p top.producer0.params.max_ints_to_send 10K \
     --show-parameters --no-run
 ----
 
-// AUTHOR NOTE: Please paste the actual stdout showing the changed
-// parameter value here.
+The path `top.producer0.params.max_ints_to_send` maps directly to what
+you saw in the tree: `top` → `producer0` → `params` →
+`max_ints_to_send`.  Every parameter in every Sparta simulator is
+accessible this way.
+
+// AUTHOR NOTE: Please paste the actual --show-parameters output here.
 
 === Running with Multiple Producers
 
@@ -183,43 +301,70 @@ producer.  To run with 10 producers:
 
 [source,bash]
 ----
-./sparta_skeleton -p top.consumer.params.num_producers 10
+% ./sparta_skeleton -p top.consumer.params.num_producers 10
 ----
 
-// AUTHOR NOTE: Please paste the actual stdout here, showing how the
-// summary changes with 10 producers vs 1.
+// AUTHOR NOTE: Please paste the actual output here showing how the
+// summary changes with 10 producers (num_produced per producer,
+// num_consumed on the consumer, events_fired in the scheduler).
+
+=== Using a Configuration File
+
+For larger simulations with many parameters, managing them all on the
+command line becomes unwieldy.  Sparta can write the current
+configuration to a YAML file that you can edit and reuse:
+
+[source,bash]
+----
+# Write the default configuration to a file
+% ./sparta_skeleton --write-final-config skeleton_config.yaml --no-run
+
+# Edit the file -- change num_producers from 1 to 100
+% sed -i 's/num_producers: 1/num_producers: 100/' skeleton_config.yaml
+
+# Run with the new configuration
+% ./sparta_skeleton -c skeleton_config.yaml
+----
+
+The YAML config file approach is the standard way to set up large
+simulation runs and is covered in detail in
+<<_command_line_simulation>>.
 
 === Generating Reports
 
-Sparta's reporting system can produce output in several formats with no
-changes to the model code.  Try each of the following:
+Sparta's reporting system produces output in several formats with no
+changes to the model code:
 
 [source,bash]
 ----
-./sparta_skeleton --report-all output.html html   # HTML format
-./sparta_skeleton --report-all output.txt  text   # plain text
-./sparta_skeleton --report-all output.json json   # JSON format
+% ./sparta_skeleton --report-all output.html html   # HTML format
+% ./sparta_skeleton --report-all output.txt  text   # plain text
+% ./sparta_skeleton --report-all output.json json   # JSON format
 ----
 
-// AUTHOR NOTE: Please paste a representative snippet of the text
-// report output here so readers can see what a Sparta report looks
-// like before the Statistics chapter covers it in detail.
+// AUTHOR NOTE: Please paste a representative snippet of the plain
+// text report output here.
 
 === Enabling Logging
 
-Sparta has a built-in hierarchical logging system.  To capture all log
-messages from every component to a file:
+Sparta has a built-in hierarchical logging system.  The `-l` flag takes
+three arguments: a tree path pattern, a log category, and an output
+file.
 
 [source,bash]
 ----
-./sparta_skeleton -l top info all.log
-----
+# Capture all info messages from every node
+% ./sparta_skeleton -l top info all.log
 
-To capture only messages from the consumer:
+# Capture only consumer messages
+% ./sparta_skeleton -l top.consumer info consumer.log
 
-[source,bash]
-----
-./sparta_skeleton -l top.consumer info consumer.log
+# Capture only producer messages (wildcard matches producer0, producer1, ...)
+% ./sparta_skeleton -l top.producer* info producers.log
+
+# Capture producer and consumer messages to the same file
+% ./sparta_skeleton -l top.producer* info combined.log \
+                   -l top.consumer  info combined.log
 ----
 
 // AUTHOR NOTE: Please paste a few representative lines from one of
@@ -258,15 +403,20 @@ three methods that Sparta calls in sequence during startup:
 `buildTree_`:: Creates the `ResourceTreeNode` hierarchy -- one consumer
 node and one or more producer nodes depending on the `num_producers`
 parameter.  At the end of this phase the tree exists but no `Unit`
-objects have been instantiated yet.
+objects have been instantiated yet.  This is what the Built Tree output
+above shows.
 
 `configureTree_`:: An opportunity to inspect or adjust parameters before
-the model is instantiated.  The skeleton pipeline does not override
-this in a meaningful way, but it is available.
+instantiation.  The skeleton pipeline uses this phase minimally, but it
+is the correct place to implement topology changes that depend on
+parameter values.
 
-`bindTree_`:: Connects the ports between the producer and consumer units.
-Each producer's `out_` port is bound to the consumer's corresponding
-`in_` port.  This is where communication paths are established.
+`bindTree_`:: Called after elaboration -- after Sparta has instantiated
+all the `Unit` objects.  This is where ports are connected.
+`producer_out_port` is bound to `consumer_in_port`, and
+`producer0_go_port` is bound to the consumer's corresponding go port.
+The bound ports you saw in the Finalized Tree output are the result of
+this phase.
 
 This three-phase construction pattern is the heart of every Sparta
 simulator and is covered in full detail in
@@ -275,36 +425,39 @@ simulator and is covered in full detail in
 === The Units: Producer and Consumer
 
 Both `Producer` and `Consumer` derive from `sparta::Unit`.  Each unit
-declares its ports and events as member variables, and registers
+declares its ports and events as member variables and registers
 callbacks that Sparta calls when data arrives or events fire.
 
 The `Producer` works like this:
 
-1. On startup, a `sparta::StartupEvent` fires the `produceData_` method
-   on the first cycle.
+1. A `sparta::StartupEvent` fires `produceData_` on the first cycle,
+   kicking off the pipeline without waiting for an external stimulus.
 2. `produceData_` sends a `uint32_t` value out through its
    `sparta::DataOutPort`.
-3. The producer then waits for a "go" signal from the consumer via a
-   `sparta::SignalInPort` before sending the next value.
+3. The producer then waits for a "go" signal back from the consumer via
+   a `sparta::SignalInPort` before sending the next value.  This
+   back-pressure mechanism is what keeps the pipeline from running
+   ahead of the consumer.
 
 The `Consumer` works like this:
 
 1. On startup, it sends a "go" signal to each producer via a
-   `sparta::SignalOutPort`, kicking off the pipeline.
+   `sparta::SignalOutPort`, priming the pipeline.
 2. When data arrives on its `sparta::DataInPort`, the port fires a
-   callback that schedules a `sparta::UniqueEvent` for the next phase
+   callback that schedules a `sparta::UniqueEvent` for a later phase
    of the same cycle.
-3. That event consumes the data and sends another "go" to keep the
-   pipeline flowing.
+3. That event consumes the data, increments `num_consumed`, and sends
+   another "go" to keep the pipeline flowing.
 
 The use of a `UniqueEvent` in the consumer -- rather than processing
-data directly in the port callback -- is a deliberate pattern.  It
-guarantees that the consumer processes data only after all producers
-have had a chance to send in the current cycle.  This is Sparta's
-event ordering system at work, and it is covered in detail in
+data directly in the port callback -- is deliberate.  It guarantees
+that the consumer processes data only after all producers have had a
+chance to deliver in the current cycle, regardless of the order in
+which their port callbacks fire.  This is Sparta's event ordering
+system at work, and it is covered in detail in
 <<_events_and_scheduling>>.
 
-=== Ports, Parameters, and Statistics
+=== Parameters, Statistics, and Logging
 
 Each unit in the skeleton pipeline also demonstrates three other core
 Sparta features that appear in almost every real model:
@@ -318,12 +471,14 @@ defined this way.
 **Statistics** (counters) are declared as `sparta::Counter` member
 variables inside the unit.  Sparta automatically collects them and
 includes them in the summary output and report files you generated
-earlier.
+earlier.  The `num_consumed` and `num_produced` counters in the tree
+output are defined this way.
 
 **Logging** is done through a `sparta::log::MessageSource` attached to
 the unit's tree node.  Messages are emitted with `ILOG`, `WLOG`, and
 `ELOG` macros and are automatically routed by the `-l` command line
-option you used above.
+option.  The `?` nodes in the tree output above are those message
+sources.
 
 == What You Have Learned
 
@@ -331,12 +486,14 @@ At this point you have:
 
 - Installed Sparta and its dependencies on your platform
 - Built and run a complete Sparta simulator
-- Inspected the simulation tree, parameters, and statistics from the
-  command line
+- Inspected the simulation tree, parameters, ports, events, and
+  statistics from the command line
+- Understood the three-phase construction sequence: build, configure,
+  bind
 - Generated reports in multiple formats
-- Captured log output from specific components
-- Understood the high-level structure of a Sparta simulator at a
-  code level
+- Captured log output from specific components using tree path patterns
+- Understood at a high level how Producer, Consumer, and
+  SkeletonSimulator fit together
 
 The next chapter walks through building a Sparta simulator from
 scratch, introducing each concept step by step.  After that,

@@ -23,7 +23,7 @@ use those classes to form the final simulation.
 As an example of a simulation hierarchy, take a generic SoC design
 which consists of multiple cores and a memory subsytem (`mss`).  Each
 core consists of subcomponents (`fetch`, `decode`, `rename`, etc).
-[plantuml,align="center"]
+[plantuml,format="png",align="center"]
 ....
 @startuml
 (top) --> (cpu)
