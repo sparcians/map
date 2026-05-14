@@ -1,9 +1,24 @@
 = Simulation Construction
 :url-composite: https://en.wikipedia.org/wiki/Composite_pattern
+:url-factory: https://en.wikipedia.org/wiki/Factory_method_pattern
+:url-doxygen-simulation: https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html
+:url-doxygen-treenode: https://sparcians.github.io/map/classsparta_1_1TreeNode.html
+:url-doxygen-roottreenode: https://sparcians.github.io/map/classsparta_1_1RootTreeNode.html
+:url-doxygen-resourcetreenode: https://sparcians.github.io/map/classsparta_1_1ResourceTreeNode.html
+:url-doxygen-resourcefactory: https://sparcians.github.io/map/classsparta_1_1ResourceFactory.html
+:url-doxygen-resourcefactorybase: https://sparcians.github.io/map/classsparta_1_1ResourceFactoryBase.html
+:url-doxygen-parameterset: https://sparcians.github.io/map/classsparta_1_1ParameterSet.html
+:url-doxygen-portset: https://sparcians.github.io/map/classsparta_1_1PortSet.html
+:url-doxygen-statisticset: https://sparcians.github.io/map/classsparta_1_1StatisticSet.html
+:url-doxygen-unit: https://sparcians.github.io/map/classsparta_1_1Unit.html
+:url-doxygen-resource: https://sparcians.github.io/map/classsparta_1_1Resource.html
+:url-doxygen-cmdlinesim: https://sparcians.github.io/map/classsparta_1_1app_1_1CommandLineSimulator.html
 :imagesdir:../images
 :data-uri:
+:source-highlighter:rouge
+:rouge-style: github
 
-Building a Sparta Model requires establishing component hierarchies
+Building a Sparta model requires establishing component hierarchies
 and relationships that will be used during simulation.  This
 establishment is used to represent all of the components instantiated
 by Sparta as well as those components created by the modeler to build,
@@ -21,8 +36,9 @@ use those classes to form the final simulation.
 == Sparta Classes for Simulation
 
 As an example of a simulation hierarchy, take a generic SoC design
-which consists of multiple cores and a memory subsytem (`mss`).  Each
+which consists of multiple cores and a memory subsystem (`mss`).  Each
 core consists of subcomponents (`fetch`, `decode`, `rename`, etc).
+
 [plantuml,format="png",align="center"]
 ....
 @startuml
@@ -41,25 +57,26 @@ core consists of subcomponents (`fetch`, `decode`, `rename`, etc).
 @enduml
 ....
 
-The `top` level node is, by default, named `top` and is the root of all components in the example SoC.
+The `top` level node is, by default, named `top` and is the root of
+all components in the example SoC.
 
 ****
 Note that in Sparta, a "root" tree node is always of type
-https://sparcians.github.io/map/classsparta_1_1RootTreeNode.html[sparta::RootTreenode]
+{url-doxygen-roottreenode}[sparta::RootTreeNode]
 called `top` if constructed without a name.  This `top` node is
 created automatically when a
-https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html[sparta::app::Simulation]
-object is instantiated (https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a50d046cc0b13d2776fb51813bfa7b0c5[sparta::app::Simulation::getRoot()])..
+{url-doxygen-simulation}[sparta::app::Simulation]
+object is instantiated ({url-doxygen-simulation}#a50d046cc0b13d2776fb51813bfa7b0c5[sparta::app::Simulation::getRoot()]).
 ****
 
 Each node of the hierarchy represents a
-https://sparcians.github.io/map/classsparta_1_1TreeNode.html[sparta::TreeNode]
+{url-doxygen-treenode}[sparta::TreeNode]
 which is the main "node container".  This container will hold
 everything related to that component like the component's
-https://sparcians.github.io/map/classsparta_1_1ParameterSet.html[ParameterSet],
-https://sparcians.github.io/map/classsparta_1_1PortSet.html[PortSet],
-https://sparcians.github.io/map/classsparta_1_1StatisticSet.html[StatisticSet], and the modeler's specific
-https://sparcians.github.io/map/classsparta_1_1Unit.html[Unit].
+{url-doxygen-parameterset}[ParameterSet],
+{url-doxygen-portset}[PortSet],
+{url-doxygen-statisticset}[StatisticSet], and the modeler's specific
+{url-doxygen-unit}[Unit].
 
 The modeler is responsible for creating these nodes, establishing the
 relationships between them, and eventually destroying them.  This
@@ -75,7 +92,8 @@ Everything in simulation refers to these constructed artifacts and
 their relationships.
 
 After component relationship is established, the diagram will consist
-of the following classes/relationships:
+of the following classes and relationships:
+
 [plantuml,align="center"]
 ....
 @startuml
@@ -120,17 +138,18 @@ sparta::Unit <|-- my_model::etc
 
 @enduml
 ....
-Note that `sparta::RootTreeNode` and `sparta::ResourceTreeNode` being
-of type `sparta::TreeNode` contain a list of children `sparta::TreeNode` objects as well as 1
-parent.  A `sparta::TreeNode` cannot have more than 1 parent.
 
-After the building of the simulation environment, from the modeler's
+Note that `sparta::RootTreeNode` and `sparta::ResourceTreeNode` being
+of type `sparta::TreeNode` contain a list of children `sparta::TreeNode`
+objects as well as one parent.  A `sparta::TreeNode` cannot have more
+than one parent.
+
+After the simulation environment is built, from the modeler's
 point of view, relationships will look like the following.
 
 [plantuml,align="center"]
 ....
 @startuml
-
 
 class sparta::top
 
@@ -152,13 +171,13 @@ my_model::Core --> my_model::etc
 
 However, accessing one component (`Core` -> `Fetch` as an example) is
 not direct, but rather through the containers in which they reside:
+
 ```
    my_core->getContainer()->getChildren ... etc
 ```
 
-This is highly discouraged -- as resources should communicate through
-Ports, not directly.  Instead, resources should communicate through
-https://sparcians.github.io/map/communication.html#comm_ports[`sparta::Ports`].
+This is highly discouraged -- resources should communicate through
+{url-doxygen-portset}[`sparta::Ports`], not directly.
 
 === Sparta TreeNode
 
@@ -169,10 +188,11 @@ nodes is, or a derivative of, a `sparta::TreeNode`.
 Referring back to the Composite Pattern, `sparta::TreeNode` _is-a_
 Component, a Leaf, and a Composite.  When the modeler creates the
 tree, that modeler is actually creating `sparta::TreeNode` instances
-to reside in the tree and then establishes parent-child relationships between them.
+to reside in the tree and then establishes parent-child relationships
+between them.
 
-In practice, the modeler will most likely construct a:
-https://sparcians.github.io/map/classsparta_1_1ResourceTreeNode.html[sparta::ResourceTreeNode]
+In practice, the modeler will most likely construct a
+{url-doxygen-resourcetreenode}[sparta::ResourceTreeNode]
 derived type.  This class is a special type of `sparta::TreeNode` that
 allows Sparta to instantiate and maintain model-specific units and
 components used in simulation.
@@ -180,12 +200,13 @@ components used in simulation.
 === Sparta ResourceTreeNode
 
 The
-https://sparcians.github.io/map/classsparta_1_1ResourceTreeNode.html[`sparta::ResourceTreeNode`]
+{url-doxygen-resourcetreenode}[`sparta::ResourceTreeNode`]
 is a derivative class of `sparta::TreeNode` and is aware of modeling
 resources that need to be instantiated including the modeler's
 specific derivative of the `sparta::Unit` or `sparta::Resource`.
 
-Specifically, the `sparta::ResourceTreeNode` is the main container for the following components:
+Specifically, the `sparta::ResourceTreeNode` is the main container for
+the following components:
 
 1. `sparta::Unit` -- The base class that the modeler will create their component from
 1. `sparta::ParameterSet` -- The parameters used by the modeler's `sparta::Unit` to configure
@@ -196,26 +217,26 @@ well as the parameters it uses.  However, by itself, the
 modeler's modeling components.  To instantiate those components,
 `sparta::ResourceTreeNode` requires the modeler to provide an instance
 of a
-https://sparcians.github.io/map/classsparta_1_1ResourceFactory.html[`sparta::ResourceFactory`]
+{url-doxygen-resourcefactory}[`sparta::ResourceFactory`]
 or a derivative of
-https://sparcians.github.io/map/classsparta_1_1ResourceFactoryBase.html[`sparta::ResourceFactoryBase`]
+{url-doxygen-resourcefactorybase}[`sparta::ResourceFactoryBase`].
 
-https://en.wikipedia.org/wiki/Factory_method_pattern[Factories] are a common practice in software development, allowing a
-framework to remain type-agnostic, but giving an opportunity for the
-user to instantiate their own instance of a class.
+{url-factory}[Factories] are a common practice in software development,
+allowing a framework to remain type-agnostic, but giving an opportunity
+for the user to instantiate their own instance of a class.
 
 [#Factory Pattern,link="https://upload.wikimedia.org/wikipedia/commons/4/43/W3sDesign_Factory_Method_Design_Pattern_UML.jpg"]
 image::../images/W3sDesign_Factory_Method_Design_Pattern_UML.jpg[The Factory Design Pattern,align=center]
 
 For convenience, Sparta provides the generic derived factory
-https://sparcians.github.io/map/classsparta_1_1ResourceFactory.html[`sparta::ResourceFactory`]
+{url-doxygen-resourcefactory}[`sparta::ResourceFactory`]
 if the modeler has no special construction requirements.  See the
 <<Factories>> section to learn how to create a custom factory to build
 specialized simulation tree structures.
 
 During finalization of the framework (documented in the next section),
 the `sparta::ResourceTreeNode` will use the given factory to
-instantiate the user defined modeling component.
+instantiate the user-defined modeling component.
 
 == Building the Simulation Hierarchy
 
@@ -224,18 +245,18 @@ application that just contains `main()` and starts with a
 `sparta::RootTreeNode`.  However, to take advantage of Sparta's
 built-in command line parsing, automatic phase construction, automatic
 report generation, and other powerful components, using Sparta's
-`sparta::app::Simulation` class is a cleaner choice.
+`sparta::app::Simulation` class is the cleaner choice.
 
 === Sparta Simulation
 
-A Sparta-based simulator starts with the modeler providing a derivated
-instantiated instance of
-https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html[`sparta::app::Simulation`].
+A Sparta-based simulator starts with the modeler providing a derived
+instance of
+{url-doxygen-simulation}[`sparta::app::Simulation`].
 
 This class provides a default `sparta::RootTreeNode` that can be used
 immediately.  When this class is coupled with
-`sparta::app::CommandLine`, Sparta is now more "entrenched" in the
-modeler's simulator.
+`sparta::app::CommandLineSimulator`, Sparta is now more "entrenched" in
+the modeler's simulator.
 
 To start a new simulation, provide a derivative of
 `sparta::app::Simulation`.  Initialize the Simulation with the name of
@@ -250,17 +271,16 @@ the simulator (user defined) and an instance of the
 #pragma once
 
 #include "sparta/app/Simulation.hpp"
-#include "sparta/kernek/Scheduler.hpp"
+#include "sparta/kernel/Scheduler.hpp"
 
 namespace my_simulator
 {
     class MySimulator : public sparta::app::Simulation
     {
     public:
-        // User defined simulation behaviors as well as overrides
         MySimulator(/* custom args */) :
             sparta::app::Simulation("my_simulator", &scheduler_)
-        { // user defined setups  }
+        { /* user defined setups */ }
 
     private:
         sparta::Scheduler scheduler_{"my_scheduler"};
@@ -270,52 +290,53 @@ namespace my_simulator
 
 int main()
 {
-    MySimulator my_sim;
+    my_simulator::MySimulator my_sim;
     (void) my_sim;
     return 0;
 }
 
 ----
-Typical usecase is the modeler provides 1 instance of this object _per
-simulation_, but there's nothing in the framework that restricts this.
+
+The typical use case is for the modeler to provide one instance of this
+object _per simulation_, but there is nothing in the framework that
+restricts this.
 
 At this point, the modeler has created the _beginnings_ of a
 simulator, but it does not contain any hierarchy nor any instantiated
 modeling components.
 
 The building of the simulation hierarchy is done in stages, with each
-stage allowing the modeler define the hierarchy, configure the
+stage allowing the modeler to define the hierarchy, configure the
 hierarchy, allow the framework to instantiate the simulator, and then
-finally the stage to allow the modeler to bind all of the components
-together.
+finally allowing the modeler to bind all of the components together.
 
 These stages are done automatically for the modeler via the
 `sparta::app::Simulation` class.  The class will guide the
 modeler through these phases:
 
-- <<build>>Define the user-defined modeling components in simulation
+- <<build>> -- Define the user-defined modeling components in simulation
    and their initial relationships.  This builds the composite tree.
--  <<configure>>Allow the user to present or override configurations
+- <<configure>> -- Allow the user to present or override configurations
    before the simulation is instantiated.  This allows changes in
    topology or behaviors.
-- <<instantiate>> – (Internal) Construct user-defined modeling
+- <<instantiate>> -- (Internal) Construct user-defined modeling
    components registered during Build and configured during Configure.
    The composite tree is now locked.
-- <<bind>> – (Internal) Connect all the user-defined modeling components
-   together to establish final communication flow
+- <<bind>> -- (Internal) Connect all the user-defined modeling components
+   together to establish final communication flow.
 
 ==== Build Phase [[build]]
 
 The virtual method
-https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#aecc889666b5da1b6891a6f1ed337fbc8[`sparta::app::Simulation::buildTree_()] will be called via
-https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a319e9c4e7418f8f953e1a527b4feff8a[sparta::app::Simulation::buildTree()]
+{url-doxygen-simulation}#aecc889666b5da1b6891a6f1ed337fbc8[`sparta::app::Simulation::buildTree_()`] will be called via
+{url-doxygen-simulation}#a319e9c4e7418f8f953e1a527b4feff8a[`sparta::app::Simulation::buildTree()`]
 in the public API:
 
 [source,cpp]
 ----
 int main()
 {
-    MySimulator my_sim;
+    my_simulator::MySimulator my_sim;
     my_sim.buildTree(); // Build the TreeNode hierarchy
     return 0;
 }
@@ -324,8 +345,8 @@ int main()
 The *Build* phase is the first phase of simulation construction where
 the modeler is expected to create `sparta::TreeNode` derivative types
 and establish relationships (parent and child) between those nodes.
-This is creating and setting up _pure_ Sparta componentry and the
-modeler's units/classes will not be created in this phase.
+This is creating and setting up _pure_ Sparta componentry -- the
+modeler's units and classes will not be created in this phase.
 
 To create the CPU hierarchy above, the modeler must override the
 protected `virtual` method `void buildTree_()` in the
@@ -337,9 +358,10 @@ in simulation.
 The modeler is responsible for creating and destroying those objects.
 
 ****
-A rule of thumb when using the Sparta Modeling Framework: if *you* call `new` *you*
-must call `delete`.  The framework will never require the modeler to
-delete anything that it has created nor will it delete anything for you.
+A rule of thumb when using the Sparta Modeling Framework: if _you_ call
+`new`, _you_ must call `delete`.  The framework will never require the
+modeler to delete anything that it has created, nor will it delete
+anything for you.
 ****
 
 [source,cpp]
@@ -374,8 +396,8 @@ namespace my_simulator
 ----
 
 In the source file, implement the `buildTree_` method and create the
-node hierarchy.  Note that **none** of the modeler's components have
-been instantiated at end of this phase.
+node hierarchy.  Note that *none* of the modeler's components have
+been instantiated at the end of this phase.
 
 [.underline]
 `buildTree_` Implementation Notes
@@ -384,14 +406,14 @@ Each `ResourceTreeNode` that is constructed takes the following:
 
 - Its parent tree node
 - A unique name for that node.  Rules do apply to this name.  The name
-  must be python compatible meaning only alpha-numeric characters.
-- The group name if there is more than 1 node of the same name.  For
-  example, in the code above, there are 2 cores: `core0` and `core1`.
-  The group name is `core`
+  must be Python compatible -- only alphanumeric characters and underscores.
+- The group name if there is more than one node of the same name.  For
+  example, in the code below, there are 2 cores: `core0` and `core1`.
+  The group name is `core`.
 - The group index is the number being instantiated.  For the `core`
   example, this is 0 then 1.
 - The description
-- The factory used to instantiate the modeler's component during the <<instantiate>>
+- The factory used to instantiate the modeler's component during <<instantiate>>
 
 [source,cpp]
 ----
@@ -417,11 +439,9 @@ namespace my_simulator
     MySimulator::MySimulator() :
         sparta::app::Simulation("my_simulator", &scheduler_)
     {
-       // User defined operations + resource factory registration
-
        // Register resource factories with the Simulation class that
        // tell Sparta how to instantiate both the modeler's classes and
-       // its parameters.
+       // their parameters.
        getResourceSet()->
            addResourceFactory<sparta::ResourceFactory<CPU, CPU::CPUParameters>>();
        getResourceSet()->
@@ -438,7 +458,6 @@ namespace my_simulator
         sparta::ResourceTreeNode* cpu_tn =
             new sparta::ResourceTreeNode(root_tn,
                                          CPU::name,
-                                         // Only allow 1 CPU object
                                          sparta::TreeNode::GROUP_NAME_NONE,
                                          sparta::TreeNode::GROUP_IDX_NONE,
                                          "My CPU instance",
@@ -447,20 +466,19 @@ namespace my_simulator
         // _We_ created the ResourceTreeNode, so _we_ must delete it
         tns_to_delete_.emplace_back(cpu_tn);
 
-        // Create the CPU nodes, children of the CPU TreeNode.  For
-        // the sake of brevity, assume a simulation of just 2 cores.  This
+        // Create the core nodes, children of the CPU TreeNode.  For
+        // brevity, assume a simulation of just 2 cores.  This
         // can be parameterized either on the command line (shown later)
         // or via parameters.
         constexpr uint32_t num_cores = 2;
-        for (uint32_t core_num; core_num < num_cores; ++core_num)
+        for (uint32_t core_num = 0; core_num < num_cores; ++core_num) // <1>
         {
             sparta::ResourceTreeNode* core_tn =
                 new sparta::ResourceTreeNode(cpu_tn,
-                                             // The name _must_ be unique
                                              Core::name + std::to_string(core_num),
                                              "core",
                                              core_num,
-                                             "My core" + std::to_string(core_num) + " instance",
+                                             "My core " + std::to_string(core_num) + " instance",
                                              getResourceSet()->getResourceFactory(Core::name));
 
             // _We_ created the ResourceTreeNode, so _we_ must delete it
@@ -471,7 +489,6 @@ namespace my_simulator
         sparta::ResourceTreeNode* mss_tn =
             new sparta::ResourceTreeNode(root_tn,
                                          MSS::name,
-                                         // Only allow 1 CPU object
                                          sparta::TreeNode::GROUP_NAME_NONE,
                                          sparta::TreeNode::GROUP_IDX_NONE,
                                          "My MSS instance",
@@ -482,35 +499,37 @@ namespace my_simulator
     }
 }
 ----
+<1> Always initialize loop variables.  An uninitialized `uint32_t` loop
+counter produces undefined behavior even though it often works in
+practice.
 
-Looking at `MySimulator`'s constructor in more detail, for Sparta to
+Looking at `MySimulator`'s constructor in more detail: for Sparta to
 instantiate the modeling-specific class instances, the modeler must
 provide a factory that the `ResourceTreeNode` will use to create it.
 
 One way to build these factory instances is to allow Sparta to
 maintain them in the Simulation class directly via the call to
 `addResourceFactory` from an internal `ResourceSet`:
-`getResourceSet()->addResourceFactory<FactoryT>(...)`.  Then, the
-modeler can retrieve these factory instances later when creating the
-`sparta::ResourceTreeNode`:
+`getResourceSet()->addResourceFactory<FactoryT>(...)`.  The
+modeler can then retrieve these factory instances later when creating
+`sparta::ResourceTreeNode` objects:
 
 [source,cpp]
 ----
 sparta::ResourceTreeNode* cpu_tn =
     new sparta::ResourceTreeNode(root_tn,
                                  CPU::name,
-                                 // Only allow 1 CPU object
                                  sparta::TreeNode::GROUP_NAME_NONE,
                                  sparta::TreeNode::GROUP_IDX_NONE,
                                  "My CPU instance",
-                                 getResourceSet()->getResourceFactory(Core::name));
+                                 getResourceSet()->getResourceFactory(CPU::name));
 ----
 
 This methodology is preferred as it allows the framework to construct,
-use, and destroy the factories for you in the order that is preferable
-to flow of simulation.
+use, and destroy the factories in the order that is preferable
+to the flow of simulation.
 
-However, "stashing" the factory into the internal resource set is not
+However, stashing the factory into the internal resource set is not
 required.  Instead, a modeler can create and maintain their own
 factories in the private section of the Simulation instance:
 
@@ -528,13 +547,15 @@ namespace my_simulator
     };
 }
 ----
-and then pass a pointer to that factory to the constructor of the ResourceTreeNode:
+
+and then pass a pointer to that factory to the constructor of the
+`ResourceTreeNode`:
+
 [source,cpp]
 ----
 sparta::ResourceTreeNode* cpu_tn =
     new sparta::ResourceTreeNode(root_tn,
                                  CPU::name,
-                                 // Only allow 1 CPU object
                                  sparta::TreeNode::GROUP_NAME_NONE,
                                  sparta::TreeNode::GROUP_IDX_NONE,
                                  "My CPU instance",
@@ -542,26 +563,27 @@ sparta::ResourceTreeNode* cpu_tn =
 ----
 
 This is useful if the modeler has a collection of pre-made factories
-to be reused.  However, there is one important caveat if a modeler
-chooses to do this:
+to be reused.  However, there is one important caveat:
 
 [.text-left]
-[.red]**The factory must outlive the ResourceTreeNode it's associated with.**
+[.red]*The factory must outlive the ResourceTreeNode it is associated with.*
 
-In other words, the factory must be destroyed _after_ the
-ResourceTreeNode is destroyed.  The factory is used to destruct the
-ResourceTreeNode's internal components properly.
+The factory must be destroyed _after_ the `ResourceTreeNode` is
+destroyed.  The factory is used to properly destruct the
+`ResourceTreeNode`'s internal components.
 
 ==== Configure Phase [[configure]]
 
 The virtual method
-https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a9d83dfcb8bf3490bff0e26b08f84c4bf[sparta::app::Simulation::configureTree_()] will be called from the public API call https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a54a0e00d7f5998fec76bb62061a475ed[sparta::app::configureTree()].
+{url-doxygen-simulation}#a9d83dfcb8bf3490bff0e26b08f84c4bf[`sparta::app::Simulation::configureTree_()`]
+will be called from the public API call
+{url-doxygen-simulation}#a54a0e00d7f5998fec76bb62061a475ed[`sparta::app::Simulation::configureTree()`].
 
 [source,cpp]
 ----
 int main()
 {
-    MySimulator my_sim;
+    my_simulator::MySimulator my_sim;
     my_sim.buildTree();     // Build the TreeNode hierarchy
     my_sim.configureTree(); // Configure/adjust parameters before instantiation
     return 0;
@@ -570,46 +592,11 @@ int main()
 
 Most modelers will not perform any explicit configurations, but at
 this point in simulation construction, the modeler can grab the
-`sparta::ParameterSet` instances from `sparta::ResourceTreeNode` that
-are associated with _any_ of the modeled components to make
-adjustments, check for errors, etc.
+`sparta::ParameterSet` instances from `sparta::ResourceTreeNode` objects
+found in the tree hierarchy to make adjustments, check for errors, etc.
 
 The `sparta::ParameterSet` objects are created by the
-`sparta::ResourceTreeNode` found in the tree node hierarchy.
-
-[source,cpp]
-----
-#pragma once
-
-#include <vector>
-#include <memory>
-
-#include "sparta/app/Simulation.hpp"
-#include "sparta/kernel/Scheduler.hpp"
-
-// Forward declare
-namespace sparta { class TreeNode; }
-
-namespace my_simulator
-{
-    // MySimulator.hpp
-    class MySimulator : public sparta::app::Simulation
-    {
-        // ... construction code
-
-    private:
-
-        // Override sparta::app::Simulation's method
-        void buildTree_() override final;
-        void configureTree_() override final;
-
-        std::vector<std::unique_ptr<sparta::TreeNode>> tns_to_delete_;
-
-        // Other user defined private member variables/methods...
-    };
-}
-----
-
+`sparta::ResourceTreeNode` objects found in the tree node hierarchy.
 
 [source,cpp]
 ----
@@ -622,162 +609,418 @@ namespace my_simulator
 
     void MySimulator::configureTree_()
     {
-
-        // The modeler can now grab sparta::ParameterSets and specific
-        // Parameters to check for sanity, etc.  This can be either const or non-const
-        const auto core_rtn = getRoot()->getChildAs<sparta::ResourceTreeNode>(CPU::name);
-        const sparta::ParameterSet * core_parameters = core_rtn->getParameterSet();
+        // The modeler can grab sparta::ParameterSets and specific
+        // Parameters to check for sanity, etc.
+        const auto cpu_rtn = getRoot()->getChildAs<sparta::ResourceTreeNode>(CPU::name);
+        const sparta::ParameterSet * cpu_parameters = cpu_rtn->getParameterSet();
         const sparta::Parameter<uint32_t> & num_branch_units =
-            core_parameters->getParameterAs<uint32_t>("num_branch_units");
-         sparta_assert(num_branch_units == 1, "This core design only supports 1 branch unit");
+            cpu_parameters->getParameterAs<uint32_t>("num_branch_units");
+        sparta_assert(num_branch_units == 1,
+                      "This core design only supports 1 branch unit");
     }
 }
 ----
 
 ==== Instantiate Phase [[instantiate]]
 
-Instantiating the components of simulation is a sparta-internal
-effort, but the phase is still started by the user by calling
-https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a200bdd31a21e24a242770fcb8e7fff5f[`sparta::app::Simulation::finalizeTree()`]
+Instantiating the components of simulation is a Sparta-internal
+effort, but the phase is still initiated by the user by calling
+{url-doxygen-simulation}#a200bdd31a21e24a242770fcb8e7fff5f[`sparta::app::Simulation::finalizeTree()`]:
 
 [source,cpp]
 ----
 int main()
 {
-    MySimulator my_sim;
+    my_simulator::MySimulator my_sim;
     my_sim.buildTree();     // Build the TreeNode hierarchy
     my_sim.configureTree(); // Configure/adjust parameters before instantiation
-    my_sim.finalizeTree();  // Finialize and lock in parameters; instantiate the model
+    my_sim.finalizeTree();  // Finalize and lock in parameters; instantiate the model
     return 0;
 }
 ----
 
 During this phase, the `sparta::ParameterSet` classes are locked to
-disallow parameter changes, but the tree is still malleable meaning is
-can be extended with even more subcomponents in the modeler's
-constructor.  See <<advanced_features>> for examples.
+disallow further parameter changes, but the tree is still malleable --
+it can be extended with additional subcomponents in the modeler's unit
+constructors.  See <<advanced_features>> for examples.
 
-Also during the call to `finalizeTree`, the framework will traverse
-the tree built in <<build>>, look for `sparta::ResourceTreeNode`
-objects, and instruct them to instantiate the modeler's specific
-implementation of a `sparta::Unit`.
+Also during `finalizeTree`, the framework will traverse the tree built
+in <<build>>, locate `sparta::ResourceTreeNode` objects, and instruct
+them to instantiate the modeler's specific implementation of
+`sparta::Unit`.
 
-After the modeler's components (instances of `sparta::Unit`) are
-created, these components are essentially ready for execution.
-However, communication _between_ components (especially those with
-`sparta::Ports`) is not yet established.  These connections are
-performed in the next/final phase called the Bind Phase of simulation.
-
+After the modeler's components are created, they are essentially ready
+for execution.  However, communication _between_ components (especially
+those with `sparta::Ports`) is not yet established.  These connections
+are performed in the next and final phase: the Bind Phase.
 
 ==== Bind Phase [[bind]]
 
 During this phase (called automatically during
 `Simulation::finalizeTree()`), components instantiated from the
-previous phase are now ready to be bound together.  This binding is
-only pertinent for those components that have `sparta::Port` objects
-or `sparta::Bus` objects that need to be connected.  This is the heart
-of simulation for a Sparta-based model where data is
-communicated/passed from one component to another.
+previous phase are ready to be bound together.  This binding is
+only relevant for components that have `sparta::Port` or `sparta::Bus`
+objects that need to be connected.  This is the heart of simulation
+for a Sparta-based model -- where data is communicated and passed from
+one component to another.
 
-Binding is the responsibility of the modeler and not the framework.
-The framework only holds the components necessary for binding to ease
-the process of binding, but is unaware of how components should be
-connected.
+Binding is the responsibility of the modeler, not the framework.
+The framework holds the components necessary for binding to ease
+the process, but is unaware of how components should be connected.
 
-Binding happens in the modeler's derivation of `bindTree_` virtual
-method of `sparta::app::Simulation`.  Ports are found using the Ports name
+Binding happens in the modeler's override of the `bindTree_()` virtual
+method of `sparta::app::Simulation`.  Ports are located by name using
+the tree path.
 
 To bind two `sparta::Port` or `sparta::Bus` objects together, the
 following rules apply:
 
-1. One of the Ports *must be* an `sparta::InPort` type and the other *must be*
-a `sparta::OutPort` type
-1. If the Port is a data type
-(`sparta::DataInPort`/`sparta::DataOutPort`) the data type *must be*
-equivalent and not castable
+1. One port *must be* a `sparta::InPort` type and the other *must be*
+   a `sparta::OutPort` type.
+1. If the port is a data type
+   (`sparta::DataInPort`/`sparta::DataOutPort`) the data type *must be*
+   equivalent and not merely castable.
 1. If the components are `sparta::Bus` types, they must be equivalent
-in size and polarity.  For example, if the Bus has 1 InPort and 2
-OutPorts, the Bus being bound to must have 1 OutPort and 2 InPorts of
-the same name.
-
-[source,cpp]
-----
-#pragma once
-
-#include <vector>
-#include <memory>
-
-#include "sparta/app/Simulation.hpp"
-#include "sparta/kernel/Scheduler.hpp"
-
-// Forward declare
-namespace sparta { class TreeNode; }
-
-namespace my_simulator
-{
-    // MySimulator.hpp
-    class MySimulator : public sparta::app::Simulation
-    {
-        // ... construction code
-
-    private:
-
-        // Override sparta::app::Simulation's method
-        void buildTree_() override final;
-        void configureTree_() override final;
-        void bindTree_() override final;
-
-        std::vector<std::unique_ptr<sparta::TreeNode>> tns_to_delete_;
-
-        // Other user defined private member variables/methods...
-    };
-}
-----
+   in size and polarity.  For example, if a Bus has 1 InPort and 2
+   OutPorts, the Bus being bound to it must have 1 OutPort and 2 InPorts
+   of the same names.
 
 [source,cpp]
 ----
 namespace my_simulator
 {
-    MySimulator::MySimulator() {...}
-
-    void MySimulator::buildTree_() {...}
-
-    void MySimulator::configureTree_() {...}
-
     void MySimulator::bindTree_()
     {
-
+        // Locate ports by tree path and bind them together.
+        // sparta::bind() requires one InPort and one OutPort of the
+        // same data type.
+        sparta::bind(getRoot()->getChildAs<sparta::Port>("top.cpu.core0.fetch.ports.out_fetch_queue_write"),
+                     getRoot()->getChildAs<sparta::Port>("top.cpu.core0.decode.ports.in_fetch_queue_write"));
     }
 }
 ----
 
 ==== Running the Simulation
 
-The last part of simulation configuration is to tell the Sparta
-framework it can now "lock" the simulation environment and expect no
+The last step of simulation configuration is to tell the Sparta
+framework to "lock" the simulation environment and expect no
 more topological changes.  This is done through the call to
-https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html#a18ede64ec543df1bb56a71618fe82757[`sparta::app::Simulation::finalizeFramework()`]
-
-
+{url-doxygen-simulation}#a18ede64ec543df1bb56a71618fe82757[`sparta::app::Simulation::finalizeFramework()`]:
 
 [source,cpp]
 ----
 int main()
 {
-    MySimulator my_sim;
-    my_sim.buildTree();     // Build the TreeNode hierarchy
-    my_sim.configureTree(); // Configure/adjust parameters before instantiation
-    my_sim.finalizeTree();  // Finialize and lock in parameters; instantiate the model
-    my_sim.finalizeFramework(); // Tell Sparta that simulation is ready to run
+    my_simulator::MySimulator my_sim;
+    my_sim.buildTree();          // Build the TreeNode hierarchy
+    my_sim.configureTree();      // Configure/adjust parameters before instantiation
+    my_sim.finalizeTree();       // Finalize and lock parameters; instantiate the model
+    my_sim.finalizeFramework();  // Tell Sparta simulation is ready to run
+    my_sim.run(1000);            // Run for 1000 cycles
     return 0;
 }
 ----
 
-
-
-
 == Factories [[factories]]
 
-== Commandline Simulation
+The {url-factory}[Factory design pattern] is central to how Sparta
+instantiates modeling components.  A factory is a class that knows how
+to construct a specific type of object on behalf of a framework that
+must remain type-agnostic.
 
-== More Advanced Simulation Construction
+In Sparta, every `sparta::ResourceTreeNode` requires a factory at
+construction time.  When `finalizeTree()` traverses the tree, it calls
+each node's factory to instantiate the modeler's `sparta::Unit`
+derivative.  The factory is also responsible for constructing the
+associated `sparta::ParameterSet`.
+
+=== Using the Built-in ResourceFactory
+
+For the common case -- one `sparta::Unit` derivative with one
+`sparta::ParameterSet` derivative -- Sparta provides
+`sparta::ResourceFactory<ResourceT, ParameterSetT>`.  This is the
+factory used throughout the examples in this chapter:
+
+[source,cpp]
+----
+getResourceSet()->
+    addResourceFactory<sparta::ResourceFactory<Core, Core::CoreParameters>>();
+----
+
+This tells Sparta: "when you encounter a `ResourceTreeNode` that needs
+a `Core`, use `Core::CoreParameters` for its parameter set and call
+`new Core(node, params)` to instantiate it."
+
+The `sparta::Unit` constructor signature that `sparta::ResourceFactory`
+expects is:
+
+[source,cpp]
+----
+MyUnit(sparta::TreeNode * node, const MyUnit::MyParameters * params);
+----
+
+As long as the modeler's unit follows this convention, the built-in
+factory requires no additional code.
+
+=== Defining Parameters for a Unit
+
+Parameters are defined as a nested `ParameterSet` class inside the
+modeler's unit header.  Each parameter is a `sparta::Parameter<T>`
+member variable with a name, default value, and description:
+
+[source,cpp]
+----
+// Core.hpp
+class Core : public sparta::Unit
+{
+public:
+    class CoreParameters : public sparta::ParameterSet
+    {
+    public:
+        CoreParameters(sparta::TreeNode * n) :
+            sparta::ParameterSet(n)
+        {}
+
+        PARAMETER(uint32_t, num_execution_units, 4,
+                  "Number of execution units in the core")
+        PARAMETER(uint32_t, num_branch_units,    1,
+                  "Number of branch units in the core")
+        PARAMETER(bool,     enable_forwarding,   true,
+                  "Enable result forwarding between pipeline stages")
+    };
+
+    static const char * name;
+
+    Core(sparta::TreeNode * node, const CoreParameters * params);
+
+private:
+    const uint32_t num_execution_units_;
+    const uint32_t num_branch_units_;
+    const bool     enable_forwarding_;
+};
+----
+
+[source,cpp]
+----
+// Core.cpp
+const char * Core::name = "core";
+
+Core::Core(sparta::TreeNode * node, const CoreParameters * params) :
+    sparta::Unit(node),
+    num_execution_units_(params->num_execution_units),
+    num_branch_units_   (params->num_branch_units),
+    enable_forwarding_  (params->enable_forwarding)
+{
+    sparta_assert(num_branch_units_ == 1,
+                  "This core design only supports 1 branch unit");
+}
+----
+
+Parameters are read during construction and should be copied into
+`const` member variables at that point.  The `sparta::ParameterSet` is
+locked after construction and changes to parameter values after that
+point will throw an exception.
+
+=== Writing a Custom Factory
+
+Sometimes the default `sparta::ResourceFactory` is not sufficient.
+Common reasons to write a custom factory include:
+
+- The unit constructor requires additional arguments beyond the standard
+  `(TreeNode*, ParameterSet*)` signature
+- Multiple related units need to be created together and share
+  construction-time state
+- The factory needs to perform validation or setup before instantiation
+
+A custom factory derives from
+{url-doxygen-resourcefactorybase}[`sparta::ResourceFactoryBase`]
+and overrides `createResource_`:
+
+[source,cpp]
+----
+class CoreFactory : public sparta::ResourceFactoryBase
+{
+public:
+    // Pass in whatever the factory needs at construction time
+    CoreFactory(std::shared_ptr<SharedBus> shared_bus) :
+        shared_bus_(shared_bus)
+    {}
+
+    sparta::Resource * createResource_(sparta::ResourceTreeNode * node,
+                                       const sparta::ParameterSet * params) override
+    {
+        const auto * core_params =
+            dynamic_cast<const Core::CoreParameters *>(params);
+        sparta_assert(core_params != nullptr,
+                      "CoreFactory received wrong ParameterSet type");
+
+        // Pass extra construction-time data to the unit
+        return new Core(node, core_params, shared_bus_);
+    }
+
+    sparta::ParameterSet * createParameters_(sparta::TreeNode * node) override
+    {
+        return new Core::CoreParameters(node);
+    }
+
+    const std::string & getResourceType_() const override
+    {
+        return Core::name;
+    }
+
+private:
+    std::shared_ptr<SharedBus> shared_bus_;
+};
+----
+
+Then in the simulator constructor, replace the built-in factory with
+the custom one:
+
+[source,cpp]
+----
+MySimulator::MySimulator(std::shared_ptr<SharedBus> shared_bus) :
+    sparta::app::Simulation("my_simulator", &scheduler_),
+    core_factory_(shared_bus)  // custom factory as a member variable
+{}
+
+void MySimulator::buildTree_()
+{
+    auto root_tn = getRoot();
+
+    sparta::ResourceTreeNode* cpu_tn =
+        new sparta::ResourceTreeNode(root_tn, CPU::name,
+                                     sparta::TreeNode::GROUP_NAME_NONE,
+                                     sparta::TreeNode::GROUP_IDX_NONE,
+                                     "My CPU instance",
+                                     &core_factory_);  // custom factory
+    tns_to_delete_.emplace_back(cpu_tn);
+}
+----
+
+Remember: if you maintain the factory as a member variable of the
+simulator, the simulator destructor must destroy `tns_to_delete_`
+_before_ the factory member variable goes out of scope.  Using a
+`std::vector<std::unique_ptr<sparta::TreeNode>>` in the order shown
+above guarantees this when the member variables are declared in the
+right order in the header.
+
+== Command Line Simulation [[commandline_simulation]]
+
+Most Sparta-based simulators are driven from the command line.  Rather
+than writing argument parsing from scratch, Sparta provides
+`sparta::app::CommandLineSimulator` which gives a simulator a rich set
+of built-in options for free and integrates cleanly with
+`sparta::app::Simulation`.
+
+The built-in options include parameter overrides, configuration file
+loading, report generation, logging control, run-length specification,
+tree inspection, and more -- all of the options explored in
+<<_getting_started>>.
+
+=== Integrating CommandLineSimulator
+
+To use the command line integration, replace the hand-written `main()`
+with one that creates a `CommandLineSimulator` and passes it to the
+simulator:
+
+[source,cpp]
+----
+#include "sparta/app/CommandLineSimulator.hpp"
+#include "sparta/app/SimulationConfiguration.hpp"
+#include "MySimulator.hpp"
+
+int main(int argc, char ** argv)
+{
+    uint32_t num_cores = 1;  // default
+
+    sparta::app::DefaultValues DEFAULTS;
+    DEFAULTS.run_time_cycles = 100; // default run length
+
+    // Create a CommandLineSimulator -- this parses and owns the command line
+    sparta::app::CommandLineSimulator cls("My Simulator",
+                                          DEFAULTS);
+
+    // Add simulator-specific options on top of Sparta's built-in set
+    auto & app_opts = cls.getApplicationOptions();
+    app_opts.add_options()
+        ("num-cores",
+         sparta::app::named_value<uint32_t>("NUM_CORES", &num_cores)->default_value(1),
+         "Number of cores to simulate");
+
+    // Parse the command line -- this handles --help, --show-tree, etc.
+    int err_code = 0;
+    if (!cls.parse(argc, argv, err_code)) {
+        return err_code;
+    }
+
+    // Build and run the simulation
+    sparta::app::Simulation::SimulationConfiguration sim_config;
+    MySimulator sim("my_simulator", &cls.getScheduler(), num_cores);
+    cls.populateSimulation(&sim);
+    cls.runSimulator(&sim);
+    cls.postProcessSimulation();
+
+    return 0;
+}
+----
+
+With this in place, the simulator automatically gains all of the
+command line features described in the Getting Started chapter:
+`--show-tree`, `--show-parameters`, `-p`, `-c`, `-r`, `-l`,
+`--report-all`, and more.
+
+=== Adding Custom Options
+
+The `CommandLineSimulator` exposes `getApplicationOptions()` which
+returns a `boost::program_options::options_description` that the
+modeler can extend with simulator-specific flags.  Values are written
+directly into local variables (as shown with `num_cores` above) and
+are available immediately after `parse()` returns.
+
+=== Wildcard Parameter Overrides
+
+One of the most powerful features of the command line integration is
+wildcard parameter overrides using `?` and `*` in tree paths:
+
+[source,bash]
+----
+# Set num_to_fetch=2 on all cores
+./my_simulator -p top.cpu.core?.fetch.params.num_to_fetch 2
+
+# Set a parameter on every unit named "decode" anywhere in the tree
+./my_simulator -p top.*.decode.params.width 4
+----
+
+This makes it easy to run design space exploration sweeps across
+multi-core configurations without modifying any model code.
+
+== Advanced Simulation Construction [[advanced_features]]
+
+// AUTHOR NOTE: This section covers construction patterns that go
+// beyond the basic build/configure/instantiate/bind flow.
+// Suggested topics based on the Sparta docs and Olympia source:
+//
+// === Dynamic Topology
+// Changing the number of units (cores, execution units, etc.) based
+// on parameter values read during configureTree_.  Show how to read
+// a parameter in configureTree_ and then modify tns_to_delete_ or
+// call a helper to add/remove nodes before finalizeTree_.
+//
+// === Sub-unit Construction in Unit Constructors
+// During finalizeTree_, the tree is locked for ResourceTreeNode
+// additions but a Unit constructor can still add child TreeNodes
+// (not ResourceTreeNodes) to itself.  Show a Unit that creates
+// sub-structure (e.g. per-way cache arrays as child nodes) in its
+// own constructor.
+//
+// === Topologies
+// The CoreExample uses a separate CoreTopology_1 class to define
+// the port connections rather than hard-coding them in bindTree_.
+// Show how to use a topology struct/class to make the binding
+// declarative and reusable across multiple simulator configurations.
+//
+// === Using sparta::app::Simulation with Multiple Topologies
+// Show how to select between different topology configurations
+// (e.g. in-order vs. out-of-order core) at runtime via a command
+// line option, by building the appropriate set of ResourceTreeNodes
+// in buildTree_ based on a parameter or option value.
