@@ -556,10 +556,9 @@ namespace sparta
 
 } // sparta namespace
 
-// Helper methods to determine pointer type and/or remove it
+// SimDB/upstream MetaStruct has no notion of Sparta types; specialize here alongside the class definition.
 namespace MetaStruct {
 
-    // Helper structs
     template<typename T>
     struct is_any_pointer<sparta::SpartaSharedPointer<T>> : public std::true_type {};
 
@@ -583,4 +582,5 @@ namespace MetaStruct {
 
     template<typename T>
     struct remove_any_pointer<sparta::SpartaSharedPointer<T> const &> { using type = T; };
-}
+
+} // namespace MetaStruct

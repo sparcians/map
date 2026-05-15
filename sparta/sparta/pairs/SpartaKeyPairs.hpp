@@ -30,6 +30,7 @@
 #include "sparta/utils/Utils.hpp"
 #include "sparta/utils/MetaTypeList.hpp"
 #include "sparta/utils/MetaStructs.hpp"
+#include "sparta/utils/SpartaSharedPointer.hpp"
 #include "sparta/utils/DetectMemberUtils.hpp"
 
 #include "simdb/utils/Demangle.hpp"
