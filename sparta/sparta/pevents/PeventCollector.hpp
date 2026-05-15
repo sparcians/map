@@ -95,7 +95,7 @@ namespace pevents{
         {
             if(isCollecting())
             {
-                collect_(obj, pos_args...);
+                collect_(nullptr, obj, pos_args...);
                 generateCollectionString_();
             }
         }

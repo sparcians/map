@@ -472,6 +472,12 @@ public:
     std::string pipeline_collection_file_prefix = NoPipelineCollectionStr;
 
     /*!
+     * Set by CommandLineSimulator. Controls time/space tradeoffs for
+     * pipeline collection.
+     */
+    utils::ValidValue<size_t> pipeline_collection_heartbeat;
+
+    /*!
      * Additional report descriptions
      */
     ReportDescVec reports;

@@ -206,6 +206,23 @@ public:
         setManualCollection();
     }
 
+    //! Collectable classes must be able to register themselves with
+    //! the ArgosCollector and store a ScalarCollector/ContainerCollector.
+    void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final
+    {
+        auto loc = getLocation();
+        auto clk_name = notNull(getClock())->getName();
+        entry_point_ = argos_collector->createContainerCollector<BinValueT, sparse_array_type>(loc, clk_name, expected_capacity_);
+    }
+
+    //! Whether a scalar (Collectable) or container (IterableCollector),
+    //! serialize struct-like data structure hierarchies (field name + dtype)
+    //! to the database.
+    void serializeStructSchema(simdb::DatabaseManager* db_mgr, std::map<std::string, int>& schema_ids_by_dtype_name) override final
+    {
+        CollectableT::template serializeStructSchema<BinT>(db_mgr, schema_ids_by_dtype_name);
+    }
+
     //! Collect the contents of the iterable object.  This function
     //! will walk starting from index 0 -> expected_capacity, clearing
     //! out any records where the iterable object does not contain
@@ -280,7 +297,9 @@ public:
     }
 
 private:
-    typedef Collectable<typename std::iterator_traits<typename IterableType::iterator>::value_type> CollectableT;
+    typedef typename std::iterator_traits<typename IterableType::iterator>::value_type BinT;
+    typedef MetaStruct::remove_any_pointer_t<BinT> BinValueT;
+    typedef Collectable<BinT> CollectableT;
     // Standard walk of iterable types
     void collectImpl_(const IterableType * iterable_object, std::false_type)
     {
@@ -341,6 +360,9 @@ private:
     const size_type expected_capacity_ = 0;
     bool auto_collect_ = true;
     bool warn_on_size_ = true;
+
+    // Entry point into the SimDB collection system.
+    simdb::argos::ContainerCollector<BinValueT, sparse_array_type>* entry_point_ = nullptr;
 
     // For those folks that want a value to automatically
     // disappear in the future

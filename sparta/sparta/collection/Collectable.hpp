@@ -24,6 +24,8 @@
 #include "sparta/utils/Utils.hpp"
 #include "sparta/utils/MetaStructs.hpp"
 
+#include "simdb/apps/argos/ArgosCollector.hpp"
+
 #include "boost/numeric/conversion/converter.hpp"
 
 namespace sparta{
@@ -50,6 +52,7 @@ namespace sparta{
         {
         public:
             static constexpr uint64_t BAD_DISPLAY_ID = 0x1000;
+            using ValueType = MetaStruct::remove_any_pointer_t<DataT>;
 
             /**
              * \brief Construct the Collectable, no data object associated, part of a group
@@ -69,27 +72,6 @@ namespace sparta{
                 ev_close_record_(&event_set_, name + "_pipeline_collectable_close_event",
                                  CREATE_SPARTA_HANDLER_WITH_DATA(Collectable, closeRecord, bool))
             {
-                sparta_assert(getNodeUID() < ~(decltype(transaction_t::location_ID))0,
-                            "Tree has at least " << getNodeUID() << " in it. Because pipeouts "
-                            "use these locations and only have 32b location IDs, the pipeline "
-                            "collection system imposes a limit of " << ~(decltype(transaction_t::location_ID))0
-                            << " nodes in the tree. This is expected to be an unattainable number "
-                            "without some kind of runaway allocation bug. If you are sure you "
-                            << " nodes in the tree. This is expected to be an unattainable number "
-                            "without some kind of runaway allocation bug. If you are sure you "
-                            "need more nodes than this, contact the SPARTA team. In the meantime, "
-                            "it is probably safe to comment out this assertion if you do not "
-                            "plan to use the pipeline collection functionality");
-
-                argos_record_.location_ID        = boost::numeric::converter<decltype(argos_record_.location_ID),
-                                                                             decltype(getNodeUID())>::convert(getNodeUID());
-                argos_record_.control_Process_ID = 0; // what is this for?
-                argos_record_.parent_ID          = parentid;
-                argos_record_.flags              = is_Annotation;
-                argos_record_.time_Start         = 0;
-                argos_record_.time_End           = 1;
-
-
             }
 
             /**
@@ -115,9 +97,7 @@ namespace sparta{
 
                 // Get an initial value, if available
                 if(collected_object) {
-                    std::ostringstream ss;
-                    ss << *collected_object;
-                    prev_annot_ = ss.str();
+                    initialize(*collected_object);
                 }
             }
 
@@ -142,36 +122,67 @@ namespace sparta{
             virtual ~Collectable() {}
 
             /**
+             * \brief Collectable classes must be able to register themselves with
+             * the ArgosCollector and store a ScalarCollector/ContainerCollector.
+             */
+            void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final
+            {
+                // Legacy (non-PairCollector) usage will be turned off in map_v3 for any struct-like
+                // collectables. The user will have to create the nested SpartaPairDefinitionType
+                // in order to continue collecting this type.
+                if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
+                {
+                    auto loc = getLocation();
+                    auto clk_name = notNull(getClock())->getName();
+                    entry_point_ = argos_collector->createScalarCollector<ValueType>(loc, clk_name);
+                }
+                else
+                {
+                    argos_collector->markUnsupported(getLocation());
+                }
+            }
+
+            /**
+             * \brief Whether a scalar (Collectable) or container (IterableCollector),
+             * serialize struct-like data structure hierarchies (field name + dtype)
+             * to the database.
+             */
+            void serializeStructSchema(simdb::DatabaseManager*, std::map<std::string, int>&) override final
+            {
+                // Legacy (non-PairCollector) usage is not supported for struct-like types.
+            }
+
+            /**
              * \brief For manual collection, provide an initial value
              * \param val The value to initial the record with
              */
             void initialize(const DataT & val) {
-                std::ostringstream ss;
-                ss << val;
-                prev_annot_ = ss.str();
+                if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
+                {
+                    sparta_assert(entry_point_ == nullptr, "Cannot initialize() collectable after finalizeFramework()");
+                    simdb::StreamBuffer buf(initial_bytes_);
+                    buf.append(val);
+                }
+                else
+                {
+                    (void)val;
+                }
             }
 
             //! Explicitly/manually collect a value for this collectable, ignoring
             //! what the Collectable is currently pointing to.
             void collect(const DataT & val)
             {
-                if(SPARTA_EXPECT_FALSE(isCollected()))
+                if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
                 {
-                    std::ostringstream ss;
-                    ss << val;
-                    if((ss.str() != prev_annot_) && !record_closed_)
+                    if(SPARTA_EXPECT_FALSE(isCollected() && entry_point_))
                     {
-                        // Close the old record (if there is one)
-                        closeRecord();
+                        entry_point_->setValue(val);
                     }
-
-                    // Remember the new string for a new record and start
-                    // a new record if not empty.
-                    prev_annot_ = ss.str();
-                    if(!prev_annot_.empty() && record_closed_) {
-                        startNewRecord_();
-                        record_closed_ = false;
-                    }
+                }
+                else
+                {
+                    (void)val;
                 }
             }
 
@@ -187,12 +198,20 @@ namespace sparta{
              */
             void collectWithDuration(const DataT & val, sparta::Clock::Cycle duration)
             {
-                if(SPARTA_EXPECT_FALSE(isCollected()))
+                if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
                 {
-                    if(duration != 0) {
-                        ev_close_record_.preparePayload(false)->schedule(duration);
+                    if(SPARTA_EXPECT_FALSE(isCollected()))
+                    {
+                        if(duration != 0) {
+                            ev_close_record_.preparePayload(false)->schedule(duration);
+                        }
+                        collect(val);
                     }
-                    collect(val);
+                }
+                else
+                {
+                    (void)val;
+                    (void)duration;
                 }
             }
 
@@ -200,12 +219,15 @@ namespace sparta{
             //! CollectableTreeNode/PipelineCollector when a user of the
             //! TreeNode requests this object to be collected.
             void collect() override final {
-                // If pointer has become nullified, close the record
-                if(nullptr == collected_object_) {
-                    closeRecord();
-                    return;
+                if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
+                {
+                    // If pointer has become nullified, close the record
+                    if(nullptr == collected_object_) {
+                        closeRecord();
+                        return;
+                    }
+                    collect(*collected_object_);
                 }
-                collect(*collected_object_);
             }
 
             /*!
@@ -214,36 +236,27 @@ namespace sparta{
              * \pre Must have constructed wit ha non-null collected object
              */
             void collectWithDuration(sparta::Clock::Cycle duration) {
-                // If pointer has become nullified, close the record
-                if(nullptr == collected_object_) {
-                    closeRecord();
-                    return;
-                }
-                collectWithDuration(*collected_object_, duration);
-            }
-
-            //! For heartbeat collections, existing records will need to
-            //! be closed and reopened
-            void restartRecord() override final {
-                // Do not get a new ID when we're doing a heartbeat
-                if(!record_closed_) {
-                    argos_record_.flags |= CONTINUE_FLAG;
-                    writeRecord_();
-                    argos_record_.flags &= ~CONTINUE_FLAG;
-                    startNewRecord_();
+                if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
+                {
+                    // If pointer has become nullified, close the record
+                    if(nullptr == collected_object_) {
+                        closeRecord();
+                        return;
+                    }
+                    collectWithDuration(*collected_object_, duration);
                 }
             }
 
             //! Force close a record.  This will close the record
             //! immediately and clear the field for the next cycle
-            void closeRecord(const bool & simulation_ending = false) override final
+            void closeRecord(const bool & = false) override final
             {
-                if(SPARTA_EXPECT_FALSE(isCollected()))
+                if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
                 {
-                    if(!record_closed_ && writeRecord_(simulation_ending)) {
-                        prev_annot_.clear();
+                    if(SPARTA_EXPECT_FALSE(isCollected() && entry_point_))
+                    {
+                        entry_point_->quiet();
                     }
-                    record_closed_ = true;
                 }
             }
 
@@ -263,62 +276,22 @@ namespace sparta{
 
         private:
 
-            //! Return true if the annotation was written; false otherwise
-            bool writeRecord_(bool simulation_ending = false)
-            {
-                sparta_assert(pipeline_col_,
-                            "Must startCollecting_ on this Collectable "
-                            << getLocation() << " before a record can be written");
-
-                // This record hasn't changed, don't write it
-                if(SPARTA_EXPECT_FALSE(argos_record_.time_Start == pipeline_col_->getScheduler()->getCurrentTick())) {
-                    return false;
-                }
-
-                // Set a new transaction ID since we're starting anew
-                argos_record_.transaction_ID = pipeline_col_->getUniqueTransactionId();
-
-                // Notice that we make the length +1 in order to null
-                // terminate the data.
-                argos_record_.length = static_cast<uint16_t>(prev_annot_.size());
-
-                // We should just change the transaction structure to take
-                // an std::string instead of char* in the future.
-                argos_record_.annt = prev_annot_;
-
-                // Capture the end time
-                argos_record_.time_End =
-                    pipeline_col_->getScheduler()->getCurrentTick() + (simulation_ending ? 1 : 0);;
-
-                // If this assert fires, then a user is trying to collect
-                // a record multiple times in their cycle window or
-                // something else really bad has happened.
-                sparta_assert(argos_record_.time_Start < argos_record_.time_End);
-
-                // Write the old record to the file
-                pipeline_col_->writeRecord(argos_record_);
-
-                return true;
-            }
-
-            //! Start a new record
-            void startNewRecord_() {
-                // Set up the new start time for the new record
-                argos_record_.time_Start = pipeline_col_->getScheduler()->getCurrentTick();
-            }
-
             //! Virtual method called by CollectableTreeNode when
             //! collection is enabled on the TreeNode
             void setCollecting_(bool collect, Collector * collector) override final
             {
+                if constexpr (!std::is_trivial_v<ValueType> || !std::is_standard_layout_v<ValueType>)
+                {
+                    return;
+                }
+
                 pipeline_col_ = dynamic_cast<PipelineCollector *>(collector);
                 sparta_assert(pipeline_col_ != nullptr,
                             "Collectables can only added to PipelineCollectors... for now");
 
-                if(collect && !prev_annot_.empty()) {
-                    // Set the start time for this transaction to be
-                    // moment collection is enabled.
-                    startNewRecord_();
+                if(collect && !initial_bytes_.empty()) {
+                    entry_point_->setBytes(initial_bytes_);
+                    initial_bytes_.clear();
                 }
 
                 // If the collected object is null, this Collectable
@@ -337,21 +310,13 @@ namespace sparta{
                     }
                 }
 
-                if(!collect && !record_closed_) {
-                    // Force the record to be written
+                if(!collect) {
                     closeRecord();
                 }
             }
 
             // The annotation object to be collected
             const DataT * collected_object_ = nullptr;
-
-            // The live transaction record
-            annotation_t argos_record_;
-
-            // Store the result of the previous annotation, the
-            // annotation_t struct holds a pointer to this
-            std::string prev_annot_;
 
             // Ze Collec-tor
             PipelineCollector * pipeline_col_ = nullptr;
@@ -361,35 +326,15 @@ namespace sparta{
             sparta::EventSet event_set_;
             sparta::PayloadEvent<bool, sparta::SchedulingPhase::Trigger> ev_close_record_;
 
-            // Is this collectable currently closed?
-            bool record_closed_ = true;
-
             // Should we auto-collect?
             bool auto_collect_ = true;
-        };
 
-        /**
-        * \class UniquePairGenerator
-        * \brief A class which provides every new instantiation of the Templated class Collectable
-        * with a new unique value. This value is used by all the instantiations of a certain type
-        * of a Collectable as its own unique PairId which differentiates itself from other Collectable
-        * instatiations templated on some other type of class.
-        */
-        class UniquePairIDGenerator {
-        public:
+            // Extracted value bytes from initialize() to be applied when
+            // collection is first enabled (setCollecting_)
+            std::vector<char> initial_bytes_;
 
-            // We need to make Collectable a friend of this class, as it will directly call
-            // the static private function from within itself.
-            template<typename DataT, SchedulingPhase collection_phase, typename>
-            friend class Collectable;
-        private:
-
-            // Any point this funtion is invoked, it releases a new 64bit integer which is unique.
-            // So, we need to limit the access of this function.
-            static uint64_t getUniquePairID_() {
-                static uint64_t id = 0;
-                return ++id;
-             }
+            // Entry point into the SimDB collection system.
+            simdb::argos::ScalarCollector<DataT>* entry_point_ = nullptr;
         };
 
         /**
@@ -458,6 +403,7 @@ namespace sparta{
             using PairCollector<PairDef_t>::getPEventLogVector;
             using PairCollector<PairDef_t>::getArgosFormatGuide;
             using PairCollector<PairDef_t>::collect_;
+            using PairCollector<PairDef_t>::setTinyStrings_;
             using PairCollector<PairDef_t>::isCollecting;
 
         public:
@@ -477,23 +423,10 @@ namespace sparta{
                         const std::string & desc = "Collectable <manual, no desc>") :
                 sparta::PairCollector<PairDef_t>(),
                 CollectableTreeNode(sparta::notNull(parent), name, group, index, desc),
-                argos_record_(pair_t(0, 1, parentid, 0, BAD_DISPLAY_ID,
-                    boost::numeric::converter<decltype(argos_record_.location_ID),
-                        decltype(getNodeUID())>::convert(getNodeUID()),
-                            is_Pair, 0)),
                 event_set_(this),
                 ev_close_record_(&event_set_, name + "_pipeline_collectable_close_event",
-                                 CREATE_SPARTA_HANDLER_WITH_DATA(Collectable, closeRecord, bool)) {
-                static constexpr auto MAX_UID = std::numeric_limits<decltype(argos_record_.location_ID)>::max();
-                sparta_assert(getNodeUID() < MAX_UID,
-                            "Tree has at least " << getNodeUID() << " in it. Because pipeouts "
-                            "use these locations and only have 32b location IDs, the pipeline "
-                            "collection system imposes a limit of " << MAX_UID
-                            << " nodes in the tree. This is expected to be an unattainable number "
-                            "without some kind of runaway allocation bug. If you are sure you "
-                            "need more nodes than this, contact the SPARTA team. In the meantime, "
-                            "it is probably safe to comment out this assertion if you do not "
-                            "plan to use the pipeline collection functionality");
+                                 CREATE_SPARTA_HANDLER_WITH_DATA(Collectable, closeRecord, bool))
+            {
             }
 
             /**
@@ -545,6 +478,89 @@ namespace sparta{
             virtual ~Collectable() {}
 
             /**
+             * \brief Collectable classes must be able to register themselves with
+             * the ArgosCollector and store a ScalarCollector/ContainerCollector.
+             */
+            void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final
+            {
+                auto loc = getLocation();
+                auto clk_name = notNull(getClock())->getName();
+                entry_point_ = argos_collector->createScalarCollector<DataT>(loc, clk_name);
+                setTinyStrings_(argos_collector->getTinyStrings());
+            }
+
+            /**
+             * \brief Whether a scalar (Collectable) or container (IterableCollector),
+             * serialize struct-like data structure hierarchies (field name + dtype)
+             * to the database.
+             */
+            void serializeStructSchema(simdb::DatabaseManager* db_mgr, std::map<std::string, int>& schema_ids_by_dtype_name) override final
+            {
+                serializeStructSchema<DataT>(db_mgr, schema_ids_by_dtype_name);
+            }
+
+            template <typename T>
+            static void serializeStructSchema(simdb::DatabaseManager* db_mgr, std::map<std::string, int>& schema_ids_by_dtype_name)
+            {
+                using value_type = MetaStruct::remove_any_pointer_t<T>;
+                if constexpr (std::is_trivial_v<value_type> && std::is_standard_layout_v<value_type>)
+                {
+                    // No need to serialize built-in types
+                    return;
+                }
+                else if constexpr (std::is_enum_v<value_type>)
+                {
+                    // No need to serialize enum types
+                    return;
+                }
+                else if constexpr (std::is_same_v<value_type, std::string>)
+                {
+                    // No need to serialize string types
+                    return;
+                }
+                else
+                {
+                    const auto root_dtype = simdb::demangle_type<value_type>();
+                    if(schema_ids_by_dtype_name.find(root_dtype) != schema_ids_by_dtype_name.end()) {
+                        return;
+                    }
+
+                    const int32_t schema_id =
+                        db_mgr->INSERT(SQL_TABLE("DataTypeSchemas"), SQL_VALUES(root_dtype))->getId();
+
+                    using PairDef = typename value_type::SpartaPairDefinitionType;
+                    PairDef pair_def;
+                    sparta::PairCache pair_cache;
+                    pair_def.finalizeKeys(&pair_cache);
+
+                    const auto & names = pair_cache.getNameStrings();
+                    const auto & dtypes = pair_def.getLeafArgosDtypeStrings();
+                    const auto & formatters = pair_cache.getFormatVector();
+                    sparta_assert(names.size() == dtypes.size());
+                    sparta_assert(formatters.size() == names.size());
+
+                    constexpr int32_t parent_id_unset = 0;
+                    const std::string kind_pod{"pod"};
+                    const std::string empty;
+
+                    for(std::size_t i = 0; i < names.size(); ++i) {
+                        const std::string special_formatter =
+                            pairFormatterToSpecialFormatString(formatters[i]);
+                        (void)db_mgr->INSERT(SQL_TABLE("DataTypeNodes"),
+                                                SQL_VALUES(schema_id,
+                                                        parent_id_unset,
+                                                        kind_pod,
+                                                        names[i],
+                                                        empty,
+                                                        dtypes[i],
+                                                        empty,
+                                                        special_formatter));
+                    }
+                    schema_ids_by_dtype_name[root_dtype] = static_cast<int>(schema_id);
+                }
+            }
+ 
+            /**
              * \brief For manual collection, provide an initial value
              * \param val The value to initialze the record with
              */
@@ -575,25 +591,10 @@ namespace sparta{
             MetaStruct::enable_if_t<!MetaStruct::is_any_pointer<T>::value, void>
             collect(const T & val)
             {
-                collect_(val);
-
-                // if the value pairs are not the same as the
-                // previous value pairs and the previous record is still open
-                if(!isSameRecord() && !record_closed_)
-                {
-                    //Close the old record (if there is one)
-                    closeRecord();
-                }
-
-                // Remember the new value pairs for a new record and start
-                // a new record if not empty.
-                updateLastRecord_();
-
-                // If the new Value pairs are not empty and current record is closed, we start a new record.
-                if(record_closed_ && hasData_()){
-                    startNewRecord_();
-                    record_closed_ = false;
-                }
+                std::vector<char> bytes;
+                simdb::StreamBuffer buf(bytes);
+                collect_(&buf, val);
+                entry_point_->setBytes(bytes);
             }
 
             //! Explicitly/manually collect a value for this collectable, ignoring
@@ -679,32 +680,13 @@ namespace sparta{
                 collectWithDuration(*collected_object_, duration);
             }
 
-            //! For heartbeat collections, existing records will need to
-            //! be closed and reopened
-            void restartRecord() override final {
-
-                // Do not get a new ID when we're doing a heartbeat
-               if(!record_closed_) {
-                    argos_record_.flags |= CONTINUE_FLAG;
-                    writeRecord_();
-                    argos_record_.flags &= ~CONTINUE_FLAG;
-                    startNewRecord_();
-                }
-            }
-
             //! Force close a record.  This will close the record
             //! immediately and clear the field for the next cycle
-            void closeRecord(const bool & simulation_ending = false) override final
+            void closeRecord(const bool & = false) override final
             {
                 if(SPARTA_EXPECT_FALSE(isCollected()))
                 {
-                    if(!record_closed_ && writeRecord_(simulation_ending)) {
-
-                        // Clear the previous vector containing the Name Value pairs.
-                        argos_record_.valueVector.clear();
-                        argos_record_.stringVector.clear();
-                    }
-                    record_closed_ = true;
+                    entry_point_->quiet();
                 }
             }
 
@@ -714,23 +696,15 @@ namespace sparta{
                 auto_collect_ = false;
             }
 
-            //! \brief Before writing a record to file, we need to check
-            //  if any of the old Values have changed or not.
-            bool isSameRecord() const {
-                return (argos_record_.valueVector == getDataVector()) && (argos_record_.stringVector == getStringVector());
-            }
-
             //! \brief Strictly a Debug/Testing API.
             //!  Never to be called in real modeler's code.
-            const std::string & dumpNameValuePairs(const DataT & val) {
-                collect_(val);
-                log_string_.clear();
+            std::string dumpNameValuePairs(const DataT & val) {
+                collect_((simdb::StreamBuffer*)nullptr, val);
                 std::ostringstream ss;
                 for(const auto & pairs : getPEventLogVector()){
                     ss << pairs.first << "(" << pairs.second << ") ";
                 }
-                log_string_ = ss.str();
-                return log_string_;
+                return ss.str();
             }
 
         protected:
@@ -749,103 +723,12 @@ namespace sparta{
 
         private:
 
-            /**
-            * \brief A static function which sets the Unique PairId of a certain instantiation of Collectable.
-            * Function contains a static variable which tells us if this templated instantiation of Collectable
-            * already has been instantiated anytime before, or this is the first time we are instantiating it.
-            * Checks the value of the static variable to see if 0 or not. If it is 0, it means this is the very
-            * first time we are creating an instance of this class, Set the variable id to the getuniquePairID
-            * function of the UniquePairIDGenerator class generates, guranteed to be unique
-            * and not shared by any other Pair class.
-            */
-            inline static uint64_t getUniquePairID_() {
-                static uint64_t id = 0;
-                if(id){ return id; }
-                id = sparta::collection::UniquePairIDGenerator::getUniquePairID_();
-                return id;
-            }
-
-            //! \brief Update the vector containing the Name Value Pairs
-            //  we collected from the last collection
-            //! \brief Fill it with the new Name Value pairs from
-            //  this cycle of Collection.
-            void updateLastRecord_(){
-                // These values will change every time the transaction changes
-                argos_record_.valueVector = getDataVector();
-                argos_record_.stringVector = getStringVector();
-                argos_record_.sizeOfVector = getSizeOfVector();
-
-                if (has_display_id_field_) {
-                    argos_record_.display_ID = argos_record_.valueVector[0].first & 0x0fff;
-                }
-            }
-
-            //! \brief Does this transaction contain any data yet?
-            bool hasData_() const {
-                return !(argos_record_.valueVector.empty() && argos_record_.stringVector.empty());
-            }
-
-            //! \brief Send the Pair Structure Record to Outputter
-            //  for writing to the Transaction Database File.
-            bool writeRecord_(bool simulation_ending = false)
-            {
-                sparta_assert(pipeline_col_,
-                            "Must startCollecting_ on this Collectable "
-                            << getLocation() << " before a record can be written");
-
-                // This record hasn't changed, don't write it
-                if(SPARTA_EXPECT_FALSE(argos_record_.time_Start == pipeline_col_->getScheduler()->getCurrentTick())) {
-                    return false;
-                }
-
-                // Set a new transaction ID since we're starting anew
-                argos_record_.transaction_ID = pipeline_col_->getUniqueTransactionId();
-
-                argos_record_.pairId = getUniquePairID_();
-
-                // Capture the end time
-                argos_record_.time_End =
-                    pipeline_col_->getScheduler()->getCurrentTick() + (simulation_ending ? 1 : 0);
-
-                // If this assert fires, then a user is trying to collect
-                // a record multiple times in their cycle window or
-                // something else really bad has happened.
-                sparta_assert(argos_record_.time_Start < argos_record_.time_End);
-
-                // Write the old record to the file
-                pipeline_col_->writeRecord(argos_record_);
-                return true;
-            }
-
-            //! Start a new record
-            void startNewRecord_() {
-
-                // Set up the new start time for the new record
-                argos_record_.time_Start = pipeline_col_->getScheduler()->getCurrentTick();
-            }
-
             //! collection is enabled on the TreeNode
             void setCollecting_(bool collect, Collector * collector) override final
             {
                 pipeline_col_ = dynamic_cast<PipelineCollector *>(collector);
                 sparta_assert(pipeline_col_ != nullptr,
                             "Collectables can only added to PipelineCollectors... for now");
-
-                // These fields only need to be set once - they define the format of the collectable
-                // and remain constant for the duration of the simulation
-                argos_record_.nameVector = getNameStrings();
-                argos_record_.length = argos_record_.nameVector.size();
-                has_display_id_field_ = (argos_record_.nameVector[0] == "DID");
-                for(const auto formatter: getFormatVector()) {
-                    argos_record_.delimVector.emplace_back(formatter);
-                }
-
-                if(collect && hasData_()){
-
-                    // Set the start time for this transaction to be
-                    // moment collection is enabled.
-                    startNewRecord_();
-                }
 
                 // If the collected object is null, this Collectable
                 // object is to be explicitly collected
@@ -865,11 +748,9 @@ namespace sparta{
                     }
                 }
             }
+
             // The pair collectable object to be collected
             const DataT * collected_object_ = nullptr;
-
-            // The live transaction record
-            pair_t argos_record_;
 
             // Ze Collec-tor
             PipelineCollector * pipeline_col_ = nullptr;
@@ -879,16 +760,11 @@ namespace sparta{
             sparta::EventSet event_set_;
             sparta::PayloadEvent<bool, sparta::SchedulingPhase::Trigger> ev_close_record_;
 
-            // Is this collectable currently closed?
-            bool record_closed_ = true;
-
             // Should we auto-collect?
             bool auto_collect_ = true;
 
-            // Is the first field the display ID (DID)?
-            bool has_display_id_field_ = false;
-
-            std::string log_string_;
+            // Entry point into the SimDB collection system.
+            simdb::argos::ScalarCollector<DataT>* entry_point_ = nullptr;
         };
     }//namespace collection
 }//namespace sparta

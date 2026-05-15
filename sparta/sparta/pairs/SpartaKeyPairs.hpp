@@ -22,6 +22,7 @@
 #include <limits>
 #include <unordered_map>
 #include <functional>
+#include <cstdint>
 
 #include "sparta/pairs/PairFormatter.hpp"
 #include "sparta/pairs/RegisterPairsMacro.hpp"
@@ -31,8 +32,148 @@
 #include "sparta/utils/MetaStructs.hpp"
 #include "sparta/utils/DetectMemberUtils.hpp"
 
+#include "simdb/utils/Demangle.hpp"
+#include "simdb/utils/StreamBuffer.hpp"
+#include "simdb/utils/TinyStrings.hpp"
 
 namespace sparta {
+
+    namespace pair_schema_detail {
+
+        //! Decayed return type of the last method pointer in a `KeyPairFromEntity` pack (the collected leaf).
+        template<typename... Args>
+        using KeyPairLeaf_t = MetaStruct::decay_t<
+            MetaStruct::return_type_t<
+                MetaStruct::last_index_type_t<
+                    MetaStruct::parameter_pack_length<Args...>::value - 1,
+                    Args...>>>;
+
+        /**
+         * \brief Map a collected leaf C++ type to Argos / SimpleDeserializer dtype strings.
+         *
+         * Returns one of: keys in `SimpleDeserializer.CONVERTERS`, `"string"`, or `"enum"`.
+         * Classification follows `KeyPairFromEntity::updateValueInCache_` where applicable.
+         */
+        template<typename T>
+        std::string argosLeafDtypeString() {
+            using D = MetaStruct::decay_t<T>;
+            if constexpr (MetaStruct::is_string<D>::value) {
+                return "string";
+            }
+            else if constexpr (MetaStruct::is_char_pointer<D>::value) {
+                return "string";
+            }
+            else if constexpr (std::is_enum<D>::value) {
+                // TODO cnyce: come back here when enums are
+                // stored by their underlying int, not their
+                // TinyStrings ID
+                return "string";
+            }
+            else {
+                return simdb::demangle_type<D>();
+            }
+        }
+
+    } // namespace pair_schema_detail
+
+    namespace pair_collection_detail {
+
+        //! Append a collected leaf value to \a buf (Argos binary layout).
+        template<typename T>
+        MetaStruct::enable_if_t<
+            std::is_integral<MetaStruct::decay_t<T>>::value &&
+            MetaStruct::is_pod<MetaStruct::decay_t<T>>::value &&
+            !MetaStruct::is_bool<MetaStruct::decay_t<T>>::value, void>
+        appendLeafValue(simdb::StreamBuffer& buf, simdb::TinyStrings<>*, const T& val) {
+            buf.append(val);
+        }
+
+        template<typename T>
+        MetaStruct::enable_if_t<
+            std::is_enum<MetaStruct::decay_t<T>>::value &&
+            sparta::utils::has_ostream_operator<MetaStruct::decay_t<T>>::value, void>
+        appendLeafValue(simdb::StreamBuffer& buf, simdb::TinyStrings<>* tiny_strings, const T& val) {
+            sparta_assert(tiny_strings != nullptr);
+            std::ostringstream ss;
+            ss << val;
+            const uint32_t id = tiny_strings->getStringID(ss.str());
+            buf.append(id);
+        }
+
+        template<typename T>
+        MetaStruct::enable_if_t<
+            std::is_enum<MetaStruct::decay_t<T>>::value &&
+            !sparta::utils::has_ostream_operator<MetaStruct::decay_t<T>>::value, void>
+        appendLeafValue(simdb::StreamBuffer& buf, simdb::TinyStrings<>*, const T& val) {
+            using U = MetaStruct::underlying_type_t<MetaStruct::decay_t<T>>;
+            buf.append(static_cast<U>(val));
+        }
+
+        template<typename T>
+        MetaStruct::enable_if_t<
+            std::is_convertible<MetaStruct::decay_t<T>, std::string>::value and
+            std::is_convertible<MetaStruct::decay_t<T>, uint32_t>::value and
+            !MetaStruct::is_string<MetaStruct::decay_t<T>>::value and
+            !MetaStruct::is_char_pointer<MetaStruct::decay_t<T>>::value, void>
+        appendLeafValue(simdb::StreamBuffer& buf, simdb::TinyStrings<>* tiny_strings, const T& val) {
+            sparta_assert(tiny_strings != nullptr);
+            const uint32_t id = tiny_strings->getStringID(std::string(val));
+            buf.append(id);
+        }
+
+        template<typename T>
+        MetaStruct::enable_if_t<MetaStruct::is_bool<MetaStruct::decay_t<T>>::value, void>
+        appendLeafValue(simdb::StreamBuffer& buf, simdb::TinyStrings<>*, const T& val) {
+            buf.append(static_cast<bool>(val));
+        }
+
+        template<typename T>
+        MetaStruct::enable_if_t<MetaStruct::is_char_pointer<MetaStruct::decay_t<T>>::value, void>
+        appendLeafValue(simdb::StreamBuffer& buf, simdb::TinyStrings<>* tiny_strings, const T& val) {
+            sparta_assert(tiny_strings != nullptr);
+            sparta_assert(val);
+            const uint32_t id = tiny_strings->getStringID(std::string(val));
+            buf.append(id);
+        }
+
+        template<typename T>
+        MetaStruct::enable_if_t<MetaStruct::is_string<MetaStruct::decay_t<T>>::value, void>
+        appendLeafValue(simdb::StreamBuffer& buf, simdb::TinyStrings<>* tiny_strings, const T& val) {
+            sparta_assert(tiny_strings != nullptr);
+            const uint32_t id = tiny_strings->getStringID(val);
+            buf.append(id);
+        }
+
+        template<typename T>
+        MetaStruct::enable_if_t<std::is_floating_point<MetaStruct::decay_t<T>>::value, void>
+        appendLeafValue(simdb::StreamBuffer& buf, simdb::TinyStrings<>*, const T& val) {
+            buf.append(val);
+        }
+
+        template<typename T>
+        MetaStruct::enable_if_t<MetaStruct::is_stl<MetaStruct::decay_t<T>>::value, void>
+        appendLeafValue(simdb::StreamBuffer& buf, simdb::TinyStrings<>* tiny_strings, const T& val) {
+            sparta_assert(tiny_strings != nullptr);
+            std::ostringstream ss;
+            ss << val;
+            const uint32_t id = tiny_strings->getStringID(ss.str());
+            buf.append(id);
+        }
+
+        template<typename T>
+        MetaStruct::enable_if_t<MetaStruct::is_pair<MetaStruct::decay_t<T>>::value, void>
+        appendLeafValue(simdb::StreamBuffer& buf, simdb::TinyStrings<>* tiny_strings, const T& val) {
+            static bool flag = false;
+            if(!flag) {
+                appendLeafValue(buf, tiny_strings, val.first);
+            }
+            else {
+                appendLeafValue(buf, tiny_strings, val.second);
+            }
+            flag = !flag;
+        }
+
+    } // namespace pair_collection_detail
 
     /**
      * \class PairCache
@@ -300,6 +441,25 @@ namespace sparta {
         }
 
         /**
+         * \brief Flattened (field name, Argos dtype string) schema in pair order.
+         *
+         * Field names match `getNameStrings()`; dtype strings align with
+         * `SimpleDeserializer.CONVERTERS` keys, `"string"`, or `"enum"`.
+         */
+        std::vector<std::pair<std::string, std::string>>
+        getFlattenedFieldNameAndDtypeSchema() const {
+            const auto & names = pair_cache_.getNameStrings();
+            const auto & dtypes = pair_definition_.getLeafArgosDtypeStrings();
+            sparta_assert(names.size() == dtypes.size());
+            std::vector<std::pair<std::string, std::string>> out;
+            out.reserve(names.size());
+            for(std::size_t i = 0; i < names.size(); ++i) {
+                out.emplace_back(names[i], dtypes[i]);
+            }
+            return out;
+        }
+
+        /**
         * \brief is this pair collector currently doing work
         * to run collection logic.
         */
@@ -318,11 +478,11 @@ namespace sparta {
          * and record the data in the PairCache.
          */
         template<typename... Targs>
-        void defaultCollect_(const Targs &... pos_args) {
+        void defaultCollect_(simdb::StreamBuffer* buf, const Targs &... pos_args) {
 
             // Only do a collection if any of our keys were dirty, i.e our
             // updateData_ method was reached
-            if(collect_(pos_args...)) {
+            if(collect_(buf, pos_args...)) {
                 generateCollectionString_();
             }
         }
@@ -332,9 +492,19 @@ namespace sparta {
          * Returns true if any of the pairs were dirty during the collection
          */
         template<typename... Targs>
-        bool collect_(const Targs &... args) {
-            return pair_definition_.populatePairs(
-                &pair_cache_, args...);
+        bool collect_(simdb::StreamBuffer* buf, const Targs &... args) {
+            if(buf != nullptr) {
+                return pair_definition_.extractBytes(buf, args...);
+            }
+            return pair_definition_.populatePairs(&pair_cache_, args...);
+        }
+
+        /**
+         * \brief Set the TinyStrings string-ID map owned by the ArgosCollector app.
+         * This is only used for pipeline collection, not PEvents.
+         */
+        void setTinyStrings_(simdb::TinyStrings<>* tiny_strings) {
+            pair_definition_.setTinyStrings(tiny_strings);
         }
 
         /**
@@ -460,8 +630,17 @@ namespace sparta {
             return f_switch_;
         }
 
+        /**
+         * \brief Set the TinyStrings string-ID map owned by the ArgosCollector app.
+         * This is only used for pipeline collection, not PEvents.
+         */
+        void setTinyStrings(simdb::TinyStrings<>* tiny_strings) {
+            tiny_strings_ = tiny_strings;
+        }
+
     private:
         std::string name_;
+        simdb::TinyStrings<>* tiny_strings_ = nullptr;
 
     protected:
         /**
@@ -474,6 +653,18 @@ namespace sparta {
             stream << format_tags_.prefix;
             stream << std::setfill(format_tags_.fill_char);
             stream << std::setw(format_tags_.swidth);
+        }
+
+        /**
+         * \brief Ask the ArgosCollector's TinyStrings for the given string's int ID.
+         */
+        uint32_t getStringID_(const std::string& s) {
+            return tiny_strings_->getStringID(s);
+        }
+
+        template<typename T>
+        void appendLeafValueToStream_(simdb::StreamBuffer& buf, const T& val) {
+            pair_collection_detail::appendLeafValue(buf, tiny_strings_, val);
         }
 
         //! Formatting options for this key's value.
@@ -512,6 +703,10 @@ namespace sparta {
             c->updateStringCache(s.str(), id_);
             return false;
         }
+
+        void populateArgBytes(simdb::StreamBuffer& buf, const DataType& dat) {
+            appendLeafValueToStream_(buf, dat);
+        }
     };
 
     /**
@@ -538,6 +733,8 @@ namespace sparta {
             Pair(name, id) {}
 
         virtual bool populateFromEntity(PairCache *, const EntityType &)  = 0;
+
+        virtual void appendBytesFromEntity(simdb::StreamBuffer&, const EntityType &) = 0;
     };
 
     template <class DataT, class EntityType, class EntityBaseClass>
@@ -604,6 +801,10 @@ namespace sparta {
             return false;
         }
 
+        void appendBytesFromEntity(simdb::StreamBuffer& buf, const EntityType & owner) override final {
+            this->appendLeafValueToStream_(buf, ((owner).*func_)());
+        }
+
     protected:
         std::unique_ptr<UnRefDataT> data_cpy_;
         FuncType func_;
@@ -651,13 +852,17 @@ namespace sparta {
         public:
 
             DerivedTypeVerification_(
-                const E & outer, PairCache *& c, const T & owner, Ts &&... ts,
+                const E & outer,
+                PairCache *& c,
+                simdb::StreamBuffer * buf,
+                const T & owner,
+                Ts &&... ts,
                 MetaStruct::enable_if_t<MetaStruct::is_any_pointer<MetaStruct::decay_t<T>>::value>* = 0) :
                 DerivedTypeVerification_<E, T, MetaTypeList::type_list<Tail...>, Ts...>(
-                    outer, c, owner, std::forward<Ts>(ts)...) {
+                    outer, c, buf, owner, std::forward<Ts>(ts)...) {
                 const auto dtype = dynamic_cast<MetaStruct::add_pointer_t<H>>(owner.get());
                 if(dtype) {
-                    outer->populateFromEntityUtility_(c, dtype, std::forward<Ts>(ts)...);
+                    outer->populateFromEntityUtility_(c, buf, dtype, std::forward<Ts>(ts)...);
                 }
             }
         };
@@ -666,7 +871,7 @@ namespace sparta {
         template<typename E, typename T, typename... Ts>
         class DerivedTypeVerification_<E, T, MetaTypeList::type_list<>, Ts...> {
         public:
-            DerivedTypeVerification_(const E &, PairCache *&, const T &, Ts &&...) {}
+            DerivedTypeVerification_(const E &, PairCache *&, simdb::StreamBuffer *, const T &, Ts &&...) {}
         };
 
         /**
@@ -677,8 +882,11 @@ namespace sparta {
          */
         template<std::size_t... S>
         bool unpackTupleAsIndices_(
-            PairCache *& c, const EntityType & owner, MetaStruct::sequence_generator<S...>) {
-            return populateFromEntityUtility_(c, owner, std::get<S>(parameterPack_)...);
+            PairCache *& c,
+            simdb::StreamBuffer * buf,
+            const EntityType & owner,
+            MetaStruct::sequence_generator<S...>) {
+            return populateFromEntityUtility_(c, buf, owner, std::get<S>(parameterPack_)...);
         }
 
         //! During object-method invocation, if we encounter an Abstract type, we
@@ -695,7 +903,7 @@ namespace sparta {
             //! Abstract Type is encountered.
             std::is_abstract<MetaStruct::decay_t<MetaStruct::remove_any_pointer_t<T>>>::value and
             MetaStruct::is_any_pointer<T>::value ,bool>
-        populateFromEntityUtility_(PairCache *& c, const T & object, Ts &&... ts) {
+        populateFromEntityUtility_(PairCache *& c, simdb::StreamBuffer * buf, const T & object, Ts &&... ts) {
 
             //! This abstract type must have a TypeList.
             static_assert(MetaTypeList::is_meta_typelist<
@@ -715,7 +923,7 @@ namespace sparta {
                     typename MetaStruct::decay_t<
                         MetaStruct::remove_any_pointer_t<T>>::derived_type_list,
                             Ts &&...>(
-                this, c, object, std::forward<Ts>(ts)...);
+                this, c, buf, object, std::forward<Ts>(ts)...);
 
             (void)verify_derived_type;
             return false;
@@ -735,7 +943,7 @@ namespace sparta {
             //! Abstract Type is encountered.
             std::is_abstract<MetaStruct::decay_t<MetaStruct::remove_any_pointer_t<T>>>::value and
             !MetaStruct::is_any_pointer<T>::value ,bool>
-        populateFromEntityUtility_(PairCache *& c, const T & object, R (S :: * func)() const, Ts &&... ts) {
+        populateFromEntityUtility_(PairCache *& c, simdb::StreamBuffer * buf, const T & object, R (S :: * func)() const, Ts &&... ts) {
 
             //! This abstract type must have a TypeList.
             static_assert(MetaTypeList::is_meta_typelist<
@@ -749,7 +957,7 @@ namespace sparta {
                     MetaStruct::remove_any_pointer_t<T>>::derived_type_list>::value,
                         "Abstract Base Type cannot contain an empty MetaTypeList.");
 
-            return populateFromEntityUtility_(c, (object.*func)(), std::forward<Ts>(ts)...);
+            return populateFromEntityUtility_(c, buf, (object.*func)(), std::forward<Ts>(ts)...);
         }
 
         //! During object-method invocation, if we encounter an Abstract type, we
@@ -766,7 +974,7 @@ namespace sparta {
             //! Abstract Type is encountered.
             std::is_abstract<MetaStruct::decay_t<MetaStruct::remove_any_pointer_t<T>>>::value and
             !MetaStruct::is_any_pointer<T>::value ,bool>
-        populateFromEntityUtility_(PairCache *& c, const T & object, R (S :: * func)() const) {
+        populateFromEntityUtility_(PairCache *& c, simdb::StreamBuffer * buf, const T & object, R (S :: * func)() const) {
 
             //! This abstract type must have a TypeList.
             static_assert(MetaTypeList::is_meta_typelist<
@@ -783,18 +991,7 @@ namespace sparta {
             // Get the new data, as a copy.
             const ValueType & tmp = ((object).*func)();
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, buf, tmp);
         }
 
         // Type of object is not abstract.
@@ -828,8 +1025,8 @@ namespace sparta {
                 MetaStruct::remove_any_pointer_t<T>>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T & object, R (S :: * func)() const, Ts &&... ts) {
-            return populateFromEntityUtility_(c, (object.*func)(), std::forward<Ts>(ts)...);
+            PairCache *& c, simdb::StreamBuffer * buf, const T & object, R (S :: * func)() const, Ts &&... ts) {
+            return populateFromEntityUtility_(c, buf, (object.*func)(), std::forward<Ts>(ts)...);
         }
 
         // Type of object is not abstract.
@@ -872,8 +1069,8 @@ namespace sparta {
                 MetaStruct::remove_any_pointer_t<T>>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T & object, std::function<R ()> const S :: * func, Ts &&... ts) {
-            return populateFromEntityUtility_(c, (object.*func)(), std::forward<Ts>(ts)...);
+            PairCache *& c, simdb::StreamBuffer * buf, const T & object, std::function<R ()> const S :: * func, Ts &&... ts) {
+            return populateFromEntityUtility_(c, buf, (object.*func)(), std::forward<Ts>(ts)...);
         }
 
         // Type of object is not abstract.
@@ -902,8 +1099,8 @@ namespace sparta {
             !MetaStruct::is_any_pointer<T>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T &, std::function<R ()> const S, Ts &&... ts) {
-            return populateFromEntityUtility_(c, S(), std::forward<Ts>(ts)...);
+            PairCache *& c, simdb::StreamBuffer * buf, const T &, std::function<R ()> const S, Ts &&... ts) {
+            return populateFromEntityUtility_(c, buf, S(), std::forward<Ts>(ts)...);
         }
 
         // Type of object is not abstract.
@@ -934,8 +1131,8 @@ namespace sparta {
             !MetaStruct::is_any_pointer<T>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T & object, std::function<R (const H &)> const S, Ts &&... ts) {
-            return populateFromEntityUtility_(c, S(object), std::forward<Ts>(ts)...);
+            PairCache *& c, simdb::StreamBuffer * buf, const T & object, std::function<R (const H &)> const S, Ts &&... ts) {
+            return populateFromEntityUtility_(c, buf, S(object), std::forward<Ts>(ts)...);
         }
 
         // Type of object is not abstract.
@@ -966,7 +1163,7 @@ namespace sparta {
             !MetaStruct::is_any_pointer<T>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *&, const T &, std::function<R (const H &)> const, Ts...) {
+            PairCache *&, simdb::StreamBuffer * buf, const T &, std::function<R (const H &)> const, Ts...) {
             return false;
         }
 
@@ -1001,8 +1198,8 @@ namespace sparta {
                 MetaStruct::remove_any_pointer_t<T>>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T & object, R (S :: * func)() const, Ts &&... ts) {
-            return populateFromEntityUtility_(c, (*object.*func)(), std::forward<Ts>(ts)...);
+            PairCache *& c, simdb::StreamBuffer * buf, const T & object, R (S :: * func)() const, Ts &&... ts) {
+            return populateFromEntityUtility_(c, buf, (*object.*func)(), std::forward<Ts>(ts)...);
         }
 
         // Type of object is not abstract.
@@ -1036,8 +1233,8 @@ namespace sparta {
                 MetaStruct::remove_any_pointer_t<T>>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T & object, std::function<R ()> const S :: * func, Ts &&... ts) {
-            return populateFromEntityUtility_(c, (*object.*func)(), std::forward<Ts>(ts)...);
+            PairCache *& c, simdb::StreamBuffer * buf, const T & object, std::function<R ()> const S :: * func, Ts &&... ts) {
+            return populateFromEntityUtility_(c, buf, (*object.*func)(), std::forward<Ts>(ts)...);
         }
 
         // Type of object is not abstract.
@@ -1066,8 +1263,8 @@ namespace sparta {
             MetaStruct::is_any_pointer<T>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T &, std::function<R ()> const S, Ts &&... ts) {
-            return populateFromEntityUtility_(c, S(), std::forward<Ts>(ts)...);
+            PairCache *& c, simdb::StreamBuffer * buf, const T &, std::function<R ()> const S, Ts &&... ts) {
+            return populateFromEntityUtility_(c, buf, S(), std::forward<Ts>(ts)...);
         }
 
         // Type of object is not abstract.
@@ -1098,8 +1295,8 @@ namespace sparta {
             MetaStruct::is_any_pointer<T>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T & object, std::function<R (const H &)> const S, Ts &&... ts) {
-            return populateFromEntityUtility_(c, S(*object), std::forward<Ts>(ts)...);
+            PairCache *& c, simdb::StreamBuffer * buf, const T & object, std::function<R (const H &)> const S, Ts &&... ts) {
+            return populateFromEntityUtility_(c, buf, S(*object), std::forward<Ts>(ts)...);
         }
 
         // Type of object is not abstract.
@@ -1130,7 +1327,7 @@ namespace sparta {
             MetaStruct::is_any_pointer<T>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *&, const T &, std::function<R (const H &)> const, Ts &&...) {
+            PairCache *&, simdb::StreamBuffer * buf, const T &, std::function<R (const H &)> const, Ts &&...) {
             return false;
         }
 
@@ -1169,23 +1366,12 @@ namespace sparta {
                 MetaStruct::remove_any_pointer_t<T>>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T & object, R (S :: * func)() const) {
+            PairCache *& c, simdb::StreamBuffer * buf, const T & object, R (S :: * func)() const) {
 
             // Get the new data, as a copy.
             const ValueType & tmp = ((object).*func)();
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, buf, tmp);
         }
 
         // Type of object is not abstract.
@@ -1219,23 +1405,12 @@ namespace sparta {
                 MetaStruct::remove_any_pointer_t<T>>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T & object, std::function<R ()> const S :: * func) {
+            PairCache *& c, simdb::StreamBuffer * buf, const T & object, std::function<R ()> const S :: * func) {
 
             // Get the new data, as a copy.
             const ValueType & tmp = ((object).*func)();
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, buf, tmp);
         }
 
         // Type of object is not abstract.
@@ -1265,23 +1440,12 @@ namespace sparta {
             !MetaStruct::is_any_pointer<T>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T &, std::function<R ()> const S) {
+            PairCache *& c, simdb::StreamBuffer * buf, const T &, std::function<R ()> const S) {
 
             // Get the new data, as a copy.
             const ValueType & tmp = S();
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, buf, tmp);
         }
 
         // Type of object is not abstract.
@@ -1312,23 +1476,12 @@ namespace sparta {
             !MetaStruct::is_any_pointer<T>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T & object, std::function<R (const H &)> const S) {
+            PairCache *& c, simdb::StreamBuffer * buf, const T & object, std::function<R (const H &)> const S) {
 
             // Get the new data, as a copy.
             const ValueType & tmp = S(object);
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, buf, tmp);
         }
 
         // Type of object is not abstract.
@@ -1359,7 +1512,7 @@ namespace sparta {
             !MetaStruct::is_any_pointer<T>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *&, const T &, std::function<R (const H &)> const) {
+            PairCache *&, simdb::StreamBuffer * buf, const T &, std::function<R (const H &)> const) {
             return false;
         }
 
@@ -1408,23 +1561,12 @@ namespace sparta {
                 MetaStruct::remove_any_pointer_t<T>>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T & object, R (S :: * func)() const) {
+            PairCache *& c, simdb::StreamBuffer * buf, const T & object, R (S :: * func)() const) {
 
             // Get the new data, as a copy.
             const ValueType & tmp = (*object.*func)();
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, buf, tmp);
         }
 
         // Type of object is not abstract.
@@ -1458,23 +1600,12 @@ namespace sparta {
                 MetaStruct::remove_any_pointer_t<T>>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T & object, std::function<R ()> const S :: * func) {
+            PairCache *& c, simdb::StreamBuffer * buf, const T & object, std::function<R ()> const S :: * func) {
 
             // Get the new data, as a copy.
             const ValueType & tmp = (*object.*func)();
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, buf, tmp);
         }
 
         // Type of object is not abstract.
@@ -1504,23 +1635,12 @@ namespace sparta {
             MetaStruct::is_any_pointer<T>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T &, std::function<R ()> const S) {
+            PairCache *& c, simdb::StreamBuffer * buf, const T &, std::function<R ()> const S) {
 
             // Get the new data, as a copy.
             const ValueType & tmp = S();
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, buf, tmp);
         }
 
         // Type of object is not abstract.
@@ -1551,23 +1671,12 @@ namespace sparta {
             MetaStruct::is_any_pointer<T>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *& c, const T & object, std::function<R (const H &)> const S) {
+            PairCache *& c, simdb::StreamBuffer * buf, const T & object, std::function<R (const H &)> const S) {
 
             // Get the new data, as a copy.
             const ValueType & tmp = S(*object);
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, buf, tmp);
         }
 
         // Type of object is not abstract.
@@ -1598,7 +1707,7 @@ namespace sparta {
             MetaStruct::is_any_pointer<T>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *&, const T &, std::function<R (const H &)> const) {
+            PairCache *&, simdb::StreamBuffer * buf, const T &, std::function<R (const H &)> const) {
             return false;
         }
 
@@ -1630,7 +1739,7 @@ namespace sparta {
                 MetaStruct::remove_any_pointer_t<T>>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *&, const T &, R (S :: *)() const, Ts &&...) {
+            PairCache *&, simdb::StreamBuffer * buf, const T &, R (S :: *)() const, Ts &&...) {
             return false;
         }
 
@@ -1657,7 +1766,7 @@ namespace sparta {
                 MetaStruct::remove_any_pointer_t<T>>>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *&, const T &, std::function<R ()> const, Ts &&...) {
+            PairCache *&, simdb::StreamBuffer * buf, const T &, std::function<R ()> const, Ts &&...) {
             return false;
         }
 
@@ -1684,7 +1793,7 @@ namespace sparta {
                 MetaStruct::remove_any_pointer_t<T>>>::value, bool>
 
         populateFromEntityUtility_(
-            PairCache *&, const T &, std::function<R (Ps...)> const, Ts &&...) {
+            PairCache *&, simdb::StreamBuffer * buf, const T &, std::function<R (Ps...)> const, Ts &&...) {
             return false;
         }
 
@@ -1841,6 +1950,23 @@ namespace sparta {
         // Have a unique pointer to the ultimate terminal type of this KeyPairEntity.
         std::unique_ptr<ValueType> data_cpy_;
 
+        bool finalizeCollection_(
+            PairCache *& c, simdb::StreamBuffer * buf, const ValueType & tmp) {
+            if(buf != nullptr) {
+                this->appendLeafValueToStream_(*buf, tmp);
+                return false;
+            }
+            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
+                data_cpy_.reset(new ValueType(tmp));
+            }
+            else if(*data_cpy_ == tmp) {
+                return true;
+            }
+            updateValueInCache_(c, id_, tmp);
+            data_cpy_.reset(new ValueType(tmp));
+            return false;
+        }
+
     public:
         KeyPairFromEntity(uint32_t i, const std::string & name, Args &&... args) :
             BasePairFromEntity<EntityType>(name, i),
@@ -1856,7 +1982,21 @@ namespace sparta {
         */
         virtual bool populateFromEntity(PairCache * c, const EntityType & owner)
         override final {
-            return unpackTupleAsIndices_(c, owner, MetaStruct::generate_sequence_t<sizeof...(Args)>());
+            PairCache* cache_ref = c;
+            return unpackTupleAsIndices_(
+                cache_ref,
+                nullptr,
+                owner,
+                MetaStruct::generate_sequence_t<sizeof...(Args)>());
+        }
+
+        void appendBytesFromEntity(simdb::StreamBuffer& buf, const EntityType & owner) override final {
+            PairCache* cache_ref = nullptr;
+            unpackTupleAsIndices_(
+                cache_ref,
+                &buf,
+                owner,
+                MetaStruct::generate_sequence_t<sizeof...(Args)>());
         }
     };
 
@@ -1935,6 +2075,46 @@ namespace sparta {
             return false;
         }
 
+        template <typename EntityT, typename T>
+        inline MetaStruct::enable_if_t<!std::is_same<EntityT, NoEntity>::value, void>
+        extractBytesFromEntityHelper_(simdb::StreamBuffer* buf, BoundPairType* pair, const T& owner) {
+            reinterpret_cast<BoundPairType*>(pair)->appendBytesFromEntity(*buf, owner);
+        }
+
+        template <typename EntityT, typename T>
+        inline MetaStruct::enable_if_t<std::is_same<EntityT, NoEntity>::value, void>
+        extractBytesFromEntityHelper_(simdb::StreamBuffer*, BoundPairType*, const T&) {}
+
+        template<int ArgPos>
+        void populatePositionalBytes_(simdb::StreamBuffer*) {
+            sparta_assert(ArgPos == arbitrary_pairs_.size(),
+                          "Too many or too few positional arguments were supplied to the collect method of your pair collector.");
+        }
+
+        template<int ArgPos, typename U, typename... Targs>
+        void populatePositionalBytes_(simdb::StreamBuffer* buf, const U& u, const Targs&... args) {
+            reinterpret_cast<ArbitraryPair<U>*>(arbitrary_pairs_[ArgPos])->populateArgBytes(*buf, u);
+            populatePositionalBytes_<ArgPos + 1, Targs...>(buf, args...);
+        }
+
+        template <typename EntityT, typename T, typename... Targs>
+        inline MetaStruct::enable_if_t<!std::is_same<EntityT, NoEntity>::value, void>
+        extractPositionalArguments_(simdb::StreamBuffer* buf, const T&, const Targs&... pos_args) {
+            constexpr size_t nargs = sizeof...(Targs);
+            sparta_assert(nargs == arbitrary_pairs_.size(),
+                          "Attempting to give positional arguments to a PairDefinition which accepts a different count");
+            populatePositionalBytes_<0, Targs...>(buf, pos_args...);
+        }
+
+        template <typename EntityT, typename T, typename... Targs>
+        inline MetaStruct::enable_if_t<std::is_same<EntityT, NoEntity>::value, void>
+        extractPositionalArguments_(simdb::StreamBuffer* buf, const T& arg0, const Targs&... pos_args) {
+            constexpr size_t nargs = sizeof...(Targs);
+            sparta_assert(nargs + 1 == arbitrary_pairs_.size(),
+                          "Attempting to give positional arguments to a PairDefinition which accepts a different count");
+            populatePositionalBytes_<0, T, Targs...>(buf, arg0, pos_args...);
+        }
+
         /**
          * \brief unroll the positional arguments that were supplied and pass these values up to the
          * appropriate ArbitraryPair. This method is specially enabled to ignore the first argument
@@ -2000,6 +2180,9 @@ namespace sparta {
                 size, name, std::forward<Args>(args)...);
             pairs_.emplace_back(new_pair);
             bound_pairs_.emplace_back(new_pair);
+            leaf_argos_dtype_strings_.emplace_back(
+                pair_schema_detail::argosLeafDtypeString<
+                    pair_schema_detail::KeyPairLeaf_t<Args...>>());
             new_pair->setFormatter(format);
         }
 
@@ -2105,6 +2288,8 @@ namespace sparta {
                 new ArbitraryPair<DataT>(name, pairs_.size());
             pairs_.emplace_back(new_pair);
             arbitrary_pairs_.emplace_back(new_pair);
+            leaf_argos_dtype_strings_.emplace_back(
+                pair_schema_detail::argosLeafDtypeString<DataT>());
 
             new_pair->setFormatter(format);
 
@@ -2139,6 +2324,9 @@ namespace sparta {
                 pairs_.size(), name, std::forward<Args>(args)...);
             pairs_.emplace_back(new_pair);
             bound_pairs_.emplace_back(new_pair);
+            leaf_argos_dtype_strings_.emplace_back(
+                pair_schema_detail::argosLeafDtypeString<
+                    pair_schema_detail::KeyPairLeaf_t<Args...>>());
             new_pair->setFormatter(std::ios::dec);
         }
 
@@ -2205,6 +2393,8 @@ namespace sparta {
                     name, func, pairs_.size());
             pairs_.emplace_back(new_pair);
             bound_pairs_.emplace_back(new_pair);
+            leaf_argos_dtype_strings_.emplace_back(
+                pair_schema_detail::argosLeafDtypeString<DataType>());
 
             // mark the pair to be formatted pair if necessary
             new_pair->setFormatter(format);
@@ -2217,6 +2407,7 @@ namespace sparta {
         * by making use of Overloaded function addKey with one parameter.
         */
         void finalizeKeys(PairCache * pair_cache) {
+            sparta_assert(leaf_argos_dtype_strings_.size() == pairs_.size());
             pair_cache->reserveThemAll(pairs_.size());
             for(uint32_t i = 0; i < pairs_.size(); ++i) {
                 pair_cache->addKey(pairs_[i]->getKey(), i, pairs_[i]->getFormatter());
@@ -2229,6 +2420,13 @@ namespace sparta {
          */
         inline uint32_t size() const {
             return pairs_.size();
+        }
+
+        /**
+         * \brief Argos dtype string per collected pair, parallel to `pairs_` / `getNameStrings()`.
+         */
+        inline const std::vector<std::string> & getLeafArgosDtypeStrings() const {
+            return leaf_argos_dtype_strings_;
         }
 
         /**
@@ -2262,10 +2460,37 @@ namespace sparta {
             return !was_clean;
         }
 
+        /**
+         * \brief Serialize all pair fields into \a buf (no PairCache / dirty tracking).
+         * \return Always \c true (caller treats stream collection as a full write).
+         */
+        template<typename T, typename... Targs>
+        bool extractBytes(simdb::StreamBuffer* buf, const T & owner, const Targs &... pos_args) {
+            sparta_assert(buf != nullptr);
+            for(auto & pair : bound_pairs_) {
+                extractBytesFromEntityHelper_<EntityType>(buf, pair, owner);
+            }
+            if(arbitrary_pairs_.size() > 0) {
+                extractPositionalArguments_<EntityType>(buf, owner, pos_args...);
+            }
+            return true;
+        }
+
+        /**
+         * \brief Set the TinyStrings string-ID map owned by the ArgosCollector app.
+         * This is only used for pipeline collection, not PEvents.
+         */
+        void setTinyStrings(simdb::TinyStrings<>* tiny_strings) {
+            for(auto & pair : pairs_) {
+                pair->setTinyStrings(tiny_strings);
+            }
+        }
+
     protected:
         PairList pairs_;
         BoundPairList bound_pairs_;
         ArbitraryPairList arbitrary_pairs_;
+        std::vector<std::string> leaf_argos_dtype_strings_;
         bool finalized_;
     };
 

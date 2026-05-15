@@ -16,6 +16,13 @@
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/collection/Collector.hpp"
 
+namespace simdb{
+    class DatabaseManager;
+    namespace argos{
+        class ArgosCollector;
+    }
+}
+
 namespace sparta{
 namespace collection
 {
@@ -61,6 +68,19 @@ namespace collection
         //!Virtual destructor
         virtual ~CollectableTreeNode()
         {}
+
+        /**
+         * \brief Collectable classes must be able to register themselves with
+         * the ArgosCollector and store a ScalarCollector/ContainerCollector.
+         */
+        virtual void createSimDbEntryPoint(simdb::argos::ArgosCollector*) = 0;
+
+        /**
+         * \brief Whether a scalar (Collectable) or container (IterableCollector),
+         * serialize struct-like data structure hierarchies (field name + dtype)
+         * to the database.
+         */
+        virtual void serializeStructSchema(simdb::DatabaseManager*, std::map<std::string, int>& schema_ids_by_dtype_name) = 0;
 
         /**
          * \brief Method that tells this treenode that is now running

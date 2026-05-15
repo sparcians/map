@@ -1265,6 +1265,10 @@ bool CommandLineSimulator::parse(int argc,
                     return false;
                 }
 
+                std::string collection_db_file = sim_config_.pipeline_collection_file_prefix + std::string(".db");
+                sim_config_.simdb_config.enableApp("argos-collector");
+                sim_config_.simdb_config.setAppDatabase("argos-collector", collection_db_file);
+
                 ++i;
                 collection_parsed = true;
             } else if (o.string_key.find("collection-at") != std::string::npos) {
@@ -2045,6 +2049,10 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
     if(heartbeat != 0 && heartbeat % 100 != 0){
         throw SpartaException("HEARTBEAT for pipeline collection must be a multiple of 100 > 0, not \"")
             << heartbeat << "\"";
+    }
+
+    if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr && heartbeat != 0){
+        sim_config_.pipeline_collection_heartbeat = heartbeat;
     }
 
     // Pevent

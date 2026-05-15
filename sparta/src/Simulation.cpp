@@ -89,6 +89,7 @@
 #if SIMDB_ENABLED
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
 #include "sparta/serialization/checkpoint/CherryPickFastCheckpointer.hpp"
+#include "simdb/apps/argos/ArgosCollector.hpp"
 #include "simdb/apps/AppManager.hpp"
 #endif
 
@@ -609,6 +610,7 @@ void Simulation::buildTree()
     simdb::AppRegistrations app_registrations(app_managers_.get());
     app_registrations.registerApp<ReportStatsCollector>();
     app_registrations.registerApp<serialization::checkpoint::CherryPickFastCheckpointer>();
+    app_registrations.registerApp<simdb::argos::ArgosCollector>();
     registerSimDbApps_(&app_registrations);
 #endif
 
@@ -814,6 +816,44 @@ void Simulation::finalizeFramework()
             app->setScheduler(getScheduler());
             db_mgr->safeTransaction([&]() { setupReports_(app); });
             reports_setup = true;
+        }
+        else if (auto app = app_mgr->getApp<simdb::argos::ArgosCollector>())
+        {
+            const auto& heartbeat_vv = notNull(sim_config_)->pipeline_collection_heartbeat;
+            if (heartbeat_vv.isValid())
+            {
+                app->setHeartbeat(heartbeat_vv);
+            }
+            app->timestampWith([this](){return scheduler_->getCurrentTick();});
+
+            std::set<const Clock*> collectable_clocks;
+            std::map<std::string, int> schema_ids_by_dtype_name;
+            std::function<void(TreeNode*)> visitCollectables;
+            visitCollectables = [&](TreeNode* node)
+            {
+                if (auto ctn = dynamic_cast<collection::CollectableTreeNode*>(node))
+                {
+                    ctn->createSimDbEntryPoint(app);
+                    ctn->serializeStructSchema(db_mgr, schema_ids_by_dtype_name);
+                    collectable_clocks.insert(notNull(ctn->getClock()));
+                }
+                for (auto child : TreeNodePrivateAttorney::getAllChildren(node))
+                {
+                    visitCollectables(child);
+                }
+            };
+
+            db_mgr->safeTransaction([&](){
+                visitCollectables(getRoot());
+            });
+
+            for (auto clk : collectable_clocks)
+            {
+                auto period = clk->getPeriod();
+                auto numer = clk->getRatio().getNumerator();
+                auto denom = clk->getRatio().getDenominator();
+                app->addClock(clk->getName(), period, numer, denom);
+            }
         }
     }
 #endif
