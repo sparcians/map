@@ -169,6 +169,11 @@ namespace sparta{
                 }
             }
 
+            void extractBytes(simdb::StreamBuffer* buf, const DataT & val)
+            {
+                buf->append(val);
+            }
+
             //! Explicitly/manually collect a value for this collectable, ignoring
             //! what the Collectable is currently pointing to.
             void collect(const DataT & val)
@@ -407,6 +412,8 @@ namespace sparta{
             using PairCollector<PairDef_t>::isCollecting;
 
         public:
+            //! IterableCollector and other callers need public access for per-bin serialization.
+            using PairCollector<PairDef_t>::extractBytes;
 
             /**
              * \brief Construct the Collectable, no data object associated, part of a group

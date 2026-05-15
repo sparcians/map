@@ -261,10 +261,8 @@ public:
     //! Force close all records for this iterable type.  This will
     //! close the record immediately and clear the field for the next
     //! cycle
-    void closeRecord(const bool & simulation_ending = false) override {
-        for (size_type i = 0; i < positions_.size(); ++i) {
-            positions_[i]->closeRecord(simulation_ending);
-        }
+    void closeRecord(const bool & = false) override {
+        entry_point_->quiet();
     }
 
     //! Schedule event to close all records for this iterable type.
@@ -300,6 +298,7 @@ private:
     typedef typename std::iterator_traits<typename IterableType::iterator>::value_type BinT;
     typedef MetaStruct::remove_any_pointer_t<BinT> BinValueT;
     typedef Collectable<BinT> CollectableT;
+
     // Standard walk of iterable types
     void collectImpl_(const IterableType * iterable_object, std::false_type)
     {
@@ -307,15 +306,18 @@ private:
             "Can't collect iterable_object because it's a nullptr! How did we get here?");
         auto itr = iterable_object->begin();
         auto eitr = iterable_object->end();
-        for (uint32_t i = 0; i < expected_capacity_; ++i)
+        auto size = std::distance(itr, eitr);
+        std::vector<std::vector<char>> bin_bytes(size);
+        for (uint32_t i = 0; i < size; ++i)
         {
-            if (itr != eitr) {
-                positions_[i]->collect(*itr);
-                ++itr;
-            } else {
-                positions_[i]->closeRecord();
-            }
+            sparta_assert(itr != eitr);
+            auto& bytes = bin_bytes[i];
+            simdb::StreamBuffer buf(bytes);
+            positions_[i]->extractBytes(&buf, *itr);
+            ++itr;
         }
+
+        entry_point_->setBinBytes(bin_bytes);
     }
 
     // Full iteration walk, checking validity of the iterator.  This
@@ -325,17 +327,21 @@ private:
     {
         sparta_assert(nullptr != iterable_object,
             "Can't collect iterable_object because it's a nullptr! How did we get here?");
-        uint32_t s = 0;
         auto itr = iterable_object->begin();
-        for (uint32_t i = 0; i < expected_capacity_; ++i, ++s)
+        std::map<uint16_t, std::vector<char>> bin_bytes;
+        for (uint32_t i = 0; i < expected_capacity_; ++i)
         {
+            sparta_assert(i <= UINT16_MAX);
+            sparta_assert(itr != iterable_object->end());
             if (itr.isValid()) {
-                positions_[i]->collect(*itr);
-            } else {
-                positions_[i]->closeRecord();
+                auto& bytes = bin_bytes[(uint16_t)i];
+                simdb::StreamBuffer buf(bytes);
+                positions_[i]->extractBytes(&buf, *itr);
             }
             ++itr;
         }
+
+        entry_point_->setBinBytes(bin_bytes);
     }
 
     //! Virtual method called by CollectableTreeNode when collection

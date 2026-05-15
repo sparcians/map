@@ -467,6 +467,14 @@ namespace sparta {
             return collecting_;
         }
 
+        template<typename... Targs>
+        bool extractBytes(simdb::StreamBuffer* buf, const Targs &... args) {
+            if(buf != nullptr) {
+                return pair_definition_.extractBytes(buf, args...);
+            }
+            return false;
+        }
+
     protected:
 
         /**
@@ -2057,6 +2065,20 @@ namespace sparta {
         }
 
         /**
+         * \brief Resolve bound-pair payloads that may be wrapped in smart pointers (\c SpartaSharedPointer,
+         *        \c std::shared_ptr, raw pointers, etc.) to a const reference usable by entity pairs.
+         */
+        template<typename EntityT, typename T>
+        static const EntityT & entityPayloadRefForBoundPairs_(const T & owner) {
+            if constexpr(std::is_same_v<std::remove_cv_t<std::remove_reference_t<T>>, EntityT>) {
+                return owner;
+            }
+            else if constexpr(std::is_same_v<MetaStruct::remove_any_pointer_t<T>, EntityT>) {
+                return *owner;
+            }
+        }
+
+        /**
          * \brief If this PairDefinition is trying to collect data from some Entity, we need to allow this.
          * but if we are not, we cannot try to do this since our first argument will
          * not be the argument of an entity.
@@ -2065,7 +2087,8 @@ namespace sparta {
         template <typename Ret, typename EntityT, typename T>
         inline MetaStruct::enable_if_t<!std::is_same<EntityT, NoEntity>::value, Ret>
         populateFromEntityHelper_(PairCache * cache, BoundPairType * pair, const T & owner) {
-            bool val = reinterpret_cast<BoundPairType *>(pair)->populateFromEntity(cache, owner);
+            bool val = reinterpret_cast<BoundPairType *>(pair)->populateFromEntity(
+                cache, entityPayloadRefForBoundPairs_<EntityT>(owner));
             return val;
         }
 
@@ -2078,7 +2101,8 @@ namespace sparta {
         template <typename EntityT, typename T>
         inline MetaStruct::enable_if_t<!std::is_same<EntityT, NoEntity>::value, void>
         extractBytesFromEntityHelper_(simdb::StreamBuffer* buf, BoundPairType* pair, const T& owner) {
-            reinterpret_cast<BoundPairType*>(pair)->appendBytesFromEntity(*buf, owner);
+            reinterpret_cast<BoundPairType*>(pair)->appendBytesFromEntity(
+                *buf, entityPayloadRefForBoundPairs_<EntityT>(owner));
         }
 
         template <typename EntityT, typename T>
