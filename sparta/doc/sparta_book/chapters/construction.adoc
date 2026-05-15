@@ -15,8 +15,6 @@
 :url-doxygen-cmdlinesim: https://sparcians.github.io/map/classsparta_1_1app_1_1CommandLineSimulator.html
 :imagesdir:../images
 :data-uri:
-:source-highlighter:rouge
-:rouge-style: github
 
 Building a Sparta model requires establishing component hierarchies
 and relationships that will be used during simulation.  This
