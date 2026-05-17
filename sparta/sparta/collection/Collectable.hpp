@@ -127,6 +127,12 @@ namespace sparta{
              */
             void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final
             {
+                // Bin collectors under IterableCollectors do not need an entry point.
+                if (dynamic_cast<CollectableTreeNode*>(getParent()))
+                {
+                    return;
+                }
+
                 // Legacy (non-PairCollector) usage will be turned off in map_v3 for any struct-like
                 // collectables. The user will have to create the nested SpartaPairDefinitionType
                 // in order to continue collecting this type.
@@ -490,10 +496,18 @@ namespace sparta{
              */
             void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final
             {
+                // Bin collectors under IterableCollectors do not need an entry point.
+                // But in order to serialize strings, all the PairDefinitions need
+                // the TinyStrings regardless.
+                setTinyStrings_(argos_collector->getTinyStrings());
+                if (dynamic_cast<CollectableTreeNode*>(getParent()))
+                {
+                    return;
+                }
+
                 auto loc = getLocation();
                 auto clk_name = notNull(getClock())->getName();
                 entry_point_ = argos_collector->createScalarCollector<DataT>(loc, clk_name);
-                setTinyStrings_(argos_collector->getTinyStrings());
             }
 
             /**
@@ -553,15 +567,15 @@ namespace sparta{
                     for(std::size_t i = 0; i < names.size(); ++i) {
                         const std::string special_formatter =
                             pairFormatterToSpecialFormatString(formatters[i]);
-                        (void)db_mgr->INSERT(SQL_TABLE("DataTypeNodes"),
-                                                SQL_VALUES(schema_id,
-                                                        parent_id_unset,
-                                                        kind_pod,
-                                                        names[i],
-                                                        empty,
-                                                        dtypes[i],
-                                                        empty,
-                                                        special_formatter));
+                        db_mgr->INSERT(SQL_TABLE("DataTypeNodes"),
+                                       SQL_VALUES(schema_id,
+                                                  parent_id_unset,
+                                                  kind_pod,
+                                                  names[i],
+                                                  empty,
+                                                  dtypes[i],
+                                                  empty,
+                                                  special_formatter));
                     }
                     schema_ids_by_dtype_name[root_dtype] = static_cast<int>(schema_id);
                 }

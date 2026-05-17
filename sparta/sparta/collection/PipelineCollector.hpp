@@ -393,7 +393,7 @@ namespace collection
                 {
                     // First turn on this node if it's actually a CollectableTreeNode
                     CollectableTreeNode* c_node = dynamic_cast<CollectableTreeNode*>(starting_node);
-                    if(c_node != nullptr) {
+                    if(c_node != nullptr && dynamic_cast<CollectableTreeNode*>(c_node->getParent()) == nullptr) {
                         c_node->startCollecting(this);
                         registered_collectables_.insert(c_node);
                     }
@@ -420,7 +420,7 @@ namespace collection
             recursiveStopCollect = [&recursiveStopCollect, this] (sparta::TreeNode* starting_node) {
                 // First turn off this node if it's actually a CollectableTreeNode
                 CollectableTreeNode* c_node = dynamic_cast<CollectableTreeNode*>(starting_node);
-                if(c_node != nullptr)
+                if(c_node != nullptr && dynamic_cast<CollectableTreeNode*>(c_node->getParent()) == nullptr)
                 {
                     c_node->stopCollecting(this);
                     registered_collectables_.erase(c_node);
