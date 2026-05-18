@@ -1,0 +1,463 @@
+= Parameters
+:url-parameterset: https://sparcians.github.io/map/classsparta_1_1ParameterSet.html
+:url-parameter: https://sparcians.github.io/map/classsparta_1_1Parameter.html
+:url-cmdlinesim: https://sparcians.github.io/map/classsparta_1_1app_1_1CommandLineSimulator.html
+:url-simulation: https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html
+:url-formats: https://sparcians.github.io/map/formats.html
+
+Parameters are how a Sparta simulator is configured without
+recompiling.  They control topology (how many cores, how many
+execution units), behavior (cache replacement policy, branch predictor
+type), and capacity (queue depths, buffer sizes).  A well-parameterized
+model can explore an entire design space from a single binary with
+nothing but configuration files and command line flags.
+
+This chapter covers how to declare parameters in a unit, how to read
+them at construction time, how to validate them, and how to set them
+from the command line and YAML configuration files.
+
+== Declaring Parameters
+
+Parameters are declared inside a nested `ParameterSet` class within
+the unit header.  The `ParameterSet` must derive from
+`sparta::ParameterSet` and be passed the tree node in its constructor.
+Individual parameters are declared using the `PARAMETER` macro.
+
+[source,cpp]
+----
+// FetchUnit.hpp
+#pragma once
+#include "sparta/simulation/Unit.hpp"
+#include "sparta/simulation/ParameterSet.hpp"
+
+class FetchUnit : public sparta::Unit
+{
+public:
+    class FetchParameters : public sparta::ParameterSet
+    {
+    public:
+        FetchParameters(sparta::TreeNode * n) :
+            sparta::ParameterSet(n)
+        {}
+
+        PARAMETER(uint32_t, fetch_width,       4,       "Number of instructions fetched per cycle")
+        PARAMETER(uint32_t, icache_line_size,  64,      "I-cache line size in bytes")
+        PARAMETER(bool,     enable_prefetch,   true,    "Enable instruction prefetching")
+        PARAMETER(std::string, branch_pred,    "gshare","Branch predictor type: gshare, bimodal, tournament")
+    };
+
+    static const char * name;
+    FetchUnit(sparta::TreeNode * node, const FetchParameters * params);
+};
+----
+
+The `PARAMETER` macro takes four arguments:
+
+[source,cpp]
+----
+PARAMETER(type, name, default_value, description)
+----
+
+- `type` -- any C++ type that can be serialized to/from a string.
+  Common types: `uint32_t`, `uint64_t`, `int32_t`, `bool`,
+  `std::string`, `double`.  Vectors are also supported:
+  `std::vector<uint32_t>`.
+- `name` -- the parameter name as it appears on the command line and
+  in YAML files.  Must be Python-compatible (alphanumeric and
+  underscores only).
+- `default_value` -- the value used if the parameter is not explicitly
+  set.
+- `description` -- a human-readable description shown by
+  `--show-parameters`.
+
+== Reading Parameters in the Constructor
+
+Parameters are read in the unit constructor.  The `ParameterSet` is
+passed as a `const` pointer -- it is read-only from the unit's
+perspective.  Copy parameter values into `const` member variables at
+construction time:
+
+[source,cpp]
+----
+// FetchUnit.cpp
+const char * FetchUnit::name = "fetch";
+
+FetchUnit::FetchUnit(sparta::TreeNode * node,
+                     const FetchParameters * params) :
+    sparta::Unit(node),
+    fetch_width_    (params->fetch_width),
+    icache_line_size_(params->icache_line_size),
+    enable_prefetch_ (params->enable_prefetch),
+    branch_pred_     (params->branch_pred)
+{
+    // Parameters are now locked -- changes after this point will throw
+    ILOG("FetchUnit created: width=" << fetch_width_
+         << " prefetch=" << enable_prefetch_
+         << " predictor=" << branch_pred_);
+}
+----
+
+Store parameters as `const` member variables.  This documents intent
+(this value does not change during simulation), enables compiler
+optimizations, and prevents accidental modification in callbacks.
+
+[source,cpp]
+----
+// FetchUnit.hpp private section
+private:
+    const uint32_t    fetch_width_;
+    const uint32_t    icache_line_size_;
+    const bool        enable_prefetch_;
+    const std::string branch_pred_;
+----
+
+NOTE: The `ParameterSet` is locked after the unit constructor returns.
+Any attempt to read or modify parameters after construction will throw
+a `sparta::SpartaException`.  If you need a parameter value later in
+simulation (in an event callback, for example), copy it to a member
+variable in the constructor as shown above.
+
+== Ignoring Parameters
+
+Sometimes a unit receives a parameter that it intentionally does not
+use -- perhaps a parameter added for future use, or one that only
+applies in certain configurations.  Sparta requires that every
+parameter be either read or explicitly ignored.  An unused, unignored
+parameter triggers a warning (and optionally an error) at startup.
+
+Call `.ignore()` on any parameter the unit does not use:
+
+[source,cpp]
+----
+FetchUnit::FetchUnit(sparta::TreeNode * node,
+                     const FetchParameters * params) :
+    sparta::Unit(node),
+    fetch_width_(params->fetch_width)
+{
+    // This parameter exists for future use -- ignore it for now
+    params->enable_prefetch.ignore();
+}
+----
+
+== Parameter Validation
+
+Parameters can have validation callbacks attached in the
+`ParameterSet` constructor.  A validation callback receives the
+parameter value and the tree node, and returns `true` if the value
+is valid.  If it returns `false`, Sparta throws an exception at
+startup with the provided error message.
+
+[source,cpp]
+----
+class FetchParameters : public sparta::ParameterSet
+{
+public:
+    FetchParameters(sparta::TreeNode * n) :
+        sparta::ParameterSet(n)
+    {
+        // fetch_width must be a power of two between 1 and 16
+        auto validate_fetch_width =
+            [](uint32_t & val, const sparta::TreeNode *) -> bool {
+                return val >= 1 && val <= 16 && (val & (val - 1)) == 0;
+            };
+        fetch_width.addDependentValidationCallback(
+            validate_fetch_width,
+            "fetch_width must be a power of two between 1 and 16");
+
+        // branch predictor type must be a known value
+        auto validate_branch_pred =
+            [](std::string & val, const sparta::TreeNode *) -> bool {
+                return val == "gshare" || val == "bimodal" || val == "tournament";
+            };
+        branch_pred.addDependentValidationCallback(
+            validate_branch_pred,
+            "branch_pred must be one of: gshare, bimodal, tournament");
+    }
+
+    PARAMETER(uint32_t,   fetch_width,    4,       "Number of instructions fetched per cycle")
+    PARAMETER(std::string, branch_pred,   "gshare", "Branch predictor type")
+};
+----
+
+Validation callbacks run during `configureTree()`, before the unit is
+instantiated.  This means invalid parameter values are caught at
+startup, not during a long simulation run.
+
+== Setting Parameters from the Command Line
+
+With `sparta::app::CommandLineSimulator` integrated (see
+<<_command_line_simulation>>), every parameter in the simulation is
+automatically accessible from the command line using the `-p` flag
+with the full tree path to the parameter:
+
+[source,bash]
+----
+# Set fetch_width on core0's fetch unit
+./my_simulator -p top.cpu.core0.fetch.params.fetch_width 8
+
+# Set the branch predictor type
+./my_simulator -p top.cpu.core0.fetch.params.branch_pred tournament
+
+# Set the same parameter on all cores using a wildcard
+./my_simulator -p top.cpu.core?.fetch.params.fetch_width 8
+
+# Set parameters on every unit named "fetch" anywhere in the tree
+./my_simulator -p top.*.fetch.params.fetch_width 8
+----
+
+The path mirrors the simulation tree exactly.  Use `--show-parameters
+--no-run` to see all available parameters and their current values
+before running:
+
+[source,bash]
+----
+./my_simulator --show-parameters --no-run
+----
+
+[source]
+----
+top.cpu.core0.fetch.params
+  fetch_width       = 4         (default: 4)
+  icache_line_size  = 64        (default: 64)
+  enable_prefetch   = true      (default: true)
+  branch_pred       = gshare    (default: gshare)
+----
+
+Parameters that have been changed from their default value are marked
+in the output.  The simulation summary also reports non-default
+parameter counts so you can confirm your overrides were applied.
+
+=== Numeric Suffixes
+
+The `-p` flag supports convenient numeric suffixes for large values:
+
+[cols="1,1"]
+|===
+| Suffix | Multiplier
+
+| `K` or `k` | 1,000
+| `M` or `m` | 1,000,000
+| `G` or `g` | 1,000,000,000
+| `Ki`       | 1,024
+| `Mi`       | 1,048,576
+| `Gi`       | 1,073,741,824
+|===
+
+[source,bash]
+----
+# Set max instructions to 1 billion
+./my_simulator -p top.cpu.core0.fetch.params.max_insts 1G
+
+# Set I-cache size to 32 KiB
+./my_simulator -p top.cpu.core0.icache.params.size 32Ki
+----
+
+== Setting Parameters from a YAML Configuration File
+
+For larger simulation configurations with many parameters, use a
+YAML file instead of command line flags.  Sparta's YAML configuration
+format maps directly to the simulation tree structure.
+
+=== Writing a Configuration File
+
+Use `--write-final-config` to dump the current configuration (with
+any command line overrides applied) to a YAML file:
+
+[source,bash]
+----
+./my_simulator --write-final-config my_config.yaml --no-run
+----
+
+The resulting file mirrors the tree structure:
+
+[source,yaml]
+----
+# my_config.yaml
+top:
+  cpu:
+    core0:
+      fetch:
+        params:
+          fetch_width: 4
+          icache_line_size: 64
+          enable_prefetch: true
+          branch_pred: gshare
+      decode:
+        params:
+          decode_width: 4
+      # ... other units
+----
+
+Edit the file to change parameters, then run with `-c`:
+
+[source,bash]
+----
+./my_simulator -c my_config.yaml
+----
+
+=== Wildcard YAML Entries
+
+YAML configuration files support the same wildcard paths as the
+command line.  Use `?` to match a single character and `*` to match
+any sequence:
+
+[source,yaml]
+----
+top:
+  cpu:
+    core?:            # applies to core0, core1, core2, ...
+      fetch:
+        params:
+          fetch_width: 8
+          branch_pred: tournament
+----
+
+=== Multiple Configuration Files
+
+Multiple `-c` flags can be stacked.  They are applied in order, so
+later files override earlier ones:
+
+[source,bash]
+----
+# Start with a base config, override with a core-specific config
+./my_simulator -c base_config.yaml -c ooo_core_config.yaml
+----
+
+This makes it easy to maintain a library of reusable configuration
+files -- a base config for the platform, a separate config for each
+core microarchitecture variant, and a sweep config for the parameters
+being explored.
+
+=== Mixing Files and Command Line
+
+Command line `-p` overrides are applied after all `-c` files.  This
+lets you use a config file for the bulk of the configuration and
+fine-tune individual parameters on the command line:
+
+[source,bash]
+----
+./my_simulator -c base_config.yaml \
+               -p top.cpu.core?.fetch.params.fetch_width 8 \
+               -p top.cpu.core?.decode.params.decode_width 8
+----
+
+== Architecture Configurations
+
+Sparta supports a special type of configuration called an
+*architecture* configuration, set via the `--arch` flag.  Architecture
+configurations are YAML files that represent a complete named
+microarchitecture variant -- think "4-wide OoO" vs "2-wide in-order".
+
+[source,bash]
+----
+./my_simulator --arch ooo_4wide
+----
+
+Architecture configs are loaded before other configuration files and
+can be overridden by `-c` and `-p` flags.  They are a clean way to
+ship a small number of named reference configurations alongside a
+simulator.
+
+The special `meta.params.architecture` tree node (visible in
+`--show-parameters` output) records which architecture was loaded.
+
+== Parameterizing Topology
+
+Parameters are not just for configuring unit behavior -- they can also
+control topology (how many nodes are built in `buildTree_`).  There
+are two ways to do this.
+
+=== Reading Parameters Before Instantiation
+
+During `configureTree_()`, the `ParameterSet` objects for all
+`ResourceTreeNode` instances in the tree are available but the units
+have not yet been instantiated.  This is the right time to read a
+parameter that controls how many child nodes to build.
+
+[source,cpp]
+----
+void MySimulator::configureTree_()
+{
+    // Read the number of cores from the CPU's parameter set
+    const auto * cpu_rtn =
+        getRoot()->getChildAs<sparta::ResourceTreeNode>(CPU::name);
+    const auto * cpu_params =
+        dynamic_cast<const CPU::CPUParameters *>(cpu_rtn->getParameterSet());
+
+    uint32_t num_cores = cpu_params->num_cores;
+
+    // Build additional core nodes based on the parameter value
+    for (uint32_t i = already_built_cores_; i < num_cores; ++i) {
+        auto * core_tn = new sparta::ResourceTreeNode(
+            cpu_rtn,
+            Core::name + std::to_string(i),
+            "core", i,
+            "Core " + std::to_string(i),
+            getResourceSet()->getResourceFactory(Core::name));
+        tns_to_delete_.emplace_back(core_tn);
+    }
+}
+----
+
+=== Topology Parameters as Simulator Constructor Arguments
+
+A simpler pattern used in Olympia is to pass topology parameters
+directly to the simulator constructor as plain C++ arguments, before
+any Sparta tree is built:
+
+[source,cpp]
+----
+// main.cpp
+uint32_t num_cores = 1;
+cls.getApplicationOptions().add_options()
+    ("num-cores",
+     sparta::app::named_value<uint32_t>("N", &num_cores)->default_value(1),
+     "Number of cores to simulate");
+cls.parse(argc, argv, err_code);
+
+// num_cores is now set from the command line before the tree is built
+MySimulator sim(num_cores);
+----
+
+[source,cpp]
+----
+// MySimulator.cpp
+MySimulator::MySimulator(uint32_t num_cores) :
+    sparta::app::Simulation("my_simulator", &scheduler_)
+{
+    num_cores_ = num_cores;
+}
+
+void MySimulator::buildTree_()
+{
+    for (uint32_t i = 0; i < num_cores_; ++i) {
+        // build core i ...
+    }
+}
+----
+
+This approach is cleaner for parameters that fundamentally control
+the shape of the simulation tree, since the tree does not need to be
+built twice and there is no risk of reading a parameter before it has
+been applied.
+
+== Summary
+
+Sparta's parameter system provides a complete, no-boilerplate solution
+for model configuration:
+
+- Declare parameters with the `PARAMETER` macro in a nested
+  `ParameterSet` class
+- Copy parameters to `const` member variables in the unit constructor
+- Add validation callbacks in the `ParameterSet` constructor for
+  range and consistency checks
+- Use `-p` on the command line for quick overrides and one-off
+  experiments
+- Use `-c` YAML files for reproducible, shareable configurations
+- Use `--write-final-config` to capture the exact configuration of
+  any run
+- Stack multiple `-c` files and add `-p` overrides to build a
+  flexible, layered configuration workflow
+
+The next chapter covers statistics and reporting -- how to expose
+measurements from a running simulation for analysis.

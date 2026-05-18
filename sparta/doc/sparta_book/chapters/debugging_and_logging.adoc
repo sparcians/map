@@ -1,0 +1,510 @@
+= Debugging and Logging
+:url-messagesource: https://sparcians.github.io/map/classsparta_1_1log_1_1MessageSource.html
+:url-tap: https://sparcians.github.io/map/classsparta_1_1log_1_1Tap.html
+:url-spartaassert: https://sparcians.github.io/map/SpartaAssert_8hpp.html
+:url-spartaexception: https://sparcians.github.io/map/classsparta_1_1SpartaException.html
+:url-end-user: https://sparcians.github.io/map/end_user.html
+:url-logging: https://sparcians.github.io/map/logging.html
+
+Debugging a performance simulator is different from debugging typical
+software.  A bug may only appear after millions of cycles, the causal
+chain may span multiple units, and the symptoms (wrong IPC, wrong
+cache hit rate) may be far removed from the root cause.  Sparta
+provides a layered debugging toolkit: structured logging for
+understanding what happened, assertions for catching invariant
+violations early, debug dumps for post-mortem analysis, and tree
+inspection commands for understanding the simulation's structure.
+
+This chapter covers all of these tools and how to use them effectively.
+
+== Sparta Logging
+
+Sparta's logging system is a hierarchical, category-based message
+system.  Every unit can emit log messages at runtime, and those
+messages are routed to files or stdout based on tree path patterns
+and categories specified on the command line.  Messages have zero
+overhead when logging is disabled -- the `SPARTA_EXPECT_FALSE` hint
+tells the compiler to optimize for the common case of logging being
+off.
+
+=== Declaring Log Message Sources
+
+Every `sparta::Unit` inherits three built-in log message sources:
+
+- `info_logger_` -- for informational messages about normal operation
+- `warn_logger_` -- for warning messages about unexpected but
+  recoverable conditions
+- `debug_logger_` -- for verbose debug output
+
+These are ready to use in any unit without any declaration:
+
+[source,cpp]
+----
+void FetchUnit::fetch_()
+{
+    ILOG("Fetching " << fetch_width_ << " instructions at PC "
+         << std::hex << current_pc_);
+}
+
+void FetchUnit::handleFlush_(const FlushEvent & flush)
+{
+    WLOG("Flush received at cycle " << getClock()->currentCycle()
+         << " -- flushing " << num_inflight_ << " in-flight instructions");
+}
+----
+
+The macros `ILOG`, `WLOG`, and `DLOG` are shorthand for info, warn,
+and debug logging respectively.  They are defined to check whether
+the logger is observed (has an active tap) before constructing the
+message string, using `SPARTA_EXPECT_FALSE` to hint to the compiler
+that logging is usually off:
+
+[source,cpp]
+----
+#define ILOG(msg) \
+    if (SPARTA_EXPECT_FALSE(info_logger_)) { \
+        info_logger_ << msg; \
+    }
+----
+
+This means disabled log messages have essentially zero runtime cost
+-- the condition is almost always false, the compiler puts the
+message construction off the hot path, and no string formatting
+occurs.
+
+=== Adding Custom Log Categories
+
+For units that benefit from more fine-grained log control, additional
+message sources can be declared:
+
+[source,cpp]
+----
+// FetchUnit.hpp
+class FetchUnit : public sparta::Unit
+{
+private:
+    // Custom log source for branch prediction events
+    sparta::log::MessageSource branch_logger_;
+    sparta::log::MessageSource cache_logger_;
+};
+
+// FetchUnit.cpp
+FetchUnit::FetchUnit(sparta::TreeNode * node,
+                     const FetchParameters * params) :
+    sparta::Unit(node),
+    branch_logger_(node, "branch", "Branch prediction log messages"),
+    cache_logger_ (node, "cache",  "I-cache log messages")
+{
+    // ...
+}
+----
+
+Custom log sources appear as `?` nodes in `--show-tree` output under
+the unit and can be tapped by category name on the command line.
+
+=== Enabling Logging from the Command Line
+
+Use the `-l` flag with three arguments: a tree path pattern, a
+category, and a destination:
+
+[source,bash]
+----
+# Capture all info messages from every node, write to a file
+./my_simulator -r 10000 -l top info all.log
+
+# Capture only fetch unit messages
+./my_simulator -r 10000 -l top.cpu.core0.fetch info fetch.log
+
+# Capture all categories from fetch (empty string = all categories)
+./my_simulator -r 10000 -l top.cpu.core0.fetch "" fetch_all.log
+
+# Capture warning messages from all units (wildcard)
+./my_simulator -r 10000 -l top warning warnings.log
+
+# Capture from all cores using a wildcard
+./my_simulator -r 10000 -l top.cpu.core* info cores.log
+
+# Write to stdout (use 1) or stderr (use 2)
+./my_simulator -r 10000 -l top.cpu.core0.fetch debug 1
+
+# Multiple taps -- capture different units to different files
+./my_simulator -r 10000 \
+    -l top.cpu.core0.fetch  info fetch.log \
+    -l top.cpu.core0.decode info decode.log \
+    -l top.cpu.core0.lsu    info lsu.log
+----
+
+=== Log Output Formats
+
+The destination file extension controls the log format:
+
+[cols="1,1,2"]
+|===
+| Extension | Format | Content
+
+| `.log.basic`
+| Basic
+| Origin, category, and message content only
+
+| `.log.verbose`
+| Verbose
+| All metadata: timestamp, origin, category, thread, sequence number,
+  and message
+
+| `.log.raw`
+| Raw
+| Message content only, no metadata.  Useful for diffing logs between
+  runs.
+
+| Any other `.log`
+| Default
+| Most metadata excluding thread and sequence number.  The most
+  commonly useful format.
+
+| `1`
+| stdout
+| Basic format to stdout
+
+| `2`
+| stderr
+| Basic format to stderr
+|===
+
+Each log line (except raw) looks like:
+
+[source]
+----
+{0000000042 00000042 top.cpu.core0.fetch info}  Fetching 4 instructions at PC 0x1000
+----
+
+The fields in the braces are: tick, cycle, origin path, and category.
+
+=== Deferred Logging with --debug-on
+
+For long simulations, enabling logging from cycle 0 produces enormous
+files and significant slowdown.  Use `--debug-on` to defer all logging
+(and pipeline collection) until a specific cycle:
+
+[source,bash]
+----
+# Enable logging only after cycle 1,000,000
+./my_simulator -r 2000000 \
+    --debug-on 1000000 \
+    -l top info simulation.log
+----
+
+Or defer until a specific instruction count:
+
+[source,bash]
+----
+# Enable after 500K instructions retired
+./my_simulator -r 10000000 \
+    --debug-on-icount 500000 \
+    -l top info simulation.log
+----
+
+This is one of the most useful debugging techniques for bugs that
+only appear deep into a workload.
+
+=== Attaching a Log Tap in C++
+
+For unit tests or special-purpose debugging, log taps can be attached
+programmatically:
+
+[source,cpp]
+----
+#include "sparta/log/Tap.hpp"
+
+// Attach a tap to capture all info messages from the fetch unit to stdout
+sparta::log::Tap fetch_tap(fetch_node, "info", std::cout);
+
+// Attach to the scheduler to see every event that fires
+sparta::log::Tap scheduler_tap(&scheduler_, "debug", std::cout);
+----
+
+The tap is automatically removed when it goes out of scope.
+
+== Sparta Assertions
+
+Sparta provides `sparta_assert` as the primary tool for catching
+invariant violations in model code.  Unlike `assert()`, a
+`sparta_assert` failure generates a `sparta::SpartaException` which
+triggers Sparta's exception handling: it writes a debug dump,
+captures the device tree state, and prints a clean error message
+rather than aborting.
+
+[source,cpp]
+----
+#include "sparta/utils/SpartaAssert.hpp"
+
+void DecodeUnit::decode_()
+{
+    sparta_assert(pending_inst_.isValid(),
+                  "decode_() called with no pending instruction");
+
+    sparta_assert(credits_ > 0,
+                  "decode_() called with no credits -- check back-pressure logic");
+
+    sparta_assert(pending_inst_.getValue() < MAX_INSTRUCTION_VALUE,
+                  "Instruction value out of range: " << pending_inst_.getValue());
+}
+----
+
+The second argument to `sparta_assert` is the error message, which
+supports stream-style formatting with `<<`.  The message is only
+constructed when the assertion fails, so complex messages have no
+runtime cost during normal operation.
+
+=== When to Use sparta_assert
+
+Use `sparta_assert` liberally:
+
+- At the start of every event callback to validate preconditions
+- When reading data from a `ValidValue` before checking `isValid()`
+- When a state machine transitions to verify the current state is valid
+- When performing any arithmetic that could overflow or produce NaN
+- Anywhere you would write a comment starting with "this should never happen"
+
+A model with thorough assertions will catch bugs at the point they
+are introduced rather than many cycles later when their effects
+become visible in wrong statistics.
+
+=== sparta_assert vs std::assert
+
+Never use `std::assert()` in Sparta model code.  `std::assert` aborts
+the process immediately, bypassing Sparta's exception handling and
+producing no debug dump.  Always use `sparta_assert`.
+
+== Post-Run Debug Dumps
+
+When a `sparta_assert` fails or any `sparta::SpartaException` is
+thrown during a run, Sparta automatically writes a debug dump file.
+By default this file is named `error-dump.dbg`.
+
+The debug dump contains:
+
+- The full device tree at the time of the exception
+- The exception message and backtrace
+- The current scheduler state (current tick, events pending)
+- Per-unit debug state (each resource gets a chance to write its
+  own debug information)
+
+=== Reading the Debug Dump
+
+The dump file contains ANSI color codes.  View it with:
+
+[source,bash]
+----
+cat error-dump.dbg | less -R
+----
+
+Or to strip the color codes and view as plain text:
+
+[source,bash]
+----
+cat error-dump.dbg | sed 's/\x1b\[[0-9;]*m//g' | less
+----
+
+=== Controlling Debug Dump Behavior
+
+[source,bash]
+----
+# Always write a dump (even on clean exit) -- useful for baseline comparison
+./my_simulator --debug-dump always
+
+# Never write a dump -- useful for batch runs where disk space is limited
+./my_simulator --debug-dump never
+
+# (default) Write only on exception
+./my_simulator --debug-dump error
+
+# Write to a specific filename
+./my_simulator --debug-dump error --debug-dump-filename my_debug.dbg
+----
+
+=== Writing Custom Debug State
+
+Every `sparta::Unit` can override `dumpDebugContent_()` to write
+unit-specific state to the debug dump.  This is called automatically
+when the dump is triggered:
+
+[source,cpp]
+----
+// FetchUnit.cpp
+void FetchUnit::dumpDebugContent_(std::ostream & output) const noexcept
+{
+    output << "FetchUnit debug state:" << std::endl;
+    output << "  current_pc:    0x" << std::hex << current_pc_ << std::endl;
+    output << "  num_inflight:  " << std::dec << num_inflight_ << std::endl;
+    output << "  fetch_blocked: " << (fetch_blocked_ ? "yes" : "no") << std::endl;
+    if (pending_inst_.isValid()) {
+        output << "  pending_inst:  " << pending_inst_.getValue() << std::endl;
+    } else {
+        output << "  pending_inst:  (none)" << std::endl;
+    }
+}
+----
+
+Good `dumpDebugContent_` implementations are invaluable for
+post-mortem debugging -- they show the exact state of each unit
+at the moment the assertion fired.
+
+== Tree Inspection Commands
+
+Sparta's `--show-*` family of commands let you inspect the simulation
+structure without running it.  These are essential for debugging
+topology issues, missing port bindings, and parameter problems.
+
+[cols="1,1"]
+|===
+| Command | Shows
+
+| `--show-tree --no-run`
+| Full device tree including all phases: built, configured, finalized.
+  Shows port bindings, events, statistics, and log sources.
+
+| `--show-parameters --no-run`
+| All parameters with current values, defaults, and whether they
+  have been modified.
+
+| `--show-ports --no-run`
+| All ports and their bindings.  Unbound ports show clearly.
+
+| `--show-counters --no-run`
+| All counters and statistics with their current (pre-run) values.
+
+| `--show-loggers --no-run`
+| All log message sources and their categories.
+
+| `--show-dag --no-run`
+| The full event DAG showing precedence relationships between all
+  events.  Useful for diagnosing ordering problems.
+
+| `--help-tree`
+| Shorthand for `--show-tree --no-run`
+
+| `--help-parameters`
+| Shorthand for `--show-parameters --no-run`
+|===
+
+=== Finding Unbound Ports
+
+The most common use of `--show-ports` is finding ports that were
+not bound in `bindTree_()`.  An unbound port looks like this in the
+output:
+
+[source]
+----
+top.cpu.core0.decode.ports
+  in_fetch_queue : <DataInPort uint32_t> (UNBOUND)
+  out_rename     : <DataOutPort uint32_t> [bound to] {in_rename_queue (top.cpu.core0.rename.ports.in_rename_queue)}
+----
+
+Any port marked `UNBOUND` means data sent to it will silently
+disappear.  This is a common cause of counters that never increment.
+
+=== Inspecting the Event DAG
+
+The `--show-dag` output shows every event and its precedence
+relationships.  Use it when you suspect an ordering bug -- when an
+event is firing before data it depends on has arrived:
+
+[source,bash]
+----
+./my_simulator --show-dag --no-run 2>&1 | grep -A 3 "ev_decode"
+----
+
+== GDB Integration
+
+When debugging a Sparta simulator under GDB, the default behavior of
+breaking on uncaught exceptions is not useful because Sparta catches
+and rethrows exceptions internally.  Instead, break on exception throws
+or on the `SpartaException` constructor:
+
+[source]
+----
+$ gdb --args ./my_simulator -r 1000
+(gdb) catch throw
+(gdb) run
+----
+
+Or more specifically:
+
+[source]
+----
+(gdb) break 'sparta::SpartaException::SpartaException()'
+(gdb) run
+----
+
+The `SpartaException` default constructor is always called regardless
+of how the exception is constructed, so this breakpoint fires
+reliably for every Sparta exception.
+
+When the breakpoint fires, use `backtrace` to see where the exception
+was thrown and `info locals` to inspect the local variables at each
+frame.
+
+== Common Debugging Patterns
+
+=== Counter Never Increments
+
+If a counter ends the simulation at zero when it should not:
+
+1. Check `--show-ports` -- is the unit's input port unbound?
+2. Check `--show-dag` -- is the unit's event in the right phase?
+3. Add a `DLOG` at the start of the callback and enable logging --
+   is the callback ever firing?
+4. Add a `sparta_assert(false)` temporarily in the callback -- does
+   it ever trigger?
+
+=== Simulation Ends Too Early
+
+Sparta terminates when there are no more *continuing* events
+scheduled.  If the simulation stops before expected:
+
+1. Check whether the last unit in the pipeline is sending a "go"
+   signal back upstream.
+2. Check whether a `StartupEvent` correctly primed the pipeline.
+3. Add `-l top info 1` to watch the event flow near the end of
+   simulation and identify which unit went silent first.
+
+=== Wrong Statistics at End of Run
+
+If a rate or derived statistic is wrong:
+
+1. Check the raw counters first with `--report-all output.txt text`
+2. Verify the `StatisticDef` expression matches the intended formula
+3. Check visibility -- is the counter actually being accumulated?
+4. Use `--report-update-cycles 100` to generate a CSV and plot how
+   the counter evolves over time -- does it stop incrementing at
+   some point?
+
+=== Assertion Failure in a Callback
+
+When a `sparta_assert` fires in an event callback:
+
+1. Read the debug dump: `cat error-dump.dbg | less -R`
+2. Find the unit's section in the dump -- look for the custom
+   `dumpDebugContent_` output
+3. Note the tick and cycle from the assertion message
+4. Re-run with `-l top debug 1 --debug-on <cycle-200>` to capture
+   the 200 cycles leading up to the failure
+
+== Summary
+
+Sparta's debugging toolkit works best when used together:
+
+- Use `ILOG`/`WLOG`/`DLOG` liberally during development; they cost
+  nothing when disabled
+- Put `sparta_assert` at every precondition; they catch bugs at the
+  source, not the symptom
+- Use `--show-tree`, `--show-ports`, and `--show-dag` to verify
+  structure before running
+- Use `--debug-on` to focus logging on the cycle range of interest
+- Implement `dumpDebugContent_()` in every unit to make post-mortem
+  analysis practical
+- When under GDB, break on `SpartaException::SpartaException()` to
+  stop at the point the exception is created
+
+The next chapter covers pipeline collection and visualization with
+Argos/Helios.

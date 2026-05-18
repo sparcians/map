@@ -1,0 +1,50 @@
+= The Sparta Modeling Framework
+Knute Lingaard, Colby Nyce
+v1.0, 2026-05-17
+:doctype: book
+:title-page-background-image: image:spartan.png[fit=none]
+:toc: left
+:toclevels: 2
+:sectnums:
+:imagesdir: ./images
+:icons: font
+:multipage-level: 1
+
+image::spartan.png[Cover, align=center]
+
+[preface]
+= Preface
+Sparta is a toolkit for modeling/simulation engineers to build CPU,
+GPU, and platform simulations. Sparta is a framework much like STL or
+Boost in that it doesn't do anything on its own, but rather provides
+structure/organization as well as numerous helper classes and
+interfaces allowing models built with Sparta to work together for
+functional simulation, performance simulation, analysis, and design.
+
+The Sparta Modeling Framework is built on the principles of a OO
+framework design, written in C++ as well as python. The concepts in
+modeling communication/scheduling are similar to SystemC and Gem5, but
+takes a much more abstract approach to simulation design and
+development.
+
+This book will walk the reader through the fundamentals of the
+framework as well as provide insight and guidelines to write
+high-quality, professional level performance and functional models.
+
+// Include your 10 adoc files here
+include::chapters/introduction.adoc[]
+include::chapters/getting_started.adoc[]
+include::chapters/first_simulator.adoc[]
+include::chapters/construction.adoc[]
+include::chapters/ports_and_communication.adoc[]
+include::chapters/events_and_scheduling.adoc[]
+include::chapters/parameters.adoc[]
+include::chapters/statistics_and_reporting.adoc[]
+include::chapters/debugging_and_logging.adoc[]
+
+//include::analysis_methods.adoc[]
+//include::best_practices.adoc[]
+//include::framework.adoc[]
+//include::output.adoc[]
+//include::resources.adoc[]
+//include::special_cases.adoc[]

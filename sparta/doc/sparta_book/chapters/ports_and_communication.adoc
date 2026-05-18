@@ -1,0 +1,409 @@
+= Ports and Communication
+:url-dataport: https://sparcians.github.io/map/classsparta_1_1DataInPort.html
+:url-signalport: https://sparcians.github.io/map/classsparta_1_1SignalInPort.html
+:url-syncport: https://sparcians.github.io/map/classsparta_1_1SyncInPort.html
+:url-portset: https://sparcians.github.io/map/classsparta_1_1PortSet.html
+:url-port: https://sparcians.github.io/map/classsparta_1_1Port.html
+:url-event: https://sparcians.github.io/map/classsparta_1_1Event.html
+:url-uniqueevent: https://sparcians.github.io/map/classsparta_1_1UniqueEvent.html
+:url-validvalue: https://sparcians.github.io/map/classsparta_1_1utils_1_1ValidValue.html
+:url-clockmanager: https://sparcians.github.io/map/classsparta_1_1ClockManager.html
+:url-clock: https://sparcians.github.io/map/classsparta_1_1Clock.html
+:url-scheduler: https://sparcians.github.io/map/classsparta_1_1Scheduler.html
+:url-schedulingphase: https://sparcians.github.io/map/namespacesparta.html#aeec80d237ace9f07634c3d24c9aed9a0
+:url-dag: https://sparcians.github.io/map/classsparta_1_1DAG.html
+:url-startupevent: https://sparcians.github.io/map/classsparta_1_1StartupEvent.html
+:url-payloadevent: https://sparcians.github.io/map/classsparta_1_1PayloadEvent.html
+
+Sparta provides a rich set of classes for communication and scheduling
+between modeling resources.  This chapter covers the communication
+half of that system: ports.  Events and scheduling are covered in
+<<_events_and_scheduling>>.
+
+The philosophy behind Sparta communication is straightforward: *two
+resources should never know about each other directly*.  A `Fetch`
+unit should not hold a pointer to a `Decode` unit and call its methods
+directly.  Instead, `Fetch` sends data on an outbound port, and
+`Decode` receives it on an inbound port.  The connection between those
+ports is established by the simulator in `bindTree_`, not by the units
+themselves.
+
+This decoupling has practical benefits beyond clean design.  It means
+that topology -- which units connect to which -- can be changed in the
+simulator without touching model code.  It means ports show up in the
+simulation tree and can be inspected, logged, and reported on.  And it
+means the framework can enforce timing and ordering rules across the
+model without any per-unit coordination.
+
+== Port Types
+
+Sparta provides three families of ports:
+
+[cols="1,1,2"]
+|===
+| In Port | Out Port | Purpose
+
+| `sparta::DataInPort<T>`
+| `sparta::DataOutPort<T>`
+| Transfer typed data between units.  The most common port type.
+
+| `sparta::SignalInPort`
+| `sparta::SignalOutPort`
+| Send a signal (no data payload) between units.  Used for
+  handshaking, back-pressure, and ready/valid protocols.
+
+| `sparta::SyncInPort<T>`
+| `sparta::SyncOutPort<T>`
+| Transfer typed data between units on *different clock domains*.
+  Data sent on the out port is held until the rising edge of the
+  receiver's clock.
+|===
+
+Every port has a direction (In or Out) and a delay measured in clock
+cycles.  When a sender calls `send()` on an out port, the data arrives
+at the bound in port's registered callback after the specified delay.
+A delay of 1 is the most common choice -- it models a one-cycle
+pipeline register between stages.  A delay of 0 means the data arrives
+in the same cycle it was sent, which is valid but requires careful
+attention to event ordering (covered in <<_events_and_scheduling>>).
+
+=== DataInPort and DataOutPort
+
+`sparta::DataInPort<T>` and `sparta::DataOutPort<T>` are the workhorses
+of Sparta communication.  They transfer a typed value `T` from one
+unit to another with a configurable cycle delay.
+
+The sender simply calls `send()` with the data:
+
+[source,cpp]
+----
+// In the sender's unit -- declared as a member variable
+sparta::DataOutPort<uint32_t> out_port_{&unit_port_set_, "out_port"};
+
+// Called during simulation
+void MyProducer::produceData_()
+{
+    uint32_t value = computeNextValue_();
+    out_port_.send(value);  // delivers to receiver 1 cycle later (default)
+}
+----
+
+The receiver declares a `DataInPort` with a delay, registers a
+callback in its constructor, and implements the callback:
+
+[source,cpp]
+----
+// MyConsumer.hpp
+class MyConsumer : public sparta::Unit
+{
+public:
+    MyConsumer(sparta::TreeNode * node, const MyConsumerParams * params);
+    static const char * name;
+
+private:
+    // Receive uint32_t, 1 cycle after it is sent
+    sparta::DataInPort<uint32_t> in_port_{&unit_port_set_, "in_port", 1};
+
+    void receiveData_(const uint32_t & dat);
+};
+
+// MyConsumer.cpp
+MyConsumer::MyConsumer(sparta::TreeNode * node,
+                       const MyConsumerParams * params) :
+    sparta::Unit(node)
+{
+    in_port_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER_WITH_DATA(MyConsumer, receiveData_, uint32_t));
+}
+
+void MyConsumer::receiveData_(const uint32_t & dat)
+{
+    ILOG("Received: " << dat);
+}
+----
+
+A few things to note:
+
+- The port is declared as a member variable, not allocated on the heap.
+  This is the standard pattern -- ports are owned by the unit and live
+  for the duration of the simulation.
+- The first argument to every port constructor is `&unit_port_set_`,
+  the `sparta::PortSet` inherited from `sparta::Unit`.  This registers
+  the port in the simulation tree so it can be found by `bindTree_`.
+- The second argument is the port's name.  This name must be unique
+  within the unit's port set and must be Python-compatible (alphanumeric
+  and underscores only).
+- The delay argument on `DataInPort` (here `1`) is the number of cycles
+  after `send()` is called before the callback fires.
+
+The callback is registered using the
+`CREATE_SPARTA_HANDLER_WITH_DATA(ClassName, MethodName, DataType)`
+macro.  This macro generates a type-safe callback delegate.  The
+method signature must match exactly: `void method(const DataType &)`.
+
+=== Sending Data with a Custom Delay
+
+The delay on `DataInPort` sets a minimum delivery time.  The sender
+can also specify an additional delay at send time:
+
+[source,cpp]
+----
+// Send with default delay (whatever DataInPort was constructed with)
+out_port_.send(value);
+
+// Send with an additional 2-cycle delay on top of the port's delay
+out_port_.send(value, 2);
+----
+
+This is useful for modeling variable-latency operations like cache
+hits vs. misses -- the port delay models the common case and the
+send-time delay models the exception.
+
+=== SignalInPort and SignalOutPort
+
+`sparta::SignalInPort` and `sparta::SignalOutPort` work exactly like
+`DataInPort`/`DataOutPort` except they carry no data payload.  They
+are used for handshaking signals -- ready, valid, go, stall, flush --
+where the presence of the signal is the message.
+
+[source,cpp]
+----
+// Sender
+sparta::SignalOutPort go_out_{&unit_port_set_, "go_out"};
+go_out_.send();  // send the signal, no data
+
+// Receiver
+sparta::SignalInPort go_in_{&unit_port_set_, "go_in", 1};
+
+// Constructor
+go_in_.registerConsumerHandler(
+    CREATE_SPARTA_HANDLER(MyUnit, handleGoSignal_));
+
+// Callback -- no data argument
+void MyUnit::handleGoSignal_() {
+    ILOG("Go signal received at cycle " << getClock()->currentCycle());
+    startProducing_();
+}
+----
+
+The callback macro for signal ports is `CREATE_SPARTA_HANDLER(ClassName,
+MethodName)` -- no data type argument since there is no payload.
+
+=== SyncInPort and SyncOutPort
+
+`sparta::SyncInPort<T>` and `sparta::SyncOutPort<T>` are used when
+two units run on different clocks and data must be synchronized across
+the clock domain boundary.  Data sent on a `SyncOutPort` is held until
+the next rising edge of the *receiver's* clock, ensuring that the
+receiver always sees data at a clean clock boundary.
+
+Usage is identical to `DataIn`/`DataOutPort` -- the synchronization is
+handled transparently by the framework.  The receiver never needs to
+know it is talking to a unit on a different clock.
+
+See <<_clocks_and_clock_domains>> for how to set up multiple clock
+domains in a simulation.
+
+== Declaring Ports as Member Variables
+
+All ports must be declared as member variables of the unit, not as
+local variables and not allocated with `new`.  The port constructor
+registers the port with the `sparta::PortSet` and with the simulation
+tree, so the port must exist for the full lifetime of the unit.
+
+The standard pattern is to declare ports in the unit header using
+in-class member initializers:
+
+[source,cpp]
+----
+class MyUnit : public sparta::Unit
+{
+private:
+    // Ports declared as members with in-class initializers
+    sparta::DataOutPort<uint32_t>  out_data_{&unit_port_set_, "out_data"};
+    sparta::DataInPort<uint32_t>   in_data_ {&unit_port_set_, "in_data",  1};
+    sparta::SignalOutPort          out_go_  {&unit_port_set_, "out_go"};
+    sparta::SignalInPort           in_go_   {&unit_port_set_, "in_go",    1};
+};
+----
+
+The name string passed to each port constructor becomes the port's
+name in the simulation tree.  After `finalizeTree()` runs, these ports
+will appear under `top.<unit>.ports.<port_name>` and the `--show-tree`
+output will show their bindings.
+
+== Handling Multiple Inputs with UniqueEvent
+
+A common pattern in pipeline modeling is a unit that must wait for
+data from *two or more* sources before doing work.  For example, an
+execution unit might need both an instruction and its operands before
+it can execute.
+
+If the unit processes data directly in the port callback, it runs the
+risk of acting before all inputs have arrived for the current cycle.
+The correct pattern is to schedule a `sparta::UniqueEvent` from each
+port callback.  A `UniqueEvent` can be scheduled multiple times per
+cycle but fires only once -- guaranteeing that the work method runs
+after all port callbacks have had a chance to deliver their data.
+
+[source,cpp]
+----
+class MyUnit : public sparta::Unit
+{
+private:
+    sparta::DataInPort<uint32_t>  in_source1_{&unit_port_set_, "in_source1", 1};
+    sparta::DataInPort<uint32_t>  in_source2_{&unit_port_set_, "in_source2", 1};
+
+    // UniqueEvent fires once per cycle, even if scheduled multiple times
+    sparta::UniqueEvent<> ev_do_work_{&unit_event_set_, "ev_do_work",
+                                      CREATE_SPARTA_HANDLER(MyUnit, doWork_)};
+
+    // Use ValidValue to track which inputs have arrived
+    sparta::utils::ValidValue<uint32_t> data1_;
+    sparta::utils::ValidValue<uint32_t> data2_;
+
+    void receiveSource1_(const uint32_t & dat) {
+        sparta_assert(!data1_.isValid());
+        data1_ = dat;
+        ev_do_work_.schedule();  // schedule work -- may already be scheduled
+    }
+
+    void receiveSource2_(const uint32_t & dat) {
+        sparta_assert(!data2_.isValid());
+        data2_ = dat;
+        ev_do_work_.schedule();  // schedule work -- UniqueEvent fires only once
+    }
+
+    void doWork_() {
+        sparta_assert(data1_.isValid() && data2_.isValid(),
+                      "doWork_ called before both inputs arrived");
+        uint32_t result = data1_.getValue() + data2_.getValue();
+        ILOG("Result: " << result);
+        data1_.clearValid();
+        data2_.clearValid();
+    }
+};
+----
+
+`sparta::utils::ValidValue<T>` is a wrapper that tracks whether a value
+has been assigned.  It throws an assertion if you try to read an
+unassigned value, making it far safer than a raw `uint32_t` with a
+separate `bool valid` flag.  Use it any time a value is conditionally
+present.
+
+This UniqueEvent + ValidValue pattern is fundamental to correct Sparta
+modeling and appears throughout Olympia.  Get comfortable with it
+early.
+
+== Binding Ports
+
+Ports are bound together in the simulator's `bindTree_()` method.
+The `sparta::bind()` free function takes two ports and connects them:
+
+[source,cpp]
+----
+void MySimulator::bindTree_()
+{
+    sparta::bind(
+        getRoot()->getChildAs<sparta::Port>(
+            "top.cpu.core0.fetch.ports.out_fetch_queue_write"),
+        getRoot()->getChildAs<sparta::Port>(
+            "top.cpu.core0.decode.ports.in_fetch_queue_write"));
+}
+----
+
+The rules for binding:
+
+1. One port must be an `InPort` type and the other must be an `OutPort`
+   type -- you cannot bind two `InPorts` or two `OutPorts` together.
+2. For data ports, the data type `T` must match exactly.  Binding a
+   `DataOutPort<uint32_t>` to a `DataInPort<uint64_t>` is a compile
+   error.
+3. A port can only be bound once.  Attempting to bind an already-bound
+   port throws a `sparta::SpartaException` at startup.
+
+If `--show-tree` shows a port with no `[bound to]` annotation after
+`finalizeTree()` runs, that port was never bound -- a common source of
+simulation bugs where data silently goes nowhere.
+
+== Clocks and Clock Domains [[clocks_and_clock_domains]]
+
+In Sparta, a {url-clock}[`sparta::Clock`] is not an event-generating
+object that fires every cycle.  It is simply a time-conversion utility
+that answers: "given the current scheduler tick, what cycle is this
+unit on?"
+
+This distinction matters: Sparta's scheduler operates in ticks (by
+default, 1 tick = 1 picosecond).  A unit running at 1 GHz has a clock
+period of 1000 ticks.  The `sparta::Clock` converts between ticks and
+cycles so that port delays and event scheduling can be expressed in
+cycles rather than raw ticks.
+
+=== Setting Up Multiple Clocks
+
+Clocks are created using a
+{url-clockmanager}[`sparta::ClockManager`] and associated with tree
+nodes.  All units hanging off a node inherit that node's clock.
+
+[source,cpp]
+----
+#include "sparta/kernel/ClockManager.hpp"
+
+void MySimulator::buildTree_()
+{
+    // Create the clock tree.  The root clock runs at the master
+    // frequency: 1 tick = 1 PS.
+    sparta::RootTreeNode clk_root("clocks", "Clock Tree Root",
+                                   getRoot()->getSearchScope());
+    sparta::ClockManager cm;
+    sparta::Clock::Handle root_clk = cm.makeRoot(&clk_root);
+
+    // Create derived clocks relative to the root
+    sparta::Clock::Handle clk_3ghz = cm.makeClock("core_clk",   root_clk, 3000.0);
+    sparta::Clock::Handle clk_1ghz = cm.makeClock("mem_clk",    root_clk, 1000.0);
+    sparta::Clock::Handle clk_500  = cm.makeClock("bus_clk",    root_clk,  500.0);
+
+    // Associate clocks with tree nodes
+    cpu_node_->setClock(clk_3ghz.get());   // CPU runs at 3 GHz
+    mss_node_->setClock(clk_1ghz.get());   // Memory runs at 1 GHz
+    bus_node_->setClock(clk_500.get());    // Bus runs at 500 MHz
+
+    // ... rest of buildTree_
+}
+----
+
+=== Querying the Current Cycle
+
+Inside any unit, `getClock()->currentCycle()` returns the current
+cycle count on that unit's clock:
+
+[source,cpp]
+----
+void MyUnit::doWork_()
+{
+    ILOG("Working at cycle " << getClock()->currentCycle());
+}
+----
+
+This is the correct way to timestamp log messages and statistics.
+Do not use the scheduler's tick count directly in model code -- always
+convert through the unit's clock.
+
+== Summary
+
+The port system is the foundation of all inter-unit communication in
+Sparta.  The key principles to take away from this chapter:
+
+- Units communicate through ports, never through direct pointers or
+  method calls on each other.
+- `DataPort` transfers typed data; `SignalPort` transfers a signal
+  with no payload; `SyncPort` crosses clock domains.
+- Ports are declared as member variables, registered in the unit's
+  `PortSet`, and bound together in `bindTree_`.
+- The `UniqueEvent` + `ValidValue` pattern is the correct way to handle
+  units that wait for multiple inputs before doing work.
+- `sparta::Clock` converts scheduler ticks to cycle counts -- always
+  use it for time-related queries in model code.
+
+The next chapter covers the other half of the communication system:
+events and scheduling.

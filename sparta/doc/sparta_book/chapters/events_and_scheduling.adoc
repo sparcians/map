@@ -1,0 +1,510 @@
+= Events and Scheduling
+:url-event: https://sparcians.github.io/map/classsparta_1_1Event.html
+:url-uniqueevent: https://sparcians.github.io/map/classsparta_1_1UniqueEvent.html
+:url-singlecycleuniqueevent: https://sparcians.github.io/map/classsparta_1_1SingleCycleUniqueEvent.html
+:url-payloadevent: https://sparcians.github.io/map/classsparta_1_1PayloadEvent.html
+:url-startupevent: https://sparcians.github.io/map/classsparta_1_1StartupEvent.html
+:url-scheduleable: https://sparcians.github.io/map/classsparta_1_1Scheduleable.html
+:url-eventset: https://sparcians.github.io/map/classsparta_1_1EventSet.html
+:url-scheduler: https://sparcians.github.io/map/classsparta_1_1Scheduler.html
+:url-schedulingphase: https://sparcians.github.io/map/namespacesparta.html#aeec80d237ace9f07634c3d24c9aed9a0
+:url-dag: https://sparcians.github.io/map/classsparta_1_1DAG.html
+:url-spartahandler: https://sparcians.github.io/map/SpartaHandler_8hpp.html
+
+The previous chapter covered how data moves between units through
+ports.  This chapter covers the other half of the communication
+system: *when* things happen and *in what order*.
+
+In Sparta, all work in simulation happens through events.  A port
+callback fires because an event was scheduled when data arrived.  A
+pipeline stage wakes up because an event fires at the start of the
+cycle.  An instruction retires because an event is scheduled when its
+execution completes.  Understanding Sparta's event and scheduling
+system is understanding how a Sparta simulator actually runs.
+
+== The Sparta Scheduler
+
+The {url-scheduler}[`sparta::Scheduler`] is the engine at the center
+of every Sparta simulation.  It maintains a queue of future callbacks
+sorted by time and fires them in order.  Its base unit of time is the
+*tick* -- by convention, one tick equals one picosecond.
+
+The scheduler does not drive a clock.  It does not fire events once
+per cycle.  It fires events when they are scheduled, which may be
+at any tick in the future.  A unit's `sparta::Clock` converts between
+ticks and cycles so that modelers can schedule events in cycle-relative
+terms without knowing the underlying tick rate.
+
+=== How the Scheduler Runs
+
+The typical scheduler lifecycle within a `sparta::app::Simulation` is:
+
+[source,cpp]
+----
+my_sim.buildTree();
+my_sim.configureTree();
+my_sim.finalizeTree();       // DAG finalized here
+my_sim.finalizeFramework();  // scheduler locked, ready to run
+my_sim.run(1000);            // run for up to 1000 cycles
+----
+
+During `finalizeTree()`, the scheduler finalizes the
+{url-dag}[Directed Acyclic Graph (DAG)] that governs event ordering.
+After finalization, events can be scheduled.  Attempting to schedule
+an event before the DAG is finalized throws an exception.
+
+The `run(N)` call advances the scheduler until either N cycles have
+elapsed or no more events are pending.  Pass `true` as the second
+argument to run to *exactly* N cycles regardless of pending events:
+
+[source,cpp]
+----
+my_sim.run(1000);        // run up to (but not including) tick 1000
+my_sim.run(1000, true);  // run to exactly tick 999
+----
+
+=== Attaching a Logger to the Scheduler
+
+The scheduler is a `sparta::RootTreeNode` and can be logged like any
+other tree node.  To see every event that fires:
+
+[source,bash]
+----
+./my_simulator -r 1000 -l scheduler debug scheduler.log
+----
+
+Or in C++ code:
+
+[source,cpp]
+----
+new sparta::log::Tap(&scheduler_, "debug", std::cout);
+----
+
+This is invaluable for debugging ordering problems -- the log shows
+exactly which events fire and in which order each cycle.
+
+== Event Types
+
+Sparta provides five event types.  Choosing the right one matters for
+both correctness and performance.
+
+=== sparta::Event
+
+{url-event}[`sparta::Event`] is the basic event type.  It schedules a
+callback method to fire at a future tick.  The same event can be
+scheduled multiple times, and it will fire multiple times -- once for
+each time it is scheduled.
+
+[source,cpp]
+----
+// Declaration (member variable)
+sparta::Event<> ev_do_work_{&unit_event_set_, "ev_do_work",
+                             CREATE_SPARTA_HANDLER(MyUnit, doWork_)};
+
+// Scheduling
+ev_do_work_.schedule();     // fire this cycle (0 cycle delay)
+ev_do_work_.schedule(1);    // fire next cycle
+ev_do_work_.schedule(5);    // fire 5 cycles from now
+----
+
+Use `sparta::Event` when you want the callback to fire every time you
+schedule it.  It is the right choice for modeling recurring work like
+a unit that produces output every cycle it has input.
+
+WARNING: If `sparta::Event` is scheduled twice in the same cycle, it
+fires twice.  This is correct behavior but is easy to misuse.  If you
+intend for the work to happen only once regardless of how many times
+it is triggered, use `sparta::UniqueEvent` instead.
+
+=== sparta::UniqueEvent
+
+{url-uniqueevent}[`sparta::UniqueEvent`] can be scheduled any number
+of times within a single cycle, but fires only once per cycle.
+Subsequent `schedule()` calls within the same cycle are silently
+ignored if the event is already pending.
+
+[source,cpp]
+----
+sparta::UniqueEvent<> ev_process_{&unit_event_set_, "ev_process",
+                                   CREATE_SPARTA_HANDLER(MyUnit, process_)};
+
+// Both of these schedule the same callback -- it fires only once
+ev_process_.schedule();
+ev_process_.schedule();  // ignored -- already scheduled this cycle
+----
+
+`sparta::UniqueEvent` is the most commonly used event type in
+well-written Sparta models.  Use it whenever:
+
+- Multiple port callbacks may all trigger the same downstream work
+- A unit may receive stimuli from more than one source per cycle
+- You want to guarantee that a work method runs exactly once after
+  all inputs have been delivered
+
+The UniqueEvent + ValidValue pattern from <<_ports_and_communication>>
+depends on `UniqueEvent` for correctness.
+
+=== sparta::SingleCycleUniqueEvent
+
+{url-singlecycleuniqueevent}[`sparta::SingleCycleUniqueEvent`] is a
+variant of `UniqueEvent` that can *only* be scheduled for the current
+cycle (delay of 0).  It is slightly faster than `UniqueEvent` because
+it does not need to manage a future queue entry.  Use it for callbacks
+that must always fire in the same cycle they are triggered.
+
+[source,cpp]
+----
+sparta::SingleCycleUniqueEvent<> ev_flush_{&unit_event_set_, "ev_flush",
+                                            CREATE_SPARTA_HANDLER(MyUnit, flush_)};
+
+// Can only schedule for this cycle -- no delay argument
+ev_flush_.schedule();
+----
+
+=== sparta::PayloadEvent
+
+{url-payloadevent}[`sparta::PayloadEvent<T>`] is like `sparta::Event`
+but carries a data payload of type `T`.  It is useful when you need to
+schedule work in the future *and* pass data to that future work without
+storing it as a member variable.
+
+[source,cpp]
+----
+sparta::PayloadEvent<uint32_t> ev_writeback_{
+    &unit_event_set_, "ev_writeback",
+    CREATE_SPARTA_HANDLER_WITH_DATA(MyUnit, writeback_, uint32_t)};
+
+// Schedule a writeback 3 cycles from now, carrying the result value
+ev_writeback_.preparePayload(result_value)->schedule(3);
+----
+
+The callback signature must accept a `const T &` argument:
+
+[source,cpp]
+----
+void MyUnit::writeback_(const uint32_t & result) {
+    ILOG("Writing back result: " << result << " at cycle "
+         << getClock()->currentCycle());
+}
+----
+
+`PayloadEvent` is well suited to modeling pipeline bypass networks,
+write-back queues, and any situation where a result produced now must
+be delivered to a specific destination some cycles later.
+
+=== sparta::StartupEvent
+
+{url-startupevent}[`sparta::StartupEvent`] is a special event that
+fires once at the very beginning of simulation, before the first
+regular tick.  It is used to kick off units that need to prime the
+pipeline -- scheduling their first regular event, sending an initial
+signal, or setting up state that must exist before any port callbacks
+can fire.
+
+`StartupEvent` is the one event type that can be scheduled *before*
+the scheduler is finalized, making it the correct mechanism for
+any unit initialization that depends on a scheduled callback.
+
+[source,cpp]
+----
+// In the unit constructor
+sparta::StartupEvent startup_event_{&unit_event_set_,
+    CREATE_SPARTA_HANDLER(MyProducer, kickoff_)};
+
+void MyProducer::kickoff_() {
+    // This fires before cycle 0
+    ILOG("Starting producer");
+    ev_produce_.schedule();  // schedule first production for cycle 0
+}
+----
+
+NOTE: `StartupEvent` does not support a delay argument.  It always
+fires before cycle 0.  Do not confuse it with `Event` scheduled at
+time 0 -- a `StartupEvent` fires before the DAG is even running,
+which means it cannot have precedence relationships with other events.
+
+== Event Declarations
+
+All events must be declared as member variables of the unit and
+registered with a `sparta::EventSet`.  Units that derive from
+`sparta::Unit` get a built-in `unit_event_set_` for this purpose.
+
+The standard declaration pattern uses in-class member initializers:
+
+[source,cpp]
+----
+class MyUnit : public sparta::Unit
+{
+private:
+    sparta::UniqueEvent<>          ev_process_  {&unit_event_set_, "ev_process",
+                                                  CREATE_SPARTA_HANDLER(MyUnit, process_)};
+    sparta::Event<>                ev_send_     {&unit_event_set_, "ev_send",
+                                                  CREATE_SPARTA_HANDLER(MyUnit, send_)};
+    sparta::PayloadEvent<uint32_t> ev_writeback_{&unit_event_set_, "ev_writeback",
+                                                  CREATE_SPARTA_HANDLER_WITH_DATA(MyUnit, writeback_, uint32_t)};
+    sparta::StartupEvent           ev_startup_  {&unit_event_set_,
+                                                  CREATE_SPARTA_HANDLER(MyUnit, kickoff_)};
+};
+----
+
+Event names must be unique within the unit's event set and must be
+Python-compatible (alphanumeric and underscores only).  Events appear
+in the simulation tree under `top.<unit>.events.<event_name>` and can
+be observed via `--show-tree`.
+
+== Scheduling Phases
+
+The most important concept for understanding event ordering in Sparta
+is the {url-schedulingphase}[`sparta::SchedulingPhase`].
+
+Every event belongs to exactly one scheduling phase.  The scheduler
+fires all events in phase order, every cycle, before advancing to the
+next cycle.  This means that if event A is in an earlier phase than
+event B, A is *always* guaranteed to fire before B within the same
+cycle -- regardless of when they were scheduled or what order units
+were constructed.
+
+The phases, in order of execution:
+
+[cols="1,1,3"]
+|===
+| Phase | Template Argument | Purpose
+
+| Trigger
+| `SchedulingPhase::Trigger`
+| Simulation-level triggers (run control, expression triggers).
+  Reserved for framework use.
+
+| Update
+| `SchedulingPhase::Update`
+| State update events.  Use for events that update internal model
+  state that other events in the same cycle will read.
+
+| PortUpdate
+| `SchedulingPhase::PortUpdate`
+| Port delivery callbacks.  All `DataInPort` and `SignalInPort`
+  callbacks fire in this phase.  This phase runs *before* Tick,
+  ensuring that data from ports is delivered before units process it.
+
+| Flush
+| `SchedulingPhase::Flush`
+| Pipeline flush events.  Use for events that flush or invalidate
+  pipeline state in response to a mispredict or exception.
+
+| Collection
+| `SchedulingPhase::Collection`
+| Pipeline collection (Argos/Helios data capture).  Fires after Tick
+  so the collection sees the state after all processing is complete.
+
+| Tick
+| `SchedulingPhase::Tick` (default)
+| The main work phase.  This is where the vast majority of model
+  logic runs.  All user-defined events default to this phase unless
+  otherwise specified.
+
+| PostTick
+| `SchedulingPhase::PostTick`
+| Clean-up or observation events that run after all Tick processing
+  is complete.
+|===
+
+The default phase for all event types is `SchedulingPhase::Tick`.
+This is the correct choice for most modeling work.
+
+=== Specifying a Non-Default Phase
+
+The scheduling phase is a template parameter on the event type:
+
+[source,cpp]
+----
+// Default -- fires in SchedulingPhase::Tick
+sparta::UniqueEvent<> ev_process_{&unit_event_set_, "ev_process",
+                                   CREATE_SPARTA_HANDLER(MyUnit, process_)};
+
+// Fires in SchedulingPhase::Update (before Tick)
+sparta::UniqueEvent<sparta::SchedulingPhase::Update> ev_update_state_{
+    &unit_event_set_, "ev_update_state",
+    CREATE_SPARTA_HANDLER(MyUnit, updateState_)};
+
+// Fires in SchedulingPhase::PostTick (after Tick)
+sparta::UniqueEvent<sparta::SchedulingPhase::PostTick> ev_collect_{
+    &unit_event_set_, "ev_collect",
+    CREATE_SPARTA_HANDLER(MyUnit, collect_)};
+----
+
+The phased ordering eliminates the need for most explicit precedence
+declarations.  Because port callbacks always fire in `PortUpdate`
+(before `Tick`), a unit's data is always delivered before its
+processing events run.  This is the core guarantee that makes
+Sparta's ordering deterministic.
+
+== Intra-Phase Ordering with the DAG
+
+Within a single phase, events are semi-deterministic: they will fire
+in the same order every simulation run, but that order may change if
+the model source code changes.  When a specific ordering within a
+phase is required, use explicit precedence declarations.
+
+Precedence is established with `.precedes()` or the `>>` operator:
+
+[source,cpp]
+----
+// ev_fetch_ must fire before ev_decode_ within SchedulingPhase::Tick
+ev_fetch_.precedes(ev_decode_);
+
+// Equivalent syntax using the >> operator
+ev_fetch_ >> ev_decode_;
+
+// A chain: fetch -> decode -> rename -> dispatch
+ev_fetch_ >> ev_decode_ >> ev_rename_ >> ev_dispatch_;
+----
+
+Precedence can also be established between events in different units
+as long as both events are in the same scheduling phase:
+
+[source,cpp]
+----
+// In the simulator's bindTree_ -- after both units are instantiated
+fetch_unit_->getEvent("ev_output") >>
+    decode_unit_->getEvent("ev_input");
+----
+
+It is a *compile-time error* to establish precedence between events
+in different scheduling phases -- the phases already guarantee
+ordering between them, so cross-phase precedence would be redundant
+and potentially contradictory:
+
+[source,cpp]
+----
+// COMPILER ERROR: cannot set precedence across phases
+sparta::Event<sparta::SchedulingPhase::Update> ev_update_{...};
+sparta::Event<sparta::SchedulingPhase::Tick>   ev_tick_{...};
+
+ev_update_ >> ev_tick_;  // ERROR: different phases
+----
+
+Precedence must be established before the scheduler is finalized.
+The constructor of a unit is the right place for intra-unit
+precedence.  Cross-unit precedence belongs in `bindTree_`.
+
+== Putting It Together: A Pipeline Stage
+
+Here is a complete pipeline stage that uses ports, events, phases,
+and precedence correctly:
+
+[source,cpp]
+----
+// DecodeUnit.hpp
+#pragma once
+#include "sparta/simulation/Unit.hpp"
+#include "sparta/ports/DataPort.hpp"
+#include "sparta/events/UniqueEvent.hpp"
+#include "sparta/events/StartupEvent.hpp"
+#include "sparta/utils/ValidValue.hpp"
+
+class DecodeUnit : public sparta::Unit
+{
+public:
+    class DecodeParameters : public sparta::ParameterSet
+    {
+    public:
+        DecodeParameters(sparta::TreeNode * n) : sparta::ParameterSet(n) {}
+        PARAMETER(uint32_t, decode_width, 4, "Number of instructions to decode per cycle")
+    };
+
+    static const char * name;
+    DecodeUnit(sparta::TreeNode * node, const DecodeParameters * params);
+
+private:
+    const uint32_t decode_width_;
+
+    // Ports
+    sparta::DataInPort<uint32_t>  in_fetch_    {&unit_port_set_, "in_fetch",   1};
+    sparta::DataOutPort<uint32_t> out_rename_  {&unit_port_set_, "out_rename"};
+    sparta::SignalInPort          in_credits_  {&unit_port_set_, "in_credits", 1};
+
+    // Events -- all in SchedulingPhase::Tick
+    sparta::UniqueEvent<> ev_decode_ {&unit_event_set_, "ev_decode",
+                                       CREATE_SPARTA_HANDLER(DecodeUnit, decode_)};
+
+    // Callbacks
+    void receiveInstruction_(const uint32_t & inst);
+    void receiveCredit_();
+    void decode_();
+
+    // State
+    sparta::utils::ValidValue<uint32_t> pending_inst_;
+    uint32_t credits_ = 0;
+};
+----
+
+[source,cpp]
+----
+// DecodeUnit.cpp
+const char * DecodeUnit::name = "decode";
+
+DecodeUnit::DecodeUnit(sparta::TreeNode * node,
+                       const DecodeParameters * params) :
+    sparta::Unit(node),
+    decode_width_(params->decode_width)
+{
+    in_fetch_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER_WITH_DATA(DecodeUnit, receiveInstruction_, uint32_t));
+    in_credits_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER(DecodeUnit, receiveCredit_));
+}
+
+void DecodeUnit::receiveInstruction_(const uint32_t & inst)
+{
+    pending_inst_ = inst;
+    ev_decode_.schedule();  // work fires in Tick, after all PortUpdate callbacks
+}
+
+void DecodeUnit::receiveCredit_()
+{
+    ++credits_;
+    ev_decode_.schedule();  // also try to decode if credits arrive
+}
+
+void DecodeUnit::decode_()
+{
+    if (!pending_inst_.isValid() || credits_ == 0) {
+        return;  // nothing to do
+    }
+    ILOG("Decoding instruction " << pending_inst_.getValue()
+         << " at cycle " << getClock()->currentCycle());
+    out_rename_.send(pending_inst_.getValue());
+    pending_inst_.clearValid();
+    --credits_;
+}
+----
+
+Notice that `decode_()` checks both `pending_inst_` and `credits_`
+before doing work.  Since `ev_decode_` is a `UniqueEvent`, it fires
+only once per cycle even if both `receiveInstruction_()` and
+`receiveCredit_()` schedule it.  The method runs after all
+`PortUpdate` callbacks have fired (because `Tick` follows
+`PortUpdate`), so by the time `decode_()` runs, both the instruction
+and the credit update have been applied.
+
+== Summary
+
+Sparta's event and scheduling system provides deterministic ordering
+through a combination of scheduling phases and explicit DAG-based
+precedence:
+
+- The {url-scheduler}[`sparta::Scheduler`] fires events in tick order,
+  with all events in a cycle processed before advancing to the next.
+- Scheduling phases (`PortUpdate` → `Tick` → `PostTick` etc.) provide
+  coarse-grained, automatic ordering between categories of work.
+- The {url-dag}[DAG] provides fine-grained ordering within a phase via
+  `.precedes()` and `>>`.
+- Use `sparta::UniqueEvent` as the default event type -- it prevents
+  duplicate firings and is the correct choice for the vast majority
+  of pipeline modeling work.
+- Use `sparta::StartupEvent` to prime the pipeline before cycle 0.
+- Use `sparta::PayloadEvent` to deliver data to a future callback
+  without storing it as member state.
+
+The next chapter covers parameters -- how to configure a Sparta model
+from the command line or a YAML file without recompiling.
