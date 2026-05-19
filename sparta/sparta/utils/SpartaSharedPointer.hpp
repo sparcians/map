@@ -559,6 +559,7 @@ namespace sparta
 // Helper methods to determine pointer type and/or remove it
 namespace MetaStruct {
 
+    // Helper structs
     template<typename T>
     struct is_any_pointer<sparta::SpartaSharedPointer<T>> : public std::true_type {};
 
@@ -582,5 +583,4 @@ namespace MetaStruct {
 
     template<typename T>
     struct remove_any_pointer<sparta::SpartaSharedPointer<T> const &> { using type = T; };
-
-} // namespace MetaStruct
+}

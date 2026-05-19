@@ -14,5 +14,4 @@ namespace sparta {
 
     // Vector used for pipeViewer Formatting.
     using PairFormatterVector = std::vector<PairFormatter>;
-
 } // end namespace sparta

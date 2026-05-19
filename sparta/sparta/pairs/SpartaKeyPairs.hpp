@@ -22,7 +22,6 @@
 #include <limits>
 #include <unordered_map>
 #include <functional>
-#include <cstdint>
 
 #include "sparta/pairs/PairFormatter.hpp"
 #include "sparta/pairs/RegisterPairsMacro.hpp"
@@ -30,7 +29,6 @@
 #include "sparta/utils/Utils.hpp"
 #include "sparta/utils/MetaTypeList.hpp"
 #include "sparta/utils/MetaStructs.hpp"
-#include "sparta/utils/SpartaSharedPointer.hpp"
 #include "sparta/utils/DetectMemberUtils.hpp"
 
 #include "simdb/utils/Demangle.hpp"
@@ -1855,11 +1853,7 @@ namespace sparta {
         */
         virtual bool populateFromEntity(PairCache * c, const EntityType & owner)
         override final {
-            PairCache* cache_ref = c;
-            return unpackTupleAsIndices_(
-                cache_ref,
-                owner,
-                MetaStruct::generate_sequence_t<sizeof...(Args)>());
+            return unpackTupleAsIndices_(c, owner, MetaStruct::generate_sequence_t<sizeof...(Args)>());
         }
     };
 
@@ -1890,6 +1884,7 @@ namespace sparta {
         typedef std::vector<BoundPairType *> BoundPairList;
         typedef std::vector<Pair *> ArbitraryPairList;
         typedef std::vector<std::unique_ptr<Pair>> PairList;
+        typedef std::vector<std::string> LeafDTypeList;
 
         /**
         * \brief This special character will act as placeholder
@@ -1920,20 +1915,6 @@ namespace sparta {
         }
 
         /**
-         * \brief Resolve bound-pair payloads that may be wrapped in smart pointers (\c SpartaSharedPointer,
-         *        \c std::shared_ptr, raw pointers, etc.) to a const reference usable by entity pairs.
-         */
-        template<typename EntityT, typename T>
-        static const EntityT & entityPayloadRefForBoundPairs_(const T & owner) {
-            if constexpr(std::is_same_v<std::remove_cv_t<std::remove_reference_t<T>>, EntityT>) {
-                return owner;
-            }
-            else if constexpr(std::is_same_v<MetaStruct::remove_any_pointer_t<T>, EntityT>) {
-                return *owner;
-            }
-        }
-
-        /**
          * \brief If this PairDefinition is trying to collect data from some Entity, we need to allow this.
          * but if we are not, we cannot try to do this since our first argument will
          * not be the argument of an entity.
@@ -1942,8 +1923,7 @@ namespace sparta {
         template <typename Ret, typename EntityT, typename T>
         inline MetaStruct::enable_if_t<!std::is_same<EntityT, NoEntity>::value, Ret>
         populateFromEntityHelper_(PairCache * cache, BoundPairType * pair, const T & owner) {
-            bool val = reinterpret_cast<BoundPairType *>(pair)->populateFromEntity(
-                cache, entityPayloadRefForBoundPairs_<EntityT>(owner));
+            bool val = pair->populateFromEntity(cache, owner);
             return val;
         }
 
@@ -2312,7 +2292,7 @@ namespace sparta {
         PairList pairs_;
         BoundPairList bound_pairs_;
         ArbitraryPairList arbitrary_pairs_;
-        std::vector<std::string> leaf_argos_dtype_strings_;
+        LeafDTypeList leaf_argos_dtype_strings_;
         bool finalized_;
     };
 
