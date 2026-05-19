@@ -54,6 +54,9 @@ namespace sparta{
             static constexpr uint64_t BAD_DISPLAY_ID = 0x1000;
             using ValueType = MetaStruct::remove_any_pointer_t<DataT>;
 
+            // TODO cnyce: legacy use is supported for enums too
+            static constexpr bool simdb_support_ = std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>;
+
             /**
              * \brief Construct the Collectable, no data object associated, part of a group
              * \param parent A pointer to a parent treenode.  Must not be null
@@ -136,7 +139,7 @@ namespace sparta{
                 // Legacy (non-PairCollector) usage will be turned off in map_v3 for any struct-like
                 // collectables. The user will have to create the nested SpartaPairDefinitionType
                 // in order to continue collecting this type.
-                if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
+                if constexpr (simdb_support_)
                 {
                     auto loc = getLocation();
                     auto clk_name = notNull(getClock())->getName();
@@ -154,6 +157,12 @@ namespace sparta{
              * to the database.
              */
             void serializeStructSchema(simdb::DatabaseManager*, std::map<std::string, int>&) override final
+            {
+                // Legacy (non-PairCollector) usage is not supported for struct-like types.
+            }
+
+            template <typename T>
+            static void serializeStructSchema(simdb::DatabaseManager*, std::map<std::string, int>&)
             {
                 // Legacy (non-PairCollector) usage is not supported for struct-like types.
             }
@@ -187,8 +196,7 @@ namespace sparta{
              */
             void collectWithDuration(const DataT & val, sparta::Clock::Cycle duration)
             {
-                // TODO cnyce: this code cannot have this do-nothing ELSE
-                if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
+                if constexpr (simdb_support_)
                 {
                     if(SPARTA_EXPECT_FALSE(isCollected()))
                     {
@@ -209,8 +217,7 @@ namespace sparta{
             //! CollectableTreeNode/PipelineCollector when a user of the
             //! TreeNode requests this object to be collected.
             void collect() override final {
-                // TODO cnyce: this code cannot have this do-nothing ELSE
-                if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
+                if constexpr (simdb_support_)
                 {
                     // If pointer has become nullified, close the record
                     if(nullptr == collected_object_) {
@@ -227,8 +234,7 @@ namespace sparta{
              * \pre Must have constructed wit ha non-null collected object
              */
             void collectWithDuration(sparta::Clock::Cycle duration) {
-                // TODO cnyce: this code cannot have this do-nothing ELSE
-                if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
+                if constexpr (simdb_support_)
                 {
                     // If pointer has become nullified, close the record
                     if(nullptr == collected_object_) {
@@ -243,10 +249,9 @@ namespace sparta{
             //! immediately and clear the field for the next cycle
             void closeRecord(const bool & = false) override final
             {
-                // TODO cnyce: this code cannot have this do-nothing ELSE
-                if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
+                if constexpr (simdb_support_)
                 {
-                    if(SPARTA_EXPECT_FALSE(isCollected() && entry_point_))
+                    if(SPARTA_EXPECT_FALSE(isCollected()))
                     {
                         entry_point_->quiet();
                     }
@@ -327,9 +332,6 @@ namespace sparta{
             // Extracted value bytes from initialize() to be applied when
             // collection is first enabled (setCollecting_)
             std::vector<char> initial_bytes_;
-
-            // Entry point into the SimDB collection system.
-            simdb::argos::CollectionEntryPoint* entry_point_ = nullptr;
         };
 
         /**
@@ -782,9 +784,6 @@ namespace sparta{
 
             // Should we auto-collect?
             bool auto_collect_ = true;
-
-            // Entry point into the SimDB collection system.
-            simdb::argos::CollectionEntryPoint* entry_point_ = nullptr;
         };
     }//namespace collection
 }//namespace sparta

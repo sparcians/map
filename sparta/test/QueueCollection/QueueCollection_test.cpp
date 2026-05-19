@@ -1,4 +1,5 @@
 #include "sparta/sparta.hpp"
+#include "sparta/app/Simulation.hpp"
 #include "sparta/simulation/ClockManager.hpp"
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/utils/SpartaTester.hpp"

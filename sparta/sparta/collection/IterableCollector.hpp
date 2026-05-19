@@ -370,9 +370,6 @@ private:
     bool auto_collect_ = true;
     bool warn_on_size_ = true;
 
-    // Entry point into the SimDB collection system.
-    simdb::argos::CollectionEntryPoint* entry_point_ = nullptr;
-
     // For those folks that want a value to automatically
     // disappear in the future
     sparta::EventSet event_set_;

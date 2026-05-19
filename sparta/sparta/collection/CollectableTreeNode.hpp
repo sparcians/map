@@ -20,6 +20,7 @@ namespace simdb{
     class DatabaseManager;
     namespace argos{
         class ArgosCollector;
+        class CollectionEntryPoint;
     }
 }
 
@@ -110,7 +111,7 @@ namespace collection
          * \brief Determine whether or not this node has collection
          * turned on or off.
          */
-        bool isCollected() const { return is_collected_; }
+        bool isCollected() const { return is_collected_ && entry_point_ != nullptr; }
 
         //! Pure virtual method used by deriving classes to be
         //! notified when they can perform their collection
@@ -139,6 +140,11 @@ namespace collection
          * \param collect true if collection is enabled; false otherwise
          */
         virtual void setCollecting_(bool collect, Collector *) { (void) collect; }
+
+        /**
+         * \brief Entry point into the SimDB collection system.
+         */
+        simdb::argos::CollectionEntryPoint* entry_point_ = nullptr;
 
     private:
 

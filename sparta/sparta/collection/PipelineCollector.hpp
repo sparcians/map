@@ -25,11 +25,6 @@
 #include "sparta/pipeViewer/ClockFileWriter.hpp"
 #include "sparta/pipeViewer/LocationFileWriter.hpp"
 #include "sparta/simulation/TreeNodePrivateAttorney.hpp"
-#include "sparta/app/Simulation.hpp"
-
-#include "simdb/apps/argos/ArgosCollector.hpp"
-#include "simdb/apps/AppManager.hpp"
-#include "simdb/sqlite/DatabaseManager.hpp"
 
 namespace sparta{
 namespace collection
@@ -662,10 +657,6 @@ namespace collection
 
         //! Is collection enabled on at least one node?
         bool collection_active_ = false;
-
-        //! SimDB AppManagers. Needed when PipelineCollector
-        //! is used without an app::Simulation (e.g. unit test)
-        std::unique_ptr<simdb::AppManagers> app_managers_;
     };
 
 }// namespace collection
