@@ -28,9 +28,93 @@
 
 #include "boost/numeric/conversion/converter.hpp"
 
+#define ENTER_COLLECTION \
+    [[maybe_unused]] auto bp = sparta::collection::CollectionDebugger::instance()->enterCollection<decltype(this)>();
+
 namespace sparta{
     namespace collection
     {
+        inline void debugMe() {}
+
+        /**
+         * \class CollectionDebugger
+         * \note TODO cnyce: Remove this class once all bugs are fixed.
+         */
+        class CollectionDebugger
+        {
+        public:
+            class DebugPoint
+            {
+            public:
+                DebugPoint(CollectionDebugger* debugger, const std::string& dtype)
+                    : debugger_(debugger)
+                    , dtype_(dtype)
+                {
+                    if (debugger_->shouldBreakOn(dtype))
+                    {
+                        std::cout << "Breakpoint hit for collected type: " << dtype << std::endl;
+                        debugMe();
+                    }
+                }
+
+                bool keep = false;
+
+                ~DebugPoint()
+                {
+                    if (keep)
+                    {
+                        debugger_->activate(dtype_);
+                    }
+                    else
+                    {
+                        debugger_->deactivate(dtype_);
+                    }
+                }
+
+            private:
+                CollectionDebugger* debugger_ = nullptr;
+                std::string dtype_;
+            };
+
+            static CollectionDebugger* instance()
+            {
+                static CollectionDebugger debugger;
+                return &debugger;
+            }
+
+            template <typename T>
+            DebugPoint enterCollection()
+            {
+                auto dtype = simdb::demangle_type<T>();
+                return DebugPoint(this, dtype);
+            }
+
+            void activate(const std::string& dtype)
+            {
+                active_dtypes_.insert(dtype);
+                all_dtypes_.insert(dtype);
+            }
+
+            void deactivate(const std::string& dtype)
+            {
+                active_dtypes_.erase(dtype);
+                all_dtypes_.insert(dtype);
+            }
+
+            bool shouldBreakOn(const std::string& dtype) const
+            {
+                if (all_dtypes_.count(dtype) == 0)
+                {
+                    return true;
+                }
+                return active_dtypes_.count(dtype) > 0;
+            }
+
+        private:
+            CollectionDebugger() = default;
+            std::unordered_set<std::string> active_dtypes_;
+            std::unordered_set<std::string> all_dtypes_;
+        };
 
         /**
          * \class Collectable
@@ -182,6 +266,7 @@ namespace sparta{
             {
                 // TODO cnyce
                 (void)val;
+                ENTER_COLLECTION
             }
 
             /*!
@@ -278,8 +363,7 @@ namespace sparta{
             //! collection is enabled on the TreeNode
             void setCollecting_(bool collect, Collector * collector) override final
             {
-                // TODO cnyce: this code cannot have this do-nothing early return
-                if constexpr (!std::is_trivial_v<ValueType> || !std::is_standard_layout_v<ValueType>)
+                if constexpr (!simdb_support_)
                 {
                     return;
                 }
@@ -617,6 +701,7 @@ namespace sparta{
                 //simdb::StreamBuffer buf(bytes);
                 //collect_(&buf, val);
                 //entry_point_->setBytes(bytes);
+                ENTER_COLLECTION
             }
 
             //! Explicitly/manually collect a value for this collectable, ignoring

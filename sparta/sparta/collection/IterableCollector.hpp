@@ -249,6 +249,7 @@ public:
                     warn_on_size_ = false;
                 }
             }
+            ENTER_COLLECTION
             collectImpl_(iterable_object, std::integral_constant<bool, sparse_array_type>());
         }
     }
