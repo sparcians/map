@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <vector>
 
 namespace sparta {
@@ -16,18 +15,4 @@ namespace sparta {
     // Vector used for pipeViewer Formatting.
     using PairFormatterVector = std::vector<PairFormatter>;
 
-    /**
-     * \brief Argos \c DataTypeNodes.SpecialFormatters value for a pair formatter.
-     * \return \c "HEX", \c "OCT", or empty for default decimal formatting.
-     */
-    inline std::string pairFormatterToSpecialFormatString(PairFormatter formatter) {
-        switch(formatter) {
-            case PairFormatter::HEX:
-                return "HEX";
-            case PairFormatter::OCTAL:
-                return "OCT";
-            default:
-                return "";
-        }
-    }
 } // end namespace sparta

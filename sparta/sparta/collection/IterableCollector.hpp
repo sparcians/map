@@ -310,14 +310,16 @@ private:
         std::vector<std::vector<char>> bin_bytes(size);
         for (uint32_t i = 0; i < size; ++i)
         {
-            sparta_assert(itr != eitr);
-            auto& bytes = bin_bytes[i];
-            simdb::StreamBuffer buf(bytes);
-            positions_[i]->extractBytes(&buf, *itr);
-            ++itr;
+            // TODO cnyce
+            //sparta_assert(itr != eitr);
+            //auto& bytes = bin_bytes[i];
+            //simdb::StreamBuffer buf(bytes);
+            //positions_[i]->extractBytes(&buf, *itr);
+            //++itr;
+            (void)i;
         }
 
-        entry_point_->setBinBytes(bin_bytes);
+        entry_point_->setContigContainerBinBytes(bin_bytes);
     }
 
     // Full iteration walk, checking validity of the iterator.  This
@@ -334,14 +336,15 @@ private:
             sparta_assert(i <= UINT16_MAX);
             sparta_assert(itr != iterable_object->end());
             if (itr.isValid()) {
-                auto& bytes = bin_bytes[(uint16_t)i];
-                simdb::StreamBuffer buf(bytes);
-                positions_[i]->extractBytes(&buf, *itr);
+                // TODO cnyce
+                //auto& bytes = bin_bytes[(uint16_t)i];
+                //simdb::StreamBuffer buf(bytes);
+                //positions_[i]->extractBytes(&buf, *itr);
             }
             ++itr;
         }
 
-        entry_point_->setBinBytes(bin_bytes);
+        entry_point_->setSparseContainerBinBytes(bin_bytes);
     }
 
     //! Virtual method called by CollectableTreeNode when collection
@@ -368,7 +371,7 @@ private:
     bool warn_on_size_ = true;
 
     // Entry point into the SimDB collection system.
-    simdb::argos::ContainerCollector<BinValueT, sparse_array_type>* entry_point_ = nullptr;
+    simdb::argos::CollectionEntryPoint* entry_point_ = nullptr;
 
     // For those folks that want a value to automatically
     // disappear in the future

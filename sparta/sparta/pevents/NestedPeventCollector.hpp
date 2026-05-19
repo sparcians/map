@@ -78,7 +78,7 @@ namespace pevents {
         void collect(const Data_t & obj,
             const Targs &... pos_args) {
             if(isCollecting()) {
-                collect_(nullptr, obj, pos_args...);
+                collect_(obj, pos_args...);
                 generateCollectionString_();
             }
         }

@@ -33,7 +33,7 @@ public:
     template <typename... Targs>
     void collect(const Targs&... pos_args)
     {
-        defaultCollect_((simdb::StreamBuffer*)nullptr, pos_args...);
+        defaultCollect_(pos_args...);
     }
 protected:
 

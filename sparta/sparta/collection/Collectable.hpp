@@ -163,38 +163,16 @@ namespace sparta{
              * \param val The value to initial the record with
              */
             void initialize(const DataT & val) {
-                if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
-                {
-                    sparta_assert(entry_point_ == nullptr, "Cannot initialize() collectable after finalizeFramework()");
-                    simdb::StreamBuffer buf(initial_bytes_);
-                    buf.append(val);
-                }
-                else
-                {
-                    (void)val;
-                }
-            }
-
-            void extractBytes(simdb::StreamBuffer* buf, const DataT & val)
-            {
-                buf->append(val);
+                // TODO cnyce
+                (void)val;
             }
 
             //! Explicitly/manually collect a value for this collectable, ignoring
             //! what the Collectable is currently pointing to.
             void collect(const DataT & val)
             {
-                if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
-                {
-                    if(SPARTA_EXPECT_FALSE(isCollected() && entry_point_))
-                    {
-                        entry_point_->setValue(val);
-                    }
-                }
-                else
-                {
-                    (void)val;
-                }
+                // TODO cnyce
+                (void)val;
             }
 
             /*!
@@ -209,6 +187,7 @@ namespace sparta{
              */
             void collectWithDuration(const DataT & val, sparta::Clock::Cycle duration)
             {
+                // TODO cnyce: this code cannot have this do-nothing ELSE
                 if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
                 {
                     if(SPARTA_EXPECT_FALSE(isCollected()))
@@ -230,6 +209,7 @@ namespace sparta{
             //! CollectableTreeNode/PipelineCollector when a user of the
             //! TreeNode requests this object to be collected.
             void collect() override final {
+                // TODO cnyce: this code cannot have this do-nothing ELSE
                 if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
                 {
                     // If pointer has become nullified, close the record
@@ -247,6 +227,7 @@ namespace sparta{
              * \pre Must have constructed wit ha non-null collected object
              */
             void collectWithDuration(sparta::Clock::Cycle duration) {
+                // TODO cnyce: this code cannot have this do-nothing ELSE
                 if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
                 {
                     // If pointer has become nullified, close the record
@@ -262,6 +243,7 @@ namespace sparta{
             //! immediately and clear the field for the next cycle
             void closeRecord(const bool & = false) override final
             {
+                // TODO cnyce: this code cannot have this do-nothing ELSE
                 if constexpr (std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>)
                 {
                     if(SPARTA_EXPECT_FALSE(isCollected() && entry_point_))
@@ -291,6 +273,7 @@ namespace sparta{
             //! collection is enabled on the TreeNode
             void setCollecting_(bool collect, Collector * collector) override final
             {
+                // TODO cnyce: this code cannot have this do-nothing early return
                 if constexpr (!std::is_trivial_v<ValueType> || !std::is_standard_layout_v<ValueType>)
                 {
                     return;
@@ -301,7 +284,8 @@ namespace sparta{
                             "Collectables can only added to PipelineCollectors... for now");
 
                 if(collect && !initial_bytes_.empty()) {
-                    entry_point_->setBytes(initial_bytes_);
+                    //TODO cnyce
+                    //entry_point_->setBytes(initial_bytes_);
                     initial_bytes_.clear();
                 }
 
@@ -345,7 +329,7 @@ namespace sparta{
             std::vector<char> initial_bytes_;
 
             // Entry point into the SimDB collection system.
-            simdb::argos::ScalarCollector<DataT>* entry_point_ = nullptr;
+            simdb::argos::CollectionEntryPoint* entry_point_ = nullptr;
         };
 
         /**
@@ -418,8 +402,6 @@ namespace sparta{
             using PairCollector<PairDef_t>::isCollecting;
 
         public:
-            //! IterableCollector and other callers need public access for per-bin serialization.
-            using PairCollector<PairDef_t>::extractBytes;
 
             /**
              * \brief Construct the Collectable, no data object associated, part of a group
@@ -539,6 +521,11 @@ namespace sparta{
                     // No need to serialize string types
                     return;
                 }
+                else if constexpr (std::is_same_v<std::decay_t<value_type>, const char*>)
+                {
+                    // No need to serialize string types
+                    return;
+                }
                 else
                 {
                     const auto root_dtype = simdb::demangle_type<value_type>();
@@ -560,13 +547,24 @@ namespace sparta{
                     sparta_assert(names.size() == dtypes.size());
                     sparta_assert(formatters.size() == names.size());
 
+                    std::vector<std::string> format_strings;
+                    for(std::size_t i = 0; i < formatters.size(); ++i) {
+                        std::string fmt_str;
+                        switch(formatters[i]) {
+                            case PairFormatter::HEX:
+                                fmt_str = "HEX"; break;
+                            case PairFormatter::OCTAL:
+                                fmt_str = "OCT"; break;
+                            default: break;
+                        }
+                        format_strings.push_back(fmt_str);
+                    }
+
                     constexpr int32_t parent_id_unset = 0;
                     const std::string kind_pod{"pod"};
                     const std::string empty;
 
                     for(std::size_t i = 0; i < names.size(); ++i) {
-                        const std::string special_formatter =
-                            pairFormatterToSpecialFormatString(formatters[i]);
                         db_mgr->INSERT(SQL_TABLE("DataTypeNodes"),
                                        SQL_VALUES(schema_id,
                                                   parent_id_unset,
@@ -575,7 +573,7 @@ namespace sparta{
                                                   empty,
                                                   dtypes[i],
                                                   empty,
-                                                  special_formatter));
+                                                  format_strings[i]));
                     }
                     schema_ids_by_dtype_name[root_dtype] = static_cast<int>(schema_id);
                 }
@@ -612,10 +610,11 @@ namespace sparta{
             MetaStruct::enable_if_t<!MetaStruct::is_any_pointer<T>::value, void>
             collect(const T & val)
             {
-                std::vector<char> bytes;
-                simdb::StreamBuffer buf(bytes);
-                collect_(&buf, val);
-                entry_point_->setBytes(bytes);
+                // TODO cnyce
+                //std::vector<char> bytes;
+                //simdb::StreamBuffer buf(bytes);
+                //collect_(&buf, val);
+                //entry_point_->setBytes(bytes);
             }
 
             //! Explicitly/manually collect a value for this collectable, ignoring
@@ -720,7 +719,7 @@ namespace sparta{
             //! \brief Strictly a Debug/Testing API.
             //!  Never to be called in real modeler's code.
             std::string dumpNameValuePairs(const DataT & val) {
-                collect_((simdb::StreamBuffer*)nullptr, val);
+                collect_(val);
                 std::ostringstream ss;
                 for(const auto & pairs : getPEventLogVector()){
                     ss << pairs.first << "(" << pairs.second << ") ";
@@ -785,7 +784,7 @@ namespace sparta{
             bool auto_collect_ = true;
 
             // Entry point into the SimDB collection system.
-            simdb::argos::ScalarCollector<DataT>* entry_point_ = nullptr;
+            simdb::argos::CollectionEntryPoint* entry_point_ = nullptr;
         };
     }//namespace collection
 }//namespace sparta

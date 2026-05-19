@@ -16,10 +16,6 @@
 #include "sparta/utils/MetaStructs.hpp"
 #include "sparta/utils/SpartaSharedPointerBaseAllocator.hpp"
 
-// TODO cnyce:
-// Merge MetaStructs.hpp and TypeTraits.hpp
-#include "simdb/utils/TypeTraits.hpp"
-
 namespace sparta
 {
     // Forward declarations
@@ -560,7 +556,7 @@ namespace sparta
 
 } // sparta namespace
 
-// SimDB/upstream MetaStruct has no notion of Sparta types; specialize here alongside the class definition.
+// Helper methods to determine pointer type and/or remove it
 namespace MetaStruct {
 
     template<typename T>
@@ -588,31 +584,3 @@ namespace MetaStruct {
     struct remove_any_pointer<sparta::SpartaSharedPointer<T> const &> { using type = T; };
 
 } // namespace MetaStruct
-
-namespace simdb::type_traits {
-
-    template<typename T>
-    struct is_any_pointer<sparta::SpartaSharedPointer<T>> : public std::true_type {};
-
-    template<typename T>
-    struct is_any_pointer<sparta::SpartaSharedPointer<T> const> : public std::true_type {};
-
-    template<typename T>
-    struct is_any_pointer<sparta::SpartaSharedPointer<T> &> : public std::true_type {};
-
-    template<typename T>
-    struct is_any_pointer<sparta::SpartaSharedPointer<T> const &> : public std::true_type {};
-
-    template<typename T>
-    struct remove_any_pointer<sparta::SpartaSharedPointer<T>> { using type = T; };
-
-    template<typename T>
-    struct remove_any_pointer<sparta::SpartaSharedPointer<T> const> { using type = T; };
-
-    template<typename T>
-    struct remove_any_pointer<sparta::SpartaSharedPointer<T> &> { using type = T; };
-
-    template<typename T>
-    struct remove_any_pointer<sparta::SpartaSharedPointer<T> const &> { using type = T; };
-
-} // namespace simdb::type_traits
