@@ -1125,7 +1125,10 @@ void Simulation::postProcessingLastCall()
 {
 #if SIMDB_ENABLED
     // This is added here to close AppManager's even with --no-run
-    app_managers_->postSimLoopTeardown();
+    if (app_managers_require_teardown_) {
+        app_managers_->postSimLoopTeardown();
+        app_managers_require_teardown_ = false;
+    }
 #endif
 }
 
