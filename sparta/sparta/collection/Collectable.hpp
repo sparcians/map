@@ -614,7 +614,7 @@ namespace sparta{
 
                 auto loc = getLocation();
                 auto clk_name = notNull(getClock())->getName();
-                entry_point_ = argos_collector->createScalarCollector<DataT>(loc, clk_name);
+                entry_point_ = argos_collector->createScalarCollector<Data_t>(loc, clk_name);
                 owned_bit_bucket_ = std::make_unique<CollectableBitBucket>(argos_collector->getTinyStrings());
                 bit_bucket_ = owned_bit_bucket_.get();
                 setBitBucket_(bit_bucket_);
