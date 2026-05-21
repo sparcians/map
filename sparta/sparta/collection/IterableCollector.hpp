@@ -213,6 +213,10 @@ public:
         auto loc = getLocation();
         auto clk_name = notNull(getClock())->getName();
         entry_point_ = argos_collector->createContainerCollector<BinValueT, sparse_array_type>(loc, clk_name, expected_capacity_);
+        bit_bucket_ = std::make_unique<ContainerBitBucket<sparse_array_type>>(argos_collector->getTinyStrings(), expected_capacity_);
+        for (auto& bin : positions_) {
+            bin->setBitBucket(bit_bucket_.get());
+        }
     }
 
     //! Whether a scalar (Collectable) or container (IterableCollector),
@@ -308,18 +312,15 @@ private:
         auto itr = iterable_object->begin();
         auto eitr = iterable_object->end();
         auto size = std::distance(itr, eitr);
-        std::vector<std::vector<char>> bin_bytes(size);
+        bit_bucket_->reset();
         for (uint32_t i = 0; i < size; ++i)
         {
-            // TODO cnyce
-            //sparta_assert(itr != eitr);
-            //auto& bytes = bin_bytes[i];
-            //simdb::StreamBuffer buf(bytes);
-            //positions_[i]->extractBytes(&buf, *itr);
-            //++itr;
-            (void)i;
+            bit_bucket_->beginBin();
+            positions_[i]->collect(*itr);
+            ++itr;
         }
 
+        auto bin_bytes = bit_bucket_->release();
         entry_point_->setContigContainerBinBytes(bin_bytes);
     }
 
@@ -331,20 +332,19 @@ private:
         sparta_assert(nullptr != iterable_object,
             "Can't collect iterable_object because it's a nullptr! How did we get here?");
         auto itr = iterable_object->begin();
-        std::map<uint16_t, std::vector<char>> bin_bytes;
+        bit_bucket_->reset();
         for (uint32_t i = 0; i < expected_capacity_; ++i)
         {
             sparta_assert(i <= UINT16_MAX);
             sparta_assert(itr != iterable_object->end());
             if (itr.isValid()) {
-                // TODO cnyce
-                //auto& bytes = bin_bytes[(uint16_t)i];
-                //simdb::StreamBuffer buf(bytes);
-                //positions_[i]->extractBytes(&buf, *itr);
+                bit_bucket_->beginBin(i);
+                positions_[i]->collect(*itr);
             }
             ++itr;
         }
 
+        auto bin_bytes = bit_bucket_->release();
         entry_point_->setSparseContainerBinBytes(bin_bytes);
     }
 
@@ -370,6 +370,7 @@ private:
     const size_type expected_capacity_ = 0;
     bool auto_collect_ = true;
     bool warn_on_size_ = true;
+    std::unique_ptr<ContainerBitBucket<sparse_array_type>> bit_bucket_;
 
     // For those folks that want a value to automatically
     // disappear in the future

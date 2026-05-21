@@ -1265,9 +1265,10 @@ bool CommandLineSimulator::parse(int argc,
                     return false;
                 }
 
-                std::string collection_db_file = sim_config_.pipeline_collection_file_prefix + std::string(".db");
+                std::filesystem::path collection_db_file = sim_config_.pipeline_collection_file_prefix;
+                collection_db_file.replace_extension(".db");
                 sim_config_.simdb_config.enableApp("argos-collector");
-                sim_config_.simdb_config.setAppDatabase("argos-collector", collection_db_file);
+                sim_config_.simdb_config.setAppDatabase("argos-collector", collection_db_file.string());
 
                 ++i;
                 collection_parsed = true;
@@ -2211,14 +2212,6 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                                                                        multiple_triggers,
                                                                        sim->getRootClock(),
                                                                        sim->getRoot()));
-
-            // If pipeline collection is turned on begin writing an info file
-            // about the simulation.
-            info_out_.reset(new sparta::InformationWriter(sim_config_.pipeline_collection_file_prefix+"simulation.info"));
-            info_out_->write("Pipeline Collection files generated from simulator ");
-            info_out_->write(sim->getSimName());
-            info_out_->write("\n\nSimulation started at: ");
-            info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
         }
 
         // Finalize the pevent controller now that the tree is built.
@@ -2488,8 +2481,6 @@ void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
                 if(pipeline_collection_triggerable_->isTriggered()) {
                     pipeline_collection_triggerable_->stop();
                 }
-                info_out_->write("Simulation aborted at: ");
-                info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
             }
 
             // In interactive simulation, we would try and enter a "debug mode" and
@@ -2503,12 +2494,6 @@ void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
         if(pipeline_collection_triggerable_->isTriggered()) {
             pipeline_collection_triggerable_->stop();
         }
-
-         // Write the end time of the simulation.
-        info_out_->write("Simulation ended at: ");
-        info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
-        sparta::InformationWriter& outputter = *(info_out_.get());
-        outputter << "Heartbeat interval: " << pipeline_heartbeat_ << " ticks" << "\n";
     }
 
     if(show_tree_){

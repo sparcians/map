@@ -228,10 +228,32 @@ namespace sparta{
                     auto loc = getLocation();
                     auto clk_name = notNull(getClock())->getName();
                     entry_point_ = argos_collector->createScalarCollector<ValueType>(loc, clk_name);
+                    owned_bit_bucket_ = std::make_unique<CollectableBitBucket>(
+                        argos_collector->getTinyStrings());
+                    bit_bucket_ = owned_bit_bucket_.get();
                 }
                 else
                 {
                     argos_collector->markUnsupported(getLocation());
+                }
+            }
+
+            /**
+             * \brief Forward the BitBucket from a parent IterableCollector.
+             * \note Only used for simdb-supported (trivial POD) legacy collectables.
+             */
+            void setBitBucket(BitBucket* bit_bucket)
+            {
+                if constexpr (simdb_support_)
+                {
+                    sparta_assert(dynamic_cast<CollectableTreeNode*>(getParent()) != nullptr);
+                    sparta_assert(bit_bucket_ == nullptr);
+                    sparta_assert(entry_point_ == nullptr);
+                    bit_bucket_ = bit_bucket;
+                }
+                else
+                {
+                    (void)bit_bucket;
                 }
             }
 
@@ -264,9 +286,22 @@ namespace sparta{
             //! what the Collectable is currently pointing to.
             void collect(const DataT & val)
             {
-                // TODO cnyce
-                (void)val;
                 ENTER_COLLECTION
+                if constexpr (simdb_support_)
+                {
+                    if (entry_point_) {
+                        bit_bucket_->reset();
+                        bit_bucket_->dump(val);
+                        auto bytes = static_cast<CollectableBitBucket*>(bit_bucket_)->release();
+                        entry_point_->setScalarValueBytes(bytes);
+                    } else if (bit_bucket_) {
+                        bit_bucket_->dump(val);
+                    }
+                }
+                else
+                {
+                    (void)val;
+                }
             }
 
             /*!
@@ -416,6 +451,9 @@ namespace sparta{
             // Extracted value bytes from initialize() to be applied when
             // collection is first enabled (setCollecting_)
             std::vector<char> initial_bytes_;
+
+            std::unique_ptr<CollectableBitBucket> owned_bit_bucket_;
+            BitBucket* bit_bucket_ = nullptr;
         };
 
         /**
@@ -484,6 +522,7 @@ namespace sparta{
             using PairCollector<PairDef_t>::getPEventLogVector;
             using PairCollector<PairDef_t>::getArgosFormatGuide;
             using PairCollector<PairDef_t>::collect_;
+            using PairCollector<PairDef_t>::setBitBucket_;
             using PairCollector<PairDef_t>::setTinyStrings_;
             using PairCollector<PairDef_t>::isCollecting;
 
@@ -576,6 +615,22 @@ namespace sparta{
                 auto loc = getLocation();
                 auto clk_name = notNull(getClock())->getName();
                 entry_point_ = argos_collector->createScalarCollector<DataT>(loc, clk_name);
+                owned_bit_bucket_ = std::make_unique<CollectableBitBucket>(argos_collector->getTinyStrings());
+                bit_bucket_ = owned_bit_bucket_.get();
+                setBitBucket_(bit_bucket_);
+            }
+
+            /**
+             * \brief Forward the BitBucket along to the Pair objects in this collector.
+             * \note Only to be called from IterableCollector.
+             */
+            void setBitBucket(BitBucket* bit_bucket)
+            {
+                sparta_assert(dynamic_cast<CollectableTreeNode*>(getParent()) != nullptr);
+                sparta_assert(bit_bucket_ == nullptr);
+                sparta_assert(entry_point_ == nullptr);
+                bit_bucket_ = bit_bucket;
+                setBitBucket_(bit_bucket_);
             }
 
             /**
@@ -696,12 +751,15 @@ namespace sparta{
             MetaStruct::enable_if_t<!MetaStruct::is_any_pointer<T>::value, void>
             collect(const T & val)
             {
-                // TODO cnyce
-                //std::vector<char> bytes;
-                //simdb::StreamBuffer buf(bytes);
-                //collect_(&buf, val);
-                //entry_point_->setBytes(bytes);
                 ENTER_COLLECTION
+                if (entry_point_) {
+                    bit_bucket_->reset();
+                    collect_(val);
+                    auto bytes = static_cast<CollectableBitBucket*>(bit_bucket_)->release();
+                    entry_point_->setScalarValueBytes(bytes);
+                } else {
+                    collect_(val);
+                }
             }
 
             //! Explicitly/manually collect a value for this collectable, ignoring
@@ -869,6 +927,9 @@ namespace sparta{
 
             // Should we auto-collect?
             bool auto_collect_ = true;
+
+            std::unique_ptr<CollectableBitBucket> owned_bit_bucket_;
+            BitBucket* bit_bucket_ = nullptr;
         };
     }//namespace collection
 }//namespace sparta

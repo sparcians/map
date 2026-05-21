@@ -19,7 +19,7 @@ std::ostream& operator<<(std::ostream& os, const e_Color color)
         case e_Color::BLUE:  os << "BLUE"; break;
         case e_Color::__INVALID__: throw sparta::SpartaException("Invalid color enum");
     }
-    return os << "\n";
+    return os;
 }
 
 class DummyStructPairDef;
