@@ -2342,6 +2342,14 @@ namespace sparta {
                                 const std::ios_base::fmtflags &>::value, void>
         addPair(const std::string & name, Args &&... args) {
             sparta_assert(!name.empty());
+            if(name == "DID") {
+                for(const auto& pair : pairs_){
+                    if(pair->getKey() == "DID"){
+                        return;
+                    }
+                }
+            }
+
             static_assert(sizeof...(Args),
                           "There must be atleast one Method Pointer in addPair() call.");
             auto * new_pair = new KeyPairFromEntity<EntityType, Args...>(
@@ -2368,6 +2376,14 @@ namespace sparta {
                                 const std::ios_base::fmtflags&>::value, void>
         addPair(const std::string & name, Args &&... args) {
             sparta_assert(!name.empty());
+            if(name == "DID") {
+                for(const auto& pair : pairs_){
+                    if(pair->getKey() == "DID"){
+                        return;
+                    }
+                }
+            }
+
             static_assert(sizeof...(Args),
                           "There must be atleast one Method Pointer in addPair() call.");
 
