@@ -28,93 +28,9 @@
 
 #include "boost/numeric/conversion/converter.hpp"
 
-#define ENTER_COLLECTION \
-    [[maybe_unused]] auto bp = sparta::collection::CollectionDebugger::instance()->enterCollection<decltype(this)>();
-
 namespace sparta{
     namespace collection
     {
-        inline void debugMe() {}
-
-        /**
-         * \class CollectionDebugger
-         * \note TODO cnyce: Remove this class once all bugs are fixed.
-         */
-        class CollectionDebugger
-        {
-        public:
-            class DebugPoint
-            {
-            public:
-                DebugPoint(CollectionDebugger* debugger, const std::string& dtype)
-                    : debugger_(debugger)
-                    , dtype_(dtype)
-                {
-                    if (debugger_->shouldBreakOn(dtype))
-                    {
-                        std::cout << "Breakpoint hit for collected type: " << dtype << std::endl;
-                        debugMe();
-                    }
-                }
-
-                bool keep = false;
-
-                ~DebugPoint()
-                {
-                    if (keep)
-                    {
-                        debugger_->activate(dtype_);
-                    }
-                    else
-                    {
-                        debugger_->deactivate(dtype_);
-                    }
-                }
-
-            private:
-                CollectionDebugger* debugger_ = nullptr;
-                std::string dtype_;
-            };
-
-            static CollectionDebugger* instance()
-            {
-                static CollectionDebugger debugger;
-                return &debugger;
-            }
-
-            template <typename T>
-            DebugPoint enterCollection()
-            {
-                auto dtype = simdb::demangle_type<T>();
-                return DebugPoint(this, dtype);
-            }
-
-            void activate(const std::string& dtype)
-            {
-                active_dtypes_.insert(dtype);
-                all_dtypes_.insert(dtype);
-            }
-
-            void deactivate(const std::string& dtype)
-            {
-                active_dtypes_.erase(dtype);
-                all_dtypes_.insert(dtype);
-            }
-
-            bool shouldBreakOn(const std::string& dtype) const
-            {
-                if (all_dtypes_.count(dtype) == 0)
-                {
-                    return true;
-                }
-                return active_dtypes_.count(dtype) > 0;
-            }
-
-        private:
-            CollectionDebugger() = default;
-            std::unordered_set<std::string> active_dtypes_;
-            std::unordered_set<std::string> all_dtypes_;
-        };
 
         /**
          * \class Collectable
@@ -217,7 +133,7 @@ namespace sparta{
 
             /**
              * \brief Collectable classes must be able to register themselves with
-             * the ArgosCollector and store a ScalarCollector/ContainerCollector.
+             * the ArgosCollector.
              */
             void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final
             {
@@ -247,7 +163,6 @@ namespace sparta{
 
             /**
              * \brief Forward the BitBucket from a parent IterableCollector.
-             * \note Only used for simdb-supported (trivial POD) legacy collectables.
              */
             void setBitBucket(BitBucket* bit_bucket)
             {
@@ -271,7 +186,7 @@ namespace sparta{
              * \param val The value to initial the record with
              */
             void initialize(const DataT & val) {
-                // TODO cnyce
+                //TODO cnyce: handle initial value
                 (void)val;
             }
 
@@ -279,7 +194,6 @@ namespace sparta{
             //! what the Collectable is currently pointing to.
             void collect(const DataT & val)
             {
-                ENTER_COLLECTION
                 if(SPARTA_EXPECT_FALSE(isCollected()))
                 {
                     collect_(val);
@@ -378,8 +292,7 @@ namespace sparta{
                             "Collectables can only added to PipelineCollectors... for now");
 
                 if(collect && !initial_bytes_.empty()) {
-                    //TODO cnyce
-                    //entry_point_->setBytes(initial_bytes_);
+                    //TODO cnyce: handle initial value
                     initial_bytes_.clear();
                 }
 
@@ -610,7 +523,7 @@ namespace sparta{
 
             /**
              * \brief Collectable classes must be able to register themselves with
-             * the ArgosCollector and store a ScalarCollector/ContainerCollector.
+             * the ArgosCollector.
              */
             void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final
             {
@@ -628,7 +541,7 @@ namespace sparta{
                 entry_point_ = argos_collector->createScalarCollector<Data_t>(loc, clk_name);
                 owned_bit_bucket_ = std::make_unique<CollectableBitBucket>(argos_collector->getTinyStrings());
                 bit_bucket_ = owned_bit_bucket_.get();
-                setBitBucket_(bit_bucket_);
+                setBitBucket_(bit_bucket_); // PairDefinition base class API; Pairs need the BitBucket too
             }
 
             /**
@@ -641,7 +554,7 @@ namespace sparta{
                 sparta_assert(bit_bucket_ == nullptr);
                 sparta_assert(entry_point_ == nullptr);
                 bit_bucket_ = bit_bucket;
-                setBitBucket_(bit_bucket_);
+                setBitBucket_(bit_bucket_); // PairDefinition base class API; Pairs need the BitBucket too
             }
 
             /**
@@ -700,7 +613,7 @@ namespace sparta{
                     sparta_assert(formatters.size() == names.size());
 
                     std::vector<std::string> format_strings;
-                    for(std::size_t i = 0; i < formatters.size(); ++i) {
+                    for(size_t i = 0; i < formatters.size(); ++i) {
                         std::string fmt_str;
                         switch(formatters[i]) {
                             case PairFormatter::HEX:
@@ -716,7 +629,7 @@ namespace sparta{
                     const std::string kind_pod{"pod"};
                     const std::string empty;
 
-                    for(std::size_t i = 0; i < names.size(); ++i) {
+                    for(size_t i = 0; i < names.size(); ++i) {
                         db_mgr->INSERT(SQL_TABLE("DataTypeNodes"),
                                        SQL_VALUES(schema_id,
                                                   parent_id_unset,
@@ -762,7 +675,6 @@ namespace sparta{
             MetaStruct::enable_if_t<!MetaStruct::is_any_pointer<T>::value, void>
             collect(const T & val)
             {
-                ENTER_COLLECTION
                 if (entry_point_) {
                     bit_bucket_->reset();
                     collect_(val);

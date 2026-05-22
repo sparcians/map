@@ -207,7 +207,7 @@ public:
     }
 
     //! Collectable classes must be able to register themselves with
-    //! the ArgosCollector and store a ScalarCollector/ContainerCollector.
+    //! the ArgosCollector.
     void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final
     {
         auto loc = getLocation();
@@ -253,7 +253,6 @@ public:
                     warn_on_size_ = false;
                 }
             }
-            ENTER_COLLECTION
             collectImpl_(iterable_object, std::integral_constant<bool, sparse_array_type>());
         }
     }

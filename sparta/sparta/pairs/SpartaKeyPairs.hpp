@@ -252,9 +252,7 @@ namespace sparta {
         }
 
         std::vector<std::vector<char>> release() {
-            auto v = std::move(bin_bytes_);
-            bin_bytes_.clear();
-            return v;
+            return std::move(bin_bytes_);
         }
 
     private:
@@ -2049,24 +2047,23 @@ namespace sparta {
 
             if(auto bb = this->getBitBucket_(false)) {
                 bb->dumpField(tmp);
-            }
-
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
+            } else {
+                if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
+                    data_cpy_.reset(new ValueType(tmp));
+                }
+                else if(*data_cpy_ == tmp) {
+                    return true;
+                }
+                updateValueInCache_(c, id_, tmp);
                 data_cpy_.reset(new ValueType(tmp));
             }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
             return false;
         }
 
     public:
         KeyPairFromEntity(uint32_t i, const std::string & name, Args &&... args) :
             BasePairFromEntity<EntityType>(name, i),
-            parameterPack_(std::forward<Args>(args)...),
-            data_cpy_(nullptr) {
+            parameterPack_(std::forward<Args>(args)...) {
             static_assert(MetaStruct::parameter_pack_length<Args...>::value,
                 "There must be at least one Method Pointer which is passed from addPair API");
             }

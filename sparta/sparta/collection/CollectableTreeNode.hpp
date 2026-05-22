@@ -72,7 +72,7 @@ namespace collection
 
         /**
          * \brief Collectable classes must be able to register themselves with
-         * the ArgosCollector and store a ScalarCollector/ContainerCollector.
+         * the ArgosCollector.
          */
         virtual void createSimDbEntryPoint(simdb::argos::ArgosCollector*) = 0;
 
