@@ -138,8 +138,15 @@ namespace sparta{
             static constexpr uint64_t BAD_DISPLAY_ID = 0x1000;
             using ValueType = MetaStruct::remove_any_pointer_t<DataT>;
 
-            // TODO cnyce: legacy use is supported for enums too
-            static constexpr bool simdb_support_ = std::is_trivial_v<ValueType> && std::is_standard_layout_v<ValueType>;
+            template <typename T>
+            static constexpr bool native_support() {
+                return std::is_trivial_v<T> && std::is_standard_layout_v<T>;
+            }
+
+            template <typename T>
+            static constexpr bool string_support() {
+                return !native_support<T>() && utils::has_ostream_operator<T>::value;
+            }
 
             /**
              * \brief Construct the Collectable, no data object associated, part of a group
@@ -220,22 +227,22 @@ namespace sparta{
                     return;
                 }
 
-                // Legacy (non-PairCollector) usage will be turned off in map_v3 for any struct-like
-                // collectables. The user will have to create the nested SpartaPairDefinitionType
-                // in order to continue collecting this type.
-                if constexpr (simdb_support_)
+                if constexpr(!native_support<ValueType>() && !string_support<ValueType>())
                 {
-                    auto loc = getLocation();
-                    auto clk_name = notNull(getClock())->getName();
-                    entry_point_ = argos_collector->createScalarCollector<ValueType>(loc, clk_name);
-                    owned_bit_bucket_ = std::make_unique<CollectableBitBucket>(
-                        argos_collector->getTinyStrings());
-                    bit_bucket_ = owned_bit_bucket_.get();
+                    throw SpartaException("Cannot collect type '" ) << simdb::demangle_type<ValueType>() << "'. "
+                        << "This is not a POD, string, enum or something that supports ostream operators.";
                 }
-                else
-                {
-                    argos_collector->markUnsupported(getLocation());
-                }
+
+                using collectable_t = std::conditional_t<
+                    string_support<ValueType>(),
+                    std::string, ValueType>;
+
+                auto loc = getLocation();
+                auto clk_name = notNull(getClock())->getName();
+                entry_point_ = argos_collector->createScalarCollector<collectable_t>(loc, clk_name);
+                owned_bit_bucket_ = std::make_unique<CollectableBitBucket>(
+                    argos_collector->getTinyStrings());
+                bit_bucket_ = owned_bit_bucket_.get();
             }
 
             /**
@@ -244,33 +251,19 @@ namespace sparta{
              */
             void setBitBucket(BitBucket* bit_bucket)
             {
-                if constexpr (simdb_support_)
-                {
-                    sparta_assert(dynamic_cast<CollectableTreeNode*>(getParent()) != nullptr);
-                    sparta_assert(bit_bucket_ == nullptr);
-                    sparta_assert(entry_point_ == nullptr);
-                    bit_bucket_ = bit_bucket;
-                }
-                else
-                {
-                    (void)bit_bucket;
-                }
+                sparta_assert(dynamic_cast<CollectableTreeNode*>(getParent()) != nullptr);
+                sparta_assert(bit_bucket_ == nullptr);
+                sparta_assert(entry_point_ == nullptr);
+                bit_bucket_ = bit_bucket;
             }
 
-            /**
-             * \brief Whether a scalar (Collectable) or container (IterableCollector),
-             * serialize struct-like data structure hierarchies (field name + dtype)
-             * to the database.
-             */
             void serializeStructSchema(simdb::DatabaseManager*, std::map<std::string, int>&) override final
             {
-                // Legacy (non-PairCollector) usage is not supported for struct-like types.
             }
 
             template <typename T>
             static void serializeStructSchema(simdb::DatabaseManager*, std::map<std::string, int>&)
             {
-                // Legacy (non-PairCollector) usage is not supported for struct-like types.
             }
 
             /**
@@ -287,20 +280,9 @@ namespace sparta{
             void collect(const DataT & val)
             {
                 ENTER_COLLECTION
-                if constexpr (simdb_support_)
+                if(SPARTA_EXPECT_FALSE(isCollected()))
                 {
-                    if (entry_point_) {
-                        bit_bucket_->reset();
-                        bit_bucket_->dump(val);
-                        auto bytes = static_cast<CollectableBitBucket*>(bit_bucket_)->release();
-                        entry_point_->setScalarValueBytes(bytes);
-                    } else if (bit_bucket_) {
-                        bit_bucket_->dump(val);
-                    }
-                }
-                else
-                {
-                    (void)val;
+                    collect_(val);
                 }
             }
 
@@ -316,20 +298,12 @@ namespace sparta{
              */
             void collectWithDuration(const DataT & val, sparta::Clock::Cycle duration)
             {
-                if constexpr (simdb_support_)
+                if(SPARTA_EXPECT_FALSE(isCollected()))
                 {
-                    if(SPARTA_EXPECT_FALSE(isCollected()))
-                    {
-                        if(duration != 0) {
-                            ev_close_record_.preparePayload(false)->schedule(duration);
-                        }
-                        collect(val);
+                    if(duration != 0) {
+                        ev_close_record_.preparePayload(false)->schedule(duration);
                     }
-                }
-                else
-                {
-                    (void)val;
-                    (void)duration;
+                    collect(val);
                 }
             }
 
@@ -337,15 +311,12 @@ namespace sparta{
             //! CollectableTreeNode/PipelineCollector when a user of the
             //! TreeNode requests this object to be collected.
             void collect() override final {
-                if constexpr (simdb_support_)
-                {
-                    // If pointer has become nullified, close the record
-                    if(nullptr == collected_object_) {
-                        closeRecord();
-                        return;
-                    }
-                    collect(*collected_object_);
+                // If pointer has become nullified, close the record
+                if(nullptr == collected_object_) {
+                    closeRecord();
+                    return;
                 }
+                collect(*collected_object_);
             }
 
             /*!
@@ -354,27 +325,21 @@ namespace sparta{
              * \pre Must have constructed wit ha non-null collected object
              */
             void collectWithDuration(sparta::Clock::Cycle duration) {
-                if constexpr (simdb_support_)
-                {
-                    // If pointer has become nullified, close the record
-                    if(nullptr == collected_object_) {
-                        closeRecord();
-                        return;
-                    }
-                    collectWithDuration(*collected_object_, duration);
+                // If pointer has become nullified, close the record
+                if(nullptr == collected_object_) {
+                    closeRecord();
+                    return;
                 }
+                collectWithDuration(*collected_object_, duration);
             }
 
             //! Force close a record.  This will close the record
             //! immediately and clear the field for the next cycle
             void closeRecord(const bool & = false) override final
             {
-                if constexpr (simdb_support_)
+                if(SPARTA_EXPECT_FALSE(isCollected()))
                 {
-                    if(SPARTA_EXPECT_FALSE(isCollected()))
-                    {
-                        entry_point_->quiet();
-                    }
+                    entry_point_->quiet();
                 }
             }
 
@@ -398,9 +363,14 @@ namespace sparta{
             //! collection is enabled on the TreeNode
             void setCollecting_(bool collect, Collector * collector) override final
             {
-                if constexpr (!simdb_support_)
-                {
-                    return;
+                if constexpr (string_support<ValueType>() && !std::is_same_v<ValueType, std::string> && !std::is_enum_v<ValueType>) {
+                    if (collect) {
+                        std::ostringstream oss;
+                        oss << "'" << simdb::demangle_type<ValueType>() << "' ";
+                        oss << "will be collected using the ostream operator. Provide a PairDefinition for ";
+                        oss << "this class to boost performance.";
+                        entry_point_->postWarning(oss.str());
+                    }
                 }
 
                 pipeline_col_ = dynamic_cast<PipelineCollector *>(collector);
@@ -431,6 +401,47 @@ namespace sparta{
 
                 if(!collect) {
                     closeRecord();
+                }
+            }
+
+            //! Pointer-type collection
+            template <typename T>
+            std::enable_if_t<MetaStruct::is_any_pointer_v<T>, void>
+            collect_(const T & val)
+            {
+                sparta_assert(isCollected());
+                if (val) {
+                    collect_(*val);
+                } else {
+                    closeRecord();
+                }
+            }
+
+            //! String-type / operator<< collection
+            template <typename T>
+            std::enable_if_t<!MetaStruct::is_any_pointer_v<T> && string_support<T>(), void>
+            collect_(const T & val)
+            {
+                sparta_assert(isCollected());
+                std::ostringstream oss;
+                oss << val;
+                auto string_id = bit_bucket_->getTinyStrings()->getStringID(oss.str());
+                collect_(string_id);
+            }
+
+            //! POD-type collection
+            template <typename T>
+            std::enable_if_t<!MetaStruct::is_any_pointer_v<T> && !string_support<T>(), void>
+            collect_(const T & val)
+            {
+                sparta_assert(isCollected());
+                if (entry_point_) {
+                    bit_bucket_->reset();
+                    bit_bucket_->dump(val);
+                    auto bytes = static_cast<CollectableBitBucket*>(bit_bucket_)->release();
+                    entry_point_->setScalarValueBytes(bytes);
+                } else if (bit_bucket_) {
+                    bit_bucket_->dump(val);
                 }
             }
 

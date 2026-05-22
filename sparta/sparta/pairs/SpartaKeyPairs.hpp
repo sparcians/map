@@ -91,7 +91,7 @@ namespace sparta {
                          std::is_same_v<std::decay_t<T>, const char*>)
             {
                 auto string_id = tiny_strings_->getStringID(fieldval);
-                dump(string_id);
+                dump(reinterpret_cast<const char*>(&string_id), sizeof(uint32_t));
             }
             else if constexpr(std::is_enum_v<T> &&
                               utils::has_ostream_operator<MetaStruct::decay_t<T>>::value)
@@ -99,24 +99,37 @@ namespace sparta {
                 std::ostringstream oss;
                 oss << fieldval;
                 auto string_id = tiny_strings_->getStringID(oss.str());
-                dump(string_id);
+                dump(reinterpret_cast<const char*>(&string_id), sizeof(uint32_t));
             }
             else if constexpr(std::is_enum_v<T>)
             {
                 using Underlying = std::underlying_type_t<T>;
                 static_assert(std::is_unsigned_v<Underlying>);
                 auto enum_int = static_cast<uint64_t>(fieldval);
-                dump(enum_int);
+                dump(reinterpret_cast<const char*>(&enum_int), sizeof(uint64_t));
             }
-            else if constexpr(std::is_same_v<T, bool>)
+            else if constexpr(std::is_trivial_v<T> && std::is_standard_layout_v<T>)
             {
-                auto bool8 = static_cast<uint8_t>(fieldval);
-                dump(bool8);
+                if constexpr(std::is_same_v<T, bool>)
+                {
+                    auto bool8 = static_cast<uint8_t>(fieldval);
+                    dump(reinterpret_cast<const char*>(&bool8), sizeof(uint8_t));
+                }
+                else
+                {
+                    dump(reinterpret_cast<const char*>(&fieldval), sizeof(T));
+                }
+            }
+            else if constexpr(MetaStruct::is_pod_convertible_v<T>)
+            {
+                using pod_t = MetaStruct::pod_convertible_t<T>;
+                const pod_t pod_val = static_cast<pod_t>(fieldval);
+                dump(reinterpret_cast<const char*>(&pod_val), sizeof(pod_t));
             }
             else
             {
-                static_assert(std::is_trivial_v<T> && std::is_standard_layout_v<T>);
-                dump(reinterpret_cast<const char*>(&fieldval), sizeof(T));
+                throw SpartaException("Cannot collect type '" ) << simdb::demangle_type<T>() << "'. "
+                    << "This is not a POD, string, enum or something that supports ostream operators.";
             }
         }
 
@@ -143,6 +156,11 @@ namespace sparta {
             {
                 dump(data);
             }
+        }
+
+        simdb::TinyStrings<>* getTinyStrings() const
+        {
+            return tiny_strings_;
         }
 
     private:
