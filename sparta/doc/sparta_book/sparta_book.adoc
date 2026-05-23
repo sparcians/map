@@ -33,17 +33,27 @@ high-quality, professional level performance and functional models.
 
 // Include your 10 adoc files here
 include::chapters/introduction.adoc[]
+
 include::chapters/getting_started.adoc[]
-include::chapters/first_simulator.adoc[]
+
+//include::chapters/first_simulator.adoc[]
+
 include::chapters/construction.adoc[]
+
 include::chapters/ports_and_communication.adoc[]
+
 include::chapters/events_and_scheduling.adoc[]
+
 include::chapters/parameters.adoc[]
+
 include::chapters/statistics_and_reporting.adoc[]
+
 include::chapters/debugging_and_logging.adoc[]
 
 //include::analysis_methods.adoc[]
-//include::best_practices.adoc[]
+
+include::chapters/best_practices.adoc[]
+
 //include::framework.adoc[]
 //include::output.adoc[]
 //include::resources.adoc[]

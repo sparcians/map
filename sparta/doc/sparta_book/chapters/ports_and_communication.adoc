@@ -84,7 +84,8 @@ sparta::DataOutPort<uint32_t> out_port_{&unit_port_set_, "out_port"};
 void MyProducer::produceData_()
 {
     uint32_t value = computeNextValue_();
-    out_port_.send(value);  // delivers to receiver 1 cycle later (default)
+    out_port_.send(value);  // delivers to receiver in 0 cycles;
+                            // assumes receiver will add the delay
 }
 ----
 

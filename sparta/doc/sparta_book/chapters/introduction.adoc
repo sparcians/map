@@ -189,26 +189,15 @@ scheduling, statistics, and analysis.
 
 *Chapter 2 -- Simulation Construction* covers the class hierarchy that
 makes up a Sparta simulation: `TreeNode`, `ResourceTreeNode`, `Unit`,
-and `Resource`.  It explains the four phases of simulation construction
--- Build, Configure, Instantiate, and Bind -- and shows how to wire
-them together into a running simulator.
-
-// AUTHOR NOTE: Add a one or two sentence summary for each subsequent
-// chapter as you write them.  Suggested chapters:
-//
-//   Chapter 3 -- Ports and Communication
-//   Chapter 4 -- Events and Scheduling
-//   Chapter 5 -- Parameters
-//   Chapter 6 -- Statistics and Reporting
-//   Chapter 7 -- Notifications
-//   Chapter 8 -- Pipeline Collection and Visualization (Argos/Helios)
-//   Chapter 9 -- Command Line Simulation
-//   Chapter 10 -- Advanced Topics
+and `Resource`.  It explains the four phases of simulation
+construction -- Build, Configure, Instantiate, and Bind -- and shows
+how to wire them together into a running simulator.
 
 Throughout this book, examples draw from {url-olympia}[Olympia], the
 open source RISC-V out-of-order performance model maintained under
-RISC-V International.  Olympia represents a complete, production-quality
-Sparta simulator and is the recommended companion codebase for readers
-who want to see every concept applied at scale.  The full source for
-Sparta, Olympia, and the rest of the modeling toolchain is available
-in the {url-map}[MAP repository] under the Sparcians organization.
+RISC-V International.  Olympia represents a complete,
+production-quality Sparta simulator and is the recommended companion
+codebase for readers who want to see every concept applied at scale.
+The full source for Sparta, Olympia, and the rest of the modeling
+toolchain is available in the {url-map}[MAP repository] under the
+Sparcians organization.

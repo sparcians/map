@@ -14,9 +14,15 @@ $(BUILD_DIR):
 $(HTML_OUT_DIR):
 	mkdir -p $(HTML_OUT_DIR)
 
+ADOC_FLAGS := --require asciidoctor-diagram \
+             -a data-uri \
+             -a source-highlighter=rouge \
+			 -a rouge-style=thankful_eyes \
+             -a plantuml-jar-path=$(HOME)/plantuml/plantuml.jar
+
 # Build Multi-page HTML version
 html: $(SRC) | $(HTML_OUT_DIR)
-	asciidoctor-multipage -D $(HTML_OUT_DIR) $(SRC)
+	asciidoctor-multipage $(ADOC_FLAGS) -D $(HTML_OUT_DIR) $(SRC)
 	@echo "Multi-page HTML book generated in $(HTML_OUT_DIR)/"
 
 # Build PDF version
@@ -32,13 +38,6 @@ clean:
 
 .PHONY: all html pdf clean
 
-#ADOC_FLAGS = --require asciidoctor-diagram \
-#             -a data-uri \
-#             -a toc=left \
-#             -a toclevels=2 \
-#             -a source-highlighter=rouge \
-#			 -a rouge-style=thankful_eyes \
-#             -a plantuml-jar-path=$(HOME)/plantuml/plantuml.jar
 #
 #%.html: %.adoc Makefile
 #	asciidoctor $(ADOC_FLAGS) $<
