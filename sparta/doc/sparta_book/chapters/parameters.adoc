@@ -75,7 +75,10 @@ PARAMETER(type, name, default_value, description)
 Parameters are read in the unit constructor.  The `ParameterSet` is
 passed as a `const` pointer -- it is read-only from the unit's
 perspective.  Copy parameter values into `const` member variables at
-construction time:
+construction time to local variables to ensure performance.  Reading a
+parameter during simulation time from the `ParameterSet` is
+inefficient and will result in Sparta throwing a "read too many times"
+exception.
 
 [source,cpp]
 ----
@@ -117,6 +120,7 @@ a `sparta::SpartaException`.  If you need a parameter value later in
 simulation (in an event callback, for example), copy it to a member
 variable in the constructor as shown above.
 
+[#ignore-params]
 == Ignoring Parameters
 
 Sometimes a unit receives a parameter that it intentionally does not
@@ -138,6 +142,11 @@ FetchUnit::FetchUnit(sparta::TreeNode * node,
     params->enable_prefetch.ignore();
 }
 ----
+
+NOTE: The entire `ParameterSet` can be ignored as well by calling
+`ignoreAll`, but this is highly discouraged.  Instead, use the
+`<OPTIONAL>` keyword on a parameter or a group of parameters in the
+YAML file provided to simulation.  See <<optional-params>>.
 
 == Parameter Validation
 
@@ -328,6 +337,26 @@ files -- a base config for the platform, a separate config for each
 core microarchitecture variant, and a sweep config for the parameters
 being explored.
 
+To simplify this further, the Sparta supports the inclusion of other
+parameter files.
+
+[source,yaml]
+----
+# ooo_core_config.yaml
+
+include: base_config.yaml
+
+# OoO behaviors defined below...
+----
+
+This will have the same behavior as above:
+
+[source,bash]
+----
+# Start with a base config, override with a core-specific config
+./my_simulator -c ooo_core_config.yaml
+----
+
 === Mixing Files and Command Line
 
 Command line `-p` overrides are applied after all `-c` files.  This
@@ -341,6 +370,68 @@ fine-tune individual parameters on the command line:
                -p top.cpu.core?.decode.params.decode_width 8
 ----
 
+NOTE: Parameters supplied on the command line are always parsed from
+first to last (or left to right).  This includes yaml files read from
+the `-c` option. For example, if `fetch_width` was defined in the
+`base_config.yaml` as the value `16` and then a subsequent `-p` option
+sets it to `8`, `8` will be the final value.
+
+[#optional-params]
+=== Optional Parameters
+
+When defining parameters in yaml files, there will be instances where
+one yaml file "negates" the parameters of a previous yaml file.  This
+is especially true when defining <<arch-configs>>.
+
+As an example, if one yaml file lists parameters related to a
+particular functionality but a subsequent yaml file _changes_ that
+behavior, the original parameters related to that parameter might now
+be unused.
+
+One way to solve this is to use the `ignore()` and `ignoreAll()`
+functions off of `Parameter` and `ParameterSet` (as described in
+<<ignore-params>>, but the better approach to tell Sparta that these
+parmeters are "not longer relevant" by using the `<OPTIONAL>` keyword.
+
+For example, take 2 yaml files, one enables a behavior `foo` in the
+simulator, but the second yaml changes that to behavior `bar`.
+
+[source,bash]
+----
+# Start with behavior 1, override with behavior 2
+./my_simulator -c behavior_foo.yaml -c behavior_bar.yaml
+----
+
+`behavior_foo.yaml`
+[source,yaml]
+----
+top:
+  cpu:
+    core0:
+      behavior: foo # Instantiate a foo unit
+      foo.params.direction: up
+----
+
+`behavior_bar.yaml`
+[source,yaml]
+----
+top:
+  cpu:
+    core0:
+      behavior: bar # Instantiate a bar unit instead
+
+      # Sparta needs to know what to do with param from behavior_foo.yaml
+      foo.params.direction: <OPTIONAL>
+
+      bar.params.speed: fast
+----
+
+Unfortunately, `behavior_bar.yaml` changes the behavior to `bar` and
+keeps a unit called `foo` from being instantiated.  Sparta will
+complain that the parameter `foo.params.direction` is not read.  The
+`<OPTIONAL>` keyword will tell Sparta this is ok.
+
+[#arch-configs]
 == Architecture Configurations
 
 Sparta supports a special type of configuration called an
@@ -360,6 +451,26 @@ simulator.
 
 The special `meta.params.architecture` tree node (visible in
 `--show-parameters` output) records which architecture was loaded.
+
+One useful functionality with architecture yaml files is the ability
+to define these files and build a hierarchy.  For example, an OoO 4
+wide machine might be the same as an OoO 2 wide machine, but with just
+a few parameters changed.  Using the keyword `include:` in the yaml
+file enables this:
+
+`ooo_4wide.yaml`
+[source,yaml]
+----
+include: ooo_2wide.yaml
+
+# 4 wide overrides and additions.
+# ...
+----
+
+Keep in mind that a 4 wide machine _might_ override or change the
+topology making some parameters moot in the `ooo_2wide.yaml`
+file. Sparta will complain that these moot parameters are not being
+read.  This can be alleviated using <<optional-params>>.
 
 == Parameterizing Topology
 
@@ -384,7 +495,7 @@ void MySimulator::configureTree_()
     const auto * cpu_params =
         dynamic_cast<const CPU::CPUParameters *>(cpu_rtn->getParameterSet());
 
-    uint32_t num_cores = cpu_params->num_cores;
+    const uint32_t num_cores = cpu_params->num_cores;
 
     // Build additional core nodes based on the parameter value
     for (uint32_t i = already_built_cores_; i < num_cores; ++i) {
@@ -408,7 +519,7 @@ any Sparta tree is built:
 [source,cpp]
 ----
 // main.cpp
-uint32_t num_cores = 1;
+constexpr uint32_t num_cores = 1;
 cls.getApplicationOptions().add_options()
     ("num-cores",
      sparta::app::named_value<uint32_t>("N", &num_cores)->default_value(1),
@@ -423,9 +534,9 @@ MySimulator sim(num_cores);
 ----
 // MySimulator.cpp
 MySimulator::MySimulator(uint32_t num_cores) :
-    sparta::app::Simulation("my_simulator", &scheduler_)
+    sparta::app::Simulation("my_simulator", &scheduler_),
+    num_cores_(num_cores)
 {
-    num_cores_ = num_cores;
 }
 
 void MySimulator::buildTree_()
