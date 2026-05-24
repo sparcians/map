@@ -112,7 +112,7 @@ Specifically, the `sparta::ResourceTreeNode` is the main container for
 the following resources:
 
 1. `sparta::Unit` -- The base class that the modeler will create their component from (`Fetch`, `Decode`, etc)
-1. `sparta::ParameterSet` -- The parameters used by the modeler's `sparta::Unit` to configure (`FetchParameterSet`, `DecodeParameterSet`, etc)
+2. `sparta::ParameterSet` -- The parameters used by the modeler's `sparta::Unit` to configure (`FetchParameterSet`, `DecodeParameterSet`, etc)
 
 The `sparta::ResourceTreeNode` will instantiate the modeler's unit as
 well as the parameters it uses.  However, by itself, the
@@ -581,10 +581,10 @@ following rules apply:
 
 1. One port *must be* a `sparta::InPort` type and the other *must be*
    a `sparta::OutPort` type.
-1. If the port is a data type
+2. If the port is a data type
    (`sparta::DataInPort`/`sparta::DataOutPort`) the data type *must be*
    equivalent and not merely castable.
-1. If the resources are `sparta::Bus` types, they must be equivalent
+3. If the resources are `sparta::Bus` types, they must be equivalent
    in size and polarity.  For example, if a Bus has 1 InPort and 2
    OutPorts, the Bus being bound to it must have 1 OutPort and 2 InPorts
    of the same names.

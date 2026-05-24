@@ -21,21 +21,7 @@ Sparta's event and phase system exists.
 Consider a mux with three data inputs (`InputA`, `InputB`, `InputC`),
 a select signal, and a result output.
 
-[plantuml,mux-diagram,png,align="center"]
-....
-@startuml
-rectangle "InputA()" as A
-rectangle "InputB()" as B
-rectangle "InputC()" as C
-rectangle "Select()" as S
-rectangle "Result"   as R
-
-A --> R
-B --> R
-C --> R
-S --> R : select
-@enduml
-....
+image::mux_picture.png[align="center"]
 
 The constraint is:
 
@@ -53,9 +39,9 @@ SystemC solves this with delta cycles -- borrowed from VHDL -- but
 delta cycles are limited to a finite upper bound and do not scale
 cleanly to complex topologies.
 
-Sparta solves it with explicit event ordering via the DAG and
-scheduling phases.  The solution is deterministic, has no iteration
-limit, and is expressed directly in the model code.
+Sparta solves it with explicit event ordering via a Directed Acyclic
+Graph (DAG) and scheduling phases.  The solution is deterministic, has
+no iteration limit, and is expressed directly in the model code.
 
 === The Solution
 
@@ -190,12 +176,12 @@ void MuxUnit::inputA_(const Value & val) {
 }
 ----
 
-This processes the result in the port callback directly.  If
-`InputA`'s callback fires before `InputB` and `InputC`, the result
-is computed with stale or uninitialized values for B and C.  The
-bug is non-deterministic -- it may produce correct results in some
-runs and wrong results in others depending on the order the scheduler
-happens to fire the port callbacks.
+This processes the result in the port callback directly.  If `InputA`
+'s callback fires before `InputB` and `InputC`, the result is computed
+with stale or uninitialized values for B and C.  The bug is
+non-deterministic -- it may produce correct results in some runs and
+wrong results in others depending on the order the scheduler happens
+to fire the port callbacks.
 
 Even this slightly better version is broken:
 
@@ -221,7 +207,7 @@ between the port callbacks and `evSelect_`.  The scheduler may fire
 producing wrong results.
 
 The `registerConsumingEvent` + `registerProducingEvent` calls are not
-optional.  They are what tells Sparta about the data dependencies your
+optional.  These functions tell Sparta about the data dependencies the
 model has, so the framework can enforce them.
 
 === Complete MuxUnit Example
@@ -237,7 +223,7 @@ Here is the full, correct implementation:
 #include "sparta/events/UniqueEvent.hpp"
 #include "sparta/utils/ValidValue.hpp"
 
-// Value type for the mux -- replace with your actual data type
+// Value type for the mux -- replace with actual data type
 using Value = uint32_t;
 
 class MuxUnit : public sparta::Unit
@@ -389,9 +375,9 @@ not been set, catching missing-input bugs immediately rather than
 propagating garbage values silently.
 
 These four patterns appear together throughout Olympia and any
-well-written Sparta model.  When you find yourself writing a unit
-that receives data from multiple sources and produces output that
-depends on all of them, reach for this pattern first.
+well-written Sparta model.  When a modeler is writing a unit that
+receives data from multiple sources and produces output that depends
+on all of them, reach for this pattern first.
 
 == Credit-Based Flow Control
 

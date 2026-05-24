@@ -208,9 +208,10 @@ domains in a simulation.
 == Declaring Ports as Member Variables
 
 All ports must be declared as member variables of the unit, not as
-local variables and not allocated with `new`.  The port constructor
-registers the port with the `sparta::PortSet` and with the simulation
-tree, so the port must exist for the full lifetime of the unit.
+local variables as the framework requires the Ports to be persistent
+throughout simulation.  The port constructor registers the port with
+the `sparta::PortSet` and with the simulation tree, so the port must
+exist for the full lifetime of the unit.
 
 The standard pattern is to declare ports in the unit header using
 in-class member initializers:
@@ -318,10 +319,16 @@ The rules for binding:
 1. One port must be an `InPort` type and the other must be an `OutPort`
    type -- you cannot bind two `InPorts` or two `OutPorts` together.
 2. For data ports, the data type `T` must match exactly.  Binding a
-   `DataOutPort<uint32_t>` to a `DataInPort<uint64_t>` is a compile
+   `DataOutPort<uint32_t>` to a `DataInPort<uint64_t>` is a runtime
    error.
-3. A port can only be bound once.  Attempting to bind an already-bound
-   port throws a `sparta::SpartaException` at startup.
+3. Ports support a *many-to-many* relationship.  A single `OutPort`
+   can be bound to multiple `InPorts`, and a single `InPort` can be
+   bound to multiple `OutPorts`.  Each `bind()` call adds a connection
+   -- calling `bind()` again with the same port adds a second binding
+   rather than replacing the first.  This makes it straightforward to
+   broadcast a signal (such as a flush) from one source to many
+   receivers, or to fan inputs from multiple producers into a single
+   consumer.
 
 If `--show-tree` shows a port with no `[bound to]` annotation after
 `finalizeTree()` runs, that port was never bound -- a common source of
