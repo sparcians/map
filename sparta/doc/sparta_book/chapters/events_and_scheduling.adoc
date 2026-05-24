@@ -25,9 +25,6 @@ at any tick in the future.  A unit's `sparta::Clock` converts between
 ticks and cycles so that modelers can schedule events in cycle-relative
 terms without knowing the underlying tick rate.
 
-To understand the relationship between the `sparta::Scheduler` and
-events before continuing, see <<clocks_events>>.
-
 === How the Scheduler Runs
 
 The typical scheduler lifecycle within a `sparta::app::Simulation` is:
@@ -142,10 +139,11 @@ depends on `UniqueEvent` for correctness.
 
 {url-singlecycleuniqueevent}[`sparta::SingleCycleUniqueEvent`] is a
 variant of `UniqueEvent` that can *only* be scheduled for the current
-cycle (delay of 0) or exactly 1 cycle in the future.  It is slightly
-faster than `UniqueEvent` because it does not need to manage a future
-queue entry.  Use it for callbacks that must always fire in the same
-cycle they are triggered.
+cycle (delay of 0) or the next cycle.
+`sparta::SingleCycleUniqueEvent` is slightly faster than `UniqueEvent`
+because it does not need to manage a future queue entry.  Use this
+event type for callbacks that must always fire in the same cycle they
+are triggered.
 
 [source,cpp]
 ----
@@ -159,9 +157,9 @@ ev_flush_.schedule();
 === sparta::PayloadEvent
 
 {url-payloadevent}[`sparta::PayloadEvent<T>`] is like `sparta::Event`
-but carries a data payload of type `T`.  It is useful when you need to
-schedule work in the future *and* pass data to that future work without
-storing it as a member variable.
+but carries a data payload of type `T`.  `sparta::PayloadEvent` is
+useful when you need to schedule work in the future *and* pass data to
+that future work without storing the data as a member variable.
 
 [source,cpp]
 ----
@@ -290,8 +288,8 @@ The phases, in order of execution:
 
 | Collection
 | `SchedulingPhase::Collection`
-| Pipeline collection (Argos/Helios data capture).  Fires before Tick
-  so the collection sees the state after before processing.
+| Pipeline collection (Argos/Helios data capture).  Fires after Tick
+  so the collection sees the state after all processing is complete.
 
 | Tick
 | `SchedulingPhase::Tick` (default)
@@ -338,39 +336,105 @@ Sparta's ordering deterministic.
 == Intra-Phase Ordering with the DAG
 include::attributes.adoc[]
 
-Within a single phase, events are semi-deterministic: they will fire
-in the same order every simulation run, but that order may change if
-the model source code changes.  When a specific ordering within a
-phase is required, use explicit precedence declarations.
+Within a single phase, events that have no explicit precedence
+relationship are *free-form*: they fire in a deterministic order
+within a given simulation run, but that order may differ between
+runs with different parameters or a different binary build.  When a
+specific ordering within a phase is required, use explicit precedence
+declarations.
 
-Precedence is established with `.precedes()` or the `>>` operator:
+=== Auto-Precedence
+
+`sparta::Unit` automatically establishes a key set of precedence
+relationships on behalf of the modeler during `onBindTreeEarly_()`.
+Specifically, all `Tick`-phase events registered in
+`unit_event_set_` are registered as *consumers* of all `InPorts` in
+`unit_port_set_`, and as *producers* on all `OutPorts`.  This means:
+
+- Every `Tick`-phase event in the unit is guaranteed to fire *after*
+  all N-cycle `InPort` callbacks have delivered their data
+- Every `OutPort` send from a `Tick`-phase event is guaranteed to
+  happen *after* the event fires
+
+This is auto-precedence and it is enabled by default for every
+`sparta::Unit`.  It is why the simple pattern of "port callback
+schedules a `UniqueEvent`, event does the work" is correct without
+any explicit `registerConsumingEvent` calls -- the auto-precedence
+handles the ordering between the port and the `Tick`-phase event
+automatically.
+
+Auto-precedence does *not* establish ordering *between* events in the
+same unit.  If `my_first_event_` and `my_second_event_` are both in
+`SchedulingPhase::Tick`, their relative order is free-form unless the
+modeler explicitly declares it.
+
+Auto-precedence can be disabled if needed:
 
 [source,cpp]
 ----
-// ev_fetch_ must fire before ev_decode_ within SchedulingPhase::Tick
-ev_fetch_.precedes(ev_decode_);
+MyUnit::MyUnit(sparta::TreeNode * node, const MyParameters * params) :
+    sparta::Unit(node)
+{
+    // Disable auto-precedence -- modeler takes full responsibility
+    // for all port/event ordering
+    setAutoPrecedence(false);
+}
+----
 
-// Equivalent syntax using the >> operator
-ev_fetch_ >> ev_decode_;
+Disable auto-precedence only when you have a specific reason -- for
+example, when a unit has `OutPorts` that are driven from a
+`PortUpdate`-phase callback rather than a `Tick`-phase event, and the
+auto-precedence would create a false ordering constraint.  In all
+other cases, leave it enabled.
+
+NOTE: 0-cycle `InPorts` are *not* covered by auto-precedence.
+A 0-cycle port callback fires in `SchedulingPhase::Tick`, not
+`SchedulingPhase::PortUpdate`.  If your unit uses 0-cycle ports and
+needs ordering guarantees, use `registerConsumingEvent` explicitly as
+shown in the mux example in <<_best_practices>>.
+
+=== Explicit Precedence with `>>`
+
+Precedence is established with the `>>` operator or `.precedes()`:
+
+[source,cpp]
+----
+// my_first_event_ must fire before my_second_event_
+// within SchedulingPhase::Tick
+my_first_event_ >> my_second_event_;
+
+// Equivalent using precedes()
+my_first_event_.precedes(my_second_event_);
 
 // A chain: fetch -> decode -> rename -> dispatch
 ev_fetch_ >> ev_decode_ >> ev_rename_ >> ev_dispatch_;
 ----
 
-Precedence can also be established between events in different units
-as long as both events are in the same scheduling phase:
+Each `>>` call adds a DAG edge.  The DAG assigns events into
+*ordering groups* based on these edges.  Events in the same group
+(connected by precedence) fire in their declared order.  Events with
+no edge between them are free-form relative to each other.
+
+Precedence between events in the same unit is established in the unit
+constructor.  Precedence between events in *different* units is
+established in `bindTree_()`, after both units have been instantiated:
 
 [source,cpp]
 ----
-// In the simulator's bindTree_ -- after both units are instantiated
-fetch_unit_->getEvent("ev_output") >>
-    decode_unit_->getEvent("ev_input");
+void MySimulator::bindTree_()
+{
+    // Fetch's output event must precede Decode's input event
+    auto * fetch  = getRoot()->getChildAs<FetchUnit>("top.cpu.core0.fetch");
+    auto * decode = getRoot()->getChildAs<DecodeUnit>("top.cpu.core0.decode");
+
+    fetch->getEventSet()->getEvent("ev_output") >>
+        decode->getEventSet()->getEvent("ev_input");
+}
 ----
 
-It is a *compile-time error* to establish precedence between events
-in different scheduling phases -- the phases already guarantee
-ordering between them, so cross-phase precedence would be redundant
-and potentially contradictory:
+It is a compile-time error to establish precedence between events in
+different scheduling phases -- phases already guarantee ordering
+between them:
 
 [source,cpp]
 ----
@@ -382,8 +446,66 @@ ev_update_ >> ev_tick_;  // ERROR: different phases
 ----
 
 Precedence must be established before the scheduler is finalized.
-The constructor of a unit is the right place for intra-unit
-precedence.  Cross-unit precedence belongs in `bindTree_`.
+The unit constructor is the right place for intra-unit precedence.
+Cross-unit precedence belongs in `bindTree_`.
+
+=== EventGroup: Many-to-Many Precedence
+
+When multiple events all need to precede multiple other events,
+writing out every individual `>>` edge is verbose.
+{url-eventgroup}[`sparta::EventGroup`] solves this by establishing
+an N×M precedence between two sets of events with a single `>>`
+expression.
+
+[source,cpp]
+----
+#include "sparta/events/Precedence.hpp"
+
+// Three producer events, three consumer events --
+// every producer must fire before every consumer
+sparta::EventGroup(prod0, prod1, prod2) >> sparta::EventGroup(cons0, cons1, cons2);
+
+// The above is exactly equivalent to:
+prod0 >> cons0;  prod0 >> cons1;  prod0 >> cons2;
+prod1 >> cons0;  prod1 >> cons1;  prod1 >> cons2;
+prod2 >> cons0;  prod2 >> cons1;  prod2 >> cons2;
+----
+
+`EventGroup` accepts any mix of `sparta::Event`,
+`sparta::UniqueEvent`, and `sparta::PayloadEvent` types via its
+variadic constructor:
+
+[source,cpp]
+----
+// Single event on either side is also valid
+sparta::EventGroup(ev_fetch_) >> sparta::EventGroup(ev_decode_, ev_rename_);
+
+// Equivalent to:
+ev_fetch_ >> ev_decode_;
+ev_fetch_ >> ev_rename_;
+----
+
+`EventGroup` is temporary -- it exists only to establish the DAG
+edges.  There is nothing to store or keep alive after the `>>`
+expression completes.
+
+A practical use of `EventGroup` is a unit with several independent
+input-processing events that all must complete before any
+output-producing events run:
+
+[source,cpp]
+----
+// In the constructor -- all input events must precede all output events
+sparta::EventGroup(ev_process_alu_,
+                   ev_process_lsu_,
+                   ev_process_branch_)
+    >> sparta::EventGroup(ev_send_results_,
+                          ev_update_rat_);
+----
+
+This expresses the ordering intent clearly and concisely -- far more
+readable than nine individual `>>` statements, and with no risk of
+accidentally omitting one of the edges.
 
 == Putting It Together: A Pipeline Stage
 include::attributes.adoc[]
@@ -486,7 +608,6 @@ only once per cycle even if both `receiveInstruction_()` and
 `PortUpdate`), so by the time `decode_()` runs, both the instruction
 and the credit update have been applied.
 
-[#clocks_events]
 == Clocks and Events [[clocks_and_events]]
 include::attributes.adoc[]
 
@@ -664,12 +785,25 @@ precedence:
   coarse-grained, automatic ordering between categories of work.
 - The {url-dag}[DAG] provides fine-grained ordering within a phase via
   `.precedes()` and `>>`.
+- `sparta::Unit` automatically establishes precedence between all
+  `Tick`-phase events and all ports in `unit_event_set_` and
+  `unit_port_set_` -- this is auto-precedence and it is on by default.
+- Auto-precedence does not cover 0-cycle ports or ordering *between*
+  events in the same unit -- use `registerConsumingEvent` and `>>`
+  respectively for those cases.
 - Use `sparta::UniqueEvent` as the default event type -- it prevents
   duplicate firings and is the correct choice for the vast majority
   of pipeline modeling work.
 - Use `sparta::StartupEvent` to prime the pipeline before cycle 0.
 - Use `sparta::PayloadEvent` to deliver data to a future callback
   without storing it as member state.
+- The scheduler runs in ticks; events are scheduled in cycles.
+  Always use `getClock()->currentCycle()` in model code -- never
+  raw tick values.
+- Events inherit their clock from the tree node they are attached to.
+  The same unit class runs at any frequency without code changes.
+- Use `SyncPort` to communicate across clock boundaries -- never
+  schedule events manually across clocks.
 
 The next chapter covers parameters -- how to configure a Sparta model
 from the command line or a YAML file without recompiling.
