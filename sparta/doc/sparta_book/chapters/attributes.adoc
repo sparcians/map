@@ -12,4 +12,15 @@
 :url-doxygen-unit: https://sparcians.github.io/map/classsparta_1_1Unit.html
 :url-doxygen-resource: https://sparcians.github.io/map/classsparta_1_1Resource.html
 :url-doxygen-cmdlinesim: https://sparcians.github.io/map/classsparta_1_1app_1_1CommandLineSimulator.html
+:url-event: https://sparcians.github.io/map/classsparta_1_1Event.html
+:url-uniqueevent: https://sparcians.github.io/map/classsparta_1_1UniqueEvent.html
+:url-singlecycleuniqueevent: https://sparcians.github.io/map/classsparta_1_1SingleCycleUniqueEvent.html
+:url-payloadevent: https://sparcians.github.io/map/classsparta_1_1PayloadEvent.html
+:url-startupevent: https://sparcians.github.io/map/classsparta_1_1StartupEvent.html
+:url-scheduleable: https://sparcians.github.io/map/classsparta_1_1Scheduleable.html
+:url-eventset: https://sparcians.github.io/map/classsparta_1_1EventSet.html
+:url-scheduler: https://sparcians.github.io/map/classsparta_1_1Scheduler.html
+:url-schedulingphase: https://sparcians.github.io/map/namespacesparta.html#aeec80d237ace9f07634c3d24c9aed9a0
+:url-dag: https://sparcians.github.io/map/classsparta_1_1DAG.html
+:url-spartahandler: https://sparcians.github.io/map/SpartaHandler_8hpp.html
 :data-uri:
