@@ -1,0 +1,15 @@
+:url-composite: https://en.wikipedia.org/wiki/Composite_pattern
+:url-factory: https://en.wikipedia.org/wiki/Factory_method_pattern
+:url-doxygen-simulation: https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html
+:url-doxygen-treenode: https://sparcians.github.io/map/classsparta_1_1TreeNode.html
+:url-doxygen-roottreenode: https://sparcians.github.io/map/classsparta_1_1RootTreeNode.html
+:url-doxygen-resourcetreenode: https://sparcians.github.io/map/classsparta_1_1ResourceTreeNode.html
+:url-doxygen-resourcefactory: https://sparcians.github.io/map/classsparta_1_1ResourceFactory.html
+:url-doxygen-resourcefactorybase: https://sparcians.github.io/map/classsparta_1_1ResourceFactoryBase.html
+:url-doxygen-parameterset: https://sparcians.github.io/map/classsparta_1_1ParameterSet.html
+:url-doxygen-portset: https://sparcians.github.io/map/classsparta_1_1PortSet.html
+:url-doxygen-statisticset: https://sparcians.github.io/map/classsparta_1_1StatisticSet.html
+:url-doxygen-unit: https://sparcians.github.io/map/classsparta_1_1Unit.html
+:url-doxygen-resource: https://sparcians.github.io/map/classsparta_1_1Resource.html
+:url-doxygen-cmdlinesim: https://sparcians.github.io/map/classsparta_1_1app_1_1CommandLineSimulator.html
+:data-uri:

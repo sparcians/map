@@ -1,19 +1,4 @@
 = Simulation Construction
-:url-composite: https://en.wikipedia.org/wiki/Composite_pattern
-:url-factory: https://en.wikipedia.org/wiki/Factory_method_pattern
-:url-doxygen-simulation: https://sparcians.github.io/map/classsparta_1_1app_1_1Simulation.html
-:url-doxygen-treenode: https://sparcians.github.io/map/classsparta_1_1TreeNode.html
-:url-doxygen-roottreenode: https://sparcians.github.io/map/classsparta_1_1RootTreeNode.html
-:url-doxygen-resourcetreenode: https://sparcians.github.io/map/classsparta_1_1ResourceTreeNode.html
-:url-doxygen-resourcefactory: https://sparcians.github.io/map/classsparta_1_1ResourceFactory.html
-:url-doxygen-resourcefactorybase: https://sparcians.github.io/map/classsparta_1_1ResourceFactoryBase.html
-:url-doxygen-parameterset: https://sparcians.github.io/map/classsparta_1_1ParameterSet.html
-:url-doxygen-portset: https://sparcians.github.io/map/classsparta_1_1PortSet.html
-:url-doxygen-statisticset: https://sparcians.github.io/map/classsparta_1_1StatisticSet.html
-:url-doxygen-unit: https://sparcians.github.io/map/classsparta_1_1Unit.html
-:url-doxygen-resource: https://sparcians.github.io/map/classsparta_1_1Resource.html
-:url-doxygen-cmdlinesim: https://sparcians.github.io/map/classsparta_1_1app_1_1CommandLineSimulator.html
-:data-uri:
 
 Building a Sparta model requires establishing hierarchies and
 relationships between modeling resources that will exist during
@@ -34,6 +19,7 @@ to Sparta's base classes used to make up a simulator then and then
 illustrate how to use those classes to form the final simulation.
 
 == Sparta Classes for Simulation
+include::attributes.adoc[]
 
 As an example of a simulation hierarchy, take a generic SoC design
 which consists of multiple cores and a memory subsystem (`mss`).  Each
@@ -156,6 +142,7 @@ the `sparta::ResourceTreeNode` will use the given factory to
 instantiate the user-defined modeling component.
 
 == Building the Simulation Hierarchy
+include::attributes.adoc[]
 
 The simulation hierarchy can be built anywhere, including a simple
 application that just contains `main()` and starts with a
@@ -752,6 +739,7 @@ but Sparta does provide a wrapper class called
 common usages.
 
 == Command Line Simulation Class [[commandline_simulation]]
+include::attributes.adoc[]
 
 Most Sparta-based simulators are driven from the command line.  Rather
 than writing argument parsing from scratch, Sparta provides
@@ -843,6 +831,7 @@ This makes it easy to run design space exploration sweeps across
 multi-core configurations without modifying any model code.
 
 == Advanced Simulation Construction [[advanced_features]]
+include::attributes.adoc[]
 
 === Factories [[factories]]
 
