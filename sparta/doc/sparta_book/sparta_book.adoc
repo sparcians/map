@@ -40,9 +40,9 @@ include::chapters/getting_started.adoc[]
 
 include::chapters/construction.adoc[]
 
-include::chapters/ports_and_communication.adoc[]
-
 include::chapters/events_and_scheduling.adoc[]
+
+include::chapters/ports_and_communication.adoc[]
 
 include::chapters/parameters.adoc[]
 
