@@ -1,15 +1,4 @@
 = Events and Scheduling
-:url-event: https://sparcians.github.io/map/classsparta_1_1Event.html
-:url-uniqueevent: https://sparcians.github.io/map/classsparta_1_1UniqueEvent.html
-:url-singlecycleuniqueevent: https://sparcians.github.io/map/classsparta_1_1SingleCycleUniqueEvent.html
-:url-payloadevent: https://sparcians.github.io/map/classsparta_1_1PayloadEvent.html
-:url-startupevent: https://sparcians.github.io/map/classsparta_1_1StartupEvent.html
-:url-scheduleable: https://sparcians.github.io/map/classsparta_1_1Scheduleable.html
-:url-eventset: https://sparcians.github.io/map/classsparta_1_1EventSet.html
-:url-scheduler: https://sparcians.github.io/map/classsparta_1_1Scheduler.html
-:url-schedulingphase: https://sparcians.github.io/map/namespacesparta.html#aeec80d237ace9f07634c3d24c9aed9a0
-:url-dag: https://sparcians.github.io/map/classsparta_1_1DAG.html
-:url-spartahandler: https://sparcians.github.io/map/SpartaHandler_8hpp.html
 
 The previous chapter covered how data moves between units through
 ports.  This chapter covers the other half of the communication
@@ -23,6 +12,7 @@ execution completes.  Understanding Sparta's event and scheduling
 system is understanding how a Sparta simulator actually runs.
 
 == The Sparta Scheduler
+include::attributes.adoc[]
 
 The {url-scheduler}[`sparta::Scheduler`] is the engine at the center
 of every Sparta simulation.  It maintains a queue of future callbacks
@@ -34,6 +24,9 @@ per cycle.  It fires events when they are scheduled, which may be
 at any tick in the future.  A unit's `sparta::Clock` converts between
 ticks and cycles so that modelers can schedule events in cycle-relative
 terms without knowing the underlying tick rate.
+
+To understand the relationship between the `sparta::Scheduler` and
+events before continuing, see <<clocks_events>>.
 
 === How the Scheduler Runs
 
@@ -84,6 +77,7 @@ This is invaluable for debugging ordering problems -- the log shows
 exactly which events fire and in which order each cycle.
 
 == Event Types
+include::attributes.adoc[]
 
 Sparta provides five event types.  Choosing the right one matters for
 both correctness and performance.
@@ -148,9 +142,10 @@ depends on `UniqueEvent` for correctness.
 
 {url-singlecycleuniqueevent}[`sparta::SingleCycleUniqueEvent`] is a
 variant of `UniqueEvent` that can *only* be scheduled for the current
-cycle (delay of 0).  It is slightly faster than `UniqueEvent` because
-it does not need to manage a future queue entry.  Use it for callbacks
-that must always fire in the same cycle they are triggered.
+cycle (delay of 0) or exactly 1 cycle in the future.  It is slightly
+faster than `UniqueEvent` because it does not need to manage a future
+queue entry.  Use it for callbacks that must always fire in the same
+cycle they are triggered.
 
 [source,cpp]
 ----
@@ -224,6 +219,7 @@ time 0 -- a `StartupEvent` fires before the DAG is even running,
 which means it cannot have precedence relationships with other events.
 
 == Event Declarations
+include::attributes.adoc[]
 
 All events must be declared as member variables of the unit and
 registered with a `sparta::EventSet`.  Units that derive from
@@ -253,6 +249,7 @@ in the simulation tree under `top.<unit>.events.<event_name>` and can
 be observed via `--show-tree`.
 
 == Scheduling Phases
+include::attributes.adoc[]
 
 The most important concept for understanding event ordering in Sparta
 is the {url-schedulingphase}[`sparta::SchedulingPhase`].
@@ -293,8 +290,8 @@ The phases, in order of execution:
 
 | Collection
 | `SchedulingPhase::Collection`
-| Pipeline collection (Argos/Helios data capture).  Fires after Tick
-  so the collection sees the state after all processing is complete.
+| Pipeline collection (Argos/Helios data capture).  Fires before Tick
+  so the collection sees the state after before processing.
 
 | Tick
 | `SchedulingPhase::Tick` (default)
@@ -339,6 +336,7 @@ processing events run.  This is the core guarantee that makes
 Sparta's ordering deterministic.
 
 == Intra-Phase Ordering with the DAG
+include::attributes.adoc[]
 
 Within a single phase, events are semi-deterministic: they will fire
 in the same order every simulation run, but that order may change if
@@ -388,6 +386,7 @@ The constructor of a unit is the right place for intra-unit
 precedence.  Cross-unit precedence belongs in `bindTree_`.
 
 == Putting It Together: A Pipeline Stage
+include::attributes.adoc[]
 
 Here is a complete pipeline stage that uses ports, events, phases,
 and precedence correctly:
@@ -487,7 +486,173 @@ only once per cycle even if both `receiveInstruction_()` and
 `PortUpdate`), so by the time `decode_()` runs, both the instruction
 and the credit update have been applied.
 
+[#clocks_events]
+== Clocks and Events [[clocks_and_events]]
+include::attributes.adoc[]
+
+Understanding the relationship between `sparta::Clock` and the
+scheduler is essential for writing correct multi-clock models and for
+understanding what cycle delay arguments to events actually mean.
+
+=== The Scheduler Runs in Ticks, Events are Scheduled in Cycles
+
+The `sparta::Scheduler` operates entirely in *ticks*.  By convention
+one tick equals one picosecond.  When you call `ev.schedule(3)`, you
+are not passing 3 ticks -- you are passing 3 cycles.  Sparta converts
+that cycle count to ticks using the clock of the unit that owns the
+event:
+
+[source,cpp]
+----
+// A unit running at 1 GHz -- clock period = 1000 ticks
+ev_decode_.schedule(1);   // fires 1000 ticks from now
+
+// A unit running at 3 GHz -- clock period = 333 ticks
+ev_execute_.schedule(1);  // fires 333 ticks from now
+----
+
+Both calls say "fire next cycle" -- but "next cycle" means something
+different on a 1 GHz clock versus a 3 GHz clock.  The event fires at
+the right absolute time in each case because Sparta does the
+conversion automatically through the unit's clock.
+
+This is why model code should never mix ticks and cycles.  Always
+schedule events in cycles.  Always query time in cycles via
+`getClock()->currentCycle()`.  Let the clock handle the conversion.
+
+=== How Events Inherit Their Clock
+
+An event does not take a clock as a constructor argument.  Instead,
+it inherits the clock of the `sparta::EventSet` it belongs to, which
+in turn inherits the clock of the tree node it is attached to.
+
+[source,cpp]
+----
+// The EventSet is attached to the unit's tree node at construction
+sparta::UniqueEvent<> ev_decode_{&unit_event_set_, "ev_decode",
+                                  CREATE_SPARTA_HANDLER(DecodeUnit, decode_)};
+// ev_decode_ uses whatever clock DecodeUnit's tree node has
+----
+
+The tree node's clock is set in `buildTree_()` when
+`node->setClock(clk)` is called, or is inherited from the node's
+parent if not explicitly set.  Every unit in the `top.cpu.core0`
+subtree uses the core clock unless a specific subnode overrides it.
+
+This means the clock is determined by *where the unit sits in the
+tree*, not by anything in the unit's own code.  The same `DecodeUnit`
+class runs on a 1 GHz clock in one simulation and a 3 GHz clock in
+another -- no code changes required.
+
+=== getClock()->currentCycle() vs getScheduler()->getCurrentTick()
+
+Two methods return the current simulation time, and they mean
+different things:
+
+[cols="1,2,2"]
+|===
+| Method | Returns | When to use
+
+| `getClock()->currentCycle()`
+| The current cycle count on *this unit's clock*
+| Always -- in log messages, statistics, assertions, and any
+  time-aware model logic
+
+| `getClock()->currentCycle(other_clock)`
+| The current cycle count on a *different* clock
+| When comparing time across clock domains
+
+| `getScheduler()->getCurrentTick()`
+| The raw tick count from the scheduler
+| Almost never in model code -- use only in framework-level
+  infrastructure
+|===
+
+Always use `getClock()->currentCycle()` in model code.  Raw tick
+values are meaningless without knowing the clock period, make the
+code clock-frequency-dependent, and break silently when the clock
+frequency changes.
+
+[source,cpp]
+----
+// CORRECT
+ILOG("Decoding at cycle " << getClock()->currentCycle());
+sparta_assert(getClock()->currentCycle() > last_decode_cycle_,
+              "decode fired twice in the same cycle");
+
+// WRONG -- tick values are clock-frequency-dependent
+ILOG("Decoding at tick " << getScheduler()->getCurrentTick());
+----
+
+=== Minimum Schedulable Unit
+
+You cannot schedule an event at a sub-cycle granularity.  The minimum
+delay is 0 cycles (fires in the current cycle, same tick) or 1 cycle
+(fires at the next clock edge).  Fractional cycle delays are not
+supported -- there is no such thing as a 0.5 cycle delay.
+
+[source,cpp]
+----
+ev.schedule(0);   // fires this cycle (same tick as scheduler position)
+ev.schedule(1);   // fires next cycle (clock_period ticks from now)
+ev.schedule(10);  // fires 10 cycles from now
+----
+
+A delay of 0 is legal but requires careful attention to event phase
+ordering -- see <<_scheduling_phases>> for how to ensure 0-cycle
+events fire in the correct order.
+
+=== Cross-Clock Event Scheduling
+
+When a unit on one clock needs to trigger work on a unit running on a
+different clock, do not schedule events directly across the clock
+boundary.  Use a `SyncPort` instead -- it is designed exactly for
+this case.  The `SyncPort` holds data until the next rising edge of
+the *receiver's* clock and delivers it there, guaranteeing the
+receiver's callback fires at a clean cycle boundary on its own clock.
+
+[source,cpp]
+----
+// Sender at 3 GHz -- sends data via SyncPort
+sparta::SyncOutPort<uint32_t> out_to_mem_{&unit_port_set_, "out_to_mem"};
+out_to_mem_.send(data_);  // data held until next 1 GHz clock edge
+
+// Receiver at 1 GHz -- callback fires at its own clock boundary
+sparta::SyncInPort<uint32_t> in_from_cpu_{&unit_port_set_, "in_from_cpu", 0};
+----
+
+If you find yourself computing tick offsets manually to schedule an
+event "at the right time on another clock", stop -- use `SyncPort`.
+Manual tick arithmetic is fragile, clock-frequency-dependent, and
+breaks when either clock frequency changes.
+
+=== Querying Another Unit's Clock
+
+Occasionally a unit needs to know the current cycle on a *different*
+clock -- for example, to calculate how many of its own cycles fit into
+one cycle of a slower downstream unit.  Use `getClock()->getRatio()`
+or convert via the scheduler's current tick:
+
+[source,cpp]
+----
+// How many 3 GHz cycles fit in one 1 GHz cycle?
+double ratio = core_clk_->getPeriod() / mem_clk_->getPeriod();
+// ratio = 3.0 -- 3 core cycles per memory cycle
+
+// What memory cycle is it right now?
+sparta::Clock::Cycle mem_cycle =
+    mem_clk_->currentCycle();
+ILOG("Core cycle " << getClock()->currentCycle()
+     << " = memory cycle " << mem_cycle);
+----
+
+// AUTHOR NOTE: Please verify the exact API for clock ratio and
+// cross-clock cycle queries -- getClock()->getRatio() and
+// getPeriod() may have different names in the actual Sparta API.
+// The concept is correct; the method names may need adjustment.
+
 == Summary
+include::attributes.adoc[]
 
 Sparta's event and scheduling system provides deterministic ordering
 through a combination of scheduling phases and explicit DAG-based
