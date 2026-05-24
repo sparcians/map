@@ -356,17 +356,19 @@ Specifically, all `Tick`-phase events registered in
 - Every `OutPort` send from a `Tick`-phase event is guaranteed to
   happen *after* the event fires
 
-This is auto-precedence and it is enabled by default for every
-`sparta::Unit`.  It is why the simple pattern of "port callback
-schedules a `UniqueEvent`, event does the work" is correct without
-any explicit `registerConsumingEvent` calls -- the auto-precedence
-handles the ordering between the port and the `Tick`-phase event
-automatically.
+This is auto-precedence and is enabled by default for every
+`sparta::Unit`.  Auto-precedence is why the simple pattern of "port
+callback schedules a `UniqueEvent`, event does the work" is correct
+without any explicit `registerConsumingEvent` calls -- the
+auto-precedence handles the ordering between the port and the
+`Tick`-phase event automatically.
 
-Auto-precedence does *not* establish ordering *between* events in the
-same unit.  If `my_first_event_` and `my_second_event_` are both in
+Auto-precedence does *not* establish ordering *between* events within
+the unit.  If `my_first_event_` and `my_second_event_` are both in
 `SchedulingPhase::Tick`, their relative order is free-form unless the
-modeler explicitly declares it.
+modeler explicitly declares the order explicitly.  However, unless the
+modeler changes the unit (in code), the order of these events will be
+deterministic from one run of the simulation to another.
 
 Auto-precedence can be disabled if needed:
 
@@ -384,14 +386,13 @@ MyUnit::MyUnit(sparta::TreeNode * node, const MyParameters * params) :
 Disable auto-precedence only when you have a specific reason -- for
 example, when a unit has `OutPorts` that are driven from a
 `PortUpdate`-phase callback rather than a `Tick`-phase event, and the
-auto-precedence would create a false ordering constraint.  In all
-other cases, leave it enabled.
+auto-precedence would create a false ordering constraint.
 
-NOTE: 0-cycle `InPorts` are *not* covered by auto-precedence.
-A 0-cycle port callback fires in `SchedulingPhase::Tick`, not
-`SchedulingPhase::PortUpdate`.  If your unit uses 0-cycle ports and
-needs ordering guarantees, use `registerConsumingEvent` explicitly as
-shown in the mux example in <<_best_practices>>.
+NOTE: 0-cycle `InPorts` are *not* covered by auto-precedence.  A
+0-cycle port callback fires in `SchedulingPhase::Tick`, not
+`SchedulingPhase::PortUpdate`.  If a unit uses 0-cycle ports and needs
+ordering guarantees, use `registerConsumingEvent` explicitly as shown
+in the mux example in <<_best_practices>>.
 
 === Explicit Precedence with `>>`
 
