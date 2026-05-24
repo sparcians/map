@@ -393,11 +393,443 @@ well-written Sparta model.  When you find yourself writing a unit
 that receives data from multiple sources and produces output that
 depends on all of them, reach for this pattern first.
 
-// AUTHOR NOTE: Additional best practices sections to add:
-//
-// == Parameters: Copy to const at Construction
-// == Never Access Another Unit Directly
-// == Use sparta_assert Liberally
-// == Keep Event Callbacks Short
-// == Pipeline Stall and Credit Patterns
-// == Handling Flushes
+== Credit-Based Flow Control
+
+Pipeline stages must not send more data downstream than the receiver
+can accept.  Without flow control, a fast producer will overflow a
+slow consumer's buffers.  Sparta models this with a credit-based
+handshake: the receiver grants credits upstream, and the sender
+consumes one credit per item sent.  When credits reach zero the
+sender stalls.
+
+This pattern appears in almost every pipeline stage in Olympia and
+is the standard way to model back-pressure in Sparta.
+
+=== The Pattern
+
+[plantuml,credit-diagram,png,align="center"]
+....
+@startuml
+rectangle "Sender"   as S
+rectangle "Receiver" as R
+
+S --> R : data (1 credit consumed)
+R --> S : credits (SignalOutPort)
+@enduml
+....
+
+The receiver owns a buffer of finite capacity.  At startup (and each
+time it consumes an entry from the buffer) it sends credits back
+upstream.  The sender maintains a credit count and only sends when
+credits are available.
+
+=== Components
+
+[source,cpp]
+----
+// --- Sender side ---
+
+// Data output to downstream
+sparta::DataOutPort<Instruction> out_inst_{&unit_port_set_, "out_inst"};
+
+// Credit input from downstream receiver with 1 cycle delay
+sparta::DataInPort<uint32_t> in_credits_{&unit_port_set_, "in_credits", 1};
+
+// Internal credit counter
+uint32_t credits_ = 0;
+
+// Work event; by default is scheuled in 0 cycles
+sparta::UniqueEvent<> ev_send_{&unit_event_set_, "ev_send",
+                               CREATE_SPARTA_HANDLER(SenderUnit, send_)};
+// OPTIMIZATION: Consider using sparta::SingleCycleEvent
+
+----
+
+[source,cpp]
+----
+// --- Receiver side ---
+
+// Data input from upstream sender; delay receiving by 1 cycle
+sparta::DataInPort<Instruction> in_inst_{&unit_port_set_, "in_inst", 1};
+
+// Credit output back to sender
+sparta::DataOutPort<uint32_t> out_credits_{&unit_port_set_, "out_credits"};
+
+sparta::UniqueEvent<> ev_consume_{&unit_event_set_, "ev_consume",
+                                  CREATE_SPARTA_HANDLER(ReceiverUnit, consume_)};
+
+// Internal buffer
+std::queue<Instruction> buffer_;
+const uint32_t buffer_capacity_;
+----
+
+=== Sender Implementation
+
+[source,cpp]
+----
+SenderUnit::SenderUnit(sparta::TreeNode * node,
+                       const SenderParameters * params) :
+    sparta::Unit(node)
+{
+
+    // When credits are sent from the receiving unit, the method
+    // receiveCredit_ will be called.
+    in_credits_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER_WITH_DATA(SenderUnit, receiveCredit_, uint32_t));
+
+    // Ordering: credits must arrive before the send event evaluates them
+    in_credits_.registerConsumingEvent(ev_send_);
+}
+
+void SenderUnit::receiveCredit_()
+{
+    ++credits_;
+    ILOG("Credit received, total credits: " << credits_);
+
+    // Optimization: Only schedule the event if there's work to do!
+    if (true == hasPendingWork_())
+    {
+        ev_send_.schedule();  // try to send now that we have a credit
+    }
+}
+
+void SenderUnit::send_()
+{
+    // This method should only be called if there's work to do.
+    // This assert will help catch misuse and keep the model running fast.
+    sparta_assert(true == hasPendingWork_(),
+                  "Why was this scheduled if there was no work?");
+
+    Instruction inst = getNextInstruction_();
+    out_inst_.send(inst);
+    --credits_;
+
+    ILOG("Sent instruction, remaining credits: " << credits_);
+
+    // If more work is pending and we still have credits, keep going
+    // on the next cycle
+    if (credits_ > 0 && hasPendingWork_()) {
+        ev_send_.schedule(sparta::Clock::Cycle(1));
+    }
+}
+----
+
+=== Receiver Implementation
+
+[source,cpp]
+----
+ReceiverUnit::ReceiverUnit(sparta::TreeNode * node,
+                           const ReceiverParameters * params) :
+    sparta::Unit(node),
+    buffer_capacity_(params->buffer_capacity)
+{
+    // Set up a startup event, called once, to send initial credits
+    sparta::StartupEvent(node, CREATE_SPARTA_HANDLER(ReceiverUnit, onStarting_));
+
+    in_inst_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER_WITH_DATA(ReceiverUnit, receiveInst_, Instruction));
+}
+
+void ReceiverUnit::onStarting_()
+{
+    // Grant initial credits equal to buffer capacity at startup.
+    out_credits_.send(buffer_capacity_);
+    ILOG("Granted " << buffer_capacity_ << " initial credits");
+}
+
+void ReceiverUnit::receiveInst_(const Instruction & inst)
+{
+    sparta_assert(buffer_.size() < buffer_capacity_,
+                  "Receiver buffer overflow -- sender ignored credit protocol");
+    buffer_.push(inst);
+    ILOG("Received instruction, buffer occupancy: " << buffer_.size());
+
+    // Does not need to be an event and can be called directly, but using
+    // an event allows the modeler to schedule other work before the
+    // consumption
+    ev_consume_.schedule();
+}
+
+void ReceiverUnit::consume_()
+{
+    // Called when the receiver processes an entry from the buffer
+    sparta_assert(!buffer_.empty(), "consume_() called on empty buffer");
+    buffer_.pop();
+
+    // Return one credit to the sender for every entry consumed
+    out_credits_.send(1);
+    ILOG("Consumed instruction, granted 1 credit, buffer occupancy: "
+         << buffer_.size());
+}
+----
+
+=== Key Points
+
+**Credits represent buffer slots, not data values.**  Each credit
+grants the sender permission to occupy one slot in the receiver's
+buffer.  Initial credits equal the buffer capacity.  One credit is
+consumed per item sent and one credit is returned per item consumed.
+
+**The sender never sends without a credit.**  The `sparta_assert` in
+the receiver's `receiveInst_` will fire if the sender violates this,
+catching the bug immediately.
+
+**Use `registerConsumingEvent` for the credit port.**  As shown above,
+registering `in_credits_` as a consuming event of `ev_send_` ensures
+that credit updates from the current cycle are applied before the send
+event evaluates whether to send.  Without this, a credit arriving in
+the same cycle as a send decision may be counted too late.
+
+**Initial credits are sent via `StartupEvent`.**  Credits must be
+granted before the first cycle so the sender can begin immediately.
+A `StartupEvent` is the correct mechanism -- do not send initial
+credits from the receiver's constructor, as ports are not yet bound
+at that point.
+
+== Handling Flushes
+
+A flush (also called a squash or rollback) invalidates in-flight work
+in the pipeline.  The most common cause is a branch misprediction:
+when the execute stage detects a mispredict, all instructions that
+entered the pipeline after the mispredicted branch must be discarded.
+
+Flushes are among the hardest bugs to get right in a performance
+model because they interact with every pipeline stage simultaneously
+and must be handled in a specific order relative to normal pipeline
+work.
+
+=== The Flush Scheduling Phase
+
+Sparta provides `SchedulingPhase::Flush` specifically for flush
+handling.  The phase order is:
+
+[source]
+----
+Update -> PortUpdate -> Flush -> Collection -> Tick -> PostTick
+----
+
+Flush events fire *after* port delivery (`PortUpdate`) but *before*
+normal pipeline work (`Tick`).  This means that when a flush fires:
+
+- All port callbacks for the current cycle have already run --
+  the flush sees the fully-updated input state
+- Normal pipeline work (`Tick` phase events) has *not* yet run --
+  the flush can cancel pending work before it executes
+
+This ordering is not accidental.  It means a pipeline stage can
+receive a flush signal, discard its pending work, and the discarded
+work will never be processed -- all within the same cycle the flush
+was detected.
+
+=== Flush from a Single Source
+
+The simplest flush scenario: a single unit (typically the execute
+stage or a branch unit) detects a mispredict and broadcasts a flush
+to all upstream stages.
+
+==== Components
+
+[source,cpp]
+----
+// In the flushing unit (e.g. Execute)
+sparta::SignalOutPort out_flush_{&unit_port_set_, "out_flush"};
+
+// In each flushable upstream unit (e.g. Decode, Fetch)
+sparta::SignalInPort in_flush_{&unit_port_set_, "in_flush", 0};  // 0-cycle!
+
+// The flush event -- in SchedulingPhase::Flush, not Tick
+sparta::UniqueEvent<sparta::SchedulingPhase::Flush> ev_flush_{
+    &unit_event_set_, "ev_flush",
+    CREATE_SPARTA_HANDLER(DecodeUnit, flush_)};
+----
+
+The flush port is 0-cycle so the flush takes effect immediately in
+the same cycle it is broadcast.  The flush *event* is in
+`SchedulingPhase::Flush` so it fires before any `Tick`-phase events
+process new work this cycle.
+
+==== Flush Sender (Execute Unit)
+
+[source,cpp]
+----
+void ExecuteUnit::detectMispredict_()
+{
+    WLOG("Branch mispredict detected at cycle "
+         << getClock()->currentCycle()
+         << " -- broadcasting flush");
+
+    out_flush_.send();  // 0-cycle: all upstream stages receive this cycle
+    ++num_mispredicts_;
+}
+----
+
+==== Flush Receiver (Each Upstream Stage)
+
+[source,cpp]
+----
+DecodeUnit::DecodeUnit(sparta::TreeNode * node,
+                       const DecodeParameters * params) :
+    sparta::Unit(node)
+{
+    in_flush_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER(DecodeUnit, handleFlush_));
+
+    // The flush port callback schedules the flush event
+    in_flush_.registerConsumingEvent(ev_flush_);
+}
+
+// This fires in SchedulingPhase::PortUpdate -- just schedule the flush event
+void DecodeUnit::handleFlush_()
+{
+    ev_flush_.schedule();  // schedule the actual flush work
+}
+
+// This fires in SchedulingPhase::Flush -- before any Tick-phase events
+void DecodeUnit::flush_()
+{
+    WLOG("Flushing decode at cycle " << getClock()->currentCycle()
+         << " -- discarding " << pending_insts_.size() << " instructions");
+
+    // Discard all in-flight work
+    pending_insts_.clear();
+    ev_decode_.cancel();  // cancel any pending decode work this cycle
+
+    // Return credits for any instructions we are dropping
+    for (uint32_t i = 0; i < num_dropped; ++i) {
+        out_credits_.send();
+    }
+
+    ++num_flushes_;
+}
+----
+
+The two-step pattern -- port callback schedules the flush event,
+flush event does the actual work -- is deliberate.  It keeps the
+flush work in `SchedulingPhase::Flush` where it is guaranteed to
+run after all port deliveries and before all `Tick`-phase work.
+Doing the flush work directly in the port callback (which fires in
+`SchedulingPhase::PortUpdate`) would be incorrect because other port
+callbacks for the same cycle may not have fired yet.
+
+=== Flush Propagating Through Multiple Stages
+
+In a real pipeline, a flush from the execute stage must reach every
+upstream stage: rename, decode, fetch, and the branch predictor.
+There are two approaches:
+
+==== Approach 1: Broadcast (Recommended)
+
+The flushing unit sends a single flush signal that all upstream
+stages receive directly.  Each stage has its own flush input port
+bound to the same output port in `bindTree_`:
+
+[source,cpp]
+----
+void MySimulator::bindTree_()
+{
+    // Bind execute's flush output to every upstream stage's flush input
+    auto & out_flush =
+        *getRoot()->getChildAs<sparta::Port>("top.cpu.core0.execute.ports.out_flush");
+
+    sparta::bind(out_flush,
+        *getRoot()->getChildAs<sparta::Port>("top.cpu.core0.rename.ports.in_flush"));
+    sparta::bind(out_flush,
+        *getRoot()->getChildAs<sparta::Port>("top.cpu.core0.decode.ports.in_flush"));
+    sparta::bind(out_flush,
+        *getRoot()->getChildAs<sparta::Port>("top.cpu.core0.fetch.ports.in_flush"));
+}
+----
+
+This is the pattern used in Olympia.  Every stage receives the flush
+in the same cycle and handles it independently.  There is no
+propagation delay and no risk of stages flushing out of order.
+
+==== Approach 2: Propagation (Use with Caution)
+
+Each stage flushes itself and forwards the flush signal to the next
+stage upstream.  This models the hardware more closely when flush
+propagation has a real cycle cost, but it is harder to get right --
+each stage must forward the flush *before* its own `Tick`-phase work
+runs, which requires careful use of `SchedulingPhase::Flush` events
+and 0-cycle forwarding ports.
+
+Use the broadcast approach unless you have a specific reason to model
+propagation delay in the flush path.
+
+=== Canceling Pending Events During a Flush
+
+A common mistake is flushing the data structures but forgetting to
+cancel events that were already scheduled for this cycle.  If a
+`Tick`-phase event was scheduled before the flush arrived, it will
+still fire after the flush unless explicitly canceled:
+
+[source,cpp]
+----
+void DecodeUnit::flush_()
+{
+    pending_insts_.clear();
+
+    // IMPORTANT: cancel any Tick-phase events that were already scheduled.
+    // If ev_decode_ fires after the flush it will try to process instructions
+    // that no longer exist.
+    ev_decode_.cancel();
+    ev_send_output_.cancel();
+}
+----
+
+`cancel()` is safe to call on an event that is not currently
+scheduled -- it is a no-op.  Always cancel all relevant `Tick`-phase
+events in the flush handler.
+
+=== Flush Checklist
+
+When implementing flush handling in a new unit, verify each of these:
+
+[cols="1,3"]
+|===
+| Check | What to verify
+
+| Flush port delay is 0
+| The flush must arrive in the same cycle it is sent.  A 1-cycle
+  flush port means the stage continues working for one extra cycle
+  after the mispredict, introducing phantom instructions.
+
+| Flush event is in `SchedulingPhase::Flush`
+| If the flush event is in `SchedulingPhase::Tick`, it may fire
+  after normal work for the same cycle has already run.
+
+| All in-flight data structures are cleared
+| Check queues, buffers, `ValidValue` members, and any state that
+  represents work in progress.
+
+| All pending `Tick`-phase events are canceled
+| Any event scheduled for the current or future cycles that would
+  process the now-discarded work must be canceled.
+
+| Credits are returned for dropped instructions
+| If the unit holds credits on behalf of dropped instructions, those
+  credits must be returned upstream so the pipeline does not
+  permanently lose capacity.
+
+| Flush counter is incremented
+| Always count flushes.  A flush counter at zero after a workload
+  with branches is a sign the flush signal is not being received.
+|===
+
+=== Key Takeaways
+
+**Put flush events in `SchedulingPhase::Flush`.**  This is what the
+phase exists for.  It guarantees the flush runs after all port
+deliveries and before all normal pipeline work in the same cycle.
+
+**Use 0-cycle flush ports.**  Flush propagation delay belongs in the
+microarchitecture spec, not in the simulator by accident.  0-cycle
+ports ensure every stage sees the flush in the same cycle.
+
+**Broadcast, don't propagate.**  Binding the flush output directly
+to every upstream stage's flush input is simpler, more robust, and
+easier to debug than chaining flushes through the pipeline.
+
+**Cancel pending events.**  Clearing data structures without
+canceling events that will process them is the most common flush
+implementation bug.  Do both, always.
