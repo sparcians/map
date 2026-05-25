@@ -1,8 +1,9 @@
 = The Sparta Modeling Framework
-Knute Lingaard, Colby Nyce
+Knute Lingaard, Colby Nyce, Kathlene Magnus
 v1.0, 2026-05-17
 :doctype: book
-:title-page-background-image: image:spartan.png[fit=none]
+//:pdf-theme: sparta-theme.yml
+//:title-page-background-image: image:spartan.png[pdfwidth=30%]
 :toc: left
 :toclevels: 2
 :sectnums:

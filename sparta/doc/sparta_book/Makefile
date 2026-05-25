@@ -28,7 +28,7 @@ html: $(SRC) | $(HTML_OUT_DIR)
 # Build PDF version
 pdf: $(SRC) | $(BUILD_DIR)
 	@command -v asciidoctor-pdf >/dev/null 2>&1 || { echo >&2 "asciidoctor-pdf is required but not installed. Skipping PDF."; exit 0; }
-	asciidoctor-pdf $(SRC) -o $(PDF_OUT)
+	asciidoctor-pdf $(ADOC_FLAGS) $(SRC) -o $(PDF_OUT)
 	@echo "PDF book generated at $(PDF_OUT)"
 
 # Clean up build artifacts
