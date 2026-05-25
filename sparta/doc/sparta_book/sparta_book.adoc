@@ -54,6 +54,8 @@ include::chapters/debugging_and_logging.adoc[]
 
 include::chapters/best_practices.adoc[]
 
+include::chapters/functional_modeling.adoc[]
+
 //include::framework.adoc[]
 //include::output.adoc[]
 //include::resources.adoc[]

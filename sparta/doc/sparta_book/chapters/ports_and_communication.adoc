@@ -202,7 +202,7 @@ Usage is identical to `DataIn`/`DataOutPort` -- the synchronization is
 handled transparently by the framework.  The receiver never needs to
 know it is talking to a unit on a different clock.
 
-See <<_clocks_and_clock_domains>> for how to set up multiple clock
+See <<clocks_and_clock_domains>> for how to set up multiple clock
 domains in a simulation.
 
 == Declaring Ports as Member Variables

@@ -55,9 +55,11 @@ Xcode command line tools are out of date, run
 == Cloning the Repository
 
 Sparta lives inside the MAP (Modeling Architectural Platform)
-repository alongside the Helios visualization tools.  Always clone
-the stable `map_v2` branch -- the `master` branch is for development
-and should not be used for modeling work.
+repository alongside the Helios visualization tools.  Always clone a
+stable branch.  For this book, clone the `map_v2` branch.
+
+NOTE: The `master` branch is for development and should not be used
+for modeling work.
 
 [source,bash]
 ----
@@ -94,12 +96,40 @@ included in the MAP repository under `sparta/example/SkeletonPipeline`.
 It models a simple producer/consumer system and exercises the core
 Sparta classes: `Unit`, `Port`, `Event`, `Parameter`, and `Scheduler`.
 
+Conceptually, the simulator relationship looks like the following:
+
+[plantuml,skeleton-pipeline,png,align="center"]
+....
+@startuml skeleton_pipeline
+
+skinparam rectangle {
+    BackgroundColor #FFFFFF
+    BorderColor #000000
+    FontColor #000000
+}
+skinparam arrow {
+    Color #000000
+    FontColor #000000
+}
+skinparam defaultFontName Monospaced
+
+rectangle "Producer" as P
+rectangle "Consumer" as C
+
+P -right-> C : Data[In,Out]Port<uint32_t>
+C -left[dashed]-> P : Signal[In,Out]Port::producer_go_port
+
+@enduml
+....
+
+Building the SkeletonPipeline model can be done directly in the clone
+of Sparta in the `release` directory created in the previous step.
+The build system is set up to use the _local_ libraries of Sparta and
+not the installed versions.
+
 [source,bash]
 ----
-cd map/sparta/example/SkeletonPipeline
-mkdir release
-cd release
-cmake .. -DCMAKE_BUILD_TYPE=Release
+cd release/example/SkeletonPipeline
 make -j$(nproc)
 ----
 
@@ -110,7 +140,7 @@ This produces the `sparta_skeleton` binary in the `release/` directory.
 === Default Run
 
 Run the simulator with its default configuration -- one producer, one
-consumer -- and let it run to completion:
+consumer, 100 objects transferred -- and let it run to completion:
 
 [source,bash]
 ----
@@ -189,7 +219,7 @@ parameter, port, event, statistic, and log message source in the model:
 % ./sparta_skeleton --show-tree --no-run
 ----
 
-[source]
+[source,bash,options="nowrap"]
 ----
 Setting up Simulation Content...
 Resources:
@@ -201,42 +231,110 @@ Building tree...
 
 Built Tree:
 top : <top (root)> (privacy: 0)
++-descendant_attached : <top.descendant_attached name:"descendant_attached" datat:(sparta::TreeNode)  observers:1 posted:9> (privacy: 0)
 +-consumer : <top.consumer resource: "consumer"> (privacy: 0)
 | +-params : <top.consumer.params 1 params> {builtin} (privacy: 0)
-| | +-num_producers : <param uint32_t num_producers=1, def=1> (privacy: 0)
-+-producer0 : <top.producer0 resource: "producer"> (producer[0]) (privacy: 0)
+| | +-num_producers : [<top.consumer.params.num_producers tags:[SPARTA_Parameter]>]<param uint32_t num_producers=1, def=1, write=0 read: 1 ignored: 0> (privacy: 0)
++-producer0 : <top.producer0 resource: "producer"> (producer[0])  (privacy: 0)
 | +-params : <top.producer0.params 3 params> {builtin} (privacy: 0)
-| | +-max_ints_to_send : <param uint32_t max_ints_to_send=100, def=100> (privacy: 0)
-| | +-test_param : <param uint32_t test_param=0, def=0 VOLATILE> (privacy: 0)
-| | +-arch_override_test_param : <param std::string arch_override_test_param=...> (privacy: 0)
-...
+| | +-max_ints_to_send : [<top.producer0.params.max_ints_to_send tags:[SPARTA_Parameter]>]<param uint32_t max_ints_to_send=100, def=100, write=0 read: 0 ignored: 0> (privacy: 0)
+| | +-test_param : [<top.producer0.params.test_param tags:[SPARTA_Parameter]>]<param uint32_t test_param=0, def=0, write=0 read: 0 ignored: 0 VOLATILE> (privacy: 0)
+| | +-arch_override_test_param : [<top.producer0.params.arch_override_test_param tags:[SPARTA_Parameter]>]<param std::string arch_override_test_param=reset_in_constructor, def=arch_override_default_value, write=1 read: 0 ignored: 0> (privacy: 0)
++-sparta_expression_trigger_fired : <top.sparta_expression_trigger_fired name:"sparta_expression_trigger_fired" datat:(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)  observers:0 posted:0> (privacy: 0)
+Configuring tree...
+
+Configured Tree:
+top : <top (root)> (privacy: 0)
++-descendant_attached : <top.descendant_attached name:"descendant_attached" datat:(sparta::TreeNode)  observers:1 posted:9> (privacy: 0)
++-consumer : <top.consumer resource: "consumer"> (privacy: 0)
+| +-params : <top.consumer.params 1 params> {builtin} (privacy: 0)
+| | +-num_producers : [<top.consumer.params.num_producers tags:[SPARTA_Parameter]>]<param uint32_t num_producers=1, def=1, write=0 read: 1 ignored: 0> (privacy: 0)
++-producer0 : <top.producer0 resource: "producer"> (producer[0])  (privacy: 0)
+| +-params : <top.producer0.params 3 params> {builtin} (privacy: 0)
+| | +-max_ints_to_send : [<top.producer0.params.max_ints_to_send tags:[SPARTA_Parameter]>]<param uint32_t max_ints_to_send=100, def=100, write=0 read: 0 ignored: 0> (privacy: 0)
+| | +-test_param : [<top.producer0.params.test_param tags:[SPARTA_Parameter]>]<param uint32_t test_param=0, def=0, write=0 read: 0 ignored: 0 VOLATILE> (privacy: 0)
+| | +-arch_override_test_param : [<top.producer0.params.arch_override_test_param tags:[SPARTA_Parameter]>]<param std::string arch_override_test_param=reset_in_constructor, def=arch_override_default_value, write=1 read: 0 ignored: 0> (privacy: 0)
++-sparta_expression_trigger_fired : <top.sparta_expression_trigger_fired name:"sparta_expression_trigger_fired" datat:(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)  observers:0 posted:0> (privacy: 0)
+Finalizing tree...
+{0000000000 00000000 top.producer0 warning}  Modify test_b Producer(): 1
+
 Finalized Tree
-_SPARTA_global_node_ : <_SPARTA_global_node_> {builtin}
-+-scheduler : <scheduler (root)>
-| +-stats : <scheduler.stats 7 stats, 6 counters> {builtin}
-| | +-ticks, picoseconds, seconds, milliseconds, ...
-| +-events : <scheduler.events 7 events> {builtin}
-| | +-gbl_event_Trigger, gbl_event_Update, gbl_event_PortUpdate, ...
-+-top : <top (root)>
-| +-consumer : <top.consumer resource: "consumer">
-| | +-params, ports, events, stats, log sources
-| | +-ports
-| | | +-consumer_in_port : [bound to] {producer_out_port}
-| | | +-producer0_go_port : [bound to] {producer_go_port}
-| | +-events
-| | | +-ev_data_arrived
-| | +-stats
-| | | +-num_consumed : val:0
-| +-producer0 : <top.producer0 resource: "producer">
-| | +-ports
-| | | +-producer_out_port : [bound to] {consumer_in_port}
-| | | +-producer_go_port : [bound to] {producer0_go_port}
-| | +-stats
-| | | +-num_produced : val:0
-+-clocks : <clocks (root)>
-| +-Root : <Clock Root period=1>
-| | +-stats
-| | | +-cycles : val:0
+_SPARTA_global_node_ : <_SPARTA_global_node_> {builtin} (privacy: 0)
++-scheduler : <scheduler (root)> (privacy: 0)
+| +-descendant_attached : <scheduler.descendant_attached name:"descendant_attached" datat:(sparta::TreeNode)  observers:0 posted:25> (privacy: 0)
+| +-? : <scheduler:log_msg_src cat:"debug" observed:false msgs:0> (_sparta_log_msg_source_[0])  (privacy: 0)
+| +-? : <scheduler:log_msg_src cat:"calltrace" observed:false msgs:0> (_sparta_log_msg_source_[1])  (privacy: 0)
+| +-stats : <scheduler.stats 7 stats, 6 counters> {builtin} (privacy: 0)
+| | +-ticks : <scheduler.stats.ticks val:0 normal vis:100000000> (privacy: 0)
+| | +-picoseconds : <scheduler.stats.picoseconds val:0 normal vis:100000000> (privacy: 0)
+| | +-seconds : <scheduler.stats.seconds expr:picoseconds/1000000000000.0 vis:100000000> (privacy: 0)
+| | +-milliseconds : <scheduler.stats.milliseconds expr:picoseconds/1000000000.0 vis:100000000> (privacy: 0)
+| | +-microseconds : <scheduler.stats.microseconds expr:picoseconds/1000000.0 vis:100000000> (privacy: 0)
+| | +-nanoseconds : <scheduler.stats.nanoseconds expr:picoseconds/1000.0 vis:100000000> (privacy: 0)
+| | +-host_machine_user_runtime_seconds : <scheduler.stats.host_machine_user_runtime_seconds expr:host_user_time_count_ms/1000.0 vis:100000000> (privacy: 0)
+| | +-host_machine_system_runtime_seconds : <scheduler.stats.host_machine_system_runtime_seconds expr:host_system_time_count_ms/1000.0 vis:100000000> (privacy: 0)
+| | +-host_machine_wall_runtime_seconds : <scheduler.stats.host_machine_wall_runtime_seconds expr:host_wall_time_count_ms/1000.0 vis:100000000> (privacy: 0)
+| | +-events_fired : <scheduler.stats.events_fired val:0 normal vis:100000000> (privacy: 0)
+| | +-host_user_time_count_ms : <scheduler.stats.host_user_time_count_ms val:0 normal vis:100000000> (privacy: 0)
+| | +-host_system_time_count_ms : <scheduler.stats.host_system_time_count_ms val:0 normal vis:100000000> (privacy: 0)
+| | +-host_wall_time_count_ms : <scheduler.stats.host_wall_time_count_ms val:0 normal vis:100000000> (privacy: 0)
+| +-events : <scheduler.events 7 events> {builtin} (privacy: 0)
+| | +-gbl_event_Trigger : <scheduler.events.gbl_event_Trigger> (privacy: 0)
+| | +-gbl_event_Update : <scheduler.events.gbl_event_Update> (privacy: 0)
+| | +-gbl_event_PortUpdate : <scheduler.events.gbl_event_PortUpdate> (privacy: 0)
+| | +-gbl_event_Flush : <scheduler.events.gbl_event_Flush> (privacy: 0)
+| | +-gbl_event_Collection : <scheduler.events.gbl_event_Collection> (privacy: 0)
+| | +-gbl_event_Tick : <scheduler.events.gbl_event_Tick> (privacy: 0)
+| | +-gbl_event_PostTick : <scheduler.events.gbl_event_PostTick> (privacy: 0)
+| +-? : <scheduler:log_msg_src cat:"debug" observed:false msgs:0> (_sparta_log_msg_source_[2])  (privacy: 0)
++-top : <top (root)> (privacy: 0)
+| +-descendant_attached : <top.descendant_attached name:"descendant_attached" datat:(sparta::TreeNode)  observers:1 posted:34> (privacy: 0)
+| +-consumer : <top.consumer resource: "consumer"> (privacy: 0)
+| | +-params : <top.consumer.params 1 params> {builtin} (privacy: 0)
+| | | +-num_producers : [<top.consumer.params.num_producers tags:[SPARTA_Parameter]>]<param uint32_t num_producers=1, def=1, write=0 read: 3 ignored: 0> (privacy: 0)
+| | +-ports : <top.consumer.ports> (privacy: 0)
+| | | +-consumer_in_port : [bound to] {producer_out_port (top.producer0.ports.producer_out_port)} (privacy: 0)
+| | | | +-events : <top.consumer.ports.consumer_in_port.events 1 events> {builtin} (privacy: 0)
+| | | | | +-consumer_in_port_forward_event : <top.consumer.ports.consumer_in_port.events.consumer_in_port_forward_event> (privacy: 0)
+| | | +-producer0_go_port : [bound to] {producer_go_port (top.producer0.ports.producer_go_port)} (privacy: 0)
+| | +-events : <top.consumer.events 1 events> {builtin} (privacy: 0)
+| | | +-ev_data_arrived : <top.consumer.events.ev_data_arrived> (privacy: 0)
+| | +-stats : <top.consumer.stats 0 stats, 1 counters> {builtin} (privacy: 0)
+| | | +-num_consumed : <top.consumer.stats.num_consumed val:0 normal vis:100000000> (privacy: 0)
+| | +-? : <top.consumer:log_msg_src cat:"info" observed:false msgs:0> (_sparta_log_msg_source_[0])  (privacy: 0)
+| | +-? : <top.consumer:log_msg_src cat:"warning" observed:true msgs:0> (_sparta_log_msg_source_[1])  (privacy: 0)
+| | +-? : <top.consumer:log_msg_src cat:"debug" observed:false msgs:0> (_sparta_log_msg_source_[2])  (privacy: 0)
+| | +-? : <top.consumer:log_msg_src cat:"info" observed:false msgs:0> (_sparta_log_msg_source_[3])  (privacy: 0)
+| +-producer0 : <top.producer0 resource: "producer"> (producer[0])  (privacy: 0)
+| | +-params : <top.producer0.params 3 params> {builtin} (privacy: 0)
+| | | +-max_ints_to_send : [<top.producer0.params.max_ints_to_send tags:[SPARTA_Parameter]>]<param uint32_t max_ints_to_send=100, def=100, write=0 read: 1 ignored: 0> (privacy: 0)
+| | | +-test_param : [<top.producer0.params.test_param tags:[SPARTA_Parameter]>]<param uint32_t test_param=1, def=0, write=1 read: 1 ignored: 0 VOLATILE> (privacy: 0)
+| | | +-arch_override_test_param : [<top.producer0.params.arch_override_test_param tags:[SPARTA_Parameter]>]<param std::string arch_override_test_param=reset_in_constructor, def=arch_override_default_value, write=1 read: 0 ignored: 1> (privacy: 0)
+| | +-ports : <top.producer0.ports> (privacy: 0)
+| | | +-producer_out_port : [bound to] {consumer_in_port (top.consumer.ports.consumer_in_port)} (privacy: 0)
+| | | +-producer_go_port : [bound to] {producer0_go_port (top.consumer.ports.producer0_go_port)} (privacy: 0)
+| | | | +-events : <top.producer0.ports.producer_go_port.events 1 events> {builtin} (privacy: 0)
+| | | | | +-producer_go_port_forward_event : <top.producer0.ports.producer_go_port.events.producer_go_port_forward_event> (privacy: 0)
+| | +-events : <top.producer0.events 0 events> {builtin} (privacy: 0)
+| | +-stats : <top.producer0.stats 0 stats, 1 counters> {builtin} (privacy: 0)
+| | | +-num_produced : <top.producer0.stats.num_produced val:0 normal vis:100000000> (privacy: 0)
+| | +-? : <top.producer0:log_msg_src cat:"info" observed:false msgs:0> (_sparta_log_msg_source_[0])  (privacy: 0)
+| | +-? : <top.producer0:log_msg_src cat:"warning" observed:true msgs:1> (_sparta_log_msg_source_[1])  (privacy: 0)
+| | +-? : <top.producer0:log_msg_src cat:"debug" observed:false msgs:0> (_sparta_log_msg_source_[2])  (privacy: 0)
+| | +-? : <top.producer0:log_msg_src cat:"info" observed:false msgs:0> (_sparta_log_msg_source_[3])  (privacy: 0)
+| +-sparta_expression_trigger_fired : <top.sparta_expression_trigger_fired name:"sparta_expression_trigger_fired" datat:(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)  observers:0 posted:0> (privacy: 0)
++-meta : <meta (root)> (privacy: 0)
+| +-descendant_attached : <meta.descendant_attached name:"descendant_attached" datat:(sparta::TreeNode)  observers:0 posted:3> (privacy: 0)
+| +-params : <meta.params 2 params> {builtin} (privacy: 0)
+| | +-architecture : [<meta.params.architecture tags:[SPARTA_Parameter]>]<param std::string architecture=NONE, def=NONE, write=0 read: 0 ignored: 0> (privacy: 0)
+| | +-is_final_config : [<meta.params.is_final_config tags:[SPARTA_Parameter]>]<param bool is_final_config=false, def=false, write=0 read: 0 ignored: 1> (privacy: 0)
++-clocks : <clocks (root)> (privacy: 0)
+| +-descendant_attached : <clocks.descendant_attached name:"descendant_attached" datat:(sparta::TreeNode)  observers:0 posted:3> (privacy: 0)
+| +-Root : <Clock Root period=1> (privacy: 0)
+| | +-stats : <clocks.Root.stats 0 stats, 1 counters> {builtin} (privacy: 0)
+| | | +-cycles : <clocks.Root.stats.cycles val:0 normal vis:100000000> (privacy: 0)
+Preparing to run...
+User specified --no-run or another command with "no-run" semantics. Skipping run
 ----
 
 This tree output is worth studying carefully -- it is the map of
@@ -328,7 +426,7 @@ configuration to a YAML file that you can edit and reuse:
 
 The YAML config file approach is the standard way to set up large
 simulation runs and is covered in detail in
-<<_command_line_simulation>>.
+<<commandline_simulation>>.
 
 === Generating Reports
 
@@ -430,37 +528,39 @@ callbacks that Sparta calls when data arrives or events fire.
 
 The `Producer` works like this:
 
-1. A `sparta::StartupEvent` fires `produceData_` on the first cycle,
-   kicking off the pipeline without waiting for an external stimulus.
+1. After initialization the producer waits for a "go" signal from the
+   consumer via a `sparta::SignalInPort` before sending values to the
+   Consumer.  This back-pressure mechanism is what keeps the pipeline
+   from running ahead of the Consumer.
 2. `produceData_` sends a `uint32_t` value out through its
-   `sparta::DataOutPort`.
-3. The producer then waits for a "go" signal back from the consumer via
-   a `sparta::SignalInPort` before sending the next value.  This
-   back-pressure mechanism is what keeps the pipeline from running
-   ahead of the consumer.
+   `sparta::DataOutPort` only after receiving the "go" signal.
+3. The Producer "goes to sleep" until the next "go" signal from the
+   Consumer.
 
 The `Consumer` works like this:
 
-1. On startup, it sends a "go" signal to each producer via a
-   `sparta::SignalOutPort`, priming the pipeline.
-2. When data arrives on its `sparta::DataInPort`, the port fires a
+1. A `sparta::StartupEvent` initiates `signalNextProducer_` on the
+   first cycle, kicking off the pipeline without waiting for an
+   external stimulus.
+2. Every cycle that the Consumer receives data from the Producer, the
+   Consumer will sends a "go" signal to the next producer via a
+   `sparta::SignalOutPort`, continuing the pipeline.
+3. When data arrives on its `sparta::DataInPort`, the port fires a
    callback that schedules a `sparta::UniqueEvent` for a later phase
    of the same cycle.
-3. That event consumes the data, increments `num_consumed`, and sends
-   another "go" to keep the pipeline flowing.
+4. That event consumes the data
 
-The use of a `UniqueEvent` in the consumer -- rather than processing
-data directly in the port callback -- is deliberate.  It guarantees
-that the consumer processes data only after all producers have had a
-chance to deliver in the current cycle, regardless of the order in
-which their port callbacks fire.  This is Sparta's event ordering
-system at work, and it is covered in detail in
-<<_events_and_scheduling>>.
+The use of a `UniqueEvent` in the consumer, rather than processing
+data directly in the port callback, is deliberate.  It guarantees that
+the consumer processes data only after all producers have had a chance
+to deliver in the current cycle, regardless of the order in which
+their port callbacks fire.  This is Sparta's event ordering system at
+work, and it is covered in detail in <<_events_and_scheduling>>.
 
 === Parameters, Statistics, and Logging
 
 Each unit in the skeleton pipeline also demonstrates three other core
-Sparta features that appear in almost every real model:
+Sparta features that appear in almost every model:
 
 **Parameters** are declared inside a nested `ParameterSet` class within
 each unit.  They are automatically exposed on the command line and in
@@ -495,10 +595,8 @@ At this point you have:
 - Understood at a high level how Producer, Consumer, and
   SkeletonSimulator fit together
 
-The next chapter walks through building a Sparta simulator from
-scratch, introducing each concept step by step.  After that,
-<<_simulation_construction>> covers the construction phase system
-in full detail.
+The next chapter <<_simulation_construction>> walks through building a
+Sparta simulator from scratch, introducing each concept step by step.
 
 For reference, the skeleton pipeline source is in
 `sparta/example/SkeletonPipeline` in your MAP clone.  The

@@ -25,4 +25,20 @@
 :url-spartahandler: https://sparcians.github.io/map/SpartaHandler_8hpp.html
 :url-startupevent: https://sparcians.github.io/map/classsparta_1_1StartupEvent.html
 :url-uniqueevent: https://sparcians.github.io/map/classsparta_1_1UniqueEvent.html
+:url-pegasus: https://github.com/sparcians/map/tree/master/pegasus
+:url-olympia: https://github.com/riscv-software-src/riscv-perf-model
+:url-actiongroup: https://sparcians.github.io/map/classsparta_1_1ActionGroup.html
+:url-pegasus: https://github.com/sparcians/pegasus
+:url-olympia: https://github.com/riscv-software-src/riscv-perf-model
+:url-registerset: https://sparcians.github.io/map/classsparta_1_1RegisterSet.html
+:url-register: https://sparcians.github.io/map/classsparta_1_1Register.html
+:url-registerbase: https://sparcians.github.io/map/classsparta_1_1RegisterBase.html
+:url-archdata: https://sparcians.github.io/map/classsparta_1_1ArchData.html
+:url-blockingmemif: https://sparcians.github.io/map/classsparta_1_1memory_1_1BlockingMemoryIF.html
+:url-simplememmap: https://sparcians.github.io/map/classsparta_1_1memory_1_1SimpleMemoryMapNode.html
+:url-memoryobject: https://sparcians.github.io/map/classsparta_1_1memory_1_1MemoryObject.html
+:url-fastcheckpointer: https://sparcians.github.io/map/classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html
+:url-persistentcheckpointer: https://sparcians.github.io/map/classsparta_1_1serialization_1_1checkpoint_1_1PersistentFastCheckpointer.html
+:url-checkpointer: https://sparcians.github.io/map/classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html
+:url-checkpoint-format: https://sparcians.github.io/map/checkpoint_format.html
 :data-uri:
