@@ -212,7 +212,12 @@ public:
     {
         auto loc = getLocation();
         auto clk_name = notNull(getClock())->getName();
-        entry_point_ = argos_collector->createContainerCollector<BinValueT, sparse_array_type>(loc, clk_name, expected_capacity_);
+
+        using collectable_t = std::conditional_t<
+            use_dynamic<BinValueT>(),
+            detail::DynamicDataType, BinValueT>;
+
+        entry_point_ = argos_collector->createContainerCollector<collectable_t, sparse_array_type>(loc, clk_name, expected_capacity_);
         bit_bucket_ = std::make_unique<ContainerBitBucket<sparse_array_type>>(argos_collector->getTinyStrings(), expected_capacity_);
         for (auto& bin : positions_) {
             bin->setBitBucket(bit_bucket_.get());
@@ -266,7 +271,9 @@ public:
     //! close the record immediately and clear the field for the next
     //! cycle
     void closeRecord(const bool & = false) override {
-        entry_point_->quiet();
+        if(SPARTA_EXPECT_FALSE(isCollected() && entry_point_)) {
+            entry_point_->quiet();
+        }
     }
 
     //! Schedule event to close all records for this iterable type.
@@ -306,6 +313,12 @@ private:
     // Standard walk of iterable types
     void collectImpl_(const IterableType * iterable_object, std::false_type)
     {
+        // Unit tests may not have any entry point / bit bucket / simulation set up.
+        if (!bit_bucket_) {
+            return;
+        }
+
+        sparta_assert(entry_point_);
         sparta_assert(nullptr != iterable_object,
             "Can't collect iterable_object because it's a nullptr! How did we get here?");
         auto itr = iterable_object->begin();
@@ -328,6 +341,12 @@ private:
     // and not valid entries in the component
     void collectImpl_(const IterableType * iterable_object, std::true_type)
     {
+        // Unit tests may not have any entry point / bit bucket / simulation set up.
+        if (!bit_bucket_) {
+            return;
+        }
+
+        sparta_assert(entry_point_);
         sparta_assert(nullptr != iterable_object,
             "Can't collect iterable_object because it's a nullptr! How did we get here?");
         auto itr = iterable_object->begin();

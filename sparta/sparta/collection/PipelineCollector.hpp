@@ -326,9 +326,11 @@ namespace collection
                 {
                     // First turn on this node if it's actually a CollectableTreeNode
                     CollectableTreeNode* c_node = dynamic_cast<CollectableTreeNode*>(starting_node);
-                    if(c_node != nullptr && dynamic_cast<CollectableTreeNode*>(c_node->getParent()) == nullptr) {
+                    if(c_node != nullptr) {
                         c_node->startCollecting(this);
-                        registered_collectables_.insert(c_node);
+                        if(dynamic_cast<CollectableTreeNode*>(c_node->getParent()) == nullptr) {
+                            registered_collectables_.insert(c_node);
+                        }
                     }
 
                     // Recursive step. Go through the children and turn them on as well.
@@ -353,10 +355,12 @@ namespace collection
             recursiveStopCollect = [&recursiveStopCollect, this] (sparta::TreeNode* starting_node) {
                 // First turn off this node if it's actually a CollectableTreeNode
                 CollectableTreeNode* c_node = dynamic_cast<CollectableTreeNode*>(starting_node);
-                if(c_node != nullptr && dynamic_cast<CollectableTreeNode*>(c_node->getParent()) == nullptr)
+                if(c_node != nullptr)
                 {
                     c_node->stopCollecting(this);
-                    registered_collectables_.erase(c_node);
+                    if(dynamic_cast<CollectableTreeNode*>(c_node->getParent()) == nullptr) {
+                        registered_collectables_.erase(c_node);
+                    }
                 }
 
                 // Recursive step. Go through the children and turn them on as well.
@@ -367,14 +371,7 @@ namespace collection
             };
             recursiveStopCollect(starting_node);
 
-            bool still_active = !registered_collectables_.empty();
-            // for(auto & cp : clock_ctn_map_) {
-            //     if(cp.second->anyCollected()) {
-            //         still_active = true;
-            //         break;
-            //     }
-            // }
-            collection_active_ = still_active;
+            collection_active_ = !registered_collectables_.empty();
         }
 
         /**

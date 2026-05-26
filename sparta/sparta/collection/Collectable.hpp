@@ -16,6 +16,7 @@
 #include <iomanip>
 
 #include "sparta/collection/PipelineCollector.hpp"
+#include "sparta/collection/DynamicDataType.hpp"
 #include "sparta/pipeViewer/transaction_structures.hpp"
 #include "sparta/events/PayloadEvent.hpp"
 #include "sparta/events/EventSet.hpp"
@@ -23,8 +24,6 @@
 #include "sparta/pairs/SpartaKeyPairs.hpp"
 #include "sparta/utils/Utils.hpp"
 #include "sparta/utils/MetaStructs.hpp"
-
-#include "simdb/apps/argos/ArgosCollector.hpp"
 
 #include "boost/numeric/conversion/converter.hpp"
 
@@ -47,22 +46,31 @@ namespace sparta{
          *  scheduling phase is ignored.
          */
 
+        template <typename T>
+        static constexpr bool use_native() {
+            constexpr bool is_native_pod = std::is_trivial_v<T> && std::is_standard_layout_v<T>;
+            constexpr bool is_enum_no_ostream = std::is_enum_v<T> && !utils::has_ostream_operator<T>::value;
+            return is_native_pod || is_enum_no_ostream;
+        }
+
+        template <typename T>
+        static constexpr bool use_string() {
+            constexpr bool is_string_type = std::is_same_v<T, std::string> || MetaStruct::is_char_pointer_v<T>;
+            constexpr bool is_enum_with_ostream = std::is_enum_v<T> && utils::has_ostream_operator<T>::value;
+            return is_string_type || is_enum_with_ostream;
+        }
+
+        template <typename T>
+        static constexpr bool use_dynamic() {
+            return !use_native<T>() && !use_string<T>() && utils::has_ostream_operator<T>::value;
+        }
+
         template<typename DataT, SchedulingPhase collection_phase = SchedulingPhase::Collection, typename = void>
         class Collectable : public CollectableTreeNode
         {
         public:
             static constexpr uint64_t BAD_DISPLAY_ID = 0x1000;
             using ValueType = MetaStruct::remove_any_pointer_t<DataT>;
-
-            template <typename T>
-            static constexpr bool native_support() {
-                return std::is_trivial_v<T> && std::is_standard_layout_v<T>;
-            }
-
-            template <typename T>
-            static constexpr bool string_support() {
-                return !native_support<T>() && utils::has_ostream_operator<T>::value;
-            }
 
             /**
              * \brief Construct the Collectable, no data object associated, part of a group
@@ -137,21 +145,23 @@ namespace sparta{
              */
             void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final
             {
+                argos_collector_ = argos_collector;
+
                 // Bin collectors under IterableCollectors do not need an entry point.
                 if (dynamic_cast<CollectableTreeNode*>(getParent()))
                 {
                     return;
                 }
 
-                if constexpr(!native_support<ValueType>() && !string_support<ValueType>())
+                if constexpr(!use_native<ValueType>() && !use_string<ValueType>() && !use_dynamic<ValueType>())
                 {
                     throw SpartaException("Cannot collect type '" ) << simdb::demangle_type<ValueType>() << "'. "
                         << "This is not a POD, string, enum or something that supports ostream operators.";
                 }
 
                 using collectable_t = std::conditional_t<
-                    string_support<ValueType>(),
-                    std::string, ValueType>;
+                    use_dynamic<ValueType>(),
+                    detail::DynamicDataType, ValueType>;
 
                 auto loc = getLocation();
                 auto clk_name = notNull(getClock())->getName();
@@ -172,8 +182,20 @@ namespace sparta{
                 bit_bucket_ = bit_bucket;
             }
 
-            void serializeStructSchema(simdb::DatabaseManager*, std::map<std::string, int>&) override final
+            void serializeStructSchema(simdb::DatabaseManager* db_mgr, std::map<std::string, int>&) override final
             {
+                if constexpr(use_dynamic<ValueType>()) {
+                    uint16_t cid = 0;
+                    if(entry_point_) {
+                        cid = entry_point_->getID();
+                    }else {
+                        auto parent = notNull(dynamic_cast<CollectableTreeNode*>(getParent()));
+                        cid = parent->getSerializationCID();
+                    }
+                    dynamic_dtype_handler_ = std::make_unique<detail::DynamicDataType>(db_mgr, entry_point_, bit_bucket_, argos_collector_, cid);
+                }else {
+                    (void)db_mgr;
+                }
             }
 
             template <typename T>
@@ -185,18 +207,36 @@ namespace sparta{
              * \brief For manual collection, provide an initial value
              * \param val The value to initial the record with
              */
-            void initialize(const DataT & val) {
+            void initialize(const ValueType & val) {
                 //TODO cnyce: handle initial value
                 (void)val;
             }
 
+            template <typename T>
+            std::enable_if_t<MetaStruct::is_any_pointer_v<T>, void>
+            initialize(const T & val) {
+                if (val) {
+                    initialize(*val);
+                }
+            }
+
             //! Explicitly/manually collect a value for this collectable, ignoring
             //! what the Collectable is currently pointing to.
-            void collect(const DataT & val)
+            void collect(const ValueType & val)
             {
                 if(SPARTA_EXPECT_FALSE(isCollected()))
                 {
                     collect_(val);
+                }
+            }
+
+            template <typename T>
+            std::enable_if_t<MetaStruct::is_any_pointer_v<T>, void>
+            collect(const T & val) {
+                if (val) {
+                    collect(*val);
+                } else {
+                    closeRecord();
                 }
             }
 
@@ -210,7 +250,7 @@ namespace sparta{
              * \warn No checks are performed if a new value is collected
              *       within the previous duration!
              */
-            void collectWithDuration(const DataT & val, sparta::Clock::Cycle duration)
+            void collectWithDuration(const ValueType & val, sparta::Clock::Cycle duration)
             {
                 if(SPARTA_EXPECT_FALSE(isCollected()))
                 {
@@ -218,6 +258,16 @@ namespace sparta{
                         ev_close_record_.preparePayload(false)->schedule(duration);
                     }
                     collect(val);
+                }
+            }
+
+            template <typename T>
+            std::enable_if_t<MetaStruct::is_any_pointer_v<T>, void>
+            collectWithDuration(const T & val, sparta::Clock::Cycle duration) {
+                if (val) {
+                    collectWithDuration(*val, duration);
+                } else {
+                    closeRecord();
                 }
             }
 
@@ -251,7 +301,7 @@ namespace sparta{
             //! immediately and clear the field for the next cycle
             void closeRecord(const bool & = false) override final
             {
-                if(SPARTA_EXPECT_FALSE(isCollected()))
+                if(SPARTA_EXPECT_FALSE(isCollected() && entry_point_))
                 {
                     entry_point_->quiet();
                 }
@@ -277,14 +327,16 @@ namespace sparta{
             //! collection is enabled on the TreeNode
             void setCollecting_(bool collect, Collector * collector) override final
             {
-                if constexpr (string_support<ValueType>() && !std::is_same_v<ValueType, std::string> && !std::is_enum_v<ValueType>) {
-                    if (collect) {
-                        std::ostringstream oss;
-                        oss << "'" << simdb::demangle_type<ValueType>() << "' ";
-                        oss << "will be collected using the ostream operator. Provide a PairDefinition for ";
-                        oss << "this class to boost performance.";
-                        entry_point_->postWarning(oss.str());
-                    }
+                if (dynamic_cast<CollectableTreeNode*>(getParent()) != nullptr) {
+                    return;
+                }
+
+                if (dynamic_dtype_handler_ && collect) {
+                    std::ostringstream oss;
+                    oss << "'" << simdb::demangle_type<ValueType>() << "' ";
+                    oss << "will be collected using the ostream operator. Provide a PairDefinition for ";
+                    oss << "this class to boost performance.";
+                    entry_point_->postWarning(oss.str());
                 }
 
                 pipeline_col_ = dynamic_cast<PipelineCollector *>(collector);
@@ -330,21 +382,9 @@ namespace sparta{
                 }
             }
 
-            //! String-type / operator<< collection
+            //! Native-type collection
             template <typename T>
-            std::enable_if_t<!MetaStruct::is_any_pointer_v<T> && string_support<T>(), void>
-            collect_(const T & val)
-            {
-                sparta_assert(isCollected());
-                std::ostringstream oss;
-                oss << val;
-                auto string_id = bit_bucket_->getTinyStrings()->getStringID(oss.str());
-                collect_(string_id);
-            }
-
-            //! POD-type collection
-            template <typename T>
-            std::enable_if_t<!MetaStruct::is_any_pointer_v<T> && !string_support<T>(), void>
+            std::enable_if_t<!MetaStruct::is_any_pointer_v<T> && use_native<T>(), void>
             collect_(const T & val)
             {
                 sparta_assert(isCollected());
@@ -356,6 +396,40 @@ namespace sparta{
                 } else if (bit_bucket_) {
                     bit_bucket_->dump(val);
                 }
+            }
+
+            //! String-type / operator<< collection
+            template <typename T>
+            std::enable_if_t<!MetaStruct::is_any_pointer_v<T> && use_string<T>(), void>
+            collect_(const T & val)
+            {
+                sparta_assert(isCollected());
+                std::ostringstream oss;
+                oss << val;
+                auto string_id = notNull(bit_bucket_)->getTinyStrings()->getStringID(oss.str());
+                collect_(string_id);
+            }
+
+            //! Dynamic-type collection
+            template <typename T>
+            std::enable_if_t<!MetaStruct::is_any_pointer_v<T> && use_dynamic<T>(), void>
+            collect_(const T & val)
+            {
+                sparta_assert(isCollected());
+                std::ostringstream oss;
+                oss << val;
+                notNull(dynamic_dtype_handler_.get())->parseAndDump(oss.str());
+            }
+
+            //! INVALID COLLECTION (basically just here to get unit tests to compile)
+            template <typename T>
+            std::enable_if_t<!MetaStruct::is_any_pointer_v<T> &&
+                             !use_native<T>() &&
+                             !use_string<T>() &&
+                             !use_dynamic<T>(),
+            void> collect_(const T&)
+            {
+                throw SpartaException("Cannot collect data type!");
             }
 
             // The annotation object to be collected
@@ -378,6 +452,8 @@ namespace sparta{
 
             std::unique_ptr<CollectableBitBucket> owned_bit_bucket_;
             BitBucket* bit_bucket_ = nullptr;
+            std::unique_ptr<detail::DynamicDataType> dynamic_dtype_handler_;
+            simdb::argos::ArgosCollector* argos_collector_ = nullptr;
         };
 
         /**
@@ -675,13 +751,15 @@ namespace sparta{
             MetaStruct::enable_if_t<!MetaStruct::is_any_pointer<T>::value, void>
             collect(const T & val)
             {
-                if (entry_point_) {
-                    bit_bucket_->reset();
-                    collect_(val);
-                    auto bytes = static_cast<CollectableBitBucket*>(bit_bucket_)->release();
-                    entry_point_->setScalarValueBytes(bytes);
-                } else {
-                    collect_(val);
+                if(SPARTA_EXPECT_FALSE(isCollected())) {
+                    if(entry_point_) {
+                        bit_bucket_->reset();
+                        collect_(val);
+                        auto bytes = static_cast<CollectableBitBucket*>(bit_bucket_)->release();
+                        entry_point_->setScalarValueBytes(bytes);
+                    } else {
+                        collect_(val);
+                    }
                 }
             }
 
@@ -772,7 +850,7 @@ namespace sparta{
             //! immediately and clear the field for the next cycle
             void closeRecord(const bool & = false) override final
             {
-                if(SPARTA_EXPECT_FALSE(isCollected()))
+                if(SPARTA_EXPECT_FALSE(isCollected() && entry_point_))
                 {
                     entry_point_->quiet();
                 }
@@ -814,6 +892,10 @@ namespace sparta{
             //! collection is enabled on the TreeNode
             void setCollecting_(bool collect, Collector * collector) override final
             {
+                if (dynamic_cast<CollectableTreeNode*>(getParent()) != nullptr) {
+                    return;
+                }
+
                 pipeline_col_ = dynamic_cast<PipelineCollector *>(collector);
                 sparta_assert(pipeline_col_ != nullptr,
                             "Collectables can only added to PipelineCollectors... for now");

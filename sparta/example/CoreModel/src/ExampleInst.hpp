@@ -29,7 +29,7 @@ namespace core_example
     public:
 
         // The modeler needs to alias a type called "SpartaPairDefinitionType" to the Pair Definition class  of itself
-        using SpartaPairDefinitionType = ExampleInstPairDef;
+        //using SpartaPairDefinitionType = ExampleInstPairDef;
 
         enum class Status : std::uint16_t{
             FETCHED = 0,

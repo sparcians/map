@@ -15,14 +15,7 @@
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/collection/Collector.hpp"
-
-namespace simdb{
-    class DatabaseManager;
-    namespace argos{
-        class ArgosCollector;
-        class CollectionEntryPoint;
-    }
-}
+#include "simdb/apps/argos/ArgosCollector.hpp"
 
 namespace sparta{
 namespace collection
@@ -111,7 +104,7 @@ namespace collection
          * \brief Determine whether or not this node has collection
          * turned on or off.
          */
-        bool isCollected() const { return is_collected_ && entry_point_ != nullptr; }
+        bool isCollected() const { return is_collected_; }
 
         //! Pure virtual method used by deriving classes to be
         //! notified when they can perform their collection
@@ -132,6 +125,11 @@ namespace collection
         //!        to their end cycle in their records to ensure it
         //!        does not get closed out.
         virtual void closeRecord(const bool & simulation_ending = false) { (void) simulation_ending; }
+
+        //! Get the CID (collectable ID) that SimDB knows us by.
+        uint16_t getSerializationCID() const {
+            return entry_point_ ? entry_point_->getID() : 0;
+        }
 
     protected:
 
