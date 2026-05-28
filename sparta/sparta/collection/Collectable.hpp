@@ -16,7 +16,7 @@
 #include <iomanip>
 
 #include "sparta/collection/PipelineCollector.hpp"
-#include "sparta/collection/DynamicDataType.hpp"
+//#include "sparta/collection/DynamicDataType.hpp" TODO XXX
 #include "sparta/pipeViewer/transaction_structures.hpp"
 #include "sparta/events/PayloadEvent.hpp"
 #include "sparta/events/EventSet.hpp"
@@ -159,43 +159,47 @@ namespace sparta{
                         << "This is not a POD, string, enum or something that supports ostream operators.";
                 }
 
-                using collectable_t = std::conditional_t<
-                    use_dynamic<ValueType>(),
-                    detail::DynamicDataType, ValueType>;
+                //using collectable_t = std::conditional_t<
+                //    use_dynamic<ValueType>(),
+                //    detail::DynamicDataType, ValueType>;
 
-                auto loc = getLocation();
-                auto clk_name = notNull(getClock())->getName();
-                entry_point_ = argos_collector->createScalarCollector<collectable_t>(loc, clk_name);
-                owned_bit_bucket_ = std::make_unique<CollectableBitBucket>(
-                    argos_collector->getTinyStrings());
-                bit_bucket_ = owned_bit_bucket_.get();
+                //auto loc = getLocation();
+                //auto clk_name = notNull(getClock())->getName();
+                //entry_point_ = argos_collector->createScalarCollector<collectable_t>(loc, clk_name);
+                //owned_bit_bucket_ = std::make_unique<CollectableBitBucket>(
+                //    //TODO cnyce: don't cache TinyStrings; use a ref to the TinyStringsResource
+                //    argos_collector->getTinyStrings());
+                //bit_bucket_ = owned_bit_bucket_.get();
+                //TODO XXX
             }
 
             /**
              * \brief Forward the BitBucket from a parent IterableCollector.
              */
-            void setBitBucket(BitBucket* bit_bucket)
-            {
-                sparta_assert(dynamic_cast<CollectableTreeNode*>(getParent()) != nullptr);
-                sparta_assert(bit_bucket_ == nullptr);
-                sparta_assert(entry_point_ == nullptr);
-                bit_bucket_ = bit_bucket;
-            }
+            //void setBitBucket(BitBucket* bit_bucket)
+            //{
+            //    sparta_assert(dynamic_cast<CollectableTreeNode*>(getParent()) != nullptr);
+            //    sparta_assert(bit_bucket_ == nullptr);
+            //    sparta_assert(entry_point_ == nullptr);
+            //    bit_bucket_ = bit_bucket;
+            //}
+            //TODO XXX
 
             void serializeStructSchema(simdb::DatabaseManager* db_mgr, std::map<std::string, int>&) override final
             {
-                if constexpr(use_dynamic<ValueType>()) {
-                    uint16_t cid = 0;
-                    if(entry_point_) {
-                        cid = entry_point_->getID();
-                    }else {
-                        auto parent = notNull(dynamic_cast<CollectableTreeNode*>(getParent()));
-                        cid = parent->getSerializationCID();
-                    }
-                    dynamic_dtype_handler_ = std::make_unique<detail::DynamicDataType>(db_mgr, entry_point_, bit_bucket_, argos_collector_, cid);
-                }else {
+                //if constexpr(use_dynamic<ValueType>()) {
+                //    uint16_t cid = 0;
+                //    if(entry_point_) {
+                //        cid = entry_point_->getID();
+                //    }else {
+                //        auto parent = notNull(dynamic_cast<CollectableTreeNode*>(getParent()));
+                //        cid = parent->getSerializationCID();
+                //    }
+                //    dynamic_dtype_handler_ = std::make_unique<detail::DynamicDataType>(db_mgr, entry_point_, bit_bucket_, argos_collector_, cid);
+                //}else {
                     (void)db_mgr;
-                }
+                //}
+                //TODO XXX
             }
 
             template <typename T>
@@ -331,13 +335,14 @@ namespace sparta{
                     return;
                 }
 
-                if (dynamic_dtype_handler_ && collect) {
-                    std::ostringstream oss;
-                    oss << "'" << simdb::demangle_type<ValueType>() << "' ";
-                    oss << "will be collected using the ostream operator. Provide a PairDefinition for ";
-                    oss << "this class to boost performance.";
-                    entry_point_->postWarning(oss.str());
-                }
+                //TODO XXX
+                //if (dynamic_dtype_handler_ && collect) {
+                //    std::ostringstream oss;
+                //    oss << "'" << simdb::demangle_type<ValueType>() << "' ";
+                //    oss << "will be collected using the ostream operator. Provide a PairDefinition for ";
+                //    oss << "this class to boost performance.";
+                //    entry_point_->postWarning(oss.str());
+                //}
 
                 pipeline_col_ = dynamic_cast<PipelineCollector *>(collector);
                 sparta_assert(pipeline_col_ != nullptr,
@@ -387,15 +392,17 @@ namespace sparta{
             std::enable_if_t<!MetaStruct::is_any_pointer_v<T> && use_native<T>(), void>
             collect_(const T & val)
             {
-                sparta_assert(isCollected());
-                if (entry_point_) {
-                    bit_bucket_->reset();
-                    bit_bucket_->dump(val);
-                    auto bytes = static_cast<CollectableBitBucket*>(bit_bucket_)->release();
-                    entry_point_->setScalarValueBytes(bytes);
-                } else if (bit_bucket_) {
-                    bit_bucket_->dump(val);
-                }
+                //sparta_assert(isCollected());
+                //if (entry_point_) {
+                //    bit_bucket_->reset();
+                //    bit_bucket_->dump(val);
+                //    auto bytes = static_cast<CollectableBitBucket*>(bit_bucket_)->release();
+                //    entry_point_->setScalarValueBytes(bytes);
+                //} else if (bit_bucket_) {
+                //    bit_bucket_->dump(val);
+                //}
+                //TODO XX
+                (void)val;
             }
 
             //! String-type / operator<< collection
@@ -403,11 +410,13 @@ namespace sparta{
             std::enable_if_t<!MetaStruct::is_any_pointer_v<T> && use_string<T>(), void>
             collect_(const T & val)
             {
-                sparta_assert(isCollected());
-                std::ostringstream oss;
-                oss << val;
-                auto string_id = notNull(bit_bucket_)->getTinyStrings()->getStringID(oss.str());
-                collect_(string_id);
+                //sparta_assert(isCollected());
+                //std::ostringstream oss;
+                //oss << val;
+                //auto string_id = notNull(bit_bucket_)->getTinyStrings()->getStringID(oss.str());
+                //collect_(string_id);
+                //TODO XXX
+                (void)val;
             }
 
             //! Dynamic-type collection
@@ -415,10 +424,12 @@ namespace sparta{
             std::enable_if_t<!MetaStruct::is_any_pointer_v<T> && use_dynamic<T>(), void>
             collect_(const T & val)
             {
-                sparta_assert(isCollected());
-                std::ostringstream oss;
-                oss << val;
-                notNull(dynamic_dtype_handler_.get())->parseAndDump(oss.str());
+                //sparta_assert(isCollected());
+                //std::ostringstream oss;
+                //oss << val;
+                //notNull(dynamic_dtype_handler_.get())->parseAndDump(oss.str());
+                //TODO XXX
+                (void)val;
             }
 
             //! INVALID COLLECTION (basically just here to get unit tests to compile)
@@ -450,9 +461,9 @@ namespace sparta{
             // collection is first enabled (setCollecting_)
             std::vector<char> initial_bytes_;
 
-            std::unique_ptr<CollectableBitBucket> owned_bit_bucket_;
-            BitBucket* bit_bucket_ = nullptr;
-            std::unique_ptr<detail::DynamicDataType> dynamic_dtype_handler_;
+            //std::unique_ptr<CollectableBitBucket> owned_bit_bucket_;
+            //BitBucket* bit_bucket_ = nullptr;
+            //std::unique_ptr<detail::DynamicDataType> dynamic_dtype_handler_;
             simdb::argos::ArgosCollector* argos_collector_ = nullptr;
         };
 
@@ -522,8 +533,8 @@ namespace sparta{
             using PairCollector<PairDef_t>::getPEventLogVector;
             using PairCollector<PairDef_t>::getArgosFormatGuide;
             using PairCollector<PairDef_t>::collect_;
-            using PairCollector<PairDef_t>::setBitBucket_;
-            using PairCollector<PairDef_t>::setTinyStrings_;
+            //using PairCollector<PairDef_t>::setBitBucket_;
+            //using PairCollector<PairDef_t>::setTinyStrings_;
             using PairCollector<PairDef_t>::isCollecting;
 
         public:
@@ -606,32 +617,36 @@ namespace sparta{
                 // Bin collectors under IterableCollectors do not need an entry point.
                 // But in order to serialize strings, all the PairDefinitions need
                 // the TinyStrings regardless.
-                setTinyStrings_(argos_collector->getTinyStrings());
+                //setTinyStrings_(argos_collector->getTinyStrings());TODO XXX
                 if (dynamic_cast<CollectableTreeNode*>(getParent()))
                 {
+                    //TODO XXX: it is confusing everything when the Collectable has
+                    //to know whether it is standalone or in a container
                     return;
                 }
 
                 auto loc = getLocation();
                 auto clk_name = notNull(getClock())->getName();
                 entry_point_ = argos_collector->createScalarCollector<Data_t>(loc, clk_name);
-                owned_bit_bucket_ = std::make_unique<CollectableBitBucket>(argos_collector->getTinyStrings());
-                bit_bucket_ = owned_bit_bucket_.get();
-                setBitBucket_(bit_bucket_); // PairDefinition base class API; Pairs need the BitBucket too
+                //owned_bit_bucket_ = std::make_unique<CollectableBitBucket>(argos_collector->getTinyStrings());
+                //bit_bucket_ = owned_bit_bucket_.get();
+                //setBitBucket_(bit_bucket_); // PairDefinition base class API; Pairs need the BitBucket too
+                //TODO XXX
             }
 
             /**
              * \brief Forward the BitBucket along to the Pair objects in this collector.
              * \note Only to be called from IterableCollector.
              */
-            void setBitBucket(BitBucket* bit_bucket)
-            {
-                sparta_assert(dynamic_cast<CollectableTreeNode*>(getParent()) != nullptr);
-                sparta_assert(bit_bucket_ == nullptr);
-                sparta_assert(entry_point_ == nullptr);
-                bit_bucket_ = bit_bucket;
-                setBitBucket_(bit_bucket_); // PairDefinition base class API; Pairs need the BitBucket too
-            }
+            //void setBitBucket(BitBucket* bit_bucket)
+            //{
+            //    sparta_assert(dynamic_cast<CollectableTreeNode*>(getParent()) != nullptr);
+            //    sparta_assert(bit_bucket_ == nullptr);
+            //    sparta_assert(entry_point_ == nullptr);
+            //    bit_bucket_ = bit_bucket;
+            //    setBitBucket_(bit_bucket_); // PairDefinition base class API; Pairs need the BitBucket too
+            //}
+            //TODO XXX
 
             /**
              * \brief Whether a scalar (Collectable) or container (IterableCollector),
@@ -751,16 +766,18 @@ namespace sparta{
             MetaStruct::enable_if_t<!MetaStruct::is_any_pointer<T>::value, void>
             collect(const T & val)
             {
-                if(SPARTA_EXPECT_FALSE(isCollected())) {
-                    if(entry_point_) {
-                        bit_bucket_->reset();
-                        collect_(val);
-                        auto bytes = static_cast<CollectableBitBucket*>(bit_bucket_)->release();
-                        entry_point_->setScalarValueBytes(bytes);
-                    } else {
-                        collect_(val);
-                    }
-                }
+                //if(SPARTA_EXPECT_FALSE(isCollected())) {
+                //    if(entry_point_) {
+                //        bit_bucket_->reset();
+                //        collect_(val);
+                //        auto bytes = static_cast<CollectableBitBucket*>(bit_bucket_)->release();
+                //        entry_point_->setScalarValueBytes(bytes);
+                //    } else {
+                //        collect_(val);
+                //    }
+                //}
+                //TODO XXX
+                (void)val;
             }
 
             //! Explicitly/manually collect a value for this collectable, ignoring
@@ -933,8 +950,8 @@ namespace sparta{
             // Should we auto-collect?
             bool auto_collect_ = true;
 
-            std::unique_ptr<CollectableBitBucket> owned_bit_bucket_;
-            BitBucket* bit_bucket_ = nullptr;
+            //std::unique_ptr<CollectableBitBucket> owned_bit_bucket_;
+            //BitBucket* bit_bucket_ = nullptr;
         };
     }//namespace collection
 }//namespace sparta

@@ -558,7 +558,6 @@ inline void mergeFieldValue_(FieldTypeState& state, const std::string& raw_token
 
 } // namespace dynamic_field_type
 
-
 class DynamicDataType
 {
 public:
@@ -581,11 +580,11 @@ public:
     public:
         ParserBase(simdb::argos::CollectionEntryPoint* entry_point,
                    sparta::BitBucket* bit_bucket,
-                   simdb::argos::PipelineStagerBase* stager,
+                   simdb::argos::ArgosCollector* argos_collector,
                    uint16_t cid)
             : entry_point_(entry_point)
             , bit_bucket_(bit_bucket)
-            , stager_(stager)
+            , argos_collector_(argos_collector)
             , cid_(cid)
         {}
 
@@ -635,12 +634,13 @@ public:
                 parsed_field_names_, parsed_field_values_);
             validateFieldNames_(parsed_field_names_);
 
-            if (updateFieldTypes_(parsed_field_values_) && stager_) {
-                stager_->postDynamicFieldChanges(cid_, parsed_field_names_, field_types_);
+            if (updateFieldTypes_(parsed_field_values_)) {
+                auto stager = argos_collector_->getStager();
+                stager->postDynamicFieldChanges(cid_, parsed_field_names_, field_types_);
             }
 
             std::vector<char> bytes;
-            simdb::StreamBuffer buf(bytes);
+            simdb::StreamBuffer buf(bytes, argos_collector_->getTinyStrings());
 
             sparta_assert(parsed_field_values_.size() == field_types_.size());
             for (size_t i = 0; i < field_types_.size(); ++i) {
@@ -715,7 +715,7 @@ public:
 
         simdb::argos::CollectionEntryPoint* const entry_point_;
         sparta::BitBucket* const bit_bucket_;
-        simdb::argos::PipelineStagerBase* const stager_;
+        simdb::argos::ArgosCollector* const argos_collector_;
         const uint16_t cid_;
 
         std::vector<std::string> field_names_;
@@ -854,30 +854,30 @@ public:
     static std::unique_ptr<ParserBase> createParser(
         simdb::argos::CollectionEntryPoint* const entry_point,
         sparta::BitBucket* const bit_bucket,
-        simdb::argos::PipelineStagerBase* const stager,
+        simdb::argos::ArgosCollector* argos_collector,
         const std::string& stringified_fields,
         const uint16_t cid)
     {
         if (ParserImpl7::isValidFormat(stringified_fields)) {
-            return std::make_unique<ParserImpl7>(entry_point, bit_bucket, stager, cid);
+            return std::make_unique<ParserImpl7>(entry_point, bit_bucket, argos_collector, cid);
         }
         if (ParserImpl6::isValidFormat(stringified_fields)) {
-            return std::make_unique<ParserImpl6>(entry_point, bit_bucket, stager, cid);
+            return std::make_unique<ParserImpl6>(entry_point, bit_bucket, argos_collector, cid);
         }
         if (ParserImpl5::isValidFormat(stringified_fields)) {
-            return std::make_unique<ParserImpl5>(entry_point, bit_bucket, stager, cid);
+            return std::make_unique<ParserImpl5>(entry_point, bit_bucket, argos_collector, cid);
         }
         if (ParserImpl4::isValidFormat(stringified_fields)) {
-            return std::make_unique<ParserImpl4>(entry_point, bit_bucket, stager, cid);
+            return std::make_unique<ParserImpl4>(entry_point, bit_bucket, argos_collector, cid);
         }
         if (ParserImpl3::isValidFormat(stringified_fields)) {
-            return std::make_unique<ParserImpl3>(entry_point, bit_bucket, stager, cid);
+            return std::make_unique<ParserImpl3>(entry_point, bit_bucket, argos_collector, cid);
         }
         if (ParserImpl2::isValidFormat(stringified_fields)) {
-            return std::make_unique<ParserImpl2>(entry_point, bit_bucket, stager, cid);
+            return std::make_unique<ParserImpl2>(entry_point, bit_bucket, argos_collector, cid);
         }
         if (ParserImpl1::isValidFormat(stringified_fields)) {
-            return std::make_unique<ParserImpl1>(entry_point, bit_bucket, stager, cid);
+            return std::make_unique<ParserImpl1>(entry_point, bit_bucket, argos_collector, cid);
         }
 
         throw simdb::DBException("Invalid operator<< format");
@@ -887,7 +887,7 @@ public:
     void parseAndDump(const std::string& stringified_fields)
     {
         if (!parser_) {
-            parser_ = createParser(entry_point_, bit_bucket_, argos_collector_->getStager(), stringified_fields, cid_);
+            parser_ = createParser(entry_point_, bit_bucket_, argos_collector_, stringified_fields, cid_);
         }
         parser_->parseAndDump(stringified_fields);
     }
@@ -904,5 +904,5 @@ private:
 } // namespace sparta::collection::detail
 
 namespace simdb::argos::detail {
-    template <> struct is_dynamic_type<sparta::collection::detail::DynamicDataType> : std::true_type {};
+    //template <> struct is_dynamic_type<sparta::collection::detail::DynamicDataType> : std::true_type {};
 }
