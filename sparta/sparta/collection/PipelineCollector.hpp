@@ -421,17 +421,6 @@ namespace collection
         }
 
         /**
-         * \brief Output a finized transaction to our Outputter class.
-         * \param dat The transaction to be outputted.
-         * \param R_Type the type of transaction struct
-         */
-        template<class R_Type>
-        void writeRecord(const R_Type&)
-        {
-            throw SpartaException("TODO cnyce: Delete legacy Argos code");
-        }
-
-        /**
          * \brief Return true if the collector is actively collecting
          *
          *  Will be true if there are any registered collectables that
@@ -443,9 +432,6 @@ namespace collection
          */
         bool isCollectionActive() const {
             return collection_active_;
-        }
-
-        void printMap() {
         }
 
         //! \return the pipeout file path
