@@ -57,15 +57,14 @@ namespace sparta {
         template<typename Leaf>
         std::string argosLeafDtypeString() {
             using T = MetaStruct::decay_t<Leaf>;
-            if constexpr (std::is_trivial_v<T> && std::is_standard_layout_v<T> && !std::is_enum_v<T>) {
-                return simdb::demangle_type<T>();
-            } else if constexpr (std::is_enum_v<T> && utils::has_ostream_operator<T>::value) {
+            if constexpr (std::is_same_v<T, std::string> || std::is_same_v<std::decay_t<T>, const char*>) {
+                return "string";
+            } else if constexpr ((std::is_trivial_v<T> && std::is_standard_layout_v<T>) ||
+                                 (std::is_enum_v<T> && utils::has_ostream_operator<T>::value)) {
                 return simdb::demangle_type<T>();
             } else if constexpr (std::is_enum_v<T>) {
                 using underlying_t = std::underlying_type_t<T>;
                 return simdb::demangle_type<underlying_t>();
-            } else if constexpr (std::is_same_v<T, std::string> || std::is_same_v<std::decay_t<T>, const char*>) {
-                return "string";
             } else if constexpr (simdb::type_traits::is_pod_convertible_v<T> && (!std::is_trivial_v<T> || !std::is_standard_layout_v<T>)) {
                 using converted_t = simdb::type_traits::pod_convertible_t<T>();
                 return simdb::demangle_type<converted_t>();
@@ -532,7 +531,7 @@ namespace sparta {
         /**
          * \brief Use the given bit bucket to dump collected data to SimDB
          */
-        void setBitBucket(std::shared_ptr<collection::BitBucket> bit_bucket) {
+        virtual void setBitBucket(std::shared_ptr<collection::BitBucket> bit_bucket) {
             bit_bucket_ = bit_bucket;
         }
 

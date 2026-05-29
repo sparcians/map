@@ -36,7 +36,9 @@ namespace sparta{
         struct use_raw_type : std::false_type {};
 
         template <typename T>
-        struct use_raw_type<T, std::enable_if_t<std::is_trivial_v<T> && std::is_standard_layout_v<T>>> : std::true_type {};
+        struct use_raw_type<T,
+            std::enable_if_t<std::is_trivial_v<T> &&
+                             std::is_standard_layout_v<T>>> : std::true_type {};
 
         template <typename T>
         inline constexpr bool use_raw_type_v = use_raw_type<T>::value;
@@ -45,7 +47,9 @@ namespace sparta{
         struct use_tiny_strings : std::false_type {};
 
         template <typename T>
-        struct use_tiny_strings<T, std::enable_if_t<std::is_same_v<T, std::string> || std::is_same_v<std::decay_t<T>, const char*>>> : std::true_type {};
+        struct use_tiny_strings<T,
+            std::enable_if_t<std::is_same_v<T, std::string> ||
+                             std::is_same_v<std::decay_t<T>, const char*>>> : std::true_type {};
 
         template <typename T>
         inline constexpr bool use_tiny_strings_v = use_tiny_strings<T>::value;
@@ -54,7 +58,9 @@ namespace sparta{
         struct use_pair_definition : std::false_type {};
 
         template <typename T>
-        struct use_pair_definition<T, std::enable_if_t<std::is_base_of<sparta::PairDefinition<T>, typename T::SpartaPairDefinitionType>::value>> : std::true_type {};
+        struct use_pair_definition<T,
+            std::enable_if_t<std::is_base_of<sparta::PairDefinition<T>,
+                             typename T::SpartaPairDefinitionType>::value>> : std::true_type {};
 
         template <typename T>
         inline constexpr bool use_pair_definition_v = use_pair_definition<T>::value;
@@ -63,7 +69,11 @@ namespace sparta{
         struct use_cast_operator : std::false_type {};
 
         template <typename T>
-        struct use_cast_operator<T, std::enable_if_t<simdb::type_traits::is_pod_convertible_v<T> && !use_raw_type_v<T> && !use_pair_definition_v<T>>> : std::true_type {};
+        struct use_cast_operator<T,
+            std::enable_if_t<simdb::type_traits::is_pod_convertible_v<T> &&
+                             !use_raw_type_v<T> &&
+                             !use_pair_definition_v<T> &&
+                             !utils::has_ostream_operator<T>::value>> : std::true_type {};
 
         template <typename T>
         inline constexpr bool use_cast_operator_v = use_cast_operator<T>::value;
@@ -72,11 +82,12 @@ namespace sparta{
         struct use_dynamic_fields : std::false_type {};
 
         template <typename T>
-        struct use_dynamic_fields<T, std::enable_if_t<!use_raw_type_v<T> &&
-                                                      !use_tiny_strings_v<T> &&
-                                                      !use_pair_definition_v<T> &&
-                                                      !use_cast_operator_v<T> &&
-                                                      utils::has_ostream_operator<T>::value>> : std::true_type {};
+        struct use_dynamic_fields<T,
+            std::enable_if_t<!use_raw_type_v<T> &&
+                             !use_tiny_strings_v<T> &&
+                             !use_pair_definition_v<T> &&
+                             !use_cast_operator_v<T> &&
+                             utils::has_ostream_operator<T>::value>> : std::true_type {};
 
         template <typename T>
         inline constexpr bool use_dynamic_fields_v = use_dynamic_fields<T>::value;
@@ -270,12 +281,6 @@ namespace sparta{
 
                 auto bit_bucket = std::make_shared<CollectableBitBucket>(argos_collector->getResources());
                 setBitBucket(bit_bucket);
-            }
-
-            //! Whether a scalar (Collectable) or container (IterableCollector), serialize
-            //! struct-like data structure hierarchies (field name + dtype) to the database.
-            void serializeStructSchema(simdb::DatabaseManager*, std::map<std::string, int>&) override final {
-                // TODO XXX
             }
 
             //! Set the BitBucket (byte buffers for SimDB CollectionEntryPoint)
@@ -525,8 +530,74 @@ namespace sparta{
                 return type;
             }
 
+            //! Whether a scalar (Collectable) or container (IterableCollector), serialize
+            //! struct-like data structure hierarchies (field name + dtype) to the database.
+            void serializeStructSchema(
+                simdb::DatabaseManager* db_mgr,
+                std::map<std::string, int>& schema_ids_by_dtype_name) override final
+            {
+                auto root_dtype = encodeCollectedType();
+                if(schema_ids_by_dtype_name.find(root_dtype) != schema_ids_by_dtype_name.end()) {
+                    return;
+                }
+
+                const int32_t schema_id =
+                    db_mgr->INSERT(SQL_TABLE("DataTypeSchemas"), SQL_VALUES(root_dtype))->getId();
+
+                using PairDef = typename ValueType::SpartaPairDefinitionType;
+                PairDef pair_def;
+                sparta::PairCache pair_cache;
+                pair_def.finalizeKeys(&pair_cache);
+
+                const auto & names = pair_cache.getNameStrings();
+                const auto & dtypes = pair_def.getLeafArgosDtypeStrings();
+                const auto & formatters = pair_cache.getFormatVector();
+                sparta_assert(names.size() == dtypes.size());
+                sparta_assert(formatters.size() == names.size());
+
+                std::vector<std::string> format_strings;
+                for(size_t i = 0; i < formatters.size(); ++i) {
+                    std::string fmt_str;
+                    switch(formatters[i]) {
+                        case PairFormatter::HEX:
+                            fmt_str = "HEX"; break;
+                        case PairFormatter::OCTAL:
+                            fmt_str = "OCT"; break;
+                        default: break;
+                    }
+                    format_strings.push_back(fmt_str);
+                }
+
+                constexpr int32_t parent_id_unset = 0;
+                const std::string kind_pod{"pod"};
+                const std::string empty;
+
+                std::cout << "\nSerializing PairDefinition to database for '" << root_dtype << "'...\n";
+                for(size_t i = 0; i < names.size(); ++i) {
+                    std::cout << "\t" << names[i] << ", " << dtypes[i];
+                    if (!format_strings[i].empty()) {
+                        std::cout << " (" << format_strings[i] << ")";
+                    }
+                    std::cout << "\n";
+
+                    db_mgr->INSERT(SQL_TABLE("DataTypeNodes"),
+                                   SQL_VALUES(schema_id,
+                                              parent_id_unset,
+                                              kind_pod,
+                                              names[i],
+                                              empty,
+                                              dtypes[i],
+                                              empty,
+                                              format_strings[i]));
+                }
+                schema_ids_by_dtype_name[root_dtype] = schema_id;
+            }
+
             void setBitBucket(std::shared_ptr<BitBucket> bit_bucket) override final {
+                // Share the BitBucket with the Pairs
                 setBitBucket_(bit_bucket);
+
+                // Let the base class own the bit bucket
                 CollectableCommon<DataT, collection_phase>::setBitBucket(bit_bucket);
             }
 

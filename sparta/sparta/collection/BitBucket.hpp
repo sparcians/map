@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "sparta/utils/SpartaAssert.hpp"
+#include "sparta/utils/ValidValue.hpp"
 #include "simdb/apps/argos/Collectables.hpp"
 
 namespace sparta::collection {
@@ -27,7 +27,9 @@ public:
         } else if constexpr (std::is_enum_v<T>) {
             auto enum_maps = argos_resources_->getEnumMapResource();
             enum_maps->inspect(val);
-            writeField((std::underlying_type<T>)val, field_id);
+            using underlying_t = std::underlying_type_t<T>;
+            auto enum_int = static_cast<underlying_t>(val);
+            writeField(enum_int, field_id);
         } else {
             writeField(&val, sizeof(T), field_id);
         }

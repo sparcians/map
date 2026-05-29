@@ -81,7 +81,9 @@ namespace collection
          * serialize struct-like data structure hierarchies (field name + dtype)
          * to the database.
          */
-        virtual void serializeStructSchema(simdb::DatabaseManager*, std::map<std::string, int>& schema_ids_by_dtype_name) = 0;
+        virtual void serializeStructSchema(simdb::DatabaseManager*, std::map<std::string, int>& schema_ids_by_dtype_name) {
+            (void)schema_ids_by_dtype_name;
+        }
 
         /**
          * \brief Encode the collected data type in a way Argos python deserializers
