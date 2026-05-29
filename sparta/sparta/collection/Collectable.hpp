@@ -255,10 +255,7 @@ namespace sparta{
             //! Force close a record.  This will close the record
             //! immediately and clear the field for the next cycle
             void closeRecord(const bool & = false) override final {
-                if (!entry_point_) {
-                    return;
-                }
-                if (SPARTA_EXPECT_FALSE(isCollected())) {
+                if (SPARTA_EXPECT_FALSE(isCollected() && entry_point_)) {
                     entry_point_->quiet();
                 }
             }
@@ -307,7 +304,7 @@ namespace sparta{
                               "Collectables can only added to PipelineCollectors... for now");
 
                 if(collect && !initial_bytes_.empty()) {
-                    //TODO cnyce: handle initial value
+                    //TODO XXX: handle initial value
                     initial_bytes_.clear();
                 }
 

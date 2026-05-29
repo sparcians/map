@@ -34,6 +34,7 @@
 #include "sparta/utils/ValidValue.hpp"
 
 #include "simdb/utils/Demangle.hpp"
+#include "simdb/utils/TypeTraits.hpp"
 
 namespace sparta {
 
@@ -53,24 +54,19 @@ namespace sparta {
          * Returns one of: keys in `SimpleDeserializer.CONVERTERS`, `"string"`, or `"enum"`.
          * Classification follows `KeyPairFromEntity::updateValueInCache_` where applicable.
          */
-        template<typename T>
+        template<typename Leaf>
         std::string argosLeafDtypeString() {
-            //TODO XXX: is this the best way?
-            using D = MetaStruct::decay_t<T>;
-            if constexpr (MetaStruct::is_string<D>::value) {
+            using T = MetaStruct::decay_t<Leaf>;
+            if constexpr (std::is_trivial_v<T> && std::is_standard_layout_v<T>) {
+                return simdb::demangle_type<T>();
+            } else if constexpr (std::is_same_v<T, std::string> || std::is_same_v<std::decay_t<T>, const char*>) {
                 return "string";
-            }
-            else if constexpr (MetaStruct::is_char_pointer<D>::value) {
-                return "string";
-            }
-            else if constexpr (std::is_enum<D>::value) {
-                // TODO cnyce: come back here when enums are
-                // stored by their underlying int, not their
-                // TinyStrings ID
-                return "string";
-            }
-            else {
-                return simdb::demangle_type<D>();
+            } else if constexpr (simdb::type_traits::is_pod_convertible_v<T> && (!std::is_trivial_v<T> || !std::is_standard_layout_v<T>)) {
+                using converted_t = simdb::type_traits::pod_convertible_t<T>();
+                return simdb::demangle_type<converted_t>();
+            } else {
+                static_assert(utils::has_ostream_operator<T>::value);
+                return "dynamic";
             }
         }
 
