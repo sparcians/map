@@ -155,11 +155,6 @@ namespace sparta{
             //! Virtual destructor -- does nothing
             virtual ~CollectableCommon() {}
 
-            virtual void setIterableBinIndex(size_t bin_idx) {
-                sparta_assert(bin_idx <= UINT16_MAX);
-                iterable_bin_idx_ = bin_idx;
-            }
-
             /**
              * \brief For manual collection, provide an initial value
              * \param val The value to initial the record with
@@ -353,17 +348,6 @@ namespace sparta{
             //! Destination for all collected data, whether we are a standalone
             //! Collectable or one of the positions_ in the IterableCollector
             std::shared_ptr<BitBucket> bit_bucket_;
-
-            //! IterableCollector positions_ index (not applicable for standalone
-            //! Collectables)
-            utils::ValidValue<uint16_t> iterable_bin_idx_;
-
-            //! Helper method for non-PairDefinition Collectables
-            template <typename T>
-            void writeToBitBucket_(const T val, uint32_t field_id) {
-                auto bin_idx = iterable_bin_idx_.isValid() ? (uint32_t)iterable_bin_idx_.getValue() : 0u;
-                bit_bucket_->writeField(val, bin_idx, field_id);
-            }
         };
 
         #define INHERIT_COMMON_INTERFACE                                                      \
@@ -424,7 +408,7 @@ namespace sparta{
         private:
             void performCollection_(const ValueType & val) override final {
                 constexpr auto dummy_field_id = 0u;
-                this->template writeToBitBucket_<ValueType>(val, dummy_field_id);
+                bit_bucket_->writeField(val, dummy_field_id);
 
                 if (entry_point_) {
                     static_cast<CollectableBitBucket*>(bit_bucket_.get())->writeTo(entry_point_);
@@ -452,7 +436,7 @@ namespace sparta{
         private:
             void performCollection_(const ValueType & val) override final {
                 constexpr auto dummy_field_id = 0u;
-                this->template writeToBitBucket_<std::string>(val, dummy_field_id);
+                bit_bucket_->writeField(val, dummy_field_id);
 
                 if (entry_point_) {
                     static_cast<CollectableBitBucket*>(bit_bucket_.get())->writeTo(entry_point_);
@@ -483,7 +467,7 @@ namespace sparta{
                 constexpr auto dummy_field_id = 0u;
                 using converted_t = simdb::type_traits::pod_convertible_t<ValueType>();
                 auto converted_val = static_cast<converted_t>(val);
-                this->template writeToBitBucket_<converted_t>(converted_val, dummy_field_id);
+                bit_bucket_->writeField(converted_val, dummy_field_id);
 
                 if (entry_point_) {
                     static_cast<CollectableBitBucket*>(bit_bucket_.get())->writeTo(entry_point_);
@@ -510,14 +494,18 @@ namespace sparta{
             }
 
         private:
-            void performCollection_(const ValueType & val) override final {
-                // TODO XXX
-                (void)val;
-
-                if (entry_point_) {
-                    static_cast<CollectableBitBucket*>(bit_bucket_.get())->writeTo(entry_point_);
+            void performCollection_(const ValueType &) override final {
+                // TODO XXX - fix up DynamicDataType.hpp
+                if (warn_ && entry_point_) {
+                    std::string warning = "Cannot collect data type '";
+                    warning += simdb::demangle_type<ValueType>() + "'. ";
+                    warning += "This must be moved to PairDefinition.";
+                    entry_point_->postWarning(warning);
                 }
+                warn_ = false;
             }
+
+            bool warn_ = true;
         };
 
         //! Use case 5: We are collecting a class/struct which provides SpartaPairDefinitionType.
@@ -548,7 +536,9 @@ namespace sparta{
             using PairCollector<PairDef_t>::setBitBucket_;
 
             void performCollection_(const ValueType & val) override final {
-                bit_bucket_->clear();
+                if (!this->isIterableCollectorBin()) {
+                    bit_bucket_->clear();
+                }
                 collect_(val);
 
                 if (entry_point_) {

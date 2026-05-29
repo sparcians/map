@@ -57,8 +57,13 @@ namespace sparta {
         template<typename Leaf>
         std::string argosLeafDtypeString() {
             using T = MetaStruct::decay_t<Leaf>;
-            if constexpr (std::is_trivial_v<T> && std::is_standard_layout_v<T>) {
+            if constexpr (std::is_trivial_v<T> && std::is_standard_layout_v<T> && !std::is_enum_v<T>) {
                 return simdb::demangle_type<T>();
+            } else if constexpr (std::is_enum_v<T> && utils::has_ostream_operator<T>::value) {
+                return simdb::demangle_type<T>();
+            } else if constexpr (std::is_enum_v<T>) {
+                using underlying_t = std::underlying_type_t<T>;
+                return simdb::demangle_type<underlying_t>();
             } else if constexpr (std::is_same_v<T, std::string> || std::is_same_v<std::decay_t<T>, const char*>) {
                 return "string";
             } else if constexpr (simdb::type_traits::is_pod_convertible_v<T> && (!std::is_trivial_v<T> || !std::is_standard_layout_v<T>)) {
@@ -398,7 +403,6 @@ namespace sparta {
          * \brief Use the given bit bucket to dump collected data to SimDB
          */
         void setBitBucket_(std::shared_ptr<collection::BitBucket> bit_bucket) {
-            //TODO XXX
             pair_definition_.setBitBucket(bit_bucket);
         }
 
@@ -1833,9 +1837,28 @@ namespace sparta {
         bool finalizeCollection_(
             PairCache *& c, const ValueType & tmp) {
 
-            if(auto bb = this->getBitBucket_(false)) {
-                // TODO XXX
-                (void)bb;
+            if(auto bit_bucket = this->getBitBucket_(false)) {
+                using T = MetaStruct::decay_t<ValueType>;
+                if constexpr (std::is_trivial_v<T> && std::is_standard_layout_v<T> && !std::is_enum_v<T>) {
+                    bit_bucket->writeField(&tmp, sizeof(ValueType), id_);
+                } else if constexpr (std::is_enum_v<T>) {
+                    using underlying_t = std::underlying_type_t<T>;
+                    auto underlying_val = static_cast<underlying_t>(tmp);
+                    bit_bucket->writeField(&underlying_val, sizeof(underlying_t), id_);
+                } else if constexpr (std::is_same_v<T, std::string> || std::is_same_v<std::decay_t<T>, const char*>) {
+                    auto resources = bit_bucket->getArgosResources();
+                    auto string_id = resources->getTinyStringsResource()->getStringID(tmp);
+                    bit_bucket->writeField(&string_id, sizeof(uint32_t), id_);
+                } else if constexpr (simdb::type_traits::is_pod_convertible_v<T> && !std::is_enum_v<T> &&
+                                    (!std::is_trivial_v<T> || !std::is_standard_layout_v<T>)) {
+                    using converted_t = simdb::type_traits::pod_convertible_t<T>();
+                    static_assert(std::is_trivial_v<converted_t> && std::is_standard_layout_v<converted_t>);
+                    auto converted_val = static_cast<converted_t>(tmp);
+                    bit_bucket->writeField(&converted_val, sizeof(converted_t), id_);
+                } else {
+                    static_assert(utils::has_ostream_operator<T>::value);
+                    throw SpartaException("TODO XXX: Support DynamicDataType");
+                }
             } else {
                 if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
                     data_cpy_.reset(new ValueType(tmp));
@@ -2163,8 +2186,6 @@ namespace sparta {
             leaf_argos_dtype_strings_.emplace_back(
                 pair_schema_detail::argosLeafDtypeString<
                     pair_schema_detail::KeyPairLeaf_t<Args...>>());
-            //new_pair->setIterableBinIndex()
-            //TODO XXX
             new_pair->setFormatter(std::ios::dec);
         }
 

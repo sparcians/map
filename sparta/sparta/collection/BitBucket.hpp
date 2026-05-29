@@ -14,22 +14,22 @@ public:
     virtual ~BitBucket() = default;
 
     virtual void clear() = 0;
-    virtual void writeField(const void* data, uint32_t bytes, uint32_t bin_idx, uint32_t field_id) = 0;
+    virtual void writeField(const void* data, uint32_t bytes, uint32_t field_id) = 0;
     virtual void writeTo(simdb::argos::CollectionEntryPoint* entry_point) = 0;
 
     template <typename T>
-    void writeField(const T& val, uint32_t bin_idx, uint32_t field_id) {
+    void writeField(const T& val, uint32_t field_id) {
         if constexpr (std::is_same_v<T, bool>) {
-            writeField(val ? uint8_t(1) : uint8_t(0), bin_idx, field_id);
+            writeField(val ? uint8_t(1) : uint8_t(0), field_id);
         } else if constexpr (std::is_same_v<T, std::string> || std::is_same_v<std::decay_t<T>, const char*>) {
             auto& tiny_strings = argos_resources_->getTinyStringsResource();
-            writeField(tiny_strings->getStringID(val), bin_idx, field_id);
+            writeField(tiny_strings->getStringID(val), field_id);
         } else if constexpr (std::is_enum_v<T>) {
             auto enum_maps = argos_resources_->getEnumMapResource();
             enum_maps->inspect(val);
-            writeField((std::underlying_type<T>)val, bin_idx, field_id);
+            writeField((std::underlying_type<T>)val, field_id);
         } else {
-            writeField(&val, sizeof(T), bin_idx, field_id);
+            writeField(&val, sizeof(T), field_id);
         }
     }
 
@@ -51,8 +51,7 @@ public:
         num_fields_written_ = 0;
     }
 
-    void writeField(const void* data, uint32_t bytes, uint32_t bin_idx, uint32_t field_id) override final {
-        sparta_assert(bin_idx == 0);
+    void writeField(const void* data, uint32_t bytes, uint32_t field_id) override final {
         sparta_assert(field_id == num_fields_written_);
         auto src = static_cast<const char*>(data);
         buffer_.insert(buffer_.end(), src, src + bytes);
@@ -89,17 +88,20 @@ public:
 
     void clear() override final {
         bin_buckets_.clear();
+        active_bin_idx_.clearValid();
     }
 
-    void writeField(const void* data, uint32_t bytes, uint32_t bin_idx, uint32_t field_id) override final {
+    void setActiveBinIdx(uint32_t bin_idx) {
         sparta_assert(bin_idx <= UINT16_MAX);
-        auto& bin_bucket = bin_buckets_[bin_idx];
+        active_bin_idx_ = static_cast<uint16_t>(bin_idx);
+    }
+
+    void writeField(const void* data, uint32_t bytes, uint32_t field_id) override final {
+        auto& bin_bucket = bin_buckets_[active_bin_idx_.getValue()];
         if (!bin_bucket) {
             bin_bucket = std::make_unique<CollectableBitBucket>(getArgosResources());
         }
-
-        constexpr uint32_t dummy_bin_idx = 0;
-        bin_bucket->writeField(data, bytes, dummy_bin_idx, field_id);
+        bin_bucket->writeField(data, bytes, field_id);
     }
 
     void writeTo(simdb::argos::CollectionEntryPoint* entry_point) override final {
@@ -114,6 +116,7 @@ public:
 
 private:
     std::map<uint16_t, std::unique_ptr<CollectableBitBucket>> bin_buckets_;
+    utils::ValidValue<uint16_t> active_bin_idx_;
 };
 
 template <>
@@ -126,16 +129,18 @@ public:
         bin_buckets_.clear();
     }
 
-    void writeField(const void* data, uint32_t bytes, uint32_t bin_idx, uint32_t field_id) override final {
+    void setActiveBinIdx(uint32_t bin_idx) {
         sparta_assert(bin_idx <= UINT16_MAX);
-        if (bin_idx == bin_buckets_.size()) {
-            bin_buckets_.emplace_back(std::make_unique<CollectableBitBucket>(getArgosResources()));
-        }
+        sparta_assert(bin_idx == bin_buckets_.size());
+        bin_buckets_.emplace_back(std::make_unique<CollectableBitBucket>(getArgosResources()));
+    }
 
-        sparta_assert(bin_idx == bin_buckets_.size() - 1);
+    void writeField(const void* data, uint32_t bytes, uint32_t field_id) override final {
+        if (bin_buckets_.empty()) {
+            setActiveBinIdx(0);
+        }
         auto& bin_bucket = bin_buckets_.back();
-        constexpr uint32_t dummy_bin_idx = 0;
-        bin_bucket->writeField(data, bytes, dummy_bin_idx, field_id);
+        bin_bucket->writeField(data, bytes, field_id);
     }
 
     void writeTo(simdb::argos::CollectionEntryPoint* entry_point) override final {

@@ -100,7 +100,6 @@ public:
             std::stringstream name_str;
             name_str << name << i;
             positions_.emplace_back(new CollectableT(this, name_str.str(), group, i));
-            positions_.back()->setIterableBinIndex(i);
         }
     }
 
@@ -344,6 +343,7 @@ private:
         bit_bucket_->clear();
         for (uint32_t i = 0; i < size; ++i)
         {
+            bit_bucket_->setActiveBinIdx(i);
             positions_[i]->collect(*itr);
             ++itr;
         }
@@ -370,6 +370,7 @@ private:
         {
             sparta_assert(itr != iterable_object->end());
             if (itr.isValid()) {
+                bit_bucket_->setActiveBinIdx(i);
                 positions_[i]->collect(*itr);
             }
             ++itr;
