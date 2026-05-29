@@ -100,6 +100,7 @@ public:
             std::stringstream name_str;
             name_str << name << i;
             positions_.emplace_back(new CollectableT(this, name_str.str(), group, i));
+            positions_.back()->setIterableBinIndex(i);
         }
     }
 
@@ -212,17 +213,13 @@ public:
     {
         auto loc = getLocation();
         auto clk_name = notNull(getClock())->getName();
+        auto type = encodeCollectedType();
+        entry_point_ = argos_collector->createContainerCollector<sparse_array_type>(loc, clk_name, expected_capacity_, type);
 
-        using collectable_t = std::conditional_t<
-            use_dynamic<BinValueT>(),
-            detail::DynamicDataType, BinValueT>;
-
-        entry_point_ = argos_collector->createContainerCollector<collectable_t, sparse_array_type>(loc, clk_name, expected_capacity_);
-        //bit_bucket_ = std::make_unique<ContainerBitBucket<sparse_array_type>>(argos_collector->getTinyStrings(), expected_capacity_);
-        //for (auto& bin : positions_) {
-        //    bin->setBitBucket(bit_bucket_.get());
-        //}
-        //TODO XXX
+        bit_bucket_ = std::make_shared<IterableCollectorBitBucket<sparse_array_type>>(argos_collector->getResources());
+        for (auto & bin : positions_) {
+            bin->setBitBucket(bit_bucket_);
+        }
     }
 
     //! Whether a scalar (Collectable) or container (IterableCollector),
@@ -230,7 +227,25 @@ public:
     //! to the database.
     void serializeStructSchema(simdb::DatabaseManager* db_mgr, std::map<std::string, int>& schema_ids_by_dtype_name) override final
     {
-        CollectableT::template serializeStructSchema<BinT>(db_mgr, schema_ids_by_dtype_name);
+        positions_.at(0)->serializeStructSchema(db_mgr, schema_ids_by_dtype_name);
+    }
+
+    std::string encodeCollectedType(bool human_readable = false) const override final
+    {
+        auto type = positions_.at(0)->encodeCollectedType();
+        auto human_readable_type = positions_.at(0)->encodeCollectedType(true);
+        auto human_readable_desc = human_readable_type.substr(type.size() + 1);
+
+        if constexpr (sparse_array_type) {
+            type += "_sparse";
+        } else {
+            type += "_contig";
+        }
+        type += "_capacity" + std::to_string(expected_capacity_);
+        if (human_readable) {
+            type += " " + human_readable_desc;
+        }
+        return type;
     }
 
     //! Collect the contents of the iterable object.  This function
@@ -310,32 +325,30 @@ private:
     typedef typename std::iterator_traits<typename IterableType::iterator>::value_type BinT;
     typedef MetaStruct::remove_any_pointer_t<BinT> BinValueT;
     typedef Collectable<BinT> CollectableT;
+    typedef IterableCollectorBitBucket<sparse_array_type> BitBucketT;
 
     // Standard walk of iterable types
     void collectImpl_(const IterableType * iterable_object, std::false_type)
     {
         // Unit tests may not have any entry point / bit bucket / simulation set up.
-        //if (!bit_bucket_) {
-        //    return;
-        //}
-        //TODO XXX
+        if (!entry_point_) {
+            return;
+        }
 
-        sparta_assert(entry_point_);
+        sparta_assert(bit_bucket_);
         sparta_assert(nullptr != iterable_object,
             "Can't collect iterable_object because it's a nullptr! How did we get here?");
         auto itr = iterable_object->begin();
         auto eitr = iterable_object->end();
         auto size = std::distance(itr, eitr);
-        //bit_bucket_->reset();
+        bit_bucket_->clear();
         for (uint32_t i = 0; i < size; ++i)
         {
-            //bit_bucket_->beginBin();
             positions_[i]->collect(*itr);
             ++itr;
         }
 
-        //auto bin_bytes = bit_bucket_->release();
-        //entry_point_->setContigContainerBinBytes(bin_bytes);
+        bit_bucket_->writeTo(entry_point_);
     }
 
     // Full iteration walk, checking validity of the iterator.  This
@@ -344,29 +357,25 @@ private:
     void collectImpl_(const IterableType * iterable_object, std::true_type)
     {
         // Unit tests may not have any entry point / bit bucket / simulation set up.
-        //if (!bit_bucket_) {
-        //    return;
-        //}
-        //TODO XXX
+        if (!entry_point_) {
+            return;
+        }
 
-        sparta_assert(entry_point_);
+        sparta_assert(bit_bucket_);
         sparta_assert(nullptr != iterable_object,
             "Can't collect iterable_object because it's a nullptr! How did we get here?");
         auto itr = iterable_object->begin();
-        //bit_bucket_->reset();
+        bit_bucket_->clear();
         for (uint32_t i = 0; i < expected_capacity_; ++i)
         {
-            sparta_assert(i <= UINT16_MAX);
             sparta_assert(itr != iterable_object->end());
             if (itr.isValid()) {
-                //bit_bucket_->beginBin(i);
                 positions_[i]->collect(*itr);
             }
             ++itr;
         }
 
-        //auto bin_bytes = bit_bucket_->release();
-        //entry_point_->setSparseContainerBinBytes(bin_bytes);
+        bit_bucket_->writeTo(entry_point_);
     }
 
     //! Virtual method called by CollectableTreeNode when collection
@@ -391,7 +400,7 @@ private:
     const size_type expected_capacity_ = 0;
     bool auto_collect_ = true;
     bool warn_on_size_ = true;
-    //std::unique_ptr<ContainerBitBucket<sparse_array_type>> bit_bucket_;
+    std::shared_ptr<BitBucketT> bit_bucket_;
 
     // For those folks that want a value to automatically
     // disappear in the future

@@ -13,6 +13,7 @@
 
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/simulation/Clock.hpp"
+#include "sparta/simulation/TreeNodePrivateAttorney.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/collection/CollectableTreeNode.hpp"
 #include "sparta/collection/Collector.hpp"
@@ -20,11 +21,6 @@
 #include "sparta/events/UniqueEvent.hpp"
 #include "sparta/events/GlobalOrderingPoint.hpp"
 #include "sparta/kernel/Scheduler.hpp"
-
-#include "sparta/pipeViewer/Outputter.hpp"
-#include "sparta/pipeViewer/ClockFileWriter.hpp"
-#include "sparta/pipeViewer/LocationFileWriter.hpp"
-#include "sparta/simulation/TreeNodePrivateAttorney.hpp"
 
 namespace sparta{
 namespace collection
@@ -328,7 +324,7 @@ namespace collection
                     CollectableTreeNode* c_node = dynamic_cast<CollectableTreeNode*>(starting_node);
                     if(c_node != nullptr) {
                         c_node->startCollecting(this);
-                        if(dynamic_cast<CollectableTreeNode*>(c_node->getParent()) == nullptr) {
+                        if(!c_node->isIterableCollectorBin()) {
                             registered_collectables_.insert(c_node);
                         }
                     }
@@ -358,9 +354,7 @@ namespace collection
                 if(c_node != nullptr)
                 {
                     c_node->stopCollecting(this);
-                    if(dynamic_cast<CollectableTreeNode*>(c_node->getParent()) == nullptr) {
-                        registered_collectables_.erase(c_node);
-                    }
+                    registered_collectables_.erase(c_node);
                 }
 
                 // Recursive step. Go through the children and turn them on as well.
@@ -452,12 +446,6 @@ namespace collection
         }
 
         void printMap() {
-            //std::cout << "Printing Map Not Supported" << std::endl;
-            // for(auto & p : clock_ctn_map_) {
-            //     std::cout << "\nClock            : " << p.first->getName()
-            //               << "\nAuto collectables: " << std::endl;
-            //     p.second->print();
-            // }
         }
 
         //! \return the pipeout file path
@@ -471,19 +459,6 @@ namespace collection
         }
 
     private:
-
-        /**
-         * \brief Write the clock file based off of a pointer to the root clock,
-         * that was established in the parameters of startCollection
-         */
-        void writeClockFile_()
-        {
-            // We only need the ClockFileWriter to exist during the writing of the clock file.
-            // there for it was created on the stack.
-            //std::cout << "Writing Pipeline Collection clock file. " << std::endl;
-            pipeViewer::ClockFileWriter clock_writer(filepath_);
-            clock_writer << (*root_clk_);
-        }
 
         //! Pointer to the root clock.  This clock is considered the
         //! hyper-clock or the clock with the hypercycle

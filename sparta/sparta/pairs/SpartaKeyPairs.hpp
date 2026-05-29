@@ -23,6 +23,7 @@
 #include <unordered_map>
 #include <functional>
 
+#include "sparta/collection/BitBucket.hpp"
 #include "sparta/pairs/PairFormatter.hpp"
 #include "sparta/pairs/RegisterPairsMacro.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
@@ -33,7 +34,6 @@
 #include "sparta/utils/ValidValue.hpp"
 
 #include "simdb/utils/Demangle.hpp"
-#include "simdb/utils/TinyStrings.hpp"
 
 namespace sparta {
 
@@ -76,191 +76,6 @@ namespace sparta {
 
     } // namespace pair_schema_detail
 
-    template<typename T>
-    struct always_false : std::false_type {};
-#if 0 // TODO XXX
-    class BitBucket {
-    public:
-        explicit BitBucket(simdb::TinyStrings<>* tiny_strings) : tiny_strings_(tiny_strings) {}
-        virtual ~BitBucket() = default;
-        virtual void dump(const char* data, size_t bytes) = 0;
-        virtual void reset() = 0;
-
-        template <typename T>
-        void dump(const T& fieldval) {
-            if constexpr(std::is_same_v<T, std::string> ||
-                         std::is_same_v<std::decay_t<T>, const char*>)
-            {
-                auto string_id = tiny_strings_->getStringID(fieldval);
-                dump(reinterpret_cast<const char*>(&string_id), sizeof(uint32_t));
-            }
-            else if constexpr(std::is_enum_v<T> &&
-                              utils::has_ostream_operator<MetaStruct::decay_t<T>>::value)
-            {
-                std::ostringstream oss;
-                oss << fieldval;
-                auto string_id = tiny_strings_->getStringID(oss.str());
-                dump(reinterpret_cast<const char*>(&string_id), sizeof(uint32_t));
-            }
-            else if constexpr(std::is_enum_v<T>)
-            {
-                using Underlying = std::underlying_type_t<T>;
-                static_assert(std::is_unsigned_v<Underlying>);
-                auto enum_int = static_cast<uint64_t>(fieldval);
-                dump(reinterpret_cast<const char*>(&enum_int), sizeof(uint64_t));
-            }
-            else if constexpr(std::is_trivial_v<T> && std::is_standard_layout_v<T>)
-            {
-                if constexpr(std::is_same_v<T, bool>)
-                {
-                    auto bool8 = static_cast<uint8_t>(fieldval);
-                    dump(reinterpret_cast<const char*>(&bool8), sizeof(uint8_t));
-                }
-                else
-                {
-                    dump(reinterpret_cast<const char*>(&fieldval), sizeof(T));
-                }
-            }
-            else if constexpr(MetaStruct::is_pod_convertible_v<T>)
-            {
-                using pod_t = MetaStruct::pod_convertible_t<T>;
-                const pod_t pod_val = static_cast<pod_t>(fieldval);
-                dump(reinterpret_cast<const char*>(&pod_val), sizeof(pod_t));
-            }
-            else
-            {
-                throw SpartaException("Cannot collect type '" ) << simdb::demangle_type<T>() << "'. "
-                    << "This is not a POD, string, enum or something that supports ostream operators.";
-            }
-        }
-
-        template <typename T>
-        void dumpField(const T& data) {
-            if constexpr(MetaStruct::is_stl<T>::value)
-            {
-                auto size = data.size();
-                sparta_assert(size <= UINT16_MAX);
-                dump((uint16_t)size);
-
-                auto itr = data.begin();
-                auto eitr = data.end();
-                while (itr != eitr) {
-                    dump(*itr++);
-                }
-            }
-            else if constexpr(MetaStruct::is_pair<T>::value)
-            {
-                dump(data.first);
-                dump(data.second);
-            }
-            else
-            {
-                dump(data);
-            }
-        }
-
-        simdb::TinyStrings<>* getTinyStrings() const
-        {
-            return tiny_strings_;
-        }
-
-    private:
-        simdb::TinyStrings<>* tiny_strings_ = nullptr;
-    };
-
-    // For use with Collectable (non-iterable)
-    class CollectableBitBucket : public BitBucket {
-    public:
-        explicit CollectableBitBucket(simdb::TinyStrings<>* tiny_strings)
-            : BitBucket(tiny_strings)
-        {}
-
-        void dump(const char* data, size_t bytes) override final {
-            bytes_.insert(bytes_.end(), data, data+bytes);
-        }
-
-        void reset() override final {
-            bytes_.clear();
-        }
-
-        std::vector<char> release() {
-            return std::move(bytes_);
-        }
-
-    private:
-        std::vector<char> bytes_;
-    };
-
-    template <bool Sparse>
-    class ContainerBitBucket;
-
-    // For use with IterableCollector (sparse)
-    template <> class ContainerBitBucket<true> : public BitBucket {
-    public:
-        ContainerBitBucket(simdb::TinyStrings<>* tiny_strings, size_t capacity)
-            : BitBucket(tiny_strings)
-            , capacity_(capacity)
-        {}
-
-        void beginBin(uint64_t bin_idx) {
-            sparta_assert(bin_idx < UINT16_MAX);
-            sparta_assert(bin_idx < capacity_);
-            active_bin_idx_ = bin_idx;
-        }
-
-        void dump(const char* data, size_t bytes) override final {
-            auto& dst = bin_bytes_[active_bin_idx_.getValue()];
-            dst.insert(dst.end(), data, data+bytes);
-        }
-
-        void reset() override final {
-            bin_bytes_.clear();
-            active_bin_idx_.clearValid();
-        }
-
-        std::map<uint16_t, std::vector<char>> release() {
-            auto m = std::move(bin_bytes_);
-            active_bin_idx_.clearValid();
-            return m;
-        }
-
-    private:
-        std::map<uint16_t, std::vector<char>> bin_bytes_;
-        utils::ValidValue<uint16_t> active_bin_idx_;
-        size_t capacity_ = 0;
-    };
-
-    // For use with IterableCollector (contiguous)
-    template <> class ContainerBitBucket<false> : public BitBucket {
-    public:
-        ContainerBitBucket(simdb::TinyStrings<>* tiny_strings, size_t capacity)
-            : BitBucket(tiny_strings)
-            , capacity_(capacity)
-        {}
-
-        void beginBin() {
-            sparta_assert(bin_bytes_.size() + 1 <= capacity_);
-            bin_bytes_.emplace_back();
-        }
-
-        void dump(const char* data, size_t bytes) override final {
-            auto& dst = bin_bytes_.back();
-            dst.insert(dst.end(), data, data+bytes);
-        }
-
-        void reset() override final {
-            bin_bytes_.clear();
-        }
-
-        std::vector<std::vector<char>> release() {
-            return std::move(bin_bytes_);
-        }
-
-    private:
-        std::vector<std::vector<char>> bin_bytes_;
-        size_t capacity_ = 0;
-    };
-#endif
     /**
      * \class PairCache
      * \brief A pair cache is updated by KeyPairs. The pair cache has
@@ -584,23 +399,13 @@ namespace sparta {
         }
 
         /**
-         * \brief Set the TinyStrings string-ID map owned by the ArgosCollector app.
-         * This is only used for pipeline collection, not PEvents.
+         * \brief Use the given bit bucket to dump collected data to SimDB
          */
-        //void setTinyStrings_(simdb::TinyStrings<>* tiny_strings) {
-        //    pair_definition_.setTinyStrings(tiny_strings);
-        //}
-        //TODO XXX
+        void setBitBucket_(std::shared_ptr<collection::BitBucket> bit_bucket) {
+            //TODO XXX
+            pair_definition_.setBitBucket(bit_bucket);
+        }
 
-        /**
-         * \brief Forward the BitBucket along to the Pair objects in this collector.
-         */
-        //void setBitBucket_(BitBucket* bit_bucket)
-        //{
-        //    pair_definition_.setBitBucket(bit_bucket);
-        //}
-        //TODO XXX
- 
         /**
          * \brief The method that you do your magic to capture the collection data.
          * \note This method is abstract
@@ -725,26 +530,15 @@ namespace sparta {
         }
 
         /**
-         * \brief Set the TinyStrings string-ID map owned by the ArgosCollector app.
-         * This is only used for pipeline collection, not PEvents.
+         * \brief Use the given bit bucket to dump collected data to SimDB
          */
-        //void setTinyStrings(simdb::TinyStrings<>* tiny_strings) {
-        //    tiny_strings_ = tiny_strings;
-        //}
-        //TODO XXX
-
-        /**
-         * \brief Set the BitBucket to receive notices of the pair's collected data.
-         */
-        //virtual void setBitBucket(BitBucket* bit_bucket) {
-        //    bit_bucket_ = bit_bucket;
-        //}
-        //TODO XXX
+        void setBitBucket(std::shared_ptr<collection::BitBucket> bit_bucket) {
+            bit_bucket_ = bit_bucket;
+        }
 
     private:
         std::string name_;
-        simdb::TinyStrings<>* tiny_strings_ = nullptr;
-        //BitBucket* bit_bucket_ = nullptr;
+        std::shared_ptr<collection::BitBucket> bit_bucket_;
 
     protected:
         /**
@@ -760,22 +554,14 @@ namespace sparta {
         }
 
         /**
-         * \brief Ask the ArgosCollector's TinyStrings for the given string's int ID.
-         */
-        uint32_t getStringID_(const std::string& s) {
-            return tiny_strings_->getStringID(s);
-        }
-
-        /**
          * \brief Let subclasses notify the BitBucket when pairs are collected.
          */
-        //BitBucket* getBitBucket_(bool expect = true) {
-        //    if(!bit_bucket_ && expect) {
-        //        throw SpartaException("BitBucket never set!");
-        //    }
-        //    return bit_bucket_;
-        //}
-        //TODO XXX
+        collection::BitBucket* getBitBucket_(bool expect = true) const {
+            if(!bit_bucket_ && expect) {
+                throw SpartaException("BitBucket never set!");
+            }
+            return bit_bucket_.get();
+        }
 
         //! Formatting options for this key's value.
         PrePostTags format_tags_;
@@ -910,10 +696,9 @@ namespace sparta {
         FuncType func_;
 
     private:
-        //void setBitBucket(BitBucket*) override final {
-        //    throw SpartaException("BitBucket is only for collection, not PEvents");
-        //}
-        //TODO XXX
+        void setBitBucket(std::shared_ptr<collection::BitBucket>) override final {
+            throw SpartaException("BitBucket is only for collection, not PEvents");
+        }
     };
 
     /**
@@ -2052,10 +1837,10 @@ namespace sparta {
         bool finalizeCollection_(
             PairCache *& c, const ValueType & tmp) {
 
-            //TODO XXX
-            //if(auto bb = this->getBitBucket_(false)) {
-            //    bb->dumpField(tmp);
-            //} else {
+            if(auto bb = this->getBitBucket_(false)) {
+                // TODO XXX
+                (void)bb;
+            } else {
                 if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
                     data_cpy_.reset(new ValueType(tmp));
                 }
@@ -2064,7 +1849,7 @@ namespace sparta {
                 }
                 updateValueInCache_(c, id_, tmp);
                 data_cpy_.reset(new ValueType(tmp));
-            //}
+            }
             return false;
         }
 
@@ -2382,6 +2167,8 @@ namespace sparta {
             leaf_argos_dtype_strings_.emplace_back(
                 pair_schema_detail::argosLeafDtypeString<
                     pair_schema_detail::KeyPairLeaf_t<Args...>>());
+            //new_pair->setIterableBinIndex()
+            //TODO XXX
             new_pair->setFormatter(std::ios::dec);
         }
 
@@ -2524,24 +2311,13 @@ namespace sparta {
         }
 
         /**
-         * \brief Set the TinyStrings string-ID map owned by the ArgosCollector app.
-         * This is only used for pipeline collection, not PEvents.
+         * \brief Use the given bit bucket to dump collected data to SimDB
          */
-        //void setTinyStrings(simdb::TinyStrings<>* tiny_strings) {
-        //    for(auto & pair : pairs_) {
-        //        pair->setTinyStrings(tiny_strings);
-        //    }
-        //}
-
-        /**
-         * \brief Forward the BitBucket along to the Pair objects in this collector.
-         */
-        //void setBitBucket(BitBucket* bit_bucket) {
-        //    for(auto & pair : pairs_) {
-        //        pair->setBitBucket(bit_bucket);
-        //    }
-        //}
-        //TODO XXX
+        void setBitBucket(std::shared_ptr<collection::BitBucket> bit_bucket) {
+            for(auto & pair : pairs_) {
+                pair->setBitBucket(bit_bucket);
+            }
+        }
 
     protected:
         PairList pairs_;

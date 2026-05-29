@@ -64,6 +64,13 @@ namespace collection
         {}
 
         /**
+         * \brief Check if this CollectableTreeNode is a Collectable inside an IterableCollector.
+         */
+        bool isIterableCollectorBin() const {
+            return dynamic_cast<const CollectableTreeNode*>(getParent()) != nullptr;
+        }
+
+        /**
          * \brief Collectable classes must be able to register themselves with
          * the ArgosCollector.
          */
@@ -77,6 +84,20 @@ namespace collection
         virtual void serializeStructSchema(simdb::DatabaseManager*, std::map<std::string, int>& schema_ids_by_dtype_name) = 0;
 
         /**
+         * \brief Encode the collected data type in a way Argos python deserializers
+         * will understand:
+         *
+         *   - "unsigned long"
+         *   - "bool"
+         *   - "string"
+         *   - "MMUState"
+         *   - "ExampleInst"
+         *   - "ExampleInst_sparse_capacity32"
+         *   - etc.
+         */
+        virtual std::string encodeCollectedType(bool human_readable = false) const = 0;
+
+        /**
          * \brief Method that tells this treenode that is now running
          *        collection.
          * \param collector The collector that is performing the collection
@@ -87,7 +108,9 @@ namespace collection
          */
         void startCollecting(Collector * collector) {
             is_collected_ = true;
-            setCollecting_(true, collector);
+            if (!isIterableCollectorBin()) {
+                setCollecting_(true, collector);
+            }
         }
 
         /**
@@ -96,7 +119,9 @@ namespace collection
          */
         void stopCollecting(Collector * collector)
         {
-            setCollecting_(false, collector);
+            if (!isIterableCollectorBin()) {
+                setCollecting_(false, collector);
+            }
             is_collected_ = false;
         }
 

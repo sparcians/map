@@ -213,8 +213,8 @@ namespace core_example
             SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("DID",   &MemoryAccessInfo::getInstUniqueID),
                                   SPARTA_ADDPAIR("valid", &MemoryAccessInfo::getPhyAddrIsReady),
                                   SPARTA_ADDPAIR("mmu",   &MemoryAccessInfo::getMMUState),
-                                  SPARTA_ADDPAIR("cache", &MemoryAccessInfo::getCacheState))
-                                  //SPARTA_FLATTEN(         &MemoryAccessInfo::getInstPtr))
+                                  SPARTA_ADDPAIR("cache", &MemoryAccessInfo::getCacheState),
+                                  SPARTA_FLATTEN(         &MemoryAccessInfo::getInstPtr))
         };
 
         // Forward declaration of the Pair Definition class is must as we are friending it.
@@ -328,8 +328,8 @@ namespace core_example
             }
             SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("DID",   &LoadStoreInstInfo::getInstUniqueID),
                                   SPARTA_ADDPAIR("rank",  &LoadStoreInstInfo::getPriority),
-                                  SPARTA_ADDPAIR("state", &LoadStoreInstInfo::getState))
-                                  //SPARTA_FLATTEN(         &LoadStoreInstInfo::getMemoryAccessInfoPtr))
+                                  SPARTA_ADDPAIR("state", &LoadStoreInstInfo::getState),
+                                  SPARTA_FLATTEN(         &LoadStoreInstInfo::getMemoryAccessInfoPtr))
         };
 
         void setTLB(SimpleTLB& tlb)

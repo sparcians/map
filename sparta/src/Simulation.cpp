@@ -831,7 +831,8 @@ void Simulation::finalizeFramework()
             std::function<void(TreeNode*)> visitCollectables;
             visitCollectables = [&](TreeNode* node)
             {
-                if (auto ctn = dynamic_cast<collection::CollectableTreeNode*>(node))
+                if (auto ctn = dynamic_cast<collection::CollectableTreeNode*>(node);
+                    ctn && !ctn->isIterableCollectorBin())
                 {
                     ctn->createSimDbEntryPoint(app);
                     ctn->serializeStructSchema(db_mgr, schema_ids_by_dtype_name);
