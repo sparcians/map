@@ -197,9 +197,7 @@ int main()
             {"name", "string"},
             {"value", u64},
             {"d", "double"},
-            {"unit", "string"}, // TODO cnyce: come back here when enums are
-                                // stored by their underlying int, not their
-                                // TinyStrings ID
+            {"unit", "SchemaInner::Unit"},
         };
         expectSchemasEqual(schema_collector.getFlattenedFieldNameAndDtypeSchema(), expected_nested);
     }

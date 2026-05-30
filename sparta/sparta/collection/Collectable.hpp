@@ -186,7 +186,7 @@ namespace sparta{
             //! Explicitly/manually collect a value for this collectable, ignoring
             //! what the Collectable is currently pointing to.
             void collect(const ValueType & val) {
-                if(SPARTA_EXPECT_FALSE(isCollected()))
+                if(SPARTA_EXPECT_FALSE(isCollected() && (bit_bucket_ || entry_point_)))
                 {
                     performCollection_(val);
                 }
@@ -374,18 +374,12 @@ namespace sparta{
         public:
             INHERIT_COMMON_INTERFACE
 
-        private:
             std::string encodeCollectedType(bool = false) const override final {
-                throw_();
-                return "";
-            }
-
-            void performCollection_(const ValueType &) override final {
-                throw_();
-            }
-
-            void throw_() const {
                 throw SpartaException("Uncollectable type encountered at ") << this->getLocation();
+            }
+
+        private:
+            void performCollection_(const ValueType &) override final {
             }
         };
 
@@ -594,6 +588,17 @@ namespace sparta{
 
                 // Let the base class own the bit bucket
                 CollectableCommon<DataT, collection_phase>::setBitBucket(bit_bucket);
+            }
+
+            //! \brief Strictly a Debug/Testing API.
+            //!  Never to be called in real modeler's code.
+            std::string dumpNameValuePairs(const DataT & val) {
+                collect_(val);
+                std::ostringstream ss;
+                for(const auto & pairs : this->getPEventLogVector()){
+                    ss << pairs.first << "(" << pairs.second << ") ";
+                }
+                return ss.str();
             }
 
         private:

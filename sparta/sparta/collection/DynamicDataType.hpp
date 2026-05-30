@@ -565,7 +565,7 @@ public:
 
     DynamicDataType(simdb::DatabaseManager* db_mgr,
                     simdb::argos::CollectionEntryPoint* entry_point,
-                    sparta::BitBucket* bit_bucket,
+                    sparta::collection::BitBucket* bit_bucket,
                     simdb::argos::ArgosCollector* argos_collector,
                     uint16_t cid)
         : db_mgr_(db_mgr)
@@ -579,7 +579,7 @@ public:
     {
     public:
         ParserBase(simdb::argos::CollectionEntryPoint* entry_point,
-                   sparta::BitBucket* bit_bucket,
+                   sparta::collection::BitBucket* bit_bucket,
                    simdb::argos::ArgosCollector* argos_collector,
                    uint16_t cid)
             : entry_point_(entry_point)
@@ -640,7 +640,7 @@ public:
             }
 
             std::vector<char> bytes;
-            simdb::StreamBuffer buf(bytes, argos_collector_->getTinyStrings());
+            simdb::argos::StreamBuffer buf(bytes, argos_collector_->getTinyStrings());
 
             sparta_assert(parsed_field_values_.size() == field_types_.size());
             for (size_t i = 0; i < field_types_.size(); ++i) {
@@ -665,18 +665,18 @@ public:
             if (entry_point_) {
                 entry_point_->setScalarValueBytes(bytes);
             } else if (bit_bucket_) {
-                bit_bucket_->dump(bytes.data(), bytes.size());
+                bit_bucket_->writeField(bytes.data(), bytes.size(), 0u);
             }
         }
 
-        void dumpBool_(simdb::StreamBuffer& buf, const std::string& bool_str) const
+        void dumpBool_(simdb::argos::StreamBuffer& buf, const std::string& bool_str) const
         {
             sparta_assert(bool_str == "true" || bool_str == "false");
             buf.append(bool_str == "true");
         }
 
         template <typename IntType>
-        void dumpInt_(simdb::StreamBuffer& buf, const std::string& int_str) const
+        void dumpInt_(simdb::argos::StreamBuffer& buf, const std::string& int_str) const
         {
             static_assert(std::is_integral_v<IntType> && std::is_scalar_v<IntType>);
 
@@ -686,7 +686,7 @@ public:
         }
 
         template <typename FloatType>
-        void dumpFlt_(simdb::StreamBuffer& buf, const std::string& flt_str) const
+        void dumpFlt_(simdb::argos::StreamBuffer& buf, const std::string& flt_str) const
         {
             static_assert(std::is_floating_point_v<FloatType> && std::is_scalar_v<FloatType>);
 
@@ -695,7 +695,7 @@ public:
             buf.append(flt_val);
         }
 
-        void dumpString_(simdb::StreamBuffer& buf, const std::string& s) const
+        void dumpString_(simdb::argos::StreamBuffer& buf, const std::string& s) const
         {
             auto sid = getTinyStringID_(s);
             buf.append(sid);
@@ -714,7 +714,7 @@ public:
         }
 
         simdb::argos::CollectionEntryPoint* const entry_point_;
-        sparta::BitBucket* const bit_bucket_;
+        sparta::collection::BitBucket* const bit_bucket_;
         simdb::argos::ArgosCollector* const argos_collector_;
         const uint16_t cid_;
 
@@ -853,7 +853,7 @@ public:
 
     static std::unique_ptr<ParserBase> createParser(
         simdb::argos::CollectionEntryPoint* const entry_point,
-        sparta::BitBucket* const bit_bucket,
+        sparta::collection::BitBucket* const bit_bucket,
         simdb::argos::ArgosCollector* argos_collector,
         const std::string& stringified_fields,
         const uint16_t cid)
@@ -895,7 +895,7 @@ public:
 private:
     simdb::DatabaseManager* const db_mgr_;
     simdb::argos::CollectionEntryPoint* const entry_point_;
-    sparta::BitBucket* const bit_bucket_;
+    sparta::collection::BitBucket* const bit_bucket_;
     simdb::argos::ArgosCollector *const argos_collector_;
     const uint16_t cid_;
     std::unique_ptr<ParserBase> parser_;
