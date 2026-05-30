@@ -56,10 +56,6 @@ namespace sparta {
         SchedulerAccess(const int val) : val(val) {}
         const int val;
     };
-
-    std::ostream& operator<<(std::ostream& os, const SchedulerAccess sched_access) {
-        return os << sched_access.val;
-    }
 }
 
 void testStatsOutput()

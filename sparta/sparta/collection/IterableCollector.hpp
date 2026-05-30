@@ -221,12 +221,11 @@ public:
         }
     }
 
-    //! Whether a scalar (Collectable) or container (IterableCollector),
-    //! serialize struct-like data structure hierarchies (field name + dtype)
+    //! Serialize struct-like data structure hierarchies (field name + dtype)
     //! to the database.
-    void serializeStructSchema(simdb::DatabaseManager* db_mgr, std::map<std::string, int>& schema_ids_by_dtype_name) override final
+    void serializeStructSchema(simdb::DatabaseManager* db_mgr, std::set<std::string>& serialized_types) override final
     {
-        positions_.at(0)->serializeStructSchema(db_mgr, schema_ids_by_dtype_name);
+        positions_.at(0)->serializeStructSchema(db_mgr, serialized_types);
     }
 
     std::string encodeCollectedType(bool human_readable = false) const override final

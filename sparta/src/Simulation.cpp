@@ -834,7 +834,7 @@ void Simulation::finalizeFramework()
             app->timestampWith([this](){return scheduler_->getCurrentTick();});
 
             std::set<const Clock*> collectable_clocks;
-            std::map<std::string, int> schema_ids_by_dtype_name;
+            std::set<std::string> serialized_types;
             std::function<void(TreeNode*)> visitCollectables;
             visitCollectables = [&](TreeNode* node)
             {
@@ -842,7 +842,7 @@ void Simulation::finalizeFramework()
                     ctn && !ctn->isIterableCollectorBin())
                 {
                     ctn->createSimDbEntryPoint(app);
-                    ctn->serializeStructSchema(db_mgr, schema_ids_by_dtype_name);
+                    ctn->serializeStructSchema(db_mgr, serialized_types);
                     collectable_clocks.insert(notNull(ctn->getClock()));
                 }
                 for (auto child : TreeNodePrivateAttorney::getAllChildren(node))

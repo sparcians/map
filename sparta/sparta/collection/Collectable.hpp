@@ -246,9 +246,8 @@ namespace sparta{
                 collectWithDuration(*collected_object_, duration);
             }
 
-            //! Virtual method called by
-            //! CollectableTreeNode/PipelineCollector when a user of the
-            //! TreeNode requests this object to be collected.
+            //! Virtual method called by CollectableTreeNode/PipelineCollector
+            //! when a user of the TreeNode requests this object to be collected.
             void collect() override final {
                 // If pointer has become nullified, close the record
                 if(nullptr == collected_object_) {
@@ -403,8 +402,8 @@ namespace sparta{
                 auto type = simdb::demangle_type<ValueType>();
                 if constexpr (std::is_enum_v<ValueType>) {
                     if (human_readable) {
-                        using Underlying = std::underlying_type_t<ValueType>;
-                        type += " (enum: " + simdb::demangle_type<Underlying>() + ")";
+                        using underlying_t = std::underlying_type_t<ValueType>;
+                        type += " (enum: " + simdb::demangle_type<underlying_t>() + ")";
                     }
                 }
                 return type;
@@ -421,7 +420,7 @@ namespace sparta{
             }
         };
 
-        //! Use case 2: We are collecting a scalar string type (std::string, const char*, or enum with operator<<).
+        //! Use case 2: We are collecting a scalar string type (std::string, const char*).
         //! These collected strings are written as uint32_t values after going through TinyStrings.
         template<typename DataT, SchedulingPhase collection_phase>
         class Collectable<DataT, collection_phase, std::enable_if_t<use_tiny_strings_v<MetaStruct::remove_any_pointer_t<DataT>>>>
@@ -430,12 +429,8 @@ namespace sparta{
         public:
             INHERIT_COMMON_INTERFACE
 
-            std::string encodeCollectedType(bool human_readable = false) const override final {
-                auto type = std::string("string");
-                if (human_readable && std::is_enum_v<ValueType>) {
-                    type += " (enum with ostream operator)";
-                }
-                return type;
+            std::string encodeCollectedType(bool = false) const override final {
+                return "string";
             }
 
         private:
@@ -506,8 +501,8 @@ namespace sparta{
                     warning += simdb::demangle_type<ValueType>() + "'. ";
                     warning += "This must be moved to PairDefinition.";
                     entry_point_->postWarning(warning);
+                    warn_ = false;
                 }
-                warn_ = false;
             }
 
             bool warn_ = true;
@@ -534,10 +529,10 @@ namespace sparta{
             //! struct-like data structure hierarchies (field name + dtype) to the database.
             void serializeStructSchema(
                 simdb::DatabaseManager* db_mgr,
-                std::map<std::string, int>& schema_ids_by_dtype_name) override final
+                std::set<std::string>& serialized_types) override final
             {
                 auto root_dtype = encodeCollectedType();
-                if(schema_ids_by_dtype_name.find(root_dtype) != schema_ids_by_dtype_name.end()) {
+                if(serialized_types.count(root_dtype)) {
                     return;
                 }
 
@@ -590,7 +585,7 @@ namespace sparta{
                                               empty,
                                               format_strings[i]));
                 }
-                schema_ids_by_dtype_name[root_dtype] = schema_id;
+                serialized_types.insert(root_dtype);
             }
 
             void setBitBucket(std::shared_ptr<BitBucket> bit_bucket) override final {

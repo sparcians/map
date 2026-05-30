@@ -50,9 +50,6 @@ namespace sparta {
 
         /**
          * \brief Map a collected leaf C++ type to Argos / SimpleDeserializer dtype strings.
-         *
-         * Returns one of: keys in `SimpleDeserializer.CONVERTERS`, `"string"`, or `"enum"`.
-         * Classification follows `KeyPairFromEntity::updateValueInCache_` where applicable.
          */
         template<typename Leaf>
         std::string argosLeafDtypeString() {
@@ -343,9 +340,6 @@ namespace sparta {
 
         /**
          * \brief Flattened (field name, Argos dtype string) schema in pair order.
-         *
-         * Field names match `getNameStrings()`; dtype strings align with
-         * `SimpleDeserializer.CONVERTERS` keys, `"string"`, or `"enum"`.
          */
         std::vector<std::pair<std::string, std::string>>
         getFlattenedFieldNameAndDtypeSchema() const {
@@ -1837,27 +1831,8 @@ namespace sparta {
             PairCache *& c, const ValueType & tmp) {
 
             if(auto bit_bucket = this->getBitBucket_(false)) {
-                using T = MetaStruct::decay_t<ValueType>;
-                if constexpr (std::is_trivial_v<T> && std::is_standard_layout_v<T> && !std::is_enum_v<T>) {
-                    bit_bucket->writeField(&tmp, sizeof(ValueType), id_);
-                } else if constexpr (std::is_enum_v<T>) {
-                    using underlying_t = std::underlying_type_t<T>;
-                    auto underlying_val = static_cast<underlying_t>(tmp);
-                    bit_bucket->writeField(&underlying_val, sizeof(underlying_t), id_);
-                } else if constexpr (std::is_same_v<T, std::string> || std::is_same_v<std::decay_t<T>, const char*>) {
-                    auto resources = bit_bucket->getArgosResources();
-                    auto string_id = resources->getTinyStringsResource()->getStringID(tmp);
-                    bit_bucket->writeField(&string_id, sizeof(uint32_t), id_);
-                } else if constexpr (simdb::type_traits::is_pod_convertible_v<T> && !std::is_enum_v<T> &&
-                                    (!std::is_trivial_v<T> || !std::is_standard_layout_v<T>)) {
-                    using converted_t = simdb::type_traits::pod_convertible_t<T>();
-                    static_assert(std::is_trivial_v<converted_t> && std::is_standard_layout_v<converted_t>);
-                    auto converted_val = static_cast<converted_t>(tmp);
-                    bit_bucket->writeField(&converted_val, sizeof(converted_t), id_);
-                } else {
-                    static_assert(utils::has_ostream_operator<T>::value);
-                    throw SpartaException("TODO XXX: Support DynamicDataType");
-                }
+                auto success = bit_bucket->writeField(tmp, id_);
+                sparta_assert(success);
             } else {
                 if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
                     data_cpy_.reset(new ValueType(tmp));
@@ -1874,7 +1849,8 @@ namespace sparta {
     public:
         KeyPairFromEntity(uint32_t i, const std::string & name, Args &&... args) :
             BasePairFromEntity<EntityType>(name, i),
-            parameterPack_(std::forward<Args>(args)...) {
+            parameterPack_(std::forward<Args>(args)...),
+            data_cpy_(nullptr) {
             static_assert(MetaStruct::parameter_pack_length<Args...>::value,
                 "There must be at least one Method Pointer which is passed from addPair API");
             }
@@ -1955,7 +1931,7 @@ namespace sparta {
         template <typename Ret, typename EntityT, typename T>
         inline MetaStruct::enable_if_t<!std::is_same<EntityT, NoEntity>::value, Ret>
         populateFromEntityHelper_(PairCache * cache, BoundPairType * pair, const T & owner) {
-            bool val = pair->populateFromEntity(cache, owner);
+            bool val = reinterpret_cast<BoundPairType *>(pair)->populateFromEntity(cache, owner);
             return val;
         }
 

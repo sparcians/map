@@ -902,7 +902,3 @@ private:
 };
 
 } // namespace sparta::collection::detail
-
-namespace simdb::argos::detail {
-    //template <> struct is_dynamic_type<sparta::collection::detail::DynamicDataType> : std::true_type {};
-}
