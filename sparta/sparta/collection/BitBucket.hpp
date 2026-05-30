@@ -50,14 +50,40 @@ public:
 
     void clear() override final {
         buffer_.clear();
-        num_fields_written_ = 0;
+        if (!order_locked_) {
+            // The first non-empty pass between clear() calls defines the
+            // canonical field_id order for the lifetime of this bucket.
+            if (!field_order_.empty()) {
+                order_locked_ = true;
+            }
+        } else {
+            // All-or-nothing: a pass must write every known field. If the
+            // cursor isn't back at the start, a field cycle was incomplete.
+            sparta_assert(expected_pos_ == 0,
+                          "BitBucket cleared mid-pass: a field cycle was incomplete "
+                          "(all-or-nothing violated)");
+            expected_pos_ = 0;
+        }
     }
 
     void writeField(const void* data, uint32_t bytes, uint32_t field_id) override final {
-        sparta_assert(field_id == num_fields_written_);
         auto src = static_cast<const char*>(data);
+
+        if (SPARTA_EXPECT_FALSE(!order_locked_)) {
+            // Learning phase: record arrival order verbatim.
+            field_order_.push_back(field_id);
+        } else {
+            // Verification phase (hot path): order must match exactly.
+            sparta_assert(expected_pos_ < field_order_.size() &&
+                          field_id == field_order_[expected_pos_],
+                          "BitBucket field order changed: expected field_id "
+                          << field_order_[expected_pos_] << " but got " << field_id);
+            if (++expected_pos_ == field_order_.size()) {
+                expected_pos_ = 0;
+            }
+        }
+
         buffer_.insert(buffer_.end(), src, src + bytes);
-        ++num_fields_written_;
     }
 
     void writeTo(simdb::argos::CollectionEntryPoint* entry_point) override final {
@@ -70,13 +96,11 @@ public:
         clear();
     }
 
-    uint32_t numFieldsWritten() const {
-        return num_fields_written_;
-    }
-
 private:
     std::vector<char> buffer_;
-    uint32_t num_fields_written_ = 0;
+    std::vector<uint32_t> field_order_;
+    bool order_locked_ = false;
+    size_t expected_pos_ = 0;
 };
 
 template <bool Sparse>

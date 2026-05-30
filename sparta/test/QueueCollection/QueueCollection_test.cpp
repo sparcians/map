@@ -26,8 +26,6 @@ std::ostream& operator<<(std::ostream& os, const e_Color color)
 template <typename T>
 class ImplicitPOD
 {
-    static_assert(MetaStruct::is_pod_convertible_v<T>);
-
 public:
     explicit ImplicitPOD(const T val) : val_(val) {}
     operator T() const { return val_; }

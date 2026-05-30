@@ -22,6 +22,11 @@
 #include "sparta/events/GlobalOrderingPoint.hpp"
 #include "sparta/kernel/Scheduler.hpp"
 
+namespace sparta::app{
+    class Simulation;
+    extern void onPipelineCollectionShutdown(Simulation* sim);
+}
+
 namespace sparta{
 namespace collection
 {
@@ -166,6 +171,16 @@ namespace collection
 
         // Registered collectables
         std::set<CollectableTreeNode*> registered_collectables_;
+
+        // Simulation from the root node. This is used to ensure the SimDB
+        // pipeline is flushed on simulator exceptions, any newly-seen enum
+        // values get stringified into the DB, ensure newly-seen std::string
+        // IDs in the TinyStrings table get written to the DB, etc.
+        //
+        // Without proper teardown, the database blobs could be unparseable
+        // for the collected data that just occurred prior to the exception.
+        // Either that or there is just missing data that should be there.
+        app::Simulation* simulation_ = nullptr;
 
     public:
 
@@ -378,6 +393,7 @@ namespace collection
                 col->stopCollecting(this);
             }
             registered_collectables_.clear();
+            onPipelineCollectionShutdown(simulation_);
         }
 
         /**

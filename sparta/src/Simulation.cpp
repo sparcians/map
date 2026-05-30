@@ -149,6 +149,13 @@ private:
 
 #endif
 
+void onPipelineCollectionShutdown(Simulation* sim)
+{
+    if(sim) {
+        sim->postProcessingLastCall();
+    }
+}
+
 /*!
  * \brief YAML parser class to turn simulation control definition files:
  *
