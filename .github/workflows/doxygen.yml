@@ -47,6 +47,7 @@ jobs:
         run: |
           sudo gem install asciidoctor
           sudo gem install asciidoctor-diagram
+          sudo gem install asciidoctor-multipage
 
       # ── 5. Download PlantUML jar ──────────────────────────────────────────────
       - name: Download PlantUML
@@ -60,20 +61,7 @@ jobs:
       - name: Build Sparta book
         working-directory: sparta/doc/sparta_book
         run: |
-          mkdir -p _site
-          asciidoctor \
-            --require asciidoctor-diagram \
-            -a data-uri \
-            -a toc=left \
-            -a toclevels=3 \
-            -a source-highlighter=rouge \
-            -a rouge-style=github \
-            -a imagesdir=images \
-            -D _site \
-            sparta_book.adoc
-          if [ -d images ]; then
-            cp -r images _site/images
-          fi
+          make html
 
       # ── 7. Merge outputs: Doxygen at root, book in sparta_book/ subdir ────────
       - name: Merge into single deploy directory
@@ -82,7 +70,7 @@ jobs:
           # Doxygen output goes to the root
           cp -r sparta/doc/html/. _deploy/
           # Book output goes into the sparta_book/ subdirectory
-          cp -r sparta/doc/sparta_book/_site/. _deploy/sparta_book/
+          cp -r sparta/doc/sparta_book/html/. _deploy/sparta_book/
 
       # ── 8. Deploy to gh-pages branch ─────────────────────────────────────────
       - name: Deploy to GitHub Pages
