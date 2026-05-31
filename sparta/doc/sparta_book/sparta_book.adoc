@@ -1,5 +1,5 @@
 = The Sparta Modeling Framework
-Knute Lingaard, Colby Nyce, Kathlene Magnus
+Knute Lingaard, Nick Haw, Dave Murrell, Colby Nyce, and Kathlene Magnus
 v1.0, 2026-05-17
 :doctype: book
 //:pdf-theme: sparta-theme.yml
@@ -15,6 +15,7 @@ image::spartan.png[Cover, align=center]
 
 [preface]
 = Preface
+
 Sparta is a toolkit for modeling/simulation engineers to build CPU,
 GPU, and platform simulations. Sparta is a framework much like STL or
 Boost in that it doesn't do anything on its own, but rather provides
@@ -46,6 +47,8 @@ include::chapters/events_and_scheduling.adoc[]
 include::chapters/ports_and_communication.adoc[]
 
 include::chapters/parameters.adoc[]
+
+include::chapters/resources.adoc[]
 
 include::chapters/statistics_and_reporting.adoc[]
 

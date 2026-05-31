@@ -1,4 +1,12 @@
 :url-composite: https://en.wikipedia.org/wiki/Composite_pattern
+:url-systemc: https://systemc.org
+:url-gem5: https://www.gem5.org
+:url-stf: https://github.com/sparcians/stf_lib
+:url-olympia: https://github.com/riscv-software-src/riscv-perf-model
+:url-coyote: https://upcommons.upc.edu/handle/2117/350176
+:url-map: https://github.com/sparcians/map
+:url-sparcians: https://github.com/sparcians
+:url-riscv-sig: https://wiki.riscv.org/display/TECH/Performance+Modeling
 :url-dag: https://sparcians.github.io/map/classsparta_1_1DAG.html
 :url-doxygen-cmdlinesim: https://sparcians.github.io/map/classsparta_1_1app_1_1CommandLineSimulator.html
 :url-doxygen-parameterset: https://sparcians.github.io/map/classsparta_1_1ParameterSet.html
@@ -26,10 +34,8 @@
 :url-startupevent: https://sparcians.github.io/map/classsparta_1_1StartupEvent.html
 :url-uniqueevent: https://sparcians.github.io/map/classsparta_1_1UniqueEvent.html
 :url-pegasus: https://github.com/sparcians/map/tree/master/pegasus
-:url-olympia: https://github.com/riscv-software-src/riscv-perf-model
 :url-actiongroup: https://sparcians.github.io/map/classsparta_1_1ActionGroup.html
 :url-pegasus: https://github.com/sparcians/pegasus
-:url-olympia: https://github.com/riscv-software-src/riscv-perf-model
 :url-registerset: https://sparcians.github.io/map/classsparta_1_1RegisterSet.html
 :url-register: https://sparcians.github.io/map/classsparta_1_1Register.html
 :url-registerbase: https://sparcians.github.io/map/classsparta_1_1RegisterBase.html
@@ -41,4 +47,14 @@
 :url-persistentcheckpointer: https://sparcians.github.io/map/classsparta_1_1serialization_1_1checkpoint_1_1PersistentFastCheckpointer.html
 :url-checkpointer: https://sparcians.github.io/map/classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html
 :url-checkpoint-format: https://sparcians.github.io/map/checkpoint_format.html
+:url-buffer: https://sparcians.github.io/map/classsparta_1_1Buffer.html
+:url-queue: https://sparcians.github.io/map/classsparta_1_1Queue.html
+:url-pipe: https://sparcians.github.io/map/classsparta_1_1Pipe.html
+:url-pipeline: https://sparcians.github.io/map/classsparta_1_1Pipeline.html
+:url-bus: https://sparcians.github.io/map/classsparta_1_1Bus.html
+:url-array: https://sparcians.github.io/map/classsparta_1_1Array.html
+:url-circularbuffer: https://sparcians.github.io/map/classsparta_1_1CircularBuffer.html
+:url-priorityqueue: https://sparcians.github.io/map/classsparta_1_1PriorityQueue.html
+:url-pipelinecollector: https://sparcians.github.io/map/classsparta_1_1collection_1_1PipelineCollector.html
+:cpp: pass:[C++ (C++17/23)]
 :data-uri:

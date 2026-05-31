@@ -1,19 +1,5 @@
 = Ports and Communication
-:url-dataport: https://sparcians.github.io/map/classsparta_1_1DataInPort.html
-:url-signalport: https://sparcians.github.io/map/classsparta_1_1SignalInPort.html
-:url-syncport: https://sparcians.github.io/map/classsparta_1_1SyncInPort.html
-:url-portset: https://sparcians.github.io/map/classsparta_1_1PortSet.html
-:url-port: https://sparcians.github.io/map/classsparta_1_1Port.html
-:url-event: https://sparcians.github.io/map/classsparta_1_1Event.html
-:url-uniqueevent: https://sparcians.github.io/map/classsparta_1_1UniqueEvent.html
-:url-validvalue: https://sparcians.github.io/map/classsparta_1_1utils_1_1ValidValue.html
-:url-clockmanager: https://sparcians.github.io/map/classsparta_1_1ClockManager.html
-:url-clock: https://sparcians.github.io/map/classsparta_1_1Clock.html
-:url-scheduler: https://sparcians.github.io/map/classsparta_1_1Scheduler.html
-:url-schedulingphase: https://sparcians.github.io/map/namespacesparta.html#aeec80d237ace9f07634c3d24c9aed9a0
-:url-dag: https://sparcians.github.io/map/classsparta_1_1DAG.html
-:url-startupevent: https://sparcians.github.io/map/classsparta_1_1StartupEvent.html
-:url-payloadevent: https://sparcians.github.io/map/classsparta_1_1PayloadEvent.html
+include::attributes.adoc[]
 
 Sparta provides a rich set of classes for communication and scheduling
 between modeling resources.  This chapter covers the communication
@@ -36,6 +22,7 @@ means the framework can enforce timing and ordering rules across the
 model without any per-unit coordination.
 
 == Port Types
+include::attributes.adoc[]
 
 Sparta provides three families of ports:
 
@@ -57,6 +44,8 @@ Sparta provides three families of ports:
 | Transfer typed data between units on *different clock domains*.
   Data sent on the out port is held until the rising edge of the
   receiver's clock.
+| `sparta::Bus`
+| Named bundle of ports bound as a unit
 |===
 
 Every port has a direction (In or Out) and a delay measured in clock
@@ -206,6 +195,7 @@ See <<clocks_and_clock_domains>> for how to set up multiple clock
 domains in a simulation.
 
 == Declaring Ports as Member Variables
+include::attributes.adoc[]
 
 All ports must be declared as member variables of the unit, not as
 local variables as the framework requires the Ports to be persistent
@@ -235,6 +225,7 @@ will appear under `top.<unit>.ports.<port_name>` and the `--show-tree`
 output will show their bindings.
 
 == Handling Multiple Inputs with UniqueEvent
+include::attributes.adoc[]
 
 A common pattern in pipeline modeling is a unit that must wait for
 data from *two or more* sources before doing work.  For example, an
@@ -298,6 +289,7 @@ modeling and appears throughout Olympia.  Get comfortable with it
 early.
 
 == Binding Ports
+include::attributes.adoc[]
 
 Ports are bound together in the simulator's `bindTree_()` method.
 The `sparta::bind()` free function takes two ports and connects them:
@@ -335,6 +327,7 @@ If `--show-tree` shows a port with no `[bound to]` annotation after
 simulation bugs where data silently goes nowhere.
 
 == Clocks and Clock Domains [[clocks_and_clock_domains]]
+include::attributes.adoc[]
 
 In Sparta, a {url-clock}[`sparta::Clock`] is not an event-generating
 object that fires every cycle.  It is simply a time-conversion utility
@@ -397,7 +390,71 @@ This is the correct way to timestamp log messages and statistics.
 Do not use the scheduler's tick count directly in model code -- always
 convert through the unit's clock.
 
+== sparta::Bus
+include::attributes.adoc[]
+
+{url-bus}[`sparta::Bus`] groups a set of related ports into a named
+bundle that can be bound as a unit.  A bus is useful when two units
+always communicate over the same fixed set of ports -- rather than
+binding each port individually in `bindTree_()`, the entire bus can
+be bound with a single call.
+
+=== Defining a Bus
+
+A bus is defined by specifying pairs of `InPort`/`OutPort` with
+matching names and data types:
+
+[source,cpp]
+----
+#include "sparta/ports/Bus.hpp"
+
+// Define a bus for fetch-to-decode communication
+class FetchDecodeBus : public sparta::Bus
+{
+public:
+    FetchDecodeBus(sparta::TreeNode * node) :
+        sparta::Bus(node, "fetch_decode_bus")
+    {
+        addPort_(&out_insts_,  true  /*is output*/);
+        addPort_(&in_credits_, false /*is input*/);
+    }
+
+    sparta::DataOutPort<InstGroup>  out_insts_    {&unit_port_set_, "out_insts"};
+    sparta::DataInPort<uint32_t>    in_credits_   {&unit_port_set_, "in_credits", 1};
+};
+----
+
+=== Binding a Bus
+
+Two bus instances are bound together in `bindTree_()`.  The binding
+rules require matching port names, matching data types, and opposite
+polarity (one bus's outputs connect to the other's inputs):
+
+[source,cpp]
+----
+void MySimulator::bindTree_()
+{
+    sparta::bind(
+        getRoot()->getChildAs<sparta::Bus>(
+            "top.cpu.core0.fetch.ports.fetch_decode_bus"),
+        getRoot()->getChildAs<sparta::Bus>(
+            "top.cpu.core0.decode.ports.fetch_decode_bus"));
+}
+----
+
+A bus bind is equivalent to binding each port pair individually.
+The advantage is that adding a new signal to the interface only
+requires updating the bus definition -- the `bindTree_()` call
+remains unchanged.
+
+// AUTHOR NOTE: Please verify the Bus API -- specifically whether
+// addPort_() is the correct method name and whether Bus derives from
+// a PortSet or has its own binding mechanism.  The Bus documentation
+// in the Doxygen reference is sparse.  Olympia or the CoreExample
+// may have a concrete Bus usage to reference.
+
 == Summary
+include::attributes.adoc[]
 
 The port system is the foundation of all inter-unit communication in
 Sparta.  The key principles to take away from this chapter:
@@ -412,6 +469,8 @@ Sparta.  The key principles to take away from this chapter:
   units that wait for multiple inputs before doing work.
 - `sparta::Clock` converts scheduler ticks to cycle counts -- always
   use it for time-related queries in model code.
+- `sparta::Bus` is a collection of Ports that can be used to represent a bus
+  of communication between two units
 
 The next chapter covers the other half of the communication system:
 events and scheduling.

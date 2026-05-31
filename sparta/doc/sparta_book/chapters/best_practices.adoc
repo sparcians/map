@@ -572,6 +572,1063 @@ A `StartupEvent` is the correct mechanism -- do not send initial
 credits from the receiver's constructor, as ports are not yet bound
 at that point.
 
+Claude finished the response
+Welcome, Knute! I’m Claude.
+
+Bring me anything—a tough problem, a half-formed idea, something you need to write. We’ll figure it out together.
+
+Where do you want to start?
+
+
+
+
+
+
+
+
+The ++ in AsciiDoc is interpreted as formatting markup. Escape it with a backslash or use the passthrough macro:
+asciidoc
+
+C++ (C++11 or later)
+
+Should be written as either:
+asciidoc
+
+{cpp} ({cpp}11 or later)
+
+Where :cpp: pass:[C++] is defined in attributes.adoc, or inline:
+asciidoc
+
+pass:[C++] (pass:[C++]11 or later)
+
+The cleanest solution is to add to attributes.adoc:
+asciidoc
+
+:cpp: pass:[C++]
+
+Then write throughout the book:
+asciidoc
+
+{cpp} ({cpp}11 or later)
+
+Want me to add :cpp: to attributes.adoc?
+
+add to best practices when to use precedence and when to not use.  Need to add these pictures:
+2:00 PM
+
+These two slides are exactly what the auto-precedence section needs — they illustrate the concept visually in a way that prose alone can't. Let me add the section to best practices with PlantUML diagrams recreating the key ideas from the slides.
+Ran 3 commands, read a file
+
+Section added. Here's what's in it:
+
+When Precedence Is Not Needed — PlantUML diagram showing non-zero cycle ports delivering in PortUpdate, UniqueEvent firing in Tick, with annotated code showing the 1-cycle delay and the comment explaining no registerConsumingEvent is needed
+
+When Precedence Is Needed — PlantUML diagram showing 0-cycle ports promoted to Tick, both delivery and UniqueEvent in the same phase, with annotated code for both registerConsumingEvent on the consumer and registerProducingEvent on the producer
+
+Decision guide table — five situations mapped to yes/no with the reason, including cross-references to the mux section and the DAG section
+
+Key takeaways — three points: default requires nothing, 0-cycle ports are the exception, over-specifying is harmless but unnecessary
+
+The PlantUML diagrams capture the essential structure from the slides — the producer/callback/UniqueEvent flow with phase labels. They're simplified compared to the originals but convey the same information in a format that renders in the book.
+Best practices
+ADOC
+
+
+Claude is AI and can make mistakes. Please double-check responses.
+Best practices · ADOC
+= Best Practices
+:url-uniqueevent: https://sparcians.github.io/map/classsparta_1_1UniqueEvent.html
+:url-schedulingphase: https://sparcians.github.io/map/namespacesparta.html#aeec80d237ace9f07634c3d24c9aed9a0
+:url-dag: https://sparcians.github.io/map/classsparta_1_1DAG.html
+:url-validvalue: https://sparcians.github.io/map/classsparta_1_1utils_1_1ValidValue.html
+
+This chapter collects modeling patterns and practices that experienced
+Sparta engineers apply consistently.  Some are about correctness --
+patterns that prevent subtle bugs.  Others are about clarity -- making
+the model easier to understand and debug.  All of them are illustrated
+with concrete code.
+
+== Modeling a Mux: The Ordering Problem
+
+The multiplexer (mux) is the canonical example of the ordering problem
+in cycle-based simulation -- and the clearest illustration of why
+Sparta's event and phase system exists.
+
+=== The Problem
+
+Consider a mux with three data inputs (`InputA`, `InputB`, `InputC`),
+a select signal, and a result output.
+
+image::mux_picture.png[align="center"]
+
+The constraint is:
+
+- You cannot compute `Result` until `Select` has been called
+- You cannot call `Select` until all inputs (`InputA`, `InputB`,
+  `InputC`) are available
+
+In a 0-cycle turnaround model (where all inputs arrive in the same
+cycle and the result must also be produced in the same cycle), this
+creates an ordering problem.  If the three input callbacks and the
+select callback can fire in any order, the model may compute the
+result before all inputs have arrived.
+
+SystemC solves this with delta cycles -- borrowed from VHDL -- but
+delta cycles are limited to a finite upper bound and do not scale
+cleanly to complex topologies.
+
+Sparta solves it with explicit event ordering via a Directed Acyclic
+Graph (DAG) and scheduling phases.  The solution is deterministic, has
+no iteration limit, and is expressed directly in the model code.
+
+=== The Solution
+
+The key insight is that `Select` is an *event*, not a port callback.
+The three input port callbacks each store their value and schedule
+the same `UniqueEvent` (`evSelect`).  Because `evSelect` is a
+`UniqueEvent`, it fires exactly once per cycle regardless of how many
+inputs arrive.  The ordering is enforced with
+`registerConsumingEvent` and `registerProducingEvent`, which tell the
+DAG that `evSelect` must fire *after* all three input ports have
+delivered their data, and that `pResult` is driven *only after*
+`evSelect` fires.
+
+==== Components
+
+[source,cpp]
+----
+// Three 0-cycle data input ports
+sparta::DataInPort<Value> pInputA_{&unit_port_set_, "pInputA", 0};
+sparta::DataInPort<Value> pInputB_{&unit_port_set_, "pInputB", 0};
+sparta::DataInPort<Value> pInputC_{&unit_port_set_, "pInputC", 0};
+
+// The select event -- UniqueEvent fires only once per cycle
+sparta::UniqueEvent<> evSelect_{&unit_event_set_, "evSelect",
+                                 CREATE_SPARTA_HANDLER(MuxUnit, select_)};
+
+// The result output port
+sparta::DataOutPort<Value> pResult_{&unit_port_set_, "pResult"};
+----
+
+==== Enforcing the Ordering
+
+In the unit constructor, register the consuming and producing event
+relationships with the ports:
+
+[source,cpp]
+----
+MuxUnit::MuxUnit(sparta::TreeNode * node,
+                 const MuxParameters * params) :
+    sparta::Unit(node)
+{
+    // Register callbacks
+    pInputA_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER_WITH_DATA(MuxUnit, inputA_, Value));
+    pInputB_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER_WITH_DATA(MuxUnit, inputB_, Value));
+    pInputC_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER_WITH_DATA(MuxUnit, inputC_, Value));
+
+    // Tell the DAG: evSelect_ must fire AFTER all three input ports
+    // have delivered their data.  This establishes a happens-before
+    // relationship: port delivery -> evSelect_.
+    pInputA_.registerConsumingEvent(evSelect_);
+    pInputB_.registerConsumingEvent(evSelect_);
+    pInputC_.registerConsumingEvent(evSelect_);
+
+    // Tell the DAG: pResult_ is driven only AFTER evSelect_ fires.
+    // This establishes: evSelect_ -> pResult_ send.
+    pResult_.registerProducingEvent(evSelect_);
+}
+----
+
+`registerConsumingEvent(ev)` tells the DAG that the event `ev` must
+fire after this port's callback fires within the same cycle.
+
+`registerProducingEvent(ev)` tells the DAG that data sent on this
+port is driven by event `ev` -- any consumer of `pResult_` will
+be guaranteed to receive data only after `evSelect_` has run.
+
+==== The Callbacks
+
+[source,cpp]
+----
+// The input callbacks -- store the value and schedule the selector
+void MuxUnit::inputA_(const Value & val) {
+    a_value_ = val;
+    evSelect_.schedule();  // schedule evSelect -- fires only once
+}
+
+void MuxUnit::inputB_(const Value & val) {
+    b_value_ = val;
+    evSelect_.schedule();  // already scheduled? UniqueEvent ignores it
+}
+
+void MuxUnit::inputC_(const Value & val) {
+    c_value_ = val;
+    evSelect_.schedule();  // same
+}
+
+// The selector -- called once per cycle, after all inputs have arrived
+void MuxUnit::select_() {
+    result_ = chooseWinner_();
+    pResult_.send(result_);  // can be 0 or more cycles -- legal!
+}
+----
+
+The three input callbacks each schedule `evSelect_`.  Because
+`evSelect_` is a `UniqueEvent`, it fires exactly once regardless of
+whether one, two, or three inputs arrived this cycle.  When
+`select_()` runs, all three values are guaranteed to have been
+stored because the DAG enforces that all three port callbacks
+complete before `evSelect_` fires.
+
+==== Why This Works
+
+The ordering guarantee comes from two cooperating mechanisms:
+
+1. **`registerConsumingEvent`** adds a DAG edge: port callback →
+   `evSelect_`.  The scheduler will not fire `evSelect_` until all
+   three port forward events (one per input port) have completed.
+
+2. **`UniqueEvent`** ensures that `select_()` fires exactly once even
+   though three different callbacks each call `evSelect_.schedule()`.
+
+Together they give a clean, deterministic solution: all inputs settle
+first, then the select logic runs exactly once, then the result is
+sent.  There is no iteration, no delta cycle limit, and no risk of
+the result being computed before all inputs have arrived.
+
+=== Contrast with the Broken Pattern
+
+To understand why the ordering registration matters, consider what
+happens without it:
+
+[source,cpp]
+----
+// BROKEN -- do not do this
+void MuxUnit::inputA_(const Value & val) {
+    a_value_ = val;
+    result_ = chooseWinner_();  // InputB and InputC may not have arrived yet!
+    pResult_.send(result_);     // Result may be wrong
+}
+----
+
+This processes the result in the port callback directly.  If `InputA`
+'s callback fires before `InputB` and `InputC`, the result is computed
+with stale or uninitialized values for B and C.  The bug is
+non-deterministic -- it may produce correct results in some runs and
+wrong results in others depending on the order the scheduler happens
+to fire the port callbacks.
+
+Even this slightly better version is broken:
+
+[source,cpp]
+----
+// STILL BROKEN -- do not do this
+void MuxUnit::inputA_(const Value & val) {
+    a_value_ = val;
+    evSelect_.schedule();  // schedule the event...
+}
+// ... same for B and C ...
+
+void MuxUnit::select_() {
+    result_ = chooseWinner_();
+    pResult_.send(result_);
+}
+// But WITHOUT registerConsumingEvent -- no DAG edge established
+----
+
+Without the `registerConsumingEvent` calls, the DAG has no edge
+between the port callbacks and `evSelect_`.  The scheduler may fire
+`evSelect_` before all three input callbacks have run, again
+producing wrong results.
+
+The `registerConsumingEvent` + `registerProducingEvent` calls are not
+optional.  These functions tell Sparta about the data dependencies the
+model has, so the framework can enforce them.
+
+=== Complete MuxUnit Example
+
+Here is the full, correct implementation:
+
+[source,cpp]
+----
+// MuxUnit.hpp
+#pragma once
+#include "sparta/simulation/Unit.hpp"
+#include "sparta/ports/DataPort.hpp"
+#include "sparta/events/UniqueEvent.hpp"
+#include "sparta/utils/ValidValue.hpp"
+
+// Value type for the mux -- replace with actual data type
+using Value = uint32_t;
+
+class MuxUnit : public sparta::Unit
+{
+public:
+    class MuxParameters : public sparta::ParameterSet
+    {
+    public:
+        MuxParameters(sparta::TreeNode * n) : sparta::ParameterSet(n) {}
+        PARAMETER(std::string, select_policy, "priority",
+                  "Mux select policy: priority, round_robin")
+    };
+
+    static const char * name;
+    MuxUnit(sparta::TreeNode * node, const MuxParameters * params);
+
+private:
+    // Input ports (0-cycle -- all inputs arrive in the same cycle)
+    sparta::DataInPort<Value> pInputA_{&unit_port_set_, "pInputA", 0};
+    sparta::DataInPort<Value> pInputB_{&unit_port_set_, "pInputB", 0};
+    sparta::DataInPort<Value> pInputC_{&unit_port_set_, "pInputC", 0};
+
+    // The select event
+    sparta::UniqueEvent<> evSelect_{&unit_event_set_, "evSelect",
+                                    CREATE_SPARTA_HANDLER(MuxUnit, select_)};
+
+    // Output port
+    sparta::DataOutPort<Value> pResult_{&unit_port_set_, "pResult"};
+
+    // Input storage
+    sparta::utils::ValidValue<Value> a_value_;
+    sparta::utils::ValidValue<Value> b_value_;
+    sparta::utils::ValidValue<Value> c_value_;
+
+    Value result_ = 0;
+    const std::string select_policy_;
+
+    // Callbacks
+    void inputA_(const Value & val);
+    void inputB_(const Value & val);
+    void inputC_(const Value & val);
+    void select_();
+
+    Value chooseWinner_() const;
+};
+----
+
+[source,cpp]
+----
+// MuxUnit.cpp
+#include "MuxUnit.hpp"
+
+const char * MuxUnit::name = "mux";
+
+MuxUnit::MuxUnit(sparta::TreeNode * node,
+                 const MuxParameters * params) :
+    sparta::Unit(node),
+    select_policy_(params->select_policy)
+{
+    // Register port callbacks
+    pInputA_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER_WITH_DATA(MuxUnit, inputA_, Value));
+    pInputB_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER_WITH_DATA(MuxUnit, inputB_, Value));
+    pInputC_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER_WITH_DATA(MuxUnit, inputC_, Value));
+
+    // Establish DAG ordering:
+    // All three input port callbacks must complete before evSelect_ fires
+    pInputA_.registerConsumingEvent(evSelect_);
+    pInputB_.registerConsumingEvent(evSelect_);
+    pInputC_.registerConsumingEvent(evSelect_);
+
+    // pResult_ is driven only after evSelect_ fires
+    pResult_.registerProducingEvent(evSelect_);
+}
+
+void MuxUnit::inputA_(const Value & val) {
+    a_value_ = val;
+    evSelect_.schedule();
+}
+
+void MuxUnit::inputB_(const Value & val) {
+    b_value_ = val;
+    evSelect_.schedule();
+}
+
+void MuxUnit::inputC_(const Value & val) {
+    c_value_ = val;
+    evSelect_.schedule();
+}
+
+void MuxUnit::select_() {
+    // At this point ALL inputs that arrived this cycle have been stored.
+    // chooseWinner_ selects based on the policy and which inputs are valid.
+    result_ = chooseWinner_();
+    ILOG("Mux select: result=" << result_
+         << " a_valid=" << a_value_.isValid()
+         << " b_valid=" << b_value_.isValid()
+         << " c_valid=" << c_value_.isValid());
+
+    pResult_.send(result_);
+
+    // Clear valid flags for next cycle
+    a_value_.clearValid();
+    b_value_.clearValid();
+    c_value_.clearValid();
+}
+
+Value MuxUnit::chooseWinner_() const {
+    // Example: priority -- A > B > C
+    if (select_policy_ == "priority") {
+        if (a_value_.isValid()) { return a_value_.getValue(); }
+        if (b_value_.isValid()) { return b_value_.getValue(); }
+        sparta_assert(c_value_.isValid(), "select_() called with no valid inputs");
+        return c_value_.getValue();
+    }
+    // ... other policies
+    sparta_assert(false, "Unknown select policy: " << select_policy_);
+    return 0;
+}
+----
+
+=== Key Takeaways
+
+The mux example illustrates three general principles that apply
+throughout Sparta modeling:
+
+**1. Use `UniqueEvent` for any work triggered by multiple sources.**
+Whenever more than one port callback or event might trigger the same
+downstream work in the same cycle, the work method should be a
+`UniqueEvent`.  This guarantees the work runs exactly once regardless
+of how many triggers arrived.
+
+**2. Use `registerConsumingEvent` to declare data dependencies.**
+If an event's work depends on data delivered by a port, register that
+dependency explicitly.  This is not optional -- it is what gives the
+DAG the information it needs to enforce correct ordering.
+
+**3. Use `registerProducingEvent` to declare output dependencies.**
+If a port sends data that was computed by an event, register that
+relationship.  Downstream consumers are then guaranteed to receive
+the data only after the producing event has run.
+
+**4. Use `ValidValue` to track which inputs have arrived.**
+`sparta::utils::ValidValue<T>` is safer than a raw value with a
+separate `bool valid` flag.  It asserts on read if the value has
+not been set, catching missing-input bugs immediately rather than
+propagating garbage values silently.
+
+These four patterns appear together throughout Olympia and any
+well-written Sparta model.  When a modeler is writing a unit that
+receives data from multiple sources and produces output that depends
+on all of them, reach for this pattern first.
+
+== Credit-Based Flow Control
+
+Pipeline stages must not send more data downstream than the receiver
+can accept.  Without flow control, a fast producer will overflow a
+slow consumer's buffers.  Sparta models this with a credit-based
+handshake: the receiver grants credits upstream, and the sender
+consumes one credit per item sent.  When credits reach zero the
+sender stalls.
+
+This pattern appears in almost every pipeline stage in Olympia and
+is the standard way to model back-pressure in Sparta.
+
+=== The Pattern
+
+[plantuml,credit-diagram,png,align="center"]
+....
+@startuml
+rectangle "Sender"   as S
+rectangle "Receiver" as R
+
+S --> R : data (1 credit consumed)
+R --> S : credits (SignalOutPort)
+@enduml
+....
+
+The receiver owns a buffer of finite capacity.  At startup (and each
+time it consumes an entry from the buffer) it sends credits back
+upstream.  The sender maintains a credit count and only sends when
+credits are available.
+
+=== Components
+
+[source,cpp]
+----
+// --- Sender side ---
+
+// Data output to downstream
+sparta::DataOutPort<Instruction> out_inst_{&unit_port_set_, "out_inst"};
+
+// Credit input from downstream receiver with 1 cycle delay
+sparta::DataInPort<uint32_t> in_credits_{&unit_port_set_, "in_credits", 1};
+
+// Internal credit counter
+uint32_t credits_ = 0;
+
+// Work event; by default is scheuled in 0 cycles
+sparta::UniqueEvent<> ev_send_{&unit_event_set_, "ev_send",
+                               CREATE_SPARTA_HANDLER(SenderUnit, send_)};
+// OPTIMIZATION: Consider using sparta::SingleCycleEvent
+
+----
+
+[source,cpp]
+----
+// --- Receiver side ---
+
+// Data input from upstream sender; delay receiving by 1 cycle
+sparta::DataInPort<Instruction> in_inst_{&unit_port_set_, "in_inst", 1};
+
+// Credit output back to sender
+sparta::DataOutPort<uint32_t> out_credits_{&unit_port_set_, "out_credits"};
+
+sparta::UniqueEvent<> ev_consume_{&unit_event_set_, "ev_consume",
+                                  CREATE_SPARTA_HANDLER(ReceiverUnit, consume_)};
+
+// Internal buffer
+std::queue<Instruction> buffer_;
+const uint32_t buffer_capacity_;
+----
+
+=== Sender Implementation
+
+[source,cpp]
+----
+SenderUnit::SenderUnit(sparta::TreeNode * node,
+                       const SenderParameters * params) :
+    sparta::Unit(node)
+{
+
+    // When credits are sent from the receiving unit, the method
+    // receiveCredit_ will be called.
+    in_credits_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER_WITH_DATA(SenderUnit, receiveCredit_, uint32_t));
+
+    // Ordering: credits must arrive before the send event evaluates them
+    in_credits_.registerConsumingEvent(ev_send_);
+}
+
+void SenderUnit::receiveCredit_()
+{
+    ++credits_;
+    ILOG("Credit received, total credits: " << credits_);
+
+    // Optimization: Only schedule the event if there's work to do!
+    if (true == hasPendingWork_())
+    {
+        ev_send_.schedule();  // try to send now that we have a credit
+    }
+}
+
+void SenderUnit::send_()
+{
+    // This method should only be called if there's work to do.
+    // This assert will help catch misuse and keep the model running fast.
+    sparta_assert(true == hasPendingWork_(),
+                  "Why was this scheduled if there was no work?");
+
+    Instruction inst = getNextInstruction_();
+    out_inst_.send(inst);
+    --credits_;
+
+    ILOG("Sent instruction, remaining credits: " << credits_);
+
+    // If more work is pending and we still have credits, keep going
+    // on the next cycle
+    if (credits_ > 0 && hasPendingWork_()) {
+        ev_send_.schedule(sparta::Clock::Cycle(1));
+    }
+}
+----
+
+=== Receiver Implementation
+
+[source,cpp]
+----
+ReceiverUnit::ReceiverUnit(sparta::TreeNode * node,
+                           const ReceiverParameters * params) :
+    sparta::Unit(node),
+    buffer_capacity_(params->buffer_capacity)
+{
+    // Set up a startup event, called once, to send initial credits
+    sparta::StartupEvent(node, CREATE_SPARTA_HANDLER(ReceiverUnit, onStarting_));
+
+    in_inst_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER_WITH_DATA(ReceiverUnit, receiveInst_, Instruction));
+}
+
+void ReceiverUnit::onStarting_()
+{
+    // Grant initial credits equal to buffer capacity at startup.
+    out_credits_.send(buffer_capacity_);
+    ILOG("Granted " << buffer_capacity_ << " initial credits");
+}
+
+void ReceiverUnit::receiveInst_(const Instruction & inst)
+{
+    sparta_assert(buffer_.size() < buffer_capacity_,
+                  "Receiver buffer overflow -- sender ignored credit protocol");
+    buffer_.push(inst);
+    ILOG("Received instruction, buffer occupancy: " << buffer_.size());
+
+    // Does not need to be an event and can be called directly, but using
+    // an event allows the modeler to schedule other work before the
+    // consumption
+    ev_consume_.schedule();
+}
+
+void ReceiverUnit::consume_()
+{
+    // Called when the receiver processes an entry from the buffer
+    sparta_assert(!buffer_.empty(), "consume_() called on empty buffer");
+    buffer_.pop();
+
+    // Return one credit to the sender for every entry consumed
+    out_credits_.send(1);
+    ILOG("Consumed instruction, granted 1 credit, buffer occupancy: "
+         << buffer_.size());
+}
+----
+
+=== Key Points
+
+**Credits represent buffer slots, not data values.**  Each credit
+grants the sender permission to occupy one slot in the receiver's
+buffer.  Initial credits equal the buffer capacity.  One credit is
+consumed per item sent and one credit is returned per item consumed.
+
+**The sender never sends without a credit.**  The `sparta_assert` in
+the receiver's `receiveInst_` will fire if the sender violates this,
+catching the bug immediately.
+
+**Use `registerConsumingEvent` for the credit port.**  As shown above,
+registering `in_credits_` as a consuming event of `ev_send_` ensures
+that credit updates from the current cycle are applied before the send
+event evaluates whether to send.  Without this, a credit arriving in
+the same cycle as a send decision may be counted too late.
+
+**Initial credits are sent via `StartupEvent`.**  Credits must be
+granted before the first cycle so the sender can begin immediately.
+A `StartupEvent` is the correct mechanism -- do not send initial
+credits from the receiver's constructor, as ports are not yet bound
+at that point.
+
+== Handling Flushes
+
+A flush (also called a squash or rollback) invalidates in-flight work
+in the pipeline.  The most common cause is a branch misprediction:
+when the execute stage detects a mispredict, all instructions that
+entered the pipeline after the mispredicted branch must be discarded.
+
+Flushes are among the hardest bugs to get right in a performance
+model because they interact with every pipeline stage simultaneously
+and must be handled in a specific order relative to normal pipeline
+work.
+
+=== The Flush Scheduling Phase
+
+Sparta provides `SchedulingPhase::Flush` specifically for flush
+handling.  The phase order is:
+
+[source]
+----
+Update -> PortUpdate -> Flush -> Collection -> Tick -> PostTick
+----
+
+Flush events fire *after* port delivery (`PortUpdate`) but *before*
+normal pipeline work (`Tick`).  This means that when a flush fires:
+
+- All port callbacks for the current cycle have already run --
+  the flush sees the fully-updated input state
+- Normal pipeline work (`Tick` phase events) has *not* yet run --
+  the flush can cancel pending work before it executes
+
+This ordering is not accidental.  It means a pipeline stage can
+receive a flush signal, discard its pending work, and the discarded
+work will never be processed -- all within the same cycle the flush
+was detected.
+
+=== Flush from a Single Source
+
+The simplest flush scenario: a single unit (typically the execute
+stage or a branch unit) detects a mispredict and broadcasts a flush
+to all upstream stages.
+
+==== Components
+
+[source,cpp]
+----
+// In the flushing unit (e.g. Execute)
+sparta::SignalOutPort out_flush_{&unit_port_set_, "out_flush"};
+
+// In each flushable upstream unit (e.g. Decode, Fetch)
+sparta::SignalInPort in_flush_{&unit_port_set_, "in_flush", 0};  // 0-cycle!
+
+// The flush event -- in SchedulingPhase::Flush, not Tick
+sparta::UniqueEvent<sparta::SchedulingPhase::Flush> ev_flush_{
+    &unit_event_set_, "ev_flush",
+    CREATE_SPARTA_HANDLER(DecodeUnit, flush_)};
+----
+
+The flush port is 0-cycle so the flush takes effect immediately in
+the same cycle it is broadcast.  The flush *event* is in
+`SchedulingPhase::Flush` so it fires before any `Tick`-phase events
+process new work this cycle.
+
+==== Flush Sender (Execute Unit)
+
+[source,cpp]
+----
+void ExecuteUnit::detectMispredict_()
+{
+    WLOG("Branch mispredict detected at cycle "
+         << getClock()->currentCycle()
+         << " -- broadcasting flush");
+
+    out_flush_.send();  // 0-cycle: all upstream stages receive this cycle
+    ++num_mispredicts_;
+}
+----
+
+==== Flush Receiver (Each Upstream Stage)
+
+[source,cpp]
+----
+DecodeUnit::DecodeUnit(sparta::TreeNode * node,
+                       const DecodeParameters * params) :
+    sparta::Unit(node)
+{
+    in_flush_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER(DecodeUnit, handleFlush_));
+
+    // The flush port callback schedules the flush event
+    in_flush_.registerConsumingEvent(ev_flush_);
+}
+
+// This fires in SchedulingPhase::PortUpdate -- just schedule the flush event
+void DecodeUnit::handleFlush_()
+{
+    ev_flush_.schedule();  // schedule the actual flush work
+}
+
+// This fires in SchedulingPhase::Flush -- before any Tick-phase events
+void DecodeUnit::flush_()
+{
+    WLOG("Flushing decode at cycle " << getClock()->currentCycle()
+         << " -- discarding " << pending_insts_.size() << " instructions");
+
+    // Discard all in-flight work
+    pending_insts_.clear();
+    ev_decode_.cancel();  // cancel any pending decode work this cycle
+
+    // Return credits for any instructions we are dropping
+    for (uint32_t i = 0; i < num_dropped; ++i) {
+        out_credits_.send();
+    }
+
+    ++num_flushes_;
+}
+----
+
+The two-step pattern -- port callback schedules the flush event,
+flush event does the actual work -- is deliberate.  It keeps the
+flush work in `SchedulingPhase::Flush` where it is guaranteed to
+run after all port deliveries and before all `Tick`-phase work.
+Doing the flush work directly in the port callback (which fires in
+`SchedulingPhase::PortUpdate`) would be incorrect because other port
+callbacks for the same cycle may not have fired yet.
+
+=== Flush Propagating Through Multiple Stages
+
+In a real pipeline, a flush from the execute stage must reach every
+upstream stage: rename, decode, fetch, and the branch predictor.
+There are two approaches:
+
+==== Approach 1: Broadcast (Recommended)
+
+The flushing unit sends a single flush signal that all upstream
+stages receive directly.  Each stage has its own flush input port
+bound to the same output port in `bindTree_`:
+
+[source,cpp]
+----
+void MySimulator::bindTree_()
+{
+    // Bind execute's flush output to every upstream stage's flush input
+    auto & out_flush =
+        *getRoot()->getChildAs<sparta::Port>("top.cpu.core0.execute.ports.out_flush");
+
+    sparta::bind(out_flush,
+        *getRoot()->getChildAs<sparta::Port>("top.cpu.core0.rename.ports.in_flush"));
+    sparta::bind(out_flush,
+        *getRoot()->getChildAs<sparta::Port>("top.cpu.core0.decode.ports.in_flush"));
+    sparta::bind(out_flush,
+        *getRoot()->getChildAs<sparta::Port>("top.cpu.core0.fetch.ports.in_flush"));
+}
+----
+
+This is the pattern used in Olympia.  Every stage receives the flush
+in the same cycle and handles it independently.  There is no
+propagation delay and no risk of stages flushing out of order.
+
+==== Approach 2: Propagation (Use with Caution)
+
+Each stage flushes itself and forwards the flush signal to the next
+stage upstream.  This models the hardware more closely when flush
+propagation has a real cycle cost, but it is harder to get right --
+each stage must forward the flush *before* its own `Tick`-phase work
+runs, which requires careful use of `SchedulingPhase::Flush` events
+and 0-cycle forwarding ports.
+
+Use the broadcast approach unless you have a specific reason to model
+propagation delay in the flush path.
+
+=== Canceling Pending Events During a Flush
+
+A common mistake is flushing the data structures but forgetting to
+cancel events that were already scheduled for this cycle.  If a
+`Tick`-phase event was scheduled before the flush arrived, it will
+still fire after the flush unless explicitly canceled:
+
+[source,cpp]
+----
+void DecodeUnit::flush_()
+{
+    pending_insts_.clear();
+
+    // IMPORTANT: cancel any Tick-phase events that were already scheduled.
+    // If ev_decode_ fires after the flush it will try to process instructions
+    // that no longer exist.
+    ev_decode_.cancel();
+    ev_send_output_.cancel();
+}
+----
+
+`cancel()` is safe to call on an event that is not currently
+scheduled -- it is a no-op.  Always cancel all relevant `Tick`-phase
+events in the flush handler.
+
+=== Flush Checklist
+
+When implementing flush handling in a new unit, verify each of these:
+
+[cols="1,3"]
+|===
+| Check | What to verify
+
+| Flush port delay is 0
+| The flush must arrive in the same cycle it is sent.  A 1-cycle
+  flush port means the stage continues working for one extra cycle
+  after the mispredict, introducing phantom instructions.
+
+| Flush event is in `SchedulingPhase::Flush`
+| If the flush event is in `SchedulingPhase::Tick`, it may fire
+  after normal work for the same cycle has already run.
+
+| All in-flight data structures are cleared
+| Check queues, buffers, `ValidValue` members, and any state that
+  represents work in progress.
+
+| All pending `Tick`-phase events are canceled
+| Any event scheduled for the current or future cycles that would
+  process the now-discarded work must be canceled.
+
+| Credits are returned for dropped instructions
+| If the unit holds credits on behalf of dropped instructions, those
+  credits must be returned upstream so the pipeline does not
+  permanently lose capacity.
+
+| Flush counter is incremented
+| Always count flushes.  A flush counter at zero after a workload
+  with branches is a sign the flush signal is not being received.
+|===
+
+=== Key Takeaways
+
+**Put flush events in `SchedulingPhase::Flush`.**  This is what the
+phase exists for.  It guarantees the flush runs after all port
+deliveries and before all normal pipeline work in the same cycle.
+
+**Use 0-cycle flush ports.**  Flush propagation delay belongs in the
+microarchitecture spec, not in the simulator by accident.  0-cycle
+ports ensure every stage sees the flush in the same cycle.
+
+**Broadcast, don't propagate.**  Binding the flush output directly
+to every upstream stage's flush input is simpler, more robust, and
+easier to debug than chaining flushes through the pipeline.
+
+**Cancel pending events.**  Clearing data structures without
+canceling events that will process them is the most common flush
+implementation bug.  Do both, always.
+
+== When to Use Precedence (and When Not To) [[using_precedence]]
+include::attributes.adoc[]
+
+Establishing explicit precedence rules is not required in most Sparta
+models.  The framework's phase system and auto-precedence handle the
+vast majority of ordering needs automatically.  Understanding when
+explicit precedence is and is not needed prevents both under-specification
+(ordering bugs) and over-specification (unnecessary complexity).
+
+=== Precedence Is Not Needed: Non-Zero Cycle Ports
+
+The most common modeling pattern -- producers sending data over ports
+with a non-zero cycle delay -- requires no explicit precedence
+declarations at all.
+
+image::../images/precedence_not_needed.png[Precendence Not Needed Image,align=center]
+
+The ordering works automatically because:
+
+- Producers drive ports with a non-zero cycle delay, most likely in
+  the `Tick` phase
+- Data is delivered to the receiving block on the `PortUpdate` phase
+  in the *next* cycle
+- Each port callback schedules the `UniqueEvent` during the callback
+- The `UniqueEvent` callback fires on the `Tick` phase later in the
+  same cycle -- always *after* all `PortUpdate` callbacks have run
+
+Since `PortUpdate` always precedes `Tick`, the framework guarantees
+the `UniqueEvent` fires after all port data has arrived.  No
+`registerConsumingEvent` calls are required.
+
+[source,cpp]
+----
+// Non-zero cycle ports -- no explicit precedence needed
+sparta::DataInPort<InstPtr> in_inst_{&unit_port_set_, "in_inst", 1}; // <1>
+sparta::UniqueEvent<>       ev_process_{&unit_event_set_, "ev_process",
+                                         CREATE_SPARTA_HANDLER(MyUnit, process_)};
+
+MyUnit::MyUnit(sparta::TreeNode* node, const MyParameters* params) :
+    sparta::Unit(node)
+{
+    in_inst_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER_WITH_DATA(MyUnit, receiveInst_, InstPtr));
+    // No registerConsumingEvent needed -- PortUpdate precedes Tick automatically
+}
+
+void MyUnit::receiveInst_(const InstPtr & inst) {
+    pending_inst_ = inst;
+    ev_process_.schedule();  // fires in Tick phase -- after all PortUpdate callbacks
+}
+----
+<1> The `1`-cycle delay means data arrives in `PortUpdate` phase next
+    cycle.  `ev_process_` fires in `Tick` phase of that same cycle,
+    always after the callback.
+
+=== Precedence Is Needed: 0-Cycle Ports
+
+Explicit precedence is required when 0-cycle ports are involved.
+When the framework detects a 0-cycle port, the port delivery is
+*promoted to the `Tick` phase* -- the same phase where the
+`UniqueEvent` runs.  Without explicit ordering, the `UniqueEvent`
+may fire before all port callbacks have delivered their data.
+
+image::../images/precedence_needed.png[Precendence Needed Image,align=center]
+
+The ordering problem:
+
+- The producer's events fire in the `Tick` phase and drive 0-cycle ports
+- Data is delivered to the block in the *same* `Tick` phase
+- Each callback schedules the `UniqueEvent` -- also in `Tick`
+- Without explicit ordering, the `UniqueEvent` may fire *before* all
+  port callbacks have run in the same `Tick` phase
+
+The solution is `registerConsumingEvent` and `registerProducingEvent`:
+
+[source,cpp]
+----
+// 0-cycle ports -- explicit precedence required
+sparta::DataInPort<InstPtr> in_inst_{&unit_port_set_, "in_inst", 0}; // <1>
+sparta::UniqueEvent<>       ev_process_{&unit_event_set_, "ev_process",
+                                         CREATE_SPARTA_HANDLER(MyUnit, process_)};
+
+MyUnit::MyUnit(sparta::TreeNode* node, const MyParameters* params) :
+    sparta::Unit(node)
+{
+    in_inst_.registerConsumerHandler(
+        CREATE_SPARTA_HANDLER_WITH_DATA(MyUnit, receiveInst_, InstPtr));
+
+    // Required: tell the DAG that ev_process_ must fire AFTER
+    // in_inst_ has delivered its callback
+    in_inst_.registerConsumingEvent(ev_process_); // <2>
+}
+----
+<1> The `0`-cycle delay promotes delivery to `Tick` phase -- same as
+    `ev_process_`.  Without explicit ordering the firing order is
+    undefined within `Tick`.
+<2> `registerConsumingEvent` adds a DAG edge: port callback →
+    `ev_process_`.  The framework enforces this ordering automatically.
+
+For the producer side, `registerProducingEvent` ensures the producer's
+event fires before any downstream 0-cycle port consumers:
+
+[source,cpp]
+----
+// In the producer unit
+sparta::DataOutPort<InstPtr> out_inst_{&unit_port_set_, "out_inst"};
+sparta::UniqueEvent<>        ev_produce_{&unit_event_set_, "ev_produce",
+                                          CREATE_SPARTA_HANDLER(ProducerUnit, produce_)};
+
+ProducerUnit::ProducerUnit(sparta::TreeNode* node, const ProducerParameters* params) :
+    sparta::Unit(node)
+{
+    // Tell the DAG: ev_produce_ fires before any consumer of out_inst_
+    out_inst_.registerProducingEvent(ev_produce_); // <1>
+}
+----
+<1> The framework adds the ordering between `ev_produce_` and all
+    downstream consumers automatically at DAG finalization -- no
+    per-consumer registration required.
+
+=== Decision Guide
+
+[cols="2,1,3"]
+|===
+| Situation | Precedence Needed? | Reason
+
+| Non-zero cycle ports, `UniqueEvent` in `Tick`
+| No
+| `PortUpdate` always precedes `Tick` -- framework handles ordering
+
+| 0-cycle ports, `UniqueEvent` in `Tick`
+| Yes
+| Both port delivery and `UniqueEvent` are in `Tick` -- ordering
+  is undefined without explicit DAG edges
+
+| Multiple producers, non-zero cycle ports
+| No
+| All port callbacks fire in `PortUpdate`, `UniqueEvent` fires in
+  `Tick` -- phase separation is sufficient
+
+| Multiple producers, 0-cycle ports (mux pattern)
+| Yes
+| See <<_modeling_a_mux_the_ordering_problem>> for the complete
+  solution using `registerConsumingEvent` on each input port
+
+| Events ordering within the same phase
+| Yes
+| Use `>>` or `EventGroup` to establish intra-phase ordering
+  (see <<_intra_phase_ordering_with_the_dag>>)
+|===
+
+=== Key Takeaways
+
+**The default case requires no explicit precedence.**  For the vast
+majority of pipeline models -- non-zero cycle ports driving a
+`UniqueEvent` -- the `PortUpdate` → `Tick` phase ordering is
+sufficient and no `registerConsumingEvent` calls are needed.
+
+**0-cycle ports are the exception.**  When a port has zero delay,
+delivery is promoted to `Tick` phase, breaking the automatic
+ordering guarantee.  Always call `registerConsumingEvent` on every
+0-cycle `InPort` and `registerProducingEvent` on every 0-cycle
+`OutPort` whose producer event must fire first.
+
+**Over-specifying precedence is harmless but unnecessary.**
+Adding `registerConsumingEvent` to non-zero cycle ports does not
+break anything -- the DAG edge is simply redundant.  However, excess
+precedence declarations add noise to the DAG, slow finalization
+slightly, and make the code harder to read.  Add only the edges the
+model actually requires.
+
 == Handling Flushes
 
 A flush (also called a squash or rollback) invalidates in-flight work
