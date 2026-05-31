@@ -557,10 +557,6 @@ namespace sparta{
                     format_strings.push_back(fmt_str);
                 }
 
-                constexpr int32_t parent_id_unset = 0;
-                const std::string kind_pod{"pod"};
-                const std::string empty;
-
                 std::cout << "\nSerializing PairDefinition to database for '" << root_dtype << "'...\n";
                 for(size_t i = 0; i < names.size(); ++i) {
                     std::cout << "\t" << names[i] << ", " << dtypes[i];
@@ -571,12 +567,8 @@ namespace sparta{
 
                     db_mgr->INSERT(SQL_TABLE("DataTypeNodes"),
                                    SQL_VALUES(schema_id,
-                                              parent_id_unset,
-                                              kind_pod,
                                               names[i],
-                                              empty,
                                               dtypes[i],
-                                              empty,
                                               format_strings[i]));
                 }
                 serialized_types.insert(root_dtype);

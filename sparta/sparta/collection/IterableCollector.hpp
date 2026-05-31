@@ -213,7 +213,7 @@ public:
         auto loc = getLocation();
         auto clk_name = notNull(getClock())->getName();
         auto type = encodeCollectedType();
-        entry_point_ = argos_collector->createContainerCollector<sparse_array_type>(loc, clk_name, expected_capacity_, type);
+        entry_point_ = argos_collector->createContainerCollector(loc, clk_name, type);
 
         bit_bucket_ = std::make_shared<IterableCollectorBitBucket<sparse_array_type>>(argos_collector->getResources());
         for (auto & bin : positions_) {
