@@ -9,7 +9,7 @@ name: Documentation
 on:
   push:
     branches:
-      - master
+      - map_v2.2
       - knutel/sparta-book
 
 permissions:
@@ -46,7 +46,7 @@ jobs:
       - name: Install Asciidoctor
         run: |
           sudo gem install asciidoctor
-          sudo gem install asciidoctor-diagram
+          sudo gem install asciidoctor-diagram-plantuml
           sudo gem install asciidoctor-multipage
 
       # ── 5. Download PlantUML jar ──────────────────────────────────────────────
@@ -70,7 +70,7 @@ jobs:
           # Doxygen output goes to the root
           cp -r sparta/doc/html/. _deploy/
           # Book output goes into the sparta_book/ subdirectory
-          cp -r sparta/doc/sparta_book/html/. _deploy/sparta_book/
+          cp -r sparta/doc/sparta_book/build/html sparta/doc/sparta_book/build/images _deploy/sparta_book/
 
       # ── 8. Deploy to gh-pages branch ─────────────────────────────────────────
       - name: Deploy to GitHub Pages
