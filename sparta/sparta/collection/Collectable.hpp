@@ -272,7 +272,7 @@ namespace sparta{
             }
 
             //! Collectable classes must be able to register themselves with the ArgosCollector.
-            void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final {
+            void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override {
                 auto loc = getLocation();
                 auto clk_name = notNull(getClock())->getName();
                 auto type = encodeCollectedType();
@@ -297,7 +297,7 @@ namespace sparta{
 
             //! Virtual method called by CollectableTreeNode when
             //! collection is enabled on the TreeNode
-            void setCollecting_(bool collect, Collector * collector) override final {
+            void setCollecting_(bool collect, Collector * collector) override {
                 pipeline_col_ = dynamic_cast<PipelineCollector *>(collector);
                 sparta_assert(pipeline_col_ != nullptr,
                               "Collectables can only added to PipelineCollectors... for now");
@@ -487,19 +487,19 @@ namespace sparta{
                 return type;
             }
 
-        private:
-            void performCollection_(const ValueType &) override final {
-                // TODO XXX - fix up DynamicDataType.hpp
-                if (warn_ && entry_point_) {
-                    std::string warning = "Cannot collect data type '";
-                    warning += simdb::demangle_type<ValueType>() + "'. ";
-                    warning += "This must be moved to PairDefinition.";
-                    entry_point_->postWarning(warning);
-                    warn_ = false;
-                }
+            void createSimDbEntryPoint(simdb::argos::ArgosCollector*) override final {
+                // TODO cnyce: postWarning
+                // We have a chicken-and-egg scenario here. We need the entry_point_
+                // in order to call postWarning, but if we create the entry point
+                // then it will show up in Argos when we don't want it to.
             }
 
-            bool warn_ = true;
+        private:
+            void setCollecting_(bool, Collector *) override final {
+            }
+
+            void performCollection_(const ValueType &) override final {
+            }
         };
 
         //! Use case 5: We are collecting a class/struct which provides SpartaPairDefinitionType.

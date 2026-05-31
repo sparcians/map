@@ -308,6 +308,7 @@ namespace collection
             }
             registered_collectables_.clear();
             collection_active_ = false;
+            onPipelineCollectionShutdown(simulation_);
         }
 
         void reactivate(const std::string& filepath)

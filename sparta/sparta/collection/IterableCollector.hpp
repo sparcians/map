@@ -210,14 +210,19 @@ public:
     //! the ArgosCollector.
     void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final
     {
-        auto loc = getLocation();
-        auto clk_name = notNull(getClock())->getName();
-        auto type = encodeCollectedType();
-        entry_point_ = argos_collector->createContainerCollector(loc, clk_name, type);
+        // TODO cnyce: fix dynamic fields support
+        if constexpr (use_dynamic_fields_v<BinValueT>) {
+            (void)argos_collector;
+        } else {
+            auto loc = getLocation();
+            auto clk_name = notNull(getClock())->getName();
+            auto type = encodeCollectedType();
+            entry_point_ = argos_collector->createContainerCollector(loc, clk_name, type);
 
-        bit_bucket_ = std::make_shared<IterableCollectorBitBucket<sparse_array_type>>(argos_collector->getResources());
-        for (auto & bin : positions_) {
-            bin->setBitBucket(bit_bucket_);
+            bit_bucket_ = std::make_shared<IterableCollectorBitBucket<sparse_array_type>>(argos_collector->getResources());
+            for (auto & bin : positions_) {
+                bin->setBitBucket(bit_bucket_);
+            }
         }
     }
 
