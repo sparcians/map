@@ -212,7 +212,13 @@ public:
     {
         // TODO cnyce: fix dynamic fields support
         if constexpr (use_dynamic_fields_v<BinValueT>) {
-            (void)argos_collector;
+            std::ostringstream oss;
+            oss << "Collecting non-trivial classes using operator<< only is not supported for now. Use PairDefinition.";
+            oss << "\n\t(" << getLocation() << ")";
+
+            auto stager = argos_collector->getStager();
+            constexpr uint16_t no_cid = 0;
+            stager->postNotif(no_cid, oss.str(), simdb::argos::NotifType::WARNING);
         } else {
             auto loc = getLocation();
             auto clk_name = notNull(getClock())->getName();

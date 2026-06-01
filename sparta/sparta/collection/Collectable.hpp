@@ -487,11 +487,14 @@ namespace sparta{
                 return type;
             }
 
-            void createSimDbEntryPoint(simdb::argos::ArgosCollector*) override final {
-                // TODO cnyce: postWarning
-                // We have a chicken-and-egg scenario here. We need the entry_point_
-                // in order to call postWarning, but if we create the entry point
-                // then it will show up in Argos when we don't want it to.
+            void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final {
+                std::ostringstream oss;
+                oss << "Collecting non-trivial classes using operator<< only is not supported for now. Use PairDefinition.";
+                oss << "\n\t(" << this->getLocation() << ")";
+
+                constexpr uint16_t no_cid = 0;
+                auto stager = argos_collector->getStager();
+                stager->postNotif(no_cid, oss.str(), simdb::argos::NotifType::WARNING);
             }
 
         private:
