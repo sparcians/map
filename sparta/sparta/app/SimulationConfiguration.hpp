@@ -668,6 +668,22 @@ public:
         }
 
         /*!
+         * \brief Call the setVerbose() method for all SimDB apps once created.
+         */
+        void enableVerboseMode(bool enable = true)
+        {
+            verbose_ = enable;
+        }
+
+        /*!
+         * \brief Get verbose flag.
+         */
+        bool verboseMode() const
+        {
+            return verbose_;
+        }
+
+        /*!
          * \brief Add a SQLite PRAGMA to execute on database creation.
          * \note Applies to all app databases if different.
          */
@@ -700,6 +716,7 @@ public:
         std::set<std::string> reused_db_files_;
         std::map<std::string, std::string> dbmgr_pragmas_;
         bool legacy_reports_enabled_ = true;
+        bool verbose_ = false;
     } simdb_config;
 
     /*!

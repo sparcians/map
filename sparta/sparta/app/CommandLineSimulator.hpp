@@ -55,7 +55,7 @@ class InformationWriter;
 
 namespace app {
 
-const constexpr char DefaultHeartbeat[]        = "0";
+const constexpr char DefaultHeartbeat[]        = "10";
 
 
 /*!

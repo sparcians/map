@@ -661,6 +661,8 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
         ("simdb-app-log-file",
          named_value<std::vector<std::string>>("FILENAME", 1, 1),
          "Tell all SimDB apps to use the given filename for their thread-safe file loggers.")
+        ("simdb-verbose",
+         "Enable verbose mode for all SimDB apps.")
         ;
     #endif
 
@@ -1705,6 +1707,10 @@ bool CommandLineSimulator::parse(int argc,
         sim_config_.simdb_config.disableLegacyReports();
     }
 
+    if (vm_.count("simdb-verbose")) {
+        sim_config_.simdb_config.enableVerboseMode();
+    }
+
     if (!global_simdb_file_.empty()) {
         if (global_simdb_file_ == "autogen") {
             global_simdb_file_ = generateUUID() + ".db";
@@ -2043,13 +2049,12 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
         size_t end_pos;
         heartbeat = utils::smartLexicalCast<uint32_t>(pipeline_heartbeat_, end_pos);
     }catch (SpartaException const&){
-        throw SpartaException("HEARTBEAT for pipeline collection must be an integer value and a multiple of 100 > 0, not \"")
+        throw SpartaException("HEARTBEAT for pipeline collection must be an integer value > 0, not \"")
             << pipeline_heartbeat_ << "\"";
     }
 
-    if(heartbeat != 0 && heartbeat % 100 != 0){
-        throw SpartaException("HEARTBEAT for pipeline collection must be a multiple of 100 > 0, not \"")
-            << heartbeat << "\"";
+    if(heartbeat == 0){
+        throw SpartaException("HEARTBEAT for pipeline collection must be greater than zero");
     }
 
     if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr && heartbeat != 0){

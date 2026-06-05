@@ -273,12 +273,8 @@ namespace collection
                 sparta_assert(heartbeat_interval % 100 == 0)
             }
 
-            // We are gonna subtract one from the heartbeat_interval
-            // later.. Better be greater than one.
-            sparta_assert(heartbeat_interval > 1);
             // Initialize some values.
             filepath_           = filepath;
-            heartbeat_interval_ = heartbeat_interval;
             root_clk_           = root_clk;
         }
 
@@ -469,10 +465,6 @@ namespace collection
 
         //! The filepath/prefix for writing pipeline collection files too
         std::string filepath_;
-
-        //! The number of ticks between heart beats. Also the offset
-        //! between index pointer writes in the Outputter
-        uint64_t heartbeat_interval_ = 0;
 
         //! Scheduler on which this collector operates
         Scheduler * scheduler_;

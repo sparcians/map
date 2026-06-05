@@ -519,6 +519,7 @@ void Simulation::createSimDbApps_()
         parameterizeSimDbApps_(&app_mgr);
     }
 
+    app_managers_->setVerbose(sim_config_->simdb_config.verboseMode());
     app_managers_->createEnabledApps();
     app_managers_->createSchemas();
 #else

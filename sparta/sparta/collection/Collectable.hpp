@@ -16,7 +16,7 @@
 #include <iomanip>
 
 #include "sparta/collection/PipelineCollector.hpp"
-//#include "sparta/collection/DynamicDataType.hpp" TODO XXX
+//#include "sparta/collection/DynamicDataType.hpp" TODO cnyce
 #include "sparta/collection/BitBucket.hpp"
 #include "sparta/pipeViewer/transaction_structures.hpp"
 #include "sparta/events/PayloadEvent.hpp"
@@ -171,7 +171,7 @@ namespace sparta{
              * \param val The value to initial the record with
              */
             void initialize(const ValueType & val) {
-                //TODO XXX
+                //TODO cnyce: handle initial value
                 (void)val;
             }
 
@@ -303,7 +303,7 @@ namespace sparta{
                               "Collectables can only added to PipelineCollectors... for now");
 
                 if(collect && !initial_bytes_.empty()) {
-                    //TODO XXX: handle initial value
+                    //TODO cnyce: handle initial value
                     initial_bytes_.clear();
                 }
 
