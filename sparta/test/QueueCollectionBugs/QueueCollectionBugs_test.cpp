@@ -173,6 +173,108 @@ static ArchBranchFetchOpPtr createBranchFetchOp()
     return std::make_shared<ArchBranchFetchOp>(fetch);
 }
 
+//
+// ---------------------------------------------------------------------------
+// Multi-level flatten case (generalized fix).
+//
+// Here the flatten chain crosses a base/derived boundary at a NON-terminal hop:
+//
+//   OuterOp -> flatten(getMidOp -> shared_ptr<ArchMidOp>)        (ArchMidOp : MidOp)
+//     MidOp -> flatten(getFetchOp -> shared_ptr<ArchFetchOp>)    (ArchFetchOp : FetchOp)
+//       FetchOp -> DID / start_pc / end_pc
+//     MidOp -> mid
+//   OuterOp -> outer_dummy
+//
+// The pack for an inner field is (getMidOp, getFetchOp, getUID). The middle hop
+// dereferences a shared_ptr<ArchMidOp> and calls &MidOp::getFetchOp (a proper
+// base method) with MORE method pointers still to follow -- the non-last
+// base-of recurse case that the generalized fix adds.
+// ---------------------------------------------------------------------------
+//
+class MidPairDef;
+
+class MidOp
+{
+public:
+    using SpartaPairDefinitionType = MidPairDef;
+
+    MidOp(const std::shared_ptr<ArchFetchOp> & fetch, uint64_t mid)
+        : fetch_(fetch)
+        , mid_(mid)
+    {}
+
+    virtual ~MidOp() = default;
+
+    const std::shared_ptr<ArchFetchOp> & getFetchOp() const { return fetch_; }
+    uint64_t getMid() const { return mid_; }
+
+private:
+    std::shared_ptr<ArchFetchOp> fetch_;
+    uint64_t mid_;
+};
+
+class MidPairDef : public sparta::PairDefinition<MidOp>
+{
+public:
+    MidPairDef() : sparta::PairDefinition<MidOp>() {
+        SPARTA_INVOKE_PAIRS(MidOp);
+    }
+    SPARTA_REGISTER_PAIRS(SPARTA_FLATTEN(&MidOp::getFetchOp),
+                          SPARTA_ADDPAIR("mid", &MidOp::getMid))
+};
+
+//
+// Derived middle op - inherits MidPairDef (= PairDefinition<MidOp>).
+//
+class ArchMidOp : public MidOp
+{
+public:
+    ArchMidOp(const std::shared_ptr<ArchFetchOp> & fetch, uint64_t mid)
+        : MidOp(fetch, mid)
+    {}
+};
+
+class OuterPairDef;
+
+class OuterOp
+{
+public:
+    using SpartaPairDefinitionType = OuterPairDef;
+
+    explicit OuterOp(const std::shared_ptr<ArchMidOp> & mid)
+        : mid_(mid)
+    {}
+
+    const std::shared_ptr<ArchMidOp> & getMidOp() const { return mid_; }
+
+    uint32_t getDummy() const { return 909; }
+
+private:
+    std::shared_ptr<ArchMidOp> mid_;
+};
+
+class OuterPairDef : public sparta::PairDefinition<OuterOp>
+{
+public:
+    OuterPairDef() : sparta::PairDefinition<OuterOp>() {
+        SPARTA_INVOKE_PAIRS(OuterOp);
+    }
+    SPARTA_REGISTER_PAIRS(SPARTA_FLATTEN(&OuterOp::getMidOp),
+                          SPARTA_ADDPAIR("outer_dummy", &OuterOp::getDummy))
+};
+
+using OuterOpPtr = std::shared_ptr<OuterOp>;
+
+static OuterOpPtr createOuterOp()
+{
+    const uint64_t uid = nextUID();
+    const uint64_t start_pc = 0x1000 + uid * 0x40;
+    const uint64_t end_pc = start_pc + 0x10;
+    auto fetch = std::make_shared<ArchFetchOp>(uid, start_pc, end_pc);
+    auto mid = std::make_shared<ArchMidOp>(fetch, 0x5000 + uid);
+    return std::make_shared<OuterOp>(mid);
+}
+
 class TestSimulator : public sparta::app::Simulation
 {
 public:
@@ -231,10 +333,52 @@ void TestBranchFetchOp(int argc, char** argv)
     sim.postProcessingLastCall();
 }
 
+void TestMultiLevelFlatten(int argc, char** argv)
+{
+    sparta::Scheduler sched;
+    TestSimulator sim(sched);
+    sparta::RootTreeNode& rtn = *sim.getRoot();
+
+    sparta::app::SimulationConfiguration sim_config;
+    auto& simdb_config = sim_config.simdb_config;
+    simdb_config.setSimExecutable(argv[0]);
+    simdb_config.enableApp("argos-collector");
+    simdb_config.setAppDatabase("argos-collector", "bug_multilevel.db");
+
+    sim.configure(argc, argv, &sim_config, false);
+    sim.buildTree();
+    sim.configureTree();
+
+    sparta::StatisticSet queue_stats(&rtn);
+    sparta::Queue<OuterOpPtr> queue("collect_me", 8, rtn.getClock(), &queue_stats);
+    queue.enableCollection(&rtn);
+    sim.finalizeTree();
+
+    constexpr size_t heartbeat = 3;
+    sparta::collection::PipelineCollector pc("testPipe", heartbeat, rtn.getClock(), &rtn);
+    sim.finalizeFramework();
+    pc.startCollection(&rtn);
+
+    sched.run(1);
+
+    queue.push(createOuterOp());
+    sched.run(1);
+
+    queue.push(createOuterOp());
+    sched.run(1);
+
+    queue.push(createOuterOp());
+    sched.run(1);
+
+    pc.destroy();
+    sim.postProcessingLastCall();
+}
+
 int main(int argc, char** argv)
 {
     sparta::SleeperThread::disableForever();
     TestBranchFetchOp(argc, argv);
+    TestMultiLevelFlatten(argc, argv);
 
     REPORT_ERROR;
     return ERROR_CODE;

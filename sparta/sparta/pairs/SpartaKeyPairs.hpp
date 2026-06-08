@@ -1446,15 +1446,90 @@ namespace sparta {
             return finalizeCollection_(c, tmp);
         }
 
-        // BUGFIX (flatten-through-derived pointer):
+        // BUGFIX (flatten-through-derived pointer, NON-last hop):
+        // Type of object is not abstract.
+        // Type of object is a pointer to a *derived* type.
+        // Functional object is a Method Pointer belonging to a proper *base*
+        //   class of the pointee, and is NOT the last function in the pack
+        //   (more method pointers follow). This is the multi-level flatten case.
+        //   The is_same recurse overloads do not match (base != derived), and the
+        //   variadic mismatch overload is prevented from matching here by its
+        //   added !is_base_of guard, so this overload handles it: invoke the
+        //   base-class accessor on the derived pointee (valid via upcast) and
+        //   recurse into the remaining method pointers.
+        //  \code{.cpp}
+        //  std::shared_ptr<Derived> b;   // Derived : public Base
+        //  Member Function:
+        //      const std::shared_ptr<Inner> & Base::getInner() const { ... }
+        //  addPair() callset -> (X::&getDerivedPtr, &Base::getInner, &Inner::getI)
+        //  \endcode
+        template<typename T, typename R, typename S, typename... Ts>
+        MetaStruct::enable_if_t<
+
+            //! Must be non-abstract type.
+            !std::is_abstract<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<T>>>::value &&
+
+            //! Object is a pointer.
+            MetaStruct::is_any_pointer<T>::value &&
+
+            //! Method Pointer Type and Object Type do NOT match exactly...
+            !std::is_same<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<S>>,
+                MetaStruct::remove_any_pointer_t<T>>::value &&
+
+            //! ...but the method's class is a (proper) base of the pointee type.
+            std::is_base_of<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<S>>,
+                MetaStruct::decay_t<MetaStruct::remove_any_pointer_t<T>>>::value, bool>
+
+        populateFromEntityUtility_(
+            PairCache *& c, const T & object, R (S :: * func)() const, Ts &&... ts) {
+            return populateFromEntityUtility_(c, (*object.*func)(), std::forward<Ts>(ts)...);
+        }
+
+        // BUGFIX (flatten-through-derived value/ref, NON-last hop):
+        // Same as above, but the object is held by value/reference (not a pointer).
+        //  \code{.cpp}
+        //  Derived b;                    // Derived : public Base
+        //  Member Function:
+        //      const std::shared_ptr<Inner> & Base::getInner() const { ... }
+        //  addPair() callset -> (X::&getDerived, &Base::getInner, &Inner::getI)
+        //  \endcode
+        template<typename T, typename R, typename S, typename... Ts>
+        MetaStruct::enable_if_t<
+
+            //! Must be non-abstract type.
+            !std::is_abstract<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<T>>>::value &&
+
+            //! Object is NOT a pointer.
+            !MetaStruct::is_any_pointer<T>::value &&
+
+            //! Method Pointer Type and Object Type do NOT match exactly...
+            !std::is_same<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<S>>,
+                MetaStruct::remove_any_pointer_t<T>>::value &&
+
+            //! ...but the method's class is a (proper) base of the object type.
+            std::is_base_of<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<S>>,
+                MetaStruct::decay_t<MetaStruct::remove_any_pointer_t<T>>>::value, bool>
+
+        populateFromEntityUtility_(
+            PairCache *& c, const T & object, R (S :: * func)() const, Ts &&... ts) {
+            return populateFromEntityUtility_(c, (object.*func)(), std::forward<Ts>(ts)...);
+        }
+
+        // BUGFIX (flatten-through-derived pointer, LAST hop):
         // Type of object is not abstract.
         // Type of object is a pointer to a *derived* type.
         // Functional object is the (last) Method Pointer, belonging to a proper
         //   *base* class of the pointee. The is_same overloads above do not match
         //   this case, and the variadic mismatch catch-all would silently
         //   return false (dropping the field from the blob). Because this overload
-        //   is non-variadic, it is more specialized than that variadic catch-all
-        //   and wins by partial ordering -- no existing overload is modified.
+        //   is non-variadic, it is more specialized than the variadic recurse
+        //   overload above and wins by partial ordering.
         // We invoke the base-class accessor on the derived pointee (valid via
         //   upcast) and collect the value as normal.
         //  \code{.cpp}
@@ -1693,10 +1768,18 @@ namespace sparta {
             !std::is_abstract<MetaStruct::decay_t<
                 MetaStruct::remove_any_pointer_t<T>>>::value &&
 
-            //! Method Pointer Type and Object Type mismatch.
+            //! Method Pointer Type and Object Type mismatch...
             !std::is_same<MetaStruct::decay_t<
                 MetaStruct::remove_any_pointer_t<S>>,
-                MetaStruct::remove_any_pointer_t<T>>::value, bool>
+                MetaStruct::remove_any_pointer_t<T>>::value &&
+
+            //! ...and the method's class is NOT a base of the object type either.
+            //  (The base-of case is handled by the flatten-through-derived
+            //  recurse/last-hop overloads above; only truly unrelated types are
+            //  dropped here.)
+            !std::is_base_of<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<S>>,
+                MetaStruct::decay_t<MetaStruct::remove_any_pointer_t<T>>>::value, bool>
 
         populateFromEntityUtility_(
             PairCache *&, const T &, R (S :: *)() const, Ts &&...) {
