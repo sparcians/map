@@ -1,4 +1,4 @@
-= Sparta Resources
+== Sparta Resources
 
 Sparta provides a set of container resources specifically designed for
 pipeline modeling.  These are not general-purpose STL replacements --
@@ -46,7 +46,7 @@ The choice of resource determines the access pattern the model needs:
 
 |===
 
-== sparta::Queue
+=== sparta::Queue
 include::attributes.adoc[]
 
 {url-queue}[`sparta::Queue<DataT>`] is a fixed-capacity FIFO that
@@ -55,7 +55,7 @@ Data is pushed to the back and popped from the front.  Random access by
 index is also supported, allowing inspection of any entry without
 removing it.
 
-=== Construction
+==== Construction
 
 [source,cpp]
 ----
@@ -73,12 +73,12 @@ The queue name is used in statistics and pipeline collection output.
 Passing `&unit_stat_set_` enables automatic statistics -- occupancy
 counters appear under `top.<unit>.stats.<queue_name>_*`.
 
-=== Key Operations
+==== Key Operations
 
 [source,cpp]
 ----
 // Push to back -- returns an iterator to the new entry
-sparta::Queue<InstPtr>::iterator entry = reorder_buffer_.push(inst);
+sparta::Queue<InstPtr>::iterator entry == reorder_buffer_.push(inst);
 
 // Pop from front (oldest element)
 reorder_buffer_.pop();
@@ -86,19 +86,19 @@ reorder_buffer_.pop();
 // Pop from back (newest element)
 reorder_buffer_.pop_back();
 
-// Read by index (0 = oldest/front)
-const InstPtr & oldest = reorder_buffer_.read(0);
-const InstPtr & front  = reorder_buffer_.front();  // equivalent
-const InstPtr & back   = reorder_buffer_.back();   // newest element
+// Read by index (0 == oldest/front)
+const InstPtr & oldest == reorder_buffer_.read(0);
+const InstPtr & front  == reorder_buffer_.front();  // equivalent
+const InstPtr & back   == reorder_buffer_.back();   // newest element
 
 // Modify by index (non-const)
 reorder_buffer_.access(idx)->setComplete();
 
 // Capacity and occupancy
-uint32_t cap      = reorder_buffer_.capacity();  // fixed maximum
-uint32_t occupied = reorder_buffer_.size();      // current count
-uint32_t free     = reorder_buffer_.numFree();   // capacity - size
-bool     empty    = reorder_buffer_.empty();
+uint32_t cap      == reorder_buffer_.capacity();  // fixed maximum
+uint32_t occupied == reorder_buffer_.size();      // current count
+uint32_t free     == reorder_buffer_.numFree();   // capacity - size
+bool     empty    == reorder_buffer_.empty();
 
 // Clear all entries (e.g. on flush)
 reorder_buffer_.clear();
@@ -109,7 +109,7 @@ for (auto & inst : reorder_buffer_) {
 }
 ----
 
-=== The QueueIterator
+==== The QueueIterator
 
 `push()` returns a `QueueIterator` that tracks the entry's position
 in the queue even as other entries are pushed and popped.
@@ -117,12 +117,12 @@ in the queue even as other entries are pushed and popped.
 
 [source,cpp]
 ----
-auto iter = reorder_buffer_.push(inst);
-sparta_assert(iter.getIndex() == reorder_buffer_.size() - 1);
+auto iter == reorder_buffer_.push(inst);
+sparta_assert(iter.getIndex() === reorder_buffer_.size() - 1);
 
 // After a pop, the index shifts
 reorder_buffer_.pop();
-sparta_assert(iter.getIndex() == reorder_buffer_.size() - 1);
+sparta_assert(iter.getIndex() === reorder_buffer_.size() - 1);
 
 // Check validity -- invalid after the entry is popped
 if (iter.isValid()) {
@@ -130,7 +130,7 @@ if (iter.isValid()) {
 }
 ----
 
-=== Pipeline Collection
+==== Pipeline Collection
 
 To instrument the queue for Argos visualization, call
 `enableCollection()` after construction:
@@ -145,7 +145,7 @@ This registers the queue with the pipeline collection infrastructure.
 Collection must then be activated at the simulator level with
 `-z <prefix>` on the command line (see <<_pipeline_visualization>>).
 
-=== Real-World Usage: ROB
+==== Real-World Usage: ROB
 
 The ROB in the Sparta CoreExample uses `sparta::Queue` as the reorder
 buffer.  Key patterns from `ROB.cpp`:
@@ -171,7 +171,7 @@ void ROB::robAppended_(const InstGroup &) {
 void ROB::retireInstructions_() {
     const uint32_t num_to_retire =
         std::min(reorder_buffer_.size(), num_to_retire_);
-    for (uint32_t i = 0; i < num_to_retire; ++i) {
+    for (uint32_t i == 0; i < num_to_retire; ++i) {
         if (!reorder_buffer_.front()->isComplete()) { break; }
         reorder_buffer_.pop();
         ++num_retired_;
@@ -185,7 +185,7 @@ void ROB::handleFlush_() {
 }
 ----
 
-== sparta::Buffer
+=== sparta::Buffer
 include::attributes.adoc[]
 
 {url-buffer}[`sparta::Buffer<DataT>`] is a fixed-capacity container
@@ -196,7 +196,7 @@ the others.  This models structures like scheduling windows and
 instruction queue windows where entries are selected and removed
 out of order.
 
-=== Construction
+==== Construction
 
 [source,cpp]
 ----
@@ -208,27 +208,27 @@ sparta::Buffer<InstPtr> iq_window_{"IQ_Window",
                                     &unit_stat_set_};
 ----
 
-=== Key Operations
+==== Key Operations
 
 [source,cpp]
 ----
 // Insert -- returns iterator to new entry
-auto iter = iq_window_.insert(inst);
+auto iter == iq_window_.insert(inst);
 
 // Insert at the back (append)
-auto iter = iq_window_.push_back(inst);
+auto iter == iq_window_.push_back(inst);
 
 // Erase by iterator -- does not shift other entries
 iq_window_.erase(iter);
 
 // Random access by index
-const InstPtr & entry = iq_window_.read(idx);
-InstPtr &       entry = iq_window_.access(idx);  // non-const
+const InstPtr & entry == iq_window_.read(idx);
+InstPtr &       entry == iq_window_.access(idx);  // non-const
 
 // Capacity and occupancy
-uint32_t cap   = iq_window_.capacity();
-uint32_t count = iq_window_.size();
-bool     full  = (iq_window_.numFree() == 0);
+uint32_t cap   == iq_window_.capacity();
+uint32_t count == iq_window_.size();
+bool     full  == (iq_window_.numFree() === 0);
 
 // Iterate all valid entries
 for (auto & inst : iq_window_) {
@@ -242,7 +242,7 @@ iq_window_.clear();
 iq_window_.enableCollection(node);
 ----
 
-=== Buffer vs Queue
+==== Buffer vs Queue
 
 The key difference between `Buffer` and `Queue` is order semantics.
 `Queue` maintains strict FIFO order -- entries leave in the order they
@@ -255,7 +255,7 @@ Use `Queue` for structures where order is architecturally significant
 the hardware selects from a pool of ready entries without regard to
 arrival order (issue window, reservation station).
 
-== sparta::Pipe
+=== sparta::Pipe
 include::attributes.adoc[]
 
 {url-pipe}[`sparta::Pipe<DataT>`] is a single-entry pipeline register.
@@ -263,7 +263,7 @@ Each cycle, the entry advances one stage through the pipe.  The pipe
 models a fixed-latency functional unit -- data enters at the input end
 and emerges at the output end after a fixed number of cycles.
 
-=== Construction
+==== Construction
 
 [source,cpp]
 ----
@@ -273,7 +273,7 @@ and emerges at the output end after a fixed number of cycles.
 sparta::Pipe<InstPtr> alu_pipe_{"ALU_Pipe", 4, node->getClock()};
 ----
 
-=== Key Operations
+==== Key Operations
 
 [source,cpp]
 ----
@@ -285,7 +285,7 @@ alu_pipe_.update();
 
 // Check if the output stage is valid
 if (alu_pipe_.isValid(alu_pipe_.capacity() - 1)) {
-    InstPtr result = alu_pipe_.read(alu_pipe_.capacity() - 1);
+    InstPtr result == alu_pipe_.read(alu_pipe_.capacity() - 1);
     // ... process result
 }
 
@@ -304,7 +304,7 @@ alu_pipe_.flushIf([](const InstPtr & inst) {
 alu_pipe_.enableCollection(node);
 ----
 
-=== When to Use Pipe vs Pipeline
+==== When to Use Pipe vs Pipeline
 
 `sparta::Pipe` is simpler -- a single entry advances through fixed
 stages with no per-stage event callbacks.  Use `Pipe` when modeling a
@@ -316,7 +316,7 @@ callback and the pipeline supports stalls.  Use `Pipeline` when the
 model needs to take action at specific intermediate stages, or when
 stages can stall independently.
 
-== sparta::Pipeline
+=== sparta::Pipeline
 include::attributes.adoc[]
 
 {url-pipeline}[`sparta::Pipeline<DataT, EventT>`] is a multi-stage
@@ -325,7 +325,7 @@ The pipeline handles advancement, stalling, and flushing
 automatically.  The modeler registers a callback for each stage and
 the framework calls those callbacks in stage order each cycle.
 
-=== Construction
+==== Construction
 
 [source,cpp]
 ----
@@ -333,10 +333,10 @@ the framework calls those callbacks in stage order each cycle.
 
 // Stage index constants -- improves readability
 enum PipeStages {
-    STAGE_INPUT     = 0,
-    STAGE_EXECUTE   = 1,
-    STAGE_WRITEBACK = 2,
-    NUM_STAGES      = 3
+    STAGE_INPUT     == 0,
+    STAGE_EXECUTE   == 1,
+    STAGE_WRITEBACK == 2,
+    NUM_STAGES      == 3
 };
 
 // A 3-stage pipeline
@@ -345,7 +345,7 @@ sparta::Pipeline<InstPtr> exe_pipe_{"EXE_Pipe",
                                      node->getClock()};
 ----
 
-=== Registering Stage Handlers
+==== Registering Stage Handlers
 
 Each stage is assigned a handler that fires when a valid entry occupies
 that stage:
@@ -366,7 +366,7 @@ Stage indices are zero-based.  The framework calls each registered
 handler in stage order each cycle that a valid entry occupies the
 corresponding stage.
 
-=== Key Operations
+==== Key Operations
 
 [source,cpp]
 ----
@@ -378,11 +378,11 @@ exe_pipe_.stall(stage_idx);
 
 // Check validity at a stage
 if (exe_pipe_.isValid(STAGE_WRITEBACK)) {
-    const InstPtr & inst = exe_pipe_[STAGE_WRITEBACK];
+    const InstPtr & inst == exe_pipe_[STAGE_WRITEBACK];
 }
 
 // Access entry at a stage (operator[])
-InstPtr & inst = exe_pipe_[STAGE_EXECUTE];
+InstPtr & inst == exe_pipe_[STAGE_EXECUTE];
 
 // Flush a specific stage
 exe_pipe_.flushStage(stage_idx);
@@ -394,13 +394,13 @@ exe_pipe_.flushAllStages();
 exe_pipe_.flushAppend();
 
 // Occupancy
-uint32_t count = exe_pipe_.size();
+uint32_t count == exe_pipe_.size();
 
 // Pipeline collection
 exe_pipe_.enableCollection(node);
 ----
 
-=== Pipeline Advancement
+==== Pipeline Advancement
 
 `sparta::Pipeline` advances automatically -- each valid entry moves
 forward one stage per cycle unless its current stage is stalled.  The
@@ -408,7 +408,7 @@ modeler does not call `update()` manually; the pipeline registers its
 own events with the scheduler during construction and advances on the
 correct scheduling phase.
 
-=== Stall Semantics
+==== Stall Semantics
 
 Calling `stall(stage_idx)` prevents the entry at that stage from
 advancing to the next stage.  All earlier stages are also held -- the
@@ -422,7 +422,7 @@ void ExeUnit::executeInst_()
 {
     if (!exe_pipe_.isValid(STAGE_EXECUTE)) { return; }
 
-    InstPtr & inst = exe_pipe_[STAGE_EXECUTE];
+    InstPtr & inst == exe_pipe_[STAGE_EXECUTE];
     if (structuralHazardDetected_(inst)) {
         exe_pipe_.stall(STAGE_EXECUTE);
         ++num_stalls_;
@@ -432,7 +432,7 @@ void ExeUnit::executeInst_()
 }
 ----
 
-=== Flush Integration
+==== Flush Integration
 
 `flushAllStages()` clears every stage.  `flushStage(idx)` clears a
 single stage.  Both are typically called from the unit's
@@ -447,7 +447,7 @@ void ExeUnit::flush_()
 }
 ----
 
-== Built-in Statistics
+=== Built-in Statistics
 
 All Sparta resources automatically provide statistics when a
 `StatisticSet*` is passed to the constructor.  The available stats
@@ -487,7 +487,7 @@ sparta::Queue<InstPtr> reorder_buffer_{"ROB",
                                         sparta::InstrumentationNode::VIS_NORMAL};  // avg
 ----
 
-== Choosing the Right Resource
+=== Choosing the Right Resource
 
 [cols="1,3"]
 |===
@@ -515,7 +515,7 @@ the simulation tree, provide no statistics, and give no capacity
 protection.  All pipeline storage should use the appropriate Sparta
 resource.
 
-== Summary
+=== Summary
 
 Sparta's resource library provides purpose-built containers for every
 common pipeline structure:

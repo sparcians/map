@@ -1,4 +1,4 @@
-= Parameters
+== Parameters
 :url-parameterset: https://sparcians.github.io/map/classsparta_1_1ParameterSet.html
 :url-parameter: https://sparcians.github.io/map/classsparta_1_1Parameter.html
 :url-cmdlinesim: https://sparcians.github.io/map/classsparta_1_1app_1_1CommandLineSimulator.html
@@ -16,7 +16,7 @@ This chapter covers how to declare parameters in a unit, how to read
 them at construction time, how to validate them, and how to set them
 from the command line and YAML configuration files.
 
-== Declaring Parameters
+=== Declaring Parameters
 
 Parameters are declared inside a nested `ParameterSet` class within
 the unit header.  The `ParameterSet` must derive from
@@ -70,7 +70,7 @@ PARAMETER(type, name, default_value, description)
 - `description` -- a human-readable description shown by
   `--show-parameters`.
 
-== Reading Parameters in the Constructor
+=== Reading Parameters in the Constructor
 
 Parameters are read in the unit constructor.  The `ParameterSet` is
 passed as a `const` pointer -- it is read-only from the unit's
@@ -83,7 +83,7 @@ exception.
 [source,cpp]
 ----
 // FetchUnit.cpp
-const char * FetchUnit::name = "fetch";
+const char * FetchUnit::name == "fetch";
 
 FetchUnit::FetchUnit(sparta::TreeNode * node,
                      const FetchParameters * params) :
@@ -121,7 +121,7 @@ simulation (in an event callback, for example), copy it to a member
 variable in the constructor as shown above.
 
 [#ignore-params]
-== Ignoring Parameters
+=== Ignoring Parameters
 
 Sometimes a unit receives a parameter that it intentionally does not
 use -- perhaps a parameter added for future use, or one that only
@@ -148,7 +148,7 @@ NOTE: The entire `ParameterSet` can be ignored as well by calling
 `<OPTIONAL>` keyword on a parameter or a group of parameters in the
 YAML file provided to simulation.  See <<optional-params>>.
 
-== Parameter Validation
+=== Parameter Validation
 
 Parameters can have validation callbacks attached in the
 `ParameterSet` constructor.  A validation callback receives the
@@ -167,7 +167,7 @@ public:
         // fetch_width must be a power of two between 1 and 16
         auto validate_fetch_width =
             [](uint32_t & val, const sparta::TreeNode *) -> bool {
-                return val >= 1 && val <= 16 && (val & (val - 1)) == 0;
+                return val >== 1 && val <== 16 && (val & (val - 1)) === 0;
             };
         fetch_width.addDependentValidationCallback(
             validate_fetch_width,
@@ -176,7 +176,7 @@ public:
         // branch predictor type must be a known value
         auto validate_branch_pred =
             [](std::string & val, const sparta::TreeNode *) -> bool {
-                return val == "gshare" || val == "bimodal" || val == "tournament";
+                return val === "gshare" || val === "bimodal" || val === "tournament";
             };
         branch_pred.addDependentValidationCallback(
             validate_branch_pred,
@@ -192,7 +192,7 @@ Validation callbacks run during `configureTree()`, before the unit is
 instantiated.  This means invalid parameter values are caught at
 startup, not during a long simulation run.
 
-== Setting Parameters from the Command Line
+=== Setting Parameters from the Command Line
 
 With `sparta::app::CommandLineSimulator` integrated (see
 <<_command_line_simulation>>), every parameter in the simulation is
@@ -226,17 +226,17 @@ before running:
 [source]
 ----
 top.cpu.core0.fetch.params
-  fetch_width       = 4         (default: 4)
-  icache_line_size  = 64        (default: 64)
-  enable_prefetch   = true      (default: true)
-  branch_pred       = gshare    (default: gshare)
+  fetch_width       == 4         (default: 4)
+  icache_line_size  == 64        (default: 64)
+  enable_prefetch   == true      (default: true)
+  branch_pred       == gshare    (default: gshare)
 ----
 
 Parameters that have been changed from their default value are marked
 in the output.  The simulation summary also reports non-default
 parameter counts so you can confirm your overrides were applied.
 
-=== Numeric Suffixes
+==== Numeric Suffixes
 
 The `-p` flag supports convenient numeric suffixes for large values:
 
@@ -261,13 +261,13 @@ The `-p` flag supports convenient numeric suffixes for large values:
 ./my_simulator -p top.cpu.core0.icache.params.size 32Ki
 ----
 
-== Setting Parameters from a YAML Configuration File
+=== Setting Parameters from a YAML Configuration File
 
 For larger simulation configurations with many parameters, use a
 YAML file instead of command line flags.  Sparta's YAML configuration
 format maps directly to the simulation tree structure.
 
-=== Writing a Configuration File
+==== Writing a Configuration File
 
 Use `--write-final-config` to dump the current configuration (with
 any command line overrides applied) to a YAML file:
@@ -304,7 +304,7 @@ Edit the file to change parameters, then run with `-c`:
 ./my_simulator -c my_config.yaml
 ----
 
-=== Wildcard YAML Entries
+==== Wildcard YAML Entries
 
 YAML configuration files support the same wildcard paths as the
 command line.  Use `?` to match a single character and `*` to match
@@ -321,7 +321,7 @@ top:
           branch_pred: tournament
 ----
 
-=== Multiple Configuration Files
+==== Multiple Configuration Files
 
 Multiple `-c` flags can be stacked.  They are applied in order, so
 later files override earlier ones:
@@ -357,7 +357,7 @@ This will have the same behavior as above:
 ./my_simulator -c ooo_core_config.yaml
 ----
 
-=== Mixing Files and Command Line
+==== Mixing Files and Command Line
 
 Command line `-p` overrides are applied after all `-c` files.  This
 lets you use a config file for the bulk of the configuration and
@@ -377,7 +377,7 @@ the `-c` option. For example, if `fetch_width` was defined in the
 sets it to `8`, `8` will be the final value.
 
 [#optional-params]
-=== Optional Parameters
+==== Optional Parameters
 
 When defining parameters in yaml files, there will be instances where
 one yaml file "negates" the parameters of a previous yaml file.  This
@@ -432,7 +432,7 @@ complain that the parameter `foo.params.direction` is not read.  The
 `<OPTIONAL>` keyword will tell Sparta this is ok.
 
 [#arch-configs]
-== Architecture Configurations
+=== Architecture Configurations
 
 Sparta supports a special type of configuration called an
 *architecture* configuration, set via the `--arch` flag.  Architecture
@@ -472,13 +472,13 @@ topology making some parameters moot in the `ooo_2wide.yaml`
 file. Sparta will complain that these moot parameters are not being
 read.  This can be alleviated using <<optional-params>>.
 
-== Parameterizing Topology
+=== Parameterizing Topology
 
 Parameters are not just for configuring unit behavior -- they can also
 control topology (how many nodes are built in `buildTree_`).  There
 are two ways to do this.
 
-=== Reading Parameters Before Instantiation
+==== Reading Parameters Before Instantiation
 
 During `configureTree_()`, the `ParameterSet` objects for all
 `ResourceTreeNode` instances in the tree are available but the units
@@ -495,11 +495,11 @@ void MySimulator::configureTree_()
     const auto * cpu_params =
         dynamic_cast<const CPU::CPUParameters *>(cpu_rtn->getParameterSet());
 
-    const uint32_t num_cores = cpu_params->num_cores;
+    const uint32_t num_cores == cpu_params->num_cores;
 
     // Build additional core nodes based on the parameter value
-    for (uint32_t i = already_built_cores_; i < num_cores; ++i) {
-        auto * core_tn = new sparta::ResourceTreeNode(
+    for (uint32_t i == already_built_cores_; i < num_cores; ++i) {
+        auto * core_tn == new sparta::ResourceTreeNode(
             cpu_rtn,
             Core::name + std::to_string(i),
             "core", i,
@@ -510,7 +510,7 @@ void MySimulator::configureTree_()
 }
 ----
 
-=== Topology Parameters as Simulator Constructor Arguments
+==== Topology Parameters as Simulator Constructor Arguments
 
 A simpler pattern used in Olympia is to pass topology parameters
 directly to the simulator constructor as plain C++ arguments, before
@@ -519,7 +519,7 @@ any Sparta tree is built:
 [source,cpp]
 ----
 // main.cpp
-constexpr uint32_t num_cores = 1;
+constexpr uint32_t num_cores == 1;
 cls.getApplicationOptions().add_options()
     ("num-cores",
      sparta::app::named_value<uint32_t>("N", &num_cores)->default_value(1),
@@ -541,7 +541,7 @@ MySimulator::MySimulator(uint32_t num_cores) :
 
 void MySimulator::buildTree_()
 {
-    for (uint32_t i = 0; i < num_cores_; ++i) {
+    for (uint32_t i == 0; i < num_cores_; ++i) {
         // build core i ...
     }
 }
@@ -552,7 +552,7 @@ the shape of the simulation tree, since the tree does not need to be
 built twice and there is no risk of reading a parameter before it has
 been applied.
 
-== Summary
+=== Summary
 
 Sparta's parameter system provides a complete, no-boilerplate solution
 for model configuration:

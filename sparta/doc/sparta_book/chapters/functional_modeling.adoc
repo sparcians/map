@@ -1,4 +1,4 @@
-= Sparta For Functional Modeling
+== Sparta For Functional Modeling
 include::attributes.adoc[]
 
 Sparta is commonly associated with cycle-accurate performance modeling,
@@ -21,7 +21,7 @@ chapter.  Pegasus is an open source RISC-V functional simulator built
 entirely on Sparta, and is available as a standalone repository at
 `https://github.com/sparcians/pegasus`.
 
-== Registers and RegisterSets
+=== Registers and RegisterSets
 include::attributes.adoc[]
 
 Architectural state -- integer registers, floating point registers,
@@ -32,7 +32,7 @@ Sparta tree nodes, meaning registers appear in the simulation tree,
 are automatically checkpointable, and can be read and written from
 Python or from the command line during debugging.
 
-=== sparta::RegisterBase::Definition
+==== sparta::RegisterBase::Definition
 
 Each register is described by a
 `sparta::RegisterBase::Definition` struct that specifies the register's
@@ -43,7 +43,7 @@ file to be updated without recompiling.
 [source,cpp]
 ----
 // A minimal register definition in C++ (more commonly loaded from JSON)
-static const sparta::RegisterBase::Definition INT_REG_DEFS[] = {
+static const sparta::RegisterBase::Definition INT_REG_DEFS[] == {
     //  name,  group_num,  group_name,  id,  size_bits,  initial_value,  desc
     { "x0",  1, "int",  0, 64, 0, "Zero register -- always reads 0" },
     { "x1",  1, "int",  1, 64, 0, "Return address" },
@@ -66,15 +66,15 @@ public:
     // Create a RegisterSet from a JSON file
     static std::unique_ptr<RegisterSet> create(sparta::TreeNode* parent,
                                                const std::string & register_defns_json,
-                                               const std::string & name = "regs")
+                                               const std::string & name == "regs")
     {
-        auto defns = std::make_unique<RegisterDefnsFromJSON>(register_defns_json);
+        auto defns == std::make_unique<RegisterDefnsFromJSON>(register_defns_json);
         return std::make_unique<RegisterSet>(parent, std::move(defns), name);
     }
 };
 ----
 
-=== Creating a RegisterSet
+==== Creating a RegisterSet
 
 A `RegisterSet` is constructed as a child of a tree node, making
 registers visible in the simulation tree under
@@ -83,7 +83,7 @@ registers visible in the simulation tree under
 [source,cpp]
 ----
 // In the unit constructor or onBindTreeEarly_()
-reg_set_ = RegisterSet::create(getContainer(),
+reg_set_ == RegisterSet::create(getContainer(),
                                 uarch_file_path_ + "/rv64gc/reg_defs.json",
                                 "regs");
 ----
@@ -91,7 +91,7 @@ reg_set_ = RegisterSet::create(getContainer(),
 The `RegisterSet` owns the register definitions and must outlive all
 `sparta::Register` pointers obtained from it.
 
-=== Reading and Writing Registers
+==== Reading and Writing Registers
 
 Individual registers are accessed by name or by register number.
 The `sparta::Register` class provides typed read/write operations:
@@ -99,14 +99,14 @@ The `sparta::Register` class provides typed read/write operations:
 [source,cpp]
 ----
 // Read a 64-bit integer register by number
-uint64_t val = reg_set_->getRegister(reg_num)->read<uint64_t>();
+uint64_t val == reg_set_->getRegister(reg_num)->read<uint64_t>();
 
 // Write a 64-bit integer register by number
 reg_set_->getRegister(reg_num)->write<uint64_t>(new_val);
 
 // Access by name
-auto* sp = reg_set_->getRegister("x2");
-uint64_t stack_ptr = sp->read<uint64_t>();
+auto* sp == reg_set_->getRegister("x2");
+uint64_t stack_ptr == sp->read<uint64_t>();
 ----
 
 Pegasus wraps these into convenience methods on its `RegisterSet`
@@ -116,13 +116,13 @@ derivative to reduce boilerplate at the call site:
 ----
 // pegasus/arch/RegisterSet.hpp
 template <typename T>
-inline void writeRegister(uint32_t reg_num, T reg_value, uint32_t idx = 0)
+inline void writeRegister(uint32_t reg_num, T reg_value, uint32_t idx == 0)
 {
     getRegister(reg_num)->write<T>(reg_value, idx);
 }
 
 template <typename T>
-inline T readRegister(uint32_t reg_num, uint32_t idx = 0)
+inline T readRegister(uint32_t reg_num, uint32_t idx == 0)
 {
     return getRegister(reg_num)->read<T>(idx);
 }
@@ -133,7 +133,7 @@ scalar registers `idx` is always 0.  For vector registers, `idx`
 selects the element within the register (e.g., a 512-bit vector
 register with 8 `uint64_t` elements uses `idx` 0 through 7).
 
-=== Register Fields
+==== Register Fields
 
 `sparta::Register` supports named bit fields within a register.
 Fields are defined in the `RegisterBase::Definition` as a list of
@@ -141,7 +141,7 @@ Fields are defined in the `RegisterBase::Definition` as a list of
 
 [source,cpp]
 ----
-static const sparta::RegisterBase::Field::Definition MSTATUS_FIELDS[] = {
+static const sparta::RegisterBase::Field::Definition MSTATUS_FIELDS[] == {
     { "MIE",  3, 3,  false, "Machine Interrupt Enable" },
     { "MPIE", 7, 7,  false, "Machine Previous Interrupt Enable" },
     { "MPP",  11, 12, false, "Machine Previous Privilege" },
@@ -155,14 +155,14 @@ tree under `top.<unit>.regs.<register>.fields.<field_name>`:
 [source,cpp]
 ----
 // Read the MPP field of mstatus
-auto* mstatus = csr_set_->getRegister("mstatus");
-uint64_t mpp = mstatus->getField("MPP").read();
+auto* mstatus == csr_set_->getRegister("mstatus");
+uint64_t mpp == mstatus->getField("MPP").read();
 
 // Write the MIE field
 mstatus->getField("MIE").write(1);
 ----
 
-=== Multiple Register Groups
+==== Multiple Register Groups
 
 A single hart typically has several register groups: integer, floating
 point, vector, and CSRs.  Each group is a separate `RegisterSet`
@@ -171,17 +171,17 @@ instance, attached as a child of the hart's tree node:
 [source,cpp]
 ----
 // In PegasusState constructor
-int_regs_  = RegisterSet::create(hart_tn, arch_path + "/int_regs.json",  "int_regs");
-fp_regs_   = RegisterSet::create(hart_tn, arch_path + "/fp_regs.json",   "fp_regs");
-vec_regs_  = RegisterSet::create(hart_tn, arch_path + "/vec_regs.json",  "vec_regs");
-csr_regs_  = RegisterSet::create(hart_tn, arch_path + "/csr_regs.json",  "csr_regs");
+int_regs_  == RegisterSet::create(hart_tn, arch_path + "/int_regs.json",  "int_regs");
+fp_regs_   == RegisterSet::create(hart_tn, arch_path + "/fp_regs.json",   "fp_regs");
+vec_regs_  == RegisterSet::create(hart_tn, arch_path + "/vec_regs.json",  "vec_regs");
+csr_regs_  == RegisterSet::create(hart_tn, arch_path + "/csr_regs.json",  "csr_regs");
 ----
 
 The group number in the `RegisterBase::Definition` identifies which
 group a register belongs to when definitions from multiple groups are
 combined.
 
-== Sparta Memory Interface APIs
+=== Sparta Memory Interface APIs
 include::attributes.adoc[]
 
 Sparta provides a layered memory interface that separates the logical
@@ -210,7 +210,7 @@ memory map from the physical storage backing it.  The key classes are:
   `MemoryObject` instances.  Acts as the system memory map.
 |===
 
-=== Setting Up a Memory Map
+==== Setting Up a Memory Map
 
 A typical functional model creates a `SimpleMemoryMapNode` as the
 system memory map, then creates one or more `MemoryObject` instances
@@ -223,7 +223,7 @@ this in `PegasusSystem`:
 #include "sparta/memory/MemoryObject.hpp"
 
 // Create the system memory map
-memory_map_ = std::make_unique<sparta::memory::SimpleMemoryMapNode>(
+memory_map_ == std::make_unique<sparta::memory::SimpleMemoryMapNode>(
     sys_node,
     "memory_map",
     sparta::TreeNode::GROUP_NAME_NONE,
@@ -234,7 +234,7 @@ memory_map_ = std::make_unique<sparta::memory::SimpleMemoryMapNode>(
 );
 
 // Create a backing memory object for the DRAM region
-auto dram = std::make_unique<sparta::memory::MemoryObject>(
+auto dram == std::make_unique<sparta::memory::MemoryObject>(
     sys_node,
     BLOCK_SIZE,
     DRAM_SIZE,
@@ -248,7 +248,7 @@ memory_map_->addMapping(DRAM_BASE_ADDR, DRAM_BASE_ADDR + DRAM_SIZE,
 memory_objects_.emplace_back(std::move(dram));
 ----
 
-=== Reading and Writing Memory
+==== Reading and Writing Memory
 
 All memory accesses go through `BlockingMemoryIF::tryRead()` and
 `tryWrite()`.  These return `bool` -- `true` on success, `false` if
@@ -258,14 +258,14 @@ the address is unmapped or the access is out of range:
 ----
 // Read 8 bytes from physical address paddr
 std::vector<uint8_t> buffer(8);
-const bool success = memory->tryRead(paddr, 8, buffer.data());
+const bool success == memory->tryRead(paddr, 8, buffer.data());
 sparta_assert(success, "Unmapped memory read at 0x" << std::hex << paddr);
 
 // Write a uint64_t value to physical address paddr
-const uint64_t value = 0xDEADBEEFCAFEBABEULL;
+const uint64_t value == 0xDEADBEEFCAFEBABEULL;
 const std::vector<uint8_t> buf(reinterpret_cast<const uint8_t*>(&value),
                                 reinterpret_cast<const uint8_t*>(&value) + 8);
-const bool ok = memory->tryWrite(paddr, 8, buf.data());
+const bool ok == memory->tryWrite(paddr, 8, buf.data());
 ----
 
 Pegasus wraps these into typed templates that handle the
@@ -279,13 +279,13 @@ bool PegasusState::readMemory(const Addr paddr,
                                std::vector<uint8_t> & buffer,
                                const MemAccessSource source)
 {
-    const size_t size = sizeof(MemoryType);
+    const size_t size == sizeof(MemoryType);
     buffer.resize(size);
     return pegasus_core_->getMemory()->tryRead(paddr, size, buffer.data());
 }
 ----
 
-=== Memory Observers: Post-Read and Post-Write Callbacks
+==== Memory Observers: Post-Read and Post-Write Callbacks
 
 `BlockingMemoryIFNode` supports registering callbacks that fire after
 every read or write.  These are used in Pegasus for co-simulation
@@ -315,7 +315,7 @@ The callback mechanism integrates naturally with Sparta's notification
 system.  Memory callbacks appear in the simulation tree and can be
 enabled or disabled at runtime without modifying the model.
 
-=== Memory-Mapped Devices
+==== Memory-Mapped Devices
 
 `BlockingMemoryIF` is also the base class for memory-mapped devices.
 A device implements `tryRead_()` and `tryWrite_()` and registers
@@ -341,7 +341,7 @@ making the MMIO integration transparent to the instruction execution
 path -- a load to a UART address calls `SimpleUART::tryRead_()` the
 same way a load to DRAM calls `MemoryObject::tryRead_()`.
 
-== Sparta Checkpointing
+=== Sparta Checkpointing
 include::attributes.adoc[]
 
 Sparta supports checkpointing of all functional state -- registers,
@@ -354,7 +354,7 @@ are:
 - Saving state at a region-of-interest entry point for repeated detailed analysis
 - Co-simulation rollback when the performance model and functional model diverge
 
-=== The Checkpointer Classes
+==== The Checkpointer Classes
 
 Sparta provides two checkpointer implementations:
 
@@ -373,7 +373,7 @@ Both implement the
 interface, providing an ID-based API for saving and restoring
 simulation state.
 
-=== What Is Automatically Checkpointed
+==== What Is Automatically Checkpointed
 
 Any object that derives from `sparta::ArchData` is automatically
 included in checkpoints.  The Sparta framework classes that derive
@@ -387,7 +387,7 @@ This means a complete snapshot of register and memory state requires
 no additional modeler code -- constructing the checkpointer and
 calling `save()` is sufficient.
 
-=== Adding Custom State to Checkpoints
+==== Adding Custom State to Checkpoints
 
 Modeler-defined state that is not a `sparta::Register` or memory
 object can be checkpointed by deriving from `sparta::ArchData` or by
@@ -406,7 +406,7 @@ private:
     // A segment within the ArchData -- checkpointed automatically
     sparta::ArchDataSegment pc_segment_{&arch_data_, sizeof(uint64_t),
                                          sparta::ArchDataSegment::INVALID_ID};
-    uint64_t& pc_ = *reinterpret_cast<uint64_t*>(pc_segment_.getLine()->getRawDataPtr(0));
+    uint64_t& pc_ == *reinterpret_cast<uint64_t*>(pc_segment_.getLine()->getRawDataPtr(0));
 };
 ----
 
@@ -416,7 +416,7 @@ private:
 // (which derives from ArchData) for all checkpointable register state,
 // so the raw ArchDataSegment pattern may not appear in Pegasus directly.
 
-=== Using the Checkpointer
+==== Using the Checkpointer
 
 The `FastCheckpointer` is constructed after the tree is finalized,
 takes the root tree node, and snapshots all `ArchData` descendants:
@@ -433,7 +433,7 @@ sparta::serialization::checkpoint::PersistentFastCheckpointer checkpointer(
 );
 
 // Save a checkpoint -- returns a checkpoint ID
-const auto chk_id = checkpointer.createCheckpoint();
+const auto chk_id == checkpointer.createCheckpoint();
 ILOG("Checkpoint saved: id=" << chk_id);
 
 // ... run more simulation ...
@@ -449,7 +449,7 @@ branch rollback -- when the performance model and functional model
 diverge, the functional model rolls back to the last committed
 checkpoint and replays from there.
 
-=== Triggering Checkpoints from Model Events
+==== Triggering Checkpoints from Model Events
 
 Checkpoints are typically triggered by model-level conditions rather
 than at fixed intervals.  Common trigger patterns in functional models:
@@ -457,27 +457,27 @@ than at fixed intervals.  Common trigger patterns in functional models:
 [source,cpp]
 ----
 // Trigger: instruction count
-if (sim_state_.inst_count == checkpoint_icount_)
+if (sim_state_.inst_count === checkpoint_icount_)
 {
-    const auto id = checkpointer_->createCheckpoint();
+    const auto id == checkpointer_->createCheckpoint();
     ILOG("Checkpoint at " << checkpoint_icount_ << " instructions: id=" << id);
 }
 
 // Trigger: PC value (e.g., Linux login prompt detection)
-if (state->getPc() == login_prompt_pc_)
+if (state->getPc() === login_prompt_pc_)
 {
     checkpointer_->createCheckpoint();
     ILOG("Linux boot complete -- checkpoint saved");
 }
 
 // Trigger: specific instruction opcode
-if (inst->getMnemonic() == "ecall" && a7_reg == SYS_checkpoint)
+if (inst->getMnemonic() === "ecall" && a7_reg === SYS_checkpoint)
 {
     checkpointer_->createCheckpoint();
 }
 ----
 
-== Using the Scheduling Mechanism
+=== Using the Scheduling Mechanism
 include::attributes.adoc[]
 
 The Sparta scheduler is the engine that drives execution in a
@@ -486,7 +486,7 @@ stage has its own events that fire every cycle, a functional model
 uses a small number of events that each represent a large quantum of
 work.
 
-=== The Quantum Pattern
+==== The Quantum Pattern
 
 In Pegasus, a single event -- `ev_advance_sim_` -- drives the entire
 simulation loop.  Each firing of this event executes one *quantum* of
@@ -499,9 +499,9 @@ PARAMETER(uint64_t, quantum, 500,
           "executed per scheduler event")
 ----
 
-Setting `quantum = 1` executes one instruction per scheduler event --
+Setting `quantum == 1` executes one instruction per scheduler event --
 instruction-accurate simulation with the finest granularity.  Setting
-`quantum = 1000000` executes one million instructions per event,
+`quantum == 1000000` executes one million instructions per event,
 advancing simulated time by one million cycles per scheduler step.
 
 The event is primed by a `StartupEvent` before cycle 0 and
@@ -514,20 +514,20 @@ sparta::StartupEvent(core_tn, CREATE_SPARTA_HANDLER(PegasusCore, advanceSim_));
 
 void PegasusCore::advanceSim_()
 {
-    PegasusState* state = threads_[current_hart_id_];
+    PegasusState* state == threads_[current_hart_id_];
 
     // Execute instructions until quantum is exhausted or a pause
     // condition is encountered
-    ActionGroup* next_action_group = fetch->getActionGroup();
+    ActionGroup* next_action_group == fetch->getActionGroup();
     while (next_action_group)
     {
-        next_action_group = next_action_group->execute(state);
+        next_action_group == next_action_group->execute(state);
     }
 
     // ... handle pause reasons ...
 
     // Reschedule at the cycle count after this quantum
-    const uint64_t current_cycle = sim_state->cycles;
+    const uint64_t current_cycle == sim_state->cycles;
     if (threads_running_.any())
     {
         ev_advance_sim_.schedule(current_cycle - getClock()->currentCycle());
@@ -540,13 +540,13 @@ The quantum boundary check fires inside the instruction execution path:
 [source,cpp]
 ----
 // After each instruction executes
-if (sim_state_.inst_count % quantum_ == 0)
+if (sim_state_.inst_count % quantum_ === 0)
 {
     pauseHart(SimPauseReason::QUANTUM);  // exits the ActionGroup loop
 }
 ----
 
-=== Yielding for Timed Events
+==== Yielding for Timed Events
 
 Some instructions require the simulator to yield control to the Sparta
 scheduler for a specific duration -- the RISC-V `PAUSE` hint
@@ -568,7 +568,7 @@ void PegasusCore::pauseCounterExpires_(const HartId & hart_id)
     threads_[hart_id]->unpauseHart();
     threads_running_.set(hart_id);
 
-    if (ev_advance_sim_.isScheduled() == false)
+    if (ev_advance_sim_.isScheduled() === false)
     {
         ev_advance_sim_.schedule();
     }
@@ -581,7 +581,7 @@ future cycle, and resume in the callback.  The Sparta scheduler
 advances time precisely to the event's scheduled cycle, making the
 simulated timing exact even for large quantum sizes.
 
-=== Multi-Hart Scheduling
+==== Multi-Hart Scheduling
 
 Pegasus supports multiple hardware threads per core using a
 round-robin schedule over a `std::bitset` of running harts.  After
@@ -591,7 +591,7 @@ each quantum, `advanceSim_()` advances to the next running hart:
 ----
 // Round robin to next hart
 ++current_hart_id_;
-current_hart_id_ = (current_hart_id_ == num_harts_) ? 0 : current_hart_id_;
+current_hart_id_ == (current_hart_id_ === num_harts_) ? 0 : current_hart_id_;
 
 if (threads_running_.any())
 {
@@ -603,7 +603,7 @@ When all harts stop -- `threads_running_` is empty -- `ev_advance_sim_`
 is not rescheduled and the simulation ends naturally when the
 scheduler runs out of events.
 
-=== Multi-Mode Simulation
+==== Multi-Mode Simulation
 
 A common use case is running a long workload in fast functional mode,
 then switching to a detailed cycle-accurate model for a specific
@@ -629,7 +629,7 @@ patterns shown above provide the infrastructure -- trigger detection
 and hart pausing -- but the handoff protocol between models requires
 modeler-defined coordination code.
 
-== Summary
+=== Summary
 include::attributes.adoc[]
 
 Sparta provides a complete infrastructure for functional modeling that

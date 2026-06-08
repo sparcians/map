@@ -9,7 +9,7 @@ v1.0, 2026-05-17
 :sectnums:
 :imagesdir: ./images
 :icons: font
-:multipage-level: 1
+:multipage-level: 2
 
 image::spartan.png[Cover, align=center]
 
@@ -33,12 +33,10 @@ This book will walk the reader through the fundamentals of the
 framework as well as provide insight and guidelines to write
 high-quality, professional level performance and functional models.
 
-// Include your 10 adoc files here
+// Include your adoc files here
 include::chapters/introduction.adoc[]
 
 include::chapters/getting_started.adoc[]
-
-//include::chapters/first_simulator.adoc[]
 
 include::chapters/construction.adoc[]
 
@@ -50,16 +48,16 @@ include::chapters/parameters.adoc[]
 
 include::chapters/resources.adoc[]
 
+include::chapters/functional_modeling.adoc[]
+
 include::chapters/statistics_and_reporting.adoc[]
 
 include::chapters/debugging_and_logging.adoc[]
 
-//include::analysis_methods.adoc[]
-
 include::chapters/best_practices.adoc[]
 
-include::chapters/functional_modeling.adoc[]
-
+//include::chapters/first_simulator.adoc[]
+//include::analysis_methods.adoc[]
 //include::framework.adoc[]
 //include::output.adoc[]
 //include::resources.adoc[]

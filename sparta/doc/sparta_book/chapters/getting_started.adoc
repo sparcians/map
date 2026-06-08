@@ -1,4 +1,4 @@
-= Getting Started
+== Getting Started
 :url-map: https://github.com/sparcians/map
 :url-map-v2: https://github.com/sparcians/map/tree/map_v2
 :url-skeleton: https://sparcians.github.io/map/skeleton_example.html
@@ -10,12 +10,12 @@ the end of the chapter you will have a working Sparta environment and
 a concrete feel for what a Sparta simulator looks like from the outside
 before diving into the code.
 
-== Prerequisites
+=== Prerequisites
 
 Sparta requires a C++17-capable compiler and CMake 3.14 or later.
 The following tools and libraries must be installed before building.
 
-=== Ubuntu 22.04 / 24.04
+==== Ubuntu 22.04 / 24.04
 
 [source,bash]
 ----
@@ -33,13 +33,13 @@ sudo apt-get install -y \
     graphviz
 ----
 
-=== Windows (WSL)
+==== Windows (WSL)
 
 Install Ubuntu 22.04 or 24.04 from the Microsoft Store, open a WSL
 terminal, and follow the Ubuntu instructions above.  All subsequent
 commands in this chapter are identical under WSL.
 
-=== macOS
+==== macOS
 
 Install https://brew.sh[Homebrew] if not already present, then:
 
@@ -52,7 +52,7 @@ NOTE: Sparta is tested against Apple Clang 14 and later.  If your
 Xcode command line tools are out of date, run
 `xcode-select --install` before proceeding.
 
-== Cloning the Repository
+=== Cloning the Repository
 
 Sparta lives inside the MAP (Modeling Architectural Platform)
 repository alongside the Helios visualization tools.  Always clone a
@@ -72,7 +72,7 @@ cd map
 The `--recursive` flag is required to pull in the git submodules that
 Sparta depends on.
 
-== Building Sparta
+=== Building Sparta
 
 [source,bash]
 ----
@@ -89,7 +89,7 @@ A successful build produces `libsparta.a` and installs it to
 `/usr/local` so that downstream projects can find it with
 `find_package(Sparta)`.
 
-== Building the Skeleton Pipeline
+=== Building the Skeleton Pipeline
 
 The skeleton pipeline is a minimal but complete Sparta simulator
 included in the MAP repository under `sparta/example/SkeletonPipeline`.
@@ -135,9 +135,9 @@ make -j$(nproc)
 
 This produces the `sparta_skeleton` binary in the `release/` directory.
 
-== Running the Skeleton Pipeline
+=== Running the Skeleton Pipeline
 
-=== Default Run
+==== Default Run
 
 Run the simulator with its default configuration -- one producer, one
 consumer, 100 objects transferred -- and let it run to completion:
@@ -170,27 +170,27 @@ Run Successful!
 Saving reports...
 Automatic Simulation Summary [0,101]
   scheduler
-      ticks                               = 100
-      picoseconds                         = 100
-      seconds                             = 1e-10
-      milliseconds                        = 1e-07
-      microseconds                        = 0.0001
-      nanoseconds                         = 0.1
-      host_machine_user_runtime_seconds   = 0
-      host_machine_system_runtime_seconds = 0
-      host_machine_wall_runtime_seconds   = 0
-      events_fired                        = 301
-      host_user_time_count_ms             = 0
-      host_system_time_count_ms           = 0
-      host_wall_time_count_ms             = 0
+      ticks                               == 100
+      picoseconds                         == 100
+      seconds                             == 1e-10
+      milliseconds                        == 1e-07
+      microseconds                        == 0.0001
+      nanoseconds                         == 0.1
+      host_machine_user_runtime_seconds   == 0
+      host_machine_system_runtime_seconds == 0
+      host_machine_wall_runtime_seconds   == 0
+      events_fired                        == 301
+      host_user_time_count_ms             == 0
+      host_system_time_count_ms           == 0
+      host_wall_time_count_ms             == 0
   top
     top.consumer
-        num_consumed                      = 100
+        num_consumed                      == 100
     top.producer0
-        num_produced                      = 100
+        num_produced                      == 100
   clocks
     clocks.Root
-        cycles                            = 101
+        cycles                            == 101
 ----
 
 A few things worth noting in this output:
@@ -208,7 +208,7 @@ A few things worth noting in this output:
   overhead of the Sparta scheduler itself, the port forwarding events,
   and the producer/consumer logic combined.
 
-=== Inspecting the Simulation Tree
+==== Inspecting the Simulation Tree
 
 One of Sparta's most useful built-in features is the ability to inspect
 the full component tree before running.  This shows every node,
@@ -366,7 +366,7 @@ each unit are log message sources for `info`, `warning`, and `debug`
 categories.  The `observed:true` flag indicates which categories are
 currently being captured.
 
-=== Exploring Parameters
+==== Exploring Parameters
 
 To see every parameter and its current value without running:
 
@@ -392,7 +392,7 @@ accessible this way.
 
 // AUTHOR NOTE: Please paste the actual --show-parameters output here.
 
-=== Running with Multiple Producers
+==== Running with Multiple Producers
 
 The consumer is parameterized to accept connections from more than one
 producer.  To run with 10 producers:
@@ -406,7 +406,7 @@ producer.  To run with 10 producers:
 // summary changes with 10 producers (num_produced per producer,
 // num_consumed on the consumer, events_fired in the scheduler).
 
-=== Using a Configuration File
+==== Using a Configuration File
 
 For larger simulations with many parameters, managing them all on the
 command line becomes unwieldy.  Sparta can write the current
@@ -428,7 +428,7 @@ The YAML config file approach is the standard way to set up large
 simulation runs and is covered in detail in
 <<commandline_simulation>>.
 
-=== Generating Reports
+==== Generating Reports
 
 Sparta's reporting system produces output in several formats with no
 changes to the model code:
@@ -443,7 +443,7 @@ changes to the model code:
 // AUTHOR NOTE: Please paste a representative snippet of the plain
 // text report output here.
 
-=== Enabling Logging
+==== Enabling Logging
 
 Sparta has a built-in hierarchical logging system.  The `-l` flag takes
 three arguments: a tree path pattern, a log category, and an output
@@ -468,7 +468,7 @@ file.
 // AUTHOR NOTE: Please paste a few representative lines from one of
 // the log files here so readers can see the log format.
 
-== Walking Through the Code
+=== Walking Through the Code
 
 Now that you have seen the skeleton pipeline running, it is worth
 understanding what each piece of code does before the next chapters
@@ -493,7 +493,7 @@ The skeleton pipeline has three source files:
 | Builds the tree, configures it, and binds the ports
 |===
 
-=== The Simulator: SkeletonSimulator
+==== The Simulator: SkeletonSimulator
 
 `SkeletonSimulator` derives from `sparta::app::Simulation` and overrides
 three methods that Sparta calls in sequence during startup:
@@ -520,7 +520,7 @@ This three-phase construction pattern is the heart of every Sparta
 simulator and is covered in full detail in
 <<_simulation_construction>>.
 
-=== The Units: Producer and Consumer
+==== The Units: Producer and Consumer
 
 Both `Producer` and `Consumer` derive from `sparta::Unit`.  Each unit
 declares its ports and events as member variables and registers
@@ -557,7 +557,7 @@ to deliver in the current cycle, regardless of the order in which
 their port callbacks fire.  This is Sparta's event ordering system at
 work, and it is covered in detail in <<_events_and_scheduling>>.
 
-=== Parameters, Statistics, and Logging
+==== Parameters, Statistics, and Logging
 
 Each unit in the skeleton pipeline also demonstrates three other core
 Sparta features that appear in almost every model:
@@ -580,7 +580,7 @@ the unit's tree node.  Messages are emitted with `ILOG`, `WLOG`, and
 option.  The `?` nodes in the tree output above are those message
 sources.
 
-== What You Have Learned
+=== What You Have Learned
 
 At this point you have:
 

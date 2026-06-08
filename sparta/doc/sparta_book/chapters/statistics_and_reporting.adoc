@@ -1,4 +1,4 @@
-= Statistics and Reporting
+== Statistics and Reporting
 :url-counter: https://sparcians.github.io/map/classsparta_1_1Counter.html
 :url-cyclecounter: https://sparcians.github.io/map/classsparta_1_1CycleCounter.html
 :url-readonlycounter: https://sparcians.github.io/map/classsparta_1_1ReadOnlyCounter.html
@@ -23,7 +23,7 @@ This chapter covers how to declare counters and statistics, how to
 control their visibility, how to write report definition files, and
 how to generate reports from the command line.
 
-== Counters
+=== Counters
 
 A {url-counter}[`sparta::Counter`] is the most common statistic type.
 It is a monotonically increasing `uint64_t` that the model increments
@@ -31,7 +31,7 @@ during simulation.  Counters are declared as member variables of the
 unit and registered with the `sparta::StatisticSet` inherited from
 `sparta::Unit`.
 
-=== Declaring Counters
+==== Declaring Counters
 
 [source,cpp]
 ----
@@ -65,7 +65,7 @@ The `sparta::Counter` constructor takes:
    `COUNT_LATEST` if you want the counter to reflect only the most
    recent value rather than a cumulative total
 
-=== Incrementing Counters
+==== Incrementing Counters
 
 Counters are incremented with `++` or `+=`:
 
@@ -78,8 +78,8 @@ void DecodeUnit::decode_()
         return;
     }
 
-    uint32_t insts_this_cycle = decodeInstructions_();
-    num_decoded_ += insts_this_cycle;
+    uint32_t insts_this_cycle == decodeInstructions_();
+    num_decoded_ +== insts_this_cycle;
 }
 
 void DecodeUnit::handleFlush_()
@@ -93,7 +93,7 @@ Counters appear in the simulation tree under
 `top.<unit>.stats.<counter_name>` and are included automatically in
 the simulation summary at the end of every run.
 
-=== CycleCounter
+==== CycleCounter
 
 {url-cyclecounter}[`sparta::CycleCounter`] counts the number of clock
 cycles during which a condition is true.  It is useful for occupancy
@@ -124,7 +124,7 @@ void DecodeUnit::decode_()
 }
 ----
 
-=== ReadOnlyCounter
+==== ReadOnlyCounter
 
 {url-readonlycounter}[`sparta::ReadOnlyCounter`] wraps an existing
 `uint64_t` member variable and exposes it as a Sparta counter without
@@ -136,7 +136,7 @@ duplicating the storage:
 [source,cpp]
 ----
 // The actual count is maintained by some other data structure
-uint64_t queue_occupancy_ = 0;
+uint64_t queue_occupancy_ == 0;
 
 // Expose it as a Sparta counter
 sparta::ReadOnlyCounter ro_occupancy_ {&unit_stat_set_, "queue_occupancy",
@@ -145,7 +145,7 @@ sparta::ReadOnlyCounter ro_occupancy_ {&unit_stat_set_, "queue_occupancy",
                                         &queue_occupancy_};
 ----
 
-== StatisticDef: Derived Statistics
+=== StatisticDef: Derived Statistics
 
 A {url-statisticdef}[`sparta::StatisticDef`] is a statistic computed
 from an arithmetic expression over other counters and statistics.
@@ -158,7 +158,7 @@ sparta::Counter total_insts_   {&unit_stat_set_, "total_insts",
                                  "Total instructions retired",
                                  sparta::Counter::COUNT_NORMAL};
 
-// IPC = total_insts / total_cycles  (total_cycles comes from the scheduler)
+// IPC == total_insts / total_cycles  (total_cycles comes from the scheduler)
 sparta::StatisticDef ipc_      {&unit_stat_set_, "ipc",
                                  "Instructions per cycle",
                                  &unit_stat_set_,
@@ -195,12 +195,12 @@ sparta::StatisticDef avg_occupancy_ {&unit_stat_set_, "avg_occupancy",
                                       "total_occupancy / g_cycles"};
 ----
 
-== Histograms
+=== Histograms
 
 Sparta provides two histogram types for tracking the distribution of
 values over simulation.
 
-=== sparta::Histogram
+==== sparta::Histogram
 
 {url-histogram}[`sparta::Histogram`] (also `sparta::HistogramTreeNode`)
 tracks how many times a value fell into each of a set of fixed-size
@@ -222,7 +222,7 @@ sparta::Histogram iq_occupancy_hist_ {&unit_stat_set_,
 iq_occupancy_hist_.addValue(current_iq_size_);
 ----
 
-=== sparta::CycleHistogram
+==== sparta::CycleHistogram
 
 {url-cyclehistogram}[`sparta::CycleHistogram`] is like `Histogram`
 but accumulates *cycles* spent at each value rather than a count of
@@ -243,7 +243,7 @@ sparta::CycleHistogram iq_cycles_hist_ {&unit_stat_set_,
 iq_cycles_hist_.addValue(current_iq_size_);
 ----
 
-== Counter Visibility
+=== Counter Visibility
 
 Every counter and statistic has a *visibility* level that controls
 whether it appears in automatic reports and summaries.  The visibility
@@ -307,13 +307,13 @@ The automatic simulation summary shown at the end of every run
 too many `VIS_SUMMARY` counters produce noisy summaries; too few
 make it hard to quickly assess simulation correctness.
 
-== Generating Reports from the Command Line
+=== Generating Reports from the Command Line
 
 With `CommandLineSimulator` integrated, every counter and statistic in
 the simulation tree is immediately reportable from the command line
 with no model changes.
 
-=== Automatic Summary
+==== Automatic Summary
 
 The automatic summary runs at the end of every simulation and includes
 all `VIS_SUMMARY`-level counters:
@@ -327,17 +327,17 @@ all `VIS_SUMMARY`-level counters:
 ----
 Automatic Simulation Summary [0,10001]
   scheduler
-      ticks          = 10000
-      events_fired   = 384721
+      ticks          == 10000
+      events_fired   == 384721
   top
     top.cpu.core0.decode
-        num_decoded  = 39842
-        num_stalls   = 127
+        num_decoded  == 39842
+        num_stalls   == 127
     top.cpu.core0.execute
-        ipc          = 3.98
+        ipc          == 3.98
 ----
 
-=== Generating a Full Report
+==== Generating a Full Report
 
 Use `--report-all` to generate a report containing all non-hidden
 counters in all formats:
@@ -350,7 +350,7 @@ counters in all formats:
 ./my_simulator -r 10000 --report-all output.csv  csv
 ----
 
-=== Targeted Reports with `-r`
+==== Targeted Reports with `-r`
 
 Use `-r` to generate a report for a specific subtree of the simulation:
 
@@ -360,14 +360,14 @@ Use `-r` to generate a report for a specific subtree of the simulation:
 ./my_simulator -r "top.cpu.core0.decode" "" "" text output.txt
 ----
 
-== Report Definition Files
+=== Report Definition Files
 
 For production use, report definitions give you precise control over
 which statistics appear in a report, how they are named, and how they
 are organized.  A report definition is a YAML file that maps
 simulation tree paths to report field names.
 
-=== A Minimal Report Definition
+==== A Minimal Report Definition
 
 [source,yaml]
 ----
@@ -397,7 +397,7 @@ Run with the report definition:
 ./my_simulator -r my_report.yaml "" "" html report.html
 ----
 
-=== Multi-Core Reports with Wildcards
+==== Multi-Core Reports with Wildcards
 
 Wildcards make it easy to report the same statistics across all cores:
 
@@ -410,7 +410,7 @@ content:
     cpu:
       core*:                    # matches core0, core1, core2, ...
         decode.stats:
-          num_decoded : "Core%1 Decoded"   # %1 = the wildcard match (0, 1, 2, ...)
+          num_decoded : "Core%1 Decoded"   # %1 == the wildcard match (0, 1, 2, ...)
           num_stalls  : "Core%1 Stalls"
 
         execute.stats:
@@ -421,7 +421,7 @@ The `%1` variable in the field name is replaced by the wildcard match
 from the most recent scope qualifier.  For `core0`, `%1` is `0`; for
 `core1`, `%1` is `1`.
 
-=== Subreports
+==== Subreports
 
 Organize a large report into sections using `subreport`:
 
@@ -457,7 +457,7 @@ content:
           dcache_hits : "D-cache hits"
 ----
 
-=== Autopopulation
+==== Autopopulation
 
 `autopopulate` adds statistics automatically based on visibility
 level, without naming each one explicitly.  This is useful for
@@ -485,7 +485,7 @@ content:
     autopopulate: "!=vis:hidden"
 ----
 
-=== Statistical Expressions in Reports
+==== Statistical Expressions in Reports
 
 Report field expressions can reference multiple counters from the
 current scope and combine them with arithmetic:
@@ -501,7 +501,7 @@ content:
     "(l1cache.stats.hits + l2cache.stats.hits) / (l1cache.stats.accesses)" : "Combined cache hit rate"
 ----
 
-== Periodic Reports
+=== Periodic Reports
 
 Sparta can generate reports at regular intervals during a long
 simulation run rather than only at the end.  This is useful for
@@ -522,7 +522,7 @@ produces `stats_every_0.txt`, `stats_every_1.txt`, and so on.
 // changed or differ from what's shown here.  The end_user.html doc
 // has the authoritative syntax.
 
-== Including Report Definitions
+=== Including Report Definitions
 
 Large simulations often have many report definitions that share
 common sections.  Use `#include` to compose report definitions from
@@ -547,7 +547,7 @@ content:
 The included file is interpreted in the scope of the node it is
 included under.
 
-== Summary
+=== Summary
 
 Sparta's statistics infrastructure requires minimal model code but
 provides powerful reporting capabilities:

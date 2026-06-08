@@ -70,7 +70,7 @@ jobs:
           # Doxygen output goes to the root
           cp -r sparta/doc/html/. _deploy/
           # Book output goes into the sparta_book/ subdirectory
-          cp -r sparta/doc/sparta_book/build/html _deploy/sparta_book/
+          cp -r sparta/doc/sparta_book/build/html/. _deploy/sparta_book/
 
       # ── 8. Deploy to gh-pages branch ─────────────────────────────────────────
       - name: Deploy to GitHub Pages

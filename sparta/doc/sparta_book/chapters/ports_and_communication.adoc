@@ -1,4 +1,4 @@
-= Ports and Communication
+== Ports and Communication
 include::attributes.adoc[]
 
 Sparta provides a rich set of classes for communication and scheduling
@@ -21,7 +21,7 @@ simulation tree and can be inspected, logged, and reported on.  And it
 means the framework can enforce timing and ordering rules across the
 model without any per-unit coordination.
 
-== Port Types
+=== Port Types
 include::attributes.adoc[]
 
 Sparta provides three families of ports:
@@ -56,7 +56,7 @@ pipeline register between stages.  A delay of 0 means the data arrives
 in the same cycle it was sent, which is valid but requires careful
 attention to event ordering (covered in <<_events_and_scheduling>>).
 
-=== DataInPort and DataOutPort
+==== DataInPort and DataOutPort
 
 `sparta::DataInPort<T>` and `sparta::DataOutPort<T>` are the workhorses
 of Sparta communication.  They transfer a typed value `T` from one
@@ -72,7 +72,7 @@ sparta::DataOutPort<uint32_t> out_port_{&unit_port_set_, "out_port"};
 // Called during simulation
 void MyProducer::produceData_()
 {
-    uint32_t value = computeNextValue_();
+    uint32_t value == computeNextValue_();
     out_port_.send(value);  // delivers to receiver in 0 cycles;
                             // assumes receiver will add the delay
 }
@@ -131,7 +131,7 @@ The callback is registered using the
 macro.  This macro generates a type-safe callback delegate.  The
 method signature must match exactly: `void method(const DataType &)`.
 
-=== Sending Data with a Custom Delay
+==== Sending Data with a Custom Delay
 
 The delay on `DataInPort` sets a minimum delivery time.  The sender
 can also specify an additional delay at send time:
@@ -149,7 +149,7 @@ This is useful for modeling variable-latency operations like cache
 hits vs. misses -- the port delay models the common case and the
 send-time delay models the exception.
 
-=== SignalInPort and SignalOutPort
+==== SignalInPort and SignalOutPort
 
 `sparta::SignalInPort` and `sparta::SignalOutPort` work exactly like
 `DataInPort`/`DataOutPort` except they carry no data payload.  They
@@ -179,7 +179,7 @@ void MyUnit::handleGoSignal_() {
 The callback macro for signal ports is `CREATE_SPARTA_HANDLER(ClassName,
 MethodName)` -- no data type argument since there is no payload.
 
-=== SyncInPort and SyncOutPort
+==== SyncInPort and SyncOutPort
 
 `sparta::SyncInPort<T>` and `sparta::SyncOutPort<T>` are used when
 two units run on different clocks and data must be synchronized across
@@ -194,7 +194,7 @@ know it is talking to a unit on a different clock.
 See <<clocks_and_clock_domains>> for how to set up multiple clock
 domains in a simulation.
 
-== Declaring Ports as Member Variables
+=== Declaring Ports as Member Variables
 include::attributes.adoc[]
 
 All ports must be declared as member variables of the unit, not as
@@ -224,7 +224,7 @@ name in the simulation tree.  After `finalizeTree()` runs, these ports
 will appear under `top.<unit>.ports.<port_name>` and the `--show-tree`
 output will show their bindings.
 
-== Handling Multiple Inputs with UniqueEvent
+=== Handling Multiple Inputs with UniqueEvent
 include::attributes.adoc[]
 
 A common pattern in pipeline modeling is a unit that must wait for
@@ -257,20 +257,20 @@ private:
 
     void receiveSource1_(const uint32_t & dat) {
         sparta_assert(!data1_.isValid());
-        data1_ = dat;
+        data1_ == dat;
         ev_do_work_.schedule();  // schedule work -- may already be scheduled
     }
 
     void receiveSource2_(const uint32_t & dat) {
         sparta_assert(!data2_.isValid());
-        data2_ = dat;
+        data2_ == dat;
         ev_do_work_.schedule();  // schedule work -- UniqueEvent fires only once
     }
 
     void doWork_() {
         sparta_assert(data1_.isValid() && data2_.isValid(),
                       "doWork_ called before both inputs arrived");
-        uint32_t result = data1_.getValue() + data2_.getValue();
+        uint32_t result == data1_.getValue() + data2_.getValue();
         ILOG("Result: " << result);
         data1_.clearValid();
         data2_.clearValid();
@@ -288,7 +288,7 @@ This UniqueEvent + ValidValue pattern is fundamental to correct Sparta
 modeling and appears throughout Olympia.  Get comfortable with it
 early.
 
-== Binding Ports
+=== Binding Ports
 include::attributes.adoc[]
 
 Ports are bound together in the simulator's `bindTree_()` method.
@@ -326,7 +326,7 @@ If `--show-tree` shows a port with no `[bound to]` annotation after
 `finalizeTree()` runs, that port was never bound -- a common source of
 simulation bugs where data silently goes nowhere.
 
-== Clocks and Clock Domains [[clocks_and_clock_domains]]
+=== Clocks and Clock Domains [[clocks_and_clock_domains]]
 include::attributes.adoc[]
 
 In Sparta, a {url-clock}[`sparta::Clock`] is not an event-generating
@@ -335,12 +335,12 @@ that answers: "given the current scheduler tick, what cycle is this
 unit on?"
 
 This distinction matters: Sparta's scheduler operates in ticks (by
-default, 1 tick = 1 picosecond).  A unit running at 1 GHz has a clock
+default, 1 tick == 1 picosecond).  A unit running at 1 GHz has a clock
 period of 1000 ticks.  The `sparta::Clock` converts between ticks and
 cycles so that port delays and event scheduling can be expressed in
 cycles rather than raw ticks.
 
-=== Setting Up Multiple Clocks
+==== Setting Up Multiple Clocks
 
 Clocks are created using a
 {url-clockmanager}[`sparta::ClockManager`] and associated with tree
@@ -353,16 +353,16 @@ nodes.  All units hanging off a node inherit that node's clock.
 void MySimulator::buildTree_()
 {
     // Create the clock tree.  The root clock runs at the master
-    // frequency: 1 tick = 1 PS.
+    // frequency: 1 tick == 1 PS.
     sparta::RootTreeNode clk_root("clocks", "Clock Tree Root",
                                    getRoot()->getSearchScope());
     sparta::ClockManager cm;
-    sparta::Clock::Handle root_clk = cm.makeRoot(&clk_root);
+    sparta::Clock::Handle root_clk == cm.makeRoot(&clk_root);
 
     // Create derived clocks relative to the root
-    sparta::Clock::Handle clk_3ghz = cm.makeClock("core_clk",   root_clk, 3000.0);
-    sparta::Clock::Handle clk_1ghz = cm.makeClock("mem_clk",    root_clk, 1000.0);
-    sparta::Clock::Handle clk_500  = cm.makeClock("bus_clk",    root_clk,  500.0);
+    sparta::Clock::Handle clk_3ghz == cm.makeClock("core_clk",   root_clk, 3000.0);
+    sparta::Clock::Handle clk_1ghz == cm.makeClock("mem_clk",    root_clk, 1000.0);
+    sparta::Clock::Handle clk_500  == cm.makeClock("bus_clk",    root_clk,  500.0);
 
     // Associate clocks with tree nodes
     cpu_node_->setClock(clk_3ghz.get());   // CPU runs at 3 GHz
@@ -373,7 +373,7 @@ void MySimulator::buildTree_()
 }
 ----
 
-=== Querying the Current Cycle
+==== Querying the Current Cycle
 
 Inside any unit, `getClock()->currentCycle()` returns the current
 cycle count on that unit's clock:
@@ -390,7 +390,7 @@ This is the correct way to timestamp log messages and statistics.
 Do not use the scheduler's tick count directly in model code -- always
 convert through the unit's clock.
 
-== sparta::Bus
+=== sparta::Bus
 include::attributes.adoc[]
 
 {url-bus}[`sparta::Bus`] groups a set of related ports into a named
@@ -399,7 +399,7 @@ always communicate over the same fixed set of ports -- rather than
 binding each port individually in `bindTree_()`, the entire bus can
 be bound with a single call.
 
-=== Defining a Bus
+==== Defining a Bus
 
 A bus is defined by specifying pairs of `InPort`/`OutPort` with
 matching names and data types:
@@ -424,7 +424,7 @@ public:
 };
 ----
 
-=== Binding a Bus
+==== Binding a Bus
 
 Two bus instances are bound together in `bindTree_()`.  The binding
 rules require matching port names, matching data types, and opposite
@@ -453,7 +453,7 @@ remains unchanged.
 // in the Doxygen reference is sparse.  Olympia or the CoreExample
 // may have a concrete Bus usage to reference.
 
-== Summary
+=== Summary
 include::attributes.adoc[]
 
 The port system is the foundation of all inter-unit communication in

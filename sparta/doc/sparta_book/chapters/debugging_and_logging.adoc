@@ -1,4 +1,4 @@
-= Debugging and Logging
+== Debugging and Logging
 :url-messagesource: https://sparcians.github.io/map/classsparta_1_1log_1_1MessageSource.html
 :url-tap: https://sparcians.github.io/map/classsparta_1_1log_1_1Tap.html
 :url-spartaassert: https://sparcians.github.io/map/SpartaAssert_8hpp.html
@@ -17,7 +17,7 @@ inspection commands for understanding the simulation's structure.
 
 This chapter covers all of these tools and how to use them effectively.
 
-== Sparta Logging
+=== Sparta Logging
 
 Sparta's logging system is a hierarchical, category-based message
 system.  Every unit can emit log messages at runtime, and those
@@ -27,7 +27,7 @@ overhead when logging is disabled -- the `SPARTA_EXPECT_FALSE` hint
 tells the compiler to optimize for the common case of logging being
 off.
 
-=== Declaring Log Message Sources
+==== Declaring Log Message Sources
 
 Every `sparta::Unit` inherits three built-in log message sources:
 
@@ -72,7 +72,7 @@ This means disabled log messages have essentially zero runtime cost
 message construction off the hot path, and no string formatting
 occurs.
 
-=== Adding Custom Log Categories
+==== Adding Custom Log Categories
 
 For units that benefit from more fine-grained log control, additional
 message sources can be declared:
@@ -102,7 +102,7 @@ FetchUnit::FetchUnit(sparta::TreeNode * node,
 Custom log sources appear as `?` nodes in `--show-tree` output under
 the unit and can be tapped by category name on the command line.
 
-=== Enabling Logging from the Command Line
+==== Enabling Logging from the Command Line
 
 Use the `-l` flag with three arguments: a tree path pattern, a
 category, and a destination:
@@ -115,7 +115,7 @@ category, and a destination:
 # Capture only fetch unit messages
 ./my_simulator -r 10000 -l top.cpu.core0.fetch info fetch.log
 
-# Capture all categories from fetch (empty string = all categories)
+# Capture all categories from fetch (empty string == all categories)
 ./my_simulator -r 10000 -l top.cpu.core0.fetch "" fetch_all.log
 
 # Capture warning messages from all units (wildcard)
@@ -134,7 +134,7 @@ category, and a destination:
     -l top.cpu.core0.lsu    info lsu.log
 ----
 
-=== Log Output Formats
+==== Log Output Formats
 
 The destination file extension controls the log format:
 
@@ -179,7 +179,7 @@ Each log line (except raw) looks like:
 
 The fields in the braces are: tick, cycle, origin path, and category.
 
-=== Deferred Logging with --debug-on
+==== Deferred Logging with --debug-on
 
 For long simulations, enabling logging from cycle 0 produces enormous
 files and significant slowdown.  Use `--debug-on` to defer all logging
@@ -206,7 +206,7 @@ Or defer until a specific instruction count:
 This is one of the most useful debugging techniques for bugs that
 only appear deep into a workload.
 
-=== Attaching a Log Tap in C++
+==== Attaching a Log Tap in C++
 
 For unit tests or special-purpose debugging, log taps can be attached
 programmatically:
@@ -224,7 +224,7 @@ sparta::log::Tap scheduler_tap(&scheduler_, "debug", std::cout);
 
 The tap is automatically removed when it goes out of scope.
 
-== Sparta Assertions
+=== Sparta Assertions
 
 Sparta provides `sparta_assert` as the primary tool for catching
 invariant violations in model code.  Unlike `assert()`, a
@@ -255,7 +255,7 @@ supports stream-style formatting with `<<`.  The message is only
 constructed when the assertion fails, so complex messages have no
 runtime cost during normal operation.
 
-=== When to Use sparta_assert
+==== When to Use sparta_assert
 
 Use `sparta_assert` liberally:
 
@@ -269,13 +269,13 @@ A model with thorough assertions will catch bugs at the point they
 are introduced rather than many cycles later when their effects
 become visible in wrong statistics.
 
-=== sparta_assert vs std::assert
+==== sparta_assert vs std::assert
 
 Never use `std::assert()` in Sparta model code.  `std::assert` aborts
 the process immediately, bypassing Sparta's exception handling and
 producing no debug dump.  Always use `sparta_assert`.
 
-== Post-Run Debug Dumps
+=== Post-Run Debug Dumps
 
 When a `sparta_assert` fails or any `sparta::SpartaException` is
 thrown during a run, Sparta automatically writes a debug dump file.
@@ -289,7 +289,7 @@ The debug dump contains:
 - Per-unit debug state (each resource gets a chance to write its
   own debug information)
 
-=== Reading the Debug Dump
+==== Reading the Debug Dump
 
 The dump file contains ANSI color codes.  View it with:
 
@@ -305,7 +305,7 @@ Or to strip the color codes and view as plain text:
 cat error-dump.dbg | sed 's/\x1b\[[0-9;]*m//g' | less
 ----
 
-=== Controlling Debug Dump Behavior
+==== Controlling Debug Dump Behavior
 
 [source,bash]
 ----
@@ -322,7 +322,7 @@ cat error-dump.dbg | sed 's/\x1b\[[0-9;]*m//g' | less
 ./my_simulator --debug-dump error --debug-dump-filename my_debug.dbg
 ----
 
-=== Writing Custom Debug State
+==== Writing Custom Debug State
 
 Every `sparta::Unit` can override `dumpDebugContent_()` to write
 unit-specific state to the debug dump.  This is called automatically
@@ -349,7 +349,7 @@ Good `dumpDebugContent_` implementations are invaluable for
 post-mortem debugging -- they show the exact state of each unit
 at the moment the assertion fired.
 
-== Tree Inspection Commands
+=== Tree Inspection Commands
 
 Sparta's `--show-*` family of commands let you inspect the simulation
 structure without running it.  These are essential for debugging
@@ -387,7 +387,7 @@ topology issues, missing port bindings, and parameter problems.
 | Shorthand for `--show-parameters --no-run`
 |===
 
-=== Finding Unbound Ports
+==== Finding Unbound Ports
 
 The most common use of `--show-ports` is finding ports that were
 not bound in `bindTree_()`.  An unbound port looks like this in the
@@ -403,7 +403,7 @@ top.cpu.core0.decode.ports
 Any port marked `UNBOUND` means data sent to it will silently
 disappear.  This is a common cause of counters that never increment.
 
-=== Inspecting the Event DAG
+==== Inspecting the Event DAG
 
 The `--show-dag` output shows every event and its precedence
 relationships.  Use it when you suspect an ordering bug -- when an
@@ -414,7 +414,7 @@ event is firing before data it depends on has arrived:
 ./my_simulator --show-dag --no-run 2>&1 | grep -A 3 "ev_decode"
 ----
 
-== GDB Integration
+=== GDB Integration
 
 When debugging a Sparta simulator under GDB, the default behavior of
 breaking on uncaught exceptions is not useful because Sparta catches
@@ -444,9 +444,9 @@ When the breakpoint fires, use `backtrace` to see where the exception
 was thrown and `info locals` to inspect the local variables at each
 frame.
 
-== Common Debugging Patterns
+=== Common Debugging Patterns
 
-=== Counter Never Increments
+==== Counter Never Increments
 
 If a counter ends the simulation at zero when it should not:
 
@@ -457,7 +457,7 @@ If a counter ends the simulation at zero when it should not:
 4. Add a `sparta_assert(false)` temporarily in the callback -- does
    it ever trigger?
 
-=== Simulation Ends Too Early
+==== Simulation Ends Too Early
 
 Sparta terminates when there are no more *continuing* events
 scheduled.  If the simulation stops before expected:
@@ -468,7 +468,7 @@ scheduled.  If the simulation stops before expected:
 3. Add `-l top info 1` to watch the event flow near the end of
    simulation and identify which unit went silent first.
 
-=== Wrong Statistics at End of Run
+==== Wrong Statistics at End of Run
 
 If a rate or derived statistic is wrong:
 
@@ -479,7 +479,7 @@ If a rate or derived statistic is wrong:
    the counter evolves over time -- does it stop incrementing at
    some point?
 
-=== Assertion Failure in a Callback
+==== Assertion Failure in a Callback
 
 When a `sparta_assert` fires in an event callback:
 
@@ -490,7 +490,7 @@ When a `sparta_assert` fires in an event callback:
 4. Re-run with `-l top debug 1 --debug-on <cycle-200>` to capture
    the 200 cycles leading up to the failure
 
-== Summary
+=== Summary
 
 Sparta's debugging toolkit works best when used together:
 

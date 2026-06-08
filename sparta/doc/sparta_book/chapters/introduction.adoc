@@ -1,7 +1,7 @@
-= Introduction
+== Introduction
 include::attributes.adoc[]
 
-== Foreword
+=== Foreword
 include::attributes.adoc[]
 
 After more than two decades of building performance models and
@@ -20,7 +20,7 @@ as possible.  The author is the lead designer and developer of the
 {url-sparcians}[Sparcians] open source organization and co-chair of
 the {url-riscv-sig}[RISC-V International Performance Modeling SIG].
 
-== What is Sparta?
+=== What is Sparta?
 include::attributes.adoc[]
 
 Sparta is a modeling framework and toolkit for performance architecture
@@ -45,7 +45,7 @@ mechanisms, event ordering, modular unit definitions, data collection
 at any level at any point in time, error handling and resolution,
 pipeline visualization, and more.
 
-== Who This Book Is For
+=== Who This Book Is For
 include::attributes.adoc[]
 
 This book is written for performance architects and modeling engineers
@@ -68,7 +68,7 @@ serves as a complete, real-world reference for every concept covered
 here.  Readers are encouraged to keep a clone of Olympia nearby and
 refer to Olympia as each chapter introduces new framework concepts.
 
-== Sparta in the Wild
+=== Sparta in the Wild
 include::attributes.adoc[]
 
 Sparta is used in both industry and academia.  Public examples include:
@@ -94,7 +94,7 @@ rich statistics infrastructure make Sparta well suited to the demands of
 pre-silicon microarchitecture exploration.
 
 
-== Sparta vs gem5 Modeling [[_sparta_vs_gem5]]
+=== Sparta vs gem5 Modeling [[_sparta_vs_gem5]]
 include::attributes.adoc[]
 
 The communication and scheduling concepts in Sparta are similar in
@@ -120,14 +120,14 @@ framework quite easily. Porting a model from Sparta to gem5 is more
 difficult due to the lack of support for timing/event handling in
 gem5, specifically 0-cycle event processing.
 
-=== Licensing Issues
+==== Licensing Issues
 
 gem5 licensing is not a risk-less license, which makes some companies
 leery to adopt gem5 for research/patent analysis. Sparta is based on
 the Apache 2.0 license with no risks associated. Also, Sparta contains
 no licensing/copyrights from ARM or companies of the like.
 
-=== The Framework
+==== The Framework
 
 gem5 is both a framework and a full system modeling solution. Sparta
 is a framework with _examples_ of how to build custom models like the
@@ -147,7 +147,7 @@ interactions at a very detailed level especially when dealing with
 Discrete Event Simulation (DES) kernel in Sparta using precedence (see
 <<using_precedence>>).
 
-=== Modeling Differences [[modeling_differences]]
+==== Modeling Differences [[modeling_differences]]
 
 gem5 o3 CPU model is not event driven. In fact, it is a PSNS model
 that is explicitly controlled by 1 event called by the gem5 framework
@@ -171,7 +171,7 @@ and ensure the ordering is adhered. The framework can also ensure
 cyclic behavior was not introduced which can lead to infinite loop
 conditions.
 
-=== Modeling Performance and Use
+==== Modeling Performance and Use
 
 At the time of this book's writing, gem5's performance was considered
 very slow. This lack of simulation performance is mitigated by using
@@ -191,7 +191,7 @@ schedule events when there is work to do), the modeler has complete
 control of the performance of the simulation. The current design of
 the o3 model does not allow that.
 
-=== Summary
+==== Summary
 
 gem5 has advantages over Sparta; Sparta has advantages over
 gem5. Either way the modeler must decide based on his/her use case and
@@ -205,7 +205,7 @@ If the use case is rough performance adherence with full functional
 support and not much detailed exploration via topological differences
 or timing flows, then gem5 will be a good start.
 
-== Types of Simulation
+=== Types of Simulation
 include::attributes.adoc[]
 
 Before diving into Sparta itself, understanding the landscape of
@@ -213,7 +213,7 @@ simulation styles that performance architects use provides useful
 context.  Sparta is designed primarily for cycle-based simulation but
 is flexible enough to support other approaches.
 
-=== Cycle-Based Simulation
+==== Cycle-Based Simulation
 
 In cycle-based simulation, the simulator advances one clock cycle at a
 time.  Each unit in the model -- fetch, decode, execute, and so on --
@@ -230,7 +230,7 @@ within each cycle.
 // AUTHOR NOTE: Anything to add about how Sparta specifically supports
 // cycle-based simulation that the reader should know up front?
 
-=== Event-Driven Simulation
+==== Event-Driven Simulation
 
 In event-driven simulation, the simulator does not advance by fixed
 clock ticks.  Instead, Sparta maintains a queue of future events sorted by
@@ -243,14 +243,14 @@ time.
 // it a hybrid? How does the Sparta scheduler relate to event-driven
 // concepts? What should a reader know about choosing between the two?
 
-=== Reverse Execution Simulation
+==== Reverse Execution Simulation
 
 // AUTHOR NOTE: Please fill in this section. Reverse execution is not
 // a widely known concept outside performance modeling circles --
 // a brief explanation of what it is, why it matters, and whether/how
 // Sparta supports it would be valuable here.
 
-== A First Look at Sparta
+=== A First Look at Sparta
 include::attributes.adoc[]
 
 To make the concepts in this book concrete from the start, here is the
@@ -266,7 +266,7 @@ connected to the framework and ready to run.
 // The skeleton pipeline example in the Sparta docs may be a good
 // starting point: https://sparcians.github.io/map/skeleton_example.html
 
-== What Is in This Book
+=== What Is in This Book
 include::attributes.adoc[]
 
 This book covers the Sparta framework from the ground up, starting
