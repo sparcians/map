@@ -494,8 +494,8 @@ namespace sparta{
 
             void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final {
                 std::ostringstream oss;
-                oss << "Collecting non-trivial classes using operator<< only is not supported for now. Use PairDefinition.";
-                oss << "\n\t(" << this->getLocation() << ")";
+                oss << "Collecting non-trivial classes using operator<< only is not supported for now. Use PairDefinition.\n";
+                oss << "(" << this->getLocation() << ")";
 
                 constexpr uint16_t no_cid = 0;
                 auto stager = argos_collector->getStager();
