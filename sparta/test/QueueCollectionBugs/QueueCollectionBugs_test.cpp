@@ -124,6 +124,14 @@ public:
     {}
 };
 
+std::ostream& operator<<(std::ostream& os, const FetchOp op)
+{
+    os << "DID(" << op.getUID() << ") ";
+    os << "start_pc(0x" << std::hex << op.getFetchStart() << ") ";
+    os << "end_pc(0x" << std::hex << op.getFetchEnd() << ")";
+    return os;
+}
+
 //
 // Enclosing op that flattens a pointer to the *derived* type.
 //
@@ -275,6 +283,16 @@ static OuterOpPtr createOuterOp()
     return std::make_shared<OuterOp>(mid);
 }
 
+using ArchFetchOpPtr = std::shared_ptr<ArchFetchOp>;
+
+static ArchFetchOpPtr createArchFetchOp()
+{
+    const uint64_t uid = nextUID();
+    const uint64_t start_pc = 0x1000 + uid * 0x40;
+    const uint64_t end_pc = start_pc + 0x10;
+    return std::make_shared<ArchFetchOp>(uid, start_pc, end_pc);
+}
+
 class TestSimulator : public sparta::app::Simulation
 {
 public:
@@ -331,6 +349,10 @@ void TestBranchFetchOp(int argc, char** argv)
 
     pc.destroy();
     sim.postProcessingLastCall();
+
+    // Expect that we collected without any errors/warnings (postWarning/postError/postNotif).
+    simdb::DatabaseManager db_mgr("bug.db", false);
+    EXPECT_EQUAL(db_mgr.createQuery("Notifications")->count(), 0);
 }
 
 void TestMultiLevelFlatten(int argc, char** argv)
@@ -343,7 +365,7 @@ void TestMultiLevelFlatten(int argc, char** argv)
     auto& simdb_config = sim_config.simdb_config;
     simdb_config.setSimExecutable(argv[0]);
     simdb_config.enableApp("argos-collector");
-    simdb_config.setAppDatabase("argos-collector", "bug_multilevel.db");
+    simdb_config.setAppDatabase("argos-collector", "bug.db");
 
     sim.configure(argc, argv, &sim_config, false);
     sim.buildTree();
@@ -372,6 +394,55 @@ void TestMultiLevelFlatten(int argc, char** argv)
 
     pc.destroy();
     sim.postProcessingLastCall();
+
+    // Expect that we collected without any errors/warnings (postWarning/postError/postNotif).
+    simdb::DatabaseManager db_mgr("bug.db", false);
+    EXPECT_EQUAL(db_mgr.createQuery("Notifications")->count(), 0);
+}
+
+void TestPairCollectorSubclass(int argc, char** argv)
+{
+    sparta::Scheduler sched;
+    TestSimulator sim(sched);
+    sparta::RootTreeNode& rtn = *sim.getRoot();
+
+    sparta::app::SimulationConfiguration sim_config;
+    auto& simdb_config = sim_config.simdb_config;
+    simdb_config.setSimExecutable(argv[0]);
+    simdb_config.enableApp("argos-collector");
+    simdb_config.setAppDatabase("argos-collector", "bug.db");
+
+    sim.configure(argc, argv, &sim_config, false);
+    sim.buildTree();
+    sim.configureTree();
+
+    sparta::StatisticSet queue_stats(&rtn);
+    sparta::Queue<ArchFetchOpPtr> queue("collect_me", 8, rtn.getClock(), &queue_stats);
+    queue.enableCollection(&rtn);
+    sim.finalizeTree();
+
+    constexpr size_t heartbeat = 3;
+    sparta::collection::PipelineCollector pc("testPipe", heartbeat, rtn.getClock(), &rtn);
+    sim.finalizeFramework();
+    pc.startCollection(&rtn);
+
+    sched.run(1);
+
+    queue.push(createArchFetchOp());
+    sched.run(1);
+
+    queue.push(createArchFetchOp());
+    sched.run(1);
+
+    queue.push(createArchFetchOp());
+    sched.run(1);
+
+    pc.destroy();
+    sim.postProcessingLastCall();
+
+    // Expect that we collected without any errors/warnings (postWarning/postError/postNotif).
+    simdb::DatabaseManager db_mgr("bug.db", false);
+    EXPECT_EQUAL(db_mgr.createQuery("Notifications")->count(), 0);
 }
 
 int main(int argc, char** argv)
@@ -379,6 +450,7 @@ int main(int argc, char** argv)
     sparta::SleeperThread::disableForever();
     TestBranchFetchOp(argc, argv);
     TestMultiLevelFlatten(argc, argv);
+    TestPairCollectorSubclass(argc, argv);
 
     REPORT_ERROR;
     return ERROR_CODE;

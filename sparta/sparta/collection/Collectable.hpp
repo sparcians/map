@@ -54,13 +54,18 @@ namespace sparta{
         template <typename T>
         inline constexpr bool use_tiny_strings_v = use_tiny_strings<T>::value;
 
+        template <typename U>
+        std::true_type  derives_from_pair_definition_(const sparta::PairDefinition<U>*);
+        std::false_type derives_from_pair_definition_(...);
+
         template <typename T, typename = void>
         struct use_pair_definition : std::false_type {};
 
         template <typename T>
         struct use_pair_definition<T,
-            std::enable_if_t<std::is_base_of<sparta::PairDefinition<T>,
-                             typename T::SpartaPairDefinitionType>::value>> : std::true_type {};
+            std::enable_if_t<decltype(derives_from_pair_definition_(
+                             std::declval<typename T::SpartaPairDefinitionType*>()))::value>>
+            : std::true_type {};
 
         template <typename T>
         inline constexpr bool use_pair_definition_v = use_pair_definition<T>::value;
