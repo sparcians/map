@@ -213,8 +213,9 @@ public:
         // TODO cnyce: fix dynamic fields support
         if constexpr (use_dynamic_fields_v<BinValueT>) {
             std::ostringstream oss;
-            oss << "Collecting non-trivial classes using operator<< only is not supported for now. Use PairDefinition.";
-            oss << "\n\t(" << getLocation() << ")";
+            oss << "Collecting non-trivial classes using operator<< only is not supported for now. Use PairDefinition.\n";
+            oss << "  - path: " << getLocation() << "\n";
+            oss << "  - type: " << simdb::demangle_type<BinValueT>() << " (container)";
 
             auto stager = argos_collector->getStager();
             constexpr uint16_t no_cid = 0;
