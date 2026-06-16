@@ -216,17 +216,14 @@ public:
             oss << "Collecting non-trivial classes using operator<< only is not supported for now. Use PairDefinition.\n";
             oss << "  - path: " << getLocation() << "\n";
             oss << "  - type: " << simdb::demangle_type<BinValueT>() << " (container)";
-
-            auto stager = argos_collector->getStager();
-            constexpr uint16_t no_cid = 0;
-            stager->postNotif(no_cid, oss.str(), simdb::argos::NotifType::WARNING);
+            argos_collector->postNotif(oss.str(), simdb::argos::NotifType::WARNING);
         } else {
             auto loc = getLocation();
             auto clk_name = notNull(getClock())->getName();
             auto type = encodeCollectedType();
             entry_point_ = argos_collector->createContainerCollector(loc, clk_name, type);
 
-            bit_bucket_ = std::make_shared<IterableCollectorBitBucket<sparse_array_type>>(argos_collector->getResources());
+            bit_bucket_ = std::make_shared<IterableCollectorBitBucket<sparse_array_type>>(argos_collector->getResources(), expected_capacity_);
             for (auto & bin : positions_) {
                 bin->setBitBucket(bit_bucket_);
             }

@@ -4,6 +4,7 @@
 
 #include "sparta/utils/ValidValue.hpp"
 #include "simdb/apps/argos/Collectables.hpp"
+#include <cstring>
 
 namespace sparta::collection {
 
@@ -86,45 +87,21 @@ public:
 
     void clear() override final {
         buffer_.clear();
-        if (!order_locked_) {
-            // The first non-empty pass between clear() calls defines the
-            // canonical field_id order for the lifetime of this bucket.
-            if (!field_order_.empty()) {
-                order_locked_ = true;
-            }
-        } else {
-            // All-or-nothing: a pass must write every known field. If the
-            // cursor isn't back at the start, a field cycle was incomplete.
-            sparta_assert(expected_pos_ == 0,
-                          "BitBucket cleared mid-pass: a field cycle was incomplete "
-                          "(all-or-nothing violated)");
-            expected_pos_ = 0;
-        }
+        buffer_.reserve(bytes_per_pass_);
+        bytes_per_pass_ = 0;
     }
 
-    void writeField(const void* data, uint32_t bytes, uint32_t field_id) override final {
+    void writeField(const void* data, uint32_t bytes, uint32_t) override final {
         auto src = static_cast<const char*>(data);
-
-        if (SPARTA_EXPECT_FALSE(!order_locked_)) {
-            // Learning phase: record arrival order verbatim.
-            field_order_.push_back(field_id);
-        } else {
-            // Verification phase (hot path): order must match exactly.
-            sparta_assert(expected_pos_ < field_order_.size() &&
-                          field_id == field_order_[expected_pos_],
-                          "BitBucket field order changed: expected field_id "
-                          << field_order_[expected_pos_] << " but got " << field_id);
-            if (++expected_pos_ == field_order_.size()) {
-                expected_pos_ = 0;
-            }
-        }
-
-        buffer_.insert(buffer_.end(), src, src + bytes);
+        buffer_.resize(bytes_per_pass_ + bytes);
+        auto dst = &buffer_[bytes_per_pass_];
+        memcpy(dst, src, bytes);
+        bytes_per_pass_ += bytes;
     }
 
     //! Called when using a standalone Collectable
     void writeTo(simdb::argos::CollectionEntryPoint* entry_point) override final {
-        entry_point->setScalarValueBytes(buffer_);
+        entry_point->setScalarValueBytes(std::move(buffer_));
         clear();
     }
 
@@ -136,9 +113,7 @@ public:
 
 private:
     std::vector<char> buffer_;
-    std::vector<uint32_t> field_order_;
-    bool order_locked_ = false;
-    size_t expected_pos_ = 0;
+    size_t bytes_per_pass_ = 0;
 };
 
 template <bool Sparse>
@@ -148,79 +123,103 @@ template <>
 class IterableCollectorBitBucket<true> : public BitBucket
 {
 public:
-    using BitBucket::BitBucket;
+    IterableCollectorBitBucket(simdb::argos::ArgosResources* resource_container, size_t capacity)
+        : BitBucket(resource_container)
+        , capacity_(capacity)
+    {
+        while (capacity--)
+        {
+            bin_buckets_.emplace_back(std::make_unique<CollectableBitBucket>(getArgosResources()));
+        }
+    }
 
     void clear() override final {
-        bin_buckets_.clear();
         active_bin_idx_.clearValid();
+        all_bin_idxs_.clear();
+        all_bin_idxs_.reserve(capacity_);
     }
 
     void setActiveBinIdx(uint32_t bin_idx) {
-        sparta_assert(bin_idx <= UINT16_MAX);
+        assert(bin_idx <= UINT16_MAX);
+        assert(bin_idx < capacity_);
         active_bin_idx_ = static_cast<uint16_t>(bin_idx);
+        all_bin_idxs_.emplace_back(bin_idx);
     }
 
     void writeField(const void* data, uint32_t bytes, uint32_t field_id) override final {
         auto& bin_bucket = bin_buckets_[active_bin_idx_.getValue()];
-        if (!bin_bucket) {
-            bin_bucket = std::make_unique<CollectableBitBucket>(getArgosResources());
-        }
+        assert(bin_bucket);
         bin_bucket->writeField(data, bytes, field_id);
     }
 
     void writeTo(simdb::argos::CollectionEntryPoint* entry_point) override final {
-        std::map<uint16_t, std::vector<char>> all_bin_bytes;
-        for (auto & [bin_idx, bin_bucket] : bin_buckets_) {
-            bin_bucket->writeTo(all_bin_bytes[bin_idx]);
+        for (auto bin_idx : all_bin_idxs_) {
+            bin_buckets_[bin_idx]->writeTo(all_bin_bytes_[bin_idx]);
         }
 
-        entry_point->setSparseContainerBinBytes(all_bin_bytes);
+        entry_point->setSparseContainerBinBytes(std::move(all_bin_bytes_));
         clear();
     }
 
 private:
-    std::map<uint16_t, std::unique_ptr<CollectableBitBucket>> bin_buckets_;
+    std::vector<std::unique_ptr<CollectableBitBucket>> bin_buckets_;
+    std::map<uint16_t, std::vector<char>> all_bin_bytes_;
     utils::ValidValue<uint16_t> active_bin_idx_;
+    std::vector<uint16_t> all_bin_idxs_;
+    size_t capacity_ = 0;
 };
 
 template <>
 class IterableCollectorBitBucket<false> : public BitBucket
 {
 public:
-    using BitBucket::BitBucket;
+    IterableCollectorBitBucket(simdb::argos::ArgosResources* resource_container, size_t capacity)
+        : BitBucket(resource_container)
+        , capacity_(capacity)
+    {
+        all_bin_bytes_.reserve(capacity_);
+        while (capacity--)
+        {
+            bin_buckets_.emplace_back(std::make_unique<CollectableBitBucket>(getArgosResources()));
+        }
+    }
 
     void clear() override final {
-        bin_buckets_.clear();
+        container_size_ = 0;
+        all_bin_bytes_.reserve(capacity_);
     }
 
     void setActiveBinIdx(uint32_t bin_idx) {
-        sparta_assert(bin_idx <= UINT16_MAX);
-        sparta_assert(bin_idx == bin_buckets_.size());
-        bin_buckets_.emplace_back(std::make_unique<CollectableBitBucket>(getArgosResources()));
+        assert(bin_idx <= UINT16_MAX);
+        assert(bin_idx == container_size_);
+        ++container_size_;
     }
 
     void writeField(const void* data, uint32_t bytes, uint32_t field_id) override final {
-        if (bin_buckets_.empty()) {
+        if (SPARTA_EXPECT_FALSE(container_size_ == 0)) {
             setActiveBinIdx(0);
         }
-        auto& bin_bucket = bin_buckets_.back();
+        auto& bin_bucket = bin_buckets_[container_size_ - 1];
         bin_bucket->writeField(data, bytes, field_id);
     }
 
     void writeTo(simdb::argos::CollectionEntryPoint* entry_point) override final {
-        std::vector<std::vector<char>> all_bin_bytes(bin_buckets_.size());
-        for (size_t i = 0; i < bin_buckets_.size(); ++i) {
+        all_bin_bytes_.resize(container_size_);
+        for (size_t i = 0; i < container_size_; ++i) {
             auto & bin_bucket = bin_buckets_[i];
-            auto & bin_buffer = all_bin_bytes[i];
+            auto & bin_buffer = all_bin_bytes_[i];
             bin_bucket->writeTo(bin_buffer);
         }
 
-        entry_point->setContigContainerBinBytes(all_bin_bytes);
+        entry_point->setContigContainerBinBytes(std::move(all_bin_bytes_));
         clear();
     }
 
 private:
     std::vector<std::unique_ptr<CollectableBitBucket>> bin_buckets_;
+    std::vector<std::vector<char>> all_bin_bytes_;
+    uint16_t container_size_ = 0;
+    size_t capacity_ = 0;
 };
 
 } // sparta::collection

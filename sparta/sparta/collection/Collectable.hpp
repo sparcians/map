@@ -497,10 +497,7 @@ namespace sparta{
                 oss << "Collecting non-trivial classes using operator<< only is not supported for now. Use PairDefinition.\n";
                 oss << "  - path: " << this->getLocation() << "\n";
                 oss << "  - type: " << simdb::demangle_type<MetaStruct::remove_any_pointer_t<DataT>>() << " (scalar)";
-
-                constexpr uint16_t no_cid = 0;
-                auto stager = argos_collector->getStager();
-                stager->postNotif(no_cid, oss.str(), simdb::argos::NotifType::WARNING);
+                argos_collector->postNotif(oss.str(), simdb::argos::NotifType::WARNING);
             }
 
         private:
