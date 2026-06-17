@@ -3,7 +3,7 @@
 #pragma once
 
 #include "sparta/utils/ValidValue.hpp"
-#include "simdb/apps/argos/Collectables.hpp"
+#include "simdb/apps/argos/EntryPoint.hpp"
 #include <cstring>
 
 namespace sparta::collection {
@@ -23,7 +23,7 @@ public:
     virtual ~BitBucket() = default;
     virtual void clear() = 0;
     virtual void writeField(const void* data, uint32_t bytes, uint32_t field_id) = 0;
-    virtual void writeTo(simdb::argos::CollectionEntryPoint* entry_point) = 0;
+    virtual void writeTo(simdb::argos::EntryPoint* entry_point) = 0;
 
     template <typename T>
     bool writeField(const T& val, uint32_t field_id) {
@@ -34,13 +34,13 @@ public:
 
         // Write strings as uint32_t via TinyStrings
         else if constexpr (std::is_same_v<T, std::string> || std::is_same_v<std::decay_t<T>, const char*>) {
-            auto& tiny_strings = argos_resources_->getTinyStringsResource();
+            auto tiny_strings = argos_resources_->getTinyStrings();
             return writeField(tiny_strings->getStringID(val), field_id);
         }
 
         // Write enums as int64_t or uint64_t based on enum signedness
         else if constexpr (std::is_enum_v<T>) {
-            auto enum_maps = argos_resources_->getEnumMapResource();
+            auto enum_maps = argos_resources_->getEnumInspector();
             enum_maps->inspect(val);
             using underlying_t = std::underlying_type_t<T>;
             using int_t = std::conditional_t<std::is_signed_v<underlying_t>, int64_t, uint64_t>;
@@ -100,7 +100,7 @@ public:
     }
 
     //! Called when using a standalone Collectable
-    void writeTo(simdb::argos::CollectionEntryPoint* entry_point) override final {
+    void writeTo(simdb::argos::EntryPoint* entry_point) override final {
         entry_point->setScalarValueBytes(std::move(buffer_));
         clear();
     }
@@ -152,7 +152,7 @@ public:
         bin_bucket->writeField(data, bytes, field_id);
     }
 
-    void writeTo(simdb::argos::CollectionEntryPoint* entry_point) override final {
+    void writeTo(simdb::argos::EntryPoint* entry_point) override final {
         for (auto bin_idx : all_bin_idxs_) {
             bin_buckets_[bin_idx]->writeTo(all_bin_bytes_[bin_idx]);
         }
@@ -203,7 +203,7 @@ public:
         bin_bucket->writeField(data, bytes, field_id);
     }
 
-    void writeTo(simdb::argos::CollectionEntryPoint* entry_point) override final {
+    void writeTo(simdb::argos::EntryPoint* entry_point) override final {
         all_bin_bytes_.resize(container_size_);
         for (size_t i = 0; i < container_size_; ++i) {
             auto & bin_bucket = bin_buckets_[i];

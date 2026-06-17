@@ -153,11 +153,6 @@ namespace collection
         //!        does not get closed out.
         virtual void closeRecord(const bool & simulation_ending = false) { (void) simulation_ending; }
 
-        //! Get the CID (collectable ID) that SimDB knows us by.
-        uint16_t getSerializationCID() const {
-            return entry_point_ ? entry_point_->getID() : 0;
-        }
-
     protected:
 
         /**
@@ -169,7 +164,7 @@ namespace collection
         /**
          * \brief Entry point into the SimDB collection system.
          */
-        simdb::argos::CollectionEntryPoint* entry_point_ = nullptr;
+        simdb::argos::EntryPoint* entry_point_ = nullptr;
 
     private:
 

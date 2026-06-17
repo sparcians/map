@@ -564,7 +564,7 @@ public:
     using MinimalType = sparta::collection::detail::MinimalType;
 
     DynamicDataType(simdb::DatabaseManager* db_mgr,
-                    simdb::argos::CollectionEntryPoint* entry_point,
+                    simdb::argos::EntryPoint* entry_point,
                     sparta::collection::BitBucket* bit_bucket,
                     simdb::argos::ArgosCollector* argos_collector,
                     uint16_t cid)
@@ -578,7 +578,7 @@ public:
     class ParserBase
     {
     public:
-        ParserBase(simdb::argos::CollectionEntryPoint* entry_point,
+        ParserBase(simdb::argos::EntryPoint* entry_point,
                    sparta::collection::BitBucket* bit_bucket,
                    simdb::argos::ArgosCollector* argos_collector,
                    uint16_t cid)
@@ -713,7 +713,7 @@ public:
             return simdb::TinyStrings<>::BAD_STRING_ID;
         }
 
-        simdb::argos::CollectionEntryPoint* const entry_point_;
+        simdb::argos::EntryPoint* const entry_point_;
         sparta::collection::BitBucket* const bit_bucket_;
         simdb::argos::ArgosCollector* const argos_collector_;
         const uint16_t cid_;
@@ -852,7 +852,7 @@ public:
     };
 
     static std::unique_ptr<ParserBase> createParser(
-        simdb::argos::CollectionEntryPoint* const entry_point,
+        simdb::argos::EntryPoint* const entry_point,
         sparta::collection::BitBucket* const bit_bucket,
         simdb::argos::ArgosCollector* argos_collector,
         const std::string& stringified_fields,
@@ -894,7 +894,7 @@ public:
 
 private:
     simdb::DatabaseManager* const db_mgr_;
-    simdb::argos::CollectionEntryPoint* const entry_point_;
+    simdb::argos::EntryPoint* const entry_point_;
     sparta::collection::BitBucket* const bit_bucket_;
     simdb::argos::ArgosCollector *const argos_collector_;
     const uint16_t cid_;

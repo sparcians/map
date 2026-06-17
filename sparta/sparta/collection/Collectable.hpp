@@ -266,7 +266,7 @@ namespace sparta{
             //! immediately and clear the field for the next cycle
             void closeRecord(const bool & = false) override final {
                 if (SPARTA_EXPECT_FALSE(isCollected() && entry_point_)) {
-                    entry_point_->quiet();
+                    entry_point_->closeRecord();
                 }
             }
 
@@ -287,7 +287,7 @@ namespace sparta{
                 setBitBucket(bit_bucket);
             }
 
-            //! Set the BitBucket (byte buffers for SimDB CollectionEntryPoint)
+            //! Set the BitBucket (byte buffers for SimDB EntryPoint)
             virtual void setBitBucket(std::shared_ptr<BitBucket> bit_bucket) {
                 bit_bucket_ = bit_bucket;
             }

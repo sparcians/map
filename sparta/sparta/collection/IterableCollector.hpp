@@ -295,7 +295,7 @@ public:
     //! cycle
     void closeRecord(const bool & = false) override {
         if(SPARTA_EXPECT_FALSE(isCollected() && entry_point_)) {
-            entry_point_->quiet();
+            entry_point_->closeRecord();
         }
     }
 
