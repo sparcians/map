@@ -1,0 +1,7 @@
+<map id="sparta::statistics::ArchiveController" name="sparta::statistics::ArchiveController">
+<area shape="rect" id="Node000001" title="Base class used by the RootArchiveNode to have some control over its data source, whether it is a liv..." alt="" coords="5,39,132,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1statistics_1_1LiveSimulationArchiveController.html" title="Controller used when SPARTA simulations are directly feeding data into a tempdir archive." alt="" coords="180,5,392,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="147,44,179,39,180,45,147,50"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1statistics_1_1OfflineArchiveController.html" title="Controller used when attaching to an archive outside of any live simulation." alt="" coords="205,71,367,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="147,68,205,76,204,82,146,73"/>
+</map>

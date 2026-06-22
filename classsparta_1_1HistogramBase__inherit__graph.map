@@ -1,0 +1,7 @@
+<map id="sparta::HistogramBase" name="sparta::HistogramBase">
+<area shape="rect" id="Node000001" title="Histogram base class for uint64_t values." alt="" coords="127,5,280,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1HistogramStandalone.html" title=" " alt="" coords="5,79,194,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="175,42,119,81,116,76,172,38"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1HistogramTreeNode.html" title=" " alt="" coords="217,79,398,105"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="235,38,291,76,288,81,232,42"/>
+</map>

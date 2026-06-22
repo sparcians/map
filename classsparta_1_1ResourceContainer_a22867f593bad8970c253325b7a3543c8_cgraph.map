@@ -1,0 +1,7 @@
+<map id="sparta::ResourceContainer::unsetResource_" name="sparta::ResourceContainer::unsetResource_">
+<area shape="rect" id="Node000001" title="Allows a resource to unset the resource set with setResource_." alt="" coords="5,39,179,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1PhasedObject.html#a2dcca61565924f0a4208c6509f9a42ba" title="Returns the location of this node in device tree which can be used to navigate the device tree in met..." alt="" coords="227,5,372,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="179,42,211,37,212,42,179,48"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1PhasedObject.html#a8555fc19699141ca78722846bd2e2dc3" title="Is this node (and thus the entire tree above it) in the &quot;teardown&quot; phase." alt="" coords="227,71,372,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="179,70,212,75,211,80,179,75"/>
+</map>

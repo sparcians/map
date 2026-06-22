@@ -1,0 +1,5 @@
+<map id="sparta::statistics::expression::StatVariable::getClocks" name="sparta::statistics::expression::StatVariable::getClocks">
+<area shape="rect" id="Node000001" title="Populates a vector with the clocks found in this subexpression node." alt="" coords="5,5,172,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1StatisticInstance.html#a723a6e884cd22924999bf991d8056022" title="Gets all clocks associated with this Statistic instance (if any) whether it points to a StatisticDef,..." alt="" coords="220,13,381,54"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="172,30,204,30,204,36,172,36"/>
+</map>

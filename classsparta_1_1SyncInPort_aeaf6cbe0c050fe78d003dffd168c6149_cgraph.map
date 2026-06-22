@@ -1,0 +1,13 @@
+<map id="sparta::SyncInPort::SyncInPort" name="sparta::SyncInPort::SyncInPort">
+<area shape="rect" id="Node000001" title="Create an SyncInPort with the given name." alt="" coords="5,88,133,129"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#aec70f36a682dadc1d571fcd723f12cd6" title="Walks up parents (starting with self) until a parent with an associated local clock is found,..." alt="" coords="181,70,358,96"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,98,165,93,166,99,133,103"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1Clock.html#aa2d29cba2726bcc43077de19218307ff" title=" " alt="" coords="181,120,359,145"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="133,113,166,117,165,122,133,119"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a883ef289de0f961e1d69a988b50338d8" title="Gets the clock associated directly with this Node. This is useful for configuration and simulator deb..." alt="" coords="410,5,586,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="323,67,399,48,400,53,325,72"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="407,70,589,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="359,80,391,80,391,86,359,86"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="426,120,571,161"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="325,94,411,116,410,121,323,99"/>
+</map>

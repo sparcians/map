@@ -1,0 +1,5 @@
+<map id="sparta::NotificationSource::deregisterForThis" name="sparta::NotificationSource::deregisterForThis">
+<area shape="rect" id="Node000001" title="Deregisters a callback method that was registered with registerForThis." alt="" coords="5,5,175,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a8f4da13fd6f93c76c3df9ded6a20b6b2" title="Removes at most one registration made with registerForNotification." alt="" coords="223,5,406,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="175,23,207,23,207,28,175,28"/>
+</map>

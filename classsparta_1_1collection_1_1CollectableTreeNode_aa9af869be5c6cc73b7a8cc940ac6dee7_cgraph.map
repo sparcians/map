@@ -1,0 +1,7 @@
+<map id="sparta::collection::CollectableTreeNode::startCollecting" name="sparta::collection::CollectableTreeNode::startCollecting">
+<area shape="rect" id="Node000001" title="Method that tells this treenode that is now running collection." alt="" coords="5,5,154,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#a69968b7df373c22228ff2e24990e0d1f" title="Indicate to sub&#45;classes that collection has flipped." alt="" coords="202,5,350,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="154,30,186,30,186,36,154,36"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#a76d81cfbcf80a8584f887564054fc7dd" title=" " alt="" coords="398,5,546,61"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="350,30,382,30,382,36,350,36"/>
+</map>

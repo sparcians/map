@@ -1,0 +1,8 @@
+<map id="sparta::collection::Collectable::collect" name="sparta::collection::Collectable::collect">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,35,141,75"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1Collectable.html#a6506b3af9a7da969befd4d11536881dc" title=" " alt="" coords="189,5,358,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="141,42,173,38,174,43,142,48"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ac7d83237fc2aaa41c6b3809a4fb646e1" title="Determine whether or not this node has collection turned on or off." alt="" coords="406,27,554,83"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="141,54,189,55,358,55,390,55,390,60,358,60,189,60,141,59"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="359,35,391,40,390,45,358,40"/>
+</map>

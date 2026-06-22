@@ -1,0 +1,6 @@
+<map id="sparta::statistics::StatisticsHierRootNodes::getRootByName" name="sparta::statistics::StatisticsHierRootNodes::getRootByName">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,29,177,85"/>
+<area shape="poly" id="edge1_Node000001_Node000001" title=" " alt="" coords="49,29,50,19,57,10,71,5,91,3,113,5,127,12,125,17,112,10,91,8,72,10,60,15,55,21,55,29"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1utils_1_1ValidValue.html#ae3676d510018298bdc57028aca4efaff" title="Is this value valid." alt="" coords="225,37,380,78"/>
+<area shape="poly" id="edge2_Node000001_Node000002" title=" " alt="" coords="177,54,209,54,209,60,177,60"/>
+</map>

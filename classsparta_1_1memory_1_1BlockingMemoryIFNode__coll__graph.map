@@ -1,0 +1,35 @@
+<map id="sparta::memory::BlockingMemoryIFNode" name="sparta::memory::BlockingMemoryIFNode">
+<area shape="rect" id="Node000001" title="Pure&#45;virtual memory interface that builds on the BlockingMemoryIF, acting as a TreeNode in the SPARTA..." alt="" coords="1572,113,1737,154"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="423,60,543,86"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="520,50,595,19,640,7,687,3,1342,3,1402,5,1449,12,1494,27,1549,51,1596,80,1633,110,1630,115,1592,84,1546,56,1492,31,1448,17,1402,10,1342,8,687,8,641,13,597,24,522,55"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1StatisticSet.html" title="Set of StatisticDef and CounterBase&#45;derived objects for visiblility through a sparta Tree." alt="" coords="808,43,939,69"/>
+<area shape="poly" id="edge9_Node000009_Node000002" title=" " alt="" coords="559,67,807,56,808,62,559,73"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1InstrumentationNode.html" title="Base class requiring." alt="" coords="596,94,780,120"/>
+<area shape="poly" id="edge13_Node000012_Node000002" title=" " alt="" coords="559,83,605,91,604,96,558,88"/>
+<area shape="rect" id="Node000014" href="$classsparta_1_1NotificationSourceBase.html" title="A TreeNode that generates a single specific type of notification which propagates up a tree of TreeNo..." alt="" coords="968,151,1168,177"/>
+<area shape="poly" id="edge16_Node000014_Node000002" title=" " alt="" coords="516,92,552,113,593,129,691,151,791,163,886,167,968,167,968,172,886,172,791,168,690,156,592,135,550,118,514,97"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="200,27,373,53"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="382,53,423,60,422,66,381,59"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,27,151,53"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="166,37,199,37,199,43,166,43"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="200,76,373,102"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="388,78,422,76,422,81,389,84"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1memory_1_1BlockingMemoryIF.html" title="Pure&#45;virtual memory interface which represents a simple, immediately accessible (blocking) address&#45;sp..." alt="" coords="1258,274,1424,315"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="1408,266,1425,259,1487,234,1546,204,1625,152,1628,156,1549,209,1489,239,1427,264,1410,271"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1memory_1_1DebugMemoryIF.html" title="Memory interface which represents a simple, immediately accessible (blocking) address&#45;space with supp..." alt="" coords="963,282,1173,308"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="1189,292,1258,292,1258,297,1189,297"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1memory_1_1TranslationIF.html" title="Blocking translation interface with 1:1 translation unless subclassed." alt="" coords="592,282,784,308"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="799,292,962,292,962,297,799,297"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="955,46,1072,39,1221,39,1385,50,1468,62,1548,79,1587,93,1621,110,1619,115,1585,97,1547,84,1467,67,1385,55,1221,44,1072,45,955,51"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1Counter.html" title="Represents a counter of type counter_type (uint64_t). 2 and greater than 0 with a ceiling specified...." alt="" coords="1287,94,1395,120"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="1411,110,1571,124,1571,129,1410,115"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1CounterBase.html" title="The base class for all Counters." alt="" coords="999,94,1137,120"/>
+<area shape="poly" id="edge11_Node000010_Node000011" title=" " alt="" coords="1153,104,1286,104,1286,109,1153,109"/>
+<area shape="poly" id="edge12_Node000011_Node000012" title=" " alt="" coords="796,104,999,104,999,109,796,109"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1NotificationSource.html" title=" " alt="" coords="1256,144,1426,184"/>
+<area shape="poly" id="edge14_Node000001_Node000013" title=" " alt="" coords="1441,152,1547,142,1571,139,1572,145,1548,147,1442,157"/>
+<area shape="poly" id="edge15_Node000013_Node000014" title=" " alt="" coords="1183,161,1256,161,1256,167,1183,167"/>
+<area shape="rect" id="Node000015" href="$classsparta_1_1NotificationSource.html" title=" " alt="" coords="1256,209,1426,250"/>
+<area shape="poly" id="edge18_Node000015_Node000014" title=" " alt="" coords="1140,178,1257,207,1256,212,1139,184"/>
+<area shape="poly" id="edge17_Node000001_Node000015" title=" " alt="" coords="1440,202,1547,171,1600,152,1602,157,1548,176,1442,207"/>
+</map>

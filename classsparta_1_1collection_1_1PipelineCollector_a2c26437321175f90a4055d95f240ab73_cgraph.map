@@ -1,0 +1,21 @@
+<map id="sparta::collection::PipelineCollector::startCollection" name="sparta::collection::PipelineCollector::startCollection">
+<area shape="rect" id="Node000001" title="Turn on collection for everything below a TreeNode. Recursively transverse the tree and turn on child..." alt="" coords="5,96,130,152"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNodePrivateAttorney.html#a4cfe23c752f8411f7f946f0626910e9a" title=" " alt="" coords="178,5,387,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,94,177,57,194,49,196,54,179,61,112,98"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Scheduler.html#a34dcaf99252d9e9e0511d69d2aa84ff8" title="The current tick the Scheduler is working on or just finished." alt="" coords="219,71,346,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="130,112,203,101,204,106,131,117"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedUniqueEvent.html#a66beccbbe948db507c2337cb684ddc00" title="Schedule at time rel_tick." alt="" coords="192,136,373,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="131,131,177,138,176,143,130,136"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#aa9af869be5c6cc73b7a8cc940ac6dee7" title="Method that tells this treenode that is now running collection." alt="" coords="208,200,356,256"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="115,150,179,186,195,193,193,198,176,191,112,155"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="435,86,614,112"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="371,133,451,113,453,119,372,138"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1Scheduleable.html#a25a893867d1303b13cc8f3c3beb371de" title="Schedule this event on a relative scheduler tick." alt="" coords="449,136,600,177"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="374,154,434,154,434,159,374,159"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1Scheduler.html#a4d5e20a5e5cb060b6583b44357d8f210" title="Schedule a single event. This method should also be thread safe." alt="" coords="673,136,800,177"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="601,154,657,154,657,159,601,159"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#a69968b7df373c22228ff2e24990e0d1f" title="Indicate to sub&#45;classes that collection has flipped." alt="" coords="450,200,599,256"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="357,226,435,226,435,231,357,231"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#a76d81cfbcf80a8584f887564054fc7dd" title=" " alt="" coords="662,200,811,256"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="599,226,647,226,647,231,599,231"/>
+</map>

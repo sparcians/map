@@ -1,0 +1,5 @@
+<map id="sparta::collection::DelayedCollectable::DelayedCollectable" name="sparta::collection::DelayedCollectable::DelayedCollectable">
+<area shape="rect" id="Node000001" title="Construct the DelayedCollectable, no data object associated." alt="" coords="5,5,143,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1Collectable.html#a2664455f4e2dfa3936710fdaa990adb1" title="Do not perform any automatic collection The SchedulingPhase is ignored." alt="" coords="191,13,405,54"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,30,175,30,175,36,143,36"/>
+</map>

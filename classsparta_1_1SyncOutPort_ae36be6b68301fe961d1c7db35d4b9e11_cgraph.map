@@ -1,0 +1,6 @@
+<map id="sparta::SyncOutPort::send" name="sparta::SyncOutPort::send">
+<area shape="rect" id="Node000001" title="Send data on the output port." alt="" coords="5,29,143,70"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1SyncOutPort.html#aa8fc86d1e1801c085fc847b06972f477" title="Send data on the output port." alt="" coords="191,29,328,70"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,47,175,47,175,52,143,52"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="224,29,222,19,228,10,240,5,259,3,280,5,292,11,289,16,278,10,259,8,242,10,231,15,227,20,229,28"/>
+</map>

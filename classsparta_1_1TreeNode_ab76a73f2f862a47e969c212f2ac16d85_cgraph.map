@@ -1,0 +1,7 @@
+<map id="sparta::TreeNode::stringize" name="sparta::TreeNode::stringize">
+<area shape="rect" id="Node000001" title="Create a string representation of this node." alt="" coords="5,31,180,56"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="232,5,426,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="179,32,216,28,217,33,180,37"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#abeb9301d222aa616093a280921f65d4a" title="Render tags to a string in the form: &quot; tags:[tag0, tag1]&quot; If there are any tags. The leading space ma..." alt="" coords="228,55,431,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="180,50,212,53,212,58,179,55"/>
+</map>

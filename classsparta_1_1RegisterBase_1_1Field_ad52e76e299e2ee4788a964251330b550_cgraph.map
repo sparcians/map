@@ -1,0 +1,17 @@
+<map id="sparta::RegisterBase::Field::Field" name="sparta::RegisterBase::Field::Field">
+<area shape="rect" id="Node000001" title="Field Constructor." alt="" coords="5,104,147,145"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a7b6ca285ffd1077f9622662c167315e9" title="Adds a TreeNode to this node as a child." alt="" coords="205,5,382,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="100,102,142,70,193,40,208,34,210,39,196,45,145,74,103,106"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="196,55,390,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="146,103,194,90,225,82,226,87,195,95,147,108"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1RegisterBase_1_1Field.html#a0825cf324b6a95e9e4602d6752a77fe8" title="Gets number of bits in this field." alt="" coords="223,104,364,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="147,122,207,122,207,128,147,128"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1RegisterBase.html#a001ab5cfc53a070ae37aed9ca8009147" title="Gets the size of this register&#39;s value in bits." alt="" coords="223,170,364,210"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="147,143,210,162,208,167,145,148"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1TreeNode.html#aeefcb776a4574cd8075f92caaeb4676d" title="Tracks a node as an expected parent without actually adding this node as a child. This is used almost..." alt="" coords="195,235,392,276"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="99,144,142,182,196,220,208,226,206,231,193,224,139,186,96,148"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1RegisterBase_1_1Field.html#a980720a93ab03230baa72c528deb556a" title="Returns the index of the high bit (inclusive) in this field." alt="" coords="440,72,581,113"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="364,112,424,103,425,108,365,117"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1RegisterBase_1_1Field.html#aed27ce711418a89877751a40d9a0d492" title="Returns the index of the low bit (inclusive) in this field." alt="" coords="440,138,581,178"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="365,133,425,142,424,148,364,138"/>
+</map>

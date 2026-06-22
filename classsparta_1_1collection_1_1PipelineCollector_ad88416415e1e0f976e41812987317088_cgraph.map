@@ -1,0 +1,11 @@
+<map id="sparta::collection::PipelineCollector::stopCollection" name="sparta::collection::PipelineCollector::stopCollection">
+<area shape="rect" id="Node000001" title="Stop pipeline collection on only those CollectableTreeNodes given." alt="" coords="5,34,130,90"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNodePrivateAttorney.html#a4cfe23c752f8411f7f946f0626910e9a" title=" " alt="" coords="178,5,387,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="130,49,162,43,163,48,131,54"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ad91ec47ac9880d5833853cf629200012" title="Method that tells this treenode that is now not running collection." alt="" coords="208,70,356,126"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="131,69,193,80,192,85,130,75"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#a69968b7df373c22228ff2e24990e0d1f" title="Indicate to sub&#45;classes that collection has flipped." alt="" coords="435,70,583,126"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="357,95,420,95,420,100,357,100"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#a76d81cfbcf80a8584f887564054fc7dd" title=" " alt="" coords="631,70,780,126"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="584,95,616,95,616,100,584,100"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="sparta::serialization::checkpoint::DeltaCheckpoint::getRestoreChain" name="sparta::serialization::checkpoint::DeltaCheckpoint::getRestoreChain">
+<area shape="rect" id="Node000001" title="Returns a stack of checkpoints that must be restored from top&#45;to&#45;bottom to fully restore the state as..." alt="" coords="5,45,197,101"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a099fdcf88200fbcb8a2b1ac47b7df0f7" title="Returns the previous checkpoint. If this checkpoint is a snapshot, it has no previous checkpoint." alt="" coords="260,5,421,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,54,244,46,245,52,198,60"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a298af42f2d8f655088a1a61ff91d776b" title="Is this checkpoint a snapshot (contains ALL simulator state)" alt="" coords="245,85,436,141"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="198,87,230,92,229,97,197,92"/>
+</map>

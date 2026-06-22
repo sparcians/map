@@ -1,0 +1,28 @@
+<map id="sparta::serialization::checkpoint::FastCheckpointer::squashCurrentBranch_" name="sparta::serialization::checkpoint::FastCheckpointer::squashCurrentBranch_">
+<area shape="rect" id="Node000001" title="Squash the current branch and discard all those checkpoints that do not exist on the current branch...." alt="" coords="5,245,204,301"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a577d72a3dab8f71e562cdc75f3ea0c32" title="Debugging utility which gets a deque of checkpoints representing a chain starting at the checkpoint h..." alt="" coords="252,85,450,141"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,243,185,197,250,151,259,146,261,151,253,155,189,201,136,247"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a70d4473f66113a21b72f7e965be3a5e6" title="Returns the head checkpoint which is equivalent to the earliest checkpoint taken." alt="" coords="511,5,683,61"/>
+<area shape="poly" id="edge9_Node000001_Node000004" title=" " alt="" coords="115,244,135,203,164,156,203,109,225,88,250,71,310,45,374,29,437,22,496,22,496,27,437,28,375,35,312,50,253,75,229,92,206,112,168,159,140,206,120,246"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#af84d9d558b2d29c369695a3426b891a1" title="Gets the current checkpointer pointer. Returns nullptr if there is no current checkpoint object." alt="" coords="265,165,437,221"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="192,242,249,223,250,228,193,247"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a9701cc07fb767c8810a53b715d2fa69c" title="Returns the current checkpoint ID. This is mainly a debugging utility as the current ID changes when ..." alt="" coords="265,245,437,301"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="204,270,249,270,249,276,204,276"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#ae494a8265a96f279c4cb445001006aa5" title="Returns the checkpoint ID of the head checkpoint (if it exists) which is equivalent to the earliest c..." alt="" coords="265,325,437,381"/>
+<area shape="poly" id="edge10_Node000001_Node000009" title=" " alt="" coords="193,299,250,318,249,323,192,304"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#aa07877dc1a7c9783b24cb85940cd0975" title="Tests whether this checkpoint manager has a checkpoint with the given id." alt="" coords="252,405,450,461"/>
+<area shape="poly" id="edge12_Node000001_Node000010" title=" " alt="" coords="136,299,189,345,253,391,261,396,259,400,250,395,185,349,133,303"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a8816097ee91c1a4719b76f9b116a98d2" title="Sets the head checkpointer pointer to head." alt="" coords="265,485,437,541"/>
+<area shape="poly" id="edge13_Node000001_Node000011" title=" " alt="" coords="122,300,144,338,173,384,210,430,253,471,259,475,255,479,250,475,206,434,169,387,139,341,118,303"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a664dabb6a4dafe36cee4ad8a34e3bfd0" title="Attempts to find a checkpoint within this checkpointer by ID." alt="" coords="498,85,696,141"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="451,110,482,110,482,116,451,116"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="438,82,495,63,497,68,440,87"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1CheckpointBase.html#abcdccb90c47517e8bd4b6f4ec9cc3019" title="Returns the ID of this checkpoint." alt="" coords="502,245,693,301"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="435,139,452,151,469,172,476,192,484,212,500,231,504,234,500,238,496,235,479,214,472,194,464,175,448,155,432,144"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a099fdcf88200fbcb8a2b1ac47b7df0f7" title="Returns the previous checkpoint. If this checkpoint is a snapshot, it has no previous checkpoint." alt="" coords="516,165,678,221"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="440,139,503,160,501,165,438,144"/>
+<area shape="poly" id="edge8_Node000008_Node000005" title=" " alt="" coords="437,270,486,270,486,276,437,276"/>
+<area shape="poly" id="edge11_Node000009_Node000005" title=" " alt="" coords="437,323,494,304,496,309,438,328"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1serialization_1_1checkpoint_1_1CheckpointBase.html#a340b95a07ec67709e8113a642c7a3b5d" title="Make this the head checkpoint by detaching from previous checkpoint." alt="" coords="502,485,693,541"/>
+<area shape="poly" id="edge14_Node000011_Node000012" title=" " alt="" coords="437,510,486,510,486,516,437,516"/>
+</map>

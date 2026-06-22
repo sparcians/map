@@ -1,0 +1,9 @@
+<map id="sparta::StartupEvent::StartupEvent" name="sparta::StartupEvent::StartupEvent">
+<area shape="rect" id="Node000001" title="Create and schedule a StartupEvent with the given handler." alt="" coords="5,55,144,96"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="196,5,390,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,54,191,41,222,33,224,38,192,46,144,59"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1PhasedObject.html#ade690bdb9df72fd6bad8847fbdf226f1" title="Gets the trees current phase." alt="" coords="220,55,366,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="144,73,204,73,204,78,144,78"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a7a6b76838262227a43b793429376f9a2" title="Get the scheduler associated with this tree node&#39;s root." alt="" coords="192,120,394,146"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="144,92,192,105,224,113,222,118,191,110,143,97"/>
+</map>

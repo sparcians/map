@@ -1,0 +1,5 @@
+<map id="sparta::Array::access" name="sparta::Array::access">
+<area shape="rect" id="Node000001" title="Access (writeable) the data at a position." alt="" coords="5,5,147,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Array.html#a6b47047a46bca0f7375c680465fd2192" title="Determine whether an index is currently valid." alt="" coords="195,5,333,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="147,16,179,16,179,21,147,21"/>
+</map>

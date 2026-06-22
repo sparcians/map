@@ -1,0 +1,14 @@
+<map id="sparta::memory::MemoryObject::stringize" name="sparta::memory::MemoryObject::stringize">
+<area shape="rect" id="Node000001" title="Render description of this MemoryObject as a string." alt="" coords="5,71,205,111"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData.html#a22b639275516468921dac9048a0d8b12" title="Gets the number of lines with allocated data;." alt="" coords="268,5,437,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="184,67,257,48,259,53,185,73"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1memory_1_1MemoryObject.html#af86c4cce457c759c77d8bdba93f9aaa6" title="Returns the number of blocks in this memory object." alt="" coords="253,71,452,111"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="205,88,237,88,237,94,205,94"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ArchData.html#af4a09dc555ca4675c18e474bb5598077" title="Gets the current size of the layout for this ArchData." alt="" coords="500,136,666,161"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="193,109,253,120,373,134,485,142,485,147,373,139,252,126,192,115"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TieredMap.html#abfe91975749b2122c8b12f6ba8d08d47" title="Number of elements allocated in this map." alt="" coords="506,13,660,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="437,23,491,23,491,28,437,28"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="500,71,666,111"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="452,88,484,88,484,94,452,94"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="437,109,514,129,513,134,436,114"/>
+</map>

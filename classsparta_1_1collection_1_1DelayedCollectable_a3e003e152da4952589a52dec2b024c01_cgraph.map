@@ -1,0 +1,10 @@
+<map id="sparta::collection::DelayedCollectable::collect" name="sparta::collection::DelayedCollectable::collect">
+<area shape="rect" id="Node000001" title="Explicitly collect a value in the future." alt="" coords="5,22,143,78"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1Collectable.html#a56d9cf5ee0cc7e0897413afc6b73c541" title=" " alt="" coords="191,29,326,70"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,47,175,47,175,52,143,52"/>
+<area shape="poly" id="edge4_Node000002_Node000002" title=" " alt="" coords="223,29,221,19,227,10,240,5,258,3,279,5,290,11,288,16,277,10,258,8,241,10,231,14,227,20,228,28"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1collection_1_1Collectable.html#a6506b3af9a7da969befd4d11536881dc" title=" " alt="" coords="374,29,543,70"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="327,47,358,47,358,52,327,52"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ac7d83237fc2aaa41c6b3809a4fb646e1" title="Determine whether or not this node has collection turned on or off." alt="" coords="591,22,740,78"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="544,47,575,47,575,52,544,52"/>
+</map>

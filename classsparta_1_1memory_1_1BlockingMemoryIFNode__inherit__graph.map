@@ -1,0 +1,19 @@
+<map id="sparta::memory::BlockingMemoryIFNode" name="sparta::memory::BlockingMemoryIFNode">
+<area shape="rect" id="Node000001" title="Pure&#45;virtual memory interface that builds on the BlockingMemoryIF, acting as a TreeNode in the SPARTA..." alt="" coords="289,241,455,282"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1memory_1_1BlockingMemoryObjectIFNode.html" title="BlockingMemoryIFNode implementation with binding to a MemoryObject instantiated separately and specif..." alt="" coords="185,330,351,371"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="339,294,293,332,290,328,335,290"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1memory_1_1SimpleMemoryMapNode.html" title="Memory mapping object which implements BlockingMemoryIFNode. Supports a simple mapping of incoming ad..." alt="" coords="375,330,577,371"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="409,290,454,328,451,332,405,294"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="229,160,350,186"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="313,195,356,239,352,243,309,199"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="5,79,179,105"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="137,108,260,157,258,162,135,113"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="19,5,165,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="95,46,95,79,89,79,89,46"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="203,79,376,105"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="292,120,292,160,287,160,287,120"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1memory_1_1BlockingMemoryIF.html" title="Pure&#45;virtual memory interface which represents a simple, immediately accessible (blocking) address&#45;sp..." alt="" coords="397,153,563,193"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="445,205,398,243,395,239,442,201"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1memory_1_1DebugMemoryIF.html" title="Memory interface which represents a simple, immediately accessible (blocking) address&#45;space with supp..." alt="" coords="400,79,610,105"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="499,120,489,153,484,151,494,119"/>
+</map>

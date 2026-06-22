@@ -1,0 +1,5 @@
+<map id="sparta::Scheduleable::setScheduleableClock" name="sparta::Scheduleable::setScheduleableClock">
+<area shape="rect" id="Node000001" title="Set the clock and scheduler of this Scheduleable." alt="" coords="5,5,162,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Clock.html#aa2d29cba2726bcc43077de19218307ff" title=" " alt="" coords="210,13,388,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,23,194,23,194,28,162,28"/>
+</map>

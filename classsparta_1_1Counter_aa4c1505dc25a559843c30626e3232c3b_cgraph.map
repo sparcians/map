@@ -1,0 +1,5 @@
+<map id="sparta::Counter::operator==" name="sparta::Counter::operator==">
+<area shape="rect" id="Node000001" title="Compare value to value of another counter." alt="" coords="5,5,183,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Counter.html#a6ddd114c70b29a8ed9001635ba6d79a7" title="Gets the value of this counter." alt="" coords="231,5,363,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="183,16,215,16,215,21,183,21"/>
+</map>

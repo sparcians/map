@@ -1,0 +1,7 @@
+<map id="sparta::RootTreeNode::RootTreeNode" name="sparta::RootTreeNode::RootTreeNode">
+<area shape="rect" id="Node000001" title="Constructor." alt="" coords="5,23,153,64"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a7b6ca285ffd1077f9622662c167315e9" title="Adds a TreeNode to this node as a child." alt="" coords="217,5,393,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,33,201,27,202,32,153,38"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a0c72f80e1e5b0847930c4067b22657b1" title=" " alt="" coords="201,55,409,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="153,49,185,52,185,57,153,54"/>
+</map>

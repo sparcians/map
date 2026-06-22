@@ -1,0 +1,22 @@
+var classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe =
+[
+    [ "Collectable", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#a8e4200f604a74bb842b910c5e78948a7", null ],
+    [ "Collectable", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#a381c6d8a6c6335c5dfdd7546b65b41b6", null ],
+    [ "Collectable", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#a95872e06d2ab4a3bea334f15a9c3f816", null ],
+    [ "~Collectable", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#afbc9ef60a58dfea1016f4746ba4fbf52", null ],
+    [ "closeRecord", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#a6666a4e0e418e58b8caca92389bb5b05", null ],
+    [ "collect", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#aa9dd3c69fb39c212790c78cc82a15377", null ],
+    [ "collect", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#af0f47c7a182a11b14c086684e9493794", null ],
+    [ "collect", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#a2f7e82a6497761fe294d45c19a4e081b", null ],
+    [ "collectWithDuration", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#a9b79179f8a716a48f3ab18a4e66257f7", null ],
+    [ "collectWithDuration", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#a59ce8458d60bb9475ccfad83806575bc", null ],
+    [ "collectWithDuration", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#aa2432664778d5765fc5f9011698bcd11", null ],
+    [ "dumpNameValuePairs", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#a965eb17f205b066987fc3b09691a2c04", null ],
+    [ "generateCollectionString_", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#ae4d6dad84b80577aedc9209e4f895e37", null ],
+    [ "getEventSet_", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#a43cd5991a877fd0081e64055be56c153", null ],
+    [ "initialize", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#a2b96306711140072def7319f5671c3ad", null ],
+    [ "initialize", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#af01cd76ab454ec5325949bb7769d04ff", null ],
+    [ "isSameRecord", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#a01e3f799e08ecf35afba1b121b933d4a", null ],
+    [ "restartRecord", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#ae5e9099fdf645162c91efa0c20337cf3", null ],
+    [ "setManualCollection", "classsparta_1_1collection_1_1Collectable_3_01DataT_00_01collection__phase_00_01MetaStruct_1_1ena95f85bb7619f65143e3ce37fb66ff5fe.html#a609df7194f7d23219820a32a450d2340", null ]
+];

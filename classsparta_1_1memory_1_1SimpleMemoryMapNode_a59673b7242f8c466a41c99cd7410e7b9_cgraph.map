@@ -1,0 +1,11 @@
+<map id="sparta::memory::SimpleMemoryMapNode::tryPoke_" name="sparta::memory::SimpleMemoryMapNode::tryPoke_">
+<area shape="rect" id="Node000001" title="Implements tryPoke_." alt="" coords="5,71,207,111"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1SimpleMemoryMap.html#a5ef58f4130935e3a0a5af7c6125312a0" title="Finds the Mapping object associated with an address." alt="" coords="255,5,456,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="186,67,260,48,261,53,187,73"/>
+<area shape="rect" id="Node000003" href="$structsparta_1_1memory_1_1SimpleMemoryMap_1_1Mapping.html#a7b36d343646b9626487a0ab8c8adc934" title="Maps an input address to the address&#45;space for the destination memory interface." alt="" coords="255,71,456,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="207,88,239,88,239,94,207,94"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#afca95f6e332e2c05d78fa5c08ff73965" title="Attempts to &#39;poke&#39; memory without having any side effects other than changing the bytes within the ra..." alt="" coords="256,136,454,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="187,109,261,129,260,134,186,115"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a56bff166f0c2e250be9450a8a152becc" title="Determines if the range [addr, addr+size) is within the access windows for this interface." alt="" coords="504,136,702,177"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="455,154,488,154,488,159,455,159"/>
+</map>

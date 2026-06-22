@@ -1,0 +1,26 @@
+<map id="sparta::ParameterTree::set" name="sparta::ParameterTree::set">
+<area shape="rect" id="Node000001" title="Add a parameter to the tree, replacing any existing parameter." alt="" coords="5,157,179,182"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ParameterTree.html#a007934ff3307755c30ec7b579afb7d81" title="Add a node to the tree, with proper priority." alt="" coords="227,116,376,157"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="176,154,211,148,212,153,177,159"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1ParameterTree_1_1Node.html#ac5ee96d25a6a0bd7445c1f63c169bf23" title="Set a value on this node directly." alt="" coords="227,181,376,222"/>
+<area shape="poly" id="edge12_Node000001_Node000012" title=" " alt="" coords="180,180,212,185,211,191,179,186"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ParameterTree_1_1Node.html#a852e57d877ab82d07b805011e4a4841c" title="Get a child for setting a parameter, creating it if needed." alt="" coords="424,116,573,157"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="376,134,409,134,409,139,376,139"/>
+<area shape="poly" id="edge6_Node000003_Node000003" title=" " alt="" coords="461,116,459,106,465,97,479,91,499,89,520,92,533,98,531,103,519,97,499,95,480,97,469,101,464,107,466,115"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ParameterTree_1_1Node.html#a6ab9fcf14fdc98365cc71ad96704279d" title=" " alt="" coords="650,59,799,99"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="573,115,634,99,635,104,574,120"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1TreeNode.html#a1ef80729c2131ffb68b5e62b5002c321" title="Gets the next name between two &#39;.&#39; chars in a string starting at pos." alt="" coords="621,124,828,149"/>
+<area shape="poly" id="edge7_Node000003_Node000007" title=" " alt="" coords="574,134,606,134,606,139,574,139"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1ParameterTree_1_1Node.html#a3c54fbac150dd987dd36e7c220824a57" title="Attempts to get an immediate child with an exact match for a given name or pattern string...." alt="" coords="631,173,818,214"/>
+<area shape="poly" id="edge8_Node000003_Node000008" title=" " alt="" coords="574,153,627,166,626,171,573,158"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ParameterTree_1_1Node.html#a8f53d8a81e030268ae3dc7da2b19c2d7" title="Does this node have a value written to it which can be accessed through:" alt="" coords="900,5,1049,46"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="799,60,884,42,885,47,800,66"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ParameterTree_1_1Node.html#a5d7fac3aa3b32912136c83f8fdfcbab9" title="Not default&#45;constructable." alt="" coords="900,71,1049,111"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="800,80,884,84,884,89,800,85"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1TreeNode.html#a2cac07d5f406fa1300d0e283e2a1f498" title="Determines if a given node name has any wildcard characters which will be substituted in createSearch..." alt="" coords="876,160,1073,201"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="818,186,860,184,860,189,819,191"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1ParameterTree_1_1Node.html#a5b44b34a8091bc1b0b1e368c51a90b4b" title="Does a string, name, interpreted as a sparta TreeNode pattern, match another string interpreted as a ..." alt="" coords="900,225,1049,266"/>
+<area shape="poly" id="edge10_Node000008_Node000010" title=" " alt="" coords="819,211,885,224,884,230,818,216"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1TreeNode.html#aacb943215632699fbddc6554dacfbdf7" title="Compute a regex pattern for a node child path containing any number of wildcard characters (not a dot..." alt="" coords="1121,225,1283,266"/>
+<area shape="poly" id="edge11_Node000010_Node000011" title=" " alt="" coords="1049,243,1106,243,1106,248,1049,248"/>
+</map>

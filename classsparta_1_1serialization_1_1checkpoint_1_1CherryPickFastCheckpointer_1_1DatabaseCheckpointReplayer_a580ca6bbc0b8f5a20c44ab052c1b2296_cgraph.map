@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::CherryPickFastCheckpointer::DatabaseCheckpointReplayer::getNumCheckpoints" name="sparta::serialization::checkpoint::CherryPickFastCheckpointer::DatabaseCheckpointReplayer::getNumCheckpoints">
+<area shape="rect" id="Node000001" title="Get the total number of committed checkpoints." alt="" coords="5,5,229,76"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1CherryPickFastCheckpointer_1_1DatabaseCheckpointLoader.html#a23d993b7a4a043001b2dd94931d679ad" title="Get the total number of committed checkpoints." alt="" coords="277,5,500,76"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="229,38,261,38,261,43,229,43"/>
+</map>

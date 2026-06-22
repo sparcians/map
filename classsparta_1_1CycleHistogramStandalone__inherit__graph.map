@@ -1,0 +1,5 @@
+<map id="sparta::CycleHistogramStandalone" name="sparta::CycleHistogramStandalone">
+<area shape="rect" id="Node000001" title="CycleHistogramStandalone class for uint64_t values." alt="" coords="5,79,226,105"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1CycleHistogramBase.html" title="CycleHistogramBase class for uint64_t values." alt="" coords="23,5,208,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="118,46,118,79,113,79,113,46"/>
+</map>

@@ -1,0 +1,15 @@
+<map id="sparta::NotificationSourceBase::stringize" name="sparta::NotificationSourceBase::stringize">
+<area shape="rect" id="Node000001" title="Create a string representation of this node." alt="" coords="5,120,175,161"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="227,5,422,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="112,118,160,79,221,41,239,34,241,39,224,46,163,83,115,122"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1NotificationSourceBase.html#a476d4d8ae1133d22cbfee796ff0a2c76" title="Returns the notification name string for slow string comparison or printing." alt="" coords="237,55,412,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="165,117,233,98,235,103,166,123"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1NotificationSourceBase.html#acd75dadf0a1a94940eb7fb6cdff828a9" title="Gets the demangled name of the C++ notification type which this NotificationSource can emit." alt="" coords="223,120,426,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="175,138,207,138,207,144,175,144"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1NotificationSourceBase.html#a7bd4ea774dda06b18a6290ab6278c347" title="Returns the number of delegates affected by postings of this notification." alt="" coords="240,186,409,226"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="166,159,235,178,233,184,165,164"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1NotificationSourceBase.html#ab98c3ccb45abb754b402b6ac88912f6d" title="Returns the number of notifications posted by this node." alt="" coords="240,251,409,292"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="116,160,164,198,224,236,238,242,236,247,221,241,161,202,113,164"/>
+<area shape="rect" id="Node000005" href="$namespacesparta.html#ac0a2df7a7ca53b2fc0384476286b95ec" title="Demangles a C++ symbol." alt="" coords="474,128,593,154"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="427,138,458,138,458,144,427,144"/>
+</map>

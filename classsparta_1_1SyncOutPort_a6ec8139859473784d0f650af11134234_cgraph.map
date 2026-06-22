@@ -1,0 +1,6 @@
+<map id="sparta::SyncOutPort::sendAndAllowSlide" name="sparta::SyncOutPort::sendAndAllowSlide">
+<area shape="rect" id="Node000001" title="Send data on the output port and allow slide." alt="" coords="5,29,145,70"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1SyncOutPort.html#aa8fc86d1e1801c085fc847b06972f477" title="Send data on the output port." alt="" coords="193,29,330,70"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="145,47,177,47,177,52,145,52"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="226,29,224,19,230,10,242,5,261,3,282,5,294,11,291,16,280,10,261,8,244,10,233,15,229,20,231,28"/>
+</map>

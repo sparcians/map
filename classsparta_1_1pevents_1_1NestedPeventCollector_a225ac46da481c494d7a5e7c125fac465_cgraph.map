@@ -1,0 +1,9 @@
+<map id="sparta::pevents::NestedPeventCollector::generateCollectionString_" name="sparta::pevents::NestedPeventCollector::generateCollectionString_">
+<area shape="rect" id="Node000001" title="Override the generateCollectionString_() of the bases PairCollector, In this method,..." alt="" coords="5,35,232,75"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Clock.html#a00acfc088c2e51817af21129b1bbc970" title="Get the current cycle (uses current tick from the Scheduler)" alt="" coords="280,42,454,68"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="232,52,264,52,264,58,232,58"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Scheduler.html#a34dcaf99252d9e9e0511d69d2aa84ff8" title="The current tick the Scheduler is working on or just finished." alt="" coords="514,5,642,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="454,40,499,34,499,39,455,46"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Clock.html#ae80357c4ccec5470a15ed098af03c63d" title="Given the tick, convert to a Clock::Cycle." alt="" coords="502,70,654,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="455,64,487,68,486,74,454,69"/>
+</map>

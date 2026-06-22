@@ -1,0 +1,9 @@
+<map id="sparta::SyncInPort::setPortDelay" name="sparta::SyncInPort::setPortDelay">
+<area shape="rect" id="Node000001" title="Set the port delay associated with this port." alt="" coords="5,47,133,88"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="181,5,375,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,50,205,33,206,38,134,55"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Clock.html#ab621af2dc3047de88e78eb0a0a0010d5" title="Return the tick corresponding to the given cycle." alt="" coords="205,55,350,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="133,65,190,65,190,70,133,70"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Port.html#a8d71612c1256b048b9ec52d06fe2ba2f" title="Is this port bound to another port?" alt="" coords="208,104,348,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="134,80,206,97,205,102,133,85"/>
+</map>

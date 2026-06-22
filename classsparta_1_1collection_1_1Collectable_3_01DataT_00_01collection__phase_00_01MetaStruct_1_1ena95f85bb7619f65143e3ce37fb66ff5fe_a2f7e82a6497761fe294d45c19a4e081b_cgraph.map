@@ -1,0 +1,11 @@
+<map id="sparta::collection::Collectable&lt; DataT, collection_phase, MetaStruct::enable_if_t&lt; std::is_base_of&lt; sparta::PairDefinition&lt; MetaStruct::remove_any_pointer_t&lt; DataT &gt; &gt;, typename MetaStruct::remove_any_pointer_t&lt; DataT &gt;::SpartaPairDefinitionType &gt;::value &gt; &gt;::collect" name="sparta::collection::Collectable&lt; DataT, collection_phase, MetaStruct::enable_if_t&lt; std::is_base_of&lt; sparta::PairDefinition&lt; MetaStruct::remove_any_pointer_t&lt; DataT &gt; &gt;, typename MetaStruct::remove_any_pointer_t&lt; DataT &gt;::SpartaPairDefinitionType &gt;::value &gt; &gt;::collect">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,337,151"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1Collectable.html#a6506b3af9a7da969befd4d11536881dc" title=" " alt="" coords="568,58,737,98"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="337,61,428,58,520,60,552,62,552,67,520,65,428,63,337,66"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1collection_1_1Collectable.html#a56d9cf5ee0cc7e0897413afc6b73c541" title=" " alt="" coords="385,98,520,138"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="338,99,369,104,369,109,337,104"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ac7d83237fc2aaa41c6b3809a4fb646e1" title="Determine whether or not this node has collection turned on or off." alt="" coords="785,50,934,106"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="738,76,769,76,769,81,738,81"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="520,102,552,95,553,101,521,107"/>
+<area shape="poly" id="edge5_Node000004_Node000004" title=" " alt="" coords="414,98,412,88,419,79,432,73,452,71,474,74,487,80,485,85,473,79,452,76,433,78,422,83,418,89,419,97"/>
+</map>
