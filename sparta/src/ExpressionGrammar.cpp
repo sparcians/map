@@ -263,7 +263,7 @@ namespace functions {
  */
 static double ifnan(double x, double y)
 {
-    if(isnan(x) || isinf(x)){
+    if(std::isnan(x) || std::isinf(x)){
         return y;
     }
     return x;
