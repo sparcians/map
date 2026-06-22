@@ -126,9 +126,9 @@ namespace sparta {
                                              doc.GetAllocator());
 
                         const double val = si.second->getValue();
-                        if (isnan(val)) {
+                        if (std::isnan(val)) {
                             stats_json.AddMember("val", rapidjson::Value("nan"), doc.GetAllocator());
-                        } else if (isinf(val)) {
+                        } else if (std::isinf(val)) {
                             stats_json.AddMember("val", rapidjson::Value("inf"), doc.GetAllocator());
                         } else {
                             double dbl_formatted = 0;
@@ -345,11 +345,11 @@ namespace sparta {
                         }
                         rapidjson::Value stat_name_json;
                         stat_name_json.SetString(stat_name.c_str(), stat_name.size(), doc.GetAllocator());
-                        if (isnan(val)) {
+                        if (std::isnan(val)) {
                             contents.AddMember(stat_name_json,
                                                rapidjson::Value("nan"),
                                                doc.GetAllocator());
-                        } else if(isinf(val)) {
+                        } else if(std::isinf(val)) {
                             contents.AddMember(stat_name_json,
                                                rapidjson::Value("inf"),
                                                doc.GetAllocator());
