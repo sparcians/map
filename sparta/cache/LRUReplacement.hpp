@@ -77,6 +77,7 @@ namespace sparta::cache
 
         uint32_t getMRUWay(const std::vector<uint32_t> & way_order) override
         {
+            (void) way_order;
             sparta_assert(false, "Not implemented");
         }
 
