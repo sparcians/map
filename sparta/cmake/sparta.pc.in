@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: sparta
+Description: High-performance C++ modeling framework
+Version: @GIT_REPO_VERSION@
+Requires: yaml-cpp sqlite3 hdf5
+Libs: -L${libdir} -lsparta -lboost_program_options -lboost_filesystem -lboost_system -lboost_timer -lboost_serialization -lz
+Cflags: -I${includedir} -std=c++17
