@@ -16,7 +16,6 @@
 #include <iomanip>
 
 #include "sparta/collection/PipelineCollector.hpp"
-//#include "sparta/collection/DynamicDataType.hpp" TODO cnyce
 #include "sparta/collection/BitBucket.hpp"
 #include "sparta/pipeViewer/transaction_structures.hpp"
 #include "sparta/events/PayloadEvent.hpp"

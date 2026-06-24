@@ -38,13 +38,12 @@ public:
             return writeField(tiny_strings->getStringID(val), field_id);
         }
 
-        // Write enums as int64_t or uint64_t based on enum signedness
+        // Write enums as their underlying integer type.
         else if constexpr (std::is_enum_v<T>) {
             auto enum_maps = argos_resources_->getEnumInspector();
             enum_maps->inspect(val);
             using underlying_t = std::underlying_type_t<T>;
-            using int_t = std::conditional_t<std::is_signed_v<underlying_t>, int64_t, uint64_t>;
-            auto enum_int = static_cast<int_t>(val);
+            const underlying_t enum_int = static_cast<underlying_t>(val);
             return writeField(enum_int, field_id);
         }
 
