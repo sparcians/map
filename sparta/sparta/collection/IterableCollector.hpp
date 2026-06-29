@@ -223,7 +223,9 @@ public:
             auto type = encodeCollectedType();
             entry_point_ = argos_collector->createContainerCollector(loc, clk_name, type);
 
-            bit_bucket_ = std::make_shared<IterableCollectorBitBucket<sparse_array_type>>(argos_collector->getResources(), expected_capacity_);
+            auto tiny_strings = argos_collector->getTinyStrings();
+            auto enum_inspector = argos_collector->getEnumInspector();
+            bit_bucket_ = std::make_shared<IterableCollectorBitBucket<sparse_array_type>>(tiny_strings, enum_inspector, expected_capacity_);
             for (auto & bin : positions_) {
                 bin->setBitBucket(bit_bucket_);
             }

@@ -282,7 +282,9 @@ namespace sparta{
                 auto type = encodeCollectedType();
                 entry_point_ = argos_collector->createScalarCollector(loc, clk_name, type);
 
-                auto bit_bucket = std::make_shared<CollectableBitBucket>(argos_collector->getResources());
+                auto tiny_strings = argos_collector->getTinyStrings();
+                auto enum_inspector = argos_collector->getEnumInspector();
+                auto bit_bucket = std::make_shared<CollectableBitBucket>(tiny_strings, enum_inspector);
                 setBitBucket(bit_bucket);
             }
 

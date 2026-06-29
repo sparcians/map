@@ -17,8 +17,10 @@ namespace sparta::collection {
 class BitBucket
 {
 public:
-    explicit BitBucket(simdb::argos::ArgosResources* resource_container) :
-        argos_resources_(resource_container) {}
+    explicit BitBucket(simdb::TinyStrings<>* tiny_strings, simdb::argos::EnumInspector* enum_inspector) :
+        tiny_strings_(tiny_strings),
+        enum_inspector_(enum_inspector)
+    {}
 
     virtual ~BitBucket() = default;
     virtual void clear() = 0;
@@ -34,14 +36,12 @@ public:
 
         // Write strings as uint32_t via TinyStrings
         else if constexpr (std::is_same_v<T, std::string> || std::is_same_v<std::decay_t<T>, const char*>) {
-            auto tiny_strings = argos_resources_->getTinyStrings();
-            return writeField(tiny_strings->getStringID(val), field_id);
+            return writeField(tiny_strings_->getStringID(val), field_id);
         }
 
         // Write enums as their underlying integer type.
         else if constexpr (std::is_enum_v<T>) {
-            auto enum_maps = argos_resources_->getEnumInspector();
-            enum_maps->inspect(val);
+            enum_inspector_->inspect(val);
             using underlying_t = std::underlying_type_t<T>;
             const underlying_t enum_int = static_cast<underlying_t>(val);
             return writeField(enum_int, field_id);
@@ -69,12 +69,17 @@ public:
         }
     }
 
-    simdb::argos::ArgosResources* getArgosResources() const {
-        return argos_resources_;
+    simdb::TinyStrings<>* getTinyStrings() const {
+        return tiny_strings_;
+    }
+
+    simdb::argos::EnumInspector* getEnumInspector() const {
+        return enum_inspector_;
     }
 
 private:
-    simdb::argos::ArgosResources* argos_resources_ = nullptr;
+    simdb::TinyStrings<>* tiny_strings_ = nullptr;
+    simdb::argos::EnumInspector* enum_inspector_ = nullptr;
 };
 
 //! BitBucket implementation for Collectable objects (whether "standalone"
@@ -122,13 +127,13 @@ template <>
 class IterableCollectorBitBucket<true> : public BitBucket
 {
 public:
-    IterableCollectorBitBucket(simdb::argos::ArgosResources* resource_container, size_t capacity)
-        : BitBucket(resource_container)
+    IterableCollectorBitBucket(simdb::TinyStrings<>* tiny_strings, simdb::argos::EnumInspector* enum_inspector, size_t capacity)
+        : BitBucket(tiny_strings, enum_inspector)
         , capacity_(capacity)
     {
         while (capacity--)
         {
-            bin_buckets_.emplace_back(std::make_unique<CollectableBitBucket>(getArgosResources()));
+            bin_buckets_.emplace_back(std::make_unique<CollectableBitBucket>(tiny_strings, enum_inspector));
         }
     }
 
@@ -172,14 +177,14 @@ template <>
 class IterableCollectorBitBucket<false> : public BitBucket
 {
 public:
-    IterableCollectorBitBucket(simdb::argos::ArgosResources* resource_container, size_t capacity)
-        : BitBucket(resource_container)
+    IterableCollectorBitBucket(simdb::TinyStrings<>* tiny_strings, simdb::argos::EnumInspector* enum_inspector, size_t capacity)
+        : BitBucket(tiny_strings, enum_inspector)
         , capacity_(capacity)
     {
         all_bin_bytes_.reserve(capacity_);
         while (capacity--)
         {
-            bin_buckets_.emplace_back(std::make_unique<CollectableBitBucket>(getArgosResources()));
+            bin_buckets_.emplace_back(std::make_unique<CollectableBitBucket>(tiny_strings, enum_inspector));
         }
     }
 
