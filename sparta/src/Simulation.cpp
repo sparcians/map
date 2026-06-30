@@ -89,6 +89,7 @@
 #if SIMDB_ENABLED
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
 #include "sparta/serialization/checkpoint/CherryPickFastCheckpointer.hpp"
+#include "simdb/apps/argos/ArgosCollector.hpp"
 #include "simdb/apps/AppManager.hpp"
 #endif
 
@@ -147,6 +148,13 @@ private:
     (void) phase;
 
 #endif
+
+void onPipelineCollectionShutdown(Simulation* sim)
+{
+    if(sim) {
+        sim->postProcessingLastCall();
+    }
+}
 
 /*!
  * \brief YAML parser class to turn simulation control definition files:
@@ -511,6 +519,7 @@ void Simulation::createSimDbApps_()
         parameterizeSimDbApps_(&app_mgr);
     }
 
+    app_managers_->setVerbose(sim_config_->simdb_config.verboseMode());
     app_managers_->createEnabledApps();
     app_managers_->createSchemas();
 #else
@@ -609,6 +618,7 @@ void Simulation::buildTree()
     simdb::AppRegistrations app_registrations(app_managers_.get());
     app_registrations.registerApp<ReportStatsCollector>();
     app_registrations.registerApp<serialization::checkpoint::CherryPickFastCheckpointer>();
+    app_registrations.registerApp<simdb::argos::ArgosCollector>();
     registerSimDbApps_(&app_registrations);
 #endif
 
@@ -814,6 +824,45 @@ void Simulation::finalizeFramework()
             app->setScheduler(getScheduler());
             db_mgr->safeTransaction([&]() { setupReports_(app); });
             reports_setup = true;
+        }
+        else if (auto app = app_mgr->getApp<simdb::argos::ArgosCollector>())
+        {
+            const auto& heartbeat_vv = notNull(sim_config_)->pipeline_collection_heartbeat;
+            if (heartbeat_vv.isValid())
+            {
+                app->setHeartbeat(heartbeat_vv);
+            }
+            app->timestampWith([this](){return scheduler_->getCurrentTick();});
+
+            std::set<const Clock*> collectable_clocks;
+            std::set<std::string> serialized_types;
+            std::function<void(TreeNode*)> visitCollectables;
+            visitCollectables = [&](TreeNode* node)
+            {
+                if (auto ctn = dynamic_cast<collection::CollectableTreeNode*>(node);
+                    ctn && !ctn->isIterableCollectorBin())
+                {
+                    ctn->createSimDbEntryPoint(app);
+                    ctn->serializeStructSchema(db_mgr, serialized_types);
+                    collectable_clocks.insert(notNull(ctn->getClock()));
+                }
+                for (auto child : TreeNodePrivateAttorney::getAllChildren(node))
+                {
+                    visitCollectables(child);
+                }
+            };
+
+            db_mgr->safeTransaction([&](){
+                visitCollectables(getRoot());
+            });
+
+            for (auto clk : collectable_clocks)
+            {
+                auto period = clk->getPeriod();
+                auto numer = clk->getRatio().getNumerator();
+                auto denom = clk->getRatio().getDenominator();
+                app->addClock(clk->getName(), period, numer, denom);
+            }
         }
     }
 #endif
@@ -1085,7 +1134,10 @@ void Simulation::postProcessingLastCall()
 {
 #if SIMDB_ENABLED
     // This is added here to close AppManager's even with --no-run
-    app_managers_->postSimLoopTeardown();
+    if (app_managers_require_teardown_) {
+        app_managers_->postSimLoopTeardown();
+        app_managers_require_teardown_ = false;
+    }
 #endif
 }
 

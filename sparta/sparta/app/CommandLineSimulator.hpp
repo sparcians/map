@@ -55,7 +55,7 @@ class InformationWriter;
 
 namespace app {
 
-const constexpr char DefaultHeartbeat[]        = "0";
+const constexpr char DefaultHeartbeat[]        = "10";
 
 
 /*!
@@ -457,7 +457,6 @@ protected:
      */
     std::unique_ptr<sparta::trigger::Triggerable> pipeline_collection_triggerable_;
     std::unique_ptr<sparta::trigger::Trigger>     pipeline_trigger_;
-    std::unique_ptr<sparta::InformationWriter>    info_out_;
 
     /*!
      * \brief Heartbeat period of pipeline collection file (before lexical cast

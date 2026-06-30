@@ -23,6 +23,7 @@
 #include <unordered_map>
 #include <functional>
 
+#include "sparta/collection/BitBucket.hpp"
 #include "sparta/pairs/PairFormatter.hpp"
 #include "sparta/pairs/RegisterPairsMacro.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
@@ -30,9 +31,47 @@
 #include "sparta/utils/MetaTypeList.hpp"
 #include "sparta/utils/MetaStructs.hpp"
 #include "sparta/utils/DetectMemberUtils.hpp"
+#include "sparta/utils/ValidValue.hpp"
 
+#include "simdb/utils/Demangle.hpp"
+#include "simdb/utils/TypeTraits.hpp"
 
 namespace sparta {
+
+    namespace pair_schema_detail {
+
+        //! Decayed return type of the last method pointer in a `KeyPairFromEntity` pack (the collected leaf).
+        template<typename... Args>
+        using KeyPairLeaf_t = MetaStruct::decay_t<
+            MetaStruct::return_type_t<
+                MetaStruct::last_index_type_t<
+                    MetaStruct::parameter_pack_length<Args...>::value - 1,
+                    Args...>>>;
+
+        /**
+         * \brief Map a collected leaf C++ type to Argos / SimpleDeserializer dtype strings.
+         */
+        template<typename Leaf>
+        std::string argosLeafDtypeString() {
+            using T = MetaStruct::decay_t<Leaf>;
+            if constexpr (std::is_same_v<T, std::string> || std::is_same_v<std::decay_t<T>, const char*>) {
+                return "string";
+            } else if constexpr ((std::is_trivial_v<T> && std::is_standard_layout_v<T>) ||
+                                 (std::is_enum_v<T> && utils::has_ostream_operator<T>::value)) {
+                return simdb::demangle_type<T>();
+            } else if constexpr (std::is_enum_v<T>) {
+                using underlying_t = std::underlying_type_t<T>;
+                return simdb::demangle_type<underlying_t>();
+            } else if constexpr (simdb::type_traits::is_pod_convertible_v<T> && (!std::is_trivial_v<T> || !std::is_standard_layout_v<T>)) {
+                using converted_t = simdb::type_traits::pod_convertible_t<T>();
+                return simdb::demangle_type<converted_t>();
+            } else {
+                static_assert(utils::has_ostream_operator<T>::value);
+                return "dynamic";
+            }
+        }
+
+    } // namespace pair_schema_detail
 
     /**
      * \class PairCache
@@ -300,6 +339,22 @@ namespace sparta {
         }
 
         /**
+         * \brief Flattened (field name, Argos dtype string) schema in pair order.
+         */
+        std::vector<std::pair<std::string, std::string>>
+        getFlattenedFieldNameAndDtypeSchema() const {
+            const auto & names = pair_cache_.getNameStrings();
+            const auto & dtypes = pair_definition_.getLeafArgosDtypeStrings();
+            sparta_assert(names.size() == dtypes.size());
+            std::vector<std::pair<std::string, std::string>> out;
+            out.reserve(names.size());
+            for(std::size_t i = 0; i < names.size(); ++i) {
+                out.emplace_back(names[i], dtypes[i]);
+            }
+            return out;
+        }
+
+        /**
         * \brief is this pair collector currently doing work
         * to run collection logic.
         */
@@ -335,6 +390,13 @@ namespace sparta {
         bool collect_(const Targs &... args) {
             return pair_definition_.populatePairs(
                 &pair_cache_, args...);
+        }
+
+        /**
+         * \brief Use the given bit bucket to dump collected data to SimDB
+         */
+        void setBitBucket_(std::shared_ptr<collection::BitBucket> bit_bucket) {
+            pair_definition_.setBitBucket(bit_bucket);
         }
 
         /**
@@ -460,8 +522,16 @@ namespace sparta {
             return f_switch_;
         }
 
+        /**
+         * \brief Use the given bit bucket to dump collected data to SimDB
+         */
+        virtual void setBitBucket(std::shared_ptr<collection::BitBucket> bit_bucket) {
+            bit_bucket_ = bit_bucket;
+        }
+
     private:
         std::string name_;
+        std::shared_ptr<collection::BitBucket> bit_bucket_;
 
     protected:
         /**
@@ -474,6 +544,16 @@ namespace sparta {
             stream << format_tags_.prefix;
             stream << std::setfill(format_tags_.fill_char);
             stream << std::setw(format_tags_.swidth);
+        }
+
+        /**
+         * \brief Let subclasses notify the BitBucket when pairs are collected.
+         */
+        collection::BitBucket* getBitBucket_(bool expect = true) const {
+            if(!bit_bucket_ && expect) {
+                throw SpartaException("BitBucket never set!");
+            }
+            return bit_bucket_.get();
         }
 
         //! Formatting options for this key's value.
@@ -607,6 +687,11 @@ namespace sparta {
     protected:
         std::unique_ptr<UnRefDataT> data_cpy_;
         FuncType func_;
+
+    private:
+        void setBitBucket(std::shared_ptr<collection::BitBucket>) override final {
+            throw SpartaException("BitBucket is only for collection, not PEvents");
+        }
     };
 
     /**
@@ -783,18 +868,7 @@ namespace sparta {
             // Get the new data, as a copy.
             const ValueType & tmp = ((object).*func)();
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, tmp);
         }
 
         // Type of object is not abstract.
@@ -1174,18 +1248,7 @@ namespace sparta {
             // Get the new data, as a copy.
             const ValueType & tmp = ((object).*func)();
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, tmp);
         }
 
         // Type of object is not abstract.
@@ -1224,18 +1287,7 @@ namespace sparta {
             // Get the new data, as a copy.
             const ValueType & tmp = ((object).*func)();
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, tmp);
         }
 
         // Type of object is not abstract.
@@ -1270,18 +1322,7 @@ namespace sparta {
             // Get the new data, as a copy.
             const ValueType & tmp = S();
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, tmp);
         }
 
         // Type of object is not abstract.
@@ -1317,18 +1358,7 @@ namespace sparta {
             // Get the new data, as a copy.
             const ValueType & tmp = S(object);
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, tmp);
         }
 
         // Type of object is not abstract.
@@ -1413,18 +1443,165 @@ namespace sparta {
             // Get the new data, as a copy.
             const ValueType & tmp = (*object.*func)();
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, tmp);
+        }
+
+        // BUGFIX (flatten-through-derived pointer, NON-last hop):
+        // Type of object is not abstract.
+        // Type of object is a pointer to a *derived* type.
+        // Functional object is a Method Pointer belonging to a proper *base*
+        //   class of the pointee, and is NOT the last function in the pack
+        //   (more method pointers follow). This is the multi-level flatten case.
+        //   The is_same recurse overloads do not match (base != derived), and the
+        //   variadic mismatch overload is prevented from matching here by its
+        //   added !is_base_of guard, so this overload handles it: invoke the
+        //   base-class accessor on the derived pointee (valid via upcast) and
+        //   recurse into the remaining method pointers.
+        //  \code{.cpp}
+        //  std::shared_ptr<Derived> b;   // Derived : public Base
+        //  Member Function:
+        //      const std::shared_ptr<Inner> & Base::getInner() const { ... }
+        //  addPair() callset -> (X::&getDerivedPtr, &Base::getInner, &Inner::getI)
+        //  \endcode
+        template<typename T, typename R, typename S, typename... Ts>
+        MetaStruct::enable_if_t<
+
+            //! Must be non-abstract type.
+            !std::is_abstract<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<T>>>::value &&
+
+            //! Object is a pointer.
+            MetaStruct::is_any_pointer<T>::value &&
+
+            //! Method Pointer Type and Object Type do NOT match exactly...
+            !std::is_same<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<S>>,
+                MetaStruct::remove_any_pointer_t<T>>::value &&
+
+            //! ...but the method's class is a (proper) base of the pointee type.
+            std::is_base_of<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<S>>,
+                MetaStruct::decay_t<MetaStruct::remove_any_pointer_t<T>>>::value, bool>
+
+        populateFromEntityUtility_(
+            PairCache *& c, const T & object, R (S :: * func)() const, Ts &&... ts) {
+            return populateFromEntityUtility_(c, (*object.*func)(), std::forward<Ts>(ts)...);
+        }
+
+        // BUGFIX (flatten-through-derived value/ref, NON-last hop):
+        // Same as above, but the object is held by value/reference (not a pointer).
+        //  \code{.cpp}
+        //  Derived b;                    // Derived : public Base
+        //  Member Function:
+        //      const std::shared_ptr<Inner> & Base::getInner() const { ... }
+        //  addPair() callset -> (X::&getDerived, &Base::getInner, &Inner::getI)
+        //  \endcode
+        template<typename T, typename R, typename S, typename... Ts>
+        MetaStruct::enable_if_t<
+
+            //! Must be non-abstract type.
+            !std::is_abstract<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<T>>>::value &&
+
+            //! Object is NOT a pointer.
+            !MetaStruct::is_any_pointer<T>::value &&
+
+            //! Method Pointer Type and Object Type do NOT match exactly...
+            !std::is_same<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<S>>,
+                MetaStruct::remove_any_pointer_t<T>>::value &&
+
+            //! ...but the method's class is a (proper) base of the object type.
+            std::is_base_of<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<S>>,
+                MetaStruct::decay_t<MetaStruct::remove_any_pointer_t<T>>>::value, bool>
+
+        populateFromEntityUtility_(
+            PairCache *& c, const T & object, R (S :: * func)() const, Ts &&... ts) {
+            return populateFromEntityUtility_(c, (object.*func)(), std::forward<Ts>(ts)...);
+        }
+
+        // BUGFIX (flatten-through-derived pointer, LAST hop):
+        // Type of object is not abstract.
+        // Type of object is a pointer to a *derived* type.
+        // Functional object is the (last) Method Pointer, belonging to a proper
+        //   *base* class of the pointee. The is_same overloads above do not match
+        //   this case, and the variadic mismatch catch-all would silently
+        //   return false (dropping the field from the blob). Because this overload
+        //   is non-variadic, it is more specialized than the variadic recurse
+        //   overload above and wins by partial ordering.
+        // We invoke the base-class accessor on the derived pointee (valid via
+        //   upcast) and collect the value as normal.
+        //  \code{.cpp}
+        //  std::shared_ptr<Derived> b;   // Derived : public Base
+        //  Member Function:
+        //      int Base::getValue() const { return value; }
+        //  addPair() callset -> (X::&getDerivedPtr, &Base::getValue)
+        //  \endcode
+        template<typename T, typename R, typename S>
+        MetaStruct::enable_if_t<
+
+            //! Must be non-abstract type.
+            !std::is_abstract<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<T>>>::value &&
+
+            //! Object is a pointer.
+            MetaStruct::is_any_pointer<T>::value &&
+
+            //! Method Pointer Type and Object Type do NOT match exactly...
+            !std::is_same<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<S>>,
+                MetaStruct::remove_any_pointer_t<T>>::value &&
+
+            //! ...but the method's class is a (proper) base of the pointee type.
+            std::is_base_of<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<S>>,
+                MetaStruct::decay_t<MetaStruct::remove_any_pointer_t<T>>>::value, bool>
+
+        populateFromEntityUtility_(
+            PairCache *& c, const T & object, R (S :: * func)() const) {
+
+            // Get the new data, as a copy.
+            const ValueType & tmp = (*object.*func)();
+
+            return finalizeCollection_(c, tmp);
+        }
+
+        // BUGFIX (flatten-through-derived value/ref):
+        // Same as above, but the object is held by value/reference (not a pointer).
+        //  \code{.cpp}
+        //  Derived b;                    // Derived : public Base
+        //  Member Function:
+        //      int Base::getValue() const { return value; }
+        //  addPair() callset -> (X::&getDerived, &Base::getValue)
+        //  \endcode
+        template<typename T, typename R, typename S>
+        MetaStruct::enable_if_t<
+
+            //! Must be non-abstract type.
+            !std::is_abstract<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<T>>>::value &&
+
+            //! Object is NOT a pointer.
+            !MetaStruct::is_any_pointer<T>::value &&
+
+            //! Method Pointer Type and Object Type do NOT match exactly...
+            !std::is_same<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<S>>,
+                MetaStruct::remove_any_pointer_t<T>>::value &&
+
+            //! ...but the method's class is a (proper) base of the object type.
+            std::is_base_of<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<S>>,
+                MetaStruct::decay_t<MetaStruct::remove_any_pointer_t<T>>>::value, bool>
+
+        populateFromEntityUtility_(
+            PairCache *& c, const T & object, R (S :: * func)() const) {
+
+            // Get the new data, as a copy.
+            const ValueType & tmp = (object.*func)();
+
+            return finalizeCollection_(c, tmp);
         }
 
         // Type of object is not abstract.
@@ -1463,18 +1640,7 @@ namespace sparta {
             // Get the new data, as a copy.
             const ValueType & tmp = (*object.*func)();
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, tmp);
         }
 
         // Type of object is not abstract.
@@ -1509,18 +1675,7 @@ namespace sparta {
             // Get the new data, as a copy.
             const ValueType & tmp = S();
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, tmp);
         }
 
         // Type of object is not abstract.
@@ -1556,18 +1711,7 @@ namespace sparta {
             // Get the new data, as a copy.
             const ValueType & tmp = S(*object);
 
-            // Since we could potentially start out empty with
-            // none primitive data with a non-default constructor
-            // we are forced to wait till we get the first copy.
-            if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
-                data_cpy_.reset(new ValueType(tmp));
-            }
-            else if(*data_cpy_ == tmp) {
-                return true;
-            }
-            updateValueInCache_(c, id_, tmp);
-            data_cpy_.reset(new ValueType(tmp));
-            return false;
+            return finalizeCollection_(c, tmp);
         }
 
         // Type of object is not abstract.
@@ -1624,10 +1768,18 @@ namespace sparta {
             !std::is_abstract<MetaStruct::decay_t<
                 MetaStruct::remove_any_pointer_t<T>>>::value &&
 
-            //! Method Pointer Type and Object Type mismatch.
+            //! Method Pointer Type and Object Type mismatch...
             !std::is_same<MetaStruct::decay_t<
                 MetaStruct::remove_any_pointer_t<S>>,
-                MetaStruct::remove_any_pointer_t<T>>::value, bool>
+                MetaStruct::remove_any_pointer_t<T>>::value &&
+
+            //! ...and the method's class is NOT a base of the object type either.
+            //  (The base-of case is handled by the flatten-through-derived
+            //  recurse/last-hop overloads above; only truly unrelated types are
+            //  dropped here.)
+            !std::is_base_of<MetaStruct::decay_t<
+                MetaStruct::remove_any_pointer_t<S>>,
+                MetaStruct::decay_t<MetaStruct::remove_any_pointer_t<T>>>::value, bool>
 
         populateFromEntityUtility_(
             PairCache *&, const T &, R (S :: *)() const, Ts &&...) {
@@ -1841,6 +1993,25 @@ namespace sparta {
         // Have a unique pointer to the ultimate terminal type of this KeyPairEntity.
         std::unique_ptr<ValueType> data_cpy_;
 
+        bool finalizeCollection_(
+            PairCache *& c, const ValueType & tmp) {
+
+            if(auto bit_bucket = this->getBitBucket_(false)) {
+                auto success = bit_bucket->writeField(tmp, id_);
+                sparta_assert(success);
+            } else {
+                if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
+                    data_cpy_.reset(new ValueType(tmp));
+                }
+                else if(*data_cpy_ == tmp) {
+                    return true;
+                }
+                updateValueInCache_(c, id_, tmp);
+                data_cpy_.reset(new ValueType(tmp));
+            }
+            return false;
+        }
+
     public:
         KeyPairFromEntity(uint32_t i, const std::string & name, Args &&... args) :
             BasePairFromEntity<EntityType>(name, i),
@@ -1887,6 +2058,7 @@ namespace sparta {
         typedef std::vector<BoundPairType *> BoundPairList;
         typedef std::vector<Pair *> ArbitraryPairList;
         typedef std::vector<std::unique_ptr<Pair>> PairList;
+        typedef std::vector<std::string> LeafDTypeList;
 
         /**
         * \brief This special character will act as placeholder
@@ -2000,6 +2172,9 @@ namespace sparta {
                 size, name, std::forward<Args>(args)...);
             pairs_.emplace_back(new_pair);
             bound_pairs_.emplace_back(new_pair);
+            leaf_argos_dtype_strings_.emplace_back(
+                pair_schema_detail::argosLeafDtypeString<
+                    pair_schema_detail::KeyPairLeaf_t<Args...>>());
             new_pair->setFormatter(format);
         }
 
@@ -2105,6 +2280,8 @@ namespace sparta {
                 new ArbitraryPair<DataT>(name, pairs_.size());
             pairs_.emplace_back(new_pair);
             arbitrary_pairs_.emplace_back(new_pair);
+            leaf_argos_dtype_strings_.emplace_back(
+                pair_schema_detail::argosLeafDtypeString<DataT>());
 
             new_pair->setFormatter(format);
 
@@ -2133,12 +2310,23 @@ namespace sparta {
                                 const std::ios_base::fmtflags &>::value, void>
         addPair(const std::string & name, Args &&... args) {
             sparta_assert(!name.empty());
+            if(name == "DID") {
+                for(const auto& pair : pairs_){
+                    if(pair->getKey() == "DID"){
+                        return;
+                    }
+                }
+            }
+
             static_assert(sizeof...(Args),
                           "There must be atleast one Method Pointer in addPair() call.");
             auto * new_pair = new KeyPairFromEntity<EntityType, Args...>(
                 pairs_.size(), name, std::forward<Args>(args)...);
             pairs_.emplace_back(new_pair);
             bound_pairs_.emplace_back(new_pair);
+            leaf_argos_dtype_strings_.emplace_back(
+                pair_schema_detail::argosLeafDtypeString<
+                    pair_schema_detail::KeyPairLeaf_t<Args...>>());
             new_pair->setFormatter(std::ios::dec);
         }
 
@@ -2156,6 +2344,14 @@ namespace sparta {
                                 const std::ios_base::fmtflags&>::value, void>
         addPair(const std::string & name, Args &&... args) {
             sparta_assert(!name.empty());
+            if(name == "DID") {
+                for(const auto& pair : pairs_){
+                    if(pair->getKey() == "DID"){
+                        return;
+                    }
+                }
+            }
+
             static_assert(sizeof...(Args),
                           "There must be atleast one Method Pointer in addPair() call.");
 
@@ -2205,6 +2401,8 @@ namespace sparta {
                     name, func, pairs_.size());
             pairs_.emplace_back(new_pair);
             bound_pairs_.emplace_back(new_pair);
+            leaf_argos_dtype_strings_.emplace_back(
+                pair_schema_detail::argosLeafDtypeString<DataType>());
 
             // mark the pair to be formatted pair if necessary
             new_pair->setFormatter(format);
@@ -2217,6 +2415,7 @@ namespace sparta {
         * by making use of Overloaded function addKey with one parameter.
         */
         void finalizeKeys(PairCache * pair_cache) {
+            sparta_assert(leaf_argos_dtype_strings_.size() == pairs_.size());
             pair_cache->reserveThemAll(pairs_.size());
             for(uint32_t i = 0; i < pairs_.size(); ++i) {
                 pair_cache->addKey(pairs_[i]->getKey(), i, pairs_[i]->getFormatter());
@@ -2229,6 +2428,13 @@ namespace sparta {
          */
         inline uint32_t size() const {
             return pairs_.size();
+        }
+
+        /**
+         * \brief Argos dtype string per collected pair, parallel to `pairs_` / `getNameStrings()`.
+         */
+        inline const std::vector<std::string> & getLeafArgosDtypeStrings() const {
+            return leaf_argos_dtype_strings_;
         }
 
         /**
@@ -2262,10 +2468,20 @@ namespace sparta {
             return !was_clean;
         }
 
+        /**
+         * \brief Use the given bit bucket to dump collected data to SimDB
+         */
+        void setBitBucket(std::shared_ptr<collection::BitBucket> bit_bucket) {
+            for(auto & pair : pairs_) {
+                pair->setBitBucket(bit_bucket);
+            }
+        }
+
     protected:
         PairList pairs_;
         BoundPairList bound_pairs_;
         ArbitraryPairList arbitrary_pairs_;
+        LeafDTypeList leaf_argos_dtype_strings_;
         bool finalized_;
     };
 

@@ -63,8 +63,8 @@ sparta_regress(sparta_core_example)
 sparta_named_test(sparta_core_example_20000cycs sparta_core_example -r 200000)
 sparta_named_test(sparta_core_example_fetch_max_ipc sparta_core_example  -i 1M -p top.cpu.core0.fetch.params.fetch_max_ipc true)
 sparta_named_test(sparta_core_example_pipeout sparta_core_example -i 1000 -z pipeout -K layouts/cpu_layout.alf)
-sparta_named_test(sparta_core_example_pipeout_icount sparta_core_example -i 1000 --debug-on-icount 100 -z pipeout -K layouts/cpu_layout.alf)
-sparta_named_test(sparta_core_example_pipeout_cycle sparta_core_example -i 1000 --debug-on 100 -z pipeout -K layouts/cpu_layout.alf)
+sparta_named_test(sparta_core_example_pipeout_icount sparta_core_example -i 1000 --debug-on-icount 100 -z pipeout_icount -K layouts/cpu_layout.alf)
+sparta_named_test(sparta_core_example_pipeout_cycle sparta_core_example -i 1000 --debug-on 100 -z pipeout_cycle -K layouts/cpu_layout.alf)
 # Using a standard  YAML causes this test to fail.  Need to investigate Issue #4
 # sparta_named_test(sparta_core_example_preload sparta_core_example -i 1000 -p top.cpu.core0.preloader.params.preload_file sample_preload.yaml)
 sparta_named_test(sparta_core_example_multicore_yaml_opts_smoke_test sparta_core_example -i 10k --report top multicore_report_opts_basic.yaml out.txt --num-cores 2)
@@ -154,10 +154,10 @@ sparta_expect_failure_test(sparta_core_example_override_extensions_neg_test spar
 sparta_named_test(sparta_core_example_3d_nested_extension_params sparta_core_example --no-run --extension-file nested_vecs.yaml --write-final-config final.yaml)
 
 if(USING_SIMDB)
-sparta_named_test(sparta_core_example_simdb_apps1 sparta_core_example --simdb-apps simdb-reports cherry-pick-fast-checkpointer --simdb-database test.db --no-run)
-sparta_named_test(sparta_core_example_simdb_apps2 sparta_core_example --simdb-apps simdb-reports cherry-pick-fast-checkpointer --simdb-app-database simdb-reports reports.db --no-run)
+sparta_named_test(sparta_core_example_simdb_apps1 sparta_core_example --simdb-apps simdb-reports cherry-pick-fast-checkpointer --simdb-database simdb_apps1.db --no-run)
+sparta_named_test(sparta_core_example_simdb_apps2 sparta_core_example --simdb-apps simdb-reports cherry-pick-fast-checkpointer --simdb-app-database simdb-reports reports.db cherry-pick-fast-checkpointer chkptr.db --no-run)
 sparta_named_test(sparta_core_example_simdb_apps3 sparta_core_example --simdb-apps cherry-pick-fast-checkpointer --simdb-app-count cherry-pick-fast-checkpointer 2 --simdb-database autogen --no-run)
-sparta_named_test(sparta_core_example_simdb_apps4 sparta_core_example --simdb-apps cherry-pick-fast-checkpointer --simdb-app-count cherry-pick-fast-checkpointer top.cpu.core* --num-cores 2 --no-run)
+sparta_named_test(sparta_core_example_simdb_apps4 sparta_core_example --simdb-apps cherry-pick-fast-checkpointer --simdb-app-count cherry-pick-fast-checkpointer top.cpu.core* --num-cores 2 --simdb-database simdb_apps4.db --no-run)
 
 # Run all backwards compatibility tests for map_v2.1+ reports and their v2.0.* equivalents
 add_test(NAME sparta_simdb_report_verif_suite COMMAND python3 ../../../scripts/simdb/run_report_verif_suite.py --sim-exe-path sparta_core_example --serial --force --fail-fast)

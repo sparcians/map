@@ -16,6 +16,7 @@
 #include <iomanip>
 
 #include "sparta/collection/PipelineCollector.hpp"
+#include "sparta/collection/BitBucket.hpp"
 #include "sparta/pipeViewer/transaction_structures.hpp"
 #include "sparta/events/PayloadEvent.hpp"
 #include "sparta/events/EventSet.hpp"
@@ -30,26 +31,77 @@ namespace sparta{
     namespace collection
     {
 
-        /**
-         * \class Collectable
-         * \brief Class used to either manually or auto-collect an Annotation String
-         *        object in a pipeline database
-         * \tparam DataT The DataT of the collectable being collected
-         * \tparam collection_phase The phase collection will occur.  If
-         *                          sparta::SchedulingPhase::Collection,
-         *                          collection is done prior to Tick.
-         *
-         *  Auto-collection will occur only if a Collectable is
-         *  constructed with a collected_object.  If no object is
-         *  provided, it assumes a manual collection and the
-         *  scheduling phase is ignored.
-         */
+        template <typename T, typename = void>
+        struct use_raw_type : std::false_type {};
 
-        template<typename DataT, SchedulingPhase collection_phase = SchedulingPhase::Collection, typename = void>
-        class Collectable : public CollectableTreeNode
+        template <typename T>
+        struct use_raw_type<T,
+            std::enable_if_t<std::is_trivial_v<T> &&
+                             std::is_standard_layout_v<T>>> : std::true_type {};
+
+        template <typename T>
+        inline constexpr bool use_raw_type_v = use_raw_type<T>::value;
+
+        template <typename T, typename = void>
+        struct use_tiny_strings : std::false_type {};
+
+        template <typename T>
+        struct use_tiny_strings<T,
+            std::enable_if_t<std::is_same_v<T, std::string> ||
+                             std::is_same_v<std::decay_t<T>, const char*>>> : std::true_type {};
+
+        template <typename T>
+        inline constexpr bool use_tiny_strings_v = use_tiny_strings<T>::value;
+
+        template <typename U>
+        std::true_type  derives_from_pair_definition_(const sparta::PairDefinition<U>*);
+        std::false_type derives_from_pair_definition_(...);
+
+        template <typename T, typename = void>
+        struct use_pair_definition : std::false_type {};
+
+        template <typename T>
+        struct use_pair_definition<T,
+            std::enable_if_t<decltype(derives_from_pair_definition_(
+                             std::declval<typename T::SpartaPairDefinitionType*>()))::value>>
+            : std::true_type {};
+
+        template <typename T>
+        inline constexpr bool use_pair_definition_v = use_pair_definition<T>::value;
+
+        template <typename T, typename = void>
+        struct use_cast_operator : std::false_type {};
+
+        template <typename T>
+        struct use_cast_operator<T,
+            std::enable_if_t<simdb::type_traits::is_pod_convertible_v<T> &&
+                             !use_raw_type_v<T> &&
+                             !use_pair_definition_v<T> &&
+                             !utils::has_ostream_operator<T>::value>> : std::true_type {};
+
+        template <typename T>
+        inline constexpr bool use_cast_operator_v = use_cast_operator<T>::value;
+
+        template <typename T, typename = void>
+        struct use_dynamic_fields : std::false_type {};
+
+        template <typename T>
+        struct use_dynamic_fields<T,
+            std::enable_if_t<!use_raw_type_v<T> &&
+                             !use_tiny_strings_v<T> &&
+                             !use_pair_definition_v<T> &&
+                             !use_cast_operator_v<T> &&
+                             utils::has_ostream_operator<T>::value>> : std::true_type {};
+
+        template <typename T>
+        inline constexpr bool use_dynamic_fields_v = use_dynamic_fields<T>::value;
+
+        //! Common code for all Collectable implementations below.
+        template <typename DataT, SchedulingPhase collection_phase = SchedulingPhase::Collection>
+        class CollectableCommon : public CollectableTreeNode
         {
         public:
-            static constexpr uint64_t BAD_DISPLAY_ID = 0x1000;
+            using ValueType = MetaStruct::remove_any_pointer_t<DataT>;
 
             /**
              * \brief Construct the Collectable, no data object associated, part of a group
@@ -58,38 +110,17 @@ namespace sparta{
              * \param parentid The transaction id of a parent for this collectable; 0 for no parent
              * \param desc A description for the interface
              */
-            Collectable(sparta::TreeNode* parent,
-                        const std::string& name,
-                        const std::string& group,
-                        uint32_t index,
-                        uint64_t parentid = 0,
-                        const std::string & desc = "Collectable <manual, no desc>") :
+            CollectableCommon(sparta::TreeNode* parent,
+                              const std::string& name,
+                              const std::string& group,
+                              uint32_t index,
+                              uint64_t parentid = 0,
+                              const std::string & desc = "Collectable <manual, no desc>") :
                 CollectableTreeNode(sparta::notNull(parent), name, group, index, desc),
                 event_set_(this),
                 ev_close_record_(&event_set_, name + "_pipeline_collectable_close_event",
-                                 CREATE_SPARTA_HANDLER_WITH_DATA(Collectable, closeRecord, bool))
+                                CREATE_SPARTA_HANDLER_WITH_DATA(CollectableCommon, closeRecord, bool))
             {
-                sparta_assert(getNodeUID() < ~(decltype(transaction_t::location_ID))0,
-                            "Tree has at least " << getNodeUID() << " in it. Because pipeouts "
-                            "use these locations and only have 32b location IDs, the pipeline "
-                            "collection system imposes a limit of " << ~(decltype(transaction_t::location_ID))0
-                            << " nodes in the tree. This is expected to be an unattainable number "
-                            "without some kind of runaway allocation bug. If you are sure you "
-                            << " nodes in the tree. This is expected to be an unattainable number "
-                            "without some kind of runaway allocation bug. If you are sure you "
-                            "need more nodes than this, contact the SPARTA team. In the meantime, "
-                            "it is probably safe to comment out this assertion if you do not "
-                            "plan to use the pipeline collection functionality");
-
-                argos_record_.location_ID        = boost::numeric::converter<decltype(argos_record_.location_ID),
-                                                                             decltype(getNodeUID())>::convert(getNodeUID());
-                argos_record_.control_Process_ID = 0; // what is this for?
-                argos_record_.parent_ID          = parentid;
-                argos_record_.flags              = is_Annotation;
-                argos_record_.time_Start         = 0;
-                argos_record_.time_End           = 1;
-
-
             }
 
             /**
@@ -100,421 +131,16 @@ namespace sparta{
              * \param parentid The transaction id of a parent for this collectable; 0 for no parent
              * \param desc A description for the interface
              */
-            Collectable(sparta::TreeNode* parent,
-                        const std::string& name,
-                        const DataT * collected_object,
-                        uint64_t parentid = 0,
-                        const std::string & desc = "Collectable <no desc>") :
-                Collectable(parent, name,
-                            TreeNode::GROUP_NAME_NONE,
-                            TreeNode::GROUP_IDX_NONE,
-                            parentid,
-                            desc)
-            {
-                collected_object_ = collected_object;
-
-                // Get an initial value, if available
-                if(collected_object) {
-                    std::ostringstream ss;
-                    ss << *collected_object;
-                    prev_annot_ = ss.str();
-                }
-            }
-
-            /**
-             * \brief Construct the Collectable, no data object associated
-             * \param parent A pointer to a parent treenode.  Must not be null
-             * \param name The name for which to create this object as a child sparta::TreeNode
-             * \param parentid The transaction id of a parent for this collectable; 0 for no parent
-             * \param desc A description for the interface
-             */
-            Collectable(sparta::TreeNode* parent,
-                        const std::string& name,
-                        uint64_t parentid = 0,
-                        const std::string & desc = "Collectable <manual, no desc>") :
-                Collectable(parent, name, nullptr, parentid, desc)
-            {
-                // Can't auto collect without setting collected_object_
-                setManualCollection();
-            }
-
-            //! Virtual destructor -- does nothing
-            virtual ~Collectable() {}
-
-            /**
-             * \brief For manual collection, provide an initial value
-             * \param val The value to initial the record with
-             */
-            void initialize(const DataT & val) {
-                std::ostringstream ss;
-                ss << val;
-                prev_annot_ = ss.str();
-            }
-
-            //! Explicitly/manually collect a value for this collectable, ignoring
-            //! what the Collectable is currently pointing to.
-            void collect(const DataT & val)
-            {
-                if(SPARTA_EXPECT_FALSE(isCollected()))
-                {
-                    std::ostringstream ss;
-                    ss << val;
-                    if((ss.str() != prev_annot_) && !record_closed_)
-                    {
-                        // Close the old record (if there is one)
-                        closeRecord();
-                    }
-
-                    // Remember the new string for a new record and start
-                    // a new record if not empty.
-                    prev_annot_ = ss.str();
-                    if(!prev_annot_.empty() && record_closed_) {
-                        startNewRecord_();
-                        record_closed_ = false;
-                    }
-                }
-            }
-
-            /*!
-             * \brief Explicitly collect a value for the given duration
-             * \param duration The amount of time in cycles the value is available
-             *
-             * Explicitly collect a value for this collectable for the
-             * given amount of time.
-             *
-             * \warn No checks are performed if a new value is collected
-             *       within the previous duration!
-             */
-            void collectWithDuration(const DataT & val, sparta::Clock::Cycle duration)
-            {
-                if(SPARTA_EXPECT_FALSE(isCollected()))
-                {
-                    if(duration != 0) {
-                        ev_close_record_.preparePayload(false)->schedule(duration);
-                    }
-                    collect(val);
-                }
-            }
-
-            //! Virtual method called by
-            //! CollectableTreeNode/PipelineCollector when a user of the
-            //! TreeNode requests this object to be collected.
-            void collect() override final {
-                // If pointer has become nullified, close the record
-                if(nullptr == collected_object_) {
-                    closeRecord();
-                    return;
-                }
-                collect(*collected_object_);
-            }
-
-            /*!
-             * \brief Calls collectWithDuration using the internal collected_object_
-             * specified at construction.
-             * \pre Must have constructed wit ha non-null collected object
-             */
-            void collectWithDuration(sparta::Clock::Cycle duration) {
-                // If pointer has become nullified, close the record
-                if(nullptr == collected_object_) {
-                    closeRecord();
-                    return;
-                }
-                collectWithDuration(*collected_object_, duration);
-            }
-
-            //! For heartbeat collections, existing records will need to
-            //! be closed and reopened
-            void restartRecord() override final {
-                // Do not get a new ID when we're doing a heartbeat
-                if(!record_closed_) {
-                    argos_record_.flags |= CONTINUE_FLAG;
-                    writeRecord_();
-                    argos_record_.flags &= ~CONTINUE_FLAG;
-                    startNewRecord_();
-                }
-            }
-
-            //! Force close a record.  This will close the record
-            //! immediately and clear the field for the next cycle
-            void closeRecord(const bool & simulation_ending = false) override final
-            {
-                if(SPARTA_EXPECT_FALSE(isCollected()))
-                {
-                    if(!record_closed_ && writeRecord_(simulation_ending)) {
-                        prev_annot_.clear();
-                    }
-                    record_closed_ = true;
-                }
-            }
-
-            //! \brief Do not perform any automatic collection
-            //! The SchedulingPhase is ignored
-            void setManualCollection() {
-                auto_collect_ = false;
-            }
-
-        protected:
-
-            //! \brief Get a reference to the internal event set
-            //! \return Reference to event set -- used by DelayedCollectable
-            EventSet & getEventSet_() {
-                return event_set_;
-            }
-
-        private:
-
-            //! Return true if the annotation was written; false otherwise
-            bool writeRecord_(bool simulation_ending = false)
-            {
-                sparta_assert(pipeline_col_,
-                            "Must startCollecting_ on this Collectable "
-                            << getLocation() << " before a record can be written");
-
-                // This record hasn't changed, don't write it
-                if(SPARTA_EXPECT_FALSE(argos_record_.time_Start == pipeline_col_->getScheduler()->getCurrentTick())) {
-                    return false;
-                }
-
-                // Set a new transaction ID since we're starting anew
-                argos_record_.transaction_ID = pipeline_col_->getUniqueTransactionId();
-
-                // Notice that we make the length +1 in order to null
-                // terminate the data.
-                argos_record_.length = static_cast<uint16_t>(prev_annot_.size());
-
-                // We should just change the transaction structure to take
-                // an std::string instead of char* in the future.
-                argos_record_.annt = prev_annot_;
-
-                // Capture the end time
-                argos_record_.time_End =
-                    pipeline_col_->getScheduler()->getCurrentTick() + (simulation_ending ? 1 : 0);;
-
-                // If this assert fires, then a user is trying to collect
-                // a record multiple times in their cycle window or
-                // something else really bad has happened.
-                sparta_assert(argos_record_.time_Start < argos_record_.time_End);
-
-                // Write the old record to the file
-                pipeline_col_->writeRecord(argos_record_);
-
-                return true;
-            }
-
-            //! Start a new record
-            void startNewRecord_() {
-                // Set up the new start time for the new record
-                argos_record_.time_Start = pipeline_col_->getScheduler()->getCurrentTick();
-            }
-
-            //! Virtual method called by CollectableTreeNode when
-            //! collection is enabled on the TreeNode
-            void setCollecting_(bool collect, Collector * collector) override final
-            {
-                pipeline_col_ = dynamic_cast<PipelineCollector *>(collector);
-                sparta_assert(pipeline_col_ != nullptr,
-                            "Collectables can only added to PipelineCollectors... for now");
-
-                if(collect && !prev_annot_.empty()) {
-                    // Set the start time for this transaction to be
-                    // moment collection is enabled.
-                    startNewRecord_();
-                }
-
-                // If the collected object is null, this Collectable
-                // object is to be explicitly collected
-                if(collected_object_ && auto_collect_) {
-                    if(collect) {
-                        // Add this Collectable to the PipelineCollector's
-                        // list of objects requiring collection
-                        pipeline_col_->addToAutoCollection(this, collection_phase);
-                    }
-                    else {
-                        // Remove this Collectable from the
-                        // PipelineCollector's list of objects requiring
-                        // collection
-                        pipeline_col_->removeFromAutoCollection(this);
-                    }
-                }
-
-                if(!collect && !record_closed_) {
-                    // Force the record to be written
-                    closeRecord();
-                }
-            }
-
-            // The annotation object to be collected
-            const DataT * collected_object_ = nullptr;
-
-            // The live transaction record
-            annotation_t argos_record_;
-
-            // Store the result of the previous annotation, the
-            // annotation_t struct holds a pointer to this
-            std::string prev_annot_;
-
-            // Ze Collec-tor
-            PipelineCollector * pipeline_col_ = nullptr;
-
-            // For those folks that want a value to automatically
-            // disappear in the future
-            sparta::EventSet event_set_;
-            sparta::PayloadEvent<bool, sparta::SchedulingPhase::Trigger> ev_close_record_;
-
-            // Is this collectable currently closed?
-            bool record_closed_ = true;
-
-            // Should we auto-collect?
-            bool auto_collect_ = true;
-        };
-
-        /**
-        * \class UniquePairGenerator
-        * \brief A class which provides every new instantiation of the Templated class Collectable
-        * with a new unique value. This value is used by all the instantiations of a certain type
-        * of a Collectable as its own unique PairId which differentiates itself from other Collectable
-        * instatiations templated on some other type of class.
-        */
-        class UniquePairIDGenerator {
-        public:
-
-            // We need to make Collectable a friend of this class, as it will directly call
-            // the static private function from within itself.
-            template<typename DataT, SchedulingPhase collection_phase, typename>
-            friend class Collectable;
-        private:
-
-            // Any point this funtion is invoked, it releases a new 64bit integer which is unique.
-            // So, we need to limit the access of this function.
-            static uint64_t getUniquePairID_() {
-                static uint64_t id = 0;
-                return ++id;
-             }
-        };
-
-        /**
-         * \class Collectable
-         * \brief Class used to either manually or auto-collect a Name Value Pair
-         *        object in a pipeline database
-         * \tparam DataT The DataT of the Pair Definition of the collectable being collected
-         * \tparam collection_phase The phase collection will occur.  If
-         *                          sparta::SchedulingPhase::Collection,
-         *                          collection is done prior to Tick.
-         *
-         *  Auto-collection will occur only if a Collectable is
-         *  constructed with a collected_object.  If no object is
-         *  provided, it assumes a manual collection and the
-         *  scheduling phase is ignored.
-         *
-         * We are templatizing the Collectable Class on the actual collectable to be collected.
-         * So, the modeler does not have to maintain two different ways to call Collectable.
-         * The modeler will always templatize Collectable on
-         * the actual DataType or on a pointer to it, exactly the way they do now.
-         * To enable this template overload, we need to check if the DataT the modeler
-         * has templatized on Collectable class,
-         * is actually a sparta::Pair type or not.
-         * The only way to check this is to find out if this DataT type has a type alias inside
-         * its namespace which is derived from sparta::PairDefinition class which in turn must be templatized
-         * on the actual Collectable class or the DataT type itself, that we want to collect.
-         * That is why we have a type named "SpartaPairDefinitionType" inside the Actual Collectable class which refers to its
-         * PairDefinition type.
-         * For the same reason, we have a type named "SpartaPairDefinitionType" inside the Pair Definition class which refers
-         * to its Actual Collectable type.
-         * The std::enable_if template switching basically checks if the DataType has a type named "SpartaPairDefinitionType",
-         * which is actually a PairDefinition of itself, a Pair Collectable Entity, or not.
-         * The only way to check if DataType has a type "SpartaPairDefinitionType" which is Pair Definition of itself, a
-         * Collectable Entity or not, is by using SFINAE(Substitution Failure Is Not An Error).
-         * It checks if DataType has a type "SpartaPairDefinitionType" in its namespace which derives from sparta::PairDefinition
-         * which is templatized on the the DataType itself.
-         * If this exact piece of code is substituted to form a well-formed code, this template overload is
-         * selected by compiler. If this does not work, then the compiler creates an ill-formed code.
-         * Any ill-formed code during Template Parameter Substitution  is not considered an error.
-         * It is rather thrown away, and the compiler moves to find a more generic Template Overload.
-         *
-         * \note This Template Overload is switched on only for Pair-Collectable User Defined DataTypes.
-         * \note The Modeler might also pass a Shared Pointer to the actual DataT object
-         * instead of the actual Object.
-         * \note So, we handle that case by using remove_shared_ptr templated struct.
-         */
-        template<typename DataT, SchedulingPhase collection_phase>
-        class Collectable<DataT, collection_phase,
-                          MetaStruct::enable_if_t<
-                              std::is_base_of<sparta::PairDefinition<MetaStruct::remove_any_pointer_t<DataT>>,
-                                              typename MetaStruct::remove_any_pointer_t<DataT>::SpartaPairDefinitionType>::value>> :
-            public sparta::PairCollector<typename MetaStruct::remove_any_pointer_t<DataT>::SpartaPairDefinitionType>, public CollectableTreeNode
-        {
-            // Aliasing the actual Datatype of the collectable being collected as Data_t
-            typedef MetaStruct::remove_any_pointer_t<DataT> Data_t;
-
-            // Aliasing the Datatype of the Pair Definition of the collectable being collected as PairDef_t
-            typedef typename Data_t::SpartaPairDefinitionType PairDef_t;
-
-            // Making a bunch of APIs of PairCollector class being available to us with the using directive
-            using PairCollector<PairDef_t>::getNameStrings;
-            using PairCollector<PairDef_t>::getDataVector;
-            using PairCollector<PairDef_t>::getStringVector;
-            using PairCollector<PairDef_t>::getFormatVector;
-            using PairCollector<PairDef_t>::getSizeOfVector;
-            using PairCollector<PairDef_t>::getPEventLogVector;
-            using PairCollector<PairDef_t>::getArgosFormatGuide;
-            using PairCollector<PairDef_t>::collect_;
-            using PairCollector<PairDef_t>::isCollecting;
-
-        public:
-
-            /**
-             * \brief Construct the Collectable, no data object associated, part of a group
-             * \param parent A pointer to a parent treenode.  Must not be null
-             * \param name The name for which to create this object as a child sparta::TreeNode
-             * \param parentid The transaction id of a parent for this collectable; 0 for no parent
-             * \param desc A description for the interface
-             */
-            Collectable(sparta::TreeNode* parent,
-                        const std::string& name,
-                        const std::string& group,
-                        uint32_t index,
-                        uint64_t parentid = 0,
-                        const std::string & desc = "Collectable <manual, no desc>") :
-                sparta::PairCollector<PairDef_t>(),
-                CollectableTreeNode(sparta::notNull(parent), name, group, index, desc),
-                argos_record_(pair_t(0, 1, parentid, 0, BAD_DISPLAY_ID,
-                    boost::numeric::converter<decltype(argos_record_.location_ID),
-                        decltype(getNodeUID())>::convert(getNodeUID()),
-                            is_Pair, 0)),
-                event_set_(this),
-                ev_close_record_(&event_set_, name + "_pipeline_collectable_close_event",
-                                 CREATE_SPARTA_HANDLER_WITH_DATA(Collectable, closeRecord, bool)) {
-                static constexpr auto MAX_UID = std::numeric_limits<decltype(argos_record_.location_ID)>::max();
-                sparta_assert(getNodeUID() < MAX_UID,
-                            "Tree has at least " << getNodeUID() << " in it. Because pipeouts "
-                            "use these locations and only have 32b location IDs, the pipeline "
-                            "collection system imposes a limit of " << MAX_UID
-                            << " nodes in the tree. This is expected to be an unattainable number "
-                            "without some kind of runaway allocation bug. If you are sure you "
-                            "need more nodes than this, contact the SPARTA team. In the meantime, "
-                            "it is probably safe to comment out this assertion if you do not "
-                            "plan to use the pipeline collection functionality");
-            }
-
-            /**
-             * \brief Construct the Collectable
-             * \param parent A pointer to a parent treenode.  Must not be null
-             * \param name The name for which to create this object as a child sparta::TreeNode
-             * \param collected_object Pointer to the object to collect during the "COLLECT" phase
-             * \param parentid The transaction id of a parent for this collectable; 0 for no parent
-             * \param desc A description for the interface
-             */
-
-            Collectable(sparta::TreeNode* parent,
-                        const std::string& name,
-                        const DataT * collected_object,
-                        uint64_t parentid = 0,
-                        const std::string & desc = "Collectable <no desc>") :
-                Collectable(parent, name,
-                            TreeNode::GROUP_NAME_NONE,
-                            TreeNode::GROUP_IDX_NONE,
-                            parentid,
-                            desc)
+            CollectableCommon(sparta::TreeNode* parent,
+                              const std::string& name,
+                              const DataT * collected_object,
+                              uint64_t parentid = 0,
+                              const std::string & desc = "Collectable <no desc>") :
+                CollectableCommon(parent, name,
+                                  TreeNode::GROUP_NAME_NONE,
+                                  TreeNode::GROUP_IDX_NONE,
+                                  parentid,
+                                  desc)
             {
                 collected_object_ = collected_object;
 
@@ -531,83 +157,53 @@ namespace sparta{
              * \param parentid The transaction id of a parent for this collectable; 0 for no parent
              * \param desc A description for the interface
              */
-            Collectable(sparta::TreeNode* parent,
-                        const std::string& name,
-                        uint64_t parentid = 0,
-                        const std::string & desc = "Collectable <manual, no desc>") :
-                Collectable(parent, name, nullptr, parentid, desc)
+            CollectableCommon(sparta::TreeNode* parent,
+                              const std::string& name,
+                              uint64_t parentid = 0,
+                              const std::string & desc = "Collectable <manual, no desc>") :
+                CollectableCommon(parent, name, nullptr, parentid, desc)
             {
                 // Can't auto collect without setting collected_object_
                 setManualCollection();
             }
 
             //! Virtual destructor -- does nothing
-            virtual ~Collectable() {}
+            virtual ~CollectableCommon() {}
 
             /**
              * \brief For manual collection, provide an initial value
-             * \param val The value to initialze the record with
+             * \param val The value to initial the record with
              */
-            template<typename T>
-            MetaStruct::enable_if_t<!MetaStruct::is_any_pointer<T>::value, void>
-            initialize(const T & val) {
-                if(SPARTA_EXPECT_FALSE(isCollected())) {
-                    collect(val);
-                }
+            void initialize(const ValueType & val) {
+                //TODO cnyce: handle initial value
+                (void)val;
             }
 
-            /**
-             * \brief For manual collection, provide an initial value
-             * \param val A reference to a pointer pointing to the value to initialze the record with
-             */
-            template<typename T>
-            MetaStruct::enable_if_t<MetaStruct::is_any_pointer<T>::value, void>
-            initialize(const T & val){
-                if(SPARTA_EXPECT_FALSE(isCollected())) {
-                    collect(*val);
-                }
-            }
-
-            //! Explicitly/manually collect a value for this collectable, ignoring
-            //! what the Collectable is currently pointing to.
-            //! Here we pass the actual object of the collectable type we are collecting.
-            template<typename T>
-            MetaStruct::enable_if_t<!MetaStruct::is_any_pointer<T>::value, void>
-            collect(const T & val)
-            {
-                collect_(val);
-
-                // if the value pairs are not the same as the
-                // previous value pairs and the previous record is still open
-                if(!isSameRecord() && !record_closed_)
-                {
-                    //Close the old record (if there is one)
-                    closeRecord();
-                }
-
-                // Remember the new value pairs for a new record and start
-                // a new record if not empty.
-                updateLastRecord_();
-
-                // If the new Value pairs are not empty and current record is closed, we start a new record.
-                if(record_closed_ && hasData_()){
-                    startNewRecord_();
-                    record_closed_ = false;
-                }
-            }
-
-            //! Explicitly/manually collect a value for this collectable, ignoring
-            //! what the Collectable is currently pointing to.
-            //! Here we pass the shared pointer to the actual object of the collectable type we are collecting.
             template <typename T>
-            MetaStruct::enable_if_t<MetaStruct::is_any_pointer<T>::value, void>
-            collect(const T & val){
-                // If pointer has become nullified, close the record
-                if(nullptr == val) {
-                    closeRecord();
-                    return;
+            std::enable_if_t<MetaStruct::is_any_pointer_v<T>, void>
+            initialize(const T & val) {
+                if (val) {
+                    initialize(*val);
                 }
-                collect(*val);
+            }
+
+            //! Explicitly/manually collect a value for this collectable, ignoring
+            //! what the Collectable is currently pointing to.
+            void collect(const ValueType & val) {
+                if(SPARTA_EXPECT_FALSE(isCollected() && (bit_bucket_ || entry_point_)))
+                {
+                    performCollection_(val);
+                }
+            }
+
+            template <typename T>
+            std::enable_if_t<MetaStruct::is_any_pointer_v<T>, void>
+            collect(const T & val) {
+                if (val) {
+                    collect(*val);
+                } else {
+                    closeRecord();
+                }
             }
 
             /*!
@@ -620,9 +216,7 @@ namespace sparta{
              * \warn No checks are performed if a new value is collected
              *       within the previous duration!
              */
-            template<typename T>
-            MetaStruct::enable_if_t<!MetaStruct::is_any_pointer<T>::value, void>
-            collectWithDuration(const T & val, sparta::Clock::Cycle duration){
+            void collectWithDuration(const ValueType & val, sparta::Clock::Cycle duration) {
                 if(SPARTA_EXPECT_FALSE(isCollected()))
                 {
                     if(duration != 0) {
@@ -631,38 +225,15 @@ namespace sparta{
                     collect(val);
                 }
             }
-
-            /*!
-             * \brief Explicitly collect a value from a shared pointer for the given duration
-             * \param duration The amount of time in cycles the value is available
-             *
-             * Explicitly collect a value for this collectable passed as a shared pointer for the
-             * given amount of time.
-             *
-             * \warn No checks are performed if a new value is collected
-             *       within the previous duration!
-             */
-            template<typename T>
-            MetaStruct::enable_if_t<MetaStruct::is_any_pointer<T>::value, void>
-            collectWithDuration(const T & val, sparta::Clock::Cycle duration){
-                // If pointer has become nullified, close the record
-                if(nullptr == val) {
+ 
+            template <typename T>
+            std::enable_if_t<MetaStruct::is_any_pointer_v<T>, void>
+            collectWithDuration(const T & val, sparta::Clock::Cycle duration) {
+                if (val) {
+                    collectWithDuration(*val, duration);
+                } else {
                     closeRecord();
-                    return;
                 }
-                collectWithDuration(*val, duration);
-            }
-
-            //! Virtual method called by
-            //! CollectableTreeNode/PipelineCollector when a user of the
-            //! TreeNode requests this object to be collected.
-            void collect() override final {
-                // If pointer has become nullified, close the record
-                if(nullptr == collected_object_) {
-                    closeRecord();
-                    return;
-                }
-                collect(*collected_object_);
             }
 
             /*!
@@ -679,32 +250,22 @@ namespace sparta{
                 collectWithDuration(*collected_object_, duration);
             }
 
-            //! For heartbeat collections, existing records will need to
-            //! be closed and reopened
-            void restartRecord() override final {
-
-                // Do not get a new ID when we're doing a heartbeat
-               if(!record_closed_) {
-                    argos_record_.flags |= CONTINUE_FLAG;
-                    writeRecord_();
-                    argos_record_.flags &= ~CONTINUE_FLAG;
-                    startNewRecord_();
+            //! Virtual method called by CollectableTreeNode/PipelineCollector
+            //! when a user of the TreeNode requests this object to be collected.
+            void collect() override final {
+                // If pointer has become nullified, close the record
+                if(nullptr == collected_object_) {
+                    closeRecord();
+                    return;
                 }
+                collect(*collected_object_);
             }
 
             //! Force close a record.  This will close the record
             //! immediately and clear the field for the next cycle
-            void closeRecord(const bool & simulation_ending = false) override final
-            {
-                if(SPARTA_EXPECT_FALSE(isCollected()))
-                {
-                    if(!record_closed_ && writeRecord_(simulation_ending)) {
-
-                        // Clear the previous vector containing the Name Value pairs.
-                        argos_record_.valueVector.clear();
-                        argos_record_.stringVector.clear();
-                    }
-                    record_closed_ = true;
+            void closeRecord(const bool & = false) override final {
+                if (SPARTA_EXPECT_FALSE(isCollected() && entry_point_)) {
+                    entry_point_->closeRecord();
                 }
             }
 
@@ -714,181 +275,349 @@ namespace sparta{
                 auto_collect_ = false;
             }
 
-            //! \brief Before writing a record to file, we need to check
-            //  if any of the old Values have changed or not.
-            bool isSameRecord() const {
-                return (argos_record_.valueVector == getDataVector()) && (argos_record_.stringVector == getStringVector());
+            //! Collectable classes must be able to register themselves with the ArgosCollector.
+            void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override {
+                auto loc = getLocation();
+                auto clk_name = notNull(getClock())->getName();
+                auto type = encodeCollectedType();
+                entry_point_ = argos_collector->createScalarCollector(loc, clk_name, type);
+
+                auto tiny_strings = argos_collector->getTinyStrings();
+                auto enum_inspector = argos_collector->getEnumInspector();
+                auto bit_bucket = std::make_shared<CollectableBitBucket>(tiny_strings, enum_inspector);
+                setBitBucket(bit_bucket);
             }
 
-            //! \brief Strictly a Debug/Testing API.
-            //!  Never to be called in real modeler's code.
-            const std::string & dumpNameValuePairs(const DataT & val) {
-                collect_(val);
-                log_string_.clear();
-                std::ostringstream ss;
-                for(const auto & pairs : getPEventLogVector()){
-                    ss << pairs.first << "(" << pairs.second << ") ";
-                }
-                log_string_ = ss.str();
-                return log_string_;
+            //! Set the BitBucket (byte buffers for SimDB EntryPoint)
+            virtual void setBitBucket(std::shared_ptr<BitBucket> bit_bucket) {
+                bit_bucket_ = bit_bucket;
             }
 
         protected:
 
             //! \brief Get a reference to the internal event set
             //! \return Reference to event set -- used by DelayedCollectable
-            inline EventSet & getEventSet_() {
+            EventSet & getEventSet_() {
                 return event_set_;
             }
 
-            //! \brief Collectable is inheriting from PairCollector Class
-            //  and this is a pure virtual function in base
-            //! \brief We need to redefine and override this function,
-            //  else Collectable will also become Abstract.
-            virtual void generateCollectionString_() override {}
-
-        private:
-
-            /**
-            * \brief A static function which sets the Unique PairId of a certain instantiation of Collectable.
-            * Function contains a static variable which tells us if this templated instantiation of Collectable
-            * already has been instantiated anytime before, or this is the first time we are instantiating it.
-            * Checks the value of the static variable to see if 0 or not. If it is 0, it means this is the very
-            * first time we are creating an instance of this class, Set the variable id to the getuniquePairID
-            * function of the UniquePairIDGenerator class generates, guranteed to be unique
-            * and not shared by any other Pair class.
-            */
-            inline static uint64_t getUniquePairID_() {
-                static uint64_t id = 0;
-                if(id){ return id; }
-                id = sparta::collection::UniquePairIDGenerator::getUniquePairID_();
-                return id;
-            }
-
-            //! \brief Update the vector containing the Name Value Pairs
-            //  we collected from the last collection
-            //! \brief Fill it with the new Name Value pairs from
-            //  this cycle of Collection.
-            void updateLastRecord_(){
-                // These values will change every time the transaction changes
-                argos_record_.valueVector = getDataVector();
-                argos_record_.stringVector = getStringVector();
-                argos_record_.sizeOfVector = getSizeOfVector();
-
-                if (has_display_id_field_) {
-                    argos_record_.display_ID = argos_record_.valueVector[0].first & 0x0fff;
-                }
-            }
-
-            //! \brief Does this transaction contain any data yet?
-            bool hasData_() const {
-                return !(argos_record_.valueVector.empty() && argos_record_.stringVector.empty());
-            }
-
-            //! \brief Send the Pair Structure Record to Outputter
-            //  for writing to the Transaction Database File.
-            bool writeRecord_(bool simulation_ending = false)
-            {
-                sparta_assert(pipeline_col_,
-                            "Must startCollecting_ on this Collectable "
-                            << getLocation() << " before a record can be written");
-
-                // This record hasn't changed, don't write it
-                if(SPARTA_EXPECT_FALSE(argos_record_.time_Start == pipeline_col_->getScheduler()->getCurrentTick())) {
-                    return false;
-                }
-
-                // Set a new transaction ID since we're starting anew
-                argos_record_.transaction_ID = pipeline_col_->getUniqueTransactionId();
-
-                argos_record_.pairId = getUniquePairID_();
-
-                // Capture the end time
-                argos_record_.time_End =
-                    pipeline_col_->getScheduler()->getCurrentTick() + (simulation_ending ? 1 : 0);
-
-                // If this assert fires, then a user is trying to collect
-                // a record multiple times in their cycle window or
-                // something else really bad has happened.
-                sparta_assert(argos_record_.time_Start < argos_record_.time_End);
-
-                // Write the old record to the file
-                pipeline_col_->writeRecord(argos_record_);
-                return true;
-            }
-
-            //! Start a new record
-            void startNewRecord_() {
-
-                // Set up the new start time for the new record
-                argos_record_.time_Start = pipeline_col_->getScheduler()->getCurrentTick();
-            }
-
+            //! Virtual method called by CollectableTreeNode when
             //! collection is enabled on the TreeNode
-            void setCollecting_(bool collect, Collector * collector) override final
-            {
+            void setCollecting_(bool collect, Collector * collector) override {
                 pipeline_col_ = dynamic_cast<PipelineCollector *>(collector);
                 sparta_assert(pipeline_col_ != nullptr,
-                            "Collectables can only added to PipelineCollectors... for now");
+                              "Collectables can only added to PipelineCollectors... for now");
 
-                // These fields only need to be set once - they define the format of the collectable
-                // and remain constant for the duration of the simulation
-                argos_record_.nameVector = getNameStrings();
-                argos_record_.length = argos_record_.nameVector.size();
-                has_display_id_field_ = (argos_record_.nameVector[0] == "DID");
-                for(const auto formatter: getFormatVector()) {
-                    argos_record_.delimVector.emplace_back(formatter);
-                }
-
-                if(collect && hasData_()){
-
-                    // Set the start time for this transaction to be
-                    // moment collection is enabled.
-                    startNewRecord_();
+                if(collect && !initial_bytes_.empty()) {
+                    //TODO cnyce: handle initial value
+                    initial_bytes_.clear();
                 }
 
                 // If the collected object is null, this Collectable
                 // object is to be explicitly collected
                 if(collected_object_ && auto_collect_) {
                     if(collect) {
-
                         // Add this Collectable to the PipelineCollector's
                         // list of objects requiring collection
                         pipeline_col_->addToAutoCollection(this, collection_phase);
                     }
                     else {
-
                         // Remove this Collectable from the
                         // PipelineCollector's list of objects requiring
                         // collection
                         pipeline_col_->removeFromAutoCollection(this);
                     }
                 }
+
+                if(!collect) {
+                    closeRecord();
+                }
             }
-            // The pair collectable object to be collected
+
+            //! Subclasses are responsible for collecting values and writing the bytes
+            virtual void performCollection_(const ValueType & val) = 0;
+
+             //! The annotation object to be collected
             const DataT * collected_object_ = nullptr;
 
-            // The live transaction record
-            pair_t argos_record_;
-
-            // Ze Collec-tor
+            //! Ze Collec-tor
             PipelineCollector * pipeline_col_ = nullptr;
 
-            // For those folks that want a value to automatically
-            // disappear in the future
+            //! For those folks that want a value to automatically
+            //! disappear in the future
             sparta::EventSet event_set_;
             sparta::PayloadEvent<bool, sparta::SchedulingPhase::Trigger> ev_close_record_;
 
-            // Is this collectable currently closed?
-            bool record_closed_ = true;
-
-            // Should we auto-collect?
+            //! Should we auto-collect?
             bool auto_collect_ = true;
 
-            // Is the first field the display ID (DID)?
-            bool has_display_id_field_ = false;
+            //! Extracted value bytes from initialize() to be applied when
+            //! collection is first enabled (setCollecting_)
+            std::vector<char> initial_bytes_;
 
-            std::string log_string_;
+            //! Destination for all collected data, whether we are a standalone
+            //! Collectable or one of the positions_ in the IterableCollector
+            std::shared_ptr<BitBucket> bit_bucket_;
         };
+
+        #define INHERIT_COMMON_INTERFACE                                                      \
+            using ValueType = typename CollectableCommon<DataT, collection_phase>::ValueType; \
+            using CollectableCommon<DataT, collection_phase>::CollectableCommon;              \
+            using CollectableCommon<DataT, collection_phase>::initialize;                     \
+            using CollectableCommon<DataT, collection_phase>::collect;                        \
+            using CollectableCommon<DataT, collection_phase>::collectWithDuration;            \
+            using CollectableCommon<DataT, collection_phase>::closeRecord;                    \
+            using CollectableCommon<DataT, collection_phase>::setManualCollection;            \
+            using CollectableCommon<DataT, collection_phase>::getEventSet_;                   \
+            using CollectableCommon<DataT, collection_phase>::bit_bucket_;                    \
+            using CollectableCommon<DataT, collection_phase>::entry_point_;
+
+        //! Use case 0: This first Collectable class is the default no-op / unusable base implementation.
+        //! It is really only here to keep all legacy code compiling.
+        template<typename DataT, SchedulingPhase collection_phase = SchedulingPhase::Collection, typename = void>
+        class Collectable : public CollectableCommon<DataT, collection_phase>
+        {
+        public:
+            INHERIT_COMMON_INTERFACE
+
+            std::string encodeCollectedType(bool = false) const override final {
+                throw SpartaException("Uncollectable type encountered at ") << this->getLocation();
+            }
+
+        private:
+            void performCollection_(const ValueType &) override final {
+            }
+        };
+
+        //! Use case 1: We are collecting a bool, int/float, or an enum. These collected values are written
+        //! as their native type.
+        template<typename DataT, SchedulingPhase collection_phase>
+        class Collectable<DataT, collection_phase, std::enable_if_t<use_raw_type_v<MetaStruct::remove_any_pointer_t<DataT>>>>
+            : public CollectableCommon<DataT, collection_phase>
+        {
+        public:
+            INHERIT_COMMON_INTERFACE
+
+            std::string encodeCollectedType(bool human_readable = false) const override final {
+                auto type = simdb::demangle_type<ValueType>();
+                if constexpr (std::is_enum_v<ValueType>) {
+                    if (human_readable) {
+                        using underlying_t = std::underlying_type_t<ValueType>;
+                        type += " (enum: " + simdb::demangle_type<underlying_t>() + ")";
+                    }
+                }
+                return type;
+            }
+
+        private:
+            void performCollection_(const ValueType & val) override final {
+                constexpr auto dummy_field_id = 0u;
+                bit_bucket_->writeField(val, dummy_field_id);
+
+                if (entry_point_) {
+                    static_cast<CollectableBitBucket*>(bit_bucket_.get())->writeTo(entry_point_);
+                }
+            }
+        };
+
+        //! Use case 2: We are collecting a scalar string type (std::string, const char*).
+        //! These collected strings are written as uint32_t values after going through TinyStrings.
+        template<typename DataT, SchedulingPhase collection_phase>
+        class Collectable<DataT, collection_phase, std::enable_if_t<use_tiny_strings_v<MetaStruct::remove_any_pointer_t<DataT>>>>
+            : public CollectableCommon<DataT, collection_phase>
+        {
+        public:
+            INHERIT_COMMON_INTERFACE
+
+            std::string encodeCollectedType(bool = false) const override final {
+                return "string";
+            }
+
+        private:
+            void performCollection_(const ValueType & val) override final {
+                constexpr auto dummy_field_id = 0u;
+                bit_bucket_->writeField(val, dummy_field_id);
+
+                if (entry_point_) {
+                    static_cast<CollectableBitBucket*>(bit_bucket_.get())->writeTo(entry_point_);
+                }
+            }
+        };
+
+        //! Use case 3: We are collecting a class/struct which does not provide SpartaPairDefinitionType,
+        //! but provides a cast-to-POD operator.
+        template<typename DataT, SchedulingPhase collection_phase>
+        class Collectable<DataT, collection_phase, std::enable_if_t<use_cast_operator_v<MetaStruct::remove_any_pointer_t<DataT>>>>
+            : public CollectableCommon<DataT, collection_phase>
+        {
+        public:
+            INHERIT_COMMON_INTERFACE
+
+            std::string encodeCollectedType(bool human_readable = false) const override final {
+                using converted_t = simdb::type_traits::pod_convertible_t<ValueType>();
+                auto type = simdb::demangle_type<converted_t>();
+                if (human_readable) {
+                    type += " (built-in type using cast operator)";
+                }
+                return type;
+            }
+
+        private:
+            void performCollection_(const ValueType & val) override final {
+                constexpr auto dummy_field_id = 0u;
+                using converted_t = simdb::type_traits::pod_convertible_t<ValueType>();
+                auto converted_val = static_cast<converted_t>(val);
+                bit_bucket_->writeField(converted_val, dummy_field_id);
+
+                if (entry_point_) {
+                    static_cast<CollectableBitBucket*>(bit_bucket_.get())->writeTo(entry_point_);
+                }
+            }
+        };
+    
+        //! Use case 4: We are collecting a class/struct that does not provide SpartaPairDefinitionType,
+        //! has no cast-to-POD operator, and only provides operator<<. We will figure out the fields
+        //! dynamically (at least field data type, as well as the field name if applicable).
+        template<typename DataT, SchedulingPhase collection_phase>
+        class Collectable<DataT, collection_phase, std::enable_if_t<use_dynamic_fields_v<MetaStruct::remove_any_pointer_t<DataT>>>>
+            : public CollectableCommon<DataT, collection_phase>
+        {
+        public:
+            INHERIT_COMMON_INTERFACE
+
+            std::string encodeCollectedType(bool human_readable = false) const override final {
+                auto type = std::string("dynamic");
+                if (human_readable) {
+                    type += " (" + simdb::demangle_type<ValueType>() + ")";
+                }
+                return type;
+            }
+
+            void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final {
+                std::ostringstream oss;
+                oss << "Collecting non-trivial classes using operator<< only is not supported for now. Use PairDefinition.\n";
+                oss << "  - path: " << this->getLocation() << "\n";
+                oss << "  - type: " << simdb::demangle_type<MetaStruct::remove_any_pointer_t<DataT>>() << " (scalar)";
+                argos_collector->postNotif(oss.str(), simdb::argos::NotifType::WARNING);
+            }
+
+        private:
+            void setCollecting_(bool, Collector *) override final {
+            }
+
+            void performCollection_(const ValueType &) override final {
+            }
+        };
+
+        //! Use case 5: We are collecting a class/struct which provides SpartaPairDefinitionType.
+        template<typename DataT, SchedulingPhase collection_phase>
+        class Collectable<DataT, collection_phase, std::enable_if_t<use_pair_definition_v<MetaStruct::remove_any_pointer_t<DataT>>>>
+            : public CollectableCommon<DataT, collection_phase>
+            , public PairCollector<typename MetaStruct::remove_any_pointer_t<DataT>::SpartaPairDefinitionType>
+        {
+        public:
+            INHERIT_COMMON_INTERFACE
+
+            std::string encodeCollectedType(bool human_readable = false) const override final {
+                auto type = simdb::demangle_type<ValueType>();
+                if (human_readable) {
+                    type += " (using PairDefinition)";
+                }
+                return type;
+            }
+
+            //! Whether a scalar (Collectable) or container (IterableCollector), serialize
+            //! struct-like data structure hierarchies (field name + dtype) to the database.
+            void serializeStructSchema(
+                simdb::DatabaseManager* db_mgr,
+                std::set<std::string>& serialized_types) override final
+            {
+                auto root_dtype = encodeCollectedType();
+                if(serialized_types.count(root_dtype)) {
+                    return;
+                }
+
+                const int32_t schema_id =
+                    db_mgr->INSERT(SQL_TABLE("DataTypeSchemas"), SQL_VALUES(root_dtype))->getId();
+
+                using PairDef = typename ValueType::SpartaPairDefinitionType;
+                PairDef pair_def;
+                sparta::PairCache pair_cache;
+                pair_def.finalizeKeys(&pair_cache);
+
+                const auto & names = pair_cache.getNameStrings();
+                const auto & dtypes = pair_def.getLeafArgosDtypeStrings();
+                const auto & formatters = pair_cache.getFormatVector();
+                sparta_assert(names.size() == dtypes.size());
+                sparta_assert(formatters.size() == names.size());
+
+                std::vector<std::string> format_strings;
+                for(size_t i = 0; i < formatters.size(); ++i) {
+                    std::string fmt_str;
+                    switch(formatters[i]) {
+                        case PairFormatter::HEX:
+                            fmt_str = "HEX"; break;
+                        case PairFormatter::OCTAL:
+                            fmt_str = "OCT"; break;
+                        default: break;
+                    }
+                    format_strings.push_back(fmt_str);
+                }
+
+                std::cout << "\nSerializing PairDefinition to database for '" << root_dtype << "'...\n";
+                for(size_t i = 0; i < names.size(); ++i) {
+                    std::cout << "\t" << names[i] << ", " << dtypes[i];
+                    if (!format_strings[i].empty()) {
+                        std::cout << " (" << format_strings[i] << ")";
+                    }
+                    std::cout << "\n";
+
+                    db_mgr->INSERT(SQL_TABLE("DataTypeNodes"),
+                                   SQL_VALUES(schema_id,
+                                              names[i],
+                                              dtypes[i],
+                                              format_strings[i]));
+                }
+                serialized_types.insert(root_dtype);
+            }
+
+            void setBitBucket(std::shared_ptr<BitBucket> bit_bucket) override final {
+                // Share the BitBucket with the Pairs
+                setBitBucket_(bit_bucket);
+
+                // Let the base class own the bit bucket
+                CollectableCommon<DataT, collection_phase>::setBitBucket(bit_bucket);
+            }
+
+            //! \brief Strictly a Debug/Testing API.
+            //!  Never to be called in real modeler's code.
+            std::string dumpNameValuePairs(const DataT & val) {
+                collect_(val);
+                std::ostringstream ss;
+                for(const auto & pairs : this->getPEventLogVector()){
+                    ss << pairs.first << "(" << pairs.second << ") ";
+                }
+                return ss.str();
+            }
+
+        private:
+            typedef typename ValueType::SpartaPairDefinitionType PairDef_t;
+            using PairCollector<PairDef_t>::collect_;
+            using PairCollector<PairDef_t>::setBitBucket_;
+
+            void performCollection_(const ValueType & val) override final {
+                if (!this->isIterableCollectorBin()) {
+                    bit_bucket_->clear();
+                }
+                collect_(val);
+
+                if (entry_point_) {
+                    static_cast<CollectableBitBucket*>(bit_bucket_.get())->writeTo(entry_point_);
+                }
+            }
+
+            void generateCollectionString_() override {}
+        };
+
     }//namespace collection
 }//namespace sparta

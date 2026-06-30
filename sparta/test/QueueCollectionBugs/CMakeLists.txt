@@ -1,0 +1,5 @@
+project(QueueCollectionBugs_test)
+
+sparta_add_test_executable(QueueCollectionBugs_test QueueCollectionBugs_test.cpp)
+
+sparta_test(QueueCollectionBugs_test QueueCollectionBugs_test_RUN)
