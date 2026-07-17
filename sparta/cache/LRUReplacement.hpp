@@ -42,6 +42,8 @@ namespace sparta::cache
 
         void touchLRU(uint32_t way, const std::vector<uint32_t> & way_order) override
         {
+            (void) way;
+            (void) way_order;
             sparta_assert(false, "Not implemented");
         }
 
@@ -53,6 +55,8 @@ namespace sparta::cache
 
         void touchMRU(uint32_t way, const std::vector<uint32_t> & way_order) override
         {
+            (void) way;
+            (void) way_order;
             sparta_assert(false, "Not implemented");
         }
 
@@ -60,6 +64,7 @@ namespace sparta::cache
 
         uint32_t getLRUWay(const std::vector<uint32_t> & way_order) override
         {
+            (void) way_order;
             sparta_assert(false, "Not implemented");
         }
 
@@ -67,11 +72,13 @@ namespace sparta::cache
 
         uint32_t getMRUWay(const std::vector<uint32_t> & way_order) override
         {
+            (void) way_order;
             sparta_assert(false, "Not implemented");
         }
 
         void lockWay(uint32_t way) override
         {
+            (void) way;
             sparta_assert(way < num_ways_);
             sparta_assert(false, "Not implemented");
         }
