@@ -65,12 +65,14 @@ namespace sparta
         SharedData(const std::string & name,
                    const Clock * clk,
                    U && init_val = U()) :
+            name_(name),
             ev_update_(clk, CREATE_SPARTA_HANDLER(SharedData, update_))
         {
             writePS(std::forward<U>(init_val));
         }
 
         SharedData(const SharedData& rhs) :
+            name_(rhs.name_),
             ev_update_(rhs.ev_update_),
             current_state_(rhs.current_state_),
             data_(rhs.data_)
@@ -79,6 +81,7 @@ namespace sparta
         }
 
         SharedData(SharedData&& rhs) :
+            name_(std::move(rhs.name_)),
             ev_update_(std::move(rhs.ev_update_)),
             current_state_(std::move(rhs.current_state_)),
             data_(std::move(rhs.data_))
@@ -88,6 +91,7 @@ namespace sparta
 
         SharedData& operator=(const SharedData& rhs)
         {
+            name_ = rhs.name_;
             ev_update_ = rhs.ev_update_;
             resetHandler_();
 
@@ -99,6 +103,7 @@ namespace sparta
 
         SharedData& operator=(SharedData&& rhs)
         {
+            name_ = std::move(rhs.name_);
             ev_update_ = std::move(rhs.ev_update_);
             resetHandler_();
 
@@ -106,6 +111,14 @@ namespace sparta
             data_ = std::move(rhs.data_);
 
             return *this;
+        }
+
+        /**
+         * \brief Get the name of this SharedData
+         * \return The SharedData name
+         */
+        const std::string & getName() const {
+            return name_;
         }
 
         /**
@@ -243,6 +256,9 @@ namespace sparta
             clearNS();
         }
 
+        // SharedData's name
+        std::string name_;
+
         // Global Event
         GlobalEvent<SchedulingPhase::Update> ev_update_;
 
@@ -253,4 +269,3 @@ namespace sparta
         PSNSData data_;
     };
 }
-
