@@ -206,6 +206,57 @@ public:
         setManualCollection();
     }
 
+    //! Collectable classes must be able to register themselves with
+    //! the ArgosCollector.
+    void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final
+    {
+        // TODO cnyce: fix dynamic fields support
+        if constexpr (use_dynamic_fields_v<BinValueT>) {
+            std::ostringstream oss;
+            oss << "Collecting non-trivial classes using operator<< only is not supported for now. Use PairDefinition.\n";
+            oss << "  - path: " << getLocation() << "\n";
+            oss << "  - type: " << simdb::demangle_type<BinValueT>() << " (container)";
+            argos_collector->postNotif(oss.str(), simdb::argos::NotifType::WARNING);
+        } else {
+            auto loc = getLocation();
+            auto clk_name = notNull(getClock())->getName();
+            auto type = encodeCollectedType();
+            entry_point_ = argos_collector->createContainerCollector(loc, clk_name, type);
+
+            auto tiny_strings = argos_collector->getTinyStrings();
+            auto enum_inspector = argos_collector->getEnumInspector();
+            bit_bucket_ = std::make_shared<IterableCollectorBitBucket<sparse_array_type>>(tiny_strings, enum_inspector, expected_capacity_);
+            for (auto & bin : positions_) {
+                bin->setBitBucket(bit_bucket_);
+            }
+        }
+    }
+
+    //! Serialize struct-like data structure hierarchies (field name + dtype)
+    //! to the database.
+    void serializeStructSchema(simdb::DatabaseManager* db_mgr, std::set<std::string>& serialized_types) override final
+    {
+        positions_.at(0)->serializeStructSchema(db_mgr, serialized_types);
+    }
+
+    std::string encodeCollectedType(bool human_readable = false) const override final
+    {
+        auto type = positions_.at(0)->encodeCollectedType();
+        auto human_readable_type = positions_.at(0)->encodeCollectedType(true);
+        auto human_readable_desc = human_readable_type.substr(type.size() + 1);
+
+        if constexpr (sparse_array_type) {
+            type += "_sparse";
+        } else {
+            type += "_contig";
+        }
+        type += "_capacity" + std::to_string(expected_capacity_);
+        if (human_readable) {
+            type += " " + human_readable_desc;
+        }
+        return type;
+    }
+
     //! Collect the contents of the iterable object.  This function
     //! will walk starting from index 0 -> expected_capacity, clearing
     //! out any records where the iterable object does not contain
@@ -244,9 +295,9 @@ public:
     //! Force close all records for this iterable type.  This will
     //! close the record immediately and clear the field for the next
     //! cycle
-    void closeRecord(const bool & simulation_ending = false) override {
-        for (size_type i = 0; i < positions_.size(); ++i) {
-            positions_[i]->closeRecord(simulation_ending);
+    void closeRecord(const bool & = false) override {
+        if(SPARTA_EXPECT_FALSE(isCollected() && entry_point_)) {
+            entry_point_->closeRecord();
         }
     }
 
@@ -280,23 +331,34 @@ public:
     }
 
 private:
-    typedef Collectable<typename std::iterator_traits<typename IterableType::iterator>::value_type> CollectableT;
+    typedef typename std::iterator_traits<typename IterableType::iterator>::value_type BinT;
+    typedef MetaStruct::remove_any_pointer_t<BinT> BinValueT;
+    typedef Collectable<BinT> CollectableT;
+    typedef IterableCollectorBitBucket<sparse_array_type> BitBucketT;
+
     // Standard walk of iterable types
     void collectImpl_(const IterableType * iterable_object, std::false_type)
     {
+        // Unit tests may not have any entry point / bit bucket / simulation set up.
+        if (!entry_point_) {
+            return;
+        }
+
+        sparta_assert(bit_bucket_);
         sparta_assert(nullptr != iterable_object,
             "Can't collect iterable_object because it's a nullptr! How did we get here?");
         auto itr = iterable_object->begin();
         auto eitr = iterable_object->end();
-        for (uint32_t i = 0; i < expected_capacity_; ++i)
+        auto size = std::distance(itr, eitr);
+        bit_bucket_->clear();
+        for (uint32_t i = 0; i < size; ++i)
         {
-            if (itr != eitr) {
-                positions_[i]->collect(*itr);
-                ++itr;
-            } else {
-                positions_[i]->closeRecord();
-            }
+            bit_bucket_->setActiveBinIdx(i);
+            positions_[i]->collect(*itr);
+            ++itr;
         }
+
+        bit_bucket_->writeTo(entry_point_);
     }
 
     // Full iteration walk, checking validity of the iterator.  This
@@ -304,19 +366,27 @@ private:
     // and not valid entries in the component
     void collectImpl_(const IterableType * iterable_object, std::true_type)
     {
+        // Unit tests may not have any entry point / bit bucket / simulation set up.
+        if (!entry_point_) {
+            return;
+        }
+
+        sparta_assert(bit_bucket_);
         sparta_assert(nullptr != iterable_object,
             "Can't collect iterable_object because it's a nullptr! How did we get here?");
-        uint32_t s = 0;
         auto itr = iterable_object->begin();
-        for (uint32_t i = 0; i < expected_capacity_; ++i, ++s)
+        bit_bucket_->clear();
+        for (uint32_t i = 0; i < expected_capacity_; ++i)
         {
+            sparta_assert(itr != iterable_object->end());
             if (itr.isValid()) {
+                bit_bucket_->setActiveBinIdx(i);
                 positions_[i]->collect(*itr);
-            } else {
-                positions_[i]->closeRecord();
             }
             ++itr;
         }
+
+        bit_bucket_->writeTo(entry_point_);
     }
 
     //! Virtual method called by CollectableTreeNode when collection
@@ -341,6 +411,7 @@ private:
     const size_type expected_capacity_ = 0;
     bool auto_collect_ = true;
     bool warn_on_size_ = true;
+    std::shared_ptr<BitBucketT> bit_bucket_;
 
     // For those folks that want a value to automatically
     // disappear in the future

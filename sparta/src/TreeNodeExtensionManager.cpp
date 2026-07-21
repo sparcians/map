@@ -700,7 +700,6 @@ std::function<ExtensionsBase*()> & TreeNodeExtensionManager::getExtensionFactory
     return no_factory;
 }
 
-
 void TreeNodeExtensionManager::doPostCreate_(ExtensionsBase* extension) const
 {
     extension->setParameters(std::make_unique<ParameterSet>(nullptr));
