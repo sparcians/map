@@ -836,6 +836,9 @@ void Simulation::finalizeFramework()
 
             std::set<const Clock*> collectable_clocks;
             std::set<std::string> serialized_types;
+            // Copy the structured binding into an ordinary local so the lambda
+            // below does not capture a structured binding (a C++20 extension).
+            auto local_db_mgr = db_mgr;
             std::function<void(TreeNode*)> visitCollectables;
             visitCollectables = [&](TreeNode* node)
             {
@@ -843,7 +846,7 @@ void Simulation::finalizeFramework()
                     ctn && !ctn->isIterableCollectorBin())
                 {
                     ctn->createSimDbEntryPoint(app);
-                    ctn->serializeStructSchema(db_mgr, serialized_types);
+                    ctn->serializeStructSchema(local_db_mgr, serialized_types);
                     collectable_clocks.insert(notNull(ctn->getClock()));
                 }
                 for (auto child : TreeNodePrivateAttorney::getAllChildren(node))
