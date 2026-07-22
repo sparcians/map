@@ -148,8 +148,9 @@ public:
 
 static std::string expectedUint64Dtype()
 {
-    return (sizeof(uint64_t) == sizeof(unsigned long)) ? std::string("unsigned long")
-                                                         : std::string("unsigned long long");
+    return (sizeof(uint64_t) == sizeof(unsigned long))
+        ? "unsigned long"
+        : "unsigned long long";
 }
 
 static void expectSchemasEqual(

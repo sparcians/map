@@ -210,10 +210,9 @@ public:
     //! the ArgosCollector.
     void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final
     {
-        // TODO cnyce: fix dynamic fields support
         if constexpr (use_dynamic_fields_v<BinValueT>) {
             std::ostringstream oss;
-            oss << "Collecting non-trivial classes using operator<< only is not supported for now. Use PairDefinition.\n";
+            oss << "Collecting non-trivial classes using operator<< is no longer supported. Use PairDefinition.\n";
             oss << "  - path: " << getLocation() << "\n";
             oss << "  - type: " << simdb::demangle_type<BinValueT>() << " (container)";
             argos_collector->postNotif(oss.str(), simdb::argos::NotifType::WARNING);

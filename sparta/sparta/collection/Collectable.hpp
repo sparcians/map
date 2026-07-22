@@ -476,8 +476,8 @@ namespace sparta{
         };
     
         //! Use case 4: We are collecting a class/struct that does not provide SpartaPairDefinitionType,
-        //! has no cast-to-POD operator, and only provides operator<<. We will figure out the fields
-        //! dynamically (at least field data type, as well as the field name if applicable).
+        //! has no cast-to-POD operator, and only provides operator<<. This is no longer supported, and
+        //! Argos will show a warning message that we did not add this to the collection.
         template<typename DataT, SchedulingPhase collection_phase>
         class Collectable<DataT, collection_phase, std::enable_if_t<use_dynamic_fields_v<MetaStruct::remove_any_pointer_t<DataT>>>>
             : public CollectableCommon<DataT, collection_phase>

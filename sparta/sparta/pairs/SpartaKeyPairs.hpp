@@ -1446,7 +1446,7 @@ namespace sparta {
             return finalizeCollection_(c, tmp);
         }
 
-        // BUGFIX (flatten-through-derived pointer, NON-last hop):
+        // Flatten-through-derived pointer, NON-last hop:
         // Type of object is not abstract.
         // Type of object is a pointer to a *derived* type.
         // Functional object is a Method Pointer belonging to a proper *base*
@@ -1488,7 +1488,7 @@ namespace sparta {
             return populateFromEntityUtility_(c, (*object.*func)(), std::forward<Ts>(ts)...);
         }
 
-        // BUGFIX (flatten-through-derived value/ref, NON-last hop):
+        // Flatten-through-derived value/ref, NON-last hop:
         // Same as above, but the object is held by value/reference (not a pointer).
         //  \code{.cpp}
         //  Derived b;                    // Derived : public Base
@@ -1521,7 +1521,7 @@ namespace sparta {
             return populateFromEntityUtility_(c, (object.*func)(), std::forward<Ts>(ts)...);
         }
 
-        // BUGFIX (flatten-through-derived pointer, LAST hop):
+        // Flatten-through-derived pointer, LAST hop:
         // Type of object is not abstract.
         // Type of object is a pointer to a *derived* type.
         // Functional object is the (last) Method Pointer, belonging to a proper
@@ -1567,7 +1567,7 @@ namespace sparta {
             return finalizeCollection_(c, tmp);
         }
 
-        // BUGFIX (flatten-through-derived value/ref):
+        // Flatten-through-derived value/ref:
         // Same as above, but the object is held by value/reference (not a pointer).
         //  \code{.cpp}
         //  Derived b;                    // Derived : public Base
