@@ -3,6 +3,7 @@
 #include "sparta/sparta.hpp"
 #include "sparta/utils/SpartaTester.hpp"
 #include <algorithm>
+#include <type_traits>
 using namespace sparta;
 
 uint32_t some_arbitrary_data;
@@ -113,7 +114,6 @@ public:
     }
 };
 
-#if TODO_XXX
 struct SchemaInner {
     double d = 0.0;
     enum class Unit : uint8_t { Alpha = 0, Beta = 1 } unit = Unit::Alpha;
@@ -149,7 +149,7 @@ public:
 
 static std::string expectedUint64Dtype()
 {
-    return (sizeof(uint64_t) == sizeof(unsigned long))
+    return std::is_same_v<uint64_t, unsigned long>
         ? "unsigned long"
         : "unsigned long long";
 }
@@ -165,7 +165,6 @@ static void expectSchemasEqual(
         EXPECT_EQUAL(got[i].second, expected[i].second);
     }
 }
-#endif
 
 /*
  * Create 3 different instances of our class, and
@@ -183,7 +182,6 @@ int main()
     pos_collector.turnOn();
     my_collector.turnOn();
 
-    #if TODO_XXX
     {
         const std::vector<std::pair<std::string, std::string>> expected_collected_a = {
             {"i_val", "int"},
@@ -205,7 +203,6 @@ int main()
         };
         expectSchemasEqual(schema_collector.getFlattenedFieldNameAndDtypeSchema(), expected_nested);
     }
-    #endif
 
     A a(0, "test0");
     A a1(1,"test1");
@@ -222,7 +219,6 @@ int main()
     my_collector.collect(a1, 12);
     my_collector.collect(a2, 32);
 
-    #if TODO_XXX
     {
         const std::vector<std::pair<std::string, std::string>> expected_with_dynamic = {
             {"i_val", "int"},
@@ -233,7 +229,6 @@ int main()
         };
         expectSchemasEqual(another_collector.getFlattenedFieldNameAndDtypeSchema(), expected_with_dynamic);
     }
-    #endif
 
     REPORT_ERROR;
     return ERROR_CODE;
