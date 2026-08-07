@@ -4,6 +4,7 @@
 
 #include "sparta/utils/ValidValue.hpp"
 #include "simdb/apps/argos/EntryPoint.hpp"
+#include "simdb/Exceptions.hpp"
 #include <cstring>
 
 namespace sparta::collection {
@@ -57,9 +58,31 @@ public:
 
         // Write PODs (or TinyStrings uint32_t ID, or enums by their underlying type,
         // or bools as uint8_t)
-        else {
-            static_assert(std::is_trivial_v<T> && std::is_standard_layout_v<T>);
+        else if constexpr (std::is_trivial_v<T> && std::is_standard_layout_v<T>) {
             writeField_(&val, sizeof(T), field_id);
+        }
+
+        // Invalid! We might not be able to get away with a static_assert here.
+        // The PEvent system collects std::pair's which work for PEvents, but
+        // are not valid for Argos. The switch is based on the presence of a
+        // BitBucket (Argos) or not (PEvents) and not something we can switch
+        // on with a constexpr. See the code in SpartaKeyPairs.hpp:
+        //
+        // bool finalizeCollection_(
+        //     PairCache *& cache, const ValueType & tmp) {
+        //
+        //     if(auto bit_bucket = this->getBitBucket_(false)) {
+        //         *** ARGOS ***
+        //         bit_bucket->writeField(tmp, id_);
+        //     } else {
+        //         *** PEVENTS ***
+        //         ...
+        //     }
+        //     return false;
+        // }
+        else {
+            throw simdb::DBException("Invalid type! Must be a POD, enum, or string, not ")
+                << simdb::demangle_type<T>();
         }
     }
 
