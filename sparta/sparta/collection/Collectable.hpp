@@ -289,7 +289,7 @@ namespace sparta{
             }
 
             //! Set the BitBucket (byte buffers for SimDB EntryPoint)
-            virtual void setBitBucket(std::shared_ptr<BitBucket> bit_bucket) {
+            virtual void setBitBucket(const std::shared_ptr<BitBucket>& bit_bucket) {
                 bit_bucket_ = bit_bucket;
             }
 
@@ -564,13 +564,22 @@ namespace sparta{
                     format_strings.push_back(fmt_str);
                 }
 
-                std::cout << "\nSerializing PairDefinition to database for '" << root_dtype << "'...\n";
+                bool verbose = false;
+                if (auto sim = this->getSimulation()) {
+                    verbose = sim->getSimulationConfiguration()->verboseMode();
+                }
+
+                if (verbose) {
+                    std::cout << "\nSerializing PairDefinition to database for '" << root_dtype << "'...\n";
+                }
                 for(size_t i = 0; i < names.size(); ++i) {
-                    std::cout << "\t" << names[i] << ", " << dtypes[i];
-                    if (!format_strings[i].empty()) {
-                        std::cout << " (" << format_strings[i] << ")";
+                    if (verbose) {
+                        std::cout << "\t" << names[i] << ", " << dtypes[i];
+                        if (!format_strings[i].empty()) {
+                            std::cout << " (" << format_strings[i] << ")";
+                        }
+                        std::cout << "\n";
                     }
-                    std::cout << "\n";
 
                     db_mgr->INSERT(SQL_TABLE("DataTypeNodes"),
                                    SQL_VALUES(schema_id,
@@ -581,7 +590,7 @@ namespace sparta{
                 serialized_types.insert(root_dtype);
             }
 
-            void setBitBucket(std::shared_ptr<BitBucket> bit_bucket) override final {
+            void setBitBucket(const std::shared_ptr<BitBucket>& bit_bucket) override final {
                 // Share the BitBucket with the Pairs
                 setBitBucket_(bit_bucket);
 

@@ -395,7 +395,7 @@ namespace sparta {
         /**
          * \brief Use the given bit bucket to dump collected data to SimDB
          */
-        void setBitBucket_(std::shared_ptr<collection::BitBucket> bit_bucket) {
+        void setBitBucket_(const std::shared_ptr<collection::BitBucket>& bit_bucket) {
             pair_definition_.setBitBucket(bit_bucket);
         }
 
@@ -525,7 +525,7 @@ namespace sparta {
         /**
          * \brief Use the given bit bucket to dump collected data to SimDB
          */
-        virtual void setBitBucket(std::shared_ptr<collection::BitBucket> bit_bucket) {
+        virtual void setBitBucket(const std::shared_ptr<collection::BitBucket>& bit_bucket) {
             bit_bucket_ = bit_bucket;
         }
 
@@ -689,7 +689,7 @@ namespace sparta {
         FuncType func_;
 
     private:
-        void setBitBucket(std::shared_ptr<collection::BitBucket>) override final {
+        void setBitBucket(const std::shared_ptr<collection::BitBucket>&) override final {
             throw SpartaException("BitBucket is only for collection, not PEvents");
         }
     };
@@ -1994,11 +1994,10 @@ namespace sparta {
         std::unique_ptr<ValueType> data_cpy_;
 
         bool finalizeCollection_(
-            PairCache *& c, const ValueType & tmp) {
+            PairCache *& cache, const ValueType & tmp) {
 
             if(auto bit_bucket = this->getBitBucket_(false)) {
-                auto success = bit_bucket->writeField(tmp, id_);
-                sparta_assert(success);
+                bit_bucket->writeField(tmp, id_);
             } else {
                 if(SPARTA_EXPECT_FALSE(data_cpy_.get() == nullptr)) {
                     data_cpy_.reset(new ValueType(tmp));
@@ -2006,7 +2005,7 @@ namespace sparta {
                 else if(*data_cpy_ == tmp) {
                     return true;
                 }
-                updateValueInCache_(c, id_, tmp);
+                updateValueInCache_(cache, id_, tmp);
                 data_cpy_.reset(new ValueType(tmp));
             }
             return false;
@@ -2471,7 +2470,7 @@ namespace sparta {
         /**
          * \brief Use the given bit bucket to dump collected data to SimDB
          */
-        void setBitBucket(std::shared_ptr<collection::BitBucket> bit_bucket) {
+        void setBitBucket(const std::shared_ptr<collection::BitBucket>& bit_bucket) {
             for(auto & pair : pairs_) {
                 pair->setBitBucket(bit_bucket);
             }
