@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <iomanip>
 
+#include "sparta/app/Simulation.hpp"
 #include "sparta/collection/PipelineCollector.hpp"
 #include "sparta/collection/BitBucket.hpp"
 #include "sparta/pipeViewer/transaction_structures.hpp"
@@ -31,70 +32,38 @@ namespace sparta{
     namespace collection
     {
 
-        template <typename T, typename = void>
-        struct use_raw_type : std::false_type {};
+        template <typename T>
+        concept use_raw_type = std::is_trivial_v<T> && std::is_standard_layout_v<T>;
 
         template <typename T>
-        struct use_raw_type<T,
-            std::enable_if_t<std::is_trivial_v<T> &&
-                             std::is_standard_layout_v<T>>> : std::true_type {};
-
-        template <typename T>
-        inline constexpr bool use_raw_type_v = use_raw_type<T>::value;
-
-        template <typename T, typename = void>
-        struct use_tiny_strings : std::false_type {};
-
-        template <typename T>
-        struct use_tiny_strings<T,
-            std::enable_if_t<std::is_same_v<T, std::string> ||
-                             std::is_same_v<std::decay_t<T>, const char*>>> : std::true_type {};
-
-        template <typename T>
-        inline constexpr bool use_tiny_strings_v = use_tiny_strings<T>::value;
+        concept use_tiny_strings = std::is_same_v<T, std::string> ||
+                                   std::is_same_v<std::decay_t<T>, const char*>;
 
         template <typename U>
         std::true_type  derives_from_pair_definition_(const sparta::PairDefinition<U>*);
         std::false_type derives_from_pair_definition_(...);
 
-        template <typename T, typename = void>
-        struct use_pair_definition : std::false_type {};
+        template <typename T>
+        concept use_pair_definition = requires {
+            typename T::SpartaPairDefinitionType;
+            requires decltype(derives_from_pair_definition_(
+                std::declval<typename T::SpartaPairDefinitionType*>()))::value;
+        };
 
         template <typename T>
-        struct use_pair_definition<T,
-            std::enable_if_t<decltype(derives_from_pair_definition_(
-                             std::declval<typename T::SpartaPairDefinitionType*>()))::value>>
-            : std::true_type {};
+        concept use_cast_operator =
+            simdb::type_traits::is_pod_convertible_v<T> &&
+            !use_raw_type<T> &&
+            !use_pair_definition<T> &&
+            !utils::has_ostream_operator<T>::value;
 
         template <typename T>
-        inline constexpr bool use_pair_definition_v = use_pair_definition<T>::value;
-
-        template <typename T, typename = void>
-        struct use_cast_operator : std::false_type {};
-
-        template <typename T>
-        struct use_cast_operator<T,
-            std::enable_if_t<simdb::type_traits::is_pod_convertible_v<T> &&
-                             !use_raw_type_v<T> &&
-                             !use_pair_definition_v<T> &&
-                             !utils::has_ostream_operator<T>::value>> : std::true_type {};
-
-        template <typename T>
-        inline constexpr bool use_cast_operator_v = use_cast_operator<T>::value;
-
-        template <typename T, typename = void>
-        struct use_dynamic_fields : std::false_type {};
-
-        template <typename T>
-        struct use_dynamic_fields<T,
-            std::enable_if_t<!use_raw_type_v<T> &&
-                             !use_tiny_strings_v<T> &&
-                             !use_pair_definition_v<T> &&
-                             !use_cast_operator_v<T> &&
-                             utils::has_ostream_operator<T>::value>> : std::true_type {};
-
-        template <typename T>
-        inline constexpr bool use_dynamic_fields_v = use_dynamic_fields<T>::value;
+        concept use_dynamic_fields =
+            !use_raw_type<T> &&
+            !use_tiny_strings<T> &&
+            !use_pair_definition<T> &&
+            !use_cast_operator<T> &&
+            utils::has_ostream_operator<T>::value;
 
         //! Common code for all Collectable implementations below.
         template <typename DataT, SchedulingPhase collection_phase = SchedulingPhase::Collection>
@@ -180,8 +149,8 @@ namespace sparta{
             }
 
             template <typename T>
-            std::enable_if_t<MetaStruct::is_any_pointer_v<T>, void>
-            initialize(const T & val) {
+            requires MetaStruct::is_any_pointer_v<T>
+            void initialize(const T & val) {
                 if (val) {
                     initialize(*val);
                 }
@@ -197,8 +166,8 @@ namespace sparta{
             }
 
             template <typename T>
-            std::enable_if_t<MetaStruct::is_any_pointer_v<T>, void>
-            collect(const T & val) {
+            requires MetaStruct::is_any_pointer_v<T>
+            void collect(const T & val) {
                 if (val) {
                     collect(*val);
                 } else {
@@ -227,8 +196,8 @@ namespace sparta{
             }
  
             template <typename T>
-            std::enable_if_t<MetaStruct::is_any_pointer_v<T>, void>
-            collectWithDuration(const T & val, sparta::Clock::Cycle duration) {
+            requires MetaStruct::is_any_pointer_v<T>
+            void collectWithDuration(const T & val, sparta::Clock::Cycle duration) {
                 if (val) {
                     collectWithDuration(*val, duration);
                 } else {
@@ -392,7 +361,8 @@ namespace sparta{
         //! Use case 1: We are collecting a bool, int/float, or an enum. These collected values are written
         //! as their native type.
         template<typename DataT, SchedulingPhase collection_phase>
-        class Collectable<DataT, collection_phase, std::enable_if_t<use_raw_type_v<MetaStruct::remove_any_pointer_t<DataT>>>>
+        requires use_raw_type<MetaStruct::remove_any_pointer_t<DataT>>
+        class Collectable<DataT, collection_phase, void>
             : public CollectableCommon<DataT, collection_phase>
         {
         public:
@@ -423,7 +393,8 @@ namespace sparta{
         //! Use case 2: We are collecting a scalar string type (std::string, const char*).
         //! These collected strings are written as uint32_t values after going through TinyStrings.
         template<typename DataT, SchedulingPhase collection_phase>
-        class Collectable<DataT, collection_phase, std::enable_if_t<use_tiny_strings_v<MetaStruct::remove_any_pointer_t<DataT>>>>
+        requires use_tiny_strings<MetaStruct::remove_any_pointer_t<DataT>>
+        class Collectable<DataT, collection_phase, void>
             : public CollectableCommon<DataT, collection_phase>
         {
         public:
@@ -447,7 +418,8 @@ namespace sparta{
         //! Use case 3: We are collecting a class/struct which does not provide SpartaPairDefinitionType,
         //! but provides a cast-to-POD operator.
         template<typename DataT, SchedulingPhase collection_phase>
-        class Collectable<DataT, collection_phase, std::enable_if_t<use_cast_operator_v<MetaStruct::remove_any_pointer_t<DataT>>>>
+        requires use_cast_operator<MetaStruct::remove_any_pointer_t<DataT>>
+        class Collectable<DataT, collection_phase, void>
             : public CollectableCommon<DataT, collection_phase>
         {
         public:
@@ -479,7 +451,8 @@ namespace sparta{
         //! has no cast-to-POD operator, and only provides operator<<. This is no longer supported, and
         //! Argos will show a warning message that we did not add this to the collection.
         template<typename DataT, SchedulingPhase collection_phase>
-        class Collectable<DataT, collection_phase, std::enable_if_t<use_dynamic_fields_v<MetaStruct::remove_any_pointer_t<DataT>>>>
+        requires use_dynamic_fields<MetaStruct::remove_any_pointer_t<DataT>>
+        class Collectable<DataT, collection_phase, void>
             : public CollectableCommon<DataT, collection_phase>
         {
         public:
@@ -511,7 +484,8 @@ namespace sparta{
 
         //! Use case 5: We are collecting a class/struct which provides SpartaPairDefinitionType.
         template<typename DataT, SchedulingPhase collection_phase>
-        class Collectable<DataT, collection_phase, std::enable_if_t<use_pair_definition_v<MetaStruct::remove_any_pointer_t<DataT>>>>
+        requires use_pair_definition<MetaStruct::remove_any_pointer_t<DataT>>
+        class Collectable<DataT, collection_phase, void>
             : public CollectableCommon<DataT, collection_phase>
             , public PairCollector<typename MetaStruct::remove_any_pointer_t<DataT>::SpartaPairDefinitionType>
         {
@@ -566,7 +540,7 @@ namespace sparta{
 
                 bool verbose = false;
                 if (auto sim = this->getSimulation()) {
-                    verbose = sim->getSimulationConfiguration()->verboseMode();
+                    verbose = sim->getSimulationConfiguration()->simdb_config.verboseMode();
                 }
 
                 if (verbose) {

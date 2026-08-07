@@ -210,7 +210,7 @@ public:
     //! the ArgosCollector.
     void createSimDbEntryPoint(simdb::argos::ArgosCollector* argos_collector) override final
     {
-        if constexpr (use_dynamic_fields_v<BinValueT>) {
+        if constexpr (use_dynamic_fields<BinValueT>) {
             std::ostringstream oss;
             oss << "Collecting non-trivial classes using operator<< is no longer supported. Use PairDefinition.\n";
             oss << "  - path: " << getLocation() << "\n";
