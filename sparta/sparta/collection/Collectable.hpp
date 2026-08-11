@@ -32,13 +32,6 @@ namespace sparta{
     namespace collection
     {
 
-        template <typename T>
-        concept use_raw_type = std::is_trivial_v<T> && std::is_standard_layout_v<T>;
-
-        template <typename T>
-        concept use_tiny_strings = std::is_same_v<T, std::string> ||
-                                   std::is_same_v<std::decay_t<T>, const char*>;
-
         template <typename U>
         std::true_type  derives_from_pair_definition_(const sparta::PairDefinition<U>*);
         std::false_type derives_from_pair_definition_(...);
@@ -49,6 +42,16 @@ namespace sparta{
             requires decltype(derives_from_pair_definition_(
                 std::declval<typename T::SpartaPairDefinitionType*>()))::value;
         };
+
+        template <typename T>
+        concept use_raw_type =
+            std::is_trivial_v<T> &&
+            std::is_standard_layout_v<T> &&
+            !use_pair_definition<T>;
+
+        template <typename T>
+        concept use_tiny_strings = std::is_same_v<T, std::string> ||
+                                   std::is_same_v<std::decay_t<T>, const char*>;
 
         template <typename T>
         concept use_cast_operator =
@@ -273,10 +276,6 @@ namespace sparta{
             //! Virtual method called by CollectableTreeNode when
             //! collection is enabled on the TreeNode
             void setCollecting_(bool collect, Collector * collector) override {
-                pipeline_col_ = dynamic_cast<PipelineCollector *>(collector);
-                sparta_assert(pipeline_col_ != nullptr,
-                              "Collectables can only added to PipelineCollectors... for now");
-
                 if(collect && !initial_bytes_.empty()) {
                     //TODO cnyce: handle initial value
                     initial_bytes_.clear();
@@ -285,6 +284,10 @@ namespace sparta{
                 // If the collected object is null, this Collectable
                 // object is to be explicitly collected
                 if(collected_object_ && auto_collect_) {
+                    pipeline_col_ = dynamic_cast<PipelineCollector *>(collector);
+                    sparta_assert(pipeline_col_ != nullptr,
+                                  "Collectables can only added to PipelineCollectors... for now");
+
                     if(collect) {
                         // Add this Collectable to the PipelineCollector's
                         // list of objects requiring collection

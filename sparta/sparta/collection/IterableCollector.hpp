@@ -392,10 +392,10 @@ private:
     //! is enabled on the TreeNode
     void setCollecting_(bool collect, Collector * collector) override
     {
-        PipelineCollector * pipeline_col = dynamic_cast<PipelineCollector *>(collector);
-        sparta_assert(pipeline_col != nullptr);
-
         if(collect && auto_collect_) {
+            PipelineCollector * pipeline_col = dynamic_cast<PipelineCollector *>(collector);
+            sparta_assert(pipeline_col != nullptr);
+
             // Add this Collectable to the PipelineCollector's
             // list of objects requiring collection
             pipeline_col->addToAutoCollection(this, collection_phase);
