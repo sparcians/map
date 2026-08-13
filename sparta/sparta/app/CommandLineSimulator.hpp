@@ -55,7 +55,13 @@ class InformationWriter;
 
 namespace app {
 
-const constexpr char DefaultHeartbeat[]        = "10";
+// TODO cnyce: Default to 10 for the heartbeat interval to
+// re-enable the Argos collection checkpointers to save
+// disk space. With or without delta compression, the new
+// collector's DB size is much less than legacy anyway.
+// Since checkpointing is async, runtime is not affected
+// either way. See SimDB GitHub issue #198.
+const constexpr char DefaultHeartbeat[]        = "1";
 
 
 /*!
