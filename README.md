@@ -29,7 +29,7 @@ Current development branches:
 
 | map_v2.0                               | map_v2.1                                    | map_v2.2 | map_v3.0 |
 | -------------------------------------- | ------------------------------------------- | -------- | -------- |
-| Development prior to SimDB integration | SimDB integration/report generation support | TreeNode Extensions API Update | Brand new Argos rebuilt on SimDB for a much smaller database and much more responsive UI |
+| Development prior to SimDB integration | SimDB integration/report generation support | TreeNode Extensions API Update | Brand new Argos pipeline collection mechanism coupled with a brand new Argos viewer |
 
 Clone MAP with the `--recursive` option to also clone the git submodules, and `--branch map_v2.2` to clone
 the latest stable v2.  `master` branch of Sparta should never be used (development).
