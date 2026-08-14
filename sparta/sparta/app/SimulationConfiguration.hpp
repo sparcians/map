@@ -472,6 +472,12 @@ public:
     std::string pipeline_collection_file_prefix = NoPipelineCollectionStr;
 
     /*!
+     * Set by CommandLineSimulator. Controls time/space tradeoffs for
+     * pipeline collection.
+     */
+    utils::ValidValue<size_t> pipeline_collection_heartbeat;
+
+    /*!
      * Additional report descriptions
      */
     ReportDescVec reports;
@@ -489,24 +495,6 @@ public:
         void setSimExecutable(const std::string & exe_name)
         {
             sim_exec_db_filename_ = exe_name + ".db";
-        }
-
-        /*!
-         * \brief Before creating any apps, call this method to enable all apps
-         * to have access to a single thread-safe file logger.
-         * \param filename The name / path of the output file.
-         */
-        void useAppFileLogger(const std::string & filename)
-        {
-            app_file_logger_filename_ = filename;
-        }
-
-        /*!
-         * \brief Get the filename of the apps' shared file logger, if enabled.
-         */
-        std::string getAppLoggerFilename() const
-        {
-            return app_file_logger_filename_;
         }
 
         /*!
@@ -662,6 +650,22 @@ public:
         }
 
         /*!
+         * \brief Call the setVerbose() method for all SimDB apps once created.
+         */
+        void enableVerboseMode(bool enable = true)
+        {
+            verbose_ = enable;
+        }
+
+        /*!
+         * \brief Get verbose flag.
+         */
+        bool verboseMode() const
+        {
+            return verbose_;
+        }
+
+        /*!
          * \brief Add a SQLite PRAGMA to execute on database creation.
          * \note Applies to all app databases if different.
          */
@@ -686,7 +690,6 @@ public:
 
     private:
         std::string sim_exec_db_filename_;
-        std::string app_file_logger_filename_;
         std::set<std::string> enabled_apps_;
         std::map<std::string, size_t> concrete_app_counts_;
         std::map<std::string, std::string> inferred_app_counts_;
@@ -694,6 +697,7 @@ public:
         std::set<std::string> reused_db_files_;
         std::map<std::string, std::string> dbmgr_pragmas_;
         bool legacy_reports_enabled_ = true;
+        bool verbose_ = false;
     } simdb_config;
 
     /*!

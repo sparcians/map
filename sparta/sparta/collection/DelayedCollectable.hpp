@@ -167,7 +167,7 @@ namespace collection
         // future
         sparta::PayloadEvent<DataT, SchedulingPhase::Collection> ev_collect_{
             &Collectable<DataT>::getEventSet_(), "delayedpipelinecollectable_event",
-                CREATE_SPARTA_HANDLER_WITH_DATA(Collectable<DataT>, collect, DataT)};
+                CREATE_SPARTA_HANDLER_WITH_DATA(CollectableCommon<DataT>, collect, DataT)};
 
         // For those folks that want collection to appear in the
         // future with a duration

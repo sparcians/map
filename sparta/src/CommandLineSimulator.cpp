@@ -658,9 +658,8 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
         ("simdb-pragmas",
          named_value<std::vector<std::string>>("PRAGMA_NAME PRAGMA_VALUE [PRAGMA_NAME PRAGMA_VALUE...]", 2, -1)->multitoken(),
          "List of name-value pairs of SQLite pragmas to use when opening the database(s).")
-        ("simdb-app-log-file",
-         named_value<std::vector<std::string>>("FILENAME", 1, 1),
-         "Tell all SimDB apps to use the given filename for their thread-safe file loggers.")
+        ("simdb-verbose",
+         "Enable verbose mode for all SimDB apps.")
         ;
     #endif
 
@@ -1231,10 +1230,6 @@ bool CommandLineSimulator::parse(int argc,
                     sim_config_.simdb_config.addPragmaOnOpen(pragma_name, pragma_value);
                 }
                 opts.options.erase(opts.options.begin() + i);
-            }else if (o.string_key == "simdb-app-log-file") {
-                const auto & filename = o.value.at(0);
-                sim_config_.simdb_config.useAppFileLogger(filename);
-                opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "pipeline-collection") {
                 //Enforce that we cannot set pipeline-collection options twice.
                 if(collection_parsed)
@@ -1264,6 +1259,11 @@ bool CommandLineSimulator::parse(int argc,
                     err_code = 1;
                     return false;
                 }
+
+                std::filesystem::path collection_db_file = sim_config_.pipeline_collection_file_prefix;
+                collection_db_file.replace_extension(".db");
+                sim_config_.simdb_config.enableApp("argos-collector");
+                sim_config_.simdb_config.setAppDatabase("argos-collector", collection_db_file.string());
 
                 ++i;
                 collection_parsed = true;
@@ -1700,6 +1700,10 @@ bool CommandLineSimulator::parse(int argc,
         sim_config_.simdb_config.disableLegacyReports();
     }
 
+    if (vm_.count("simdb-verbose")) {
+        sim_config_.simdb_config.enableVerboseMode();
+    }
+
     if (!global_simdb_file_.empty()) {
         if (global_simdb_file_ == "autogen") {
             global_simdb_file_ = generateUUID() + ".db";
@@ -2038,13 +2042,16 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
         size_t end_pos;
         heartbeat = utils::smartLexicalCast<uint32_t>(pipeline_heartbeat_, end_pos);
     }catch (SpartaException const&){
-        throw SpartaException("HEARTBEAT for pipeline collection must be an integer value and a multiple of 100 > 0, not \"")
+        throw SpartaException("HEARTBEAT for pipeline collection must be an integer value > 0, not \"")
             << pipeline_heartbeat_ << "\"";
     }
 
-    if(heartbeat != 0 && heartbeat % 100 != 0){
-        throw SpartaException("HEARTBEAT for pipeline collection must be a multiple of 100 > 0, not \"")
-            << heartbeat << "\"";
+    if(heartbeat == 0){
+        throw SpartaException("HEARTBEAT for pipeline collection must be greater than zero");
+    }
+
+    if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr && heartbeat != 0){
+        sim_config_.pipeline_collection_heartbeat = heartbeat;
     }
 
     // Pevent
@@ -2203,14 +2210,6 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
                                                                        multiple_triggers,
                                                                        sim->getRootClock(),
                                                                        sim->getRoot()));
-
-            // If pipeline collection is turned on begin writing an info file
-            // about the simulation.
-            info_out_.reset(new sparta::InformationWriter(sim_config_.pipeline_collection_file_prefix+"simulation.info"));
-            info_out_->write("Pipeline Collection files generated from simulator ");
-            info_out_->write(sim->getSimName());
-            info_out_->write("\n\nSimulation started at: ");
-            info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
         }
 
         // Finalize the pevent controller now that the tree is built.
@@ -2480,8 +2479,6 @@ void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
                 if(pipeline_collection_triggerable_->isTriggered()) {
                     pipeline_collection_triggerable_->stop();
                 }
-                info_out_->write("Simulation aborted at: ");
-                info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
             }
 
             // In interactive simulation, we would try and enter a "debug mode" and
@@ -2495,12 +2492,6 @@ void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
         if(pipeline_collection_triggerable_->isTriggered()) {
             pipeline_collection_triggerable_->stop();
         }
-
-         // Write the end time of the simulation.
-        info_out_->write("Simulation ended at: ");
-        info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
-        sparta::InformationWriter& outputter = *(info_out_.get());
-        outputter << "Heartbeat interval: " << pipeline_heartbeat_ << " ticks" << "\n";
     }
 
     if(show_tree_){

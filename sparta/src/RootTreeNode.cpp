@@ -8,6 +8,7 @@
 
 #include "sparta/simulation/RootTreeNode.hpp"
 #include "sparta/extensions/TreeNodeExtensionManager.hpp"
+#include "sparta/app/Simulation.hpp"
 
 #include <algorithm>
 #include <sstream>
@@ -183,6 +184,13 @@ void RootTreeNode::setExtensionManager(TreeNodeExtensionManager* mgr)
     }
     extension_mgr_ = mgr;
     mgr->setRoot(this);
+}
+
+void RootTreeNode::onEnteringTeardown_() noexcept
+{
+    if (auto sim = getSimulator()) {
+        sim->postProcessingLastCall();
+    }
 }
 
 } // namespace sparta
