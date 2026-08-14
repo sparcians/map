@@ -11,6 +11,7 @@
 #pragma once
 
 #include <vector>
+#include <limits>
 #include <iostream>
 #include <exception>
 #include <iterator>
@@ -185,16 +186,37 @@ namespace sparta::utils
         };
 
         /**
-         * \brief Construct FastList of a given size
-         * \param size Fixed size of the list
+         * \brief Construct FastList of a given fixed size
+         * \param size Size of the list, which is also its maximum
          */
-        FastList(size_t size)
+        FastList(size_t size) :
+            FastList(size, size)
+        {}
+
+        /**
+         * \brief Construct a FastList that grows on demand up to a maximum
+         * \param initial_size Number of nodes constructed up front
+         * \param max_size Ceiling on the number of nodes; must be >= initial_size
+         *
+         * Reserving max_size up front is load bearing, not an optimisation: Node
+         * holds raw storage for DataT, so reallocating would byte-copy live
+         * elements and invalidate outstanding iterators.
+         */
+        FastList(size_t initial_size, size_t max_size) :
+            max_size_(max_size)
         {
-            sparta_assert(size != 0,
+            sparta_assert(initial_size != 0,
                           "Cannot create a sparta::utils::FastList of size 0");
+            sparta_assert(initial_size <= max_size,
+                          "sparta::utils::FastList initial size " << initial_size <<
+                          " is larger than its max size " << max_size);
+            // -1 is the end/free sentinel, so the ceiling must fit in NodeIdx.
+            sparta_assert(max_size <= size_t(std::numeric_limits<typename Node::NodeIdx>::max()),
+                          "sparta::utils::FastList max size " << max_size <<
+                          " exceeds the addressable node index range");
+            nodes_.reserve(max_size_);
             int node_idx = 0;
-            nodes_.reserve(size);
-            for(size_t i = 0; i < size; ++i) {
+            for(size_t i = 0; i < initial_size; ++i) {
                 Node n(node_idx);
                 n.prev = node_idx - 1;
                 n.next = node_idx + 1;
@@ -239,7 +261,7 @@ namespace sparta::utils
         size_t size()     const { return size_; };
 
         //! \return The maximum size of this list
-        size_t max_size() const { return nodes_.capacity(); };
+        size_t max_size() const { return max_size_; };
 
         ////////////////////////////////////////////////////////////////////////////////
         // Modifiers
@@ -295,8 +317,7 @@ namespace sparta::utils
         template<class ...ArgsT>
         iterator emplace(const const_iterator & pos, ArgsT&&...args)
         {
-            sparta_assert(free_head_ != -1,
-                          "FastList is out of element room");
+            ensureFreeNode_();
             const auto index_pos = pos.getIndex();
 
             // If the index pos is -1, it's either end() or begin() on
@@ -339,8 +360,7 @@ namespace sparta::utils
         template<class ...ArgsT>
         iterator emplace_front(ArgsT&&...args)
         {
-            sparta_assert(free_head_ != -1,
-                          "FastList is out of element room");
+            ensureFreeNode_();
 
             auto & new_node = nodes_[free_head_];
             free_head_ = new_node.next;
@@ -371,8 +391,7 @@ namespace sparta::utils
          */
         template<class ...ArgsT>
         iterator emplace_back(ArgsT&&...args) {
-            sparta_assert(free_head_ != -1,
-                          "FastList is out of element room");
+            ensureFreeNode_();
 
             auto & new_node = nodes_[free_head_];
             free_head_ = new_node.next;
@@ -441,8 +460,21 @@ namespace sparta::utils
             return os;
         }
 
+        //! Ensure a free node is available, growing the list if below its ceiling.
+        void ensureFreeNode_() {
+            if(SPARTA_EXPECT_TRUE(free_head_ != -1)) { return; }
+            sparta_assert(nodes_.size() < max_size_,
+                          "FastList is out of element room (max_size=" << max_size_ << ")");
+            // Never reallocates: the ctor reserved max_size_.
+            const typename Node::NodeIdx new_idx =
+                static_cast<typename Node::NodeIdx>(nodes_.size());
+            nodes_.emplace_back(new_idx);
+            free_head_ = new_idx;
+        }
+
         // Stores all the nodes.
         std::vector<Node> nodes_;
+        size_t max_size_;     //!< Ceiling on the node count
 
         int free_head_  = 0;  //!< The free head
         int first_node_ = -1; //!< The first node in the list (-1 for empty)

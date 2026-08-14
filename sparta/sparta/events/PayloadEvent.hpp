@@ -105,9 +105,11 @@ namespace sparta
         PayloadEvent(TreeNode * event_set,
                      const std::string & name,
                      const SpartaHandler & consumer_event_handler,
-                     Clock::Cycle delay = 0) :
+                     Clock::Cycle delay = 0,
+                     size_t max_outstanding =
+                         PhasedPayloadEvent<DataT>::DEFAULT_MAX_OUTSTANDING) :
             PhasedPayloadEvent<DataT>(event_set, name, sched_phase_T,
-                                      consumer_event_handler, delay)
+                                      consumer_event_handler, delay, max_outstanding)
         { }
 
         //! Destroy!
