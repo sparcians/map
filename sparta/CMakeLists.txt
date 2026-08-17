@@ -144,6 +144,19 @@ endif ()
 string (STRIP ${GIT_REPO_VERSION} GIT_REPO_VERSION)
 message (STATUS "Sparta Version: ${GIT_REPO_VERSION}")
 
+#pkg-config support
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sparta.pc.in
+  ${CMAKE_CURRENT_BINARY_DIR}/sparta.pc
+  @ONLY
+)
+
+install(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/sparta.pc
+  DESTINATION lib/pkgconfig
+)
+
+
 # Use ccache if we've got it.
 find_program (CCACHE_PROGRAM ccache)
 if (CCACHE_PROGRAM)
