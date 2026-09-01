@@ -3,9 +3,11 @@
 #pragma once
 
 #include "sparta/utils/ValidValue.hpp"
+#include "sparta/utils/Utils.hpp"
 #include "simdb/apps/argos/EntryPoint.hpp"
 #include "simdb/Exceptions.hpp"
 #include <cstring>
+#include <vector>
 
 namespace sparta::collection {
 
@@ -34,6 +36,27 @@ public:
             writeField(val ? uint8_t(1) : uint8_t(0), field_id);
         }
 
+        // Write list-of-integer values as [count, elem0, elem1, ...].
+        else if constexpr (sparta::is_vector<T>::value) {
+            using value_type = typename T::value_type;
+            sparta_assert(val.size() <= 32u);
+            uint8_t count = static_cast<uint8_t>(val.size());
+            writeField_(static_cast<const void*>(&count), sizeof(count), field_id);
+            if constexpr (std::is_integral_v<value_type> && !std::is_same_v<value_type, bool>) {
+                for (const auto& elem : val) {
+                    writeField(elem, field_id);
+                }
+            } else {
+                using converted_t = simdb::type_traits::pod_convertible_t<value_type>;
+                static_assert(simdb::type_traits::is_pod_convertible_v<value_type> &&
+                              std::is_integral_v<converted_t> && !std::is_same_v<converted_t, bool>,
+                              "Argos vector collection only supports integer vectors or integer-like values.");
+                for (const auto& elem : val) {
+                    writeField(static_cast<converted_t>(elem), field_id);
+                }
+            }
+        }
+
         // Write strings as uint32_t via TinyStrings
         else if constexpr (std::is_same_v<T, std::string> || std::is_same_v<std::decay_t<T>, const char*>) {
             writeField(tiny_strings_->getStringID(val), field_id);
@@ -50,7 +73,7 @@ public:
         // Write struct/class fields that provide exactly one cast-to-POD operator
         else if constexpr (simdb::type_traits::is_pod_convertible_v<T> && !std::is_enum_v<T> &&
                           (!std::is_trivial_v<T> || !std::is_standard_layout_v<T>)) {
-            using converted_t = simdb::type_traits::pod_convertible_t<T>();
+            using converted_t = simdb::type_traits::pod_convertible_t<T>;
             static_assert(std::is_trivial_v<converted_t> && std::is_standard_layout_v<converted_t>);
             auto converted_val = static_cast<converted_t>(val);
             writeField(converted_val, field_id);
