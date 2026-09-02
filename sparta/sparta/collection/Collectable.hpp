@@ -429,7 +429,7 @@ namespace sparta{
             INHERIT_COMMON_INTERFACE
 
             std::string encodeCollectedType(bool human_readable = false) const override final {
-                using converted_t = simdb::type_traits::pod_convertible_t<ValueType>();
+                using converted_t = simdb::type_traits::pod_convertible_t<ValueType>;
                 auto type = simdb::demangle_type<converted_t>();
                 if (human_readable) {
                     type += " (built-in type using cast operator)";
@@ -440,7 +440,7 @@ namespace sparta{
         private:
             void performCollection_(const ValueType & val) override final {
                 constexpr auto dummy_field_id = 0u;
-                using converted_t = simdb::type_traits::pod_convertible_t<ValueType>();
+                using converted_t = simdb::type_traits::pod_convertible_t<ValueType>;
                 auto converted_val = static_cast<converted_t>(val);
                 bit_bucket_->writeField(converted_val, dummy_field_id);
 
