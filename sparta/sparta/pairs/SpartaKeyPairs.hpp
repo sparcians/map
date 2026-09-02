@@ -54,7 +54,18 @@ namespace sparta {
         template<typename Leaf>
         std::string argosLeafDtypeString() {
             using T = MetaStruct::decay_t<Leaf>;
-            if constexpr (std::is_same_v<T, std::string> || std::is_same_v<std::decay_t<T>, const char*>) {
+            if constexpr (sparta::is_vector<T>::value) {
+                using value_type = typename T::value_type;
+                if constexpr (std::is_integral_v<value_type> && !std::is_same_v<value_type, bool>) {
+                    return std::string("list-of-") + simdb::demangle_type<value_type>();
+                } else {
+                    using converted_t = simdb::type_traits::pod_convertible_t<value_type>;
+                    static_assert(simdb::type_traits::is_pod_convertible_v<value_type> &&
+                                  std::is_integral_v<converted_t> && !std::is_same_v<converted_t, bool>,
+                                  "Argos vector collection only supports integer vectors or integer-like values.");
+                    return std::string("list-of-") + simdb::demangle_type<converted_t>();
+                }
+            } else if constexpr (std::is_same_v<T, std::string> || std::is_same_v<std::decay_t<T>, const char*>) {
                 return "string";
             } else if constexpr ((std::is_trivial_v<T> && std::is_standard_layout_v<T>) ||
                                  (std::is_enum_v<T> && utils::has_ostream_operator<T>::value)) {
@@ -63,7 +74,7 @@ namespace sparta {
                 using underlying_t = std::underlying_type_t<T>;
                 return simdb::demangle_type<underlying_t>();
             } else if constexpr (simdb::type_traits::is_pod_convertible_v<T> && (!std::is_trivial_v<T> || !std::is_standard_layout_v<T>)) {
-                using converted_t = simdb::type_traits::pod_convertible_t<T>();
+                using converted_t = simdb::type_traits::pod_convertible_t<T>;
                 return simdb::demangle_type<converted_t>();
             } else {
                 static_assert(utils::has_ostream_operator<T>::value);
