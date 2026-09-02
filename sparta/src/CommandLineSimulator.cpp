@@ -1243,12 +1243,18 @@ bool CommandLineSimulator::parse(int argc,
                 }
                 sim_config_.pipeline_collection_filepath =
                     o.value.empty() ? std::string(argv[0]) + ".db" : o.value.at(0);
-                if(!o.value.empty() &&
-                   std::filesystem::path(sim_config_.pipeline_collection_filepath).extension() != ".db") {
-                    std::cerr << "Pipeline collection output path must use the .db extension: "
-                              << sim_config_.pipeline_collection_filepath << std::endl;
-                    err_code = 1;
-                    return false;
+                if(!o.value.empty()) {
+                    const std::filesystem::path output_path(sim_config_.pipeline_collection_filepath);
+                    if(output_path.extension().empty()) {
+                        sim_config_.pipeline_collection_filepath += ".db";
+                        std::cerr << "Warning: Pipeline collection output path has no extension; using: "
+                                  << sim_config_.pipeline_collection_filepath << std::endl;
+                    } else if(output_path.extension() != ".db") {
+                        std::cerr << "Pipeline collection output path must use the .db extension: "
+                                  << sim_config_.pipeline_collection_filepath << std::endl;
+                        err_code = 1;
+                        return false;
+                    }
                 }
                 sim_config_.simdb_config.enableApp("argos-collector");
                 if(!o.value.empty()) {
