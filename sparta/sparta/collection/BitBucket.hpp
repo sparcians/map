@@ -40,7 +40,7 @@ public:
         else if constexpr (sparta::is_vector<T>::value) {
             using value_type = typename T::value_type;
             sparta_assert(val.size() <= 32u);
-            uint8_t count = static_cast<uint8_t>(val.size());
+            const uint8_t count = static_cast<uint8_t>(val.size());
             writeField_(static_cast<const void*>(&count), sizeof(count), field_id);
             if constexpr (std::is_integral_v<value_type> && !std::is_same_v<value_type, bool>) {
                 for (const auto& elem : val) {
