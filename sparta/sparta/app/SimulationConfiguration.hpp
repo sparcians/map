@@ -466,10 +466,10 @@ public:
     bool suppress_unread_parameter_warnings = false;
 
     /*!
-     * The default pipeline collection prefix for pipeline collection
-     * (-z option).  Empty string means no prefix
+     * The output SimDB filename / path to .db output file (-z option).
+     * Empty string means collection is not enabled.
      */
-    std::string pipeline_collection_file_prefix = NoPipelineCollectionStr;
+    std::string pipeline_collection_filepath = NoPipelineCollectionStr;
 
     /*!
      * Set by CommandLineSimulator. Controls time/space tradeoffs for
