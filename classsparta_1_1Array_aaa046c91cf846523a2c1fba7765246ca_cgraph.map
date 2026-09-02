@@ -1,0 +1,5 @@
+<map id="sparta::Array::enableCollection" name="sparta::Array::enableCollection">
+<area shape="rect" id="Node000001" title="Set up a auto&#45;collector for this Array." alt="" coords="5,5,200,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Array.html#a04bb4a1d42dec14d026afe15c65eef35" title="Return the maximum number of elements this Array can hold." alt="" coords="248,5,395,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="200,16,233,16,233,21,200,21"/>
+</map>

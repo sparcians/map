@@ -1,0 +1,5 @@
+<map id="sparta::Queue::back" name="sparta::Queue::back">
+<area shape="rect" id="Node000001" title="Read and return the last pushed in element(newest element), reference." alt="" coords="5,5,141,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Queue.html#a61d770819cbda5b70db6eff8f35b289b" title="Return the number of valid entries." alt="" coords="189,5,319,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="141,16,173,16,173,21,141,21"/>
+</map>

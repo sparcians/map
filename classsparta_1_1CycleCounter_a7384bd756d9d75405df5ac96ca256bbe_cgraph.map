@@ -1,0 +1,12 @@
+<map id="sparta::CycleCounter::updateCountingMultiplier" name="sparta::CycleCounter::updateCountingMultiplier">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,71,175,111"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1CycleCounter.html#aead538c9b90aff98d4cd89cf1150b647" title="Return whether this counter is counting or not." alt="" coords="244,5,384,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="161,68,228,48,230,53,163,73"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1CycleCounter.html#a553ff94c88dd594a033738d7ee9e1424" title="Start counting, taking into account the specified delay." alt="" coords="223,71,405,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="175,88,207,88,207,94,175,94"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1CycleCounter.html#a4c3847983c218f89627f83c4acc62e83" title="Stop counting and increment internal count, taking into account the specified delay." alt="" coords="244,136,384,177"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="163,109,230,129,228,134,161,114"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Clock.html#a3671607fc743bf3a36be1ce37fcb27b5" title="Return the total elapsed cycles from this Clocks POV." alt="" coords="453,112,639,137"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="406,101,438,106,437,111,405,107"/>
+<area shape="poly" id="edge5_Node000005_Node000004" title=" " alt="" coords="384,144,437,137,438,142,384,149"/>
+</map>

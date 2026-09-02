@@ -1,0 +1,10 @@
+<map id="sparta::collection::IterableCollector::scheduleCloseRecord" name="sparta::collection::IterableCollector::scheduleCloseRecord">
+<area shape="rect" id="Node000001" title="Schedule event to close all records for this iterable type." alt="" coords="5,77,159,133"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ac7d83237fc2aaa41c6b3809a4fb646e1" title="Determine whether or not this node has collection turned on or off." alt="" coords="226,5,374,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,77,210,60,212,65,160,82"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1PhasedPayloadEvent.html#a3f7835dce02b716a08b1c88e23733955" title="Prepare a Scheduleable Payload for scheduling either now or later." alt="" coords="207,85,393,126"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="159,102,191,102,191,108,159,108"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Scheduleable.html#a3bb381d1ef9ccb3c335613c5600d162b" title="Schedule this event with its pre&#45;set delay using the pre&#45;set Clock." alt="" coords="229,174,370,215"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="152,131,235,165,233,170,150,136"/>
+<area shape="poly" id="edge4_Node000004_Node000004" title=" " alt="" coords="259,174,257,164,263,155,278,150,300,148,323,150,337,156,335,161,322,155,300,153,279,155,267,159,262,165,264,173"/>
+</map>

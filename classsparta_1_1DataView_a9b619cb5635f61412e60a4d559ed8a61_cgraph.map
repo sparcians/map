@@ -1,0 +1,11 @@
+<map id="sparta::DataView::DataView" name="sparta::DataView::DataView">
+<area shape="rect" id="Node000001" title="Construct a DataView." alt="" coords="5,63,187,88"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData.html#a8c75d23c3f39c60c51817f99b4541dea" title="All constructed segments must register themselves through this method to be laid out within the ArchD..." alt="" coords="235,55,401,96"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="187,73,219,73,219,78,187,78"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ArchData.html#afde21b4a684f915cb56e8daba53e9d99" title="Checks to see that the size of the data is a valid access size." alt="" coords="449,5,659,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="401,53,448,41,482,33,484,38,450,46,402,58"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ArchDataSegment.html#a8302b256054d796400c6ef8a65b25b43" title="Gets the layout Identifier of this segment." alt="" coords="470,55,639,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="402,73,454,73,454,78,402,78"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ArchDataSegment.html#ae30270498f1a2a6ab9375fcaf7d2df5c" title="Gets the layout size of this segment (number of bytes)" alt="" coords="470,120,639,161"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="394,94,464,113,462,118,393,99"/>
+</map>

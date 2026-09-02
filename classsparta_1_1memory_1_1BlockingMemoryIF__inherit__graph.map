@@ -1,0 +1,15 @@
+<map id="sparta::memory::BlockingMemoryIF" name="sparta::memory::BlockingMemoryIF">
+<area shape="rect" id="Node000001" title="Pure&#45;virtual memory interface which represents a simple, immediately accessible (blocking) address&#45;sp..." alt="" coords="264,103,429,143"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1memory_1_1BlockingMemoryIFNode.html" title="Pure&#45;virtual memory interface that builds on the BlockingMemoryIF, acting as a TreeNode in the SPARTA..." alt="" coords="497,37,662,78"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="435,95,504,76,505,81,437,101"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1memory_1_1CachedMemory.html" title="Memory that can be used as a cache for core models." alt="" coords="477,103,682,143"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="445,120,476,120,476,126,445,126"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1memory_1_1DMIBlockingMemoryIF.html" title="Class that provides a BlockingMemoryIF over a raw pointer." alt="" coords="485,168,674,209"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="437,145,505,165,504,170,435,151"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1DebugMemoryIF.html" title="Memory interface which represents a simple, immediately accessible (blocking) address&#45;space with supp..." alt="" coords="5,110,216,136"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="231,120,263,120,263,126,231,126"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1memory_1_1BlockingMemoryObjectIFNode.html" title="BlockingMemoryIFNode implementation with binding to a MemoryObject instantiated separately and specif..." alt="" coords="748,5,914,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="677,43,748,34,748,39,678,48"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1memory_1_1SimpleMemoryMapNode.html" title="Memory mapping object which implements BlockingMemoryIFNode. Supports a simple mapping of incoming ad..." alt="" coords="730,71,932,111"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="678,68,730,75,730,80,677,73"/>
+</map>

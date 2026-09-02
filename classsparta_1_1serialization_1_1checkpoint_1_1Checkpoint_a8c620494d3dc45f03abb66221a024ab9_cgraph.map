@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::Checkpoint::getPrevID" name="sparta::serialization::checkpoint::Checkpoint::getPrevID">
+<area shape="rect" id="Node000001" title="Get the ID of our previous checkpoint. Returns UNIDENTIFIED_CHECKPOINT only for the head checkpoint." alt="" coords="5,5,167,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1CheckpointBase.html#abcdccb90c47517e8bd4b6f4ec9cc3019" title="Returns the ID of this checkpoint." alt="" coords="215,5,406,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="167,30,199,30,199,36,167,36"/>
+</map>

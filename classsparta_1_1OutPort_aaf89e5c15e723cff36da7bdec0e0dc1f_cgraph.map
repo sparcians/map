@@ -1,0 +1,13 @@
+<map id="sparta::OutPort::registerProducingPort" name="sparta::OutPort::registerProducingPort">
+<area shape="rect" id="Node000001" title="Add an InPort &quot;producer&quot; to this OutPort." alt="" coords="5,96,163,137"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="217,5,412,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="113,94,157,66,210,40,228,33,229,38,212,45,160,70,116,98"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="225,55,404,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="162,97,236,82,237,87,164,103"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1InPort.html#a951319d5979a8c0e4711555fd38853dd" title="Return the internally used Scheduleable for precedence." alt="" coords="211,104,418,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="163,114,195,114,195,120,163,120"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1Port.html#a8d71612c1256b048b9ec52d06fe2ba2f" title="Is this port bound to another port?" alt="" coords="244,153,384,179"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="164,131,237,147,236,152,162,136"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1OutPort.html#a08bfa7d5cc8c5bc6961cd8fda5f72b7f" title=" " alt="" coords="236,203,393,244"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="117,135,161,163,212,189,226,195,224,200,210,194,158,167,114,140"/>
+</map>

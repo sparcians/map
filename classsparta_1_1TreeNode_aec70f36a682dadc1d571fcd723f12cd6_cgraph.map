@@ -1,0 +1,9 @@
+<map id="sparta::TreeNode::getClock" name="sparta::TreeNode::getClock">
+<area shape="rect" id="Node000001" title="Walks up parents (starting with self) until a parent with an associated local clock is found,..." alt="" coords="5,70,183,96"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a883ef289de0f961e1d69a988b50338d8" title="Gets the clock associated directly with this Node. This is useful for configuration and simulator deb..." alt="" coords="234,5,410,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="147,67,223,48,224,53,149,72"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="231,70,413,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="183,80,215,80,215,86,183,86"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="249,120,394,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="149,94,235,116,233,121,147,99"/>
+</map>

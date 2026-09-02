@@ -1,0 +1,7 @@
+<map id="sparta::SysCSpartaSchedulerAdapter::registerSysCFinishQueryEvent" name="sparta::SysCSpartaSchedulerAdapter::registerSysCFinishQueryEvent">
+<area shape="rect" id="Node000001" title="Register a sparta::Event that is used to determine if the SystemC components are finished." alt="" coords="5,39,254,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Scheduler.html#a34dcaf99252d9e9e0511d69d2aa84ff8" title="The current tick the Scheduler is working on or just finished." alt="" coords="309,5,436,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="254,39,293,34,294,39,254,45"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Scheduleable.html#ac00ff0f252b7756345b67d336aa29343" title="Is this Event continuing?" alt="" coords="302,71,443,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="254,73,286,77,286,82,254,78"/>
+</map>

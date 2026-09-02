@@ -1,0 +1,5 @@
+<map id="sparta::Clock::setPeriod" name="sparta::Clock::setPeriod">
+<area shape="rect" id="Node000001" title="Set the period of this clock." alt="" coords="5,13,163,38"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="211,5,356,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="163,23,196,23,196,28,163,28"/>
+</map>

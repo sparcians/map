@@ -1,0 +1,10 @@
+<map id="sparta::RegisterBase::readWithCheck" name="sparta::RegisterBase::readWithCheck">
+<area shape="rect" id="Node000001" title="Read a value from this register, possibly via a user&#45;supplied callback." alt="" coords="5,71,147,111"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1RegisterBase.html#ac5ae196a0da96f0ab0969056f40f9923" title="Gets the size of this register&#39;s value in bytes." alt="" coords="195,5,336,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,68,189,49,191,54,138,73"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1RegisterBase.html#a5f4184140ff8f4d4a6126cbaee367564" title="Returns true if register has a read callback; false otherwise." alt="" coords="195,71,336,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="147,88,179,88,179,94,147,94"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1RegisterBase.html#a2b0c0bb422cc52e108f0806ec74354de" title="Read a value from this register." alt="" coords="195,160,336,201"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="122,110,208,151,206,155,120,114"/>
+<area shape="poly" id="edge4_Node000004_Node000004" title=" " alt="" coords="229,160,227,150,233,141,246,135,265,133,286,136,298,142,296,147,284,141,265,139,247,141,237,145,233,151,234,159"/>
+</map>

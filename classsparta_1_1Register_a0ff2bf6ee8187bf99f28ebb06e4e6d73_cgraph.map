@@ -1,0 +1,13 @@
+<map id="sparta::Register::stringize" name="sparta::Register::stringize">
+<area shape="rect" id="Node000001" title="Create a string representation of this node." alt="" coords="5,96,171,122"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="219,5,413,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="111,93,159,67,218,41,240,33,242,38,220,46,161,72,113,98"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1RegisterBase.html#a001ab5cfc53a070ae37aed9ca8009147" title="Gets the size of this register&#39;s value in bits." alt="" coords="245,55,386,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="171,94,229,85,230,91,172,99"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1RegisterBase.html#a67c4210770235e7f9ba06a0c547abf58" title="Creates a string representing this register&#39;s value as a sequence of bytes, separated by a spaces,..." alt="" coords="239,120,393,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="172,118,224,125,223,131,171,123"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ArchDataSegment.html#ae784215a75535b9d09f942b950b4b102" title="Has this segment been placed yet." alt="" coords="231,186,400,226"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="115,120,220,170,237,177,235,182,218,175,113,125"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1RegisterBase.html#ac5ae196a0da96f0ab0969056f40f9923" title="Gets the size of this register&#39;s value in bytes." alt="" coords="461,120,602,161"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="394,138,446,138,446,144,394,144"/>
+</map>

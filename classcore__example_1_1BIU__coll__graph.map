@@ -1,0 +1,30 @@
+<map id="core_example::BIU" name="core_example::BIU">
+<area shape="rect" id="Node000001" title=" " alt="" coords="1757,108,1887,134"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Unit.html" title="The is the base class for user defined blocks in simulation." alt="" coords="1620,108,1707,134"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1723,118,1756,118,1756,124,1723,124"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Resource.html" title="The is the base class for all types of resources used by the SPARTA framework." alt="" coords="1336,5,1454,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="1470,16,1534,25,1566,34,1597,48,1616,60,1632,76,1656,106,1652,109,1628,80,1613,65,1595,53,1565,40,1533,30,1469,21"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PortSet.html" title="A TreeNode that represents a set of ports used by a Resource." alt="" coords="828,59,935,84"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="951,67,1072,65,1233,68,1414,78,1596,100,1621,105,1620,110,1596,105,1414,83,1233,73,1072,70,951,72"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="423,141,543,167"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="514,130,566,105,635,87,706,76,827,69,827,74,707,82,636,93,568,110,517,135"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1EventSet.html" title="Set of Events that a unit (or sparta::TreeNode, sparta::Resource) contains and are visible through a ..." alt="" coords="1164,111,1281,136"/>
+<area shape="poly" id="edge9_Node000009_Node000005" title=" " alt="" coords="558,143,567,142,737,132,905,126,1164,121,1164,127,905,131,737,138,567,147,559,148"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1StatisticSet.html" title="Set of StatisticDef and CounterBase&#45;derived objects for visiblility through a sparta Tree." alt="" coords="816,168,947,194"/>
+<area shape="poly" id="edge11_Node000010_Node000005" title=" " alt="" coords="559,157,815,174,815,179,558,162"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1NotificationSourceBase.html" title="A TreeNode that generates a single specific type of notification which propagates up a tree of TreeNo..." alt="" coords="592,223,792,248"/>
+<area shape="poly" id="edge15_Node000013_Node000005" title=" " alt="" coords="521,172,568,196,639,220,637,225,566,201,518,177"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="200,108,373,134"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="382,134,423,141,422,147,381,140"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,108,151,134"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="166,118,199,118,199,124,166,124"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="200,157,373,183"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="388,159,422,156,422,162,389,165"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="1296,120,1619,118,1620,124,1296,126"/>
+<area shape="poly" id="edge10_Node000002_Node000010" title=" " alt="" coords="962,176,1110,171,1280,161,1470,143,1619,124,1620,129,1470,148,1281,166,1111,176,963,182"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1log_1_1MessageSource.html" title="Message source object associated with a sparta TreeNode through which messages can be sent." alt="" coords="1305,233,1485,259"/>
+<area shape="poly" id="edge12_Node000002_Node000011" title=" " alt="" coords="1461,260,1494,263,1529,263,1563,257,1595,244,1621,220,1639,190,1651,159,1657,133,1662,135,1656,160,1644,192,1625,223,1597,248,1565,262,1529,268,1494,268,1461,265"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1NotificationSource.html" title=" " alt="" coords="971,220,1140,261"/>
+<area shape="poly" id="edge13_Node000011_Node000012" title=" " alt="" coords="1156,240,1304,242,1304,247,1156,245"/>
+<area shape="poly" id="edge14_Node000012_Node000013" title=" " alt="" coords="807,235,971,237,970,242,807,240"/>
+</map>

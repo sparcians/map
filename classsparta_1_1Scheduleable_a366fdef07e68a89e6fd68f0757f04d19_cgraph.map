@@ -1,0 +1,7 @@
+<map id="sparta::Scheduleable::cancel" name="sparta::Scheduleable::cancel">
+<area shape="rect" id="Node000001" title="Cancel this Scheduleable at the given time, if placed on the Scheduler." alt="" coords="5,35,147,75"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Scheduler.html#a1c3856191e10dd48f4bf0f0decd2883b" title="Cancel the given Scheduleable if on the Scheduler." alt="" coords="204,5,331,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="147,42,188,35,189,40,147,47"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Clock.html#ab621af2dc3047de88e78eb0a0a0010d5" title="Return the tick corresponding to the given cycle." alt="" coords="195,70,340,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="147,63,179,67,179,73,147,68"/>
+</map>

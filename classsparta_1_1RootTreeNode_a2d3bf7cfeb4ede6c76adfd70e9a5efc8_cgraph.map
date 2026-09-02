@@ -1,0 +1,5 @@
+<map id="sparta::RootTreeNode::~RootTreeNode" name="sparta::RootTreeNode::~RootTreeNode">
+<area shape="rect" id="Node000001" title="Destructor." alt="" coords="5,5,153,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#af52ced91b3e4228df74f70678e0e9f7e" title="Protected Wrapper for getParent()&#45;&gt;removeChildForTeardown_ which allows subclases of TreeNode to indi..." alt="" coords="201,5,373,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="153,23,185,23,185,28,153,28"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="sparta::StatisticSet::createCounter" name="sparta::StatisticSet::createCounter">
+<area shape="rect" id="Node000001" title="Allocates a Counter which is owned by this StatisticSet and deleted at its destruction." alt="" coords="5,27,137,68"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="185,5,379,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="137,36,170,31,170,36,137,41"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="209,55,354,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="137,54,194,61,193,66,137,59"/>
+</map>

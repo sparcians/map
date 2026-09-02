@@ -1,0 +1,9 @@
+<map id="sparta::TreeNode::getAs" name="sparta::TreeNode::getAs">
+<area shape="rect" id="Node000001" title="Retrieves this node after casting to type const T." alt="" coords="5,31,166,56"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a164eb7014e7e50a5b4921c139f712056" title="Retrieves this node after casting to type T." alt="" coords="214,31,374,56"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="166,41,198,41,198,46,166,46"/>
+<area shape="rect" id="Node000003" href="$namespacesparta.html#ac0a2df7a7ca53b2fc0384476286b95ec" title="Demangles a C++ symbol." alt="" coords="460,5,579,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="374,32,444,24,444,29,375,37"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="422,55,616,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="375,49,406,53,406,58,374,55"/>
+</map>

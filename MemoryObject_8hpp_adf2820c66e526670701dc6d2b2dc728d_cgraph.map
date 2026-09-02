@@ -1,0 +1,16 @@
+<map id="operator&lt;&lt;" name="operator&lt;&lt;">
+<area shape="rect" id="Node000001" title="MemoryObject stream operator." alt="" coords="5,78,90,104"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1MemoryObject.html#ae28194bd86edceb1e0e18e6c86a8ff0d" title="Render description of this MemoryObject as a string." alt="" coords="138,71,337,111"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="90,88,122,88,122,94,90,94"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ArchData.html#a22b639275516468921dac9048a0d8b12" title="Gets the number of lines with allocated data;." alt="" coords="400,5,569,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="316,67,389,48,391,53,318,73"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1memory_1_1MemoryObject.html#af86c4cce457c759c77d8bdba93f9aaa6" title="Returns the number of blocks in this memory object." alt="" coords="385,71,584,111"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="337,88,370,88,370,94,337,94"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ArchData.html#af4a09dc555ca4675c18e474bb5598077" title="Gets the current size of the layout for this ArchData." alt="" coords="632,136,799,161"/>
+<area shape="poly" id="edge7_Node000002_Node000007" title=" " alt="" coords="325,109,385,120,506,134,617,142,617,147,505,139,385,126,324,115"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TieredMap.html#abfe91975749b2122c8b12f6ba8d08d47" title="Number of elements allocated in this map." alt="" coords="639,13,792,38"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="570,23,623,23,623,28,570,28"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="632,71,799,111"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="585,88,616,88,616,94,585,94"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="570,109,647,129,645,134,568,114"/>
+</map>

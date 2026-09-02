@@ -1,0 +1,7 @@
+<map id="sparta::statistics::ReportStatisticsAggregator" name="sparta::statistics::ReportStatisticsAggregator">
+<area shape="rect" id="Node000001" title="This class is a source of statistics values used by SPARTA simulators. It takes a sparta::Report obje..." alt="" coords="5,183,189,223"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1statistics_1_1ArchiveSource.html" title="Generic statistic source base class for report archives." alt="" coords="39,94,155,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="100,150,100,182,94,182,94,150"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1statistics_1_1ArchiveStream.html" title="Generic statistic stream base class for sources and sinks in the report archive system." alt="" coords="39,5,155,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="100,62,100,94,94,94,94,62"/>
+</map>

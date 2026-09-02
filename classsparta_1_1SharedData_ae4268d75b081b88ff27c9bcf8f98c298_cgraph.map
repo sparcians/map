@@ -1,0 +1,5 @@
+<map id="sparta::SharedData::readNS" name="sparta::SharedData::readNS">
+<area shape="rect" id="Node000001" title="Get a constant reference to the data that will be visible next cycle." alt="" coords="5,5,137,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1SharedData.html#a7ab983a6e6b8838137749ffae452399f" title="Is there data for the next cycle?" alt="" coords="185,5,316,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="137,23,169,23,169,28,137,28"/>
+</map>

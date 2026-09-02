@@ -1,0 +1,32 @@
+<map id="sparta::SyncOutPort::bind" name="sparta::SyncOutPort::bind">
+<area shape="rect" id="Node000001" title="Bind to an SyncInPort." alt="" coords="5,170,143,210"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1OutPort.html#a25b7c703a072502b11376aac416eaa2e" title="Bind to an InPort." alt="" coords="191,203,329,228"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,197,176,201,175,207,143,202"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="382,5,576,31"/>
+<area shape="poly" id="edge15_Node000001_Node000010" title=" " alt="" coords="110,167,226,105,300,70,376,40,397,33,398,38,378,45,302,75,229,110,113,172"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1InPort.html#a4aa69ee3a7e62514552665661ca5b603" title="Called by the OutPort, remember the binding." alt="" coords="412,55,547,80"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="267,201,309,146,340,115,376,89,396,80,398,85,378,94,343,119,313,150,272,204"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#aec70f36a682dadc1d571fcd723f12cd6" title="Walks up parents (starting with self) until a parent with an associated local clock is found,..." alt="" coords="390,104,568,130"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="276,200,320,169,376,138,393,132,395,137,378,143,323,174,279,204"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1Port.html#afb0fd7ccb38114dd5aaaf4dc69f03e39" title="The direction of the port." alt="" coords="398,153,560,179"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="320,199,403,180,405,186,321,205"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1Clock.html#a9a92feceb7447a3c277a347331b9af8c" title="Get the clock frequency." alt="" coords="377,203,581,228"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="329,213,361,213,361,218,329,218"/>
+<area shape="poly" id="edge9_Node000002_Node000010" title=" " alt="" coords="267,201,328,108,375,40,382,36,385,40,379,44,332,111,272,204"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="390,252,569,278"/>
+<area shape="poly" id="edge10_Node000002_Node000011" title=" " alt="" coords="321,226,405,245,403,251,320,232"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1Port.html#a668f2ae037c8d17f23cbfb59a5ab4b99" title="Get this Port&#39;s static delay." alt="" coords="396,301,563,327"/>
+<area shape="poly" id="edge11_Node000002_Node000012" title=" " alt="" coords="279,227,323,257,378,288,395,294,393,299,376,293,320,262,276,231"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1Port.html#a3827bc2d2b14dbf48d6c0e995c0a3dfe" title="See if the given port is already bound." alt="" coords="388,351,571,376"/>
+<area shape="poly" id="edge12_Node000002_Node000013" title=" " alt="" coords="272,227,313,281,343,312,378,337,388,342,385,347,376,342,340,316,309,285,267,230"/>
+<area shape="rect" id="Node000014" href="$classsparta_1_1Port.html#afe9b3f3282b3c545c7137cde62cc40dc" title=" " alt="" coords="393,400,565,426"/>
+<area shape="poly" id="edge13_Node000002_Node000014" title=" " alt="" coords="269,228,283,261,306,304,338,349,379,387,385,391,382,395,375,391,334,352,301,307,278,263,264,230"/>
+<area shape="rect" id="Node000015" href="$classsparta_1_1InPort.html#a32288dcb9ca7bc1aac322242ff219704" title=" " alt="" coords="392,450,566,490"/>
+<area shape="poly" id="edge14_Node000002_Node000015" title=" " alt="" coords="267,228,279,269,300,325,333,385,354,412,379,436,383,439,379,443,375,440,350,416,329,387,296,327,274,270,262,230"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html#a883ef289de0f961e1d69a988b50338d8" title="Gets the clock associated directly with this Node. This is useful for configuration and simulator deb..." alt="" coords="632,39,809,80"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="536,101,581,90,617,81,618,87,582,95,538,106"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="629,104,812,130"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="568,114,614,114,614,120,568,120"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="648,154,793,194"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="538,128,582,138,633,151,632,156,581,143,536,133"/>
+</map>

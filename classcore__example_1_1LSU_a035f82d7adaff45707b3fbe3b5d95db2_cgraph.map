@@ -1,0 +1,30 @@
+<map id="core_example::LSU::LSU" name="core_example::LSU::LSU">
+<area shape="rect" id="Node000001" title="Constructor for LSU." alt="" coords="5,223,173,248"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Buffer.html#ace76a7b21e07822cfca79fd53b39dbde" title="Request that this queue begin collecting its contents for pipeline collection." alt="" coords="221,5,419,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,221,109,185,135,136,172,85,194,62,219,41,228,36,231,40,222,46,198,65,176,88,140,139,114,188,98,223"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Pipeline.html#a704074f44f2ae9bbca2df410a5197ca2" title="Enable pipeline collection." alt="" coords="243,79,396,120"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="102,220,151,176,184,151,219,129,230,124,232,129,222,134,187,156,154,180,105,224"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Resource.html#a2be37d3a368b3db6396c83675b37b2aa" title="Gets the TreeNode (container) for this resource (if any)" alt="" coords="221,144,418,170"/>
+<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="118,220,220,178,242,172,244,177,222,183,120,224"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html#aadc69fe186075177c6559e84188982e9" title="Gets the group index of this node." alt="" coords="222,193,418,219"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="172,222,206,218,206,223,173,228"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1NotificationSourceBase.html#a8bd1a11753aa860f953f65f25cf22198" title="Is this NotificationSourceBase being observed at this node or an ancestor of any distance." alt="" coords="235,243,404,284"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="173,243,220,249,219,254,172,248"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1Pipeline.html#a672c64dfbccd9cb344aff2370c63eade" title="Ask pipeline to perform its own update." alt="" coords="240,308,400,349"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="119,247,222,293,241,300,239,305,220,298,116,251"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1InPort.html#a0c3a7eb0dc8bad5657bb5f7905fb8d78" title="Register a handler to this Port (must be Direction::IN) to handle data arrival." alt="" coords="246,374,394,414"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="103,247,151,301,185,332,222,359,233,365,231,369,219,363,181,336,147,304,99,251"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1Pipeline.html#a0c9f097a45c06dec19ff946fb999566e" title="Register event handler for a designated pipeline stage." alt="" coords="241,459,399,500"/>
+<area shape="poly" id="edge12_Node000001_Node000012" title=" " alt="" coords="99,247,144,328,180,378,222,424,258,449,255,454,219,428,176,382,140,331,94,250"/>
+<area shape="poly" id="edge3_Node000003_Node000003" title=" " alt="" coords="276,79,274,69,281,60,297,55,320,53,345,55,360,61,358,66,343,60,320,58,298,60,284,64,279,70,282,78"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1UniqueEvent.html#a3bb381d1ef9ccb3c335613c5600d162b" title="Schedule this event with its pre&#45;set delay using the pre&#45;set Clock." alt="" coords="488,287,625,328"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="400,319,472,312,473,318,400,324"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="467,352,646,378"/>
+<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="394,382,451,375,452,380,394,388"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1InPort.html#a699777326e92148af9c82758bd70f462" title="Let derived classes look over the registered consumer handler." alt="" coords="483,402,630,442"/>
+<area shape="poly" id="edge11_Node000009_Node000011" title=" " alt="" coords="394,400,468,409,467,414,394,406"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1Clock.html#aa2d29cba2726bcc43077de19218307ff" title=" " alt="" coords="468,467,646,492"/>
+<area shape="poly" id="edge13_Node000012_Node000013" title=" " alt="" coords="399,477,452,477,452,482,399,482"/>
+<area shape="rect" id="Node000014" href="$classsparta_1_1Pipeline.html#aca25172a94332e6f29f0c61412f95fc3" title="Indicate the pipeline size." alt="" coords="488,516,626,542"/>
+<area shape="poly" id="edge14_Node000012_Node000014" title=" " alt="" coords="400,493,477,510,476,515,399,499"/>
+</map>

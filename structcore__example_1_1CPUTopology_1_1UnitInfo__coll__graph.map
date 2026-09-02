@@ -1,0 +1,5 @@
+<map id="core_example::CPUTopology::UnitInfo" name="core_example::CPUTopology::UnitInfo">
+<area shape="rect" id="Node000001" title="Structure to represent a resource unit in device tree." alt="" coords="7,94,195,135"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ResourceFactoryBase.html" title="Factory which can create Resources as well as the Parameter sets that can be modified before actually..." alt="" coords="5,5,197,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,46,104,93,98,93,98,46"/>
+</map>

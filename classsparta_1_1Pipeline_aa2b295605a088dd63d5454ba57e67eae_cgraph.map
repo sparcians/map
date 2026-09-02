@@ -1,0 +1,5 @@
+<map id="sparta::Pipeline::isStalledOrStallingAtStage" name="sparta::Pipeline::isStalledOrStallingAtStage">
+<area shape="rect" id="Node000001" title="Check if the designated pipeline stage will be stalled the very next cycle." alt="" coords="5,5,171,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Pipeline.html#ae08f5f438f2e89a12bc75a23a3af5b74" title="Check if the pipeline will be stalled the very next cycle." alt="" coords="219,5,384,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="171,23,203,23,203,28,171,28"/>
+</map>

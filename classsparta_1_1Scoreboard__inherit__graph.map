@@ -1,0 +1,7 @@
+<map id="sparta::Scoreboard" name="sparta::Scoreboard">
+<area shape="rect" id="Node000001" title="Class used to track operand dependencies (timed) between units." alt="" coords="5,153,135,178"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Unit.html" title="The is the base class for user defined blocks in simulation." alt="" coords="26,79,114,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="73,120,73,152,67,152,67,120"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Resource.html" title="The is the base class for all types of resources used by the SPARTA framework." alt="" coords="11,5,129,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="73,46,73,79,67,79,67,46"/>
+</map>

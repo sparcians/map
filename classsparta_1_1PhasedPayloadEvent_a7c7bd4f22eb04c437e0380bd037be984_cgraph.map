@@ -1,0 +1,7 @@
+<map id="sparta::PhasedPayloadEvent::setContinuing" name="sparta::PhasedPayloadEvent::setContinuing">
+<area shape="rect" id="Node000001" title="This event, if continuing == true, will keep the simulation running." alt="" coords="5,39,192,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1PhasedPayloadEvent.html#ae4b329988917863c31f03a3764323a01" title="Get the scheduleable associated with this event node." alt="" coords="240,5,426,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="192,43,224,38,225,44,192,48"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Scheduleable.html#a017c86b15dc4298f385820e2169779e1" title="This event, if continuing == true, will keep the simulation running." alt="" coords="262,71,404,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="192,69,247,77,247,82,192,74"/>
+</map>

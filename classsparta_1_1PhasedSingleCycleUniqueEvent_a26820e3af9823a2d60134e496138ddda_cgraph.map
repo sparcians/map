@@ -1,0 +1,17 @@
+<map id="sparta::PhasedSingleCycleUniqueEvent::PhasedSingleCycleUniqueEvent" name="sparta::PhasedSingleCycleUniqueEvent::PhasedSingleCycleUniqueEvent">
+<area shape="rect" id="Node000001" title="Create a PhasedSingleCycleUniqueEvent." alt="" coords="5,112,219,168"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#aec70f36a682dadc1d571fcd723f12cd6" title="Walks up parents (starting with self) until a parent with an associated local clock is found,..." alt="" coords="267,70,444,96"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="219,113,282,97,283,103,220,118"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1Scheduleable.html#ab2e055a1d7931c478f87d1f03c51bd01" title="Set a new label for this Scheduleable – used in debugging." alt="" coords="285,120,426,161"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="219,138,269,138,269,143,219,143"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1Scheduleable.html#abb13cd12df45ef6b55d3e0146e9399dd" title="Set the clock and scheduler of this Scheduleable." alt="" coords="277,185,434,226"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="219,166,263,178,262,183,217,171"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a883ef289de0f961e1d69a988b50338d8" title="Gets the clock associated directly with this Node. This is useful for configuration and simulator deb..." alt="" coords="495,5,671,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="409,67,484,48,485,53,410,72"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="492,70,674,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="444,80,476,80,476,86,444,86"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="510,120,656,161"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="410,94,496,116,495,121,409,99"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1Clock.html#aa2d29cba2726bcc43077de19218307ff" title=" " alt="" coords="494,193,672,218"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="434,203,478,203,478,208,434,208"/>
+</map>

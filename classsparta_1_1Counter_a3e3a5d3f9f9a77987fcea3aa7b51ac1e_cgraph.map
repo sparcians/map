@@ -1,0 +1,9 @@
+<map id="sparta::Counter::operator=" name="sparta::Counter::operator=">
+<area shape="rect" id="Node000001" title="Sets a new value." alt="" coords="5,42,175,68"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Counter.html#a79e138c4e54f9793cb3f671022535f1b" title="Sets a new value." alt="" coords="223,42,355,68"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="175,52,207,52,207,58,175,58"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1CounterBase.html#afd1b340fd4b02a83486d5d7c171d4b1d" title="Gets the behavior for this counter specified at construction." alt="" coords="431,5,569,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="355,43,415,35,416,40,356,48"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="403,70,597,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="356,61,388,65,387,71,355,66"/>
+</map>

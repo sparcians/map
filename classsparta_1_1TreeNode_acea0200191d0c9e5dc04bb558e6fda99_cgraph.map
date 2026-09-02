@@ -1,0 +1,5 @@
+<map id="sparta::TreeNode::getChildrenOfType" name="sparta::TreeNode::getChildrenOfType">
+<area shape="rect" id="Node000001" title="return all the children matching a particular type using dynamic cast." alt="" coords="5,5,197,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a63eb06c6b97cc1d58dde858e4d761550" title="Gets a vector of all children of this node in any group in the order in which they were added to this..." alt="" coords="245,13,436,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,23,229,23,229,28,197,28"/>
+</map>

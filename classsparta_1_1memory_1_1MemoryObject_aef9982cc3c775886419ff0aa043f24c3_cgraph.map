@@ -1,0 +1,5 @@
+<map id="sparta::memory::MemoryObject::getFill" name="sparta::memory::MemoryObject::getFill">
+<area shape="rect" id="Node000001" title="Get the fill pattern. Fewer than 8 bytes may be used. See getFillPatternSize." alt="" coords="5,5,205,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData.html#a212c297cb552081412bd8d2ae2664f37" title="Gets the value used to initialize unwritten memory." alt="" coords="253,13,425,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="205,23,237,23,237,28,205,28"/>
+</map>

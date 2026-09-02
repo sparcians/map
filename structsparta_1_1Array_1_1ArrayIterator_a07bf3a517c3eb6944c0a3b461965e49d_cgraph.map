@@ -1,0 +1,26 @@
+<map id="sparta::Array::ArrayIterator::operator++" name="sparta::Array::ArrayIterator::operator++">
+<area shape="rect" id="Node000001" title="post&#45;increment operator." alt="" coords="5,161,176,202"/>
+<area shape="rect" id="Node000002" href="$structsparta_1_1Array_1_1ArrayIterator.html#a0b25a12dcd5d1b83d93b82463bd0a816" title="pre&#45;increment operator." alt="" coords="224,161,394,202"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="176,179,208,179,208,184,176,184"/>
+<area shape="poly" id="edge12_Node000002_Node000002" title=" " alt="" coords="268,161,266,151,272,142,287,137,309,135,332,137,347,143,344,148,331,142,309,140,288,142,275,147,271,153,273,160"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Array.html#a1b1ec52fc43356ee602b064087efa012" title="STL&#45;like begin operation, starts at the oldest valid index." alt="" coords="464,41,602,66"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="329,159,377,117,408,94,441,75,453,70,455,75,443,80,411,99,381,121,332,163"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1Array.html#a907a7790d84849692fd3b90bf4f41a59" title="STL&#45;like begin operation, starts at index 0 (ignores valid bit)." alt="" coords="468,90,598,116"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="355,158,441,124,462,118,463,123,443,130,357,163"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1Array.html#a04bb4a1d42dec14d026afe15c65eef35" title="Return the maximum number of elements this Array can hold." alt="" coords="460,140,607,165"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="394,168,444,161,444,167,395,173"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1Array.html#a2b458c2ca7766f2f6414241bcf4505fe" title="Sets the input argument to the index containing the location of the next oldest item after input argu..." alt="" coords="442,189,624,230"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="395,190,427,194,426,199,394,195"/>
+<area shape="rect" id="Node000010" href="$structsparta_1_1Array_1_1ArrayIterator.html#a559cd56f34e40b70c7fc55e98b4dc53f" title="Determine whether this array entry pointed to by this iterator is valid." alt="" coords="448,255,618,295"/>
+<area shape="poly" id="edge9_Node000002_Node000010" title=" " alt="" coords="355,200,443,239,461,246,459,251,441,244,353,205"/>
+<area shape="rect" id="Node000011" href="$namespacesparta.html#a57bc9340188818892abcbd141b40fa50" title="Ensures that a pointer is not null." alt="" coords="481,320,585,345"/>
+<area shape="poly" id="edge10_Node000002_Node000011" title=" " alt="" coords="328,200,376,253,408,281,443,305,468,316,465,320,441,309,405,285,373,257,324,204"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Array.html#a6ef7ce44f6458ea2061d9776678178dc" title="Return the oldest index in the array." alt="" coords="672,5,828,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="602,42,656,35,657,40,603,47"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1Array.html#ad58ce73335e9712a099f78571664fb22" title="The number of valid entries contained." alt="" coords="673,70,827,96"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="603,60,658,68,658,73,602,66"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1Array.html#a6b47047a46bca0f7375c680465fd2192" title="Determine whether an index is currently valid." alt="" coords="876,13,1014,38"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="828,23,860,23,860,28,828,28"/>
+<area shape="rect" id="Node000012" href="$namespacesparta.html#ac0a2df7a7ca53b2fc0384476286b95ec" title="Demangles a C++ symbol." alt="" coords="690,320,810,345"/>
+<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="586,330,675,330,675,335,586,335"/>
+</map>

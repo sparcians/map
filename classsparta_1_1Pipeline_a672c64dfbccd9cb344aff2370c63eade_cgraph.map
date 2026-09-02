@@ -1,0 +1,5 @@
+<map id="sparta::Pipeline::performOwnUpdates" name="sparta::Pipeline::performOwnUpdates">
+<area shape="rect" id="Node000001" title="Ask pipeline to perform its own update." alt="" coords="5,5,165,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1UniqueEvent.html#a3bb381d1ef9ccb3c335613c5600d162b" title="Schedule this event with its pre&#45;set delay using the pre&#45;set Clock." alt="" coords="213,5,350,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="165,23,197,23,197,28,165,28"/>
+</map>

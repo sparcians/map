@@ -1,0 +1,11 @@
+<map id="sparta::app::SimulationConfiguration::SimDBConfig::enableApp" name="sparta::app::SimulationConfiguration::SimDBConfig::enableApp">
+<area shape="rect" id="Node000001" title="Tell the simulation to enable the given app. Unless otherwise specified, the database will be the exe..." alt="" coords="5,24,232,65"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1app_1_1SimulationConfiguration_1_1SimDBConfig.html#ab864b79d7a84f20555e8ee4514c4e0c9" title="Check if the given app is enabled." alt="" coords="554,24,780,65"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="208,21,279,10,393,3,506,10,563,18,562,24,506,15,393,8,280,15,209,26"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1app_1_1SimulationConfiguration_1_1SimDBConfig.html#a2650df7988cba77a2e8636f9fd0438f8" title="Set the number of instances that should be available for the given app." alt="" coords="280,24,506,65"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="232,42,264,42,264,47,232,47"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1app_1_1SimulationConfiguration_1_1SimDBConfig.html#a18c855deb68b45e6fd0892f647b8613a" title="Direct the given app to go to the provided database file." alt="" coords="280,90,506,130"/>
+<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="208,63,290,83,289,88,206,68"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="507,42,538,42,538,47,507,47"/>
+<area shape="poly" id="edge5_Node000004_Node000002" title=" " alt="" coords="481,87,563,67,565,72,482,92"/>
+</map>

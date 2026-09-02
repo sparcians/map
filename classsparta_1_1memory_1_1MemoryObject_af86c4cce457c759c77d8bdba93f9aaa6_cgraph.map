@@ -1,0 +1,7 @@
+<map id="sparta::memory::MemoryObject::getNumBlocks" name="sparta::memory::MemoryObject::getNumBlocks">
+<area shape="rect" id="Node000001" title="Returns the number of blocks in this memory object." alt="" coords="5,35,205,75"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="253,5,419,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="205,40,236,36,237,41,205,45"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ArchData.html#af4a09dc555ca4675c18e474bb5598077" title="Gets the current size of the layout for this ArchData." alt="" coords="253,70,419,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="205,64,237,68,236,74,205,70"/>
+</map>

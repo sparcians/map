@@ -1,0 +1,5 @@
+<map id="sparta::DataView" name="sparta::DataView">
+<area shape="rect" id="Node000001" title="View into a backend block of memory in an ArchData." alt="" coords="30,79,150,105"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchDataSegment.html" title=" " alt="" coords="5,5,175,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,46,93,79,87,79,87,46"/>
+</map>

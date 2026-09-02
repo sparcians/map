@@ -1,0 +1,28 @@
+<map id="sparta::Unit" name="sparta::Unit">
+<area shape="rect" id="Node000001" title="The is the base class for user defined blocks in simulation." alt="" coords="1611,119,1698,144"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Resource.html" title="The is the base class for all types of resources used by the SPARTA framework." alt="" coords="1327,5,1445,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1461,16,1525,25,1558,35,1588,49,1608,64,1625,82,1649,117,1644,120,1621,86,1605,68,1586,54,1556,40,1524,30,1460,21"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1PortSet.html" title="A TreeNode that represents a set of ports used by a Resource." alt="" coords="1164,60,1272,86"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="1287,74,1426,87,1587,110,1611,116,1610,121,1587,115,1426,92,1287,79"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="423,144,543,170"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="536,136,592,122,754,98,916,83,1058,74,1164,71,1164,76,1059,80,916,88,755,103,593,127,537,142"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1EventSet.html" title="Set of Events that a unit (or sparta::TreeNode, sparta::Resource) contains and are visible through a ..." alt="" coords="823,119,940,144"/>
+<area shape="poly" id="edge8_Node000008_Node000004" title=" " alt="" coords="558,149,823,132,823,138,559,155"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1StatisticSet.html" title="Set of StatisticDef and CounterBase&#45;derived objects for visiblility through a sparta Tree." alt="" coords="816,169,947,195"/>
+<area shape="poly" id="edge10_Node000009_Node000004" title=" " alt="" coords="559,159,815,175,815,181,558,164"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1NotificationSourceBase.html" title="A TreeNode that generates a single specific type of notification which propagates up a tree of TreeNo..." alt="" coords="592,223,792,248"/>
+<area shape="poly" id="edge14_Node000012_Node000004" title=" " alt="" coords="520,175,568,198,634,220,632,225,566,203,518,180"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="200,111,373,136"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="382,137,423,144,422,149,381,142"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,111,151,136"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="166,121,199,121,199,126,166,126"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="200,160,373,186"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="388,162,422,159,422,164,389,167"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="955,129,1610,129,1610,134,955,134"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="962,175,1587,134,1610,132,1611,138,1587,139,963,180"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1log_1_1MessageSource.html" title="Message source object associated with a sparta TreeNode through which messages can be sent." alt="" coords="1296,233,1476,259"/>
+<area shape="poly" id="edge11_Node000001_Node000010" title=" " alt="" coords="1455,260,1487,263,1521,262,1555,256,1586,244,1610,222,1628,195,1648,144,1653,146,1633,198,1614,226,1588,248,1556,261,1522,267,1487,268,1455,265"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1NotificationSource.html" title=" " alt="" coords="971,220,1140,261"/>
+<area shape="poly" id="edge12_Node000010_Node000011" title=" " alt="" coords="1156,240,1295,242,1295,247,1156,245"/>
+<area shape="poly" id="edge13_Node000011_Node000012" title=" " alt="" coords="807,235,971,237,970,242,807,240"/>
+</map>

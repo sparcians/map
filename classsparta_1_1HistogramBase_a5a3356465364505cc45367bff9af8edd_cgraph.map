@@ -1,0 +1,9 @@
+<map id="sparta::HistogramBase::initializeStats_" name="sparta::HistogramBase::initializeStats_">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,27,159,68"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1StatisticSet.html#a5030504954b19726883e6d19b8e8e25a" title="Allocates a Counter which is owned by this StatisticSet and deleted at its destruction." alt="" coords="207,27,338,68"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="159,45,191,45,191,50,159,50"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="386,5,580,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="338,36,371,31,372,36,339,41"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="410,55,556,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="339,54,395,61,395,66,338,59"/>
+</map>

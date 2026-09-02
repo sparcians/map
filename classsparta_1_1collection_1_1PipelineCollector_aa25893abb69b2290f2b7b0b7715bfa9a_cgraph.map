@@ -1,0 +1,11 @@
+<map id="sparta::collection::PipelineCollector::addToAutoCollection" name="sparta::collection::PipelineCollector::addToAutoCollection">
+<area shape="rect" id="Node000001" title="Add the CollectableTreeNode to auto collection." alt="" coords="5,55,153,111"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#aec70f36a682dadc1d571fcd723f12cd6" title="Walks up parents (starting with self) until a parent with an associated local clock is found,..." alt="" coords="201,70,378,96"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="153,80,185,80,185,86,153,86"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a883ef289de0f961e1d69a988b50338d8" title="Gets the clock associated directly with this Node. This is useful for configuration and simulator deb..." alt="" coords="429,5,605,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="343,67,418,48,419,53,344,72"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="426,70,608,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="378,80,410,80,410,86,378,86"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="444,120,590,161"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="344,94,430,116,429,121,343,99"/>
+</map>

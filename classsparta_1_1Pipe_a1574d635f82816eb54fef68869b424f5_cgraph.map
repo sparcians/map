@@ -1,0 +1,7 @@
+<map id="sparta::Pipe::isAnyValid" name="sparta::Pipe::isAnyValid">
+<area shape="rect" id="Node000001" title="Are any entries valid, including ones appended THIS cycle." alt="" coords="5,13,162,38"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Pipe.html#adcbb9aba032c20162821448cabeddc4a" title="See if there is something at the given stage." alt="" coords="210,13,344,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,23,194,23,194,28,162,28"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1utils_1_1ValidValue.html#ae3676d510018298bdc57028aca4efaff" title="Is this value valid." alt="" coords="392,5,547,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="344,23,376,23,376,28,344,28"/>
+</map>

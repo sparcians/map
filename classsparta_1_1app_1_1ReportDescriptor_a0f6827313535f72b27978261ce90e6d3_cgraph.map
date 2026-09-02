@@ -1,0 +1,7 @@
+<map id="sparta::app::ReportDescriptor::getAllInstantiations" name="sparta::app::ReportDescriptor::getAllInstantiations">
+<area shape="rect" id="Node000001" title="Returns all report instantiations, including those already instantiated (no report start trigger) and..." alt="" coords="5,39,193,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1app_1_1ReportDescriptor.html#a93dd9633fbac766a2fcc028a7973eb27" title="Returns the vector of instantiated reports based on this descriptor." alt="" coords="241,5,428,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,43,225,38,226,44,194,48"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1app_1_1ReportDescriptor.html#a5ca68ee6ee40e9c44ff07e00cb35ecbd" title="Returns a vector of reports that have not been instantiated yet, but will be when this report descrip..." alt="" coords="241,71,428,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="194,69,226,74,225,79,193,74"/>
+</map>

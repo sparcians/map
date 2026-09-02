@@ -1,0 +1,7 @@
+<map id="sparta::Buffer::numFree" name="sparta::Buffer::numFree">
+<area shape="rect" id="Node000001" title="Return the number of free entries." alt="" coords="5,31,160,56"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Buffer.html#abfb1899d768f143c8df9e24a5a44f287" title="Return the fixed size of this buffer." alt="" coords="208,5,359,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="160,31,192,27,192,32,160,36"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Buffer.html#a58e8b8181aae8c9427385d0d1015a579" title="Return the number of valid entries." alt="" coords="220,55,346,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="160,50,205,56,205,61,160,55"/>
+</map>

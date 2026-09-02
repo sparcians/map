@@ -1,0 +1,22 @@
+<map id="sparta::Parameter::operator=" name="sparta::Parameter::operator=">
+<area shape="rect" id="Node000001" title="Assigns the specified value to this parameter." alt="" coords="5,150,135,190"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="408,5,602,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,148,119,93,148,64,181,41,233,21,287,10,341,5,392,4,392,9,342,10,288,15,234,26,184,46,151,68,123,96,85,151"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ParameterBase.html#a6fa5c793d436deda683384bc989615ef" title="Increments the number of writes that will be reported by getWriteCount." alt="" coords="194,55,349,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="105,147,182,106,197,100,199,105,184,111,108,152"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ParameterBase.html#ac3e3f0af10beb201fd8e49f770c6ea73" title="Invoke any register callbacks for this parameter. These callbacks are used by Parameters to make modi..." alt="" coords="195,120,348,161"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="135,158,179,152,180,157,136,163"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1TreeNode.html#ad3780c614eaa9c18ba2a162c32c2fa24" title="Is this TreeNode supposed to be hidden during tree printouts This value does not have to be respected..." alt="" coords="183,185,360,211"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="136,177,168,181,167,186,135,182"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1ParameterBase.html#ab639ac53e587869d2d7981a1b89e8285" title="Log the most recently assigned value given to this parameter to the global parameters logger for debu..." alt="" coords="195,235,348,276"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="114,189,184,221,197,227,195,232,182,226,112,194"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1ParameterBase.html#ac0b7033f61214146640a83e64fb1f9b1" title="Ask the simulator if we are using a final config." alt="" coords="195,300,348,341"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="88,189,129,237,155,263,184,285,193,291,191,295,181,290,152,267,125,241,84,193"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="349,54,434,33,435,38,350,59"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedObject.html#ade690bdb9df72fd6bad8847fbdf226f1" title="Gets the trees current phase." alt="" coords="432,55,578,96"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="350,73,417,73,417,78,350,78"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ParameterBase.html#a2d42e4b8c58c2970f4f1e28e76448b12" title="Is this a volatile parmaeter?" alt="" coords="428,120,582,161"/>
+<area shape="poly" id="edge5_Node000003_Node000005" title=" " alt="" coords="347,94,416,113,414,118,346,99"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ParameterBase.html#a03addcff7db396f643149458febf51e4" title="Resets the number of reads that wil be reported by getReadCount." alt="" coords="428,186,582,226"/>
+<area shape="poly" id="edge6_Node000003_Node000006" title=" " alt="" coords="341,94,362,107,378,123,386,140,395,155,410,171,418,176,415,181,406,175,390,159,382,142,373,126,358,111,338,99"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="sparta::StateTimerUnit::StateTimer::startState" name="sparta::StateTimerUnit::StateTimer::startState">
+<area shape="rect" id="Node000001" title="Start timing state." alt="" coords="5,35,160,75"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Clock.html#a00acfc088c2e51817af21129b1bbc970" title="Get the current cycle (uses current tick from the Scheduler)" alt="" coords="208,42,382,68"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="160,52,192,52,192,58,160,58"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Scheduler.html#a34dcaf99252d9e9e0511d69d2aa84ff8" title="The current tick the Scheduler is working on or just finished." alt="" coords="442,5,570,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="382,40,427,34,427,39,383,46"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Clock.html#ae80357c4ccec5470a15ed098af03c63d" title="Given the tick, convert to a Clock::Cycle." alt="" coords="430,70,582,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="383,64,415,68,414,74,382,69"/>
+</map>
