@@ -97,6 +97,7 @@ namespace sparta
          * \param name      The name of this event (as it shows in the EventSet)
          * \param consumer_event_handler A SpartaHandler to the consumer's event_handler
          * \param delay The relative time (in Cycles) from "now" to schedule
+         * \param max_outstanding Ceiling on simultaneously in-flight payloads
          *
          * Create a PayloadEvent that can be used to schedule objects
          * of DataT now or in the future to the

@@ -208,6 +208,7 @@ namespace sparta
          * \param sched_phase The SchedulingPhase this PhasedPayloadEvent belongs to
          * \param consumer_event_handler A SpartaHandler to the consumer's event_handler
          * \param delay The relative time (in Cycles) from "now" to schedule
+         * \param max_outstanding Ceiling on simultaneously in-flight payloads
          *
          * The suggestion is to use the derived class sparta::PayloadEvent
          * instead of this class directly.
@@ -581,6 +582,7 @@ namespace sparta
          * \param sched_phase The SchedulingPhase this PhasedPayloadEvent belongs to
          * \param consumer_event_handler A SpartaHandler to the consumer's event_handler
          * \param delay The relative time (in Cycles) from "now" to schedule
+         * \param max_outstanding Ceiling on simultaneously in-flight payloads
          *
          * \note This constructor is restricted to be used by the sparta::Scheduler only
          *       in order to support sparta::GlobalEvent

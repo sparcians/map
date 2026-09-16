@@ -186,8 +186,8 @@ namespace sparta::utils
         };
 
         /**
-         * \brief Construct FastList of a given fixed size
-         * \param size Size of the list, which is also its maximum
+         * \brief Construct FastList of a given size
+         * \param size Fixed size of the list
          */
         FastList(size_t size) :
             FastList(size, size)
@@ -211,11 +211,11 @@ namespace sparta::utils
                           "sparta::utils::FastList initial size " << initial_size <<
                           " is larger than its max size " << max_size);
             // -1 is the end/free sentinel, so the ceiling must fit in NodeIdx.
-            sparta_assert(max_size <= size_t(std::numeric_limits<typename Node::NodeIdx>::max()),
+            sparta_assert(max_size <= static_cast<size_t>(std::numeric_limits<typename Node::NodeIdx>::max()),
                           "sparta::utils::FastList max size " << max_size <<
                           " exceeds the addressable node index range");
-            nodes_.reserve(max_size_);
             int node_idx = 0;
+            nodes_.reserve(max_size_);
             for(size_t i = 0; i < initial_size; ++i) {
                 Node n(node_idx);
                 n.prev = node_idx - 1;
@@ -474,7 +474,7 @@ namespace sparta::utils
 
         // Stores all the nodes.
         std::vector<Node> nodes_;
-        size_t max_size_;     //!< Ceiling on the node count
+        const size_t max_size_;  //!< Ceiling on the node count
 
         int free_head_  = 0;  //!< The free head
         int first_node_ = -1; //!< The first node in the list (-1 for empty)
