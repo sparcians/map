@@ -12,8 +12,14 @@ platforms like Gem5 and SystemC while providing more abstract and
 flexible methodologies for quick analysis and study.
 
 MAP is broken into two parts:
-1. **Sparta** -- A set of C++ classes (C++17) used to construct, bind, and run full simulation designs and produce performance analysis data in text form, database form, or HDF5. It's a modeling framework.
-1. **Helios** -- A set of python tools used to visualize, analyze, and deep dive data generated for a Sparta-built simulator.  It's a visualization toolset.
+
+1. **Sparta** -- A set of C++ classes (C++17) used to construct, bind,
+   and run full simulation designs and produce performance analysis
+   data in text form, database form (SimDB), or HDF5. It's a modeling
+   framework.
+1. **Helios** -- A set of python tools used to visualize, analyze, and
+   deep dive data generated for a Sparta-built simulator.  It's a
+   visualization toolset.
 
 ## Current Regression Status
 
@@ -21,32 +27,30 @@ MAP is broken into two parts:
 [![MacOS Build Status](https://dev.azure.com/sparcians/map/_apis/build/status/sparcians.map?branchName=master&label=MacOS)](https://dev.azure.com/sparcians/map/_build/latest?definitionId=1&branchName=master)
 [![Documentation](https://github.com/sparcians/map/workflows/Documentation/badge.svg)](https://sparcians.github.io/map/)
 
-## Cloning MAP
+## MAP Development
 
-[NOTE] map_v1 is no longer supported.
+> [!NOTE]
+> map_v1 is no longer supported.
+> `master`, while always compiling/regressing clean should never be used for development
 
 Current development branches:
 
-| map_v2.0                               | map_v2.1                                    | map_v2.2 | map_v3.0 |
-| -------------------------------------- | ------------------------------------------- | -------- | -------- |
-| Development prior to SimDB integration | SimDB integration/report generation support | TreeNode Extensions API Update | Brand new Argos pipeline collection mechanism coupled with a brand new Argos viewer |
+| Release | Description |
+| map\_v2.0 | Development prior to SimDB integration |
+| map\_v2.1 | SimDB integration/report generation support |
+| map\_v2.2 | TreeNode Extensions API Update |
+| map\_v3.0 | Brand new Argos pipeline collection mechanism coupled with a brand new Argos viewer |
 
 Clone MAP with the `--recursive` option to also clone the git submodules, and `--branch map_v2.2` to clone
 the latest stable v2.  `master` branch of Sparta should never be used (development).
 
+The developers of the Sparta framework suggest using MAP v2.2 to start.
+
 - `git clone git@github.com:sparcians/map.git --recursive --branch map_v2.2`
 
-## Building MAP
+## Building MAP/Sparta
 
-The MAP repository has numerous dependencies, which are listed in a
-[conda recipe](https://github.com/sparcians/map/blob/master/conda.recipe/meta.yaml),
-and the versions of these libraries continuously change.
-
-There are a few ways to set up a development environment for developing
-using Sparta: Simple (just install packages) or creating a Conda
-environment with the recipe found in sparta.
-
-## Simple
+## Prerequisites
 
 The following packages are needed to build Sparta (not the Helios tools):
 
@@ -58,92 +62,40 @@ The following packages are needed to build Sparta (not the Helios tools):
 - (libhdf5-dev) HDF5 1.10.7
 - (clang++) Clang, Version: 14.0.0 OR (g++) v13.0.0 or greater
 
-These packages were tested with Ubuntu 22.02/24.04 (as well as WSL).
+These packages were tested with Ubuntu 22.02/24.04 (as well as WSL) and MacOS.
 Use `apt`, `yum` or `brew` to install.
 
-Clone sparta:
+Clone sparta (suggest using map\_v2.2):
 ```
 git clone --recursive git@github.com:sparcians/map --branch map_v2.2
 ```
-
-Build sparta:
+Building Sparta:
 ```
 cd map/sparta && mkdir release && cd release
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
-
-Install the libraries and headers locally on your system:
+Installing the libraries and headers locally on your system:
 ```
 sudo cmake --install . --prefix /usr/local
 ```
 
-Build a simulator like Olympia from https://github.com/riscv-software-src/riscv-perf-model
+## MAP v3
 
+MAP v3 overhauls the Helios/Argos tool set.  This includes updates to
+the Sparta modeling framework, although not extensive.  Specifically,
+the pipeline collection backend has been enhanced/improved both in
+performance and disk space.
 
-## Conda
+Simulators build with map_v3 will work without modification.  However,
+if the modeler uses pipeline collection (`-z` option), the modeler
+might encounter errors like so:
 
-Users can set up a conda environment that will build and run the tools
-found in this repository using a predefined recipe.
-
-This guide assumes the user is not familiar with conda nor has it
-installed and would like to build everything.
-
-1. If conda is not installed, install it
-   * Get miniconda and install: https://docs.conda.io/en/latest/miniconda.html
-   * You can install miniconda anywhere
-   * These directions were tested with conda version 24.7.1
-1. Activate conda `conda activate`
-1. Go to the root of MAP
-   * `cd map`
-1. Install JSON and YAML parsers
-   * `conda install -c conda-forge jq`
-   * `conda install -c conda-forge yq`
-1. Create a sparta conda development environment
-   * `./scripts/create_conda_env.sh sparta dev`
-   * If the rendering fails (such as an unexpected error), try with
-     the safe environment: `conda env create -f
-     scripts/rendered_safe_environment.yaml`
-1. Activate the environment
-   * `conda activate sparta`
-1. To build Sparta framework components:
-   * `cd sparta && mkdir release && cd release`
-   * `cmake -DCMAKE_BUILD_TYPE=Release ..`
-   * `make`
-   * `cmake --install . --prefix $CONDA_PREFIX`
-
-A few interesting cmake options to help resolve dependencies are:
-
-For both Sparta and Helios:
-
-* `-DBOOST_ROOT=<BOOST_LOCATION>`: Custom Boost location
-* `-DCMAKE_INSTALL_PREFIX=`: Install prefix, defaults to a system wide location normally so you can use this for a local install in a home folder for example.
-
-Helios only:
-
-* `-DPython3_ROOT_DIR=<PYTHON_LOCATION>`: Not often needed but useful to point to the right python if you are not in a conda env)
-
-
-## Updating Regression/Build Environments for CI
-
-CI files are generated when the command `conda smithy rerender` is run
-inside a MAP clone.  That command uses the following files to control
-the generation of the CI-specific control files:
-
-- `conda-forge.yml` - defines which platforms you want to support and some other higher-level things
-- `conda.recipe/conda_build_config.yaml` - defines lists of values for variables that are used in meta.yaml
-- `conda.recipe/meta.yaml` - uses variables (stuff inside {{ varname }} double curlies)
-
-To update versions of OSes, edit the following file:
-https://github.com/sparcians/map/blob/master/conda.recipe/conda_build_config.yaml
-and then run `conda smithy rerender`.
-
-Install `conda smithy` instructions:
+```shell
+terminate called after throwing an instance of 'sparta::SpartaException'
+  what():  Uncollectable type encountered at top.cpu.core0.dcache.mshr_file.mshr_file0
 ```
-conda install -n root -c conda-forge conda-smithy
-conda install -n root -c conda-forge conda-package-handling
-```
-If `conda smithy` complains about being out of date:
-```
-conda update -n root conda-smithy
-```
+This error indicates that the collectable type is not compatible with the new Argos tools and need to be ported.
+
+See [doc/PairDefinitionPortingGuide.md](Pair Definition Porting Guide)
+for porting information.

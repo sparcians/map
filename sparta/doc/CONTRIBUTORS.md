@@ -30,6 +30,7 @@ Colby Nyce
 - Report mechanism enhancements and bug fixing
 - Enhanced data collection
 - Improvements to functional modeling components
+- SimDB architect and lead developer
 
 Kathlene Hurt
 - Improvements to functional modeling components
@@ -42,6 +43,5 @@ Joe Gross
 - Helios tools (Plato/Argos development)
 
 Tim Snyder
-- Sparta's CI system 
+- Sparta's CI system
 - Verious fixes
-

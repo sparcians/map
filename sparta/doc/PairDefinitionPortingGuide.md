@@ -1,10 +1,13 @@
 # PairDefinition Porting Guide for Legacy Sparta Collectables
 
-This document is for an AI assistant helping port existing Sparta simulator code from legacy `operator<<`
-collection to `sparta::PairDefinition`. It is not user-facing documentation.
+This document is for an AI assistant helping port existing Sparta
+simulator code from legacy `operator<<` collection to
+`sparta::PairDefinition` specifically for porting simulators from
+map\_v2.x to map\_v3.x. This document is not user-facing documentation.
 
-The goal is to translate struct-like collected types into field-by-field PairDefinitions with as
-little guesswork as possible, while still asking for confirmation when the mapping is ambiguous.
+The goal is to translate struct-like collected types into
+field-by-field PairDefinitions with as little guesswork as possible,
+while still asking for confirmation when the mapping is ambiguous.
 
 ## What PairDefinition Is For
 
@@ -534,4 +537,3 @@ AI has to pause and ask the user another clarifying question.
   `SpartaPairDefinitionType`, and `enableCollection()` to find directly comparable examples.
 - Treat Olympia as a pattern reference, not an exact code template; if the repository cannot be
   accessed or the relevant files are not obvious, ask the user for a local clone or an example file.
-
