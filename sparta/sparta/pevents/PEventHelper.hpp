@@ -47,19 +47,19 @@ namespace PEventProtection
     template<>
     inline bool CheckNoQuotes(const std::string& obj, const std::string& pre, const std::string& post)
     {
-        if(SPARTA_EXPECT_FALSE(std::strcmp(&obj.front(), "\"") == 0))
+        if(SPARTA_EXPECT_FALSE(!obj.empty() && obj.front() == '"'))
         {
             return false;
         }
-        if(SPARTA_EXPECT_FALSE(std::strcmp(&obj.back(), "\"") == 0))
+        if(SPARTA_EXPECT_FALSE(!obj.empty() && obj.back() == '"'))
         {
             return false;
         }
-        if(SPARTA_EXPECT_FALSE(std::strcmp(&pre.front(), "\"") == 0))
+        if(SPARTA_EXPECT_FALSE(!pre.empty() && pre.front() == '"'))
         {
             return false;
         }
-        if(SPARTA_EXPECT_FALSE(std::strcmp(&post.back(), "\"") == 0))
+        if(SPARTA_EXPECT_FALSE(!post.empty() && post.back() == '"'))
         {
             return false;
         }
