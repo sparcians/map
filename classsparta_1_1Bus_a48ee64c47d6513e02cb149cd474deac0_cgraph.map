@@ -1,0 +1,5 @@
+<map id="sparta::Bus::registerPort" name="sparta::Bus::registerPort">
+<area shape="rect" id="Node000001" title="Register the given port with the bus." alt="" coords="5,5,165,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a7b6ca285ffd1077f9622662c167315e9" title="Adds a TreeNode to this node as a child." alt="" coords="213,5,389,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="165,16,197,16,197,21,165,21"/>
+</map>

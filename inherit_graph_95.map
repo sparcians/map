@@ -1,0 +1,9 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classsparta_1_1collection_1_1BitBucket.html" title="Base class for all collectable bit buckets (scalars, sparse/contig iterables). We use this class so t..." alt="" coords="5,77,124,118"/>
+<area shape="rect" id="Node000001" href="$classsparta_1_1collection_1_1CollectableBitBucket.html" title="BitBucket implementation for Collectable objects (whether &quot;standalone&quot; or inside an IterableCollector..." alt="" coords="187,5,335,46"/>
+<area shape="poly" id="edge231_Node000000_Node000001" title=" " alt="" coords="134,69,171,55,201,44,203,49,173,60,136,74"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1IterableCollectorBitBucket_3_01false_01_4.html" title=" " alt="" coords="172,70,350,126"/>
+<area shape="poly" id="edge232_Node000000_Node000002" title=" " alt="" coords="139,95,171,95,171,100,139,100"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1collection_1_1IterableCollectorBitBucket_3_01true_01_4.html" title=" " alt="" coords="172,150,350,206"/>
+<area shape="poly" id="edge233_Node000000_Node000003" title=" " alt="" coords="131,122,192,147,190,152,129,127"/>
+</map>

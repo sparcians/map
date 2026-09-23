@@ -1,0 +1,5 @@
+<map id="sparta::Pipe::enableCollection" name="sparta::Pipe::enableCollection">
+<area shape="rect" id="Node000001" title="Request that this queue begin collecting its contents for pipeline collection." alt="" coords="5,5,196,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Pipe.html#a1b85e49559a213767050fd214a4eb6e0" title="What is the capacity of the pipe? I.e. Entry count." alt="" coords="244,5,387,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="196,16,228,16,228,21,196,21"/>
+</map>

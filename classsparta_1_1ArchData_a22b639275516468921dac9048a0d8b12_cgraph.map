@@ -1,0 +1,5 @@
+<map id="sparta::ArchData::getNumAllocatedLines" name="sparta::ArchData::getNumAllocatedLines">
+<area shape="rect" id="Node000001" title="Gets the number of lines with allocated data;." alt="" coords="5,5,175,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TieredMap.html#abfe91975749b2122c8b12f6ba8d08d47" title="Number of elements allocated in this map." alt="" coords="223,13,376,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="175,23,207,23,207,28,175,28"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="sparta::collection::Collectable&lt; DataT, collection_phase, void &gt;::serializeStructSchema" name="sparta::collection::Collectable&lt; DataT, collection_phase, void &gt;::serializeStructSchema">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,20,174,90"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1Collectable.html#aed88b58a384b3c086d7b5c99b60d6f08" title="Encode the collected data type in a way Argos python deserializers will understand:" alt="" coords="222,5,443,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="174,42,206,38,206,44,174,47"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a0074a4a62b20d8b414fe52939feaf9ca" title="Gets the simulation (if any) associated with this tree." alt="" coords="230,70,435,96"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="174,62,214,67,214,72,174,67"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="491,13,685,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="444,23,475,23,475,28,444,28"/>
+</map>

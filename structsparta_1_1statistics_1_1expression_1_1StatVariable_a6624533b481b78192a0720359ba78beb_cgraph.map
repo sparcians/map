@@ -1,0 +1,5 @@
+<map id="sparta::statistics::expression::StatVariable::evaluate_" name="sparta::statistics::expression::StatVariable::evaluate_">
+<area shape="rect" id="Node000001" title="Compute value of this item in simulation." alt="" coords="5,5,172,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1StatisticInstance.html#ab8f6dd24dae4e0e920fa32cde5ee43d8" title="Returns the value computed for this statistic instance at the current time." alt="" coords="220,13,381,54"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="172,30,204,30,204,36,172,36"/>
+</map>

@@ -1,0 +1,12 @@
+<map id="sparta::FrontArray::readValid" name="sparta::FrontArray::readValid">
+<area shape="rect" id="Node000001" title="read the nth valid object from the front of the array." alt="" coords="5,74,129,114"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Array.html#a04bb4a1d42dec14d026afe15c65eef35" title="Return the maximum number of elements this Array can hold." alt="" coords="180,5,327,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="118,71,205,35,207,40,120,76"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Array.html#a6b47047a46bca0f7375c680465fd2192" title="Determine whether an index is currently valid." alt="" coords="378,107,516,132"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="129,88,224,86,330,92,381,100,380,105,330,97,224,91,129,93"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Array.html#ad58ce73335e9712a099f78571664fb22" title="The number of valid entries contained." alt="" coords="177,107,330,132"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="129,100,161,104,160,110,129,105"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1Array.html#a75d854e215f22fbe70407ab87a5bc11c" title="Read (only) the data at an index." alt="" coords="191,156,316,182"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="111,112,178,142,193,148,192,153,176,147,108,117"/>
+<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="306,153,378,134,380,139,308,158"/>
+</map>

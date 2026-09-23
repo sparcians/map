@@ -1,0 +1,7 @@
+<map id="sparta::app::SimulationConfiguration" name="sparta::app::SimulationConfiguration">
+<area shape="rect" id="Node000001" title="Configuration applicator class that is used for configuring a simulator. Works in conjunction with sp..." alt="" coords="389,46,615,72"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1utils_1_1ValidValue.html" title=" " alt="" coords="41,5,196,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="212,31,389,47,388,52,211,36"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1app_1_1SimulationConfiguration_1_1SimDBConfig.html" title=" " alt="" coords="5,71,232,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="247,78,388,66,389,71,247,83"/>
+</map>

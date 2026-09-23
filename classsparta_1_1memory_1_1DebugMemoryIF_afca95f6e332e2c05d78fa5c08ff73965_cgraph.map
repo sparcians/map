@@ -1,0 +1,5 @@
+<map id="sparta::memory::DebugMemoryIF::tryPoke" name="sparta::memory::DebugMemoryIF::tryPoke">
+<area shape="rect" id="Node000001" title="Attempts to &#39;poke&#39; memory without having any side effects other than changing the bytes within the ra..." alt="" coords="5,5,204,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a56bff166f0c2e250be9450a8a152becc" title="Determines if the range [addr, addr+size) is within the access windows for this interface." alt="" coords="252,5,450,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="204,23,236,23,236,28,204,28"/>
+</map>

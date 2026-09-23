@@ -1,0 +1,9 @@
+<map id="sparta::Pipe::readLast" name="sparta::Pipe::readLast">
+<area shape="rect" id="Node000001" title="Read the last entry." alt="" coords="5,46,152,72"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Pipe.html#a90e1ef3038d69e0e1c26d2cc3053dc20" title="Read the entry at the given stage." alt="" coords="200,46,320,72"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,56,184,56,184,62,152,62"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1utils_1_1ValidValue.html#aca75dab39668be5fb02f4e2bb8d5019c" title="Get the value &#45; const version." alt="" coords="368,5,523,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="320,46,352,40,353,45,321,51"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1utils_1_1ValidValue.html#ae3676d510018298bdc57028aca4efaff" title="Is this value valid." alt="" coords="368,71,523,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="321,67,353,72,352,78,320,72"/>
+</map>

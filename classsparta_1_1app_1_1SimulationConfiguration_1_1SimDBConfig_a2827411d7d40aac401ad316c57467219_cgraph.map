@@ -1,0 +1,5 @@
+<map id="sparta::app::SimulationConfiguration::SimDBConfig::disableLegacyReports" name="sparta::app::SimulationConfiguration::SimDBConfig::disableLegacyReports">
+<area shape="rect" id="Node000001" title="When used together with –enable&#45;simdb&#45;reports, the option –disable&#45;legacy&#45;reports results in stats re..." alt="" coords="5,5,244,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1app_1_1SimulationConfiguration_1_1SimDBConfig.html#ab864b79d7a84f20555e8ee4514c4e0c9" title="Check if the given app is enabled." alt="" coords="292,5,518,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="244,23,276,23,276,28,244,28"/>
+</map>

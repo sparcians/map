@@ -1,0 +1,17 @@
+<map id="sparta::PhasedUniqueEvent::PhasedUniqueEvent" name="sparta::PhasedUniqueEvent::PhasedUniqueEvent">
+<area shape="rect" id="Node000001" title="Create a PhasedUniqueEvent. The recommendation is to use the EventSet::createEvent method to create o..." alt="" coords="5,98,187,138"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1EventNode.html#af64ae7e31a3b6a1ea4b9fb99c921fefd" title="Center point of Scheduler location." alt="" coords="255,12,392,53"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="151,95,252,57,254,62,153,100"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#aec70f36a682dadc1d571fcd723f12cd6" title="Walks up parents (starting with self) until a parent with an associated local clock is found,..." alt="" coords="235,105,412,131"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="187,116,219,116,219,121,187,121"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1Scheduleable.html#ab2e055a1d7931c478f87d1f03c51bd01" title="Set a new label for this Scheduleable – used in debugging." alt="" coords="253,155,394,196"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="180,136,238,151,237,157,178,142"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Clock.html#aa2d29cba2726bcc43077de19218307ff" title=" " alt="" coords="462,5,640,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="391,26,446,22,447,28,392,31"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html#a883ef289de0f961e1d69a988b50338d8" title="Gets the clock associated directly with this Node. This is useful for configuration and simulator deb..." alt="" coords="463,55,639,96"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="395,102,447,92,448,97,396,107"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="460,120,642,146"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="413,121,445,123,444,129,412,127"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="478,170,624,210"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="373,129,413,141,477,162,475,167,411,146,372,134"/>
+</map>

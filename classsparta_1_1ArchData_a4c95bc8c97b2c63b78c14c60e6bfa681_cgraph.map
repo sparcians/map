@@ -1,0 +1,7 @@
+<map id="sparta::ArchData::getLineStates" name="sparta::ArchData::getLineStates">
+<area shape="rect" id="Node000001" title="Gets state information for each line in this ArchData." alt="" coords="5,39,172,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData_1_1Line.html#aec7dc20d6989a7aebd6fe0d0fdd3bfbd" title="Index of this line (typically offset/line_size)" alt="" coords="220,5,368,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="172,43,204,38,205,43,173,48"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ArchData_1_1Line.html#a72d2d41162c812acc370f1e150bf3897" title="Has this line been modified since the last save or restore. Immediately after construction,..." alt="" coords="220,71,368,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="173,69,205,74,204,80,172,75"/>
+</map>

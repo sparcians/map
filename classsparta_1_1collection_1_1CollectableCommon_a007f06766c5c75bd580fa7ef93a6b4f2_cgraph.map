@@ -1,0 +1,24 @@
+<map id="sparta::collection::CollectableCommon::setCollecting_" name="sparta::collection::CollectableCommon::setCollecting_">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,126,149,182"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1PipelineCollector.html#aa25893abb69b2290f2b7b0b7715bfa9a" title="Add the CollectableTreeNode to auto collection." alt="" coords="215,12,362,68"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="119,123,195,78,205,73,208,78,198,83,122,128"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1collection_1_1CollectableCommon.html#af3ec59a72f72abdf2d9f8f1a3bf65f98" title=" " alt="" coords="446,196,589,252"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="150,162,431,208,430,213,149,168"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1collection_1_1CollectableCommon.html#a169193d8990a9ce5025b6cd9f37f83ee" title=" " alt="" coords="217,247,360,303"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="129,180,227,237,224,241,126,184"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1collection_1_1PipelineCollector.html#a431febb8511cada5d2a79a51b6f39dea" title="Remove the given CollectableTreeNode from collection." alt="" coords="197,92,381,148"/>
+<area shape="poly" id="edge11_Node000001_Node000010" title=" " alt="" coords="149,140,181,135,182,140,150,145"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#aec70f36a682dadc1d571fcd723f12cd6" title="Walks up parents (starting with self) until a parent with an associated local clock is found,..." alt="" coords="429,70,606,96"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="363,51,430,64,429,69,362,57"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a883ef289de0f961e1d69a988b50338d8" title="Gets the clock associated directly with this Node. This is useful for configuration and simulator deb..." alt="" coords="657,5,834,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="571,67,646,48,648,53,572,72"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="654,70,837,96"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="607,80,639,80,639,86,607,86"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="673,120,818,161"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="572,94,658,116,657,121,571,99"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ac7d83237fc2aaa41c6b3809a4fb646e1" title="Determine whether or not this node has collection turned on or off." alt="" coords="671,196,820,252"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="590,222,656,222,656,227,590,227"/>
+<area shape="poly" id="edge9_Node000009_Node000007" title=" " alt="" coords="361,257,430,241,431,246,362,262"/>
+<area shape="poly" id="edge10_Node000009_Node000009" title=" " alt="" coords="247,247,248,237,255,228,269,222,289,221,311,223,325,230,322,235,310,228,289,226,270,228,258,232,253,239,252,247"/>
+<area shape="poly" id="edge12_Node000010_Node000003" title=" " alt="" coords="381,103,420,96,420,102,382,108"/>
+</map>

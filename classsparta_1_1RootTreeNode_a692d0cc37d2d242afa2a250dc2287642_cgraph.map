@@ -1,0 +1,5 @@
+<map id="sparta::RootTreeNode::enterTeardown" name="sparta::RootTreeNode::enterTeardown">
+<area shape="rect" id="Node000001" title="Places this tree into TREE_TEARDOWN phase so that nodes may be deleted without errors." alt="" coords="5,5,153,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a3f7ae09a1aa188a5570ec00d90a37d21" title="Recursively enter TREE_TEARDOWN phase while alerting nodes through onEnteringTeardown_ and alterting ..." alt="" coords="201,13,420,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="153,23,185,23,185,28,153,28"/>
+</map>

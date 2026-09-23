@@ -1,0 +1,8 @@
+<map id="sparta::RegisterBase::writeWithCheck" name="sparta::RegisterBase::writeWithCheck">
+<area shape="rect" id="Node000001" title="Write a value to this register, possibly via a user&#45;supplied callback." alt="" coords="5,51,147,91"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1RegisterBase.html#a9790c24f2361e9164d2b809ae43116b0" title="Returns true if register has a write callback; false otherwise." alt="" coords="195,5,336,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="146,52,179,44,180,49,147,57"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1RegisterBase.html#a15986636f0056a88f5cf468039b182d1" title="Write a value into this register." alt="" coords="195,95,336,135"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="147,85,180,93,179,98,146,90"/>
+<area shape="poly" id="edge3_Node000003_Node000003" title=" " alt="" coords="229,95,227,85,233,76,246,70,265,68,286,70,298,77,296,81,284,76,265,73,247,75,237,80,233,86,234,93"/>
+</map>

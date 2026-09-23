@@ -1,0 +1,5 @@
+<map id="sparta::PhasedSingleCycleUniqueEvent::setContinuing" name="sparta::PhasedSingleCycleUniqueEvent::setContinuing">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,186,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Scheduleable.html#a017c86b15dc4298f385820e2169779e1" title="This event, if continuing == true, will keep the simulation running." alt="" coords="234,5,375,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="186,23,218,23,218,28,186,28"/>
+</map>

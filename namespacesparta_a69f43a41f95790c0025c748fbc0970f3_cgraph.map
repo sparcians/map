@@ -1,0 +1,13 @@
+<map id="sparta::bind" name="sparta::bind">
+<area shape="rect" id="Node000001" title="Bind two ports together." alt="" coords="5,31,93,56"/>
+<area shape="rect" id="Node000002" href="$namespacesparta.html#ae0e328d41db963d8fa8d62139d70e960" title="Bind two buses together." alt="" coords="141,31,228,56"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,41,125,41,125,46,93,46"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Bus.html#a87e2bcf029a5ec143359b569bab943e7" title="Bind bus1 to bus2." alt="" coords="276,31,392,56"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="229,41,261,41,261,46,229,46"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="440,5,620,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="393,33,425,29,425,34,393,39"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1Bus.html#a4f2d0c49bb361b96024d3bb0ef3ada65" title="Get the ports in this PortSet for the given direction." alt="" coords="459,55,601,80"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="393,48,444,54,444,60,393,53"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1PortSet.html#a5c61be847db017f48430c57c7e7967dc" title="Get the ports in this PortSet for the given direction." alt="" coords="668,55,830,80"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="601,65,652,65,652,70,601,70"/>
+</map>

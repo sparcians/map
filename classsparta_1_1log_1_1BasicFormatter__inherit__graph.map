@@ -1,0 +1,5 @@
+<map id="sparta::log::BasicFormatter" name="sparta::log::BasicFormatter">
+<area shape="rect" id="Node000001" title="Formatter including only a few bits of the most relevant message information." alt="" coords="5,79,181,105"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1log_1_1Formatter.html" title="File writer formatting interface. Subclsases can format for different file types (e...." alt="" coords="22,5,164,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="96,46,96,79,90,79,90,46"/>
+</map>

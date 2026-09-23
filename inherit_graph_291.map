@@ -1,0 +1,13 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,136,110,161"/>
+<area shape="rect" id="Node000001" href="$classMetaTypeList_1_1is__empty.html" title="Class Template is_empty Generic case." alt="" coords="171,5,330,46"/>
+<area shape="poly" id="edge317_Node000000_Node000001" title=" " alt="" coords="79,122,113,89,156,57,181,44,183,49,159,61,117,93,83,126"/>
+<area shape="rect" id="Node000002" href="$structMetaTypeList_1_1is__meta__typelist.html" title="Variadic Class Template which takes a type and matches it if that is a type_list. Generic case result..." alt="" coords="174,71,326,111"/>
+<area shape="poly" id="edge318_Node000000_Node000002" title=" " alt="" coords="117,128,179,109,180,115,119,133"/>
+<area shape="rect" id="Node000003" href="$structsparta_1_1is__sparta__enum.html" title="Detect whether template parameter is sparta::utils::Enum type." alt="" coords="158,136,343,161"/>
+<area shape="poly" id="edge319_Node000000_Node000003" title=" " alt="" coords="125,146,157,146,157,151,125,151"/>
+<area shape="rect" id="Node000004" href="$structsparta_1_1utils_1_1always__false.html" title=" " alt="" coords="184,185,317,226"/>
+<area shape="poly" id="edge320_Node000000_Node000004" title=" " alt="" coords="119,164,184,183,182,188,117,169"/>
+<area shape="rect" id="Node000005" href="$structsparta_1_1utils_1_1is__vector.html" title=" " alt="" coords="162,250,338,276"/>
+<area shape="poly" id="edge321_Node000000_Node000005" title=" " alt="" coords="82,171,116,204,159,235,187,247,185,252,156,240,112,208,78,175"/>
+</map>

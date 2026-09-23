@@ -1,0 +1,20 @@
+<map id="sparta::EnumCycleHistogram&lt; EnumType &gt;" name="sparta::EnumCycleHistogram&lt; EnumType &gt;">
+<area shape="rect" id="Node000001" title="EnumCycleHistogram class for C++ Enum values." alt="" coords="96,559,285,600"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="130,155,251,181"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="184,197,177,242,177,498,181,530,187,558,182,559,175,531,172,498,172,242,179,196"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1InstrumentationNode.html" title="Base class requiring." alt="" coords="212,230,396,256"/>
+<area shape="poly" id="edge9_Node000009_Node000002" title=" " alt="" coords="223,187,287,228,284,232,220,192"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="5,80,179,106"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="122,113,176,153,173,157,119,118"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="19,5,165,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="95,46,95,80,89,80,89,46"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="203,80,376,106"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="262,118,209,157,205,153,259,113"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1CycleHistogramBase.html" title="CycleHistogramBase class for uint64_t values." alt="" coords="213,484,398,510"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="277,521,220,561,217,556,274,517"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1CycleCounter.html" title="Represents a cycle counter." alt="" coords="234,380,374,406"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="307,422,308,483,303,484,302,422"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1CounterBase.html" title="The base class for all Counters." alt="" coords="235,305,373,331"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="307,346,307,380,301,380,301,346"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="307,271,307,305,301,305,301,271"/>
+</map>

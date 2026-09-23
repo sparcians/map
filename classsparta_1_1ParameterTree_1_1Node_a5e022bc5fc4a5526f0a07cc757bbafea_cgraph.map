@@ -1,0 +1,7 @@
+<map id="sparta::ParameterTree::Node::getRoot" name="sparta::ParameterTree::Node::getRoot">
+<area shape="rect" id="Node000001" title="Gets the parent of this node." alt="" coords="5,39,155,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ParameterTree_1_1Node.html#a8fe5011a81193c31d22533f1213911ef" title="Gets the name of this node." alt="" coords="203,5,352,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="154,44,187,38,188,44,155,49"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ParameterTree_1_1Node.html#acd09756ef616cfe1f1003c762a8a6b7c" title="Gets the parent of this node." alt="" coords="203,71,352,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="155,68,188,74,187,79,154,74"/>
+</map>

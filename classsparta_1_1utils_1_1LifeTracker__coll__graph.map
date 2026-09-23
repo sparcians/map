@@ -1,0 +1,5 @@
+<map id="sparta::utils::LifeTracker&lt; TrackedObjectT &gt;" name="sparta::utils::LifeTracker&lt; TrackedObjectT &gt;">
+<area shape="rect" id="Node000001" title="A class that will track the lifetime of the object it points to." alt="" coords="17,94,177,135"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,189,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="100,62,100,94,94,94,94,62"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="sparta::serialization::checkpoint::DeltaCheckpoint::getDistanceToPrevSnapshot" name="sparta::serialization::checkpoint::DeltaCheckpoint::getDistanceToPrevSnapshot">
+<area shape="rect" id="Node000001" title="Determines how many checkpoints away the closest, earlier snapshot is." alt="" coords="5,45,199,101"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a099fdcf88200fbcb8a2b1ac47b7df0f7" title="Returns the previous checkpoint. If this checkpoint is a snapshot, it has no previous checkpoint." alt="" coords="262,5,423,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="199,54,245,47,246,52,200,60"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a298af42f2d8f655088a1a61ff91d776b" title="Is this checkpoint a snapshot (contains ALL simulator state)" alt="" coords="247,85,438,141"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="200,87,232,92,231,97,199,92"/>
+</map>

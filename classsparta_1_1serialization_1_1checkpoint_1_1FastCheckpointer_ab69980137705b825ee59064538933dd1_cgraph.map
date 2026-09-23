@@ -1,0 +1,56 @@
+<map id="sparta::serialization::checkpoint::FastCheckpointer::loadCheckpoint" name="sparta::serialization::checkpoint::FastCheckpointer::loadCheckpoint">
+<area shape="rect" id="Node000001" title="Loads state from a specific checkpoint by ID." alt="" coords="5,709,204,764"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a46f4bf524ed6c274be858397a61c3dcb" title="Delete given checkpoint and all contiguous previous checkpoints which can be deleted (See checkpoint_..." alt="" coords="263,319,462,375"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="122,707,332,387,336,390,126,710"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#af84d9d558b2d29c369695a3426b891a1" title="Gets the current checkpointer pointer. Returns nullptr if there is no current checkpoint object." alt="" coords="777,127,949,183"/>
+<area shape="poly" id="edge23_Node000001_Node000008" title=" " alt="" coords="108,708,123,634,151,531,192,416,219,359,249,306,308,215,360,148,390,120,425,94,468,71,520,47,574,30,619,25,665,31,720,47,750,60,778,77,825,114,822,119,775,81,748,65,718,52,664,36,619,30,575,35,522,52,470,75,428,99,393,124,364,151,312,218,254,309,224,362,197,418,156,533,128,635,113,709"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a664dabb6a4dafe36cee4ad8a34e3bfd0" title="Attempts to find a checkpoint within this checkpointer by ID." alt="" coords="263,669,462,724"/>
+<area shape="poly" id="edge21_Node000001_Node000013" title=" " alt="" coords="204,719,247,712,248,717,205,724"/>
+<area shape="rect" id="Node000014" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a21e139d37ad60c48a22ffb58359f83fb" title="Returns ArchDatas enumerated by this Checkpointer for iteration when saving or loading checkpoint dat..." alt="" coords="276,749,448,804"/>
+<area shape="poly" id="edge22_Node000001_Node000014" title=" " alt="" coords="205,749,261,758,260,764,204,755"/>
+<area shape="rect" id="Node000015" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#aa888ae87ad677a06369a78d346190f40" title="Gets the tick number of the current checkpoint (see getCurrentID). This is the tick number of the lat..." alt="" coords="276,829,448,884"/>
+<area shape="poly" id="edge24_Node000001_Node000015" title=" " alt="" coords="154,762,253,814,266,820,264,825,251,819,152,767"/>
+<area shape="rect" id="Node000017" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a6ebfe7e8f67bc296801c839d4b9fca1d" title="Attempts to restore this checkpoint including any previous deltas (dependencies)." alt="" coords="252,604,473,645"/>
+<area shape="poly" id="edge26_Node000001_Node000017" title=" " alt="" coords="150,706,198,679,251,654,267,648,269,653,253,659,200,684,152,711"/>
+<area shape="rect" id="Node000020" href="$classsparta_1_1Scheduler.html#a56280d7e20ed09064b40d5fcf58dfa78" title="Clears the events in the scheduler, sets the current tick to tick and the elapsed ticks to either tic..." alt="" coords="299,908,426,949"/>
+<area shape="poly" id="edge32_Node000001_Node000020" title=" " alt="" coords="126,763,178,829,214,864,253,894,285,909,283,914,250,899,210,868,174,833,122,766"/>
+<area shape="rect" id="Node000021" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a32e6733bafbcb93dfd243ee155ff75ec" title="Sets the current checkpoint pointer." alt="" coords="276,973,448,1028"/>
+<area shape="poly" id="edge33_Node000001_Node000021" title=" " alt="" coords="120,764,139,806,169,859,207,912,253,959,264,966,261,970,250,963,203,916,164,862,135,809,115,766"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a6fe13ab23b23f4f787328f038e33833c" title="Can this checkpoint be deleted Cannot be deleted if:" alt="" coords="524,371,716,427"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="462,365,510,374,509,379,461,370"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a34a8164584635a65bf411dead281837b" title="Indicates whether this checkpoint has been flagged deleted." alt="" coords="767,238,959,294"/>
+<area shape="poly" id="edge13_Node000002_Node000005" title=" " alt="" coords="389,317,446,269,481,246,520,229,581,216,643,214,704,220,760,231,758,236,703,226,643,220,581,221,522,234,484,251,449,273,392,321"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1serialization_1_1checkpoint_1_1CheckpointBase.html#abcdccb90c47517e8bd4b6f4ec9cc3019" title="Returns the ID of this checkpoint." alt="" coords="1007,103,1198,159"/>
+<area shape="poly" id="edge11_Node000002_Node000006" title=" " alt="" coords="366,318,381,258,410,183,430,144,455,107,485,74,520,48,551,31,585,19,654,5,726,4,797,13,866,29,930,49,1036,94,1033,99,928,54,864,34,796,18,725,9,655,10,586,24,554,36,522,52,488,78,459,110,435,146,415,185,386,260,371,320"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a298af42f2d8f655088a1a61ff91d776b" title="Is this checkpoint a snapshot (contains ALL simulator state)" alt="" coords="767,437,959,492"/>
+<area shape="poly" id="edge14_Node000002_Node000007" title=" " alt="" coords="402,373,457,408,489,424,522,437,580,451,639,460,752,466,752,472,639,465,579,456,520,442,487,429,454,413,399,378"/>
+<area shape="poly" id="edge8_Node000002_Node000008" title=" " alt="" coords="384,317,441,257,478,227,520,202,580,180,642,165,704,156,761,152,761,157,705,161,643,170,581,185,522,207,481,231,444,261,388,321"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a051b7ba282cb3affd3dcc21d38cc176d" title="Return the ID had by this checkpoint before it was deleted If this checkpoint has not been flagged fo..." alt="" coords="524,62,716,118"/>
+<area shape="poly" id="edge9_Node000002_Node000009" title=" " alt="" coords="377,317,433,230,473,179,519,135,534,124,537,128,523,139,477,183,437,233,381,320"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a70d4473f66113a21b72f7e965be3a5e6" title="Returns the head checkpoint which is equivalent to the earliest checkpoint taken." alt="" coords="534,502,706,558"/>
+<area shape="poly" id="edge10_Node000002_Node000010" title=" " alt="" coords="393,373,451,426,522,481,541,492,538,497,520,485,447,430,390,377"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a099fdcf88200fbcb8a2b1ac47b7df0f7" title="Returns the previous checkpoint. If this checkpoint is a snapshot, it has no previous checkpoint." alt="" coords="782,639,944,695"/>
+<area shape="poly" id="edge12_Node000002_Node000011" title=" " alt="" coords="378,375,400,418,431,470,473,523,496,547,523,568,549,583,572,593,616,602,662,607,720,618,768,633,767,638,719,623,662,612,615,608,571,599,546,588,519,572,493,551,469,527,427,473,395,420,373,377"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#ad674f72c145ce3dc5fa9da21e982f02e" title="Look forward to see if any future checkpoints depend on d." alt="" coords="521,267,719,323"/>
+<area shape="poly" id="edge15_Node000002_Node000012" title=" " alt="" coords="461,325,505,316,506,321,462,330"/>
+<area shape="poly" id="edge3_Node000003_Node000003" title=" " alt="" coords="573,371,573,361,582,352,598,347,620,345,646,347,661,354,659,359,644,353,620,350,599,352,585,357,578,363,578,371"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a181f5bd1247c81ce6b4988e2ffeb32c1" title="Returns next checkpoint following *this. May be an empty vector if there are no later checkpoints fol..." alt="" coords="782,322,944,378"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="716,377,766,367,767,372,717,382"/>
+<area shape="poly" id="edge5_Node000003_Node000005" title=" " alt="" coords="663,369,766,308,783,299,786,303,769,312,666,373"/>
+<area shape="poly" id="edge7_Node000003_Node000007" title=" " alt="" coords="717,422,753,432,752,437,716,428"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="913,235,1036,165,1039,170,915,240"/>
+<area shape="poly" id="edge17_Node000012_Node000004" title=" " alt="" coords="720,315,768,326,767,331,719,320"/>
+<area shape="poly" id="edge18_Node000012_Node000005" title=" " alt="" coords="720,281,752,277,752,282,720,286"/>
+<area shape="poly" id="edge19_Node000012_Node000007" title=" " alt="" coords="702,321,721,333,737,347,747,360,769,388,813,425,809,429,765,392,742,363,733,350,718,337,699,326"/>
+<area shape="poly" id="edge16_Node000012_Node000008" title=" " alt="" coords="669,265,799,189,801,194,671,269"/>
+<area shape="poly" id="edge20_Node000012_Node000012" title=" " alt="" coords="573,267,573,257,582,248,598,243,620,241,646,243,661,250,659,255,644,249,620,246,599,248,585,253,578,259,578,267"/>
+<area shape="rect" id="Node000016" href="$classsparta_1_1serialization_1_1checkpoint_1_1CheckpointBase.html#ae8050ecd3358de84498a663fcad34ca3" title="Returns the tick number at which this checkpoint was taken." alt="" coords="524,829,716,884"/>
+<area shape="poly" id="edge25_Node000015_Node000016" title=" " alt="" coords="449,854,509,854,509,859,449,859"/>
+<area shape="rect" id="Node000018" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a4a21aef72a972e589a730f45901915d9" title="Returns a stack of checkpoints that must be restored from top&#45;to&#45;bottom to fully restore the state as..." alt="" coords="524,713,716,768"/>
+<area shape="poly" id="edge27_Node000017_Node000018" title=" " alt="" coords="451,643,474,654,489,665,499,676,509,687,523,698,530,703,527,707,519,703,505,691,495,680,486,669,472,659,448,648"/>
+<area shape="rect" id="Node000019" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#aabc0a1c84c2b16e7a9743c84eb01e114" title="Loads delta state of this checkpoint to root. Does not look at any other checkpoints checkpoints." alt="" coords="524,633,716,688"/>
+<area shape="poly" id="edge30_Node000017_Node000019" title=" " alt="" coords="474,637,510,642,509,648,473,643"/>
+<area shape="poly" id="edge29_Node000018_Node000007" title=" " alt="" coords="701,710,717,699,765,624,835,505,840,507,770,627,721,702,705,714"/>
+<area shape="poly" id="edge28_Node000018_Node000011" title=" " alt="" coords="714,710,767,693,768,699,715,715"/>
+<area shape="poly" id="edge31_Node000019_Node000007" title=" " alt="" coords="654,630,814,500,817,504,658,635"/>
+</map>

@@ -1,0 +1,36 @@
+<map id="ExampleSimulator" name="ExampleSimulator">
+<area shape="rect" id="Node000001" title="ExampleSimulator which builds the model and configures it." alt="" coords="1542,218,1667,244"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1app_1_1Simulation.html" title="Simulator which builds a sparta DeviceTree." alt="" coords="1341,218,1492,244"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1508,228,1541,228,1541,234,1508,234"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ClockManager.html" title="Manages building a clock tree." alt="" coords="1016,6,1162,32"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="1178,12,1213,15,1250,22,1286,33,1319,51,1340,69,1358,90,1386,137,1405,182,1415,217,1410,218,1400,184,1381,139,1354,93,1336,73,1315,56,1284,38,1248,27,1212,20,1177,17"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1app_1_1Backtrace.html" title="Backtrace printer. Registers a handler for certain fatal signals and dumps the backtrace if they occu..." alt="" coords="1014,55,1164,81"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="1179,65,1250,76,1285,87,1318,103,1351,129,1378,160,1411,216,1407,219,1373,164,1347,133,1316,108,1283,92,1248,81,1179,71"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ResourceSet.html" title="Set of published ResourceFactories which can be referenced by name." alt="" coords="1020,105,1158,130"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="1174,117,1245,126,1283,135,1318,148,1345,163,1369,181,1405,216,1402,219,1366,185,1342,168,1316,153,1281,141,1244,131,1173,122"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1Scheduler.html" title="A class that lets you schedule events now and in the future." alt="" coords="1028,218,1150,244"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="1165,228,1341,228,1341,234,1165,234"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1RootTreeNode.html" title="TreeNode which represents the root (&quot;top&quot;) of a device tree." alt="" coords="632,187,779,213"/>
+<area shape="poly" id="edge11_Node000002_Node000007" title=" " alt="" coords="795,195,843,194,1080,190,1184,195,1317,208,1357,215,1356,220,1317,213,1184,200,1080,195,843,199,795,200"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="795,205,1028,223,1028,229,795,210"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="423,187,543,213"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="558,198,631,198,631,203,558,203"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="200,154,373,180"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="382,180,423,187,422,193,381,186"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,154,151,180"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="166,164,199,164,199,170,166,170"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="200,203,373,229"/>
+<area shape="poly" id="edge10_Node000008_Node000011" title=" " alt="" coords="388,205,422,202,422,208,389,211"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1app_1_1SimulationConfiguration.html" title="Configuration applicator class that is used for configuring a simulator. Works in conjunction with sp..." alt="" coords="976,267,1202,293"/>
+<area shape="poly" id="edge12_Node000002_Node000012" title=" " alt="" coords="1217,263,1317,249,1354,242,1355,247,1317,254,1218,268"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1utils_1_1ValidValue.html" title=" " alt="" coords="628,253,783,294"/>
+<area shape="poly" id="edge13_Node000012_Node000013" title=" " alt="" coords="799,272,975,276,975,281,799,278"/>
+<area shape="rect" id="Node000014" href="$classsparta_1_1app_1_1SimulationConfiguration_1_1SimDBConfig.html" title=" " alt="" coords="592,319,819,359"/>
+<area shape="poly" id="edge14_Node000012_Node000014" title=" " alt="" coords="834,317,1000,291,1001,296,835,322"/>
+<area shape="rect" id="Node000015" href="$classsparta_1_1app_1_1FeatureConfiguration.html" title="Collection of named feature values." alt="" coords="984,317,1194,342"/>
+<area shape="poly" id="edge15_Node000002_Node000015" title=" " alt="" coords="1206,311,1261,299,1316,282,1358,263,1394,242,1396,247,1361,267,1318,287,1263,304,1207,316"/>
+<area shape="rect" id="Node000016" href="$classsparta_1_1log_1_1Tap.html" title="Logging Tap. Attach to a TreeNode to intercept logging messages from any NotificationSource nodes in ..." alt="" coords="1035,366,1143,392"/>
+<area shape="poly" id="edge16_Node000002_Node000016" title=" " alt="" coords="1158,371,1236,357,1277,344,1316,326,1343,307,1368,284,1404,243,1408,246,1372,288,1347,311,1318,331,1279,349,1237,362,1159,376"/>
+<area shape="rect" id="Node000017" href="$classsparta_1_1app_1_1ReportDescriptorCollection.html" title="This collection of ReportDescriptors is designed to never deallocate memory once it has been allocate..." alt="" coords="995,416,1182,457"/>
+<area shape="poly" id="edge17_Node000002_Node000017" title=" " alt="" coords="1197,425,1258,408,1288,396,1315,380,1350,348,1376,309,1396,272,1408,243,1413,245,1401,274,1381,312,1354,351,1319,384,1291,401,1260,414,1198,430"/>
+</map>

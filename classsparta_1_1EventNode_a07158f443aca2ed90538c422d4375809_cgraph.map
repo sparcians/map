@@ -1,0 +1,5 @@
+<map id="sparta::EventNode::getLabel" name="sparta::EventNode::getLabel">
+<area shape="rect" id="Node000001" title="Get the name of this EventNode as registered in the consumer handler for the TopoSortable." alt="" coords="5,5,139,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="187,13,366,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="139,23,171,23,171,28,139,28"/>
+</map>

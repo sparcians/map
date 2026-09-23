@@ -1,0 +1,11 @@
+<map id="sparta::collection::PipelineCollector::PipelineCollector" name="sparta::collection::PipelineCollector::PipelineCollector">
+<area shape="rect" id="Node000001" title="Instantiate the collector with required parameters before pipeline collection can occur." alt="" coords="5,84,130,140"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNodePrivateAttorney.html#a4cfe23c752f8411f7f946f0626910e9a" title=" " alt="" coords="178,5,387,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="120,81,177,55,193,49,195,54,179,60,122,86"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Clock.html#a82e1ca55c8ca69966a11a2b81ffcbce0" title="Returns the period of this clock in scheduler ticks." alt="" coords="204,70,361,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="130,101,188,93,189,98,131,106"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="210,120,355,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="131,118,195,126,194,132,130,123"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1Scheduler.html#ad57d35535f5ce3d1ce808af3df549552" title="Is the scheduler finalized." alt="" coords="219,185,346,226"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="117,138,179,170,205,180,203,185,177,175,114,143"/>
+</map>

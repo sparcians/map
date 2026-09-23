@@ -1,0 +1,9 @@
+<map id="sparta::RootTreeNode::bindTreeLate" name="sparta::RootTreeNode::bindTreeLate">
+<area shape="rect" id="Node000001" title="Public method for recursively giving all resources and nodes a chance to bind ports locally...." alt="" coords="5,63,153,103"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#ae3865c3ca676372326557b644bc1c305" title="Recursively invoke TreeNode::onBindTreeEarly_ and Resource::onBindTreeLate_ (in that order for each n..." alt="" coords="210,5,386,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,61,202,48,204,53,154,66"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="201,70,395,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="153,80,185,80,185,86,153,86"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedObject.html#ade690bdb9df72fd6bad8847fbdf226f1" title="Gets the trees current phase." alt="" coords="225,120,370,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="154,100,211,115,210,120,152,105"/>
+</map>
