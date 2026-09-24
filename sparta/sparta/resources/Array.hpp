@@ -107,19 +107,21 @@ namespace sparta
          * index for which they point.
          */
         template<bool is_const_iterator = true>
-        struct ArrayIterator : public utils::IteratorTraits<std::forward_iterator_tag, value_type>
+        struct ArrayIterator : public utils::IteratorTraits<std::forward_iterator_tag, value_type, is_const_iterator>
         {
         private:
-
-            typedef typename std::conditional<is_const_iterator,
-                                              const value_type &,
-                                              value_type &>::type  DataReferenceType;
+            using iterator_traits = utils::IteratorTraits<std::forward_iterator_tag, value_type, is_const_iterator>;
 
             typedef typename std::conditional<is_const_iterator,
                                               const FullArrayType *,
                                               FullArrayType *>::type   ArrayPointerType;
             friend FullArrayType;
 
+        public:
+            using typename iterator_traits::pointer;
+            using typename iterator_traits::reference;
+
+        private:
             /// Private constructor, only the array can create iterators.
             ArrayIterator(ArrayPointerType array,
                           uint32_t start_index,
@@ -140,12 +142,12 @@ namespace sparta
             }
 
             /// Get access on a non-const iterator
-            DataReferenceType getAccess_(std::false_type) {
+            reference getAccess_() const requires (!is_const_iterator) {
                 return array_->access(index_);
             }
 
             /// Get access on a const iterator
-            DataReferenceType getAccess_(std::true_type) const {
+            reference getAccess_() const requires is_const_iterator {
                 return array_->read(index_);
             }
 
@@ -280,34 +282,19 @@ namespace sparta
             }
 
             /// support the dereference operator, non-const
-            DataReferenceType operator*() {
+            reference operator*() const {
                 sparta_assert(index_ < sparta::notNull(array_)->capacity(),
                             "Cannot operate on an uninitialized iterator.");
                 // return the data at our location in the array.
-                return getAccess_(std::integral_constant<bool, is_const_iterator>());
-            }
-
-            /// support the dereference operator, const
-            DataReferenceType operator*() const {
-                sparta_assert(index_ < sparta::notNull(array_)->capacity(),
-                            "Cannot operate on an uninitialized iterator.");
-                // return the data at our location in the array.
-                return getAccess_(std::integral_constant<bool, is_const_iterator>());
+                return getAccess_();
             }
 
             /// support -> operator.
-            value_type* operator->()
+            pointer operator->() const
             {
                 sparta_assert(index_ < sparta::notNull(array_)->capacity(),
                             "Cannot operate on an uninitialized iterator.");
-                return std::addressof(getAccess_(std::integral_constant<bool, is_const_iterator>()));
-            }
-
-            const value_type* operator->() const
-            {
-                sparta_assert(index_ < sparta::notNull(array_)->capacity(),
-                            "Cannot operate on an uninitialized iterator.");
-                return std::addressof(getAccess_(std::integral_constant<bool, is_const_iterator>()));
+                return std::addressof(getAccess_());
             }
 
             /// pre-increment operator.

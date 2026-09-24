@@ -76,22 +76,25 @@ public:
     typedef uint32_t size_type;
 
     template <bool is_const_iterator = true>
-    class PipeIterator : public utils::IteratorTraits<std::forward_iterator_tag, value_type>
+    class PipeIterator : public utils::IteratorTraits<std::forward_iterator_tag, value_type, is_const_iterator>
     {
-        typedef typename std::conditional<is_const_iterator,
-                                          const value_type &,
-                                          value_type &>::type DataReferenceType;
+        using iterator_traits = utils::IteratorTraits<std::forward_iterator_tag, value_type, is_const_iterator>;
 
         typedef typename std::conditional<is_const_iterator,
                                           const Pipe<DataT> *,
                                           Pipe<DataT> *>::type PipePointerType;
+    public:
+        using typename iterator_traits::pointer;
+        using typename iterator_traits::reference;
+
+    private:
         /// Get access on a non-const iterator
-        DataReferenceType getAccess_(std::false_type) {
+        reference getAccess_() const requires (!is_const_iterator) {
             return pipe_->access(index_);
         }
 
         /// Get access on a const iterator
-        DataReferenceType getAccess_(std::true_type) {
+        reference getAccess_() const requires is_const_iterator {
             return pipe_->read(index_);
         }
 
@@ -117,17 +120,16 @@ public:
         PipeIterator(PipeIterator &&)      = default;
 
         ///Override derefrence operator
-        DataReferenceType operator*() {
+        reference operator*() const {
             sparta_assert(index_ != uint32_t(-1));
             sparta_assert(pipe_->isValid(index_));
-            return getAccess_(std::integral_constant<bool, is_const_iterator>());
+            return getAccess_();
         }
 
-
         ///support -> operator
-        DataReferenceType operator->()
+        pointer operator->() const
         {
-            return operator*();
+            return std::addressof(operator*());
         }
 
         /// override Pre-increment operator

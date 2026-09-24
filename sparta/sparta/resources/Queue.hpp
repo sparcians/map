@@ -224,11 +224,11 @@ namespace sparta
          *
          */
         template <bool is_const_iterator = true>
-        class QueueIterator : public utils::IteratorTraits<std::bidirectional_iterator_tag, value_type>
+        class QueueIterator : public utils::IteratorTraits<std::bidirectional_iterator_tag, value_type, is_const_iterator>
         {
         private:
-            using DataReferenceType = typename std::conditional<is_const_iterator,
-                                                                const value_type &, value_type &>::type;
+            using iterator_traits = utils::IteratorTraits<std::bidirectional_iterator_tag, value_type, is_const_iterator>;
+
             using QueuePointerType =  typename std::conditional<is_const_iterator,
                                                                 const QueueType * , QueueType * >::type;
 
@@ -250,6 +250,8 @@ namespace sparta
             bool isAttached_() const { return nullptr != attached_queue_; }
 
         public:
+            using typename iterator_traits::pointer;
+            using typename iterator_traits::reference;
 
             //! \brief Default constructor
             QueueIterator() = default;
@@ -351,23 +353,17 @@ namespace sparta
             }
 
             /// Dereferencing operator
-            DataReferenceType operator* ()
+            reference operator* () const
             {
                 sparta_assert(isValid(), "This is an invalid iterator");
-                return getAccess_(std::integral_constant<bool, is_const_iterator>());
+                return getAccess_();
             }
 
             ///support -> operator
-            value_type* operator->()
+            pointer operator->() const
             {
                 sparta_assert(isValid(), "This is an invalid iterator");
-                return std::addressof(getAccess_(std::integral_constant<bool, is_const_iterator>()));
-            }
-
-            const value_type* operator->() const
-            {
-                sparta_assert(isValid(), "This is an invalid iterator");
-                return std::addressof(getAccess_(std::integral_constant<bool, is_const_iterator>()));
+                return std::addressof(getAccess_());
             }
 
             /// Get the logical index of this entry in the queue.
@@ -387,12 +383,12 @@ namespace sparta
             uint64_t obj_id_ = 0;
 
             /// Get access on a non-const iterator
-            DataReferenceType getAccess_(std::false_type) const {
+            reference getAccess_() const requires (!is_const_iterator) {
                 return attached_queue_->accessPhysical_(physical_index_);
             }
 
             /// Get access on a const iterator
-            DataReferenceType getAccess_(std::true_type) const {
+            reference getAccess_() const requires is_const_iterator {
                 return attached_queue_->readPhysical_(physical_index_);
             }
         };

@@ -98,13 +98,9 @@ namespace sparta
          * referred to by the iterator is not valid.
          */
         template<bool is_const_iterator = true>
-        class PipelineIterator : public utils::IteratorTraits<std::forward_iterator_tag, DataT>
+        class PipelineIterator : public utils::IteratorTraits<std::forward_iterator_tag, DataT, is_const_iterator>
         {
-            using DataReferenceType =
-                typename std::conditional<is_const_iterator, const DataT &, DataT &>::type;
-
-            using DataPointerType =
-                typename std::conditional<is_const_iterator, const DataT *, DataT *>::type;
+            using iterator_traits = utils::IteratorTraits<std::forward_iterator_tag, DataT, is_const_iterator>;
 
             using PipelinePointerType =
                 typename std::conditional<is_const_iterator,
@@ -113,6 +109,9 @@ namespace sparta
         public:
             friend class PipelineIterator<true>;
             friend class Pipeline;
+
+            using typename iterator_traits::pointer;
+            using typename iterator_traits::reference;
 
             /*!
              * \brief Constructor
@@ -163,17 +162,17 @@ namespace sparta
             PipelineIterator& operator=(const PipelineIterator & rhs) = default;
 
             //! Override the dereferencing operator*
-            DataReferenceType operator*()
+            reference operator*() const
             {
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing!");
                 return pipelinePtr_->operator[](index_);
             }
 
             //! Override the dereferencing operator->
-            DataPointerType operator->()
+            pointer operator->() const
             {
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing!");
-                return &(this->operator*());
+                return std::addressof(this->operator*());
             }
 
             //! Override the pre-increment operator

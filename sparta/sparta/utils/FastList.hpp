@@ -93,12 +93,14 @@ namespace sparta::utils
          *
          */
         template<bool is_const = true>
-        class NodeIterator : public sparta::utils::IteratorTraits<std::forward_iterator_tag, value_type>
+        class NodeIterator : public IteratorTraits<std::forward_iterator_tag, value_type, is_const>
         {
-            typedef std::conditional_t<is_const, const value_type &, value_type &> RefIteratorType;
-            typedef std::conditional_t<is_const, const value_type *, value_type *> PtrIteratorType;
             typedef std::conditional_t<is_const, const FastList *, FastList *>     FastListPtrType;
+            using iterator_traits = IteratorTraits<std::forward_iterator_tag, value_type, is_const>;
+
         public:
+            using typename iterator_traits::pointer;
+            using typename iterator_traits::reference;
 
             NodeIterator() = default;
 
@@ -114,27 +116,15 @@ namespace sparta::utils
             bool isValid() const { return (node_idx_ != -1); }
 
             //! Iterator dereference
-            PtrIteratorType operator->()       {
+            pointer operator->() const {
                 assert(isValid());
-                return reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
-            }
-
-            //! Iterator dereference (const)
-            PtrIteratorType operator->() const {
-                assert(isValid());
-                return reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
+                return reinterpret_cast<pointer>(flist_->getStorage(node_idx_));
             }
 
             //! Iterator dereference
-            RefIteratorType operator* ()       {
+            reference operator* () const {
                 assert(isValid());
-                return *reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
-            }
-
-            //! Iterator dereference (const)
-            RefIteratorType operator* () const {
-                assert(isValid());
-                return *reinterpret_cast<PtrIteratorType>(flist_->getStorage(node_idx_));
+                return *reinterpret_cast<pointer>(flist_->getStorage(node_idx_));
             }
 
             //! Get the index in the list where this iterator points

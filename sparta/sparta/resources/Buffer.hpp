@@ -136,16 +136,16 @@ namespace sparta
          *
          */
         template <bool is_const_iterator = true>
-        class BufferIterator : public utils::IteratorTraits<std::bidirectional_iterator_tag, value_type>
+        class BufferIterator : public utils::IteratorTraits<std::bidirectional_iterator_tag, value_type, is_const_iterator>
         {
         private:
             friend class Buffer<value_type>;
-            typedef typename std::conditional<is_const_iterator,
-                                              const value_type &, value_type &>::type DataReferenceType;
+            using iterator_traits = utils::IteratorTraits<std::bidirectional_iterator_tag, value_type, is_const_iterator>;
             typedef typename std::conditional<is_const_iterator,
                                               const BufferType *, BufferType *>::type BufferPointerType;
             typedef typename std::conditional<is_const_iterator,
                                               const DataPointer *, DataPointer *>::type DataPointerType;
+
             /**
              * \brief Get the accurate index of this iterators position in the Buffer.
              * \return the accurate index of the entry in the buffer.
@@ -177,6 +177,8 @@ namespace sparta
 
 
         public:
+            using typename iterator_traits::pointer;
+            using typename iterator_traits::reference;
 
             /**
              * \brief Deleted default constructor
@@ -249,7 +251,7 @@ namespace sparta
             }
 
             /// override the dereferencing operator
-            DataReferenceType operator* () const {
+            reference operator* () const {
                 sparta_assert(attached_buffer_,
                               "The iterator is not attached to a buffer. Was it initialized?");
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");
@@ -257,14 +259,7 @@ namespace sparta
             }
 
             //! Overload the class-member-access operator.
-            value_type * operator -> () {
-                sparta_assert(attached_buffer_,
-                              "The iterator is not attached to a buffer. Was it initialized?");
-                sparta_assert(isValid(), "Iterator is not valid for dereferencing");
-                return buffer_entry_->data;
-            }
-
-            value_type const * operator -> () const {
+            pointer operator -> () const {
                 sparta_assert(attached_buffer_,
                               "The iterator is not attached to a buffer. Was it initialized?");
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");

@@ -138,15 +138,15 @@ namespace sparta
          */
         template <bool is_const_iterator = true>
         class CircularBufferIterator :
-            public utils::IteratorTraits<std::bidirectional_iterator_tag, value_type>
+            public utils::IteratorTraits<std::bidirectional_iterator_tag, value_type, is_const_iterator>
         {
         private:
             // Constant to indicate constness
             static constexpr bool is_const_iterator_type = is_const_iterator;
 
             friend class CircularBuffer<value_type>;
-            typedef typename std::conditional<is_const_iterator,
-                                              const value_type &, value_type &>::type DataReferenceType;
+            using iterator_traits = utils::IteratorTraits<std::bidirectional_iterator_tag, value_type, is_const_iterator>;
+
             typedef typename std::conditional<is_const_iterator,
                                               const CircularBufferType *, CircularBufferType *>::type CircularBufferPointerType;
 
@@ -181,6 +181,8 @@ namespace sparta
             }
 
         public:
+            using typename iterator_traits::pointer;
+            using typename iterator_traits::reference;
 
             /**
              * \brief Deleted default constructor
@@ -257,20 +259,13 @@ namespace sparta
             }
 
             /// override the dereferencing operator
-            DataReferenceType operator* () {
+            reference operator* () const {
                 sparta_assert(attached_circularbuffer_,
                             "This iterator is not attached to a CircularBuffer. Was it initialized?");
                 sparta_assert(isValid(), "Iterator is not valid for dereferencing");
                 return circularbuffer_entry_->data;
             }
-            value_type* operator->()
-            {
-                sparta_assert(attached_circularbuffer_,
-                            "This iterator is not attached to a CircularBuffer. Was it initialized?");
-                sparta_assert(isValid(), "Iterator is not valid for dereferencing");
-                return &circularbuffer_entry_->data;
-            }
-            const value_type* operator->() const
+            pointer operator->() const
             {
                 sparta_assert(attached_circularbuffer_,
                             "This iterator is not attached to a CircularBuffer. Was it initialized?");

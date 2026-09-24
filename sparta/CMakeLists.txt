@@ -248,6 +248,13 @@ else ()
   target_compile_definitions (sparta PRIVATE -DSIMDB_ENABLED=0)
 endif ()
 
+# Clang >= 22 emits a warning for __COUNTER__ unless it has -std=c++26
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 22)
+      target_compile_options(sparta PUBLIC -Wno-c2y-extensions)
+  endif()
+endif()
+
 # Add local includes
 target_include_directories (sparta PUBLIC "./")
 
