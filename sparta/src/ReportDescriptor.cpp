@@ -285,7 +285,7 @@ report::format::BaseFormatter* ReportDescriptor::addInstantiation(Report* r,
     instantiations_.emplace_back(r, formatter);
 
     if (!filename.empty()) {
-        // Clear the output filenmae
+        // Clear the output file. 
         std::ofstream os(filename, std::ios::out);
         if(os.fail()){
             throw SpartaException("Failed to open report destination file: \"") << filename
