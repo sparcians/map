@@ -2,7 +2,11 @@
 
 #pragma once
 
+#include <array>
+#include <functional>
 #include <iostream>
+#include <sstream>
+#include <type_traits>
 #include <vector>
 
 #include "sparta/simulation/TreeNode.hpp"
@@ -974,6 +978,140 @@ namespace sparta
 
         ////////////////////////////////////////////////////////////////////////
         //! @}
+    };
+
+    /*!
+     * \class SprintfNotificationSource
+     * \brief Accepts a sprintf-style format string like "%s_%i.json" and uses
+     * the arguments given to postNotification to turn this:
+     * \code
+     * notif_source.setFormatString("%s_%i.json");
+     * notif_source.postNotification("foo", 4);
+     *   -> NotificationSource<std::string>::postNotification("foo_4.json");
+     * \endcode
+     * Only %s and %i specifiers are supported (and %% for a literal '%').
+     * The format string may be changed at any time via setFormatString(), and
+     * each postNotification() call may use a different set of argument types,
+     * as long as they match whichever format string is current at that time.
+     */
+    class SprintfNotificationSource : public NotificationSource<std::string>
+    {
+    public:
+        using NotificationSource<std::string>::NotificationSource;
+
+        void setFormatString(const std::string& format_str)
+        {
+            parsed_specs_ = parseFormatSpecifiers_(format_str);
+            format_str_ = format_str;
+        }
+
+        bool hasFormatString() const {
+            return !format_str_.empty();
+        }
+
+        /*!
+         * \brief Formats the current format string (see setFormatString) with
+         * args and posts the resulting std::string.
+         * \pre setFormatString() must have been called
+         * \throw SpartaException if the number/type of args does not match
+         * the %s and %i specifiers in the current format string.
+         */
+        template <typename... Args>
+        void postNotification(Args... args) const
+        {
+            sparta_assert(!format_str_.empty(),
+                          "setFormatString() must be called before postNotification() on " << getLocation());
+
+            constexpr std::array<SpecType, sizeof...(Args)> expected_types { specTypeFor_<Args>()... };
+
+            if(parsed_specs_.size() != sizeof...(Args)){
+                throw SpartaException("Sprintf format string \"")
+                    << format_str_ << "\" for " << getLocation() << " has " << parsed_specs_.size()
+                    << " specifier(s) but " << sizeof...(Args) << " argument(s) were given";
+            }
+
+            for(std::size_t i = 0; i < parsed_specs_.size(); ++i){
+                if(parsed_specs_[i] != expected_types[i]){
+                    throw SpartaException("Sprintf format string \"")
+                        << format_str_ << "\" for " << getLocation()
+                        << " has a type mismatch at specifier index " << i;
+                }
+            }
+
+            // One stream-to-ostringstream lambda per argument, invoked in order as specifiers are encountered
+            const std::array<std::function<void(std::ostringstream&)>, sizeof...(Args)> streamers {
+                [&args](std::ostringstream& o){ o << args; }...
+            };
+
+            std::ostringstream oss;
+            std::size_t arg_idx = 0;
+            for(std::size_t i = 0; i < format_str_.size(); ++i){
+                if(format_str_[i] != '%'){
+                    oss << format_str_[i];
+                    continue;
+                }
+
+                const char spec = format_str_[++i];
+                if(spec == '%'){
+                    oss << '%';
+                }else{
+                    streamers[arg_idx++](oss);
+                }
+            }
+
+            NotificationSource<std::string>::postNotification(oss.str());
+        }
+
+    private:
+        enum class SpecType { STRING, INT };
+
+        // Maps an argument type to the specifier it must match (%i for non-bool integrals, %s otherwise)
+        template <typename T>
+        static constexpr SpecType specTypeFor_()
+        {
+            using PlainT = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
+            if constexpr (std::is_integral<PlainT>::value && !std::is_same<PlainT, bool>::value){
+                return SpecType::INT;
+            }else{
+                return SpecType::STRING;
+            }
+        }
+
+        // Runtime scan of format_str for %s/%i/%% specifiers, in order of appearance
+        static std::vector<SpecType> parseFormatSpecifiers_(const std::string& format_str)
+        {
+            std::vector<SpecType> specs;
+            for(std::size_t i = 0; i < format_str.size(); ++i){
+                if(format_str[i] != '%'){
+                    continue;
+                }
+
+                if(i + 1 >= format_str.size()){
+                    throw SpartaException("Sprintf format string \"")
+                        << format_str << "\" ends with a lone '%' character";
+                }
+
+                const char spec = format_str[++i];
+                switch(spec){
+                    case 's':
+                        specs.push_back(SpecType::STRING);
+                        break;
+                    case 'i':
+                        specs.push_back(SpecType::INT);
+                        break;
+                    case '%':
+                        break; // Literal '%', not a specifier
+                    default:
+                        throw SpartaException("Sprintf format string \"")
+                            << format_str << "\" contains unsupported specifier '%" << spec
+                            << "'. Only %s and %i are supported";
+                }
+            }
+            return specs;
+        }
+
+        std::string format_str_;
+        std::vector<SpecType> parsed_specs_;
     };
 
     /**

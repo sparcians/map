@@ -106,6 +106,11 @@ private:
     void postRandomNumber_();
 
     /*!
+     * \brief A SprintfNotificationSource for testing the 'sprintf-notif' report trigger
+     */
+    std::unique_ptr<sparta::SprintfNotificationSource> sprintf_test_notification_source_;
+
+    /*!
      * \brief A notification source for testing purposes (toggle triggers specifically)
      */
     std::unique_ptr<sparta::NotificationSource<uint64_t>> toggle_trigger_notification_source_;

@@ -211,6 +211,53 @@ int main()
         EXPECT_NOTHROW(node.enterTeardown());
     }
 
+    {
+        sparta::RootTreeNode sprintf_root("sprintf_root", "Root for SprintfNotificationSource tests");
+        sparta::SprintfNotificationSource sprintf_noti(
+            &sprintf_root, "sprintf_noti", "group", 0, "Sprintf notification node", "sprintf_notix");
+        EXPECT_NOTHROW(sprintf_root.enterConfiguring());
+        EXPECT_NOTHROW(sprintf_root.enterFinalized());
+
+        struct SprintfObserver
+        {
+            std::string last_message;
+            void callback(const std::string& msg) { last_message = msg; }
+        };
+        SprintfObserver observer;
+        sprintf_root.registerForNotification<std::string,
+                                             SprintfObserver,
+                                             &SprintfObserver::callback>(&observer, "sprintf_notix");
+
+        // postNotification before setFormatString must assert
+        EXPECT_THROW(sprintf_noti.postNotification("foo", 4));
+
+        // Unsupported specifier
+        EXPECT_THROW(sprintf_noti.setFormatString("%s_%f"));
+
+        EXPECT_NOTHROW(sprintf_noti.setFormatString("%s_%i.json"));
+
+        // Mismatched arg count/types are only caught once postNotification is
+        // actually called with a particular set of arguments
+        EXPECT_THROW(sprintf_noti.postNotification("foo"));
+        EXPECT_THROW(sprintf_noti.postNotification("foo", 4, 5));
+        EXPECT_THROW(sprintf_noti.postNotification(4, "foo"));
+
+        EXPECT_NOTHROW(sprintf_noti.postNotification("foo", 4));
+        EXPECT_EQUAL(observer.last_message, "foo_4.json");
+
+        // Change the format string on the fly and post again with a different
+        // number/type of arguments than the previous call
+        EXPECT_NOTHROW(sprintf_noti.setFormatString("<%s:%i>"));
+        EXPECT_NOTHROW(sprintf_noti.postNotification("bar", 7));
+        EXPECT_EQUAL(observer.last_message, "<bar:7>");
+
+        EXPECT_NOTHROW(sprintf_noti.setFormatString("just a literal string, no specifiers"));
+        EXPECT_NOTHROW(sprintf_noti.postNotification());
+        EXPECT_EQUAL(observer.last_message, "just a literal string, no specifiers");
+
+        EXPECT_NOTHROW(sprintf_root.enterTeardown());
+    }
+
     // Done
 
     REPORT_ERROR;

@@ -1691,6 +1691,12 @@ void Report::handleParsedTrigger(
     sparta_assert(context);
     sparta_assert(!kv_pairs.empty());
 
+    // 'sprintf-notif' is only supported as a top-level report descriptor trigger
+    // (--report <descriptor.yaml>), not for subreports / positional-args def_files
+    sparta_assert(kv_pairs.find("sprintf-notif") == kv_pairs.end(),
+                  "The 'sprintf-notif' trigger keyword is not supported for subreports. "
+                  "It may only be used as a top-level report descriptor trigger.");
+
     auto ref_tag = kv_pairs.find("tag");
 
     //Simple expressions like "core0.rob.stats.total_number_retired >= 100"
