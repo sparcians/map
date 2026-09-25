@@ -32,6 +32,7 @@
 #include "sparta/simulation/Clock.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/ValidValue.hpp"
+#include "sparta/log/NotificationSource.hpp"
 
 namespace sparta::app {
     class SimulationConfiguration;
@@ -204,6 +205,13 @@ namespace sparta {
              * compatibility.
              */
             bool legacy_reports_enabled_ = true;
+
+            /*!
+             * \brief Set when this descriptor's dest_file is a sprintf-style format
+             * string bound to a SprintfNotificationSource (via the 'sprintf-notif'
+             * trigger keyword) rather than a literal output filename.
+             */
+            bool uses_sprintf_notif_trigger_ = false;
 
             /*!
              * \brief Go through the SimDB collection system and "activate" all of our
@@ -501,6 +509,16 @@ namespace sparta {
             uint32_t writeOutput(std::ostream* out=nullptr);
 
             /*!
+             * \brief Overload used only by descriptors bound to a 'sprintf-notif'
+             * trigger. Writes all non-updatable instantiations to \a filename, the
+             * fully-resolved filename produced each time the bound
+             * SprintfNotificationSource fires. Returns the number of reports written
+             * in this call
+             * \pre usesSprintfNotifTrigger() must be true
+             */
+            uint32_t writeOutput(const std::string& filename);
+
+            /*!
              * \brief Updates all of the instantiations whose formatters support
              * 'update', possibly by writing to the destinations. Returns the number of
              * reports updated in this call
@@ -518,6 +536,25 @@ namespace sparta {
              * updates that occur at the exact same tick
              */
             void capUpdatesToOncePerTick(const Scheduler * scheduler);
+
+            /*!
+             * \brief Marks this descriptor as using a 'sprintf-notif' trigger, meaning
+             * dest_file is a sprintf-style format string bound to a
+             * SprintfNotificationSource rather than a literal output filename.
+             */
+            void setUsesSprintfNotifTrigger(SprintfNotificationSource* notif_src) {
+                uses_sprintf_notif_trigger_ = true;
+                sparta_assert(dest_file.find("%s") != std::string::npos ||
+                              dest_file.find("%i") != std::string::npos);
+                notif_src->setFormatString(dest_file);
+            }
+
+            /*!
+             * \brief Returns whether this descriptor uses a 'sprintf-notif' trigger
+             */
+            bool usesSprintfNotifTrigger() const {
+                return uses_sprintf_notif_trigger_;
+            }
 
             /*!
              * \brief Give this descriptor a specific annotator subclass for printing

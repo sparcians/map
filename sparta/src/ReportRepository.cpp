@@ -200,6 +200,7 @@ private:
         std::string toggle_expression;
         std::string update_expression;
         std::string update_whenever_expression;
+        std::string sprintf_notif_target;
         std::string tag;
 
         //  trigger:
@@ -222,11 +223,12 @@ private:
                 }
             };
 
-            get_expression("start",       start_expression);
-            get_expression("stop",        stop_expression);
-            get_expression("whenever",    toggle_expression);
-            get_expression("tag",         tag);
-            get_expression("update-time", update_expression);
+            get_expression("start",         start_expression);
+            get_expression("stop",          stop_expression);
+            get_expression("whenever",      toggle_expression);
+            get_expression("tag",           tag);
+            get_expression("update-time",   update_expression);
+            get_expression("sprintf-notif", sprintf_notif_target);
 
             if (!update_expression.empty()) {
                 domain_for_pending_update_trigger_ = TriggerDomain::WallClock;
@@ -278,6 +280,24 @@ private:
                 if (ctx != nullptr) {
                     context = ctx;
                 }
+            }
+
+            if (!sprintf_notif_target.empty()) {
+                sparta_assert(start_expression.empty() &&
+                              stop_expression.empty() &&
+                              toggle_expression.empty() &&
+                              tag.empty() &&
+                              !domain_for_pending_update_trigger_.isValid(),
+                              "The 'sprintf-notif' trigger keyword cannot be combined with "
+                              "any other trigger keys (start, stop, whenever, update-*, tag)");
+
+                if (desc_.format == "csv" || desc_.format == "csv_cumulative") {
+                    throw SpartaException(
+                        "The 'sprintf-notif' trigger keyword may not be used with report "
+                        "format \"") << desc_.format << "\"";
+                }
+
+                this->configureSprintfNotifTrigger_(sprintf_notif_target, context);
             }
 
             this->configureStartTrigger_(start_expression, tag, context);
@@ -372,6 +392,37 @@ private:
         } catch (...) {
             configure(sim_->getRoot()->getSearchScope());
         }
+    }
+
+    void configureSprintfNotifTrigger_(const std::string & target_path,
+                                       TreeNode * context)
+    {
+        auto resolve = [&](TreeNode * ctx) -> SprintfNotificationSource* {
+            return ctx->getChildAs<SprintfNotificationSource*>(target_path, false);
+        };
+
+        SprintfNotificationSource * sprintf_src = resolve(context);
+        if (sprintf_src == nullptr && sim_ != nullptr) {
+            sprintf_src = resolve(sim_->getRoot()->getSearchScope());
+        }
+
+        if (sprintf_src == nullptr) {
+            throw SpartaException("Could not find a SprintfNotificationSource at location \"")
+                << target_path << "\" for the 'sprintf-notif' trigger in report descriptor "
+                << desc_.stringize();
+        }
+
+        desc_.setUsesSprintfNotifTrigger(sprintf_src);
+
+        // Write the report using the filename this source posts each time it fires
+        sprintf_src->REGISTER_FOR_NOTIFICATION(
+            onSprintfNotificationFired_, std::string, sprintf_src->getNotificationName());
+    }
+
+    // Callback invoked whenever the bound SprintfNotificationSource posts a formatted filename
+    void onSprintfNotificationFired_(const std::string & filename)
+    {
+        desc_.writeOutput(filename);
     }
 
     void configureStopTrigger_(const std::string & stop_expression,
