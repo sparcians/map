@@ -1001,7 +1001,21 @@ namespace sparta
 
         void setFormatString(const std::string& format_str)
         {
-            parsed_specs_ = parseFormatSpecifiers_(format_str);
+            // The format_str looks something like "%s_$i.json".
+            // In the event that we have multiple reports setup
+            // to be triggered by the same notif source, we need
+            // to ensure that the format specifiers are the same
+            // for all ReportDescriptor dest_file's we are given.
+            auto specs = parseFormatSpecifiers_(format_str);
+            if (!parsed_specs_.empty())
+            {
+                sparta_assert(specs == parsed_specs_);
+            }
+            else
+            {
+                parsed_specs_ = specs;
+            }
+
             format_str_ = format_str;
         }
 
