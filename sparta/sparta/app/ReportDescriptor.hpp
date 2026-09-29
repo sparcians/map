@@ -544,8 +544,6 @@ namespace sparta {
              */
             void setUsesSprintfNotifTrigger(SprintfNotificationSource* notif_src) {
                 uses_sprintf_notif_trigger_ = true;
-                sparta_assert(dest_file.find("%s") != std::string::npos ||
-                              dest_file.find("%i") != std::string::npos);
                 notif_src->setFormatString(dest_file);
             }
 
