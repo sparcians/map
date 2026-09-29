@@ -418,6 +418,7 @@ uint32_t ReportDescriptor::writeOutput(const std::string& filename)
               << "\" when clearing it in preparation for a sprintf-notif triggered write";
     }
     clear_os.close();
+    sprintf_notif_trigger_dest_files_.push_back(filename);
 
     writes_++;
     uint32_t num_saved = 0;

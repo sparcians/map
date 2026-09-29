@@ -84,11 +84,6 @@ public:
 
     ~Directory()
     {
-        if (sprintf_notif_source_ != nullptr) {
-            sprintf_notif_source_->DEREGISTER_FOR_NOTIFICATION(
-                onSprintfNotificationFired_, std::string,
-                sprintf_notif_source_->getNotificationName());
-        }
         referenced_directories_.erase(referenced_directory_key_);
     }
 
@@ -422,7 +417,6 @@ private:
         // Write the report using the filename this source posts each time it fires
         sprintf_src->REGISTER_FOR_NOTIFICATION(
             onSprintfNotificationFired_, std::string, sprintf_src->getNotificationName());
-        sprintf_notif_source_ = sprintf_src;
     }
 
     // Callback invoked whenever the bound SprintfNotificationSource posts a formatted filename
@@ -986,7 +980,6 @@ private:
     std::string referenced_directory_key_;
     std::string start_expression_;
     std::shared_ptr<sparta::NotificationSource<std::string>> on_triggered_notifier_;
-    SprintfNotificationSource * sprintf_notif_source_ = nullptr;
 
     bool legacy_start_trigger_ = true;
     bool legacy_stop_trigger_ = true;
@@ -1037,6 +1030,11 @@ public:
     Impl(TreeNode * context) :
       Impl(nullptr, context)
     {
+    }
+
+    ~Impl()
+    {
+        directories_.clear();
     }
 
     ReportRepository::DirectoryHandle createDirectory(

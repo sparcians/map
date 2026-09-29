@@ -214,6 +214,12 @@ namespace sparta {
             bool uses_sprintf_notif_trigger_ = false;
 
             /*!
+             * \brief When using sprintf-notif triggers, keep track of all report files
+             * written to disk. This supports the end-of-sim stdout message.
+             */
+            std::vector<std::string> sprintf_notif_trigger_dest_files_;
+
+            /*!
              * \brief Go through the SimDB collection system and "activate" all of our
              * statistics in the collection's "black box". Then immediately ask the
              * collector to "sweep" these values into the compression->database pipeline
@@ -409,9 +415,29 @@ namespace sparta {
              * \brief Represents this descriptor as a string
              */
             std::string stringize() const {
+                auto comma_sep_files = [](const std::vector<std::string>& dest_files)
+                {
+                    std::ostringstream oss;
+                    bool comma = false;
+                    for (const auto& s : dest_files)
+                    {
+                        oss << s;
+                        if (comma)
+                        {
+                            oss << ", ";
+                        }
+                        comma = true;
+                    }
+                    return oss.str();
+                };
+
+                auto _dest_files = sprintf_notif_trigger_dest_files_.empty() ?
+                    (orig_dest_file_.empty() ? dest_file : orig_dest_file_) :
+                    comma_sep_files(sprintf_notif_trigger_dest_files_);
+
                 std::stringstream ss;
                 ss << "Report def \"" << def_file << "\" on node \"" << loc_pattern
-                   << "\" -> \"" << (orig_dest_file_.empty() ? dest_file : orig_dest_file_) << "\"";
+                   << "\" -> \"" << _dest_files << "\"";
                 if(format.size() != 0){
                     ss << " (format=" << format << ")";
                 }
