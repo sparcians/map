@@ -436,6 +436,13 @@ uint32_t ReportDescriptor::writeOutput(const std::string& filename)
         }
     }
 
+    if (report_archive_ != nullptr) {
+        report_archive_->dispatchAll();
+    }
+    if (streaming_stats_root_ != nullptr) {
+        streaming_stats_root_->pushStreamUpdateToListeners();
+    }
+
     return num_saved;
 }
 
