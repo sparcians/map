@@ -422,6 +422,9 @@ private:
     // Callback invoked whenever the bound SprintfNotificationSource posts a formatted filename
     void onSprintfNotificationFired_(const std::string & filename)
     {
+        if (formatters_.empty()) {
+            this->startReports_();
+        }
         desc_.writeOutput(filename);
     }
 
