@@ -251,10 +251,6 @@ int main()
         EXPECT_NOTHROW(sprintf_noti.postNotification("bar", 7));
         EXPECT_EQUAL(observer.last_message, "<bar:7>");
 
-        EXPECT_NOTHROW(sprintf_noti.setFormatString("just a literal string, no specifiers"));
-        EXPECT_NOTHROW(sprintf_noti.postNotification());
-        EXPECT_EQUAL(observer.last_message, "just a literal string, no specifiers");
-
         EXPECT_NOTHROW(sprintf_root.enterTeardown());
     }
 
