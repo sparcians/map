@@ -1,0 +1,8 @@
+content:
+  report:
+    pattern:   _global
+    def_file:  simple_stats.yaml
+    dest_file: "%s_%i.json"
+    format:    json_reduced
+    trigger:
+      sprintf-notif: top.cpu.core0.rob.sprintf_notif_channel

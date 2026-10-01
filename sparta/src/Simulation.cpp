@@ -72,6 +72,7 @@
 #include "sparta/app/ConfigApplicators.hpp"
 #include "sparta/app/MetaTreeNode.hpp"
 #include "sparta/app/ReportDescriptor.hpp"
+#include "sparta/app/ReportConfigInspection.hpp"
 #include "sparta/app/SimulationConfiguration.hpp"
 #include "sparta/control/TemporaryRunController.hpp"
 #include "sparta/events/Scheduleable.hpp"
@@ -1538,6 +1539,16 @@ void Simulation::setupReports_(ReportStatsCollector* collector)
         if (!rd.isEnabled()) {
             continue;
         }
+
+        // TODO cnyce: 'sprintf-notif' triggers are not yet supported alongside SimDB report export
+        if (sim_config_ &&
+            sim_config_->simdb_config.appEnabled("simdb-reports") &&
+            sparta::app::hasSprintfNotifTrigger(&rd)) {
+            throw SpartaException(
+                "The 'sprintf-notif' report trigger is not yet supported together with "
+                "--enable-simdb-reports: ") << rd.stringize();
+        }
+
         std::vector<sparta::TreeNode*> roots;
         std::vector<std::vector<std::string>> replacements;
         if(rd.loc_pattern == ReportDescriptor::GLOBAL_KEYWORD){
