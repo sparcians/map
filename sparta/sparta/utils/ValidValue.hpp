@@ -29,7 +29,7 @@ namespace utils
         typedef T value_type;
 
         //! Construct with no validity (not valid, uninitialized)
-        ValidValue() :
+        constexpr ValidValue() :
             valid_(false),
             value_()
         {}
@@ -43,7 +43,7 @@ namespace utils
          * constructors below should/will be used instead
          */
         template<typename ...ArgsT>
-        ValidValue(ArgsT&& ...args) :
+        constexpr ValidValue(ArgsT&& ...args) :
             valid_(true),
             value_(std::forward<ArgsT>(args)...)
         {}
@@ -51,10 +51,10 @@ namespace utils
         //! Allow copies of direct ValidValue -- non-const.  This is
         //! to prevent the variatic template constructor from being
         //! used when the rvalue is another ValidValue
-        ValidValue(ValidValue &) = default;
+        constexpr ValidValue(ValidValue &) = default;
 
         //! Allow moves
-        ValidValue(ValidValue && v) :
+        constexpr ValidValue(ValidValue && v) :
             valid_(v.valid_),
             value_(std::move(v.value_))
         {
@@ -62,18 +62,18 @@ namespace utils
         }
 
         //! Allow copies
-        ValidValue(const ValidValue &) = default;
+        constexpr ValidValue(const ValidValue &) = default;
 
         //! Allow assignments
-        ValidValue & operator=(const ValidValue&) = default;
-        ValidValue & operator=(ValidValue&&) = default;
+        constexpr ValidValue & operator=(const ValidValue&) = default;
+        constexpr ValidValue & operator=(ValidValue&&) = default;
 
         /**
          * \brief Assignment
          * \param val The value to assign, becomes immediately valid
          * \return The value after assignment
          */
-        value_type operator=(const value_type & val) {
+        constexpr value_type operator=(const value_type & val) {
             valid_ = true;
             return (value_ = val);
         }
@@ -130,7 +130,7 @@ namespace utils
          * \brief Is this value valid
          * \return true if valid
          */
-        bool isValid() const {
+        constexpr bool isValid() const {
             return valid_;
         }
 
@@ -177,7 +177,7 @@ namespace utils
         /**
          * \brief Clear the validity of this object.
          */
-        void clearValid() {
+        constexpr void clearValid() {
             valid_ = false;
         }
 
