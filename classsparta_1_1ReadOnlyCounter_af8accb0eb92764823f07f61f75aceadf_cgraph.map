@@ -1,0 +1,9 @@
+<map id="sparta::ReadOnlyCounter::operator==" name="sparta::ReadOnlyCounter::operator==">
+<area shape="rect" id="Node000001" title="Comparison against another counter." alt="" coords="5,23,170,64"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1CounterBase.html#a31d36b265b2bc10db58b1461cd63c516" title="Gets the value of this counter." alt="" coords="231,5,393,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="170,32,215,26,216,32,170,37"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ReadOnlyCounter.html#a896a11e20c3fe95e1cd727d9f123e821" title="Gets the value of this counter." alt="" coords="218,55,406,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="170,50,202,53,202,58,170,55"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="454,55,648,80"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="406,65,438,65,438,70,406,70"/>
+</map>

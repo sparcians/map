@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.26">
+<meta name="author" content="Knute Lingaard, Nick Haw, Dave Murrell, Colby Nyce, and Kathlene Magnus">
+<title>The Sparta Modeling Framework</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
+<style>
+/*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
+/* Uncomment the following line when using as a custom stylesheet */
+/* @import "https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700"; */
+html{font-family:sans-serif;-webkit-text-size-adjust:100%}
+a{background:none}
+a:focus{outline:thin dotted}
+a:active,a:hover{outline:0}
+h1{font-size:2em;margin:.67em 0}
+b,strong{font-weight:bold}
+abbr{font-size:.9em}
+abbr[title]{cursor:help;border-bottom:1px dotted #dddddf;text-decoration:none}
+dfn{font-style:italic}
+hr{height:0}
+mark{background:#ff0;color:#000}
+code,kbd,pre,samp{font-family:monospace;font-size:1em}
+pre{white-space:pre-wrap}
+q{quotes:"\201C" "\201D" "\2018" "\2019"}
+small{font-size:80%}
+sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}
+sup{top:-.5em}
+sub{bottom:-.25em}
+img{border:0}
+svg:not(:root){overflow:hidden}
+figure{margin:0}
+audio,video{display:inline-block}
+audio:not([controls]){display:none;height:0}
+fieldset{border:1px solid silver;margin:0 2px;padding:.35em .625em .75em}
+legend{border:0;padding:0}
+button,input,select,textarea{font-family:inherit;font-size:100%;margin:0}
+button,input{line-height:normal}
+button,select{text-transform:none}
+button,html input[type=button],input[type=reset],input[type=submit]{-webkit-appearance:button;cursor:pointer}
+button[disabled],html input[disabled]{cursor:default}
+input[type=checkbox],input[type=radio]{padding:0}
+button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0}
+textarea{overflow:auto;vertical-align:top}
+table{border-collapse:collapse;border-spacing:0}
+*,::before,::after{box-sizing:border-box}
+html,body{font-size:100%}
+body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;line-height:1;position:relative;cursor:auto;-moz-tab-size:4;-o-tab-size:4;tab-size:4;word-wrap:anywhere;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased}
+a:hover{cursor:pointer}
+img,object,embed{max-width:100%;height:auto}
+object,embed{height:100%}
+img{-ms-interpolation-mode:bicubic}
+.left{float:left!important}
+.right{float:right!important}
+.text-left{text-align:left!important}
+.text-right{text-align:right!important}
+.text-center{text-align:center!important}
+.text-justify{text-align:justify!important}
+.hide{display:none}
+img,object,svg{display:inline-block;vertical-align:middle}
+textarea{height:auto;min-height:50px}
+select{width:100%}
+.subheader,.admonitionblock td.content>.title,.audioblock>.title,.exampleblock>.title,.imageblock>.title,.listingblock>.title,.literalblock>.title,.stemblock>.title,.openblock>.title,.paragraph>.title,.quoteblock>.title,table.tableblock>.title,.verseblock>.title,.videoblock>.title,.dlist>.title,.olist>.title,.ulist>.title,.qlist>.title,.hdlist>.title{line-height:1.45;color:#7a2518;font-weight:400;margin-top:0;margin-bottom:.25em}
+div,dl,dt,dd,ul,ol,li,h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6,pre,form,p,blockquote,th,td{margin:0;padding:0}
+a{color:#2156a5;text-decoration:underline;line-height:inherit}
+a:hover,a:focus{color:#1d4b8f}
+a img{border:0}
+p{line-height:1.6;margin-bottom:1.25em;text-rendering:optimizeLegibility}
+p aside{font-size:.875em;line-height:1.35;font-style:italic}
+h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{font-family:"Open Sans","DejaVu Sans",sans-serif;font-weight:300;font-style:normal;color:#ba3925;text-rendering:optimizeLegibility;margin-top:1em;margin-bottom:.5em;line-height:1.0125em}
+h1 small,h2 small,h3 small,#toctitle small,.sidebarblock>.content>.title small,h4 small,h5 small,h6 small{font-size:60%;color:#e99b8f;line-height:0}
+h1{font-size:2.125em}
+h2{font-size:1.6875em}
+h3,#toctitle,.sidebarblock>.content>.title{font-size:1.375em}
+h4,h5{font-size:1.125em}
+h6{font-size:1em}
+hr{border:solid #dddddf;border-width:1px 0 0;clear:both;margin:1.25em 0 1.1875em}
+em,i{font-style:italic;line-height:inherit}
+strong,b{font-weight:bold;line-height:inherit}
+small{font-size:60%;line-height:inherit}
+code{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;font-weight:400;color:rgba(0,0,0,.9)}
+ul,ol,dl{line-height:1.6;margin-bottom:1.25em;list-style-position:outside;font-family:inherit}
+ul,ol{margin-left:1.5em}
+ul li ul,ul li ol{margin-left:1.25em;margin-bottom:0}
+ul.circle{list-style-type:circle}
+ul.disc{list-style-type:disc}
+ul.square{list-style-type:square}
+ul.circle ul:not([class]),ul.disc ul:not([class]),ul.square ul:not([class]){list-style:inherit}
+ol li ul,ol li ol{margin-left:1.25em;margin-bottom:0}
+dl dt{margin-bottom:.3125em;font-weight:bold}
+dl dd{margin-bottom:1.25em}
+blockquote{margin:0 0 1.25em;padding:.5625em 1.25em 0 1.1875em;border-left:1px solid #ddd}
+blockquote,blockquote p{line-height:1.6;color:rgba(0,0,0,.85)}
+@media screen and (min-width:768px){h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2}
+h1{font-size:2.75em}
+h2{font-size:2.3125em}
+h3,#toctitle,.sidebarblock>.content>.title{font-size:1.6875em}
+h4{font-size:1.4375em}}
+table{background:#fff;margin-bottom:1.25em;border:1px solid #dedede;word-wrap:normal}
+table thead,table tfoot{background:#f7f8f7}
+table thead tr th,table thead tr td,table tfoot tr th,table tfoot tr td{padding:.5em .625em .625em;font-size:inherit;color:rgba(0,0,0,.8);text-align:left}
+table tr th,table tr td{padding:.5625em .625em;font-size:inherit;color:rgba(0,0,0,.8)}
+table tr.even,table tr.alt{background:#f8f8f7}
+table thead tr th,table tfoot tr th,table tbody tr td,table tr td,table tfoot tr td{line-height:1.6}
+h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2;word-spacing:-.05em}
+h1 strong,h2 strong,h3 strong,#toctitle strong,.sidebarblock>.content>.title strong,h4 strong,h5 strong,h6 strong{font-weight:400}
+.center{margin-left:auto;margin-right:auto}
+.stretch{width:100%}
+.clearfix::before,.clearfix::after,.float-group::before,.float-group::after{content:" ";display:table}
+.clearfix::after,.float-group::after{clear:both}
+:not(pre).nobreak{word-wrap:normal}
+:not(pre).nowrap{white-space:nowrap}
+:not(pre).pre-wrap{white-space:pre-wrap}
+:not(pre):not([class^=L])>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background:#f7f7f8;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed}
+pre{color:rgba(0,0,0,.9);font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;line-height:1.45;text-rendering:optimizeSpeed}
+pre code,pre pre{color:inherit;font-size:inherit;line-height:inherit}
+pre.nowrap,pre.nowrap pre{white-space:pre;word-wrap:normal}
+em em{font-style:normal}
+strong strong{font-weight:400}
+.keyseq{color:rgba(51,51,51,.8)}
+kbd{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;display:inline-block;color:rgba(0,0,0,.8);font-size:.65em;line-height:1.45;background:#f7f7f7;border:1px solid #ccc;border-radius:3px;box-shadow:0 1px 0 rgba(0,0,0,.2),inset 0 0 0 .1em #fff;margin:0 .15em;padding:.2em .5em;vertical-align:middle;position:relative;top:-.1em;white-space:nowrap}
+.keyseq kbd:first-child{margin-left:0}
+.keyseq kbd:last-child{margin-right:0}
+.menuseq,.menuref{color:#000}
+.menuseq b:not(.caret),.menuref{font-weight:inherit}
+.menuseq{word-spacing:-.02em}
+.menuseq b.caret{font-size:1.25em;line-height:.8}
+.menuseq i.caret{font-weight:bold;text-align:center;width:.45em}
+b.button::before,b.button::after{position:relative;top:-1px;font-weight:400}
+b.button::before{content:"[";padding:0 3px 0 2px}
+b.button::after{content:"]";padding:0 2px 0 3px}
+p a>code:hover{color:rgba(0,0,0,.9)}
+#header,#content,#footnotes,#footer{width:100%;margin:0 auto;max-width:62.5em;*zoom:1;position:relative;padding-left:.9375em;padding-right:.9375em}
+#header::before,#header::after,#content::before,#content::after,#footnotes::before,#footnotes::after,#footer::before,#footer::after{content:" ";display:table}
+#header::after,#content::after,#footnotes::after,#footer::after{clear:both}
+#content{margin-top:1.25em}
+#content::before{content:none}
+#header>h1:first-child{color:rgba(0,0,0,.85);margin-top:2.25rem;margin-bottom:0}
+#header>h1:first-child+#toc{margin-top:8px;border-top:1px solid #dddddf}
+#header>h1:only-child{border-bottom:1px solid #dddddf;padding-bottom:8px}
+#header .details{border-bottom:1px solid #dddddf;line-height:1.45;padding-top:.25em;padding-bottom:.25em;padding-left:.25em;color:rgba(0,0,0,.6);display:flex;flex-flow:row wrap}
+#header .details span:first-child{margin-left:-.125em}
+#header .details span.email a{color:rgba(0,0,0,.85)}
+#header .details br{display:none}
+#header .details br+span::before{content:"\00a0\2013\00a0"}
+#header .details br+span.author::before{content:"\00a0\22c5\00a0";color:rgba(0,0,0,.85)}
+#header .details br+span#revremark::before{content:"\00a0|\00a0"}
+#header #revnumber{text-transform:capitalize}
+#header #revnumber::after{content:"\00a0"}
+#content>h1:first-child:not([class]){color:rgba(0,0,0,.85);border-bottom:1px solid #dddddf;padding-bottom:8px;margin-top:0;padding-top:1rem;margin-bottom:1.25rem}
+#toc{border-bottom:1px solid #e7e7e9;padding-bottom:.5em}
+#toc>ul{margin-left:.125em}
+#toc ul.sectlevel0>li>a{font-style:italic}
+#toc ul.sectlevel0 ul.sectlevel1{margin:.5em 0}
+#toc ul{font-family:"Open Sans","DejaVu Sans",sans-serif;list-style-type:none}
+#toc li{line-height:1.3334;margin-top:.3334em}
+#toc a{text-decoration:none}
+#toc a:active{text-decoration:underline}
+#toctitle{color:#7a2518;font-size:1.2em}
+@media screen and (min-width:768px){#toctitle{font-size:1.375em}
+body.toc2{padding-left:15em;padding-right:0}
+body.toc2 #header>h1:nth-last-child(2){border-bottom:1px solid #dddddf;padding-bottom:8px}
+#toc.toc2{margin-top:0!important;background:#f8f8f7;position:fixed;width:15em;left:0;top:0;border-right:1px solid #e7e7e9;border-top-width:0!important;border-bottom-width:0!important;z-index:1000;padding:1.25em 1em;height:100%;overflow:auto}
+#toc.toc2 #toctitle{margin-top:0;margin-bottom:.8rem;font-size:1.2em}
+#toc.toc2>ul{font-size:.9em;margin-bottom:0}
+#toc.toc2 ul ul{margin-left:0;padding-left:1em}
+#toc.toc2 ul.sectlevel0 ul.sectlevel1{padding-left:0;margin-top:.5em;margin-bottom:.5em}
+body.toc2.toc-right{padding-left:0;padding-right:15em}
+body.toc2.toc-right #toc.toc2{border-right-width:0;border-left:1px solid #e7e7e9;left:auto;right:0}}
+@media screen and (min-width:1280px){body.toc2{padding-left:20em;padding-right:0}
+#toc.toc2{width:20em}
+#toc.toc2 #toctitle{font-size:1.375em}
+#toc.toc2>ul{font-size:.95em}
+#toc.toc2 ul ul{padding-left:1.25em}
+body.toc2.toc-right{padding-left:0;padding-right:20em}}
+#content #toc{border:1px solid #e0e0dc;margin-bottom:1.25em;padding:1.25em;background:#f8f8f7;border-radius:4px}
+#content #toc>:first-child{margin-top:0}
+#content #toc>:last-child{margin-bottom:0}
+#footer{max-width:none;background:rgba(0,0,0,.8);padding:1.25em}
+#footer-text{color:hsla(0,0%,100%,.8);line-height:1.44}
+#content{margin-bottom:.625em}
+.sect1{padding-bottom:.625em}
+@media screen and (min-width:768px){#content{margin-bottom:1.25em}
+.sect1{padding-bottom:1.25em}}
+.sect1:last-child{padding-bottom:0}
+.sect1+.sect1{border-top:1px solid #e7e7e9}
+#content h1>a.anchor,h2>a.anchor,h3>a.anchor,#toctitle>a.anchor,.sidebarblock>.content>.title>a.anchor,h4>a.anchor,h5>a.anchor,h6>a.anchor{position:absolute;z-index:1001;width:1.5ex;margin-left:-1.5ex;display:block;text-decoration:none!important;visibility:hidden;text-align:center;font-weight:400}
+#content h1>a.anchor::before,h2>a.anchor::before,h3>a.anchor::before,#toctitle>a.anchor::before,.sidebarblock>.content>.title>a.anchor::before,h4>a.anchor::before,h5>a.anchor::before,h6>a.anchor::before{content:"\00A7";font-size:.85em;display:block;padding-top:.1em}
+#content h1:hover>a.anchor,#content h1>a.anchor:hover,h2:hover>a.anchor,h2>a.anchor:hover,h3:hover>a.anchor,#toctitle:hover>a.anchor,.sidebarblock>.content>.title:hover>a.anchor,h3>a.anchor:hover,#toctitle>a.anchor:hover,.sidebarblock>.content>.title>a.anchor:hover,h4:hover>a.anchor,h4>a.anchor:hover,h5:hover>a.anchor,h5>a.anchor:hover,h6:hover>a.anchor,h6>a.anchor:hover{visibility:visible}
+#content h1>a.link,h2>a.link,h3>a.link,#toctitle>a.link,.sidebarblock>.content>.title>a.link,h4>a.link,h5>a.link,h6>a.link{color:#ba3925;text-decoration:none}
+#content h1>a.link:hover,h2>a.link:hover,h3>a.link:hover,#toctitle>a.link:hover,.sidebarblock>.content>.title>a.link:hover,h4>a.link:hover,h5>a.link:hover,h6>a.link:hover{color:#a53221}
+details,.audioblock,.imageblock,.literalblock,.listingblock,.stemblock,.videoblock{margin-bottom:1.25em}
+details{margin-left:1.25rem}
+details>summary{cursor:pointer;display:block;position:relative;line-height:1.6;margin-bottom:.625rem;outline:none;-webkit-tap-highlight-color:transparent}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"";border:solid transparent;border-left:solid;border-width:.3em 0 .3em .5em;position:absolute;top:.5em;left:-1.25rem;transform:translateX(15%)}
+details[open]>summary::before{border:solid transparent;border-top:solid;border-width:.5em .3em 0;transform:translateY(15%)}
+details>summary::after{content:"";width:1.25rem;height:1em;position:absolute;top:.3em;left:-1.25rem}
+.admonitionblock td.content>.title,.audioblock>.title,.exampleblock>.title,.imageblock>.title,.listingblock>.title,.literalblock>.title,.stemblock>.title,.openblock>.title,.paragraph>.title,.quoteblock>.title,table.tableblock>.title,.verseblock>.title,.videoblock>.title,.dlist>.title,.olist>.title,.ulist>.title,.qlist>.title,.hdlist>.title{text-rendering:optimizeLegibility;text-align:left;font-family:"Noto Serif","DejaVu Serif",serif;font-size:1rem;font-style:italic}
+table.tableblock.fit-content>caption.title{white-space:nowrap;width:0}
+.paragraph.lead>p,#preamble>.sectionbody>[class=paragraph]:first-of-type p{font-size:1.21875em;line-height:1.6;color:rgba(0,0,0,.85)}
+.admonitionblock>table{border-collapse:separate;border:0;background:none;width:100%}
+.admonitionblock>table td.icon{text-align:center;width:80px}
+.admonitionblock>table td.icon img{max-width:none}
+.admonitionblock>table td.icon .title{font-weight:bold;font-family:"Open Sans","DejaVu Sans",sans-serif;text-transform:uppercase}
+.admonitionblock>table td.content{padding-left:1.125em;padding-right:1.25em;border-left:1px solid #dddddf;color:rgba(0,0,0,.6);word-wrap:anywhere}
+.admonitionblock>table td.content>:last-child>:last-child{margin-bottom:0}
+.exampleblock>.content{border:1px solid #e6e6e6;margin-bottom:1.25em;padding:1.25em;background:#fff;border-radius:4px}
+.sidebarblock{border:1px solid #dbdbd6;margin-bottom:1.25em;padding:1.25em;background:#f3f3f2;border-radius:4px}
+.sidebarblock>.content>.title{color:#7a2518;margin-top:0;text-align:center}
+.exampleblock>.content>:first-child,.sidebarblock>.content>:first-child{margin-top:0}
+.exampleblock>.content>:last-child,.exampleblock>.content>:last-child>:last-child,.exampleblock>.content .olist>ol>li:last-child>:last-child,.exampleblock>.content .ulist>ul>li:last-child>:last-child,.exampleblock>.content .qlist>ol>li:last-child>:last-child,.sidebarblock>.content>:last-child,.sidebarblock>.content>:last-child>:last-child,.sidebarblock>.content .olist>ol>li:last-child>:last-child,.sidebarblock>.content .ulist>ul>li:last-child>:last-child,.sidebarblock>.content .qlist>ol>li:last-child>:last-child{margin-bottom:0}
+.literalblock pre,.listingblock>.content>pre{border-radius:4px;overflow-x:auto;padding:1em;font-size:.8125em}
+@media screen and (min-width:768px){.literalblock pre,.listingblock>.content>pre{font-size:.90625em}}
+@media screen and (min-width:1280px){.literalblock pre,.listingblock>.content>pre{font-size:1em}}
+.literalblock pre,.listingblock>.content>pre:not(.highlight),.listingblock>.content>pre[class=highlight],.listingblock>.content>pre[class^="highlight "]{background:#f7f7f8}
+.literalblock.output pre{color:#f7f7f8;background:rgba(0,0,0,.9)}
+.listingblock>.content{position:relative}
+.listingblock pre>code{display:block}
+.listingblock code[data-lang]::before{display:none;content:attr(data-lang);position:absolute;font-size:.75em;top:.425rem;right:.5rem;line-height:1;text-transform:uppercase;color:inherit;opacity:.5}
+.listingblock:hover code[data-lang]::before{display:block}
+.listingblock.terminal pre .command::before{content:attr(data-prompt);padding-right:.5em;color:inherit;opacity:.5}
+.listingblock.terminal pre .command:not([data-prompt])::before{content:"$"}
+.listingblock pre.highlightjs{padding:0}
+.listingblock pre.highlightjs>code{padding:1em;border-radius:4px}
+.listingblock pre.prettyprint{border-width:0}
+.prettyprint{background:#f7f7f8}
+pre.prettyprint .linenums{line-height:1.45;margin-left:2em}
+pre.prettyprint li{background:none;list-style-type:inherit;padding-left:0}
+pre.prettyprint li code[data-lang]::before{opacity:1}
+pre.prettyprint li:not(:first-child) code[data-lang]::before{display:none}
+table.linenotable{border-collapse:separate;border:0;margin-bottom:0;background:none}
+table.linenotable td[class]{color:inherit;vertical-align:top;padding:0;line-height:inherit;white-space:normal}
+table.linenotable td.code{padding-left:.75em}
+table.linenotable td.linenos,pre.pygments .linenos{border-right:1px solid;opacity:.35;padding-right:.5em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+pre.pygments span.linenos{display:inline-block;margin-right:.75em}
+.quoteblock{margin:0 1em 1.25em 1.5em;display:table}
+.quoteblock:not(.excerpt)>.title{margin-left:-1.5em;margin-bottom:.75em}
+.quoteblock blockquote,.quoteblock p{color:rgba(0,0,0,.85);font-size:1.15rem;line-height:1.75;word-spacing:.1em;letter-spacing:0;font-style:italic;text-align:justify}
+.quoteblock blockquote{margin:0;padding:0;border:0}
+.quoteblock blockquote::before{content:"\201c";float:left;font-size:2.75em;font-weight:bold;line-height:.6em;margin-left:-.6em;color:#7a2518;text-shadow:0 1px 2px rgba(0,0,0,.1)}
+.quoteblock blockquote>.paragraph:last-child p{margin-bottom:0}
+.quoteblock .attribution{margin-top:.75em;margin-right:.5ex;text-align:right}
+.verseblock{margin:0 1em 1.25em}
+.verseblock pre{font-family:"Open Sans","DejaVu Sans",sans-serif;font-size:1.15rem;color:rgba(0,0,0,.85);font-weight:300;text-rendering:optimizeLegibility}
+.verseblock pre strong{font-weight:400}
+.verseblock .attribution{margin-top:1.25rem;margin-left:.5ex}
+.quoteblock .attribution,.verseblock .attribution{font-size:.9375em;line-height:1.45;font-style:italic}
+.quoteblock .attribution br,.verseblock .attribution br{display:none}
+.quoteblock .attribution cite,.verseblock .attribution cite{display:block;letter-spacing:-.025em;color:rgba(0,0,0,.6)}
+.quoteblock.abstract blockquote::before,.quoteblock.excerpt blockquote::before,.quoteblock .quoteblock blockquote::before{display:none}
+.quoteblock.abstract blockquote,.quoteblock.abstract p,.quoteblock.excerpt blockquote,.quoteblock.excerpt p,.quoteblock .quoteblock blockquote,.quoteblock .quoteblock p{line-height:1.6;word-spacing:0}
+.quoteblock.abstract{margin:0 1em 1.25em;display:block}
+.quoteblock.abstract>.title{margin:0 0 .375em;font-size:1.15em;text-align:center}
+.quoteblock.excerpt>blockquote,.quoteblock .quoteblock{padding:0 0 .25em 1em;border-left:.25em solid #dddddf}
+.quoteblock.excerpt,.quoteblock .quoteblock{margin-left:0}
+.quoteblock.excerpt blockquote,.quoteblock.excerpt p,.quoteblock .quoteblock blockquote,.quoteblock .quoteblock p{color:inherit;font-size:1.0625rem}
+.quoteblock.excerpt .attribution,.quoteblock .quoteblock .attribution{color:inherit;font-size:.85rem;text-align:left;margin-right:0}
+p.tableblock:last-child{margin-bottom:0}
+td.tableblock>.content{margin-bottom:1.25em;word-wrap:anywhere}
+td.tableblock>.content>:last-child{margin-bottom:-1.25em}
+table.tableblock,th.tableblock,td.tableblock{border:0 solid #dedede}
+table.grid-all>*>tr>*{border-width:1px}
+table.grid-cols>*>tr>*{border-width:0 1px}
+table.grid-rows>*>tr>*{border-width:1px 0}
+table.frame-all{border-width:1px}
+table.frame-ends{border-width:1px 0}
+table.frame-sides{border-width:0 1px}
+table.frame-none>colgroup+*>:first-child>*,table.frame-sides>colgroup+*>:first-child>*{border-top-width:0}
+table.frame-none>:last-child>:last-child>*,table.frame-sides>:last-child>:last-child>*{border-bottom-width:0}
+table.frame-none>*>tr>:first-child,table.frame-ends>*>tr>:first-child{border-left-width:0}
+table.frame-none>*>tr>:last-child,table.frame-ends>*>tr>:last-child{border-right-width:0}
+table.stripes-all>*>tr,table.stripes-odd>*>tr:nth-of-type(odd),table.stripes-even>*>tr:nth-of-type(even),table.stripes-hover>*>tr:hover{background:#f8f8f7}
+th.halign-left,td.halign-left{text-align:left}
+th.halign-right,td.halign-right{text-align:right}
+th.halign-center,td.halign-center{text-align:center}
+th.valign-top,td.valign-top{vertical-align:top}
+th.valign-bottom,td.valign-bottom{vertical-align:bottom}
+th.valign-middle,td.valign-middle{vertical-align:middle}
+table thead th,table tfoot th{font-weight:bold}
+tbody tr th{background:#f7f8f7}
+tbody tr th,tbody tr th p,tfoot tr th,tfoot tr th p{color:rgba(0,0,0,.8);font-weight:bold}
+p.tableblock>code:only-child{background:none;padding:0}
+p.tableblock{font-size:1em}
+ol{margin-left:1.75em}
+ul li ol{margin-left:1.5em}
+dl dd{margin-left:1.125em}
+dl dd:last-child,dl dd:last-child>:last-child{margin-bottom:0}
+li p,ul dd,ol dd,.olist .olist,.ulist .ulist,.ulist .olist,.olist .ulist{margin-bottom:.625em}
+ul.checklist,ul.none,ol.none,ul.no-bullet,ol.no-bullet,ol.unnumbered,ul.unstyled,ol.unstyled{list-style-type:none}
+ul.no-bullet,ol.no-bullet,ol.unnumbered{margin-left:.625em}
+ul.unstyled,ol.unstyled{margin-left:0}
+li>p:empty:only-child::before{content:"";display:inline-block}
+ul.checklist>li>p:first-child{margin-left:-1em}
+ul.checklist>li>p:first-child>.fa-square-o:first-child,ul.checklist>li>p:first-child>.fa-check-square-o:first-child{width:1.25em;font-size:.8em;position:relative;bottom:.125em}
+ul.checklist>li>p:first-child>input[type=checkbox]:first-child{margin-right:.25em}
+ul.inline{display:flex;flex-flow:row wrap;list-style:none;margin:0 0 .625em -1.25em}
+ul.inline>li{margin-left:1.25em}
+.unstyled dl dt{font-weight:400;font-style:normal}
+ol.arabic{list-style-type:decimal}
+ol.decimal{list-style-type:decimal-leading-zero}
+ol.loweralpha{list-style-type:lower-alpha}
+ol.upperalpha{list-style-type:upper-alpha}
+ol.lowerroman{list-style-type:lower-roman}
+ol.upperroman{list-style-type:upper-roman}
+ol.lowergreek{list-style-type:lower-greek}
+.hdlist>table,.colist>table{border:0;background:none}
+.hdlist>table>tbody>tr,.colist>table>tbody>tr{background:none}
+td.hdlist1,td.hdlist2{vertical-align:top;padding:0 .625em}
+td.hdlist1{font-weight:bold;padding-bottom:1.25em}
+td.hdlist2{word-wrap:anywhere}
+.literalblock+.colist,.listingblock+.colist{margin-top:-.5em}
+.colist td:not([class]):first-child{padding:.4em .75em 0;line-height:1;vertical-align:top}
+.colist td:not([class]):first-child img{max-width:none}
+.colist td:not([class]):last-child{padding:.25em 0}
+.thumb,.th{line-height:0;display:inline-block;border:4px solid #fff;box-shadow:0 0 0 1px #ddd}
+.imageblock.left{margin:.25em .625em 1.25em 0}
+.imageblock.right{margin:.25em 0 1.25em .625em}
+.imageblock>.title{margin-bottom:0}
+.imageblock.thumb,.imageblock.th{border-width:6px}
+.imageblock.thumb>.title,.imageblock.th>.title{padding:0 .125em}
+.image.left,.image.right{margin-top:.25em;margin-bottom:.25em;display:inline-block;line-height:0}
+.image.left{margin-right:.625em}
+.image.right{margin-left:.625em}
+a.image{text-decoration:none;display:inline-block}
+a.image object{pointer-events:none}
+sup.footnote,sup.footnoteref{font-size:.875em;position:static;vertical-align:super}
+sup.footnote a,sup.footnoteref a{text-decoration:none}
+sup.footnote a:active,sup.footnoteref a:active,#footnotes .footnote a:first-of-type:active{text-decoration:underline}
+#footnotes{padding-top:.75em;padding-bottom:.75em;margin-bottom:.625em}
+#footnotes hr{width:20%;min-width:6.25em;margin:-.25em 0 .75em;border-width:1px 0 0}
+#footnotes .footnote{padding:0 .375em 0 .225em;line-height:1.3334;font-size:.875em;margin-left:1.2em;margin-bottom:.2em}
+#footnotes .footnote a:first-of-type{font-weight:bold;text-decoration:none;margin-left:-1.05em}
+#footnotes .footnote:last-of-type{margin-bottom:0}
+#content #footnotes{margin-top:-.625em;margin-bottom:0;padding:.75em 0}
+div.unbreakable{page-break-inside:avoid}
+.big{font-size:larger}
+.small{font-size:smaller}
+.underline{text-decoration:underline}
+.overline{text-decoration:overline}
+.line-through{text-decoration:line-through}
+.aqua{color:#00bfbf}
+.aqua-background{background:#00fafa}
+.black{color:#000}
+.black-background{background:#000}
+.blue{color:#0000bf}
+.blue-background{background:#0000fa}
+.fuchsia{color:#bf00bf}
+.fuchsia-background{background:#fa00fa}
+.gray{color:#606060}
+.gray-background{background:#7d7d7d}
+.green{color:#006000}
+.green-background{background:#007d00}
+.lime{color:#00bf00}
+.lime-background{background:#00fa00}
+.maroon{color:#600000}
+.maroon-background{background:#7d0000}
+.navy{color:#000060}
+.navy-background{background:#00007d}
+.olive{color:#606000}
+.olive-background{background:#7d7d00}
+.purple{color:#600060}
+.purple-background{background:#7d007d}
+.red{color:#bf0000}
+.red-background{background:#fa0000}
+.silver{color:#909090}
+.silver-background{background:#bcbcbc}
+.teal{color:#006060}
+.teal-background{background:#007d7d}
+.white{color:#bfbfbf}
+.white-background{background:#fafafa}
+.yellow{color:#bfbf00}
+.yellow-background{background:#fafa00}
+span.icon>.fa{cursor:default}
+a span.icon>.fa{cursor:inherit}
+.admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
+.admonitionblock td.icon .icon-note::before{content:"\f05a";color:#19407c}
+.admonitionblock td.icon .icon-tip::before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
+.admonitionblock td.icon .icon-warning::before{content:"\f071";color:#bf6900}
+.admonitionblock td.icon .icon-caution::before{content:"\f06d";color:#bf3400}
+.admonitionblock td.icon .icon-important::before{content:"\f06a";color:#bf0000}
+.conum[data-value]{display:inline-block;color:#fff!important;background:rgba(0,0,0,.8);border-radius:50%;text-align:center;font-size:.75em;width:1.67em;height:1.67em;line-height:1.67em;font-family:"Open Sans","DejaVu Sans",sans-serif;font-style:normal;font-weight:bold}
+.conum[data-value] *{color:#fff!important}
+.conum[data-value]+b{display:none}
+.conum[data-value]::after{content:attr(data-value)}
+pre .conum[data-value]{position:relative;top:-.125em}
+b.conum *{color:inherit!important}
+.conum:not([data-value]):empty{display:none}
+dt,th.tableblock,td.content,div.footnote{text-rendering:optimizeLegibility}
+h1,h2,p,td.content,span.alt,summary{letter-spacing:-.01em}
+p strong,td.content strong,div.footnote strong{letter-spacing:-.005em}
+p,blockquote,dt,td.content,td.hdlist1,span.alt,summary{font-size:1.0625rem}
+p{margin-bottom:1.25rem}
+.sidebarblock p,.sidebarblock dt,.sidebarblock td.content,p.tableblock{font-size:1em}
+.exampleblock>.content{background:#fffef7;border-color:#e0e0dc;box-shadow:0 1px 4px #e0e0dc}
+.print-only{display:none!important}
+@page{margin:1.25cm .75cm}
+@media print{*{box-shadow:none!important;text-shadow:none!important}
+html{font-size:80%}
+a{color:inherit!important;text-decoration:underline!important}
+a.bare,a[href^="#"],a[href^="mailto:"]{text-decoration:none!important}
+a[href^="http:"]:not(.bare)::after,a[href^="https:"]:not(.bare)::after{content:"(" attr(href) ")";display:inline-block;font-size:.875em;padding-left:.25em}
+abbr[title]{border-bottom:1px dotted}
+abbr[title]::after{content:" (" attr(title) ")"}
+pre,blockquote,tr,img,object,svg{page-break-inside:avoid}
+thead{display:table-header-group}
+svg{max-width:100%}
+p,blockquote,dt,td.content{font-size:1em;orphans:3;widows:3}
+h2,h3,#toctitle,.sidebarblock>.content>.title{page-break-after:avoid}
+#header,#content,#footnotes,#footer{max-width:none}
+#toc,.sidebarblock,.exampleblock>.content{background:none!important}
+#toc{border-bottom:1px solid #dddddf!important;padding-bottom:0!important}
+body.book #header{text-align:center}
+body.book #header>h1:first-child{border:0!important;margin:2.5em 0 1em}
+body.book #header .details{border:0!important;display:block;padding:0!important}
+body.book #header .details span:first-child{margin-left:0!important}
+body.book #header .details br{display:block}
+body.book #header .details br+span::before{content:none!important}
+body.book #toc{border:0!important;text-align:left!important;padding:0!important;margin:0!important}
+body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-break-before:always}
+.listingblock code[data-lang]::before{display:block}
+#footer{padding:0 .9375em}
+.hide-on-print{display:none!important}
+.print-only{display:block!important}
+.hide-for-print{display:none!important}
+.show-for-print{display:inherit!important}}
+@media amzn-kf8,print{#header>h1:first-child{margin-top:1.25rem}
+.sect1{padding:0!important}
+.sect1+.sect1{border:0}
+#footer{background:none}
+#footer-text{color:rgba(0,0,0,.6);font-size:.9em}}
+@media amzn-kf8{#header,#content,#footnotes,#footer{padding:0}}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+pre.rouge table td { padding: 5px; }
+pre.rouge table pre { margin: 0; }
+pre.rouge {
+  color: #faf6e4;
+  background-color: #122b3b;
+}
+pre.rouge .gl {
+  color: #dee5e7;
+  background-color: #4e5d62;
+}
+pre.rouge .gp {
+  color: #a8e1fe;
+  font-weight: bold;
+}
+pre.rouge .c, pre.rouge .ch, pre.rouge .cd, pre.rouge .cm, pre.rouge .cpf, pre.rouge .c1, pre.rouge .cs {
+  color: #6c8b9f;
+  font-style: italic;
+}
+pre.rouge .cp {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+pre.rouge .err {
+  color: #fefeec;
+  background-color: #cc0000;
+}
+pre.rouge .gr {
+  color: #cc0000;
+  font-weight: bold;
+  font-style: italic;
+}
+pre.rouge .k, pre.rouge .kd, pre.rouge .kv {
+  color: #f6dd62;
+  font-weight: bold;
+}
+pre.rouge .o, pre.rouge .ow {
+  color: #4df4ff;
+  font-weight: bold;
+}
+pre.rouge .p, pre.rouge .pi {
+  color: #4df4ff;
+}
+pre.rouge .gd {
+  color: #cc0000;
+}
+pre.rouge .gi {
+  color: #b2fd6d;
+}
+pre.rouge .ge {
+  font-style: italic;
+}
+pre.rouge .gs {
+  font-weight: bold;
+}
+pre.rouge .gt {
+  color: #dee5e7;
+  background-color: #4e5d62;
+}
+pre.rouge .kc {
+  color: #f696db;
+  font-weight: bold;
+}
+pre.rouge .kn {
+  color: #ffb000;
+  font-weight: bold;
+}
+pre.rouge .kp {
+  color: #ffb000;
+  font-weight: bold;
+}
+pre.rouge .kr {
+  color: #ffb000;
+  font-weight: bold;
+}
+pre.rouge .gh {
+  color: #ffb000;
+  font-weight: bold;
+}
+pre.rouge .gu {
+  color: #ffb000;
+  font-weight: bold;
+}
+pre.rouge .kt {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+pre.rouge .no {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+pre.rouge .nc {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+pre.rouge .nd {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+pre.rouge .nn {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+pre.rouge .bp {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+pre.rouge .ne {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+pre.rouge .nl {
+  color: #ffb000;
+  font-weight: bold;
+}
+pre.rouge .nt {
+  color: #ffb000;
+  font-weight: bold;
+}
+pre.rouge .m, pre.rouge .mb, pre.rouge .mf, pre.rouge .mh, pre.rouge .mi, pre.rouge .il, pre.rouge .mo, pre.rouge .mx {
+  color: #f696db;
+  font-weight: bold;
+}
+pre.rouge .ld {
+  color: #f696db;
+  font-weight: bold;
+}
+pre.rouge .ss {
+  color: #f696db;
+  font-weight: bold;
+}
+pre.rouge .s, pre.rouge .sb, pre.rouge .dl, pre.rouge .sd, pre.rouge .s2, pre.rouge .sh, pre.rouge .sx, pre.rouge .sr, pre.rouge .s1 {
+  color: #fff0a6;
+  font-weight: bold;
+}
+pre.rouge .sa {
+  color: #f6dd62;
+  font-weight: bold;
+}
+pre.rouge .se {
+  color: #4df4ff;
+  font-weight: bold;
+}
+pre.rouge .sc {
+  color: #4df4ff;
+  font-weight: bold;
+}
+pre.rouge .si {
+  color: #4df4ff;
+  font-weight: bold;
+}
+pre.rouge .nb {
+  font-weight: bold;
+}
+pre.rouge .ni {
+  color: #999999;
+  font-weight: bold;
+}
+pre.rouge .w {
+  color: #BBBBBB;
+}
+pre.rouge .go {
+  color: #BBBBBB;
+}
+pre.rouge .nf, pre.rouge .fm {
+  color: #a8e1fe;
+}
+pre.rouge .py {
+  color: #a8e1fe;
+}
+pre.rouge .na {
+  color: #a8e1fe;
+}
+pre.rouge .nv, pre.rouge .vc, pre.rouge .vg, pre.rouge .vi, pre.rouge .vm {
+  color: #a8e1fe;
+  font-weight: bold;
+}
+</style>
+<style>.toc-current{font-weight: bold;} .toc-root{font-family: "Open Sans","DejaVu Sans",sans-serif;
+                       font-size: 0.9em;} #content{display: flex; flex-direction: column; flex: 1 1 auto;}
+             .nav-footer{text-align: center; margin-top: auto;}
+             .nav-footer > p > a {white-space: nowrap;}</style>
+</head>
+<body id="_modeling_a_mux_the_ordering_problem" class="book toc2 toc-left">
+<div id="header">
+<h1>The Sparta Modeling Framework</h1>
+<div class="details">
+<span id="author" class="author">Knute Lingaard, Nick Haw, Dave Murrell, Colby Nyce, and Kathlene Magnus</span><br>
+<span id="revnumber">version 1.0,</span>
+<span id="revdate">2026-05-17</span>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<p><span class="toc-root"><a href="sparta_book.html">The Sparta Modeling Framework</a></span></p><ul class="sectlevel1">
+<li><a href="_preface.html">Preface</a>
+</li>
+<li><a href="_introduction.html">1. Introduction</a>
+</li>
+<li><a href="_getting_started.html">2. Getting Started</a>
+</li>
+<li><a href="_simulation_construction.html">3. Simulation Construction</a>
+</li>
+<li><a href="_events_and_scheduling.html">4. Events and Scheduling</a>
+</li>
+<li><a href="_ports_and_communication.html">5. Ports and Communication</a>
+</li>
+<li><a href="_parameters.html">6. Parameters</a>
+</li>
+<li><a href="_sparta_resources.html">7. Sparta Resources</a>
+</li>
+<li><a href="_sparta_for_functional_modeling.html">8. Sparta For Functional Modeling</a>
+</li>
+<li><a href="_statistics_and_reporting.html">9. Statistics and Reporting</a>
+</li>
+<li><a href="_debugging_and_logging.html">10. Debugging and Logging</a>
+</li>
+<li><a href="_performance_modeling_patterns.html">11. Performance Modeling Patterns</a>
+<ul class="sectlevel2">
+<li><a href="_modeling_a_mux_the_ordering_problem.html"><span class="toc-current">11.1. Modeling a Mux: The Ordering Problem</span></a>
+</li>
+<li><a href="_credit_based_flow_control.html">11.2. Credit-Based Flow Control</a>
+</li>
+<li><a href="using_precedence.html">11.3. When to Use Precedence (and When Not To)</a>
+</li>
+<li><a href="_understanding_and_solving_a_dag_issue.html">11.4. Understanding and Solving a DAG Issue</a>
+</li>
+<li><a href="_handling_flushes.html">11.5. Handling Flushes</a>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect2">
+<h3 id="_modeling_a_mux_the_ordering_problem">11.1. Modeling a Mux: The Ordering Problem</h3>
+<div class="paragraph">
+<p>The multiplexer (mux) is the canonical example of the ordering problem
+in cycle-based simulation&#8201;&#8212;&#8201;and the clearest illustration of why
+Sparta&#8217;s event and phase system exists.</p>
+</div>
+<div class="sect3">
+<h4 id="_the_problem">11.1.1. The Problem</h4>
+<div class="paragraph">
+<p>Consider a mux with three data inputs (<code>InputA</code>, <code>InputB</code>, <code>InputC</code>),
+a select signal, and a result output.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="data:image/png;base64,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" alt="mux picture">
+</div>
+</div>
+<div class="paragraph">
+<p>The constraint is:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>You cannot compute <code>Result</code> until <code>Select</code> has been called</p>
+</li>
+<li>
+<p>You cannot call <code>Select</code> until all inputs (<code>InputA</code>, <code>InputB</code>,
+<code>InputC</code>) are available</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In a 0-cycle turnaround model (where all inputs arrive in the same
+cycle and the result must also be produced in the same cycle), this
+creates an ordering problem.  If the three input callbacks and the
+select callback can fire in any order, the model may compute the
+result before all inputs have arrived.</p>
+</div>
+<div class="paragraph">
+<p>SystemC solves this with delta cycles&#8201;&#8212;&#8201;borrowed from VHDL&#8201;&#8212;&#8201;but
+delta cycles are limited to a finite upper bound and do not scale
+cleanly to complex topologies.</p>
+</div>
+<div class="paragraph">
+<p>Sparta solves it with explicit event ordering via a Directed Acyclic
+Graph (DAG) and scheduling phases.  The solution is deterministic, has
+no iteration limit, and is expressed directly in the model code.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_solution">11.1.2. The Solution</h4>
+<div class="paragraph">
+<p>The key insight is that <code>Select</code> is an <strong>event</strong>, not a port callback.
+The three input port callbacks each store their value and schedule
+the same <code>UniqueEvent</code> (<code>evSelect</code>).  Because <code>evSelect</code> is a
+<code>UniqueEvent</code>, it fires exactly once per cycle regardless of how many
+inputs arrive.  The ordering is enforced with
+<code>registerConsumingEvent</code> and <code>registerProducingEvent</code>, which tell the
+DAG that <code>evSelect</code> must fire <strong>after</strong> all three input ports have
+delivered their data, and that <code>pResult</code> is driven <strong>only after</strong>
+<code>evSelect</code> fires.</p>
+</div>
+<div class="sect4">
+<h5 id="_components">Components</h5>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="c1">// Three 0-cycle data input ports</span>
+<span class="n">sparta</span><span class="o">::</span><span class="n">DataInPort</span><span class="o">&lt;</span><span class="n">Value</span><span class="o">&gt;</span> <span class="n">pInputA_</span><span class="p">{</span><span class="o">&amp;</span><span class="n">unit_port_set_</span><span class="p">,</span> <span class="s">"pInputA"</span><span class="p">,</span> <span class="mi">0</span><span class="p">};</span>
+<span class="n">sparta</span><span class="o">::</span><span class="n">DataInPort</span><span class="o">&lt;</span><span class="n">Value</span><span class="o">&gt;</span> <span class="n">pInputB_</span><span class="p">{</span><span class="o">&amp;</span><span class="n">unit_port_set_</span><span class="p">,</span> <span class="s">"pInputB"</span><span class="p">,</span> <span class="mi">0</span><span class="p">};</span>
+<span class="n">sparta</span><span class="o">::</span><span class="n">DataInPort</span><span class="o">&lt;</span><span class="n">Value</span><span class="o">&gt;</span> <span class="n">pInputC_</span><span class="p">{</span><span class="o">&amp;</span><span class="n">unit_port_set_</span><span class="p">,</span> <span class="s">"pInputC"</span><span class="p">,</span> <span class="mi">0</span><span class="p">};</span>
+
+<span class="c1">// The select event -- UniqueEvent fires only once per cycle</span>
+<span class="n">sparta</span><span class="o">::</span><span class="n">UniqueEvent</span><span class="o">&lt;&gt;</span> <span class="n">evSelect_</span><span class="p">{</span><span class="o">&amp;</span><span class="n">unit_event_set_</span><span class="p">,</span> <span class="s">"evSelect"</span><span class="p">,</span>
+                                 <span class="n">CREATE_SPARTA_HANDLER</span><span class="p">(</span><span class="n">MuxUnit</span><span class="p">,</span> <span class="n">select_</span><span class="p">)};</span>
+
+<span class="c1">// The result output port</span>
+<span class="n">sparta</span><span class="o">::</span><span class="n">DataOutPort</span><span class="o">&lt;</span><span class="n">Value</span><span class="o">&gt;</span> <span class="n">pResult_</span><span class="p">{</span><span class="o">&amp;</span><span class="n">unit_port_set_</span><span class="p">,</span> <span class="s">"pResult"</span><span class="p">};</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_enforcing_the_ordering">Enforcing the Ordering</h5>
+<div class="paragraph">
+<p>In the unit constructor, register the consuming and producing event
+relationships with the ports:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="n">MuxUnit</span><span class="o">::</span><span class="n">MuxUnit</span><span class="p">(</span><span class="n">sparta</span><span class="o">::</span><span class="n">TreeNode</span> <span class="o">*</span> <span class="n">node</span><span class="p">,</span>
+                 <span class="k">const</span> <span class="n">MuxParameters</span> <span class="o">*</span> <span class="n">params</span><span class="p">)</span> <span class="o">:</span>
+    <span class="n">sparta</span><span class="o">::</span><span class="n">Unit</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// Register callbacks</span>
+    <span class="n">pInputA_</span><span class="p">.</span><span class="n">registerConsumerHandler</span><span class="p">(</span>
+        <span class="n">CREATE_SPARTA_HANDLER_WITH_DATA</span><span class="p">(</span><span class="n">MuxUnit</span><span class="p">,</span> <span class="n">inputA_</span><span class="p">,</span> <span class="n">Value</span><span class="p">));</span>
+    <span class="n">pInputB_</span><span class="p">.</span><span class="n">registerConsumerHandler</span><span class="p">(</span>
+        <span class="n">CREATE_SPARTA_HANDLER_WITH_DATA</span><span class="p">(</span><span class="n">MuxUnit</span><span class="p">,</span> <span class="n">inputB_</span><span class="p">,</span> <span class="n">Value</span><span class="p">));</span>
+    <span class="n">pInputC_</span><span class="p">.</span><span class="n">registerConsumerHandler</span><span class="p">(</span>
+        <span class="n">CREATE_SPARTA_HANDLER_WITH_DATA</span><span class="p">(</span><span class="n">MuxUnit</span><span class="p">,</span> <span class="n">inputC_</span><span class="p">,</span> <span class="n">Value</span><span class="p">));</span>
+
+    <span class="c1">// Tell the DAG: evSelect_ must fire AFTER all three input ports</span>
+    <span class="c1">// have delivered their data.  This establishes a happens-before</span>
+    <span class="c1">// relationship: port delivery -&gt; evSelect_.</span>
+    <span class="n">pInputA_</span><span class="p">.</span><span class="n">registerConsumingEvent</span><span class="p">(</span><span class="n">evSelect_</span><span class="p">);</span>
+    <span class="n">pInputB_</span><span class="p">.</span><span class="n">registerConsumingEvent</span><span class="p">(</span><span class="n">evSelect_</span><span class="p">);</span>
+    <span class="n">pInputC_</span><span class="p">.</span><span class="n">registerConsumingEvent</span><span class="p">(</span><span class="n">evSelect_</span><span class="p">);</span>
+
+    <span class="c1">// Tell the DAG: pResult_ is driven only AFTER evSelect_ fires.</span>
+    <span class="c1">// This establishes: evSelect_ -&gt; pResult_ send.</span>
+    <span class="n">pResult_</span><span class="p">.</span><span class="n">registerProducingEvent</span><span class="p">(</span><span class="n">evSelect_</span><span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>registerConsumingEvent(ev)</code> tells the DAG that the event <code>ev</code> must
+fire after this port&#8217;s callback fires within the same cycle.</p>
+</div>
+<div class="paragraph">
+<p><code>registerProducingEvent(ev)</code> tells the DAG that data sent on this
+port is driven by event <code>ev</code>&#8201;&#8212;&#8201;any consumer of <code>pResult_</code> will
+be guaranteed to receive data only after <code>evSelect_</code> has run.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_the_callbacks">The Callbacks</h5>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="c1">// The input callbacks -- store the value and schedule the selector</span>
+<span class="kt">void</span> <span class="n">MuxUnit</span><span class="o">::</span><span class="n">inputA_</span><span class="p">(</span><span class="k">const</span> <span class="n">Value</span> <span class="o">&amp;</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">a_value_</span> <span class="o">==</span> <span class="n">val</span><span class="p">;</span>
+    <span class="n">evSelect_</span><span class="p">.</span><span class="n">schedule</span><span class="p">();</span>  <span class="c1">// schedule evSelect -- fires only once</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">MuxUnit</span><span class="o">::</span><span class="n">inputB_</span><span class="p">(</span><span class="k">const</span> <span class="n">Value</span> <span class="o">&amp;</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">b_value_</span> <span class="o">==</span> <span class="n">val</span><span class="p">;</span>
+    <span class="n">evSelect_</span><span class="p">.</span><span class="n">schedule</span><span class="p">();</span>  <span class="c1">// already scheduled? UniqueEvent ignores it</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">MuxUnit</span><span class="o">::</span><span class="n">inputC_</span><span class="p">(</span><span class="k">const</span> <span class="n">Value</span> <span class="o">&amp;</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">c_value_</span> <span class="o">==</span> <span class="n">val</span><span class="p">;</span>
+    <span class="n">evSelect_</span><span class="p">.</span><span class="n">schedule</span><span class="p">();</span>  <span class="c1">// same</span>
+<span class="p">}</span>
+
+<span class="c1">// The selector -- called once per cycle, after all inputs have arrived</span>
+<span class="kt">void</span> <span class="n">MuxUnit</span><span class="o">::</span><span class="n">select_</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">result_</span> <span class="o">==</span> <span class="n">chooseWinner_</span><span class="p">();</span>
+    <span class="n">pResult_</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">result_</span><span class="p">);</span>  <span class="c1">// can be 0 or more cycles -- legal!</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The three input callbacks each schedule <code>evSelect_</code>.  Because
+<code>evSelect_</code> is a <code>UniqueEvent</code>, it fires exactly once regardless of
+whether one, two, or three inputs arrived this cycle.  When
+<code>select_()</code> runs, all three values are guaranteed to have been
+stored because the DAG enforces that all three port callbacks
+complete before <code>evSelect_</code> fires.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_why_this_works">Why This Works</h5>
+<div class="paragraph">
+<p>The ordering guarantee comes from two cooperating mechanisms:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong><code>registerConsumingEvent</code></strong> adds a DAG edge: port callback →
+<code>evSelect_</code>.  The scheduler will not fire <code>evSelect_</code> until all
+three port forward events (one per input port) have completed.</p>
+</li>
+<li>
+<p><strong><code>UniqueEvent</code></strong> ensures that <code>select_()</code> fires exactly once even
+though three different callbacks each call <code>evSelect_.schedule()</code>.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Together they give a clean, deterministic solution: all inputs settle
+first, then the select logic runs exactly once, then the result is
+sent.  There is no iteration, no delta cycle limit, and no risk of
+the result being computed before all inputs have arrived.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_contrast_with_the_broken_pattern">11.1.3. Contrast with the Broken Pattern</h4>
+<div class="paragraph">
+<p>To understand why the ordering registration matters, consider what
+happens without it:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="c1">// BROKEN -- do not do this</span>
+<span class="kt">void</span> <span class="n">MuxUnit</span><span class="o">::</span><span class="n">inputA_</span><span class="p">(</span><span class="k">const</span> <span class="n">Value</span> <span class="o">&amp;</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">a_value_</span> <span class="o">==</span> <span class="n">val</span><span class="p">;</span>
+    <span class="n">result_</span> <span class="o">==</span> <span class="n">chooseWinner_</span><span class="p">();</span>  <span class="c1">// InputB and InputC may not have arrived yet!</span>
+    <span class="n">pResult_</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">result_</span><span class="p">);</span>     <span class="c1">// Result may be wrong</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This processes the result in the port callback directly.  If <code>InputA</code>
+'s callback fires before <code>InputB</code> and <code>InputC</code>, the result is computed
+with stale or uninitialized values for B and C.  The bug is
+non-deterministic&#8201;&#8212;&#8201;it may produce correct results in some runs and
+wrong results in others depending on the order the scheduler happens
+to fire the port callbacks.</p>
+</div>
+<div class="paragraph">
+<p>Even this slightly better version is broken:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="c1">// STILL BROKEN -- do not do this</span>
+<span class="kt">void</span> <span class="n">MuxUnit</span><span class="o">::</span><span class="n">inputA_</span><span class="p">(</span><span class="k">const</span> <span class="n">Value</span> <span class="o">&amp;</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">a_value_</span> <span class="o">==</span> <span class="n">val</span><span class="p">;</span>
+    <span class="n">evSelect_</span><span class="p">.</span><span class="n">schedule</span><span class="p">();</span>  <span class="c1">// schedule the event...</span>
+<span class="p">}</span>
+<span class="c1">// ... same for B and C ...</span>
+
+<span class="kt">void</span> <span class="n">MuxUnit</span><span class="o">::</span><span class="n">select_</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">result_</span> <span class="o">==</span> <span class="n">chooseWinner_</span><span class="p">();</span>
+    <span class="n">pResult_</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">result_</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="c1">// But WITHOUT registerConsumingEvent -- no DAG edge established</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Without the <code>registerConsumingEvent</code> calls, the DAG has no edge
+between the port callbacks and <code>evSelect_</code>.  The scheduler may fire
+<code>evSelect_</code> before all three input callbacks have run, again
+producing wrong results.</p>
+</div>
+<div class="paragraph">
+<p>The <code>registerConsumingEvent</code> + <code>registerProducingEvent</code> calls are not
+optional.  These functions tell Sparta about the data dependencies the
+model has, so the framework can enforce them.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_complete_muxunit_example">11.1.4. Complete MuxUnit Example</h4>
+<div class="paragraph">
+<p>Here is the full, correct implementation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="c1">// MuxUnit.hpp</span>
+<span class="cp">#pragma once
+#include</span> <span class="cpf">"sparta/simulation/Unit.hpp"</span><span class="cp">
+#include</span> <span class="cpf">"sparta/ports/DataPort.hpp"</span><span class="cp">
+#include</span> <span class="cpf">"sparta/events/UniqueEvent.hpp"</span><span class="cp">
+#include</span> <span class="cpf">"sparta/utils/ValidValue.hpp"</span><span class="cp">
+</span>
+<span class="c1">// Value type for the mux -- replace with actual data type</span>
+<span class="k">using</span> <span class="n">Value</span> <span class="o">==</span> <span class="kt">uint32_t</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">MuxUnit</span> <span class="o">:</span> <span class="k">public</span> <span class="n">sparta</span><span class="o">::</span><span class="n">Unit</span>
+<span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="k">class</span> <span class="nc">MuxParameters</span> <span class="o">:</span> <span class="k">public</span> <span class="n">sparta</span><span class="o">::</span><span class="n">ParameterSet</span>
+    <span class="p">{</span>
+    <span class="nl">public:</span>
+        <span class="n">MuxParameters</span><span class="p">(</span><span class="n">sparta</span><span class="o">::</span><span class="n">TreeNode</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span> <span class="o">:</span> <span class="n">sparta</span><span class="o">::</span><span class="n">ParameterSet</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="p">{}</span>
+        <span class="n">PARAMETER</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span> <span class="n">select_policy</span><span class="p">,</span> <span class="s">"priority"</span><span class="p">,</span>
+                  <span class="s">"Mux select policy: priority, round_robin"</span><span class="p">)</span>
+    <span class="p">};</span>
+
+    <span class="k">static</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">name</span><span class="p">;</span>
+    <span class="n">MuxUnit</span><span class="p">(</span><span class="n">sparta</span><span class="o">::</span><span class="n">TreeNode</span> <span class="o">*</span> <span class="n">node</span><span class="p">,</span> <span class="k">const</span> <span class="n">MuxParameters</span> <span class="o">*</span> <span class="n">params</span><span class="p">);</span>
+
+<span class="nl">private:</span>
+    <span class="c1">// Input ports (0-cycle -- all inputs arrive in the same cycle)</span>
+    <span class="n">sparta</span><span class="o">::</span><span class="n">DataInPort</span><span class="o">&lt;</span><span class="n">Value</span><span class="o">&gt;</span> <span class="n">pInputA_</span><span class="p">{</span><span class="o">&amp;</span><span class="n">unit_port_set_</span><span class="p">,</span> <span class="s">"pInputA"</span><span class="p">,</span> <span class="mi">0</span><span class="p">};</span>
+    <span class="n">sparta</span><span class="o">::</span><span class="n">DataInPort</span><span class="o">&lt;</span><span class="n">Value</span><span class="o">&gt;</span> <span class="n">pInputB_</span><span class="p">{</span><span class="o">&amp;</span><span class="n">unit_port_set_</span><span class="p">,</span> <span class="s">"pInputB"</span><span class="p">,</span> <span class="mi">0</span><span class="p">};</span>
+    <span class="n">sparta</span><span class="o">::</span><span class="n">DataInPort</span><span class="o">&lt;</span><span class="n">Value</span><span class="o">&gt;</span> <span class="n">pInputC_</span><span class="p">{</span><span class="o">&amp;</span><span class="n">unit_port_set_</span><span class="p">,</span> <span class="s">"pInputC"</span><span class="p">,</span> <span class="mi">0</span><span class="p">};</span>
+
+    <span class="c1">// The select event</span>
+    <span class="n">sparta</span><span class="o">::</span><span class="n">UniqueEvent</span><span class="o">&lt;&gt;</span> <span class="n">evSelect_</span><span class="p">{</span><span class="o">&amp;</span><span class="n">unit_event_set_</span><span class="p">,</span> <span class="s">"evSelect"</span><span class="p">,</span>
+                                    <span class="n">CREATE_SPARTA_HANDLER</span><span class="p">(</span><span class="n">MuxUnit</span><span class="p">,</span> <span class="n">select_</span><span class="p">)};</span>
+
+    <span class="c1">// Output port</span>
+    <span class="n">sparta</span><span class="o">::</span><span class="n">DataOutPort</span><span class="o">&lt;</span><span class="n">Value</span><span class="o">&gt;</span> <span class="n">pResult_</span><span class="p">{</span><span class="o">&amp;</span><span class="n">unit_port_set_</span><span class="p">,</span> <span class="s">"pResult"</span><span class="p">};</span>
+
+    <span class="c1">// Input storage</span>
+    <span class="n">sparta</span><span class="o">::</span><span class="n">utils</span><span class="o">::</span><span class="n">ValidValue</span><span class="o">&lt;</span><span class="n">Value</span><span class="o">&gt;</span> <span class="n">a_value_</span><span class="p">;</span>
+    <span class="n">sparta</span><span class="o">::</span><span class="n">utils</span><span class="o">::</span><span class="n">ValidValue</span><span class="o">&lt;</span><span class="n">Value</span><span class="o">&gt;</span> <span class="n">b_value_</span><span class="p">;</span>
+    <span class="n">sparta</span><span class="o">::</span><span class="n">utils</span><span class="o">::</span><span class="n">ValidValue</span><span class="o">&lt;</span><span class="n">Value</span><span class="o">&gt;</span> <span class="n">c_value_</span><span class="p">;</span>
+
+    <span class="n">Value</span> <span class="n">result_</span> <span class="o">==</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">select_policy_</span><span class="p">;</span>
+
+    <span class="c1">// Callbacks</span>
+    <span class="kt">void</span> <span class="n">inputA_</span><span class="p">(</span><span class="k">const</span> <span class="n">Value</span> <span class="o">&amp;</span> <span class="n">val</span><span class="p">);</span>
+    <span class="kt">void</span> <span class="n">inputB_</span><span class="p">(</span><span class="k">const</span> <span class="n">Value</span> <span class="o">&amp;</span> <span class="n">val</span><span class="p">);</span>
+    <span class="kt">void</span> <span class="n">inputC_</span><span class="p">(</span><span class="k">const</span> <span class="n">Value</span> <span class="o">&amp;</span> <span class="n">val</span><span class="p">);</span>
+    <span class="kt">void</span> <span class="n">select_</span><span class="p">();</span>
+
+    <span class="n">Value</span> <span class="n">chooseWinner_</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+<span class="p">};</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="cpp"><span class="c1">// MuxUnit.cpp</span>
+<span class="cp">#include</span> <span class="cpf">"MuxUnit.hpp"</span><span class="cp">
+</span>
+<span class="k">const</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">MuxUnit</span><span class="o">::</span><span class="n">name</span> <span class="o">==</span> <span class="s">"mux"</span><span class="p">;</span>
+
+<span class="n">MuxUnit</span><span class="o">::</span><span class="n">MuxUnit</span><span class="p">(</span><span class="n">sparta</span><span class="o">::</span><span class="n">TreeNode</span> <span class="o">*</span> <span class="n">node</span><span class="p">,</span>
+                 <span class="k">const</span> <span class="n">MuxParameters</span> <span class="o">*</span> <span class="n">params</span><span class="p">)</span> <span class="o">:</span>
+    <span class="n">sparta</span><span class="o">::</span><span class="n">Unit</span><span class="p">(</span><span class="n">node</span><span class="p">),</span>
+    <span class="n">select_policy_</span><span class="p">(</span><span class="n">params</span><span class="o">-&gt;</span><span class="n">select_policy</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// Register port callbacks</span>
+    <span class="n">pInputA_</span><span class="p">.</span><span class="n">registerConsumerHandler</span><span class="p">(</span>
+        <span class="n">CREATE_SPARTA_HANDLER_WITH_DATA</span><span class="p">(</span><span class="n">MuxUnit</span><span class="p">,</span> <span class="n">inputA_</span><span class="p">,</span> <span class="n">Value</span><span class="p">));</span>
+    <span class="n">pInputB_</span><span class="p">.</span><span class="n">registerConsumerHandler</span><span class="p">(</span>
+        <span class="n">CREATE_SPARTA_HANDLER_WITH_DATA</span><span class="p">(</span><span class="n">MuxUnit</span><span class="p">,</span> <span class="n">inputB_</span><span class="p">,</span> <span class="n">Value</span><span class="p">));</span>
+    <span class="n">pInputC_</span><span class="p">.</span><span class="n">registerConsumerHandler</span><span class="p">(</span>
+        <span class="n">CREATE_SPARTA_HANDLER_WITH_DATA</span><span class="p">(</span><span class="n">MuxUnit</span><span class="p">,</span> <span class="n">inputC_</span><span class="p">,</span> <span class="n">Value</span><span class="p">));</span>
+
+    <span class="c1">// Establish DAG ordering:</span>
+    <span class="c1">// All three input port callbacks must complete before evSelect_ fires</span>
+    <span class="n">pInputA_</span><span class="p">.</span><span class="n">registerConsumingEvent</span><span class="p">(</span><span class="n">evSelect_</span><span class="p">);</span>
+    <span class="n">pInputB_</span><span class="p">.</span><span class="n">registerConsumingEvent</span><span class="p">(</span><span class="n">evSelect_</span><span class="p">);</span>
+    <span class="n">pInputC_</span><span class="p">.</span><span class="n">registerConsumingEvent</span><span class="p">(</span><span class="n">evSelect_</span><span class="p">);</span>
+
+    <span class="c1">// pResult_ is driven only after evSelect_ fires</span>
+    <span class="n">pResult_</span><span class="p">.</span><span class="n">registerProducingEvent</span><span class="p">(</span><span class="n">evSelect_</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">MuxUnit</span><span class="o">::</span><span class="n">inputA_</span><span class="p">(</span><span class="k">const</span> <span class="n">Value</span> <span class="o">&amp;</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">a_value_</span> <span class="o">==</span> <span class="n">val</span><span class="p">;</span>
+    <span class="n">evSelect_</span><span class="p">.</span><span class="n">schedule</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">MuxUnit</span><span class="o">::</span><span class="n">inputB_</span><span class="p">(</span><span class="k">const</span> <span class="n">Value</span> <span class="o">&amp;</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">b_value_</span> <span class="o">==</span> <span class="n">val</span><span class="p">;</span>
+    <span class="n">evSelect_</span><span class="p">.</span><span class="n">schedule</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">MuxUnit</span><span class="o">::</span><span class="n">inputC_</span><span class="p">(</span><span class="k">const</span> <span class="n">Value</span> <span class="o">&amp;</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">c_value_</span> <span class="o">==</span> <span class="n">val</span><span class="p">;</span>
+    <span class="n">evSelect_</span><span class="p">.</span><span class="n">schedule</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">MuxUnit</span><span class="o">::</span><span class="n">select_</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// At this point ALL inputs that arrived this cycle have been stored.</span>
+    <span class="c1">// chooseWinner_ selects based on the policy and which inputs are valid.</span>
+    <span class="n">result_</span> <span class="o">==</span> <span class="n">chooseWinner_</span><span class="p">();</span>
+    <span class="n">ILOG</span><span class="p">(</span><span class="s">"Mux select: result="</span> <span class="o">&lt;&lt;</span> <span class="n">result_</span>
+         <span class="o">&lt;&lt;</span> <span class="s">" a_valid="</span> <span class="o">&lt;&lt;</span> <span class="n">a_value_</span><span class="p">.</span><span class="n">isValid</span><span class="p">()</span>
+         <span class="o">&lt;&lt;</span> <span class="s">" b_valid="</span> <span class="o">&lt;&lt;</span> <span class="n">b_value_</span><span class="p">.</span><span class="n">isValid</span><span class="p">()</span>
+         <span class="o">&lt;&lt;</span> <span class="s">" c_valid="</span> <span class="o">&lt;&lt;</span> <span class="n">c_value_</span><span class="p">.</span><span class="n">isValid</span><span class="p">());</span>
+
+    <span class="n">pResult_</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">result_</span><span class="p">);</span>
+
+    <span class="c1">// Clear valid flags for next cycle</span>
+    <span class="n">a_value_</span><span class="p">.</span><span class="n">clearValid</span><span class="p">();</span>
+    <span class="n">b_value_</span><span class="p">.</span><span class="n">clearValid</span><span class="p">();</span>
+    <span class="n">c_value_</span><span class="p">.</span><span class="n">clearValid</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="n">Value</span> <span class="n">MuxUnit</span><span class="o">::</span><span class="n">chooseWinner_</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="c1">// Example: priority -- A &gt; B &gt; C</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">select_policy_</span> <span class="o">===</span> <span class="s">"priority"</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">a_value_</span><span class="p">.</span><span class="n">isValid</span><span class="p">())</span> <span class="p">{</span> <span class="k">return</span> <span class="n">a_value_</span><span class="p">.</span><span class="n">getValue</span><span class="p">();</span> <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">b_value_</span><span class="p">.</span><span class="n">isValid</span><span class="p">())</span> <span class="p">{</span> <span class="k">return</span> <span class="n">b_value_</span><span class="p">.</span><span class="n">getValue</span><span class="p">();</span> <span class="p">}</span>
+        <span class="n">sparta_assert</span><span class="p">(</span><span class="n">c_value_</span><span class="p">.</span><span class="n">isValid</span><span class="p">(),</span> <span class="s">"select_() called with no valid inputs"</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">c_value_</span><span class="p">.</span><span class="n">getValue</span><span class="p">();</span>
+    <span class="p">}</span>
+    <span class="c1">// ... other policies</span>
+    <span class="n">sparta_assert</span><span class="p">(</span><span class="nb">false</span><span class="p">,</span> <span class="s">"Unknown select policy: "</span> <span class="o">&lt;&lt;</span> <span class="n">select_policy_</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_key_takeaways">11.1.5. Key Takeaways</h4>
+<div class="paragraph">
+<p>The mux example illustrates three general principles that apply
+throughout Sparta modeling:</p>
+</div>
+<div class="paragraph">
+<p><strong>1. Use <code>UniqueEvent</code> for any work triggered by multiple sources.</strong>
+Whenever more than one port callback or event might trigger the same
+downstream work in the same cycle, the work method should be a
+<code>UniqueEvent</code>.  This guarantees the work runs exactly once regardless
+of how many triggers arrived.</p>
+</div>
+<div class="paragraph">
+<p><strong>2. Use <code>registerConsumingEvent</code> to declare data dependencies.</strong>
+If an event&#8217;s work depends on data delivered by a port, register that
+dependency explicitly.  This is not optional&#8201;&#8212;&#8201;it is what gives the
+DAG the information it needs to enforce correct ordering.</p>
+</div>
+<div class="paragraph">
+<p><strong>3. Use <code>registerProducingEvent</code> to declare output dependencies.</strong>
+If a port sends data that was computed by an event, register that
+relationship.  Downstream consumers are then guaranteed to receive
+the data only after the producing event has run.</p>
+</div>
+<div class="paragraph">
+<p><strong>4. Use <code>ValidValue</code> to track which inputs have arrived.</strong>
+<code>sparta::utils::ValidValue&lt;T&gt;</code> is safer than a raw value with a
+separate <code>bool valid</code> flag.  It asserts on read if the value has
+not been set, catching missing-input bugs immediately rather than
+propagating garbage values silently.</p>
+</div>
+<div class="paragraph">
+<p>These four patterns appear together throughout Olympia and any
+well-written Sparta model.  When a modeler is writing a unit that
+receives data from multiple sources and produces output that depends
+on all of them, reach for this pattern first.</p>
+</div>
+</div>
+</div>
+<div class="paragraph nav-footer">
+<p>↑ Up: <a href="_performance_modeling_patterns.html">Performance Modeling Patterns</a> | ⌂ Home: <a href="sparta_book.html">The Sparta Modeling Framework</a> | Next: <a href="_credit_based_flow_control.html">Credit-Based Flow Control</a> →</p>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Version 1.0<br>
+Last updated 2026-10-01 23:53:01 UTC
+</div>
+</div>
+</body>
+</html>

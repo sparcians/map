@@ -1,0 +1,7 @@
+<map id="sparta::serialization::checkpoint::DeltaCheckpoint::getTotalMemoryUse" name="sparta::serialization::checkpoint::DeltaCheckpoint::getTotalMemoryUse">
+<area shape="rect" id="Node000001" title="Returns memory usage by this checkpoint." alt="" coords="5,45,197,101"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#ac81e696adf31e92766ed9b0c67dfa41f" title="Returns memory usage by the content of this checkpoint." alt="" coords="245,5,436,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,54,229,49,230,54,198,60"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a181f5bd1247c81ce6b4988e2ffeb32c1" title="Returns next checkpoint following *this. May be an empty vector if there are no later checkpoints fol..." alt="" coords="260,85,421,141"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="198,87,245,95,244,100,197,92"/>
+</map>

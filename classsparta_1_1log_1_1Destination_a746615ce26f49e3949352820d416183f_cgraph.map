@@ -1,0 +1,5 @@
+<map id="sparta::log::Destination::compare" name="sparta::log::Destination::compare">
+<area shape="rect" id="Node000001" title="Handle Destination::operator== on ostreams." alt="" coords="5,5,157,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1log_1_1Destination.html#a290fbe40d58e252d3bce82f102d0fb80" title="Returns true if the destination behind this interface was constructed with the ostream o." alt="" coords="205,5,356,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="157,23,189,23,189,28,157,28"/>
+</map>

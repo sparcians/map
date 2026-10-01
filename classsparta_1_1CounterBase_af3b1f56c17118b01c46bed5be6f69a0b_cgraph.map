@@ -1,0 +1,7 @@
+<map id="sparta::CounterBase::CounterBase" name="sparta::CounterBase::CounterBase">
+<area shape="rect" id="Node000001" title="CounterBase constructor." alt="" coords="5,27,144,68"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a7b6ca285ffd1077f9622662c167315e9" title="Adds a TreeNode to this node as a child." alt="" coords="202,5,378,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="144,35,186,30,187,35,144,41"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#aeefcb776a4574cd8075f92caaeb4676d" title="Tracks a node as an expected parent without actually adding this node as a child. This is used almost..." alt="" coords="192,55,389,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="144,54,177,58,176,63,144,59"/>
+</map>

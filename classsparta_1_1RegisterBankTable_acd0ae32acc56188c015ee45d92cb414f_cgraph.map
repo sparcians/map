@@ -1,0 +1,5 @@
+<map id="sparta::RegisterBankTable::extendBanks_" name="sparta::RegisterBankTable::extendBanks_">
+<area shape="rect" id="Node000001" title="Extends the banks_ vector to contain num_banks entries." alt="" coords="5,5,179,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1RegisterBankTable.html#a42924bbd4c496cfdfeaadef7ed0e4ece" title="Insert a register in a specific bank." alt="" coords="227,5,400,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="179,23,211,23,211,28,179,28"/>
+</map>

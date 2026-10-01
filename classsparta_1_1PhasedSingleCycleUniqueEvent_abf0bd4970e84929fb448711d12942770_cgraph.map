@@ -1,0 +1,13 @@
+<map id="sparta::PhasedSingleCycleUniqueEvent::schedule" name="sparta::PhasedSingleCycleUniqueEvent::schedule">
+<area shape="rect" id="Node000001" title="Schedule this PhasedSingleCycleUniqueEvent exactly zero or one cycle into the future...." alt="" coords="5,88,181,129"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Scheduler.html#afd6f4288f6a11a80522091a664b22747" title="Const expression to calculate tick value for indexing." alt="" coords="255,5,382,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,85,228,55,244,49,246,54,230,60,150,90"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="229,70,408,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="181,96,213,92,214,97,181,101"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Clock.html#ab621af2dc3047de88e78eb0a0a0010d5" title="Return the tick corresponding to the given cycle." alt="" coords="246,120,391,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="181,115,230,120,230,126,181,120"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1Scheduleable.html#a8e4138971ef32a66e6d14e5b67630f51" title="Return true if this scheduleable was scheduled at all." alt="" coords="248,169,389,210"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="152,127,230,155,246,161,244,166,228,160,150,132"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1Scheduler.html#a0f61de7b477fc17afb98246925797494" title="Is the given Scheduleable item anywhere (in time now &#45;&gt; future) on the Scheduler?" alt="" coords="456,169,583,210"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="389,187,441,187,441,192,389,192"/>
+</map>

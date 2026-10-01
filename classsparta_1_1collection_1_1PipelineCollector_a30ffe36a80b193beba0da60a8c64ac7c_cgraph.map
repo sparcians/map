@@ -1,0 +1,32 @@
+<map id="sparta::collection::PipelineCollector::PipelineCollector" name="sparta::collection::PipelineCollector::PipelineCollector">
+<area shape="rect" id="Node000001" title="Instantiate the collector with required parameters before pipeline collection can occur." alt="" coords="5,260,130,316"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNodePrivateAttorney.html#a4cfe23c752f8411f7f946f0626910e9a" title=" " alt="" coords="178,5,387,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="72,259,84,215,105,161,135,105,154,80,176,57,182,52,185,56,179,61,158,83,139,108,109,163,89,217,77,261"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Scheduler.html#a1ac6fb167a8fbd15b0c2d85061e9ce99" title="Get the internal DAG." alt="" coords="219,71,346,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="78,259,115,190,142,153,176,121,203,106,205,110,179,125,146,156,119,193,83,261"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1DAG.html#a10d94f366abe416c5fb5754d47bf1b51" title="Get the named GOP point; create it if not found." alt="" coords="200,136,365,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="86,258,124,212,149,189,176,170,186,165,189,170,179,175,152,194,128,216,90,262"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1Clock.html#a82e1ca55c8ca69966a11a2b81ffcbce0" title="Returns the period of this clock in scheduler ticks." alt="" coords="204,185,361,210"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="108,258,141,238,177,221,198,213,200,218,179,225,143,243,111,262"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1Scheduleable.html#a89179a9145a4ff37cf37f450c0c33349" title="get the internal Vertex of this scheduleable" alt="" coords="212,235,353,275"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="130,276,196,266,197,271,131,281"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="210,300,355,341"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="131,295,195,305,194,310,130,300"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1Scheduler.html#ad57d35535f5ce3d1ce808af3df549552" title="Is the scheduler finalized." alt="" coords="219,365,346,406"/>
+<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="113,314,179,350,205,361,203,365,177,355,111,319"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1Scheduleable.html#a017c86b15dc4298f385820e2169779e1" title="This event, if continuing == true, will keep the simulation running." alt="" coords="212,431,353,471"/>
+<area shape="poly" id="edge12_Node000001_Node000012" title=" " alt="" coords="88,315,126,366,151,393,179,415,199,426,196,431,176,420,147,397,122,370,84,318"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1Scheduleable.html#abb13cd12df45ef6b55d3e0146e9399dd" title="Set the clock and scheduler of this Scheduleable." alt="" coords="204,496,360,537"/>
+<area shape="poly" id="edge13_Node000001_Node000013" title=" " alt="" coords="80,316,94,353,115,398,143,442,179,481,192,489,189,494,176,485,139,446,110,400,89,355,75,317"/>
+<area shape="rect" id="Node000015" href="$classsparta_1_1Scheduleable.html#a04355f3cb8a5f030350d26ac8cd7d898" title="Set the Scheduler of this Scheduleable, and set the local vertex_ to a new vertex from the Vertex Fac..." alt="" coords="212,561,353,602"/>
+<area shape="poly" id="edge15_Node000001_Node000015" title=" " alt="" coords="75,316,86,366,105,428,136,491,156,521,179,546,199,560,196,564,176,550,152,524,131,494,100,429,81,367,70,317"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1DAG.html#a41539cd0534d9987397940e29fa80718" title="Find a GOP point." alt="" coords="679,112,863,137"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="365,142,663,127,664,132,366,147"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1DAG.html#ab65ce1ac46015e913ac39cd7fae2f13d" title="Create a new Vertex&#45;GOP point." alt="" coords="435,161,622,186"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="366,154,420,160,419,165,365,159"/>
+<area shape="poly" id="edge6_Node000006_Node000005" title=" " alt="" coords="595,158,689,138,690,143,596,163"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1DAG.html#a651d357b385d5c4f00de234aa3b54cac" title="Get a new Vertex from the DAGs Vertex Factory Called in a Scheduleable after the scheduler_ has been ..." alt="" coords="670,161,872,186"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="623,171,655,171,655,176,623,176"/>
+<area shape="rect" id="Node000014" href="$classsparta_1_1Clock.html#aa2d29cba2726bcc43077de19218307ff" title=" " alt="" coords="440,504,618,529"/>
+<area shape="poly" id="edge14_Node000013_Node000014" title=" " alt="" coords="361,514,424,514,424,519,361,519"/>
+</map>

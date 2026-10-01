@@ -1,0 +1,5 @@
+<map id="sparta::Pipeline::setProducerForPipelineUpdate" name="sparta::Pipeline::setProducerForPipelineUpdate">
+<area shape="rect" id="Node000001" title="Specify producer event for the pipeline update event." alt="" coords="5,5,191,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1EventNode.html#ade2ce9e1d898e826493a600eefebd6bf" title="Get the scheduleable associated with this event node." alt="" coords="239,5,372,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="191,23,223,23,223,28,191,28"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="sparta::collection::IterableCollector::collect" name="sparta::collection::IterableCollector::collect">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,107,127,162"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1IterableCollector.html#a5c37ee6515addb3568705b7a9a18d8a8" title=" " alt="" coords="211,5,332,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="113,104,173,71,196,60,198,65,176,76,115,108"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1log_1_1MessageSource.html#a24b94fa6283e1bdb858f92ab8f0dbcc1" title="Gets the global warning logger. These messages can be picked up by placing a Tap on the sparta::TreeN..." alt="" coords="182,85,362,126"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="127,123,166,118,167,123,128,128"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="175,150,369,175"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="128,140,159,145,159,150,127,145"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ac7d83237fc2aaa41c6b3809a4fb646e1" title="Determine whether or not this node has collection turned on or off." alt="" coords="198,200,346,256"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="124,160,176,185,188,191,186,196,174,190,122,165"/>
+</map>

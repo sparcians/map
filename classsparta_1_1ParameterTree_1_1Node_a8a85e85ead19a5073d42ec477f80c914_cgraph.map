@@ -1,0 +1,9 @@
+<map id="sparta::ParameterTree::Node::getChild" name="sparta::ParameterTree::Node::getChild">
+<area shape="rect" id="Node000001" title="Gets the most recently created child of this node by a concrete child name." alt="" coords="5,39,155,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a2cac07d5f406fa1300d0e283e2a1f498" title="Determines if a given node name has any wildcard characters which will be substituted in createSearch..." alt="" coords="203,5,400,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="154,45,187,40,188,45,155,50"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ParameterTree_1_1Node.html#a5b44b34a8091bc1b0b1e368c51a90b4b" title="Does a string, name, interpreted as a sparta TreeNode pattern, match another string interpreted as a ..." alt="" coords="227,71,376,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="155,67,212,75,211,81,154,72"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#aacb943215632699fbddc6554dacfbdf7" title="Compute a regex pattern for a node child path containing any number of wildcard characters (not a dot..." alt="" coords="448,71,610,111"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="376,88,433,88,433,94,376,94"/>
+</map>

@@ -1,0 +1,15 @@
+<map id="sparta::ParameterTree::Node::recurseGetAllNodeExtensions" name="sparta::ParameterTree::Node::recurseGetAllNodeExtensions">
+<area shape="rect" id="Node000001" title="Get a mapping from Nodes to their extensions recursively." alt="" coords="5,71,243,111"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ParameterTree_1_1Node.html#ab5ae67dfca6757090ce580b89f61bc6f" title="Gets vector of pointers to children of this node." alt="" coords="299,5,448,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="204,67,283,46,285,52,205,73"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ParameterTree_1_1Node.html#a5d4707d23ab167b1270fe682b448fe59" title="Get all user data keys (names)." alt="" coords="291,71,457,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="243,88,275,88,275,94,243,94"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ParameterTree_1_1Node.html#a9733a96929134078b34a60baff422ec8" title="Try to get any named user data (std::any_cast)" alt="" coords="297,136,451,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="205,109,282,130,281,135,204,115"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ParameterTree_1_1Node.html#a3fd63cc7e4e854ebd34c2d77f99a5c32" title="Gets the path to this node including the root node." alt="" coords="505,136,654,177"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="451,154,489,154,489,159,451,159"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ParameterTree_1_1Node.html#a8fe5011a81193c31d22533f1213911ef" title="Gets the name of this node." alt="" coords="702,103,852,143"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="654,141,686,136,687,141,655,146"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ParameterTree_1_1Node.html#acd09756ef616cfe1f1003c762a8a6b7c" title="Gets the parent of this node." alt="" coords="702,168,852,209"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="655,166,687,171,686,176,654,171"/>
+</map>

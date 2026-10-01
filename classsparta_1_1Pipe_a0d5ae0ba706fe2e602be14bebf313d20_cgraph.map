@@ -1,0 +1,11 @@
+<map id="sparta::Pipe::performOwnUpdates" name="sparta::Pipe::performOwnUpdates">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,35,172,75"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Pipe.html#a1574d635f82816eb54fef68869b424f5" title="Are any entries valid, including ones appended THIS cycle." alt="" coords="220,13,376,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="172,41,204,36,205,41,172,46"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1UniqueEvent.html#a3bb381d1ef9ccb3c335613c5600d162b" title="Schedule this event with its pre&#45;set delay using the pre&#45;set Clock." alt="" coords="229,63,366,103"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="172,64,215,69,214,75,172,69"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Pipe.html#adcbb9aba032c20162821448cabeddc4a" title="See if there is something at the given stage." alt="" coords="424,13,558,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="376,23,408,23,408,28,376,28"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1utils_1_1ValidValue.html#ae3676d510018298bdc57028aca4efaff" title="Is this value valid." alt="" coords="606,5,762,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="558,23,591,23,591,28,558,28"/>
+</map>

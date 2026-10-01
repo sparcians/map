@@ -1,0 +1,15 @@
+<map id="sparta::log::RawFormatter::writeHeader" name="sparta::log::RawFormatter::writeHeader">
+<area shape="rect" id="Node000001" title="Write a header to a newly&#45;opened report." alt="" coords="5,104,174,145"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1SimulationInfo.html#ab6df1c6f149c18a0ddba301086ca1288" title="Write this information to an ostream." alt="" coords="222,104,368,145"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="174,122,206,122,206,127,174,127"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1SimulationInfo.html#aaaf9c8cf6dd90544da19ef002a47275c" title="Gets (name, value) pairs for each header entry." alt="" coords="416,104,562,145"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="369,122,401,122,401,127,369,127"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TimeManager.html#a6728b6d1e95b60a1c6f21321491b37e6" title="Gets the number of seconds elapsed since the instantiation of SPARTA static and global vars." alt="" coords="617,5,759,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="526,101,609,57,622,50,624,55,612,61,528,106"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TimeManager.html#af030bd86de09c6db4e481d66fe77afb7" title="Returns the TimeManager singleton." alt="" coords="617,71,759,111"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="563,109,601,103,602,108,563,115"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1utils_1_1ValidValue.html#aca75dab39668be5fb02f4e2bb8d5019c" title="Get the value &#45; const version." alt="" coords="610,136,766,177"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="563,134,595,139,594,144,563,139"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1utils_1_1ValidValue.html#ae3676d510018298bdc57028aca4efaff" title="Is this value valid." alt="" coords="610,201,766,242"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="529,143,612,186,624,192,622,197,609,191,527,148"/>
+</map>

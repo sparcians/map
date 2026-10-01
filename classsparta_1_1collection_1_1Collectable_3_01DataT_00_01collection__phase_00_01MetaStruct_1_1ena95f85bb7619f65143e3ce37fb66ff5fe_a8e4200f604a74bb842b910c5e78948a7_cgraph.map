@@ -1,0 +1,5 @@
+<map id="sparta::collection::Collectable&lt; DataT, collection_phase, MetaStruct::enable_if_t&lt; std::is_base_of&lt; sparta::PairDefinition&lt; MetaStruct::remove_any_pointer_t&lt; DataT &gt; &gt;, typename MetaStruct::remove_any_pointer_t&lt; DataT &gt;::SpartaPairDefinitionType &gt;::value &gt; &gt;::Collectable" name="sparta::collection::Collectable&lt; DataT, collection_phase, MetaStruct::enable_if_t&lt; std::is_base_of&lt; sparta::PairDefinition&lt; MetaStruct::remove_any_pointer_t&lt; DataT &gt; &gt;, typename MetaStruct::remove_any_pointer_t&lt; DataT &gt;::SpartaPairDefinitionType &gt;::value &gt; &gt;::Collectable">
+<area shape="rect" id="Node000001" title="Construct the Collectable, no data object associated, part of a group." alt="" coords="5,5,337,151"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a0e16aaf48db706d4ed5f1a8f696310d7" title="Gets the unique ID of this node." alt="" coords="385,65,583,91"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="337,76,369,76,369,81,337,81"/>
+</map>

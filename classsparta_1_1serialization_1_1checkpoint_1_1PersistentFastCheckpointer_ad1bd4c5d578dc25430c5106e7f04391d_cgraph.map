@@ -1,0 +1,13 @@
+<map id="sparta::serialization::checkpoint::PersistentFastCheckpointer::save" name="sparta::serialization::checkpoint::PersistentFastCheckpointer::save">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,45,187,101"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a635083089c21e29907190647b3963d83" title="Creates a checkpoint at the given scheduler&#39;s current tick with a new checkpoint ID some point after ..." alt="" coords="235,45,407,101"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="187,70,219,70,219,76,187,76"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#ab555167eb11cd29ba3d0d55bfeba3d6c" title="Create a checkpoint." alt="" coords="455,5,627,61"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="407,55,439,49,440,54,408,60"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a182c99fa315f6596d2a7cee9d616014e" title="Creates a head without taking an identified checkpoint. Cannot already have a head." alt="" coords="455,85,627,141"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="408,86,440,92,439,97,407,91"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html#a8b1a87ef3baa56e2170129b0c5ed1c7c" title="Create a head node." alt="" coords="675,49,848,105"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="627,96,660,91,660,96,628,102"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1Scheduler.html#a34dcaf99252d9e9e0511d69d2aa84ff8" title="The current tick the Scheduler is working on or just finished." alt="" coords="698,129,825,170"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="628,125,683,134,682,139,627,130"/>
+</map>

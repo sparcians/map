@@ -1,0 +1,7 @@
+<map id="sparta::ContextCounter::numContexts" name="sparta::ContextCounter::numContexts">
+<area shape="rect" id="Node000001" title="Return the number of contexts in this ContextCounter." alt="" coords="5,35,158,75"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ContextCounter.html#aee68de4d1dde4a77485fff998d95851a" title="Return a pointer to the first internal counter." alt="" coords="219,5,372,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,42,203,36,204,41,158,47"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ContextCounter.html#a833be501a1311b3edccacddd3bbea057" title="Return a pointer to one past the last internal counter." alt="" coords="206,70,385,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="158,62,190,67,190,72,158,68"/>
+</map>

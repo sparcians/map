@@ -1,0 +1,17 @@
+<map id="sparta::operator&gt;&gt;" name="sparta::operator&gt;&gt;">
+<area shape="rect" id="Node000001" title="Place a precedence between a Bus and a Scheduleable." alt="" coords="5,56,132,82"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Bus.html#a16cc5eff60d0e358a06db2ca757a98c5" title="Make all inports precede the given event." alt="" coords="180,56,359,82"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="132,66,164,66,164,72,132,72"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Bus.html#a4f2d0c49bb361b96024d3bb0ef3ada65" title="Get the ports in this PortSet for the given direction." alt="" coords="410,16,551,42"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="340,53,394,42,395,48,341,58"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1InPort.html#a1a7e27e872e1e73ce02aa320a0973346" title="Add an event &quot;listener&quot; to this port." alt="" coords="407,76,554,117"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="360,78,392,82,391,88,359,83"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PortSet.html#a5c61be847db017f48430c57c7e7967dc" title="Get the ports in this PortSet for the given direction." alt="" coords="611,5,773,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="551,23,595,20,595,26,552,28"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1Port.html#afb0fd7ccb38114dd5aaaf4dc69f03e39" title="The direction of the port." alt="" coords="611,55,773,80"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="555,84,595,78,596,84,555,89"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="602,104,782,130"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="555,101,587,104,587,110,555,106"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1Port.html#a8d71612c1256b048b9ec52d06fe2ba2f" title="Is this port bound to another port?" alt="" coords="622,153,762,179"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="535,115,603,140,624,146,623,151,601,145,533,120"/>
+</map>

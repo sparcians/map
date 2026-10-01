@@ -1,0 +1,7 @@
+<map id="sparta::serialization::checkpoint::CheckpointBase::stringize" name="sparta::serialization::checkpoint::CheckpointBase::stringize">
+<area shape="rect" id="Node000001" title="Returns a string describing this object." alt="" coords="5,45,197,101"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1CheckpointBase.html#a2e4f1d7aa555a2eb2182e4ca2d6cb5c2" title="Returns memory usage by this checkpoint solely for the checkpointed content." alt="" coords="245,5,436,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,54,229,49,230,54,198,60"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1CheckpointBase.html#a2e2414240cc08b7596835c45d1b12f8c" title="Returns memory usage by this checkpoint including any framework data structures." alt="" coords="245,85,436,141"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="198,87,230,92,229,97,197,92"/>
+</map>

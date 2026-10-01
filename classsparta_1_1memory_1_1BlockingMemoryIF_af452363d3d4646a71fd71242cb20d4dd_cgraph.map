@@ -1,0 +1,5 @@
+<map id="sparta::memory::BlockingMemoryIF::tryPoke_" name="sparta::memory::BlockingMemoryIF::tryPoke_">
+<area shape="rect" id="Node000001" title="Override of DebugMemoryIF::tryPoke_ which forwards the call to tryWrite_." alt="" coords="5,5,171,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1BlockingMemoryIF.html#a73f4639204dbf2a145e07ab7d575d108" title="Implements tryWrite." alt="" coords="219,5,384,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="171,23,203,23,203,28,171,28"/>
+</map>
