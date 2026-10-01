@@ -1,15 +1,4 @@
 == Statistics and Reporting
-:url-counter: https://sparcians.github.io/map/classsparta_1_1Counter.html
-:url-cyclecounter: https://sparcians.github.io/map/classsparta_1_1CycleCounter.html
-:url-readonlycounter: https://sparcians.github.io/map/classsparta_1_1ReadOnlyCounter.html
-:url-statisticdef: https://sparcians.github.io/map/classsparta_1_1StatisticDef.html
-:url-statisticset: https://sparcians.github.io/map/classsparta_1_1StatisticSet.html
-:url-histogram: https://sparcians.github.io/map/classsparta_1_1HistogramTreeNode.html
-:url-cyclehistogram: https://sparcians.github.io/map/classsparta_1_1CycleHistogramTreeNode.html
-:url-instrumentationnode: https://sparcians.github.io/map/classsparta_1_1InstrumentationNode.html
-:url-report-def: https://sparcians.github.io/map/report_def_format.html
-:url-report-out: https://sparcians.github.io/map/report_out_format.html
-:url-end-user: https://sparcians.github.io/map/end_user.html
 
 One of Sparta's most powerful features is its statistics and reporting
 infrastructure.  Counters and statistics are declared as member
@@ -24,10 +13,12 @@ control their visibility, how to write report definition files, and
 how to generate reports from the command line.
 
 === Counters
+include::attributes.adoc[]
 
 A {url-counter}[`sparta::Counter`] is the most common statistic type.
-It is a monotonically increasing `uint64_t` that the model increments
-during simulation.  Counters are declared as member variables of the
+The `sparta::Counter` is typically used as a monotonically increasing
+`uint64_t` that the modeler increments during simulation on
+interesting points.  Counters are declared as member variables of the
 unit and registered with the `sparta::StatisticSet` inherited from
 `sparta::Unit`.
 
@@ -42,7 +33,7 @@ private:
     // Counters -- declared as member variables
     sparta::Counter num_decoded_    {&unit_stat_set_, "num_decoded",
                                       "Total instructions decoded",
-                                      sparta::Counter::COUNT_NORMAL};
+                                      sparta::Counter::COUNT_INTEGRAL};
 
     sparta::Counter num_stalls_     {&unit_stat_set_, "num_stalls",
                                       "Total decode stalls",
@@ -60,10 +51,12 @@ The `sparta::Counter` constructor takes:
    `sparta::Unit`
 2. The counter name -- must be Python-compatible, unique within the
    unit's stat set, and will appear in the simulation tree
-3. A description -- shown in `--show-parameters` output and reports
+3. A description -- shown in `--show-stats` output and reports
 4. The counter behavior -- almost always `COUNT_NORMAL`; use
-   `COUNT_LATEST` if you want the counter to reflect only the most
-   recent value rather than a cumulative total
+   `COUNT_LATEST` if the counter is to reflect only the most recent
+   value (less or greater) rather than a cumulative total.  Use
+   `COUNT_INTEGRAL` if the counter is to increment in large "chunks."
+   See {url-counter-behavior}[ Counter Behavior ]
 
 ==== Incrementing Counters
 
@@ -78,8 +71,8 @@ void DecodeUnit::decode_()
         return;
     }
 
-    uint32_t insts_this_cycle == decodeInstructions_();
-    num_decoded_ +== insts_this_cycle;
+    const uint32_t insts_this_cycle = decodeInstructions_();
+    num_decoded_ += insts_this_cycle;
 }
 
 void DecodeUnit::handleFlush_()
@@ -96,16 +89,17 @@ the simulation summary at the end of every run.
 ==== CycleCounter
 
 {url-cyclecounter}[`sparta::CycleCounter`] counts the number of clock
-cycles during which a condition is true.  It is useful for occupancy
-and utilization measurements -- how many cycles was the decode queue
-non-empty, how many cycles was the execution unit busy, and so on.
+cycles during which a condition is true.  `sparta::CycleCounter` is
+useful for occupancy and utilization measurements -- how many cycles
+was the decode queue non-empty, how many cycles was the execution unit
+busy, and so on.
 
 [source,cpp]
 ----
-sparta::CycleCounter cycles_busy_ {&unit_stat_set_, "cycles_busy",
-                                    "Cycles decode was busy (not stalled)",
-                                    sparta::CounterBase::COUNT_NORMAL,
-                                    getClock()};
+sparta::CycleCounter cycles_stalled_ {&unit_stat_set_, "cycles_stalled",
+                                      "Cycles decode was stalled",
+                                      sparta::CounterBase::COUNT_NORMAL,
+                                      getClock()};
 ----
 
 `CycleCounter` requires the unit's clock as an additional constructor
@@ -116,13 +110,22 @@ argument.  Start and stop it based on conditions:
 void DecodeUnit::decode_()
 {
     if (stalled_) {
-        cycles_busy_.stopCounting();
+        cycles_busy_.startCounting();
         return;
     }
-    cycles_busy_.startCounting();
+    cycles_busy_.stopCounting();
     // ... decode logic
 }
 ----
+
+`sparta::CycleCounter` can only transition from start to stop and stop
+to start states.  The modeler cannot transition from start to start
+nor stop to stop as the counter will assert.  This reasoning allows
+the modeler to find potential misuse of the counter during simulation.
+For example, in the Decode code above, if `decode_` were called
+back-to-back and the unit is _still stalled_, the `cycles_busy_`
+counter will assert.  This enables the modeler to question why this
+function is being called when Decode is clearly stalled.
 
 ==== ReadOnlyCounter
 
@@ -140,12 +143,13 @@ uint64_t queue_occupancy_ == 0;
 
 // Expose it as a Sparta counter
 sparta::ReadOnlyCounter ro_occupancy_ {&unit_stat_set_, "queue_occupancy",
-                                        "Current decode queue occupancy",
-                                        sparta::CounterBase::COUNT_LATEST,
-                                        &queue_occupancy_};
+                                       "Current decode queue occupancy",
+                                       sparta::CounterBase::COUNT_LATEST,
+                                       &queue_occupancy_};
 ----
 
-=== StatisticDef: Derived Statistics
+=== Statistic Definitions: Derived Statistics
+include::attributes.adoc[]
 
 A {url-statisticdef}[`sparta::StatisticDef`] is a statistic computed
 from an arithmetic expression over other counters and statistics.
@@ -155,22 +159,22 @@ utilization percentage that are computed from raw counters.
 [source,cpp]
 ----
 sparta::Counter total_insts_   {&unit_stat_set_, "total_insts",
-                                 "Total instructions retired",
-                                 sparta::Counter::COUNT_NORMAL};
+                                "Total instructions retired",
+                                sparta::Counter::COUNT_NORMAL};
 
 // IPC == total_insts / total_cycles  (total_cycles comes from the scheduler)
 sparta::StatisticDef ipc_      {&unit_stat_set_, "ipc",
-                                 "Instructions per cycle",
-                                 &unit_stat_set_,
-                                 "total_insts / cycles"};
+                                "Instructions per cycle",
+                                &unit_stat_set_,
+                                "total_insts / cycles"};
 ----
 
 The expression string uses counter and statistic names relative to the
 current `StatisticSet`.  The full expression language supports `+`,
 `-`, `*`, `/`, `**` (power), parentheses, and a large set of math
 functions (`sqrt`, `log2`, `abs`, `min`, `max`, `cond`, and more).
-Global scheduler variables are also available: `g_ticks`,
-`g_seconds`, `g_cycles`, and so on.
+Global scheduler variables are also available: `g_ticks`, `g_seconds`,
+`g_cycles`, and so on.
 
 Some useful derived statistic patterns:
 
@@ -195,7 +199,30 @@ sparta::StatisticDef avg_occupancy_ {&unit_stat_set_, "avg_occupancy",
                                       "total_occupancy / g_cycles"};
 ----
 
+The modeler can use _other_ `sparta::Counter` objects as well as
+_other_ `sparta::StatisticDef` objects in other areas of the
+simulation tree.
+
+For example, if the statistic `avg_occupancy_` is actually calculated
+by accessing `total_occupancy` from the the Unit's parent statistic
+set, the modeler can refer to that counter using the syntax `..`:
+
+[source,cpp]
+----
+// Average queue occupancy
+sparta::StatisticDef avg_occupancy_ {&unit_stat_set_, "avg_occupancy",
+                                      "Average decode queue occupancy",
+                                      &unit_stat_set_,
+                                      "..stats.total_occupancy / g_cycles"};
+----
+
+Note that `sparta::StatisticDef` objects are lazily evaluated, meaning
+that the value of the statistic is calculated only when referenced
+(report generation, etc).  This allow simulation speed to be
+uninhibited by complex statistic expressions.
+
 === Histograms
+include::attributes.adoc[]
 
 Sparta provides two histogram types for tracking the distribution of
 values over simulation.
@@ -244,10 +271,11 @@ iq_cycles_hist_.addValue(current_iq_size_);
 ----
 
 === Counter Visibility
+include::attributes.adoc[]
 
 Every counter and statistic has a *visibility* level that controls
-whether it appears in automatic reports and summaries.  The visibility
-levels, from lowest to highest, are:
+whether that counter/statstic appears in reports and/or summaries.
+The visibility levels, from lowest to highest, are:
 
 [cols="1,1,3"]
 |===
@@ -301,17 +329,23 @@ sparta::Counter internal_debug_ {&unit_stat_set_, "internal_debug",
                                   sparta::InstrumentationNode::VIS_HIDDEN};
 ----
 
-The automatic simulation summary shown at the end of every run
-(and the `--report-all` output) includes all counters with
-`VIS_SUMMARY` visibility.  Design your visibility levels carefully:
-too many `VIS_SUMMARY` counters produce noisy summaries; too few
-make it hard to quickly assess simulation correctness.
+The automatic simulation summary shown at the end of every run (and
+the `--report-all` output) includes all counters with `VIS_SUMMARY`
+visibility.
+
+The visibility is specifically used for custom report generation. See <<report_generation>>.
+
+Design visibility levels carefully: too many `VIS_SUMMARY` counters
+produce noisy summaries; too few present inadequate reports.
+
+
 
 === Generating Reports from the Command Line
+include::attributes.adoc[]
 
 With `CommandLineSimulator` integrated, every counter and statistic in
 the simulation tree is immediately reportable from the command line
-with no model changes.
+using the option `--auto-summary on`.
 
 ==== Automatic Summary
 
@@ -339,8 +373,8 @@ Automatic Simulation Summary [0,10001]
 
 ==== Generating a Full Report
 
-Use `--report-all` to generate a report containing all non-hidden
-counters in all formats:
+Use `--report-all <file>.<fmt>` to generate a report containing all
+non-hidden counters in all formats:
 
 [source,bash]
 ----
@@ -350,17 +384,18 @@ counters in all formats:
 ./my_simulator -r 10000 --report-all output.csv  csv
 ----
 
-==== Targeted Reports with `-r`
+==== Targeted Reports with `--report`
 
-Use `-r` to generate a report for a specific subtree of the simulation:
+Use `--report` to generate a report for a specific subtree of the simulation:
 
 [source,bash]
 ----
 # Report all stats under core0's decode unit
-./my_simulator -r "top.cpu.core0.decode" "" "" text output.txt
+./my_simulator --report "top.cpu.core0.decode" "" "" text output.txt
 ----
 
-=== Report Definition Files
+=== Report Definition Files [[report_generation]]
+include::attributes.adoc[]
 
 For production use, report definitions give you precise control over
 which statistics appear in a report, how they are named, and how they
@@ -502,6 +537,7 @@ content:
 ----
 
 === Periodic Reports
+include::attributes.adoc[]
 
 Sparta can generate reports at regular intervals during a long
 simulation run rather than only at the end.  This is useful for
@@ -523,6 +559,7 @@ produces `stats_every_0.txt`, `stats_every_1.txt`, and so on.
 // has the authoritative syntax.
 
 === Including Report Definitions
+include::attributes.adoc[]
 
 Large simulations often have many report definitions that share
 common sections.  Use `#include` to compose report definitions from
@@ -548,6 +585,7 @@ The included file is interpreted in the scope of the node it is
 included under.
 
 === Summary
+include::attributes.adoc[]
 
 Sparta's statistics infrastructure requires minimal model code but
 provides powerful reporting capabilities:

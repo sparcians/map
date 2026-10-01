@@ -56,5 +56,18 @@
 :url-circularbuffer: https://sparcians.github.io/map/classsparta_1_1CircularBuffer.html
 :url-priorityqueue: https://sparcians.github.io/map/classsparta_1_1PriorityQueue.html
 :url-pipelinecollector: https://sparcians.github.io/map/classsparta_1_1collection_1_1PipelineCollector.html
+:url-dag: https://sparcians.github.io/map/classsparta_1_1DAG.html
+:url-validvalue: https://sparcians.github.io/map/classsparta_1_1utils_1_1ValidValue.html
 :cpp: pass:[C++ (C++17/23)]
+:url-counter: https://sparcians.github.io/map/classsparta_1_1Counter.html
+:url-counter-behavior: https://sparcians.github.io/map/classsparta_1_1CounterBase.html#ad969c57042d02c0c75c96600ed30bb60
+:url-cyclecounter: https://sparcians.github.io/map/classsparta_1_1CycleCounter.html
+:url-readonlycounter: https://sparcians.github.io/map/classsparta_1_1ReadOnlyCounter.html
+:url-statisticdef: https://sparcians.github.io/map/classsparta_1_1StatisticDef.html
+:url-histogram: https://sparcians.github.io/map/classsparta_1_1HistogramTreeNode.html
+:url-cyclehistogram: https://sparcians.github.io/map/classsparta_1_1CycleHistogramTreeNode.html
+:url-instrumentationnode: https://sparcians.github.io/map/classsparta_1_1InstrumentationNode.html
+:url-report-def: https://sparcians.github.io/map/report_def_format.html
+:url-report-out: https://sparcians.github.io/map/report_out_format.html
+:url-end-user: https://sparcians.github.io/map/end_user.html
 :data-uri:

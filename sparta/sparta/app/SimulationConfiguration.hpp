@@ -413,7 +413,7 @@ public:
     /*!
      * Automatic summary state. Determines what to do with the
      * automatic summary after running.  Valid values are found in
-     * sparta::app""Simulation.
+     * sparta::app::Simulation.
      */
     AutoSummaryState auto_summary_state{AutoSummaryState::AUTO_SUMMARY_OFF};
 

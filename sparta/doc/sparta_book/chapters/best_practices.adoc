@@ -1,8 +1,4 @@
 == Performance Modeling Patterns
-:url-uniqueevent: https://sparcians.github.io/map/classsparta_1_1UniqueEvent.html
-:url-schedulingphase: https://sparcians.github.io/map/namespacesparta.html#aeec80d237ace9f07634c3d24c9aed9a0
-:url-dag: https://sparcians.github.io/map/classsparta_1_1DAG.html
-:url-validvalue: https://sparcians.github.io/map/classsparta_1_1utils_1_1ValidValue.html
 
 This chapter collects modeling patterns and practices that experienced
 Sparta engineers apply consistently.  Some are about correctness --
@@ -748,16 +744,26 @@ include::attributes.adoc[]
 
 By default the Sparta Modeling Framework will order events based on an
 evaluated flow control between units.  This is done through the
-auto-precedence mechanism in the Sparta {url-sparta-unit}[Unit].
+auto-precedence mechanism in the Sparta {url-doxygen-unit}[Unit].
+
+==== Auto-Precedence: How It Works
+
+NOTE: Auto-precedence can be disabled by calling
+`setAutoPrecedence(false)` in the derivative class of the
+`sparta::Unit` that exhibits the ordering issues.  However, this may
+cause additional issues while not resolving the current one. See <<dag_issue_fixes>>
 
 After the binding phase of simulation is complete, the framework will
-comb through the simulation tree looking for port bindings and follow
-them via OutPort (assumed Producer) to InPort (assumed Consumer). For
-those units containing the InPort type (Consumer), the framework will
-automatically apply precedence rules between events in the Producer
-and Consumer if the Ports appear to be 0 cycle.  This concept is
-covered in <<using_precedence>>.  Behind the scenes the framework is
-building a Directed Acyclic Graph or DAG to ensure there are no cylic
+comb through the simulation tree looking for bound OutPorts and follow
+them to bound InPorts.  The framework assumes this is a
+Producer/Consumer relationship: the Producer contains the OutPort, the
+Consumer contains the InPort.
+
+For the Consumer, the framework will automatically apply precedence
+rules between events in the Producer and Consumer if the InPort is
+constructed with a 0 cycle delay.  This concept is covered in
+<<using_precedence>>.  Behind the scenes the framework is building a
+Directed Acyclic Graph or {url-dag}[DAG] to ensure there are no cyclic
 behaviors.
 
 Using the DAG, the framework will automatically set the need for event
@@ -843,7 +849,9 @@ In the DAG, this picture has started to form:
 At this point the DAG will flag an error and stop the finalization
 phase of simulation.
 
-So, how does the modeler fix this?
+==== Potential Fixes for DAG Issues [[dag_issue_fixes]]
+
+How does the modeler fix a DAG issue?
 
 === Handling Flushes
 
