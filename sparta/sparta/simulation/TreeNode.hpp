@@ -299,13 +299,13 @@ namespace sparta
          * \brief GroupIndex indicating that a node has no group index because
          * it belongs to no group
          */
-        static const group_idx_type GROUP_IDX_NONE = (group_idx_type)-1;
+        static constexpr group_idx_type GROUP_IDX_NONE = (group_idx_type)-1;
 
         /*!
          * \brief Maximum value of node_uid_ before the framework throws an
          * exception.
          */
-        static const node_uid_type MAX_NODE_UID;
+        static constexpr node_uid_type MAX_NODE_UID = std::numeric_limits<node_uid_type>::max();
 
         /*!
          * \brief Group name indicating that a node belongs to no group
@@ -388,7 +388,7 @@ namespace sparta
          * report-based accesses and model-based accesses so that this can be
          * conditionally incremented
          */
-        static const uint64_t CHILD_FIND_THRESHOLD = 100000;
+        static constexpr uint64_t CHILD_FIND_THRESHOLD = 100000;
 
         /*!
          * \brief Threshold for number of getChild calls after finalization
@@ -396,13 +396,13 @@ namespace sparta
          *
          * See CHILD_FIND_THRESHOLD for explanation of threshold value choice
          */
-        static const uint64_t CHILD_GET_THRESHOLD = 100000;
+        static constexpr uint64_t CHILD_GET_THRESHOLD = 100000;
 
         /*!
          * \brief Number of teardown-phase-related messages that can be printed
          * before the rest will be suppressed.
          */
-        static const uint32_t TEARDOWN_ERROR_LIMIT = 5;
+        static constexpr uint32_t TEARDOWN_ERROR_LIMIT = 5;
 
         /*!
          * \brief List of pattern susbtitutions when creating a search pattern
