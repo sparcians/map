@@ -305,7 +305,7 @@ namespace sparta
          * \brief Maximum value of node_uid_ before the framework throws an
          * exception.
          */
-        static constexpr node_uid_type MAX_NODE_UID;
+        static constexpr node_uid_type MAX_NODE_UID = std::numeric_limits<node_uid_type>::max();
 
         /*!
          * \brief Group name indicating that a node belongs to no group
