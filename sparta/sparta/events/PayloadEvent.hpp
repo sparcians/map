@@ -97,6 +97,7 @@ namespace sparta
          * \param name      The name of this event (as it shows in the EventSet)
          * \param consumer_event_handler A SpartaHandler to the consumer's event_handler
          * \param delay The relative time (in Cycles) from "now" to schedule
+         * \param max_outstanding Ceiling on simultaneously in-flight payloads
          *
          * Create a PayloadEvent that can be used to schedule objects
          * of DataT now or in the future to the
@@ -105,9 +106,11 @@ namespace sparta
         PayloadEvent(TreeNode * event_set,
                      const std::string & name,
                      const SpartaHandler & consumer_event_handler,
-                     Clock::Cycle delay = 0) :
+                     Clock::Cycle delay = 0,
+                     size_t max_outstanding =
+                         PhasedPayloadEvent<DataT>::DEFAULT_MAX_OUTSTANDING) :
             PhasedPayloadEvent<DataT>(event_set, name, sched_phase_T,
-                                      consumer_event_handler, delay)
+                                      consumer_event_handler, delay, max_outstanding)
         { }
 
         //! Destroy!

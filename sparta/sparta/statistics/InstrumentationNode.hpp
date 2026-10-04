@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <vector>
+#include <utility>
+
 #include "sparta/simulation/TreeNode.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
@@ -194,6 +197,14 @@ public:
 
     };
 
+    //! MetadataPairs are name/value pairs appended to an
+    //! object/derived type in report generation.  This information
+    //! can be used for communicating relevant information about an
+    //! InstrumentationNode like value ranges, big numbers good/bad,
+    //! etc.
+    using StringPair = std::pair<std::string, std::string>;
+    using MetadataPairs = std::vector<StringPair>;
+
     ////////////////////////////////////////////////////////////////////////
     //! @}
 
@@ -220,6 +231,7 @@ public:
      */
     InstrumentationNode(InstrumentationNode&& rhp) :
         TreeNode::TreeNode(std::move(rhp)),
+        meta_data_(std::move(rhp.meta_data_)),
         visibility_(rhp.visibility_),
         class_(rhp.class_),
         instrument_type_(rhp.instrument_type_)
@@ -548,9 +560,8 @@ public:
         return false;
     }
 
-    using StringPair = std::pair<std::string, std::string>;
-    const std::vector<StringPair> & getMetadata() const {
-        return metadata_;
+    const MetadataPairs & getMetadata() const {
+        return meta_data_;
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -562,9 +573,7 @@ protected:
      * \brief Add any arbitrary metadata as strings to this object. Used to
      * add extra information to statistics reports (json, etc.)
      */
-    void addMetadata_(const std::string & key, const std::string & value){
-        metadata_.emplace_back(std::make_pair(key, value));
-    }
+    MetadataPairs meta_data_;
 
 private:
 
@@ -582,11 +591,6 @@ private:
      * \brief Type hint for this node
      */
     Type instrument_type_;
-
-    /*!
-     * \brief
-     */
-    std::vector<StringPair> metadata_;
 };
 
 } // namespace sparta

@@ -380,8 +380,11 @@ namespace sparta
                 ++sub_stat_index;
             }
 
-            addMetadata_("context_name", context_name);
-            addMetadata_("num_contexts", std::to_string(num_contexts));
+            meta_data_.insert(meta_data_.begin(),
+                              {
+                                  {"context_name", context_name},
+                                  {"num_contexts", std::to_string(num_contexts)}
+                              });
 
             begin_counter_ = &internal_counters_.front();
             end_counter_ = &internal_counters_.back();
@@ -483,4 +486,3 @@ namespace sparta
     sparta::trigger::ContextCounterTrigger:: \
         registerContextCounterAggregateFcn(handler, this, #method, aggregated_value); \
     }
-

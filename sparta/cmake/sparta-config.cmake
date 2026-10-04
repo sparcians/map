@@ -79,17 +79,7 @@ set (Sparta_LIBS sparta yaml-cpp::yaml-cpp ZLIB::ZLIB Threads::Threads
 
 # Link against sqlite3 and hdf5 if SimDB is enabled
 if (USING_SIMDB)
-  find_package (SQLite3 3.19 REQUIRED)
-  include_directories (SYSTEM ${SQLite3_INCLUDE_DIRS})
-  message (STATUS "Using SQLite3 ${SQLite3_VERSION}")
-
-  find_package (HDF5 1.10 REQUIRED COMPONENTS CXX)
-  include_directories (SYSTEM ${HDF5_INCLUDE_DIRS})
-  message (STATUS "Using HDF5 ${HDF5_VERSION}")
-
-  list (APPEND Sparta_LIBS HDF5::HDF5 sqlite3)
-else ()
-  message (STATUS "Skipping SQLite3 and HDF5 -- SimDB is disabled")
+  list (APPEND Sparta_LIBS SimDB::simdb)
 endif ()
 
 # If HDF5 is built with MPI support, we also need to add the MPI include dirs and link against the MPI library

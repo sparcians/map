@@ -38,6 +38,14 @@
  * inside of itself. This is the most basic and simplest
  * case of Pair Collection.
 */
+class IntegerLike {
+public:
+    IntegerLike(uint16_t value = 0) : value_(value) {}
+    operator uint16_t() const { return value_; }
+private:
+    uint16_t value_;
+};
+
 class Level_1_PairDef;
 class Level_1{
 public:
@@ -56,6 +64,24 @@ private:
     std::vector<uint16_t> vec_;
 };
 typedef std::shared_ptr<Level_1> Level_1_Ptr;
+
+class IntegerLikeLevel;
+class IntegerLikeLevel {
+public:
+    using SpartaPairDefinitionType = IntegerLikeLevel;
+    IntegerLikeLevel(const std::vector<IntegerLike>& vec) : vec_(vec) {}
+    std::vector<IntegerLike> getVec() const { return vec_; }
+private:
+    std::vector<IntegerLike> vec_;
+};
+
+class IntegerLikeLevelPairDef : public sparta::PairDefinition<IntegerLikeLevel> {
+public:
+    IntegerLikeLevelPairDef() : PairDefinition<IntegerLikeLevel>() {
+        SPARTA_INVOKE_PAIRS(IntegerLikeLevel);
+    }
+    SPARTA_REGISTER_PAIRS(SPARTA_ADDPAIR("vector", &IntegerLikeLevel::getVec))
+};
 
 class Level_1_PairDef : public sparta::PairDefinition<Level_1>{
 public:
@@ -500,6 +526,12 @@ public:
                           SPARTA_ADDPAIR("val2", &Level_8::getPair))
 };
 
+template <typename T>
+std::string getListDtypeString()
+{
+    return "list-of-" + simdb::demangle_type<T>();
+}
+
 int main()
 {
     sparta::Scheduler sched;
@@ -530,6 +562,16 @@ int main()
 
     std::vector<uint16_t> vec {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     std::shared_ptr<Level_1> l_1 {std::make_shared<Level_1>(12, 1024, 4966, vec)};
+    Level_1_PairDef pair_def;
+    const auto & dtypes = pair_def.getLeafArgosDtypeStrings();
+    EXPECT_EQUAL(dtypes[3], getListDtypeString<uint16_t>());
+
+    std::vector<IntegerLike> int_like_vec {IntegerLike(1), IntegerLike(2), IntegerLike(3), IntegerLike(4)};
+    IntegerLikeLevel int_like_obj(int_like_vec);
+    IntegerLikeLevelPairDef int_like_pair_def;
+    const auto & int_like_dtypes = int_like_pair_def.getLeafArgosDtypeStrings();
+    EXPECT_EQUAL(int_like_dtypes[0], getListDtypeString<uint16_t>());
+
     sparta::collection::Collectable<Level_1> Level_1_Collector(&obj1000000_tn, "level1_0");
     std::string expectedLogString = "uid(12) vaddr(1024) raddr(4966) vector([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) ";
     EXPECT_EQUAL(Level_1_Collector.dumpNameValuePairs(*l_1), expectedLogString);

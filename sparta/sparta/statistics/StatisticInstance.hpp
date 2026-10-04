@@ -376,6 +376,11 @@ namespace sparta
         InstrumentationNode::class_t getClass() const;
 
         /*!
+         * \brief Get the meta data associated with this instance
+         */
+        const InstrumentationNode::MetadataPairs & getMetadata() const;
+
+        /*!
          * \brief Returns the StatisticDef used to compute this statistic
          */
         const StatisticDef* getStatisticDef() {
@@ -404,7 +409,7 @@ namespace sparta
         }
 
         /*!
-         * \Returns the parameter used to compute this statistic
+         * \returns the parameter used to compute this statistic
          */
         const ParameterBase* getParameter() {
             return par_;

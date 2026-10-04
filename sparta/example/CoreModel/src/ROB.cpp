@@ -16,7 +16,15 @@ namespace core_example
                   "ipc",
                   "Instructions retired per cycle",
                   &unit_stat_set_,
-                  "total_number_retired/cycles"),
+                  "total_number_retired/cycles",
+                  {
+                      sparta::StatisticDef::VS_ABSOLUTE,
+                      {
+                          {"low", "0"},
+                          {"high", std::to_string(uint32_t(p->num_to_retire))},
+                          {"semantic", "higher"}
+                      }
+                  }),
         num_retired_(&unit_stat_set_,
                      "total_number_retired",
                      "The total number of instructions retired by this core",

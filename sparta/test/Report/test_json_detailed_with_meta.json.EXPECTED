@@ -1,0 +1,110 @@
+{ "_id": " ",
+  "report_metadata": {},
+  "stat_info": {
+    "c1": [
+      { "name": "Report X.core0.c1",
+        "desc": "Counter 1 (NORMAL VIS)",
+        "vis": "100000000",
+        "class": "50"
+      },
+      { "name": "Report X.core0.dummy.c1",
+        "desc": "Counter 1 in dummy",
+        "vis": "200000000",
+        "class": "50"
+      },
+      { "name": "Report X.core1.c1",
+        "desc": "Counter 1",
+        "vis": "100000000",
+        "class": "50"
+      }
+    ],
+    "c2": [
+      { "name": "Report X.core0.c2",
+        "desc": "Counter 2 (SUMMARY VIS)",
+        "vis": "200000000",
+        "class": "50"
+      },
+      { "name": "Report X.core0.dummy.c2",
+        "desc": "Counter 2 in dummy",
+        "vis": "100000000",
+        "class": "50",
+        "range": "0:100000000",
+        "semantic": "lower"
+      },
+      { "name": "Report X.core1.c2",
+        "desc": "Counter 2",
+        "vis": "100000000",
+        "class": "50"
+      }
+    ],
+    "c3": [
+      { "name": "Report X.core0.c3",
+        "desc": "Counter 3 (HIDDEN VIS)",
+        "vis": "0",
+        "class": "50"
+      },
+      { "name": "Report X.core1.c3",
+        "desc": "Counter 3",
+        "vis": "100000000",
+        "class": "50"
+      }
+    ],
+    "c4": [
+      { "name": "Report X.core0.c4",
+        "desc": "Counter 4 (NORMAL VIS)",
+        "vis": "100000000",
+        "class": "50"
+      },
+      { "name": "Report X.core1.c4",
+        "desc": "Counter 4",
+        "vis": "100000000",
+        "class": "50"
+      }
+    ],
+    "c5": [
+      { "name": "Report X.core0.c5",
+        "desc": "Counter 5 (NORMAL VIS)",
+        "vis": "100000000",
+        "class": "50"
+      }
+    ],
+    "s1": [
+      { "name": "Report X.core0.s1",
+        "desc": "Statistic Description",
+        "vis": "100000000",
+        "class": "50"
+      }
+    ],
+    "s2": [
+      { "name": "Report X.core0.s2",
+        "desc": "Statistic Description",
+        "vis": "100000000",
+        "class": "50"
+      }
+    ],
+    "s3": [
+      { "name": "Report X.core0.s3",
+        "desc": "Statistic Description",
+        "vis": "100000000",
+        "class": "50",
+        "range": "0:100",
+        "semantic": "higher"
+      }
+    ],
+    "s4": [
+      { "name": "Report X.core0.s4",
+        "desc": "Statistic Description",
+        "vis": "100000000",
+        "class": "50"
+      }
+    ],
+    "s5": [
+      { "name": "Report X.core0.s5",
+        "desc": "Statistic Description",
+        "vis": "100000000",
+        "class": "50"
+      }
+    ]
+  }
+}
+

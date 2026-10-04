@@ -38,9 +38,9 @@ bool __groupedPrinting(
         const std::string & counter_name = counter.name_;
         const double dbl_value = counter.val_;
 
-        if (isnan(dbl_value)) {
+        if (std::isnan(dbl_value)) {
             counter_info.AddMember("val", rapidjson::Value("nan"), doc.GetAllocator());
-        } else if(isinf(dbl_value)) {
+        } else if(std::isinf(dbl_value)) {
             counter_info.AddMember("val", rapidjson::Value("inf"), doc.GetAllocator());
         } else {
             double dbl_formatted = 0;
@@ -76,9 +76,9 @@ bool __groupedPrinting(
                              doc.GetAllocator());
 
     const double dbl_aggregate = static_cast<double>(aggregate);
-    if (isnan(dbl_aggregate)) {
+    if (std::isnan(dbl_aggregate)) {
         aggregate_info.AddMember("val", rapidjson::Value("nan"), doc.GetAllocator());
-    } else if (isinf(dbl_aggregate)) {
+    } else if (std::isinf(dbl_aggregate)) {
         aggregate_info.AddMember("val", rapidjson::Value("inf"), doc.GetAllocator());
     } else {
         double dbl_formatted = 0;
@@ -124,11 +124,11 @@ bool __groupedPrintingReduced(
         const std::string & counter_name = counter.name_;
         const double dbl_value = counter.val_;
 
-        if (isnan(dbl_value)) {
+        if (std::isnan(dbl_value)) {
             grouped_json.AddMember(rapidjson::StringRef(counter_name.c_str()),
                                    rapidjson::Value("nan"),
                                    doc.GetAllocator());
-        } else if(isinf(dbl_value)) {
+        } else if(std::isinf(dbl_value)) {
             grouped_json.AddMember(rapidjson::StringRef(counter_name.c_str()),
                                    rapidjson::Value("inf"),
                                    doc.GetAllocator());

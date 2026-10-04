@@ -462,33 +462,34 @@ void ReportStatsCollector::writeReportInfo_(
     }
 
     const auto& stats = r->getStatistics();
-    for (const auto& si : stats) {
-        const auto& si_name = si.first;
+    for (const auto& si : stats)
+    {
         const auto si_loc = si.second->getLocation();
-        const auto si_desc = si.second->getDesc(false);
-        const auto si_vis = static_cast<int>(si.second->getVisibility());
-        const auto si_class = static_cast<int>(si.second->getClass());
-
         if (!visited_stats.insert(si_loc).second) {
             continue;
         }
+
+        const auto& si_name = si.first;
+        const auto si_desc = si.second->getDesc(false);
+        const auto si_vis = static_cast<int>(si.second->getVisibility());
+        const auto si_class = static_cast<int>(si.second->getClass());
+        const auto si_meta = si.second->getMetadata();
 
         auto si_record = db_mgr_->INSERT(
             SQL_TABLE("StatisticInsts"),
             SQL_COLUMNS("ReportID", "StatisticName", "StatisticLoc", "StatisticDesc", "StatisticVis", "StatisticClass"),
             SQL_VALUES(report_id, si_name, si_loc, si_desc, si_vis, si_class));
 
-        if (auto stat_def = si.second->getStatisticDef()) {
-            const auto si_id = si_record->getId();
-            for (const auto& pair : stat_def->getMetadata()) {
-                const auto& meta_name = pair.first;
-                const auto& meta_value = pair.second;
+        const auto si_id = si_record->getId();
+        for (const auto& pair : si_meta)
+        {
+            const auto& meta_name = pair.first;
+            const auto& meta_value = pair.second;
 
-                db_mgr_->INSERT(
-                    SQL_TABLE("StatisticDefnMetadata"),
-                    SQL_COLUMNS("StatisticInstID", "MetaName", "MetaValue"),
-                    SQL_VALUES(si_id, meta_name, meta_value));
-            }
+            db_mgr_->INSERT(
+                SQL_TABLE("StatisticDefnMetadata"),
+                SQL_COLUMNS("StatisticInstID", "MetaName", "MetaValue"),
+                SQL_VALUES(si_id, meta_name, meta_value));
         }
 
         simdb_stats_[desc].push_back(si.second.get());
@@ -510,7 +511,7 @@ void ReportStatsCollector::writeReportInfo_(
             }
 
             break;
-        }        
+        }
     }
 
     for (const auto& sr : r->getSubreports()) {

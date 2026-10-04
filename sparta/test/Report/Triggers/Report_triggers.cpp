@@ -18,6 +18,7 @@
 #include "sparta/report/SubContainer.hpp"
 #include "sparta/report/format/ReportHeader.hpp"
 #include "sparta/app/ReportConfigInspection.hpp"
+#include "sparta/log/NotificationSource.hpp"
 
 #include <iostream>
 
@@ -2168,6 +2169,138 @@ void report_trigger_config_inspection()
     }
 }
 
+/*!
+ * \brief Verify the 'sprintf-notif' trigger keyword binds a report's
+ * dest_file to a SprintfNotificationSource found in the tree, and
+ * that its validation rules are enforced.
+ */
+void sprintf_notif_trigger_tests()
+{
+    PRINT_ENTER_TEST
+
+    RootTreeNode root("top");
+    TreeNode core0(&root, "core0", "Core 0");
+    StatisticSet sset0(&core0);
+
+    Scheduler scheduler("test");
+    std::shared_ptr<sparta::Clock> root_clk(
+        std::make_shared<sparta::Clock>("test_clock", &scheduler));
+    scheduler.finalize();
+    root.setClock(root_clk.get());
+    core0.setClock(root_clk.get());
+
+    struct SprintfObserver
+    {
+        std::string last_message;
+        void callback(const std::string & msg) { last_message = msg; }
+    };
+    SprintfObserver observer;
+
+    sparta::SprintfNotificationSource sprintf_noti(
+        &core0, "sprintf_noti", "group", 0, "Sprintf notification node", "sprintf_notix");
+
+    root.getSearchScope()->registerForNotification<std::string,
+                                                   SprintfObserver,
+                                                   &SprintfObserver::callback>(&observer, "sprintf_notix");
+
+    std::cout << "  [sprintf-notif] Happy path: binds dest_file as the format string" << std::endl;
+    {
+        const std::string report_def = R"(
+content:
+    report:
+        pattern:   top.core0
+        def_file:  core_stats.yaml
+        dest_file: "%s_%i.json"
+        format:    json_reduced
+        trigger:
+            sprintf-notif: core0.sprintf_noti
+)";
+        sparta::app::ReportDescVec descriptors =
+            sparta::app::createDescriptorsFromDefinitionString(report_def, &root);
+        sparta_assert(descriptors.size() == 1);
+
+        auto & desc = descriptors[0];
+        ReportRepository repository(&root);
+        auto directoryHandle = repository.createDirectory(desc);
+
+        std::vector<TreeNode*> roots;
+        std::vector<std::vector<std::string>> replacements;
+        root.getSearchScope()->findChildren(desc.loc_pattern, roots, replacements);
+
+        std::unique_ptr<Report> r(new Report("TestReport", roots[0]));
+        r->addFileWithReplacements(desc.def_file, replacements[0], false);
+        repository.addReport(directoryHandle, std::move(r));
+        repository.commit(&directoryHandle);
+
+        sprintf_noti.postNotification("foo", 4);
+        EXPECT_EQUAL(observer.last_message, "foo_4.json");
+    }
+
+    std::cout << "  [sprintf-notif] Cannot be combined with another trigger key" << std::endl;
+    {
+        const std::string report_def = R"(
+content:
+    report:
+        pattern:   top.core0
+        def_file:  core_stats.yaml
+        dest_file: "%s_%i.json"
+        format:    json_reduced
+        trigger:
+            sprintf-notif: core0.sprintf_noti
+            start:         "core0.stats.c0 >= 1"
+)";
+        sparta::app::ReportDescVec descriptors =
+            sparta::app::createDescriptorsFromDefinitionString(report_def, &root);
+        auto & desc = descriptors[0];
+        ReportRepository repository(&root);
+        auto directoryHandle = repository.createDirectory(desc);
+        EXPECT_THROW_MSG_CONTAINS(repository.commit(&directoryHandle);,
+            "cannot be combined with");
+    }
+
+    std::cout << "  [sprintf-notif] Not allowed with CSV formats" << std::endl;
+    {
+        const std::string report_def = R"(
+content:
+    report:
+        pattern:   top.core0
+        def_file:  core_stats.yaml
+        dest_file: out.csv
+        format:    csv
+        trigger:
+            sprintf-notif: core0.sprintf_noti
+)";
+        sparta::app::ReportDescVec descriptors =
+            sparta::app::createDescriptorsFromDefinitionString(report_def, &root);
+        auto & desc = descriptors[0];
+        ReportRepository repository(&root);
+        auto directoryHandle = repository.createDirectory(desc);
+        EXPECT_THROW_MSG_CONTAINS(repository.commit(&directoryHandle);,
+            "may not be used with report");
+    }
+
+    std::cout << "  [sprintf-notif] Throws when the target node cannot be found" << std::endl;
+    {
+        const std::string report_def = R"(
+content:
+    report:
+        pattern:   top.core0
+        def_file:  core_stats.yaml
+        dest_file: "%s_%i.json"
+        format:    json_reduced
+        trigger:
+            sprintf-notif: core0.no_such_node
+)";
+        sparta::app::ReportDescVec descriptors =
+            sparta::app::createDescriptorsFromDefinitionString(report_def, &root);
+        auto & desc = descriptors[0];
+        ReportRepository repository(&root);
+        auto directoryHandle = repository.createDirectory(desc);
+        EXPECT_THROW_MSG_CONTAINS(repository.commit(&directoryHandle);,
+            "Could not find a SprintfNotificationSource");
+    }
+}
+
 int main()
 {
     independent_computation_windows_basic();
@@ -2205,6 +2338,8 @@ int main()
     cumulative_statistics_start_from_zero();
 
     report_trigger_config_inspection();
+
+    sprintf_notif_trigger_tests();
 
     REPORT_ERROR;
     return ERROR_CODE;

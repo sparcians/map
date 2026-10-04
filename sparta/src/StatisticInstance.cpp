@@ -498,6 +498,21 @@ namespace sparta
         return InstrumentationNode::DEFAULT_CLASS;
     }
 
+    const InstrumentationNode::MetadataPairs & StatisticInstance::getMetadata() const
+    {
+        static const InstrumentationNode::MetadataPairs no_pairs;
+
+        if(sdef_) {
+            return sdef_->getMetadata();
+        }
+
+        if(ctr_) {
+            return ctr_->getMetadata();
+        }
+
+        return no_pairs;
+    }
+
     void StatisticInstance::getClocks(std::vector<const Clock*>& clocks) const {
         if(sdef_){
             if(node_ref_.expired() == true){

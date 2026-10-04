@@ -221,10 +221,7 @@ protected:
             tmp.desc = desc;
             tmp.vis = si.second->getVisibility();
             tmp.n_class = si.second->getClass();
-            const StatisticDef * stat_defn = si.second->getStatisticDef();
-            if (stat_defn != nullptr) {
-                tmp.metadata = stat_defn->getMetadata();
-            }
+            tmp.metadata = si.second->getMetadata();
             return tmp;
         };
 

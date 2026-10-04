@@ -223,9 +223,9 @@ void sparta::report::format::JavascriptObject::writeStats_(std::ostream& out, co
         out << "      \"" << sname << "\": { ";
         double val = si.second->getValue();
         out << "\"val\" : ";
-        if (isnan(val)){
+        if (std::isnan(val)){
             out << "\"nan\"";
-        } else if (isinf(val)) {
+        } else if (std::isinf(val)) {
             out << "\"inf\"";
         } else{
             out << Report::formatNumber(val, false, decimal_places_);

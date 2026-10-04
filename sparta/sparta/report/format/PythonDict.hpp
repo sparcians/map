@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <cmath>
 #include <math.h>
 
 #include "sparta/report/format/BaseOstreamFormatter.hpp"
@@ -115,9 +116,9 @@ protected:
                 }
                 out << "\"" << si.first << "\": " ;
                 double val = si.second->getValue();
-                if(isnan(val)){
+                if(std::isnan(val)){
                     out << "float('nan')";
-                }else if(isinf(val)){
+                }else if(std::isinf(val)){
                     out << "float('inf')";
                 }else{
                     out << Report::formatNumber(val);

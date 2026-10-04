@@ -69,8 +69,6 @@
 #include "sparta/utils/Printing.hpp"
 #include "sparta/utils/SmartLexicalCast.hpp"
 
-namespace sfs = std::filesystem;
-
 namespace sparta {
     namespace app {
 
@@ -158,13 +156,10 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
 {
     static std::stringstream heartbeat_doc;
     heartbeat_doc << \
-        "The interval in ticks at which index pointers will be written to file during pipeline "
-        "collection. The heartbeat also represents the longest life duration of lingering "
-        "transactions. Transactions with a life span longer than the heartbeat will be finalized "
-        "and then restarted with a new start time. Must be a multiple of 100 for efficient reading "
-        "by pipeViewer. Large values will reduce responsiveness of pipeViewer when jumping to different "
-        "areas of the file and loading.\nDefault = "
-        << DefaultHeartbeat << " ticks.\n";
+        "Controls how often the collector writes a complete snapshot of the collected pipeline "
+        "data; delta compression is performed between full snapshots. Smaller values make the "
+        "Argos UI more responsive when fetching data, at the cost of a larger database.\nDefault = "
+        << DefaultHeartbeat << " samples.\n";
 
     sparta_opts_.add_options()
         ("help,h",
@@ -343,9 +338,9 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "WARNING: The CYCLE may only be partly included. It is dependent upon when the "
          "scheduler activates the trigger. It is recommended to schedule a few ticks before your "
          "desired area.\n"
-         "Examples: '--debug-on 5002 -z PREFIX_ --log top debug 1' or '--debug-on core_clk 5002 "
-         "-z PREFIX_'\n"
-         "begins pipeline collection to PREFIX_ and logging to stdout at some point within tick "
+         "Examples: '--debug-on 5002 -z pipeline.db --log top debug 1' or '--debug-on core_clk 5002 "
+         "-z pipeline.db'\n"
+         "begins pipeline collection to pipeline.db and logging to stdout at some point within tick "
          "5002 and will include all of tick 5003",
          "Begin all debugging instrumentation at a specific tick number") // Brief
         ("debug-on-icount",
@@ -354,8 +349,8 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
          "instructions.\n"
          "WARNING: Must not be specified with --debug-on, --debug-on-roi\n"
          "See also --debug-on.\n"
-         "Examples: '--debug-on-icount 500 -z PREFIX_'\n"
-         "Begins pipeline collection to PREFIX_ when instruction count from this simulator's "
+         "Examples: '--debug-on-icount 500 -z pipeline.db'\n"
+         "Begins pipeline collection to pipeline.db when instruction count from this simulator's "
          "counter with the CSEM_INSTRUCTIONS semantic is equal to 500",
          "Begin all debugging instrumentation at a specific instruction count") // Brief
         ("debug-on-roi",
@@ -367,13 +362,11 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
     // Pipeline configuration
     pipeout_opts_.add_options()
         ("pipeline-collection,z",
-         named_value<std::vector<std::string>>("OUTPUTPATH", 1, 1)->multitoken(),
-         "Run pipeline collection on this simulation, and dump the output files to OUTPUTPATH. "
-         "OUTPUTPATH can be a prefix such as myfiles_ for the pipeline files and may be a "
-         "directory\n"
-         "Example: \"--pipeline-collection data/test1_\"\n"
-         "Note: Any directories in this path must already exist.\n",
-         "Enable pipline collection to files with names prefixed with OUTPATH") // Brief
+         named_value<std::vector<std::string>>("[OUTPUTPATH]", 0, 1)->multitoken(),
+         "Run pipeline collection on this simulation and write it to the SQLite database file OUTPUTPATH. "
+         "If OUTPUTPATH is omitted, the database is named <program_exe_name>.db.\n"
+         "Example: \"--pipeline-collection data/test1.db\"\n",
+         "Enable pipeline collection, optionally writing to OUTPUTPATH") // Brief
         ("collection-at,k",
          named_value<std::vector<std::string>>("TREENODE", 1, 1),
          "Specify a treenode to recursively turn on at and below for pipeline collection."
@@ -658,9 +651,8 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
         ("simdb-pragmas",
          named_value<std::vector<std::string>>("PRAGMA_NAME PRAGMA_VALUE [PRAGMA_NAME PRAGMA_VALUE...]", 2, -1)->multitoken(),
          "List of name-value pairs of SQLite pragmas to use when opening the database(s).")
-        ("simdb-app-log-file",
-         named_value<std::vector<std::string>>("FILENAME", 1, 1),
-         "Tell all SimDB apps to use the given filename for their thread-safe file loggers.")
+        ("simdb-verbose",
+         "Enable verbose mode for all SimDB apps.")
         ;
     #endif
 
@@ -1231,10 +1223,6 @@ bool CommandLineSimulator::parse(int argc,
                     sim_config_.simdb_config.addPragmaOnOpen(pragma_name, pragma_value);
                 }
                 opts.options.erase(opts.options.begin() + i);
-            }else if (o.string_key == "simdb-app-log-file") {
-                const auto & filename = o.value.at(0);
-                sim_config_.simdb_config.useAppFileLogger(filename);
-                opts.options.erase(opts.options.begin() + i);
             }else if (o.string_key == "pipeline-collection") {
                 //Enforce that we cannot set pipeline-collection options twice.
                 if(collection_parsed)
@@ -1245,24 +1233,33 @@ bool CommandLineSimulator::parse(int argc,
                     err_code = 1;
                     return false;
                 }
-                if(o.value.size() < 1 || o.value.size() > 2)
+                if(o.value.size() > 1)
                 {
                     std::cerr << "command-line option \"" << o.string_key << "\" had " << o.value.size()
-                              << " tokens but requires 1 or 2. \nExample -z output_ top.core0" << std::endl;
+                              << " tokens but requires at most 1. \nExample -z output.db" << std::endl;
                     printUsageHelp_();
                     err_code = 1;
                     return false;
                 }
-                //Check to make sure we are --pipeline-collection was not set twice.
-                sim_config_.pipeline_collection_file_prefix = o.value.at(0);
-
-                // Check that a valid file prefix was given
-                if(sim_config_.pipeline_collection_file_prefix.empty()){
-                    std::cerr << "Command line supplied an empty path for pipeline collection. "
-                                 "This likely wasn't intended and is considered mis-use. Supply a "
-                                 "non-empty string as the pipeout file prefix";
-                    err_code = 1;
-                    return false;
+                sim_config_.pipeline_collection_filepath =
+                    o.value.empty() ? std::string(argv[0]) + ".db" : o.value.at(0);
+                if(!o.value.empty()) {
+                    const std::filesystem::path output_path(sim_config_.pipeline_collection_filepath);
+                    if(output_path.extension().empty()) {
+                        sim_config_.pipeline_collection_filepath += ".db";
+                        std::cerr << "Warning: Pipeline collection output path has no extension; using: "
+                                  << sim_config_.pipeline_collection_filepath << std::endl;
+                    } else if(output_path.extension() != ".db") {
+                        std::cerr << "Pipeline collection output path must use the .db extension: "
+                                  << sim_config_.pipeline_collection_filepath << std::endl;
+                        err_code = 1;
+                        return false;
+                    }
+                }
+                sim_config_.simdb_config.enableApp("argos-collector");
+                if(!o.value.empty()) {
+                    sim_config_.simdb_config.setAppDatabase("argos-collector",
+                                                            sim_config_.pipeline_collection_filepath);
                 }
 
                 ++i;
@@ -1700,6 +1697,10 @@ bool CommandLineSimulator::parse(int argc,
         sim_config_.simdb_config.disableLegacyReports();
     }
 
+    if (vm_.count("simdb-verbose")) {
+        sim_config_.simdb_config.enableVerboseMode();
+    }
+
     if (!global_simdb_file_.empty()) {
         if (global_simdb_file_ == "autogen") {
             global_simdb_file_ = generateUUID() + ".db";
@@ -1988,14 +1989,14 @@ bool CommandLineSimulator::parse(int argc,
 
         // Print out parameters related to Pipeline Collection.
         bool collecting = false;
-        if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr){
+        if(sim_config_.pipeline_collection_filepath != NoPipelineCollectionStr){
             collecting = true;
         }
 
         //print out some stuff about the pipeline collections run status.
         std::cout << "  pipeline-collection: " << std::boolalpha << collecting << std::endl;
         if(collecting){
-            std::cout << "  output dir:          " << sim_config_.pipeline_collection_file_prefix << std::endl;
+            std::cout << "  output database:     " << sim_config_.pipeline_collection_filepath << std::endl;
             std::cout << "  pipeline heartbeat:  " << pipeline_heartbeat_ << std::endl;
         }
     }
@@ -2038,13 +2039,16 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
         size_t end_pos;
         heartbeat = utils::smartLexicalCast<uint32_t>(pipeline_heartbeat_, end_pos);
     }catch (SpartaException const&){
-        throw SpartaException("HEARTBEAT for pipeline collection must be an integer value and a multiple of 100 > 0, not \"")
+        throw SpartaException("HEARTBEAT for pipeline collection must be an integer value > 0, not \"")
             << pipeline_heartbeat_ << "\"";
     }
 
-    if(heartbeat != 0 && heartbeat % 100 != 0){
-        throw SpartaException("HEARTBEAT for pipeline collection must be a multiple of 100 > 0, not \"")
-            << heartbeat << "\"";
+    if(heartbeat == 0){
+        throw SpartaException("HEARTBEAT for pipeline collection must be greater than zero");
+    }
+
+    if(sim_config_.pipeline_collection_filepath != NoPipelineCollectionStr && heartbeat != 0){
+        sim_config_.pipeline_collection_heartbeat = heartbeat;
     }
 
     // Pevent
@@ -2194,23 +2198,15 @@ void CommandLineSimulator::populateSimulation_(Simulation* sim)
             param_out.addParameters(sim->getRoot()->getSearchScope(), extensions_ptree, sim_config_.verbose_cfg);
         }
 
-        if(sim_config_.pipeline_collection_file_prefix != NoPipelineCollectionStr)
+        if(sim_config_.pipeline_collection_filepath != NoPipelineCollectionStr)
         {
             const bool multiple_triggers = sim_config_.trigger_on_type == SimulationConfiguration::TriggerSource::TRIGGER_ON_ROI;
-            pipeline_collection_triggerable_.reset(new PipelineTrigger(sim_config_.pipeline_collection_file_prefix,
+            pipeline_collection_triggerable_.reset(new PipelineTrigger(sim_config_.pipeline_collection_filepath,
                                                                        pipeline_enabled_node_names_,
                                                                        heartbeat,
                                                                        multiple_triggers,
                                                                        sim->getRootClock(),
                                                                        sim->getRoot()));
-
-            // If pipeline collection is turned on begin writing an info file
-            // about the simulation.
-            info_out_.reset(new sparta::InformationWriter(sim_config_.pipeline_collection_file_prefix+"simulation.info"));
-            info_out_->write("Pipeline Collection files generated from simulator ");
-            info_out_->write(sim->getSimName());
-            info_out_->write("\n\nSimulation started at: ");
-            info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
         }
 
         // Finalize the pevent controller now that the tree is built.
@@ -2480,8 +2476,6 @@ void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
                 if(pipeline_collection_triggerable_->isTriggered()) {
                     pipeline_collection_triggerable_->stop();
                 }
-                info_out_->write("Simulation aborted at: ");
-                info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
             }
 
             // In interactive simulation, we would try and enter a "debug mode" and
@@ -2495,12 +2489,6 @@ void CommandLineSimulator::runSimulator_(Simulation* sim, uint64_t ticks)
         if(pipeline_collection_triggerable_->isTriggered()) {
             pipeline_collection_triggerable_->stop();
         }
-
-         // Write the end time of the simulation.
-        info_out_->write("Simulation ended at: ");
-        info_out_->writeLine(sparta::TimeManager::getTimeManager().getLocalTime());
-        sparta::InformationWriter& outputter = *(info_out_.get());
-        outputter << "Heartbeat interval: " << pipeline_heartbeat_ << " ticks" << "\n";
     }
 
     if(show_tree_){

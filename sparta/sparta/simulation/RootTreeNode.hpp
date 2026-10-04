@@ -575,6 +575,8 @@ namespace sparta
             }
         }
 
+        virtual void onEnteringTeardown_() noexcept override final;
+
         /*!
          * \brief GlobalTreeNode allocated by this node as a parent if a null
          * global was specified at construction.

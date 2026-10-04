@@ -10,6 +10,7 @@
 #include "sparta/report/format/BasicHTML.hpp"
 #include "sparta/report/format/Text.hpp"
 #include "sparta/report/format/Gnuplot.hpp"
+#include "sparta/report/format/JSON_detail.hpp"
 #include "sparta/kernel/Scheduler.hpp"
 #include "sparta/statistics/Counter.hpp"
 #include "sparta/statistics/ReadOnlyCounter.hpp"
@@ -329,13 +330,29 @@ int main()
         // Ok StatisticDefs in tree
         StatisticDef sd1(&sset0, "s1", "Statistic Description", &sset0, "c1", StatisticDef::VS_PERCENTAGE);
         StatisticDef sd2(&sset0, "s2", "Statistic Description", &sset0, "c2", StatisticDef::VS_FRACTIONAL);
-        StatisticDef sd3(&sset0, "s3", "Statistic Description", &core0, "stats.c3/stats.s4", StatisticDef::VS_ABSOLUTE); // Stat-reference
+        StatisticDef sd3(&sset0, "s3", "Statistic Description", &core0, "stats.c3/stats.s4",
+                         {
+                             StatisticDef::VS_ABSOLUTE,
+                             {
+                                 {"range", "0:100" },
+                                 {"semantic", "higher" }
+                             }
+                         }
+            ); // Stat-reference with meta data
         StatisticDef sd4(&sset0, "s4", "Statistic Description", &sset0, "log2(16)/4+c3**c4"); // Expression on counters
 
         TreeNode dummy(&core0, "dummy", "Dummy node fore testing subtree-depth limits");
         StatisticSet sset_dummy(&dummy);
         Counter dummy_c1(&sset_dummy, "c1", "Counter 1 in dummy", Counter::COUNT_NORMAL, Counter::VIS_SUMMARY);
-        Counter dummy_c2(&sset_dummy, "c2", "Counter 2 in dummy", Counter::COUNT_NORMAL, Counter::VIS_NORMAL);
+        Counter dummy_c2(&sset_dummy, "c2", "Counter 2 in dummy",
+                         {
+                             Counter::COUNT_NORMAL,
+                             {
+                                 {"range", "0:100000000"},
+                                 {"semantic", "lower"},
+                             }
+                         },
+                         Counter::VIS_NORMAL);
 
         // Invalid StatisticDefs
         EXPECT_THROW(StatisticDef sd5(&sset0, "s5", "Statistic Description", &sset0, "1", StatisticDef::VS_INVALID));
@@ -347,7 +364,6 @@ int main()
         EXPECT_EQUAL(c2.getVisibility(), sparta::InstrumentationNode::VIS_SUMMARY);
         EXPECT_EQUAL(c3.getVisibility(), sparta::InstrumentationNode::VIS_HIDDEN);
         EXPECT_EQUAL(c4.getVisibility(), sparta::InstrumentationNode::VIS_NORMAL);
-
 
         // Finalization
 
@@ -679,6 +695,10 @@ content:
         txt_9.setShowSimInfo(false);
         std::ofstream("test_autopopulate_multi_nested.txt", std::ios::out) << txt_9;
 
+        // Write a json-detailed report to ensure meta data is included
+        sparta::report::format::JSON_detail json_det_10(&r9);
+        std::ofstream("test_json_detailed_with_meta.json", std::ios::out) << json_det_10;
+
         // Check output files
 
         EXPECT_FILES_EQUAL("test_report_out",                    "test_report_out.EXPECTED");
@@ -695,7 +715,8 @@ content:
         EXPECT_FILES_EQUAL("test_autopopulate_from_string.html", "test_autopopulate_from_string.html.EXPECTED");
         EXPECT_FILES_EQUAL("test_autopopulate_multireport.txt",  "test_autopopulate_multireport.txt.EXPECTED");
         EXPECT_FILES_EQUAL("test_autopopulate_multi_nested.txt", "test_autopopulate_multi_nested.txt.EXPECTED");
-        EXPECT_FILES_EQUAL("test_periodic.csv",                  "test_periodic.csv.EXPECTED")
+        EXPECT_FILES_EQUAL("test_periodic.csv",                  "test_periodic.csv.EXPECTED");
+        EXPECT_FILES_EQUAL("test_json_detailed_with_meta.json",  "test_json_detailed_with_meta.json.EXPECTED");
 
         // Print out some info about the report
         std::cout << "Context            : " << report.getContext() << std::endl;

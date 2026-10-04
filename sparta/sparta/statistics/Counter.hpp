@@ -52,7 +52,7 @@ namespace sparta
                 const std::string& group,
                 TreeNode::group_idx_type group_idx,
                 const std::string& desc,
-                CounterBehavior behave,
+                CounterBase::CounterBehaviorDetailed behave,
                 visibility_t visibility) :
             CounterBase(parent,
                         name,
@@ -70,7 +70,7 @@ namespace sparta
                 const std::string& group,
                 TreeNode::group_idx_type group_idx,
                 const std::string& desc,
-                CounterBehavior behave) :
+                CounterBase::CounterBehaviorDetailed behave) :
             Counter(parent,
                     name,
                     group,
@@ -86,7 +86,7 @@ namespace sparta
         Counter(TreeNode* parent,
                 const std::string& name,
                 const std::string& desc,
-                CounterBehavior behave,
+                CounterBase::CounterBehaviorDetailed behave,
                 visibility_t visibility) :
             Counter(parent,
                     name,
@@ -103,7 +103,7 @@ namespace sparta
         Counter(TreeNode* parent,
                 const std::string& name,
                 const std::string& desc,
-                CounterBehavior behave) :
+                CounterBase::CounterBehaviorDetailed behave) :
             Counter(parent,
                     name,
                     TreeNode::GROUP_NAME_NONE,
@@ -304,4 +304,3 @@ namespace sparta
     };
 
 } // namespace sparta
-

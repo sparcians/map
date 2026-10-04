@@ -188,11 +188,16 @@ namespace utils
             return Rational<T>(d_, n_);
         }
 
-        inline bool operator==(const Rational<T> &r)
+        inline bool operator==(const Rational<T> &r) const
         {
             Rational<T> t(r);
             t.simplify();
             return (n_ == t.n_) && (d_ == t.d_);
+        }
+
+        inline bool operator!=(const Rational<T> &r) const
+        {
+            return !(*this == r);
         }
 
     private:
