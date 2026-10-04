@@ -1,0 +1,5 @@
+<map id="sparta::memory::DMIBlockingMemoryIF::getRawDataPtr" name="sparta::memory::DMIBlockingMemoryIF::getRawDataPtr">
+<area shape="rect" id="Node000001" title="Get a raw pointer to the memory held (dangerous)" alt="" coords="5,5,195,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1DMIBlockingMemoryIF.html#ad2f22b56513195bde837c1ee9b1a333c" title=" " alt="" coords="243,5,432,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="195,23,227,23,227,28,195,28"/>
+</map>

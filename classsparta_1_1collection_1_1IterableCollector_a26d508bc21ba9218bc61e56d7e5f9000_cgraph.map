@@ -1,0 +1,19 @@
+<map id="sparta::collection::IterableCollector::createSimDbEntryPoint" name="sparta::collection::IterableCollector::createSimDbEntryPoint">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,96,167,152"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1IterableCollector.html#a4942723bf8295c8768135bff3c58f66d" title="Encode the collected data type in a way Argos python deserializers will understand:" alt="" coords="236,5,388,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="156,93,225,65,227,70,158,98"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#aec70f36a682dadc1d571fcd723f12cd6" title="Walks up parents (starting with self) until a parent with an associated local clock is found,..." alt="" coords="223,86,400,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="167,112,207,108,208,113,168,117"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="215,135,409,161"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="168,130,199,133,199,139,167,135"/>
+<area shape="rect" id="Node000008" href="$namespacesparta.html#a57bc9340188818892abcbd141b40fa50" title="Ensures that a pointer is not null." alt="" coords="260,188,364,214"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="159,150,216,171,248,181,246,186,214,176,157,155"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a883ef289de0f961e1d69a988b50338d8" title="Gets the clock associated directly with this Node. This is useful for configuration and simulator deb..." alt="" coords="460,17,636,58"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="364,82,452,59,453,64,365,88"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="457,82,639,107"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="401,94,441,94,442,99,401,100"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="476,132,621,172"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="373,109,461,129,460,135,372,115"/>
+<area shape="rect" id="Node000009" href="$namespacesparta.html#ac0a2df7a7ca53b2fc0384476286b95ec" title="Demangles a C++ symbol." alt="" coords="488,196,608,222"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="365,200,473,204,473,209,364,206"/>
+</map>

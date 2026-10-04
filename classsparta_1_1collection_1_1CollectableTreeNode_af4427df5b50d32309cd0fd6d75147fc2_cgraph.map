@@ -1,0 +1,5 @@
+<map id="sparta::collection::CollectableTreeNode::isIterableCollectorBin" name="sparta::collection::CollectableTreeNode::isIterableCollectorBin">
+<area shape="rect" id="Node000001" title="Check if this CollectableTreeNode is a Collectable inside an IterableCollector." alt="" coords="5,5,156,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="204,20,386,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="156,30,188,30,188,36,156,36"/>
+</map>

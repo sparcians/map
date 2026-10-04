@@ -1,0 +1,22 @@
+<map id="sparta::SyncOutPort::send" name="sparta::SyncOutPort::send">
+<area shape="rect" id="Node000001" title="Send data on the output port." alt="" coords="5,126,143,166"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1SyncOutPort.html#adb4ee9acf9ce838b5b290eef8465104b" title="Compute the next available relative cycle for sending data, assuming all of the specified number of b..." alt="" coords="191,53,380,109"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="141,123,178,111,179,116,143,128"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="428,183,622,208"/>
+<area shape="poly" id="edge11_Node000001_Node000007" title=" " alt="" coords="143,151,413,181,412,186,143,156"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1Clock.html#ae49a6ed7cd60d0fa2c7b8d456370877c" title="Return true if the current tick aligns with a positive edge of this Clock." alt="" coords="444,133,607,159"/>
+<area shape="poly" id="edge12_Node000001_Node000008" title=" " alt="" coords="143,144,428,144,428,149,143,149"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Clock.html#a00acfc088c2e51817af21129b1bbc970" title="Get the current cycle (uses current tick from the Scheduler)" alt="" coords="438,35,612,60"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="380,65,422,59,423,64,381,70"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1Clock.html#ae80357c4ccec5470a15ed098af03c63d" title="Given the tick, convert to a Clock::Cycle." alt="" coords="670,5,823,31"/>
+<area shape="poly" id="edge7_Node000002_Node000005" title=" " alt="" coords="340,50,382,33,427,20,486,11,546,6,655,8,655,13,546,12,487,16,429,25,384,38,343,55"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1Clock.html#a146666fd108e483100035e63e7e9aa9d" title="Get the current scheduler tick." alt="" coords="442,84,609,110"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="381,84,426,88,426,93,380,90"/>
+<area shape="poly" id="edge8_Node000002_Node000007" title=" " alt="" coords="325,107,373,139,429,169,445,175,443,180,427,174,370,144,322,111"/>
+<area shape="poly" id="edge9_Node000002_Node000008" title=" " alt="" coords="381,106,429,120,455,126,453,132,427,125,380,111"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Scheduler.html#a34dcaf99252d9e9e0511d69d2aa84ff8" title="The current tick the Scheduler is working on or just finished." alt="" coords="683,76,810,117"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="587,58,668,77,667,82,586,64"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="613,33,655,28,655,33,613,39"/>
+<area shape="poly" id="edge6_Node000006_Node000004" title=" " alt="" coords="609,94,668,94,668,100,609,100"/>
+<area shape="poly" id="edge10_Node000008_Node000004" title=" " alt="" coords="586,130,667,112,668,117,587,135"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="sparta::PhasedPayloadEvent::cancelIf" name="sparta::PhasedPayloadEvent::cancelIf">
+<area shape="rect" id="Node000001" title="Cancel any scheduled Payload that matches the given criteria." alt="" coords="5,35,192,75"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1utils_1_1FastList.html#a253cbef93f0eb00d4956d519449aba88" title="Obtain a beginning iterator." alt="" coords="253,5,394,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="192,40,237,34,238,39,193,45"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1utils_1_1FastList.html#a0c03a9ca446ad2ca3fdc369bd1298d63" title="Obtain an end iterator." alt="" coords="240,70,408,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="193,64,225,68,224,73,192,69"/>
+</map>

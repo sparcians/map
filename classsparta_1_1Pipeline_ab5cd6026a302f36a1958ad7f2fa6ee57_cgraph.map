@@ -1,0 +1,5 @@
+<map id="sparta::Pipeline::empty" name="sparta::Pipeline::empty">
+<area shape="rect" id="Node000001" title="Indicate no valid pipeline stages." alt="" coords="5,5,156,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Pipeline.html#a49d7ddddc63a73af1066c98654e22c73" title="Indicate the number of valid pipeline stages." alt="" coords="204,5,373,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="156,16,188,16,188,21,156,21"/>
+</map>

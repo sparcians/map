@@ -1,0 +1,5 @@
+<map id="sparta::RegisterBase::getValueAsByteString" name="sparta::RegisterBase::getValueAsByteString">
+<area shape="rect" id="Node000001" title="Creates a string representing this register&#39;s value as a sequence of bytes, separated by a spaces,..." alt="" coords="5,5,160,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1RegisterBase.html#ac5ae196a0da96f0ab0969056f40f9923" title="Gets the size of this register&#39;s value in bytes." alt="" coords="208,5,349,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="160,23,192,23,192,28,160,28"/>
+</map>

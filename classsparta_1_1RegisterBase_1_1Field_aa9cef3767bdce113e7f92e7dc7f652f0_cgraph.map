@@ -1,0 +1,14 @@
+<map id="sparta::RegisterBase::Field::stringize" name="sparta::RegisterBase::Field::stringize">
+<area shape="rect" id="Node000001" title="Create a string representation of this node." alt="" coords="5,55,147,96"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="195,5,389,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="146,54,194,41,224,33,225,38,195,46,147,59"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1RegisterBase_1_1Field.html#a0825cf324b6a95e9e4602d6752a77fe8" title="Gets number of bits in this field." alt="" coords="221,55,362,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="147,73,205,73,205,78,147,78"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1RegisterBase_1_1Field.html#a843ee03e72ef14e03dd249cee23e8402" title="Peeks the field." alt="" coords="221,120,362,161"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="146,94,209,113,207,118,145,99"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1RegisterBase_1_1Field.html#a980720a93ab03230baa72c528deb556a" title="Returns the index of the high bit (inclusive) in this field." alt="" coords="437,55,578,96"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="363,73,421,73,421,78,363,78"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1RegisterBase_1_1Field.html#aed27ce711418a89877751a40d9a0d492" title="Returns the index of the low bit (inclusive) in this field." alt="" coords="437,120,578,161"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="362,94,425,113,423,118,360,99"/>
+<area shape="poly" id="edge6_Node000006_Node000005" title=" " alt="" coords="363,138,421,138,421,144,363,144"/>
+</map>

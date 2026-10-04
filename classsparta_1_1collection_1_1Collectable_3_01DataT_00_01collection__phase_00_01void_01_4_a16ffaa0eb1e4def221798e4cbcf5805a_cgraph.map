@@ -1,0 +1,5 @@
+<map id="sparta::collection::Collectable&lt; DataT, collection_phase, void &gt;::setBitBucket" name="sparta::collection::Collectable&lt; DataT, collection_phase, void &gt;::setBitBucket">
+<area shape="rect" id="Node000001" title="Set the BitBucket (byte buffers for SimDB EntryPoint)" alt="" coords="5,5,158,76"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1CollectableCommon.html#a673ad8c53e058bcc10ecc9cefd47fc93" title="Set the BitBucket (byte buffers for SimDB EntryPoint)" alt="" coords="206,13,349,68"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,38,190,38,190,43,158,43"/>
+</map>

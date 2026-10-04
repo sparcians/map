@@ -1,0 +1,5 @@
+<map id="sparta::ParameterTree::Node::matches" name="sparta::ParameterTree::Node::matches">
+<area shape="rect" id="Node000001" title="Does a string, name, interpreted as a sparta TreeNode pattern, match another string interpreted as a ..." alt="" coords="5,5,155,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#aacb943215632699fbddc6554dacfbdf7" title="Compute a regex pattern for a node child path containing any number of wildcard characters (not a dot..." alt="" coords="203,5,365,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="155,23,187,23,187,28,155,28"/>
+</map>

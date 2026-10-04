@@ -1,0 +1,11 @@
+<map id="sparta::HistogramStandalone::HistogramStandalone" name="sparta::HistogramStandalone::HistogramStandalone">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,27,194,68"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1HistogramBase.html#a5a3356465364505cc45367bff9af8edd" title=" " alt="" coords="242,27,395,68"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="194,45,226,45,226,50,194,50"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1StatisticSet.html#a5030504954b19726883e6d19b8e8e25a" title="Allocates a Counter which is owned by this StatisticSet and deleted at its destruction." alt="" coords="443,27,574,68"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="395,45,427,45,427,50,395,50"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="622,5,817,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="574,36,607,31,608,36,575,41"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="647,55,792,96"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="575,54,632,61,631,66,574,59"/>
+</map>

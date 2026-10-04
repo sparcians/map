@@ -1,0 +1,7 @@
+<map id="sparta::Pipeline::flushStage" name="sparta::Pipeline::flushStage">
+<area shape="rect" id="Node000001" title="Flush a specific stage of the pipeline using const iterator." alt="" coords="5,13,182,38"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Pipeline.html#a89dd80770478e532071697ceba05404a" title="Flush a specific stage of the pipeline using stage id." alt="" coords="230,13,406,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="182,23,214,23,214,28,182,28"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Pipeline.html#ae08f5f438f2e89a12bc75a23a3af5b74" title="Check if the pipeline will be stalled the very next cycle." alt="" coords="454,5,619,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="406,23,439,23,439,28,406,28"/>
+</map>

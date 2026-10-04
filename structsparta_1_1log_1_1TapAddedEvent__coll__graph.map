@@ -1,0 +1,5 @@
+<map id="sparta::log::TapAddedEvent" name="sparta::log::TapAddedEvent">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,94,184,120"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1log_1_1Tap.html" title="Logging Tap. Attach to a TreeNode to intercept logging messages from any NotificationSource nodes in ..." alt="" coords="40,5,149,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,47,97,94,92,94,92,47"/>
+</map>

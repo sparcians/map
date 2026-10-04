@@ -1,0 +1,5 @@
+<map id="sparta::ArchData::Line::fillWithInitial" name="sparta::ArchData::Line::fillWithInitial">
+<area shape="rect" id="Node000001" title="Fills the line&#39;s data with the initial value." alt="" coords="5,5,154,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData.html#aa0a283171cbcf7d38df0e940bced107b" title="Fill a buffer with a fill pattern." alt="" coords="202,13,370,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="154,23,186,23,186,28,154,28"/>
+</map>

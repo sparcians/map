@@ -1,0 +1,7 @@
+<map id="sparta::PhasedSingleCycleUniqueEvent::isScheduled" name="sparta::PhasedSingleCycleUniqueEvent::isScheduled">
+<area shape="rect" id="Node000001" title="Return true if this scheduleable was scheduled at all." alt="" coords="5,5,181,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Scheduleable.html#a8e4138971ef32a66e6d14e5b67630f51" title="Return true if this scheduleable was scheduled at all." alt="" coords="229,5,370,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="181,23,213,23,213,28,181,28"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Scheduler.html#a0f61de7b477fc17afb98246925797494" title="Is the given Scheduleable item anywhere (in time now &#45;&gt; future) on the Scheduler?" alt="" coords="418,5,545,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="371,23,403,23,403,28,371,28"/>
+</map>

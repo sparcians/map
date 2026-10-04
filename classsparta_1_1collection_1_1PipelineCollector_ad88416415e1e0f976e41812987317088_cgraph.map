@@ -1,0 +1,15 @@
+<map id="sparta::collection::PipelineCollector::stopCollection" name="sparta::collection::PipelineCollector::stopCollection">
+<area shape="rect" id="Node000001" title="Stop pipeline collection on only those CollectableTreeNodes given." alt="" coords="5,34,130,90"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNodePrivateAttorney.html#a4cfe23c752f8411f7f946f0626910e9a" title=" " alt="" coords="178,5,387,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="130,49,162,43,163,48,131,54"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ad91ec47ac9880d5833853cf629200012" title="Method that tells this treenode that is now not running collection." alt="" coords="208,70,356,126"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="131,69,193,80,192,85,130,75"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#af4427df5b50d32309cd0fd6d75147fc2" title="Check if this CollectableTreeNode is a Collectable inside an IterableCollector." alt="" coords="435,30,585,86"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="356,82,419,71,420,76,357,87"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#a69968b7df373c22228ff2e24990e0d1f" title="Indicate to sub&#45;classes that collection has flipped." alt="" coords="436,110,584,166"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="357,108,422,119,421,125,356,113"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="633,45,816,70"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="586,55,618,55,618,60,586,60"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#a76d81cfbcf80a8584f887564054fc7dd" title=" " alt="" coords="650,110,799,166"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="585,135,635,135,635,140,585,140"/>
+</map>

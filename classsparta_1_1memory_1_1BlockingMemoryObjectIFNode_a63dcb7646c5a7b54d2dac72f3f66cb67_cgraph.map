@@ -1,0 +1,24 @@
+<map id="sparta::memory::BlockingMemoryObjectIFNode::tryPoke_" name="sparta::memory::BlockingMemoryObjectIFNode::tryPoke_">
+<area shape="rect" id="Node000001" title="Override of DebugMemoryIF::tryPoke_." alt="" coords="5,185,211,226"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1MemoryObject.html#a87b3e5cf615db94c4c3b7262047081ea" title="Writes memory." alt="" coords="259,185,458,226"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="211,203,243,203,243,208,211,208"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ArchData.html#afd6648775a857328800b6c6f053562c1" title="Gets the line associated with this offset, allocating a new line if necessary." alt="" coords="506,128,672,153"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="432,182,526,155,527,161,433,187"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1ArchData_1_1Line.html#aa4be1659c3bd363e291962cfb812ffff" title="Offset into the owning ArchData." alt="" coords="732,185,881,226"/>
+<area shape="poly" id="edge8_Node000002_Node000008" title=" " alt="" coords="459,203,717,203,717,208,459,208"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1ArchData_1_1Line.html#a296a2c331517833318db3a7b4499b855" title="Write to this line, reordering bytes based on byte order if required." alt="" coords="515,243,663,283"/>
+<area shape="poly" id="edge9_Node000002_Node000009" title=" " alt="" coords="443,224,501,238,499,243,442,229"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ArchData.html#a07e41ac141e36036cffedb4afad07197" title="Determines if this ArchData contains a byte for the specified address." alt="" coords="720,5,893,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="607,125,657,91,719,55,730,50,733,55,722,60,659,96,610,129"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TieredMap.html#a8a87b132e5d7c6126454765d8966e3ed" title="Finds a mapping for key k if one exists in this map." alt="" coords="731,70,882,96"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="640,124,739,98,741,103,642,129"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="723,120,890,161"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="673,138,708,138,708,143,673,143"/>
+<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="635,151,723,178,721,183,634,156"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1TieredMap.html#ad157505881efdd0d3f14695b05bc5dec" title="Attempts to get a pair_t associated with the key k without modifying the data structure." alt="" coords="941,63,1071,103"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="882,80,925,80,925,86,882,86"/>
+<area shape="rect" id="Node000010" href="$namespacesparta.html#a57002ba92c08d4a3abb4acb2824bc6d3" title=" " alt="" coords="755,250,858,276"/>
+<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="664,260,739,260,739,266,664,266"/>
+<area shape="rect" id="Node000011" href="$namespacesparta.html#a17970a38d3054bdd50ce337e22a35679" title="Swaps the order of bytes for various types." alt="" coords="943,250,1068,276"/>
+<area shape="poly" id="edge11_Node000010_Node000011" title=" " alt="" coords="858,260,928,260,928,266,858,266"/>
+</map>
