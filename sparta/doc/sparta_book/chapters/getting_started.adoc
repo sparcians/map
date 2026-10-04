@@ -170,27 +170,27 @@ Run Successful!
 Saving reports...
 Automatic Simulation Summary [0,101]
   scheduler
-      ticks                               == 100
-      picoseconds                         == 100
-      seconds                             == 1e-10
-      milliseconds                        == 1e-07
-      microseconds                        == 0.0001
-      nanoseconds                         == 0.1
-      host_machine_user_runtime_seconds   == 0
-      host_machine_system_runtime_seconds == 0
-      host_machine_wall_runtime_seconds   == 0
-      events_fired                        == 301
-      host_user_time_count_ms             == 0
-      host_system_time_count_ms           == 0
-      host_wall_time_count_ms             == 0
+      ticks                               = 100
+      picoseconds                         = 100
+      seconds                             = 1e-10
+      milliseconds                        = 1e-07
+      microseconds                        = 0.0001
+      nanoseconds                         = 0.1
+      host_machine_user_runtime_seconds   = 0
+      host_machine_system_runtime_seconds = 0
+      host_machine_wall_runtime_seconds   = 0
+      events_fired                        = 301
+      host_user_time_count_ms             = 0
+      host_system_time_count_ms           = 0
+      host_wall_time_count_ms             = 0
   top
     top.consumer
-        num_consumed                      == 100
+        num_consumed                      = 100
     top.producer0
-        num_produced                      == 100
+        num_produced                      = 100
   clocks
     clocks.Root
-        cycles                            == 101
+        cycles                            = 101
 ----
 
 A few things worth noting in this output:

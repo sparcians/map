@@ -139,7 +139,7 @@ duplicating the storage:
 [source,cpp]
 ----
 // The actual count is maintained by some other data structure
-uint64_t queue_occupancy_ == 0;
+uint64_t queue_occupancy_ = 0;
 
 // Expose it as a Sparta counter
 sparta::ReadOnlyCounter ro_occupancy_ {&unit_stat_set_, "queue_occupancy",
@@ -361,14 +361,14 @@ all `VIS_SUMMARY`-level counters:
 ----
 Automatic Simulation Summary [0,10001]
   scheduler
-      ticks          == 10000
-      events_fired   == 384721
+      ticks          = 10000
+      events_fired   = 384721
   top
     top.cpu.core0.decode
-        num_decoded  == 39842
-        num_stalls   == 127
+        num_decoded  = 39842
+        num_stalls   = 127
     top.cpu.core0.execute
-        ipc          == 3.98
+        ipc          = 3.98
 ----
 
 ==== Generating a Full Report

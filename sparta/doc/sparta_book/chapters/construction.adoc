@@ -356,7 +356,7 @@ namespace my_simulator
 
     void MySimulator::buildTree_()
     {
-        auto root_tn == getRoot();  // get the RootTreeNode "top"
+        auto root_tn = getRoot();  // get the RootTreeNode "top"
 
         // Create the CPU node, a child of the root tree node
         sparta::ResourceTreeNode* cpu_tn =
@@ -374,8 +374,8 @@ namespace my_simulator
         // brevity, assume a simulation of just 2 cores.  This
         // can be parameterized either on the command line (shown later)
         // or via parameters.
-        constexpr uint32_t num_cores == 2;
-        for (uint32_t core_num == 0; core_num < num_cores; ++core_num) // <1>
+        constexpr uint32_t num_cores = 2;
+        for (uint32_t core_num = 0; core_num < num_cores; ++core_num) // <1>
         {
             sparta::ResourceTreeNode* core_tn =
                 new sparta::ResourceTreeNode(cpu_tn,
@@ -515,8 +515,8 @@ namespace my_simulator
     {
         // The modeler can grab sparta::ParameterSets and specific
         // Parameters to check for sanity, etc.
-        const auto cpu_rtn == getRoot()->getChildAs<sparta::ResourceTreeNode>(CPU::name);
-        const sparta::ParameterSet * cpu_parameters == cpu_rtn->getParameterSet();
+        const auto cpu_rtn = getRoot()->getChildAs<sparta::ResourceTreeNode>(CPU::name);
+        const sparta::ParameterSet * cpu_parameters = cpu_rtn->getParameterSet();
         const sparta::Parameter<uint32_t> & num_branch_units =
             cpu_parameters->getParameterAs<uint32_t>("num_branch_units");
         sparta_assert(num_branch_units === 1,
@@ -699,9 +699,9 @@ However, accessing one component (`Core` -> `Fetch` as an example) is
 not direct, but rather through the containers in which they reside:
 
 ```cpp
-   my_model::Core   * my_core   == ...pointer to instance of Core
-   sparta::TreeNode * container == my_core->getContainer();
-   my_model::Fetch  * my_fetch  == container->getChildAs<my_model::Fetch>("fetch")
+   my_model::Core   * my_core   = ...pointer to instance of Core
+   sparta::TreeNode * container = my_core->getContainer();
+   my_model::Fetch  * my_fetch  = container->getChildAs<my_model::Fetch>("fetch")
 ```
 
 However, resources accessing other resources through the node
@@ -767,24 +767,24 @@ simulator:
 
 int main(int argc, char ** argv)
 {
-    uint32_t num_cores == 1;  // default
+    uint32_t num_cores = 1;  // default
 
     sparta::app::DefaultValues DEFAULTS;
-    DEFAULTS.run_time_cycles == 100; // default run length
+    DEFAULTS.run_time_cycles = 100; // default run length
 
     // Create a CommandLineSimulator -- this parses and owns the command line
     sparta::app::CommandLineSimulator cls("My Simulator",
                                           DEFAULTS);
 
     // Add simulator-specific options on top of Sparta's built-in set
-    auto & app_opts == cls.getApplicationOptions();
+    auto & app_opts = cls.getApplicationOptions();
     app_opts.add_options()
         ("num-cores",
          sparta::app::named_value<uint32_t>("NUM_CORES", &num_cores)->default_value(1),
          "Number of cores to simulate");
 
     // Parse the command line -- this handles --help, --show-tree, etc.
-    int err_code == 0;
+    int err_code = 0;
     if (!cls.parse(argc, argv, err_code)) {
         return err_code;
     }
@@ -915,7 +915,7 @@ private:
 [source,cpp]
 ----
 // Core.cpp
-const char * Core::name == "core";
+const char * Core::name = "core";
 
 Core::Core(sparta::TreeNode * node, const CoreParameters * params) :
     sparta::Unit(node),
@@ -997,7 +997,7 @@ MySimulator::MySimulator(std::shared_ptr<SharedBus> shared_bus) :
 
 void MySimulator::buildTree_()
 {
-    auto root_tn == getRoot();
+    auto root_tn = getRoot();
 
     sparta::ResourceTreeNode* cpu_tn =
         new sparta::ResourceTreeNode(root_tn, CPU::name,

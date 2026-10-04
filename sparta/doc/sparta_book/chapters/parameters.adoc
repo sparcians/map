@@ -83,7 +83,7 @@ exception.
 [source,cpp]
 ----
 // FetchUnit.cpp
-const char * FetchUnit::name == "fetch";
+const char * FetchUnit::name = "fetch";
 
 FetchUnit::FetchUnit(sparta::TreeNode * node,
                      const FetchParameters * params) :
@@ -226,10 +226,10 @@ before running:
 [source]
 ----
 top.cpu.core0.fetch.params
-  fetch_width       == 4         (default: 4)
-  icache_line_size  == 64        (default: 64)
-  enable_prefetch   == true      (default: true)
-  branch_pred       == gshare    (default: gshare)
+  fetch_width       = 4         (default: 4)
+  icache_line_size  = 64        (default: 64)
+  enable_prefetch   = true      (default: true)
+  branch_pred       = gshare    (default: gshare)
 ----
 
 Parameters that have been changed from their default value are marked
@@ -495,11 +495,11 @@ void MySimulator::configureTree_()
     const auto * cpu_params =
         dynamic_cast<const CPU::CPUParameters *>(cpu_rtn->getParameterSet());
 
-    const uint32_t num_cores == cpu_params->num_cores;
+    const uint32_t num_cores = cpu_params->num_cores;
 
     // Build additional core nodes based on the parameter value
-    for (uint32_t i == already_built_cores_; i < num_cores; ++i) {
-        auto * core_tn == new sparta::ResourceTreeNode(
+    for (uint32_t i = already_built_cores_; i < num_cores; ++i) {
+        auto * core_tn = new sparta::ResourceTreeNode(
             cpu_rtn,
             Core::name + std::to_string(i),
             "core", i,
@@ -519,7 +519,7 @@ any Sparta tree is built:
 [source,cpp]
 ----
 // main.cpp
-constexpr uint32_t num_cores == 1;
+constexpr uint32_t num_cores = 1;
 cls.getApplicationOptions().add_options()
     ("num-cores",
      sparta::app::named_value<uint32_t>("N", &num_cores)->default_value(1),
@@ -541,7 +541,7 @@ MySimulator::MySimulator(uint32_t num_cores) :
 
 void MySimulator::buildTree_()
 {
-    for (uint32_t i == 0; i < num_cores_; ++i) {
+    for (uint32_t i = 0; i < num_cores_; ++i) {
         // build core i ...
     }
 }

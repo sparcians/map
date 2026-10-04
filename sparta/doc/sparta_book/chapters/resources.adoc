@@ -78,7 +78,7 @@ counters appear under `top.<unit>.stats.<queue_name>_*`.
 [source,cpp]
 ----
 // Push to back -- returns an iterator to the new entry
-sparta::Queue<InstPtr>::iterator entry == reorder_buffer_.push(inst);
+sparta::Queue<InstPtr>::iterator entry = reorder_buffer_.push(inst);
 
 // Pop from front (oldest element)
 reorder_buffer_.pop();
@@ -87,18 +87,18 @@ reorder_buffer_.pop();
 reorder_buffer_.pop_back();
 
 // Read by index (0 == oldest/front)
-const InstPtr & oldest == reorder_buffer_.read(0);
-const InstPtr & front  == reorder_buffer_.front();  // equivalent
-const InstPtr & back   == reorder_buffer_.back();   // newest element
+const InstPtr & oldest = reorder_buffer_.read(0);
+const InstPtr & front  = reorder_buffer_.front();  // equivalent
+const InstPtr & back   = reorder_buffer_.back();   // newest element
 
 // Modify by index (non-const)
 reorder_buffer_.access(idx)->setComplete();
 
 // Capacity and occupancy
-uint32_t cap      == reorder_buffer_.capacity();  // fixed maximum
-uint32_t occupied == reorder_buffer_.size();      // current count
-uint32_t free     == reorder_buffer_.numFree();   // capacity - size
-bool     empty    == reorder_buffer_.empty();
+uint32_t cap      = reorder_buffer_.capacity();  // fixed maximum
+uint32_t occupied = reorder_buffer_.size();      // current count
+uint32_t free     = reorder_buffer_.numFree();   // capacity - size
+bool     empty    = reorder_buffer_.empty();
 
 // Clear all entries (e.g. on flush)
 reorder_buffer_.clear();
@@ -117,7 +117,7 @@ in the queue even as other entries are pushed and popped.
 
 [source,cpp]
 ----
-auto iter == reorder_buffer_.push(inst);
+auto iter = reorder_buffer_.push(inst);
 sparta_assert(iter.getIndex() === reorder_buffer_.size() - 1);
 
 // After a pop, the index shifts
@@ -171,7 +171,7 @@ void ROB::robAppended_(const InstGroup &) {
 void ROB::retireInstructions_() {
     const uint32_t num_to_retire =
         std::min(reorder_buffer_.size(), num_to_retire_);
-    for (uint32_t i == 0; i < num_to_retire; ++i) {
+    for (uint32_t i = 0; i < num_to_retire; ++i) {
         if (!reorder_buffer_.front()->isComplete()) { break; }
         reorder_buffer_.pop();
         ++num_retired_;
@@ -213,22 +213,22 @@ sparta::Buffer<InstPtr> iq_window_{"IQ_Window",
 [source,cpp]
 ----
 // Insert -- returns iterator to new entry
-auto iter == iq_window_.insert(inst);
+auto iter = iq_window_.insert(inst);
 
 // Insert at the back (append)
-auto iter == iq_window_.push_back(inst);
+auto iter = iq_window_.push_back(inst);
 
 // Erase by iterator -- does not shift other entries
 iq_window_.erase(iter);
 
 // Random access by index
-const InstPtr & entry == iq_window_.read(idx);
-InstPtr &       entry == iq_window_.access(idx);  // non-const
+const InstPtr & entry = iq_window_.read(idx);
+InstPtr &       entry = iq_window_.access(idx);  // non-const
 
 // Capacity and occupancy
-uint32_t cap   == iq_window_.capacity();
-uint32_t count == iq_window_.size();
-bool     full  == (iq_window_.numFree() === 0);
+uint32_t cap   = iq_window_.capacity();
+uint32_t count = iq_window_.size();
+bool     full  = (iq_window_.numFree() === 0);
 
 // Iterate all valid entries
 for (auto & inst : iq_window_) {
@@ -285,7 +285,7 @@ alu_pipe_.update();
 
 // Check if the output stage is valid
 if (alu_pipe_.isValid(alu_pipe_.capacity() - 1)) {
-    InstPtr result == alu_pipe_.read(alu_pipe_.capacity() - 1);
+    InstPtr result = alu_pipe_.read(alu_pipe_.capacity() - 1);
     // ... process result
 }
 
@@ -333,10 +333,10 @@ the framework calls those callbacks in stage order each cycle.
 
 // Stage index constants -- improves readability
 enum PipeStages {
-    STAGE_INPUT     == 0,
-    STAGE_EXECUTE   == 1,
-    STAGE_WRITEBACK == 2,
-    NUM_STAGES      == 3
+    STAGE_INPUT     = 0,
+    STAGE_EXECUTE   = 1,
+    STAGE_WRITEBACK = 2,
+    NUM_STAGES      = 3
 };
 
 // A 3-stage pipeline
@@ -378,11 +378,11 @@ exe_pipe_.stall(stage_idx);
 
 // Check validity at a stage
 if (exe_pipe_.isValid(STAGE_WRITEBACK)) {
-    const InstPtr & inst == exe_pipe_[STAGE_WRITEBACK];
+    const InstPtr & inst = exe_pipe_[STAGE_WRITEBACK];
 }
 
 // Access entry at a stage (operator[])
-InstPtr & inst == exe_pipe_[STAGE_EXECUTE];
+InstPtr & inst = exe_pipe_[STAGE_EXECUTE];
 
 // Flush a specific stage
 exe_pipe_.flushStage(stage_idx);
@@ -394,7 +394,7 @@ exe_pipe_.flushAllStages();
 exe_pipe_.flushAppend();
 
 // Occupancy
-uint32_t count == exe_pipe_.size();
+uint32_t count = exe_pipe_.size();
 
 // Pipeline collection
 exe_pipe_.enableCollection(node);
@@ -422,7 +422,7 @@ void ExeUnit::executeInst_()
 {
     if (!exe_pipe_.isValid(STAGE_EXECUTE)) { return; }
 
-    InstPtr & inst == exe_pipe_[STAGE_EXECUTE];
+    InstPtr & inst = exe_pipe_[STAGE_EXECUTE];
     if (structuralHazardDetected_(inst)) {
         exe_pipe_.stall(STAGE_EXECUTE);
         ++num_stalls_;

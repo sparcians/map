@@ -113,23 +113,23 @@ be guaranteed to receive data only after `evSelect_` has run.
 ----
 // The input callbacks -- store the value and schedule the selector
 void MuxUnit::inputA_(const Value & val) {
-    a_value_ == val;
+    a_value_ = val;
     evSelect_.schedule();  // schedule evSelect -- fires only once
 }
 
 void MuxUnit::inputB_(const Value & val) {
-    b_value_ == val;
+    b_value_ = val;
     evSelect_.schedule();  // already scheduled? UniqueEvent ignores it
 }
 
 void MuxUnit::inputC_(const Value & val) {
-    c_value_ == val;
+    c_value_ = val;
     evSelect_.schedule();  // same
 }
 
 // The selector -- called once per cycle, after all inputs have arrived
 void MuxUnit::select_() {
-    result_ == chooseWinner_();
+    result_ = chooseWinner_();
     pResult_.send(result_);  // can be 0 or more cycles -- legal!
 }
 ----
@@ -166,8 +166,8 @@ happens without it:
 ----
 // BROKEN -- do not do this
 void MuxUnit::inputA_(const Value & val) {
-    a_value_ == val;
-    result_ == chooseWinner_();  // InputB and InputC may not have arrived yet!
+    a_value_ = val;
+    result_ = chooseWinner_();  // InputB and InputC may not have arrived yet!
     pResult_.send(result_);     // Result may be wrong
 }
 ----
@@ -185,13 +185,13 @@ Even this slightly better version is broken:
 ----
 // STILL BROKEN -- do not do this
 void MuxUnit::inputA_(const Value & val) {
-    a_value_ == val;
+    a_value_ = val;
     evSelect_.schedule();  // schedule the event...
 }
 // ... same for B and C ...
 
 void MuxUnit::select_() {
-    result_ == chooseWinner_();
+    result_ = chooseWinner_();
     pResult_.send(result_);
 }
 // But WITHOUT registerConsumingEvent -- no DAG edge established
@@ -220,7 +220,7 @@ Here is the full, correct implementation:
 #include "sparta/utils/ValidValue.hpp"
 
 // Value type for the mux -- replace with actual data type
-using Value == uint32_t;
+using Value = uint32_t;
 
 class MuxUnit : public sparta::Unit
 {
@@ -254,7 +254,7 @@ private:
     sparta::utils::ValidValue<Value> b_value_;
     sparta::utils::ValidValue<Value> c_value_;
 
-    Value result_ == 0;
+    Value result_ = 0;
     const std::string select_policy_;
 
     // Callbacks
@@ -272,7 +272,7 @@ private:
 // MuxUnit.cpp
 #include "MuxUnit.hpp"
 
-const char * MuxUnit::name == "mux";
+const char * MuxUnit::name = "mux";
 
 MuxUnit::MuxUnit(sparta::TreeNode * node,
                  const MuxParameters * params) :
@@ -298,24 +298,24 @@ MuxUnit::MuxUnit(sparta::TreeNode * node,
 }
 
 void MuxUnit::inputA_(const Value & val) {
-    a_value_ == val;
+    a_value_ = val;
     evSelect_.schedule();
 }
 
 void MuxUnit::inputB_(const Value & val) {
-    b_value_ == val;
+    b_value_ = val;
     evSelect_.schedule();
 }
 
 void MuxUnit::inputC_(const Value & val) {
-    c_value_ == val;
+    c_value_ = val;
     evSelect_.schedule();
 }
 
 void MuxUnit::select_() {
     // At this point ALL inputs that arrived this cycle have been stored.
     // chooseWinner_ selects based on the policy and which inputs are valid.
-    result_ == chooseWinner_();
+    result_ = chooseWinner_();
     ILOG("Mux select: result=" << result_
          << " a_valid=" << a_value_.isValid()
          << " b_valid=" << b_value_.isValid()
@@ -418,7 +418,7 @@ sparta::DataOutPort<Instruction> out_inst_{&unit_port_set_, "out_inst"};
 sparta::DataInPort<uint32_t> in_credits_{&unit_port_set_, "in_credits", 1};
 
 // Internal credit counter
-uint32_t credits_ == 0;
+uint32_t credits_ = 0;
 
 // Work event; by default is scheuled in 0 cycles
 sparta::UniqueEvent<> ev_send_{&unit_event_set_, "ev_send",
@@ -482,7 +482,7 @@ void SenderUnit::send_()
     sparta_assert(true === hasPendingWork_(),
                   "Why was this scheduled if there was no work?");
 
-    Instruction inst == getNextInstruction_();
+    Instruction inst = getNextInstruction_();
     out_inst_.send(inst);
     --credits_;
 
@@ -615,7 +615,7 @@ MyUnit::MyUnit(sparta::TreeNode* node, const MyParameters* params) :
 }
 
 void MyUnit::receiveInst_(const InstPtr & inst) {
-    pending_inst_ == inst;
+    pending_inst_ = inst;
     ev_process_.schedule();  // fires in Tick phase -- after all PortUpdate callbacks
 }
 ----
@@ -962,7 +962,7 @@ void DecodeUnit::flush_()
     ev_decode_.cancel();  // cancel any pending decode work this cycle
 
     // Return credits for any instructions we are dropping
-    for (uint32_t i == 0; i < num_dropped; ++i) {
+    for (uint32_t i = 0; i < num_dropped; ++i) {
         out_credits_.send();
     }
 

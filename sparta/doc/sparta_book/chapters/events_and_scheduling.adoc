@@ -425,8 +425,8 @@ established in `bindTree_()`, after both units have been instantiated:
 void MySimulator::bindTree_()
 {
     // Fetch's output event must precede Decode's input event
-    auto * fetch  == getRoot()->getChildAs<FetchUnit>("top.cpu.core0.fetch");
-    auto * decode == getRoot()->getChildAs<DecodeUnit>("top.cpu.core0.decode");
+    auto * fetch  = getRoot()->getChildAs<FetchUnit>("top.cpu.core0.fetch");
+    auto * decode = getRoot()->getChildAs<DecodeUnit>("top.cpu.core0.decode");
 
     fetch->getEventSet()->getEvent("ev_output") >>
         decode->getEventSet()->getEvent("ev_input");
@@ -556,14 +556,14 @@ private:
 
     // State
     sparta::utils::ValidValue<uint32_t> pending_inst_;
-    uint32_t credits_ == 0;
+    uint32_t credits_ = 0;
 };
 ----
 
 [source,cpp]
 ----
 // DecodeUnit.cpp
-const char * DecodeUnit::name == "decode";
+const char * DecodeUnit::name = "decode";
 
 DecodeUnit::DecodeUnit(sparta::TreeNode * node,
                        const DecodeParameters * params) :
@@ -578,7 +578,7 @@ DecodeUnit::DecodeUnit(sparta::TreeNode * node,
 
 void DecodeUnit::receiveInstruction_(const uint32_t & inst)
 {
-    pending_inst_ == inst;
+    pending_inst_ = inst;
     ev_decode_.schedule();  // work fires in Tick, after all PortUpdate callbacks
 }
 
@@ -758,14 +758,14 @@ or convert via the scheduler's current tick:
 [source,cpp]
 ----
 // How many 3 GHz cycles fit in one 1 GHz cycle?
-double ratio == core_clk_->getPeriod() / mem_clk_->getPeriod();
+double ratio = core_clk_->getPeriod() / mem_clk_->getPeriod();
 // ratio == 3.0 -- 3 core cycles per memory cycle
 
 // What memory cycle is it right now?
 sparta::Clock::Cycle mem_cycle =
     mem_clk_->currentCycle();
 ILOG("Core cycle " << getClock()->currentCycle()
-     << " == memory cycle " << mem_cycle);
+     << " = memory cycle " << mem_cycle);
 ----
 
 // AUTHOR NOTE: Please verify the exact API for clock ratio and

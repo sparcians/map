@@ -72,7 +72,7 @@ sparta::DataOutPort<uint32_t> out_port_{&unit_port_set_, "out_port"};
 // Called during simulation
 void MyProducer::produceData_()
 {
-    uint32_t value == computeNextValue_();
+    uint32_t value = computeNextValue_();
     out_port_.send(value);  // delivers to receiver in 0 cycles;
                             // assumes receiver will add the delay
 }
@@ -257,20 +257,20 @@ private:
 
     void receiveSource1_(const uint32_t & dat) {
         sparta_assert(!data1_.isValid());
-        data1_ == dat;
+        data1_ = dat;
         ev_do_work_.schedule();  // schedule work -- may already be scheduled
     }
 
     void receiveSource2_(const uint32_t & dat) {
         sparta_assert(!data2_.isValid());
-        data2_ == dat;
+        data2_ = dat;
         ev_do_work_.schedule();  // schedule work -- UniqueEvent fires only once
     }
 
     void doWork_() {
         sparta_assert(data1_.isValid() && data2_.isValid(),
                       "doWork_ called before both inputs arrived");
-        uint32_t result == data1_.getValue() + data2_.getValue();
+        uint32_t result = data1_.getValue() + data2_.getValue();
         ILOG("Result: " << result);
         data1_.clearValid();
         data2_.clearValid();
@@ -357,12 +357,12 @@ void MySimulator::buildTree_()
     sparta::RootTreeNode clk_root("clocks", "Clock Tree Root",
                                    getRoot()->getSearchScope());
     sparta::ClockManager cm;
-    sparta::Clock::Handle root_clk == cm.makeRoot(&clk_root);
+    sparta::Clock::Handle root_clk = cm.makeRoot(&clk_root);
 
     // Create derived clocks relative to the root
-    sparta::Clock::Handle clk_3ghz == cm.makeClock("core_clk",   root_clk, 3000.0);
-    sparta::Clock::Handle clk_1ghz == cm.makeClock("mem_clk",    root_clk, 1000.0);
-    sparta::Clock::Handle clk_500  == cm.makeClock("bus_clk",    root_clk,  500.0);
+    sparta::Clock::Handle clk_3ghz = cm.makeClock("core_clk",   root_clk, 3000.0);
+    sparta::Clock::Handle clk_1ghz = cm.makeClock("mem_clk",    root_clk, 1000.0);
+    sparta::Clock::Handle clk_500  = cm.makeClock("bus_clk",    root_clk,  500.0);
 
     // Associate clocks with tree nodes
     cpu_node_->setClock(clk_3ghz.get());   // CPU runs at 3 GHz
