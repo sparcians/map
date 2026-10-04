@@ -6,19 +6,20 @@ include::attributes.adoc[]
 
 After more than two decades of building performance models and
 simulation frameworks inside the semiconductor industry, three
-colleagues (Knute, Dave, and Nick) sat down and listed every
-requirement a modeling framework _should_ satisfy -- requirements that
-existing tools like {url-systemc}[SystemC] and {url-gem5}[gem5] left
-unmet.  The result, after years of design and iteration, is Sparta: a
-framework built from first principles for the people who build
-performance simulators for a living.
+colleagues (Knute Lingaard, Dave Murrell, and Nick Haw) sat down and
+listed every requirement a modeling framework _should_ satisfy --
+requirements that existing tools like {url-systemc}[SystemC] and
+{url-gem5}[gem5] left unmet.  The result, after years of design and
+iteration, is Sparta: a framework built from first principles for the
+people who build performance simulators for a living.
 
 This book is the documentation that Sparta always deserved.  The book
-is written by the lead designer of the framework with the goal of
-turning a capable engineer into a productive Sparta modeler as quickly
-as possible.  The author is the lead designer and developer of the
-{url-sparcians}[Sparcians] open source organization and co-chair of
-the {url-riscv-sig}[RISC-V International Performance Modeling SIG].
+is written by the lead designer of the framework (Knute Lingaard) with
+the goal of turning a capable engineer into a productive Sparta
+modeler as quickly as possible.  The author is the lead designer and
+developer of the {url-sparcians}[Sparcians] open source organization
+and co-chair of the {url-riscv-sig}[RISC-V International Performance
+Modeling SIG].
 
 === What is Sparta?
 include::attributes.adoc[]

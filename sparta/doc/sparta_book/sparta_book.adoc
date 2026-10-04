@@ -1,6 +1,5 @@
 = The Sparta Modeling Framework
-Knute Lingaard, Nick Haw, Dave Murrell, Colby Nyce, and Kathlene Magnus
-v1.0, 2026-05-17
+v1.0, 2026-10-04
 :doctype: book
 //:pdf-theme: sparta-theme.yml
 //:title-page-background-image: image:spartan.png[pdfwidth=30%]
