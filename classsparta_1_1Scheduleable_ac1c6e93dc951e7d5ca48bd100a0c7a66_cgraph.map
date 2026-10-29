@@ -1,0 +1,11 @@
+<map id="sparta::Scheduleable::schedule" name="sparta::Scheduleable::schedule">
+<area shape="rect" id="Node000001" title="Schedule an event in the future using the given Clock." alt="" coords="5,47,147,88"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Clock.html#aa2d29cba2726bcc43077de19218307ff" title=" " alt="" coords="195,5,373,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="146,48,211,33,212,38,147,53"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Clock.html#ab621af2dc3047de88e78eb0a0a0010d5" title="Return the tick corresponding to the given cycle." alt="" coords="211,55,356,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="147,65,195,65,195,70,147,70"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Scheduleable.html#a25a893867d1303b13cc8f3c3beb371de" title="Schedule this event on a relative scheduler tick." alt="" coords="208,104,360,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="148,84,194,97,192,102,146,89"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1Scheduler.html#a4d5e20a5e5cb060b6583b44357d8f210" title="Schedule a single event. This method should also be thread safe." alt="" coords="421,104,548,145"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="360,122,405,122,405,128,360,128"/>
+</map>

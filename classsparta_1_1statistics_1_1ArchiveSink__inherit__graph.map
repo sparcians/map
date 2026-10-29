@@ -1,0 +1,7 @@
+<map id="sparta::statistics::ArchiveSink" name="sparta::statistics::ArchiveSink">
+<area shape="rect" id="Node000001" title="Generic statistic sink base class for report archives." alt="" coords="6,94,122,135"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1statistics_1_1BinaryOArchive.html" title="Use a binary archive file as a destination for statistics values." alt="" coords="5,183,123,223"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="67,150,67,182,61,182,61,150"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1statistics_1_1ArchiveStream.html" title="Generic statistic stream base class for sources and sinks in the report archive system." alt="" coords="6,5,122,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="67,62,67,94,61,94,61,62"/>
+</map>

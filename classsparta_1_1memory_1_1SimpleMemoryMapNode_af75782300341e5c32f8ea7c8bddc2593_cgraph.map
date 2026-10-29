@@ -1,0 +1,22 @@
+<map id="sparta::memory::SimpleMemoryMapNode::read" name="sparta::memory::SimpleMemoryMapNode::read">
+<area shape="rect" id="Node000001" title="Read a block of memory." alt="" coords="5,217,207,258"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1BlockingMemoryIFNode.html#a7249fca2609ee2a456a2752890574085" title="Attempt to read memory of size size at address addr." alt="" coords="273,119,438,159"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="150,214,254,170,274,162,276,167,256,175,152,219"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1memory_1_1SimpleMemoryMap.html#a03897cc554d3c815b6dfea485c1d67c1" title="Determines if a mapping is valid or not." alt="" coords="255,184,456,225"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="207,222,239,217,240,222,208,227"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#ae35fa48697f197f9357be0d6c5fae0c6" title="Verifies that the range [addr, addr+size) is within the access windows for this interface." alt="" coords="256,249,454,290"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="208,248,241,252,240,258,207,253"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#acb92bd2905d208cab60935b46dcd67a9" title="Verifies that the given address does not span block boundaries defined for this interface." alt="" coords="256,315,454,355"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="154,256,256,299,276,307,274,312,254,304,152,261"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a4efd1a8b860fd5224a78b4f17f06853d" title="Determines if the given address spans block boundaries defined for this interface...." alt="" coords="504,283,702,323"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="438,158,458,170,475,191,483,211,491,231,506,252,535,273,532,277,502,256,486,234,478,213,471,194,454,174,435,162"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a56bff166f0c2e250be9450a8a152becc" title="Determines if the range [addr, addr+size) is within the access windows for this interface." alt="" coords="504,5,702,46"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="390,116,442,86,503,57,520,49,523,54,505,61,445,91,392,121"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1NotificationSourceBase.html#a8bd1a11753aa860f953f65f25cf22198" title="Is this NotificationSourceBase being observed at this node or an ancestor of any distance." alt="" coords="518,71,688,111"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="438,120,503,108,504,113,439,126"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1NotificationSource.html#a7853e8c00ab8e89b96fba9285cf7128e" title="Post with reference to data with parent as message origin." alt="" coords="518,136,688,177"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="439,142,503,147,502,152,438,147"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1memory_1_1BlockingMemoryIF.html#a2c04f71050bbda78ff6bbf87a57fbc01" title="Implements tryRead." alt="" coords="520,201,686,242"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="420,157,457,170,527,193,525,198,455,175,418,162"/>
+<area shape="poly" id="edge10_Node000010_Node000003" title=" " alt="" coords="455,320,488,315,489,320,455,325"/>
+</map>

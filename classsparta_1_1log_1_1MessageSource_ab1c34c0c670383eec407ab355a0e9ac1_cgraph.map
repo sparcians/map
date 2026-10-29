@@ -1,0 +1,9 @@
+<map id="sparta::log::MessageSource::stringize" name="sparta::log::MessageSource::stringize">
+<area shape="rect" id="Node000001" title="Create a string representation of this node." alt="" coords="5,47,186,88"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="234,5,428,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="186,46,251,32,252,37,187,51"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="240,55,422,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="186,65,224,65,224,70,186,70"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1NotificationSourceBase.html#a8bd1a11753aa860f953f65f25cf22198" title="Is this NotificationSourceBase being observed at this node or an ancestor of any distance." alt="" coords="246,104,416,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="182,86,231,98,230,103,181,91"/>
+</map>

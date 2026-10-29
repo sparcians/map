@@ -1,0 +1,5 @@
+<map id="sparta::ExportedPort::doesParticipateInAutoPrecedence" name="sparta::ExportedPort::doesParticipateInAutoPrecedence">
+<area shape="rect" id="Node000001" title="Does the internal Port participate in auto&#45;precedence." alt="" coords="5,5,230,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Port.html#af8f6814072216c057961fc6bb73b8a1b" title="Does this Port participate in auto&#45;precedence establishment by sparta::Unit?" alt="" coords="278,5,461,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="230,23,262,23,262,28,230,28"/>
+</map>

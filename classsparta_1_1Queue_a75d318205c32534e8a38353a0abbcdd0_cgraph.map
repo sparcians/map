@@ -1,0 +1,7 @@
+<map id="sparta::Queue::read" name="sparta::Queue::read">
+<area shape="rect" id="Node000001" title="Read and return the data at the given index, const reference." alt="" coords="5,5,138,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Queue.html#a2ddf318a5fc96552d7587210d7ba28b1" title="Determine if data at the index is valid." alt="" coords="186,5,332,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="138,16,170,16,170,21,138,21"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Queue.html#a61d770819cbda5b70db6eff8f35b289b" title="Return the number of valid entries." alt="" coords="380,5,510,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="332,16,365,16,365,21,332,21"/>
+</map>

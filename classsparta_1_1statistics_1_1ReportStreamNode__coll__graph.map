@@ -1,0 +1,5 @@
+<map id="sparta::statistics::ReportStreamNode" name="sparta::statistics::ReportStreamNode">
+<area shape="rect" id="Node000001" title="In the stream node hierarchy, this class is used wherever we encounter a sparta::Report node,..." alt="" coords="5,94,144,135"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1statistics_1_1StreamNode.html" title="When a simulation is configured to stream its statistics values for asynchronous processing,..." alt="" coords="16,5,133,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="77,62,77,94,72,94,72,62"/>
+</map>

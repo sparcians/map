@@ -1,0 +1,7 @@
+<map id="sparta::pevents::PeventCollectorController::finalize" name="sparta::pevents::PeventCollectorController::finalize">
+<area shape="rect" id="Node000001" title="we are done parsing the command line, and simulation is setup, propagate the tap information throug t..." alt="" coords="5,27,213,68"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#ae707e1cdf8038ea8aeac03ca2620d1e1" title="Finds all children starting at this node with a given pattern relative to this node by matching names..." alt="" coords="261,5,454,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="213,33,245,29,246,34,213,38"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1RootTreeNode.html#a4b9d3d82653ad11e9c2942efd1fd1804" title="Gets the search node &quot;parent&quot; of this root node which is suitable for performing searches that includ..." alt="" coords="284,55,431,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="213,57,269,63,268,68,213,62"/>
+</map>

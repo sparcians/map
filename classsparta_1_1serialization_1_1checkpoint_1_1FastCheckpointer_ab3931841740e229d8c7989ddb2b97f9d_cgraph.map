@@ -1,0 +1,7 @@
+<map id="sparta::serialization::checkpoint::FastCheckpointer::getNumDeltas" name="sparta::serialization::checkpoint::FastCheckpointer::getNumDeltas">
+<area shape="rect" id="Node000001" title="Gets the current number of delta checkpoints with valid IDs." alt="" coords="5,45,204,101"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a21cfc65068b2c2cc31cde46324f2fa0b" title="Gets the current number of checkpoints having valid IDs." alt="" coords="252,5,450,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="204,54,236,49,237,54,205,60"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#ac8705084ec70ac9e71c79e7bdd50b5a3" title="Gets the current number of snapshots with valid IDs." alt="" coords="252,85,450,141"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="205,87,237,92,236,97,204,92"/>
+</map>

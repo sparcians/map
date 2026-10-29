@@ -1,0 +1,7 @@
+<map id="sparta::TreeNode::broadcastDeregistrationForNotificationListStringToChildren_" name="sparta::TreeNode::broadcastDeregistrationForNotificationListStringToChildren_">
+<area shape="rect" id="Node000001" title="Symmetric oppostie of broadcastRegistrationForNotificationListStringToChildren_." alt="" coords="5,41,213,97"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a746152de43052580e24b26d3f890f1a2" title="Recursively notifies children that the notification described has lost one particular observer (del) ..." alt="" coords="272,5,472,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="213,52,256,46,257,52,213,58"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a4c2e0aceb5596a4f21fc5e1ad34c2ac7" title="Parses a comma&#45;separated list of notification names (or patterns) separated by commas and ignoring wh..." alt="" coords="261,85,484,126"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="213,81,245,85,245,90,213,86"/>
+</map>

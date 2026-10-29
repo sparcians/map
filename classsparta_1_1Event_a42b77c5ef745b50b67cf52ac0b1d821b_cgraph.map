@@ -1,0 +1,17 @@
+<map id="sparta::Event::Event" name="sparta::Event::Event">
+<area shape="rect" id="Node000001" title="Create a generic Event. This type of class is hardly used, but available." alt="" coords="5,105,141,131"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1EventNode.html#af64ae7e31a3b6a1ea4b9fb99c921fefd" title="Center point of Scheduler location." alt="" coords="209,12,346,53"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,102,212,57,214,62,107,107"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#aec70f36a682dadc1d571fcd723f12cd6" title="Walks up parents (starting with self) until a parent with an associated local clock is found,..." alt="" coords="189,105,366,131"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="141,116,173,116,173,121,141,121"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1Scheduleable.html#ab2e055a1d7931c478f87d1f03c51bd01" title="Set a new label for this Scheduleable – used in debugging." alt="" coords="207,155,348,196"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="122,129,192,149,191,154,121,134"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Clock.html#aa2d29cba2726bcc43077de19218307ff" title=" " alt="" coords="416,5,594,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="345,26,400,22,401,28,346,31"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html#a883ef289de0f961e1d69a988b50338d8" title="Gets the clock associated directly with this Node. This is useful for configuration and simulator deb..." alt="" coords="417,55,593,96"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="349,102,401,92,402,97,350,107"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="414,120,596,146"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="367,121,399,123,398,129,366,127"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="432,170,578,210"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="327,129,367,141,431,162,429,167,365,146,326,134"/>
+</map>

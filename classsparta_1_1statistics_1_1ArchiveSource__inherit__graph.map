@@ -1,0 +1,9 @@
+<map id="sparta::statistics::ArchiveSource" name="sparta::statistics::ArchiveSource">
+<area shape="rect" id="Node000001" title="Generic statistic source base class for report archives." alt="" coords="92,94,208,135"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1statistics_1_1BinaryIArchive.html" title="Use a binary archive file as a source of statistics values." alt="" coords="5,183,122,223"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="122,148,85,184,81,180,118,144"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1statistics_1_1ReportStatisticsAggregator.html" title="This class is a source of statistics values used by SPARTA simulators. It takes a sparta::Report obje..." alt="" coords="145,183,328,223"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="182,144,219,180,215,184,179,148"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1statistics_1_1ArchiveStream.html" title="Generic statistic stream base class for sources and sinks in the report archive system." alt="" coords="92,5,208,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="153,62,153,94,148,94,148,62"/>
+</map>

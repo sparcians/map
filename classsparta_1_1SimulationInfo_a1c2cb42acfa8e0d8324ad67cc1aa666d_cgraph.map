@@ -1,0 +1,7 @@
+<map id="sparta::SimulationInfo::postSim" name="sparta::SimulationInfo::postSim">
+<area shape="rect" id="Node000001" title="Called once after simulation in saveReports()" alt="" coords="5,39,152,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TimeManager.html#a6728b6d1e95b60a1c6f21321491b37e6" title="Gets the number of seconds elapsed since the instantiation of SPARTA static and global vars." alt="" coords="200,5,342,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,44,184,38,185,43,153,49"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TimeManager.html#af030bd86de09c6db4e481d66fe77afb7" title="Returns the TimeManager singleton." alt="" coords="200,71,342,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="153,69,185,74,184,79,152,74"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="sparta::NotificationSourceBase::NotificationSourceBase" name="sparta::NotificationSourceBase::NotificationSourceBase">
+<area shape="rect" id="Node000001" title="NotificationSourceBase." alt="" coords="5,76,199,117"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a7b6ca285ffd1077f9622662c167315e9" title="Adds a TreeNode to this node as a child." alt="" coords="260,5,436,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,73,246,40,270,33,271,38,247,45,154,79"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="251,55,445,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="199,83,235,78,235,84,199,88"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#aeefcb776a4574cd8075f92caaeb4676d" title="Tracks a node as an expected parent without actually adding this node as a child. This is used almost..." alt="" coords="249,104,446,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="199,105,234,109,233,114,199,111"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1NotificationSourceBase.html#a12dc772a6573bcdcfa9f483b0f1ba9ef" title="Validates the given notification name string." alt="" coords="247,170,449,210"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="152,115,248,154,268,162,266,167,246,159,150,120"/>
+</map>

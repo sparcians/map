@@ -1,0 +1,5 @@
+<map id="sparta::collection::PipelineCollector" name="sparta::collection::PipelineCollector">
+<area shape="rect" id="Node000001" title="A class that facilitates all universal pipeline collection operations such as outputting finalized re..." alt="" coords="5,94,130,135"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1Collector.html" title="A non&#45;templated base class that all Collectors should inherit from." alt="" coords="8,5,127,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="70,62,70,94,65,94,65,62"/>
+</map>

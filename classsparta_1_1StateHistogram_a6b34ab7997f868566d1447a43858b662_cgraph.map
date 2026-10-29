@@ -1,0 +1,15 @@
+<map id="sparta::StateHistogram::StateHistogram" name="sparta::StateHistogram::StateHistogram">
+<area shape="rect" id="Node000001" title="StateHistogram constructor." alt="" coords="5,63,160,103"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a7b6ca285ffd1077f9622662c167315e9" title="Adds a TreeNode to this node as a child." alt="" coords="218,21,394,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="159,63,230,48,231,53,161,69"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#aec70f36a682dadc1d571fcd723f12cd6" title="Walks up parents (starting with self) until a parent with an associated local clock is found,..." alt="" coords="218,70,395,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="160,80,202,80,202,86,160,86"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1TreeNode.html#aeefcb776a4574cd8075f92caaeb4676d" title="Tracks a node as an expected parent without actually adding this node as a child. This is used almost..." alt="" coords="208,120,405,161"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="161,100,210,113,209,118,159,105"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a883ef289de0f961e1d69a988b50338d8" title="Gets the clock associated directly with this Node. This is useful for configuration and simulator deb..." alt="" coords="456,5,632,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="362,67,441,48,442,53,363,72"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="453,70,635,96"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="396,80,438,80,438,86,396,86"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="472,120,617,161"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="363,94,457,117,456,122,362,99"/>
+</map>

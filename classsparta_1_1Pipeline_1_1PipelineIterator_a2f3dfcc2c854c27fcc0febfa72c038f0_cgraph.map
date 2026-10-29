@@ -1,0 +1,8 @@
+<map id="sparta::Pipeline::PipelineIterator::operator&#45;&gt;" name="sparta::Pipeline::PipelineIterator::operator&#45;&gt;">
+<area shape="rect" id="Node000001" title="Override the dereferencing operator&#45;&gt;" alt="" coords="5,5,167,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Pipeline_1_1PipelineIterator.html#af6145d6fd25bfe23103043f008164155" title="Check the validity of the iterator." alt="" coords="424,5,585,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="167,20,215,19,376,19,408,20,408,25,376,24,215,24,167,25"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Pipeline_1_1PipelineIterator.html#a9a495cd812980905e718c52f10fcce1c" title="Override the dereferencing operator*." alt="" coords="215,33,376,74"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="168,34,200,38,199,43,167,39"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="376,40,408,36,409,41,377,45"/>
+</map>

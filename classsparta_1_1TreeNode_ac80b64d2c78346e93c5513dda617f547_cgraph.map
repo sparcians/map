@@ -1,0 +1,10 @@
+<map id="sparta::TreeNode::replaceExtension" name="sparta::TreeNode::replaceExtension">
+<area shape="rect" id="Node000001" title="Replace an extension, specifying the ExtensionsBase subclass type. This api is similar to addExtensio..." alt="" coords="5,27,174,68"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a1edabc25e40272f07bab64e66c70c101" title="Add an extension, specifying the ExtensionsBase subclass type. Forward any arguments needed to your s..." alt="" coords="222,5,425,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="174,34,206,30,206,36,175,40"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#ac91d6baf74fae76dd391c4e68b04a936" title="Remove an extension by its name. Returns true if successful, false if the extension was not found." alt="" coords="239,55,408,96"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="175,55,224,61,223,66,174,60"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="473,35,667,60"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="426,28,458,31,457,37,425,33"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="408,63,457,58,458,63,409,69"/>
+</map>

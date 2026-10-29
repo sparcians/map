@@ -1,0 +1,5 @@
+<map id="sparta::Bus::enableCollection" name="sparta::Bus::enableCollection">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,193,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1PortSet.html#a5c61be847db017f48430c57c7e7967dc" title="Get the ports in this PortSet for the given direction." alt="" coords="241,5,403,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,16,225,16,225,21,193,21"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="sparta::ResourceContainer::getResource" name="sparta::ResourceContainer::getResource">
+<area shape="rect" id="Node000001" title="Gets the resource contained by this node if any. May only be called after finalization begins or duri..." alt="" coords="5,136,179,177"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1PhasedObject.html#a2dcca61565924f0a4208c6509f9a42ba" title="Returns the location of this node in device tree which can be used to navigate the device tree in met..." alt="" coords="241,5,386,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="116,134,165,96,225,57,238,50,240,55,228,61,168,100,119,138"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ResourceContainer.html#a854becbfda6c01a57fb00d02372b54b7" title="Returns the currently held resource of this node (if any). This method can be called at any time." alt="" coords="227,71,400,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="162,133,227,114,228,119,164,138"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="241,136,386,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="179,154,225,154,225,159,179,159"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PhasedObject.html#a5c50c75766fa4096ba77b12c3a53edd1" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="241,201,386,242"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="164,175,228,194,227,199,162,180"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1PhasedObject.html#a8555fc19699141ca78722846bd2e2dc3" title="Is this node (and thus the entire tree above it) in the &quot;teardown&quot; phase." alt="" coords="241,267,386,307"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="119,175,168,213,228,251,240,258,238,262,225,256,165,217,116,179"/>
+</map>

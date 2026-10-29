@@ -1,0 +1,28 @@
+<map id="sparta::app::FeatureConfiguration::FeatureOptions::setOptionsFromYamlFile" name="sparta::app::FeatureConfiguration::FeatureOptions::setOptionsFromYamlFile">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,149,272,190"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ParameterTree.html#a182674f411ef8096b23d1963ff4b068e" title="Add a parameter to the tree, replacing any existing parameter." alt="" coords="320,157,493,182"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="272,167,304,167,304,172,272,172"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ParameterTree.html#a007934ff3307755c30ec7b579afb7d81" title="Add a node to the tree, with proper priority." alt="" coords="541,116,690,157"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="491,154,525,148,526,153,492,159"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1ParameterTree_1_1Node.html#ac5ee96d25a6a0bd7445c1f63c169bf23" title="Set a value on this node directly." alt="" coords="541,181,690,222"/>
+<area shape="poly" id="edge13_Node000002_Node000013" title=" " alt="" coords="494,180,526,185,526,191,493,186"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ParameterTree_1_1Node.html#a852e57d877ab82d07b805011e4a4841c" title="Get a child for setting a parameter, creating it if needed." alt="" coords="738,116,888,157"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="691,134,723,134,723,139,691,139"/>
+<area shape="poly" id="edge7_Node000004_Node000004" title=" " alt="" coords="775,116,774,106,780,97,793,91,813,89,835,92,847,98,845,103,833,97,813,95,794,97,783,101,779,107,781,115"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1ParameterTree_1_1Node.html#a6ab9fcf14fdc98365cc71ad96704279d" title=" " alt="" coords="964,59,1114,99"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="887,115,948,99,950,104,889,120"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1TreeNode.html#a1ef80729c2131ffb68b5e62b5002c321" title="Gets the next name between two &#39;.&#39; chars in a string starting at pos." alt="" coords="936,124,1142,149"/>
+<area shape="poly" id="edge8_Node000004_Node000008" title=" " alt="" coords="888,134,920,134,920,139,888,139"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1ParameterTree_1_1Node.html#a3c54fbac150dd987dd36e7c220824a57" title="Attempts to get an immediate child with an exact match for a given name or pattern string...." alt="" coords="945,173,1132,214"/>
+<area shape="poly" id="edge9_Node000004_Node000009" title=" " alt="" coords="889,153,942,166,940,171,887,158"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ParameterTree_1_1Node.html#a8f53d8a81e030268ae3dc7da2b19c2d7" title="Does this node have a value written to it which can be accessed through:" alt="" coords="1214,5,1363,46"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="1113,60,1198,42,1199,47,1115,66"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ParameterTree_1_1Node.html#a5d7fac3aa3b32912136c83f8fdfcbab9" title="Not default&#45;constructable." alt="" coords="1214,71,1363,111"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="1114,80,1199,84,1198,89,1114,85"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1TreeNode.html#a2cac07d5f406fa1300d0e283e2a1f498" title="Determines if a given node name has any wildcard characters which will be substituted in createSearch..." alt="" coords="1190,160,1387,201"/>
+<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="1133,186,1174,184,1175,189,1133,191"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1ParameterTree_1_1Node.html#a5b44b34a8091bc1b0b1e368c51a90b4b" title="Does a string, name, interpreted as a sparta TreeNode pattern, match another string interpreted as a ..." alt="" coords="1214,225,1363,266"/>
+<area shape="poly" id="edge11_Node000009_Node000011" title=" " alt="" coords="1133,211,1199,224,1198,230,1132,216"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1TreeNode.html#aacb943215632699fbddc6554dacfbdf7" title="Compute a regex pattern for a node child path containing any number of wildcard characters (not a dot..." alt="" coords="1435,225,1598,266"/>
+<area shape="poly" id="edge12_Node000011_Node000012" title=" " alt="" coords="1364,243,1420,243,1420,248,1364,248"/>
+</map>

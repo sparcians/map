@@ -1,0 +1,7 @@
+<map id="sparta::app::ReportDescriptorCollection::removeDescriptorByName" name="sparta::app::ReportDescriptorCollection::removeDescriptorByName">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,39,242,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1app_1_1ReportDescriptor.html#a82708eb1fbcc5407ec617b99e76660c8" title="Calling this method causes the simulation to skip this descriptor when it is setting up its reports...." alt="" coords="302,5,489,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="242,42,286,36,287,42,242,47"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1app_1_1ReportDescriptorCollection.html#aa308cbc7fa427717693c0a2e1d3b3fd0" title="Access a descriptor by the app::ReportDescriptor&#39;s &quot;dest_file&quot;." alt="" coords="290,71,501,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="242,70,275,74,274,79,242,76"/>
+</map>

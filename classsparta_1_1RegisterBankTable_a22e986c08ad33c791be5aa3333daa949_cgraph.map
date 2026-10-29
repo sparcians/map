@@ -1,0 +1,8 @@
+<map id="sparta::RegisterBankTable::addRegister" name="sparta::RegisterBankTable::addRegister">
+<area shape="rect" id="Node000001" title="Adds a register to this table unless it is not a member of a group (See Register::getGroupNum." alt="" coords="5,35,179,75"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1RegisterBankTable.html#acd0ae32acc56188c015ee45d92cb414f" title="Extends the banks_ vector to contain num_banks entries." alt="" coords="227,5,400,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="179,41,211,37,211,42,179,46"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1RegisterBankTable.html#a42924bbd4c496cfdfeaadef7ed0e4ece" title="Insert a register in a specific bank." alt="" coords="448,35,621,75"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="179,54,227,55,400,55,432,55,432,60,400,60,227,60,179,60"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="401,35,433,39,432,44,400,40"/>
+</map>

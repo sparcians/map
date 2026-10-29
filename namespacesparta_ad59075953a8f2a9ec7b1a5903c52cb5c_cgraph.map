@@ -1,0 +1,17 @@
+<map id="sparta::operator&gt;&gt;" name="sparta::operator&gt;&gt;">
+<area shape="rect" id="Node000001" title="Place a precedence between a Scheduleable and a Bus." alt="" coords="5,56,132,82"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Bus.html#aaa21e7e76aa07cf62654c38578c3c8e8" title="Make all outports succeed the given event." alt="" coords="180,56,370,82"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="132,66,164,66,164,72,132,72"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Bus.html#a4f2d0c49bb361b96024d3bb0ef3ada65" title="Get the ports in this PortSet for the given direction." alt="" coords="426,16,567,42"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="349,53,410,42,411,47,350,58"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1OutPort.html#a6a9af2af9223255b8b1fc4877e5893d5" title="Add an event &quot;producer&quot; to this port." alt="" coords="418,76,575,117"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="371,78,402,82,402,88,370,84"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1PortSet.html#a5c61be847db017f48430c57c7e7967dc" title="Get the ports in this PortSet for the given direction." alt="" coords="632,5,794,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="568,23,617,20,617,26,568,28"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="623,55,803,80"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="575,84,607,79,608,84,576,89"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1Port.html#a8d71612c1256b048b9ec52d06fe2ba2f" title="Is this port bound to another port?" alt="" coords="643,104,783,130"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="576,101,628,106,627,112,575,107"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1OutPort.html#a08bfa7d5cc8c5bc6961cd8fda5f72b7f" title=" " alt="" coords="634,154,792,194"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="557,115,640,146,639,151,555,120"/>
+</map>

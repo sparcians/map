@@ -1,0 +1,5 @@
+<map id="sparta::Clock::print" name="sparta::Clock::print">
+<area shape="rect" id="Node000001" title="Used for printing the clock information." alt="" coords="5,5,133,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="181,5,360,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,16,165,16,165,21,133,21"/>
+</map>

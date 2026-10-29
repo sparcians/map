@@ -1,0 +1,9 @@
+<map id="core_example::Fetch::Fetch" name="core_example::Fetch::Fetch">
+<area shape="rect" id="Node000001" title="Constructor for Fetch." alt="" coords="5,27,146,68"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1InPort.html#a0c3a7eb0dc8bad5657bb5f7905fb8d78" title="Register a handler to this Port (must be Direction::IN) to handle data arrival." alt="" coords="194,27,341,68"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="146,45,178,45,178,50,146,50"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="389,5,568,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="341,35,373,30,374,35,342,40"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1InPort.html#a699777326e92148af9c82758bd70f462" title="Let derived classes look over the registered consumer handler." alt="" coords="405,55,552,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="342,55,390,61,389,66,341,60"/>
+</map>

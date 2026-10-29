@@ -1,0 +1,5 @@
+<map id="sparta::collection::DelayedCollectable::collect" name="sparta::collection::DelayedCollectable::collect">
+<area shape="rect" id="Node000001" title="Explicitly collect a value in the future." alt="" coords="5,5,143,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#a76d81cfbcf80a8584f887564054fc7dd" title=" " alt="" coords="191,5,339,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,30,175,30,175,36,143,36"/>
+</map>

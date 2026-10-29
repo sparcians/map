@@ -1,0 +1,19 @@
+<map id="sparta::ArchData::restore" name="sparta::ArchData::restore">
+<area shape="rect" id="Node000001" title="Restores a delta checkpoint (not a full snapshot). This contains only additive changes." alt="" coords="5,148,169,173"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData.html#afd6648775a857328800b6c6f053562c1" title="Gets the line associated with this offset, allocating a new line if necessary." alt="" coords="239,98,405,124"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="151,144,242,125,243,130,152,149"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1ArchData.html#a10382f08f1fdbfe14981713c80d51b81" title="Returns the owner TreeNode." alt="" coords="217,148,427,173"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="169,158,201,158,201,163,169,163"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1ArchData_1_1Line.html#a33abd3449c3bf810a453c52f0c43f590" title="Restore data from input buffer." alt="" coords="248,197,396,238"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="143,171,233,193,232,199,142,176"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ArchData.html#a07e41ac141e36036cffedb4afad07197" title="Determines if this ArchData contains a byte for the specified address." alt="" coords="475,5,647,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="359,95,487,49,489,54,361,100"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TieredMap.html#a8a87b132e5d7c6126454765d8966e3ed" title="Finds a mapping for key k if one exists in this map." alt="" coords="486,70,636,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="405,99,470,91,470,96,406,104"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="478,120,644,161"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="406,119,463,126,462,131,405,124"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ArchData_1_1Line.html#aa4be1659c3bd363e291962cfb812ffff" title="Offset into the owning ArchData." alt="" coords="487,185,635,226"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="400,122,428,133,453,151,476,170,488,176,485,181,474,175,450,155,426,137,398,127"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TieredMap.html#ad157505881efdd0d3f14695b05bc5dec" title="Attempts to get a pair_t associated with the key k without modifying the data structure." alt="" coords="695,63,826,103"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="637,80,680,80,680,86,637,86"/>
+</map>

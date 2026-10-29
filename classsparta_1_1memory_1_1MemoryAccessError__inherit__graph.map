@@ -1,0 +1,15 @@
+<map id="sparta::memory::MemoryAccessError" name="sparta::memory::MemoryAccessError">
+<area shape="rect" id="Node000001" title="Indicates that there was an issue accessing a SPARTA memory object or interface." alt="" coords="359,104,564,145"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1memory_1_1MemoryPeekError.html" title="Error while attempting to peek some memory object or interface." alt="" coords="612,5,804,46"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="521,95,611,57,645,44,646,49,613,61,523,100"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1memory_1_1MemoryPokeError.html" title="Error while attempting to poke some memory object or interface." alt="" coords="612,71,804,111"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="580,106,611,101,612,107,580,111"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1memory_1_1MemoryReadError.html" title="Error while attempting to read some memory object or interface." alt="" coords="612,136,804,177"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="580,137,612,141,611,147,580,142"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1memory_1_1MemoryWriteError.html" title="Error while attempting to write some memory object or interface." alt="" coords="612,201,804,242"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="525,149,613,186,646,198,645,203,611,191,523,154"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1SpartaException.html" title="Used to construct and throw a standard C++ exception. Inherits from std::exception." alt="" coords="154,112,311,137"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="326,122,358,122,358,127,326,127"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,112,106,137"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="122,122,153,122,153,127,122,127"/>
+</map>
