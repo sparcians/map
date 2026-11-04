@@ -122,9 +122,12 @@ namespace collection
 
             void enable(CollectableTreeNode * ctn) {
                 enabled_ctns_.insert(ctn);
-                // Schedule collect event in the next cycle in case
-                // this is called in an unavailable pphase.
-                ev_collect_->schedule(sparta::Clock::Cycle(1));
+
+                const auto * clk = ctn->getClock();
+                const auto period = clk->getPeriod();
+                const auto now = clk->getScheduler()->getCurrentTick();
+                const auto rel_tick = period - (now % period);
+                ev_collect_->scheduleRelativeTick(rel_tick, clk->getScheduler());
             }
 
             void disable(CollectableTreeNode * ctn) {
@@ -136,11 +139,6 @@ namespace collection
             }
 
             void performCollection() {
-                // std::for_each(enabled_ctns_.begin(),
-                //               enabled_ctns_.end(), [&](CollectableTreeNode * it) {
-                //                   std::cout << it->getName() << " " << ev_collect_.getClock()->currentCycle() << std::endl;
-                //               });
-
                 for(auto & ctn : enabled_ctns_) {
                     if(ctn->isCollected()) {
                         ctn->collect();
