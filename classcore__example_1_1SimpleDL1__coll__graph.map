@@ -1,0 +1,17 @@
+<map id="core_example::SimpleDL1" name="core_example::SimpleDL1">
+<area shape="rect" id="Node000001" title=" " alt="" coords="686,96,858,121"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="435,5,623,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="619,48,639,55,739,92,737,97,637,60,617,54"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="469,70,589,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="605,88,686,97,685,102,605,94"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="199,46,372,72"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="388,66,469,74,468,80,387,72"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="5,46,151,72"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="166,56,198,56,198,62,166,62"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="199,96,372,121"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="387,95,468,87,469,92,388,100"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="437,120,621,145"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="637,119,685,114,686,119,637,124"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="420,169,638,194"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="612,162,638,155,738,119,739,124,639,160,613,167"/>
+</map>

@@ -1,0 +1,17 @@
+<map id="sparta::serialization::checkpoint::FastCheckpointer" name="sparta::serialization::checkpoint::FastCheckpointer">
+<area shape="rect" id="Node000001" title="Implements quick checkpointing through delta&#45;checkpoint trees which store state&#45;deltas in a compact f..." alt="" coords="92,484,290,525"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpointer.html" title="Checkpointer interface. Defines an ID&#45;based checkpointing API for tree of related checkpoints which c..." alt="" coords="104,394,277,435"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,450,193,484,188,484,188,450"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Scheduler.html" title="A class that lets you schedule events now and in the future." alt="" coords="130,305,251,331"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="193,346,193,393,188,393,188,346"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1RootTreeNode.html" title="TreeNode which represents the root (&quot;top&quot;) of a device tree." alt="" coords="117,230,264,256"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="193,271,193,305,188,305,188,271"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="130,155,251,181"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="193,196,193,230,188,230,188,196"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="5,80,179,106"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="122,113,176,153,173,157,119,118"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="19,5,165,31"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="95,46,95,80,89,80,89,46"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="203,80,376,106"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="262,118,209,157,205,153,259,113"/>
+</map>

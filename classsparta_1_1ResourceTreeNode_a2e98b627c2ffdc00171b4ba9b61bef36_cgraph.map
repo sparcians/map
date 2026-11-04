@@ -1,0 +1,33 @@
+<map id="sparta::ResourceTreeNode::finalize" name="sparta::ResourceTreeNode::finalize">
+<area shape="rect" id="Node000001" title="Finalize this node and construct its resource." alt="" coords="5,252,181,293"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ResourceTreeNode.html#a264559c1652e4b47d0b94185e9ca6ae8" title="After setting parameters, create a resource." alt="" coords="229,252,404,293"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="181,270,213,270,213,276,181,276"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="452,5,646,31"/>
+<area shape="poly" id="edge15_Node000001_Node000008" title=" " alt="" coords="119,250,176,207,256,151,351,92,451,41,470,34,472,39,453,46,353,97,259,155,179,211,122,254"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1ResourceContainer.html#a854becbfda6c01a57fb00d02372b54b7" title="Returns the currently held resource of this node (if any). This method can be called at any time." alt="" coords="462,514,636,554"/>
+<area shape="poly" id="edge16_Node000001_Node000011" title=" " alt="" coords="123,291,261,387,355,446,453,498,468,505,466,510,451,503,352,450,258,392,120,296"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ResourceFactoryBase.html#a58207f7ef223ab917be0bd6aaf6cc73e" title="Instanitates a new Resource of the type described by this factory." alt="" coords="454,55,645,96"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="327,250,375,180,410,140,450,105,457,101,460,106,454,110,414,144,379,183,331,253"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#aec70f36a682dadc1d571fcd723f12cd6" title="Walks up parents (starting with self) until a parent with an associated local clock is found,..." alt="" coords="460,120,638,146"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="334,250,383,202,416,176,451,154,463,149,465,154,453,159,419,181,387,206,338,254"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="327,251,396,128,450,42,459,36,462,40,454,45,401,131,332,253"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1TreeNode.html#abfa3602a9ab827b1351ef8f518c32576" title="Gets the name of this node." alt="" coords="460,169,639,195"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="354,250,400,227,451,205,474,197,476,202,453,210,402,232,357,254"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1PhasedObject.html#ade690bdb9df72fd6bad8847fbdf226f1" title="Gets the trees current phase." alt="" coords="476,219,622,260"/>
+<area shape="poly" id="edge9_Node000002_Node000010" title=" " alt="" coords="404,258,461,249,462,255,404,263"/>
+<area shape="poly" id="edge10_Node000002_Node000011" title=" " alt="" coords="336,292,370,338,406,396,419,426,426,452,434,475,454,499,459,503,456,507,450,503,430,478,421,453,414,428,402,398,365,341,332,295"/>
+<area shape="rect" id="Node000012" href="$classsparta_1_1ResourceFactoryBase.html#a17edf1451bfe4c315cd5dbec2617ec9b" title="Returns the resource type&#45;name for this resource, demangled." alt="" coords="454,284,645,325"/>
+<area shape="poly" id="edge11_Node000002_Node000012" title=" " alt="" coords="404,282,438,287,438,292,404,287"/>
+<area shape="rect" id="Node000013" href="$classsparta_1_1TreeNode.html#a5e430f72fd1a922df3c8dbc7be3f7d00" title="Is this node part of a device tree with a proper RootTreeNode at the root." alt="" coords="455,349,643,375"/>
+<area shape="poly" id="edge12_Node000002_Node000013" title=" " alt="" coords="357,291,453,334,476,342,475,347,451,339,355,296"/>
+<area shape="rect" id="Node000014" href="$classsparta_1_1ArchData.html#a656bd7fd07e1cc1705962b102b1bb116" title="Organizes the Segments into overlapping regions as needed, eventually calling ArchDataSegment::place ..." alt="" coords="470,399,628,424"/>
+<area shape="poly" id="edge13_Node000002_Node000014" title=" " alt="" coords="338,292,387,339,419,364,453,385,465,390,463,395,451,390,416,368,384,343,334,295"/>
+<area shape="rect" id="Node000015" href="$classsparta_1_1ResourceContainer.html#a20cbff011fb2cf11ffd35b167445e79d" title="Allows subclasses to assign the resource associated with this node." alt="" coords="462,448,636,489"/>
+<area shape="poly" id="edge14_Node000002_Node000015" title=" " alt="" coords="332,292,379,362,414,401,454,435,460,439,457,443,450,439,410,405,375,365,327,295"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html#a883ef289de0f961e1d69a988b50338d8" title="Gets the clock associated directly with this Node. This is useful for configuration and simulator deb..." alt="" coords="697,55,874,96"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="605,117,683,98,684,103,606,122"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="694,120,877,146"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="638,130,679,130,679,136,638,136"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="713,170,858,210"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="606,144,698,166,697,172,605,149"/>
+</map>

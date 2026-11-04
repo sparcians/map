@@ -1,0 +1,10 @@
+<map id="sparta::serialization::checkpoint::FastCheckpointer::getCheckpointsAt" name="sparta::serialization::checkpoint::FastCheckpointer::getCheckpointsAt">
+<area shape="rect" id="Node000001" title="Gets all checkpoints taken at tick t on any timeline." alt="" coords="5,27,204,83"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1CheckpointBase.html#abcdccb90c47517e8bd4b6f4ec9cc3019" title="Returns the ID of this checkpoint." alt="" coords="491,35,682,91"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="194,24,251,12,347,3,390,5,444,12,502,27,501,32,442,18,389,10,348,8,252,18,195,29"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1CheckpointBase.html#ae8050ecd3358de84498a663fcad34ca3" title="Returns the tick number at which this checkpoint was taken." alt="" coords="252,27,443,83"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="204,52,236,52,236,58,204,58"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1serialization_1_1checkpoint_1_1DeltaCheckpoint.html#a34a8164584635a65bf411dead281837b" title="Indicates whether this checkpoint has been flagged deleted." alt="" coords="252,107,443,163"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="192,81,247,99,245,104,190,86"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="441,104,476,93,478,98,443,109"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="sparta::CycleHistogramStandalone::CycleHistogramStandalone" name="sparta::CycleHistogramStandalone::CycleHistogramStandalone">
+<area shape="rect" id="Node000001" title="CycleHistogramStandalone constructor." alt="" coords="5,39,226,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1CycleHistogramBase.html#a5af67e4be27a6130d3ac7c22d2df5bab" title="Start counting, taking into account the specified delay." alt="" coords="274,5,459,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="226,42,258,37,259,43,226,47"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1CycleHistogramBase.html#a3829b65802452b544f33ad9ed3bf4803" title=" " alt="" coords="274,71,459,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="226,70,259,75,258,80,226,76"/>
+</map>

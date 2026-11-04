@@ -1,0 +1,9 @@
+<map id="sparta::ParameterTree::Node::getOwner" name="sparta::ParameterTree::Node::getOwner">
+<area shape="rect" id="Node000001" title="Gets the ParameterTree object that owns this node." alt="" coords="5,39,155,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ParameterTree_1_1Node.html#a5e022bc5fc4a5526f0a07cc757bbafea" title="Gets the parent of this node." alt="" coords="203,39,352,79"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="155,56,187,56,187,62,155,62"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ParameterTree_1_1Node.html#a8fe5011a81193c31d22533f1213911ef" title="Gets the name of this node." alt="" coords="400,5,549,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="352,44,384,38,385,44,353,49"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ParameterTree_1_1Node.html#acd09756ef616cfe1f1003c762a8a6b7c" title="Gets the parent of this node." alt="" coords="400,71,549,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="353,68,385,74,384,79,352,74"/>
+</map>

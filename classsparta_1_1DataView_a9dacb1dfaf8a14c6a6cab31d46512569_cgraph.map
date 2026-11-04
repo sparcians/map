@@ -1,0 +1,20 @@
+<map id="sparta::DataView::writeInitial_" name="sparta::DataView::writeInitial_">
+<area shape="rect" id="Node000001" title="Writes the initial value of this DataView into memory. This is guaranteed to be called after placemen..." alt="" coords="5,38,197,64"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1DataView.html#a8eb86e6d8d39eef642e6bf53d1f69a78" title=" " alt="" coords="460,13,628,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,43,444,29,444,34,197,48"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1DataView.html#ab0d331f841c9ad15c1d7d114a29a3b6f" title="Writes a value to this DataView at the specific index." alt="" coords="245,64,398,89"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="197,59,230,63,229,68,197,65"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ArchDataSegment.html#ae30270498f1a2a6ab9375fcaf7d2df5c" title="Gets the layout size of this segment (number of bytes)" alt="" coords="689,5,859,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="628,23,674,23,674,28,628,28"/>
+<area shape="poly" id="edge5_Node000004_Node000002" title=" " alt="" coords="380,60,469,40,470,45,382,65"/>
+<area shape="rect" id="Node000005" href="$namespacesparta.html#ac0a2df7a7ca53b2fc0384476286b95ec" title="Demangles a C++ symbol." alt="" coords="484,62,603,88"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="398,73,468,73,468,78,398,79"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1DataView.html#ac3f270e0df6fa373a4f56e3a6b0d8b95" title="Same behavior as write but without checking access bounds." alt="" coords="446,112,641,137"/>
+<area shape="poly" id="edge6_Node000004_Node000006" title=" " alt="" coords="385,87,466,105,465,110,384,92"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ArchData_1_1Line.html#a296a2c331517833318db3a7b4499b855" title="Write to this line, reordering bytes based on byte order if required." alt="" coords="700,104,848,145"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="642,122,684,122,684,127,642,127"/>
+<area shape="rect" id="Node000008" href="$namespacesparta.html#a57002ba92c08d4a3abb4acb2824bc6d3" title=" " alt="" coords="907,112,1010,137"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="849,122,891,122,891,127,849,127"/>
+<area shape="rect" id="Node000009" href="$namespacesparta.html#a17970a38d3054bdd50ce337e22a35679" title="Swaps the order of bytes for various types." alt="" coords="1058,112,1183,137"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="1011,122,1043,122,1043,127,1011,127"/>
+</map>

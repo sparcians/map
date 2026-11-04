@@ -1,0 +1,5 @@
+<map id="sparta::SpartaSharedPointerAllocator::~SpartaSharedPointerAllocator" name="sparta::SpartaSharedPointerAllocator::~SpartaSharedPointerAllocator">
+<area shape="rect" id="Node000001" title="Clean up the allocator – will warn if there are objects not returned to the allocator." alt="" coords="5,5,211,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1SpartaSharedPointerAllocator.html#a2722e90894851fb3826657172c997cb3" title="Query to see if the allocator has any outstanding memory not yet returned." alt="" coords="259,13,473,54"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="211,30,243,30,243,36,211,36"/>
+</map>

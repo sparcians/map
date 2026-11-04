@@ -1,0 +1,5 @@
+<map id="sparta::ResourceTreeNode::getResourceType" name="sparta::ResourceTreeNode::getResourceType">
+<area shape="rect" id="Node000001" title="Gets the typename of the resource that this node will contain once finalized, demangled." alt="" coords="5,5,181,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ResourceFactoryBase.html#a17edf1451bfe4c315cd5dbec2617ec9b" title="Returns the resource type&#45;name for this resource, demangled." alt="" coords="229,5,420,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="181,23,213,23,213,28,181,28"/>
+</map>

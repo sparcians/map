@@ -1,0 +1,5 @@
+<map id="sparta::app::SimulationConfiguration::SimDBConfig::getTreePatternForInferredAppCount" name="sparta::app::SimulationConfiguration::SimDBConfig::getTreePatternForInferredAppCount">
+<area shape="rect" id="Node000001" title="Get the device tree pattern from which to infer the number of instances of the given app we should cr..." alt="" coords="5,5,265,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1app_1_1SimulationConfiguration_1_1SimDBConfig.html#ab864b79d7a84f20555e8ee4514c4e0c9" title="Check if the given app is enabled." alt="" coords="313,13,539,54"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="265,30,297,30,297,36,265,36"/>
+</map>

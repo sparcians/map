@@ -1,0 +1,7 @@
+<map id="sparta::ArchData::Line::write" name="sparta::ArchData::Line::write">
+<area shape="rect" id="Node000001" title="Write to this line, reordering bytes based on byte order if required." alt="" coords="5,5,154,46"/>
+<area shape="rect" id="Node000002" href="$namespacesparta.html#a57002ba92c08d4a3abb4acb2824bc6d3" title=" " alt="" coords="202,13,305,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="154,23,186,23,186,28,154,28"/>
+<area shape="rect" id="Node000003" href="$namespacesparta.html#a17970a38d3054bdd50ce337e22a35679" title="Swaps the order of bytes for various types." alt="" coords="353,13,478,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="306,23,338,23,338,28,306,28"/>
+</map>

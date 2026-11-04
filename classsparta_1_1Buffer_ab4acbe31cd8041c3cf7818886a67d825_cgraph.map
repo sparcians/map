@@ -1,0 +1,5 @@
+<map id="sparta::Buffer::isValid" name="sparta::Buffer::isValid">
+<area shape="rect" id="Node000001" title="Determine if data at the index is valid." alt="" coords="5,5,148,31"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Buffer.html#a58e8b8181aae8c9427385d0d1015a579" title="Return the number of valid entries." alt="" coords="196,5,322,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,16,180,16,180,21,148,21"/>
+</map>

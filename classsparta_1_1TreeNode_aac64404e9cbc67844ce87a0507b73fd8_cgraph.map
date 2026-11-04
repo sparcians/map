@@ -1,0 +1,9 @@
+<map id="sparta::TreeNode::lockdownParameters" name="sparta::TreeNode::lockdownParameters">
+<area shape="rect" id="Node000001" title="Method to put the device tree in lockdown phase. All LOCKED and HIDDEN parameters are frozen after th..." alt="" coords="5,55,187,96"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="235,5,429,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="182,52,261,33,262,38,183,57"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1PhasedObject.html#ade690bdb9df72fd6bad8847fbdf226f1" title="Gets the trees current phase." alt="" coords="259,55,404,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="187,73,244,73,244,78,187,78"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a31666fa4b498cd468991f2099e3fbbf7" title="Gets farthest ancestor of this node." alt="" coords="246,120,418,146"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="183,94,262,113,261,118,182,99"/>
+</map>
