@@ -16,6 +16,17 @@
 
 namespace sparta {
     namespace log {
+        namespace detail {
+            inline const char* minify(const SchedulingPhase phase)
+            {
+                constexpr auto num_phases = static_cast<size_t>(SchedulingPhase::__last_scheduling_phase);
+                static const std::array<const char*, num_phases> minis = {
+                    "TG", "U", "PU", "F", "C", "T", "PT"
+                };
+                auto idx = static_cast<int>(phase);
+                return minis.at(idx);
+            }
+        }
 
 DestinationManager::DestinationVector sparta::log::DestinationManager::dests_;
 const Formatter::Info FMTLIST[] = {
@@ -64,6 +75,15 @@ void DefaultFormatter::write(const sparta::log::Message& msg)
         stream_ << std::setw(8) << std::right << clk->currentCycle() << INFO_DELIMITER;
     }else{
         stream_ << "--------" << INFO_DELIMITER;
+    }
+
+    // scheduling phase
+    if(clk){
+        stream_ << std::setfill(' ') << std::setw(10) << std::left
+                 << detail::minify(clk->getScheduler()->getCurrentSchedulingPhase()) << INFO_DELIMITER;
+    }else{
+        stream_ << std::setfill(' ') << std::setw(10) << std::left
+                 << "----------" << INFO_DELIMITER;
     }
 
     // origin
