@@ -126,6 +126,18 @@ int main()
     aged_collected_array.enableCollection(&root);
     FrontArray front_array("front_array", 8, &clk, &sset);
 
+    // erase(iterator) returns the following entry of the same iterator kind
+    {
+        AgedArray erase_array("erase_array", 4, &clk);
+        for (uint32_t i : {2, 0, 3}) { erase_array.write(i, i); }
+        auto next = erase_array.erase(erase_array.abegin());
+        EXPECT_EQUAL(next.getIndex(), 0);
+        next = erase_array.erase(next);
+        EXPECT_EQUAL(next.getIndex(), 3);
+        EXPECT_TRUE(erase_array.erase(next) == erase_array.aend());
+        EXPECT_TRUE(erase_array.empty());
+    }
+
     DummyArray dummy_array("dummy_array", 3, &clk, &sset);
 
     // Make perfect forwarding arrays
@@ -498,6 +510,14 @@ int main()
 
     EXPECT_EQUAL(aged_array.getYoungestIndex().getIndex(), 5);
     EXPECT_EQUAL(aged_array.getOldestIndex().getIndex(), 0);
+
+    EXPECT_FALSE(aged_array.empty());
+    {
+        // Non-const overloads yield mutable iterators that can be erased directly
+        auto youngest = aged_array.getYoungestIndex();
+        EXPECT_EQUAL(youngest.getIndex(), 5);
+        EXPECT_EQUAL(aged_array.getOldestIndex().getIndex(), 0);
+    }
 
     aged_array.erase(4);
     aged_array.erase(2);

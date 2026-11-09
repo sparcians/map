@@ -11,6 +11,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <utility>
 
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/statistics/CycleHistogram.hpp"
@@ -604,6 +605,30 @@ namespace sparta
         }
 
         /**
+         * \brief Non-const overload of getOldestIndex.
+         * \param nth Is the nth oldest entry you are looking for.
+         *            nth=0 is the oldest entry, nth = 1 is the second oldest, etc..
+         * \return a mutable aged iterator to the nth oldest entry.
+         */
+        iterator getOldestIndex(const uint32_t nth=0)
+        {
+            const auto idx = std::as_const(*this).getOldestIndex(nth).getIndex();
+            return iterator(this, idx, true, false, true);
+        }
+
+        /**
+         * \brief Non-const overload of getYoungestIndex.
+         * \param nth Is the nth youngest entry to be found. nth=0 is
+         *            the youngest, nth=1 is the second youngest, etc.
+         * \return a mutable aged iterator to the nth youngest entry.
+         */
+        iterator getYoungestIndex(const uint32_t nth=0)
+        {
+            const auto idx = std::as_const(*this).getYoungestIndex(nth).getIndex();
+            return iterator(this, idx, true, false, true);
+        }
+
+        /**
          * \brief provide access the youngest index in the array.
          * \param nth Is the nth youngest entry to be found. nth=0 is
          *            the youngest, nth=1 is the second youngest, etc.
@@ -689,6 +714,14 @@ namespace sparta
             return num_valid_;
         }
 
+        /**
+         * \brief Determine whether the array has no valid entries.
+         * \return true if numValid() is zero.
+         */
+        bool empty() const {
+            return numValid() == 0;
+        }
+
         //! \return numValid() -- function for stl compatibility.
         size_type size() const {
             return numValid();
@@ -706,10 +739,17 @@ namespace sparta
         /**
          * \brief Invalidate data at an iterator position.
          * \param iter An iterator used to invalidate -- must be valid
+         * \return An iterator to the entry following the erased one,
+         *         of the same kind (aged or not) as \a iter. It equals
+         *         aend()/end() if no entry follows.
          */
-        void erase(const iterator& iter) {
+        iterator erase(const iterator& iter) {
             sparta_assert(iter.isValid());
+            // Advance before erasing since aged iteration depends on the aged list
+            iterator next(iter);
+            ++next;
             erase(iter.getIndex());
+            return next;
         }
 
         /**
