@@ -33,8 +33,8 @@ namespace sparta
          */
         enum class BoolValue : unsigned int {
             __FIRST,
-            FALSE = __FIRST,
-            TRUE,
+            False = __FIRST,
+            True,
             __LAST
         };
 
@@ -46,7 +46,7 @@ namespace sparta
         // users will pass around bool instances for methods
         // related to sparta::State<bool> instances.
         BoolEnum(const bool val) :
-            enum_val_(val ? BoolValue::TRUE : BoolValue::FALSE) {}
+            enum_val_(val ? BoolValue::True : BoolValue::False) {}
 
         // Constructor to convert any BoolValue enum instance
         // into an actual BoolEnum instance. This is important
@@ -404,17 +404,17 @@ namespace sparta
         //! The behaviour of State<bool> requires it to be set to False after
         //  construction. There are tests which assert that. So, this method
         //  when called, checks if this current instance is a State<bool> or not,
-        //  and depending on that, sets the value to FALSE.
+        //  and depending on that, sets the value to False.
         template<typename U = EnumT>
         typename std::enable_if<std::is_same<U, bool>::value, void>::type
         attemptSetValue_() {
-            setValue(BoolEnum::BoolValue::FALSE);
+            setValue(BoolEnum::BoolValue::False);
         }
 
         //! The behaviour of State<bool> requires it to be set to False after
         //  construction. There are tests which assert that. So, this method
         //  when called, checks if this current instance is a State<bool> or not,
-        //  and depending on that, sets the value to FALSE. If the current context
+        //  and depending on that, sets the value to False. If the current context
         //  is not tempaltized on bool, then do nothing.
         template<typename U = EnumT>
         typename std::enable_if<!std::is_same<U, bool>::value, void>::type
@@ -651,7 +651,7 @@ namespace sparta
          * \param val The value to query
          * \return true if was set to that value
          */
-        bool isSet(const EnumTValueType & val = BoolEnum::BoolValue::TRUE) const
+        bool isSet(const EnumTValueType & val = BoolEnum::BoolValue::True) const
         {
             return (marker_set_[val].isSet() == true);
         }
@@ -661,7 +661,7 @@ namespace sparta
          * \param val The value to query
          * \return true if the state never reached this value
          */
-        bool isClear(const EnumTValueType & val = BoolEnum::BoolValue::TRUE) const
+        bool isClear(const EnumTValueType & val = BoolEnum::BoolValue::True) const
         {
             return (marker_set_[val].isSet() == false);
         }
