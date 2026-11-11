@@ -3,6 +3,7 @@
 #include "sparta/utils/SpartaTester.hpp"
 
 #include <list>
+#include <limits>
 #include <chrono>
 
 
@@ -244,6 +245,75 @@ void testListPerf()
     }
 }
 
+
+// A FastList built with (initial, max) constructs only `initial` nodes, then
+// grows on demand up to `max`.
+void testFastListSoftResize()
+{
+    sparta::utils::FastList<int> fl(2, 8);
+    EXPECT_TRUE(fl.max_size() == 8);
+    EXPECT_TRUE(fl.size() == 0);
+
+    for(int i = 0; i < 8; ++i) {
+        fl.emplace_back(i);
+    }
+    EXPECT_TRUE(fl.size() == 8);
+
+    // Growth stops at the ceiling.
+    EXPECT_THROW(fl.emplace_back(8));
+
+    // Contents survived the growth: the backing store never reallocates.
+    int expected = 0;
+    for(auto val : fl) {
+        EXPECT_EQUAL(val, expected);
+        ++expected;
+    }
+    EXPECT_EQUAL(expected, 8);
+
+    // Erasing frees room again, and the freed node is reused.
+    fl.erase(fl.begin());
+    EXPECT_TRUE(fl.size() == 7);
+    fl.emplace_back(100);
+    EXPECT_TRUE(fl.size() == 8);
+
+    // initial == max behaves exactly like the single-argument constructor.
+    sparta::utils::FastList<int> fixed(3, 3);
+    EXPECT_TRUE(fixed.max_size() == 3);
+    for(int i = 0; i < 3; ++i) { fixed.emplace_back(i); }
+    EXPECT_THROW(fixed.emplace_back(3));
+
+    // Bad arguments are rejected.
+    EXPECT_THROW(sparta::utils::FastList<int> bad(0, 4));
+    EXPECT_THROW(sparta::utils::FastList<int> bad2(5, 4));
+
+    // A ceiling past the addressable node index would collide with the -1 sentinel.
+    EXPECT_THROW(sparta::utils::FastList<int> bad3(1, size_t(std::numeric_limits<int>::max()) + 1));
+}
+
+// Erase while iterating, across a growth boundary -- PhasedPayloadEvent's cancel
+// paths advance the iterator, then erase the element behind it.
+void testFastListEraseDuringIterationAfterGrowth()
+{
+    sparta::utils::FastList<int> fl(1, 16);
+    for(int i = 0; i < 16; ++i) { fl.emplace_back(i); }
+    EXPECT_TRUE(fl.size() == 16);
+
+    auto it = fl.begin();
+    while(it != fl.end()) {
+        auto cur = it;
+        ++it;
+        if((*cur % 2) == 0) { fl.erase(cur); }
+    }
+    EXPECT_TRUE(fl.size() == 8);
+
+    int expected = 1;
+    for(auto val : fl) {
+        EXPECT_EQUAL(val, expected);
+        expected += 2;
+    }
+}
+
+
 int main(int argc, char **)
 {
     std::locale::global(std::locale(""));
@@ -251,6 +321,8 @@ int main(int argc, char **)
     std::cout.precision(12);
 
     testFastList();
+    testFastListSoftResize();
+    testFastListEraseDuringIterationAfterGrowth();
 
     // If any argument is given, bypass the perf test (NOT in regular
     // testing)

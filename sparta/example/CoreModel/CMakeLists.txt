@@ -101,6 +101,7 @@ sparta_named_test(sparta_core_example_two_reports_json_detail_format sparta_core
 sparta_named_test(sparta_core_example_json_detail_decode sparta_core_example -i 10k --report json_detail_decode.yaml)
 sparta_named_test(sparta_core_example_simple_text sparta_core_example -i 10k --report simple_text_report.yaml)
 sparta_named_test(sparta_core_example_two_reports_json_reduced_format sparta_core_example -i 10k --report multireports_json_reduced.yaml)
+sparta_named_test(sparta_core_example_sprintf_notif_trigger sparta_core_example -i 10k --report sprintf_notif_test.yaml)
 sparta_named_test(sparta_core_example_tree_node_extensions_written_to_final_config sparta_core_example -i 10k --arch-search-dir . --arch extensions_in_arch_file.yaml --config-file extensions_in_config_file.yaml --extension-file tree_node_extensions.yaml --write-final-config final_cfg_with_extensions.yaml)
 sparta_named_test(sparta_core_example_update_reports_on_demand sparta_core_example -i 10k --report update_report_on_demand.yaml)
 sparta_named_test(sparta_core_example_context_counter_trigger_expressions sparta_core_example -i 10k --report context_counter_report_triggers.yaml -p top.cpu.core0.params.foo 8k)
@@ -160,5 +161,5 @@ sparta_named_test(sparta_core_example_simdb_apps3 sparta_core_example --simdb-ap
 sparta_named_test(sparta_core_example_simdb_apps4 sparta_core_example --simdb-apps cherry-pick-fast-checkpointer --simdb-app-count cherry-pick-fast-checkpointer top.cpu.core* --num-cores 2 --simdb-database simdb_apps4.db --no-run)
 
 # Run all backwards compatibility tests for map_v2.1+ reports and their v2.0.* equivalents
-add_test(NAME sparta_simdb_report_verif_suite COMMAND python3 ../../../scripts/simdb/run_report_verif_suite.py --sim-exe-path sparta_core_example --serial --force --fail-fast)
+add_test(NAME sparta_simdb_report_verif_suite COMMAND python3 ../../../scripts/simdb/run_report_verif_suite.py --sim-exe-path sparta_core_example --serial --force --fail-fast --skip sparta_core_example_sprintf_notif_trigger)
 endif()
