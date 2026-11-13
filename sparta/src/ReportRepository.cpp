@@ -140,6 +140,22 @@ public:
         sim_ = sim;
         this->consumeDescriptorExtensions_(context);
         this->configSimDbReports();
+
+        if (auto roi_region = desc_.getRegionOfInterest()) {
+            // Disallow the use of ROI triggers with timeseries / toggled reports
+            // until we understand the use cases better.
+            sparta_assert(report_update_trigger_.get() == nullptr);
+            sparta_assert(report_toggle_trigger_.get() == nullptr);
+
+            auto roi_manager = sim->getReportConfiguration()->getROIManager();
+            if (auto trig = report_start_trigger_.get()) {
+                roi_manager->addRoiTrigger(roi_region, trig);
+            }
+            if (auto trig = report_stop_trigger_.get()) {
+                roi_manager->addRoiTrigger(roi_region, trig);
+            }
+        }
+
         return true;
     }
 

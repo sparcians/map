@@ -879,6 +879,9 @@ void Simulation::finalizeFramework()
 
     framework_finalized_ = true;
     report_repository_->postFinalizeFramework();
+    if (report_config_) {
+        report_config_->getROIManager()->onFinalizeFramework();
+    }
 
     // Let simulation subclasses add a hook for post-finalizeFramework().
     // Do this before opening the SimDB threads so user's apps are not
