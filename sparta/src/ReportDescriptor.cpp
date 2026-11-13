@@ -67,10 +67,12 @@ bool ReportDescriptor::isValidFormatName(const std::string& format)
 ReportDescriptor::ReportDescriptor(const std::string& _loc_pattern,
                                    const std::string& _def_file,
                                    const std::string& _dest_file,
-                                   const std::string& _format) :
+                                   const std::string& _format,
+                                   const size_t roi_region) :
     writes_(0),
     updates_(0),
     orig_dest_file_(_dest_file),
+    roi_region_(roi_region),
     loc_pattern(_loc_pattern),
     def_file(_def_file),
     dest_file(_dest_file),
@@ -665,6 +667,7 @@ class ReportDescriptorFileParserYAML
         std::string dest_file_;
         std::string def_file_;
         std::string format_;
+        size_t roi_region_ = 0;
 
         bool skip_current_report_ = false;
         bool auto_expand_context_counter_stats_ = false;
@@ -682,6 +685,7 @@ class ReportDescriptorFileParserYAML
         static constexpr char KEY_DEST_FILE[]       = "dest_file";
         static constexpr char KEY_PATTERN[]         = "pattern";
         static constexpr char KEY_FORMAT[]          = "format";
+        static constexpr char KEY_ROI_REGION[]      = "roi_region";
         static constexpr char KEY_TRIGGER[]         = "trigger";
         static constexpr char KEY_START[]           = "start";
         static constexpr char KEY_STOP[]            = "stop";
@@ -758,6 +762,10 @@ class ReportDescriptorFileParserYAML
                     dest_file_ = value;
                 } else if (assoc_key == KEY_FORMAT) {
                     format_ = value;
+                } else if (assoc_key == KEY_ROI_REGION) {
+                    size_t end_pos;
+                    roi_region_ = utils::smartLexicalCast<size_t>(value, end_pos);
+                    sparta_assert(roi_region_ > 0);
                 } else if (assoc_key == KEY_SKIP) {
                     if (value == "true" || value == "1") {
                         skip_current_report_ = true;
@@ -830,7 +838,8 @@ class ReportDescriptorFileParserYAML
                     loc_pattern_,
                     def_file_,
                     dest_file_,
-                    format_);
+                    format_,
+                    roi_region_);
 
                 // Report descriptors are named from the def file
                 rd.name = name_;
@@ -869,6 +878,7 @@ class ReportDescriptorFileParserYAML
                     key == KEY_DEST_FILE        ||
                     key == KEY_PATTERN          ||
                     key == KEY_FORMAT           ||
+                    key == KEY_ROI_REGION       ||
                     key == KEY_TRIGGER          ||
                     key == KEY_START            ||
                     key == KEY_STOP             ||

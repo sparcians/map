@@ -3,6 +3,7 @@
 #pragma once
 
 #include <array>
+#include <cstdint>
 #include <functional>
 #include <iostream>
 #include <sstream>
@@ -13,6 +14,8 @@
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/StringManager.hpp"
+#include "sparta/utils/ValidValue.hpp"
+
 namespace sparta
 {
 
@@ -1126,6 +1129,37 @@ namespace sparta
 
         std::string format_str_;
         std::vector<SpecType> parsed_specs_;
+    };
+
+    /*!
+     * \brief Notification source that announces the active report region of
+     * interest (ROI). Setting the active ROI posts it as a notification.
+     */
+    class ReportROI : public NotificationSource<uint64_t>
+    {
+    public:
+        using NotificationSource<uint64_t>::NotificationSource;
+
+        //! Remember the given ROI and post it to observers
+        void setActiveROI(uint64_t roi)
+        {
+            active_roi_ = roi;
+            postNotification(roi);
+        }
+
+        //! \pre hasActiveROI() must be true
+        uint64_t getActiveROI() const
+        {
+            return active_roi_;
+        }
+
+        bool hasActiveROI() const
+        {
+            return active_roi_.isValid();
+        }
+
+    private:
+        utils::ValidValue<uint64_t> active_roi_;
     };
 
     /**

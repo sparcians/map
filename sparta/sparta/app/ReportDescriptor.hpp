@@ -33,6 +33,7 @@
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/utils/ValidValue.hpp"
 #include "sparta/log/NotificationSource.hpp"
+#include "sparta/report/RoiManager.hpp"
 
 namespace sparta::app {
     class SimulationConfiguration;
@@ -191,6 +192,12 @@ namespace sparta {
             std::string orig_dest_file_;
 
             /*!
+             * \brief Optional yaml field which allows us to disambiguate between
+             * reports that are ROI-specific.
+             */
+            size_t roi_region_ = 0;
+
+            /*!
              * \brief Report stats collector for SimDB.
              */
             ReportStatsCollector* collector_ = nullptr;
@@ -339,7 +346,8 @@ namespace sparta {
             ReportDescriptor(const std::string& _loc_pattern,
                              const std::string& _def_file,
                              const std::string& _dest_file,
-                             const std::string& _format="text");
+                             const std::string& _format="text",
+                             const size_t roi_region = 0);
 
             //! \brief Allow construction
             ReportDescriptor(const ReportDescriptor&) = default;
@@ -382,6 +390,12 @@ namespace sparta {
             //! what its immutable dest_file was from the beginning.
             const std::string & getDescriptorOrigDestFile() const {
                 return orig_dest_file_;
+            }
+
+            //! \brief Get the specific Region of Interest (ROI) for this descriptor.
+            //! \note If this returns 0, that means it is not ROI-specific.
+            size_t getRegionOfInterest() const {
+                return roi_region_;
             }
 
             /*!
@@ -886,6 +900,9 @@ namespace sparta {
             //! Access the underlying report descriptors
             const ReportDescriptorCollection * getDescriptors() const;
 
+            //! Access the underlying ROI manager
+            RoiManager* getROIManager() { return &roi_manager_; }
+
         private:
             //When using the Python shell, adding/removing reports
             //from the configuration will refresh the appropriate
@@ -910,6 +927,7 @@ namespace sparta {
             ReportDescriptorCollection *const collection_;
             RootTreeNode *const root_;
             bool allow_descriptor_changes_ = true;
+            RoiManager roi_manager_{root_};
         };
 
         /*!
