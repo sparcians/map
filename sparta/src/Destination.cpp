@@ -79,7 +79,7 @@ void DefaultFormatter::write(const sparta::log::Message& msg)
 
     // scheduling phase
     if(clk){
-        stream_ << std::setfill(' ') << std::setw(10) << std::left
+        stream_ << std::setfill(' ') << std::setw(2) << std::left
                  << detail::minify(clk->getScheduler()->getCurrentSchedulingPhase()) << INFO_DELIMITER;
     }else{
         stream_ << std::setfill(' ') << std::setw(10) << std::left
