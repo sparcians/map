@@ -19,18 +19,18 @@ public:
 
     ~RoiManager() {
         if (registered_) {
-            root_->DEREGISTER_FOR_NOTIFICATION(handleROI_, size_t, "roi_region");
+            root_->DEREGISTER_FOR_NOTIFICATION(handleROI_, uint64_t, "roi_region");
         }
     }
 
     void onFinalizeFramework() {
         if (!roi_triggers_.empty()) {
-            root_->REGISTER_FOR_NOTIFICATION(handleROI_, size_t, "roi_region");
+            root_->REGISTER_FOR_NOTIFICATION(handleROI_, uint64_t, "roi_region");
             registered_ = true;
         }
     }
 
-    void addRoiTrigger(size_t roi, trigger::ExpressionTrigger* trigger) {
+    void addRoiTrigger(uint64_t roi, trigger::ExpressionTrigger* trigger) {
         sparta_assert(!registered_);
         sparta_assert(roi > 0);
         auto& triggers = roi_triggers_[roi];
@@ -44,7 +44,7 @@ public:
     }
 
 private:
-    void handleROI_(const size_t& active_roi) {
+    void handleROI_(const uint64_t& active_roi) {
         for (auto& [roi, triggers] : roi_triggers_) {
             if (roi == active_roi) {
                 for (auto trig : triggers) {
@@ -60,7 +60,7 @@ private:
 
     RootTreeNode* root_ = nullptr;
     bool registered_ = false;
-    std::unordered_map<size_t, std::vector<trigger::ExpressionTrigger*>> roi_triggers_;
+    std::unordered_map<uint64_t, std::vector<trigger::ExpressionTrigger*>> roi_triggers_;
 };
 
 } // namespace sparta
