@@ -216,7 +216,7 @@
   unread. This ensures that all user parameters are consumed by the simulator in some way.
 
   \subsection ctrl_cfg_architecture 2.2 Selecting Architectures
-  Sparta configuration supports the` concept of architecture configuration baselines. This allows users
+  Sparta configuration supports the concept of architecture configuration baselines. This allows users
   to load configuration files that override the defaults of chosen parameters hard-coded in the
   simulator source code. Unlike typical configuration files or command line parameter specifications,
   selecting an architecture updates both the default and the value of any specified parameter such that
@@ -378,6 +378,7 @@
   \subsection report_gen 3.2 Report Generation
 
   \li \ref report_def_format
+  \li \ref report_generation
 
   The Sparta Report system is capable of collecting counters and statistics from the simulation device
   tree and printing their names and values to an output file or stream in any of a variety of formats.
@@ -793,8 +794,8 @@
   can cause crashes in this debugger
 
   ---
-  \section data_proc_vis 4 Post-processing and Visualization
-  \subsection argos 4.1 Pipeline viewer (Argos)
+  \section data_proc_vis 5 Post-processing and Visualization
+  \subsection argos 5.1 Pipeline viewer (Argos)
 
   Argos visualizes pipeline data generated from a simulator if that simulator supports sparta pipeline
   collection. See \ref pipeline for instructions on using pipeline collection.

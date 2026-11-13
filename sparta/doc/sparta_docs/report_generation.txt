@@ -1,0 +1,348 @@
+/*!
+
+  \page report_generation Report Descriptor Files (Multi-Report Definitions)
+  \tableofcontents
+
+  This page describes <b>report descriptor files</b>: YAML files that
+  instantiate one or more reports in a single place.  A descriptor
+  file states <i>where</i> in the device tree each report is created,
+  <i>which</i> report definition file supplies its content, <i>where
+  and how</i> it is written, and <i>when</i> it starts, stops and
+  updates.
+
+  A descriptor file is not the same thing as a report definition file:
+
+  - A <b>report definition file</b> (\ref report_def_format) lists the
+    counters and statistics that make up the content of a report.
+  - A <b>report descriptor file</b> (this page) binds definition files
+    to device tree locations, destinations, formats and triggers.
+
+  See \ref report_gen for an overview of the report system and the
+  \--report and \--report-all command line options.
+
+  \par Descriptor triggers vs. subreport triggers
+  The <tt>trigger</tt> block described here lives in a descriptor file
+  and controls the lifetime of an entire report.  Report definition
+  files can also place a <tt>trigger</tt> block inside a
+  <tt>subreport</tt> to control just that subreport (see
+  <tt>example/CoreModel/SubreportTriggers.txt</tt>).  Both use the same
+  expression syntax (\ref report_gen_expr), and tags defined in either
+  place can be referenced by later triggers.  Note that <tt>name</tt>
+  is valid in both file kinds: in a descriptor it names the report
+  being instantiated, in a definition it names the report or subreport
+  it appears in.
+
+  \section report_gen_usage Using a Descriptor File
+
+  A descriptor file is passed to the simulator with the single-argument
+  form of \--report:
+
+  \verbatim
+  simulator --report all_report_descriptions.yaml
+  \endverbatim
+
+  This is equivalent to many \--report PATTERN DEF_FILE DEST [FORMAT]
+  options, but is the <b>only</b> way to use report triggers (warmup,
+  update intervals, etc.).  Relative <tt>def_file</tt> paths are
+  resolved against the descriptor file's location and the directories
+  given by \--report-search-dir.
+
+  \section report_gen_structure File Structure
+
+  A descriptor file has a top-level <tt>content</tt> block containing one
+  or more <tt>report</tt> entries.  Entries can be written either as
+  repeated <tt>report:</tt> keys or as a YAML list; both forms are
+  equivalent.
+
+  \code
+  content:
+    report:
+      pattern:   top.cpu.core0
+      def_file:  core_stats.yaml
+      dest_file: core0_stats.txt
+    report:
+      pattern:   top.cpu.core1
+      def_file:  core_stats.yaml
+      dest_file: core1_stats.txt
+  \endcode
+
+  \code
+  content:
+  - report:
+      pattern:   top.cpu.core0
+      def_file:  core_stats.yaml
+      dest_file: core0_stats.txt
+  - report:
+      pattern:   top.cpu.core1
+      def_file:  core_stats.yaml
+      dest_file: core1_stats.txt
+  \endcode
+
+  Nested <tt>report</tt> blocks are an error, as is any key the parser
+  does not recognize.
+
+  \section report_gen_keys Report Keys
+
+  The following keys are valid directly inside a <tt>report</tt> block.
+
+  Key                 | Required | Default   | Description
+  ------------------- | -------- | --------- | -----------
+  <tt>def_file</tt>   | yes      |           | Report definition file (\ref report_def_format) supplying the report content.
+  <tt>dest_file</tt>  | yes      |           | Output file.  May contain the substitution variables listed in \ref report_gen_dest.
+  <tt>pattern</tt>    | no       | <tt>_global</tt> | Device tree location(s) at which the report is created.  Glob wildcards (<tt>*</tt>, <tt>?</tt>) are allowed; one report is created per matching node.  <tt>_global</tt> is the global search scope, which includes the scheduler tree.  The definition file's node paths are resolved relative to this node.
+  <tt>format</tt>     | no       | <tt>text</tt> | Output format name (e.g. <tt>txt</tt>, <tt>csv</tt>, <tt>json</tt>, <tt>html</tt>).  See \ref report_out_format.
+  <tt>name</tt>       | no       | empty     | Name of the report, used by formatters that display or store it.
+  <tt>trigger</tt>    | no       |           | Block controlling when the report starts, stops and updates.  See \ref report_gen_triggers.
+  <tt>header_metadata</tt> | no  |           | Block of arbitrary key/value pairs written to the report header.  See \ref report_gen_metadata.
+  <tt>expand-cc</tt>  | no       | false     | When <tt>true</tt> (or <tt>1</tt>), ContextCounter statistics are expanded into their individual internal counters in addition to the aggregate.
+  <tt>skip</tt>       | no       | false     | When <tt>true</tt> or <tt>1</tt>, the entry is parsed but no report is created.  Handy for temporarily disabling a report without deleting it.
+  <tt>roi_region</tt> | no       | 0         | Positive integer used to tell apart reports belonging to different regions of interest.  Must be greater than zero when given.
+
+  <b>Notes:</b>
+  - Keys are not case-translated; spell them exactly as shown.
+  - Only the key names above (plus the trigger and metadata keys
+    described below) are accepted.  Anything else raises an
+    exception that names the offending key.
+  - <tt>pattern</tt> is technically optional, but the definition file must
+    then be valid when interpreted from the global scope.
+  - When the same <tt>def_file</tt> is used with several
+    <tt>pattern</tt> values (or a wildcard), use <tt>%l</tt> or
+    <tt>%i</tt> in <tt>dest_file</tt> to keep the outputs apart.
+
+  \section report_gen_dest Destination File Variables
+
+  <tt>dest_file</tt> may contain the following variables, which are
+  expanded when the report is created:
+
+  Variable | Meaning
+  -------- | -------
+  <tt>\%l</tt> | Location in the device tree where the report was instantiated
+  <tt>\%i</tt> | Index of the report instantiation
+  <tt>\%p</tt> | Host process ID
+  <tt>\%t</tt> | Timestamp
+  <tt>\%s</tt> | Simulator name
+
+  The special names <tt>1</tt> (stdout) and <tt>2</tt> (stderr) may be
+  used as destinations; the format should then be omitted or be
+  <tt>txt</tt>.
+
+  If a <tt>sprintf-notif</tt> trigger is used (see below), the
+  destination is instead a <tt>printf</tt>-style template whose
+  arguments come from the notification payload.
+
+  \section report_gen_triggers Triggers
+
+  The <tt>trigger</tt> block controls the lifetime of a report.  Its
+  keys are all optional and may be combined where it makes sense.
+
+  Key                   | Value | Meaning
+  --------------------- | ----- | -------
+  <tt>tag</tt>          | name  | Names this report's trigger so other triggers can refer to it as <tt>name.start</tt> / <tt>name.stop</tt>.  A tag must be defined <b>above</b> the entry that references it.
+  <tt>start</tt>        | expression | Report begins collecting when the expression becomes true (e.g. warmup).
+  <tt>stop</tt>         | expression | Report stops collecting when the expression becomes true.
+  <tt>whenever</tt>     | expression | Report is active only while the expression holds.
+  <tt>update-count</tt> | <tt>COUNTER_PATH N</tt> | Write a report row each time the counter advances by N.
+  <tt>update-cycles</tt>| N     | Write a report row every N cycles.
+  <tt>update-time</tt>  | N UNIT | Write a report row every N units of simulated time (e.g. <tt>100 ps</tt>, <tt>2 ns</tt>).
+  <tt>update-whenever</tt> | expression | Write a report row each time the expression becomes true (on-demand updates).
+  <tt>sprintf-notif</tt> | notification path | Write a new report file each time the named notification fires; <tt>dest_file</tt> is treated as a format string.
+
+  Use at most one of <tt>update-count</tt>, <tt>update-cycles</tt>,
+  <tt>update-time</tt> and <tt>update-whenever</tt> per report.
+  Update triggers produce time-series output, so choose a format that
+  supports updates (e.g. <tt>csv</tt>, <tt>csv_cumulative</tt>); formats that
+  do not will simply be written once at the end of simulation.
+
+  Nested <tt>trigger</tt> blocks are not supported.
+
+  \subsection report_gen_expr Trigger Expressions
+
+  <tt>start</tt>, <tt>stop</tt>, <tt>whenever</tt> and
+  <tt>update-whenever</tt> take an expression made of:
+
+  -# <b>Counter threshold</b>: <tt>path.to.counter >= value</tt>.  Only
+     <tt>\>=</tt> is allowed for counters.
+  -# <b>Notification</b>: <tt>notif.\<channel\> OP value</tt> where OP is one of
+     <tt>==  !=  >=  <=  >  <</tt>.
+  -# <b>Tag reference</b>: <tt>tag.start</tt> or <tt>tag.stop</tt>, referring
+     to a trigger defined earlier in the file.
+  -# <b>Compound</b>: terms joined with <tt>&&</tt> or <tt>||</tt>.  Both operators
+     may <b>not</b> be mixed in a single expression.
+
+  Quote expressions that contain characters YAML treats specially
+  (<tt>&&</tt>, <tt>||</tt>, <tt>\<</tt>, <tt>\></tt>, <tt>:</tt>).
+
+  \code
+  content:
+    report:
+      pattern:   top.cpu.core0
+      def_file:  core_stats.yaml
+      dest_file: solo_stats_core0.txt
+      trigger:
+        tag:     t0
+        start:   "rob.stats.total_number_retired >= 1500"
+        stop:    "rob.stats.total_number_retired >= 9000"
+    report:
+      pattern:   top.cpu.core1
+      def_file:  core_stats.yaml
+      dest_file: solo_stats_core1.txt
+      trigger:
+        tag:     t1
+        start:   "rob.stats.total_number_retired >= 2200"
+        stop:    "rob.stats.total_number_retired >= 9400"
+    report:                       # Overlap of both windows
+      pattern:   top
+      def_file:  top_stats.yaml
+      dest_file: overlap_report.html
+      format:    html
+      trigger:
+        start:   "t0.start && t1.start"
+        stop:    "t0.stop  || t1.stop"
+  \endcode
+
+  See also <tt>example/CoreModel/ReportTriggers.txt</tt> and
+  <tt>example/CoreModel/SubreportTriggers.txt</tt>.
+
+  \subsection report_gen_update_examples Update Trigger Examples
+
+  \code
+  content:
+    report:
+      pattern:   _global
+      def_file:  autopop_all.yaml
+      dest_file: all_stats_update_count.csv
+      format:    csv
+      trigger:
+        update-count: top.cpu.core0.rob.stats.total_number_retired 75
+    report:
+      pattern:   _global
+      def_file:  autopop_all.yaml
+      dest_file: all_stats_update_cycles.csv
+      format:    csv
+      trigger:
+        update-cycles: 500
+    report:
+      pattern:   _global
+      def_file:  autopop_rob.yaml
+      dest_file: rob_stats_update_time.csv
+      format:    csv
+      trigger:
+        update-time: 100 ps
+    report:
+      pattern:   _global
+      def_file:  simple_stats.yaml
+      dest_file: update_on_demand.csv
+      format:    csv
+      trigger:
+        start:           top.cpu.core0.rob.stats.total_number_retired >= 2500
+        update-whenever: notif.stats_profiler == 1
+        stop:            top.cpu.core0.rob.stats.total_number_retired >= 8800
+  \endcode
+
+  \subsection report_gen_sprintf Per-Notification Output Files
+
+  \code
+  content:
+    report:
+      pattern:   _global
+      def_file:  simple_stats.yaml
+      dest_file: "%s_%i.json"
+      format:    json_reduced
+      trigger:
+        sprintf-notif: top.cpu.core0.rob.sprintf_notif_channel
+  \endcode
+
+  \section report_gen_metadata Header Metadata
+
+  The <tt>header_metadata</tt> block attaches arbitrary string key/value
+  pairs to the report, which formatters that support headers will emit.
+
+  \code
+  content:
+    report:
+      pattern:   _global
+      def_file:  simple_stats.yaml
+      dest_file: out.csv
+      format:    csv
+      header_metadata:
+        workload: dhrystone
+        config:   baseline
+  \endcode
+
+  The keys <tt>start_counter</tt>, <tt>stop_counter</tt> and
+  <tt>update_counter</tt> are reserved by the framework and may not be
+  used; doing so raises an exception.
+
+  \section report_gen_expand Expanding ContextCounters
+
+  \code
+  content:
+    report:
+      pattern:   _global
+      def_file:  cc_simple_stats.yaml
+      dest_file: internal_counters.json
+      format:    json
+      expand-cc: true
+  \endcode
+
+  With <tt>expand-cc: true</tt>, a statistic named <tt>ctx_count</tt>
+  that refers to a ContextCounter yields <tt>ctx_count</tt> (the
+  aggregate) plus one <tt>ctx_count.\<name\></tt> entry per internal
+  counter.
+
+  \section report_gen_placeholders Placeholders
+
+  Both descriptor and definition files may contain
+  <tt>\%PLACEHOLDER\%</tt> tokens.  Values are given either on the
+  command line:
+
+  \verbatim
+  simulator --report-yaml-replacements START_TIME 1000 END_TIME 9000 \
+            --report foo_descriptor.yaml
+  \endverbatim
+
+  or per-file, by pairing a descriptor with a definition file that
+  supplies the values as top-level YAML scalars (for example, a
+  <tt>foo.yaml</tt> containing <tt>START_TIME: 1000</tt> and
+  <tt>END_TIME: 9000</tt>), used as
+  <tt>--report foo_descriptor.yaml foo.yaml</tt>.  This keeps the
+  replacements of different descriptors from clashing.
+
+  \code
+  content:
+    report:
+      pattern:   _global
+      def_file:  simple_stats.yaml
+      dest_file: foo.json
+      format:    json_reduced
+      trigger:
+        start: top.cpu.core0.rob.stats.total_number_retired >= %START_TIME%
+        stop:  top.cpu.core0.rob.stats.total_number_retired >= %END_TIME%
+  \endcode
+
+  \section report_gen_errors Common Errors
+
+  - <tt>Each report section must contain a 'def_file' entry</tt> /
+    <tt>'dest_file' entry</tt>: a required key is missing.
+  - <tt>Unrecognized key in report definition file: 'xyz'</tt>: a
+    misspelled or unsupported key inside a <tt>report</tt> block.
+  - <tt>Nested report definitions are not supported</tt> /
+    <tt>Nested trigger definitions are not supported</tt>.
+  - <tt>Metadata key "..." is reserved</tt>: see \ref report_gen_metadata.
+  - A <tt>pattern</tt> that matches no node in the device tree, or a
+    definition file whose paths do not exist below the pattern, fails
+    when the report is instantiated.
+
+  \section report_gen_examples Example Files
+
+  Working examples live in <tt>example/CoreModel</tt>:
+
+  - <tt>multireport_as_yaml_list.yaml</tt> - list-style entries
+  - <tt>multireport_independent_triggers.yaml</tt> - tagged, combined triggers
+  - <tt>all_update_triggers.yaml</tt>, <tt>update_report_on_demand.yaml</tt> - update triggers
+  - <tt>all_report_formats.yaml</tt> - every output format
+  - <tt>sprintf_notif_test.yaml</tt> - per-notification output files
+  - <tt>context_counters.yaml</tt> - <tt>expand-cc</tt>
+  - <tt>foo_descriptor.yaml</tt>, <tt>bar_descriptor.yaml</tt> - placeholders
+
+*/

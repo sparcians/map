@@ -193,7 +193,9 @@
   definition defines exactly what counters and statistics are added to a report and how they are named
   in the report.
 
-  Report definitions do not contain information about report duration or context.
+  Report definitions do not contain information about report duration or context. Where a report is
+  instantiated, where it is written, and when it starts, stops and updates are specified on the
+  command line or in a report descriptor file. See \ref report_generation.
 
   \par Important:
   <b>A report definition can affect only the contents of the report that is instantiated based on that
@@ -915,6 +917,10 @@
 
 
   \section report_def_directive_ref Report Definition Directive and Option Reference
+  The directives below apply to report <b>definition</b> files. Keys used to instantiate reports
+  (pattern, def_file, dest_file, format, trigger, etc.) belong to report descriptor files; see
+  \ref report_generation.
+
   Directive           | Report Definition File Context  | Semantic
   ----------          | ------------------------------- | ---------
   name                | Immediate child of a subreport section or at the top-level of a report definition | Name of the report (for output formatters that display a title)
