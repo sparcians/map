@@ -1,0 +1,9 @@
+<map id="sparta::Array::abegin" name="sparta::Array::abegin">
+<area shape="rect" id="Node000001" title="STL&#45;like begin operation, const, starts at the oldest valid index." alt="" coords="5,42,143,68"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Array.html#a6ef7ce44f6458ea2061d9776678178dc" title="Return the oldest index in the array." alt="" coords="191,5,346,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,42,175,37,176,42,143,47"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1Array.html#ad58ce73335e9712a099f78571664fb22" title="The number of valid entries contained." alt="" coords="192,70,345,96"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="143,62,177,67,176,72,143,68"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Array.html#a6b47047a46bca0f7375c680465fd2192" title="Determine whether an index is currently valid." alt="" coords="394,13,532,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="346,23,379,23,379,28,346,28"/>
+</map>

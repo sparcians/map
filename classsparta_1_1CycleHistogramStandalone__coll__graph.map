@@ -1,0 +1,19 @@
+<map id="sparta::CycleHistogramStandalone" name="sparta::CycleHistogramStandalone">
+<area shape="rect" id="Node000001" title="CycleHistogramStandalone class for uint64_t values." alt="" coords="80,559,301,585"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1CycleHistogramBase.html" title="CycleHistogramBase class for uint64_t values." alt="" coords="98,484,283,510"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,525,193,559,188,559,188,525"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1CycleCounter.html" title="Represents a cycle counter." alt="" coords="120,380,261,406"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="193,422,193,484,188,484,188,422"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1CounterBase.html" title="The base class for all Counters." alt="" coords="122,305,260,331"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="193,346,193,380,188,380,188,346"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1InstrumentationNode.html" title="Base class requiring." alt="" coords="98,230,283,256"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="193,271,193,305,188,305,188,271"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1TreeNode.html" title="Node in a composite tree representing a sparta Tree item." alt="" coords="130,155,251,181"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="193,196,193,230,188,230,188,196"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1ResourceContainer.html" title="PhasedObject which can hold 0 or 1 Resource pointers to an associatedresource. Contains logic for set..." alt="" coords="5,80,179,106"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="122,113,176,153,173,157,119,118"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1PhasedObject.html" title="Object having a specific phase in the sparta construction paradigm." alt="" coords="19,5,165,31"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="95,46,95,80,89,80,89,46"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1ArchDataContainer.html" title="Container class for any number of ArchData pointers owned externally." alt="" coords="203,80,376,106"/>
+<area shape="poly" id="edge8_Node000006_Node000009" title=" " alt="" coords="262,118,209,157,205,153,259,113"/>
+</map>

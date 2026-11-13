@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::FastCheckpointer::dumpCheckpointNode_" name="sparta::serialization::checkpoint::FastCheckpointer::dumpCheckpointNode_">
+<area shape="rect" id="Node000001" title="Implements Checkpointer::dumpCheckpointNode_." alt="" coords="5,5,204,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1FastCheckpointer.html#a664dabb6a4dafe36cee4ad8a34e3bfd0" title="Attempts to find a checkpoint within this checkpointer by ID." alt="" coords="252,5,450,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="204,30,236,30,236,36,204,36"/>
+</map>

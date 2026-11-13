@@ -1,0 +1,7 @@
+<map id="sparta::ReversedStatisticRange" name="sparta::ReversedStatisticRange">
+<area shape="rect" id="Node000001" title="Exception indicating that the range of a StatisticInstance was reversed when it was accessed (probabl..." alt="" coords="5,153,172,193"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1SpartaException.html" title="Used to construct and throw a standard C++ exception. Inherits from std::exception." alt="" coords="10,79,167,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,120,91,152,86,152,86,120"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="38,5,139,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="91,46,91,79,86,79,86,46"/>
+</map>

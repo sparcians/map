@@ -1,0 +1,5 @@
+<map id="sparta::memory::SimpleMemoryMap::findInterface" name="sparta::memory::SimpleMemoryMap::findInterface">
+<area shape="rect" id="Node000001" title="Returns the destination memory interface associated with a mapping containing an address." alt="" coords="5,5,207,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1SimpleMemoryMap.html#a5ef58f4130935e3a0a5af7c6125312a0" title="Finds the Mapping object associated with an address." alt="" coords="255,5,456,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="207,23,239,23,239,28,207,28"/>
+</map>

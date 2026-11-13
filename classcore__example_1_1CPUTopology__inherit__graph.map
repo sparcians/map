@@ -1,0 +1,5 @@
+<map id="core_example::CPUTopology" name="core_example::CPUTopology">
+<area shape="rect" id="Node000001" title=" " alt="" coords="12,5,199,31"/>
+<area shape="rect" id="Node000002" href="$classcore__example_1_1CoreTopology__1.html" title="CoreTopology_1 topology class." alt="" coords="5,79,206,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="108,46,108,79,103,79,103,46"/>
+</map>

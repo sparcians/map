@@ -1,0 +1,5 @@
+<map id="sparta::RegisterBits::any" name="sparta::RegisterBits::any">
+<area shape="rect" id="Node000001" title="Returns true if any bit is set." alt="" coords="5,13,166,38"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1RegisterBits.html#a761e3e7c8f5f148c9553d7ac3bf5bf6a" title="Returns true if no bits are set." alt="" coords="214,5,348,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="166,23,198,23,198,28,166,28"/>
+</map>

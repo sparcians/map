@@ -1,0 +1,9 @@
+<map id="sparta::CycleHistogramBase::setValue" name="sparta::CycleHistogramBase::setValue">
+<area shape="rect" id="Node000001" title="Set a value to histogram until a new value is set." alt="" coords="5,71,191,111"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1CycleHistogramBase.html#a5af67e4be27a6130d3ac7c22d2df5bab" title="Start counting, taking into account the specified delay." alt="" coords="239,5,424,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="172,68,241,48,242,53,174,73"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1CycleHistogramBase.html#a2e8fac16b66925d8761cf6b72b0cb02c" title="Stop counting and increment internal count, taking into account the specified delay." alt="" coords="239,71,424,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="191,88,223,88,223,94,191,94"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1CycleHistogramBase.html#a3829b65802452b544f33ad9ed3bf4803" title=" " alt="" coords="239,136,424,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="174,109,242,129,241,134,172,114"/>
+</map>

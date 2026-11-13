@@ -1,0 +1,7 @@
+<map id="sparta::RegisterBits::RegisterBits" name="sparta::RegisterBits::RegisterBits">
+<area shape="rect" id="Node000001" title="Create a class with the given number of bytes and initialize it to the given data." alt="" coords="5,35,140,75"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1RegisterBits.html#aeff81b17f731733bff3bc8ce81bda518" title="Get the internal data pointer." alt="" coords="200,5,334,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="140,42,184,35,185,41,141,47"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1RegisterBits.html#a17200c30fd8470415b118e4af912bf73" title="Set the given masked_bits in this RegisterBits instance." alt="" coords="188,70,346,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="141,62,173,67,172,72,140,67"/>
+</map>

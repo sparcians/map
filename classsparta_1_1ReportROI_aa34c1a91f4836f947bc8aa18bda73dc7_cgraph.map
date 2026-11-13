@@ -1,0 +1,5 @@
+<map id="sparta::ReportROI::setActiveROI" name="sparta::ReportROI::setActiveROI">
+<area shape="rect" id="Node000001" title="Remember the given ROI and post it to observers." alt="" coords="5,5,136,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1NotificationSource.html#a7853e8c00ab8e89b96fba9285cf7128e" title=" " alt="" coords="184,5,369,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,23,168,23,168,28,136,28"/>
+</map>

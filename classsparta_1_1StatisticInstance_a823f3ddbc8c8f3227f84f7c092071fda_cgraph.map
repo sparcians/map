@@ -1,0 +1,13 @@
+<map id="sparta::StatisticInstance::setContext" name="sparta::StatisticInstance::setContext">
+<area shape="rect" id="Node000001" title="Set the context of this StatisticInstance (sets the scheduler) based on a TreeNode." alt="" coords="5,88,167,129"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#aec70f36a682dadc1d571fcd723f12cd6" title="Walks up parents (starting with self) until a parent with an associated local clock is found,..." alt="" coords="215,70,392,96"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="167,96,199,92,200,98,167,102"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1Clock.html#aa2d29cba2726bcc43077de19218307ff" title=" " alt="" coords="215,120,393,145"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="167,115,199,118,199,123,167,120"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1TreeNode.html#a883ef289de0f961e1d69a988b50338d8" title="Gets the clock associated directly with this Node. This is useful for configuration and simulator deb..." alt="" coords="444,5,620,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="357,67,433,48,434,53,359,72"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#aa8958d72a1f5aeff2ec36012913ac09c" title="Gets immediate parent of this node if one exists." alt="" coords="441,70,623,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="393,80,425,80,425,86,393,86"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="460,120,605,161"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="359,94,445,116,444,121,357,99"/>
+</map>

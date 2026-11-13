@@ -1,0 +1,13 @@
+<map id="sparta::EnumHistogram::EnumHistogram" name="sparta::EnumHistogram::EnumHistogram">
+<area shape="rect" id="Node000001" title="EnumHistogram constructor." alt="" coords="5,55,162,96"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a7b6ca285ffd1077f9622662c167315e9" title="Adds a TreeNode to this node as a child." alt="" coords="220,5,396,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="161,53,239,33,241,38,163,58"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1StatisticSet.html#a5030504954b19726883e6d19b8e8e25a" title="Allocates a Counter which is owned by this StatisticSet and deleted at its destruction." alt="" coords="243,55,374,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="162,73,227,73,227,78,162,78"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1TreeNode.html#aeefcb776a4574cd8075f92caaeb4676d" title="Tracks a node as an expected parent without actually adding this node as a child. This is used almost..." alt="" coords="210,120,407,161"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="156,94,222,113,220,118,155,99"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="455,35,649,60"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="374,65,440,58,440,63,375,71"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PhasedObject.html#ac8edefaf47c41a0be179827e657955d5" title="Is this node (and thus the entire tree above it) &quot;finalized&quot;." alt="" coords="480,84,625,125"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="375,81,464,92,464,97,374,86"/>
+</map>

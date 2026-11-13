@@ -1,0 +1,5 @@
+<map id="sparta::serialization::checkpoint::Checkpointer::setHead_" name="sparta::serialization::checkpoint::Checkpointer::setHead_">
+<area shape="rect" id="Node000001" title="Sets the head checkpointer pointer to head." alt="" coords="5,5,178,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1CheckpointBase.html#a340b95a07ec67709e8113a642c7a3b5d" title="Make this the head checkpoint by detaching from previous checkpoint." alt="" coords="226,5,417,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="178,30,210,30,210,36,178,36"/>
+</map>
