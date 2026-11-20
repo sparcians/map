@@ -1,0 +1,16 @@
+<map id="sparta::collection::CollectableCommon::collectWithDuration" name="sparta::collection::CollectableCommon::collectWithDuration">
+<area shape="rect" id="Node000001" title="Explicitly collect a value for the given duration." alt="" coords="5,124,149,180"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1CollectableCommon.html#a169193d8990a9ce5025b6cd9f37f83ee" title=" " alt="" coords="218,29,362,85"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="140,121,211,89,213,94,142,126"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ac7d83237fc2aaa41c6b3809a4fb646e1" title="Determine whether or not this node has collection turned on or off." alt="" coords="622,63,771,118"/>
+<area shape="poly" id="edge5_Node000001_Node000004" title=" " alt="" coords="149,142,606,97,607,102,149,147"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1PhasedPayloadEvent.html#a3f7835dce02b716a08b1c88e23733955" title="Prepare a Scheduleable Payload for scheduling either now or later." alt="" coords="197,160,383,200"/>
+<area shape="poly" id="edge6_Node000001_Node000005" title=" " alt="" coords="149,159,182,163,181,168,149,164"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1Scheduleable.html#a3bb381d1ef9ccb3c335613c5600d162b" title="Schedule this event with its pre&#45;set delay using the pre&#45;set Clock." alt="" coords="219,249,360,290"/>
+<area shape="poly" id="edge7_Node000001_Node000006" title=" " alt="" coords="131,178,240,239,237,243,128,183"/>
+<area shape="poly" id="edge4_Node000002_Node000002" title=" " alt="" coords="248,29,248,19,256,10,270,5,290,3,312,5,326,12,324,17,311,10,290,8,271,10,259,15,253,21,253,29"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1collection_1_1CollectableCommon.html#af3ec59a72f72abdf2d9f8f1a3bf65f98" title=" " alt="" coords="431,29,574,85"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="362,54,416,54,416,60,362,60"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="575,67,608,73,607,78,574,72"/>
+<area shape="poly" id="edge8_Node000006_Node000006" title=" " alt="" coords="250,249,248,239,254,230,268,224,290,222,313,225,327,231,324,236,312,230,290,227,270,229,257,234,253,240,255,248"/>
+</map>

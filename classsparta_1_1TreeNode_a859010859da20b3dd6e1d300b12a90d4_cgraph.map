@@ -1,0 +1,11 @@
+<map id="sparta::TreeNode::postPropagatingNotification_" name="sparta::TreeNode::postPropagatingNotification_">
+<area shape="rect" id="Node000001" title="Starts a notification propagating up the tree." alt="" coords="5,88,226,129"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1TreeNode.html#a91bb3b5d18785bd49e3933847eab1011" title="Can this TreeNode generate a notification of the given type having the given name or pattern." alt="" coords="274,5,474,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="181,85,292,49,294,54,182,90"/>
+<area shape="rect" id="Node000003" href="$namespacesparta.html#ac0a2df7a7ca53b2fc0384476286b95ec" title="Demangles a C++ symbol." alt="" coords="314,70,434,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="226,95,298,88,299,93,226,100"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1TreeNode.html#a1a6d4aac10bfa5345b587d84170441de" title=" " alt="" coords="277,120,471,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="226,116,261,119,261,125,226,121"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1TreeNode.html#a9faa603b824c850070637195f6d4e2a9" title="Gets the virtual global node singleton. This node can have no parent and no children...." alt="" coords="283,169,464,210"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="183,127,293,162,292,167,182,132"/>
+</map>

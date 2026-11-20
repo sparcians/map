@@ -1,0 +1,5 @@
+<map id="sparta::CycleCounter::startCounting" name="sparta::CycleCounter::startCounting">
+<area shape="rect" id="Node000001" title="Start counting, taking into account the specified delay." alt="" coords="5,5,146,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Clock.html#a3671607fc743bf3a36be1ce37fcb27b5" title="Return the total elapsed cycles from this Clocks POV." alt="" coords="194,13,380,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="146,23,178,23,178,28,146,28"/>
+</map>

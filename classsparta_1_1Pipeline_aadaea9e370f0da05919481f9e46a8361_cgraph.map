@@ -1,0 +1,5 @@
+<map id="sparta::Pipeline::isEventRegisteredAtStage" name="sparta::Pipeline::isEventRegisteredAtStage">
+<area shape="rect" id="Node000001" title="Check if any event is registered at a designated pipeline stage." alt="" coords="5,5,164,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Pipeline.html#aca25172a94332e6f29f0c61412f95fc3" title="Indicate the pipeline size." alt="" coords="212,13,350,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,23,197,23,197,28,164,28"/>
+</map>

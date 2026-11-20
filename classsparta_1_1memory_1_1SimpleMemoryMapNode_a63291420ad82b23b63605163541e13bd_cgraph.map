@@ -1,0 +1,25 @@
+<map id="sparta::memory::SimpleMemoryMapNode::write" name="sparta::memory::SimpleMemoryMapNode::write">
+<area shape="rect" id="Node000001" title="Write a block of memory." alt="" coords="5,198,207,239"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1BlockingMemoryIFNode.html#a9af8c79e356ada7d88b1a86c531fbb4e" title="Attempt to write memory of size size at address addr." alt="" coords="273,99,438,140"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="150,195,254,151,274,143,276,148,256,156,152,200"/>
+<area shape="rect" id="Node000009" href="$classsparta_1_1memory_1_1SimpleMemoryMap.html#a03897cc554d3c815b6dfea485c1d67c1" title="Determines if a mapping is valid or not." alt="" coords="255,165,456,205"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="207,202,239,198,240,203,208,208"/>
+<area shape="rect" id="Node000010" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#ae35fa48697f197f9357be0d6c5fae0c6" title="Verifies that the range [addr, addr+size) is within the access windows for this interface." alt="" coords="256,230,454,271"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="208,229,241,233,240,238,207,234"/>
+<area shape="rect" id="Node000011" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#acb92bd2905d208cab60935b46dcd67a9" title="Verifies that the given address does not span block boundaries defined for this interface." alt="" coords="256,295,454,336"/>
+<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="154,237,256,280,276,287,274,292,254,285,152,242"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a4efd1a8b860fd5224a78b4f17f06853d" title="Determines if the given address spans block boundaries defined for this interface...." alt="" coords="504,295,702,336"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="440,138,458,151,471,168,478,185,483,217,487,250,493,265,506,281,510,284,507,288,502,284,489,268,482,251,477,218,473,186,467,171,454,155,437,142"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a56bff166f0c2e250be9450a8a152becc" title="Determines if the range [addr, addr+size) is within the access windows for this interface." alt="" coords="750,71,949,112"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="377,97,432,55,466,35,503,20,558,6,603,3,647,8,703,20,756,38,803,61,801,66,754,43,702,25,647,13,603,8,559,12,505,25,469,40,435,60,381,101"/>
+<area shape="rect" id="Node000005" href="$classsparta_1_1NotificationSourceBase.html#a8bd1a11753aa860f953f65f25cf22198" title="Is this NotificationSourceBase being observed at this node or an ancestor of any distance." alt="" coords="518,34,688,75"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="435,96,508,77,509,82,436,101"/>
+<area shape="rect" id="Node000006" href="$classsparta_1_1NotificationSource.html#a7853e8c00ab8e89b96fba9285cf7128e" title="Post with reference to data with parent as message origin." alt="" coords="518,99,688,140"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="439,117,503,117,503,122,439,122"/>
+<area shape="rect" id="Node000007" href="$classsparta_1_1memory_1_1DebugMemoryIF.html#a1d460c6428bfcb6d1e37b3b908f17eef" title="Attempts to &#39;peek&#39; memory without having any side effects, size&#45;limitations, alignment constraints ex..." alt="" coords="504,165,702,205"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="436,138,509,158,508,163,435,143"/>
+<area shape="rect" id="Node000008" href="$classsparta_1_1memory_1_1BlockingMemoryIF.html#a73f4639204dbf2a145e07ab7d575d108" title="Implements tryWrite." alt="" coords="520,230,686,271"/>
+<area shape="poly" id="edge8_Node000002_Node000008" title=" " alt="" coords="436,138,458,151,474,167,482,184,491,200,506,215,514,220,511,225,502,219,486,203,478,186,469,171,454,155,433,143"/>
+<area shape="poly" id="edge7_Node000007_Node000004" title=" " alt="" coords="667,162,701,149,784,116,786,121,703,154,669,167"/>
+<area shape="poly" id="edge12_Node000011_Node000003" title=" " alt="" coords="455,313,488,313,488,318,455,318"/>
+</map>

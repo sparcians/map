@@ -1,0 +1,7 @@
+<map id="sparta::RegisterBase::getWriteMaskAsByteString" name="sparta::RegisterBase::getWriteMaskAsByteString">
+<area shape="rect" id="Node000001" title="Creats a string representing this register&#39;s write&#45;mask as sequence of bytes, separated by spaces,..." alt="" coords="5,39,189,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1RegisterBits.html#aeff81b17f731733bff3bc8ce81bda518" title="Get the internal data pointer." alt="" coords="237,5,371,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="189,42,221,36,222,41,190,47"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1RegisterBits.html#a09e7bf2b952e80202d83edefed99fecb" title="Get the number of bytes." alt="" coords="237,71,371,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="189,71,222,76,221,81,189,76"/>
+</map>

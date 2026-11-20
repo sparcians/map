@@ -1,0 +1,9 @@
+<map id="sparta::Array::ArrayIterator::operator*" name="sparta::Array::ArrayIterator::operator*">
+<area shape="rect" id="Node000001" title="support the dereference operator, const" alt="" coords="5,23,176,64"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Array.html#a04bb4a1d42dec14d026afe15c65eef35" title="Return the maximum number of elements this Array can hold." alt="" coords="224,5,371,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="176,30,208,26,209,32,176,36"/>
+<area shape="rect" id="Node000003" href="$namespacesparta.html#a57bc9340188818892abcbd141b40fa50" title="Ensures that a pointer is not null." alt="" coords="245,55,350,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="176,51,230,57,229,62,176,56"/>
+<area shape="rect" id="Node000004" href="$namespacesparta.html#ac0a2df7a7ca53b2fc0384476286b95ec" title="Demangles a C++ symbol." alt="" coords="419,55,538,80"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="350,65,404,65,404,70,350,70"/>
+</map>

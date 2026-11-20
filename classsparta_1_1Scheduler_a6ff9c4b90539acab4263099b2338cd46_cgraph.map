@@ -1,0 +1,5 @@
+<map id="sparta::Scheduler::nextEventTick" name="sparta::Scheduler::nextEventTick">
+<area shape="rect" id="Node000001" title="Returns the next tick an event is pending." alt="" coords="5,5,133,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Scheduler.html#a4f78a423a6092f3b22cb16d1a352ad6d" title="Query if the scheduler is running." alt="" coords="181,5,308,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,23,165,23,165,28,133,28"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="sparta::RegisterBase::addField" name="sparta::RegisterBase::addField">
+<area shape="rect" id="Node000001" title="Create a new field in this Register based on the given Field::Definition." alt="" coords="5,5,147,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1PhasedObject.html#aba4b14b23643204798dbc994f3cca77e" title="Is this node (and thus the entire tree above it) &quot;built&quot;. Checks that getPhase has passed TREE_BUILDI..." alt="" coords="195,5,340,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="147,23,179,23,179,28,147,28"/>
+</map>

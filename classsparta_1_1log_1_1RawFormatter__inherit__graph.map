@@ -1,0 +1,5 @@
+<map id="sparta::log::RawFormatter" name="sparta::log::RawFormatter">
+<area shape="rect" id="Node000001" title="Formatter including no meta&#45;data from the message." alt="" coords="5,79,174,105"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1log_1_1Formatter.html" title="File writer formatting interface. Subclsases can format for different file types (e...." alt="" coords="18,5,161,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="92,46,92,79,87,79,87,46"/>
+</map>

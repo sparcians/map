@@ -1,0 +1,5 @@
+<map id="sparta::memory::DebugMemoryIF" name="sparta::memory::DebugMemoryIF">
+<area shape="rect" id="Node000001" title="Memory interface which represents a simple, immediately accessible (blocking) address&#45;space with supp..." alt="" coords="5,94,216,120"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1memory_1_1TranslationIF.html" title="Blocking translation interface with 1:1 translation unless subclassed." alt="" coords="15,5,206,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="113,47,113,94,108,94,108,47"/>
+</map>

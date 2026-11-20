@@ -1,0 +1,9 @@
+<map id="sparta::ArchData::registerSegment" name="sparta::ArchData::registerSegment">
+<area shape="rect" id="Node000001" title="All constructed segments must register themselves through this method to be laid out within the ArchD..." alt="" coords="5,55,172,96"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData.html#afde21b4a684f915cb56e8daba53e9d99" title="Checks to see that the size of the data is a valid access size." alt="" coords="220,5,430,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="172,53,219,41,253,33,254,38,220,46,173,58"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ArchDataSegment.html#a8302b256054d796400c6ef8a65b25b43" title="Gets the layout Identifier of this segment." alt="" coords="240,55,410,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="172,73,225,73,225,78,172,78"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ArchDataSegment.html#ae30270498f1a2a6ab9375fcaf7d2df5c" title="Gets the layout size of this segment (number of bytes)" alt="" coords="240,120,410,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="165,94,234,113,233,118,164,99"/>
+</map>

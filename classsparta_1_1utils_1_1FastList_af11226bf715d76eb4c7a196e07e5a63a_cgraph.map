@@ -1,0 +1,7 @@
+<map id="sparta::utils::FastList::pop_back" name="sparta::utils::FastList::pop_back">
+<area shape="rect" id="Node000001" title="Pop the last element off of the list." alt="" coords="5,5,147,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1utils_1_1FastList.html#ad7b540d1fb142b718e00851e1e56f3f8" title="Erase an element with the given iterator." alt="" coords="195,5,336,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="147,23,179,23,179,28,147,28"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1utils_1_1FastList_1_1NodeIterator.html#aaec956d8ba90baa546355ba580733c8e" title="Get the index in the list where this iterator points." alt="" coords="384,5,538,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="336,23,369,23,369,28,336,28"/>
+</map>

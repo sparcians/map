@@ -1,0 +1,5 @@
+<map id="sparta::AssignOnceObject::operator==" name="sparta::AssignOnceObject::operator==">
+<area shape="rect" id="Node000001" title="Compare against another AssignOnceObject of the same contained type T." alt="" coords="5,5,178,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1AssignOnceObject.html#aa7b72ed77085f5c1e0b0283517da55b2" title="Get contained value of type T." alt="" coords="226,13,422,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="178,23,210,23,210,28,178,28"/>
+</map>

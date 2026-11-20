@@ -1,0 +1,38 @@
+var classsparta_1_1NotificationSourceBase =
+[
+    [ "ObservationStateCallback", "classsparta_1_1NotificationSourceBase_1_1ObservationStateCallback.html", "classsparta_1_1NotificationSourceBase_1_1ObservationStateCallback" ],
+    [ "ObservationStateCallbackPrivateInterface", "classsparta_1_1NotificationSourceBase_1_1ObservationStateCallbackPrivateInterface.html", "classsparta_1_1NotificationSourceBase_1_1ObservationStateCallbackPrivateInterface" ],
+    [ "callback_t", "classsparta_1_1NotificationSourceBase.html#aa37e56569ed323830634775a1ab330ce", null ],
+    [ "DelegateVector", "classsparta_1_1NotificationSourceBase.html#ab92c3c0688d1c33036a224f4ce57b715", null ],
+    [ "ObservationStateChange", "classsparta_1_1NotificationSourceBase.html#a6ad355b5a3865f40b6f2a62442a5240e", [
+      [ "SOLE_OBSERVER_REGISTERING", "classsparta_1_1NotificationSourceBase.html#a6ad355b5a3865f40b6f2a62442a5240ea192502db7dbb0510cb8169773e0079ba", null ],
+      [ "SOLE_OBSERVER_DEREGISTERING", "classsparta_1_1NotificationSourceBase.html#a6ad355b5a3865f40b6f2a62442a5240ea2b8481213d68aeaa4edbc4a7c1130b60", null ],
+      [ "OBSERVER_REGISTERING", "classsparta_1_1NotificationSourceBase.html#a6ad355b5a3865f40b6f2a62442a5240ea23de6a608c8578598c442dfd84c9036e", null ],
+      [ "OBSERVER_DEREGISTERING", "classsparta_1_1NotificationSourceBase.html#a6ad355b5a3865f40b6f2a62442a5240ea315c6a79fe3b85a61cb1afa0d0346dcd", null ]
+    ] ],
+    [ "NotificationSourceBase", "classsparta_1_1NotificationSourceBase.html#a994d35e5ebffd397296e0b3ee4e8dfbb", null ],
+    [ "NotificationSourceBase", "classsparta_1_1NotificationSourceBase.html#abb871680032872a6ab77fef8a0b60c69", null ],
+    [ "~NotificationSourceBase", "classsparta_1_1NotificationSourceBase.html#a076f56a917116ab98a0f7d3afd0e5ac9", null ],
+    [ "canGenerateNotification_", "classsparta_1_1NotificationSourceBase.html#a41f30ba14c97e602aba051bc67dc7299", null ],
+    [ "getNotificationID", "classsparta_1_1NotificationSourceBase.html#afc9450c9565a3dd0f1fa4fcab61f4134", null ],
+    [ "getNotificationName", "classsparta_1_1NotificationSourceBase.html#a476d4d8ae1133d22cbfee796ff0a2c76", null ],
+    [ "getNotificationType", "classsparta_1_1NotificationSourceBase.html#ade72bb53c21edeaf5399122114b209bf", null ],
+    [ "getNotificationTypeName", "classsparta_1_1NotificationSourceBase.html#acd75dadf0a1a94940eb7fb6cdff828a9", null ],
+    [ "getNumObservationPoints", "classsparta_1_1NotificationSourceBase.html#ac3cfadca2ea555efec9426e59993880f", null ],
+    [ "getNumObservers", "classsparta_1_1NotificationSourceBase.html#a7bd4ea774dda06b18a6290ab6278c347", null ],
+    [ "getNumPosts", "classsparta_1_1NotificationSourceBase.html#ab98c3ccb45abb754b402b6ac88912f6d", null ],
+    [ "getObservationPoints", "classsparta_1_1NotificationSourceBase.html#adba6d4954d2835349da4a92328b9d201", null ],
+    [ "notificationObserverAdded_", "classsparta_1_1NotificationSourceBase.html#aaf45cdca438e5a21e81076a0c0a092a4", null ],
+    [ "notificationObserverRemoved_", "classsparta_1_1NotificationSourceBase.html#a953205ee7e8f5434598f56599a97d548", null ],
+    [ "observed", "classsparta_1_1NotificationSourceBase.html#a8bd1a11753aa860f953f65f25cf22198", null ],
+    [ "stringize", "classsparta_1_1NotificationSourceBase.html#a9d4a9d5f11abd7a8ce06538b5bd4ae63", null ],
+    [ "validateNotificationName", "classsparta_1_1NotificationSourceBase.html#a12dc772a6573bcdcfa9f483b0f1ba9ef", null ],
+    [ "MirrorNotificationSource", "classsparta_1_1NotificationSourceBase.html#abeff14e6f02aa2136dc8a299cfd32e6b", null ],
+    [ "ObservationStateCallbackInterface", "classsparta_1_1NotificationSourceBase.html#a2590bdc3cdd8103ce2d921cd468012a6", null ],
+    [ "dels_", "classsparta_1_1NotificationSourceBase.html#ae9c6f22c8c748262018ba3dd308e2c55", null ],
+    [ "noti_id_", "classsparta_1_1NotificationSourceBase.html#ae7e6cc521e39896384d823421738f08a", null ],
+    [ "noti_tinfo_", "classsparta_1_1NotificationSourceBase.html#aa5c11bb06c86841b565fc1583be17f0e", null ],
+    [ "num_posts_", "classsparta_1_1NotificationSourceBase.html#ae76e64ef4202b94034f192d1545214e4", null ],
+    [ "obs_nodes_", "classsparta_1_1NotificationSourceBase.html#a8b53de4d040a671f006079b0943ea764", null ],
+    [ "observed_", "classsparta_1_1NotificationSourceBase.html#a1db4db7a2b6941f4342000e975dee9de", null ]
+];

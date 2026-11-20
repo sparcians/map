@@ -1,0 +1,5 @@
+<map id="sparta::collection::CollectableBitBucket" name="sparta::collection::CollectableBitBucket">
+<area shape="rect" id="Node000001" title="BitBucket implementation for Collectable objects (whether &quot;standalone&quot; or inside an IterableCollector..." alt="" coords="5,94,154,135"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1BitBucket.html" title="Base class for all collectable bit buckets (scalars, sparse/contig iterables). We use this class so t..." alt="" coords="20,5,139,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="82,62,82,94,77,94,77,62"/>
+</map>

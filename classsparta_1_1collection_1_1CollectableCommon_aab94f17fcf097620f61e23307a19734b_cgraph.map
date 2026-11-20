@@ -1,0 +1,7 @@
+<map id="sparta::collection::CollectableCommon::collect" name="sparta::collection::CollectableCommon::collect">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,45,149,101"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1collection_1_1CollectableTreeNode.html#ac7d83237fc2aaa41c6b3809a4fb646e1" title="Determine whether or not this node has collection turned on or off." alt="" coords="197,5,345,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,56,181,49,182,54,150,61"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1collection_1_1CollectableCommon.html#ad5b047e3afe818846f738cba2c14611a" title="Subclasses are responsible for collecting values and writing the bytes." alt="" coords="199,85,342,141"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="150,85,184,93,183,98,148,91"/>
+</map>

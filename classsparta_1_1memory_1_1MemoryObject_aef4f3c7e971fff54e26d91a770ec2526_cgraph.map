@@ -1,0 +1,9 @@
+<map id="sparta::memory::MemoryObject::_canAccess" name="sparta::memory::MemoryObject::_canAccess">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,205,46"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ArchData.html#ab97efbcf3061d9cb8649f5875397f061" title="Determines if an access of size &#39;bytes&#39; can be performed at the given offset based only on the size o..." alt="" coords="253,5,434,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="205,23,237,23,237,28,205,28"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1ArchData.html#aaed65a11540e5f04a01fc3256b61ae49" title="Determines whether the access defined by offset and size spans multiple ArchData Lines." alt="" coords="482,5,651,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="434,23,466,23,466,28,434,28"/>
+<area shape="rect" id="Node000004" href="$classsparta_1_1ArchData.html#a5c08af4dde06786d25cae31ae0d0750e" title="Gets Index of a line containing the specified offset." alt="" coords="699,5,866,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="652,23,684,23,684,28,652,28"/>
+</map>

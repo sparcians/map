@@ -1,0 +1,5 @@
+<map id="sparta::SysCSpartaSchedulerAdapter" name="sparta::SysCSpartaSchedulerAdapter">
+<area shape="rect" id="Node000001" title="Class that &quot;connects&quot; Sparta to SystemC." alt="" coords="5,79,196,120"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="32,5,169,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,46,103,79,98,79,98,46"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="sparta::serialization::checkpoint::DeltaCheckpoint::makeHeadCheckpoint" name="sparta::serialization::checkpoint::DeltaCheckpoint::makeHeadCheckpoint">
+<area shape="rect" id="Node000001" title="Make this the head checkpoint by detaching from previous checkpoint." alt="" coords="5,5,197,61"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1serialization_1_1checkpoint_1_1Checkpoint.html#a711ab4fca789f930fbc8a7e8a6f1975c" title="Make this the head checkpoint by detaching from previous checkpoint." alt="" coords="245,5,406,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,30,229,30,229,36,197,36"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1serialization_1_1checkpoint_1_1CheckpointBase.html#abcdccb90c47517e8bd4b6f4ec9cc3019" title="Returns the ID of this checkpoint." alt="" coords="454,5,645,61"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="406,30,438,30,438,36,406,36"/>
+</map>

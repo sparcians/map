@@ -1,0 +1,7 @@
+<map id="core_example::Core" name="core_example::Core">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,153,140,178"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1Unit.html" title="The is the base class for user defined blocks in simulation." alt="" coords="29,79,116,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="75,120,75,152,70,152,70,120"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1Resource.html" title="The is the base class for all types of resources used by the SPARTA framework." alt="" coords="13,5,132,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="75,46,75,79,70,79,70,46"/>
+</map>

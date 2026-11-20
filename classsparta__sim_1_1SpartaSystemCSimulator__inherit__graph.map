@@ -1,0 +1,5 @@
+<map id="sparta_sim::SpartaSystemCSimulator" name="sparta_sim::SpartaSystemCSimulator">
+<area shape="rect" id="Node000001" title="Top level constructor for the SystemC example TLM simulator." alt="" coords="5,79,179,120"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1app_1_1Simulation.html" title="Simulator which builds a sparta DeviceTree." alt="" coords="16,5,168,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,46,95,79,89,79,89,46"/>
+</map>

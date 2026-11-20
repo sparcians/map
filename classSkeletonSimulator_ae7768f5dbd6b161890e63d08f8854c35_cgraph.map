@@ -1,0 +1,7 @@
+<map id="SkeletonSimulator::SkeletonSimulator" name="SkeletonSimulator::SkeletonSimulator">
+<area shape="rect" id="Node000001" title="Construct SkeletonSimulator." alt="" coords="5,39,139,79"/>
+<area shape="rect" id="Node000002" href="$classsparta_1_1ResourceSet.html#a061a2e9aad915600829e1270a1e6a1ea" title="Add a resource factory by its template type." alt="" coords="189,5,336,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="139,45,173,39,174,44,139,50"/>
+<area shape="rect" id="Node000003" href="$classsparta_1_1app_1_1Simulation.html#aa21d7af1c6ff9a262aea8c21f1868331" title="Returns the resource set for this Simulation." alt="" coords="187,71,338,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="139,68,172,73,171,78,139,73"/>
+</map>
