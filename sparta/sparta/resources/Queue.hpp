@@ -630,6 +630,112 @@ namespace sparta
         }
 
         /**
+         * \brief Push data to the front of the Queue.
+         * \param dat Data to be copied in
+         * \return An iterator to the new front element.
+         */
+        iterator push_front(const value_type & dat)
+        {
+            return pushFrontImpl_(dat);
+        }
+
+        /**
+         * \brief Push data to the front of the Queue.
+         * \param dat Data to be moved in
+         * \return An iterator to the new front element.
+         */
+        iterator push_front(value_type && dat)
+        {
+            return pushFrontImpl_(std::move(dat));
+        }
+
+        /**
+         * \brief Replace the value at the given logical index.
+         * \param idx The index of the value to replace
+         * \param dat The replacement value
+         * \return An iterator to the replaced value.
+         */
+        iterator replace(uint32_t idx, const value_type & dat)
+        {
+            sparta_assert(isValid(idx), name_ << ": Cannot replace an invalid index");
+            const auto physical_idx = getPhysicalIndex_(idx);
+            accessPhysical_(physical_idx) = dat;
+            return iterator(this, physical_idx, queue_data_[physical_idx].obj_id);
+        }
+
+        /**
+         * \brief Replace the value at the given logical index.
+         * \param idx The index of the value to replace
+         * \param dat The replacement value
+         * \return An iterator to the replaced value.
+         */
+        iterator replace(uint32_t idx, value_type && dat)
+        {
+            sparta_assert(isValid(idx), name_ << ": Cannot replace an invalid index");
+            const auto physical_idx = getPhysicalIndex_(idx);
+            accessPhysical_(physical_idx) = std::move(dat);
+            return iterator(this, physical_idx, queue_data_[physical_idx].obj_id);
+        }
+
+        /**
+         * \brief Replace the value referenced by an iterator.
+         * \return An iterator to the replaced value.
+         */
+        iterator replace(const const_iterator & entry, const value_type & dat)
+        {
+            sparta_assert(entry.attached_queue_ == this && entry.isValid(),
+                          name_ << ": Cannot replace an invalid or foreign Queue entry");
+            accessPhysical_(entry.physical_index_) = dat;
+            return iterator(this, entry.physical_index_, entry.obj_id_);
+        }
+
+        /**
+         * \brief Replace the value referenced by an iterator.
+         * \return An iterator to the replaced value.
+         */
+        iterator replace(const const_iterator & entry, value_type && dat)
+        {
+            sparta_assert(entry.attached_queue_ == this && entry.isValid(),
+                          name_ << ": Cannot replace an invalid or foreign Queue entry");
+            accessPhysical_(entry.physical_index_) = std::move(dat);
+            return iterator(this, entry.physical_index_, entry.obj_id_);
+        }
+
+        /**
+         * \brief Erase the value referenced by an iterator.
+         * \return An iterator to the next value, or end() if the erased value was last.
+         * Iterators to the erased value and to values shifted by the erase are invalidated.
+         */
+        iterator erase(const const_iterator & entry)
+        {
+            sparta_assert(entry.attached_queue_ == this && entry.isValid(),
+                          name_ << ": Cannot erase an invalid or foreign Queue entry");
+
+            const uint32_t logical_idx = entry.getIndex();
+            uint32_t hole_idx = entry.physical_index_;
+            queue_data_[hole_idx].~QueueData();
+
+            for(uint32_t idx = logical_idx + 1; idx < total_valid_; ++idx)
+            {
+                const uint32_t source_idx = incrementIndexValue_(hole_idx);
+                new (queue_data_.get() + hole_idx)
+                    QueueData(std::move(queue_data_[source_idx]));
+                queue_data_[source_idx].~QueueData();
+                hole_idx = source_idx;
+            }
+
+            current_write_idx_ = decrementIndexValue_(current_write_idx_);
+            --total_valid_;
+            updateUtilizationCounters_();
+
+            if(logical_idx == total_valid_) {
+                return end();
+            }
+            return iterator(this, entry.physical_index_,
+                            queue_data_[entry.physical_index_].obj_id);
+        }
+
+        /**
          * \brief Pops the data at the front of the structure (oldest element)
          * After pop iterator always points to the last element.
          */
@@ -717,6 +823,22 @@ namespace sparta
             updateUtilizationCounters_();
 
             return iterator(this, write_idx, obj_id_);
+        }
+
+        template<typename U>
+        iterator pushFrontImpl_ (U && dat)
+        {
+            sparta_assert(total_valid_ != capacity(), name_ << ": Queue is full");
+
+            const uint32_t new_head_idx = decrementIndexValue_(current_head_idx_);
+            const uint64_t new_obj_id = obj_id_ + 1;
+            new (queue_data_.get() + new_head_idx) QueueData(std::forward<U>(dat), new_obj_id);
+            current_head_idx_ = new_head_idx;
+            obj_id_ = new_obj_id;
+            ++total_valid_;
+            updateUtilizationCounters_();
+
+            return iterator(this, current_head_idx_, obj_id_);
         }
 
         template<typename IteratorType>

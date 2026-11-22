@@ -49,9 +49,11 @@ find_package (yaml-cpp 0.7 REQUIRED)
 if (yaml-cpp_FOUND)
   if (yaml-cpp_VERSION_MINOR EQUAL 7)
     get_property(YAML_CPP_INCLUDE_DIR TARGET yaml-cpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+    set (Sparta_LIBS yaml-cpp)
   else ()
     # To be used with yaml-cpp 0.8 or (assumed) higer
     get_property(YAML_CPP_INCLUDE_DIR TARGET yaml-cpp::yaml-cpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+    set (Sparta_LIBS yaml-cpp::yaml-cpp)
   endif ()
   include_directories (SYSTEM ${YAML_CPP_INCLUDE_DIR})
   message (STATUS "Using YAML CPP ${yaml-cpp_VERSION}")
@@ -74,7 +76,7 @@ find_package(Threads REQUIRED)
 
 # Populate the Sparta_LIBS variable with the required libraries for
 # basic Sparta linking
-set (Sparta_LIBS sparta yaml-cpp::yaml-cpp ZLIB::ZLIB Threads::Threads
+list (APPEND Sparta_LIBS sparta yaml-cpp ZLIB::ZLIB Threads::Threads
   Boost::date_time Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
 
 # Link against sqlite3 and hdf5 if SimDB is enabled

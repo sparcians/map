@@ -812,6 +812,24 @@ void testEraseSupport()
     EXPECT_EQUAL(0, int_buff.size());
 }
 
+void testReplace()
+{
+    sparta::Buffer<int> buffer("replace_test", 4, nullptr);
+    auto first = buffer.push_back(1);
+    buffer.push_back(2);
+
+    auto replaced = buffer.replace(first, 10);
+    EXPECT_TRUE(first.isValid());
+    EXPECT_TRUE(replaced.isValid());
+    EXPECT_EQUAL(*first, 10);
+    EXPECT_EQUAL(buffer.read(0), 10);
+
+    buffer.replace(1, 20);
+    EXPECT_EQUAL(buffer.read(0), 10);
+    EXPECT_EQUAL(buffer.read(1), 20);
+    EXPECT_THROW(buffer.replace(2, 30));
+}
+
 void testInvalidates()
 {
     EXPECT_EQUAL(dummy_allocs, 0);
@@ -870,6 +888,7 @@ int main()
     testPointerTypes<sparta::SpartaSharedPointer<dummy_struct>>();
     generalTest();
     testConstIterator();
+    testReplace();
     testInvalidates();
 
     REPORT_ERROR;
