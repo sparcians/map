@@ -538,6 +538,58 @@ namespace sparta
         }
 
         /**
+         * \brief Replace the value at the given index.
+         * \param idx The index of the value to replace
+         * \param dat The replacement value
+         * \return An iterator to the replaced value.
+         */
+        iterator replace(uint32_t idx, const value_type& dat)
+        {
+            sparta_assert(isValid(idx), "Cannot replace an invalid index");
+            *buffer_map_[idx]->data = dat;
+            return iterator(this, buffer_map_[idx]);
+        }
+
+        /**
+         * \brief Replace the value at the given index.
+         * \param idx The index of the value to replace
+         * \param dat The replacement value
+         * \return An iterator to the replaced value.
+         */
+        iterator replace(uint32_t idx, value_type&& dat)
+        {
+            sparta_assert(isValid(idx), "Cannot replace an invalid index");
+            *buffer_map_[idx]->data = std::move(dat);
+            return iterator(this, buffer_map_[idx]);
+        }
+
+        /**
+         * \brief Replace the value referenced by an iterator.
+         * \return An iterator to the replaced value.
+         */
+        iterator replace(const const_iterator& entry, const value_type& dat)
+        {
+            sparta_assert(entry.attached_buffer_ == this && entry.isValid(),
+                          "Cannot replace an invalid or foreign Buffer entry");
+            const auto idx = entry.getIndex_();
+            *buffer_map_[idx]->data = dat;
+            return iterator(this, buffer_map_[idx]);
+        }
+
+        /**
+         * \brief Replace the value referenced by an iterator.
+         * \return An iterator to the replaced value.
+         */
+        iterator replace(const const_iterator& entry, value_type&& dat)
+        {
+            sparta_assert(entry.attached_buffer_ == this && entry.isValid(),
+                          "Cannot replace an invalid or foreign Buffer entry");
+            const auto idx = entry.getIndex_();
+            *buffer_map_[idx]->data = std::move(dat);
+            return iterator(this, buffer_map_[idx]);
+        }
+
+        /**
          * \brief Insert the item BEFORE the given index.
          * \param idx The index to insert the new item before
          * \param dat The data to insert

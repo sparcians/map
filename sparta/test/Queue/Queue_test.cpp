@@ -28,6 +28,7 @@ void testStatsOutput();
 void testPopBack();
 void testIteratorOperations();
 void testDecrementWraparoundBug();
+void testPushFrontEraseReplace();
 
 struct dummy_struct
 {
@@ -391,6 +392,7 @@ int main()
     testPopBack();
     testIteratorOperations();
     testDecrementWraparoundBug();
+    testPushFrontEraseReplace();
 
     rtn.enterTeardown();
 #ifdef PIPEOUT_GEN
@@ -809,4 +811,51 @@ void testDecrementWraparoundBug()
     EXPECT_TRUE(it.isValid());
     EXPECT_EQUAL(*it, 400);
     EXPECT_EQUAL(it.getIndex(), 0);
+}
+
+void testPushFrontEraseReplace()
+{
+    sparta::Queue<uint32_t> queue_test("push_front_erase_replace_test", 5, nullptr);
+    queue_test.push(2);
+    queue_test.push(3);
+    auto one = queue_test.push_front(1);
+    auto zero = queue_test.push_front(0);
+
+    EXPECT_EQUAL(queue_test.size(), 4);
+    EXPECT_EQUAL(queue_test.front(), 0);
+    EXPECT_EQUAL(queue_test.back(), 3);
+    EXPECT_EQUAL(one.getIndex(), 1);
+    EXPECT_EQUAL(zero.getIndex(), 0);
+
+    auto replaced = queue_test.replace(one, 10);
+    EXPECT_TRUE(replaced.isValid());
+    EXPECT_EQUAL(*replaced, 10);
+    queue_test.replace(2, 20);
+    EXPECT_EQUAL(queue_test.access(2), 20);
+
+    auto erased = queue_test.begin();
+    ++erased;
+    auto next = queue_test.erase(erased);
+    EXPECT_FALSE(erased.isValid());
+    EXPECT_TRUE(next.isValid());
+    EXPECT_EQUAL(*next, 20);
+    EXPECT_EQUAL(next.getIndex(), 1);
+    EXPECT_EQUAL(queue_test.size(), 3);
+    EXPECT_EQUAL(queue_test.access(0), 0);
+    EXPECT_EQUAL(queue_test.access(1), 20);
+    EXPECT_EQUAL(queue_test.access(2), 3);
+
+    // Exercise front insertion and erasure when the active range wraps.
+    queue_test.pop();
+    queue_test.push(4);
+    queue_test.push_front(5);
+    EXPECT_EQUAL(queue_test.access(0), 5);
+    EXPECT_EQUAL(queue_test.access(1), 20);
+    EXPECT_EQUAL(queue_test.access(2), 3);
+    EXPECT_EQUAL(queue_test.access(3), 4);
+
+    auto last = queue_test.end();
+    --last;
+    EXPECT_TRUE(queue_test.erase(last) == queue_test.end());
+    EXPECT_EQUAL(queue_test.size(), 3);
 }
