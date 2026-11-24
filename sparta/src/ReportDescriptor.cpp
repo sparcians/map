@@ -40,11 +40,8 @@
 #include "sparta/app/SimulationConfiguration.hpp"
 #include "sparta/report/format/BaseFormatter.hpp"
 #include "sparta/trigger/ExpressionTrigger.hpp"
-
-#if SIMDB_ENABLED
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
 #include "simdb/apps/AppManager.hpp"
-#endif
 
 namespace YAML {
 class EventHandler;
@@ -191,7 +188,6 @@ std::shared_ptr<statistics::StreamNode> ReportDescriptor::createRootStatisticsSt
 
 bool ReportDescriptor::configSimDbReports(app::ReportStatsCollector* collector)
 {
-#if SIMDB_ENABLED
     if (!isEnabled()) {
         return false;
     }
@@ -208,29 +204,21 @@ bool ReportDescriptor::configSimDbReports(app::ReportStatsCollector* collector)
     collector_ = collector;
     collector_->addDescriptor(this);
     return true;
-#else
-    (void)collector;
-    return false;
-#endif
 }
 
 void ReportDescriptor::sweepSimDbStats_()
 {
-#if SIMDB_ENABLED
     collector_->collect(this);
-#endif
 }
 
 void ReportDescriptor::skipSimDbStats_()
 {
-#if SIMDB_ENABLED
     if (collector_ == nullptr || skipped_annotator_ == nullptr) {
         return;
     }
 
     const std::string annotation = skipped_annotator_->currentAnnotation();
     collector_->writeSkipAnnotation(this, annotation);
-#endif
 }
 
 report::format::BaseFormatter* ReportDescriptor::addInstantiation(Report* r,

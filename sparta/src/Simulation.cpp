@@ -86,13 +86,10 @@
 #include "sparta/trigger/Trigger.hpp"
 #include "sparta/utils/StringUtils.hpp"
 #include "sparta/utils/Utils.hpp"
-
-#if SIMDB_ENABLED
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
 #include "sparta/serialization/checkpoint/CherryPickFastCheckpointer.hpp"
 #include "simdb/apps/argos/ArgosCollector.hpp"
 #include "simdb/apps/AppManager.hpp"
-#endif
 
 namespace YAML {
 class EventHandler;
@@ -326,9 +323,7 @@ Simulation::Simulation(const std::string& sim_name,
                           (this, "Simulation::delayedPEventStart_")),
     simulation_state_(this)
 {
-#if SIMDB_ENABLED
     app_managers_ = std::make_shared<simdb::AppManagers>();
-#endif
 
     // Watch for created nodes to which we will apply taps
     root_.getNodeAttachedNotification().REGISTER_FOR_THIS(rootDescendantAdded_);
@@ -489,7 +484,6 @@ void Simulation::createSimDbApps_()
     const auto & simdb_config = sim_config_->simdb_config;
     const auto enabled_apps = simdb_config.getEnabledApps();
 
-#if SIMDB_ENABLED
     if (enabled_apps.empty()) {
         return;
     }
@@ -523,12 +517,6 @@ void Simulation::createSimDbApps_()
     app_managers_->setVerbose(sim_config_->simdb_config.verboseMode());
     app_managers_->createEnabledApps();
     app_managers_->createSchemas();
-#else
-    if (!enabled_apps.empty())
-    {
-        throw SpartaException("Cannot use any command line SimDB options without -DUSING_SIMDB=ON");
-    }
-#endif
 }
 
 void Simulation::addReport(const ReportDescriptor & rep)
@@ -615,13 +603,11 @@ void Simulation::buildTree()
 
     setupProfilers_();
 
-#if SIMDB_ENABLED
     simdb::AppRegistrations app_registrations(app_managers_.get());
     app_registrations.registerApp<ReportStatsCollector>();
     app_registrations.registerApp<serialization::checkpoint::CherryPickFastCheckpointer>();
     app_registrations.registerApp<simdb::argos::ArgosCollector>();
     registerSimDbApps_(&app_registrations);
-#endif
 
     // Subclass callback
     {
@@ -811,7 +797,6 @@ void Simulation::finalizeFramework()
 
     bool reports_setup = false;
 
-#if SIMDB_ENABLED
     auto simdb_mgrs = app_managers_->getAllManagers();
     for (auto & [app_mgr, db_mgr] : simdb_mgrs)
     {
@@ -869,7 +854,6 @@ void Simulation::finalizeFramework()
             }
         }
     }
-#endif
 
     // Set up reports.  This must happen after the DAG is finalized so
     // that the report startup trigger can be scheduled
@@ -889,12 +873,10 @@ void Simulation::finalizeFramework()
     // be single-threaded.
     postFinalizeFramework_();
 
-#if SIMDB_ENABLED
     app_managers_->postInit(argc_, argv_);
     app_managers_->initializePipelines();
     app_managers_->openPipelines();
     onSimDbAppsReady_();
-#endif
 }
 
 void Simulation::run(uint64_t run_time)
@@ -1139,13 +1121,11 @@ void Simulation::saveReports()
 
 void Simulation::postProcessingLastCall()
 {
-#if SIMDB_ENABLED
     // This is added here to close AppManager's even with --no-run
     if (app_managers_require_teardown_) {
         app_managers_->postSimLoopTeardown();
         app_managers_require_teardown_ = false;
     }
-#endif
 }
 
 void Simulation::dumpMetaParameterTable(std::ostream& out) const

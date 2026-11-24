@@ -128,11 +128,32 @@ void showReportsHelp()
 
 void showSimDBHelp()
 {
-#if SIMDB_ENABLED
-    std::cout << "TODO: SimDB Help" << std::endl;
-#else
-    std::cout << "SimDB is not enabled in this build (-DUSING_SIMDB=ON)" << std::endl;
-#endif
+    std::cout << "SimDB:\n\n"
+                 "  SimDB is the simulation database (SQLite3) used by SPARTA applications (\"apps\") to\n"
+                 "  store simulation data such as reports and pipeline collection. Apps are enabled by\n"
+                 "  name using \"--simdb-apps\", or implicitly by options such as \"--enable-simdb-reports\"\n"
+                 "  (app \"simdb-reports\") and \"--pipeline-collection\" (app \"argos-collector\").\n\n"
+                 "  Database files:\n"
+                 "    By default, all enabled apps share one database file named after the simulator\n"
+                 "    executable with a \".db\" extension. Use \"--simdb-database\" to choose a different\n"
+                 "    file for all enabled apps (\"autogen\" generates a UUID-based filename), or\n"
+                 "    \"--simdb-app-database\" to override the file for specific apps. Existing database\n"
+                 "    files are overwritten unless they are listed with \"--simdb-reuse\".\n\n"
+                 "  App instances:\n"
+                 "    \"--simdb-app-count\" sets how many instances of an app are available, either as an\n"
+                 "    explicit count or as a device tree location pattern whose matching nodes are\n"
+                 "    counted.\n\n"
+                 "  SQLite settings:\n"
+                 "    \"--simdb-safety\" selects a journaling/synchronous preset:\n"
+                 "      fastest  => journal_mode=OFF,    synchronous=OFF\n"
+                 "      balanced => journal_mode=WAL,    synchronous=NORMAL (default)\n"
+                 "      safest   => journal_mode=DELETE, synchronous=FULL\n"
+                 "    \"--simdb-pragmas\" sets arbitrary SQLite pragmas when the database is opened.\n\n"
+                 "  Examples:\n"
+                 "    ./sim --simdb-apps my-app --simdb-app-count my-app top.cpu.core* --simdb-database out.db\n"
+                 "    ./sim --enable-simdb-reports reports.db --disable-legacy-reports\n"
+                 "    ./sim --simdb-apps my-app --simdb-pragmas cache_size 10000\n"
+              << std::endl;
 }
 
 CommandLineSimulator::CommandLineSimulator(const std::string& usage,
@@ -615,7 +636,6 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
         ;
 
     // Simulation Database Options
-    #if SIMDB_ENABLED
     simdb_opts_.add_options()
         ("simdb-apps",
          named_value<std::vector<std::string>>("app1 [app2 app3...]", 1, -1)->multitoken(),
@@ -654,7 +674,6 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
         ("simdb-verbose",
          "Enable verbose mode for all SimDB apps.")
         ;
-    #endif
 
     // Feature Options
     feature_opts_.add_options()
@@ -735,9 +754,7 @@ bool CommandLineSimulator::parse(int argc,
             .add(log_opts_.getVerboseOptions())
             .add(pipeout_opts_.getVerboseOptions())
             .add(report_opts_.getVerboseOptions())
-            #if SIMDB_ENABLED
             .add(simdb_opts_.getVerboseOptions())
-            #endif
             .add(app_opts_.getVerboseOptions())
             .add(feature_opts_.getVerboseOptions())
             .add(advanced_opts_.getVerboseOptions());
@@ -1641,12 +1658,8 @@ bool CommandLineSimulator::parse(int argc,
             std::cout << report_opts_.getOptionsLevelUpTo(0) << std::endl;
             showReportsHelp();
         }else if(help_topic_ == "simdb"){
-            #if SIMDB_ENABLED
                 std::cout << simdb_opts_.getOptionsLevelUpTo(0) << std::endl;
                 showSimDBHelp();
-            #else
-                std::cout << "SimDB is not enabled in this build of SPARTA (-DUSING_SIMDB=ON)." << std::endl;
-            #endif
         }else if(help_topic_ == "pipeout"){
             std::cout << pipeout_opts_.getOptionsLevelUpTo(0) << std::endl;
         }else{
@@ -2527,9 +2540,7 @@ void CommandLineSimulator::printOptionsHelp_(uint32_t level) const
               << pipeout_opts_.getOptionsLevelUpTo(level) << std::endl
               << debug_opts_.getOptionsLevelUpTo(level) << std::endl
               << report_opts_.getOptionsLevelUpTo(level) << std::endl
-              #if SIMDB_ENABLED
               << simdb_opts_.getOptionsLevelUpTo(level) << std::endl
-              #endif
               << app_opts_.getOptionsLevelUpTo(level) << std::endl;
 
     if(0 == level){

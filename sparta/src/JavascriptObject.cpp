@@ -16,10 +16,7 @@
 #include "sparta/utils/SpartaAssert.hpp"
 #include "sparta/utils/SpartaException.hpp"
 #include "sparta/statistics/StatisticInstance.hpp"
-
-#if SIMDB_ENABLED
 #include "simdb/sqlite/DatabaseManager.hpp"
-#endif
 
 void sparta::report::format::JavascriptObject::writeContentToStream_(std::ostream& out) const
 {
@@ -253,7 +250,6 @@ void sparta::report::format::JavascriptObject::writeReportList_(std::ostream& ou
 
 void sparta::report::format::JavascriptObject::writeLeafNodeInfoToDB(simdb::DatabaseManager * db_mgr)
 {
-#if SIMDB_ENABLED
     for (const auto & report_name : leaf_nodes_) {
         db_mgr->INSERT(SQL_TABLE("JsJsonLeafNodes"),
                        SQL_COLUMNS("ReportName", "IsParentOfLeafNodes"),
@@ -265,7 +261,4 @@ void sparta::report::format::JavascriptObject::writeLeafNodeInfoToDB(simdb::Data
                        SQL_COLUMNS("ReportName", "IsParentOfLeafNodes"),
                        SQL_VALUES(report_name, 1));
     }
-#else
-    (void)db_mgr;
-#endif
 }
