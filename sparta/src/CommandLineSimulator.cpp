@@ -128,7 +128,32 @@ void showReportsHelp()
 
 void showSimDBHelp()
 {
-    std::cout << "TODO XXX: SimDB Help" << std::endl;
+    std::cout << "SimDB:\n\n"
+                 "  SimDB is the simulation database (SQLite3) used by SPARTA applications (\"apps\") to\n"
+                 "  store simulation data such as reports and pipeline collection. Apps are enabled by\n"
+                 "  name using \"--simdb-apps\", or implicitly by options such as \"--enable-simdb-reports\"\n"
+                 "  (app \"simdb-reports\") and \"--pipeline-collection\" (app \"argos-collector\").\n\n"
+                 "  Database files:\n"
+                 "    By default, all enabled apps share one database file named after the simulator\n"
+                 "    executable with a \".db\" extension. Use \"--simdb-database\" to choose a different\n"
+                 "    file for all enabled apps (\"autogen\" generates a UUID-based filename), or\n"
+                 "    \"--simdb-app-database\" to override the file for specific apps. Existing database\n"
+                 "    files are overwritten unless they are listed with \"--simdb-reuse\".\n\n"
+                 "  App instances:\n"
+                 "    \"--simdb-app-count\" sets how many instances of an app are available, either as an\n"
+                 "    explicit count or as a device tree location pattern whose matching nodes are\n"
+                 "    counted.\n\n"
+                 "  SQLite settings:\n"
+                 "    \"--simdb-safety\" selects a journaling/synchronous preset:\n"
+                 "      fastest  => journal_mode=OFF,    synchronous=OFF\n"
+                 "      balanced => journal_mode=WAL,    synchronous=NORMAL (default)\n"
+                 "      safest   => journal_mode=DELETE, synchronous=FULL\n"
+                 "    \"--simdb-pragmas\" sets arbitrary SQLite pragmas when the database is opened.\n\n"
+                 "  Examples:\n"
+                 "    ./sim --simdb-apps my-app --simdb-app-count my-app top.cpu.core* --simdb-database out.db\n"
+                 "    ./sim --enable-simdb-reports reports.db --disable-legacy-reports\n"
+                 "    ./sim --simdb-apps my-app --simdb-pragmas cache_size 10000\n"
+              << std::endl;
 }
 
 CommandLineSimulator::CommandLineSimulator(const std::string& usage,
