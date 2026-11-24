@@ -220,11 +220,12 @@ find_package (Cppcheck)
 
 add_library (sparta ${SourceCppFiles})
 
-if (TARGET SimDB::simdb)
-  target_link_libraries (sparta PUBLIC SimDB::simdb)
-else ()
-  target_link_libraries (sparta PUBLIC simdb)
-endif ()
+# SimDB is always brought in via add_subdirectory() above, which
+# unconditionally defines the SimDB::simdb alias target, so there's no
+# need to fall back to the plain "simdb" target name here. Note that we
+# can't rely on Sparta_LIBS for this since it also includes "sparta"
+# itself, which would self-reference the target being defined.
+target_link_libraries (sparta PUBLIC SimDB::simdb)
 
 # Add local includes
 target_include_directories (sparta PUBLIC "./")
