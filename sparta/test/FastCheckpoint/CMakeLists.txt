@@ -6,6 +6,4 @@ sparta_test(FastCheckpoint_test FastCheckpoint_test_RUN)
 
 add_subdirectory(FILEStream)
 add_subdirectory(PersistentFastCheckpoint)
-if(USING_SIMDB)
-    add_subdirectory(CherryPickFastCheckpoint)
-endif()
+add_subdirectory(CherryPickFastCheckpoint)

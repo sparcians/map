@@ -128,11 +128,7 @@ void showReportsHelp()
 
 void showSimDBHelp()
 {
-#if SIMDB_ENABLED
-    std::cout << "TODO: SimDB Help" << std::endl;
-#else
-    std::cout << "SimDB is not enabled in this build (-DUSING_SIMDB=ON)" << std::endl;
-#endif
+    std::cout << "TODO XXX: SimDB Help" << std::endl;
 }
 
 CommandLineSimulator::CommandLineSimulator(const std::string& usage,
@@ -615,7 +611,6 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
         ;
 
     // Simulation Database Options
-    #if SIMDB_ENABLED
     simdb_opts_.add_options()
         ("simdb-apps",
          named_value<std::vector<std::string>>("app1 [app2 app3...]", 1, -1)->multitoken(),
@@ -654,7 +649,6 @@ CommandLineSimulator::CommandLineSimulator(const std::string& usage,
         ("simdb-verbose",
          "Enable verbose mode for all SimDB apps.")
         ;
-    #endif
 
     // Feature Options
     feature_opts_.add_options()
@@ -735,9 +729,7 @@ bool CommandLineSimulator::parse(int argc,
             .add(log_opts_.getVerboseOptions())
             .add(pipeout_opts_.getVerboseOptions())
             .add(report_opts_.getVerboseOptions())
-            #if SIMDB_ENABLED
             .add(simdb_opts_.getVerboseOptions())
-            #endif
             .add(app_opts_.getVerboseOptions())
             .add(feature_opts_.getVerboseOptions())
             .add(advanced_opts_.getVerboseOptions());
@@ -1641,12 +1633,8 @@ bool CommandLineSimulator::parse(int argc,
             std::cout << report_opts_.getOptionsLevelUpTo(0) << std::endl;
             showReportsHelp();
         }else if(help_topic_ == "simdb"){
-            #if SIMDB_ENABLED
                 std::cout << simdb_opts_.getOptionsLevelUpTo(0) << std::endl;
                 showSimDBHelp();
-            #else
-                std::cout << "SimDB is not enabled in this build of SPARTA (-DUSING_SIMDB=ON)." << std::endl;
-            #endif
         }else if(help_topic_ == "pipeout"){
             std::cout << pipeout_opts_.getOptionsLevelUpTo(0) << std::endl;
         }else{
@@ -2527,9 +2515,7 @@ void CommandLineSimulator::printOptionsHelp_(uint32_t level) const
               << pipeout_opts_.getOptionsLevelUpTo(level) << std::endl
               << debug_opts_.getOptionsLevelUpTo(level) << std::endl
               << report_opts_.getOptionsLevelUpTo(level) << std::endl
-              #if SIMDB_ENABLED
               << simdb_opts_.getOptionsLevelUpTo(level) << std::endl
-              #endif
               << app_opts_.getOptionsLevelUpTo(level) << std::endl;
 
     if(0 == level){

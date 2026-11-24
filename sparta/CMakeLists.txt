@@ -7,14 +7,6 @@ project (sparta CXX)
 
 set (GEN_DEBUG_INFO ON CACHE BOOL "Genearate debug info in compile & link -g")
 
-# Note that all of SimDB is optional, though included by default.
-# If this option is OFF, then it is assumed that MAP was cloned
-# without the --recursive option, therefore the SimDB submodule
-# was not cloned. If OFF, we will not put SimDB on the include
-# path, nor build the SimDB test, nor install SimDB alongside
-# the Sparta headers.
-option (USING_SIMDB "Enable Sparta to be used with SimDB" ON)
-
 # The following option is typically enabled only for CI purposes.
 # Commits that fail the github checks will produce a log file with
 # specific failures in e.g. EXPECT_EQUAL, and those logs can be
@@ -24,12 +16,10 @@ option (SPARTA_TESTER_ERROR_LOG "Redirect the SpartaTester std::cerr to a log fi
 set (SPARTA_BASE ${CMAKE_CURRENT_SOURCE_DIR})
 include (${SPARTA_BASE}/cmake/sparta-config.cmake)
 
-if (USING_SIMDB)
-  if (EXISTS "${SPARTA_BASE}/simdb/CMakeLists.txt")
-    add_subdirectory (${SPARTA_BASE}/simdb)
-  else ()
-    message(FATAL_ERROR "SimDB not found. Run 'git submodule update --init --recursive'")
-  endif ()
+if (EXISTS "${SPARTA_BASE}/simdb/CMakeLists.txt")
+  add_subdirectory (${SPARTA_BASE}/simdb)
+else ()
+  message(FATAL_ERROR "SimDB not found. Run 'git submodule update --init --recursive'")
 endif ()
 
 # Add the source for libsparta.a
@@ -37,6 +27,7 @@ list (APPEND SourceCppFiles
             src/ArgosOutputter.cpp
             src/Backtrace.cpp
             src/BaseFormatter.cpp
+            src/CherryPickFastCheckpointer.cpp
             src/Clock.cpp
             src/ClockManager.cpp
             src/CommandLineSimulator.cpp
@@ -64,6 +55,7 @@ list (APPEND SourceCppFiles
             src/Report.cpp
             src/ReportDescriptor.cpp
             src/ReportRepository.cpp
+            src/ReportStatsCollector.cpp
             src/Resource.cpp
             src/SpartaException.cpp
             src/RootTreeNode.cpp
@@ -94,13 +86,6 @@ list (APPEND SourceCppFiles
             src/State.tpp
             src/GenericUnit.cpp
 )
-
-if (USING_SIMDB)
-  list (APPEND SourceCppFiles
-    src/CherryPickFastCheckpointer.cpp
-    src/ReportStatsCollector.cpp
-  )
-endif ()
 
 # Add python support
 if (COMPILE_WITH_PYTHON)
@@ -235,17 +220,11 @@ find_package (Cppcheck)
 
 add_library (sparta ${SourceCppFiles})
 
-if (USING_SIMDB)
-  message (STATUS "SimDB is enabled")
-  target_compile_definitions (sparta PRIVATE -DSIMDB_ENABLED=1)
-  if (TARGET SimDB::simdb)
-    target_link_libraries (sparta PUBLIC SimDB::simdb)
-  else ()
-    target_link_libraries (sparta PUBLIC simdb)
-  endif ()
+target_compile_definitions (sparta PRIVATE -DSIMDB_ENABLED=1)
+if (TARGET SimDB::simdb)
+  target_link_libraries (sparta PUBLIC SimDB::simdb)
 else ()
-  message (STATUS "SimDB is disabled")
-  target_compile_definitions (sparta PRIVATE -DSIMDB_ENABLED=0)
+  target_link_libraries (sparta PUBLIC simdb)
 endif ()
 
 # Add local includes

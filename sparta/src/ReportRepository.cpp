@@ -43,11 +43,8 @@
 #include "sparta/app/SimulationConfiguration.hpp"
 #include "sparta/trigger/ExpressionTrigger.hpp"
 #include "sparta/utils/ValidValue.hpp"
-
-#if SIMDB_ENABLED
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
 #include "simdb/apps/AppManager.hpp"
-#endif
 
 namespace sparta::report::format {
 class BaseFormatter;
@@ -120,14 +117,12 @@ public:
      */
     void configSimDbReports()
     {
-    #if SIMDB_ENABLED
         if (!desc_.configSimDbReports(collector_)) {
             return;
         }
 
         const auto& header = reports_[0]->getHeader();
         collector_->setHeader(&desc_, header);
-    #endif
     }
 
     app::ReportDescriptor & getDescriptor()
@@ -183,11 +178,9 @@ public:
         num_written += desc_.writeOutput();
         desc_.teardown();
 
-    #if SIMDB_ENABLED
         if (collector_ && desc_.format != "csv" && desc_.format != "csv_cumulative") {
             collector_->updateReportEndTime(&desc_);
         }
-    #endif
 
         bool print = true;
         if (sim_) {
@@ -615,13 +608,9 @@ private:
             }
         }
 
-        #if SIMDB_ENABLED
-            if (first && collector_) {
-                collector_->updateReportStartTime(&desc_);
-            }
-        #else
-            (void)first;
-        #endif
+        if (first && collector_) {
+            collector_->updateReportStartTime(&desc_);
+        }
     }
 
     void stopReports_()
@@ -645,11 +634,9 @@ private:
         desc_.updateOutput();
         desc_.ignoreFurtherUpdates();
 
-        #if SIMDB_ENABLED
-            if (collector_ && desc_.format != "csv" && desc_.format != "csv_cumulative") {
-                collector_->updateReportEndTime(&desc_);
-            }
-        #endif
+        if (collector_ && desc_.format != "csv" && desc_.format != "csv_cumulative") {
+            collector_->updateReportEndTime(&desc_);
+        }
     }
 
     void updateReports_()
@@ -864,10 +851,7 @@ private:
         if (key.empty() || value.empty() || !collector_) {
             return;
         }
-
-    #if SIMDB_ENABLED
         collector_->updateReportMetadata(&desc_, key, value);
-    #endif
     }
 
     void setDirectoryLocationInTree_(TreeNode * tree_location)

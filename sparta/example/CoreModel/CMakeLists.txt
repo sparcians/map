@@ -154,7 +154,6 @@ sparta_named_test(sparta_core_example_override_extensions3 sparta_core_example -
 sparta_expect_failure_test(sparta_core_example_override_extensions_neg_test sparta_core_example -i 10k --extension-files base_extensions.yaml override_extensions.yaml --num-cores 2 -p) # read no extensions
 sparta_named_test(sparta_core_example_3d_nested_extension_params sparta_core_example --no-run --extension-file nested_vecs.yaml --write-final-config final.yaml)
 
-if(USING_SIMDB)
 sparta_named_test(sparta_core_example_simdb_apps1 sparta_core_example --simdb-apps simdb-reports cherry-pick-fast-checkpointer --simdb-database simdb_apps1.db --no-run)
 sparta_named_test(sparta_core_example_simdb_apps2 sparta_core_example --simdb-apps simdb-reports cherry-pick-fast-checkpointer --simdb-app-database simdb-reports reports.db cherry-pick-fast-checkpointer chkptr.db --no-run)
 sparta_named_test(sparta_core_example_simdb_apps3 sparta_core_example --simdb-apps cherry-pick-fast-checkpointer --simdb-app-count cherry-pick-fast-checkpointer 2 --simdb-database autogen --no-run)
@@ -162,4 +161,3 @@ sparta_named_test(sparta_core_example_simdb_apps4 sparta_core_example --simdb-ap
 
 # Run all backwards compatibility tests for map_v2.1+ reports and their v2.0.* equivalents
 add_test(NAME sparta_simdb_report_verif_suite COMMAND python3 ../../../scripts/simdb/run_report_verif_suite.py --sim-exe-path sparta_core_example --serial --force --fail-fast --skip sparta_core_example_sprintf_notif_trigger)
-endif()

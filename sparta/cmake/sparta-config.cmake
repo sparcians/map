@@ -75,12 +75,8 @@ find_package(Threads REQUIRED)
 # Populate the Sparta_LIBS variable with the required libraries for
 # basic Sparta linking
 set (Sparta_LIBS sparta yaml-cpp::yaml-cpp ZLIB::ZLIB Threads::Threads
-  Boost::date_time Boost::iostreams Boost::serialization Boost::timer Boost::program_options)
-
-# Link against sqlite3 and hdf5 if SimDB is enabled
-if (USING_SIMDB)
-  list (APPEND Sparta_LIBS SimDB::simdb)
-endif ()
+  Boost::date_time Boost::iostreams Boost::serialization Boost::timer Boost::program_options
+  SimDB::simdb)
 
 # If HDF5 is built with MPI support, we also need to add the MPI include dirs and link against the MPI library
 if(HDF5_IS_PARALLEL)
