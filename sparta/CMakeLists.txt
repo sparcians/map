@@ -220,7 +220,6 @@ find_package (Cppcheck)
 
 add_library (sparta ${SourceCppFiles})
 
-target_compile_definitions (sparta PRIVATE -DSIMDB_ENABLED=1)
 if (TARGET SimDB::simdb)
   target_link_libraries (sparta PUBLIC SimDB::simdb)
 else ()
