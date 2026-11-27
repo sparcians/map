@@ -104,6 +104,82 @@ namespace sparta
 
     public:
 
+        /*!
+         * \class CounterBehaviorDetailed
+         * \brief Wrapper class to add meta information to a counter definition
+         *
+         * When defining the counter's behavior, this class enables
+         * the modeler to extend that behavior with meta information.
+         * During report generation to data serialization formats
+         * (like json, yaml, or SimDB) this information is included
+         * with the counter.
+         *
+         * Usage:
+         * \code
+         *     new sparta::Counter(getContainer(),
+         *                         "my_counter_name",
+         *                         "my_counter_group_name,
+         *                         0,                                     // group idx
+         *                         "This is my fancy counter definition", // desc
+         *                         // CounterBehaviorDetailed
+         *                         {
+         *                             sparta::CounterBase::CounterBehavior::COUNT_NORMAL,
+         *                             {
+         *                                 {"lowest_value" : "0" },
+         *                                 {"highest_value" : "100" },
+         *                                 {"polarity" : "positive" }  // Positive polarity, higher is better
+         *                             }
+         *                         });
+         * \endcode
+         *
+         * The modeler is not required to provide any meta data
+         * information.  As an example, the following works as well:
+         *
+         * \code
+         *     new sparta::Counter(getContainer(),
+         *                         "my_counter_name",
+         *                         "my_counter_group_name,
+         *                         0,                                      // group idx
+         *                         "This is my simple counter definition", // desc
+         *                         sparta::CounterBase::CounterBehavior::COUNT_NORMAL);
+         * \endcode
+         */
+        class CounterBehaviorDetailed
+        {
+        public:
+            /*!
+             * \brief Construct a CounterBehaviorDetailed without meta data
+             * \param behavior The CounterBehavior
+             * \note Do not make this explicit
+             */
+            CounterBehaviorDetailed(CounterBehavior behavior) :
+                CounterBehaviorDetailed(behavior, {})
+            {}
+
+            /*!
+             * \brief Construct a CounterBehaviorDetailed without meta data
+             * \param behavior The CounterBehavior
+             * \param meta_data MetadataPairs to assign `{("name", "value"}}`
+             */
+            CounterBehaviorDetailed(CounterBehavior behavior,
+                                    const InstrumentationNode::MetadataPairs & meta_data) :
+                behavior_(behavior),
+                meta_data_(meta_data)
+            {}
+
+            //! Casting operator to obtain the original behavior
+            operator CounterBehavior() const { return behavior_; }
+
+            //! Get the meta data provided by the user
+            const InstrumentationNode::MetadataPairs & getMetadata() const {
+                return meta_data_;
+            }
+
+        private:
+            const CounterBehavior behavior_;
+            const InstrumentationNode::MetadataPairs meta_data_;
+        };
+
         //! \name Construction & Initialization
         //! @{
         ////////////////////////////////////////////////////////////////////////
@@ -127,7 +203,7 @@ namespace sparta
                     const std::string& group,
                     TreeNode::group_idx_type group_idx,
                     const std::string& desc,
-                    CounterBehavior behave,
+                    CounterBehaviorDetailed behave,
                     visibility_t visibility) :
             InstrumentationNode(nullptr,
                                 name,
@@ -144,6 +220,12 @@ namespace sparta
             ensureParentIsValid_(parent);
 
             parent->addChild(this);
+
+            // Copy over the meta data to the InstrumentationNode.
+            meta_data_.insert(meta_data_.begin(),
+                              behave.getMetadata().begin(),
+                              behave.getMetadata().end());
+
         }
 
         // Alternate constructor
@@ -152,7 +234,7 @@ namespace sparta
                     const std::string& group,
                     TreeNode::group_idx_type group_idx,
                     const std::string& desc,
-                    CounterBehavior behave) :
+                    CounterBehaviorDetailed behave) :
             CounterBase(parent,
                         name,
                         group,
@@ -168,7 +250,7 @@ namespace sparta
         CounterBase(TreeNode* parent,
                     const std::string& name,
                     const std::string& desc,
-                    CounterBehavior behave) :
+                    CounterBehaviorDetailed behave) :
             CounterBase(parent,
                         name,
                         TreeNode::GROUP_NAME_NONE,
@@ -254,7 +336,7 @@ namespace sparta
         /*!
          * \brief Returns a string containing the name of the given behavior
          */
-        static std::string getBehaviorName(CounterBehavior behave) {
+        static std::string getBehaviorName(CounterBehaviorDetailed behave) {
             switch(behave){
             case COUNT_NORMAL:
                 return "normal";
@@ -295,7 +377,7 @@ namespace sparta
         /*!
          * \brief Behavior of this counter
          */
-        const CounterBehavior behave_;
+        const CounterBehaviorDetailed behave_;
 
     }; // class CounterBase
 

@@ -53,8 +53,7 @@ public:
 
     template <typename MetadataT>
     void setMetadataValue(const std::string & name, const MetadataT & value) {
-        boost::any any_value(value);
-        metadata_[name] = any_value;
+        metadata_[name] = boost::any(value);
     }
 
     template <typename MetadataT>

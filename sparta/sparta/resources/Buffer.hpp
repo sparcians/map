@@ -879,23 +879,24 @@ namespace sparta
             sparta_assert(is_infinite_mode_,
                           "The Buffer class must be in Infinite-Mode in order to resize itself.");
 
+
             // We do not resize if there are available slots in buffer.
             if(numFree() != 0) {
+                sparta_assert(num_valid_ < buffer_map_.size());
                 return;
             }
 
             // Resize the buffer_map_ with the amount provided by user.
             buffer_map_.resize(buffer_map_.capacity() + resize_delta_);
 
-            // The number of entries the buffer can hold is its capacity.
-            num_entries_ = buffer_map_.capacity();
+            // The number of entries the buffer can hold (valid)
+            num_entries_ = buffer_map_.size();
 
             // Resize the data_pool_ to twice the capacity of the buffer_map_.
             data_pool_.resize(num_entries_ * 2);
 
             // The number of entries the pool can hold is its capacity.
-            data_pool_size_ = data_pool_.capacity();
-
+            data_pool_size_ = data_pool_.size();
 
             // Each entry in data_pool_ should have their next free position
             // pointer point to the slot to its right.

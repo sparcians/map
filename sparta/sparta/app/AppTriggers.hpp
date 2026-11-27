@@ -41,6 +41,9 @@ public:
         clk_(clk),
         root_(rtn)
     {
+        // TODO cnyce
+        sparta_assert(!multiple_triggers_, "The --debug-on-roi option is not supported yet in MAP v3");
+
         pipeline_collector_.
             reset(new sparta::collection::PipelineCollector(multiple_triggers_ ? getCollectionPath_() : pipeline_collection_path_,
                                                             pipeline_heartbeat_,
@@ -53,7 +56,7 @@ public:
     {
         sparta_assert(!triggered_, "Why has pipeline trigger been triggered?");
         triggered_ = true;
-        std::cout << "Pipeline collection started, output to files with prefix '"
+        std::cout << "Pipeline collection started, writing to database file '"
                   << pipeline_collector_->getFilePath() << "'" << std::endl;
         startCollection_();
 

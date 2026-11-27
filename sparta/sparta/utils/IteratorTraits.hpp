@@ -14,10 +14,10 @@ namespace sparta::utils
     // iterators. For Sparta, we'll put 'em back.
     template<class category, class T>
     struct IteratorTraits {
-        using difference_type = long;
-        using value_type      = T;
-        using pointer         = const T*;
-        using reference       = const T&;
+        using value_type      = std::remove_cv_t<T>; // Always non-const per standard
+        using difference_type = std::ptrdiff_t;
+        using pointer         = T*;
+        using reference       = T&;
         using iterator_category = category;
     };
 

@@ -33,6 +33,9 @@ bool hasToggleTrigger(const ReportDescriptor * rd);
 //! \brief Ask this descriptor if it has any on-demand trigger
 bool hasOnDemandTrigger(const ReportDescriptor * rd);
 
+//! \brief Ask this descriptor if it has a 'sprintf-notif' trigger
+bool hasSprintfNotifTrigger(const ReportDescriptor * rd);
+
 //! \brief Ask this descriptor if it has any *start* trigger
 //! that is configured to listen to a NotificationSource by
 //! the given name.

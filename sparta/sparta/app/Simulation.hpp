@@ -994,7 +994,7 @@ private:
     }
 
     /*!
-     *\brief Run controller interface
+     * \brief Run controller interface
      */
     std::unique_ptr<control::TemporaryRunControl> rc_;
 
@@ -1008,7 +1008,13 @@ private:
     /*!
      * \brief SimDB DatabaseManager/AppManager instances.
      */
-     std::shared_ptr<simdb::AppManagers> app_managers_;
+    std::shared_ptr<simdb::AppManagers> app_managers_;
+
+    /*!
+     * \brief Flag telling us whether postSimLoopTeardown() API call
+     * is still required.
+     */
+    bool app_managers_require_teardown_ = true;
 };
 
 } // namespace app

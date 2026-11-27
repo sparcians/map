@@ -67,10 +67,12 @@ bool ReportDescriptor::isValidFormatName(const std::string& format)
 ReportDescriptor::ReportDescriptor(const std::string& _loc_pattern,
                                    const std::string& _def_file,
                                    const std::string& _dest_file,
-                                   const std::string& _format) :
+                                   const std::string& _format,
+                                   const size_t roi_region) :
     writes_(0),
     updates_(0),
     orig_dest_file_(_dest_file),
+    roi_region_(roi_region),
     loc_pattern(_loc_pattern),
     def_file(_def_file),
     dest_file(_dest_file),
@@ -245,7 +247,10 @@ report::format::BaseFormatter* ReportDescriptor::addInstantiation(Report* r,
     }
 
     uint32_t idx = instantiations_.size(); // index of next instantiation
-    std::string filename = computeFilename(r, simulation_name, idx);
+
+    // For sprintf-notif triggered reports, the real filename isn't known yet;
+    // it's produced later by the bound SprintfNotificationSource
+    std::string filename = uses_sprintf_notif_trigger_ ? "" : computeFilename(r, simulation_name, idx);
 
     if(out){
         *out << "  Placing report on node " << r->getContext()->getLocation()
@@ -281,13 +286,15 @@ report::format::BaseFormatter* ReportDescriptor::addInstantiation(Report* r,
 
     instantiations_.emplace_back(r, formatter);
 
-    // Clear the output filenmae
-    std::ofstream os(filename, std::ios::out);
-    if(os.fail()){
-        throw SpartaException("Failed to open report destination file: \"") << filename
-              << "\" When clearing report files in preparation for run. This path may "
-              "refer to a directory that does not exist or a file for which the current "
-              "user does not have permission";
+    if (!filename.empty()) {
+        // Clear the output file. 
+        std::ofstream os(filename, std::ios::out);
+        if(os.fail()){
+            throw SpartaException("Failed to open report destination file: \"") << filename
+                  << "\" When clearing report files in preparation for run. This path may "
+                  "refer to a directory that does not exist or a file for which the current "
+                  "user does not have permission";
+        }
     }
 
     if (sim != nullptr) {
@@ -350,6 +357,12 @@ bool ReportDescriptor::updateReportActiveState_(const Report * r)
 
 uint32_t ReportDescriptor::writeOutput(std::ostream* out)
 {
+    if (uses_sprintf_notif_trigger_) {
+        // This method overload is not the one for sprintf-notif. That is writeOutput(filename).
+        sparta_assert(out == nullptr);
+        return 0;
+    }
+
     writes_++;
     uint32_t num_saved = 0;
 
@@ -387,6 +400,49 @@ uint32_t ReportDescriptor::writeOutput(std::ostream* out)
         //This is temporary - these streams are going to Python, and
         //more work needs to be done to run the simulation and the
         //C++/Python streams concurrently.
+        streaming_stats_root_->pushStreamUpdateToListeners();
+    }
+
+    return num_saved;
+}
+
+uint32_t ReportDescriptor::writeOutput(const std::string& filename)
+{
+    sparta_assert(uses_sprintf_notif_trigger_,
+                  "writeOutput(filename) may only be called on a report descriptor bound to "
+                  "a 'sprintf-notif' trigger");
+
+    // writeHeaderTo_/writeContentTo_ always open in append mode, so truncate first;
+    // otherwise a reused filename accumulates multiple headers/contents and becomes unreadable
+    std::ofstream clear_os(filename, std::ios::out);
+    if(clear_os.fail()){
+        throw SpartaException("Failed to open report destination file: \"") << filename
+              << "\" when clearing it in preparation for a sprintf-notif triggered write";
+    }
+    clear_os.close();
+    sprintf_notif_trigger_dest_files_.push_back(filename);
+
+    writes_++;
+    uint32_t num_saved = 0;
+
+    // Write all reports in the order of instantiation to the given (dynamically computed) filename
+    for(auto & inst : getInstantiations()){
+        const bool report_active = this->updateReportActiveState_(inst.first);
+        if (report_active && false == inst.second->supportsUpdate()) {
+            if (legacy_reports_enabled_) {
+                inst.second->writeTo(filename);
+            }
+            if (collector_) {
+                sweepSimDbStats_();
+            }
+            num_saved++;
+        }
+    }
+
+    if (report_archive_ != nullptr) {
+        report_archive_->dispatchAll();
+    }
+    if (streaming_stats_root_ != nullptr) {
         streaming_stats_root_->pushStreamUpdateToListeners();
     }
 
@@ -607,9 +663,11 @@ class ReportDescriptorFileParserYAML
         ReportDescVec completed_descriptors_;
 
         std::string loc_pattern_;
+        std::string name_;
         std::string dest_file_;
         std::string def_file_;
         std::string format_;
+        size_t roi_region_ = 0;
 
         bool skip_current_report_ = false;
         bool auto_expand_context_counter_stats_ = false;
@@ -620,12 +678,14 @@ class ReportDescriptorFileParserYAML
         /*!
          * \brief Reserved keywords for this parser's dictionary
          */
+        static constexpr char KEY_NAME[]            = "name";
         static constexpr char KEY_CONTENT[]         = "content";
         static constexpr char KEY_REPORT[]          = "report";
         static constexpr char KEY_DEF_FILE[]        = "def_file";
         static constexpr char KEY_DEST_FILE[]       = "dest_file";
         static constexpr char KEY_PATTERN[]         = "pattern";
         static constexpr char KEY_FORMAT[]          = "format";
+        static constexpr char KEY_ROI_REGION[]      = "roi_region";
         static constexpr char KEY_TRIGGER[]         = "trigger";
         static constexpr char KEY_START[]           = "start";
         static constexpr char KEY_STOP[]            = "stop";
@@ -634,6 +694,7 @@ class ReportDescriptorFileParserYAML
         static constexpr char KEY_UPDATE_CYCLE[]    = "update-cycles";
         static constexpr char KEY_UPDATE_COUNT[]    = "update-count";
         static constexpr char KEY_UPDATE_WHENEVER[] = "update-whenever";
+        static constexpr char KEY_SPRINTF_NOTIF[]   = "sprintf-notif";
         static constexpr char KEY_TAG[]             = "tag";
         static constexpr char KEY_SKIP[]            = "skip";
         static constexpr char KEY_AUTO_EXPAND_CC[]  = "expand-cc";
@@ -701,6 +762,10 @@ class ReportDescriptorFileParserYAML
                     dest_file_ = value;
                 } else if (assoc_key == KEY_FORMAT) {
                     format_ = value;
+                } else if (assoc_key == KEY_ROI_REGION) {
+                    size_t end_pos;
+                    roi_region_ = utils::smartLexicalCast<size_t>(value, end_pos);
+                    sparta_assert(roi_region_ > 0);
                 } else if (assoc_key == KEY_SKIP) {
                     if (value == "true" || value == "1") {
                         skip_current_report_ = true;
@@ -714,7 +779,11 @@ class ReportDescriptorFileParserYAML
                     if (value == "true" || value == "1") {
                         auto_expand_context_counter_stats_ = true;
                     }
-                } else {
+                } else if (assoc_key == KEY_NAME)
+                {
+                    name_ = value;
+                }
+                else {
                     std::ostringstream oss;
                     oss << "Unrecognized key in report definition "
                            "file: '" << assoc_key << "'";
@@ -765,11 +834,15 @@ class ReportDescriptorFileParserYAML
                     return false;
                 }
 
-                completed_descriptors_.emplace_back(
+                auto & rd = completed_descriptors_.emplace_back(
                     loc_pattern_,
                     def_file_,
                     dest_file_,
-                    format_);
+                    format_,
+                    roi_region_);
+
+                // Report descriptors are named from the def file
+                rd.name = name_;
 
                 if (!trigger_kv_pairs_.empty()) {
                     std::unordered_map<std::string, boost::any> trigger_extensions;
@@ -798,12 +871,14 @@ class ReportDescriptorFileParserYAML
         virtual bool isReservedKey_(
             const std::string & key) const override final
         {
-            return (key == KEY_CONTENT          ||
+            return (key == KEY_NAME             ||
+                    key == KEY_CONTENT          ||
                     key == KEY_REPORT           ||
                     key == KEY_DEF_FILE         ||
                     key == KEY_DEST_FILE        ||
                     key == KEY_PATTERN          ||
                     key == KEY_FORMAT           ||
+                    key == KEY_ROI_REGION       ||
                     key == KEY_TRIGGER          ||
                     key == KEY_START            ||
                     key == KEY_STOP             ||
@@ -812,6 +887,7 @@ class ReportDescriptorFileParserYAML
                     key == KEY_UPDATE_CYCLE     ||
                     key == KEY_UPDATE_COUNT     ||
                     key == KEY_UPDATE_WHENEVER  ||
+                    key == KEY_SPRINTF_NOTIF    ||
                     key == KEY_TAG              ||
                     key == KEY_SKIP             ||
                     key == KEY_AUTO_EXPAND_CC   ||
@@ -829,6 +905,7 @@ class ReportDescriptorFileParserYAML
         void prepareForNextDescriptor_()
         {
             loc_pattern_ = "_global";
+            name_.clear();
             dest_file_.clear();
             def_file_.clear();
             format_ = "text";
@@ -879,6 +956,15 @@ public:
         ReportDescriptorFileEventHandlerYAML handler(def_file_, {scope});
 
         while(parser_->HandleNextDocument(*((YP::EventHandler*)&handler))) {}
+
+        if(handler.getErrors().size() != 0){
+            SpartaException ex("One or more errors detected while consuming the report definition "
+                               "file:\n");
+            for(const std::string& es : handler.getErrors()){
+                ex << es << '\n';
+            }
+            throw  ex;
+        }
 
         return handler.getDescriptors();
     }
@@ -1258,6 +1344,12 @@ bool hasToggleTrigger(const ReportDescriptor * rd)
 bool hasOnDemandTrigger(const ReportDescriptor * rd)
 {
     return hasTriggerOfType(rd, "update-whenever");
+}
+
+//! \brief Ask this descriptor if it has a 'sprintf-notif' trigger
+bool hasSprintfNotifTrigger(const ReportDescriptor * rd)
+{
+    return hasTriggerOfType(rd, "sprintf-notif");
 }
 
 //! \brief Ask this descriptor if it has a trigger that is

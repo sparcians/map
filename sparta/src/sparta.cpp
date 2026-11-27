@@ -128,7 +128,6 @@ namespace sparta {
     TreeNode::node_uid_type TreeNode::next_node_uid_ = 0;
     TreeNode::TagsMap TreeNode::global_tags_map_;
     uint32_t TreeNode::teardown_errors_ = 0;
-    const TreeNode::node_uid_type TreeNode::MAX_NODE_UID = 0xffffffffffff;
     const std::string TreeNode::DEBUG_DUMP_SECTION_DIVIDER = \
         "================================================================================\n";
     const std::vector<std::pair<const char*, std::function<void (std::string&)>>> TreeNode::TREE_NODE_PATTERN_SUBS =

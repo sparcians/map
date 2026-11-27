@@ -55,10 +55,10 @@ private:
 
     // Stats
     sparta::Counter num_consumed_{&unit_stat_set_, "num_consumed",
-                                  "Number of items consumed", sparta::Counter::COUNT_NORMAL};
+                                  "Number of items consumed",
+                                  sparta::Counter::COUNT_NORMAL};
 
     //! Loggers
     sparta::log::MessageSource consumer_log_;
 
 };
-

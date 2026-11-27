@@ -452,6 +452,12 @@ void ExampleSimulator::configureTree_()
         "Notification channel for testing purposes only",
         "testing_notif_channel"));
 
+    sprintf_test_notification_source_.reset(new sparta::SprintfNotificationSource(
+        this->getRoot()->getSearchScope()->getChild("top.cpu.core0.rob"),
+        "sprintf_notif_channel",
+        "Notification channel for testing the 'sprintf-notif' report trigger",
+        "sprintf_notif_channel"));
+
     toggle_trigger_notification_source_.reset(new sparta::NotificationSource<uint64_t>(
         getRoot()->getSearchScope()->getChild("top.cpu.core0.rob"),
         "stats_profiler",
@@ -537,6 +543,11 @@ void ExampleSimulator::postRandomNumber_()
 {
     const size_t random = rand() % 25;
     testing_notification_source_->postNotification(random);
+
+    if (sprintf_test_notification_source_->hasFormatString() && random % 10 == 0) {
+        sprintf_test_notification_source_->postNotification("random_stat", static_cast<int>(random));
+    }
+
     random_number_trigger_->reschedule();
 }
 

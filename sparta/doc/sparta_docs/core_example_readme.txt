@@ -270,44 +270,23 @@
 
   \subsection pipeouts_core_example Generating Pipeouts
 
-  Refer to
-  https://github.com/sparcians/map/tree/master/helios/pipeViewer for
-  directions on building/installing the MAP::Helios::Argos tools
-  preferably using the Conda tools.
-
   Create a 10K instructions Pipeout:
 
   \code
   % pwd
   $HOME/map/sparta/build/example/CoreModel
-  % ./sparta_core_example -i10K -z my_pipeout
+  % ./sparta_core_example -i10K -z my_pipeout.db
   \endcode
 
-  This will create a set of files for the Argos viewer:
+  This will create a single database file for the Argos viewer (*.db)
 
-  \code
-  % ls -1 my_pipeout*
-  my_pipeoutclock.dat
-  my_pipeoutdata.dat
-  my_pipeoutdisplay_format.dat
-  my_pipeoutindex.bin
-  my_pipeoutlocation.dat
-  my_pipeoutmap.dat
-  my_pipeoutrecord.bin
-  my_pipeoutsimulation.info
-  my_pipeoutstring_map.dat
-  \endcode
-
-  Launch the MAP::Helio::Argos viewer (this assumes the correct
-  tools/libaries have been installed).  Note that the `cpu_layout.alf`
-  file is NOT in the build directory of the CoreModel.
+  Launch the Argos viewer (this assumes wx has been installed).
 
   \code
   % pwd
   $HOME/map/sparta/build/example/CoreModel
   % python3 $HOME/map/helios/pipeViewer/pipe_view/argos.py \
-         -l $HOME/map/sparta/example/CoreModel/cpu_layout.alf \
-         -d my_pipeout
+         --database my_pipeout.db
 
   \endcode
 

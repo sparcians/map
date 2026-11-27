@@ -557,7 +557,7 @@ namespace sparta
 } // sparta namespace
 
 // Helper methods to determine pointer type and/or remove it
-namespace MetaStruct {
+namespace simdb::type_traits {
 
     // Helper structs
     template<typename T>

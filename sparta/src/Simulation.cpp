@@ -72,6 +72,7 @@
 #include "sparta/app/ConfigApplicators.hpp"
 #include "sparta/app/MetaTreeNode.hpp"
 #include "sparta/app/ReportDescriptor.hpp"
+#include "sparta/app/ReportConfigInspection.hpp"
 #include "sparta/app/SimulationConfiguration.hpp"
 #include "sparta/control/TemporaryRunController.hpp"
 #include "sparta/events/Scheduleable.hpp"
@@ -89,6 +90,7 @@
 #if SIMDB_ENABLED
 #include "sparta/app/simdb/ReportStatsCollector.hpp"
 #include "sparta/serialization/checkpoint/CherryPickFastCheckpointer.hpp"
+#include "simdb/apps/argos/ArgosCollector.hpp"
 #include "simdb/apps/AppManager.hpp"
 #endif
 
@@ -147,6 +149,13 @@ private:
     (void) phase;
 
 #endif
+
+void onPipelineCollectionShutdown(Simulation* sim)
+{
+    if(sim) {
+        sim->postProcessingLastCall();
+    }
+}
 
 /*!
  * \brief YAML parser class to turn simulation control definition files:
@@ -511,6 +520,7 @@ void Simulation::createSimDbApps_()
         parameterizeSimDbApps_(&app_mgr);
     }
 
+    app_managers_->setVerbose(sim_config_->simdb_config.verboseMode());
     app_managers_->createEnabledApps();
     app_managers_->createSchemas();
 #else
@@ -609,6 +619,7 @@ void Simulation::buildTree()
     simdb::AppRegistrations app_registrations(app_managers_.get());
     app_registrations.registerApp<ReportStatsCollector>();
     app_registrations.registerApp<serialization::checkpoint::CherryPickFastCheckpointer>();
+    app_registrations.registerApp<simdb::argos::ArgosCollector>();
     registerSimDbApps_(&app_registrations);
 #endif
 
@@ -815,6 +826,48 @@ void Simulation::finalizeFramework()
             db_mgr->safeTransaction([&]() { setupReports_(app); });
             reports_setup = true;
         }
+        else if (auto app = app_mgr->getApp<simdb::argos::ArgosCollector>())
+        {
+            const auto& heartbeat_vv = notNull(sim_config_)->pipeline_collection_heartbeat;
+            if (heartbeat_vv.isValid())
+            {
+                app->setHeartbeat(heartbeat_vv);
+            }
+            app->timestampWith([this](){return scheduler_->getCurrentTick();});
+
+            std::set<const Clock*> collectable_clocks;
+            std::set<std::string> serialized_types;
+            // Copy the structured binding into an ordinary local so the lambda
+            // below does not capture a structured binding (a C++20 extension).
+            auto local_db_mgr = db_mgr;
+            std::function<void(TreeNode*)> visitCollectables;
+            visitCollectables = [&](TreeNode* node)
+            {
+                if (auto ctn = dynamic_cast<collection::CollectableTreeNode*>(node);
+                    ctn && !ctn->isIterableCollectorBin())
+                {
+                    ctn->createSimDbEntryPoint(app);
+                    ctn->serializeStructSchema(local_db_mgr, serialized_types);
+                    collectable_clocks.insert(notNull(ctn->getClock()));
+                }
+                for (auto child : TreeNodePrivateAttorney::getAllChildren(node))
+                {
+                    visitCollectables(child);
+                }
+            };
+
+            db_mgr->safeTransaction([&](){
+                visitCollectables(getRoot());
+            });
+
+            for (auto clk : collectable_clocks)
+            {
+                auto period = clk->getPeriod();
+                auto numer = clk->getRatio().getNumerator();
+                auto denom = clk->getRatio().getDenominator();
+                app->addClock(clk->getName(), period, numer, denom);
+            }
+        }
     }
 #endif
 
@@ -826,6 +879,9 @@ void Simulation::finalizeFramework()
 
     framework_finalized_ = true;
     report_repository_->postFinalizeFramework();
+    if (report_config_) {
+        report_config_->getROIManager()->onFinalizeFramework();
+    }
 
     // Let simulation subclasses add a hook for post-finalizeFramework().
     // Do this before opening the SimDB threads so user's apps are not
@@ -1085,7 +1141,10 @@ void Simulation::postProcessingLastCall()
 {
 #if SIMDB_ENABLED
     // This is added here to close AppManager's even with --no-run
-    app_managers_->postSimLoopTeardown();
+    if (app_managers_require_teardown_) {
+        app_managers_->postSimLoopTeardown();
+        app_managers_require_teardown_ = false;
+    }
 #endif
 }
 
@@ -1483,6 +1542,16 @@ void Simulation::setupReports_(ReportStatsCollector* collector)
         if (!rd.isEnabled()) {
             continue;
         }
+
+        // TODO cnyce: 'sprintf-notif' triggers are not yet supported alongside SimDB report export
+        if (sim_config_ &&
+            sim_config_->simdb_config.appEnabled("simdb-reports") &&
+            sparta::app::hasSprintfNotifTrigger(&rd)) {
+            throw SpartaException(
+                "The 'sprintf-notif' report trigger is not yet supported together with "
+                "--enable-simdb-reports: ") << rd.stringize();
+        }
+
         std::vector<sparta::TreeNode*> roots;
         std::vector<std::vector<std::string>> replacements;
         if(rd.loc_pattern == ReportDescriptor::GLOBAL_KEYWORD){
@@ -1766,7 +1835,12 @@ void Simulation::attachReportTo_(sparta::ReportRepository::DirectoryHandle direc
     }
 
     std::stringstream rep_name;
-    rep_name << def_file << " on " << n->getLocation();
+    if (true == rd.name.empty()) {
+        rep_name << def_file << " on " << n->getLocation();
+    }
+    else {
+        rep_name << rd.name;
+    }
     std::unique_ptr<Report> r(new Report(rep_name.str(), n)); // Construct with context
     sparta_assert(r);
 
@@ -1868,7 +1942,7 @@ void Simulation::checkAllVirtualParamsRead_(const ParameterTree& pt)
             // is due to an extension never being created. We issue different
             // errors in that case.
             if(auto mgr = getExtensionManager(false)){
-                if(!ok && grandparent && grandparent->getParent()){
+                if(!ok && grandparent && grandparent->getParent() && grandparent->getName() == "extension"){
                     auto tn_loc = grandparent->getParent()->getPath();
                     auto ext_name = parent->getName();
                     if(!mgr->hasExtension(tn_loc, ext_name)){

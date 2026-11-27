@@ -102,6 +102,8 @@ int main()
     {
         // Build Tree
         sparta::RootTreeNode top("top");
+        sparta::Scheduler sched;
+        sparta::Clock    clk("clock", &sched);
         sparta::TreeNode a("a", "A node");
         sparta::TreeNode b("b", "B node");
         sparta::TreeNode c("c", "C node");
@@ -112,8 +114,6 @@ int main()
         // It is important that g is destructed last to test destruction-time
         // log messages where the above TreeNodes have been destructed
         TalkativeTreeNode g("g", "G node");
-        sparta::Scheduler sched;
-        sparta::Clock clk("clock", &sched);
         g.setClock(&clk);
 
 

@@ -44,6 +44,10 @@ namespace sparta
         using ProxyFreeList     = std::vector<PayloadDeliveringProxy *>;
         using ProxyInflightList = sparta::utils::FastList <PayloadDeliveringProxy *>;
 
+        //! Nodes constructed up front; most PayloadEvents never exceed a handful
+        //! outstanding, so this matches payload_proxy_allocation_cadence_.
+        static constexpr size_t INITIAL_OUTSTANDING = 16;
+
         //! Internal class used by PhasedPayloadEvent to schedule the
         //! delivery of a payload to a consumer sometime in the
         //! future.  As long as the PhasedPayloadEvent stays alive, so does
@@ -193,6 +197,10 @@ namespace sparta
 
     public:
 
+        //! Default ceiling on in-flight payloads: a runaway-event guard, not a
+        //! modeled resource.  Pass more for events that legitimately queue deeper.
+        static constexpr size_t DEFAULT_MAX_OUTSTANDING = 16384;
+
         /*
          * \brief Create a PhasedPayloadEvent to deliver data at a particular time
          * \param event_set The sparta::EventSet this PhasedPayloadEvent belongs to
@@ -200,6 +208,7 @@ namespace sparta
          * \param sched_phase The SchedulingPhase this PhasedPayloadEvent belongs to
          * \param consumer_event_handler A SpartaHandler to the consumer's event_handler
          * \param delay The relative time (in Cycles) from "now" to schedule
+         * \param max_outstanding Ceiling on simultaneously in-flight payloads
          *
          * The suggestion is to use the derived class sparta::PayloadEvent
          * instead of this class directly.
@@ -208,10 +217,12 @@ namespace sparta
                            const std::string   & name,
                            SchedulingPhase       sched_phase,
                            const SpartaHandler & consumer_event_handler,
-                           Clock::Cycle          delay = 0) :
+                           Clock::Cycle          delay = 0,
+                           size_t                max_outstanding = DEFAULT_MAX_OUTSTANDING) :
             EventNode(event_set, name, sched_phase),
             name_(name + "[" + consumer_event_handler.getName() + "]"),
-            prototype_(consumer_event_handler, delay, sched_phase)
+            prototype_(consumer_event_handler, delay, sched_phase),
+            inflight_pl_(INITIAL_OUTSTANDING, max_outstanding)
         {
             sparta_assert(consumer_event_handler.argCount() == 1,
                           "You must assign a PhasedPayloadEvent a consumer handler "
@@ -571,6 +582,7 @@ namespace sparta
          * \param sched_phase The SchedulingPhase this PhasedPayloadEvent belongs to
          * \param consumer_event_handler A SpartaHandler to the consumer's event_handler
          * \param delay The relative time (in Cycles) from "now" to schedule
+         * \param max_outstanding Ceiling on simultaneously in-flight payloads
          *
          * \note This constructor is restricted to be used by the sparta::Scheduler only
          *       in order to support sparta::GlobalEvent
@@ -580,10 +592,12 @@ namespace sparta
                            const std::string   & name,
                            SchedulingPhase       sched_phase,
                            const SpartaHandler & consumer_event_handler,
-                           Clock::Cycle          delay = 0) :
+                           Clock::Cycle          delay = 0,
+                           size_t                max_outstanding = DEFAULT_MAX_OUTSTANDING) :
             EventNode(event_set, name, sched_phase),
             name_(name + "[" + consumer_event_handler.getName() + "]"),
-            prototype_(consumer_event_handler, delay, sched_phase)
+            prototype_(consumer_event_handler, delay, sched_phase),
+            inflight_pl_(INITIAL_OUTSTANDING, max_outstanding)
         {
 
             sparta_assert(consumer_event_handler.argCount() == 1,
@@ -622,7 +636,7 @@ namespace sparta
 
         ProxyAllocation   allocated_proxies_;
         ProxyFreeList     free_pl_;
-        ProxyInflightList inflight_pl_{1100};
+        ProxyInflightList inflight_pl_;
 
         // Use 16, a power of 2 for allocation of more objects.  No
         // rhyme or reason, but this seems to be a sweet spot in

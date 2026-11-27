@@ -898,6 +898,23 @@ void TestFixesForReportedBugs()
         scheduler.reset();
         sim_config.reset();
     }
+
+    {
+        // Bug #3
+        // Pass in a bogus parameter and ensure that finalizeTree() throws
+        // due to nobody having read it
+        auto sim_config = std::make_unique<sparta::app::SimulationConfiguration>();
+        sim_config->processParameter("top.*.*.blah.nope", "true");
+        sim_config->copyTreeNodeExtensionsFromArchAndConfigPTrees();
+
+        auto scheduler = std::make_unique<sparta::Scheduler>();
+        auto sim = std::make_unique<TestSimulator>(*scheduler);
+
+        sim->configure(0, nullptr, sim_config.get(), false);
+        sim->buildTree();
+        sim->configureTree();
+        EXPECT_THROW(sim->finalizeTree());
+    }
 }
 
 int main(int argc, char** argv)

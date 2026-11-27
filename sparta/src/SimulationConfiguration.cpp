@@ -276,11 +276,11 @@ namespace app {
                 return true; // keep going
             }
 
-            auto & dest_ptree = path.find(".extension.") != std::string::npos ?
-                only_extensions : no_extensions;
-
+            auto for_extension = path.find(".extension.") != std::string::npos;
+            auto & dest_ptree = for_extension ? only_extensions : no_extensions;
+            auto value = for_extension ? leaf->getValue() : leaf->peekValue();
             auto n = dest_ptree.create(path, leaf->isRequired());
-            n->setValue(leaf->getValue(), leaf->isRequired(), leaf->getOrigin());
+            n->setValue(value, leaf->isRequired(), leaf->getOrigin());
 
             return true; // keep going
         });
